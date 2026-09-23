@@ -3,6 +3,7 @@ package org.checkerframework.checker.modifiability.replace;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -24,14 +25,11 @@ public class ReplaceAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedTypeF
   /** The erased {@code java.util.Set} type. */
   private final TypeMirror setErasure;
 
-  /** The erased {@code java.util.Collection} type. */
-  private final TypeMirror collectionErasure;
-
   /** The erased {@code java.util.Queue} type. */
   private final TypeMirror queueErasure;
 
-  /** The erased {@code java.util.LinkedList} type. */
-  private final TypeMirror linkedListErasure;
+  /** The erased {@code java.util.List} type. */
+  private final TypeMirror listErasure;
 
   /** The {@code @}{@link MaybeReplaceable} qualifier. */
   private final AnnotationMirror MAYBE_REPLACEABLE;
@@ -54,9 +52,8 @@ public class ReplaceAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedTypeF
   public ReplaceAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.setErasure = erasureOf("java.util.Set");
-    this.collectionErasure = erasureOf("java.util.Collection");
     this.queueErasure = erasureOf("java.util.Queue");
-    this.linkedListErasure = erasureOf("java.util.LinkedList");
+    this.listErasure = erasureOf("java.util.List");
     this.MAYBE_REPLACEABLE = AnnotationBuilder.fromClass(elements, MaybeReplaceable.class);
     this.REPLACEABLE = AnnotationBuilder.fromClass(elements, Replaceable.class);
     this.UNREPLACEABLE = AnnotationBuilder.fromClass(elements, Unreplaceable.class);
@@ -96,7 +93,7 @@ public class ReplaceAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedTypeF
   }
 
   /**
-   * An exact {@code Collection}, a {@code Set}, a non-{@code LinkedList} {@code Queue}, and a
+   * An exact {@code Collection}, a {@code Set}, a {@code Queue} that is not a {@code List}, and a
    * non-{@code ListIterator} {@code Iterator} have no replace methods, so {@code @Modifiable} and
    * {@code @Unmodifiable} make no claim about them.
    */
@@ -108,9 +105,14 @@ public class ReplaceAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedTypeF
     return types.isSameType(types.erasure(type), collectionErasure)
         || TypesUtils.isErasedSubtype(type, setErasure, types)
         || (TypesUtils.isErasedSubtype(type, queueErasure, types)
-            && !TypesUtils.isErasedSubtype(type, linkedListErasure, types))
+            && !TypesUtils.isErasedSubtype(type, listErasure, types))
         || (TypesUtils.isErasedSubtype(type, iteratorErasure, types)
             && !TypesUtils.isErasedSubtype(type, listIteratorErasure, types));
+  }
+
+  @Override
+  protected List<TypeMirror> typesWithCapability() {
+    return List.of(listErasure, listIteratorErasure, mapErasure, mapEntryErasure);
   }
 
   // polyLacksCapability is not overridden: unlike grow and shrink for Map.Entry, replacement

@@ -77,6 +77,16 @@ class PreservesModifiabilityTest {
     @Modifiable List<String> m = unannotated(modifiable);
   }
 
+  // An argument whose type is a type variable is classified by the type variable's upper bound.
+  <C extends @Growable Collection<String>> void typeVariableArgument(C growable) {
+    @Growable List<String> g = annotated(growable);
+  }
+
+  <C extends Collection<String>> void typeVariableArgumentWithoutCapability(C unknown) {
+    // :: error: [assignment]
+    @Growable List<String> g = annotated(unknown);
+  }
+
   // Despite the error on its declaration, the annotation has no effect on a call to such a method.
   void misplacedAnnotationHasNoEffect(@Growable List<String> growable) {
     annotatedVoid(growable);

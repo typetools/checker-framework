@@ -66,6 +66,72 @@ public class InheritedImplementationTest {
     public void add(@Growable GrowableSubclassThatOverrides this, int index, String element) {}
   }
 
+  // An abstract class is not checked for inherited implementations; its concrete subclasses are.
+  abstract static class AbstractGrowableBase<E> extends AbstractList<E> {
+    @Growable AbstractGrowableBase() {}
+  }
+
+  static class ConcreteSubclassThatOverrides extends AbstractGrowableBase<String> {
+    @Growable ConcreteSubclassThatOverrides() {}
+
+    @Override
+    public String get(int index) {
+      return "value";
+    }
+
+    @Override
+    public int size() {
+      return 0;
+    }
+
+    @Override
+    public void add(@Growable ConcreteSubclassThatOverrides this, int index, String element) {}
+  }
+
+  // :: error: [inherited.implementation.uoe]
+  static class ConcreteSubclassThatDoesNotOverride extends AbstractGrowableBase<String> {
+    @Growable ConcreteSubclassThatDoesNotOverride() {}
+
+    @Override
+    public String get(int index) {
+      return "value";
+    }
+
+    @Override
+    public int size() {
+      return 0;
+    }
+  }
+
+  // The constructors disagree, so the method bodies of this class were not checked, and nothing is
+  // known about whether `doesNotThrow()` throws.  (It does not.)
+  static class InconsistentConstructors extends AbstractList<String> {
+    @Ungrowable InconsistentConstructors() {}
+
+    // :: error: [inconsistent.constructor.result.type]
+    @Growable InconsistentConstructors(int capacity) {}
+
+    @Override
+    public String get(int index) {
+      return "value";
+    }
+
+    @Override
+    public int size() {
+      return 0;
+    }
+
+    public void doesNotThrow(@Growable InconsistentConstructors this) {}
+
+    @Override
+    public void add(@Growable InconsistentConstructors this, int index, String element) {}
+  }
+
+  // The subclass inherits `doesNotThrow()`, which is not known to throw.
+  static class GrowableSubclassOfInconsistent extends InconsistentConstructors {
+    @Growable GrowableSubclassOfInconsistent() {}
+  }
+
   /** A subclass of UnsupportedOperationException is an UnsupportedOperationException. */
   static class MyUnsupportedOperationException extends UnsupportedOperationException {}
 

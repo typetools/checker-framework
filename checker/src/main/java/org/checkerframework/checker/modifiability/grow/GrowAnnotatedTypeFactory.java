@@ -3,6 +3,7 @@ package org.checkerframework.checker.modifiability.grow;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -91,6 +92,11 @@ public class GrowAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedTypeFact
     return TypesUtils.isErasedSubtype(type, mapEntryErasure, types)
         || (TypesUtils.isErasedSubtype(type, iteratorErasure, types)
             && !TypesUtils.isErasedSubtype(type, listIteratorErasure, types));
+  }
+
+  @Override
+  protected List<TypeMirror> typesWithCapability() {
+    return List.of(collectionErasure, mapErasure, listIteratorErasure);
   }
 
   /**

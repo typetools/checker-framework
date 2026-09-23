@@ -34,6 +34,12 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
   /** The {@code @}{@link IteratorPolyMod} qualifier. */
   protected final AnnotationMirror ITERATOR_POLY_MOD;
 
+  /** The erased {@code java.util.Collection} type. */
+  protected final TypeMirror collectionErasure;
+
+  /** The erased {@code java.util.Map} type. */
+  protected final TypeMirror mapErasure;
+
   /** The erased {@code java.util.Map.Entry} type. */
   protected final TypeMirror mapEntryErasure;
 
@@ -57,6 +63,8 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
   protected ModifiabilityBaseAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.ITERATOR_POLY_MOD = AnnotationBuilder.fromClass(elements, IteratorPolyMod.class);
+    this.collectionErasure = erasureOf("java.util.Collection");
+    this.mapErasure = erasureOf("java.util.Map");
     this.mapEntryErasure = erasureOf("java.util.Map.Entry");
     this.iteratorErasure = erasureOf("java.util.Iterator");
     this.listIteratorErasure = erasureOf("java.util.ListIterator");
@@ -142,6 +150,44 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
   }
 
   /**
+   * Returns erased types whose every subtype has this checker's capability, unless {@link
+   * #typeLacksCapability} holds of the subtype. For example, the Replace Checker's result includes
+   * {@code List}.
+   *
+   * <p>A type variable or wildcard may be instantiated by any subtype of its upper bound, including
+   * a subtype that also implements an unrelated interface. For example, a type variable whose upper
+   * bound is {@code AbstractCollection} or {@code Serializable} may be instantiated by {@code
+   * HashSet}, which cannot be replaced into. So an alias written on a type variable claims this
+   * checker's capability only if the upper bound is a subtype of one of these types.
+   *
+   * @return erased types whose subtypes have this checker's capability
+   */
+  protected abstract List<TypeMirror> typesWithCapability();
+
+  /**
+   * Returns true if a type variable or wildcard whose upper bound is {@code bound} may be
+   * instantiated by a type that structurally cannot support this checker's capability; that is, if
+   * no bound is a subtype of a type in {@link #typesWithCapability}.
+   *
+   * @param bound the upper bound of a type variable or wildcard; it may be an intersection type
+   * @return true if some instantiation of the type variable or wildcard may lack the capability
+   */
+  private boolean someInstantiationLacksCapability(TypeMirror bound) {
+    List<? extends TypeMirror> bounds =
+        bound.getKind() == TypeKind.INTERSECTION
+            ? ((IntersectionType) bound).getBounds()
+            : List.of(bound);
+    for (TypeMirror withCapability : typesWithCapability()) {
+      for (TypeMirror b : bounds) {
+        if (TypesUtils.isErasedSubtype(b, withCapability, types)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
    * Returns true if {@code @PolyModifiable} weakens to the top qualifier on {@code type}, rather
    * than to this checker's polymorphic qualifier. This differs from {@link #typeLacksCapability}
    * because a polymorphic qualifier may usefully carry a capability that the type itself cannot
@@ -205,20 +251,29 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
    * weakening is applied.
    *
    * <p>A type variable or wildcard is classified by its upper bound, so that, for example, {@code
-   * <T extends Deque<String>>} has the same capabilities as {@code Deque}.
+   * <T extends Deque<String>>} has the same capabilities as {@code Deque}. In addition, on a type
+   * variable or wildcard, {@code @Modifiable} and {@code @Unmodifiable} weaken to the top qualifier
+   * unless the upper bound is a subtype of a type that has this checker's capability; see {@link
+   * #typesWithCapability}. For example, {@code @Modifiable T} for an unbounded {@code T} is
+   * {@code @MaybeReplaceable}, because {@code T} may be {@code Set}.
    */
   @Override
   public AnnotationMirror canonicalAnnotation(
       AnnotationMirror annotation, @Nullable TypeMirror tm) {
     if (expandsModifiabilityAliases()) {
       TypeMirror bound = tm == null ? null : TypesUtils.upperBound(tm);
-      if (areSameByClass(annotation, Modifiable.class)) {
-        return bound != null && lacksCapability(bound, this::typeLacksCapability)
-            ? topAnnotation()
-            : positiveCapability();
-      } else if (areSameByClass(annotation, Unmodifiable.class)) {
-        return bound != null && lacksCapability(bound, this::typeLacksCapability)
-            ? topAnnotation()
+      if (areSameByClass(annotation, Modifiable.class)
+          || areSameByClass(annotation, Unmodifiable.class)) {
+        boolean weaken =
+            bound != null
+                && (lacksCapability(bound, this::typeLacksCapability)
+                    || ((tm.getKind() == TypeKind.TYPEVAR || tm.getKind() == TypeKind.WILDCARD)
+                        && someInstantiationLacksCapability(bound)));
+        if (weaken) {
+          return topAnnotation();
+        }
+        return areSameByClass(annotation, Modifiable.class)
+            ? positiveCapability()
             : negativeCapability();
       } else if (areSameByClass(annotation, PolyModifiable.class)) {
         return bound != null && lacksCapability(bound, this::polyLacksCapability)
@@ -317,7 +372,9 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
       return;
     }
     AnnotatedTypeMirror argumentType = getAnnotatedType(tree.getArguments().get(0));
-    if (argumentType.hasPrimaryAnnotation(positiveCapability())) {
+    // `hasAnnotation()` rather than `hasPrimaryAnnotation()`, so that an argument whose type is a
+    // type variable is classified by its upper bound.
+    if (argumentType.hasAnnotation(positiveCapability())) {
       returnType.replaceAnnotation(positiveCapability());
     } else {
       returnType.replaceAnnotation(topAnnotation());
@@ -334,8 +391,9 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
    * special treatment is needed for iterator methods.
    *
    * <p>A declared negative result keeps its declared qualifier, since such an iterator never has
-   * the capability. Otherwise, the result qualifier is computed from the receiver: the iterator of
-   * a receiver with this checker's negative qualifier also has that negative qualifier, and the
+   * the capability. A declared polymorphic result keeps the qualifier that polymorphic resolution
+   * gives it. Otherwise, the result qualifier is computed from the receiver: the iterator of a
+   * receiver with this checker's negative qualifier also has that negative qualifier, and the
    * iterator of a receiver that has both this checker's positive qualifier and
    * {@code @IteratorPolyMod} has the positive qualifier. In every other case the result is the top
    * qualifier.
@@ -369,10 +427,13 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
     if (returnType.hasPrimaryAnnotation(negativeCapability())) {
       return;
     }
-    if (returnType.hasPrimaryAnnotation(polyCapability())) {
-      // `super.methodFromUse()` resolves the polymorphic qualifier only when it infers type
-      // arguments; see `GenericAnnotatedTypeFactory.methodFromUsePreSubstitution()`.  On the other
-      // path, leave the polymorphic qualifier for that later resolution.
+    // Keep a declared polymorphic result, which relates the iterator to the receiver.  Test the
+    // declaration rather than `returnType`: `super.methodFromUse()` has already resolved the
+    // polymorphic qualifier when it infers type arguments, but not otherwise; see
+    // `GenericAnnotatedTypeFactory.methodFromUsePreSubstitution()`.
+    if (getAnnotatedType(methodType.getElement())
+        .getReturnType()
+        .hasPrimaryAnnotation(polyCapability())) {
       return;
     }
 
@@ -385,19 +446,22 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
       return;
     }
 
+    // The receiver tests below use `hasAnnotation()` rather than `hasPrimaryAnnotation()`, so that
+    // a
+    // receiver whose type is a type variable is classified by its upper bound.
+
     // The iterator of a collection that lacks the capability also lacks the capability, even if
     // the declaration says that the iterator has it (as ArrayList's does).
-    if (receiverType.hasPrimaryAnnotation(negativeCapability())) {
+    if (receiverType.hasAnnotation(negativeCapability())) {
       returnType.replaceAnnotation(negativeCapability());
       return;
     }
 
     // The receiver has the capability; its iterator does too if the receiver is @IteratorPolyMod.
-    if (receiverType.hasPrimaryAnnotation(positiveCapability())) {
+    if (receiverType.hasAnnotation(positiveCapability())) {
       AnnotatedTypeMirror iteratorHierarchyType =
           getTypeFactoryOfSubchecker(IteratorChecker.class).getReceiverType(tree);
-      if (iteratorHierarchyType != null
-          && iteratorHierarchyType.hasPrimaryAnnotation(ITERATOR_POLY_MOD)) {
+      if (iteratorHierarchyType != null && iteratorHierarchyType.hasAnnotation(ITERATOR_POLY_MOD)) {
         returnType.replaceAnnotation(positiveCapability());
         return;
       }

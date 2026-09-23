@@ -3,6 +3,7 @@ package org.checkerframework.checker.modifiability.shrink;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -89,6 +90,11 @@ public class ShrinkAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedTypeFa
       return false;
     }
     return TypesUtils.isErasedSubtype(type, mapEntryErasure, types);
+  }
+
+  @Override
+  protected List<TypeMirror> typesWithCapability() {
+    return List.of(collectionErasure, mapErasure, iteratorErasure);
   }
 
   /**

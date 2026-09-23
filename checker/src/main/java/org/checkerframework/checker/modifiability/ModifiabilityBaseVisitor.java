@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -48,8 +49,8 @@ import org.checkerframework.javacutil.TypesUtils;
  *       requiring the body of each method that requires the capability -- either on its own
  *       receiver parameter or from a method that it overrides -- to agree with that qualifier about
  *       whether the method throws {@link UnsupportedOperationException}.
- *   <li>Requiring a class that claims the capability not to inherit, without overriding, a method
- *       whose implementation always throws {@link UnsupportedOperationException}.
+ *   <li>Requiring a concrete class that claims the capability not to inherit, without overriding, a
+ *       method whose implementation always throws {@link UnsupportedOperationException}.
  *   <li>Requiring an override to preserve a positive receiver capability of the method it
  *       overrides.
  * </ul>
@@ -174,14 +175,16 @@ public class ModifiabilityBaseVisitor
   }
 
   /**
-   * Issues an error if the class claims this checker's capability, but inherits without overriding
-   * a method whose implementation always throws {@link UnsupportedOperationException}.
+   * Issues an error if a concrete class claims this checker's capability, but inherits without
+   * overriding a method whose implementation always throws {@link UnsupportedOperationException}.
    *
    * <p>The body of an inherited method is usually not available -- it is compiled separately, and
    * the checker sees only its signature -- so the implementation is known to throw only if it is
    * annotated {@code @}{@link ThrowsUnsupportedOperation}, as {@code AbstractList.set()} is, or if
-   * it is declared in a class whose constructors declare the negative qualifier, in which case
+   * it is declared in a class whose constructors all declare the negative qualifier, in which case
    * {@link #checkImplOK} verified that it throws.
+   *
+   * <p>An abstract class is not checked, because its concrete subclasses are.
    *
    * @param tree a class
    * @param classElement the element for {@code tree}
@@ -195,6 +198,11 @@ public class ModifiabilityBaseVisitor
       // UnsupportedOperationException agrees with what the class says about itself.  (In the
       // Iterator hierarchy, which has no negative qualifier, no implementation throws
       // UnsupportedOperationException on account of this checker's capability.)
+      return;
+    }
+    if (classElement.getModifiers().contains(Modifier.ABSTRACT)) {
+      // No value's run-time class is an abstract class, and each concrete subclass is checked on
+      // its own.  A concrete subclass may override the inherited method.
       return;
     }
     for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(classElement))) {
@@ -232,10 +240,12 @@ public class ModifiabilityBaseVisitor
     if (atypeFactory.getDeclAnnotation(method, ThrowsUnsupportedOperation.class) != null) {
       return true;
     }
-    // A class whose constructors declare the negative qualifier, such as @Ungrowable, was itself
-    // checked: every method of it that requires the capability throws
-    // UnsupportedOperationException.  A class that declares nothing, such as AbstractList, says
-    // nothing about its methods, and only the @ThrowsUnsupportedOperation annotation does.
+    // A class whose constructors all declare the negative qualifier, such as @Ungrowable, was
+    // itself checked: every method of it that requires the capability throws
+    // UnsupportedOperationException.  A class whose constructors disagree was not checked (see
+    // processClassMembers), and a class that declares nothing, such as AbstractList, says nothing
+    // about its methods; for them, only the @ThrowsUnsupportedOperation annotation does.
+    boolean sawNegative = false;
     for (ExecutableElement constructor :
         ElementFilter.constructorsIn(declaringClass.getEnclosedElements())) {
       AnnotationMirror resultAnno =
@@ -243,11 +253,15 @@ public class ModifiabilityBaseVisitor
               .getAnnotatedType(constructor)
               .getReturnType()
               .getPrimaryAnnotationInHierarchy(atypeFactory.topAnnotation());
-      if (resultAnno != null && isNegativeCapability(resultAnno)) {
-        return true;
+      if (resultAnno == null) {
+        continue;
       }
+      if (!isNegativeCapability(resultAnno)) {
+        return false;
+      }
+      sawNegative = true;
     }
-    return false;
+    return sawNegative;
   }
 
   /**

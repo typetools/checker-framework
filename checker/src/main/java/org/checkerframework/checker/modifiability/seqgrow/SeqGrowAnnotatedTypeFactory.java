@@ -1,8 +1,10 @@
 package org.checkerframework.checker.modifiability.seqgrow;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
@@ -127,6 +129,19 @@ public class SeqGrowAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedTypeF
                 && TypesUtils.isErasedSubtype(type, sequencedMapErasure, types))
             || TypesUtils.isErasedSubtype(type, dequeErasure, types);
     return !canSeqGrow;
+  }
+
+  @Override
+  protected List<TypeMirror> typesWithCapability() {
+    List<TypeMirror> result = new ArrayList<>(3);
+    if (sequencedCollectionErasure != null) {
+      result.add(sequencedCollectionErasure);
+    }
+    if (sequencedMapErasure != null) {
+      result.add(sequencedMapErasure);
+    }
+    result.add(dequeErasure);
+    return result;
   }
 
   /**

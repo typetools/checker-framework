@@ -1,7 +1,8 @@
 // Tests the `inconsistent.constructor.result.type` and `bottom.annotation.on.receiver` checks,
 // which are performed by ModifiabilityBaseVisitor.processClassTree.
 //
-// A class below whose constructors are @Growable also gets an `inherited.implementation.uoe`
+// A concrete class below whose constructors are @Growable also gets an
+// `inherited.implementation.uoe`
 // error, because it extends AbstractList without overriding `add(int, E)`, whose implementation
 // throws UnsupportedOperationException.  See InheritedImplementationTest.java.
 
@@ -98,7 +99,6 @@ public class ConstructorResultTypeTest {
   }
 
   // The method has no body, but the bottom qualifier on its receiver is still an error.
-  // :: error: [inherited.implementation.uoe]
   abstract static class AbstractBottomReceiver extends AbstractList<String> {
     @Growable AbstractBottomReceiver() {}
 
