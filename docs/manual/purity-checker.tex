@@ -18,6 +18,8 @@ checker.
 To run \emph{only} the Purity Checker (this is uncommon),
 supply the following command-line option to javac:
 \code{-processor org.checkerframework.framework.util.PurityChecker}.
+That implies \<-AcheckPurityAnnotations>, so you do not need to supply
+both options.
 
 To infer purity annotations,
 supply the command-line option \<-AsuggestPureMethods>.
@@ -144,9 +146,11 @@ or
 by writing \refqualclass{dataflow/qual}{Deterministic} on the
 declaration of a method that is not deterministic.
 
-To run the Purity Checker together with another checker, supply the
-command-line option \<-AcheckPurityAnnotations>.  The Purity Checker is not
-enabled by default because of a high false
+When you run the Purity Checker directly, it checks the annotations.
+To enable checking of the annotations when running any other checker,
+supply the command-line option \<-AcheckPurityAnnotations>.
+For checkers other than the Purity Checker, it is not enabled by default
+because of a high false
 positive rate.  In the future, after a new purity-checking analysis is
 implemented, the Checker Framework will default to checking purity
 annotations.
