@@ -109,11 +109,11 @@ public class InitializationVisitor<
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
     // field write of the form x.f = y
-    if (TreeUtils.isFieldAccess(varTree)) {
+    VariableElement el = TreeUtils.asFieldAccess(varTree);
+    if (el != null) {
       // cast is safe: a field access can only be an IdentifierTree or MemberSelectTree
       ExpressionTree lhs = (ExpressionTree) varTree;
       ExpressionTree y = valueExp;
-      VariableElement el = TreeUtils.variableElementFromUse(lhs);
       AnnotatedTypeMirror xType = atypeFactory.getReceiverType(lhs);
       AnnotatedTypeMirror yType = atypeFactory.getAnnotatedType(y);
       // the special FBC rules do not apply if there is an explicit
