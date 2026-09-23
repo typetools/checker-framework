@@ -242,8 +242,10 @@ rules 6 and 7 apply. If rule 7 applies, it makes the type of local variables top
 A type system designer can also register a default for a particular element
 and for the elements that it encloses, by calling
 \<QualifierDefaults.addElementDefault> (Section~\ref{creating-typesystem-defaults}).
-Such a default takes precedence over rule 6, that is, over a user-written
+At the same location, such a default takes precedence over rule 6, that is, over a user-written
 \<@DefaultQualifier>, and over a default that is registered for an enclosing element.
+A default for a specific location, such as \<RETURN>, takes precedence over a default for
+\<OTHERWISE> or \<ALL>, whichever element each default is written or registered on.
 
 % (Implementation detail:  setting defaults is implemented by the
 % \refclass{framework/util}{QualifierDefaults} class.)

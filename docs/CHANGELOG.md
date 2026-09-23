@@ -18,7 +18,7 @@ The Checker Framework runs under JDK 27 -- that is, it runs on a version 27 JVM.
 The Checker Framework runs noticeably faster, due to performance tuning.
 
 A `@DefaultQualifier` annotation on a nested element now takes precedence over
-one on an enclosing element, as the manual specifies.
+one on an enclosing element at the same location, as the manual specifies.
 
 ### Changes for type system implementers
 

@@ -14,6 +14,7 @@ import com.sun.source.util.TreePath;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.IdentityHashMap;
@@ -877,10 +878,15 @@ public class QualifierDefaults {
   /**
    * Returns every default that applies to the given scope, in the order in which the defaults are
    * to be applied: first the defaults that {@link #addElementDefault} registered for the scope or
-   * for one of its enclosing scopes, then the {@code @DefaultQualifier} annotations on the scope
-   * and on its enclosing scopes, then the conservative defaults if conservative defaults apply to
-   * the scope, and last the checked code defaults. Within each of the first two groups, the
-   * defaults of the scope itself come before those of an enclosing scope.
+   * for one of its enclosing scopes, together with the {@code @DefaultQualifier} annotations on the
+   * scope and on its enclosing scopes; then the conservative defaults if conservative defaults
+   * apply to the scope; and last the checked code defaults.
+   *
+   * <p>The first group is ordered by {@link TypeUseLocation}, so that a specific location such as
+   * {@link TypeUseLocation#RETURN} precedes {@link TypeUseLocation#OTHERWISE} and {@link
+   * TypeUseLocation#ALL}, whatever scope each default comes from. Among defaults at the same
+   * location, a registered default precedes a {@code @DefaultQualifier} annotation, and a default
+   * of the scope itself precedes a default of an enclosing scope.
    *
    * <p>The result is memoized, and callers must not modify the result.
    *
@@ -909,6 +915,10 @@ public class QualifierDefaults {
 
     List<Default> list = new ArrayList<>(scopeDefaults.elementDefaults);
     list.addAll(scopeDefaults.qualifierDefaults);
+    // Order by location, so that a more specific location takes precedence over OTHERWISE and ALL
+    // even when the less specific default belongs to a nearer scope or was registered.  The sort
+    // is stable, so among defaults at the same location, the order above decides.
+    list.sort(BY_LOCATION);
     if (conservative) {
       list.addAll(uncheckedCodeDefaults);
     }
@@ -920,6 +930,9 @@ public class QualifierDefaults {
     }
     return result;
   }
+
+  /** Orders defaults by location only, unlike {@link Default#compareTo}. */
+  private static final Comparator<Default> BY_LOCATION = Comparator.comparing(def -> def.location);
 
   /**
    * Returns the precedence list for a scope that has no element defaults and to which conservative
@@ -966,11 +979,11 @@ public class QualifierDefaults {
    * as {@code @DefaultQualifier}.
    *
    * <p>Each is a list rather than a {@link DefaultSet}, and the two are kept apart, because both
-   * distinctions decide precedence: a registered default takes precedence over a
-   * {@code @DefaultQualifier} annotation, and a default of a scope takes precedence over a default
-   * of an enclosing scope. Putting them all in one {@link DefaultSet} would instead let the
-   * annotations' names decide, since a {@link DefaultSet} is sorted by location and then by
-   * annotation name.
+   * distinctions decide precedence among defaults at the same location: a registered default takes
+   * precedence over a {@code @DefaultQualifier} annotation, and a default of a scope takes
+   * precedence over a default of an enclosing scope. Putting them all in one {@link DefaultSet}
+   * would instead let the annotations' names decide, since a {@link DefaultSet} is sorted by
+   * location and then by annotation name.
    */
   private static class ScopeDefaults {
 
@@ -1143,13 +1156,17 @@ public class QualifierDefaults {
   private static final Map<Class<?>, Boolean> applierIsCustomizedCache = new ConcurrentHashMap<>();
 
   /**
-   * Returns true if the given class overrides {@link DefaultApplierElement#applyDefault} or {@link
-   * DefaultApplierElement#addAnnotation}, either of which may apply a default other than in the way
-   * that {@link #minimizeDefaults} and the single-traversal optimization assume. Such an applier is
-   * given every default and one traversal of the type per default.
+   * Returns true if the given class overrides {@link DefaultApplierElement#applyDefault}, {@link
+   * DefaultApplierElement#addAnnotation}, or {@link DefaultApplierElement#shouldBeAnnotated}, any
+   * of which may apply a default other than in the way that {@link #minimizeDefaults} and the
+   * single-traversal optimization assume. For example, an override of {@code shouldBeAnnotated} may
+   * read {@link DefaultApplierElement#location}, which holds a single location only when the type
+   * is traversed once per default. Such an applier is given every default and one traversal of the
+   * type per default.
    *
    * @param applierClass {@link DefaultApplierElement} or a subclass of it
-   * @return true if {@code applierClass} overrides {@code applyDefault} or {@code addAnnotation}
+   * @return true if {@code applierClass} overrides {@code applyDefault}, {@code addAnnotation}, or
+   *     {@code shouldBeAnnotated}
    */
   private static boolean applierIsCustomized(Class<?> applierClass) {
     return applierIsCustomizedCache.computeIfAbsent(
@@ -1161,7 +1178,13 @@ public class QualifierDefaults {
                     DefaultApplierElement.class,
                     "addAnnotation",
                     AnnotatedTypeMirror.class,
-                    AnnotationMirror.class));
+                    AnnotationMirror.class)
+                || isOverridden(
+                    c,
+                    DefaultApplierElement.class,
+                    "shouldBeAnnotated",
+                    AnnotatedTypeMirror.class,
+                    boolean.class));
   }
 
   /**
@@ -1292,6 +1315,8 @@ public class QualifierDefaults {
      * @param def default to apply
      */
     public void applyDefault(Default def) {
+      // Set the location before the traversal, because shouldBeAnnotated may read it.
+      this.location = def.location;
       singletonDefaults[0] = def;
       this.defaults = singletonDefaults;
       impl.visit(type, null);
@@ -1303,11 +1328,11 @@ public class QualifierDefaults {
      * <p>When the precedence list permits, this traverses the type once and applies every default
      * at each node, rather than traversing the type once per default.
      *
-     * <p>It does not do so if this object's class overrides {@link #applyDefault} or {@link
-     * #addAnnotation}. Such an applier is instead given one traversal of the type per default, so
-     * that the override runs for each default, and is given even the defaults that {@link
-     * QualifierDefaults#minimizeDefaults} removed, because the override may not have the semantics
-     * that removing them assumes.
+     * <p>It does not do so if this object's class overrides {@link #applyDefault}, {@link
+     * #addAnnotation}, or {@link #shouldBeAnnotated}. Such an applier is instead given one
+     * traversal of the type per default, so that the override runs for each default, and is given
+     * even the defaults that {@link QualifierDefaults#minimizeDefaults} removed, because the
+     * override may not have the semantics that removing them assumes.
      *
      * @param precedenceList the defaults to apply, in the order in which to apply them
      */

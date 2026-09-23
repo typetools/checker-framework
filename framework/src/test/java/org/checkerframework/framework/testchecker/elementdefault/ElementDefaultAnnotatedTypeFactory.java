@@ -20,18 +20,23 @@ import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * Registers defaults through {@code QualifierDefaults.addElementDefault}: a {@code @SubQual}
- * default for {@link TypeUseLocation#RETURN} on every class named {@code ElementDefault}, and a
+ * default for {@link TypeUseLocation#RETURN} on every class named {@code ElementDefault}, a
  * {@code @SubQual} default for {@link TypeUseLocation#FIELD} on every class named {@code
- * ElementDefaultPrecedence}.
+ * ElementDefaultPrecedence}, and an {@code @ElementDefaultQual} default for {@link
+ * TypeUseLocation#OTHERWISE} on every class named {@code ElementDefaultRegisteredOtherwise}.
  *
  * <p>The test files then check that such a default composes with the {@code @DefaultQualifier}
  * annotations on the same element and on the element's enclosing scopes, rather than suppressing
- * them, and that it takes precedence over them.
+ * them, and that it takes precedence over them at the same location but not over a more specific
+ * location.
  */
 public class ElementDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The {@code @SubQual} annotation. */
   private final AnnotationMirror SUB_QUAL;
+
+  /** The {@code @ElementDefaultQual} annotation. */
+  private final AnnotationMirror ELEMENT_DEFAULT_QUAL;
 
   /** The {@code @Odd} annotation, which this type system does not support. */
   private final AnnotationMirror ODD;
@@ -45,6 +50,7 @@ public class ElementDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   public ElementDefaultAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     SUB_QUAL = AnnotationBuilder.fromClass(getElementUtils(), SubQual.class);
+    ELEMENT_DEFAULT_QUAL = AnnotationBuilder.fromClass(getElementUtils(), ElementDefaultQual.class);
     ODD = AnnotationBuilder.fromClass(getElementUtils(), Odd.class);
     this.postInit();
   }
@@ -75,6 +81,8 @@ public class ElementDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
           defaults.addElementDefault(classElt, ODD, TypeUseLocation.PARAMETER);
         } else if (className.contentEquals("ElementDefaultPrecedence")) {
           defaults.addElementDefault(classElt, SUB_QUAL, TypeUseLocation.FIELD);
+        } else if (className.contentEquals("ElementDefaultRegisteredOtherwise")) {
+          defaults.addElementDefault(classElt, ELEMENT_DEFAULT_QUAL, TypeUseLocation.OTHERWISE);
         }
       }
     }
