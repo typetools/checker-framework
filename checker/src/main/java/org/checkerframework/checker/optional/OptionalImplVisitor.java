@@ -168,7 +168,7 @@ public class OptionalImplVisitor
    * @return the receiver of the call to java.util.Optional.get, or null if {@code expression} is
    *     not such a call
    */
-  private @Nullable ExpressionTree receiverOfCallToGet(@Nullable ExpressionTree expression) {
+  private @Nullable ExpressionTree asCallToGet(@Nullable ExpressionTree expression) {
     if (expression == null) {
       return null;
     }
@@ -297,7 +297,7 @@ public class OptionalImplVisitor
     if (!(trueExpr instanceof MethodInvocationTree)) {
       return;
     }
-    ExpressionTree getReceiver = receiverOfCallToGet(TreeUtils.getReceiverTree(trueExpr));
+    ExpressionTree getReceiver = asCallToGet(TreeUtils.getReceiverTree(trueExpr));
     if (getReceiver == null) {
       return;
     }
@@ -499,7 +499,7 @@ public class OptionalImplVisitor
       return;
     }
     ExpressionTree invokArg = TreeUtils.withoutParens(invokArgs.get(0));
-    ExpressionTree getReceiver = receiverOfCallToGet(invokArg);
+    ExpressionTree getReceiver = asCallToGet(invokArg);
     if (getReceiver == null) {
       return;
     }
