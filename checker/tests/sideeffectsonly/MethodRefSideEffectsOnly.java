@@ -145,6 +145,60 @@ public class MethodRefSideEffectsOnly {
     StaticMutator m = MethodRefSideEffectsOnly::mutatesStaticVarargs;
   }
 
+  static class Box {
+    @SideEffectsOnly("this")
+    Box(Collection<Integer> c) {}
+  }
+
+  static class Wrapper {
+    Collection<Integer> c;
+
+    @SideEffectsOnly("this.c")
+    Wrapper(Collection<Integer> c) {
+      this.c = c;
+      this.c.add(1);
+    }
+  }
+
+  interface Maker<T> {
+    @SideEffectsOnly("MethodRefSideEffectsOnly.staticSb")
+    T make(Collection<Integer> c);
+  }
+
+  void constructorOk() {
+    // The object under construction did not exist before the call, so modifying it is not a side
+    // effect that is visible to the caller.
+    Maker<Box> m = Box::new;
+  }
+
+  void constructorNotOk() {
+    // `this.c` is reached through the object under construction, but it is the caller's argument.
+    // :: error: (purity.methodref)
+    Maker<Wrapper> m = Wrapper::new;
+  }
+
+  static class Outer {
+    Collection<Integer> log = new java.util.ArrayList<>();
+
+    class Inner extends Outer {
+      @SideEffectsOnly("Outer.this.log")
+      void mutatesOuterLog() {
+        Outer.this.log.add(1);
+      }
+    }
+  }
+
+  interface InnerMutator {
+    @SideEffectsOnly("#1.log")
+    void apply(Outer.Inner inner);
+  }
+
+  void outerThisNotOk() {
+    // `Outer.this` is the enclosing instance, not the receiver, so it is not `#1`.
+    // :: error: (purity.methodref)
+    InnerMutator m = Outer.Inner::mutatesOuterLog;
+  }
+
   void boundNotOk() {
     Cell cell = new Cell();
     // For a bound reference, the receiver is fixed by the reference itself, so no expression at

@@ -4740,7 +4740,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
 
       List<JavaExpression> seOnlySuperExpressions = parseSideEffectsOnly(seOnlySuperStrings);
-      List<JavaExpression> seOnlySubExpressions = parseSideEffectsOnly(seOnlySubStrings);
+      List<JavaExpression> seOnlySubExpressions = parseReceiverRelative(seOnlySubStrings);
       if (seOnlySuperExpressions == null || seOnlySubExpressions == null) {
         // An argument could not be parsed, so the annotations cannot be compared.  The strings
         // cannot be compared instead, because the two methods' parameters need not correspond
@@ -4765,6 +4765,46 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
+     * Parses the given {@code @SideEffectsOnly} expressions, as {@link #parseSideEffectsOnly} does,
+     * but replaces each {@code this} that is not the receiver of the method that declares it, such
+     * as {@code Outer.this}, by {@link Unknown}. Afterward, every {@link ThisReference} in the
+     * result is the receiver of the declaring method, and therefore of the method that inherits the
+     * annotation.
+     *
+     * @param expressionStrings {@code @SideEffectsOnly} expressions, indexed by the method whose
+     *     declaration contains them
+     * @return the parsed expressions, or null if any of them cannot be parsed
+     */
+    private @Nullable List<JavaExpression> parseReceiverRelative(
+        Map<ExecutableElement, List<String>> expressionStrings) {
+      List<JavaExpression> result = new ArrayList<>();
+      for (Map.Entry<ExecutableElement, List<String>> entry : expressionStrings.entrySet()) {
+        List<JavaExpression> parsed =
+            parseSideEffectsOnly(Collections.singletonMap(entry.getKey(), entry.getValue()));
+        if (parsed == null) {
+          return null;
+        }
+        TypeElement declaringClass = ElementUtils.enclosingTypeElement(entry.getKey());
+        JavaExpressionConverter outerThisToUnknown =
+            new JavaExpressionConverter() {
+              @Override
+              protected JavaExpression visitThisReference(ThisReference thisExpr, Void unused) {
+                // The parser gives the receiver `this` the type of the declaring class, and an
+                // outer `this`, whether written or implicit, the type of the outer class.
+                if (declaringClass.equals(TypesUtils.getTypeElement(thisExpr.getType()))) {
+                  return thisExpr;
+                }
+                return new Unknown(thisExpr.getType());
+              }
+            };
+        for (JavaExpression expr : parsed) {
+          result.add(outerThisToUnknown.convert(expr));
+        }
+      }
+      return result;
+    }
+
+    /**
      * Translates expressions written at the declaration of the method that a method reference
      * refers to, into the frame of the functional interface method that the reference implements.
      *
@@ -4773,15 +4813,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * referenced method's receiver, and the interface method's parameter {@code #(i+1)} is the
      * referenced method's parameter {@code #i}.
      *
-     * <p>An expression that mentions the referenced method's {@code this} is dropped if the
-     * reference is a constructor reference, because the object under construction did not exist
-     * before the call. Otherwise, for a bound or {@code super} reference, {@code this} is the bound
-     * receiver, which the interface method's annotation cannot name; this method returns null in
-     * that case.
+     * <p>For a constructor reference, the expression {@code this} is dropped, because the object
+     * under construction did not exist before the call. An expression that is reached through that
+     * object, such as {@code this.f}, may denote an object that existed before the call, but the
+     * interface method's annotation cannot name it; this method returns null in that case. For a
+     * bound or {@code super} reference, {@code this} is the bound receiver, which the interface
+     * method's annotation cannot name either; this method returns null in that case too.
      *
      * <p>This method requires that {@link #overriderTree} is a method reference.
      *
-     * @param subExpressions expressions written at the referenced method's declaration
+     * @param subExpressions expressions written at the referenced method's declaration, as returned
+     *     by {@link #parseReceiverRelative}
      * @return the expressions written at the interface method's declaration, or null if some
      *     expression has no counterpart there
      */
@@ -4800,11 +4842,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           subExpressions.stream()
               .anyMatch(
                   e ->
-                      methodRefKind.isConstructorReference()
-                          ? !e.containsOfClass(ThisReference.class)
-                              && e.containsOfClass(FormalParameter.class)
-                          : e.containsOfClass(FormalParameter.class)
-                              || e.containsOfClass(ThisReference.class));
+                      !(methodRefKind.isConstructorReference() && e instanceof ThisReference)
+                          && (e.containsOfClass(FormalParameter.class)
+                              || e.containsOfClass(ThisReference.class)));
       if (needsCorrespondence
           && superParameters.size() != overrider.getElement().getParameters().size() + shift) {
         // The parameters do not correspond one-to-one, as when a varargs method implements a
@@ -4830,16 +4870,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               if (methodRefKind.isUnbound()) {
                 return superParameters.get(0);
               }
-              // The receiver is fixed by the method reference itself, so no expression at the
-              // interface method's declaration denotes it.  `Unknown` is never covered.
+              // The receiver is fixed by the method reference itself, or is the object under
+              // construction, so no expression at the interface method's declaration denotes it.
+              // `Unknown` is never covered.
               return new Unknown(thisExpr.getType());
             }
           };
 
       List<JavaExpression> result = new ArrayList<>(subExpressions.size());
       for (JavaExpression subExpression : subExpressions) {
-        if (methodRefKind.isConstructorReference()
-            && subExpression.containsOfClass(ThisReference.class)) {
+        if (methodRefKind.isConstructorReference() && subExpression instanceof ThisReference) {
           // The object under construction did not exist before the call, so modifying it is not a
           // side effect that is visible to the caller.
           continue;
@@ -4910,11 +4950,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return;
       }
       if (isMethodReference) {
-        // TODO: Check a method reference against the `@SideEffectsOnly` annotation of the
-        // functional interface method.  The two annotations are written in unrelated scopes:  the
-        // referenced method's formal parameters do not correspond to the interface method's when
-        // the receiver of the reference stands for the interface method's first parameter.
-        // Comparing them requires viewpoint adaptation that this check does not perform.
+        // `checkMethodReferencePurity` checks a method reference against the `@SideEffectsOnly`
+        // annotation of the functional interface method.
         return;
       }
       Map<ExecutableElement, List<String>> overriddenExpressionStrings =
