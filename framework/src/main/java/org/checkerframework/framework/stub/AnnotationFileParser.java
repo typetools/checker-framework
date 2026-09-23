@@ -3444,12 +3444,13 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Returns the prefix for a warning line: A file name, line number, and column number.
+   * Returns the prefix for a warning line: A file name, line number, column number, colon, and
+   * trailing space.
    *
    * @param astNode where to report errors
    * @return file name, line number, and column number
    */
-  private String fileAndLine(NodeWithRange<?> astNode) {
+  private String fileAndLine(@Nullable NodeWithRange<?> astNode) {
     String filenamePrinted =
         (processingEnv.getOptions().containsKey("nomsgtext")
             ? new File(filename).getName()
