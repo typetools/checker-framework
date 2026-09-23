@@ -50,7 +50,9 @@ public final class DeclarationsIntoElements {
       }
     }
     if (tree.getKind() == Tree.Kind.RECORD) {
-      storeRecordAccessors(env, TreeUtils.elementFromDeclaration(tree));
+      TypeElement recordElt = TreeUtils.elementFromDeclaration(tree);
+      assert recordElt != null : "@AssumeAssertion(nullness): a record is never anonymous";
+      storeRecordAccessors(env, recordElt);
     }
   }
 
