@@ -160,7 +160,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * Refines an integer expression to @SignedPositive if its value is within the signed positive
-   * range (i.e. its MSB is zero). Does not refine the type of cast expressions.
+   * range (i.e. its MSB is zero). Does not refine the type of cast expressions, nor a type whose
+   * signedness qualifier is not a supertype of @SignedPositive, such as @PolySigned.
    *
    * @param tree an AST node, whose type may be refined
    * @param type the type of the tree
@@ -179,6 +180,13 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         || javaTypeKind == TypeKind.SHORT
         || javaTypeKind == TypeKind.INT
         || javaTypeKind == TypeKind.LONG)) {
+      return;
+    }
+    // Refining a @PolySigned type to @SignedPositive would lose the polymorphism, because
+    // @SignedPositive is not a subtype of @PolySigned.
+    AnnotationMirror signednessAnno = type.getPrimaryAnnotationInHierarchy(SIGNED);
+    if (signednessAnno != null
+        && !qualHierarchy.isSubtypeQualifiersOnly(SIGNED_POSITIVE, signednessAnno)) {
       return;
     }
     ValueAnnotatedTypeFactory valueFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
