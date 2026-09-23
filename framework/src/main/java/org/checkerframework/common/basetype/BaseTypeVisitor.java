@@ -1224,11 +1224,29 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     TreePath body = atypeFactory.getPath(tree.getBody());
     if (needToCheck && needPurityResult) {
-      PurityResult r =
-          body == null
-              ? new PurityResult()
-              : PurityChecker.checkPurity(
-                  body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
+      PurityResult r;
+      if (body == null) {
+        r = new PurityResult();
+      } else {
+        List<TreePath> toCheck = new ArrayList<>(2);
+        toCheck.add(body);
+        if (TreeUtils.isConstructor(tree)) {
+          MethodInvocationTree explicitCall = TreeUtils.getExplicitConstructorCall(tree);
+          if (explicitCall == null || !TreeUtils.isThisConstructorCall(explicitCall)) {
+            // The class's instance initializers run as part of this constructor.  If instead it
+            // delegates to another constructor of the same class, they run as part of that one,
+            // and this constructor is checked at its call to it, like any other method call.
+            toCheck.addAll(TreePathUtil.getInstanceInitializers(body));
+          }
+        }
+        r =
+            PurityChecker.checkPurity(
+                toCheck,
+                atypeFactory,
+                assumeSideEffectFree,
+                assumeDeterministic,
+                assumePureGetters);
+      }
       if (!r.isPure(purityKinds)) {
         reportPurityErrors(r, purityKinds);
       }
@@ -1635,6 +1653,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     Tree tree = r.tree();
     @SuppressWarnings("compilermessages")
     @CompilerMessageKey String msgKey = msgKeyPrefix + reason;
+    Object[] args;
     if (reason.equals("call")) {
       ExecutableElement calleeElement;
       if (tree instanceof MethodInvocationTree mitree) {
@@ -1642,10 +1661,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       } else {
         calleeElement = TreeUtils.elementFromUse((NewClassTree) tree);
       }
-      checker.reportError(
-          tree, msgKey, calleeElement.getEnclosingElement(), calleeElement.getSimpleName());
+      args = new Object[] {calleeElement.getEnclosingElement(), calleeElement.getSimpleName()};
     } else {
-      checker.reportError(tree, msgKey);
+      args = new Object[0];
+    }
+    // The same tree can be checked more than once:  an initializer is checked as part of every
+    // constructor that runs it, and every checker of a compound checker checks purity
+    // independently.  Report each message at each tree only once.
+    TreePath path = atypeFactory.getPath(tree);
+    if (path == null) {
+      checker.reportError(tree, msgKey, args);
+    } else {
+      checker.reportOnce(path, new DiagMessage(Diagnostic.Kind.ERROR, msgKey, args));
     }
   }
 
