@@ -40,9 +40,13 @@ dnl
 ifelse([CircleCI's "Auto-cancel redundant workflows" setting never cancels a
 workflow on the default branch. This step makes a job do no work if its commit
 is no longer the tip of its branch, because a later push will test the branch.
-"circleci-agent step halt" ends the job successfully. The step does not halt if
-"git ls-remote" fails or finds no such branch, as for a pull request from a
-fork, whose CIRCLE_BRANCH is "pull/NNNN".])dnl
+If the project defines the CIRCLE_TOKEN environment variable (a CircleCI API
+token), the step cancels the workflow, so the untested commit shows as
+"canceled" rather than as passing. Otherwise, or if cancellation fails,
+"circleci-agent step halt" ends the job successfully, and the commit's status
+is green although it was not tested. The step does nothing if "git ls-remote"
+fails or finds no such branch, as for a pull request from a fork, whose
+CIRCLE_BRANCH is "pull/NNNN".])dnl
 define([halt_if_superseded_step], [dnl
       - run:
           name: halt-if-superseded
@@ -50,7 +54,14 @@ define([halt_if_superseded_step], [dnl
             if test -n "${CIRCLE_BRANCH:-}"; then
               tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
               if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
-                echo "Halting: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
                 circleci-agent step halt
               fi
             fi])dnl
