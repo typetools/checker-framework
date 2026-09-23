@@ -2,11 +2,13 @@
 // https://github.com/typetools/checker-framework/issues/579
 
 import java.util.Comparator;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 public class Issue579<T> implements Comparator<T> {
   private final Comparator<T> real;
 
   @SuppressWarnings("unchecked")
+  @SideEffectFree
   Issue579(Comparator<? super T> real) {
     this.real = (Comparator<T>) real;
   }
