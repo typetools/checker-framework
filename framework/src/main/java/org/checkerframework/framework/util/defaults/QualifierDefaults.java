@@ -882,11 +882,14 @@ public class QualifierDefaults {
    * scope and on its enclosing scopes; then the conservative defaults if conservative defaults
    * apply to the scope; and last the checked code defaults.
    *
-   * <p>The first group is ordered by {@link TypeUseLocation}, so that a specific location such as
-   * {@link TypeUseLocation#RETURN} precedes {@link TypeUseLocation#OTHERWISE} and {@link
-   * TypeUseLocation#ALL}, whatever scope each default comes from. Among defaults at the same
-   * location, a registered default precedes a {@code @DefaultQualifier} annotation, and a default
-   * of the scope itself precedes a default of an enclosing scope.
+   * <p>In the first group, a registered default precedes a {@code @DefaultQualifier} annotation,
+   * and a default of a nearer scope precedes a default of an enclosing scope, whatever the
+   * locations of the two defaults. For example, a {@code @DefaultQualifier} for {@link
+   * TypeUseLocation#ALL} on a method precedes a {@code @DefaultQualifier} for {@link
+   * TypeUseLocation#RETURN} on the enclosing class. The defaults of any one scope are ordered by
+   * {@link TypeUseLocation}. The exception is {@link TypeUseLocation#OTHERWISE}, which means "apply
+   * if nothing more concrete is provided": every {@link TypeUseLocation#OTHERWISE} default comes
+   * after every other default of the first group, whatever scope each comes from.
    *
    * <p>The result is memoized, and callers must not modify the result.
    *
@@ -915,10 +918,10 @@ public class QualifierDefaults {
 
     List<Default> list = new ArrayList<>(scopeDefaults.elementDefaults);
     list.addAll(scopeDefaults.qualifierDefaults);
-    // Order by location, so that a more specific location takes precedence over OTHERWISE and ALL
-    // even when the less specific default belongs to a nearer scope or was registered.  The sort
-    // is stable, so among defaults at the same location, the order above decides.
-    list.sort(BY_LOCATION);
+    // Move the OTHERWISE defaults to the end, so that any more concrete default takes precedence
+    // even when the OTHERWISE default belongs to a nearer scope or was registered.  The sort is
+    // stable, so otherwise the order above decides: nearer scopes first.
+    list.sort(OTHERWISE_LAST);
     if (conservative) {
       list.addAll(uncheckedCodeDefaults);
     }
@@ -931,8 +934,9 @@ public class QualifierDefaults {
     return result;
   }
 
-  /** Orders defaults by location only, unlike {@link Default#compareTo}. */
-  private static final Comparator<Default> BY_LOCATION = Comparator.comparing(def -> def.location);
+  /** Orders the defaults for {@link TypeUseLocation#OTHERWISE} after all other defaults. */
+  private static final Comparator<Default> OTHERWISE_LAST =
+      Comparator.comparing(def -> def.location == TypeUseLocation.OTHERWISE);
 
   /**
    * Returns the precedence list for a scope that has no element defaults and to which conservative
@@ -979,10 +983,10 @@ public class QualifierDefaults {
    * as {@code @DefaultQualifier}.
    *
    * <p>Each is a list rather than a {@link DefaultSet}, and the two are kept apart, because both
-   * distinctions decide precedence among defaults at the same location: a registered default takes
-   * precedence over a {@code @DefaultQualifier} annotation, and a default of a scope takes
-   * precedence over a default of an enclosing scope. Putting them all in one {@link DefaultSet}
-   * would instead let the annotations' names decide, since a {@link DefaultSet} is sorted by
+   * distinctions decide precedence: a registered default takes precedence over a
+   * {@code @DefaultQualifier} annotation, and a default of a scope takes precedence over a default
+   * of an enclosing scope. Putting them all in one {@link DefaultSet} would instead let the
+   * locations and then the annotations' names decide, since a {@link DefaultSet} is sorted by
    * location and then by annotation name.
    */
   private static class ScopeDefaults {

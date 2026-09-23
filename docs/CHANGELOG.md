@@ -18,16 +18,18 @@ The Checker Framework runs under JDK 27 -- that is, it runs on a version 27 JVM.
 The Checker Framework runs noticeably faster, due to performance tuning.
 
 A `@DefaultQualifier` annotation on a nested element now takes precedence over
-one on an enclosing element at the same location, as the manual specifies.
+one on an enclosing element, as the manual specifies.  For example, a
+`@DefaultQualifier` for `ALL` on a method takes precedence over one for
+`RETURN` on the enclosing class.  A default for `OTHERWISE` still applies only
+where no default for a more concrete location applies.
 
 ### Changes for type system implementers
 
 A default that a type system registers through
 `QualifierDefaults.addElementDefault()` now composes with the
 `@DefaultQualifier` annotations on the element and on the element's enclosing
-scopes, rather than suppressing them.  Where a registered default and a
-`@DefaultQualifier` annotation apply at the same location, the registered
-default wins.
+scopes, rather than suppressing them.  Where both a registered default and a
+`@DefaultQualifier` annotation apply, the registered default wins.
 
 `QualifierDefaults.DefaultApplierElement.DefaultApplierElementImpl` now extends
 `AnnotatedTypeScanner<Void, Void>` rather than

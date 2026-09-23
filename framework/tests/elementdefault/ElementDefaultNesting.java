@@ -33,3 +33,23 @@ public class ElementDefaultNesting {
     }
   }
 }
+
+// Tests that a nested @DefaultQualifier for ALL takes precedence over an enclosing
+// @DefaultQualifier for the more specific location RETURN.  If the defaults were ordered by
+// location rather than by scope, then the return type of returnsSub would be @ElementDefaultQual.
+@DefaultQualifier(value = ElementDefaultQual.class, locations = TypeUseLocation.RETURN)
+class ElementDefaultNestingAll {
+
+  static @SubQual Object sub;
+
+  @DefaultQualifier(SubQual.class)
+  static Object returnsSub() {
+    return sub;
+  }
+
+  static void useReturn() {
+    @SubQual Object ok = returnsSub();
+    // :: error: (assignment)
+    @ElementDefaultQual Object bad = returnsSub();
+  }
+}
