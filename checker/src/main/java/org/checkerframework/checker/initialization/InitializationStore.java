@@ -194,6 +194,19 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
   }
 
   @Override
+  protected int fieldValuesKeysHashCode() {
+    // `supersetOf` ignores the entries of `fieldValues` whose key is an invariant field, so two
+    // equal stores may disagree about which invariant fields have an entry in `fieldValues`.
+    int result = 0;
+    for (FieldAccess fieldAccess : fieldValues.keySet()) {
+      if (!invariantFields.containsKey(fieldAccess)) {
+        result += fieldAccess.hashCode();
+      }
+    }
+    return result;
+  }
+
+  @Override
   public S leastUpperBound(S other) {
     // Remove invariant annotated fields to avoid performance issue reported in #1438.
     Map<FieldAccess, V> removedFieldValues = new HashMap<>(invariantFields.size());
