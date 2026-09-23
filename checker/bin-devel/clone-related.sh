@@ -57,7 +57,7 @@ gradle_retry_with_delays() {
       return 0
     fi
     if [ "$delay" -eq 0 ] \
-      || ! grep -q -E '(status|response) code:? (403|429|5[0-9][0-9])|Connect(ion)? timed out|Connection (reset|refused)|Read timed out|Network is unreachable|UnknownHostException|Temporary failure in name resolution|Premature end of Content-Length|Remote host terminated the handshake' "$log"; then
+      || ! grep -q -E '(status|response) code:? (403|429|5[0-9][0-9])|HTTP Status:? (403|429|5[0-9][0-9])|Connect(ion)? timed out|Connection (reset|refused)|Read timed out|Network is unreachable|UnknownHostException|Temporary failure in name resolution|Premature end of Content-Length|Remote host terminated the handshake' "$log"; then
       rm -f "$log"
       return "$status"
     fi
