@@ -239,7 +239,11 @@ public class AElement implements Cloneable {
    * @param orig the map to copy from
    * @param copy the map to copy into
    */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({
+    "unchecked",
+    "nullness:argument" // `orig.get(key)` passes a `K`, whose implicit upper bound is
+    // `@Nullable Object`, to `WrapperMap.get(Object)`, whose parameter is `@NonNull`.
+  })
   static <K, V extends AElement> void copyMapContents(
       VivifyingMap<K, V> orig, VivifyingMap<K, V> copy) {
     for (K key : orig.keySet()) {
