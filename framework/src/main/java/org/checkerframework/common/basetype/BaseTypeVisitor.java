@@ -4836,15 +4836,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // For an unbound reference, the interface method has one extra leading parameter, which is
       // the referenced method's receiver.
       int shift = methodRefKind.isUnbound() ? 1 : 0;
-      // The parameter correspondence matters only if some expression that is not dropped refers to
-      // a parameter or to the receiver.
+      // The parameter correspondence matters only if some expression refers to a formal parameter.
+      // It does not matter for `this`:  for an unbound reference, `this` is always the interface
+      // method's first parameter, and otherwise `this` has no counterpart regardless of arity.
       boolean needsCorrespondence =
-          subExpressions.stream()
-              .anyMatch(
-                  e ->
-                      !(methodRefKind.isConstructorReference() && e instanceof ThisReference)
-                          && (e.containsOfClass(FormalParameter.class)
-                              || e.containsOfClass(ThisReference.class)));
+          subExpressions.stream().anyMatch(e -> e.containsOfClass(FormalParameter.class));
       if (needsCorrespondence
           && superParameters.size() != overrider.getElement().getParameters().size() + shift) {
         // The parameters do not correspond one-to-one, as when a varargs method implements a
@@ -4852,7 +4848,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         checker.reportWarning(
             overriderTree,
             "purity.parameters.sideeffectsonly",
-            overrider.getElement().getSimpleName(),
+            ElementUtils.getSimpleDescription(overrider.getElement()),
             methodSignature(overrider.getElement()),
             methodSignature(overridden.getElement()));
         return null;

@@ -130,6 +130,37 @@ public class MethodRefSideEffectsOnly {
     TwoMutator m = MethodRefSideEffectsOnly::mutatesVarargs;
   }
 
+  static class VarargsCell {
+    @SideEffectsOnly("this")
+    void mutatesReceiver(Object... unused) {}
+  }
+
+  interface VarargsCellMutator {
+    @SideEffectsOnly("#1")
+    void apply(VarargsCell cell, Object a, Object b);
+  }
+
+  void varargsArityReceiverOk() {
+    // The arities differ, but the receiver of an unbound reference is always the interface
+    // method's `#1`, whatever the arities are.
+    VarargsCellMutator m = VarargsCell::mutatesReceiver;
+  }
+
+  static class VarargsBox {
+    @SideEffectsOnly("#1")
+    VarargsBox(StringBuilder... sbs) {}
+  }
+
+  interface TwoMaker {
+    @SideEffectsOnly({"#1", "#2"})
+    VarargsBox make(StringBuilder sb1, StringBuilder sb2);
+  }
+
+  void constructorVarargsArityNotOk() {
+    // :: warning: (purity.parameters.sideeffectsonly) :: error: (purity.methodref)
+    TwoMaker m = VarargsBox::new;
+  }
+
   static StringBuilder staticSb = new StringBuilder();
 
   interface StaticMutator {
