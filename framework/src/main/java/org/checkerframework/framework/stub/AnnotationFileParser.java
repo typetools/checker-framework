@@ -201,8 +201,13 @@ public final class AnnotationFileParser {
   /** The AST of the parsed file that this class is processing. */
   private final StubUnit stubUnit;
 
+  /** The processing environment. */
   private final ProcessingEnvironment processingEnv;
+
+  /** The type factory. */
   private final AnnotatedTypeFactory atypeFactory;
+
+  /** The element utilities. */
   private final Elements elements;
 
   /**
@@ -214,7 +219,7 @@ public final class AnnotationFileParser {
    *
    * @see #getImportedAnnotations
    */
-  private Map<String, TypeElement> allAnnotations;
+  private final Map<String, TypeElement> allAnnotations = new HashMap<>();
 
   /**
    * A list of the fully-qualified names of enum constants and static fields with constant values
@@ -249,7 +254,7 @@ public final class AnnotationFileParser {
    *
    * <p>It is used both for resolving symbols and for error messages.
    */
-  private FqName typeBeingParsed;
+  private FqName typeBeingParsed = new FqName(null, null);
 
   /**
    * Contains the annotations of the file currently being processed, or null if not currently
@@ -415,6 +420,7 @@ public final class AnnotationFileParser {
    * given file.
    *
    * @param filename name of annotation file, used only for diagnostic messages
+   * @param stubUnit the AST of the parsed file
    * @param atypeFactory the type factory
    * @param processingEnv the processing environment
    * @param fileType the type of file being parsed (stub file or ajava file) and its source
@@ -792,13 +798,13 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Sets the {@code allAnnotations} field. Call this immediately after creating a new {@code
+   * Populates the {@code allAnnotations} field. Call this immediately after creating a new {@code
    * AnnotationFileParser}.
    */
   private void setAllAnnotations() {
     // getImportedAnnotations() also modifies importedConstants and importedTypes. This should
     // be refactored to be nicer.
-    allAnnotations = getImportedAnnotations();
+    allAnnotations.putAll(getImportedAnnotations());
     if (allAnnotations.isEmpty()
         && fileType.isStub()
         && fileType != AnnotationFileType.AJAVA_AS_STUB) {
@@ -2611,7 +2617,7 @@ public final class AnnotationFileParser {
    * @param astNode where to report errors
    * @return the element for the given package
    */
-  private PackageElement findPackage(String packageName, NodeWithRange<?> astNode) {
+  private PackageElement findPackage(String packageName, @Nullable NodeWithRange<?> astNode) {
     PackageElement packageElement = elements.getPackageElement(packageName);
     if (packageElement == null) {
       stubWarnNotFound(astNode, "Imported package not found: " + packageName);
@@ -3276,7 +3282,7 @@ public final class AnnotationFileParser {
    * @param astNode where to report errors
    * @param warning warning to print
    */
-  private void stubWarnNotFound(NodeWithRange<?> astNode, String warning) {
+  private void stubWarnNotFound(@Nullable NodeWithRange<?> astNode, String warning) {
     stubWarnNotFound(astNode, warning, warnIfNotFound);
   }
 
@@ -3288,7 +3294,8 @@ public final class AnnotationFileParser {
    * @param warning warning to print
    * @param warnIfNotFound if true, print warnings about types/members that were not found
    */
-  private void stubWarnNotFound(NodeWithRange<?> astNode, String warning, boolean warnIfNotFound) {
+  private void stubWarnNotFound(
+      @Nullable NodeWithRange<?> astNode, String warning, boolean warnIfNotFound) {
     if (warnIfNotFound || debugAnnotationFileParser) {
       warn(astNode, warning);
     }
