@@ -1661,7 +1661,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (paramFunction == null) {
         continue;
       }
-      EnumSet<PurityKind> required = purityRequiredOfArgument(paramFunction, calleeKinds);
+      EnumSet<PurityKind> required = purityRequiredOfArgument(paramFunction, calleeKinds, true);
       if (required.isEmpty()) {
         continue;
       }
@@ -1698,15 +1698,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param paramFunction the functional method of a parameter's type
    * @param methodKinds the purity that a method requires of its functional-interface arguments
+   * @param applyAssumptions whether to apply the {@code -AassumeSideEffectFree} and {@code
+   *     -AassumePure} command-line options
    * @return the purity required of the argument, which may be empty
    */
   private EnumSet<PurityKind> purityRequiredOfArgument(
-      ExecutableElement paramFunction, EnumSet<PurityKind> methodKinds) {
+      ExecutableElement paramFunction, EnumSet<PurityKind> methodKinds, boolean applyAssumptions) {
     EnumSet<PurityKind> paramKinds = PurityUtils.getPurityKinds(atypeFactory, paramFunction);
     EnumSet<PurityKind> required = EnumSet.copyOf(methodKinds);
     required.removeAll(paramKinds);
     if (paramFunction.getReturnType().getKind() == TypeKind.VOID
-        && (assumeSideEffectFree
+        && ((applyAssumptions && assumeSideEffectFree)
             || paramKinds.contains(PurityKind.SIDE_EFFECT_FREE)
             || methodKinds.contains(PurityKind.SIDE_EFFECT_FREE))) {
       // A side-effect-free method that returns no value is deterministic:  two calls return the
@@ -1743,7 +1745,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       for (int i = 0; i < method.getParameters().size(); i++) {
         ExecutableElement paramFunction = parameterFunctionalMethod(method, i);
         if (paramFunction != null) {
-          required.addAll(purityRequiredOfArgument(paramFunction, result));
+          required.addAll(purityRequiredOfArgument(paramFunction, result, false));
         }
       }
       if (required.isEmpty()) {
