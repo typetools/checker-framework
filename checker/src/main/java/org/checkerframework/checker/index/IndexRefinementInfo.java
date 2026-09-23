@@ -91,15 +91,17 @@ public class IndexRefinementInfo {
    *
    * @param set a set of annotations
    * @param hierarchy a qualifier hierarchy
-   * @return the annotation (from {@code set}) in the given hierarchy
+   * @return the annotation (from {@code set}) in the given hierarchy, or null if {@code set}
+   *     contains no annotation in the hierarchy
    */
-  private static AnnotationMirror getAnno(AnnotationMirrorSet set, QualifierHierarchy hierarchy) {
+  private static @Nullable AnnotationMirror getAnno(
+      AnnotationMirrorSet set, QualifierHierarchy hierarchy) {
     AnnotationMirrorSet tops = hierarchy.getTopAnnotations();
     if (tops.size() != 1) {
       throw new TypeSystemError(
           "%s: Found %d tops, but expected one.%nFound: %s",
           IndexRefinementInfo.class, tops.size(), tops);
     }
-    return hierarchy.findAnnotationInHierarchy(set, tops.iterator().next());
+    return hierarchy.findAnnotationInHierarchy(set, tops.first());
   }
 }
