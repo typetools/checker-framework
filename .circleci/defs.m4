@@ -37,6 +37,24 @@ define([clone_plume_scripts_step], [dnl
           name: clone_plume_scripts
           command: ./checker/bin-devel/clone-plume-scripts.sh])dnl
 dnl
+ifelse([CircleCI's "Auto-cancel redundant workflows" setting never cancels a
+workflow on the default branch. This step makes a job do no work if its commit
+is no longer the tip of its branch, because a later push will test the branch.
+"circleci-agent step halt" ends the job successfully. The step does not halt if
+"git ls-remote" fails or finds no such branch, as for a pull request from a
+fork, whose CIRCLE_BRANCH is "pull/NNNN".])dnl
+define([halt_if_superseded_step], [dnl
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Halting: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                circleci-agent step halt
+              fi
+            fi])dnl
+dnl
 ifelse([Takes 4 arguments: OS, JDK version number, name, command line.])dnl
 define([boilerplate], [dnl
     docker:
@@ -45,6 +63,7 @@ define([boilerplate], [dnl
     environment:
       TERM: dumb
     steps:
+halt_if_superseded_step()
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -89,6 +108,7 @@ define([circleci_boilerplate], [dnl
     environment:
       TERM: dumb
     steps:
+halt_if_superseded_step()
       - restore_cache:
           keys:
             - &source$3-cache source-v1$3-{{ .Branch }}-{{ .Revision }}

@@ -6,6 +6,18 @@ define([dependsOn], [needs])dnl
 dnl
 define([job_name], [$1:])dnl
 dnl
+ifelse([A push to a branch of this repository that has an open pull request
+triggers both a "push" run and a "pull_request" run. The two runs are in
+different concurrency groups, so neither cancels the other. Each job runs only
+in the "push" run and in a "pull_request" run for a pull request from a fork.
+A job's "if:" that calls no status function is implicitly "success() && ...",
+so this condition does not make a job run after a job that it needs has
+failed.])dnl
+define([run_condition], [github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository])dnl
+define([job_if], [dnl
+    if: run_condition
+])dnl
+dnl
 ifelse([The Gradle distribution is the same in every job, so all jobs share one
 cache entry, whose key mentions no job. The key covers only the file that pins
 the distribution's version. The distribution cache has no "restore-keys",
@@ -90,6 +102,7 @@ define([clone_plume_scripts_step], [dnl
 dnl
 ifelse([Takes 4 arguments: OS, JDK version number, name, command line.])dnl
 define([boilerplate], [dnl
+job_if()dnl
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-$1-jdk$2[]docker_testing:latest
@@ -175,6 +188,7 @@ ifelse($1,canary_jdk,,$1,latest_jdk,,[    dependsOn:
       - canary_jobs
       - misc_jdk[]canary_jdk
 ])dnl
+job_if()dnl
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk$1-plus[]docker_testing:latest
