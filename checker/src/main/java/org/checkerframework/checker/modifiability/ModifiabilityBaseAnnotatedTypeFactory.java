@@ -266,6 +266,8 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
           || areSameByClass(annotation, Unmodifiable.class)) {
         boolean weaken =
             bound != null
+                // `tm != null` is redundant because if `bound` is non-null, then so is `tm`.
+                && tm != null
                 && (lacksCapability(bound, this::typeLacksCapability)
                     || ((tm.getKind() == TypeKind.TYPEVAR || tm.getKind() == TypeKind.WILDCARD)
                         && someInstantiationLacksCapability(bound)));
