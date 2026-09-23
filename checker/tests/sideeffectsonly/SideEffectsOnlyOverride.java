@@ -45,7 +45,7 @@ public class SideEffectsOnlyOverride {
   static class SubMore extends Super {
     @SideEffectsOnly({"#1.inner", "#1.g"})
     @Override
-    // TODO :: error: purity.sideeffectsonly.overriding
+    // :: error: purity.sideeffectsonly.overriding
     void m(Cell c) {}
   }
 
@@ -53,8 +53,24 @@ public class SideEffectsOnlyOverride {
   static class SubWhole extends Super {
     @SideEffectsOnly("#1")
     @Override
-    // TODO :: error: purity.sideeffectsonly.overriding
+    // :: error: purity.sideeffectsonly.overriding
     void m(Cell c) {}
+  }
+
+  interface I {
+    @SideEffectsOnly("#1.g")
+    void m(Cell c);
+  }
+
+  /**
+   * A method that overrides methods in two supertypes inherits the union of what they permit, which
+   * is more than either one of them permits -- even though the method writes no annotation of its
+   * own. One error is issued for each supertype.
+   */
+  static class SubOfTwo extends Super implements I {
+    @Override
+    // :: error: purity.sideeffectsonly.overriding :: error: purity.sideeffectsonly.overriding
+    public void m(Cell c) {}
   }
 
   /** A supertype without `@SideEffectsOnly` constrains nothing. */
