@@ -24,5 +24,10 @@ jobs:
           # shfmt and shellcheck are run by `prek`.
           sh_checker_shfmt_disable: true
           sh_checker_shellcheck_disable: true
-          # Exclusions.
-          sh_checker_exclude: gradlew
+          # Space-separated list of regexes matched against each file name.
+          # povray is third-party code that is not maintained here.
+          # checkbashisms cannot check zsh scripts.
+          sh_checker_exclude: >-
+            gradlew
+            tests/kvasir-tests/povray/
+            scripts/eps2png-mono-alpha[.]zsh
