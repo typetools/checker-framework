@@ -23,14 +23,14 @@ public class PurityOverride {
 
     @Override
     int pure() {
-      // :: error: [purity.not.deterministic.not.sideeffectfree.assign.field]
+      // :: error: [purity.assign.field]
       field++;
       return field;
     }
 
     @Override
     int sideEffectFree() {
-      // :: error: [purity.not.sideeffectfree.assign.field]
+      // :: error: [purity.assign.field]
       field++;
       return field;
     }
@@ -54,7 +54,7 @@ public class PurityOverride {
 
     @Override
     public int hashCode() {
-      // :: error: [purity.not.deterministic.not.sideeffectfree.assign.field]
+      // :: error: [purity.assign.field]
       field++;
       return field;
     }
