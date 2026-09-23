@@ -275,7 +275,20 @@ public class Typing extends TypeConstraint {
       // constraint reduces to the following new constraints:
       // for all i (1 <= i <= n), <Bi <= Ai>.
 
-      AbstractType sAsSuper = S.asSuper(T.getJavaType());
+      // JLS 4.10.2 defines the supertypes of a wildcard-parameterized type G<...> as the
+      // supertypes of capture(G<...>), so a capture-converted type is one of the candidates that
+      // "among the supertypes of S" offers.  javac chooses that candidate, by capture-converting
+      // the subtype side of every subtyping test.  Choosing S itself instead would make the
+      // containment constraints below have a wildcard on the left, which reduces to false whenever
+      // Ai is not a wildcard.
+      // Only a proper type is captured: in an InferenceType, an inference variable is represented
+      // by the type variable it stands for, so capturing `G<? extends alpha>` would replace the
+      // wildcard by a capture variable and lose alpha.
+      // A raw T is skipped because this method returns UNCHECKED_CONVERSION for it below, without
+      // looking at the type arguments that capture conversion would have changed.
+      AbstractType capturedS =
+          !T.isRaw() && S.isProper() && S.isWildcardParameterizedType() ? S.capture(context) : S;
+      AbstractType sAsSuper = capturedS.asSuper(T.getJavaType());
       if (sAsSuper == null) {
         return ConstraintSet.FALSE;
       } else if (sAsSuper.isRaw() || T.isRaw()) {

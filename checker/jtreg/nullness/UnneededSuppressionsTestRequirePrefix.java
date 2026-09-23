@@ -31,4 +31,14 @@ class UnneededSuppressionsTestRequirePrefix {
   public String getClassAndUid6() {
     return "hello";
   }
+
+  @SuppressWarnings({"nullness", "unneeded.suppression"})
+  public String getClassAndUid7() {
+    return "hello";
+  }
+
+  @SuppressWarnings({"nullness", "nullness:unneeded.suppression"})
+  public String getClassAndUid8() {
+    return "hello";
+  }
 }
