@@ -4940,7 +4940,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * of them permits. See {@code AnnotatedTypeFactory.getSideEffectsOnlyExpressionMap}.
      *
      * <p>Like {@link #checkMethodReferencePurity}, this runs only under {@code
-     * -AcheckPurityAnnotations}.
+     * -AcheckPurityAnnotations}, {@code -AsuggestPureMethods}, or {@code -Ainfer}.
      */
     private void checkSideEffectsOnly() {
       if (!checkPurityAnnotations) {
