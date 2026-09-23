@@ -999,7 +999,9 @@ public final class AnnotationFileParser {
     @FullyQualifiedName String fqTypeName;
     TypeElement typeElt;
     if (classTree != null) {
-      typeElt = TreeUtils.elementFromDeclaration(classTree);
+      TypeElement classElt = TreeUtils.elementFromDeclaration(classTree);
+      assert classElt != null : "@AssumeAssertion(nullness): the ajava file's tree is attributed";
+      typeElt = classElt;
       // An FqName's className does not include the package name, but getQualifiedName() does.
       innerName = removePackage(typeElt.getQualifiedName().toString(), typeBeingParsed.packageName);
       typeBeingParsed = new FqName(typeBeingParsed.packageName, innerName);
