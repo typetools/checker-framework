@@ -46,7 +46,9 @@ public class Issue8053 {
   static native <P> Getter<P, ?> createGetter(Class<P> clazz, String name);
 
   // The Beam shape: the whole thing is the mapping function of Map.computeIfAbsent, and the
-  // Class argument is itself wildcard-typed.
+  // Class argument is itself wildcard-typed.  The receiver must be a field, as in Beam: a field's
+  // type is not refined from its initializer, so the inference context differs from that of a
+  // local variable.
   static <T> List<Getter<?, ?>> beamShape(Class<? super T> clazz, List<String> types, String key) {
     return CACHE.computeIfAbsent(
         key, c -> types.stream().map(t -> createGetter(clazz, t)).collect(Collectors.toList()));
