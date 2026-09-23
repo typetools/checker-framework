@@ -3559,7 +3559,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** The required type. */
     public final String required;
 
-    /** Create a FoundRequired for two types. */
+    /**
+     * Create a FoundRequired for two types.
+     *
+     * @param found the found type
+     * @param required the required type
+     */
     private FoundRequired(AnnotatedTypeMirror found, AnnotatedTypeMirror required) {
       if (shouldPrintVerbose(found, required)) {
         this.found = found.toString(true);
@@ -3570,7 +3575,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
 
-    /** Create a FoundRequired for a type and bounds. */
+    /**
+     * Create a FoundRequired for a type and bounds.
+     *
+     * @param found the found type
+     * @param required the required bounds
+     */
     private FoundRequired(AnnotatedTypeMirror found, AnnotatedTypeParameterBounds required) {
       if (shouldPrintVerbose(found, required)) {
         this.found = found.toString(true);
