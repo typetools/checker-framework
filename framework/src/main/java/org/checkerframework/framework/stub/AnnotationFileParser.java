@@ -716,7 +716,7 @@ public final class AnnotationFileParser {
       afp.process(ajavaAnnos);
     } catch (ParseProblemException e) {
       for (Problem p : e.getProblems()) {
-        afp.warn(null, filename + ": " + p.getVerboseMessage());
+        afp.warn(null, p.getVerboseMessage());
       }
     }
   }
