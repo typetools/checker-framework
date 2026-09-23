@@ -59,6 +59,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.Vector;
@@ -4791,7 +4792,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               protected JavaExpression visitThisReference(ThisReference thisExpr, Void unused) {
                 // The parser gives the receiver `this` the type of the declaring class, and an
                 // outer `this`, whether written or implicit, the type of the outer class.
-                if (declaringClass.equals(TypesUtils.getTypeElement(thisExpr.getType()))) {
+                if (Objects.equals(declaringClass, TypesUtils.getTypeElement(thisExpr.getType()))) {
                   return thisExpr;
                 }
                 return new Unknown(thisExpr.getType());
