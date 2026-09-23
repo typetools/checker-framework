@@ -676,7 +676,10 @@ public final class AnnotationFileParser {
       AnnotationFileAnnotations annotationFileAnnos,
       AnnotationFileType fileType) {
 
-    StubUnit stubUnit = parseStubUnit(filename, inputStream, processingEnv, atypeFactory);
+    StubUnit stubUnit = parseStubUnit(filename, fileType, inputStream, processingEnv, atypeFactory);
+    if (stubUnit == null) {
+      return;
+    }
     AnnotationFileParser afp =
         new AnnotationFileParser(filename, stubUnit, atypeFactory, processingEnv, fileType);
     afp.setAllAnnotations();
@@ -701,7 +704,11 @@ public final class AnnotationFileParser {
       AnnotatedTypeFactory atypeFactory,
       ProcessingEnvironment processingEnv,
       AnnotationFileAnnotations ajavaAnnos) {
-    StubUnit stubUnit = parseStubUnit(filename, inputStream, processingEnv, atypeFactory);
+    StubUnit stubUnit =
+        parseStubUnit(filename, AnnotationFileType.AJAVA, inputStream, processingEnv, atypeFactory);
+    if (stubUnit == null) {
+      return;
+    }
     AnnotationFileParser afp =
         new AnnotationFileParser(
             filename, stubUnit, atypeFactory, processingEnv, AnnotationFileType.AJAVA);
@@ -711,31 +718,46 @@ public final class AnnotationFileParser {
     afp.process(ajavaAnnos);
   }
 
-  /** Parses the given file into a StubUnit, or returns null and issues errors. */
+  /**
+   * Parses the given file into a StubUnit, or returns null and issues warnings.
+   *
+   * @param filename the name of the annotation file; used only for diagnostic messages
+   * @param fileType the type of the annotation file
+   * @param inputStream the stream from which to read the annotation file
+   * @param processingEnv the processing environment
+   * @param atypeFactory the type factory; used only for diagnostic messages
+   * @return the AST of the annotation file, or null if it could not be parsed
+   */
   private static @Nullable StubUnit parseStubUnit(
       String filename,
+      AnnotationFileType fileType,
       InputStream inputStream,
       ProcessingEnvironment processingEnv,
       AnnotatedTypeFactory atypeFactory) {
+    boolean debugAnnotationFileParser = processingEnv.getOptions().containsKey("stubDebug");
+    if (debugAnnotationFileParser) {
+      stubDebugStatic(
+          processingEnv,
+          "started parsing annotation file %s for %s",
+          filename,
+          atypeFactory.getClass().getSimpleName());
+    }
     StubUnit result;
-    stubDebugStatic(
-        processingEnv,
-        "started parsing annotation file %s for %s",
-        filename,
-        atypeFactory.getClass().getSimpleName());
     try {
       result = StaticJavaParserUtil.parseStubUnit(inputStream);
     } catch (ParseProblemException e) {
       for (Problem p : e.getProblems()) {
-        warn(processingEnv, filename, p.getVerboseMessage());
+        warn(processingEnv, filename, fileType, p.getVerboseMessage());
       }
       result = null;
     }
-    stubDebugStatic(
-        processingEnv,
-        "finished parsing annotation file %s for %s",
-        filename,
-        atypeFactory.getClass().getSimpleName());
+    if (debugAnnotationFileParser) {
+      stubDebugStatic(
+          processingEnv,
+          "finished parsing annotation file %s for %s",
+          filename,
+          atypeFactory.getClass().getSimpleName());
+    }
     return result;
   }
 
@@ -3315,16 +3337,29 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Issues a warning, only if it has not been previously issued.
+   * Issues a warning about the given file, only if it has not been previously issued. Does nothing
+   * for JDK stub files.
    *
+   * @param processingEnv the processing environment
+   * @param filename the name of the annotation file
+   * @param fileType the type of the annotation file
    * @param warning a warning message
    */
-  private static void warn(ProcessingEnvironment processingEnv, String filename, String warning) {
-    Map<String, String> options = processingEnv.getOptions();
+  private static void warn(
+      ProcessingEnvironment processingEnv,
+      String filename,
+      AnnotationFileType fileType,
+      String warning) {
+    if (fileType == AnnotationFileType.JDK_STUB) {
+      return;
+    }
     Diagnostic.Kind stubWarnDiagnosticKind =
-        options.containsKey("stubWarnNote") ? Diagnostic.Kind.NOTE : Diagnostic.Kind.WARNING;
-    if (warnings.add(warning)) {
-      processingEnv.getMessager().printMessage(stubWarnDiagnosticKind, filename + ": " + warning);
+        processingEnv.getOptions().containsKey("stubWarnNote")
+            ? Diagnostic.Kind.NOTE
+            : Diagnostic.Kind.WARNING;
+    String message = fileAndLine(processingEnv, filename, null) + warning;
+    if (warnings.add(message)) {
+      processingEnv.getMessager().printMessage(stubWarnDiagnosticKind, message);
     }
   }
 
@@ -3460,26 +3495,35 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Returns the prefix for a warning line: A file name, line number, column number, and trailing
-   * space.
+   * Returns the prefix for a warning line: A file name, line number, column number, colon, and
+   * trailing space.
    *
    * @param astNode where to report errors
    * @return file name, line number, and column number
    */
-  private String fileAndLine(NodeWithRange<?> astNode) {
+  private String fileAndLine(@Nullable NodeWithRange<?> astNode) {
+    return fileAndLine(processingEnv, filename, astNode);
+  }
+
+  /**
+   * Returns the prefix for a warning line: A file name, line number, column number, colon, and
+   * trailing space.
+   *
+   * @param processingEnv the processing environment
+   * @param filename the name of the annotation file
+   * @param astNode where to report errors
+   * @return file name, line number, and column number
+   */
+  private static String fileAndLine(
+      ProcessingEnvironment processingEnv, String filename, @Nullable NodeWithRange<?> astNode) {
     String filenamePrinted =
         (processingEnv.getOptions().containsKey("nomsgtext")
             ? new File(filename).getName()
             : filename);
 
-    if (astNode == null) {
-      return filenamePrinted + ": ";
-    }
-    Optional<Position> begin = astNode.getBegin();
-    if (begin.isPresent()) {
-      return filenamePrinted + ":" + begin.get() + " ";
-    }
-    return filenamePrinted + ": ";
+    Optional<Position> begin = astNode == null ? Optional.empty() : astNode.getBegin();
+    String lineAndColumn = (begin.isPresent() ? begin.get() + ":" : "");
+    return filenamePrinted + ":" + lineAndColumn + " ";
   }
 
   /** An exception indicating a problem while parsing an annotation file. */
