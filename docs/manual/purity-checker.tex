@@ -85,10 +85,27 @@ the method that creates the lambda.  For example:
 \end{Verbatim}
 
 
-\subsectionAndLabel{Functional-interface parameters of side-effect-free methods}{purity-functional-interface-parameters}
+\subsectionAndLabel{Functional-interface parameters of methods with purity annotations}{purity-functional-interface-parameters}
 
-For a side-effect-free method, the functional method of any parameter that is
-a functional interface is treated as side-effect-free.
+A method annotated with a purity annotation may call the functional method of
+its own functional-interface parameters.  Such a call is treated as having the
+purity that the method promises:
+
+\begin{itemize}
+\item
+  In a \refqualclass{dataflow/qual}{SideEffectFree} method, the call is
+  treated as side-effect-free.
+\item
+  In a \refqualclass{dataflow/qual}{Deterministic} method, the call is
+  treated as deterministic.
+\item
+  In a \refqualclass{dataflow/qual}{Pure} method, the call is treated as
+  pure.
+\item
+  In a \refqualclass{dataflow/qual}{SideEffectsOnly} method, the call is
+  treated as side-effect-free.  The method itself may modify the expressions
+  listed in its annotation, but the code it is handed may not modify anything.
+\end{itemize}
 
 \begin{Verbatim}
   @SideEffectFree
@@ -97,20 +114,49 @@ a functional interface is treated as side-effect-free.
   }
 \end{Verbatim}
 
-At calls to \<m>, the functional method of the argument's declared type must
-be \<@SideEffectFree>.
+The assumption applies only when the parameter is effectively final and the
+functional method is called directly on the parameter.  It does not apply to a
+call through a local variable or field that aliases the parameter, nor to a
+method of the parameter's type other than its functional method, such as
+\<Function.andThen>:
 
 \begin{Verbatim}
-  m(String::length, "hi");  // OK: String.length() is side-effect-free
+  @SideEffectFree
+  int m2(Function<String, Integer> f, String s) {
+    Function<String, Integer> g = f;
+    return g.apply(s);  // error: g is not a parameter
+  }
 \end{Verbatim}
 
-If the argument is a lambda, then the body of the lambda is checked directly
-for side effects.
+At each call to such a method, every argument passed to a functional-interface
+parameter must have the purity that the method promises (side-effect-free for
+a \<@SideEffectsOnly> method).  How the argument is checked depends on its
+form:
+
+\begin{itemize}
+\item
+  A method reference is checked via the referenced method, which must have
+  the required purity annotations.
+\item
+  A lambda is checked via its body, which must have the required purity.
+\item
+  Any other argument is checked via the functional method of the argument's
+  declared type, which must have the required purity annotations.
+\end{itemize}
 
 \begin{Verbatim}
+  m(String::length, "hi");   // OK: String.length() is side-effect-free
   m(s -> s.length(), "hi");  // OK: the lambda body is side-effect-free
   m(s -> count++, "hi");     // error: the lambda body has a side effect
+
+  void caller(Function<String, Integer> g) {
+    m(g, "hi");              // error: [purity.functional.argument] Function.apply is not @SideEffectFree
+  }
 \end{Verbatim}
+
+If the functional method returns \<void>, a \<@Pure> method requires only
+that the argument be side-effect-free, because a side-effect-free call that
+returns no value is deterministic.
 
 %% TODO: we could implement a type system for functional interfaces with a
 %% qualifier \<@SideEffectFreeFunctionalInterface>.  Then the default for a
