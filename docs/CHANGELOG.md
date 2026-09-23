@@ -7,7 +7,7 @@
 
 ### User-visible changes
 
-New `wpi2.sh` script does whole-program inference, but requires buildfile edits.
+The new `wpi2.sh` script does whole-program inference, but requires buildfile edits.
 
 Purity Checker:
 

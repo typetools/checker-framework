@@ -364,7 +364,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     if (primaryAnnotations.size() != 1) {
       throw new BugInCF("Bad annotation size for getPrimaryAnnotation(): " + this);
     }
-    return primaryAnnotations.iterator().next();
+    return primaryAnnotations.first();
   }
 
   /**
@@ -404,7 +404,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     if (effectiveAnnotations.size() != 1) {
       throw new BugInCF("Bad annotation size for getAnnotation(): " + this);
     }
-    return effectiveAnnotations.iterator().next();
+    return effectiveAnnotations.first();
   }
 
   /**
