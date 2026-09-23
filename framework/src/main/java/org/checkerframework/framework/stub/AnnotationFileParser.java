@@ -123,6 +123,8 @@ import org.plumelib.util.SystemP;
 // From an implementation perspective, this class represents a single annotation file (stub file or
 // ajava file), notably its annotated types and its declaration annotations.
 // From a client perspective, it has static methods as described below in the Javadoc.
+// Each static method creates an `AnnotationFileParser` instance.
+// `StaticJavaParserUtil` parses the file into a StubUnit, then this class walks the StubUnit AST.
 /**
  * This class has three static methods. Each method parses an annotation file and adds annotations
  * to the {@link AnnotationFileAnnotations} passed as an argument.
