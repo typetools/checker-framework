@@ -40,13 +40,13 @@ import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.AnnotationWithMetaAnnotation;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.plumelib.util.CollectionsP;
-import org.plumelib.util.IPair;
 import org.plumelib.util.MapsP;
 import org.plumelib.util.ToStringComparator;
 import org.plumelib.util.UniqueId;
@@ -478,12 +478,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return null;
     }
 
-    List<IPair<AnnotationMirror, AnnotationMirror>> fieldAnnotationPairs =
+    List<AnnotationWithMetaAnnotation> fieldAnnotationPairs =
         atypeFactory.getAnnotationWithMetaAnnotation(
             fieldAccess.getField(), MonotonicQualifier.class);
     List<AnnotationMirror> metaAnnotations =
         CollectionsP.withoutDuplicates(
-            CollectionsP.mapList(pair -> pair.second, fieldAnnotationPairs));
+            CollectionsP.mapList(
+                AnnotationWithMetaAnnotation::metaAnnotation, fieldAnnotationPairs));
     List<AnnotationMirror> monotonicAnnotations = new ArrayList<>(metaAnnotations.size());
     for (AnnotationMirror metaAnnotation : metaAnnotations) {
       @SuppressWarnings("deprecation") // permitted for use in the framework
@@ -863,10 +864,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return false;
     }
     AnnotatedTypeFactory atypeFactory = this.analysis.atypeFactory;
-    List<IPair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
+    List<AnnotationWithMetaAnnotation> fieldAnnotations =
         atypeFactory.getAnnotationWithMetaAnnotation(fieldAcc.getField(), MonotonicQualifier.class);
-    for (IPair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
-      AnnotationMirror metaAnnotation = fieldAnnotation.second;
+    for (AnnotationWithMetaAnnotation fieldAnnotation : fieldAnnotations) {
+      AnnotationMirror metaAnnotation = fieldAnnotation.metaAnnotation();
       @SuppressWarnings("deprecation") // permitted for use in the framework
       Name annoName = AnnotationUtils.getElementValueClassName(metaAnnotation, "value", false);
       AnnotationMirror monotonicAnnotation =
@@ -1525,8 +1526,35 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   @Override
   public int hashCode() {
-    // What is a good hash code to use?
-    return 22;
+    // `equals` is mutual containment of the five maps, so equal stores have equal key sets --
+    // except that a subclass may ignore some entries of `fieldValues`, which is why the keys of
+    // `fieldValues` are hashed by the overridable `fieldValuesKeysHashCode`.  `Set.hashCode` does
+    // not depend on iteration order.
+    // This hashes only the keys, not the values, because `CFAbstractValue.hashCode` is not
+    // consistent with `CFAbstractValue.equals`: `equals` compares underlying types with
+    // `Types.isSameType` and annotations with `AnnotationUtils.areSame`, but `hashCode` uses the
+    // identity hash codes of the javac `Type` and of each javac annotation mirror.
+    return Objects.hash(
+        localVariableValues.keySet(),
+        fieldValuesKeysHashCode(),
+        arrayValues.keySet(),
+        methodCallExpressions.keySet(),
+        classValues.keySet());
+  }
+
+  /**
+   * Returns the contribution of the keys of {@link #fieldValues} to {@link #hashCode}. The result
+   * is the hash code of a set of field accesses, as defined by {@link java.util.Set#hashCode}: the
+   * sum of the hash codes of its elements.
+   *
+   * <p>A subclass whose {@code supersetOf} ignores some entries of {@code fieldValues} must
+   * override this method to ignore the same entries, so that {@code hashCode} remains consistent
+   * with {@code equals}.
+   *
+   * @return the contribution of the keys of {@code fieldValues} to {@code hashCode}
+   */
+  protected int fieldValuesKeysHashCode() {
+    return fieldValues.keySet().hashCode();
   }
 
   @SideEffectFree

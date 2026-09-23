@@ -60,6 +60,7 @@ public class WrapperMap<K, V> implements Map<K, V> {
     return back.isEmpty();
   }
 
+  @SuppressWarnings("keyfor") // use of delegate object
   @Override
   public Set<K> keySet() {
     return back.keySet();

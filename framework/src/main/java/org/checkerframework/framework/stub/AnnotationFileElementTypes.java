@@ -39,6 +39,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.AnnotationFileParser.AnnotationFileAnnotations;
+import org.checkerframework.framework.stub.AnnotationFileParser.FakeOverride;
 import org.checkerframework.framework.stub.AnnotationFileParser.RecordComponentStub;
 import org.checkerframework.framework.stub.AnnotationFileUtil.AnnotationFileType;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -50,7 +51,6 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsP;
-import org.plumelib.util.IPair;
 
 /**
  * Holds information about types parsed from annotation files (stub files or ajava files). When
@@ -159,50 +159,52 @@ public class AnnotationFileElementTypes {
           factory.getClass().getSimpleName(), ignorejdkastub);
     }
     parsing = true;
-    BaseTypeChecker checker = factory.getChecker();
-    if (!ignorejdkastub) {
-      // 1. jdk.astub
-      // Only look in .jar files, and parse it right away.
-      String jdkVersionStub = "jdk" + annotatedJdkVersion + ".astub";
-      parseOneStubFile(this.getClass(), "jdk.astub");
-      parseOneStubFile(this.getClass(), jdkVersionStub);
-      parseOneStubFile(checker.getClass(), "jdk.astub");
-      parseOneStubFile(checker.getClass(), jdkVersionStub);
-      // This needs to be special-cased for every jdkX.astub for which files exist. :-(
-      if (annotatedJdkVersion.equals("8")) {
-        String jdk11Stub = "jdk11.astub";
-        parseOneStubFile(this.getClass(), jdk11Stub);
-        parseOneStubFile(checker.getClass(), jdk11Stub);
+    try {
+      BaseTypeChecker checker = factory.getChecker();
+      if (!ignorejdkastub) {
+        // 1. jdk.astub
+        // Only look in .jar files, and parse it right away.
+        String jdkVersionStub = "jdk" + annotatedJdkVersion + ".astub";
+        parseOneStubFile(this.getClass(), "jdk.astub");
+        parseOneStubFile(this.getClass(), jdkVersionStub);
+        parseOneStubFile(checker.getClass(), "jdk.astub");
+        parseOneStubFile(checker.getClass(), jdkVersionStub);
+        // This needs to be special-cased for every jdkX.astub for which files exist. :-(
+        if (annotatedJdkVersion.equals("8")) {
+          String jdk11Stub = "jdk11.astub";
+          parseOneStubFile(this.getClass(), jdk11Stub);
+          parseOneStubFile(checker.getClass(), jdk11Stub);
+        }
+
+        // 2. Annotated JDK
+        // This preps but does not parse the JDK files (except package-info.java files).
+        // The JDK source code files will be parsed later, on demand.
+        prepJdkStubs();
+        // prepping the JDK parses all package-info.java files, which sets the `parsing` field
+        // to false, so re-set it to true.
+        parsing = true;
       }
 
-      // 2. Annotated JDK
-      // This preps but does not parse the JDK files (except package-info.java files).
-      // The JDK source code files will be parsed later, on demand.
-      prepJdkStubs();
-      // prepping the JDK parses all package-info.java files, which sets the `parsing` field
-      // to false, so re-set it to true.
-      parsing = true;
+      // 3. Stub files listed in @StubFiles annotation on the checker
+      StubFiles stubFilesAnnotation = checker.getClass().getAnnotation(StubFiles.class);
+      if (stubFilesAnnotation != null) {
+        parseAnnotationFiles(
+            Arrays.asList(stubFilesAnnotation.value()), AnnotationFileType.BUILTIN_STUB);
+      }
+
+      // 4. Stub files returned by the `getExtraStubFiles()` method
+      parseAnnotationFiles(checker.getExtraStubFiles(), AnnotationFileType.BUILTIN_STUB);
+
+      // 5. Stub files provided via -Astubs command-line option
+      String stubsOption = checker.getOption("stubs");
+      if (stubsOption != null) {
+        parseAnnotationFiles(
+            SystemUtil.pathSeparatorSplitter.splitToList(stubsOption),
+            AnnotationFileType.COMMAND_LINE_STUB);
+      }
+    } finally {
+      parsing = false;
     }
-
-    // 3. Stub files listed in @StubFiles annotation on the checker
-    StubFiles stubFilesAnnotation = checker.getClass().getAnnotation(StubFiles.class);
-    if (stubFilesAnnotation != null) {
-      parseAnnotationFiles(
-          Arrays.asList(stubFilesAnnotation.value()), AnnotationFileType.BUILTIN_STUB);
-    }
-
-    // 4. Stub files returned by the `getExtraStubFiles()` method
-    parseAnnotationFiles(checker.getExtraStubFiles(), AnnotationFileType.BUILTIN_STUB);
-
-    // 5. Stub files provided via -Astubs command-line option
-    String stubsOption = checker.getOption("stubs");
-    if (stubsOption != null) {
-      parseAnnotationFiles(
-          SystemUtil.pathSeparatorSplitter.splitToList(stubsOption),
-          AnnotationFileType.COMMAND_LINE_STUB);
-    }
-
-    parsing = false;
 
     if (stubDebug) {
       System.out.printf("exited parseStubFiles() for %s%n", factory.getClass().getSimpleName());
@@ -498,7 +500,7 @@ public class AnnotationFileElementTypes {
 
       if (canTransferAnnotationsToSameName && enclosingType.getKind() == ElementKind.RECORD) {
         AnnotationFileParser.RecordStub recordStub =
-            annotationFileAnnos.records.get(enclosingType.getSimpleName().toString());
+            annotationFileAnnos.records.get(ElementUtils.getQualifiedName(enclosingType));
         if (recordStub != null
             && recordStub.componentsByName.containsKey(elt.getSimpleName().toString())) {
           RecordComponentStub recordComponentStub =
@@ -590,10 +592,8 @@ public class AnnotationFileElementTypes {
 
     ExecutableElement method = (ExecutableElement) elt;
 
-    // This is a list of pairs of (where defined, method type) for fake overrides.  The second
-    // element of each pair is currently always an AnnotatedExecutableType.
-    List<IPair<TypeMirror, AnnotatedTypeMirror>> candidates =
-        annotationFileAnnos.fakeOverrides.get(method);
+    // The method type of each fake override is currently always an AnnotatedExecutableType.
+    List<FakeOverride> candidates = annotationFileAnnos.fakeOverrides.get(method);
 
     if (candidates == null || candidates.isEmpty()) {
       return null;
@@ -604,9 +604,9 @@ public class AnnotationFileElementTypes {
     // A list of fake receiver types.
     List<TypeMirror> applicableClasses = new ArrayList<>();
     List<TypeMirror> applicableInterfaces = new ArrayList<>();
-    for (IPair<TypeMirror, AnnotatedTypeMirror> candidatePair : candidates) {
-      TypeMirror fakeLocation = candidatePair.first;
-      AnnotatedExecutableType candidate = (AnnotatedExecutableType) candidatePair.second;
+    for (FakeOverride fakeOverride : candidates) {
+      TypeMirror fakeLocation = fakeOverride.location();
+      AnnotatedExecutableType candidate = (AnnotatedExecutableType) fakeOverride.methodType();
       if (factory.types.isSameType(receiverTypeMirror, fakeLocation)) {
         return candidate;
       } else if (factory.types.isSubtype(receiverTypeMirror, fakeLocation)) {
@@ -645,10 +645,10 @@ public class AnnotationFileElementTypes {
       throw new BugInCF(message.toString());
     }
 
-    for (IPair<TypeMirror, AnnotatedTypeMirror> candidatePair : candidates) {
-      TypeMirror candidateReceiverType = candidatePair.first;
+    for (FakeOverride fakeOverride : candidates) {
+      TypeMirror candidateReceiverType = fakeOverride.location();
       if (factory.types.isSameType(fakeReceiverType, candidateReceiverType)) {
-        return (AnnotatedExecutableType) candidatePair.second;
+        return (AnnotatedExecutableType) fakeOverride.methodType();
       }
     }
 

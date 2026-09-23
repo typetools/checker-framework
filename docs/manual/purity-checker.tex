@@ -69,26 +69,15 @@ implemented, the Checker Framework will default to checking purity
 annotations.
 
 
-\sectionAndLabel{Overriding methods must respect specifications in superclasses}{purity-override}
+\sectionAndLabel{Overriding methods inherit specifications from overridden methods}{purity-override}
 
-If a method in a superclass has a purity annotation, then every overriding
-definition must also have that purity annotation (or a stronger one).
+A purity annotation is inherited:  if a method in a superclass or
+superinterface has a purity annotation, then every overriding definition has
+that annotation too, even if the annotation is not written on the overriding
+definition.  An overriding definition may strengthen the specification by
+writing a stronger annotation, but it cannot weaken it.
 
-Here is an example of the error that is issued if this requirement is violated:
-
-\begin{mysmall}
-\begin{Verbatim}
-MyClass.java:1465: error: int hashCode() in MyClass cannot override int hashCode(Object this) in java.lang.Object;
-attempting to use an incompatible purity declaration
-    public int hashCode() {
-               ^
-  found   : []
-  required: [SIDE_EFFECT_FREE, DETERMINISTIC]
-\end{Verbatim}
-\end{mysmall}
-
-\noindent
-The reason for the error is that the \<Object> class is annotated as:
+For example, the \<Object> class is annotated as:
 
 \begin{Verbatim}
 class Object {
@@ -100,21 +89,21 @@ class Object {
 \noindent
 (where \refqualclass{dataflow/qual}{Pure} means both
 \refqualclass{dataflow/qual}{SideEffectFree} and
-\refqualclass{dataflow/qual}{Deterministic}).  Every overriding
-definition, including those in your program, must use at least as strong
-a specification.  For \<hashCode>, every overriding definition must be
-annotated as \<@Pure>.
+\refqualclass{dataflow/qual}{Deterministic}).  Therefore, every definition
+of \<hashCode>, including those in your program, is implicitly annotated
+as \<@Pure> and its body is checked accordingly:
 
-You can fix the definition by adding \<@Pure> to your method definition.
-Alternately, you can suppress the warning.
-You can suppress each such warning individually using
-\<@SuppressWarnings("purity.overriding")>,
-or you can use the \<-AsuppressWarnings=purity.overriding>
-command-line argument to suppress all such warnings.
-% The \<-AassumeSideEffectFree> command-line argument suppresses the
-% warning, but it does more too; don't mention it here.
-In the future, the Checker Framework will support inheriting annotations
-from superclass definitions.
+\begin{mysmall}
+\begin{Verbatim}
+MyClass.java:1465: error: [purity.not.deterministic.not.sideeffectfree.assign.field] field assignment not allowed in deterministic side-effect-free method
+    this.hash = h;
+        ^
+\end{Verbatim}
+\end{mysmall}
+
+\noindent
+You can fix the definition by making its body pure.  Alternately, you can
+suppress the warning; see \chapterpageref{suppressing-warnings}.
 
 
 \sectionAndLabel{Suppressing warnings}{purity-suppress-warnings}

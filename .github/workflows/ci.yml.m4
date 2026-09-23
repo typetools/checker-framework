@@ -58,13 +58,23 @@ jobs:
           fetch-depth: 0
           show-progress: false
           persist-credentials: false
-gradle_cache()dnl
-      - name: clone_plume_scripts
-        run: ./gradlew -q getPlumeScripts
-      - name: ci_org_and_branch
-        run: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
-      - name: git_changes
-        run: ./checker/bin-devel/.plume-scripts/git-changes --debug
+ifelse([This job runs no Gradle task, so it needs neither a Gradle cache nor
+GRADLE_USER_HOME.])dnl
+clone_plume_scripts_step()dnl
+      - name: set_ci_org_and_branch
+        run: |
+          # PLUME_SCRIPTS is the documented way to tell these scripts where they live.
+          PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+          # shellcheck disable=SC2034  # used by the sourced script
+          CI_DEBUG=1
+          . "$PLUME_SCRIPTS"/set-ci-org-and-branch
+      - name: set_git_range
+        run: |
+          # The sourced script reads PLUME_SCRIPTS, to find set-ci-org-and-branch.
+          PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+          # shellcheck disable=SC2034  # used by the sourced script
+          CI_DEBUG=1
+          . "$PLUME_SCRIPTS"/set-git-range
 
 include([../../.azure/jobs.m4])dnl
 
@@ -73,7 +83,7 @@ include([../../.azure/jobs.m4])dnl
     needs:
       - junit_jdk17
       - junit_jdk21
-      - junit_jdk26
+      - junit_jdk[]latest_jdk
       - nonjunit_jdk21
       - misc_jdk21
       - daikon_part1_jdk[]canary_jdk

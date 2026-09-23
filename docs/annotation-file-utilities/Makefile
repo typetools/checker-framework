@@ -17,7 +17,7 @@ annotation-file-format.html: annotation-file-format.pdf
 	hevea -fix -exec xxdate.exe urlhref.hva annotation-file-format.tex
 
 plume-bib:
-	cd ../.. && ./gradlew getPlumeBib
+	../../checker/bin-devel/clone-or-update.sh https://github.com/mernst/plume-bib.git ../manual/plume-bib
 
 .PHONY: clean
 clean:

@@ -96,7 +96,6 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsP;
-import org.plumelib.util.IPair;
 
 /**
  * An analyzer that checks consistency of {@link MustCall} and {@link CalledMethods} types, thereby
@@ -838,8 +837,8 @@ public class MustCallConsistencyAnalyzer {
    * @return true if {@code successor} is an allowed successor of {@code predecessor}
    */
   private boolean isAllowedSuccessor(Block predecessor, Block successor) {
-    for (IPair<Block, @Nullable TypeMirror> p : getSuccessorsExceptIgnoredExceptions(predecessor)) {
-      if (Objects.equals(p.first, successor)) {
+    for (SuccessorAndExceptionType p : getSuccessorsExceptIgnoredExceptions(predecessor)) {
+      if (Objects.equals(p.successor(), successor)) {
         return true;
       }
     }
@@ -2591,18 +2590,17 @@ public class MustCallConsistencyAnalyzer {
    * messages.
    *
    * @param block input block
-   * @return set of pairs (b, t), where b is a successor block, and t is the type of exception for
-   *     the CFG edge from block to b, or {@code null} if b is a non-exceptional successor
+   * @return the successor blocks, each paired with the type of exception for the CFG edge from
+   *     block to it, or {@code null} if it is a non-exceptional successor
    */
-  private Set<IPair<Block, @Nullable TypeMirror>> getSuccessorsExceptIgnoredExceptions(
-      Block block) {
+  private Set<SuccessorAndExceptionType> getSuccessorsExceptIgnoredExceptions(Block block) {
     if (block.getType() == Block.BlockType.EXCEPTION_BLOCK) {
       ExceptionBlock excBlock = (ExceptionBlock) block;
-      Set<IPair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
+      Set<SuccessorAndExceptionType> result = new LinkedHashSet<>();
       // regular successor
       Block regularSucc = excBlock.getSuccessor();
       if (regularSucc != null) {
-        result.add(IPair.of(regularSucc, null));
+        result.add(new SuccessorAndExceptionType(regularSucc, null));
       }
       // non-ignored exception successors
       Map<TypeMirror, Set<Block>> exceptionalSuccessors = excBlock.getExceptionalSuccessors();
@@ -2610,19 +2608,28 @@ public class MustCallConsistencyAnalyzer {
         TypeMirror exceptionType = entry.getKey();
         if (!cmAtf.isIgnoredExceptionType(exceptionType)) {
           for (Block exSucc : entry.getValue()) {
-            result.add(IPair.of(exSucc, exceptionType));
+            result.add(new SuccessorAndExceptionType(exSucc, exceptionType));
           }
         }
       }
       return result;
     } else {
-      Set<IPair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
+      Set<SuccessorAndExceptionType> result = new LinkedHashSet<>();
       for (Block b : block.getSuccessors()) {
-        result.add(IPair.of(b, null));
+        result.add(new SuccessorAndExceptionType(b, null));
       }
       return result;
     }
   }
+
+  /**
+   * A successor block, and the type of exception that leads to it.
+   *
+   * @param successor a successor block
+   * @param exceptionType the type of exception for the CFG edge to {@code successor}, or null if
+   *     {@code successor} is a non-exceptional successor
+   */
+  private record SuccessorAndExceptionType(Block successor, @Nullable TypeMirror exceptionType) {}
 
   /**
    * Propagates a set of Obligations to successors, and performs consistency checks when variables
@@ -2666,7 +2673,7 @@ public class MustCallConsistencyAnalyzer {
     // computes the set of Obligations that should be propagated to it and then adds it to the
     // worklist if any of its resource aliases are still in scope in the successor block. If
     // none are, then the loop performs a consistency check for that Obligation.
-    for (IPair<Block, @Nullable TypeMirror> successorAndExceptionType :
+    for (SuccessorAndExceptionType successorAndExceptionType :
         getSuccessorsExceptIgnoredExceptions(currentBlock)) {
 
       // A *mutable* set that eventually holds the set of dataflow facts to be propagated to
@@ -2683,7 +2690,8 @@ public class MustCallConsistencyAnalyzer {
         } else if (node instanceof ReturnNode rn) {
           updateObligationsForOwningReturn(obligations, cfg, rn);
         } else if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
-          updateObligationsForInvocation(obligations, node, successorAndExceptionType.second);
+          updateObligationsForInvocation(
+              obligations, node, successorAndExceptionType.exceptionType());
         } else if (node instanceof FieldAccessNode fieldAccessNode) {
           checkOwningResourceCollectionFieldAccess(fieldAccessNode);
         }
@@ -2696,8 +2704,8 @@ public class MustCallConsistencyAnalyzer {
         propagateObligationsToSuccessorBlock(
             obligations,
             currentBlock,
-            successorAndExceptionType.first,
-            successorAndExceptionType.second,
+            successorAndExceptionType.successor(),
+            successorAndExceptionType.exceptionType(),
             visited,
             worklist);
       } catch (InvalidLoopBodyAnalysisException e) {
@@ -3553,7 +3561,7 @@ public class MustCallConsistencyAnalyzer {
       BlockWithObligations current = worklist.remove();
       Block currentBlock = current.block;
 
-      for (IPair<Block, @Nullable TypeMirror> successorAndExceptionType :
+      for (SuccessorAndExceptionType successorAndExceptionType :
           getSuccessorsExceptIgnoredExceptions(currentBlock)) {
         Set<Obligation> obligations = new LinkedHashSet<>(current.obligations);
         for (Node node : currentBlock.getNodes()) {
@@ -3563,8 +3571,8 @@ public class MustCallConsistencyAnalyzer {
         }
 
         @SuppressWarnings("interning:not.interned")
-        boolean isLastBlockOfBody = successorAndExceptionType.first == loopUpdateBlock;
-        boolean staysInLoop = loopRegion.contains(successorAndExceptionType.first);
+        boolean isLastBlockOfBody = successorAndExceptionType.successor() == loopUpdateBlock;
+        boolean staysInLoop = loopRegion.contains(successorAndExceptionType.successor());
         if (!isLastBlockOfBody && !staysInLoop) {
           return null;
         }
@@ -3587,8 +3595,8 @@ public class MustCallConsistencyAnalyzer {
             propagateObligationsToSuccessorBlock(
                 obligations,
                 currentBlock,
-                successorAndExceptionType.first,
-                successorAndExceptionType.second,
+                successorAndExceptionType.successor(),
+                successorAndExceptionType.exceptionType(),
                 visited,
                 worklist);
           } catch (InvalidLoopBodyAnalysisException e) {
@@ -3636,8 +3644,8 @@ public class MustCallConsistencyAnalyzer {
     while (!wl.isEmpty()) {
       Block b = wl.removeFirst();
 
-      for (IPair<Block, @Nullable TypeMirror> succ : getSuccessorsExceptIgnoredExceptions(b)) {
-        Block s = succ.first;
+      for (SuccessorAndExceptionType succ : getSuccessorsExceptIgnoredExceptions(b)) {
+        Block s = succ.successor();
         if (s == null) {
           continue;
         }

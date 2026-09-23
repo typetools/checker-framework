@@ -33,6 +33,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.initialization.InitializationAnnotatedTypeFactory;
+import org.checkerframework.checker.initialization.InitializationAnnotatedTypeFactory.UninitializedFields;
 import org.checkerframework.checker.initialization.qual.FBCBottom;
 import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
@@ -77,7 +78,6 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.IPair;
 
 /** The annotated type factory for the nullness type-system. */
 public class NullnessAnnotatedTypeFactory
@@ -473,17 +473,21 @@ public class NullnessAnnotatedTypeFactory
   }
 
   @Override
-  public IPair<List<VariableTree>, List<VariableTree>> getUninitializedFields(
+  public UninitializedFields getUninitializedFields(
       NullnessStore store,
       TreePath path,
       boolean isStatic,
       Collection<? extends AnnotationMirror> receiverAnnotations) {
-    IPair<List<VariableTree>, List<VariableTree>> result =
+    UninitializedFields result =
         super.getUninitializedFields(store, path, isStatic, receiverAnnotations);
     // Filter out primitives.  They have the @NonNull annotation, but this checker issues no
     // warning when they are not initialized.
-    result.first.removeIf(vt -> TypesUtils.isPrimitive(getAnnotatedType(vt).getUnderlyingType()));
-    result.second.removeIf(vt -> TypesUtils.isPrimitive(getAnnotatedType(vt).getUnderlyingType()));
+    result
+        .withInvariantAnno()
+        .removeIf(vt -> TypesUtils.isPrimitive(getAnnotatedType(vt).getUnderlyingType()));
+    result
+        .withoutInvariantAnno()
+        .removeIf(vt -> TypesUtils.isPrimitive(getAnnotatedType(vt).getUnderlyingType()));
     return result;
   }
 

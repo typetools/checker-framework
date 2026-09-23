@@ -1,8 +1,6 @@
 package org.checkerframework.checker.collectionownership;
 
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -70,7 +68,6 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.IPair;
 
 /** The annotated type factory for the Collection Ownership Checker. */
 public class CollectionOwnershipAnnotatedTypeFactory
@@ -374,8 +371,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
 
   @Override
   protected ControlFlowGraph analyze(
-      Queue<IPair<ClassTree, @Nullable CollectionOwnershipStore>> classQueue,
-      Queue<IPair<LambdaExpressionTree, @Nullable CollectionOwnershipStore>> lambdaQueue,
+      Queue<ClassAndStore<CollectionOwnershipStore>> classQueue,
+      Queue<LambdaAndStore<CollectionOwnershipStore>> lambdaQueue,
       UnderlyingAST ast,
       List<FieldInitialValue<CFValue>> fieldValues,
       @Nullable ControlFlowGraph cfg,

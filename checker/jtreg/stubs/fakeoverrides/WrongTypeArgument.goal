@@ -1,0 +1,3 @@
+- compiler.warn.proc.messager: WrongTypeArgument.astub:(line 7,col 5): Method g(List) not found in type fakeoverrides.WrongTypeArgumentSub
+- compiler.warn.proc.messager: WrongTypeArgument.astub:(line 9,col 5): Method enclosing(WrongNested) not found in type fakeoverrides.WrongTypeArgumentSub
+2 warnings

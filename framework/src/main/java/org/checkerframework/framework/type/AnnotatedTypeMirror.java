@@ -117,11 +117,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     AnnotatedTypeMirror result;
     switch (type.getKind()) {
       case ARRAY -> result = new AnnotatedArrayType((ArrayType) type, atypeFactory);
-      case DECLARED ->
+      // An ERROR type is a class whose class file is not on the classpath.  javac reported no
+      // error, because it completes such a symbol lazily and never needs it, so treat the type
+      // like any other declared type.  See issue 8055.
+      case DECLARED, ERROR ->
           result = new AnnotatedDeclaredType((DeclaredType) type, atypeFactory, isDeclaration);
-      case ERROR ->
-          throw new BugInCF(
-              "AnnotatedTypeMirror.createType: input is not compilable. Found error type: " + type);
       case EXECUTABLE -> result = new AnnotatedExecutableType((ExecutableType) type, atypeFactory);
       case VOID, PACKAGE, NONE -> result = new AnnotatedNoType((NoType) type, atypeFactory);
       case NULL -> result = new AnnotatedNullType((NullType) type, atypeFactory);
@@ -364,7 +364,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     if (primaryAnnotations.size() != 1) {
       throw new BugInCF("Bad annotation size for getPrimaryAnnotation(): " + this);
     }
-    return primaryAnnotations.iterator().next();
+    return primaryAnnotations.first();
   }
 
   /**
@@ -404,7 +404,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     if (effectiveAnnotations.size() != 1) {
       throw new BugInCF("Bad annotation size for getAnnotation(): " + this);
     }
-    return effectiveAnnotations.iterator().next();
+    return effectiveAnnotations.first();
   }
 
   /**
@@ -1073,9 +1073,13 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
         }
       } else if (isDeclaration()) {
         for (TypeMirror javaTypeArg : t.getTypeArguments()) {
-          AnnotatedTypeVariable tv =
-              (AnnotatedTypeVariable) createType(javaTypeArg, atypeFactory, true);
-          typeArgs.add(tv);
+          AnnotatedTypeMirror typeArg = createType(javaTypeArg, atypeFactory, true);
+          if (!(typeArg instanceof AnnotatedTypeVariable)) {
+            throw new BugInCF(
+                "Type argument %s of declaration %s has kind %s, not TYPEVAR.",
+                javaTypeArg, t, javaTypeArg.getKind());
+          }
+          typeArgs.add(typeArg);
         }
       } else {
         for (TypeMirror javaTypeArg : t.getTypeArguments()) {
