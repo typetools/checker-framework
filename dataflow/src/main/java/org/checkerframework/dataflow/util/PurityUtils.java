@@ -4,6 +4,16 @@ import com.sun.source.tree.MethodTree;
 import java.util.EnumSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.dataflow.expression.ArrayAccess;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.FormalParameter;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
+import org.checkerframework.dataflow.expression.SuperReference;
+import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -154,5 +164,51 @@ public final class PurityUtils {
       result.add(PurityKind.DETERMINISTIC);
     }
     return result;
+  }
+
+  /**
+   * Returns true if the given expression is pure: evaluating it has no side effect, and, in an
+   * unchanged environment, every evaluation yields the same location or value.
+   *
+   * <p>In one way, this method is more conservative than {@code isDeterministic}: it returns false
+   * for an expression such as {@code a + b}, which is pure but denotes no location that a method
+   * could modify.
+   *
+   * @param provider how to get annotations
+   * @param expression an expression
+   * @return true if the given expression is pure
+   */
+  public static boolean isPure(AnnotationProvider provider, JavaExpression expression) {
+    if (expression instanceof LocalVariable
+        || expression instanceof FormalParameter
+        || expression instanceof ThisReference
+        || expression instanceof SuperReference
+        || expression instanceof ClassName
+        || expression instanceof ValueLiteral) {
+      return true;
+    } else if (expression instanceof FieldAccess fieldAccess) {
+      return isPure(provider, fieldAccess.getReceiver());
+    } else if (expression instanceof ArrayAccess arrayAccess) {
+      return isPure(provider, arrayAccess.getArray()) && isPure(provider, arrayAccess.getIndex());
+    } else if (expression instanceof MethodCall methodCall) {
+      // The call is pure only if the method is effectively `@Pure`.
+      EnumSet<PurityKind> purityKinds = getPurityKinds(provider, methodCall.getElement());
+      if (!purityKinds.contains(PurityKind.DETERMINISTIC)
+          || !purityKinds.contains(PurityKind.SIDE_EFFECT_FREE)) {
+        return false;
+      }
+      // For a static method, the receiver is a ClassName, which is pure.
+      if (!isPure(provider, methodCall.getReceiver())) {
+        return false;
+      }
+      for (JavaExpression argument : methodCall.getArguments()) {
+        if (!isPure(provider, argument)) {
+          return false;
+        }
+      }
+      return true;
+    } else {
+      return false;
+    }
   }
 }
