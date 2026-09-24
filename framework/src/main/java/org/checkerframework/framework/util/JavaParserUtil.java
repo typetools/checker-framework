@@ -163,6 +163,25 @@ public final class JavaParserUtil {
     private static final ResolvedName NONE = new ResolvedName(null, null);
 
     /**
+     * Creates a ResolvedName.
+     *
+     * @param typeElement the type that the name refers to, or null if it refers to no type
+     * @param typeParameter the declaration of the type variable that the name refers to, or null if
+     *     it refers to no type variable
+     * @throws IllegalArgumentException if both {@code typeElement} and {@code typeParameter} are
+     *     non-null
+     */
+    public ResolvedName {
+      if (typeElement != null && typeParameter != null) {
+        throw new IllegalArgumentException(
+            "Both typeElement and typeParameter are non-null: "
+                + typeElement
+                + ", "
+                + typeParameter);
+      }
+    }
+
+    /**
      * Returns a ResolvedName for the given type, or {@link #NONE} if it is null.
      *
      * @param typeElement a type, or null
