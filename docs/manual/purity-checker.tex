@@ -102,10 +102,12 @@ purity that the method promises:
 \item
   In a \refqualclass{dataflow/qual}{Pure} method, the call is treated as
   pure.
+\iffalse
 \item
   In a \refqualclass{dataflow/qual}{SideEffectsOnly} method, the call is
   treated as side-effect-free.  The method itself may modify the expressions
   listed in its annotation, but the code it is handed may not modify anything.
+\fi
 \end{itemize}
 
 \begin{Verbatim}
