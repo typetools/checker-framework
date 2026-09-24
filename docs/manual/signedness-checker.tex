@@ -34,13 +34,11 @@ Checker (see \chapterpageref{constant-value-checker}).
 
 The Signedness Checker trusts a \refqualclass{checker/index/qual}{NonNegative}
 or \refqualclass{checker/index/qual}{Positive} annotation on a \<byte>,
-\<short>, \<int>, or \<long> expression, even an \<@Unsigned> one:  such an
-expression has type \refqualclass{checker/signedness/qual}{SignedPositive}, so
-it may be used wherever a signed or an unsigned value is expected.  To verify
-these annotations, also run the Index Checker.  A \<char> is always
-non-negative, so these annotations do not affect a \<char> expression; a
-\<char> expression has type \<@SignedPositive> only when range analysis
-determines that its value is between 0 and 127.
+\<short>, \<int>, or \<long> expression.  To verify these annotations, also
+run the Index Checker.  A \<char> is always non-negative, so these
+annotations do not affect a \<char> expression; a \<char> expression has
+type \<@SignedPositive> only when range analysis determines that its value is
+between 0 and 127.
 
 Additional details appear in the paper
 ``Preventing signedness errors in numerical computations in
