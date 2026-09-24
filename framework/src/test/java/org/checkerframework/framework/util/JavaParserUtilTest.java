@@ -79,6 +79,88 @@ public class JavaParserUtilTest {
   }
 
   /**
+   * Tests that {@link JavaParserUtil#resolveTypeName} resolves the simple name of a member type
+   * that a local class or an anonymous class inherits only when that class really inherits it. Such
+   * a class has no name that {@link Elements} can look up, so its own package -- that of the
+   * compilation unit that declares it -- determines whether it inherits a package-private member
+   * type of its supertype.
+   */
+  @Test
+  public void testResolveMemberTypeInheritedByUnnameableClass() {
+    // A public member type is inherited, even across packages.
+    assertResolvesTo(SUPERPKG + ".Base.Visible", SUPERPKG, localClass("Visible"), "Visible");
+    assertResolvesTo(SUPERPKG + ".Base.Visible", SUBPKG, localClass("Visible"), "Visible");
+    assertResolvesTo(SUPERPKG + ".Base.Visible", SUPERPKG, anonymousClass("Visible"), "Visible");
+    assertResolvesTo(SUPERPKG + ".Base.Visible", SUBPKG, anonymousClass("Visible"), "Visible");
+
+    // A package-private member type is inherited only within the package that declares it.
+    assertResolvesTo(SUPERPKG + ".Base.Hidden", SUPERPKG, localClass("Hidden"), "Hidden");
+    assertResolvesTo(null, SUBPKG, localClass("Hidden"), "Hidden");
+    assertResolvesTo(SUPERPKG + ".Base.Hidden", SUPERPKG, anonymousClass("Hidden"), "Hidden");
+    assertResolvesTo(null, SUBPKG, anonymousClass("Hidden"), "Hidden");
+
+    // A private member type is never inherited.
+    assertResolvesTo(null, SUPERPKG, localClass("Secret"), "Secret");
+    assertResolvesTo(null, SUPERPKG, anonymousClass("Secret"), "Secret");
+
+    // When the class does not inherit the package-private member type, the name resolves to the
+    // type of the same simple name that is declared in the class's own package.
+    assertResolvesTo(SUPERPKG + ".Base.Shadowed", SUPERPKG, localClass("Shadowed"), "Shadowed");
+    assertResolvesTo(SUBPKG + ".Shadowed", SUBPKG, localClass("Shadowed"), "Shadowed");
+    assertResolvesTo(SUPERPKG + ".Base.Shadowed", SUPERPKG, anonymousClass("Shadowed"), "Shadowed");
+    assertResolvesTo(SUBPKG + ".Shadowed", SUBPKG, anonymousClass("Shadowed"), "Shadowed");
+  }
+
+  /**
+   * Tests that {@link JavaParserUtil#resolveTypeName} resolves a nested type name whose first
+   * component names a member type of an enclosing class and whose later components name inherited
+   * member types. Such a name is not canonical, so it cannot be looked up directly.
+   */
+  @Test
+  public void testResolveNestedNameOfDeclaredMemberType() {
+    String memberOwner =
+        "class MemberOwner { private static class Member extends Base {}"
+            + " Member.Visible f; Member.Secret g; }";
+
+    // The name of the member type itself is canonical.
+    assertResolvesTo(SUPERPKG + ".MemberOwner.Member", SUPERPKG, memberOwner, "Member");
+
+    // `Member` inherits `Visible` rather than declaring it, so `Member.Visible` is not canonical
+    // and the member types of `Member`'s supertypes must be searched.
+    assertResolvesTo(SUPERPKG + ".Base.Visible", SUPERPKG, memberOwner, "Member.Visible");
+
+    // A member type of an enclosing class shadows every other type whose name starts with the
+    // member type's simple name, so a suffix that names no member type of `Member` names nothing.
+    assertResolvesTo(null, SUPERPKG, memberOwner, "Member.Secret");
+  }
+
+  /**
+   * Returns the declaration of a class named {@code Outer}, which is not a subtype of {@code Base},
+   * that declares a local class that extends {@code Base} and that uses the given type name.
+   *
+   * @param typeName the type name that the local class uses
+   * @return a type declaration that contains a local class that uses {@code typeName}
+   */
+  private static String localClass(String typeName) {
+    return "class Outer { void m() { class Local extends "
+        + SUPERPKG
+        + ".Base { "
+        + typeName
+        + " f; } } }";
+  }
+
+  /**
+   * Returns the declaration of a class named {@code Outer}, which is not a subtype of {@code Base},
+   * that declares an anonymous subclass of {@code Base} that uses the given type name.
+   *
+   * @param typeName the type name that the anonymous class uses
+   * @return a type declaration that contains an anonymous class that uses {@code typeName}
+   */
+  private static String anonymousClass(String typeName) {
+    return "class Outer { Object o = new " + SUPERPKG + ".Base() { " + typeName + " f; }; }";
+  }
+
+  /**
    * Tests that {@link JavaParserUtil#resolveTypeNameAsTypeParameter} resolves a name to a type
    * variable exactly when no type declaration shadows the type variable.
    */
