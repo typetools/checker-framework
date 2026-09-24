@@ -170,7 +170,12 @@ public class Java8InferenceContext {
    * @param pathToExpression path to the expression whose type arguments are inferred
    * @param inference inference object
    */
-  @SuppressWarnings("this-escape")
+  @SuppressWarnings({
+    "this-escape",
+    "nullness:argument", // Objects.hash uses only the identity hash code of `this`, and the
+    // InferenceFactory constructor reads only `typeFactory`, which is already set.
+    "nullness:assignment" // see the justification for "nullness:argument"
+  })
   public Java8InferenceContext(
       AnnotatedTypeFactory factory, TreePath pathToExpression, InvocationTypeInference inference) {
     this.typeFactory = factory;
