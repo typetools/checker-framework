@@ -581,6 +581,7 @@ public final class JavaParserUtil {
    *
    * @return a JavaParser type that names {@code java.lang.Enum}
    */
+  @SuppressWarnings("nullness:argument") // JavaParser permits a null scope for an unqualified name
   private static ClassOrInterfaceType javaLangEnum() {
     return new ClassOrInterfaceType(
         new ClassOrInterfaceType(new ClassOrInterfaceType(null, "java"), "lang"), "Enum");
