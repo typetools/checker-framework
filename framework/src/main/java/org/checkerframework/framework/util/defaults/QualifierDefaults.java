@@ -608,9 +608,7 @@ public class QualifierDefaults {
       }
     }
 
-    if (atypeFactory.shouldCache
-        && !atypeFactory.stubTypes.isParsing()
-        && !atypeFactory.ajavaTypes.isParsing()) {
+    if (atypeFactory.shouldCache && !atypeFactory.isParsingAnnotationFiles()) {
       elementAnnotatedFors.put(elt, elementAnnotatedForThisChecker);
     }
 

@@ -241,10 +241,8 @@ public class AElement implements Cloneable {
    */
   @SuppressWarnings({
     "unchecked",
-    // `orig.get(key)` passes a `K`, whose implicit upper bound is `@Nullable Object`, to
-    // `WrapperMap.get(Object)`, whose parameter is `@NonNull`.  This warning appears only when
-    // this file is nullness-checked, which requires `-PnullnessAll`.
-    "nullness:argument"
+    "nullness:argument" // `orig.get(key)` passes a `K`, whose implicit upper bound is
+    // `@Nullable Object`, to `WrapperMap.get(Object)`, whose parameter is `@NonNull`.
   })
   static <K, V extends AElement> void copyMapContents(
       VivifyingMap<K, V> orig, VivifyingMap<K, V> copy) {

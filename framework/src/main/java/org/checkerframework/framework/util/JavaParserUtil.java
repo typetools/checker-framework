@@ -5,7 +5,6 @@ import com.github.javaparser.ParserConfiguration.LanguageLevel;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -70,25 +69,27 @@ public final class JavaParserUtil {
    * Returns the element for the given JavaParser type, whose name is resolved in the scope of the
    * type declarations and the compilation unit that contain it. Returns null if the name cannot be
    * resolved: it names a type variable, a local class, a member of a local or anonymous class, or a
-   * type that is not on the classpath.
+   * type that is not on the classpath. To learn whether the name names a type variable, and which
+   * one, call {@link #resolveTypeNameAsTypeParameter(Elements, ClassOrInterfaceType, Map)}.
    *
-   * <p>A client that resolves many names should call {@link #resolveTypeName(Elements,
+   * <p>A client that resolves many names should call {@link #resolveTypeNameAsTypeElement(Elements,
    * ClassOrInterfaceType, Map)}, which memoizes the name lookups.
    *
    * @param elements used for looking up names
    * @param type a JavaParser class or interface type
    * @return the element for {@code type}, or null if it cannot be determined
    */
-  public static @Nullable TypeElement resolveTypeName(
+  public static @Nullable TypeElement resolveTypeNameAsTypeElement(
       Elements elements, ClassOrInterfaceType type) {
-    return resolveTypeName(elements, type, new HashMap<>());
+    return resolveTypeNameAsTypeElement(elements, type, new HashMap<>());
   }
 
   /**
    * Returns the element for the given JavaParser type, whose name is resolved in the scope of the
    * type declarations and the compilation unit that contain it. Returns null if the name cannot be
    * resolved: it names a type variable, a local class, a member of a local or anonymous class, or a
-   * type that is not on the classpath.
+   * type that is not on the classpath. To learn whether the name names a type variable, and which
+   * one, call {@link #resolveTypeNameAsTypeParameter(Elements, ClassOrInterfaceType, Map)}.
    *
    * <p>Resolving one name looks up many candidate names, most of which name no type, so a client
    * that resolves many names should pass the same cache to each call. A cache should not be reused
@@ -102,9 +103,50 @@ public final class JavaParserUtil {
    *     ConcurrentHashMap}; this method is not thread-safe.
    * @return the element for {@code type}, or null if it cannot be determined
    */
-  public static @Nullable TypeElement resolveTypeName(
+  public static @Nullable TypeElement resolveTypeNameAsTypeElement(
       Elements elements, ClassOrInterfaceType type, Map<String, @Nullable TypeElement> cache) {
-    return resolveName(elements, type, cache).typeElement();
+    return resolveTypeName(elements, type, cache).typeElement();
+  }
+
+  /**
+   * Returns the declaration of the type variable that the given JavaParser type names, or null if
+   * the name does not name a type variable. The name is resolved in the scope of the type
+   * declarations and the compilation unit that contain it, so the result is null if a type
+   * declaration shadows a type variable of the same name.
+   *
+   * <p>A client that resolves many names should call {@link
+   * #resolveTypeNameAsTypeParameter(Elements, ClassOrInterfaceType, Map)}, which memoizes the name
+   * lookups.
+   *
+   * @param elements used for looking up names
+   * @param type a JavaParser class or interface type
+   * @return the declaration of the type variable that {@code type} names, or null if {@code type}
+   *     does not name a type variable
+   */
+  public static @Nullable TypeParameter resolveTypeNameAsTypeParameter(
+      Elements elements, ClassOrInterfaceType type) {
+    return resolveTypeNameAsTypeParameter(elements, type, new HashMap<>(4));
+  }
+
+  /**
+   * Returns the declaration of the type variable that the given JavaParser type names, or null if
+   * the name does not name a type variable. The name is resolved in the scope of the type
+   * declarations and the compilation unit that contain it, so the result is null if a type
+   * declaration shadows a type variable of the same name.
+   *
+   * <p>A name with more than one component, as in {@code T.Inner}, never names a type variable,
+   * because a type variable has no member types.
+   *
+   * @param elements used for looking up names
+   * @param type a JavaParser class or interface type
+   * @param cache maps a name to the type it names, or to null if it names no type; this method both
+   *     reads and writes it
+   * @return the declaration of the type variable that {@code type} names, or null if {@code type}
+   *     does not name a type variable
+   */
+  public static @Nullable TypeParameter resolveTypeNameAsTypeParameter(
+      Elements elements, ClassOrInterfaceType type, Map<String, @Nullable TypeElement> cache) {
+    return resolveTypeName(elements, type, cache).typeParameter();
   }
 
   /**
@@ -115,30 +157,30 @@ public final class JavaParserUtil {
    * @param typeParameter the declaration of the type variable that the name refers to, or null if
    *     it refers to no type variable
    */
-  private record ResolvedName(
+  public record ResolvedTypeName(
       @Nullable TypeElement typeElement, @Nullable TypeParameter typeParameter) {
 
     /** A name that refers to neither a type nor a type variable. */
-    private static final ResolvedName NONE = new ResolvedName(null, null);
+    private static final ResolvedTypeName NONE = new ResolvedTypeName(null, null);
 
     /**
-     * Returns a ResolvedName for the given type, or {@link #NONE} if it is null.
+     * Returns a ResolvedTypeName for the given type, or {@link #NONE} if it is null.
      *
      * @param typeElement a type, or null
-     * @return a ResolvedName for {@code typeElement}
+     * @return a ResolvedTypeName for {@code typeElement}
      */
-    private static ResolvedName of(@Nullable TypeElement typeElement) {
-      return typeElement == null ? NONE : new ResolvedName(typeElement, null);
+    private static ResolvedTypeName of(@Nullable TypeElement typeElement) {
+      return typeElement == null ? NONE : new ResolvedTypeName(typeElement, null);
     }
 
     /**
-     * Returns a ResolvedName for the given type variable declaration.
+     * Returns a ResolvedTypeName for the given type variable declaration.
      *
      * @param typeParameter the declaration of a type variable
-     * @return a ResolvedName for {@code typeParameter}
+     * @return a ResolvedTypeName for {@code typeParameter}
      */
-    private static ResolvedName of(TypeParameter typeParameter) {
-      return new ResolvedName(null, typeParameter);
+    private static ResolvedTypeName of(TypeParameter typeParameter) {
+      return new ResolvedTypeName(null, typeParameter);
     }
   }
 
@@ -148,27 +190,26 @@ public final class JavaParserUtil {
    * contain it.
    *
    * <p>Resolving a name walks the enclosing scopes and searches supertypes, which is far more work
-   * than the cache avoids. A caller that needs to know both whether the name names a type and
-   * whether it names a type variable should call this method once, rather than asking the two
-   * questions separately, because each call repeats the walk.
-   *
-   * <p>A name with more than one component, as in {@code T.Inner}, never names a type variable,
-   * because a type variable has no member types.
+   * than the cache avoids. A client that needs to know both whether the name names a type and
+   * whether it names a type variable should call this method once, rather than calling both {@link
+   * #resolveTypeNameAsTypeElement(Elements, ClassOrInterfaceType, Map)} and {@link
+   * #resolveTypeNameAsTypeParameter(Elements, ClassOrInterfaceType, Map)}, each of which repeats
+   * the walk.
    *
    * @param elements used for looking up names
    * @param type a JavaParser class or interface type
    * @param cache maps a name to the type it names, or to null if it names no type; this method both
-   *     reads and writes it. See {@link #resolveTypeName(Elements, ClassOrInterfaceType, Map)} for
-   *     restrictions on it.
+   *     reads and writes it. See {@link #resolveTypeNameAsTypeElement(Elements,
+   *     ClassOrInterfaceType, Map)} for restrictions on it.
    * @return what the name of {@code type} refers to
    */
-  private static ResolvedName resolveName(
+  public static ResolvedTypeName resolveTypeName(
       Elements elements, ClassOrInterfaceType type, Map<String, @Nullable TypeElement> cache) {
-    return resolveName(elements, type, cache, new IdentityHashMap<>(4));
+    return resolveTypeName(elements, type, cache, new IdentityHashMap<>(4));
   }
 
   /**
-   * Returns what the given JavaParser type's name refers to, as {@link #resolveName(Elements,
+   * Returns what the given JavaParser type's name refers to, as {@link #resolveTypeName(Elements,
    * ClassOrInterfaceType, Map)} does. This method also memoizes its recursive calls.
    *
    * @param elements used for looking up names
@@ -179,7 +220,7 @@ public final class JavaParserUtil {
    *     and writes it
    * @return what the name of {@code type} refers to
    */
-  private static ResolvedName resolveName(
+  private static ResolvedTypeName resolveTypeName(
       Elements elements,
       ClassOrInterfaceType type,
       Map<String, @Nullable TypeElement> cache,
@@ -224,11 +265,11 @@ public final class JavaParserUtil {
         // `name` names a local class, or is nested within one.  A local class shadows any type of
         // the same name, including a type parameter, and `Elements` cannot look up a local class
         // by name.
-        return ResolvedName.NONE;
+        return ResolvedTypeName.NONE;
       }
 
       // A member type that `ancestor` declares shadows a type parameter of `ancestor` that has the
-      // same name, so the member types are searched first.  A member type that `ancestor` merely
+      // same name, so search the member types first.  A member type that `ancestor` merely
       // inherits does not shadow a type parameter, so those are searched below, after the type
       // parameters.
       if (ancestor instanceof TypeDeclaration<?> enclosingType
@@ -237,16 +278,16 @@ public final class JavaParserUtil {
         String enclosingName = nameableFullyQualifiedName(enclosingType);
         if (enclosingName == null) {
           // A member type of an unnameable class has no name that `Elements` can look up.
-          return ResolvedName.NONE;
+          return ResolvedTypeName.NONE;
         }
         TypeElement enclosingElement = getTypeElement(elements, enclosingName, cache);
         if (enclosingElement == null) {
-          return ResolvedName.NONE;
+          return ResolvedTypeName.NONE;
         }
         // If `name` has a suffix, then the suffix names a type that is nested within the member
         // type.  If there is no such type, then `name` names nothing, because the member type
         // shadows every other type whose name starts with `firstComponent`.
-        return ResolvedName.of(
+        return ResolvedTypeName.of(
             resolveMemberType(
                 elements,
                 // Every member type that `enclosingElement` declares is a member of it, whatever
@@ -266,7 +307,7 @@ public final class JavaParserUtil {
             // any type of the same name that is declared outside `ancestor`, and it has no
             // TypeElement.  A type variable has no member types, so if `name` has a suffix, as
             // in `T.Inner`, then it names nothing at all.
-            return suffix.isEmpty() ? ResolvedName.of(typeParameter) : ResolvedName.NONE;
+            return suffix.isEmpty() ? ResolvedTypeName.of(typeParameter) : ResolvedTypeName.NONE;
           }
         }
       }
@@ -279,7 +320,7 @@ public final class JavaParserUtil {
         // anonymous class has no name that `Elements` can look up.  (There is no need to search
         // the anonymous class's supertype, which is the enum:  the enum declaration is an
         // ancestor, so a later iteration of this loop searches it.)
-        return ResolvedName.NONE;
+        return ResolvedTypeName.NONE;
       }
 
       // The member types of a class that `Elements` cannot look up by name -- an anonymous class,
@@ -296,13 +337,13 @@ public final class JavaParserUtil {
         if (body != null && containsSame(body, child)) {
           if (declaresMemberType(body, firstComponent)) {
             // A member type of an anonymous class has no name that `Elements` can look up.
-            return ResolvedName.NONE;
+            return ResolvedTypeName.NONE;
           }
           if (creation.getScope().isPresent()) {
             // In `outer.new Inner() { ... }`, `Inner` is a member of the type of `outer` rather
             // than a name that is resolved in the scope of the expression, so this method cannot
             // determine the member types that the anonymous class inherits.
-            return ResolvedName.NONE;
+            return ResolvedTypeName.NONE;
           }
           unnameableSupertypes = Collections.singletonList(creation.getType());
         }
@@ -310,7 +351,7 @@ public final class JavaParserUtil {
           // The class's inherited member types are in scope only in its body, and not in its
           // annotations, its type parameter section, or its supertype names.  Testing `child`
           // also prevents infinite recursion on the recursive call below.  (The class's declared
-          // member types are searched above, before its type parameters.)
+          // member types were searched above, before its type parameters.)
           && inScopeOfMemberTypes(child)) {
         String enclosingName = nameableFullyQualifiedName(enclosingType);
         if (enclosingName != null) {
@@ -330,7 +371,7 @@ public final class JavaParserUtil {
                     true,
                     cache);
             if (result != null) {
-              return ResolvedName.of(result);
+              return ResolvedTypeName.of(result);
             }
           }
         } else {
@@ -344,11 +385,11 @@ public final class JavaParserUtil {
         TypeElement inherited = null;
         for (ClassOrInterfaceType supertype : unnameableSupertypes) {
           TypeElement supertypeElement =
-              resolveTypeNameMemoized(elements, supertype, cache, nodeCache);
+              resolveTypeNameAsTypeElementMemoized(elements, supertype, cache, nodeCache);
           if (supertypeElement == null) {
             // The supertype could not be determined, so neither could the member types that the
             // unnameable class inherits and that might shadow `name`.
-            return ResolvedName.NONE;
+            return ResolvedTypeName.NONE;
           }
           TypeElement fromSupertype =
               resolveMemberType(
@@ -373,19 +414,19 @@ public final class JavaParserUtil {
             } else if (!inherited.equals(fromSupertype)) {
               // The class inherits two different member types with the same simple name.  Which
               // one `name` refers to (if either is accessible) cannot be determined here.
-              return ResolvedName.NONE;
+              return ResolvedTypeName.NONE;
             }
           }
         }
         if (inherited != null) {
-          return ResolvedName.of(inherited);
+          return ResolvedTypeName.of(inherited);
         }
       }
     }
 
     if (cu == null) {
       // The name might be fully-qualified.
-      return ResolvedName.of(getTypeElement(elements, name, cache));
+      return ResolvedTypeName.of(getTypeElement(elements, name, cache));
     }
 
     // A single-type import or a single-static import of a member type takes precedence over an
@@ -398,7 +439,7 @@ public final class JavaParserUtil {
       if (importedName.equals(firstComponent) || importedName.endsWith("." + firstComponent)) {
         TypeElement result = getTypeElement(elements, importedName + suffix, cache);
         if (result != null) {
-          return ResolvedName.of(result);
+          return ResolvedTypeName.of(result);
         }
         // If `importedName` equals `firstComponent`, the import has no qualifier, so it names no
         // container to search.  (JavaParser accepts such an import even though javac does not.)
@@ -429,7 +470,7 @@ public final class JavaParserUtil {
                     false,
                     cache);
             if (result != null) {
-              return ResolvedName.of(result);
+              return ResolvedTypeName.of(result);
             }
           }
         }
@@ -441,7 +482,7 @@ public final class JavaParserUtil {
     TypeElement samePackage =
         getTypeElement(elements, packageName.isEmpty() ? name : packageName + "." + name, cache);
     if (samePackage != null) {
-      return ResolvedName.of(samePackage);
+      return ResolvedTypeName.of(samePackage);
     }
 
     // The type might be in a package or type that is imported on demand, or in `java.lang`, which
@@ -458,7 +499,7 @@ public final class JavaParserUtil {
     for (String containerPrefix : containerPrefixes) {
       TypeElement result = getTypeElement(elements, containerPrefix + name, cache);
       if (result != null && isAccessible(elements, result, packageName)) {
-        return ResolvedName.of(result);
+        return ResolvedTypeName.of(result);
       }
     }
 
@@ -487,7 +528,7 @@ public final class JavaParserUtil {
                   false,
                   cache);
           if (result != null) {
-            return ResolvedName.of(result);
+            return ResolvedTypeName.of(result);
           }
         }
       }
@@ -496,7 +537,7 @@ public final class JavaParserUtil {
     // The name might be fully-qualified, or might be a top-level type in the unnamed package.
     // This lookup is last, because a type that is in scope shadows a type whose fully-qualified
     // name is `name`.
-    return ResolvedName.of(getTypeElement(elements, name, cache));
+    return ResolvedTypeName.of(getTypeElement(elements, name, cache));
   }
 
   /**
@@ -518,7 +559,7 @@ public final class JavaParserUtil {
    *     same type name can name different types.
    * @return the element for {@code type}, or null if it cannot be determined
    */
-  private static @Nullable TypeElement resolveTypeNameMemoized(
+  private static @Nullable TypeElement resolveTypeNameAsTypeElementMemoized(
       Elements elements,
       ClassOrInterfaceType type,
       Map<String, @Nullable TypeElement> cache,
@@ -526,7 +567,7 @@ public final class JavaParserUtil {
     if (nodeCache.containsKey(type)) {
       return nodeCache.get(type);
     }
-    TypeElement result = resolveName(elements, type, cache, nodeCache).typeElement();
+    TypeElement result = resolveTypeName(elements, type, cache, nodeCache).typeElement();
     nodeCache.put(type, result);
     return result;
   }
@@ -665,11 +706,12 @@ public final class JavaParserUtil {
 
   /**
    * Returns a new JavaParser type that names {@code java.lang.Enum}, the implicit superclass of
-   * every enum. The result is not part of any AST, so {@link #resolveTypeName} resolves its name as
-   * a fully-qualified name.
+   * every enum. The result is not part of any AST, so {@link #resolveTypeNameAsTypeElement}
+   * resolves its name as a fully-qualified name.
    *
    * @return a JavaParser type that names {@code java.lang.Enum}
    */
+  @SuppressWarnings("nullness:argument") // JavaParser permits a null scope for an unqualified name
   private static ClassOrInterfaceType javaLangEnum() {
     return new ClassOrInterfaceType(
         new ClassOrInterfaceType(new ClassOrInterfaceType(null, "java"), "lang"), "Enum");
@@ -1064,65 +1106,15 @@ public final class JavaParserUtil {
    * @param types used for creating types
    * @param type a JavaParser type
    * @param cache maps a name to the type it names, or to null if it names no type; this method both
-   *     reads and writes it. See {@link #resolveTypeName(Elements, ClassOrInterfaceType, Map)} for
-   *     restrictions on it.
+   *     reads and writes it. See {@link #resolveTypeNameAsTypeElement(Elements,
+   *     ClassOrInterfaceType, Map)} for restrictions on it.
    * @return the TypeMirror for {@code type}, or null if it cannot be determined
    */
   public static @Nullable TypeMirror typeToTypeMirror(
       Elements elements, Types types, Type type, Map<String, @Nullable TypeElement> cache) {
-    return typeToTypeMirror(elements, types, type, cache, false);
-  }
-
-  /**
-   * Returns the TypeMirror for the given JavaParser type, in which each use of a type variable is
-   * replaced by the type variable's upper bound, or by that bound's leftmost bound if the upper
-   * bound is an intersection type. Returns null if the result cannot be determined, which is the
-   * case for an intersection type, a union type, {@code var}, a wildcard, a type parameter
-   * declaration, or a type that is not on the classpath.
-   *
-   * <p>The result is not the type that {@code type} names, so a client that distinguishes a type
-   * variable from its upper bound should call {@link #typeToTypeMirror} instead. Replacing a type
-   * variable by its upper bound is sound only for a client that erases the result, such as one that
-   * determines whether a type qualifier is relevant: the erasure of a type variable is the erasure
-   * of its leftmost bound.
-   *
-   * @param elements used for looking up names
-   * @param types used for creating types
-   * @param type a JavaParser type
-   * @param cache maps a name to the type it names, or to null if it names no type; this method both
-   *     reads and writes it. See {@link #resolveTypeName(Elements, ClassOrInterfaceType, Map)} for
-   *     restrictions on it.
-   * @return the TypeMirror for {@code type} with each type variable replaced by its upper bound, or
-   *     null if it cannot be determined
-   */
-  public static @Nullable TypeMirror typeToTypeMirrorOrUpperBound(
-      Elements elements, Types types, Type type, Map<String, @Nullable TypeElement> cache) {
-    return typeToTypeMirror(elements, types, type, cache, true);
-  }
-
-  /**
-   * Returns the TypeMirror for the given JavaParser type, or null if it cannot be determined.
-   *
-   * @param elements used for looking up names
-   * @param types used for creating types
-   * @param type a JavaParser type
-   * @param cache maps a name to the type it names, or to null if it names no type; this method both
-   *     reads and writes it. See {@link #resolveTypeName(Elements, ClassOrInterfaceType, Map)} for
-   *     restrictions on it.
-   * @param substituteUpperBounds if true, a use of a type variable yields the type variable's upper
-   *     bound; if false, it yields null
-   * @return the TypeMirror for {@code type}, or null if it cannot be determined
-   */
-  private static @Nullable TypeMirror typeToTypeMirror(
-      Elements elements,
-      Types types,
-      Type type,
-      Map<String, @Nullable TypeElement> cache,
-      boolean substituteUpperBounds) {
     if (type instanceof ArrayType arrayType) {
       TypeMirror componentType =
-          typeToTypeMirror(
-              elements, types, arrayType.getComponentType(), cache, substituteUpperBounds);
+          typeToTypeMirror(elements, types, arrayType.getComponentType(), cache);
       return componentType == null ? null : types.getArrayType(componentType);
     }
     if (type instanceof PrimitiveType primitiveType) {
@@ -1132,59 +1124,11 @@ public final class JavaParserUtil {
       return types.getNoType(TypeKind.VOID);
     }
     if (type instanceof ClassOrInterfaceType classType) {
-      // Resolving the name once yields both what it might name:  a type or a type variable.
-      // Looking each up separately would walk the enclosing scopes twice.
-      ResolvedName resolved = resolveName(elements, classType, cache);
-      TypeElement typeElt = resolved.typeElement();
-      if (typeElt != null) {
-        return typeElt.asType();
-      }
-      TypeParameter typeParameter = resolved.typeParameter();
-      if (typeParameter != null) {
-        // A type variable has no TypeMirror here.
-        return substituteUpperBounds
-            ? typeVariableUpperBound(elements, types, typeParameter, cache)
-            : null;
-      }
-      return null;
+      TypeElement typeElt = resolveTypeNameAsTypeElement(elements, classType, cache);
+      return typeElt == null ? null : typeElt.asType();
     }
     // An intersection type, a union type, `var`, a wildcard, a type parameter declaration, etc.
     return null;
-  }
-
-  /**
-   * Returns the TypeMirror for the given type variable's upper bound, or null if the upper bound
-   * cannot be determined.
-   *
-   * <p>When the upper bound is an intersection type, which {@code Types} cannot create, this
-   * returns the intersection type's leftmost bound, which has the same erasure as the intersection
-   * type.
-   *
-   * @param elements used for looking up names
-   * @param types used for creating types
-   * @param typeParameter the declaration of a type variable
-   * @param cache maps a name to the type it names, or to null if it names no type; this method both
-   *     reads and writes it. See {@link #resolveTypeName(Elements, ClassOrInterfaceType, Map)} for
-   *     restrictions on it.
-   * @return the TypeMirror for the upper bound of {@code typeParameter}, or that bound's leftmost
-   *     bound if it is an intersection type, or null
-   */
-  private static @Nullable TypeMirror typeVariableUpperBound(
-      Elements elements,
-      Types types,
-      TypeParameter typeParameter,
-      Map<String, @Nullable TypeElement> cache) {
-    NodeList<ClassOrInterfaceType> bounds = typeParameter.getTypeBound();
-    if (bounds.isEmpty()) {
-      // The implicit upper bound is `Object`.
-      TypeElement objectElt = getTypeElement(elements, "java.lang.Object", cache);
-      return objectElt == null ? null : objectElt.asType();
-    }
-    // If there are multiple bounds, the upper bound is an intersection type, which `Types` cannot
-    // create.  Use its leftmost bound, which has the same erasure.
-    // The bound may itself be a type variable, as in `<T extends U, U extends CharSequence>`; the
-    // recursion terminates because Java forbids a cycle among type variable bounds.
-    return typeToTypeMirror(elements, types, bounds.get(0), cache, true);
   }
 
   //
