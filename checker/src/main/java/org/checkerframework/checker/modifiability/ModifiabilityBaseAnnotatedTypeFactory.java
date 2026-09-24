@@ -322,8 +322,11 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
       refineIteratorReturnType(tree, method);
     }
 
+    // When `inferTypeArgs` is false, this is being called during type argument inference, possibly
+    // while inferring the type of the argument itself.  Refining would compute the argument's type,
+    // which would re-enter inference for the argument and recurse infinitely.
     ExecutableElement invokedMethod = TreeUtils.elementFromUse(tree);
-    if (getDeclAnnotation(invokedMethod, PreservesModifiability.class) != null) {
+    if (inferTypeArgs && getDeclAnnotation(invokedMethod, PreservesModifiability.class) != null) {
       refineReturnTypeForPreservesModifiability(tree, method);
     }
 
