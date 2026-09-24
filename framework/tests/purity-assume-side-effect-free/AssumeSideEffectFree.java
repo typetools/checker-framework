@@ -25,13 +25,13 @@ public class AssumeSideEffectFree {
 
   @Deterministic
   int deterministicCall() {
-    // :: error: [purity.not.deterministic.call]
+    // :: error: [purity.call]
     return unannotated();
   }
 
   @Pure
   int pureCall() {
-    // :: error: [purity.not.deterministic.call]
+    // :: error: [purity.call]
     return unannotated();
   }
 
@@ -48,7 +48,7 @@ public class AssumeSideEffectFree {
   /** The assumption is about the methods that a body calls, not about the body itself. */
   @SideEffectFree
   int bodyIsStillChecked() {
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     field++;
     return field;
   }
