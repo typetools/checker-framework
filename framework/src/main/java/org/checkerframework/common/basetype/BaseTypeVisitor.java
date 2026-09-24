@@ -1734,16 +1734,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     EnumSet<PurityKind> paramKinds = PurityUtils.getPurityKinds(atypeFactory, paramFunction);
     EnumSet<PurityKind> required = EnumSet.copyOf(methodKinds);
     required.removeAll(paramKinds);
-    if (paramFunction.getReturnType().getKind() == TypeKind.VOID
-        && ((applyAssumptions && assumeSideEffectFree)
-            || paramKinds.contains(PurityKind.SIDE_EFFECT_FREE)
-            || methodKinds.contains(PurityKind.SIDE_EFFECT_FREE))) {
+    if (paramFunction.getReturnType().getKind() == TypeKind.VOID) {
       // A side-effect-free method that returns no value is deterministic:  two calls return the
-      // same (absent) value.  The argument is side-effect-free either because the functional
-      // method promises it or because it is required here.  Without that guarantee the argument
-      // must still be checked for determinism, since its side effects can make a later call
-      // compute a different value.
-      required.remove(PurityKind.DETERMINISTIC);
+      // same (absent) value.  Without a guarantee that the argument is side-effect-free, the
+      // argument must still be checked for determinism, since its side effects can make a later
+      // call compute a different value.
+      if (paramKinds.contains(PurityKind.SIDE_EFFECT_FREE)
+          || methodKinds.contains(PurityKind.SIDE_EFFECT_FREE)) {
+        required.remove(PurityKind.DETERMINISTIC);
+      } else if (applyAssumptions
+          && assumeSideEffectFree
+          && required.remove(PurityKind.DETERMINISTIC)) {
+        // The assumption covers the methods that the argument calls, not the argument's own
+        // code, so check that the argument is side-effect-free instead.
+        required.add(PurityKind.SIDE_EFFECT_FREE);
+      }
     }
     return required;
   }
