@@ -5,13 +5,16 @@ import java.util.Objects;
 import java.util.TreeMap;
 import org.checkerframework.afu.scenelib.io.ASTPath;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
 
 /** A declaration, as opposed to an expression. Base class for AClass, AMethod, and AField. */
 public abstract class ADeclaration extends AElement {
   /**
    * The element's insert-annotation invocations; map key is the AST path to the insertion place.
    */
-  public final VivifyingMap<ASTPath, ATypeElement> insertAnnotations =
+  @SuppressWarnings("modifiability:assignment") // The anonymous subclass's constructor result
+  // is the top qualifier, so it does not propagate the backing map's @Modifiable type.
+  public final @Modifiable VivifyingMap<ASTPath, ATypeElement> insertAnnotations =
       new VivifyingMap<>(new TreeMap<>()) {
         @Override
         public ATypeElement createValueFor(ASTPath k) {
@@ -28,7 +31,9 @@ public abstract class ADeclaration extends AElement {
    * The element's annotated insert-typecast invocations; map key is the AST path to the insertion
    * place
    */
-  public final VivifyingMap<ASTPath, ATypeElementWithType> insertTypecasts =
+  @SuppressWarnings("modifiability:assignment") // The anonymous subclass's constructor result
+  // is the top qualifier, so it does not propagate the backing map's @Modifiable type.
+  public final @Modifiable VivifyingMap<ASTPath, ATypeElementWithType> insertTypecasts =
       new VivifyingMap<>(new TreeMap<>()) {
         @Override
         public ATypeElementWithType createValueFor(ASTPath k) {

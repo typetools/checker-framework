@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.Set;
 import org.checkerframework.afu.scenelib.io.IndexFileParser;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
 
 /**
  * An {@code AScene} (annotated scene) represents the annotations on a set of Java classes and
@@ -45,7 +46,8 @@ public class AScene implements Cloneable {
   private static boolean checkClones = true;
 
   /** This scene's annotated packages; map key is package name. */
-  public final VivifyingMap<String, AElement> packages = AElement.<String>newVivifyingLHMap_AE();
+  public final @Modifiable VivifyingMap<String, AElement> packages =
+      AElement.<String>newVivifyingLHMap_AE();
 
   /**
    * Contains for each annotation type a set of imports to be added to the source if the annotation
@@ -57,7 +59,9 @@ public class AScene implements Cloneable {
   public final Map<String, Set<String>> imports = new LinkedHashMap<>();
 
   /** This scene's annotated classes; map key is class name. */
-  public final VivifyingMap</*@BinaryName*/ String, AClass> classes =
+  @SuppressWarnings("modifiability:assignment") // The anonymous subclass's constructor result
+  // is the top qualifier, so it does not propagate the backing map's @Modifiable type.
+  public final @Modifiable VivifyingMap</*@BinaryName*/ String, AClass> classes =
       new VivifyingMap<>(new LinkedHashMap<>()) {
         @Override
         public AClass createValueFor(String k) {

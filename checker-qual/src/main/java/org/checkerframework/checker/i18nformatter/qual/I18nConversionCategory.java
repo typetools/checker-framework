@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringJoiner;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 
@@ -96,7 +97,7 @@ public enum I18nConversionCategory {
    * @param <E> the type of array and set elements
    * @return a set containing the array's elements
    */
-  private static <E> Set<E> arrayToSet(E[] a) {
+  private static <E> @Modifiable Set<E> arrayToSet(E[] a) {
     return new HashSet<>(Arrays.asList(a));
   }
 

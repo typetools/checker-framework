@@ -14,6 +14,7 @@ import org.checkerframework.afu.scenelib.type.ArrayType;
 import org.checkerframework.afu.scenelib.type.BoundedType;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
+import org.checkerframework.checker.modifiability.qual.Growable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.objectweb.asm.TypePath;
 import org.plumelib.util.StringsP;
@@ -46,7 +47,7 @@ public abstract class Insertion {
    * The package names for the annotations being inserted by this Insertion. This will be empty
    * unless {@link #getText(boolean)} is called with abbreviate=true.
    */
-  protected Set<String> packageNames;
+  protected @Growable Set<String> packageNames;
 
   /**
    * Set of annotation names that should always be inserted fully-qualified, even when {@link

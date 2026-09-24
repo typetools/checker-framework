@@ -984,6 +984,17 @@ subprojects {
         "org.checkerframework.checker.resourceleak.ResourceLeakChecker")
     rootProject.createCheckTypeTask(project.name, "Signature",
         "org.checkerframework.checker.signature.SignatureChecker")
+    rootProject.createCheckTypeTask(project.name, "Modifiability",
+        "org.checkerframework.checker.modifiability.ModifiabilityChecker",
+        [
+          // The Modifiability Checker is under development and this codebase is not yet free of
+          // its errors, so `-Awarns` downgrades them to warnings.  This means that the
+          // `checkModifiability` task always succeeds; it enforces nothing, but it does detect a
+          // crash of the checker.  Remove `-Awarns` when the codebase issues no modifiability
+          // errors.
+          "-Awarns",
+          "-Afilenames",
+        ])
 
     // The checkNullness task runs on all code, but it only *checks* the following code:
     //  * All files outside the "framework", "checker", and "annotation-file-utilities" subprojects.
@@ -1200,7 +1211,7 @@ subprojects {
     tasks.register("typecheck-part1") {
       description = "Run the Checker Framework on itself (part 1)"
       group = "Verification"
-      dependsOn("checkCompilerMessages", "checkFormatter", "checkInterning", "checkOptional")
+      dependsOn("checkCompilerMessages", "checkFormatter", "checkInterning", "checkModifiability", "checkOptional")
       // Can't run "checkPurity" because it issues too many warnings.
     }
     tasks.register("typecheck-part2") {

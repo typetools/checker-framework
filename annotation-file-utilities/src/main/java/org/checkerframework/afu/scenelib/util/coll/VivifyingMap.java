@@ -2,6 +2,8 @@ package org.checkerframework.afu.scenelib.util.coll;
 
 import java.util.Iterator;
 import java.util.Map;
+import org.checkerframework.checker.modifiability.qual.PolyModifiable;
+import org.checkerframework.checker.modifiability.qual.Shrinkable;
 
 /**
  * A {@link VivifyingMap} is a map with two additional methods:
@@ -25,7 +27,7 @@ public abstract class VivifyingMap<K, V> extends WrapperMap<K, V> {
    *
    * @param back the backing map
    */
-  public VivifyingMap(Map<K, V> back) {
+  public @PolyModifiable VivifyingMap(@PolyModifiable Map<K, V> back) {
     super(back);
   }
 
@@ -53,12 +55,17 @@ public abstract class VivifyingMap<K, V> extends WrapperMap<K, V> {
    */
   protected abstract V createValueFor(K k);
 
-  /** Prunes this map by deleting entries with empty values. */
-  public void prune() {
+  /**
+   * Prunes this map by deleting entries with empty values.
+   *
+   * <p>The receiver must be {@code @Shrinkable}, because pruning removes entries from the map.
+   */
+  @SuppressWarnings("modifiability:assignment") // entrySet() is not @IteratorPolyMod.
+  public void prune(@Shrinkable VivifyingMap<K, V> this) {
     // It would be cleaner to write
     //   for (Map.Entry<K, V> entry : entrySet()) {
     // but using an iterator affords efficient deletion.
-    for (Iterator<Map.Entry<K, V>> ei = entrySet().iterator(); ei.hasNext(); ) {
+    for (@Shrinkable Iterator<Map.Entry<K, V>> ei = entrySet().iterator(); ei.hasNext(); ) {
       V value = ei.next().getValue();
       if (value instanceof VivifyingMap<?, ?> vm) {
         vm.prune();
