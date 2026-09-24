@@ -35,14 +35,14 @@ public class PurityCheckerChecksAnnotations {
 
   /** A lambda whose body lacks the functional method's purity. */
   void lambda() {
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     SefFunc f = () -> "" + count++;
   }
 
   /** A method whose body lacks its own purity. */
   @SideEffectFree
   int assignsField() {
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     return count++;
   }
 }
