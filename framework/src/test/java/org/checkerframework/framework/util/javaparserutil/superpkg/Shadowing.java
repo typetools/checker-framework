@@ -10,5 +10,9 @@ public class Shadowing<Visible> extends Base {
   public Shadowing() {}
 
   /** Shadows the type parameter {@code Visible}, and hides {@code Base.Visible}. */
-  public static class Visible {}
+  public static class Visible {
+
+    /** A member type of a member type that shadows a type parameter. */
+    public static class Inner {}
+  }
 }

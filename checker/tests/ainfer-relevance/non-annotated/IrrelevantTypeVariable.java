@@ -26,3 +26,25 @@ class IrrelevantIntersectionTypeVariable<T extends Number & java.io.Serializable
     field = t;
   }
 }
+
+// Likewise when the upper bound is another type variable, whose upper bound is not relevant.
+class IrrelevantTypeVariableBoundedByTypeVariable<U extends Number, T extends U> {
+
+  T field;
+
+  @SuppressWarnings("anno.on.irrelevant") // intentional:  `T`'s upper bound is irrelevant
+  void assignField(@AinferSibling1 T t) {
+    field = t;
+  }
+}
+
+// Likewise when a use of the type variable is the element type of an array type.
+class IrrelevantTypeVariableArray<T extends Number> {
+
+  T[] field;
+
+  @SuppressWarnings("anno.on.irrelevant") // intentional:  `T`'s upper bound is irrelevant
+  void assignField(@AinferSibling1 T[] t) {
+    field = t;
+  }
+}
