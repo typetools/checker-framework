@@ -73,7 +73,10 @@ each such invocation is checked on its own.
 
 The body of a lambda is checked against the purity annotations on the
 functional interface method that the lambda implements, not against those on
-the method that creates the lambda.  For example:
+the method that creates the lambda.  The errors shown in this section are
+reported only when purity annotations are checked, such as with
+\<-AcheckPurityAnnotations>; they are not reported by default or by
+\<-Ainfer>.  For example:
 
 \begin{Verbatim}
   @FunctionalInterface
