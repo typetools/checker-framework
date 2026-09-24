@@ -11,6 +11,8 @@ name: CI
       - "**"
 
 # Auto-cancel any in-progress jobs from the same branch or PR.
+# A push to a branch that has a pull request triggers two runs, in different
+# groups; every job's "if:" skips the "pull_request" run (see defs.m4).
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -40,11 +42,13 @@ jobs:
       - typecheck_part2_jdk25
       - misc_jdk25
       - misc_jdk27
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
       - name: canary_jobs
         run: true
   ci_info:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25-plus:latest
@@ -77,6 +81,7 @@ jobs:
       - canary_jobs
       - junit_part1_jdk25
       - junit_part2_jdk25
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk17:latest
@@ -114,6 +119,7 @@ jobs:
       - canary_jobs
       - junit_part1_jdk25
       - junit_part2_jdk25
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk21:latest
@@ -147,6 +153,7 @@ jobs:
           ORG_GRADLE_PROJECT_jdkTestVersion: "21"
 
   junit_part1_jdk25:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
@@ -179,6 +186,7 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
   junit_part2_jdk25:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
@@ -216,6 +224,7 @@ jobs:
       - canary_jobs
       - junit_part1_jdk25
       - junit_part2_jdk25
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk27:latest
@@ -252,6 +261,7 @@ jobs:
     needs:
       - canary_jobs
       - nonjunit_jdk25
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk21:latest
@@ -284,6 +294,7 @@ jobs:
           ORG_GRADLE_PROJECT_jdkTestVersion: "21"
 
   nonjunit_jdk25:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
@@ -317,6 +328,7 @@ jobs:
 
   # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
   inference_part1_jdk25:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
@@ -349,6 +361,7 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
   inference_part2_jdk25:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
@@ -385,6 +398,7 @@ jobs:
     needs:
       - canary_jobs
       - misc_jdk25
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk21-plus:latest
@@ -417,6 +431,7 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "21"
   misc_jdk25:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25-plus:latest
@@ -449,6 +464,7 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
   misc_jdk27:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk27-plus:latest
@@ -482,6 +498,7 @@ jobs:
           ORG_GRADLE_PROJECT_jdkTestVersion: "27"
 
   typecheck_part1_jdk25:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
@@ -513,6 +530,7 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
   typecheck_part2_jdk25:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
@@ -547,6 +565,7 @@ jobs:
   daikon_part1_jdk25:
     needs:
       - canary_jobs
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
@@ -581,6 +600,7 @@ jobs:
   daikon_part2_jdk25:
     needs:
       - canary_jobs
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
@@ -615,6 +635,7 @@ jobs:
   daikon_part3_jdk25:
     needs:
       - canary_jobs
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
@@ -650,6 +671,7 @@ jobs:
   guava_part1_jdk25:
     needs:
       - canary_jobs
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
@@ -684,6 +706,7 @@ jobs:
   guava_part2_jdk25:
     needs:
       - canary_jobs
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
@@ -719,6 +742,7 @@ jobs:
   plume_lib_jdk25:
     needs:
       - canary_jobs
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
@@ -751,7 +775,11 @@ jobs:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
 
   all_green:
-    if: always()
+    # "all_green" is a required check. A job that "if:" skips reports success,
+    # so the skipped job has a different name, lest it satisfy the requirement
+    # before the other run's "all_green" finishes.
+    name: ${{ (github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository) && 'all_green' || 'all_green (skipped)' }}
+    if: always() && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository)
     needs:
       - junit_jdk17
       - junit_jdk21

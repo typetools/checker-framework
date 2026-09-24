@@ -14,6 +14,8 @@ name: CI
       - "**"
 
 # Auto-cancel any in-progress jobs from the same branch or PR.
+# A push to a branch that has a pull request triggers two runs, in different
+# groups; every job's "if:" skips the "pull_request" run (see defs.m4).
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -43,11 +45,13 @@ jobs:
       - typecheck_part2_jdk[]canary_jdk
       - misc_jdk[]canary_jdk
       - misc_jdk[]latest_jdk
+job_if()dnl
     runs-on: ubuntu-latest
     steps:
       - name: canary_jobs
         run: true
   ci_info:
+job_if()dnl
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk[]canary_jdk-plus:latest
@@ -79,7 +83,11 @@ clone_plume_scripts_step()dnl
 include([../../.azure/jobs.m4])dnl
 
   all_green:
-    if: always()
+    # "all_green" is a required check. A job that "if:" skips reports success,
+    # so the skipped job has a different name, lest it satisfy the requirement
+    # before the other run's "all_green" finishes.
+    name: ${{ (run_condition) && 'all_green' || 'all_green (skipped)' }}
+    if: always() && (run_condition)
     needs:
       - junit_jdk17
       - junit_jdk21

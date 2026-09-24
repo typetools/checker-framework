@@ -103,6 +103,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
+import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArraySet;
 import org.plumelib.util.CollectionsP;
@@ -1304,10 +1305,10 @@ public class WholeProgramInferenceJavaParserStorage
    * Returns the TypeMirror for the given JavaParser type, or null if it cannot be determined.
    *
    * <p>This differs from {@link JavaParserUtil#typeToTypeMirror} in that a use of a type variable,
-   * which has no TypeMirror here, yields the type variable's effective upper bound as computed by
-   * {@link #typeVariableUpperBound}. That is sound for deciding relevance, because {@code
-   * GenericAnnotatedTypeFactory.isRelevant} erases the type and treats a type variable as relevant
-   * exactly when its upper bound is.
+   * for which no TypeMirror can be constructed from its JavaParser declaration, yields the type
+   * variable's effective upper bound as computed by {@link #typeVariableUpperBound}. That is sound
+   * for deciding relevance, because {@code GenericAnnotatedTypeFactory.isRelevant} erases the type
+   * and treats a type variable as relevant exactly when its upper bound is.
    *
    * @param type a JavaParser type
    * @return the TypeMirror for {@code type}, or null if it cannot be determined
@@ -1321,14 +1322,14 @@ public class WholeProgramInferenceJavaParserStorage
     if (elementType instanceof ClassOrInterfaceType classType) {
       // Resolving the name once yields both what it might name:  a type or a type variable.
       // Looking each up separately would walk the enclosing scopes twice.
-      JavaParserUtil.ResolvedName resolved =
-          JavaParserUtil.resolveName(elements, classType, typeElementCache);
+      JavaParserUtil.ResolvedTypeName resolved =
+          JavaParserUtil.resolveTypeName(elements, classType, typeElementCache);
       TypeElement typeElt = resolved.typeElement();
       TypeParameter typeParameter = resolved.typeParameter();
       if (typeElt != null) {
         result = typeElt.asType();
       } else if (typeParameter != null) {
-        // A type variable has no TypeMirror here, so use its upper bound.
+        // No TypeMirror can be built from a JavaParser type parameter, so use its upper bound.
         result = typeVariableUpperBound(typeParameter);
       } else {
         return null;
@@ -1360,8 +1361,7 @@ public class WholeProgramInferenceJavaParserStorage
     NodeList<ClassOrInterfaceType> bounds = typeParameter.getTypeBound();
     if (bounds.isEmpty()) {
       // The implicit upper bound is `Object`.
-      TypeElement objectElt = elements.getTypeElement("java.lang.Object");
-      return objectElt == null ? null : objectElt.asType();
+      return TypesUtils.getObjectTypeMirror(atypeFactory.getProcessingEnv());
     }
     // If there are multiple bounds, the upper bound is an intersection type, which `Types` cannot
     // create.  Use its leftmost bound, which is its erasure; that is sufficient because the client,
