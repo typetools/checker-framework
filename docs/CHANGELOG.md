@@ -22,6 +22,10 @@ The Checker Framework runs noticeably faster, due to performance tuning.
 
 ### Changes for type system implementers
 
+`PurityChecker.checkPurity()` takes two new arguments: the method declaration
+that lexically encloses the statement being checked (or null, as for an
+arbitrary expression) and the processing environment.
+
 `JavaParserUtil`: moved `DEFAULT_LANGUAGE_LEVEL`, `parseCompilationUnit()`,
 `parseStubUnit()`, and `parseExpression()` into new class `StaticJavaParserUtil`.
 
