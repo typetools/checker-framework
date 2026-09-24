@@ -239,6 +239,14 @@ rules are used in order, until one applies.
 If the unannotated type is the type of a local variable, then the first 5 rules are skipped and only
 rules 6 and 7 apply. If rule 7 applies, it makes the type of local variables top so they can be refined.
 
+A type system designer can also register a default for a particular element
+and for the elements that it encloses, by calling
+\<QualifierDefaults.addElementDefault> (Section~\ref{creating-typesystem-defaults}).
+Such a default takes precedence over rule 6, that is, over a user-written
+\<@DefaultQualifier>, and over a default that is registered for an enclosing element.
+A default for \<OTHERWISE> applies only if no default for a more concrete location applies,
+whichever element each default is written or registered on.
+
 % (Implementation detail:  setting defaults is implemented by the
 % \refclass{framework/util}{QualifierDefaults} class.)
 
