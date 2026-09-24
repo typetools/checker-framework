@@ -83,7 +83,6 @@
       "WebSearch(*)",
       "Write(*)"
     ],
-    "deny": ["Bash(git switch)", "Bash(git switch:*)"],
     "ask": []
   },
   "agentPushNotifEnabled": true,
