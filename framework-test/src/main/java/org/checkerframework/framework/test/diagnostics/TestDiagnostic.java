@@ -2,6 +2,8 @@ package org.checkerframework.framework.test.diagnostics;
 
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * Represents an expected error/warning message in a Java test file or an error/warning reported by
@@ -44,6 +46,7 @@ public class TestDiagnostic {
    * @param isFixable true if this diagnostic should no longer be reported after whole-program
    *     inference
    */
+  @SideEffectFree
   public TestDiagnostic(
       String filename,
       long lineNumber,
@@ -63,6 +66,7 @@ public class TestDiagnostic {
     return filename;
   }
 
+  @Pure
   public long getLineNumber() {
     return lineNumber;
   }

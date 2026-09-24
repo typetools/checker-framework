@@ -1201,7 +1201,15 @@ subprojects {
       description = "Run the Checker Framework on itself (part 1)"
       group = "Verification"
       dependsOn("checkCompilerMessages", "checkFormatter", "checkInterning", "checkOptional")
-      // Can't run "checkPurity" because it issues too many warnings.
+      // The Purity Checker does not yet pass on annotation-file-utilities, checker, dataflow,
+      // or framework.  To work on one of those, run its `checkPurity` task directly, such as
+      // `./gradlew :dataflow:checkPurity`.
+      if (!(project.name.equals("annotation-file-utilities")
+          || project.name.equals("checker")
+          || project.name.equals("dataflow")
+          || project.name.equals("framework"))) {
+        dependsOn("checkPurity")
+      }
     }
     tasks.register("typecheck-part2") {
       description = "Run the Checker Framework on itself (part 2)"

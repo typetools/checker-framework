@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * SimpleOptionMap is a very basic command-line option container. The keys of the option container
@@ -147,6 +148,7 @@ public class SimpleOptionMap {
    *
    * @return a list of the string representations of the options in this object
    */
+  @SideEffectFree
   public List<String> getOptionsAsList() {
     return TestUtilities.optionMapToList(options);
   }
