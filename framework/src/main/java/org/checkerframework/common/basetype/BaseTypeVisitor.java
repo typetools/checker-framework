@@ -2769,7 +2769,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected void checkLambdaPurity(
       LambdaExpressionTree tree, AnnotatedExecutableType functionType) {
     ExecutableElement functionalMethod = functionType.getElement();
-    EnumSet<PurityKind> purityKinds = PurityUtils.getPurityKinds(atypeFactory, functionalMethod);
+    EnumSet<PurityKind> purityKinds =
+        PurityUtils.getPurityKinds(atypeFactory, functionalMethod).clone();
+    // `checkLambdaSideEffectsOnly` checks `@SideEffectsOnly`, which `PurityChecker` does not track.
+    purityKinds.remove(PurityKind.SIDE_EFFECTS_ONLY);
     // Do not report errors while inferring.  The purity annotations on `functionalMethod` may
     // have been written by inference, which has not yet taken this lambda into account; the
     // code below does that.  The annotations are checked when the inference output is
