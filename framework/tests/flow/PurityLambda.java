@@ -60,13 +60,13 @@ public class PurityLambda {
 
   @Deterministic
   Supplier<String> returnsNondeterministicLambda() {
-    // :: error: [purity.not.deterministic.object.creation]
+    // :: error: [purity.object.creation]
     return () -> new String("x");
   }
 
   @Deterministic
   Supplier<String> returnsNondeterministicLambdaWithPureBody() {
-    // :: error: [purity.not.deterministic.object.creation]
+    // :: error: [purity.object.creation]
     return () -> "x";
   }
 
@@ -91,19 +91,19 @@ public class PurityLambda {
 
   @Deterministic
   Supplier<String> returnsBoundMethodRef() {
-    // :: error: [purity.not.deterministic.object.creation]
+    // :: error: [purity.object.creation]
     return this::impureString;
   }
 
   @Deterministic
   Supplier<String> returnsUnboundMethodRef() {
-    // :: error: [purity.not.deterministic.object.creation]
+    // :: error: [purity.object.creation]
     return PurityLambda::staticString;
   }
 
   @Deterministic
   Supplier<String> returnsConstructorRef() {
-    // :: error: [purity.not.deterministic.object.creation]
+    // :: error: [purity.object.creation]
     return String::new;
   }
 
@@ -118,7 +118,7 @@ public class PurityLambda {
 
   @SideEffectFree
   Supplier<String> effectInMethodRefQualifier() {
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     return impureSelf()::pureString;
   }
 
@@ -128,7 +128,7 @@ public class PurityLambda {
 
   @SideEffectFree
   Runnable anonymousClass() {
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     return new Runnable() {
       @Override
       public void run() {
@@ -144,7 +144,7 @@ public class PurityLambda {
         count++;
       }
     }
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     return new Local();
   }
 
@@ -158,11 +158,11 @@ public class PurityLambda {
       @SideEffectFree
       Local() {}
 
-      // :: error: [purity.not.sideeffectfree.assign.field]
+      // :: error: [purity.assign.field]
       int x = count++;
 
       {
-        // :: error: [purity.not.sideeffectfree.assign.field]
+        // :: error: [purity.assign.field]
         count++;
       }
     }
@@ -182,7 +182,7 @@ public class PurityLambda {
         y = 1;
       }
     }
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     return new Local();
   }
 
@@ -191,28 +191,28 @@ public class PurityLambda {
   @SideEffectFree
   String createsAndInvokes() {
     Runnable r = () -> count++;
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     r.run();
     return "";
   }
 
   @SideEffectFree
   String passesImpureLambda() {
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     takesRunnable(() -> count++);
     return "";
   }
 
   @SideEffectFree
   Runnable effectOutsideLambda() {
-    // :: error: [purity.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     count++;
     return () -> {};
   }
 
   @SideEffectFree
   Supplier<String> effectInCapturedExpression() {
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     String captured = impureString();
     return () -> captured;
   }

@@ -9,7 +9,7 @@ public class ConflictingAnnotations {
   @SideEffectFree
   // :: error: (purity.annotation.conflict)
   void test1(Collection<Integer> first) {
-    // :: error: (purity.not.sideeffectfree.call)
+    // :: error: (purity.call)
     first.add(1);
   }
 
