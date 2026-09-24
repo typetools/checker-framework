@@ -30,7 +30,7 @@ public class UnneededSuppressionsIndexTest {
     @NonNegative int x = -1;
   }
 
-  @SuppressWarnings("purity.not.deterministic.call")
+  @SuppressWarnings("purity.call")
   void method5() {}
 
   @SuppressWarnings("purity")
@@ -39,6 +39,6 @@ public class UnneededSuppressionsIndexTest {
   @SuppressWarnings("index:foo.bar.baz")
   void method7() {}
 
-  @SuppressWarnings("allcheckers:purity.not.deterministic.call")
+  @SuppressWarnings("allcheckers:purity.call")
   void method8() {}
 }
