@@ -6,7 +6,7 @@ define([dependsOn], [needs])dnl
 dnl
 define([job_name], [$1:])dnl
 dnl
-ifelse([A push to a branch of this repository that has an open pull request
+ifelse([A push to a branch *of this repository* that has an open pull request
 triggers both a "push" run and a "pull_request" run. The two runs are in
 different concurrency groups, so neither cancels the other. Each job runs only
 in the "push" run and in a "pull_request" run for a pull request from a fork.
