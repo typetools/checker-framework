@@ -1346,8 +1346,10 @@ public class QualifierDefaults {
           applyDefault(def);
         }
       } else if (precedenceList.singlePassSafe) {
-        this.defaults = precedenceList.defaults;
-        impl.visit(type, null);
+        if (precedenceList.defaults.length != 0) {
+          this.defaults = precedenceList.defaults;
+          impl.visit(type, null);
+        }
       } else {
         for (Default def : precedenceList.defaults) {
           applyDefault(def);
