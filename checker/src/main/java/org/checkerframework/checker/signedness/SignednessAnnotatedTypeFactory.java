@@ -160,7 +160,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * Refines an integer expression to @SignedPositive if its value is within the signed positive
-   * range (i.e. its MSB is zero). Does not refine the type of cast expressions.
+   * range (i.e. its MSB is zero). Does not refine the type of cast expressions, nor a type whose
+   * signedness qualifier is not a supertype of @SignedPositive, such as @PolySigned.
    *
    * @param tree an AST node, whose type may be refined
    * @param type the type of the tree
@@ -181,13 +182,23 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         || javaTypeKind == TypeKind.LONG)) {
       return;
     }
+    // Refining a @PolySigned type to @SignedPositive would lose the polymorphism, because
+    // @SignedPositive is not a subtype of @PolySigned.
+    AnnotationMirror signednessAnno = type.getPrimaryAnnotationInHierarchy(SIGNED);
+    if (signednessAnno != null
+        && !qualHierarchy.isSubtypeQualifiersOnly(SIGNED_POSITIVE, signednessAnno)) {
+      return;
+    }
     ValueAnnotatedTypeFactory valueFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
     AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
     // These annotations are trusted rather than checked.  Maybe have an option to
-    // disable using them?
-    if ((valueATM.hasPrimaryAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
-            || valueATM.hasPrimaryAnnotation(INT_RANGE_FROM_POSITIVE))
-        && type.hasPrimaryAnnotation(SIGNED)) {
+    // disable using them?  A value that satisfies them has its most significant bit clear, whether
+    // its type is @Signed or @Unsigned.  The Value Checker's dataflow analysis converts them to
+    // @IntRange, so this test matters only for trees that have no dataflow value.  A char is
+    // always non-negative, so for a char these annotations do not imply that bit 7 is clear.
+    if (javaTypeKind != TypeKind.CHAR
+        && (valueATM.hasPrimaryAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
+            || valueATM.hasPrimaryAnnotation(INT_RANGE_FROM_POSITIVE))) {
       type.replaceAnnotation(SIGNED_POSITIVE);
     } else {
       Range treeRange = ValueCheckerUtils.getPossibleValues(valueATM, valueFactory);

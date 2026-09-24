@@ -83,6 +83,17 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
     return keyForMaps;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>{@link #equals} does not account for {@link #keyForMaps}, which {@link #upperBound}
+   * intersects.
+   */
+  @Override
+  protected boolean upperBoundOfEqualValuesIsThis() {
+    return keyForMaps == null;
+  }
+
   @Override
   protected KeyForValue upperBound(
       @Nullable KeyForValue other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {
