@@ -1131,6 +1131,89 @@ public final class JavaParserUtil {
     return null;
   }
 
+  /**
+   * Returns the TypeMirror for the given JavaParser type, except that a use of a type variable
+   * yields the TypeMirror for the type variable's upper bound. For example, given the declaration
+   * {@code class C<T extends Number>}, this method returns {@code java.lang.Number} for the type
+   * {@code T} and {@code java.lang.Number[]} for the type {@code T[]}.
+   *
+   * <p>The upper bound stands in for the type variable itself, which has no TypeMirror here,
+   * because a type variable has no {@code TypeElement} that {@code Elements} can look up. A caller
+   * that must distinguish a type variable from its bound should call {@link
+   * #resolveTypeNameAsTypeParameter(Elements, ClassOrInterfaceType, Map)}.
+   *
+   * <p>When a type variable's upper bound is an intersection type, which {@code Types} cannot
+   * create, this yields the intersection type's erasure -- that is, its leftmost bound.
+   *
+   * <p>Returns null if the TypeMirror cannot be determined, for the same types for which {@link
+   * #typeToTypeMirror(Elements, Types, Type, Map)} returns null.
+   *
+   * @param elements used for looking up names
+   * @param types used for creating types
+   * @param type a JavaParser type
+   * @param cache maps a name to the type it names, or to null if it names no type; this method both
+   *     reads and writes it. See {@link #resolveTypeName(Elements, ClassOrInterfaceType, Map)} for
+   *     restrictions on it.
+   * @return the TypeMirror for {@code type}, with a type variable replaced by its upper bound, or
+   *     null if it cannot be determined
+   */
+  public static @Nullable TypeMirror typeToTypeMirrorErasingTypeVariables(
+      Elements elements, Types types, Type type, Map<String, @Nullable TypeElement> cache) {
+    if (type instanceof ArrayType arrayType) {
+      TypeMirror componentType =
+          typeToTypeMirrorErasingTypeVariables(
+              elements, types, arrayType.getComponentType(), cache);
+      return componentType == null ? null : types.getArrayType(componentType);
+    }
+    if (type instanceof ClassOrInterfaceType classType) {
+      ResolvedTypeName resolved = resolveTypeName(elements, classType, cache);
+      TypeElement typeElt = resolved.typeElement();
+      if (typeElt != null) {
+        return typeElt.asType();
+      }
+      TypeParameter typeParameter = resolved.typeParameter();
+      if (typeParameter == null) {
+        return null;
+      }
+      return typeVariableUpperBound(elements, types, typeParameter, cache);
+    }
+    return typeToTypeMirror(elements, types, type, cache);
+  }
+
+  /**
+   * Returns the TypeMirror for the upper bound of the given type variable declaration, or null if
+   * the upper bound cannot be determined.
+   *
+   * <p>When the upper bound is an intersection type, which {@code Types} cannot create, this
+   * returns the intersection type's erasure -- that is, its leftmost bound.
+   *
+   * @param elements used for looking up names
+   * @param types used for creating types
+   * @param typeParameter the declaration of a type variable
+   * @param cache maps a name to the type it names, or to null if it names no type; this method both
+   *     reads and writes it
+   * @return the TypeMirror for the upper bound of {@code typeParameter}, erased if that bound is an
+   *     intersection type, or null
+   */
+  private static @Nullable TypeMirror typeVariableUpperBound(
+      Elements elements,
+      Types types,
+      TypeParameter typeParameter,
+      Map<String, @Nullable TypeElement> cache) {
+    List<ClassOrInterfaceType> bounds = typeParameter.getTypeBound();
+    if (bounds.isEmpty()) {
+      // The implicit upper bound is `Object`.
+      TypeElement objectElt = elements.getTypeElement("java.lang.Object");
+      return objectElt == null ? null : objectElt.asType();
+    }
+    // If there are multiple bounds, the upper bound is an intersection type, which `Types` cannot
+    // create.  Use its leftmost bound, which is its erasure; that is sufficient for the clients of
+    // this method, which erase the type anyway.
+    // The bound may itself be a type variable, as in `<T extends U, U extends CharSequence>`; the
+    // recursion terminates because Java forbids a cycle among type variable bounds.
+    return typeToTypeMirrorErasingTypeVariables(elements, types, bounds.get(0), cache);
+  }
+
   //
   // Perform side effects
   //
