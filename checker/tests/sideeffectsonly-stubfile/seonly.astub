@@ -1,0 +1,23 @@
+import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
+
+package sideeffectsonly.stubfile;
+
+class Library {
+    // `Library.java` declares this method `@SideEffectsOnly("this")`.  Writing both annotations
+    // on one declaration is a conflict, whichever of the two comes from an annotation file.
+    @SideEffectFree void conflictsWithStub();
+
+    // `noSuchField` does not exist, so this expression cannot be parsed.  Because `Library` is
+    // not compiled from source, the annotation is never checked at its declaration; the error
+    // surfaces only at a call site.
+    @SideEffectsOnly("this.noSuchField") void unparseable();
+
+    @SideEffectsOnly("this") void parseable();
+}
+
+interface Callback {
+    // `noSuchField` does not exist here either.  A lambda that implements this method must fail
+    // closed at the lambda, rather than leave the lambda's body unchecked.
+    @SideEffectsOnly("this.noSuchField") void run();
+}

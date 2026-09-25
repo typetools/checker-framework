@@ -35,8 +35,8 @@ public class JavaParserUtilTest {
   public JavaParserUtilTest() {}
 
   /**
-   * Tests that {@link JavaParserUtil#resolveTypeName} resolves the simple name of an inherited
-   * member type only when the subtype really inherits it.
+   * Tests that {@link JavaParserUtil#resolveTypeNameAsTypeElement} resolves the simple name of an
+   * inherited member type only when the subtype really inherits it.
    */
   @Test
   public void testResolveInheritedMemberType() {
@@ -161,8 +161,8 @@ public class JavaParserUtilTest {
   }
 
   /**
-   * Tests that {@link JavaParserUtil#resolveTypeVariableName} resolves a name to a type variable
-   * exactly when no type declaration shadows the type variable.
+   * Tests that {@link JavaParserUtil#resolveTypeNameAsTypeParameter} resolves a name to a type
+   * variable exactly when no type declaration shadows the type variable.
    */
   @Test
   public void testResolveTypeVariableName() {
@@ -183,9 +183,18 @@ public class JavaParserUtilTest {
     // A member type that the class declares shadows a type parameter of the same name, so the name
     // names the member type rather than the type variable.
     String shadowing =
-        "class Shadowing<Visible> extends Base { public static class Visible {} Visible f; }";
+        "class Shadowing<Visible> extends Base {"
+            + " public static class Visible { public static class Inner {} }"
+            + " Visible f; Visible.Inner g; Visible.OnlyInBase h; }";
     assertNamesTypeVariable(null, SUPERPKG, shadowing, "Visible");
     assertResolvesTo(SUPERPKG + ".Shadowing.Visible", SUPERPKG, shadowing, "Visible");
+    // A name with more components is resolved within the member type.
+    assertNamesTypeVariable(null, SUPERPKG, shadowing, "Visible.Inner");
+    assertResolvesTo(SUPERPKG + ".Shadowing.Visible.Inner", SUPERPKG, shadowing, "Visible.Inner");
+    // If the member type has no such member, then the name names nothing, even though the hidden
+    // `Base.Visible` has such a member.
+    assertNamesTypeVariable(null, SUPERPKG, shadowing, "Visible.OnlyInBase");
+    assertResolvesTo(null, SUPERPKG, shadowing, "Visible.OnlyInBase");
 
     // A member type that the class only inherits does not shadow a type parameter of the same
     // name, so the name names the type variable.
@@ -200,19 +209,27 @@ public class JavaParserUtilTest {
         "class SamePackageSub<T extends CharSequence> { void m() { class T {} T f; } }",
         "T");
 
+    // A member type that a local class declares shadows a type parameter of the local class.  The
+    // member type has no name that `Elements` can look up, so the name resolves to nothing.
+    String localShadowing =
+        "class SamePackageSub { void m() { class Local<T> { class T {} T f; } } }";
+    assertNamesTypeVariable(null, SUPERPKG, localShadowing, "T");
+    assertResolvesTo(null, SUPERPKG, localShadowing, "T");
+
     // A name that names no type variable.
     assertNamesTypeVariable(
         null, SUPERPKG, "class SamePackageSub extends Base { Visible f; }", "Visible");
 
-    // A type variable has no member types, so a name with several components, whose first
-    // component names a type variable, names nothing at all.
-    assertNamesTypeVariable(
-        null, SUPERPKG, "class SamePackageSub<T extends CharSequence> { T.Inner f; }", "T.Inner");
+    // A type variable has no member types, so a name whose first component names a type variable
+    // and that has more components, as in `T.Inner`, names nothing at all.
+    String memberOfTypeVariable = "class SamePackageSub<T extends CharSequence> { T.Inner f; }";
+    assertNamesTypeVariable(null, SUPERPKG, memberOfTypeVariable, "T.Inner");
+    assertResolvesTo(null, SUPERPKG, memberOfTypeVariable, "T.Inner");
   }
 
   /**
-   * Asserts that {@link JavaParserUtil#resolveTypeName} resolves {@code typeName}, as written in
-   * the given compilation unit, to a type element with the given fully-qualified name.
+   * Asserts that {@link JavaParserUtil#resolveTypeNameAsTypeElement} resolves {@code typeName}, as
+   * written in the given compilation unit, to a type element with the given fully-qualified name.
    *
    * @param expected the expected fully-qualified name, or null if the name should not resolve
    * @param packageName the package of the compilation unit
@@ -225,15 +242,15 @@ public class JavaParserUtilTest {
     String source = "package " + packageName + "; " + typeDeclaration;
     ClassOrInterfaceType type = findType(source, typeName);
 
-    TypeElement resolved = JavaParserUtil.resolveTypeName(elements, type);
+    TypeElement resolved = JavaParserUtil.resolveTypeNameAsTypeElement(elements, type);
     String resolvedName = resolved == null ? null : resolved.getQualifiedName().toString();
     Assert.assertEquals(source, expected, resolvedName);
   }
 
   /**
-   * Asserts that {@link JavaParserUtil#resolveTypeVariableName} resolves {@code typeName}, as
-   * written in the given compilation unit, to the declaration of a type variable that is written as
-   * {@code expected}.
+   * Asserts that {@link JavaParserUtil#resolveTypeNameAsTypeParameter} resolves {@code typeName},
+   * as written in the given compilation unit, to the declaration of a type variable that is written
+   * as {@code expected}.
    *
    * @param expected the expected type parameter declaration, such as {@code "T extends
    *     CharSequence"}, or null if the name should not name a type variable
@@ -247,7 +264,7 @@ public class JavaParserUtilTest {
     String source = "package " + packageName + "; " + typeDeclaration;
     ClassOrInterfaceType type = findType(source, typeName);
 
-    TypeParameter resolved = JavaParserUtil.resolveTypeVariableName(elements, type);
+    TypeParameter resolved = JavaParserUtil.resolveTypeNameAsTypeParameter(elements, type);
     String resolvedName = resolved == null ? null : resolved.toString();
     Assert.assertEquals(source, expected, resolvedName);
   }

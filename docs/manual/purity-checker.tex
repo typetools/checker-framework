@@ -11,6 +11,8 @@ You do not need to run the Purity Checker directly.
 However, you may run just the Purity Checker by
 supplying the following command-line option to javac:
 \code{-processor org.checkerframework.framework.util.PurityChecker}.
+That implies \<-AcheckPurityAnnotations>, so you do not need to supply
+both options.
 
 The Checker Framework can infer purity annotations.
 If you supply the command-line option \<-AsuggestPureMethods>, then the
@@ -61,9 +63,11 @@ or
 by writing \refqualclass{dataflow/qual}{Deterministic} on the
 declaration of a method that is not deterministic.
 
-To enable
-checking of the annotations, supply the command-line option
-\<-AcheckPurityAnnotations>.  It is not enabled by default because of a high false
+When you run the Purity Checker directly, it checks the annotations.
+To enable checking of the annotations when running any other checker,
+supply the command-line option \<-AcheckPurityAnnotations>.
+For checkers other than the Purity Checker, it is not enabled by default
+because of a high false
 positive rate.  In the future, after a new purity-checking analysis is
 implemented, the Checker Framework will default to checking purity
 annotations.
@@ -95,7 +99,7 @@ as \<@Pure> and its body is checked accordingly:
 
 \begin{mysmall}
 \begin{Verbatim}
-MyClass.java:1465: error: [purity.not.deterministic.not.sideeffectfree.assign.field] field assignment not allowed in deterministic side-effect-free method
+MyClass.java:1465: error: [purity.assign.field] field assignment not allowed in deterministic side-effect-free method
     this.hash = h;
         ^
 \end{Verbatim}

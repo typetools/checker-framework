@@ -28,3 +28,27 @@ class IrrelevantIntersectionTypeVariable<T extends Number & java.io.Serializable
         field = t;
     }
 }
+
+// Likewise when the upper bound is another type variable, whose upper bound is not relevant.
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
+class IrrelevantTypeVariableBoundedByTypeVariable<U extends Number, T extends U> {
+
+    T field;
+
+    @org.checkerframework.dataflow.qual.Impure
+    void assignField(T t) {
+        field = t;
+    }
+}
+
+// Likewise when a use of the type variable is the element type of an array type.
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
+class IrrelevantTypeVariableArray<T extends Number> {
+
+    T[] field;
+
+    @org.checkerframework.dataflow.qual.Impure
+    void assignField(T[] t) {
+        field = t;
+    }
+}

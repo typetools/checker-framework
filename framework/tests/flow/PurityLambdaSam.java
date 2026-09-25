@@ -59,27 +59,27 @@ public class PurityLambdaSam {
   void sideEffectFree(int[] array, Runnable runnable) {
     SefFunc assignField =
         () -> {
-          // :: error: [purity.not.sideeffectfree.assign.field]
+          // :: error: [purity.assign.field]
           count++;
           return "";
         };
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     SefFunc call = () -> impure();
     SefFunc objectCreation =
         () -> {
-          // :: error: [purity.not.sideeffectfree.call]
+          // :: error: [purity.call]
           new NotSideEffectFreeCtor();
           return "";
         };
     SefFunc assignArray =
         () -> {
-          // :: error: [purity.not.sideeffectfree.assign.array]
+          // :: error: [purity.assign.array]
           array[0] = 1;
           return "";
         };
     SefFunc callImpureFunctionalMethod =
         () -> {
-          // :: error: [purity.not.sideeffectfree.call]
+          // :: error: [purity.call]
           runnable.run();
           return "";
         };
@@ -94,14 +94,14 @@ public class PurityLambdaSam {
   void otherLambdaPositions() {
     takesSefFunc(
         () -> {
-          // :: error: [purity.not.sideeffectfree.assign.field]
+          // :: error: [purity.assign.field]
           count++;
           return "";
         });
     Object cast =
         (SefFunc)
             () -> {
-              // :: error: [purity.not.sideeffectfree.assign.field]
+              // :: error: [purity.assign.field]
               count++;
               return "";
             };
@@ -109,7 +109,7 @@ public class PurityLambdaSam {
 
   SefFunc returnsLambda() {
     return () -> {
-      // :: error: [purity.not.sideeffectfree.assign.field]
+      // :: error: [purity.assign.field]
       count++;
       return "";
     };
@@ -121,7 +121,7 @@ public class PurityLambdaSam {
         () -> {
           SefFunc inner =
               () -> {
-                // :: error: [purity.not.sideeffectfree.assign.field]
+                // :: error: [purity.assign.field]
                 count++;
                 return "";
               };
@@ -131,7 +131,7 @@ public class PurityLambdaSam {
         () -> {
           SefFunc constrainedInner =
               () -> {
-                // :: error: [purity.not.sideeffectfree.assign.field]
+                // :: error: [purity.assign.field]
                 count++;
                 return "";
               };
@@ -142,25 +142,25 @@ public class PurityLambdaSam {
   // @Deterministic and @Pure functional methods, which constrain different things.
 
   void deterministic() {
-    // :: error: [purity.not.deterministic.object.creation]
+    // :: error: [purity.object.creation]
     DetFunc objectCreation = () -> new String("x");
     DetFunc catchBlock =
         () -> {
           try {
             return "";
-            // :: error: [purity.not.deterministic.catch]
+            // :: error: [purity.catch]
           } catch (RuntimeException e) {
             return "e";
           }
         };
     // A @SideEffectFree but non-@Deterministic callee is fine for SefFunc and not for DetFunc.
     SefFunc okHere = () -> sefNotDeterministic();
-    // :: error: [purity.not.deterministic.call]
+    // :: error: [purity.call]
     DetFunc notOkHere = () -> sefNotDeterministic();
     // A field assignment breaks both kinds, so it is reported here too.
     DetFunc assignField =
         () -> {
-          // :: error: [purity.not.deterministic.assign.field]
+          // :: error: [purity.assign.field]
           count++;
           return "";
         };
@@ -169,9 +169,9 @@ public class PurityLambdaSam {
   void pureFunctionalMethod() {
     PureFunc both =
         () -> {
-          // :: error: [purity.not.deterministic.not.sideeffectfree.assign.field]
+          // :: error: [purity.assign.field]
           count++;
-          // :: error: [purity.not.deterministic.object.creation]
+          // :: error: [purity.object.creation]
           return new String("x");
         };
     PureFunc ok = () -> pure();
@@ -188,7 +188,7 @@ public class PurityLambdaSam {
       field = 1;
       f =
           () -> {
-            // :: error: [purity.not.sideeffectfree.assign.field]
+            // :: error: [purity.assign.field]
             field = 2;
             return "";
           };
