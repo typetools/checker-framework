@@ -3,12 +3,15 @@ package org.checkerframework.framework.util.typeinference8.types;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Type;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
@@ -29,6 +32,27 @@ public class ProperType extends AbstractType {
 
   /** A mapping from polymorphic annotation to {@link QualifierVar}. */
   private final AnnotationMirrorMap<QualifierVar> qualifierVars;
+
+  /**
+   * The type that this type was made from by substituting instantiations, if at least one of them
+   * was weak (see {@link VariableBounds#isWeakInstantiation}); otherwise, null.
+   *
+   * <p>A position where a weak instantiation was substituted has arbitrary annotations, but {@link
+   * #type} cannot record which positions those are. The origin can: it still has a use of the
+   * variable at each such position. So this type computes its type arguments and its other parts
+   * from its origin (see {@link #fromOrigin(AbstractType)}), and a part at such a position ignores
+   * annotations, as {@link UseOfVariable#applyInstantiations} makes it. And when the variable's
+   * instantiation changes, as it does when a weak one is replaced, {@link #applyInstantiations}
+   * substitutes the new one.
+   */
+  private final @Nullable InferenceType origin;
+
+  /**
+   * If {@link #origin} is non-null, the value of {@link #instantiationStamp} for it when this type
+   * was last found to be up to date; otherwise, 0. It is not part of this type's value: it only
+   * saves {@link #applyInstantiations} from substituting again when nothing has changed.
+   */
+  private long originStamp;
 
   /**
    * Creates a proper type.
@@ -65,9 +89,30 @@ public class ProperType extends AbstractType {
       AnnotationMirrorMap<QualifierVar> qualifierVars,
       Java8InferenceContext context,
       boolean ignoreAnnotations) {
+    this(type, qualifierVars, context, ignoreAnnotations, null);
+  }
+
+  /**
+   * Creates a proper type.
+   *
+   * @param type the annotated type
+   * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
+   * @param context the context
+   * @param ignoreAnnotations true if the annotations on this type should be ignored
+   * @param origin the type that {@code type} was made from by substituting instantiations, at least
+   *     one of which is weak, or null; see {@link #origin}
+   */
+  ProperType(
+      AnnotatedTypeMirror type,
+      AnnotationMirrorMap<QualifierVar> qualifierVars,
+      Java8InferenceContext context,
+      boolean ignoreAnnotations,
+      @Nullable InferenceType origin) {
     super(context, ignoreAnnotations);
     this.type = type;
     this.qualifierVars = qualifierVars;
+    this.origin = origin;
+    this.originStamp = origin == null ? 0 : instantiationStamp(origin);
     verifyType();
   }
 
@@ -81,6 +126,8 @@ public class ProperType extends AbstractType {
     super(context, false);
     this.type = context.typeFactory.getAnnotatedType(tree);
     this.qualifierVars = AnnotationMirrorMap.emptyMap();
+    this.origin = null;
+    this.originStamp = 0;
     verifyType();
   }
 
@@ -94,7 +141,162 @@ public class ProperType extends AbstractType {
     super(context, false);
     this.type = context.typeFactory.getAnnotatedType(varTree);
     this.qualifierVars = AnnotationMirrorMap.emptyMap();
+    this.origin = null;
+    this.originStamp = 0;
     verifyType();
+  }
+
+  /**
+   * Returns a number that changes whenever the instantiation of a variable that {@code type}
+   * mentions changes.
+   *
+   * @param type a type
+   * @return a number that changes whenever the instantiation of a variable that {@code type}
+   *     mentions changes
+   */
+  private static long instantiationStamp(AbstractType type) {
+    long stamp = 0;
+    for (Variable variable : type.getInferenceVariables()) {
+      stamp += variable.getBounds().getInstantiationChanges();
+    }
+    return stamp;
+  }
+
+  /**
+   * Returns {@code derived}, a part of {@link #origin}, with instantiations applied, or null if
+   * that is not a proper type. A caller then computes the part from {@link #type} instead, as
+   * though this type had no origin.
+   *
+   * @param derived a part of {@link #origin}, or null
+   * @return {@code derived} with instantiations applied, or null
+   */
+  private @Nullable AbstractType fromOrigin(@Nullable AbstractType derived) {
+    if (derived == null) {
+      return null;
+    }
+    AbstractType result = derived.applyInstantiations();
+    return result.isProper() ? result : null;
+  }
+
+  /**
+   * Returns {@code derived}, parts of {@link #origin}, with instantiations applied, or null if any
+   * of them is not then a proper type; see {@link #fromOrigin(AbstractType)}.
+   *
+   * @param derived parts of {@link #origin}, or null
+   * @return {@code derived} with instantiations applied, or null
+   */
+  private @Nullable List<AbstractType> fromOrigin(@Nullable List<AbstractType> derived) {
+    if (derived == null) {
+      return null;
+    }
+    List<AbstractType> result = new ArrayList<>(derived.size());
+    for (AbstractType t : derived) {
+      AbstractType r = fromOrigin(t);
+      if (r == null) {
+        return null;
+      }
+      result.add(r);
+    }
+    return result;
+  }
+
+  @Override
+  public @Nullable List<AbstractType> getTypeArguments() {
+    if (origin != null) {
+      List<AbstractType> result = fromOrigin(origin.getTypeArguments());
+      if (result != null) {
+        return result;
+      }
+    }
+    return super.getTypeArguments();
+  }
+
+  @Override
+  public @Nullable AbstractType getEnclosingType() {
+    if (origin != null) {
+      AbstractType result = fromOrigin(origin.getEnclosingType());
+      if (result != null) {
+        return result;
+      }
+    }
+    return super.getEnclosingType();
+  }
+
+  @Override
+  public @Nullable AbstractType getComponentType() {
+    if (origin != null) {
+      AbstractType result = fromOrigin(origin.getComponentType());
+      if (result != null) {
+        return result;
+      }
+    }
+    return super.getComponentType();
+  }
+
+  @Override
+  public @Nullable AbstractType asSuper(TypeMirror superType) {
+    if (origin != null) {
+      AbstractType result = fromOrigin(origin.asSuper(superType));
+      if (result != null) {
+        return result;
+      }
+    }
+    return super.asSuper(superType);
+  }
+
+  @Override
+  public @Nullable List<AbstractType> getFunctionTypeParameterTypes() {
+    if (origin != null) {
+      List<AbstractType> result = fromOrigin(origin.getFunctionTypeParameterTypes());
+      if (result != null) {
+        return result;
+      }
+    }
+    return super.getFunctionTypeParameterTypes();
+  }
+
+  @Override
+  public @Nullable AbstractType getFunctionTypeReturnType() {
+    if (origin != null) {
+      AbstractType result = fromOrigin(origin.getFunctionTypeReturnType());
+      if (result != null) {
+        return result;
+      }
+    }
+    return super.getFunctionTypeReturnType();
+  }
+
+  @Override
+  public @Nullable AbstractType getWildcardLowerBound() {
+    if (origin != null) {
+      AbstractType result = fromOrigin(origin.getWildcardLowerBound());
+      if (result != null) {
+        return result;
+      }
+    }
+    return super.getWildcardLowerBound();
+  }
+
+  @Override
+  public @Nullable AbstractType getWildcardUpperBound() {
+    if (origin != null) {
+      AbstractType result = fromOrigin(origin.getWildcardUpperBound());
+      if (result != null) {
+        return result;
+      }
+    }
+    return super.getWildcardUpperBound();
+  }
+
+  @Override
+  public List<AbstractType> getIntersectionBounds() {
+    if (origin != null) {
+      List<AbstractType> result = fromOrigin(origin.getIntersectionBounds());
+      if (result != null) {
+        return result;
+      }
+    }
+    return super.getIntersectionBounds();
   }
 
   /** Asserts that this type is not void, which a proper type cannot represent. */
@@ -199,8 +401,9 @@ public class ProperType extends AbstractType {
 
   /**
    * Checks whether the annotations of {@code this} are the same as those of {@code other}, assuming
-   * that their underlying Java types have already been found to be the same. If either type is
-   * marked as having annotations that should be ignored, then the annotations are not compared.
+   * that their underlying Java types have already been found to be the same. The annotations of a
+   * position that ignores annotations are not compared; see {@link
+   * IgnoredAnnotations#replaceIgnoredForEquality}.
    *
    * <p>Neither type may be an uncaptured wildcard: the type hierarchy compares a wildcard's {@code
    * extends} bound against the other type, which for a lower-bounded wildcard is not the bound that
@@ -216,16 +419,16 @@ public class ProperType extends AbstractType {
    * argument, or one in another qualifier hierarchy, is still reported.
    *
    * @param other the type to compare against
-   * @return {@link ConstraintSet#TRUE} if the annotations are ignored or if the annotations of
-   *     {@code this} are the same as those of {@code other}; otherwise {@link
+   * @return {@link ConstraintSet#TRUE} if the annotations of {@code this} are the same as those of
+   *     {@code other}, apart from those that are ignored; otherwise {@link
    *     ConstraintSet#TRUE_ANNO_FAIL}
    */
   public ConstraintSet checkAnnotationEquality(ProperType other) {
-    if (ignoreAnnotations || other.ignoreAnnotations) {
-      return ConstraintSet.TRUE;
-    }
-    AnnotatedTypeMirror thisATM = getAnnotatedType();
-    AnnotatedTypeMirror otherATM = other.getAnnotatedType();
+    ReplacedTypes compared =
+        IgnoredAnnotations.replaceIgnoredForEquality(
+            this, other, typeFactory.getQualifierHierarchy());
+    AnnotatedTypeMirror thisATM = compared.type1();
+    AnnotatedTypeMirror otherATM = compared.type2();
     // Compare using the type hierarchy in both directions rather than AnnotatedTypeMirror#equals,
     // which requires the underlying types to be the same object.
     if (typeFactory.getTypeHierarchy().isSubtype(thisATM, otherATM)
@@ -259,6 +462,11 @@ public class ProperType extends AbstractType {
     }
     // Two types with different qualifierVars have different qualifiers, as getQualifiers() shows.
     if (!qualifierVars.equals(that.qualifierVars)) {
+      return false;
+    }
+    // A type with an origin has positions whose annotations are ignored, so it is not
+    // interchangeable with one that has the same annotations and no origin.
+    if ((origin == null) != (that.origin == null)) {
       return false;
     }
 
@@ -298,9 +506,74 @@ public class ProperType extends AbstractType {
     return Collections.emptyList();
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>A proper type has no inference variables, so this returns this type, unless it has an {@link
+   * #origin} and the instantiation of a variable that the origin mentions has changed since this
+   * type was made. Then it returns the origin with the current instantiations applied.
+   */
   @Override
   public AbstractType applyInstantiations() {
-    return this;
+    if (origin == null || instantiationStamp(origin) == originStamp) {
+      return this;
+    }
+    AbstractType result = origin.applyInstantiations();
+    if (!result.isProper()) {
+      return this;
+    }
+    ProperType properResult = (ProperType) result;
+    // `origin` has no weak instantiation at its root, so the root annotations of this type are
+    // still right, and they may differ from those of `origin` if resolution set them; see
+    // Resolution#lubOfLowerBounds.  `result` is a new type, so its annotated type may be mutated.
+    AnnotatedTypeMirror resultATM = properResult.getAnnotatedType();
+    resultATM.replaceAnnotations(type.getPrimaryAnnotations());
+    if (properResult.origin != null && isSameAnnotatedType(resultATM, type)) {
+      // Nothing that this type depends on has changed.  Returning this type, rather than an
+      // equal new one, tells the caller so; otherwise, two variables whose instantiations mention
+      // each other would make each other change forever.
+      originStamp = instantiationStamp(origin);
+      return this;
+    }
+    return new ProperType(
+        resultATM, qualifierVars, context, ignoreAnnotations, properResult.origin);
+  }
+
+  /**
+   * Returns the type that this type was made from by substituting instantiations, if at least one
+   * of them was weak; otherwise, null. See {@link #origin}.
+   *
+   * @return the type that this type was made from, or null
+   */
+  @Nullable InferenceType getOrigin() {
+    return origin;
+  }
+
+  /**
+   * Returns true if {@code a} and {@code b} are the same annotated type. {@link
+   * AnnotatedTypeMirror#equals} is not used, because it requires the underlying types to be the
+   * same object, and substituting instantiations makes new ones.
+   *
+   * @param a an annotated type
+   * @param b an annotated type
+   * @return true if {@code a} and {@code b} are the same annotated type
+   */
+  private boolean isSameAnnotatedType(AnnotatedTypeMirror a, AnnotatedTypeMirror b) {
+    return context.types.isSameType((Type) a.getUnderlyingType(), (Type) b.getUnderlyingType())
+        && typeFactory.getTypeHierarchy().isSubtype(a, b)
+        && typeFactory.getTypeHierarchy().isSubtype(b, a);
+  }
+
+  /**
+   * Returns a copy of this type, whose annotated type is a deep copy of this type's and may be
+   * mutated. Unlike {@link #create}, the copy has this type's origin; see {@link #origin}. So only
+   * the root annotations of the copy may be changed, because the origin gives the positions of the
+   * rest.
+   *
+   * @return a copy of this type
+   */
+  public ProperType copy() {
+    return new ProperType(type.deepCopy(), qualifierVars, context, ignoreAnnotations, origin);
   }
 
   @Override

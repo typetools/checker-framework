@@ -31,6 +31,7 @@ import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext.ReplacedTypes;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -66,7 +67,16 @@ public abstract class AbstractType {
   protected final AnnotatedTypeFactory typeFactory;
 
   /**
-   * True if the annotations on this type should be ignored.
+   * True if the primary annotations of this type are arbitrary, so they should be ignored. For a
+   * type variable or a wildcard, this includes the primary annotations of its bounds, which its
+   * primary annotation determines. It does not include annotations nested in this type, such as
+   * those of its type arguments or its component type: those are compared, unless they are at a
+   * position that ignores annotations itself.
+   *
+   * <p>This field is true for a bound that {@link UseOfVariable#addBound} creates from a use of a
+   * variable that has a primary annotation, because that annotation overrides the variable's, and
+   * for a position where such a bound, as a variable's instantiation, was substituted; see {@link
+   * VariableBounds#isWeakInstantiation}.
    *
    * <p>This field applies to every qualifier hierarchy at once, even when it was set because of a
    * primary annotation that appears in only some of the hierarchies. TODO: Make this per-hierarchy,
@@ -207,7 +217,7 @@ public abstract class AbstractType {
     List<AnnotatedTypeParameterBounds> typeVars =
         typeFactory.typeVariablesFromUse((AnnotatedDeclaredType) getAnnotatedType(), typeelem);
     for (AnnotatedTypeParameterBounds bound : typeVars) {
-      bounds.add(new ProperType(bound.getUpperBound(), context, ignoreAnnotations));
+      bounds.add(new ProperType(bound.getUpperBound(), context, false));
     }
     return bounds;
   }
@@ -350,7 +360,7 @@ public abstract class AbstractType {
       if (returnType.getKind() == TypeKind.VOID || returnType.getKind() == TypeKind.NONE) {
         return null;
       }
-      return create(returnType, ignoreAnnotations);
+      return create(returnType, false);
     } else {
       return null;
     }
@@ -371,7 +381,7 @@ public abstract class AbstractType {
       assert functionType != null : "@AssumeAssertion(nullness): this is a functional interface";
       List<AbstractType> params = new ArrayList<>();
       for (AnnotatedTypeMirror param : functionType.getParameterTypes()) {
-        params.add(create(param, ignoreAnnotations));
+        params.add(create(param, false));
       }
       return params;
     } else {
@@ -595,7 +605,7 @@ public abstract class AbstractType {
       if (annotatedDeclaredType.isUnderlyingTypeRaw()) {
         return Collections.emptyList();
       }
-      return create(annotatedDeclaredType.getTypeArguments(), ignoreAnnotations);
+      return create(annotatedDeclaredType.getTypeArguments(), false);
     } else {
       return null;
     }
@@ -616,7 +626,7 @@ public abstract class AbstractType {
     if (atm instanceof AnnotatedDeclaredType annotatedDeclaredType) {
       AnnotatedDeclaredType enclosing = annotatedDeclaredType.getEnclosingType();
       if (enclosing != null) {
-        return create(enclosing, ignoreAnnotations);
+        return create(enclosing, false);
       }
     }
     return null;
@@ -692,10 +702,9 @@ public abstract class AbstractType {
    *
    * @return the array component type of this type or null if one does not exist
    */
-  public final @Nullable AbstractType getComponentType() {
+  public @Nullable AbstractType getComponentType() {
     if (getJavaType().getKind() == TypeKind.ARRAY) {
-      return create(
-          ((AnnotatedArrayType) getAnnotatedType()).getComponentType(), ignoreAnnotations);
+      return create(((AnnotatedArrayType) getAnnotatedType()).getComponentType(), false);
     } else {
       return null;
     }
@@ -711,20 +720,20 @@ public abstract class AbstractType {
   /**
    * Checks whether the annotations of {@code this} are a subtype of those of {@code superType},
    * assuming that their underlying Java types have already been found to be in the required
-   * relationship. If either type is marked as having annotations that should be ignored, then the
-   * annotations are not compared.
+   * relationship. The annotations of a position that ignores annotations are not compared; see
+   * {@link IgnoredAnnotations#replaceIgnoredForSubtype}.
    *
    * @param superType the potential supertype
-   * @return {@link ConstraintSet#TRUE} if the annotations are ignored or if the annotations of
-   *     {@code this} are a subtype of those of {@code superType}; otherwise {@link
+   * @return {@link ConstraintSet#TRUE} if the annotations of {@code this} are a subtype of those of
+   *     {@code superType}, apart from those that are ignored; otherwise {@link
    *     ConstraintSet#TRUE_ANNO_FAIL}
    */
   protected final ConstraintSet checkAnnotationSubtype(ProperType superType) {
-    if (ignoreAnnotations || superType.ignoreAnnotations) {
-      return ConstraintSet.TRUE;
-    }
-    AnnotatedTypeMirror subATM = getAnnotatedType();
-    AnnotatedTypeMirror superATM = superType.getAnnotatedType();
+    ReplacedTypes compared =
+        IgnoredAnnotations.replaceIgnoredForSubtype(
+            this, superType, typeFactory.getQualifierHierarchy());
+    AnnotatedTypeMirror subATM = compared.type1();
+    AnnotatedTypeMirror superATM = compared.type2();
     if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
       return ConstraintSet.TRUE;
     } else {

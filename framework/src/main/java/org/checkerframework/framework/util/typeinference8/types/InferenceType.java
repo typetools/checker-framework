@@ -194,6 +194,15 @@ public final class InferenceType extends AbstractType {
     return abstractTypes;
   }
 
+  /**
+   * Returns the mapping from type variables to the inference variables of this type.
+   *
+   * @return the mapping from type variables to the inference variables of this type
+   */
+  Theta getMap() {
+    return map;
+  }
+
   @Override
   public AbstractType create(AnnotatedTypeMirror type, boolean ignoreAnnotations) {
     return create(type, map, qualifierVars, context, ignoreAnnotations);
@@ -264,6 +273,30 @@ public final class InferenceType extends AbstractType {
     return variables;
   }
 
+  /**
+   * Returns true if one of {@code instantiated}, a list of instantiated variables, has a weak
+   * instantiation (see {@link VariableBounds#isWeakInstantiation}) and is mentioned by this type.
+   *
+   * @param instantiated variables, each of which has an instantiation
+   * @return true if one of {@code instantiated} has a weak instantiation and is mentioned by this
+   *     type
+   */
+  private boolean substitutesWeakInstantiation(List<Variable> instantiated) {
+    Collection<Variable> mentioned = null;
+    for (Variable alpha : instantiated) {
+      ProperType instantiation = alpha.getInstantiation();
+      if (instantiation != null && VariableBounds.isWeakInstantiation(instantiation)) {
+        if (mentioned == null) {
+          mentioned = getInferenceVariables();
+        }
+        if (mentioned.contains(alpha)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   @Override
   public AbstractType applyInstantiations() {
     List<TypeVariable> typeVariables = new ArrayList<>();
@@ -296,6 +329,12 @@ public final class InferenceType extends AbstractType {
     AbstractType newAbstractType =
         createIgnoreInstantiated(
             newATM, newTypeJava, map, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations);
+    if (newAbstractType.isProper() && substitutesWeakInstantiation(instantiations)) {
+      // Record which positions have a weak instantiation's arbitrary annotations; see
+      // ProperType#origin.
+      newAbstractType =
+          new ProperType(newATM, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations, this);
+    }
 
     // Also apply instantiations to function type.
     AnnotatedExecutableType unsubedFunctionType = getFunctionType();

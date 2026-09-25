@@ -47,6 +47,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeVariableSubstitutor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
@@ -55,6 +56,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.util.CheckedExceptionsUtil;
 import org.checkerframework.framework.util.typeinference8.util.CheckedExceptionsUtil.ThrownCheckedException;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext.ReplacedTypes;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -985,9 +987,18 @@ public class InferenceFactory {
     if (properTypes.isEmpty()) {
       return null;
     }
+    if (properTypes.size() == 1) {
+      // Return the type itself, which keeps any record of where it has a weak instantiation's
+      // annotations; see ProperType#origin.
+      return properTypes.iterator().next();
+    }
 
+    QualifierHierarchy qh = typeFactory.getQualifierHierarchy();
     TypeMirror lubTM = null;
     AnnotatedTypeMirror lubATM = null;
+    // The least upper bound so far, as a type, so that its weak positions, if it is still one of
+    // `properTypes`, can be found; see IgnoredAnnotations#replaceWeakForCombining.
+    ProperType lubSoFar = null;
     boolean ignoreAnnotations = false;
     for (ProperType properType : properTypes) {
       AnnotatedTypeMirror atm = properType.getAnnotatedType();
@@ -995,26 +1006,34 @@ public class InferenceFactory {
       if (lubATM == null) {
         lubATM = atm;
         lubTM = tm;
+        lubSoFar = properType;
         ignoreAnnotations = properType.ignoreAnnotations;
       } else {
+        ReplacedTypes combined =
+            IgnoredAnnotations.replaceWeakForCombining(
+                lubSoFar, properType, qh, context.modelTypes);
+        lubATM = combined.type1();
+        atm = combined.type2();
         lubTM = lub(context.env, lubTM, tm);
         if (properType.ignoreAnnotations == ignoreAnnotations) {
           lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubATM, atm, lubTM);
         } else if (properType.ignoreAnnotations) {
-          // Only `lubATM`'s annotations are meaningful, so keep them.
-          lubATM =
-              AnnotatedTypes.asSuper(
-                  typeFactory, lubATM, AnnotatedTypeMirror.createType(lubTM, typeFactory, false));
+          // Only the root annotations of `atm` are arbitrary.  Make them bottom, so that its root
+          // puts no constraint on the result, and lub the rest.
+          AnnotatedTypeMirror neutral = atm.deepCopy();
+          neutral.replaceAnnotations(qh.getBottomAnnotations());
+          lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubATM, neutral, lubTM);
         } else {
-          // Only `atm`'s annotations are meaningful, so keep them.
-          lubATM =
-              AnnotatedTypes.asSuper(
-                  typeFactory, atm, AnnotatedTypeMirror.createType(lubTM, typeFactory, false));
+          // Only the root annotations of `lubATM` are arbitrary; see the previous case.
+          AnnotatedTypeMirror neutral = lubATM.deepCopy();
+          neutral.replaceAnnotations(qh.getBottomAnnotations());
+          lubATM = AnnotatedTypes.leastUpperBound(typeFactory, neutral, atm, lubTM);
         }
-        // The annotations of a type that ignores annotations put no constraint on the result, so
-        // the result ignores annotations only if every type does.  This is the same rule as in
-        // `glb`.
+        // The root annotations of a type that ignores annotations put no constraint on the
+        // result, so the result ignores annotations only if every type does.  This is the same
+        // rule as in `glb`.
         ignoreAnnotations = ignoreAnnotations && properType.ignoreAnnotations;
+        lubSoFar = new ProperType(lubATM, context, ignoreAnnotations);
       }
     }
     return new ProperType(lubATM, context, ignoreAnnotations);

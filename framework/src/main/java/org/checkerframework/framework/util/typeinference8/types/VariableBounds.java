@@ -50,6 +50,11 @@ public class VariableBounds {
   private @Nullable ProperType instantiation = null;
 
   /**
+   * The number of times {@link #instantiation} has been set; see {@link #getInstantiationChanges}.
+   */
+  private int instantiationChanges = 0;
+
+  /**
    * Bounds on this variable. Stored as a map from kind of bound (upper, lower, equal) to a set of
    * {@link AbstractType}s.
    */
@@ -157,17 +162,56 @@ public class VariableBounds {
     assert !type.getTypeKind().isPrimitive()
         : "instantiation of " + variable + " is the primitive type " + type;
     instantiation = type;
+    instantiationChanges++;
   }
 
   /**
-   * Sets {@code instantiation} from a proper {@code EQUAL} bound, if this variable has one. If
-   * there is more than one such bound, the last one is used, matching {@link #addBound}, which
-   * overwrites the instantiation for each proper {@code EQUAL} bound that it adds.
+   * Returns the number of times this variable's instantiation has been set. A type made by
+   * substituting a weak instantiation uses it to tell when to substitute again; see {@link
+   * ProperType#applyInstantiations}.
+   *
+   * @return the number of times this variable's instantiation has been set
+   */
+  int getInstantiationChanges() {
+    return instantiationChanges;
+  }
+
+  /**
+   * Returns true if {@code type}, as an instantiation of this variable, is weak. A weak
+   * instantiation comes from a proper {@code EQUAL} bound whose annotations are ignored, such as
+   * {@code T = @NonNull U} from the formula {@code @NonNull T = @NonNull U} (see {@link
+   * UseOfVariable#addBound}). Its Java type is this variable's, but its primary annotations are
+   * arbitrary.
+   *
+   * @param type an instantiation of this variable
+   * @return true if {@code type}, as an instantiation of this variable, is weak
+   */
+  public static boolean isWeakInstantiation(ProperType type) {
+    return type.ignoreAnnotations;
+  }
+
+  /**
+   * Makes {@code type}, a proper {@code EQUAL} bound of this variable, its instantiation, unless
+   * {@code type} is weak and the current instantiation is not. A bound whose annotations are
+   * respected determines this variable's annotations, so a weak one never replaces it, and it
+   * always replaces a weak one. Among bounds of the same kind, the later one is used.
+   *
+   * @param type a proper {@code EQUAL} bound of this variable
+   */
+  private void setInstantiationFromEqualBound(ProperType type) {
+    if (instantiation == null || !isWeakInstantiation(type) || isWeakInstantiation(instantiation)) {
+      setInstantiation(type);
+    }
+  }
+
+  /**
+   * Sets {@code instantiation} from the proper {@code EQUAL} bounds of this variable, if it has
+   * any, choosing among them as {@link #addBound} does.
    */
   private void setInstantiationFromEqualBounds() {
     for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
       if (t.isProper()) {
-        setInstantiation((ProperType) t);
+        setInstantiationFromEqualBound((ProperType) t);
       }
     }
   }
@@ -211,7 +255,7 @@ public class VariableBounds {
       // yields a reference type.
       ProperType boxedType = ((ProperType) otherType).boxType();
       boundType = boxedType;
-      setInstantiation(boxedType);
+      setInstantiationFromEqualBound(boxedType);
     }
     if (bounds.get(kind).add(boundType)) {
       addConstraintsFromComplementaryBounds(parent, kind, boundType);
@@ -604,6 +648,23 @@ public class VariableBounds {
   }
 
   /**
+   * Returns all lower bounds that are proper types, and all {@code EQUAL} bounds that are weak
+   * instantiations (see {@link #isWeakInstantiation}). A weak {@code EQUAL} bound gives this
+   * variable's Java type, but it says no more about its annotations than a lower bound does.
+   *
+   * @return all proper lower bounds and all weak {@code EQUAL} bounds
+   */
+  public Set<ProperType> findProperLowerBoundsAndWeakEqualBounds() {
+    Set<ProperType> set = findProperLowerBounds();
+    for (AbstractType bound : bounds.get(BoundKind.EQUAL)) {
+      if (bound.isProper() && isWeakInstantiation((ProperType) bound)) {
+        set.add((ProperType) bound);
+      }
+    }
+    return set;
+  }
+
+  /**
    * Returns all upper bounds that are proper types.
    *
    * @return all upper bounds that are proper types
@@ -666,7 +727,18 @@ public class VariableBounds {
     }
     constraints.applyInstantiations();
 
-    if (changed && instantiation == null) {
+    // An instantiation that was made by substituting a weak instantiation is substituted again
+    // when that one changes; see ProperType#origin.
+    if (instantiation != null) {
+      AbstractType refreshed = instantiation.applyInstantiations();
+      if (refreshed != instantiation) {
+        setInstantiation((ProperType) refreshed);
+        changed = true;
+      }
+    }
+
+    // A bound that has just become proper can replace a weak instantiation.
+    if (changed && (instantiation == null || isWeakInstantiation(instantiation))) {
       setInstantiationFromEqualBounds();
     }
     return changed;

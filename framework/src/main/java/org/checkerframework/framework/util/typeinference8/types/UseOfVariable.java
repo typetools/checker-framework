@@ -126,13 +126,43 @@ public class UseOfVariable extends AbstractType {
     return Collections.singleton(variable);
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>If the variable is instantiated, then the result is its instantiation, except that each
+   * primary annotation on this use replaces the instantiation's annotation in the same hierarchy. A
+   * polymorphic qualifier is not copied, because a proper type's annotations are compared as
+   * written, so a polymorphic qualifier on one would be treated as a concrete qualifier rather than
+   * as its {@link QualifierVar}.
+   *
+   * <p>The result ignores annotations if this use does, or if the instantiation is weak (see {@link
+   * VariableBounds#isWeakInstantiation}) and the annotations copied from this use do not cover
+   * every qualifier hierarchy.
+   */
   @Override
   public AbstractType applyInstantiations() {
-    if (this.variable.getInstantiation() != null) {
-      return this.variable.getInstantiation();
+    ProperType instantiation = variable.getInstantiation();
+    if (instantiation == null) {
+      return this;
     }
-
-    return this;
+    QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
+    AnnotationMirrorSet annosToCopy = new AnnotationMirrorSet();
+    for (AnnotationMirror anno : type.getPrimaryAnnotations()) {
+      if (!qh.isPolymorphicQualifier(anno)) {
+        annosToCopy.add(anno);
+      }
+    }
+    boolean weak =
+        VariableBounds.isWeakInstantiation(instantiation)
+            && annosToCopy.size() < qh.getTopAnnotations().size();
+    boolean ignore = ignoreAnnotations || weak;
+    if (annosToCopy.isEmpty() && ignore == instantiation.ignoreAnnotations) {
+      return instantiation;
+    }
+    // Copy, because the instantiation is stored as a bound of `variable`.
+    AnnotatedTypeMirror atm = instantiation.getAnnotatedType().deepCopy();
+    atm.replaceAnnotations(annosToCopy);
+    return instantiation.create(atm, ignore);
   }
 
   /**
