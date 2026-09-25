@@ -162,7 +162,9 @@ public class UseOfVariable extends AbstractType {
     // Copy, because the instantiation is stored as a bound of `variable`.
     AnnotatedTypeMirror atm = instantiation.getAnnotatedType().deepCopy();
     atm.replaceAnnotations(annosToCopy);
-    return instantiation.create(atm, ignore);
+    // Only the root annotations change, so the result keeps the instantiation's record of its weak
+    // positions; see ProperType#origin.
+    return instantiation.withAnnotatedType(atm, ignore);
   }
 
   /**

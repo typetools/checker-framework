@@ -729,9 +729,12 @@ public abstract class AbstractType {
    *     ConstraintSet#TRUE_ANNO_FAIL}
    */
   protected final ConstraintSet checkAnnotationSubtype(ProperType superType) {
+    if (IgnoredAnnotations.decidedByIgnoredRoot(this, superType)) {
+      return ConstraintSet.TRUE;
+    }
     ReplacedTypes compared =
         IgnoredAnnotations.replaceIgnoredForSubtype(
-            this, superType, typeFactory.getQualifierHierarchy());
+            this, superType, typeFactory.getQualifierHierarchy(), context.modelTypes);
     AnnotatedTypeMirror subATM = compared.type1();
     AnnotatedTypeMirror superATM = compared.type2();
     if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {

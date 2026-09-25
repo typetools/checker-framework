@@ -194,6 +194,40 @@ public class Issue8284Nullness {
     id(nonNullBox(nonNullU, nble)).get().toString();
   }
 
+  static <T extends @Nullable Object> Box<? extends T> extendsBox(Box<@NonNull T> box, T other) {
+    throw new RuntimeException();
+  }
+
+  static <S extends @Nullable Object> @NonNull S castNonNull(@Nullable S s) {
+    throw new RuntimeException();
+  }
+
+  static <T extends @Nullable Object> List<Box<T>> listOfBoxes(Box<@NonNull T> box, T other) {
+    throw new RuntimeException();
+  }
+
+  static <S extends @Nullable Object> S pick2(S a, S b) {
+    return a;
+  }
+
+  // A weak instantiation substituted inside a wildcard bound, under a use with a primary
+  // annotation, and inside a type that is itself substituted into another type.
+  static <U extends @Nullable Object> void weakPositionsInOtherTypes(
+      Box<@NonNull U> nonNullU,
+      @Nullable U nble,
+      Box<? extends @Nullable U> ext,
+      List<Box<@Nullable U>> boxes) {
+    Box<? extends @Nullable U> e1 = extendsBox(nonNullU, nble);
+    Box<? extends @Nullable U> e2 = pick2(extendsBox(nonNullU, nble), ext);
+    Box<@Nullable U> c1 = castNonNull(nonNullBox(nonNullU, nble));
+    Box<@Nullable U> c2 = id(castNonNull(nonNullBox(nonNullU, nble)));
+    List<Box<@Nullable U>> l1 = listOfBoxes(nonNullU, nble);
+    List<Box<@Nullable U>> l2 = id(listOfBoxes(nonNullU, nble));
+    List<Box<@Nullable U>> l3 = pick2(id(listOfBoxes(nonNullU, nble)), boxes);
+    // :: error: (dereference.of.nullable)
+    id(id(listOfBoxes(nonNullU, nble))).get(0).get().toString();
+  }
+
   static void nullableTypeArgument(TypeDescriptor<@Nullable String> td, Box<@NonNull String> box) {
     // :: error: (dereference.of.nullable)
     descriptorThenBoxId(td, box).length();

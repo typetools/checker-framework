@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -40,7 +42,7 @@ public class ProperType extends AbstractType {
    * <p>A position where a weak instantiation was substituted has arbitrary annotations, but {@link
    * #type} cannot record which positions those are. The origin can: it still has a use of the
    * variable at each such position. So this type computes its type arguments and its other parts
-   * from its origin (see {@link #fromOrigin(AbstractType)}), and a part at such a position ignores
+   * from its origin (see {@link #partFromOrigin}), and a part at such a position ignores
    * annotations, as {@link UseOfVariable#applyInstantiations} makes it. And when the variable's
    * instantiation changes, as it does when a weak one is replaced, {@link #applyInstantiations}
    * substitutes the new one.
@@ -163,140 +165,106 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns {@code derived}, a part of {@link #origin}, with instantiations applied, or null if
-   * that is not a proper type. A caller then computes the part from {@link #type} instead, as
-   * though this type had no origin.
+   * Returns a part of this type, computed from {@link #origin} if this type has one, so that the
+   * part knows which of its positions have a weak instantiation's annotations. If this type has no
+   * origin, or the part of the origin is not a proper type once instantiations are applied, then
+   * the part is computed from {@link #type} instead.
    *
-   * @param derived a part of {@link #origin}, or null
-   * @return {@code derived} with instantiations applied, or null
+   * @param part computes the part of a type
+   * @param plain computes the part of this type from {@link #type}
+   * @return the part of this type
    */
-  private @Nullable AbstractType fromOrigin(@Nullable AbstractType derived) {
-    if (derived == null) {
-      return null;
+  private @Nullable AbstractType partFromOrigin(
+      Function<AbstractType, @Nullable AbstractType> part, Supplier<@Nullable AbstractType> plain) {
+    if (origin != null) {
+      AbstractType derived = part.apply(origin);
+      if (derived != null) {
+        AbstractType result = derived.applyInstantiations();
+        if (result.isProper()) {
+          return result;
+        }
+      }
     }
-    AbstractType result = derived.applyInstantiations();
-    return result.isProper() ? result : null;
+    return plain.get();
   }
 
   /**
-   * Returns {@code derived}, parts of {@link #origin}, with instantiations applied, or null if any
-   * of them is not then a proper type; see {@link #fromOrigin(AbstractType)}.
+   * Returns parts of this type, computed from {@link #origin} if this type has one; see {@link
+   * #partFromOrigin}. If any part of the origin is not a proper type once instantiations are
+   * applied, then all the parts are computed from {@link #type} instead.
    *
-   * @param derived parts of {@link #origin}, or null
-   * @return {@code derived} with instantiations applied, or null
+   * @param parts computes the parts of a type
+   * @param plain computes the parts of this type from {@link #type}
+   * @return the parts of this type
    */
-  private @Nullable List<AbstractType> fromOrigin(@Nullable List<AbstractType> derived) {
-    if (derived == null) {
-      return null;
-    }
-    List<AbstractType> result = new ArrayList<>(derived.size());
-    for (AbstractType t : derived) {
-      AbstractType r = fromOrigin(t);
-      if (r == null) {
-        return null;
+  private @Nullable List<AbstractType> partsFromOrigin(
+      Function<AbstractType, @Nullable List<AbstractType>> parts,
+      Supplier<@Nullable List<AbstractType>> plain) {
+    if (origin != null) {
+      List<AbstractType> derived = parts.apply(origin);
+      if (derived != null) {
+        List<AbstractType> result = new ArrayList<>(derived.size());
+        for (AbstractType t : derived) {
+          AbstractType r = t.applyInstantiations();
+          if (!r.isProper()) {
+            return plain.get();
+          }
+          result.add(r);
+        }
+        return result;
       }
-      result.add(r);
     }
-    return result;
+    return plain.get();
   }
 
   @Override
   public @Nullable List<AbstractType> getTypeArguments() {
-    if (origin != null) {
-      List<AbstractType> result = fromOrigin(origin.getTypeArguments());
-      if (result != null) {
-        return result;
-      }
-    }
-    return super.getTypeArguments();
+    return partsFromOrigin(AbstractType::getTypeArguments, super::getTypeArguments);
   }
 
   @Override
   public @Nullable AbstractType getEnclosingType() {
-    if (origin != null) {
-      AbstractType result = fromOrigin(origin.getEnclosingType());
-      if (result != null) {
-        return result;
-      }
-    }
-    return super.getEnclosingType();
+    return partFromOrigin(AbstractType::getEnclosingType, super::getEnclosingType);
   }
 
   @Override
   public @Nullable AbstractType getComponentType() {
-    if (origin != null) {
-      AbstractType result = fromOrigin(origin.getComponentType());
-      if (result != null) {
-        return result;
-      }
-    }
-    return super.getComponentType();
+    return partFromOrigin(AbstractType::getComponentType, super::getComponentType);
   }
 
   @Override
   public @Nullable AbstractType asSuper(TypeMirror superType) {
-    if (origin != null) {
-      AbstractType result = fromOrigin(origin.asSuper(superType));
-      if (result != null) {
-        return result;
-      }
-    }
-    return super.asSuper(superType);
+    return partFromOrigin(t -> t.asSuper(superType), () -> super.asSuper(superType));
   }
 
   @Override
   public @Nullable List<AbstractType> getFunctionTypeParameterTypes() {
-    if (origin != null) {
-      List<AbstractType> result = fromOrigin(origin.getFunctionTypeParameterTypes());
-      if (result != null) {
-        return result;
-      }
-    }
-    return super.getFunctionTypeParameterTypes();
+    return partsFromOrigin(
+        AbstractType::getFunctionTypeParameterTypes, super::getFunctionTypeParameterTypes);
   }
 
   @Override
   public @Nullable AbstractType getFunctionTypeReturnType() {
-    if (origin != null) {
-      AbstractType result = fromOrigin(origin.getFunctionTypeReturnType());
-      if (result != null) {
-        return result;
-      }
-    }
-    return super.getFunctionTypeReturnType();
+    return partFromOrigin(
+        AbstractType::getFunctionTypeReturnType, super::getFunctionTypeReturnType);
   }
 
   @Override
   public @Nullable AbstractType getWildcardLowerBound() {
-    if (origin != null) {
-      AbstractType result = fromOrigin(origin.getWildcardLowerBound());
-      if (result != null) {
-        return result;
-      }
-    }
-    return super.getWildcardLowerBound();
+    return partFromOrigin(AbstractType::getWildcardLowerBound, super::getWildcardLowerBound);
   }
 
   @Override
   public @Nullable AbstractType getWildcardUpperBound() {
-    if (origin != null) {
-      AbstractType result = fromOrigin(origin.getWildcardUpperBound());
-      if (result != null) {
-        return result;
-      }
-    }
-    return super.getWildcardUpperBound();
+    return partFromOrigin(AbstractType::getWildcardUpperBound, super::getWildcardUpperBound);
   }
 
   @Override
   public List<AbstractType> getIntersectionBounds() {
-    if (origin != null) {
-      List<AbstractType> result = fromOrigin(origin.getIntersectionBounds());
-      if (result != null) {
-        return result;
-      }
-    }
-    return super.getIntersectionBounds();
+    List<AbstractType> result =
+        partsFromOrigin(AbstractType::getIntersectionBounds, super::getIntersectionBounds);
+    assert result != null : "@AssumeAssertion(nullness): getIntersectionBounds is non-null";
+    return result;
   }
 
   /** Asserts that this type is not void, which a proper type cannot represent. */
@@ -424,6 +392,9 @@ public class ProperType extends AbstractType {
    *     ConstraintSet#TRUE_ANNO_FAIL}
    */
   public ConstraintSet checkAnnotationEquality(ProperType other) {
+    if (IgnoredAnnotations.decidedByIgnoredRoot(this, other)) {
+      return ConstraintSet.TRUE;
+    }
     ReplacedTypes compared =
         IgnoredAnnotations.replaceIgnoredForEquality(
             this, other, typeFactory.getQualifierHierarchy());
@@ -527,7 +498,7 @@ public class ProperType extends AbstractType {
     // still right, and they may differ from those of `origin` if resolution set them; see
     // Resolution#lubOfLowerBounds.  `result` is a new type, so its annotated type may be mutated.
     AnnotatedTypeMirror resultATM = properResult.getAnnotatedType();
-    resultATM.replaceAnnotations(type.getPrimaryAnnotations());
+    IgnoredAnnotations.copyRootAnnotations(type, resultATM);
     if (properResult.origin != null && isSameAnnotatedType(resultATM, type)) {
       // Nothing that this type depends on has changed.  Returning this type, rather than an
       // equal new one, tells the caller so; otherwise, two variables whose instantiations mention
@@ -573,7 +544,24 @@ public class ProperType extends AbstractType {
    * @return a copy of this type
    */
   public ProperType copy() {
-    return new ProperType(type.deepCopy(), qualifierVars, context, ignoreAnnotations, origin);
+    return withAnnotatedType(type.deepCopy(), ignoreAnnotations);
+  }
+
+  /**
+   * Returns a type like this one, with this type's origin, but whose annotated type is {@code atm}
+   * and whose {@link #ignoreAnnotations} is {@code ignoreAnnotations}. {@code atm} must be this
+   * type's annotated type, or a copy of it, with only its root annotations changed, because the
+   * origin gives the positions of the rest; see {@link #origin}. The result is up to date exactly
+   * when this type is.
+   *
+   * @param atm this type's annotated type, or a copy of it, with only its root annotations changed
+   * @param ignoreAnnotations true if the root annotations of {@code atm} should be ignored
+   * @return a type like this one, whose annotated type is {@code atm}
+   */
+  ProperType withAnnotatedType(AnnotatedTypeMirror atm, boolean ignoreAnnotations) {
+    ProperType result = new ProperType(atm, qualifierVars, context, ignoreAnnotations, origin);
+    result.originStamp = originStamp;
+    return result;
   }
 
   @Override

@@ -1009,12 +1009,12 @@ public class InferenceFactory {
         lubSoFar = properType;
         ignoreAnnotations = properType.ignoreAnnotations;
       } else {
+        lubTM = lub(context.env, lubTM, tm);
         ReplacedTypes combined =
             IgnoredAnnotations.replaceWeakForCombining(
-                lubSoFar, properType, qh, context.modelTypes);
+                lubSoFar, properType, lubTM, qh, context.modelTypes);
         lubATM = combined.type1();
         atm = combined.type2();
-        lubTM = lub(context.env, lubTM, tm);
         if (properType.ignoreAnnotations == ignoreAnnotations) {
           lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubATM, atm, lubTM);
         } else if (properType.ignoreAnnotations) {

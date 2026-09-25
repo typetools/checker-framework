@@ -274,18 +274,22 @@ public final class InferenceType extends AbstractType {
   }
 
   /**
-   * Returns true if one of {@code instantiated}, a list of instantiated variables, has a weak
-   * instantiation (see {@link VariableBounds#isWeakInstantiation}) and is mentioned by this type.
+   * Returns true if one of {@code instantiated}, a list of instantiated variables, is mentioned by
+   * this type and has an instantiation with arbitrary annotations: one that is weak (see {@link
+   * VariableBounds#isWeakInstantiation}), or one that has weak positions itself (see {@link
+   * ProperType#getOrigin}).
    *
    * @param instantiated variables, each of which has an instantiation
-   * @return true if one of {@code instantiated} has a weak instantiation and is mentioned by this
-   *     type
+   * @return true if one of {@code instantiated} is mentioned by this type and has an instantiation
+   *     with arbitrary annotations
    */
   private boolean substitutesWeakInstantiation(List<Variable> instantiated) {
     Collection<Variable> mentioned = null;
     for (Variable alpha : instantiated) {
       ProperType instantiation = alpha.getInstantiation();
-      if (instantiation != null && VariableBounds.isWeakInstantiation(instantiation)) {
+      if (instantiation != null
+          && (VariableBounds.isWeakInstantiation(instantiation)
+              || instantiation.getOrigin() != null)) {
         if (mentioned == null) {
           mentioned = getInferenceVariables();
         }

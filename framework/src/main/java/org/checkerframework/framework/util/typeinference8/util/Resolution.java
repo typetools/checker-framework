@@ -82,18 +82,14 @@ public final class Resolution {
     }
     // `resolution.resolve` empties `unresolvedVars`, and resolving them can give any of them a
     // weak instantiation.
-    List<Variable> resolved = new ArrayList<>(requested);
-    for (Variable var : unresolvedVars) {
-      if (!resolved.contains(var)) {
-        resolved.add(var);
-      }
-    }
+    LinkedHashSet<Variable> resolved = new LinkedHashSet<>(requested);
+    resolved.addAll(unresolvedVars);
 
     // Resolve the variables
     Resolution resolution = new Resolution(context, dependencies);
     boundSet = resolution.resolve(boundSet, unresolvedVars);
     checkNoFalse(boundSet, "after resolving", as);
-    return resolveWeakInstantiations(resolved, boundSet, context);
+    return resolveWeakInstantiations(new ArrayList<>(resolved), boundSet, context);
   }
 
   /**

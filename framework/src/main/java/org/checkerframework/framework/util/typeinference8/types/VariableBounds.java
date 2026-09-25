@@ -697,6 +697,8 @@ public class VariableBounds {
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public boolean applyInstantiationsToBounds() {
     boolean changed = false;
+    // The new version of the bound that is this variable's instantiation, if that bound changes.
+    AbstractType refreshedInstantiation = null;
     for (Set<AbstractType> boundList : bounds.values()) {
       if (boundList.isEmpty()) {
         // Most variables have no bound of most kinds, and iterating a LinkedHashSet allocates.
@@ -711,6 +713,9 @@ public class VariableBounds {
       for (AbstractType bound : boundList) {
         AbstractType newBound = bound.applyInstantiations();
         if (newBound != bound) {
+          if (bound == instantiation) {
+            refreshedInstantiation = newBound;
+          }
           boundListChanged = true;
           if (!boundList.contains(newBound)) {
             changed = true;
@@ -730,7 +735,10 @@ public class VariableBounds {
     // An instantiation that was made by substituting a weak instantiation is substituted again
     // when that one changes; see ProperType#origin.
     if (instantiation != null) {
-      AbstractType refreshed = instantiation.applyInstantiations();
+      AbstractType refreshed =
+          refreshedInstantiation != null
+              ? refreshedInstantiation
+              : instantiation.applyInstantiations();
       if (refreshed != instantiation) {
         setInstantiation((ProperType) refreshed);
         changed = true;
