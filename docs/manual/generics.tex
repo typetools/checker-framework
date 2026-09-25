@@ -209,6 +209,44 @@ Here are some style guidelines:
 For further discussion, see Section~\ref{faq-implicit-bounds}.
 
 
+\subsectionAndLabel{Overriding a generic method}{generics-override}
+
+When a method overrides a generic method, the type parameter bounds of the
+overriding method must contain the type parameter bounds of the overridden
+method.  That is, the upper bound of the overriding method must be a supertype
+of the upper bound of the overridden method, and the lower bound of the
+overriding method must be a subtype of the lower bound of the overridden
+method.  The reason is that a client may call the overridden method with any
+type argument that is within the bounds of the overridden method, and the
+overriding method is what runs, so the overriding method must permit every such
+type argument.
+
+\begin{Verbatim}
+  class Super {
+    <T extends @Nullable Object> T pick(T p) { ... }
+  }
+
+  class Sub extends Super {
+    @Override
+    // error: the bounds do not contain those of the overridden method
+    <@Nullable T extends @Nullable Object> T pick(T p) { ... }
+  }
+\end{Verbatim}
+
+The declaration in \code{Sub} is illegal because a client may call
+\code{pick} through a reference of type \code{Super}, with the type argument
+\code{@NonNull String} that \code{Sub.pick} does not permit:
+
+\begin{Verbatim}
+  void client(Super s) {
+    @NonNull String result = s.<@NonNull String>pick("x");
+  }
+\end{Verbatim}
+
+It is legal for the overriding method to state weaker bounds than the
+overridden method, because that permits more type arguments rather than fewer.
+
+
 \subsectionAndLabel{Type annotations on a use of a generic type variable}{type-variable-use}
 
 A type annotation on a use of a generic type variable overrides/ignores any type
