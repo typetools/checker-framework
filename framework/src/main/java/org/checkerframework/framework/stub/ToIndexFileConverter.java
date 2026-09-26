@@ -711,11 +711,16 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                 NodeList<ClassOrInterfaceType> bounds = typeParam.getTypeBound();
                 return bounds.isEmpty() ? "Ljava/lang/Object;" : bounds.get(0).accept(this, null);
               }
+              String stubName = stubDeclaredTypeInScope(type, typeName);
+              if (stubName != null) {
+                return "L" + stubName.replace('.', '/') + ";";
+              }
             }
-            String name = resolve(typeName);
+            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameWithScope
+            @BinaryName String qualifiedTypeName = type.getNameWithScope();
+            String name = resolve(qualifiedTypeName);
             if (name == null) {
-              // could be defined in the same stub file
-              return "L" + typeName + ";";
+              return "L" + qualifiedTypeName.replace('.', '/') + ";";
             }
             return "L" + String.join("/", name.split("\\.")) + ";";
           }
@@ -779,6 +784,38 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
           if (typeParam.getNameAsString().equals(name)) {
             return typeParam;
           }
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the binary name of the type named {@code name} that the stub file declares and that is
+   * in scope at {@code node}, or null if there is no such type. Such a type is a member of a type
+   * that encloses {@code node}, or a top-level type in {@code node}'s compilation unit. A
+   * single-type import may not import a type with the same simple name as a top-level type in the
+   * same compilation unit (JLS 7.5.1), so such a type shadows every import.
+   *
+   * @param node a node in the stub file's AST
+   * @param name a simple type name
+   * @return the binary name of the stub-declared type that {@code name} refers to at {@code node},
+   *     or null
+   */
+  private @Nullable String stubDeclaredTypeInScope(Node node, String name) {
+    for (Node n = node; n != null; n = n.getParentNode().orElse(null)) {
+      List<? extends Node> members;
+      if (n instanceof TypeDeclaration<?>) {
+        members = ((TypeDeclaration<?>) n).getMembers();
+      } else if (n instanceof CompilationUnit) {
+        members = ((CompilationUnit) n).getTypes();
+      } else {
+        continue;
+      }
+      for (Node member : members) {
+        if (member instanceof TypeDeclaration<?>
+            && ((TypeDeclaration<?>) member).getNameAsString().equals(name)) {
+          return qualifiedStubBinaryName((TypeDeclaration<?>) member);
         }
       }
     }
