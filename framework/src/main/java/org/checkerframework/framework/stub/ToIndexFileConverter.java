@@ -4,6 +4,7 @@ import com.github.javaparser.ParseException;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
@@ -18,12 +19,16 @@ import com.github.javaparser.ast.body.InitializerDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
+import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithExtends;
+import com.github.javaparser.ast.nodeTypes.NodeWithImplements;
+import com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -43,13 +48,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.afu.scenelib.Annotation;
@@ -74,7 +83,6 @@ import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.reflection.Signatures;
 
 /**
  * Convert a JAIF file plus a stub file into index files (JAIFs). Note that the resulting index
@@ -88,7 +96,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   // The possessive modifiers "*+" are for efficiency only.
   // private static Pattern packagePattern =
   //         Pattern.compile("\\bpackage *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
-  /** A pattern that matches an import statement. */
+  /**
+   * A pattern that matches an import statement. Its group 1 matches the imported name: a fully
+   * qualified type name such as {@code java.util.Map.Entry} for a single-type import, or a name
+   * followed by {@code .*} such as {@code java.util.*} for an import-on-demand. For a static
+   * import, group 1 starts with {@code static}, so callers skip static imports before matching.
+   */
   private static final Pattern importPattern =
       Pattern.compile("\\bimport *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
 
@@ -119,8 +132,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private final @Nullable @DotSeparatedIdentifiers String pkgName;
 
-  /** Imports that appear in the stub file. */
-  private final List<String> imports;
+  /** Single-type imports that appear in the stub file, such as {@code import p.Foo;}. */
+  private final List<String> singleTypeImports;
+
+  /** Import-on-demand declarations that appear in the stub file, such as {@code import p.*;}. */
+  private final List<String> onDemandImports;
 
   /** A scene read from the input JAIF file, and will be written to the output JAIF file. */
   private final AScene scene;
@@ -138,22 +154,26 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     this.scene = scene;
     pkgName = pkgDecl == null ? null : pkgDecl.getNameAsString();
     if (importDecls == null) {
-      imports = Collections.emptyList();
+      singleTypeImports = Collections.emptyList();
+      onDemandImports = Collections.emptyList();
     } else {
-      ArrayList<String> imps = new ArrayList<>(importDecls.size());
+      ArrayList<String> singles = new ArrayList<>(importDecls.size());
+      ArrayList<String> onDemands = new ArrayList<>(importDecls.size());
       for (ImportDeclaration decl : importDecls) {
         if (!decl.isStatic()) {
           Matcher m = importPattern.matcher(decl.toString());
           if (m.find()) {
             String s = m.group(1);
             if (s != null) {
-              imps.add(s);
+              (s.endsWith("*") ? onDemands : singles).add(s);
             }
           }
         }
       }
-      imps.trimToSize();
-      imports = Collections.unmodifiableList(imps);
+      singles.trimToSize();
+      onDemands.trimToSize();
+      singleTypeImports = Collections.unmodifiableList(singles);
+      onDemandImports = Collections.unmodifiableList(onDemands);
     }
   }
 
@@ -206,7 +226,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @throws DefException if two different definitions of the same annotation cannot be unified
    * @throws IOException if there is trouble with file reading or writing
    */
-  private static void convert(AScene scene, InputStream in, OutputStream out)
+  // Not private, so that tests can call it.
+  static void convert(AScene scene, InputStream in, OutputStream out)
       throws IOException, DefException, ParseException {
     StubUnit iu;
     try {
@@ -285,8 +306,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   @Override
   public Void visit(ClassOrInterfaceDeclaration decl, AElement elem) {
-    visitDecl(decl, (ADeclaration) elem);
-    return super.visit(decl, elem);
+    // A nested class's members belong to the nested class, not to the class that encloses it.
+    AClass clazz = classElement(decl);
+    visitDecl(decl, clazz);
+    return super.visit(decl, clazz);
   }
 
   @Override
@@ -301,8 +324,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     // Some of the methods in the generated parser use null to represent an empty list.
     if (params != null) {
       for (Parameter param : params) {
-        Type ptype = param.getType();
-        sb.append(getJVML(ptype));
+        sb.append(getJVML(param));
       }
     }
     sb.append(")V");
@@ -310,9 +332,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     visitDecl(decl, method);
     if (params != null) {
       for (int i = 0; i < params.size(); i++) {
-        Parameter param = params.get(i);
-        AField field = method.parameters.getVivify(i);
-        visitType(param.getType(), field.type);
+        visitParameter(params.get(i), method.parameters.getVivify(i));
       }
     }
     if (rcvrAnnos != null) {
@@ -334,8 +354,16 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   @Override
   public Void visit(EnumDeclaration decl, AElement elem) {
-    visitDecl(decl, (ADeclaration) elem);
-    return super.visit(decl, elem);
+    AClass clazz = classElement(decl);
+    visitDecl(decl, clazz);
+    return super.visit(decl, clazz);
+  }
+
+  @Override
+  public Void visit(RecordDeclaration decl, AElement elem) {
+    AClass clazz = classElement(decl);
+    visitDecl(decl, clazz);
+    return super.visit(decl, clazz);
   }
 
   @Override
@@ -369,8 +397,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     AMethod method;
     if (params != null) {
       for (Parameter param : params) {
-        Type ptype = param.getType();
-        sb.append(getJVML(ptype));
+        sb.append(getJVML(param));
       }
     }
     sb.append(')').append(getJVML(type));
@@ -379,9 +406,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     visitType(type, method.returnType);
     if (params != null) {
       for (int i = 0; i < params.size(); i++) {
-        Parameter param = params.get(i);
-        AField field = method.parameters.getVivify(i);
-        visitType(param.getType(), field.type);
+        visitParameter(params.get(i), method.parameters.getVivify(i));
       }
     }
     if (rcvrParam.isPresent()) {
@@ -457,6 +482,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
+   * Returns the scene's element for the class that {@code decl} declares, creating the element if
+   * the scene does not yet contain it.
+   *
+   * @param decl a type declaration in the stub file
+   * @return the scene's element for {@code decl}
+   */
+  private AClass classElement(TypeDeclaration<?> decl) {
+    return scene.classes.getVivify(qualifiedStubBinaryName(decl));
+  }
+
+  /**
    * Copies information from an AST declaration node to an {@link ADeclaration}. Called by visitors
    * for BodyDeclaration subclasses.
    */
@@ -469,6 +505,37 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       }
     }
     return null;
+  }
+
+  /**
+   * Copies information from a formal parameter to an {@link AField}.
+   *
+   * @param param a formal parameter
+   * @param field the scene element for {@code param}
+   */
+  private void visitParameter(Parameter param, AField field) {
+    // As for a field, an annotation that precedes the parameter's type is recorded as a
+    // declaration annotation.
+    for (AnnotationExpr expr : param.getAnnotations()) {
+      Annotation anno = extractAnnotation(expr);
+      if (anno != null) {
+        field.tlAnnotationsHere.add(anno);
+      }
+    }
+    if (!param.isVarArgs()) {
+      visitType(param.getType(), field.type);
+      return;
+    }
+    // For a varargs parameter, `getType()` is the element type, and the annotations that precede
+    // the `...` apply to the array type.  Wrap a copy of the element type, because making a node
+    // the component of an array type would remove it from the parameter.
+    visitType(new ArrayType(param.getType().clone()), field.type);
+    for (AnnotationExpr expr : param.getVarArgsAnnotations()) {
+      Annotation anno = extractAnnotation(expr);
+      if (anno != null) {
+        field.type.tlAnnotationsHere.add(anno);
+      }
+    }
   }
 
   /** Copies information from an AST type node to an {@link ATypeElement}. */
@@ -573,6 +640,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
+   * Computes a formal parameter's JVML descriptor.
+   *
+   * @param param a formal parameter
+   * @return the JVML descriptor of {@code param}'s type
+   */
+  private String getJVML(Parameter param) {
+    // For a varargs parameter, `getType()` returns the element type rather than the array type.
+    return (param.isVarArgs() ? "[" : "") + getJVML(param.getType());
+  }
+
+  /**
    * Computes a type's JVML representation: its field descriptor, such as {@code I} for {@code int}
    * or {@code [[Ljava/lang/String;} for {@code String[][]}. For {@code void}, the result is {@code
    * V}.
@@ -586,18 +664,50 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         new GenericVisitorAdapter<String, Void>() {
           @Override
           public String visit(ClassOrInterfaceType type, Void v) {
-            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
-            @FullyQualifiedName String typeName = type.getNameAsString();
-            @SuppressWarnings("signature" // TODO:  bug in ToIndexFileConverter:
-            // resolve requires a @BinaryName, but this passes a @FullyQualifiedName.
-            // They differ for inner classes.
-            )
-            String name = resolve(typeName);
-            if (name == null) {
-              // could be defined in the same stub file
-              return "L" + typeName + ";";
+            // Use the name together with its scope, so that a qualified name such as
+            // `java.util.List` or `Map.Entry` is not truncated to its last identifier.
+            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameWithScope
+            @FullyQualifiedName String typeName = type.getNameWithScope();
+            String[] identifiers = typeName.split("\\.", -1);
+            CompilationUnit cu = type.findCompilationUnit().orElse(null);
+            // Search each enclosing scope, innermost first, as `scopedStubDeclaration` does.  In
+            // addition, a class's scope contains the member types that it inherits from a class
+            // on the classpath.  A type found in any enclosing scope shadows an import and a type
+            // in the current package.
+            Node declaration = null;
+            String name = null;
+            for (Node n = type; n != null; n = n.getParentNode().orElse(null)) {
+              declaration = declarationAt(n, identifiers, true);
+              if (declaration != null || n instanceof CompilationUnit) {
+                break;
+              }
+              if (n instanceof TypeDeclaration<?>) {
+                name =
+                    inheritedFromClasspath((TypeDeclaration<?>) n, identifiers, cu, visitedSet());
+                if (name != null) {
+                  break;
+                }
+              }
             }
-            return "L" + String.join("/", name.split("\\.")) + ";";
+            if (declaration == null && name == null) {
+              declaration = packageQualifiedStubDeclaration(type, typeName, true);
+            }
+            if (declaration instanceof TypeParameter typeParam) {
+              // The JVML descriptor uses the erasure, which is the first bound, or Object if
+              // the type parameter has no bound.
+              NodeList<ClassOrInterfaceType> bounds = typeParam.getTypeBound();
+              return bounds.isEmpty() ? "Ljava/lang/Object;" : bounds.get(0).accept(this, null);
+            }
+            if (declaration != null) {
+              name = qualifiedStubBinaryName((TypeDeclaration<?>) declaration);
+            }
+            if (name == null) {
+              name = resolve(typeName, cu);
+            }
+            if (name == null) {
+              name = unresolvedBinaryName(typeName);
+            }
+            return "L" + name.replace('.', '/') + ";";
           }
 
           @Override
@@ -645,74 +755,591 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Finds the fully qualified name of the class with the given name.
+   * Returns the binary name, qualified by the stub file's package, of a type that the stub file
+   * declares. For example, if the stub file's package is {@code p} and the stub file declares a
+   * top-level class {@code B} containing a nested class {@code C}, then this method maps the
+   * declaration of {@code C} to {@code "p.B$C"}.
    *
-   * @param className possibly unqualified name of class
-   * @return fully qualified name of class that {@code className} identifies in the current context,
-   *     or null if resolution fails
+   * @param declaration a type declaration in the stub file
+   * @return the binary name of {@code declaration}
    */
-  private @Nullable @BinaryName String resolve(@BinaryName String className) {
+  private String qualifiedStubBinaryName(TypeDeclaration<?> declaration) {
+    String binaryName = stubBinaryName(declaration);
+    return pkgName == null ? binaryName : pkgName + "." + binaryName;
+  }
+
+  /**
+   * If the stub file declares the type whose fully qualified name is {@code fqName}, returns that
+   * type's binary name; otherwise returns null.
+   *
+   * @param cu the stub file's compilation unit
+   * @param fqName a fully qualified type name, in which a {@code .} separates a nested class from
+   *     its enclosing class
+   * @return the binary name of {@code fqName}, or null if the stub file does not declare it
+   */
+  private @Nullable String declaredInStubFile(CompilationUnit cu, String fqName) {
+    String relativeName;
+    if (pkgName == null) {
+      relativeName = fqName;
+    } else if (fqName.startsWith(pkgName + ".")) {
+      relativeName = fqName.substring(pkgName.length() + 1);
+    } else {
+      // The name is in some other package, which the stub file does not declare.
+      return null;
+    }
+    // Because `relativeName` is qualified by the package name, it names a top-level type of the
+    // stub file or a member of one.
+    Node declaration = stubDeclaration(cu, relativeName, true);
+    return (declaration instanceof TypeDeclaration<?>)
+        ? qualifiedStubBinaryName((TypeDeclaration<?>) declaration)
+        : null;
+  }
+
+  /**
+   * Returns the declaration, in the stub file, that {@code typeName} names at {@code node}: either
+   * a {@link TypeParameter} or a {@link TypeDeclaration}. Returns null if the stub file declares no
+   * such type.
+   *
+   * @param node the node in the stub file's AST at which {@code typeName} appears
+   * @param typeName a type name, in which a {@code .} separates a nested class from its enclosing
+   *     class; it may be qualified by the stub file's package
+   * @param inherited if true, a class's member types include the ones that it inherits
+   * @return the declaration of {@code typeName}, or null
+   */
+  private static @Nullable Node stubDeclaration(Node node, String typeName, boolean inherited) {
+    Node result = scopedStubDeclaration(node, typeName, inherited);
+    // A type in scope shadows a package, so try a package-qualified name only after the lookup
+    // above fails.
+    return result != null ? result : packageQualifiedStubDeclaration(node, typeName, inherited);
+  }
+
+  /**
+   * If {@code typeName} is qualified by the stub file's package, returns the declaration, in the
+   * stub file, that it names. Otherwise returns null.
+   *
+   * @param node a node in the stub file's AST
+   * @param typeName a type name, in which a {@code .} separates a nested class from its enclosing
+   *     class
+   * @param inherited if true, a class's member types include the ones that it inherits
+   * @return the declaration of {@code typeName}, or null
+   */
+  private static @Nullable Node packageQualifiedStubDeclaration(
+      Node node, String typeName, boolean inherited) {
+    CompilationUnit cu = node.findCompilationUnit().orElse(null);
+    String pkg =
+        cu == null
+            ? null
+            : cu.getPackageDeclaration().map(PackageDeclaration::getNameAsString).orElse(null);
+    if (pkg != null && typeName.startsWith(pkg + ".")) {
+      return scopedStubDeclaration(cu, typeName.substring(pkg.length() + 1), inherited);
+    }
+    return null;
+  }
+
+  /**
+   * Returns the declaration, in the stub file, that {@code typeName} names at {@code node}, where
+   * the first identifier of {@code typeName} is a type in scope at {@code node}.
+   *
+   * @param node the node in the stub file's AST at which {@code typeName} appears
+   * @param typeName a type name, in which a {@code .} separates a nested class from its enclosing
+   *     class
+   * @param inherited if true, a class's member types include the ones that it inherits
+   * @return the declaration of {@code typeName}, or null
+   */
+  private static @Nullable Node scopedStubDeclaration(
+      Node node, String typeName, boolean inherited) {
+    String[] identifiers = typeName.split("\\.", -1);
+    // Search each enclosing declaration, innermost first, and finally the stub file's top-level
+    // classes.  That is the order in which Java resolves a type name.
+    for (Node n = node; n != null; n = n.getParentNode().orElse(null)) {
+      Node result = declarationAt(n, identifiers, inherited);
+      if (result != null || n instanceof CompilationUnit) {
+        return result;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the declaration, in the stub file, that {@code identifiers} names among the types that
+   * {@code n} itself puts in scope: its type parameters, its member types, or (for a compilation
+   * unit) its top-level types.
+   *
+   * @param n a node in the stub file's AST
+   * @param identifiers a type name that has been split at its {@code .} separators
+   * @param inherited if true, a class's member types include the ones that it inherits
+   * @return the declaration of {@code identifiers}, or null
+   */
+  private static @Nullable Node declarationAt(Node n, String[] identifiers, boolean inherited) {
+    // Within one declaration, a type parameter and a member type cannot have the same name.
+    if (identifiers.length == 1 && n instanceof NodeWithTypeParameters) {
+      for (TypeParameter typeParam : ((NodeWithTypeParameters<?>) n).getTypeParameters()) {
+        if (typeParam.getNameAsString().equals(identifiers[0])) {
+          return typeParam;
+        }
+      }
+    }
+    if (n instanceof TypeDeclaration<?> typeDecl) {
+      TypeDeclaration<?> declaration =
+          memberTypeDeclaration(typeDecl, identifiers[0], inherited, visitedSet());
+      return declaration == null
+          ? null
+          : nestedTypeDeclaration(declaration, identifiers, inherited);
+    } else if (n instanceof CompilationUnit compilationUnit) {
+      for (TypeDeclaration<?> topLevel : compilationUnit.getTypes()) {
+        if (topLevel.getNameAsString().equals(identifiers[0])) {
+          return nestedTypeDeclaration(topLevel, identifiers, inherited);
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Resolves {@code identifiers}, other than its first element which {@code declaration} names,
+   * against the member types of {@code declaration}.
+   *
+   * @param declaration the declaration that {@code identifiers[0]} names
+   * @param identifiers a type name that has been split at its {@code .} separators
+   * @param inherited if true, a class's member types include the ones that it inherits
+   * @return the declaration that {@code identifiers} names, or null if there is none
+   */
+  private static @Nullable TypeDeclaration<?> nestedTypeDeclaration(
+      TypeDeclaration<?> declaration, String[] identifiers, boolean inherited) {
+    TypeDeclaration<?> result = declaration;
+    for (int i = 1; i < identifiers.length; i++) {
+      result = memberTypeDeclaration(result, identifiers[i], inherited, visitedSet());
+      if (result == null) {
+        return null;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns the member type named {@code identifier} that {@code declaration} declares or, if
+   * {@code inherited} is true, inherits from a supertype that the stub file also declares.
+   *
+   * @param declaration a type declaration in a stub file
+   * @param identifier the simple name of a member type
+   * @param inherited if true, search the supertypes that the stub file declares
+   * @param visited the type declarations whose members have already been searched; this method adds
+   *     {@code declaration} to it
+   * @return the declaration of {@code identifier}, or null if there is none
+   */
+  private static @Nullable TypeDeclaration<?> memberTypeDeclaration(
+      TypeDeclaration<?> declaration,
+      String identifier,
+      boolean inherited,
+      Set<TypeDeclaration<?>> visited) {
+    if (!visited.add(declaration)) {
+      // The stub file declares a cyclic inheritance hierarchy, which is not legal Java.
+      return null;
+    }
+    for (BodyDeclaration<?> member : declaration.getMembers()) {
+      if (member instanceof TypeDeclaration<?>
+          && ((TypeDeclaration<?>) member).getNameAsString().equals(identifier)) {
+        return (TypeDeclaration<?>) member;
+      }
+    }
+    if (!inherited) {
+      return null;
+    }
+    for (ClassOrInterfaceType supertype : supertypes(declaration)) {
+      // Resolving the supertype's name does not consider inherited member types, which guarantees
+      // that this method terminates.
+      Node supertypeDeclaration =
+          stubDeclaration(supertypeScope(declaration), supertype.getNameWithScope(), false);
+      if (!(supertypeDeclaration instanceof TypeDeclaration<?>)) {
+        // The supertype is not declared in the stub file, so its members are unknown here.
+        // `inheritedFromClasspath` searches such a supertype on the classpath.
+        continue;
+      }
+      TypeDeclaration<?> result =
+          memberTypeDeclaration(
+              (TypeDeclaration<?>) supertypeDeclaration, identifier, true, visited);
+      // A private member type is not inherited.
+      if (result != null && !result.isPrivate()) {
+        return result;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the direct supertypes that {@code declaration}'s {@code extends} and {@code implements}
+   * clauses name.
+   *
+   * @param declaration a type declaration in a stub file
+   * @return the direct supertypes of {@code declaration}
+   */
+  private static List<ClassOrInterfaceType> supertypes(TypeDeclaration<?> declaration) {
+    List<ClassOrInterfaceType> result = new ArrayList<>(2);
+    if (declaration instanceof NodeWithExtends<?>) {
+      result.addAll(((NodeWithExtends<?>) declaration).getExtendedTypes());
+    }
+    if (declaration instanceof NodeWithImplements<?>) {
+      result.addAll(((NodeWithImplements<?>) declaration).getImplementedTypes());
+    }
+    return result;
+  }
+
+  /**
+   * Returns the node at which to resolve the names in {@code declaration}'s {@code extends} and
+   * {@code implements} clauses. A class's member types are not in scope in those clauses, so this
+   * is the node that encloses {@code declaration}.
+   *
+   * @param declaration a type declaration in a stub file
+   * @return the node that encloses {@code declaration}
+   */
+  private static Node supertypeScope(TypeDeclaration<?> declaration) {
+    return declaration.getParentNode().orElse(declaration);
+  }
+
+  /**
+   * Returns a new, empty set that compares type declarations by identity.
+   *
+   * @return a new, empty set of type declarations
+   */
+  private static Set<TypeDeclaration<?>> visitedSet() {
+    // A set that uses equals() would conflate two structurally identical declarations, because
+    // JavaParser's Node.equals() compares the structure of two ASTs.
+    return Collections.newSetFromMap(new IdentityHashMap<TypeDeclaration<?>, Boolean>());
+  }
+
+  /**
+   * Returns the binary name, without its package, of a type that the stub file declares.
+   *
+   * @param declaration a type declaration in a stub file
+   * @return the binary name of {@code declaration}, without its package
+   */
+  private static String stubBinaryName(TypeDeclaration<?> declaration) {
+    StringBuilder binaryName = new StringBuilder(declaration.getNameAsString());
+    for (Node n = declaration.getParentNode().orElse(null);
+        n != null;
+        n = n.getParentNode().orElse(null)) {
+      if (n instanceof TypeDeclaration<?>) {
+        binaryName.insert(0, ((TypeDeclaration<?>) n).getNameAsString() + "$");
+      }
+    }
+    return binaryName.toString();
+  }
+
+  /**
+   * Finds the binary name of the class with the given name.
+   *
+   * @param className possibly unqualified name of class, in which a {@code .} (not a {@code $})
+   *     separates a nested class from its enclosing class
+   * @param cu the stub file's compilation unit, or null not to consider the types that the stub
+   *     file declares
+   * @return binary name of class that {@code className} identifies in the current context, or null
+   *     if resolution fails
+   */
+  private @Nullable @BinaryName String resolve(
+      @FullyQualifiedName String className, @Nullable CompilationUnit cu) {
+
+    // The order of the lookups below is the order in which Java resolves a type name: a
+    // single-type import shadows a type in the current package, which shadows a type that an
+    // import-on-demand declaration makes available.
+
+    for (String declName : singleTypeImports) {
+      String qualifiedName = mergeImport(declName, className);
+      if (qualifiedName != null) {
+        // The import determines the type that `className` refers to, even if that type cannot be
+        // loaded, so do not look further.  If it cannot be loaded, `unresolvedBinaryName` uses
+        // the import.
+        return classBinaryName(qualifiedName, cu);
+      }
+    }
 
     if (pkgName != null) {
-      String qualifiedName = Signatures.addPackage(pkgName, className);
-      if (loadClass(qualifiedName) != null) {
-        return qualifiedName;
+      // The first identifier of `className` names a type in the current package, not a
+      // subpackage, so every later identifier names a member type.
+      String qualifiedName = pkgName + "." + className;
+      @SuppressWarnings("signature") // the stub file's declarations determine the binary name
+      @BinaryName String declared = (cu == null) ? null : declaredInStubFile(cu, qualifiedName);
+      if (declared != null) {
+        return declared;
+      }
+      @SuppressWarnings("signature") // a type in a package, followed by its member types
+      @BinaryName String binaryName = pkgName + "." + className.replace('.', '$');
+      if (loadClass(binaryName) != null) {
+        return binaryName;
+      }
+    }
+
+    for (String declName : onDemandImports) {
+      String qualifiedName = mergeImport(declName, className);
+      if (qualifiedName != null) {
+        String binaryName = classBinaryName(qualifiedName, cu);
+        if (binaryName != null) {
+          return binaryName;
+        }
       }
     }
 
     {
       // Every Java program implicitly does "import java.lang.*",
       // so see whether this class is in that package.
-      String qualifiedName = Signatures.addPackage("java.lang", className);
-      if (loadClass(qualifiedName) != null) {
-        return qualifiedName;
+      String binaryName = loadClassBinaryName("java.lang." + className);
+      if (binaryName != null) {
+        return binaryName;
       }
     }
 
-    for (String declName : imports) {
-      String qualifiedName = mergeImport(declName, className);
-      if (loadClass(qualifiedName) != null) {
-        return qualifiedName;
+    return classBinaryName(className, cu);
+  }
+
+  /**
+   * Returns the binary name of the class that a fully qualified name refers to: the class that the
+   * stub file declares, if the stub file declares it, and otherwise a class on the classpath.
+   *
+   * @param fqName a fully qualified class name
+   * @param cu the stub file's compilation unit, or null not to consider the types that the stub
+   *     file declares
+   * @return the binary name of the class that {@code fqName} refers to, or null
+   */
+  private @Nullable @BinaryName String classBinaryName(
+      String fqName, @Nullable CompilationUnit cu) {
+    if (cu != null) {
+      @SuppressWarnings("signature") // the stub file's declarations determine the binary name
+      @BinaryName String declared = declaredInStubFile(cu, fqName);
+      if (declared != null) {
+        return declared;
       }
     }
+    return loadClassBinaryName(fqName);
+  }
 
-    if (loadClass(className) != null) {
-      return className;
+  /**
+   * If {@code declaration} inherits a member type named {@code identifiers} from a class on the
+   * classpath, returns that member type's binary name; otherwise returns null. A supertype that the
+   * stub file declares has no members on the classpath, so this method searches that supertype's
+   * own supertypes.
+   *
+   * @param declaration a type declaration in a stub file
+   * @param identifiers a type name that has been split at its {@code .} separators
+   * @param cu the stub file's compilation unit, or null
+   * @param visited the type declarations whose supertypes have already been searched; this method
+   *     adds {@code declaration} to it
+   * @return the binary name of the inherited member type, or null
+   */
+  private @Nullable String inheritedFromClasspath(
+      TypeDeclaration<?> declaration,
+      String[] identifiers,
+      @Nullable CompilationUnit cu,
+      Set<TypeDeclaration<?>> visited) {
+    if (!visited.add(declaration)) {
+      // The stub file declares a cyclic inheritance hierarchy, which is not legal Java.
+      return null;
     }
-
+    for (ClassOrInterfaceType supertype : supertypes(declaration)) {
+      @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameWithScope
+      @FullyQualifiedName String supertypeName = supertype.getNameWithScope();
+      // Resolve the supertype's name without considering inherited member types, as
+      // `memberTypeDeclaration` does.
+      Node supertypeDeclaration =
+          stubDeclaration(supertypeScope(declaration), supertypeName, false);
+      if (supertypeDeclaration instanceof TypeDeclaration<?>) {
+        String result =
+            inheritedFromClasspath(
+                (TypeDeclaration<?>) supertypeDeclaration, identifiers, cu, visited);
+        if (result != null) {
+          return result;
+        }
+        continue;
+      }
+      String supertypeBinaryName = resolve(supertypeName, cu);
+      if (supertypeBinaryName == null) {
+        continue;
+      }
+      Class<?> clazz = loadClass(supertypeBinaryName);
+      for (String identifier : identifiers) {
+        clazz = memberClass(clazz, identifier, pkgName == null ? "" : pkgName, new HashSet<>());
+        if (clazz == null) {
+          break;
+        }
+      }
+      if (clazz != null) {
+        return clazz.getName();
+      }
+    }
     return null;
   }
 
   /**
-   * Combines an import with a partial binary name, yielding a binary name.
+   * Returns the member type named {@code identifier} that {@code clazz} declares or inherits, or
+   * null if there is none. Only a member type that is accessible from {@code packageName} is
+   * inherited, so this method ignores a private member type, and a package-private member type of a
+   * class in another package.
+   *
+   * @param clazz a class on the classpath, or null
+   * @param identifier the simple name of a member type
+   * @param packageName the package of the stub file, or the empty string for the unnamed package
+   * @param visited the classes that have already been searched; this method adds {@code clazz} to
+   *     it
+   * @return the member type named {@code identifier}, or null if there is none
+   */
+  private static @Nullable Class<?> memberClass(
+      @Nullable Class<?> clazz, String identifier, String packageName, Set<Class<?>> visited) {
+    if (clazz == null || !visited.add(clazz)) {
+      return null;
+    }
+    Class<?>[] members;
+    try {
+      members = clazz.getDeclaredClasses();
+    } catch (LinkageError | SecurityException e) {
+      // The class exists but its members cannot be read; treat it as having none.
+      return null;
+    }
+    for (Class<?> member : members) {
+      if (member.getSimpleName().equals(identifier) && isAccessible(member, packageName)) {
+        return member;
+      }
+    }
+    Class<?> result = memberClass(clazz.getSuperclass(), identifier, packageName, visited);
+    if (result != null) {
+      return result;
+    }
+    for (Class<?> superinterface : clazz.getInterfaces()) {
+      result = memberClass(superinterface, identifier, packageName, visited);
+      if (result != null) {
+        return result;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns true if the member type {@code member} is accessible from code in {@code packageName}
+   * that is in a subclass of the class that declares {@code member}.
+   *
+   * @param member a member type
+   * @param packageName a package name, or the empty string for the unnamed package
+   * @return true if {@code member} is accessible from {@code packageName}
+   */
+  private static boolean isAccessible(Class<?> member, String packageName) {
+    int modifiers = member.getModifiers();
+    if (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)) {
+      return true;
+    }
+    return !Modifier.isPrivate(modifiers) && member.getPackageName().equals(packageName);
+  }
+
+  /**
+   * Returns the binary name that a type name most likely refers to, for a type name that cannot be
+   * resolved. Because such a name does not indicate which of its dot-separated components are
+   * package names and which are class names, this method uses the Java convention that a package
+   * name starts with a lowercase letter and a class name starts with an uppercase letter. A name
+   * whose first identifier a single-type import names is qualified by that import. Any other name
+   * with no package name is assumed to refer to the stub file's own package.
+   *
+   * @param typeName a type name that resolution failed on
+   * @return the binary name that {@code typeName} most likely refers to
+   */
+  private String unresolvedBinaryName(@FullyQualifiedName String typeName) {
+    for (String declName : singleTypeImports) {
+      String qualifiedName = mergeImport(declName, typeName);
+      // An unchanged name is an import of a type in the unnamed package, which gives no package.
+      if (qualifiedName != null && !qualifiedName.equals(typeName)) {
+        // The import is fully qualified, so do not qualify the result by the stub file's package.
+        return splitBinaryName(qualifiedName, null);
+      }
+    }
+    return splitBinaryName(typeName, pkgName);
+  }
+
+  /**
+   * Returns the binary name that a type name most likely refers to, using the Java convention that
+   * a package name starts with a lowercase letter and a class name starts with an uppercase letter.
+   *
+   * @param typeName a type name
+   * @param defaultPackage the package of {@code typeName} if it has no package name, or null
+   * @return the binary name that {@code typeName} most likely refers to
+   */
+  private static String splitBinaryName(String typeName, @Nullable String defaultPackage) {
+    String[] identifiers = typeName.split("\\.", -1);
+    // The index of the outermost class name; every identifier before it is a package name.
+    int outermostClass = 0;
+    while (outermostClass < identifiers.length - 1
+        && !startsWithUppercase(identifiers[outermostClass])) {
+      outermostClass++;
+    }
+    StringBuilder result = new StringBuilder();
+    if (outermostClass == 0 && defaultPackage != null) {
+      // The name has no package name, so it refers to the default package.
+      result.append(defaultPackage).append('.');
+    }
+    for (int i = 0; i < identifiers.length; i++) {
+      if (i > 0) {
+        result.append(i <= outermostClass ? '.' : '$');
+      }
+      result.append(identifiers[i]);
+    }
+    return result.toString();
+  }
+
+  /**
+   * Returns true if {@code identifier} starts with an uppercase letter.
+   *
+   * @param identifier an identifier
+   * @return true if {@code identifier} starts with an uppercase letter
+   */
+  private static boolean startsWithUppercase(String identifier) {
+    return !identifier.isEmpty() && Character.isUpperCase(identifier.charAt(0));
+  }
+
+  /**
+   * Returns the binary name of the class that a fully qualified name refers to, or null if no such
+   * class can be loaded. A fully qualified name does not indicate which of its dot-separated
+   * components are packages and which are enclosing classes, so this method tries each possibility,
+   * starting with the one that has the fewest enclosing classes.
+   *
+   * @param fqName a fully qualified class name
+   * @return the binary name of the class that {@code fqName} refers to, or null
+   */
+  @SuppressWarnings("signature") // string manipulation of signature strings
+  private static @Nullable @BinaryName String loadClassBinaryName(String fqName) {
+    StringBuilder candidate = new StringBuilder(fqName);
+    int dot = candidate.length();
+    while (true) {
+      if (loadClass(candidate.toString()) != null) {
+        return candidate.toString();
+      }
+      dot = candidate.lastIndexOf(".", dot - 1);
+      if (dot < 0) {
+        return null;
+      }
+      candidate.setCharAt(dot, '$');
+    }
+  }
+
+  /**
+   * Combines an import with a partially qualified name, yielding a fully qualified name.
    *
    * @param importName package name or (for an inner class) the outer class name
    * @param className the class name
    * @return fully qualified class name if resolution succeeds, null otherwise
    */
   @SuppressWarnings("signature") // string manipulation of signature strings
-  private static @Nullable @BinaryName String mergeImport(
-      String importName, @BinaryName String className) {
+  private static @Nullable @FullyQualifiedName String mergeImport(
+      String importName, @FullyQualifiedName String className) {
     if (importName.isEmpty() || importName.equals(className)) {
       return className;
     }
     String[] importSplit = importName.split("\\.");
-    String[] classSplit = className.split("\\.");
     String importEnd = importSplit[importSplit.length - 1];
     if ("*".equals(importEnd)) {
       return importName.substring(0, importName.length() - 1) + className;
-    } else {
-      // find overlap such as in
-      //   import a.b.C.D;
+    } else if (className.equals(importEnd) || className.startsWith(importEnd + ".")) {
+      // The import supplies the prefix, such as in
+      //   import a.b.C;
       //   C.D myvar;
-      int i = importSplit.length;
-      int n = i - classSplit.length;
-      while (--i >= n) {
-        if (!classSplit[i - n].equals(importSplit[i])) {
-          return null;
-        }
-      }
-      return importName;
+      return importName + className.substring(importEnd.length());
+    } else {
+      // A single-type import makes available only the simple name of the type that it imports, so
+      // it cannot supply a prefix for any other name.
+      return null;
     }
   }
 
@@ -720,13 +1347,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * Finds the {@link Class} corresponding to a name.
    *
    * @param className a class name
-   * @return the {@link Class} object corresponding to {@code className}, or null if none found
+   * @return the {@link Class} object corresponding to {@code className}, or null if none is found
+   *     or it cannot be loaded
    */
   private static @Nullable Class<?> loadClass(@ClassGetName String className) {
     assert className != null;
     try {
-      return Class.forName(className, false, null);
-    } catch (ClassNotFoundException e) {
+      return Class.forName(className, false, ToIndexFileConverter.class.getClassLoader());
+    } catch (ClassNotFoundException | LinkageError e) {
+      // A LinkageError, such as NoClassDefFoundError, means that the class exists but cannot be
+      // used -- for example, one of its supertypes is not on the classpath.  Treat it the same
+      // as a class that does not exist, rather than aborting the whole conversion.
       return null;
     }
   }
