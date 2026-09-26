@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import org.checkerframework.afu.scenelib.el.AClass;
 import org.checkerframework.afu.scenelib.el.AField;
+import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.afu.scenelib.el.AScene;
 import org.checkerframework.afu.scenelib.el.ATypeElement;
 import org.checkerframework.afu.scenelib.el.TypePathEntry;
@@ -306,6 +307,113 @@ public class ToIndexFileConverterTest {
     String jaif =
         convert("package java;", "class MyClass {", "  void myMethod(util.List l) {}", "}");
     assertMethod(jaif, "MyClass", "myMethod(Lutil/List;)V");
+  }
+
+  /**
+   * A single-type import determines the type that a name refers to, even if the imported type is
+   * not on the classpath and a type of the same name is in {@code java.lang}.
+   */
+  @Test
+  public void testUnloadableSingleTypeImportShadowsJavaLang() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import other.pkg.Module;",
+            "class MyClass {",
+            "  void myMethod(Module m) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lother/pkg/Module;)V");
+  }
+
+  /** A package-private member type of a class in another package is not inherited. */
+  @Test
+  public void testPackagePrivateMemberTypeIsNotInherited() throws Exception {
+    // java.util.TreeMap declares a package-private member type named Entry.
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass extends java.util.TreeMap {",
+            "  void myMethod(Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
+  }
+
+  /**
+   * A member type that a class inherits from a class on the classpath shadows a type that the stub
+   * file declares in an enclosing scope.
+   */
+  @Test
+  public void testInheritedMemberTypeShadowsTopLevelStubType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class Entry {}",
+            "abstract class MyClass extends java.util.AbstractMap {",
+            "  void myMethod(Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
+  }
+
+  /** A class's own member types are not in scope in its {@code extends} clause. */
+  @Test
+  public void testSupertypeIsResolvedOutsideClassBody() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MySuperClass {",
+            "  class MyNestedClass {}",
+            "}",
+            "class MyClass extends MySuperClass {",
+            "  static class MySuperClass {}",
+            "  void myMethod(MyNestedClass c) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MySuperClass$MyNestedClass;)V");
+  }
+
+  /**
+   * The annotations of a varargs parameter are recorded: one that precedes the type as a
+   * declaration annotation, one within the element type on the array's component type, and one that
+   * precedes the {@code ...} on the array type.
+   */
+  @Test
+  public void testVarargsParameterAnnotations() throws Exception {
+    String stubFile =
+        String.join(
+            System.lineSeparator(),
+            "package p;",
+            "class C {",
+            "  void m(@A java.lang.@B String @C ... args) {}",
+            "}");
+    AScene scene = new AScene();
+    ToIndexFileConverter.convert(
+        scene,
+        new ByteArrayInputStream(stubFile.getBytes(StandardCharsets.UTF_8)),
+        new ByteArrayOutputStream());
+    AMethod method = scene.classes.get("p.C").methods.get("m([Ljava/lang/String;)V");
+    Assert.assertNotNull("no scene element for method m", method);
+    AField param = method.parameters.get(0);
+    Assert.assertNotNull("no scene element for parameter args", param);
+    Assert.assertNotNull("@A was not recorded on the parameter", param.lookup("A"));
+    Assert.assertNotNull("@C was not recorded on the array type", param.type.lookup("C"));
+    Assert.assertNull("@B was recorded on the array type", param.type.lookup("B"));
+    ATypeElement componentType = param.type.innerTypes.get(element(Collections.emptyList()));
+    Assert.assertNotNull("no scene element for the component type", componentType);
+    Assert.assertNotNull("@B was not recorded on the component type", componentType.lookup("B"));
+    Assert.assertNull("@C was recorded on the component type", componentType.lookup("C"));
+  }
+
+  /** A record's members belong to the record, not to the class that encloses it. */
+  @Test
+  public void testNestedRecordMembers() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass {",
+            "  record MyRecord(int x) {",
+            "    void myMethod() {}",
+            "  }",
+            "}");
+    assertMethod(jaif, "MyClass$MyRecord", "myMethod()V");
   }
 
   /** A type variable whose bound is a fully qualified name erases to that name. */
