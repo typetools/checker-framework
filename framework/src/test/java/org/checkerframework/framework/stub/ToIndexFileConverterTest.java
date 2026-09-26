@@ -132,6 +132,30 @@ public class ToIndexFileConverterTest {
         jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/ToIndexFileConverter;)V");
   }
 
+  /**
+   * A single-type import shadows a class of the same name in the current package, which in turn
+   * shadows a class imported on demand.
+   */
+  @Test
+  public void testResolvePrecedence() throws Exception {
+    String jaif =
+        convert(
+            "package java.lang.reflect;",
+            "import java.sql.Array;",
+            "class MyClass {",
+            "  void myMethod(Array a) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/sql/Array;)V");
+    jaif =
+        convert(
+            "package java.lang.reflect;",
+            "import java.sql.*;",
+            "class MyClass {",
+            "  void myMethod(Array a) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/lang/reflect/Array;)V");
+  }
+
   /** A varargs parameter's JVML descriptor is an array type. */
   @Test
   public void testVarargsDescriptor() throws Exception {
@@ -148,7 +172,10 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myOtherMethod([[Ljava/lang/CharSequence;)V");
   }
 
-  /** An annotation that precedes a parameter's type is recorded as a declaration annotation. */
+  /**
+   * An annotation that precedes a parameter's type, and whose annotation interface cannot be
+   * loaded, is recorded as a declaration annotation.
+   */
   @Test
   public void testParameterDeclarationAnnotation() throws Exception {
     AField param =
@@ -158,9 +185,9 @@ public class ToIndexFileConverterTest {
   }
 
   /**
-   * The annotations of a varargs parameter are recorded: one that precedes the type as a
-   * declaration annotation, one within the element type on the array's component type, and one that
-   * precedes the {@code ...} on the array type.
+   * The annotations of a varargs parameter are recorded: one that precedes the type, and whose
+   * annotation interface cannot be loaded, as a declaration annotation, one within the element type
+   * on the array's component type, and one that precedes the {@code ...} on the array type.
    */
   @Test
   public void testVarargsParameterAnnotations() throws Exception {
@@ -178,6 +205,59 @@ public class ToIndexFileConverterTest {
     Assert.assertNotNull("no scene element for the component type", componentType);
     Assert.assertNotNull("@B was not recorded on the component type", componentType.lookup("B"));
     Assert.assertNull("@C was recorded on the component type", componentType.lookup("C"));
+  }
+
+  /**
+   * An annotation that precedes a parameter's type is recorded as a declaration annotation or as a
+   * type annotation, according to its {@code @Target}. As a type annotation, it applies to the
+   * innermost component type of an array type, whether or not the parameter is varargs.
+   */
+  @Test
+  public void testParameterAnnotationTargets() throws Exception {
+    String[] stubFileLines = {
+      "package p;",
+      "import org.checkerframework.checker.nullness.qual.Nullable;",
+      "class C {",
+      "  void m1(@Nullable @Deprecated String s) {}",
+      "  void m2(@Nullable @Deprecated String[][] a) {}",
+      "  void m3(@Nullable @Deprecated String... a) {}",
+      "}"
+    };
+    List<TypePathEntry> oneLevel = Arrays.asList(arrayElement);
+    List<TypePathEntry> twoLevels = Arrays.asList(arrayElement, arrayElement);
+
+    AField param = firstParameter("m1(Ljava/lang/String;)V", stubFileLines);
+    Assert.assertNotNull(
+        "@Deprecated was not recorded on the parameter", param.lookup("Deprecated"));
+    Assert.assertNull("@Nullable was recorded on the parameter", param.lookup("Nullable"));
+    Assert.assertNotNull("@Nullable was not recorded on the type", param.type.lookup("Nullable"));
+    Assert.assertNull("@Deprecated was recorded on the type", param.type.lookup("Deprecated"));
+
+    param = firstParameter("m2([[Ljava/lang/String;)V", stubFileLines);
+    Assert.assertNotNull(
+        "@Deprecated was not recorded on the parameter", param.lookup("Deprecated"));
+    Assert.assertNull("@Nullable was recorded on the parameter", param.lookup("Nullable"));
+    Assert.assertNull("@Nullable was recorded on the array type", param.type.lookup("Nullable"));
+    Assert.assertEquals(
+        "wrong type paths",
+        Arrays.asList(twoLevels),
+        new ArrayList<>(param.type.innerTypes.keySet()));
+    Assert.assertNotNull(
+        "@Nullable was not recorded on the element type",
+        param.type.innerTypes.get(twoLevels).lookup("Nullable"));
+
+    param = firstParameter("m3([Ljava/lang/String;)V", stubFileLines);
+    Assert.assertNotNull(
+        "@Deprecated was not recorded on the parameter", param.lookup("Deprecated"));
+    Assert.assertNull("@Nullable was recorded on the parameter", param.lookup("Nullable"));
+    Assert.assertNull("@Nullable was recorded on the array type", param.type.lookup("Nullable"));
+    Assert.assertEquals(
+        "wrong type paths",
+        Arrays.asList(oneLevel),
+        new ArrayList<>(param.type.innerTypes.keySet()));
+    Assert.assertNotNull(
+        "@Nullable was not recorded on the component type",
+        param.type.innerTypes.get(oneLevel).lookup("Nullable"));
   }
 
   /**
