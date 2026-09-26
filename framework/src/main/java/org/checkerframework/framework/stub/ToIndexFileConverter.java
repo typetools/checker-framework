@@ -96,7 +96,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   // The possessive modifiers "*+" are for efficiency only.
   // private static Pattern packagePattern =
   //         Pattern.compile("\\bpackage *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
-  /** A pattern that matches an import statement. */
+  /**
+   * A pattern that matches an import statement. Its group 1 matches the imported name: a fully
+   * qualified type name such as {@code java.util.Map.Entry} for a single-type import, or a name
+   * followed by {@code .*} such as {@code java.util.*} for an import-on-demand. For a static
+   * import, group 1 starts with {@code static}, so callers skip static imports before matching.
+   */
   private static final Pattern importPattern =
       Pattern.compile("\\bimport *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
 
