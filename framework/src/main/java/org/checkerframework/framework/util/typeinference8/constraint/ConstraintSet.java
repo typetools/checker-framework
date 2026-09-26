@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.types.Dependencies;
@@ -598,12 +599,12 @@ public class ConstraintSet implements ReductionResult {
     }
 
     @Override
-    public void addFirst(Constraint constraint) {
+    public void addFirst(@Owning Constraint constraint) {
       throw new BugInCF("Attempted to modify an immutable constraint set.");
     }
 
     @Override
-    public void addLast(Constraint constraint) {
+    public void addLast(@Owning Constraint constraint) {
       throw new BugInCF("Attempted to modify an immutable constraint set.");
     }
   }
