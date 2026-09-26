@@ -77,7 +77,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.checker.signature.qual.Identifier;
 import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.reflection.Signatures;
@@ -347,7 +347,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   public Void visit(EnumConstantDeclaration decl, AElement elem) {
     AField field = ((AClass) elem).fields.getVivify(decl.getNameAsString());
     visitDecl(decl, field);
-    return super.visit(decl, field);
+    // Do not visit the arguments or the class body.  A class body declares an anonymous class,
+    // whose members do not belong to the field.
+    return null;
   }
 
   @Override
@@ -700,7 +702,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
           @Override
           public String visit(ClassOrInterfaceType type, Void v) {
             @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
-            @FullyQualifiedName String typeName = type.getNameAsString();
+            @Identifier String typeName = type.getNameAsString();
             if (!type.getScope().isPresent()) {
               TypeParameter typeParam = typeParameterInScope(type, typeName);
               if (typeParam != null) {
@@ -710,10 +712,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                 return bounds.isEmpty() ? "Ljava/lang/Object;" : bounds.get(0).accept(this, null);
               }
             }
-            @SuppressWarnings("signature" // TODO:  bug in ToIndexFileConverter:
-            // resolve requires a @BinaryName, but this passes a @FullyQualifiedName.
-            // They differ for inner classes.
-            )
             String name = resolve(typeName);
             if (name == null) {
               // could be defined in the same stub file
@@ -846,37 +844,61 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
     for (String declName : singleTypeImports) {
       String qualifiedName = mergeImport(declName, className);
-      if (qualifiedName != null && loadClass(qualifiedName) != null) {
-        return qualifiedName;
+      String binaryName = qualifiedName == null ? null : loadableBinaryName(qualifiedName);
+      if (binaryName != null) {
+        return binaryName;
       }
     }
 
     if (pkgName != null) {
       String qualifiedName = Signatures.addPackage(pkgName, className);
-      if (loadClass(qualifiedName) != null) {
-        return qualifiedName;
+      String binaryName = loadableBinaryName(qualifiedName);
+      if (binaryName != null) {
+        return binaryName;
       }
     }
 
     for (String declName : onDemandImports) {
       String qualifiedName = mergeImport(declName, className);
-      if (qualifiedName != null && loadClass(qualifiedName) != null) {
-        return qualifiedName;
+      String binaryName = qualifiedName == null ? null : loadableBinaryName(qualifiedName);
+      if (binaryName != null) {
+        return binaryName;
       }
     }
 
     {
       String qualifiedName = Signatures.addPackage("java.lang", className);
-      if (loadClass(qualifiedName) != null) {
-        return qualifiedName;
+      String binaryName = loadableBinaryName(qualifiedName);
+      if (binaryName != null) {
+        return binaryName;
       }
     }
 
-    if (loadClass(className) != null) {
-      return className;
-    }
+    return loadableBinaryName(className);
+  }
 
-    return null;
+  /**
+   * Returns the binary name of the loadable class that {@code name} refers to, or null if there is
+   * none. A nested class's name uses {@code .} where its binary name uses {@code $}, as in {@code
+   * java.util.Map.Entry} and {@code java.util.Map$Entry}. Therefore, this method tries replacing
+   * each {@code .} by {@code $}, starting from the end of {@code name}.
+   *
+   * @param name a fully qualified name or a binary name
+   * @return the binary name of the class that {@code name} refers to, or null
+   */
+  @SuppressWarnings("signature") // string manipulation of signature strings
+  private static @Nullable @BinaryName String loadableBinaryName(String name) {
+    String candidate = name;
+    while (true) {
+      if (loadClass(candidate) != null) {
+        return candidate;
+      }
+      int lastDot = candidate.lastIndexOf('.');
+      if (lastDot == -1) {
+        return null;
+      }
+      candidate = candidate.substring(0, lastDot) + "$" + candidate.substring(lastDot + 1);
+    }
   }
 
   /**

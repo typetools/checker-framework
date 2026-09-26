@@ -202,28 +202,35 @@ public class ToIndexFileConverterTest {
         jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/ToIndexFileConverter;)V");
   }
 
-  /**
-   * A single-type import shadows a class of the same name in the current package, which in turn
-   * shadows a class imported on demand.
-   */
+  /** A method's JVML descriptor uses the binary name of an imported nested class. */
   @Test
-  public void testResolvePrecedence() throws Exception {
+  public void testImportedNestedClass() throws Exception {
     String jaif =
         convert(
-            "package java.lang.reflect;",
-            "import java.sql.Array;",
+            "package p;",
+            "import java.util.Map.Entry;",
+            "import java.lang.Character.*;",
             "class MyClass {",
-            "  void myMethod(Array a) {}",
+            "  void myMethod(Entry e) {}",
+            "  void myOtherMethod(UnicodeBlock b) {}",
             "}");
-    assertMethod(jaif, "MyClass", "myMethod(Ljava/sql/Array;)V");
-    jaif =
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Ljava/lang/Character$UnicodeBlock;)V");
+  }
+
+  /** An enum constant with a class body does not crash the converter. */
+  @Test
+  public void testEnumConstantWithClassBody() throws Exception {
+    String jaif =
         convert(
-            "package java.lang.reflect;",
-            "import java.sql.*;",
-            "class MyClass {",
-            "  void myMethod(Array a) {}",
+            "package p;",
+            "enum MyEnum {",
+            "  A {",
+            "    void myConstantMethod() {}",
+            "  };",
+            "  void myEnumMethod() {}",
             "}");
-    assertMethod(jaif, "MyClass", "myMethod(Ljava/lang/reflect/Array;)V");
+    assertMethod(jaif, "MyEnum", "myEnumMethod()V");
   }
 
   /** A varargs parameter's JVML descriptor is an array type. */
