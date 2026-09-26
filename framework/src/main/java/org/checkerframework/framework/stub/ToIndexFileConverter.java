@@ -206,7 +206,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @throws DefException if two different definitions of the same annotation cannot be unified
    * @throws IOException if there is trouble with file reading or writing
    */
-  private static void convert(AScene scene, InputStream in, OutputStream out)
+  // Not private, so that tests can call it.
+  static void convert(AScene scene, InputStream in, OutputStream out)
       throws IOException, DefException, ParseException {
     StubUnit iu;
     try {
@@ -301,8 +302,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     // Some of the methods in the generated parser use null to represent an empty list.
     if (params != null) {
       for (Parameter param : params) {
-        Type ptype = param.getType();
-        sb.append(getJVML(ptype));
+        sb.append(getJVML(param));
       }
     }
     sb.append(")V");
@@ -310,9 +310,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     visitDecl(decl, method);
     if (params != null) {
       for (int i = 0; i < params.size(); i++) {
-        Parameter param = params.get(i);
-        AField field = method.parameters.getVivify(i);
-        visitType(param.getType(), field.type);
+        visitParameter(params.get(i), method.parameters.getVivify(i));
       }
     }
     if (rcvrAnnos != null) {
@@ -369,8 +367,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     AMethod method;
     if (params != null) {
       for (Parameter param : params) {
-        Type ptype = param.getType();
-        sb.append(getJVML(ptype));
+        sb.append(getJVML(param));
       }
     }
     sb.append(')').append(getJVML(type));
@@ -379,9 +376,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     visitType(type, method.returnType);
     if (params != null) {
       for (int i = 0; i < params.size(); i++) {
-        Parameter param = params.get(i);
-        AField field = method.parameters.getVivify(i);
-        visitType(param.getType(), field.type);
+        visitParameter(params.get(i), method.parameters.getVivify(i));
       }
     }
     if (rcvrParam.isPresent()) {
@@ -469,6 +464,37 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       }
     }
     return null;
+  }
+
+  /**
+   * Copies information from a formal parameter to an {@link AField}.
+   *
+   * @param param a formal parameter
+   * @param field the scene element for {@code param}
+   */
+  private void visitParameter(Parameter param, AField field) {
+    // As for a field, an annotation that precedes the parameter's type is recorded as a
+    // declaration annotation.
+    for (AnnotationExpr expr : param.getAnnotations()) {
+      Annotation anno = extractAnnotation(expr);
+      if (anno != null) {
+        field.tlAnnotationsHere.add(anno);
+      }
+    }
+    if (!param.isVarArgs()) {
+      visitType(param.getType(), field.type);
+      return;
+    }
+    // For a varargs parameter, `getType()` is the element type, and the annotations that precede
+    // the `...` apply to the array type.  Wrap a copy of the element type, because making a node
+    // the component of an array type would remove it from the parameter.
+    visitType(new ArrayType(param.getType().clone()), field.type);
+    for (AnnotationExpr expr : param.getVarArgsAnnotations()) {
+      Annotation anno = extractAnnotation(expr);
+      if (anno != null) {
+        field.type.tlAnnotationsHere.add(anno);
+      }
+    }
   }
 
   /** Copies information from an AST type node to an {@link ATypeElement}. */
@@ -573,6 +599,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
+   * Computes a formal parameter's JVML descriptor.
+   *
+   * @param param a formal parameter
+   * @return the JVML descriptor of {@code param}'s type
+   */
+  private String getJVML(Parameter param) {
+    // For a varargs parameter, `getType()` returns the element type rather than the array type.
+    return (param.isVarArgs() ? "[" : "") + getJVML(param.getType());
+  }
+
+  /**
    * Computes a type's JVML representation: its field descriptor, such as {@code I} for {@code int}
    * or {@code [[Ljava/lang/String;} for {@code String[][]}. For {@code void}, the result is {@code
    * V}.
@@ -671,7 +708,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
     for (String declName : imports) {
       String qualifiedName = mergeImport(declName, className);
-      if (loadClass(qualifiedName) != null) {
+      if (qualifiedName != null && loadClass(qualifiedName) != null) {
         return qualifiedName;
       }
     }
@@ -720,13 +757,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * Finds the {@link Class} corresponding to a name.
    *
    * @param className a class name
-   * @return the {@link Class} object corresponding to {@code className}, or null if none found
+   * @return the {@link Class} object corresponding to {@code className}, or null if none is found
+   *     or it cannot be loaded
    */
   private static @Nullable Class<?> loadClass(@ClassGetName String className) {
     assert className != null;
     try {
-      return Class.forName(className, false, null);
-    } catch (ClassNotFoundException e) {
+      return Class.forName(className, false, ToIndexFileConverter.class.getClassLoader());
+    } catch (ClassNotFoundException | LinkageError e) {
+      // A LinkageError, such as NoClassDefFoundError, means that the class exists but cannot be
+      // used -- for example, one of its supertypes is not on the classpath.  Treat it the same
+      // as a class that does not exist, rather than aborting the whole conversion.
       return null;
     }
   }

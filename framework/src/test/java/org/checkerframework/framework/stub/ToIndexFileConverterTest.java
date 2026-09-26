@@ -7,6 +7,7 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import org.checkerframework.afu.scenelib.el.AClass;
 import org.checkerframework.afu.scenelib.el.AField;
+import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.afu.scenelib.el.AScene;
 import org.checkerframework.afu.scenelib.el.ATypeElement;
 import org.checkerframework.afu.scenelib.el.TypePathEntry;
@@ -59,6 +61,124 @@ public class ToIndexFileConverterTest {
   /** The converter used by the {@code getJVML} tests. */
   private final ToIndexFileConverter converter =
       new ToIndexFileConverter(null, Collections.emptyList(), new AScene());
+
+  /**
+   * Converts a stub file to a JAIF.
+   *
+   * @param stubFileLines the lines of the stub file
+   * @return the JAIF that {@link ToIndexFileConverter} produces for the stub file
+   */
+  private static String convert(String... stubFileLines) throws Exception {
+    String stubFile = String.join(System.lineSeparator(), stubFileLines);
+    ByteArrayInputStream in = new ByteArrayInputStream(stubFile.getBytes(StandardCharsets.UTF_8));
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    ToIndexFileConverter.convert(new AScene(), in, out);
+    return out.toString(StandardCharsets.UTF_8.name());
+  }
+
+  /**
+   * Asserts that {@code jaif} declares {@code method} in {@code className}.
+   *
+   * @param jaif a JAIF
+   * @param className the name of a class, without its package; a {@code $} separates a nested class
+   *     from its enclosing class
+   * @param method the JVML representation of a method, such as {@code "myMethod(I)V"}
+   */
+  private static void assertMethod(String jaif, String className, String method) {
+    String currentClass = null;
+    for (String line : jaif.split("\\R")) {
+      if (line.startsWith("class ") && line.endsWith(":")) {
+        currentClass = line.substring("class ".length(), line.length() - 1);
+      } else if (line.strip().equals("method " + method + ":") && className.equals(currentClass)) {
+        return;
+      }
+    }
+    Assert.fail("no method " + method + " in class " + className + System.lineSeparator() + jaif);
+  }
+
+  /**
+   * Converts a stub file that declares a class {@code p.C}, and returns the scene element for the
+   * first parameter of the given method.
+   *
+   * @param method the JVML representation of a method of {@code p.C}
+   * @param stubFileLines the lines of the stub file
+   * @return the scene element for the first parameter of {@code method}
+   */
+  private static AField firstParameter(String method, String... stubFileLines) throws Exception {
+    String stubFile = String.join(System.lineSeparator(), stubFileLines);
+    AScene scene = new AScene();
+    ToIndexFileConverter.convert(
+        scene,
+        new ByteArrayInputStream(stubFile.getBytes(StandardCharsets.UTF_8)),
+        new ByteArrayOutputStream());
+    AMethod m = scene.classes.get("p.C").methods.get(method);
+    Assert.assertNotNull("no scene element for method " + method, m);
+    AField param = m.parameters.get(0);
+    Assert.assertNotNull("no scene element for the first parameter of " + method, param);
+    return param;
+  }
+
+  /** A method's JVML descriptor uses the fully qualified name of a class on the classpath. */
+  @Test
+  public void testResolveClassOnClasspath() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import org.checkerframework.framework.stub.ToIndexFileConverter;",
+            "class MyClass {",
+            "  void myMethod(ToIndexFileConverter c) {}",
+            "}");
+    assertMethod(
+        jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/ToIndexFileConverter;)V");
+  }
+
+  /** A varargs parameter's JVML descriptor is an array type. */
+  @Test
+  public void testVarargsDescriptor() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass {",
+            "  MyClass(int i, String... ss) {}",
+            "  void myMethod(Number... ns) {}",
+            "  void myOtherMethod(CharSequence[]... ss) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "<init>(I[Ljava/lang/String;)V");
+    assertMethod(jaif, "MyClass", "myMethod([Ljava/lang/Number;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod([[Ljava/lang/CharSequence;)V");
+  }
+
+  /** An annotation that precedes a parameter's type is recorded as a declaration annotation. */
+  @Test
+  public void testParameterDeclarationAnnotation() throws Exception {
+    AField param =
+        firstParameter(
+            "m(Ljava/lang/String;)V", "package p;", "class C {", "  void m(@A String s) {}", "}");
+    Assert.assertNotNull("@A was not recorded on the parameter", param.lookup("A"));
+  }
+
+  /**
+   * The annotations of a varargs parameter are recorded: one that precedes the type as a
+   * declaration annotation, one within the element type on the array's component type, and one that
+   * precedes the {@code ...} on the array type.
+   */
+  @Test
+  public void testVarargsParameterAnnotations() throws Exception {
+    AField param =
+        firstParameter(
+            "m([Ljava/lang/String;)V",
+            "package p;",
+            "class C {",
+            "  void m(@A java.lang.@B String @C ... args) {}",
+            "}");
+    Assert.assertNotNull("@A was not recorded on the parameter", param.lookup("A"));
+    Assert.assertNotNull("@C was not recorded on the array type", param.type.lookup("C"));
+    Assert.assertNull("@B was recorded on the array type", param.type.lookup("B"));
+    ATypeElement componentType = param.type.innerTypes.get(Arrays.asList(arrayElement));
+    Assert.assertNotNull("no scene element for the component type", componentType);
+    Assert.assertNotNull("@B was not recorded on the component type", componentType.lookup("B"));
+    Assert.assertNull("@C was recorded on the component type", componentType.lookup("C"));
+  }
 
   /**
    * Tests that an annotation on a nested type argument is recorded even when no annotation appears
