@@ -43,10 +43,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -473,28 +476,59 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param field the scene element for {@code param}
    */
   private void visitParameter(Parameter param, AField field) {
-    // As for a field, an annotation that precedes the parameter's type is recorded as a
-    // declaration annotation.
-    for (AnnotationExpr expr : param.getAnnotations()) {
-      Annotation anno = extractAnnotation(expr);
-      if (anno != null) {
-        field.tlAnnotationsHere.add(anno);
-      }
-    }
-    if (!param.isVarArgs()) {
-      visitType(param.getType(), field.type);
-      return;
-    }
     // For a varargs parameter, `getType()` is the element type, and the annotations that precede
     // the `...` apply to the array type.  Wrap a copy of the element type, because making a node
     // the component of an array type would remove it from the parameter.
-    visitType(new ArrayType(param.getType().clone()), field.type);
-    for (AnnotationExpr expr : param.getVarArgsAnnotations()) {
-      Annotation anno = extractAnnotation(expr);
-      if (anno != null) {
-        field.type.tlAnnotationsHere.add(anno);
+    Type type = param.isVarArgs() ? new ArrayType(param.getType().clone()) : param.getType();
+    visitType(type, field.type);
+    if (param.isVarArgs()) {
+      for (AnnotationExpr expr : param.getVarArgsAnnotations()) {
+        Annotation anno = extractAnnotation(expr);
+        if (anno != null) {
+          field.type.tlAnnotationsHere.add(anno);
+        }
       }
     }
+
+    // An annotation that precedes the parameter's type is a declaration annotation, a type
+    // annotation, or both, according to its `@Target` (JLS 9.7.4).  As a type annotation, it
+    // applies to the innermost component type of an array type:  in `@A String[]`, `@A` annotates
+    // `String`.  An annotation whose `@Target` cannot be determined is recorded as a declaration
+    // annotation, as for a field.
+    List<TypePathEntry> elementLoc =
+        new ArrayList<>(Collections.nCopies(type.getArrayLevel(), TypePathEntry.ARRAY_ELEMENT));
+    for (AnnotationExpr expr : param.getAnnotations()) {
+      Annotation anno = extractAnnotation(expr);
+      if (anno == null) {
+        continue;
+      }
+      List<ElementType> targets = getTargets(expr);
+      if (targets == null || targets.contains(ElementType.PARAMETER)) {
+        field.tlAnnotationsHere.add(anno);
+      }
+      if (targets != null && targets.contains(ElementType.TYPE_USE)) {
+        ATypeElement elementType =
+            elementLoc.isEmpty() ? field.type : field.type.innerTypes.getVivify(elementLoc);
+        elementType.tlAnnotationsHere.add(anno);
+      }
+    }
+  }
+
+  /**
+   * Returns the {@code @Target} meta-annotation of the annotation interface that an annotation
+   * instantiates.
+   *
+   * @param expr an annotation
+   * @return the element types in the {@code @Target} meta-annotation of {@code expr}'s annotation
+   *     interface, or null if that interface cannot be loaded or has no {@code @Target}
+   */
+  private @Nullable List<ElementType> getTargets(AnnotationExpr expr) {
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
+    @BinaryName String name = expr.getNameAsString();
+    String qualifiedName = resolve(name);
+    Class<?> annoClass = qualifiedName == null ? null : loadClass(qualifiedName);
+    Target target = annoClass == null ? null : annoClass.getAnnotation(Target.class);
+    return target == null ? null : Arrays.asList(target.value());
   }
 
   /**
@@ -695,6 +729,18 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *     or null if resolution fails
    */
   private @Nullable @BinaryName String resolve(@BinaryName String className) {
+    // Follow the precedence of JLS 6.4.1: a single-type import shadows a class of the same name in
+    // the current package, which in turn shadows a class imported on demand.  `java.lang` is
+    // imported on demand implicitly.
+
+    for (String declName : imports) {
+      if (!declName.endsWith("*")) {
+        String qualifiedName = mergeImport(declName, className);
+        if (qualifiedName != null && loadClass(qualifiedName) != null) {
+          return qualifiedName;
+        }
+      }
+    }
 
     if (pkgName != null) {
       String qualifiedName = Signatures.addPackage(pkgName, className);
@@ -704,8 +750,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
 
     {
-      // Every Java program implicitly does "import java.lang.*",
-      // so see whether this class is in that package.
       String qualifiedName = Signatures.addPackage("java.lang", className);
       if (loadClass(qualifiedName) != null) {
         return qualifiedName;
@@ -713,9 +757,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
 
     for (String declName : imports) {
-      String qualifiedName = mergeImport(declName, className);
-      if (qualifiedName != null && loadClass(qualifiedName) != null) {
-        return qualifiedName;
+      if (declName.endsWith("*")) {
+        String qualifiedName = mergeImport(declName, className);
+        if (qualifiedName != null && loadClass(qualifiedName) != null) {
+          return qualifiedName;
+        }
       }
     }
 
