@@ -663,6 +663,65 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MySecondClass", "myMethod(Lmypackage/Entry;)V");
   }
 
+  /**
+   * Once the first identifier of a qualified name names a member type, the remaining identifiers
+   * are resolved within that member type, even if the stub file does not declare them.
+   */
+  @Test
+  public void testQualifiedNameIsResolvedWithinMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import java.util.Map;",
+            "class MyClass {",
+            "  static class Map {}",
+            "  void myMethod(Map.Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyClass$Map$Entry;)V");
+  }
+
+  /**
+   * A qualified name whose later identifiers the stub file omits is resolved within the classpath
+   * counterpart of the stub file's declaration.
+   */
+  @Test
+  public void testQualifiedNameIsResolvedWithinClasspathCounterpart() throws Exception {
+    // java.util.AbstractMap inherits Entry from java.util.Map.
+    String jaif =
+        convert(
+            "package java.util;",
+            "abstract class AbstractMap {}",
+            "class MyClass {",
+            "  void myMethod(AbstractMap.Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
+  }
+
+  /** A member type that the stub file omits from the enclosing class is found on the classpath. */
+  @Test
+  public void testOmittedMemberTypeOfEnclosingClass() throws Exception {
+    // java.util.HashMap declares a package-private member type named Node.
+    String jaif =
+        convert("package java.util;", "class HashMap {", "  void myMethod(Node n) {}", "}");
+    assertMethod(jaif, "HashMap", "myMethod(Ljava/util/HashMap$Node;)V");
+  }
+
+  /**
+   * A member type that the stub file omits from a supertype that the stub file declares is found on
+   * the classpath.
+   */
+  @Test
+  public void testOmittedMemberTypeOfStubSupertype() throws Exception {
+    String jaif =
+        convert(
+            "package java.util;",
+            "abstract class AbstractMap {}",
+            "abstract class MyMap extends AbstractMap {",
+            "  void myMethod(SimpleEntry e) {}",
+            "}");
+    assertMethod(jaif, "MyMap", "myMethod(Ljava/util/AbstractMap$SimpleEntry;)V");
+  }
+
   /** A nested class declared in the stub file is qualified with the stub file's package. */
   @Test
   public void testUnresolvedNestedTypeInOwnPackage() throws Exception {
