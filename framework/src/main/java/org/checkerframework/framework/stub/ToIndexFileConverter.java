@@ -4,6 +4,7 @@ import com.github.javaparser.ParseException;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
@@ -18,12 +19,14 @@ import com.github.javaparser.ast.body.InitializerDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
+import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -91,7 +94,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   // The possessive modifiers "*+" are for efficiency only.
   // private static Pattern packagePattern =
   //         Pattern.compile("\\bpackage *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
-  /** A pattern that matches an import statement. */
+  /**
+   * A pattern that matches an import statement. Its group 1 matches the imported name: a fully
+   * qualified type name such as {@code java.util.Map.Entry} for a single-type import, or a name
+   * followed by {@code .*} such as {@code java.util.*} for an import-on-demand. For a static
+   * import, group 1 starts with {@code static}, so callers skip static imports before matching.
+   */
   private static final Pattern importPattern =
       Pattern.compile("\\bimport *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
 
@@ -122,8 +130,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private final @Nullable @DotSeparatedIdentifiers String pkgName;
 
-  /** Imports that appear in the stub file. */
-  private final List<String> imports;
+  /** Single-type imports that appear in the stub file, such as {@code java.util.List}. */
+  private final List<String> singleTypeImports;
+
+  /** Imports-on-demand that appear in the stub file, such as {@code java.util.*}. */
+  private final List<String> onDemandImports;
 
   /** A scene read from the input JAIF file, and will be written to the output JAIF file. */
   private final AScene scene;
@@ -141,22 +152,26 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     this.scene = scene;
     pkgName = pkgDecl == null ? null : pkgDecl.getNameAsString();
     if (importDecls == null) {
-      imports = Collections.emptyList();
+      singleTypeImports = Collections.emptyList();
+      onDemandImports = Collections.emptyList();
     } else {
-      ArrayList<String> imps = new ArrayList<>(importDecls.size());
+      ArrayList<String> singles = new ArrayList<>(importDecls.size());
+      ArrayList<String> onDemands = new ArrayList<>(importDecls.size());
       for (ImportDeclaration decl : importDecls) {
         if (!decl.isStatic()) {
           Matcher m = importPattern.matcher(decl.toString());
           if (m.find()) {
             String s = m.group(1);
             if (s != null) {
-              imps.add(s);
+              (s.endsWith("*") ? onDemands : singles).add(s);
             }
           }
         }
       }
-      imps.trimToSize();
-      imports = Collections.unmodifiableList(imps);
+      singles.trimToSize();
+      onDemands.trimToSize();
+      singleTypeImports = Collections.unmodifiableList(singles);
+      onDemandImports = Collections.unmodifiableList(onDemands);
     }
   }
 
@@ -289,8 +304,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   @Override
   public Void visit(ClassOrInterfaceDeclaration decl, AElement elem) {
-    visitDecl(decl, (ADeclaration) elem);
-    return super.visit(decl, elem);
+    // A nested class's members belong to the nested class, not to the class that encloses it.
+    AClass clazz = classElement(decl);
+    visitDecl(decl, clazz);
+    return super.visit(decl, clazz);
   }
 
   @Override
@@ -335,8 +352,16 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   @Override
   public Void visit(EnumDeclaration decl, AElement elem) {
-    visitDecl(decl, (ADeclaration) elem);
-    return super.visit(decl, elem);
+    AClass clazz = classElement(decl);
+    visitDecl(decl, clazz);
+    return super.visit(decl, clazz);
+  }
+
+  @Override
+  public Void visit(RecordDeclaration decl, AElement elem) {
+    AClass clazz = classElement(decl);
+    visitDecl(decl, clazz);
+    return super.visit(decl, clazz);
   }
 
   @Override
@@ -452,6 +477,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       }
     }
     return null;
+  }
+
+  /**
+   * Returns the scene's element for the class that {@code decl} declares, creating the element if
+   * the scene does not yet contain it.
+   *
+   * @param decl a type declaration in the stub file
+   * @return the scene's element for {@code decl}
+   */
+  private AClass classElement(TypeDeclaration<?> decl) {
+    return scene.classes.getVivify(qualifiedStubBinaryName(decl));
   }
 
   /**
@@ -665,6 +701,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
           public String visit(ClassOrInterfaceType type, Void v) {
             @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
             @FullyQualifiedName String typeName = type.getNameAsString();
+            if (!type.getScope().isPresent()) {
+              TypeParameter typeParam = typeParameterInScope(type, typeName);
+              if (typeParam != null) {
+                // The JVML descriptor uses the erasure, which is the first bound, or Object if
+                // the type parameter has no bound.
+                NodeList<ClassOrInterfaceType> bounds = typeParam.getTypeBound();
+                return bounds.isEmpty() ? "Ljava/lang/Object;" : bounds.get(0).accept(this, null);
+              }
+            }
             @SuppressWarnings("signature" // TODO:  bug in ToIndexFileConverter:
             // resolve requires a @BinaryName, but this passes a @FullyQualifiedName.
             // They differ for inner classes.
@@ -722,6 +767,59 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
+   * Returns the type parameter named {@code name} that is in scope at {@code node}, or null if no
+   * such type parameter is in scope.
+   *
+   * @param node a node in the stub file's AST
+   * @param name a type name, without type arguments
+   * @return the type parameter that {@code name} refers to at {@code node}, or null
+   */
+  private static @Nullable TypeParameter typeParameterInScope(Node node, String name) {
+    for (Node n = node; n != null; n = n.getParentNode().orElse(null)) {
+      if (n instanceof NodeWithTypeParameters) {
+        for (TypeParameter typeParam : ((NodeWithTypeParameters<?>) n).getTypeParameters()) {
+          if (typeParam.getNameAsString().equals(name)) {
+            return typeParam;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the binary name, qualified by the stub file's package, of a type that the stub file
+   * declares. For example, if the stub file's package is {@code p} and the stub file declares a
+   * top-level class {@code B} containing a nested class {@code C}, then this method maps the
+   * declaration of {@code C} to {@code "p.B$C"}.
+   *
+   * @param declaration a type declaration in the stub file
+   * @return the binary name of {@code declaration}
+   */
+  private String qualifiedStubBinaryName(TypeDeclaration<?> declaration) {
+    String binaryName = stubBinaryName(declaration);
+    return pkgName == null ? binaryName : pkgName + "." + binaryName;
+  }
+
+  /**
+   * Returns the binary name, without its package, of a type that the stub file declares.
+   *
+   * @param declaration a type declaration in a stub file
+   * @return the binary name of {@code declaration}, without its package
+   */
+  private static String stubBinaryName(TypeDeclaration<?> declaration) {
+    StringBuilder binaryName = new StringBuilder(declaration.getNameAsString());
+    for (Node n = declaration.getParentNode().orElse(null);
+        n != null;
+        n = n.getParentNode().orElse(null)) {
+      if (n instanceof TypeDeclaration<?>) {
+        binaryName.insert(0, ((TypeDeclaration<?>) n).getNameAsString() + "$");
+      }
+    }
+    return binaryName.toString();
+  }
+
+  /**
    * Finds the fully qualified name of the class with the given name.
    *
    * @param className possibly unqualified name of class
@@ -742,9 +840,27 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       }
     }
 
+    // The order of the lookups below is the order in which Java resolves a type name: a
+    // single-type import shadows a type in the current package, which shadows a type that an
+    // import-on-demand declaration makes available.
+
+    for (String declName : singleTypeImports) {
+      String qualifiedName = mergeImport(declName, className);
+      if (qualifiedName != null && loadClass(qualifiedName) != null) {
+        return qualifiedName;
+      }
+    }
+
     if (pkgName != null) {
       String qualifiedName = Signatures.addPackage(pkgName, className);
       if (loadClass(qualifiedName) != null) {
+        return qualifiedName;
+      }
+    }
+
+    for (String declName : onDemandImports) {
+      String qualifiedName = mergeImport(declName, className);
+      if (qualifiedName != null && loadClass(qualifiedName) != null) {
         return qualifiedName;
       }
     }
@@ -753,15 +869,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       String qualifiedName = Signatures.addPackage("java.lang", className);
       if (loadClass(qualifiedName) != null) {
         return qualifiedName;
-      }
-    }
-
-    for (String declName : imports) {
-      if (declName.endsWith("*")) {
-        String qualifiedName = mergeImport(declName, className);
-        if (qualifiedName != null && loadClass(qualifiedName) != null) {
-          return qualifiedName;
-        }
       }
     }
 
@@ -786,22 +893,18 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       return className;
     }
     String[] importSplit = importName.split("\\.");
-    String[] classSplit = className.split("\\.");
     String importEnd = importSplit[importSplit.length - 1];
     if ("*".equals(importEnd)) {
       return importName.substring(0, importName.length() - 1) + className;
-    } else {
-      // find overlap such as in
-      //   import a.b.C.D;
+    } else if (className.equals(importEnd) || className.startsWith(importEnd + ".")) {
+      // The import supplies the prefix, such as in
+      //   import a.b.C;
       //   C.D myvar;
-      int i = importSplit.length;
-      int n = i - classSplit.length;
-      while (--i >= n) {
-        if (!classSplit[i - n].equals(importSplit[i])) {
-          return null;
-        }
-      }
-      return importName;
+      return importName + className.substring(importEnd.length());
+    } else {
+      // A single-type import makes available only the simple name of the type that it imports, so
+      // it cannot supply a prefix for any other name.
+      return null;
     }
   }
 
