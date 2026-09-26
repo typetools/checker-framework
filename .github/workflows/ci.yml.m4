@@ -83,11 +83,13 @@ clone_plume_scripts_step()dnl
 include([../../.azure/jobs.m4])dnl
 
   all_green:
-    # "all_green" is a required check. A job that "if:" skips reports success,
-    # so the skipped job has a different name, lest it satisfy the requirement
-    # before the other run's "all_green" finishes.
+    # "all_green" is a required check. This job runs in every CI run, so that
+    # GitHub evaluates its name.  In a run whose other jobs are skipped, it is
+    # named "all_green (skipped)", lest it satisfy the requirement before the
+    # other run's "all_green" finishes.  (GitHub does not evaluate the name of
+    # a job that "if:" skips.)
     name: ${{ (run_condition) && 'all_green' || 'all_green (skipped)' }}
-    if: always() && (run_condition)
+    if: always()
     needs:
       - junit_jdk17
       - junit_jdk21
