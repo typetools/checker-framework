@@ -269,9 +269,9 @@ public final class JavaParserUtil {
       }
 
       // A member type that `ancestor` declares shadows a type parameter of `ancestor` that has the
-      // same name, so search the member types first.  A member type that `ancestor` merely
-      // inherits does not shadow a type parameter, so those are searched below, after the type
-      // parameters.
+      // same name, so search `ancestor's declared member types first.  A member type that
+      // `ancestor` merely inherits does not shadow a type parameter, so those are searched below,
+      // after the type parameters.
       if (ancestor instanceof TypeDeclaration<?> enclosingType
           && declaresMemberType(enclosingType.getMembers(), firstComponent)
           && inScopeOfMemberTypes(child)) {
