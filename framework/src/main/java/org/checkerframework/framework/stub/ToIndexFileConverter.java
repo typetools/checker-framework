@@ -876,10 +876,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private static @Nullable Node packageQualifiedStubDeclaration(
       Node node, String typeName, boolean inherited) {
     CompilationUnit cu = node.findCompilationUnit().orElse(null);
-    String pkg =
-        cu == null
-            ? null
-            : cu.getPackageDeclaration().map(PackageDeclaration::getNameAsString).orElse(null);
+    if (cu == null) {
+      return null;
+    }
+    String pkg = cu.getPackageDeclaration().map(PackageDeclaration::getNameAsString).orElse(null);
     if (pkg != null && typeName.startsWith(pkg + ".")) {
       return scopedStubDeclaration(cu, typeName.substring(pkg.length() + 1), inherited);
     }
