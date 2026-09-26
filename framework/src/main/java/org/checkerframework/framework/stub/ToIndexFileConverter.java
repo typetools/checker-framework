@@ -641,11 +641,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             if (declaration != null) {
               name = qualifiedStubBinaryName((TypeDeclaration<?>) declaration);
             } else {
-              name = resolve(typeName, type.findCompilationUnit().orElse(null));
+              // A member type that an enclosing class inherits from a class on the classpath
+              // shadows an import and a type in the current package.
+              name = inheritedFromClasspath(type, typeName);
               if (name == null) {
-                // The type might be a member type that an enclosing class inherits from a class
-                // on the classpath.
-                name = inheritedFromClasspath(type, typeName);
+                name = resolve(typeName, type.findCompilationUnit().orElse(null));
               }
               if (name == null) {
                 name = unresolvedBinaryName(typeName);
@@ -746,11 +746,40 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *
    * @param node the node in the stub file's AST at which {@code typeName} appears
    * @param typeName a type name, in which a {@code .} separates a nested class from its enclosing
-   *     class
+   *     class; it may be qualified by the stub file's package
    * @param inherited if true, a class's member types include the ones that it inherits
    * @return the declaration of {@code typeName}, or null
    */
   private static @Nullable Node stubDeclaration(Node node, String typeName, boolean inherited) {
+    Node result = scopedStubDeclaration(node, typeName, inherited);
+    if (result != null) {
+      return result;
+    }
+    // A type in scope shadows a package, so try a package-qualified name only after the lookup
+    // above fails.
+    CompilationUnit cu = node.findCompilationUnit().orElse(null);
+    String pkg =
+        cu == null
+            ? null
+            : cu.getPackageDeclaration().map(PackageDeclaration::getNameAsString).orElse(null);
+    if (pkg != null && typeName.startsWith(pkg + ".")) {
+      return scopedStubDeclaration(cu, typeName.substring(pkg.length() + 1), inherited);
+    }
+    return null;
+  }
+
+  /**
+   * Returns the declaration, in the stub file, that {@code typeName} names at {@code node}, where
+   * the first identifier of {@code typeName} is a type in scope at {@code node}.
+   *
+   * @param node the node in the stub file's AST at which {@code typeName} appears
+   * @param typeName a type name, in which a {@code .} separates a nested class from its enclosing
+   *     class
+   * @param inherited if true, a class's member types include the ones that it inherits
+   * @return the declaration of {@code typeName}, or null
+   */
+  private static @Nullable Node scopedStubDeclaration(
+      Node node, String typeName, boolean inherited) {
     String[] identifiers = typeName.split("\\.", -1);
     // Search each enclosing declaration, innermost first, and finally the stub file's top-level
     // classes.  That is the order in which Java resolves a type name.  Within one declaration, a
@@ -929,8 +958,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
 
     if (pkgName != null) {
-      String binaryName = classBinaryName(pkgName + "." + className, cu);
-      if (binaryName != null) {
+      // The first identifier of `className` names a type in the current package, not a
+      // subpackage, so every later identifier names a member type.
+      String qualifiedName = pkgName + "." + className;
+      @SuppressWarnings("signature") // the stub file's declarations determine the binary name
+      @BinaryName String declared = (cu == null) ? null : declaredInStubFile(cu, qualifiedName);
+      if (declared != null) {
+        return declared;
+      }
+      @SuppressWarnings("signature") // a type in a package, followed by its member types
+      @BinaryName String binaryName = pkgName + "." + className.replace('.', '$');
+      if (loadClass(binaryName) != null) {
         return binaryName;
       }
     }
@@ -1102,12 +1140,33 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * resolved. Because such a name does not indicate which of its dot-separated components are
    * package names and which are class names, this method uses the Java convention that a package
    * name starts with a lowercase letter and a class name starts with an uppercase letter. A name
+   * whose first identifier a single-type import names is qualified by that import. Any other name
    * with no package name is assumed to refer to the stub file's own package.
    *
    * @param typeName a type name that resolution failed on
    * @return the binary name that {@code typeName} most likely refers to
    */
-  private String unresolvedBinaryName(String typeName) {
+  private String unresolvedBinaryName(@FullyQualifiedName String typeName) {
+    for (String declName : singleTypeImports) {
+      String qualifiedName = mergeImport(declName, typeName);
+      // An unchanged name is an import of a type in the unnamed package, which gives no package.
+      if (qualifiedName != null && !qualifiedName.equals(typeName)) {
+        // The import is fully qualified, so do not qualify the result by the stub file's package.
+        return splitBinaryName(qualifiedName, null);
+      }
+    }
+    return splitBinaryName(typeName, pkgName);
+  }
+
+  /**
+   * Returns the binary name that a type name most likely refers to, using the Java convention that
+   * a package name starts with a lowercase letter and a class name starts with an uppercase letter.
+   *
+   * @param typeName a type name
+   * @param defaultPackage the package of {@code typeName} if it has no package name, or null
+   * @return the binary name that {@code typeName} most likely refers to
+   */
+  private static String splitBinaryName(String typeName, @Nullable String defaultPackage) {
     String[] identifiers = typeName.split("\\.", -1);
     // The index of the outermost class name; every identifier before it is a package name.
     int outermostClass = 0;
@@ -1116,9 +1175,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       outermostClass++;
     }
     StringBuilder result = new StringBuilder();
-    if (outermostClass == 0 && pkgName != null) {
-      // The name has no package name, so it refers to the stub file's own package.
-      result.append(pkgName).append('.');
+    if (outermostClass == 0 && defaultPackage != null) {
+      // The name has no package name, so it refers to the default package.
+      result.append(defaultPackage).append('.');
     }
     for (int i = 0; i < identifiers.length; i++) {
       if (i > 0) {

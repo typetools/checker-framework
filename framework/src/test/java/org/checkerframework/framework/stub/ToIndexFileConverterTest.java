@@ -266,6 +266,48 @@ public class ToIndexFileConverterTest {
         "myMethod(Lmypackage/MyOtherClass$MyNestedClass;Lother/pkg/MyOtherClass;)V");
   }
 
+  /** A single-type import qualifies an unresolvable name, including a nested one. */
+  @Test
+  public void testUnresolvedImportedType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import other.pkg.MyOtherClass;",
+            "class MyClass {",
+            "  void myMethod(MyOtherClass c, MyOtherClass.MyNestedClass n) {}",
+            "}");
+    assertMethod(
+        jaif,
+        "MyClass",
+        "myMethod(Lother/pkg/MyOtherClass;Lother/pkg/MyOtherClass$MyNestedClass;)V");
+  }
+
+  /** A member type is inherited through a superclass that the stub file names by package. */
+  @Test
+  public void testInheritedThroughPackageQualifiedSuperclass() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class Parent {",
+            "  class Nested {}",
+            "}",
+            "class Child extends mypackage.Parent {",
+            "  void myMethod(Nested n) {}",
+            "}");
+    assertMethod(jaif, "Child", "myMethod(Lmypackage/Parent$Nested;)V");
+  }
+
+  /**
+   * The first identifier of a qualified name is not a subpackage of the stub file's package: in
+   * package {@code java}, the name {@code util.List} does not refer to {@code java.util.List}.
+   */
+  @Test
+  public void testQualifiedNameIsNotRelativeToPackage() throws Exception {
+    String jaif =
+        convert("package java;", "class MyClass {", "  void myMethod(util.List l) {}", "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lutil/List;)V");
+  }
+
   /** A type variable whose bound is a fully qualified name erases to that name. */
   @Test
   public void testFullyQualifiedTypeVariableBound() throws Exception {
