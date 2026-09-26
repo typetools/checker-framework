@@ -712,21 +712,27 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             CompilationUnit cu = type.findCompilationUnit().orElse(null);
             // Search each enclosing scope, innermost first, as `scopedStubDeclaration` does.  In
             // addition, a class's scope contains the member types that its counterpart on the
-            // classpath declares or inherits.  A type found in any enclosing scope shadows an
-            // import and a type in the current package.  Once the first identifier names a type,
-            // the remaining identifiers are resolved within that type, and outer scopes are not
-            // searched.
+            // classpath declares or inherits.  Within a class, a member type that the class
+            // declares, in the stub file or in its counterpart, shadows an inherited one.  A type
+            // found in any enclosing scope shadows an import and a type in the current package.
+            // Once the first identifier names a type, the remaining identifiers are resolved
+            // within that type, and outer scopes are not searched.
             Node declaration = null;
             String name = null;
             for (Node n = type; n != null; n = n.getParentNode().orElse(null)) {
-              declaration = firstDeclarationAt(n, identifiers, true);
+              declaration = firstDeclarationAt(n, identifiers, false);
               if (declaration != null || n instanceof CompilationUnit) {
                 break;
               }
-              if (n instanceof TypeDeclaration<?>) {
-                Class<?> clazz =
-                    classpathMemberClass(
-                        (TypeDeclaration<?>) n, identifiers[0], false, cu, visitedSet());
+              if (n instanceof TypeDeclaration<?> typeDecl) {
+                Class<?> clazz = counterpartMemberClass(typeDecl, identifiers[0]);
+                if (clazz == null) {
+                  declaration = memberTypeDeclaration(typeDecl, identifiers[0], true, visitedSet());
+                  if (declaration != null) {
+                    break;
+                  }
+                  clazz = classpathMemberClass(typeDecl, identifiers[0], false, cu, visitedSet());
+                }
                 if (clazz != null) {
                   name = memberBinaryName(clazz, identifiers, 1);
                   break;
@@ -1185,12 +1191,21 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (start == identifiers.length) {
       return qualifiedStubBinaryName(declaration);
     }
+    // A member type that `declaration` declares, in the stub file or in its counterpart, shadows
+    // an inherited one.
     TypeDeclaration<?> member =
-        memberTypeDeclaration(declaration, identifiers[start], true, visitedSet());
+        memberTypeDeclaration(declaration, identifiers[start], false, visitedSet());
     if (member != null) {
       return memberBinaryName(member, identifiers, start + 1, cu);
     }
-    Class<?> clazz = classpathMemberClass(declaration, identifiers[start], false, cu, visitedSet());
+    Class<?> clazz = counterpartMemberClass(declaration, identifiers[start]);
+    if (clazz == null) {
+      member = memberTypeDeclaration(declaration, identifiers[start], true, visitedSet());
+      if (member != null) {
+        return memberBinaryName(member, identifiers, start + 1, cu);
+      }
+      clazz = classpathMemberClass(declaration, identifiers[start], false, cu, visitedSet());
+    }
     if (clazz != null) {
       return memberBinaryName(clazz, identifiers, start + 1);
     }
@@ -1244,6 +1259,50 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private String packageName() {
     return pkgName == null ? "" : pkgName;
+  }
+
+  /**
+   * Returns the member type named {@code identifier} that the classpath counterpart of {@code
+   * declaration} itself declares, or null if there is none. The result may be private, because a
+   * class can refer to its own private member types.
+   *
+   * @param declaration a type declaration in a stub file
+   * @param identifier the simple name of a member type
+   * @return the member type named {@code identifier}, or null
+   */
+  private @Nullable Class<?> counterpartMemberClass(
+      TypeDeclaration<?> declaration, String identifier) {
+    @SuppressWarnings("signature") // a binary name is a valid argument to Class.forName
+    @ClassGetName String counterpartName = qualifiedStubBinaryName(declaration);
+    return declaredMemberClass(loadClass(counterpartName), identifier);
+  }
+
+  /**
+   * Returns the member type named {@code identifier} that {@code clazz} itself declares, or null if
+   * there is none.
+   *
+   * @param clazz a class on the classpath, or null
+   * @param identifier the simple name of a member type
+   * @return the member type named {@code identifier}, or null
+   */
+  private static @Nullable Class<?> declaredMemberClass(
+      @Nullable Class<?> clazz, String identifier) {
+    if (clazz == null) {
+      return null;
+    }
+    Class<?>[] members;
+    try {
+      members = clazz.getDeclaredClasses();
+    } catch (LinkageError | SecurityException e) {
+      // The class exists but its members cannot be read; treat it as having none.
+      return null;
+    }
+    for (Class<?> member : members) {
+      if (member.getSimpleName().equals(identifier)) {
+        return member;
+      }
+    }
+    return null;
   }
 
   /**
@@ -1336,18 +1395,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (clazz == null || !visited.add(clazz)) {
       return null;
     }
-    Class<?>[] members;
-    try {
-      members = clazz.getDeclaredClasses();
-    } catch (LinkageError | SecurityException e) {
-      // The class exists but its members cannot be read; treat it as having none.
-      return null;
-    }
-    for (Class<?> member : members) {
-      if (member.getSimpleName().equals(identifier)
-          && (!inherited || isAccessible(member, packageName))) {
-        return member;
-      }
+    Class<?> member = declaredMemberClass(clazz, identifier);
+    if (member != null && (!inherited || isAccessible(member, packageName))) {
+      return member;
     }
     Class<?> result = memberClass(clazz.getSuperclass(), identifier, packageName, true, visited);
     if (result != null) {

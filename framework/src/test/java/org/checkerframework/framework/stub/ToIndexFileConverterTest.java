@@ -722,6 +722,29 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyMap", "myMethod(Ljava/util/AbstractMap$SimpleEntry;)V");
   }
 
+  /**
+   * A member type that the classpath counterpart of a class declares shadows a member type that the
+   * class inherits from a supertype that the stub file declares.
+   */
+  @Test
+  public void testCounterpartMemberTypeShadowsInheritedStubMemberType() throws Exception {
+    // java.util.HashMap declares a package-private member type named Node.
+    String jaif =
+        convert(
+            "package java.util;",
+            "class MySuper {",
+            "  static class Node {}",
+            "}",
+            "class HashMap extends MySuper {",
+            "  void myMethod(Node n) {}",
+            "}",
+            "class MyClass {",
+            "  void myMethod(HashMap.Node n) {}",
+            "}");
+    assertMethod(jaif, "HashMap", "myMethod(Ljava/util/HashMap$Node;)V");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/HashMap$Node;)V");
+  }
+
   /** A nested class declared in the stub file is qualified with the stub file's package. */
   @Test
   public void testUnresolvedNestedTypeInOwnPackage() throws Exception {
