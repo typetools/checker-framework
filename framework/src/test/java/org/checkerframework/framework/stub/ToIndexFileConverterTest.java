@@ -261,6 +261,30 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyEnum", "myEnumMethod()V");
   }
 
+  /**
+   * A single-type import shadows a class of the same name in the current package, which in turn
+   * shadows a class imported on demand.
+   */
+  @Test
+  public void testResolvePrecedence() throws Exception {
+    String jaif =
+        convert(
+            "package java.lang.reflect;",
+            "import java.sql.Array;",
+            "class MyClass {",
+            "  void myMethod(Array a) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/sql/Array;)V");
+    jaif =
+        convert(
+            "package java.lang.reflect;",
+            "import java.sql.*;",
+            "class MyClass {",
+            "  void myMethod(Array a) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/lang/reflect/Array;)V");
+  }
+
   /** A varargs parameter's JVML descriptor is an array type. */
   @Test
   public void testVarargsDescriptor() throws Exception {
