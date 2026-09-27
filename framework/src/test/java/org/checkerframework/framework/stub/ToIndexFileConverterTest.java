@@ -524,6 +524,24 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * A package-private member type is not inherited through a class in another package, even if the
+   * member type is in the stub file's package.
+   */
+  @Test
+  public void testPackagePrivateMemberTypeIsNotInheritedThroughOtherPackage() throws Exception {
+    String jaif =
+        convert(
+            "package org.checkerframework.framework.stub.inheritancefixture.a;",
+            "class MyClass extends org.checkerframework.framework.stub.inheritancefixture.b.Middle {",
+            "  void myMethod(Member m) {}",
+            "}");
+    assertMethod(
+        jaif,
+        "MyClass",
+        "myMethod(Lorg/checkerframework/framework/stub/inheritancefixture/a/Member;)V");
+  }
+
+  /**
    * A member type that a class inherits from a class on the classpath shadows a type that the stub
    * file declares in an enclosing scope.
    */
