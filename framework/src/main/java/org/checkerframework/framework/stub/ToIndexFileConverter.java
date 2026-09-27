@@ -1371,13 +1371,16 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   /**
    * Returns the member type named {@code identifier} that {@code clazz} declares or inherits, or
-   * null if there is none. Only a member type that is accessible from {@code packageName} is
-   * inherited, so this method ignores an inherited private member type, and an inherited
-   * package-private member type of a class in another package.
+   * null if there is none. A class inherits only the member types that are accessible from it, so
+   * this method ignores an inherited private member type. It also ignores an inherited
+   * package-private member type unless the member type and every class along the inheritance path
+   * are in {@code packageName}.
    *
    * @param clazz a class on the classpath, or null
    * @param identifier the simple name of a member type
-   * @param packageName the package of the stub file, or the empty string for the unnamed package
+   * @param packageName the package of every class along the inheritance path from the class whose
+   *     members are sought to {@code clazz}, excluding {@code clazz}; the empty string for the
+   *     unnamed package; or null if those classes are not all in the same package
    * @param inherited if true, the member types that {@code clazz} declares are themselves inherited
    *     by the class whose members are sought, so they must be accessible from {@code packageName}
    * @param visited the classes that have already been searched; this method adds {@code clazz} to
@@ -1387,7 +1390,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private static @Nullable Class<?> memberClass(
       @Nullable Class<?> clazz,
       String identifier,
-      String packageName,
+      @Nullable String packageName,
       boolean inherited,
       Set<Class<?>> visited) {
     if (clazz == null || !visited.add(clazz)) {
@@ -1397,12 +1400,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (member != null && (!inherited || isAccessible(member, packageName))) {
       return member;
     }
-    Class<?> result = memberClass(clazz.getSuperclass(), identifier, packageName, true, visited);
+    // A supertype's member type is inherited by `clazz` only if it is accessible from `clazz`.
+    String superPackageName = clazz.getPackageName().equals(packageName) ? packageName : null;
+    Class<?> result =
+        memberClass(clazz.getSuperclass(), identifier, superPackageName, true, visited);
     if (result != null) {
       return result;
     }
     for (Class<?> superinterface : clazz.getInterfaces()) {
-      result = memberClass(superinterface, identifier, packageName, true, visited);
+      result = memberClass(superinterface, identifier, superPackageName, true, visited);
       if (result != null) {
         return result;
       }
@@ -1415,10 +1421,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * that is in a subclass of the class that declares {@code member}.
    *
    * @param member a member type
-   * @param packageName a package name, or the empty string for the unnamed package
+   * @param packageName a package name, the empty string for the unnamed package, or null for no
+   *     package
    * @return true if {@code member} is accessible from {@code packageName}
    */
-  private static boolean isAccessible(Class<?> member, String packageName) {
+  private static boolean isAccessible(Class<?> member, @Nullable String packageName) {
     int modifiers = member.getModifiers();
     if (Modifier.isPublic(modifiers) || Modifier.isProtected(modifiers)) {
       return true;
