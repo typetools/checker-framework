@@ -48,6 +48,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -81,7 +83,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
-import org.checkerframework.checker.signature.qual.Identifier;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -565,8 +567,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private @Nullable List<ElementType> getTargets(AnnotationExpr expr) {
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
-    @BinaryName String name = expr.getNameAsString();
-    String qualifiedName = resolve(name);
+    @FullyQualifiedName String name = expr.getNameAsString();
+    String qualifiedName = resolve(name, expr.findCompilationUnit().orElse(null));
     Class<?> annoClass = qualifiedName == null ? null : loadClass(qualifiedName);
     Target target = annoClass == null ? null : annoClass.getAnnotation(Target.class);
     return target == null ? null : Arrays.asList(target.value());
@@ -737,10 +739,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                   name = memberBinaryName(clazz, identifiers, 1);
                   break;
                 }
-              }
-              String stubName = stubDeclaredTypeInScope(type, typeName);
-              if (stubName != null) {
-                return "L" + stubName.replace('.', '/') + ";";
               }
             }
             if (declaration == null && name == null) {
