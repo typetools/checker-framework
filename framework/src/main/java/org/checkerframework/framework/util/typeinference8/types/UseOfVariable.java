@@ -186,33 +186,66 @@ public class UseOfVariable extends AbstractType {
   }
 
   /**
-   * Adds a qualifier bound for this variable, if this use does not have a primary annotation.
+   * Adds a qualifier bound for this variable, if this use's annotations are the variable's: that
+   * is, if this use has no primary annotation and does not ignore annotations.
    *
    * @param kind the kind of bound
    * @param annotations the qualifiers to add
    */
   public void addQualifierBound(BoundKind kind, Set<AbstractQualifier> annotations) {
-    if (!hasPrimaryAnno) {
+    if (!hasPrimaryAnno && !ignoreAnnotations) {
       variable.getBounds().addQualifierBound(kind, annotations);
     }
   }
 
   /**
-   * Adds a bound for this variable, if this use does not have a primary annotation.
+   * Returns a copy of {@code bound} that ignores its root annotations, and whose annotated type is
+   * a deep copy that may be mutated. A proper type keeps its record of its weak positions; see
+   * {@link ProperType#getOrigin}.
+   *
+   * @param bound a type
+   * @return a copy of {@code bound} that ignores its root annotations
+   */
+  private static AbstractType copyIgnoringRoot(AbstractType bound) {
+    AnnotatedTypeMirror atm = bound.getAnnotatedType().deepCopy();
+    if (bound instanceof ProperType properBound) {
+      return properBound.withAnnotatedType(atm, true);
+    }
+    return bound.create(atm, true);
+  }
+
+  /**
+   * Adds a bound for this variable. If this use has a primary annotation, or ignores annotations,
+   * then the bound says nothing about the variable's annotations, so it ignores annotations.
    *
    * @param parent the constraint whose reduction created this bound
    * @param kind the kind of bound
    * @param bound the type of the bound
    */
   public void addBound(Constraint parent, BoundKind kind, AbstractType bound) {
-    if (!hasPrimaryAnno) {
+    if (!hasPrimaryAnno && !ignoreAnnotations) {
       variable.getBounds().addBound(parent, kind, bound);
+    } else if (!hasPrimaryAnno) {
+      // This use ignores annotations: it is, for example, the lower bound `U` of a variable `T`
+      // that comes from the formula `U <: @Nullable T`.  Its relation to `bound` is a relation of
+      // Java types only, so the bound ignores its root annotations.  As in the next case, a lower
+      // or upper bound gets bottom or top root annotations, so that it does not narrow the
+      // variable's instantiation.  An EQUAL bound is a weak instantiation; see
+      // VariableBounds#isWeakInstantiation.
+      AbstractType boundCopy = copyIgnoringRoot(bound);
+      QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
+      if (kind == BoundKind.LOWER) {
+        boundCopy.getAnnotatedType().replaceAnnotations(qh.getBottomAnnotations());
+      } else if (kind == BoundKind.UPPER) {
+        boundCopy.getAnnotatedType().replaceAnnotations(qh.getTopAnnotations());
+      }
+      variable.getBounds().addBound(parent, kind, boundCopy);
     } else {
       // If the use has a primary annotation, then mark the bound so that the annotations will be
       // ignored. Also, set to bottom or top, unless the bound is a type variable. This way if all
       // the bounds of a variable have annotations to be ignored, the instantiation of that variable
       // is as flexible as possible.
-      AbstractType boundCopy = bound.create(bound.getAnnotatedType().deepCopy(), true);
+      AbstractType boundCopy = copyIgnoringRoot(bound);
       // `create` may copy its argument rather than storing it (`UseOfVariable`'s constructor
       // deep-copies, and `InferenceType`'s calls `asUse()`), so mutate the annotated type that
       // `boundCopy` actually holds.  It is already a fresh copy, so mutating it is safe.
@@ -229,7 +262,7 @@ public class UseOfVariable extends AbstractType {
         boundCopyATM.replaceAnnotations(tops);
         variable.getBounds().addBound(parent, BoundKind.UPPER, boundCopy);
 
-        AbstractType boundCopy2 = bound.create(bound.getAnnotatedType().deepCopy(), true);
+        AbstractType boundCopy2 = copyIgnoringRoot(bound);
         AnnotatedTypeMirror boundCopyATM2 = boundCopy2.getAnnotatedType();
         boundCopyATM2.replaceAnnotations(bots);
         variable.getBounds().addBound(parent, BoundKind.LOWER, boundCopy2);

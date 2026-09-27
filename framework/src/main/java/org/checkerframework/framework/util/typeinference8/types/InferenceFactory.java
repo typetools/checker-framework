@@ -1036,6 +1036,16 @@ public class InferenceFactory {
         lubSoFar = new ProperType(lubATM, context, ignoreAnnotations);
       }
     }
+    // If the result has the Java type of an input that records its weak positions, then it has the
+    // same structure as that input, so it keeps that record; see ProperType#origin.  Its weak
+    // positions have the other inputs' annotations now, and they are substituted again when the
+    // weak instantiations change.
+    for (ProperType properType : properTypes) {
+      if (properType.getOrigin() != null
+          && context.types.isSameType((Type) properType.getJavaType(), (Type) lubTM)) {
+        return properType.withAnnotatedType(lubATM, ignoreAnnotations);
+      }
+    }
     return new ProperType(lubATM, context, ignoreAnnotations);
   }
 
