@@ -9,6 +9,9 @@ figures:
 	${MAKE} -C figures
 
 export BIBINPUTS = $BIBINPUTS:.:../manual/plume-bib
+# ../manual contains ifptex.sty, which lwarp needs.  The trailing ":" of an
+# empty ${TEXINPUTS} makes TeX also search its default directories.
+export TEXINPUTS := .:../manual:${TEXINPUTS}
 
 annotation-file-format.pdf: plume-bib figures
 	latexmk -bibtex -pdf annotation-file-format.tex

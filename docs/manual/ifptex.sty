@@ -1,0 +1,7 @@
+% A stand-in for ifptex.sty, which lwarp loads but does not need.
+% lwarp uses ifptex.sty only for \ifpTeX, which iftex.sty defines in TeX Live
+% 2020 and later.  On Ubuntu, ifptex.sty is in package texlive-lang-japanese,
+% which is large and is not otherwise needed to build the manuals.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{ifptex}[2026/09/28 stand-in that loads iftex]
+\RequirePackage{iftex}
