@@ -60,7 +60,7 @@ jobs:
 
   junit_jdk17:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk17'
+      - image: 'mdernst/cf-ubuntu-jdk17-testing'
     resource_class: large
     environment:
       TERM: dumb
@@ -122,7 +122,7 @@ jobs:
 
   junit_jdk21:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk21'
+      - image: 'mdernst/cf-ubuntu-jdk21-testing'
     resource_class: large
     environment:
       TERM: dumb
@@ -184,7 +184,7 @@ jobs:
 
   junit_part1_jdk25:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25-testing'
     resource_class: large
     environment:
       TERM: dumb
@@ -245,7 +245,7 @@ jobs:
             - ~/.gradle/wrapper
   junit_part2_jdk25:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25-testing'
     resource_class: large
     environment:
       TERM: dumb
@@ -307,7 +307,7 @@ jobs:
 
   junit_jdk27:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk27'
+      - image: 'mdernst/cf-ubuntu-jdk27-testing'
     resource_class: large
     environment:
       TERM: dumb
@@ -369,7 +369,7 @@ jobs:
 
   nonjunit_jdk21:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk21'
+      - image: 'mdernst/cf-ubuntu-jdk21-testing'
     resource_class: large
     environment:
       TERM: dumb
@@ -430,7 +430,7 @@ jobs:
 
   nonjunit_jdk25:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25-testing'
     resource_class: large
     environment:
       TERM: dumb
@@ -492,7 +492,7 @@ jobs:
   # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
   inference_part1_jdk25:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25-testing'
     resource_class: large
     environment:
       TERM: dumb
@@ -552,7 +552,7 @@ jobs:
             - ~/.gradle/wrapper
   inference_part2_jdk25:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25-testing'
     resource_class: large
     environment:
       TERM: dumb
@@ -613,7 +613,7 @@ jobs:
 
   misc_jdk21:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk21-plus'
+      - image: 'mdernst/cf-ubuntu-jdk21-plus-testing'
     resource_class: large
     environment:
       TERM: dumb
@@ -678,7 +678,7 @@ jobs:
 
   misc_jdk25:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk25-plus'
+      - image: 'mdernst/cf-ubuntu-jdk25-plus-testing'
     resource_class: large
     environment:
       TERM: dumb
@@ -743,7 +743,7 @@ jobs:
 
   misc_jdk27:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk27-plus'
+      - image: 'mdernst/cf-ubuntu-jdk27-plus-testing'
     resource_class: large
     environment:
       TERM: dumb
@@ -808,7 +808,7 @@ jobs:
 
   typecheck_part1_jdk25:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25-testing'
     resource_class: large
     environment:
       TERM: dumb
@@ -868,7 +868,7 @@ jobs:
             - ~/.gradle/wrapper
   typecheck_part2_jdk25:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25-testing'
     resource_class: large
     environment:
       TERM: dumb
@@ -929,7 +929,7 @@ jobs:
 
   daikon_part1_jdk25:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25-testing'
     resource_class: large
     environment:
       TERM: dumb
@@ -990,7 +990,7 @@ jobs:
             - ~/.gradle/wrapper
   daikon_part2_jdk25:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25-testing'
     resource_class: large
     environment:
       TERM: dumb
@@ -1051,7 +1051,7 @@ jobs:
             - ~/.gradle/wrapper
   daikon_part3_jdk25:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25-testing'
     resource_class: large
     environment:
       TERM: dumb
@@ -1113,7 +1113,7 @@ jobs:
 
   guava_part1_jdk25:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25-testing'
     resource_class: large
     environment:
       TERM: dumb
@@ -1174,7 +1174,7 @@ jobs:
             - ~/.gradle/wrapper
   guava_part2_jdk25:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25-testing'
     resource_class: large
     environment:
       TERM: dumb
@@ -1236,7 +1236,7 @@ jobs:
 
   plume_lib_jdk25:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk25-testing'
     resource_class: large
     environment:
       TERM: dumb
