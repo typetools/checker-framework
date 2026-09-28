@@ -46,13 +46,13 @@ ifelse([ * "misc" is the only group that runs Spotless, the Javadoc linting
    tasks, and the manual's build.])dnl
 ifelse([ * "plume-lib" is the lone job that runs Gradle in another project's
    directory, once per plume-lib package.])dnl
-ifelse([Group "cf" holds every other job. Those jobs build and test this
-project alone: Daikon builds with "make" and Guava with Maven, whose
-artifacts this cache does not cover.])dnl
 ifelse([Group "beam" is the Beam jobs, which run Gradle in Beam's directory.
 Beam's dependencies are several gigabytes, too large for the cache quota, so
 these jobs restore group "cf"'s entries, for this project's own build, and
 never save.])dnl
+ifelse([Group "cf" holds every other job. Those jobs build and test this
+project alone: Daikon builds with "make" and Guava with Maven, whose
+artifacts this cache does not cover.])dnl
 ifelse([The key must cover every file that pins a dependency version. Add to
 that list any file that gains a hardcoded dependency or plugin version. One
 key formula serves every group, so a change to a file that only one group
@@ -66,13 +66,14 @@ other.])dnl
 ifelse([A "!" pattern removes files that an earlier pattern matched, so the
 include pattern must enumerate files, via "/**", rather than name the
 directory, which "actions/cache" would archive whole.])dnl
-ifelse([Takes 1 argument: the cache group.])dnl
+ifelse([Takes 1 or 2 arguments: the cache group, and optionally the action
+to use, which defaults to "actions/cache".])dnl
 define([gradle_cache], [dnl
-      - uses: actions/cache@v6
+      - uses: ifelse([$2],,[actions/cache],[$2])@v6
         with:
           path: ~/.gradle/wrapper
           key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-      - uses: actions/cache@v6
+      - uses: ifelse([$2],,[actions/cache],[$2])@v6
         with:
           path: |
             ~/.gradle/caches/modules-2/**
@@ -86,22 +87,7 @@ define([gradle_cache], [dnl
 dnl
 ifelse([Takes 1 argument: the cache group whose entries to restore. Like
 "gradle_cache", but never saves.])dnl
-define([gradle_cache_restore], [dnl
-      - uses: actions/cache/restore@v6
-        with:
-          path: ~/.gradle/wrapper
-          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-      - uses: actions/cache/restore@v6
-        with:
-          path: |
-            ~/.gradle/caches/modules-2/**
-            !~/.gradle/caches/modules-2/**/*.lock
-            !~/.gradle/caches/modules-2/gc.properties
-          key: gradle-modules-$1-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
-          restore-keys: |
-            gradle-modules-$1-
-            gradle-modules-
-])dnl
+define([gradle_cache_restore], [gradle_cache([$1], [actions/cache/restore])])dnl
 dnl
 ifelse([Takes 1 argument: the name of the test script that a job runs.
 Expands to the cache group that the job belongs to.])dnl
@@ -292,20 +278,18 @@ ifelse($1,canary_jdk,,[dnl
 boilerplate(ubuntu, $1, test-guava-part2.sh, ./checker/bin-devel/test-guava-part2.sh)dnl
 ])dnl
 dnl
+ifelse([Takes 1 argument: the JDK version of the job's image. The jobs are
+named for JDK 21 whatever the image, because clone-related.sh runs Gradle on
+JDK 21 and Beam's Gradle version cannot run on a newer JDK, so Beam is compiled
+and type-checked only on JDK 21.])dnl
 define([beam_job], [dnl
-  job_name(beam_part1_jdk$1)
+  job_name(beam_part1_jdk21)
     dependsOn:
       - canary_jobs
-ifelse($1,canary_jdk,,[dnl
-      - beam_part1_jdk[]canary_jdk
-])dnl
 boilerplate(ubuntu, $1, test-beam-part1.sh, ./checker/bin-devel/test-beam-part1.sh)dnl
-  job_name(beam_part2_jdk$1)
+  job_name(beam_part2_jdk21)
     dependsOn:
       - canary_jobs
-ifelse($1,canary_jdk,,[dnl
-      - beam_part2_jdk[]canary_jdk
-])dnl
 boilerplate(ubuntu, $1, test-beam-part2.sh, ./checker/bin-devel/test-beam-part2.sh)dnl
 ])dnl
 dnl

@@ -739,7 +739,7 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
 
-  beam_part1_jdk25:
+  beam_part1_jdk21:
     needs:
       - canary_jobs
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
@@ -774,7 +774,7 @@ jobs:
         run: ./checker/bin-devel/test-beam-part1.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
-  beam_part2_jdk25:
+  beam_part2_jdk21:
     needs:
       - canary_jobs
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
@@ -864,8 +864,8 @@ jobs:
       - daikon_part3_jdk25
       - guava_part1_jdk25
       - guava_part2_jdk25
-      - beam_part1_jdk25
-      - beam_part2_jdk25
+      - beam_part1_jdk21
+      - beam_part2_jdk21
       - plume_lib_jdk25
     runs-on: ubuntu-latest
     steps:

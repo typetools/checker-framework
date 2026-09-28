@@ -17,3 +17,4 @@ source "$SCRIPT_DIR"/clone-related.sh
 ##  * plume-lib is run by test-plume-lib.sh
 ##  * daikon-typecheck is run as a separate CI job
 ##  * guava is run as a separate CI job
+##  * beam is run by test-beam.sh

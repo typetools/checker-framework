@@ -23,7 +23,5 @@ gradle_retry assembleForJavac -Dorg.gradle.internal.http.socketTimeout=60000 -Do
 "$SCRIPT_DIR/.git-scripts/git-clone-related" typetools beam
 cd ../beam
 
-# Download Beam's Gradle distribution and plugins, retrying in case of network problems.
-gradle_retry -PcfVersion=local --console=plain help
-
+# typecheck.sh retries Gradle runs that fail for network reasons.
 ./typecheck.sh "$GROUPARG"

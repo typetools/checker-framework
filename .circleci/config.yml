@@ -1234,7 +1234,7 @@ jobs:
             - ~/.gradle/caches/modules-2
             - ~/.gradle/wrapper
 
-  beam_part1_jdk25:
+  beam_part1_jdk21:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
@@ -1285,17 +1285,7 @@ jobs:
           no_output_timeout: "50m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
-      - run:
-          name: Prune Gradle cache
-          command: |
-            find ~/.gradle/caches -name '*.lock' -delete || true
-            rm -f ~/.gradle/caches/modules-2/gc.properties
-      - save_cache:
-          key: *gradle-cache
-          paths:
-            - ~/.gradle/caches/modules-2
-            - ~/.gradle/wrapper
-  beam_part2_jdk25:
+  beam_part2_jdk21:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
     resource_class: large
@@ -1346,16 +1336,6 @@ jobs:
           no_output_timeout: "50m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
-      - run:
-          name: Prune Gradle cache
-          command: |
-            find ~/.gradle/caches -name '*.lock' -delete || true
-            rm -f ~/.gradle/caches/modules-2/gc.properties
-      - save_cache:
-          key: *gradle-cache
-          paths:
-            - ~/.gradle/caches/modules-2
-            - ~/.gradle/wrapper
 
   plume_lib_jdk25:
     docker:
@@ -1495,11 +1475,11 @@ workflows:
           requires:
             - canary_jobs
 
-      - beam_part1_jdk25:
+      - beam_part1_jdk21:
           requires:
             - canary_jobs
 
-      - beam_part2_jdk25:
+      - beam_part2_jdk21:
           requires:
             - canary_jobs
 
@@ -1519,6 +1499,6 @@ workflows:
             - daikon_part3_jdk25
             - guava_part1_jdk25
             - guava_part2_jdk25
-            - beam_part1_jdk25
-            - beam_part2_jdk25
+            - beam_part1_jdk21
+            - beam_part2_jdk21
             - plume_lib_jdk25

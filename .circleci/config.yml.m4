@@ -105,8 +105,8 @@ job_dependences_not_in_canary(canary_jdk, daikon_part2)
 job_dependences_not_in_canary(canary_jdk, daikon_part3)
 job_dependences_not_in_canary(canary_jdk, guava_part1)
 job_dependences_not_in_canary(canary_jdk, guava_part2)
-job_dependences_not_in_canary(canary_jdk, beam_part1)
-job_dependences_not_in_canary(canary_jdk, beam_part2)
+job_dependences_not_in_canary(21, beam_part1)
+job_dependences_not_in_canary(21, beam_part2)
 job_dependences_not_in_canary(canary_jdk, plume_lib)
 
       - all_green:
@@ -121,8 +121,8 @@ job_dependences_not_in_canary(canary_jdk, plume_lib)
             - daikon_part3_jdk[]canary_jdk
             - guava_part1_jdk[]canary_jdk
             - guava_part2_jdk[]canary_jdk
-            - beam_part1_jdk[]canary_jdk
-            - beam_part2_jdk[]canary_jdk
+            - beam_part1_jdk21
+            - beam_part2_jdk21
             - plume_lib_jdk[]canary_jdk
 
 ifelse([
