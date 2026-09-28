@@ -739,6 +739,77 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
 
+  beam_part1_jdk25:
+    needs:
+      - canary_jobs
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk25:latest
+    timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache/restore@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-cf-
+            gradle-modules-
+      - name: test-beam-part1.sh
+        run: ./checker/bin-devel/test-beam-part1.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+  beam_part2_jdk25:
+    needs:
+      - canary_jobs
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk25:latest
+    timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache/restore@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-cf-
+            gradle-modules-
+      - name: test-beam-part2.sh
+        run: ./checker/bin-devel/test-beam-part2.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+
   plume_lib_jdk25:
     needs:
       - canary_jobs
@@ -793,6 +864,8 @@ jobs:
       - daikon_part3_jdk25
       - guava_part1_jdk25
       - guava_part2_jdk25
+      - beam_part1_jdk25
+      - beam_part2_jdk25
       - plume_lib_jdk25
     runs-on: ubuntu-latest
     steps:

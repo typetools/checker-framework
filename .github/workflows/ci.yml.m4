@@ -101,6 +101,8 @@ include([../../.azure/jobs.m4])dnl
       - daikon_part3_jdk[]canary_jdk
       - guava_part1_jdk[]canary_jdk
       - guava_part2_jdk[]canary_jdk
+      - beam_part1_jdk[]canary_jdk
+      - beam_part2_jdk[]canary_jdk
       - plume_lib_jdk[]canary_jdk
     runs-on: ubuntu-latest
     steps:

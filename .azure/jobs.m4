@@ -20,4 +20,6 @@ daikon_job(canary_jdk)
 
 guava_job(canary_jdk)
 
+beam_job(canary_jdk)
+
 plume_lib_job(canary_jdk)

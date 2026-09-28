@@ -103,6 +103,12 @@ ifelse($3,test-cftests-nonjunit.sh,[],
        $3,test-guava-part2.sh,[dnl
           no_output_timeout: "50m"
 ],
+       $3,test-beam-part1.sh,[dnl
+          no_output_timeout: "50m"
+],
+       $3,test-beam-part2.sh,[dnl
+          no_output_timeout: "50m"
+],
        [dnl
           no_output_timeout: "30m"
 ])dnl
@@ -203,6 +209,13 @@ define([guava_job], [dnl
 boilerplate(ubuntu, $1, test-guava-part1.sh, ./checker/bin-devel/test-guava-part1.sh)dnl
   job_name(guava_part2_jdk$1)
 boilerplate(ubuntu, $1, test-guava-part2.sh, ./checker/bin-devel/test-guava-part2.sh)dnl
+])dnl
+dnl
+define([beam_job], [dnl
+  job_name(beam_part1_jdk$1)
+boilerplate(ubuntu, $1, test-beam-part1.sh, ./checker/bin-devel/test-beam-part1.sh)dnl
+  job_name(beam_part2_jdk$1)
+boilerplate(ubuntu, $1, test-beam-part2.sh, ./checker/bin-devel/test-beam-part2.sh)dnl
 ])dnl
 dnl
 define([plume_lib_job], [dnl

@@ -17,6 +17,8 @@ ifelse(test-cftests-junit.sh,$3,[    timeoutInMinutes: 70
 ],test-cftests-inference-part2.sh,$3,[    timeoutInMinutes: 90
 ],test-guava-part1.sh,$3,[    timeoutInMinutes: 70
 ],test-guava-part2.sh,$3,[    timeoutInMinutes: 70
+],test-beam-part1.sh,$3,[    timeoutInMinutes: 70
+],test-beam-part2.sh,$3,[    timeoutInMinutes: 70
 ])dnl
     steps:
       - checkout: self
@@ -164,6 +166,23 @@ ifelse($1,canary_jdk,,[dnl
       - guava_part2_jdk[]canary_jdk
 ])dnl
 boilerplate(ubuntu, $1, test-guava-part2.sh, ./checker/bin-devel/test-guava-part2.sh)dnl
+])dnl
+dnl
+define([beam_job], [dnl
+  job_name(beam_part1_jdk$1)
+    dependsOn:
+      - canary_jobs
+ifelse($1,canary_jdk,,[dnl
+      - beam_part1_jdk[]canary_jdk
+])dnl
+boilerplate(ubuntu, $1, test-beam-part1.sh, ./checker/bin-devel/test-beam-part1.sh)dnl
+  job_name(beam_part2_jdk$1)
+    dependsOn:
+      - canary_jobs
+ifelse($1,canary_jdk,,[dnl
+      - beam_part2_jdk[]canary_jdk
+])dnl
+boilerplate(ubuntu, $1, test-beam-part2.sh, ./checker/bin-devel/test-beam-part2.sh)dnl
 ])dnl
 dnl
 define([plume_lib_job], [dnl
