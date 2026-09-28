@@ -147,12 +147,14 @@ public final class Resolution {
       if (!lowerBounds.isEmpty()) {
         t =
             viewAs(
-                lubOfLowerBounds(var, lowerBounds, context), instantiation.getJavaType(), context);
+                lubOfLowerBounds(var, lowerBounds, false, context),
+                instantiation.getJavaType(),
+                context);
       }
       if (t == null) {
         t =
             lubOfLowerBounds(
-                var, var.getBounds().findProperLowerBoundsAndWeakEqualBounds(), context);
+                var, var.getBounds().findProperLowerBoundsAndWeakEqualBounds(), true, context);
       }
       added |= var.getBounds().addBound(null, BoundKind.EQUAL, t);
     }
@@ -474,7 +476,8 @@ public final class Resolution {
    */
   private static void resolveWithLowerBounds(
       Variable ai, Set<ProperType> lowerBounds, Java8InferenceContext context) {
-    ai.getBounds().addBound(null, BoundKind.EQUAL, lubOfLowerBounds(ai, lowerBounds, context));
+    ai.getBounds()
+        .addBound(null, BoundKind.EQUAL, lubOfLowerBounds(ai, lowerBounds, false, context));
   }
 
   /**
@@ -484,12 +487,21 @@ public final class Resolution {
    * @param ai a variable
    * @param lowerBounds a nonempty set of proper types, each of which is a lower bound of {@code ai}
    *     or has the Java type of {@code ai}
+   * @param weakEqualBounds true if {@code lowerBounds} may include weak {@code EQUAL} bounds (see
+   *     {@link VariableBounds#isWeakInstantiation}), whose root annotations are arbitrary in every
+   *     hierarchy. A proper lower bound's root annotations are arbitrary only in the hierarchies
+   *     where {@link
+   *     org.checkerframework.framework.util.typeinference8.types.UseOfVariable#addBound} made them
+   *     bottom, so lubbing them is already correct.
    * @param context the context
    * @return the least upper bound of {@code lowerBounds}, with the qualifier lower bounds of {@code
    *     ai} applied
    */
   private static ProperType lubOfLowerBounds(
-      Variable ai, Set<ProperType> lowerBounds, Java8InferenceContext context) {
+      Variable ai,
+      Set<ProperType> lowerBounds,
+      boolean weakEqualBounds,
+      Java8InferenceContext context) {
     ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
     Set<AbstractQualifier> qualifierLowerBounds =
         ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
@@ -502,11 +514,14 @@ public final class Resolution {
       QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
       Set<AnnotationMirror> lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
       if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR
+          && weakEqualBounds
           && lubProperType.ignoreAnnotations) {
         // The root annotations of `lubProperType` are arbitrary, so the qualifier lower bounds
-        // replace them rather than being lubbed with them.  A type variable's are lubbed into its
-        // lower bound, as below, because replacing its primary annotation would also fix its
-        // upper bound.
+        // replace them rather than being lubbed with them.  Replacing them when only some
+        // hierarchies are arbitrary would discard the others, such as the H1 annotation of a lower
+        // bound from a use whose primary annotation is in H2 only.  A type variable's are lubbed
+        // into its lower bound, as below, because replacing its primary annotation would also fix
+        // its upper bound.
         lubProperType.getAnnotatedType().replaceAnnotations(lubAnnos);
       } else if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
         Set<? extends AnnotationMirror> newLubAnnos =
