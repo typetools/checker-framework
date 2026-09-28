@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Signedness Checker}{signedness-checker}
 
 The Signedness Checker guarantees that signed and unsigned integral values are not mixed
@@ -23,9 +22,9 @@ Floating-point types \<float>, \<double>, \<Float>, and \<Double> are always sig
 Signedness is primarily about how the bits of the representation are
 \emph{interpreted}, not about the values that it can represent.  An unsigned value
 is always non-negative, but just because a variable's value is non-negative does
-not mean that it should be marked as \<@Unsigned>.  If variable $v$ will be
+not mean that it should be marked as \<@Unsigned>.  If variable \textit{v} will be
 compared to a signed value, or used in arithmetic operations with a signed
-value, then $v$ should have signed type.
+value, then \textit{v} should have signed type.
 To indicate the range of possible values for a variable, use the
 \refqualclass{checker/index/qual}{NonNegative} annotation of the Index
 Checker (see \chapterpageref{index-checker}) or the
@@ -324,7 +323,7 @@ Signedness Checker, as described in Figure~\ref{fig-signedness-refactoring}.
 % These lists should be kept in sync with SignednessAnnotatedTypeFactory.java .
 \begin{figure}
 \begin{center}
-% The ~ around the text makes things look better in Hevea (and not terrible
+% The ~ around the text makes things look better in HTML (and not terrible
 % in LaTeX).
 \begin{tabular}{ll}
 \begin{tabular}{|l|}
@@ -332,13 +331,11 @@ Signedness Checker, as described in Figure~\ref{fig-signedness-refactoring}.
  ~jdk.jfr.Unsigned~ \\ \hline
 \end{tabular}
 &
-$\Rightarrow$
+\Rightarrowsym{}
 ~org.checkerframework.checker.signedness.qual.Unsigned~
 \end{tabular}
 \end{center}
-%BEGIN LATEX
-\vspace{-1.5\baselineskip}
-%END LATEX
+\warpprintonly{\vspace{-1.5\baselineskip}}
 \caption{Correspondence between other signedness annotations
   and the Checker Framework's annotations.}
 \label{fig-signedness-refactoring}

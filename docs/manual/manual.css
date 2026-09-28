@@ -1,0 +1,14 @@
+/* Styling for the HTML version of the Checker Framework manual, produced by lwarp. */
+
+@import url("lwarp_sagebrush.css") ;
+
+img { max-width: 100%; max-height: 100%; }
+
+/* The link from a section heading to itself.  See \selflink in manual-style.tex. */
+span.selflink {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: url("figures/chainlink.svg") no-repeat center / contain;
+}
+a:has(> span.selflink) { color: inherit; text-decoration: none; }

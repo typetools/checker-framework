@@ -128,9 +128,12 @@ tasks.register("copyToWebsite", Copy) {
   from("docs/manual") {
     into("manual")
     include("manual.html",
+        "manual-*.html",
         "manual.pdf",
-        "*.svg",
-        "manual001.png")
+        "*.css",
+        "figures/*.svg",
+        "manual-images/**",
+        "manual-multipage-images/**")
   }
 
   // Copy developer docs
@@ -160,6 +163,8 @@ tasks.register("copyToWebsite", Copy) {
     include("annotation-file-utilities.html")
     include("annotation-file-format.html")
     include("annotation-file-format.pdf")
+    include("*.css")
+    include("annotation-file-format-images/**")
     include("figures/*.svg")
     include("figures/*.png")
     include("figures/*.gif")

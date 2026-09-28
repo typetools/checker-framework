@@ -3,7 +3,7 @@
 -include Makefile.user
 
 .PHONY: all test clean
-all: manual.pdf manual.html ../api
+all: manual.pdf html ../api
 test: all
 
 .PHONY: figures-all
@@ -15,24 +15,23 @@ figures-all:
 manual.pdf: *.tex plume-bib figures-all check-labels
 	latexmk -silent -pdf -interaction=nonstopmode manual.tex || latexmk -gg -pdf -interaction=nonstopmode manual.tex
 
+# The HTML versions of the manual are produced by lwarp.
+# manual.html is a single page; manual-multipage.html is the first of many pages.
 .PHONY: html
-html: manual.html
-manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
-	hevea -fix svg.hva -exec xxdate.exe manual.tex
-# I'm not sure why this is necessary; "hevea -fix" should run it automatically.
-# Also, you need ImageMagick 6.8.0-2 Beta or later to avoid a bug.
-	imagen manual
-	./add-favicon-to-manual
-# The following three lines are only necessary when using Hevea before version 2.04.
-# With version 2.04 they have no effect but do no harm.
-	\mv -f manual.html manual.html-with-htoc
-	./hevea-retarget-crossrefs < manual.html-with-htoc > manual.html
-	\rm -f manual.html-with-htoc
-# Add CSS styling, since \newstyle doesn't work for me.
-	sed -i.bak -e "s%<style type=\"text/css\">%<style type=\"text/css\">\nimg { max-width: 100\%; max-height: 100\%; }%" manual.html
-# Add CSS styling for some links, since \ahrefloc doesn't permit styling
-	sed -i.bak -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
-	rm -f manual.html.bak
+html: manual.html manual-multipage.html
+
+# lwarpmk requires configuration files that are written when LaTeX processes
+# the source file in print mode.  Creating manual.pdf does so for manual.tex.
+manual.html: manual.pdf manual.css lwarp-postprocess CFLogo.png favicon-checkerframework.png
+	lwarpmk html manual
+	lwarpmk limages manual
+	./lwarp-postprocess manual.html
+
+manual-multipage.html: manual.pdf manual-multipage.tex manual.css lwarp-postprocess CFLogo.png favicon-checkerframework.png
+	pdflatex -interaction=batchmode manual-multipage.tex
+	lwarpmk html manual-multipage
+	lwarpmk limages manual-multipage
+	./lwarp-postprocess manual-*.html
 
 ../../checker/bin-devel/.git-scripts:
 	../../checker/bin-devel/clone-or-update.sh https://github.com/plume-lib/git-scripts.git ../../checker/bin-devel/.git-scripts
@@ -66,15 +65,19 @@ plume-bib:
 	../../checker/bin-devel/clone-or-update.sh https://github.com/mernst/plume-bib.git plume-bib
 
 
-# Leaves manual.html, and .svg files that it references.
+# Leaves the HTML files and the files that they reference.
 .PHONY: clean
 clean:
-	@\rm -f *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc manual.image.tex TAGS
+	@\rm -f *.aux *.blg *.dvi *.fdb_latexmk *.fls *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc TAGS
+	@\rm -f *_html.* *.lwarpmkconf lwarpmk.conf *.cut *.sidetoc lwarp.ist lwarp.xdy
+	@\rm -f lwarp_mathjax.txt lwarp_one_limage.txt sample_project.css *-images.txt
 
 .PHONY: very-clean very_clean
 very-clean: very_clean
 very_clean: clean
-	@\rm -f manual.html manual.bbl CFLogo.png manual001.png favicon-checkerframework.png *.svg
+	@\rm -f manual.html manual-*.html manual.bbl CFLogo.png favicon-checkerframework.png
+	@\rm -f lwarp.css lwarp_formal.css lwarp_sagebrush.css
+	@\rm -rf manual-images manual-multipage-images
 
 .PHONY: checklink
 checklink:

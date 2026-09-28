@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+r"""Post-process the HTML files that lwarp produces for the manual.
+
+Usage:  lwarp-postprocess FILE.html ...
+
+This script:
+ * retargets cross-references of the form "#autosec-99" to use the LaTeX
+   label of the section instead, such as "#introduction".  lwarp's table of
+   contents uses "autosec" anchors, which change whenever the manual is
+   reordered or a section is added.  Users who follow a link from the table
+   of contents may bookmark or share it, so the table of contents should use
+   stable anchors.  This requires that each sectioning command in the LaTeX
+   source is immediately followed by a \label command, as \sectionAndLabel does.
+ * moves the anchors for a heading's labels to just before the heading.  lwarp
+   places them after the heading, so a browser that follows a link to a
+   section scrolls the section's heading off the top of the window.
+ * removes target="_blank", which lwarp adds to every external link.  Without
+   it, the user decides whether to open a link in a new browser tab.
+ * replaces <kbd> by <code>.  lwarp renders every \texttt as <kbd>, which
+   means keyboard input.  In the manuals, \texttt is program text.  The
+   added CSS rule styles <code> as lwarp.css styles <kbd>.
+ * adds a favicon, if file favicon-checkerframework.png exists in the same
+   directory as the HTML file.
+"""
+
+import re
+import sys
+from pathlib import Path
+
+# A heading, followed by its anchors:  lwarp's autopage anchor (whose number
+# matches the heading's autosec number) and then any LaTeX labels.  After this
+# script moves the anchors before the heading, the heading no longer matches.
+HEADING_RE = re.compile(
+    r'(<h[1-6] id="autosec-([0-9]+)">.*?</h[1-6]>)'
+    r'(\s*<a id="[^"]*-autopage-\2"></a>(?:\s*<a id="[^"]+"></a>)*)',
+    re.DOTALL,
+)
+ANCHOR_RE = re.compile(r'<a id="([^"]+)"></a>')
+
+# lwarp.css's rule for kbd, applied to code instead.
+CODE_STYLE = (
+    '<style>code { font-family: "DejaVu Mono", "Bitstream Vera Mono",'
+    ' "Lucida Console", "Nimbus Mono L", "Liberation Mono", "FreeMono",'
+    ' "Andale Mono", "Courier New", monospace; font-size: 100%; }</style>'
+)
+
+FAVICON_FILE = "favicon-checkerframework.png"
+FAVICON = f'<link rel="icon" href="{FAVICON_FILE}" type="image/png" />'
+
+
+def main(filenames: list[str]) -> None:
+    """Post-process the given HTML files, which are the pages of one document."""
+    contents = {filename: Path(filename).read_text(encoding="utf-8") for filename in filenames}
+
+    # Anchors are unique across all the files of a multi-page document.
+    autosec_to_label = {}
+    for text in contents.values():
+        for m in HEADING_RE.finditer(text):
+            labels = ANCHOR_RE.findall(m.group(3))[1:]
+            if labels:
+                autosec_to_label["autosec-" + m.group(2)] = labels[0]
+
+    def move_anchors(m: re.Match[str]) -> str:
+        anchors = [f'<a id="{a}"></a>' for a in ANCHOR_RE.findall(m.group(3))]
+        return "\n".join(anchors) + "\n" + m.group(1)
+
+    def retarget(m: re.Match[str]) -> str:
+        return m.group(1) + autosec_to_label.get(m.group(2), m.group(2)) + '"'
+
+    for filename, text in contents.items():
+        text = re.sub(r'(href="[^"#]*#)(autosec-[0-9]+)"', retarget, text)
+        text = HEADING_RE.sub(move_anchors, text)
+        # lwarp's line wrapping may put a newline on either side.
+        text = re.sub(r'\s+target="_blank"', "", text)
+        text = text.replace("<kbd>", "<code>").replace("</kbd>", "</code>")
+        if CODE_STYLE not in text:
+            text = text.replace("</head>", CODE_STYLE + "\n</head>", 1)
+        if FAVICON not in text and (Path(filename).parent / FAVICON_FILE).exists():
+            text = text.replace("<head>\n", "<head>\n" + FAVICON + "\n", 1)
+        Path(filename).write_text(text, encoding="utf-8")
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

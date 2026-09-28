@@ -117,6 +117,27 @@ docs/manual/figures/*.pdf
 docs/manual/figures/*.png
 docs/manual/figures/signature-types-with-canonicalname.dia
 docs/manual/manual.html-e
+
+# lwarp (which produces the HTML versions of the manuals)
+*_html.*
+*.lwarpmkconf
+lwarpmk.conf
+comment_*.cut
+lwarp.css
+lwarp.ist
+lwarp.xdy
+lwarp_formal.css
+lwarp_mathjax.txt
+lwarp_one_limage.txt
+lwarp_sagebrush.css
+sample_project.css
+*-images.txt
+docs/manual/manual-*.html
+docs/manual/manual-images/
+docs/manual/manual-multipage-images/
+docs/annotation-file-utilities/annotation-file-format-images/
+docs/manual/manual-multipage.*
+!docs/manual/manual-multipage.tex
 docs/tmpapi/
 *.fls
 

@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Introduction}{introduction}
 
 The Checker Framework enhances Java's type system to make it more powerful
@@ -15,65 +14,65 @@ The Checker Framework comes with checkers for specific types of errors:
 % near the text "introduction.tex".
 
 \item
-  \ahrefloc{nullness-checker}{Nullness Checker} for null pointer errors
+  \hyperref[nullness-checker]{Nullness Checker} for null pointer errors
   (see \chapterpageref{nullness-checker})
 \item
-  \ahrefloc{initialization-checker}{Initialization Checker} to ensure all
+  \hyperref[initialization-checker]{Initialization Checker} to ensure all
   \<@NonNull> fields are set in the constructor (see
   \sectionpageref{initialization-checker})
 \item
-  \ahrefloc{map-key-checker}{Map Key Checker} to track which values are
+  \hyperref[map-key-checker]{Map Key Checker} to track which values are
   keys in a map (see \chapterpageref{map-key-checker})
 \item
-  \ahrefloc{optional-checker}{Optional Checker} for errors in using the
+  \hyperref[optional-checker]{Optional Checker} for errors in using the
   \sunjavadoc{java.base/java/util/Optional.html}{Optional} type (see
   \chapterpageref{optional-checker})
 \item
-  \ahrefloc{interning-checker}{Interning Checker} for errors in equality
+  \hyperref[interning-checker]{Interning Checker} for errors in equality
   testing and interning (see \chapterpageref{interning-checker})
 \item
-  \ahrefloc{called-methods-checker}{Called Methods Checker} for
+  \hyperref[called-methods-checker]{Called Methods Checker} for
   the builder pattern (see \chapterpageref{called-methods-checker})
 \item
-  \ahrefloc{resource-leak-checker}{Resource Leak Checker} for ensuring that resources are disposed of properly
+  \hyperref[resource-leak-checker]{Resource Leak Checker} for ensuring that resources are disposed of properly
   (see \chapterpageref{resource-leak-checker})
 \item
-  \ahrefloc{fenum-checker}{Fake Enum Checker} to allow type-safe fake enum
+  \hyperref[fenum-checker]{Fake Enum Checker} to allow type-safe fake enum
   patterns and type aliases or typedefs (see \chapterpageref{fenum-checker})
 \item
-  \ahrefloc{tainting-checker}{Tainting Checker} for trust and security errors
+  \hyperref[tainting-checker]{Tainting Checker} for trust and security errors
   (see \chapterpageref{tainting-checker})
 \item
-  \ahrefloc{sql-quotes-checker}{SQL Quotes Checker} to mitigate SQL injection
+  \hyperref[sql-quotes-checker]{SQL Quotes Checker} to mitigate SQL injection
   attacks
   (see \chapterpageref{sql-quotes-checker})
 \item
-  \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
+  \hyperref[lock-checker]{Lock Checker} for concurrency and lock errors
   (see \chapterpageref{lock-checker})
 \item
-  \ahrefloc{index-checker}{Index Checker} for array accesses
+  \hyperref[index-checker]{Index Checker} for array accesses
   (see \chapterpageref{index-checker})
 % TODO: Uncomment when the Non-Empty Checker is ready to be publicized.
 % \item
-%   \ahrefloc{non-empty-checker}{Non-Empty Checker} to determine whether a
+%   \hyperref[non-empty-checker]{Non-Empty Checker} to determine whether a
 %   collection, iterator, iterable, or map is non-empty (see \chapterpageref{non-empty-checker})
 \item
-  \ahrefloc{regex-checker}{Regex Checker} to prevent use of syntactically
+  \hyperref[regex-checker]{Regex Checker} to prevent use of syntactically
   invalid regular expressions (see \chapterpageref{regex-checker})
 \item
-  \ahrefloc{formatter-checker}{Format String Checker} to ensure that format
+  \hyperref[formatter-checker]{Format String Checker} to ensure that format
   strings have the right number and type of \<\%> directives (see
   \chapterpageref{formatter-checker})
 \item
-  \ahrefloc{i18n-formatter-checker}{Internationalization Format String Checker}
+  \hyperref[i18n-formatter-checker]{Internationalization Format String Checker}
   to ensure that i18n format strings have the right number and type of
   \<\{\}> directives (see \chapterpageref{i18n-formatter-checker})
 \item
-  \ahrefloc{propkey-checker}{Property File Checker} to ensure that valid
+  \hyperref[propkey-checker]{Property File Checker} to ensure that valid
   keys are used for property files and resource bundles (see
   \chapterpageref{propkey-checker})
 \item
-  \ahrefloc{i18n-checker}{Internationalization Checker} to
+  \hyperref[i18n-checker]{Internationalization Checker} to
   ensure that code is properly internationalized (see
   \sectionpageref{i18n-checker})
 % The Compiler Message Key Checker is neither here nor in the advanced
@@ -81,51 +80,51 @@ The Checker Framework comes with checkers for specific types of errors:
 % Checker Framework developers and as sample code, and is not meant
 % for Checker Framework users at large.
 \item
-  \ahrefloc{signature-checker}{Signature String Checker} to ensure that the
+  \hyperref[signature-checker]{Signature String Checker} to ensure that the
   string representation of a type is properly used, for example in
   \<Class.forName> (see \chapterpageref{signature-checker})
 \item
-  \ahrefloc{guieffect-checker}{GUI Effect Checker} to ensure that non-GUI
+  \hyperref[guieffect-checker]{GUI Effect Checker} to ensure that non-GUI
   threads do not access the UI, which would crash the application
   (see \chapterpageref{guieffect-checker})
 \item
-  \ahrefloc{units-checker}{Units Checker} to ensure operations are
+  \hyperref[units-checker]{Units Checker} to ensure operations are
   performed on correct units of measurement
   (see \chapterpageref{units-checker})
 \item
-  \ahrefloc{signedness-checker}{Signedness Checker} to
+  \hyperref[signedness-checker]{Signedness Checker} to
   ensure unsigned and signed values are not mixed
   (see \chapterpageref{signedness-checker})
 \item
-  \ahrefloc{purity-checker}{Purity Checker} to identify whether
+  \hyperref[purity-checker]{Purity Checker} to identify whether
   methods have side effects (see \chapterpageref{purity-checker})
 \item
-  \ahrefloc{constant-value-checker}{Constant Value Checker} to determine
+  \hyperref[constant-value-checker]{Constant Value Checker} to determine
   whether an expression's value can be known at compile time
   (see \chapterpageref{constant-value-checker})
 \item
-  \ahrefloc{reflection-resolution}{Reflection Checker} to determine
+  \hyperref[reflection-resolution]{Reflection Checker} to determine
   whether an expression's value (of type \<Method> or \<Class>) can be known at compile time
   (see \chapterpageref{reflection-resolution})
 \item
-  \ahrefloc{initialized-fields-checker}{Initialized Fields Checker} to ensure all
+  \hyperref[initialized-fields-checker]{Initialized Fields Checker} to ensure all
   fields are set in the constructor (see
   \chapterpageref{initialized-fields-checker})
 \item
-  \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
+  \hyperref[aliasing-checker]{Aliasing Checker} to identify whether
   expressions have aliases (see \chapterpageref{aliasing-checker})
 \item
-  \ahrefloc{must-call-checker}{Must Call Checker} to over-approximate the
+  \hyperref[must-call-checker]{Must Call Checker} to over-approximate the
   methods that should be called on an object before it is de-allocated (see \chapterpageref{must-call-checker})
 \item
-  \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
+  \hyperref[subtyping-checker]{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})
 % \item
-%   \ahrefloc{typestate-checker}{Typestate checker} to ensure operations are
+%   \hyperref[typestate-checker]{Typestate checker} to ensure operations are
 %   performed on objects that are in the right state, such as only opened
 %   files being read (see \chapterpageref{typestate-checker})
 \item
-  \ahrefloc{third-party-checkers}{Third-party checkers} that are distributed
+  \hyperref[third-party-checkers]{Third-party checkers} that are distributed
   separately from the Checker Framework
   (see \chapterpageref{third-party-checkers})
 
@@ -211,9 +210,7 @@ optional step.
 \begin{enumerate}
 \item
   Download the Checker Framework distribution:
-  %BEGIN LATEX
-  \\
-  %END LATEX
+  \warpprintonly{\\}
   \url{https://checkerframework.org/checker-framework-4.2.3.zip}
 
   For example, on Unix you can run: \<wget https://checkerframework.org/checker-framework-\ReleaseVersion{}.zip>
@@ -306,7 +303,6 @@ Section~\ref{writing-annotations}.  Here are some examples:
 \end{alltt}
 
 
-\htmlhr
 \chapterAndLabel{Using a checker}{using-a-checker}
 
 A pluggable type-checker enables you to detect certain bugs in your code,
@@ -366,9 +362,7 @@ use of a type, including in generics and casts.  Because array levels are
 types and receivers have types, you can also write type annotations on
 them.  Here are a few examples of type annotations:
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{alltt}
   \underline{@Interned} String intern() \ttlcb{} ... \ttrcb{}               // return value
   int compareTo(\underline{@NonNull} String other) \ttlcb{} ... \ttrcb{}    // parameter
@@ -377,9 +371,7 @@ them.  Here are a few examples of type annotations:
   \underline{@Interned} String \underline{@NonNull} [] messages;          // arrays:  non-null array of interned Strings
   myDate = (\underline{@Initialized} Date) beingConstructed;  // cast
 \end{alltt}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 You only need to write type annotations on method signatures, fields, and some type arguments.
 Most annotations within method bodies are inferred for you; for more details,
@@ -531,7 +523,7 @@ number, if the Checker Framework developers have improved the type
 annotations since the last release by the upstream maintainers.)  If a
 newer version of the upstream library is available but that version is not
 available in \<org.checkerframework.annotatedlib>, then
-\ahrefloc{reporting-bugs}{open an issue} requesting that the
+\hyperref[reporting-bugs]{open an issue} requesting that the
 \<org.checkerframework.annotatedlib> version be updated.
 \end{itemize}
 
@@ -911,16 +903,12 @@ be used, listed one per line.  For instance, to run the Nullness Checker and the
 Interning Checker automatically, the configuration file should contain:
 \end{sloppypar}
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   org.checkerframework.checker.nullness.NullnessChecker
   org.checkerframework.checker.interning.InterningChecker
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 You can disable this auto-discovery mechanism by passing the
 \code{-proc:none} command-line option to \<javac>, which disables all
@@ -1090,7 +1078,7 @@ may overlook some annotations.  It often leads to confusion and poor
 results.  It leads users to make changes not for any principled reason, but
 to ``make the type-checker happy'', even when the changes are in conflict
 with the documentation or the code.  Also see
-\ahrefloc{get-started-annotations-are-a-specification}{``Annotations are a
+\hyperref[get-started-annotations-are-a-specification]{``Annotations are a
   specification''}, below.
 
 

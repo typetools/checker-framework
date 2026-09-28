@@ -648,11 +648,16 @@ tasks.register("zip", Zip) {
         "docs/annotation-file-utilities/annotation-file-utilities.html",
         "docs/annotation-file-utilities/annotation-file-format.pdf",
         "docs/annotation-file-utilities/annotation-file-format.html",
+        "docs/annotation-file-utilities/*.css",
+        "docs/annotation-file-utilities/annotation-file-format-images/**",
         "docs/annotation-file-utilities/*.png",
         "docs/manual/manual.html",
+        "docs/manual/manual-*.html",
         "docs/manual/manual.pdf",
-        "docs/manual/*.svg",
-        "docs/manual/manual001.png",
+        "docs/manual/*.css",
+        "docs/manual/figures/*.svg",
+        "docs/manual/manual-images/**",
+        "docs/manual/manual-multipage-images/**",
         "docs/examples/InterningExample.java",
         "docs/examples/InterningExampleWithWarnings.java",
         "docs/examples/NullnessExample.java",
@@ -722,9 +727,7 @@ clean {
   delete("${afuManualDir}/annotation-file-format.aux")
   delete("${afuManualDir}/annotation-file-format.blg")
   delete("${afuManualDir}/annotation-file-format.dvi")
-  delete("${afuManualDir}/annotation-file-format.haux")
   delete("${afuManualDir}/annotation-file-format.html")
-  delete("${afuManualDir}/annotation-file-format.htoc")
   delete("${afuManualDir}/annotation-file-format.log")
   delete("${afuManualDir}/annotation-file-format.pdf")
   delete("${afuManualDir}/annotation-file-format.toc")
@@ -795,7 +798,7 @@ tasks.register("makeCfManual", Exec) {
   dependsOn("allJavadoc")
   description = "Build the Checker Framework manual"
   // Don't make all because it will re-run allJavadoc which causes problems when building the release.
-  commandLine("make", "-C", "docs/manual/", "manual.pdf", "manual.html")
+  commandLine("make", "-C", "docs/manual/", "manual.pdf", "html")
 }
 
 tasks.register("makeAfuManual", Exec) {
