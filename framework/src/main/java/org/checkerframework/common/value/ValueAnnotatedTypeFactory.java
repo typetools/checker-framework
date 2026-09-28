@@ -731,13 +731,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       AnnotationMirrorSet annos, TypeMirror typeMirror) {
     AnnotationMirrorSet result = null;
     for (AnnotationMirror anno : annos) {
-      AnnotationMirror converted = convertSpecialIntRangeToStandardIntRange(anno, typeMirror);
-      if (converted != anno) {
-        if (result == null) {
-          result = new AnnotationMirrorSet(annos);
+      switch (AnnotationUtils.annotationName(anno)) {
+        case INTRANGE_FROMPOS_NAME, INTRANGE_FROMNONNEG_NAME, INTRANGE_FROMGTENEGONE_NAME -> {
+          if (result == null) {
+            result = new AnnotationMirrorSet(annos);
+          }
+          result.remove(anno);
+          result.add(convertSpecialIntRangeToStandardIntRange(anno, typeMirror));
         }
-        result.remove(anno);
-        result.add(converted);
+        default -> {}
       }
     }
     return result == null ? annos : result;
