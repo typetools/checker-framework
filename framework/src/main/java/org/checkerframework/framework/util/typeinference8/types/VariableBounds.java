@@ -183,9 +183,7 @@ public class VariableBounds {
    * #setInstantiationFromEqualBound} for each proper {@code EQUAL} bound that it adds.
    */
   private void setInstantiationFromEqualBounds() {
-    @SuppressWarnings("nullness:assignment") // every BoundKind is a key of `bounds`
-    Set<AbstractType> equalBounds = bounds.get(BoundKind.EQUAL);
-    for (AbstractType t : equalBounds) {
+    for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
       if (t.isProper()) {
         setInstantiationFromEqualBound((ProperType) t);
       }
@@ -233,9 +231,7 @@ public class VariableBounds {
       boundType = boxedType;
       setInstantiationFromEqualBound(boxedType);
     }
-    @SuppressWarnings("nullness:assignment") // every BoundKind is a key of `bounds`
-    Set<AbstractType> boundsOfKind = bounds.get(kind);
-    if (boundsOfKind.add(boundType)) {
+    if (bounds.get(kind).add(boundType)) {
       addConstraintsFromComplementaryBounds(parent, kind, boundType);
       if (!boundType.ignoreAnnotations) {
         Set<AbstractQualifier> aQuals = boundType.getQualifiers();
