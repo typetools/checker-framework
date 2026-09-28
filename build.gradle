@@ -635,7 +635,9 @@ tasks.register("zip", Zip) {
     "docs/tutorial/src/**",
     "docs/tutorial/test/**",
     "docs/tutorial/Makefile",
-    "docs/tutorial/README")
+    "docs/tutorial/README",
+    // lwarp's intermediate files, such as manual-multipage_html.html.
+    "docs/manual/*_html.*")
 
     include("README.html",
         "LICENSE.txt",

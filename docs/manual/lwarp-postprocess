@@ -19,6 +19,9 @@ This script:
  * replaces <kbd> by <code>.  lwarp renders every \texttt as <kbd>, which
    means keyboard input.  In the manuals, \texttt is program text.  The
    added CSS rule styles <code> as lwarp.css styles <kbd>.
+ * gives each section's link to itself (see \selflink in manual-style.tex) an
+   accessible name.  The link's icon is a CSS background image, so otherwise
+   a screen reader would announce an empty link.
  * adds a favicon, if file favicon-checkerframework.png exists in the same
    directory as the HTML file.
 """
@@ -30,12 +33,19 @@ from pathlib import Path
 # A heading, followed by its anchors:  lwarp's autopage anchor (whose number
 # matches the heading's autosec number) and then any LaTeX labels.  After this
 # script moves the anchors before the heading, the heading no longer matches.
+# The heading's contents must not extend past its end tag; otherwise, a heading
+# with no autopage anchor would make the regex scan to the end of the file.
 HEADING_RE = re.compile(
-    r'(<h[1-6] id="autosec-([0-9]+)">.*?</h[1-6]>)'
+    r'(<h[1-6] id="autosec-([0-9]+)">(?:(?!</h[1-6]>).)*</h[1-6]>)'
     r'(\s*<a id="[^"]*-autopage-\2"></a>(?:\s*<a id="[^"]+"></a>)*)',
     re.DOTALL,
 )
 ANCHOR_RE = re.compile(r'<a id="([^"]+)"></a>')
+
+# A section's link to itself, which \selflink creates.  lwarp's line wrapping
+# may put a newline between attributes or tags.
+SELFLINK_RE = re.compile(r'(<a\s+href="[^"]*")(>\s*<span\s+class="selflink">\s*</span>\s*</a>)')
+SELFLINK_LABEL = ' aria-label="Link to this section"'
 
 # lwarp.css's rule for kbd, applied to code instead.
 CODE_STYLE = (
@@ -70,6 +80,7 @@ def main(filenames: list[str]) -> None:
     for filename, text in contents.items():
         text = re.sub(r'(href="[^"#]*#)(autosec-[0-9]+)"', retarget, text)
         text = HEADING_RE.sub(move_anchors, text)
+        text = SELFLINK_RE.sub(r"\1" + SELFLINK_LABEL + r"\2", text)
         # lwarp's line wrapping may put a newline on either side.
         text = re.sub(r'\s+target="_blank"', "", text)
         text = text.replace("<kbd>", "<code>").replace("</kbd>", "</code>")

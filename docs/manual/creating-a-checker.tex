@@ -2448,8 +2448,9 @@ For a chapter or (sub)*section, use \verb|\sectionAndLabel{Section title}{sectio
 Section labels should start with the checker
 name (as in \verb|bellyrub-examples|) and not with ``\<sec:>''.
 Figure labels should start with ``fig-\emph{checkername}'' and not with ``fig:''.
-These conventions are for the benefit of the lwarp program that produces
-the HTML version of the manual.
+The \verb|\sectionAndLabel| convention is required by the
+\<lwarp-postprocess> script, which makes the HTML version of the manual use
+stable, label-based anchors in cross-references.
 Use \verb|\begin{figure}| for all figures, including those whose
 content is a table, in order to have a single consistent numbering for all
 figures.

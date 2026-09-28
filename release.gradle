@@ -134,6 +134,8 @@ tasks.register("copyToWebsite", Copy) {
         "figures/*.svg",
         "manual-images/**",
         "manual-multipage-images/**")
+    // lwarp's intermediate files, such as manual-multipage_html.html.
+    exclude("*_html.*")
   }
 
   // Copy developer docs

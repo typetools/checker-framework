@@ -18,7 +18,7 @@ annotation-file-format.pdf: plume-bib figures
 
 # lwarpmk requires configuration files that are written when LaTeX processes
 # the source file in print mode, which creating the .pdf file does.
-annotation-file-format.html: annotation-file-format.pdf
+annotation-file-format.html: annotation-file-format.pdf ../manual/lwarp-workarounds.tex ../manual/lwarp-postprocess ../manual/ifptex.sty
 	lwarpmk html annotation-file-format
 	lwarpmk limages annotation-file-format
 	../manual/lwarp-postprocess annotation-file-format.html
