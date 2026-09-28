@@ -1036,6 +1036,8 @@ public class InferenceFactory {
         lubSoFar = new ProperType(lubATM, context, ignoreAnnotations);
       }
     }
+    assert lubATM != null && lubTM != null
+        : "@AssumeAssertion(nullness): properTypes has at least two elements";
     // If the result has the Java type of an input that records its weak positions, then it has the
     // same structure as that input, so it keeps that record; see ProperType#origin.  Its weak
     // positions have the other inputs' annotations now, and they are substituted again when the
