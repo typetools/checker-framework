@@ -276,6 +276,7 @@ public final class TreeUtils {
    * @param tree an expression tree
    * @return the outermost non-parenthesized tree enclosed by the given tree
    */
+  @Pure
   @SuppressWarnings("interning:return") // polymorphism implementation
   public static @PolyInterned ExpressionTree withoutParens(@PolyInterned ExpressionTree tree) {
     ExpressionTree t = tree;
@@ -292,6 +293,7 @@ public final class TreeUtils {
    * @param tree an expression tree
    * @return the outermost non-parenthesized non-cast tree enclosed by the given tree
    */
+  @Pure
   @SuppressWarnings("interning:return") // polymorphism implementation
   public static @PolyInterned ExpressionTree withoutParensOrCasts(
       @PolyInterned ExpressionTree tree) {
@@ -322,6 +324,7 @@ public final class TreeUtils {
    * @param tree class declaration
    * @return the element for the given class, or null if {@code tree} has not been attributed
    */
+  @Pure
   public static @Nullable TypeElement elementFromDeclaration(ClassTree tree) {
     TypeElement result = (TypeElement) TreeInfo.symbolFor((JCTree) tree);
     return result;
@@ -541,6 +544,7 @@ public final class TreeUtils {
    * @param tree a method declaration
    * @return the element for the given method
    */
+  @Pure
   public static @Nullable ExecutableElement elementFromDeclaration(MethodTree tree) {
     ExecutableElement result = (ExecutableElement) TreeInfo.symbolFor((JCTree) tree);
     return result;
@@ -629,6 +633,7 @@ public final class TreeUtils {
    * @param tree the variable
    * @return the element for the given variable, or null if {@code tree} has not been attributed
    */
+  @Pure
   public static @Nullable VariableElement elementFromDeclaration(VariableTree tree) {
     VariableElement result = (VariableElement) TreeInfo.symbolFor((JCTree) tree);
     // `result` is null for a local variable whose enclosing top-level class has not yet been
@@ -1115,6 +1120,7 @@ public final class TreeUtils {
    *
    * @return the set of kinds that represent classes
    */
+  @Pure
   public static Set<Tree.Kind> classTreeKinds() {
     return classTreeKinds;
   }
@@ -1125,6 +1131,7 @@ public final class TreeUtils {
    * @param tree the tree to test
    * @return true, iff the given kind is a class kind
    */
+  @Pure
   public static boolean isClassTree(Tree tree) {
     return classTreeKinds().contains(tree.getKind());
   }
@@ -1654,6 +1661,7 @@ public final class TreeUtils {
    * @param tree the Tree to test
    * @return true if the tree is an ExpressionTree
    */
+  @Pure
   public static boolean isExpressionTree(Tree tree) {
     return tree instanceof ExpressionTree;
   }
@@ -1680,6 +1688,7 @@ public final class TreeUtils {
    * @param tree the Tree to test
    * @return true if the tree is a type declaration
    */
+  @Pure
   public static boolean isTypeDeclaration(Tree tree) {
     return isClassTree(tree) || tree instanceof TypeParameterTree;
   }
@@ -1859,6 +1868,7 @@ public final class TreeUtils {
    *
    * @return the type as a TypeMirror of {@code tree}
    */
+  @Pure
   public static TypeMirror typeOf(Tree tree) {
     return ((JCTree) tree).type;
   }

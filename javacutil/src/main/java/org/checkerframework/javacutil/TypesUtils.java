@@ -48,6 +48,7 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.plumelib.util.CollectionsP;
 import org.plumelib.util.ImmutableTypes;
 import org.plumelib.util.StringsP;
@@ -296,6 +297,7 @@ public final class TypesUtils {
    * @param t2 the second type to test
    * @return true if the arguments are the same declared types
    */
+  @SideEffectFree
   public static boolean areSameDeclaredTypes(Type.ClassType t1, Type.ClassType t2) {
     // Do a cheaper test first
     if (t1.tsym.name != t2.tsym.name) {

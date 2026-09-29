@@ -1,6 +1,7 @@
 package org.checkerframework.framework.test.diagnostics;
 
 import java.util.List;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /** Represents a list of TestDiagnostics, which was read from a one line of a file. */
 public class TestDiagnosticLine {
@@ -9,6 +10,7 @@ public class TestDiagnosticLine {
   private final String originalLine;
   private final List<TestDiagnostic> diagnostics;
 
+  @SideEffectFree
   public TestDiagnosticLine(
       String filename, long lineNumber, String originalLine, List<TestDiagnostic> diagnostics) {
     this.filename = filename;

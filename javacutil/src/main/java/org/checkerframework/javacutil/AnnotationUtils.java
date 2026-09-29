@@ -71,7 +71,8 @@ public final class AnnotationUtils {
    * @param annotation the annotation whose name to return
    * @return the fully-qualified name of an annotation as a String
    */
-  public static final @CanonicalName String annotationName(AnnotationMirror annotation) {
+  @SideEffectFree
+  public static @CanonicalName String annotationName(AnnotationMirror annotation) {
     if (annotation instanceof AnnotationBuilder.CheckerFrameworkAnnotationMirror cfam) {
       return cfam.annotationName;
     }
@@ -127,6 +128,7 @@ public final class AnnotationUtils {
    * @return true iff a1 and a2 are the same annotation
    */
   @EqualsMethod
+  @SideEffectFree
   public static boolean areSame(AnnotationMirror a1, AnnotationMirror a2) {
     if (a1 == a2) {
       return true;
@@ -150,6 +152,7 @@ public final class AnnotationUtils {
    * @see #areSame(AnnotationMirror, AnnotationMirror)
    */
   @EqualsMethod
+  @SideEffectFree
   public static int compareByName(AnnotationMirror a1, AnnotationMirror a2) {
     if (a1 == a2) {
       return 0;
@@ -186,6 +189,7 @@ public final class AnnotationUtils {
    * @see #areSame(AnnotationMirror, AnnotationMirror)
    */
   @EqualsMethod
+  @SideEffectFree
   public static boolean areSameByName(AnnotationMirror a1, AnnotationMirror a2) {
     if (a1 == a2) {
       return true;
@@ -285,6 +289,7 @@ public final class AnnotationUtils {
    * @return AnnotationMirror with the same class as {@code anno} iff c contains anno, according to
    *     areSame; otherwise, {@code null}
    */
+  @SideEffectFree
   public static @Nullable AnnotationMirror getSame(
       Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
     for (AnnotationMirror an : c) {
@@ -403,6 +408,7 @@ public final class AnnotationUtils {
    * @return an ordering over AnnotationMirrors based on their name and values
    */
   @Pure
+  @SuppressWarnings("purity") // mutates only a newly allocated set
   public static int compareAnnotationMirrors(AnnotationMirror a1, AnnotationMirror a2) {
     int nameComparison = compareByName(a1, a2);
     if (nameComparison != 0) {
@@ -443,6 +449,7 @@ public final class AnnotationUtils {
    * @return -1 if the first is lesser, 0 if they are the same, or 1 if the first is greater
    */
   @CompareToMethod
+  @SideEffectFree
   private static int compareAnnotationValue(AnnotationValue av1, AnnotationValue av2) {
     if (av1 == av2) {
       return 0;
@@ -463,6 +470,7 @@ public final class AnnotationUtils {
    *     than, equal to, or greater than the second annotation value
    */
   @CompareToMethod
+  @SideEffectFree
   private static int compareAnnotationValueValue(@Nullable Object val1, @Nullable Object val2) {
     if (val1 == val2) {
       return 0;
@@ -711,7 +719,7 @@ public final class AnnotationUtils {
      *
      * @param message the detail message
      */
-    @Pure
+    @SideEffectFree
     public NoSuchElementException(String message) {
       super(message);
     }
@@ -1188,6 +1196,7 @@ public final class AnnotationUtils {
    * @return true if the two annotations have the same elements (fields)
    */
   @EqualsMethod
+  @SideEffectFree
   private static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
 
     // This method might return true even if these maps differ, because of default values.
@@ -1258,6 +1267,7 @@ public final class AnnotationUtils {
    * @param av2 the second AnnotationValue to compare
    * @return true if the two annotation values are the same
    */
+  @SideEffectFree
   public static boolean sameAnnotationValue(AnnotationValue av1, AnnotationValue av2) {
     return compareAnnotationValue(av1, av2) == 0;
   }
@@ -1503,6 +1513,7 @@ public final class AnnotationUtils {
    * @return the string representation, using simple (not fully-qualified) names
    */
   @SideEffectFree
+  @SuppressWarnings("purity") // mutates only a newly allocated StringJoiner
   public static String toStringSimple(AnnotationMirrorSet annos) {
     DefaultAnnotationFormatter defaultAnnotationFormatter = new DefaultAnnotationFormatter();
     StringJoiner result = new StringJoiner(" ");

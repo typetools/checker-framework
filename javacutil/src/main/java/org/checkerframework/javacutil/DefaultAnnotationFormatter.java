@@ -16,6 +16,7 @@ import org.plumelib.util.ArrayMap;
 /** A utility for converting AnnotationMirrors to Strings. It omits full package names. */
 public class DefaultAnnotationFormatter implements AnnotationFormatter {
   /** Creates a DefaultAnnotationFormatter. */
+  @SideEffectFree
   public DefaultAnnotationFormatter() {}
 
   /**
@@ -46,6 +47,7 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
    */
   @Override
   @SideEffectFree
+  @SuppressWarnings("purity") // appends only to a local StringBuilder
   public String formatAnnotationString(
       Collection<? extends AnnotationMirror> annos, boolean printInvisible) {
     StringBuilder sb = new StringBuilder();
@@ -73,6 +75,7 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
    */
   @Override
   @SideEffectFree
+  @SuppressWarnings("purity") // appends only to a local StringBuilder
   public String formatAnnotationMirror(AnnotationMirror anno) {
     StringBuilder sb = new StringBuilder();
     formatAnnotationMirror(anno, sb);

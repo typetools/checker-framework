@@ -3,6 +3,8 @@ package org.checkerframework.javacutil;
 import com.sun.source.tree.Tree;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * Exception type indicating a bug in the framework.
@@ -22,6 +24,7 @@ public class BugInCF extends RuntimeException {
    *
    * @param message the detail message
    */
+  @SideEffectFree
   public BugInCF(String message) {
     this(message, new Throwable());
   }
@@ -34,6 +37,7 @@ public class BugInCF extends RuntimeException {
    * @param args the arguments for the format string
    */
   @FormatMethod
+  @SideEffectFree
   public BugInCF(String fmt, @Nullable Object... args) {
     this(String.format(fmt, args), new Throwable());
   }
@@ -43,6 +47,7 @@ public class BugInCF extends RuntimeException {
    *
    * @param cause the cause; its detail message will be used and must be non-null
    */
+  @SideEffectFree
   public BugInCF(Throwable cause) {
     this((Tree) null, cause);
   }
@@ -53,6 +58,7 @@ public class BugInCF extends RuntimeException {
    * @param location where to report the bug
    * @param cause the cause; its detail message will be used and must be non-null
    */
+  @SideEffectFree
   public BugInCF(@Nullable Tree location, Throwable cause) {
     this(
         location,
@@ -69,6 +75,7 @@ public class BugInCF extends RuntimeException {
    * @param args the arguments for the format string
    */
   @FormatMethod
+  @SideEffectFree
   public BugInCF(Throwable cause, String fmt, @Nullable Object... args) {
     this(String.format(fmt, args), cause);
   }
@@ -79,6 +86,7 @@ public class BugInCF extends RuntimeException {
    * @param message the detail message
    * @param cause the cause
    */
+  @SideEffectFree
   public BugInCF(String message, Throwable cause) {
     this(null, message, cause);
   }
@@ -90,6 +98,7 @@ public class BugInCF extends RuntimeException {
    * @param message the detail message
    * @param cause the cause
    */
+  @SideEffectFree
   public BugInCF(@Nullable Tree location, String message, Throwable cause) {
     super(message, cause);
     if (cause instanceof BugInCF bugInCf && bugInCf.getLocation() != null) {
@@ -110,6 +119,7 @@ public class BugInCF extends RuntimeException {
    *
    * @return the tree at which to report the exception
    */
+  @Pure
   public @Nullable Tree getLocation() {
     return location;
   }

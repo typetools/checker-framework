@@ -27,6 +27,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 import org.junit.Assert;
@@ -371,6 +372,8 @@ public final class TestUtilities {
    * @param options an option map
    * @return return a list of option names
    */
+  @SideEffectFree
+  @SuppressWarnings("purity") // adds only to a newly allocated list
   public static List<String> optionMapToList(Map<String, @Nullable String> options) {
     List<String> optionList = new ArrayList<>(options.size() * 2);
 

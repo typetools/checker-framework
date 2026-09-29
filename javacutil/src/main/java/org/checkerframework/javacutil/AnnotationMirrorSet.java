@@ -14,6 +14,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.common.returnsreceiver.qual.This;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.plumelib.util.DeepCopyable;
 
@@ -46,6 +47,7 @@ public class AnnotationMirrorSet
   // Constructors and factory methods
 
   /** Default constructor. */
+  @SideEffectFree
   public AnnotationMirrorSet() {}
 
   // TODO: Should this be an unmodifiable set?
@@ -135,6 +137,7 @@ public class AnnotationMirrorSet
     return shadowSet.isEmpty();
   }
 
+  @SuppressWarnings("purity") // containsSame iterates the set
   @Override
   public boolean contains(
       @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,
@@ -261,6 +264,7 @@ public class AnnotationMirrorSet
     return containsAll(s);
   }
 
+  @SuppressWarnings("purity") // iterates the set
   @Override
   public int hashCode() {
     int result = 0;

@@ -294,6 +294,7 @@ public final class FormatUtil {
       return found;
     }
 
+    @SuppressWarnings("purity") // String.format() returns a fresh but always-equal String
     @Override
     public String getMessage() {
       return String.format("Expected %d arguments but found %d.", expected, found);
@@ -325,6 +326,7 @@ public final class FormatUtil {
       return found;
     }
 
+    @SuppressWarnings("purity") // String.format() returns a fresh but always-equal String
     @Override
     public String getMessage() {
       return String.format("Expected category %s but found %s.", expected, found);

@@ -197,6 +197,7 @@ public enum I18nConversionCategory {
   }
 
   /** Returns a pretty-printed {@link I18nConversionCategory}. */
+  @SuppressWarnings("purity") // appends only to a local StringBuilder
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder(this.name());

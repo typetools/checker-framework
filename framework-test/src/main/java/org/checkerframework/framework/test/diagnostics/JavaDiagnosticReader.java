@@ -18,6 +18,7 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 /**
@@ -145,6 +146,7 @@ public final class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>,
      * @param lineNumber the line number of the line
      * @return TestDiagnosticLine corresponding to {@code line}
      */
+    @SideEffectFree
     TestDiagnosticLine createTestDiagnosticLine(String filename, String line, long lineNumber);
   }
 
@@ -268,6 +270,7 @@ public final class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>,
    * @throws IOException if there is trouble while reading
    */
   @RequiresNonNull("reader")
+  @SideEffectsOnly("this")
   /*package-private*/ void advance(@UnknownInitialization JavaDiagnosticReader this)
       throws IOException {
     nextLine = reader.readLine();
