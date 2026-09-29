@@ -1,99 +1,85 @@
-\usepackage[T1]{fontenc}
-\usepackage{pslatex}
-\usepackage{microtype}
+% The HTML version of the manual is produced by lwarp; see the Makefile.
+% Macro \CFmultipage, if defined, selects multi-page HTML output (one page per
+% chapter).  Otherwise, the HTML output is a single page, manual.html.
 
+% Text fonts and encodings must be loaded before lwarp.
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{pslatex}
+
+\ifdefined\CFmultipage
+\usepackage[latexmk,HomeHTMLFilename=manual-multipage,HTMLFilename={manual-}]{lwarp}
+\setcounter{FileDepth}{0}
+\else
+\usepackage[latexmk,HomeHTMLFilename=manual,HTMLFilename={}]{lwarp}
+\setcounter{FileDepth}{-5}
+\fi
+\CSSFilename{manual.css}
+\input{lwarp-workarounds.tex}
+\HTMLTitle{The Checker Framework Manual}
+\HTMLDescription{The Checker Framework Manual: Custom pluggable types for Java}
+
+\usepackage{microtype}
 \usepackage{fullpage}
 \usepackage{graphicx}
-\usepackage{hevea}
 \usepackage{url}
 \usepackage{color}
-\usepackage{hyperref}
-% Not supported by Hevea, so don't bother: \usepackage{minitoc}
+% Not supported by lwarp: \usepackage{minitoc}
 \usepackage{proof}
-
-% Hevea seems to need this:
-\usepackage[utf8]{inputenc}
 
 \usepackage{relsize}
 % \def\codesize{\smaller}
 \def\codesize{\relax}           % for "pslatex"
-%HEVEA \def\codesize{\relax}
 
-%%BEGIN LATEX
+\begin{warpprint}
 \newcommand{\code}[1]{\ifmmode{\mbox{\codesize\ttfamily{#1}}}\else{\codesize\ttfamily #1}\fi}
 %\DeclareRobustCommand{\code}[1]{\codesize{\path{#1}}}
-%%END LATEX
-%%HEVEA \newcommand{\code}[1]{\codesize{\texttt{#1}}}
+\end{warpprint}
+\begin{warpHTML}
+\newcommand{\code}[1]{\texttt{#1}}
+\end{warpHTML}
 \def\<#1>{\code{#1}}
 
-% Don't use \ahref which makes no hyperlink; use \href or \ahreforurl instead.
-% \ahrefloc is for internal links to a LaTeX label, but only works in HTML
-% (no hyperlink in PDF).
+% For an internal link to a LaTeX label, use \hyperref[label]{anchor text}.
 
 % This can't handle a URL with an embedded "#" -- at least at UW CSE
 \newcommand{\myurl}[1]{{\codesize\url{#1}}}
-%HEVEA \def\myurl{\url}
 % A command that shows the URL in the printed manual.
 % Make a URL visible in the PDF but just be attached to anchor text in HTML:
-%BEGIN LATEX
-\newcommand{\ahreforurl}[2]{#2 (\url{#1})}
-%END LATEX
-%HEVEA \newcommand{\ahreforurl}[2]{\href{#1}{#2}}
+\newcommand{\ahreforurl}[2]{%
+\ifbool{warpingHTML}{\href{#1}{#2}}{#2 (\url{#1})}}
 
 \usepackage{listings}
 \usepackage{alltt}
 \usepackage{fancyvrb}
-%BEGIN LATEX
+\begin{warpprint}
 \RecustomVerbatimEnvironment{Verbatim}{Verbatim}{fontsize=\codesize}
-%END LATEX
+\end{warpprint}
 
+% In HTML, \smaller has no effect, so the BlockClass sets the font size.
 \newenvironment{mysmall}
-  {\ifhevea\makeatletter\@open{DIV}{style="font-size:small;"}\makeatother
-   \else\begin{smaller}\fi}
-  {\ifhevea\makeatletter\@close{DIV}\makeatother
-   \else\end{smaller}\fi}
+  {\begin{BlockClass}[font-size:small]{mysmall}\smaller}
+  {\end{BlockClass}}
 \newenvironment{myxsmall}
-  {\ifhevea\makeatletter\@open{DIV}{style="font-size:x-small;"}\makeatother
-   \else\begin{smaller}\begin{smaller}\fi}
-  {\ifhevea\makeatletter\@close{DIV}\makeatother
-   \else\end{smaller}\end{smaller}\fi}
+  {\begin{BlockClass}[font-size:x-small]{myxsmall}\smaller\smaller}
+  {\end{BlockClass}}
 \newenvironment{myxxsmall}
-  {\ifhevea\makeatletter\@open{DIV}{style="font-size:xx-small;"}\makeatother
-   \else\begin{smaller}\begin{smaller}\begin{smaller}\fi}
-  {\ifhevea\makeatletter\@close{DIV}\makeatother
-   \else\end{smaller}\end{smaller}\end{smaller}\fi}
+  {\begin{BlockClass}[font-size:xx-small]{myxxsmall}\smaller\smaller\smaller}
+  {\end{BlockClass}}
 
-%HEVEA \footerfalse    % Disable hevea advertisement in footer
-
-\newcommand{\htmlhr}{\relax}
-%HEVEA \renewcommand{\htmlhr}{\@hr{}{}}
-
-% Problem with using "\newcommand" or "\renewcommand": Hevea writes this
-% into manual.image.tex, and invokes LaTeX on it.  Sometimes running "make"
-% leads to an error as a result, sometimes not.  I don't know the pattern
-% of the failures, though running "make clean" and then "make" seems to
-% work.  So maybe there's a problem with an auxiliary file.  Solve it by
-% always defining \discretionary, so that \renewcommand works.
-%HEVEA \def\discretionary{\relax}\renewcommand{\discretionary}[3]{\relax}
-
-%HEVEA \newstyle{.lstframe}{margin:auto;margin-bottom:2em}
-
-% Make images larger and thus less pixelated.  This is not really a solution.
-%HEVEA\@addimagenopt{-mag 2000}
-% This avoids Hevea's built-in conversion.
 % The argument is the HEIGHT, not the width.
 \newcommand{\includeimage}[2]{%
 \begin{center}
 \includeimagenocentering{#1}{#2}%
-%BEGIN LATEX
-\vspace{-1.5\baselineskip}
-%END LATEX
+\warpprintonly{\vspace{-1.5\baselineskip}}%
 \end{center}}
 
-% The argument is the HEIGHT, not the width.
+% The argument is the HEIGHT, not the width.  It is used only in print.
+% In HTML, the image appears at its natural size (the .svg file is used).
 \newcommand{\includeimagenocentering}[2]{%
-\ifhevea\imgsrc{#1.svg}\else%
-\resizebox{!}{#2}{\includegraphics{figures/#1}}\fi}
+\ifbool{warpingHTML}%
+{\includegraphics{figures/#1}}%
+{\resizebox{!}{#2}{\includegraphics{figures/#1}}}}
 
 
 % At least 80% of every float page must be taken up by
@@ -105,13 +91,27 @@
 \def\textfraction{.2}
 
 
+% A symbol that is typeset as math in print, and as a Unicode character in
+% HTML, where lwarp would otherwise render the math as an image.
+% Arg 1: hexadecimal Unicode code point.  Arg 2: math-mode command.
+\newcommand{\textsym}[2]{\ifbool{warpingHTML}{\HTMLunicode{#1}}{\ensuremath{#2}}}
+\newcommand{\Rightarrowsym}{\textsym{21D2}{\Rightarrow}}
+\newcommand{\rightarrowsym}{\textsym{2192}{\rightarrow}}
+\newcommand{\leftrightarrowsym}{\textsym{2194}{\leftrightarrow}}
+\newcommand{\precsym}{\textsym{227A}{\prec}}
+\newcommand{\capsym}{\textsym{2229}{\cap}}
+\newcommand{\neqsym}{\textsym{2260}{\neq}}
+\newcommand{\lesym}{\textsym{2264}{\le}}
+\newcommand{\timessym}{\textsym{00D7}{\times}}
+\newcommand{\approxsym}{\textsym{2248}{\approx}}
+
 % Left and right curly braces and backslash, in tt font
 \newcommand{\ttlcb}{\texttt{\char "7B}}
 \newcommand{\ttrcb}{\texttt{\char "7D}}
 \newcommand{\ttbs}{\texttt{\char "5C}}
 
 
-%BEGIN LATEX
+\begin{warpprint}
   %% Bring items closer together in list environments
   % Prevent infinite loops
   \let\Itemize =\itemize
@@ -130,7 +130,7 @@
   \def\botfigrule{\kern-3\p@ \hrule \kern 2.6\p@} % the \hrule is .4pt high
   \def\dblfigrule{\kern3\p@ \hrule \kern -3.4\p@} % the \hrule is .4pt high
   \makeatother
-%END LATEX
+\end{warpprint}
 
 
 % Reference to Checker Framework Javadoc for a class (not a method, etc.).
@@ -183,37 +183,31 @@
 
 
 % These commands are for long-range references:  those not in the same chapter.
-\newcommand{\refwithpage}[1]{\ref{#1}, page~\pageref{#1}}
-%HEVEA \renewcommand{\refwithpage}[1]{\ref{#1}}
-\newcommand{\refwithpageparen}[1]{\ref{#1} (page~\pageref{#1})}
-%HEVEA \renewcommand{\refwithpageparen}[1]{\ref{#1}}
+% In HTML, the page number is omitted.
+\newcommand{\refwithpage}[1]{\ref{#1}\warpprintonly{, page~\pageref{#1}}}
+\newcommand{\refwithpageparen}[1]{\ref{#1}\warpprintonly{ (page~\pageref{#1})}}
 % Use \chapterpageref to reference only chapters, not sections.
 \newcommand{\chapterpageref}[1]{Chapter~\refwithpage{#1}}
 \newcommand{\sectionpageref}[1]{Section~\refwithpage{#1}}
 
 
-\ifhevea
-% Using a Unicode character avoids needing to use an image.  Unfortunately,
-% this Unicode character is not installed on all computers, so use an image
-% anyway.
-% \newcommand{\linkicon}{{\small\@print@u{128279}}}
-\newcommand{\linkicon}{\imgsrc[width="10" height="10"]{chainlink.svg}}
-\newcommand{\selflink}[1]{\if@refs\ \ahrefloc{#1}{\linkicon}\fi}
-\newcommand{\mksectionAndLabel}[1]
-{\newcommand{\csname #1AndLabel\endcsname}[2]
-{\csname #1\endcsname{##1\label{##2}\selflink{##2}}}}
-\mksectionAndLabel{chapter}
-\mksectionAndLabel{section}
-\mksectionAndLabel{subsection}
-\mksectionAndLabel{subsubsection}
-\mksectionAndLabel{paragraph}
-\else
+% In HTML, each sectioning command is followed by a link to itself, so that
+% users can easily obtain a URL for the section.  The optional argument keeps
+% the link icon out of the table of contents and out of HTML file names.
+\ifbool{warpingHTML}{%
+% The link icon is an image, figures/chainlink.svg, specified in manual.css.
+% (lwarp drops \includegraphics within a sectioning command.)
+\newcommand{\selflink}[1]{\ \hyperref[#1]{\InlineClass{selflink}{}}}
+}{%
 \newcommand{\selflink}[1]{}
-\newcommand{\chapterAndLabel}[2]{\chapter{#1}\label{#2}}
-\newcommand{\sectionAndLabel}[2]{\section{#1}\label{#2}}
-\newcommand{\subsectionAndLabel}[2]{\subsection{#1}\label{#2}}
-\newcommand{\subsubsectionAndLabel}[2]{\subsubsection{#1}\label{#2}}
-\newcommand{\paragraphAndLabel}[2]{\paragraph{#1}\label{#2}}
-\fi
+}
+\newcommand{\chapterAndLabel}[2]{\chapter[{#1}]{#1\selflink{#2}}\label{#2}}
+\newcommand{\sectionAndLabel}[2]{\section[{#1}]{#1\selflink{#2}}\label{#2}}
+\newcommand{\subsectionAndLabel}[2]{\subsection[{#1}]{#1\selflink{#2}}\label{#2}}
+\newcommand{\subsubsectionAndLabel}[2]{\subsubsection[{#1}]{#1\selflink{#2}}\label{#2}}
+\newcommand{\paragraphAndLabel}[2]{\paragraph[{#1}]{#1\selflink{#2}}\label{#2}}
+
+% hyperref should be loaded after other packages.
+\usepackage{hyperref}
 
 %  LocalWords:  fontsize mysmall myxsmall myxxsmall subsubsection

@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Integration with external tools}{external-tools}
 
 This chapter discusses how to run a checker from the command line, from a
@@ -115,9 +114,7 @@ that your Ant file already contains a compilation target that uses the
 \item
 Set the \code{cfJavac} property:
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   <property environment="env"/>
   <property name="checkerframework" value="${env.CHECKERFRAMEWORK}" />
@@ -131,16 +128,12 @@ Set the \code{cfJavac} property:
     </javac>
   </presetdef>
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 \item \textbf{Duplicate} the compilation target, then \textbf{modify} it slightly as
 indicated in this example:
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   <target name="check-nullness"
           description="Check for null pointer dereferences"
@@ -156,9 +149,7 @@ indicated in this example:
     </cf.javac>
   </target>
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 Fill in each ellipsis (\ldots) from the original compilation target.
 However, do not copy any \<fork=> setting from the original \code{<javac>}
@@ -570,7 +561,7 @@ run the Ant target by executing the following steps
 
 \item
   Select \code{build.xml} in one of the navigation views and choose
-  {\bf Run As $>$ Ant Build...} from its context menu.
+  {\bf Run As \textgreater{} Ant Build...} from its context menu.
 
 \item
   A launch configuration dialog is opened on a launch configuration
@@ -599,8 +590,8 @@ this list.
 To eliminate the warnings:
 disable all ``Unhandled Token in @SuppressWarnings'' warnings in Eclipse.
 Look under the menu headings
-``Java $\rightarrow$ Compiler $\rightarrow$ Errors/Warnings $\rightarrow$
-Annotations $\rightarrow$ Unhandled Token in '@SuppressWarnings',''
+``Java \rightarrowsym{} Compiler \rightarrowsym{} Errors/Warnings \rightarrowsym{}
+Annotations \rightarrowsym{} Unhandled Token in '@SuppressWarnings',''
 and set it to ignore.
 
 
@@ -1047,9 +1038,7 @@ annotation processor output will appear in the editor.
 \item
 Set the \code{cfJavac} property:
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   <property environment="env"/>
   <property name="checkerframework" value="${env.CHECKERFRAMEWORK}" />
@@ -1063,18 +1052,14 @@ Set the \code{cfJavac} property:
     </javac>
   </presetdef>
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 \item
 Override the \code{-init-macrodef-javac-with-processors} target to
 use \code{cf.javac} instead of \code{javac} and to run the checker.
 In this example, a nullness checker is run:
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   <target depends="-init-ap-cmdline-properties" if="ap.supported.internal"
         name="-init-macrodef-javac-with-processors">
@@ -1131,9 +1116,7 @@ In this example, a nullness checker is run:
   <target name="-post-jar">
   </target>
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 When Build and Clean Project is used, the output of the checker will
 now appear in the build console. However, annotation processor output
