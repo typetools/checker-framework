@@ -11,6 +11,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
@@ -154,7 +155,8 @@ public final class CaptureBound {
           AbstractType T = t.capturedTypeArg.getWildcardUpperBound();
           t.alpha.getBounds().addBound(null, VariableBounds.BoundKind.UPPER, T);
         } else if (t.capturedTypeArg.isLowerBoundedWildcard()) {
-          AbstractType T = t.capturedTypeArg.getWildcardLowerBound();
+          @SuppressWarnings("nullness:assignment") // `capturedTypeArg` is a wildcard.
+          @NonNull AbstractType T = t.capturedTypeArg.getWildcardLowerBound();
           t.alpha.getBounds().addBound(null, VariableBounds.BoundKind.LOWER, T);
         }
       }

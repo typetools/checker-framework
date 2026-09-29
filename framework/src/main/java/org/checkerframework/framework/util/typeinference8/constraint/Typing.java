@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.util.typeinference8.types.AbstractQualifier;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
@@ -64,7 +65,7 @@ public class Typing extends TypeConstraint {
    * @param t right-hand side type
    * @param kind the kind of constraint
    */
-  public Typing(Constraint parent, AbstractType S, AbstractType t, Kind kind) {
+  public Typing(@Nullable Constraint parent, AbstractType S, AbstractType t, Kind kind) {
     this(parent, S, t, kind, false);
   }
 
@@ -91,7 +92,11 @@ public class Typing extends TypeConstraint {
    * @param covarTypeArg true if the constraint is for a covariant type argument
    */
   public Typing(
-      Constraint parent, AbstractType S, AbstractType t, Kind kind, boolean covarTypeArg) {
+      @Nullable Constraint parent,
+      AbstractType S,
+      AbstractType t,
+      Kind kind,
+      boolean covarTypeArg) {
     this(parent, S, t, kind, covarTypeArg, false);
   }
 
@@ -107,7 +112,7 @@ public class Typing extends TypeConstraint {
    *     two proper types; see {@link #qualifiersMustMatch}
    */
   public Typing(
-      Constraint parent,
+      @Nullable Constraint parent,
       AbstractType S,
       AbstractType t,
       Kind kind,
@@ -140,7 +145,7 @@ public class Typing extends TypeConstraint {
    *     two proper types; see {@link #qualifiersMustMatch}
    */
   public Typing(
-      Constraint parent,
+      @Nullable Constraint parent,
       String description,
       AbstractType S,
       AbstractType t,
