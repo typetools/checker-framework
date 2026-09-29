@@ -181,7 +181,9 @@ public class VariableBounds {
    * instantiation comes from a proper {@code EQUAL} bound whose annotations are ignored, such as
    * {@code T = @NonNull U} from the formula {@code @NonNull T = @NonNull U} (see {@link
    * UseOfVariable#addBound}). Its Java type is this variable's, but its primary annotations are
-   * arbitrary.
+   * those of the other side of the formula, such as the {@code @NonNull} of {@code @NonNull U}.
+   * They were related to the explicit annotation on the use of this variable, which overrides this
+   * variable's annotation, so they say nothing about this variable's annotations and are ignored.
    *
    * @param type an instantiation of this variable
    * @return true if {@code type}, as an instantiation of this variable, is weak

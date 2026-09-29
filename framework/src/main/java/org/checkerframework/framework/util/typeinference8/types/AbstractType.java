@@ -67,16 +67,19 @@ public abstract class AbstractType {
   protected final AnnotatedTypeFactory typeFactory;
 
   /**
-   * True if the primary annotations of this type are arbitrary, so they should be ignored. For a
-   * type variable or a wildcard, this includes the primary annotations of its bounds, which its
-   * primary annotation determines. It does not include annotations nested in this type, such as
-   * those of its type arguments or its component type: those are compared, unless they are at a
-   * position that ignores annotations itself.
+   * True if the primary annotations of this type should be ignored, because they do not constrain
+   * any inference variable's annotations. For a type variable or a wildcard, this includes the
+   * primary annotations of its bounds, which its primary annotation determines. It does not include
+   * annotations nested in this type, such as those of its type arguments or its component type:
+   * those are compared, unless they are at a position that ignores annotations itself.
    *
-   * <p>This field is true for a bound that {@link UseOfVariable#addBound} creates from a use of a
-   * variable that has a primary annotation, because that annotation overrides the variable's, and
-   * for a position where such a bound, as a variable's instantiation, was substituted; see {@link
-   * VariableBounds#isWeakInstantiation}.
+   * <p>This field is true for a bound that {@link UseOfVariable#addBound} creates from a use of an
+   * inference variable that has a primary annotation, such as {@code @Nullable T}. That annotation
+   * overrides the variable's annotation at this use, so a formula such as {@code @Nullable T
+   * <: @Nullable String} relates only the Java types of {@code T} and {@code String}; the bound's
+   * annotations must not influence the inferred annotations of {@code T}. This field is also true
+   * for a type derived from such a bound, including a position where such a bound, as a variable's
+   * instantiation, was substituted; see {@link VariableBounds#isWeakInstantiation}.
    *
    * <p>This field applies to every qualifier hierarchy at once, even when it was set because of a
    * primary annotation that appears in only some of the hierarchies. TODO: Make this per-hierarchy,

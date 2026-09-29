@@ -23,10 +23,15 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
 /**
  * Utility methods for comparing types some of whose annotations are ignored.
  *
- * <p>Two kinds of position in a type have annotations that are arbitrary, and so are ignored:
+ * <p>Two kinds of position in a type have annotations that are ignored. Both kinds of annotations
+ * come from a formula about a use of an inference variable that has an explicit primary annotation,
+ * such as {@code @Nullable T}. That annotation overrides the variable's, so they say nothing about
+ * the variable's annotations. The two kinds are:
  *
  * <ul>
- *   <li>the root of a type whose {@link AbstractType#ignoreAnnotations} is true, and
+ *   <li>the root of a type whose {@link AbstractType#ignoreAnnotations} is true: its primary
+ *       annotations, including those of its bounds if it is a type variable or a wildcard, but not
+ *       annotations nested in it, such as those of its type arguments; and
  *   <li>a weak position: a position in a {@link ProperType} where a weak instantiation (see {@link
  *       VariableBounds#isWeakInstantiation}) was substituted. The type's {@link
  *       ProperType#getOrigin() origin} has a use of the variable there.

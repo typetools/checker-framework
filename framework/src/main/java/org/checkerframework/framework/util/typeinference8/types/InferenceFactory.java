@@ -1018,13 +1018,13 @@ public class InferenceFactory {
         if (properType.ignoreAnnotations == ignoreAnnotations) {
           lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubATM, atm, lubTM);
         } else if (properType.ignoreAnnotations) {
-          // Only the root annotations of `atm` are arbitrary.  Make them bottom, so that its root
+          // Only the root annotations of `atm` are ignored.  Make them bottom, so that its root
           // puts no constraint on the result, and lub the rest.
           AnnotatedTypeMirror neutral = atm.deepCopy();
           neutral.replaceAnnotations(qh.getBottomAnnotations());
           lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubATM, neutral, lubTM);
         } else {
-          // Only the root annotations of `lubATM` are arbitrary; see the previous case.
+          // Only the root annotations of `lubATM` are ignored; see the previous case.
           AnnotatedTypeMirror neutral = lubATM.deepCopy();
           neutral.replaceAnnotations(qh.getBottomAnnotations());
           lubATM = AnnotatedTypes.leastUpperBound(typeFactory, neutral, atm, lubTM);

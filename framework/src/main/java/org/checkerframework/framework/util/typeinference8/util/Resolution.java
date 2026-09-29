@@ -117,7 +117,8 @@ public final class Resolution {
   /**
    * Resolves the annotations of each variable in {@code vars} that has a weak instantiation (see
    * {@link VariableBounds#isWeakInstantiation}). A weak instantiation gives the variable's Java
-   * type, but its annotations are arbitrary, so this method takes the annotations from the
+   * type, but its annotations say nothing about the variable's, because they were related to an
+   * explicit annotation on a use of the variable, so this method takes the annotations from the
    * variable's other bounds instead. As {@link #resolveWithLowerBounds} would, it adds the bound
    * {@code var = t}, where {@code t} is the least upper bound of the variable's proper lower
    * bounds, with its qualifier lower bounds applied, viewed as the variable's Java type ({@link
@@ -488,9 +489,9 @@ public final class Resolution {
    * @param lowerBounds a nonempty set of proper types, each of which is a lower bound of {@code ai}
    *     or has the Java type of {@code ai}
    * @param weakEqualBounds true if {@code lowerBounds} may include weak {@code EQUAL} bounds (see
-   *     {@link VariableBounds#isWeakInstantiation}), whose root annotations are arbitrary in every
-   *     hierarchy. A proper lower bound's root annotations are arbitrary only in the hierarchies
-   *     where {@link
+   *     {@link VariableBounds#isWeakInstantiation}), whose root annotations say nothing about
+   *     {@code ai}'s in any hierarchy. A proper lower bound's root annotations say nothing about
+   *     {@code ai}'s only in the hierarchies of the use's explicit primary annotation, where {@link
    *     org.checkerframework.framework.util.typeinference8.types.UseOfVariable#addBound} made them
    *     bottom, so lubbing them is already correct.
    * @param context the context
@@ -516,9 +517,9 @@ public final class Resolution {
       if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR
           && weakEqualBounds
           && lubProperType.ignoreAnnotations) {
-        // The root annotations of `lubProperType` are arbitrary, so the qualifier lower bounds
-        // replace them rather than being lubbed with them.  Replacing them when only some
-        // hierarchies are arbitrary would discard the others, such as the H1 annotation of a lower
+        // The root annotations of `lubProperType` say nothing about `ai`'s, so the qualifier lower
+        // bounds replace them rather than being lubbed with them.  Replacing them when only some
+        // hierarchies are ignored would discard the others, such as the H1 annotation of a lower
         // bound from a use whose primary annotation is in H2 only.  A type variable's are lubbed
         // into its lower bound, as below, because replacing its primary annotation would also fix
         // its upper bound.

@@ -39,13 +39,14 @@ public class ProperType extends AbstractType {
    * The type that this type was made from by substituting instantiations, if at least one of them
    * was weak (see {@link VariableBounds#isWeakInstantiation}); otherwise, null.
    *
-   * <p>A position where a weak instantiation was substituted has arbitrary annotations, but {@link
-   * #type} cannot record which positions those are. The origin can: it still has a use of the
-   * variable at each such position. So this type computes its type arguments and its other parts
-   * from its origin (see {@link #partFromOrigin}), and a part at such a position ignores
-   * annotations, as {@link UseOfVariable#applyInstantiations} makes it. And when the variable's
-   * instantiation changes, as it does when a weak one is replaced, {@link #applyInstantiations}
-   * substitutes the new one.
+   * <p>A position where a weak instantiation was substituted has annotations that are ignored,
+   * because they say nothing about the variable's annotations (see {@link
+   * VariableBounds#isWeakInstantiation}), but {@link #type} cannot record which positions those
+   * are. The origin can: it still has a use of the variable at each such position. So this type
+   * computes its type arguments and its other parts from its origin (see {@link #partFromOrigin}),
+   * and a part at such a position ignores annotations, as {@link UseOfVariable#applyInstantiations}
+   * makes it. And when the variable's instantiation changes, as it does when a weak one is
+   * replaced, {@link #applyInstantiations} substitutes the new one.
    */
   private final @Nullable InferenceType origin;
 

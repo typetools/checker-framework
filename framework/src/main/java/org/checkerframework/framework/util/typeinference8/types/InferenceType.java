@@ -275,13 +275,13 @@ public final class InferenceType extends AbstractType {
 
   /**
    * Returns true if one of {@code instantiated}, a list of instantiated variables, is mentioned by
-   * this type and has an instantiation with arbitrary annotations: one that is weak (see {@link
+   * this type and has an instantiation with ignored annotations: one that is weak (see {@link
    * VariableBounds#isWeakInstantiation}), or one that has weak positions itself (see {@link
    * ProperType#getOrigin}).
    *
    * @param instantiated variables, each of which has an instantiation
    * @return true if one of {@code instantiated} is mentioned by this type and has an instantiation
-   *     with arbitrary annotations
+   *     with ignored annotations
    */
   private boolean substitutesWeakInstantiation(List<Variable> instantiated) {
     Collection<Variable> mentioned = null;
@@ -334,7 +334,7 @@ public final class InferenceType extends AbstractType {
         createIgnoreInstantiated(
             newATM, newTypeJava, map, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations);
     if (newAbstractType.isProper() && substitutesWeakInstantiation(instantiations)) {
-      // Record which positions have a weak instantiation's arbitrary annotations; see
+      // Record which positions have a weak instantiation's ignored annotations; see
       // ProperType#origin.
       newAbstractType =
           new ProperType(newATM, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations, this);
