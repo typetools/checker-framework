@@ -14,16 +14,12 @@
 %% Releases are made on buffalo, so this macro is really saying
 %% "released version of the CF" as opposed to a development version.
 \newif\ifonbuffalo
-%HEVEA\makeatletter\@iffileexists{/scratch/secs-jenkins/java/jdk1.7.0/LICENSE}{\onbuffalotrue}{\onbuffalofalse}\makeatother
-%BEGIN LATEX
 \IfFileExists{/scratch/secs-jenkins/java/jdk1.7.0/LICENSE}{\onbuffalotrue}{\onbuffalofalse}
-%END LATEX
 
 \begin{center}
-%HEVEA\imgsrc{CFLogo.png}
-%BEGIN LATEX
-  \includegraphics{../logo/Logo/CFLogo.pdf}
-%END LATEX
+\ifbool{warpingHTML}
+  {\includegraphics{CFLogo.png}}
+  {\includegraphics{../logo/Logo/CFLogo.pdf}}
 \end{center}
 
 % Permit text on title page by making \newpage a no-op while running \maketitle
@@ -35,10 +31,16 @@
 Section~\refwithpageparen{installation}
 describes how to \textbf{install and use} pluggable type-checkers.
 
-%HEVEA This manual is also available in \href{https://checkerframework.org/manual/checker-framework-manual.pdf}{PDF}.
+\warpHTMLonly{This manual is also available
+  \ifdefined\CFmultipage
+  as a \href{manual.html}{single HTML page}
+  \else
+  as a \href{manual-multipage.html}{multi-page HTML version}
+  \fi
+  and in \href{https://checkerframework.org/manual/checker-framework-manual.pdf}{PDF}.}
 
-%HEVEA \setcounter{tocdepth}{1}
-% Not supported by Hevea, so don't bother: \dominitoc
+\warpHTMLonly{\setcounter{tocdepth}{1}}
+% Not supported by lwarp, so don't bother: \dominitoc
 \tableofcontents
 \newpage
 
@@ -103,10 +105,9 @@ describes how to \textbf{install and use} pluggable type-checkers.
 \input{faq.tex}
 \input{troubleshooting.tex}
 
-\htmlhr
 \bibliographystyle{alpha}
 \bibliography{bibstring-unabbrev,alias,concurrency,ernst,games,generals,invariants,security,types,crossrefs}
 
 \end{document}
 
-% LocalWords:  pt TODO JavaDocs Arg api HEVEA html ernst
+% LocalWords:  pt TODO JavaDocs Arg api lwarp html ernst

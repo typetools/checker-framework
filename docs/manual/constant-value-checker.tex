@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Constant Value Checker}{constant-value-checker}
 
 The Constant Value Checker is a constant propagation analysis: for
@@ -181,7 +180,7 @@ Section~\ref{declaration-annotations-moved}.
 % These lists should be kept in sync with ValueAnnotatedTypeFactory.java .
 \begin{figure}
 \begin{center}
-% The ~ around the text makes things look better in Hevea (and not terrible
+% The ~ around the text makes things look better in HTML (and not terrible
 % in LaTeX).
 \begin{tabular}{ll}
 \begin{tabular}{|l|}
@@ -189,13 +188,11 @@ Section~\ref{declaration-annotations-moved}.
  ~android.support.annotation.IntRange~ \\ \hline
 \end{tabular}
 &
-$\Rightarrow$
+\Rightarrowsym{}
 ~org.checkerframework.checker.common.value.qual.IntRange~
 \end{tabular}
 \end{center}
-%BEGIN LATEX
-\vspace{-1.5\baselineskip}
-%END LATEX
+\warpprintonly{\vspace{-1.5\baselineskip}}
 \caption{Correspondence between other constant value and range annotations
   and the Checker Framework's annotations.}
 \label{fig-constant-value-refactoring}

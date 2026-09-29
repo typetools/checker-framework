@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Format String Checker}{formatter-checker}
 
 % VERIFICATION
@@ -213,7 +212,7 @@ Until now, we have assumed that the format specifiers simply consume format argu
 But there are two other ways for a format specifier to select a format argument:
 
 \begin{itemize}
-\item $n$\code{\$} specifies a one-based index $n$. In the
+\item \textit{n}\code{\$} specifies a one-based index \textit{n}. In the
     format string \code{"\%2\$s"}, the format specifier selects the
     second format argument.
 \item The \code{<} \emph{flag} references the format argument
@@ -242,13 +241,13 @@ intersections of previously-mentioned conversion categories:
     For example, the format string \code{"\%1\$f \%1\$c"} requires that the first
     format argument be \code{null}.  Passing either \code{4} or
     \code{4.2} would lead to an exception.
-\item[\refenum{checker/formatter/qual}{ConversionCategory}{CHAR\_AND\_INT}{}] is used if a format argument is restricted by a \refenum{checker/formatter/qual}{ConversionCategory}{CHAR}{} and a \refenum{checker/formatter/qual}{ConversionCategory}{INT}{} conversion category (\code{CHAR} $\cap$ \code{INT}).
-\item[\refenum{checker/formatter/qual}{ConversionCategory}{INT\_AND\_TIME}{}] is used if a format argument is restricted by an \refenum{checker/formatter/qual}{ConversionCategory}{INT}{} and a \refenum{checker/formatter/qual}{ConversionCategory}{TIME}{} conversion category (\code{INT} $\cap$ \code{TIME}).
+\item[\refenum{checker/formatter/qual}{ConversionCategory}{CHAR\_AND\_INT}{}] is used if a format argument is restricted by a \refenum{checker/formatter/qual}{ConversionCategory}{CHAR}{} and a \refenum{checker/formatter/qual}{ConversionCategory}{INT}{} conversion category (\code{CHAR} \capsym{} \code{INT}).
+\item[\refenum{checker/formatter/qual}{ConversionCategory}{INT\_AND\_TIME}{}] is used if a format argument is restricted by an \refenum{checker/formatter/qual}{ConversionCategory}{INT}{} and a \refenum{checker/formatter/qual}{ConversionCategory}{TIME}{} conversion category (\code{INT} \capsym{} \code{TIME}).
 \end{description}
 
 \noindent All other intersections lead to already existing conversion categories.
-For example, \code{GENERAL} $\cap$ \code{CHAR} $=$ \code{CHAR} and
-\code{UNUSED} $\cap$ \code{GENERAL} $=$ \code{GENERAL}.
+For example, \code{GENERAL} \capsym{} \code{CHAR} = \code{CHAR} and
+\code{UNUSED} \capsym{} \code{GENERAL} = \code{GENERAL}.
 
 Figure~\ref{fig-formatter-cat} summarizes the subset
 relationship among all conversion categories.
@@ -446,7 +445,7 @@ will fail even though the Format String Checker issued neither errors nor
 warnings. These cases are:
 
 \begin{enumerate}
-\item The format string is \code{null}. Use the \ahrefloc{nullness-checker}{Nullness Checker} to prevent this.
+\item The format string is \code{null}. Use the \hyperref[nullness-checker]{Nullness Checker} to prevent this.
 \item A format argument's \code{toString} method throws an exception.
 \item A format argument implements the \code{Formattable} interface and throws an
     exception in the \code{formatTo} method.
