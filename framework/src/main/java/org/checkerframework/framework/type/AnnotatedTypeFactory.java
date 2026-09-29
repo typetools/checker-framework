@@ -67,6 +67,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.PrimitiveType;
@@ -5222,6 +5223,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             newArgAsTypeVar
                 .getLowerBound()
                 .replaceAnnotations(wildcardType.getSuperBound().getPrimaryAnnotations());
+          } else if (isSameTypeModuloCaptures(wildcardUbType, correctArgType)) {
+            // Keep the annotations on the bounds of the captured type variables, too.
+            newArg = this.toAnnotatedType(correctArgType, false);
+            replaceAnnotations(wildcardType.getExtendsBound(), newArg);
           } else {
             newArg = this.toAnnotatedType(correctArgType, false);
             newArg.replaceAnnotations(wildcardType.getExtendsBound().getPrimaryAnnotations());
@@ -5252,6 +5257,51 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // annotations.
     addDefaultAnnotations(groundFunctionalType);
     return groundFunctionalType;
+  }
+
+  /**
+   * Returns true if {@code t1} and {@code t2} are the same type, except that where one has a
+   * captured type variable the other may have a different captured type variable.
+   *
+   * @param t1 a type
+   * @param t2 a type
+   * @return true if {@code t1} and {@code t2} are the same type modulo captured type variables
+   */
+  private boolean isSameTypeModuloCaptures(TypeMirror t1, TypeMirror t2) {
+    if (TypesUtils.isCapturedTypeVariable(t1) && TypesUtils.isCapturedTypeVariable(t2)) {
+      return true;
+    }
+    if (t1.getKind() != t2.getKind()) {
+      return false;
+    }
+    switch (t1.getKind()) {
+      case DECLARED -> {
+        DeclaredType d1 = (DeclaredType) t1;
+        DeclaredType d2 = (DeclaredType) t2;
+        if (!d1.asElement().equals(d2.asElement())
+            || !isSameTypeModuloCaptures(d1.getEnclosingType(), d2.getEnclosingType())) {
+          return false;
+        }
+        List<? extends TypeMirror> args1 = d1.getTypeArguments();
+        List<? extends TypeMirror> args2 = d2.getTypeArguments();
+        if (args1.size() != args2.size()) {
+          return false;
+        }
+        for (int i = 0; i < args1.size(); i++) {
+          if (!isSameTypeModuloCaptures(args1.get(i), args2.get(i))) {
+            return false;
+          }
+        }
+        return true;
+      }
+      case ARRAY -> {
+        return isSameTypeModuloCaptures(
+            ((ArrayType) t1).getComponentType(), ((ArrayType) t2).getComponentType());
+      }
+      default -> {
+        return types.isSameType(t1, t2);
+      }
+    }
   }
 
   /**

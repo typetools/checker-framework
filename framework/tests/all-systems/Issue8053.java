@@ -87,16 +87,31 @@ public class Issue8053 {
     return types.stream().map(t -> upperWild(t)).collect(Collectors.toList());
   }
 
-  // A lower-bounded wildcard in the return type, which takes the third branch.  The target type
-  // is not tightened to `List<Getter<?, ? super Number>>`, the way upperBoundedWildcard's is:
-  // CaptureBound#incorporate gives the capture variable the wildcard's bound only for
-  // `? extends T`, so the capture variable here has no lower bound and the tighter target fails
-  // under the Value Checker.  See CapturedWildcardBound#twoLevelSuper for why the symmetric bound
-  // is not added.
+  // A lower-bounded wildcard in the return type, which takes the third branch.
   static native <P> Getter<P, ? super Number> lowerWild(P p);
 
-  static List<Getter<?, ?>> lowerBoundedWildcard(List<String> types) {
+  static List<Getter<?, ? super Number>> lowerBoundedWildcard(List<String> types) {
     return types.stream().map(t -> lowerWild(t)).collect(Collectors.toList());
+  }
+
+  // The capture variable in the lambda's target type comes from javac, not from inference, so it
+  // must get its bounds' annotations from the inferred type.
+  static List<Getter<?, ?>> lowerBoundedWildcardLooseTarget(List<String> types) {
+    return types.stream().map(t -> lowerWild(t)).collect(Collectors.toList());
+  }
+
+  // The type parameter has an upper bound, which the capture variable keeps.
+  interface BoundedGetter<K, V extends CharSequence> {}
+
+  static native <P> BoundedGetter<P, ? super String> lowerWildBoundedParam(P p);
+
+  static List<BoundedGetter<?, ? super String>> lowerBoundedWildcardBoundedParam(
+      List<String> types) {
+    return types.stream().map(t -> lowerWildBoundedParam(t)).collect(Collectors.toList());
+  }
+
+  static List<BoundedGetter<?, ?>> lowerBoundedWildcardBoundedParamLooseTarget(List<String> types) {
+    return types.stream().map(t -> lowerWildBoundedParam(t)).collect(Collectors.toList());
   }
 
   // The wildcard is not the last type argument, so the capture variable that must be resolved
