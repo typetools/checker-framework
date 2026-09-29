@@ -37,16 +37,16 @@ public class ProperType extends AbstractType {
 
   /**
    * The type that this type was made from by substituting instantiations, if at least one of them
-   * was weak (see {@link VariableBounds#isWeakInstantiation}); otherwise, null.
+   * ignores annotations (see {@link AbstractType#ignoreAnnotations}); otherwise, null.
    *
-   * <p>A position where a weak instantiation was substituted has annotations that are ignored,
-   * because they say nothing about the variable's annotations (see {@link
-   * VariableBounds#isWeakInstantiation}), but {@link #type} cannot record which positions those
-   * are. The origin can: it still has a use of the variable at each such position. So this type
-   * computes its type arguments and its other parts from its origin (see {@link #partFromOrigin}),
-   * and a part at such a position ignores annotations, as {@link UseOfVariable#applyInstantiations}
-   * makes it. And when the variable's instantiation changes, as it does when a weak one is
-   * replaced, {@link #applyInstantiations} substitutes the new one.
+   * <p>A position where such an instantiation was substituted is an ignored substitution: its
+   * annotations are ignored, because they say nothing about the variable's annotations. But {@link
+   * #type} cannot record which positions those are. The origin can: it still has a use of the
+   * variable at each such position. So this type computes its type arguments and its other parts
+   * from its origin (see {@link #partFromOrigin}), and a part at such a position ignores
+   * annotations, as {@link UseOfVariable#applyInstantiations} makes it. And when the variable's
+   * instantiation changes, as it does when one that ignores annotations is replaced, {@link
+   * #applyInstantiations} substitutes the new one.
    */
   private final @Nullable InferenceType origin;
 
@@ -103,7 +103,7 @@ public class ProperType extends AbstractType {
    * @param context the context
    * @param ignoreAnnotations true if the annotations on this type should be ignored
    * @param origin the type that {@code type} was made from by substituting instantiations, at least
-   *     one of which is weak, or null; see {@link #origin}
+   *     one of which ignores annotations, or null; see {@link #origin}
    */
   ProperType(
       AnnotatedTypeMirror type,
@@ -167,9 +167,9 @@ public class ProperType extends AbstractType {
 
   /**
    * Returns a part of this type, computed from {@link #origin} if this type has one, so that the
-   * part knows which of its positions have a weak instantiation's annotations. If this type has no
-   * origin, or the part of the origin is not a proper type once instantiations are applied, then
-   * the part is computed from {@link #type} instead.
+   * part knows which of its positions are ignored substitutions. If this type has no origin, or the
+   * part of the origin is not a proper type once instantiations are applied, then the part is
+   * computed from {@link #type} instead.
    *
    * @param part computes the part of a type
    * @param plain computes the part of this type from {@link #type}
@@ -495,7 +495,7 @@ public class ProperType extends AbstractType {
       return this;
     }
     ProperType properResult = (ProperType) result;
-    // `origin` has no weak instantiation at its root, so the root annotations of this type are
+    // `origin` has no ignored substitution at its root, so the root annotations of this type are
     // still right, and they may differ from those of `origin` if resolution set them; see
     // Resolution#lubOfLowerBounds.  `result` is a new type, so its annotated type may be mutated.
     AnnotatedTypeMirror resultATM = properResult.getAnnotatedType();
@@ -513,7 +513,7 @@ public class ProperType extends AbstractType {
 
   /**
    * Returns the type that this type was made from by substituting instantiations, if at least one
-   * of them was weak; otherwise, null. See {@link #origin}.
+   * of them ignores annotations; otherwise, null. See {@link #origin}.
    *
    * @return the type that this type was made from, or null
    */

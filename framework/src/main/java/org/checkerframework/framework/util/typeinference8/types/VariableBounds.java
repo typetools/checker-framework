@@ -167,8 +167,8 @@ public class VariableBounds {
 
   /**
    * Returns the number of times this variable's instantiation has been set. A type made by
-   * substituting a weak instantiation uses it to tell when to substitute again; see {@link
-   * ProperType#applyInstantiations}.
+   * substituting an instantiation that ignores annotations uses it to tell when to substitute
+   * again; see {@link ProperType#applyInstantiations}.
    *
    * @return the number of times this variable's instantiation has been set
    */
@@ -177,31 +177,16 @@ public class VariableBounds {
   }
 
   /**
-   * Returns true if {@code type}, as an instantiation of this variable, is weak. A weak
-   * instantiation comes from a proper {@code EQUAL} bound whose annotations are ignored, such as
-   * {@code T = @NonNull U} from the formula {@code @NonNull T = @NonNull U} (see {@link
-   * UseOfVariable#addBound}). Its Java type is this variable's, but its primary annotations are
-   * those of the other side of the formula, such as the {@code @NonNull} of {@code @NonNull U}.
-   * They were related to the explicit annotation on the use of this variable, which overrides this
-   * variable's annotation, so they say nothing about this variable's annotations and are ignored.
-   *
-   * @param type an instantiation of this variable
-   * @return true if {@code type}, as an instantiation of this variable, is weak
-   */
-  public static boolean isWeakInstantiation(ProperType type) {
-    return type.ignoreAnnotations;
-  }
-
-  /**
    * Makes {@code type}, a proper {@code EQUAL} bound of this variable, its instantiation, unless
-   * {@code type} is weak and the current instantiation is not. A bound whose annotations are
-   * respected determines this variable's annotations, so a weak one never replaces it, and it
-   * always replaces a weak one. Among bounds of the same kind, the later one is used.
+   * {@code type} ignores annotations and the current instantiation does not (see {@link
+   * AbstractType#ignoreAnnotations}). A bound whose annotations are respected determines this
+   * variable's annotations, so a bound that ignores annotations never replaces it, and it always
+   * replaces one that does. Among bounds of the same kind, the later one is used.
    *
    * @param type a proper {@code EQUAL} bound of this variable
    */
   private void setInstantiationFromEqualBound(ProperType type) {
-    if (instantiation == null || !isWeakInstantiation(type) || isWeakInstantiation(instantiation)) {
+    if (instantiation == null || !type.ignoreAnnotations || instantiation.ignoreAnnotations) {
       setInstantiation(type);
     }
   }
@@ -650,16 +635,18 @@ public class VariableBounds {
   }
 
   /**
-   * Returns all lower bounds that are proper types, and all {@code EQUAL} bounds that are weak
-   * instantiations (see {@link #isWeakInstantiation}). A weak {@code EQUAL} bound gives this
-   * variable's Java type, but it says no more about its annotations than a lower bound does.
+   * Returns the bounds that determine this variable's annotations when its instantiation ignores
+   * annotations: all lower bounds that are proper types, and all proper {@code EQUAL} bounds that
+   * ignore annotations (see {@link AbstractType#ignoreAnnotations}). Such an {@code EQUAL} bound
+   * gives this variable's Java type, but it says no more about its annotations than a lower bound
+   * does.
    *
-   * @return all proper lower bounds and all weak {@code EQUAL} bounds
+   * @return all proper lower bounds and all proper {@code EQUAL} bounds that ignore annotations
    */
-  public Set<ProperType> findProperLowerBoundsAndWeakEqualBounds() {
+  public Set<ProperType> findLowerBoundsForAnnotations() {
     Set<ProperType> set = findProperLowerBounds();
     for (AbstractType bound : bounds.get(BoundKind.EQUAL)) {
-      if (bound.isProper() && isWeakInstantiation((ProperType) bound)) {
+      if (bound.isProper() && bound.ignoreAnnotations) {
         set.add((ProperType) bound);
       }
     }
@@ -734,7 +721,8 @@ public class VariableBounds {
     }
     constraints.applyInstantiations();
 
-    // An instantiation that was made by substituting a weak instantiation is substituted again
+    // An instantiation that was made by substituting one that ignores annotations is substituted
+    // again
     // when that one changes; see ProperType#origin.
     if (instantiation != null) {
       AbstractType refreshed =
@@ -747,8 +735,8 @@ public class VariableBounds {
       }
     }
 
-    // A bound that has just become proper can replace a weak instantiation.
-    if (changed && (instantiation == null || isWeakInstantiation(instantiation))) {
+    // A bound that has just become proper can replace an instantiation that ignores annotations.
+    if (changed && (instantiation == null || instantiation.ignoreAnnotations)) {
       setInstantiationFromEqualBounds();
     }
     return changed;

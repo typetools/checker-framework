@@ -988,16 +988,17 @@ public class InferenceFactory {
       return null;
     }
     if (properTypes.size() == 1) {
-      // Return the type itself, which keeps any record of where it has a weak instantiation's
-      // annotations; see ProperType#origin.
+      // Return the type itself, which keeps any record of its ignored substitutions; see
+      // ProperType#origin.
       return properTypes.iterator().next();
     }
 
     QualifierHierarchy qh = typeFactory.getQualifierHierarchy();
     TypeMirror lubTM = null;
     AnnotatedTypeMirror lubATM = null;
-    // The least upper bound so far, as a type, so that its weak positions, if it is still one of
-    // `properTypes`, can be found; see IgnoredAnnotations#replaceWeakForCombining.
+    // The least upper bound so far, as a type, so that its ignored substitutions, if it is still
+    // one of
+    // `properTypes`, can be found; see IgnoredAnnotations#replaceIgnoredForCombining.
     ProperType lubSoFar = null;
     boolean ignoreAnnotations = false;
     for (ProperType properType : properTypes) {
@@ -1011,7 +1012,7 @@ public class InferenceFactory {
       } else {
         lubTM = lub(context.env, lubTM, tm);
         ReplacedTypes combined =
-            IgnoredAnnotations.replaceWeakForCombining(
+            IgnoredAnnotations.replaceIgnoredForCombining(
                 lubSoFar, properType, lubTM, qh, context.modelTypes);
         lubATM = combined.type1();
         atm = combined.type2();
@@ -1038,10 +1039,10 @@ public class InferenceFactory {
     }
     assert lubATM != null && lubTM != null
         : "@AssumeAssertion(nullness): properTypes has at least two elements";
-    // If the result has the Java type of an input that records its weak positions, then it has the
-    // same structure as that input, so it keeps that record; see ProperType#origin.  Its weak
-    // positions have the other inputs' annotations now, and they are substituted again when the
-    // weak instantiations change.
+    // If the result has the Java type of an input that records its ignored substitutions, then it
+    // has the same structure as that input, so it keeps that record; see ProperType#origin.  Its
+    // ignored substitutions have the other inputs' annotations now, and they are substituted again
+    // when the instantiations that ignore annotations change.
     for (ProperType properType : properTypes) {
       if (properType.getOrigin() != null
           && context.types.isSameType((Type) properType.getJavaType(), (Type) lubTM)) {

@@ -78,8 +78,15 @@ public abstract class AbstractType {
    * overrides the variable's annotation at this use, so a formula such as {@code @Nullable T
    * <: @Nullable String} relates only the Java types of {@code T} and {@code String}; the bound's
    * annotations must not influence the inferred annotations of {@code T}. This field is also true
-   * for a type derived from such a bound, including a position where such a bound, as a variable's
-   * instantiation, was substituted; see {@link VariableBounds#isWeakInstantiation}.
+   * for a type derived from such a bound.
+   *
+   * <p>A proper {@code EQUAL} bound whose field is true, such as {@code T = @NonNull U} from the
+   * formula {@code @NonNull T = @NonNull U}, can become a variable's instantiation. It then gives
+   * only the variable's Java type: a Java-type-only instantiation. Its annotations come from the
+   * variable's other bounds instead; see {@link
+   * org.checkerframework.framework.util.typeinference8.util.Resolution#resolveIgnoredAnnotations}.
+   * A position where such an instantiation was substituted is an ignored substitution; see {@link
+   * ProperType#getOrigin}.
    *
    * <p>This field applies to every qualifier hierarchy at once, even when it was set because of a
    * primary annotation that appears in only some of the hierarchies. TODO: Make this per-hierarchy,

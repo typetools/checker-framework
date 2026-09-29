@@ -61,7 +61,7 @@ public final class Resolution {
     List<Variable> resolvedVars = boundSet.getInstantiatedVariables();
     as.removeAll(resolvedVars);
     if (as.isEmpty()) {
-      return resolveWeakInstantiations(requested, boundSet, context);
+      return resolveIgnoredAnnotations(requested, boundSet, context);
     }
     // Calculate the dependencies between variables. (A variable depends on another if it is
     // included in one of its bounds.)
@@ -78,10 +78,10 @@ public final class Resolution {
     // Remove any variables that already have instantiations
     unresolvedVars.removeAll(resolvedVars);
     if (unresolvedVars.isEmpty()) {
-      return resolveWeakInstantiations(requested, boundSet, context);
+      return resolveIgnoredAnnotations(requested, boundSet, context);
     }
-    // `resolution.resolve` empties `unresolvedVars`, and resolving them can give any of them a
-    // weak instantiation.
+    // `resolution.resolve` empties `unresolvedVars`, and resolving them can give any of them an
+    // instantiation that ignores annotations.
     LinkedHashSet<Variable> resolved = new LinkedHashSet<>(requested);
     resolved.addAll(unresolvedVars);
 
@@ -89,7 +89,7 @@ public final class Resolution {
     Resolution resolution = new Resolution(context, dependencies);
     boundSet = resolution.resolve(boundSet, unresolvedVars);
     checkNoFalse(boundSet, "after resolving", as);
-    return resolveWeakInstantiations(new ArrayList<>(resolved), boundSet, context);
+    return resolveIgnoredAnnotations(new ArrayList<>(resolved), boundSet, context);
   }
 
   /**
@@ -102,7 +102,7 @@ public final class Resolution {
    */
   public static BoundSet resolve(Variable a, BoundSet boundSet, Java8InferenceContext context) {
     if (a.getBounds().hasInstantiation()) {
-      return resolveWeakInstantiations(Collections.singletonList(a), boundSet, context);
+      return resolveIgnoredAnnotations(Collections.singletonList(a), boundSet, context);
     }
     Dependencies dependencies = boundSet.getDependencies();
 
@@ -111,23 +111,23 @@ public final class Resolution {
     Resolution resolution = new Resolution(context, dependencies);
     boundSet = resolution.resolveSmallestSet(unresolvedVars, boundSet);
     checkNoFalse(boundSet, "after resolving", unresolvedVars);
-    return resolveWeakInstantiations(Collections.singletonList(a), boundSet, context);
+    return resolveIgnoredAnnotations(Collections.singletonList(a), boundSet, context);
   }
 
   /**
-   * Resolves the annotations of each variable in {@code vars} that has a weak instantiation (see
-   * {@link VariableBounds#isWeakInstantiation}). A weak instantiation gives the variable's Java
-   * type, but its annotations say nothing about the variable's, because they were related to an
-   * explicit annotation on a use of the variable, so this method takes the annotations from the
-   * variable's other bounds instead. As {@link #resolveWithLowerBounds} would, it adds the bound
-   * {@code var = t}, where {@code t} is the least upper bound of the variable's proper lower
-   * bounds, with its qualifier lower bounds applied, viewed as the variable's Java type ({@link
-   * AbstractType#asSuper}). Every lower bound is a subtype of that Java type, so {@code t} is too.
-   * If the variable has no proper lower bound, then {@code t} is the weak instantiation with the
-   * qualifier lower bounds applied, and it is still weak.
+   * Resolves the annotations of each variable in {@code vars} whose instantiation ignores
+   * annotations (see {@link AbstractType#ignoreAnnotations}). Such an instantiation gives only the
+   * variable's Java type: its annotations say nothing about the variable's, because they were
+   * related to an explicit annotation on a use of the variable, so this method takes the
+   * annotations from the variable's other bounds instead. As {@link #resolveWithLowerBounds} would,
+   * it adds the bound {@code var = t}, where {@code t} is the least upper bound of the variable's
+   * proper lower bounds, with its qualifier lower bounds applied, viewed as the variable's Java
+   * type ({@link AbstractType#asSuper}). Every lower bound is a subtype of that Java type, so
+   * {@code t} is too. If the variable has no proper lower bound, then {@code t} is the
+   * instantiation with the qualifier lower bounds applied, and it still ignores annotations.
    *
-   * <p>If {@code t} respects annotations, then it replaces the weak instantiation. A type that was
-   * made by substituting the weak instantiation has recorded where (see {@link
+   * <p>If {@code t} respects annotations, then it replaces the instantiation. A type that was made
+   * by substituting the instantiation has recorded where (see {@link
    * ProperType#applyInstantiations}), so incorporating the new bound substitutes {@code t} there.
    *
    * @param vars variables, each of which has an instantiation
@@ -135,12 +135,12 @@ public final class Resolution {
    * @param context the context
    * @return {@code boundSet}, with the new bounds incorporated
    */
-  private static BoundSet resolveWeakInstantiations(
+  private static BoundSet resolveIgnoredAnnotations(
       List<Variable> vars, BoundSet boundSet, Java8InferenceContext context) {
     boolean added = false;
     for (Variable var : vars) {
       ProperType instantiation = var.getInstantiation();
-      if (instantiation == null || !VariableBounds.isWeakInstantiation(instantiation)) {
+      if (instantiation == null || !instantiation.ignoreAnnotations) {
         continue;
       }
       ProperType t = null;
@@ -153,9 +153,7 @@ public final class Resolution {
                 context);
       }
       if (t == null) {
-        t =
-            lubOfLowerBounds(
-                var, var.getBounds().findProperLowerBoundsAndWeakEqualBounds(), true, context);
+        t = lubOfLowerBounds(var, var.getBounds().findLowerBoundsForAnnotations(), true, context);
       }
       added |= var.getBounds().addBound(null, BoundKind.EQUAL, t);
     }
@@ -488,10 +486,11 @@ public final class Resolution {
    * @param ai a variable
    * @param lowerBounds a nonempty set of proper types, each of which is a lower bound of {@code ai}
    *     or has the Java type of {@code ai}
-   * @param weakEqualBounds true if {@code lowerBounds} may include weak {@code EQUAL} bounds (see
-   *     {@link VariableBounds#isWeakInstantiation}), whose root annotations say nothing about
-   *     {@code ai}'s in any hierarchy. A proper lower bound's root annotations say nothing about
-   *     {@code ai}'s only in the hierarchies of the use's explicit primary annotation, where {@link
+   * @param includesEqualBounds true if {@code lowerBounds} may include {@code EQUAL} bounds that
+   *     ignore annotations (see {@link AbstractType#ignoreAnnotations}), whose root annotations say
+   *     nothing about {@code ai}'s in any hierarchy. A proper lower bound's root annotations say
+   *     nothing about {@code ai}'s only in the hierarchies of the use's explicit primary
+   *     annotation, where {@link
    *     org.checkerframework.framework.util.typeinference8.types.UseOfVariable#addBound} made them
    *     bottom, so lubbing them is already correct.
    * @param context the context
@@ -501,7 +500,7 @@ public final class Resolution {
   private static ProperType lubOfLowerBounds(
       Variable ai,
       Set<ProperType> lowerBounds,
-      boolean weakEqualBounds,
+      boolean includesEqualBounds,
       Java8InferenceContext context) {
     ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
     Set<AbstractQualifier> qualifierLowerBounds =
@@ -515,7 +514,7 @@ public final class Resolution {
       QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
       Set<AnnotationMirror> lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
       if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR
-          && weakEqualBounds
+          && includesEqualBounds
           && lubProperType.ignoreAnnotations) {
         // The root annotations of `lubProperType` say nothing about `ai`'s, so the qualifier lower
         // bounds replace them rather than being lubbed with them.  Replacing them when only some

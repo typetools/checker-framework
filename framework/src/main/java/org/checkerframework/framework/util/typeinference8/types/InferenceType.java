@@ -275,21 +275,20 @@ public final class InferenceType extends AbstractType {
 
   /**
    * Returns true if one of {@code instantiated}, a list of instantiated variables, is mentioned by
-   * this type and has an instantiation with ignored annotations: one that is weak (see {@link
-   * VariableBounds#isWeakInstantiation}), or one that has weak positions itself (see {@link
-   * ProperType#getOrigin}).
+   * this type and has an instantiation with ignored annotations: one that ignores annotations
+   * itself (see {@link AbstractType#ignoreAnnotations}), or one that has ignored substitutions (see
+   * {@link ProperType#getOrigin}).
    *
    * @param instantiated variables, each of which has an instantiation
    * @return true if one of {@code instantiated} is mentioned by this type and has an instantiation
    *     with ignored annotations
    */
-  private boolean substitutesWeakInstantiation(List<Variable> instantiated) {
+  private boolean substitutesIgnoredAnnotations(List<Variable> instantiated) {
     Collection<Variable> mentioned = null;
     for (Variable alpha : instantiated) {
       ProperType instantiation = alpha.getInstantiation();
       if (instantiation != null
-          && (VariableBounds.isWeakInstantiation(instantiation)
-              || instantiation.getOrigin() != null)) {
+          && (instantiation.ignoreAnnotations || instantiation.getOrigin() != null)) {
         if (mentioned == null) {
           mentioned = getInferenceVariables();
         }
@@ -333,9 +332,8 @@ public final class InferenceType extends AbstractType {
     AbstractType newAbstractType =
         createIgnoreInstantiated(
             newATM, newTypeJava, map, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations);
-    if (newAbstractType.isProper() && substitutesWeakInstantiation(instantiations)) {
-      // Record which positions have a weak instantiation's ignored annotations; see
-      // ProperType#origin.
+    if (newAbstractType.isProper() && substitutesIgnoredAnnotations(instantiations)) {
+      // Record which positions are ignored substitutions; see ProperType#origin.
       newAbstractType =
           new ProperType(newATM, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations, this);
     }

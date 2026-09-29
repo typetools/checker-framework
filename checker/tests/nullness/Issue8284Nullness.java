@@ -181,7 +181,8 @@ public class Issue8284Nullness {
     throw new RuntimeException();
   }
 
-  // T's weak instantiation, from the ignored bound on T, is substituted into S's lower bound Box<T>
+  // T's Java-type-only instantiation, from the ignored bound on T, is substituted into S's lower
+  // bound Box<T>
   // before T's annotations are known.  S's instantiation must still end up consistent with T's.
   static <U extends @Nullable Object> void substitutedIntoAnotherBound(
       Box<@Nullable U> nullableU, @NonNull U nn, Box<@NonNull U> nonNullU, @Nullable U nble) {
@@ -210,9 +211,9 @@ public class Issue8284Nullness {
     return a;
   }
 
-  // A weak instantiation substituted inside a wildcard bound, under a use with a primary
+  // A Java-type-only instantiation substituted inside a wildcard bound, under a use with a primary
   // annotation, and inside a type that is itself substituted into another type.
-  static <U extends @Nullable Object> void weakPositionsInOtherTypes(
+  static <U extends @Nullable Object> void ignoredSubstitutionsInOtherTypes(
       Box<@NonNull U> nonNullU,
       @Nullable U nble,
       Box<? extends @Nullable U> ext,

@@ -135,9 +135,8 @@ public class UseOfVariable extends AbstractType {
    * written, so a polymorphic qualifier on one would be treated as a concrete qualifier rather than
    * as its {@link QualifierVar}.
    *
-   * <p>The result ignores annotations if this use does, or if the instantiation is weak (see {@link
-   * VariableBounds#isWeakInstantiation}) and the annotations copied from this use do not cover
-   * every qualifier hierarchy.
+   * <p>The result ignores annotations if this use does, or if the instantiation does and the
+   * annotations copied from this use do not cover every qualifier hierarchy.
    */
   @Override
   public AbstractType applyInstantiations() {
@@ -152,18 +151,17 @@ public class UseOfVariable extends AbstractType {
         annosToCopy.add(anno);
       }
     }
-    boolean weak =
-        VariableBounds.isWeakInstantiation(instantiation)
-            && annosToCopy.size() < qh.getTopAnnotations().size();
-    boolean ignore = ignoreAnnotations || weak;
+    boolean someHierarchyIgnored =
+        instantiation.ignoreAnnotations && annosToCopy.size() < qh.getTopAnnotations().size();
+    boolean ignore = ignoreAnnotations || someHierarchyIgnored;
     if (annosToCopy.isEmpty() && ignore == instantiation.ignoreAnnotations) {
       return instantiation;
     }
     // Copy, because the instantiation is stored as a bound of `variable`.
     AnnotatedTypeMirror atm = instantiation.getAnnotatedType().deepCopy();
     atm.replaceAnnotations(annosToCopy);
-    // Only the root annotations change, so the result keeps the instantiation's record of its weak
-    // positions; see ProperType#origin.
+    // Only the root annotations change, so the result keeps the instantiation's record of its
+    // ignored substitutions; see ProperType#origin.
     return instantiation.withAnnotatedType(atm, ignore);
   }
 
@@ -200,8 +198,8 @@ public class UseOfVariable extends AbstractType {
 
   /**
    * Returns a copy of {@code bound} that ignores its root annotations, and whose annotated type is
-   * a deep copy that may be mutated. A proper type keeps its record of its weak positions; see
-   * {@link ProperType#getOrigin}.
+   * a deep copy that may be mutated. A proper type keeps its record of its ignored substitutions;
+   * see {@link ProperType#getOrigin}.
    *
    * @param bound a type
    * @return a copy of {@code bound} that ignores its root annotations
@@ -230,8 +228,8 @@ public class UseOfVariable extends AbstractType {
       // that comes from the formula `U <: @Nullable T`.  Its relation to `bound` is a relation of
       // Java types only, so the bound ignores its root annotations.  As in the next case, a lower
       // or upper bound gets bottom or top root annotations, so that it does not narrow the
-      // variable's instantiation.  An EQUAL bound is a weak instantiation; see
-      // VariableBounds#isWeakInstantiation.
+      // variable's instantiation.  An EQUAL bound gives only the variable's Java type; see
+      // AbstractType#ignoreAnnotations.
       AbstractType boundCopy = copyIgnoringRoot(bound);
       QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
       if (kind == BoundKind.LOWER) {

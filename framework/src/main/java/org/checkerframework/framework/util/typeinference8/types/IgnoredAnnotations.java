@@ -32,9 +32,9 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
  *   <li>the root of a type whose {@link AbstractType#ignoreAnnotations} is true: its primary
  *       annotations, including those of its bounds if it is a type variable or a wildcard, but not
  *       annotations nested in it, such as those of its type arguments; and
- *   <li>a weak position: a position in a {@link ProperType} where a weak instantiation (see {@link
- *       VariableBounds#isWeakInstantiation}) was substituted. The type's {@link
- *       ProperType#getOrigin() origin} has a use of the variable there.
+ *   <li>an ignored substitution: a position in a {@link ProperType} where an instantiation that
+ *       ignores annotations was substituted. The type's {@link ProperType#getOrigin() origin} has a
+ *       use of the variable there.
  * </ul>
  *
  * The rest of each type is compared as usual.
@@ -50,9 +50,9 @@ final class IgnoredAnnotations {
    * Returns the annotated types of {@code sub} and {@code sup}, in that order, for checking that
    * {@code sub} is a subtype of {@code sup}. The root of a type that ignores annotations has bottom
    * annotations if it is {@code sub}, and top annotations if it is {@code sup}, so that it
-   * satisfies the check. A weak position has the annotations of the corresponding position of the
-   * other type. If neither type has an ignored position, the result holds the types' own annotated
-   * types; otherwise it holds copies.
+   * satisfies the check. An ignored substitution has the annotations of the corresponding position
+   * of the other type. If neither type has an ignored position, the result holds the types' own
+   * annotated types; otherwise it holds copies.
    *
    * @param sub the potential subtype
    * @param sup the potential supertype
@@ -62,20 +62,23 @@ final class IgnoredAnnotations {
    */
   static ReplacedTypes replaceIgnoredForSubtype(
       AbstractType sub, AbstractType sup, QualifierHierarchy qh, Types types) {
-    boolean weakPositions = hasOrigin(sub) || hasOrigin(sup);
-    if (!sub.ignoreAnnotations && !sup.ignoreAnnotations && !weakPositions) {
+    boolean mayHaveIgnoredSubstitutions = hasOrigin(sub) || hasOrigin(sup);
+    if (!sub.ignoreAnnotations && !sup.ignoreAnnotations && !mayHaveIgnoredSubstitutions) {
       return new ReplacedTypes(sub.getAnnotatedType(), sup.getAnnotatedType());
     }
     AbstractType alignedSub = sub;
-    if (weakPositions) {
+    if (mayHaveIgnoredSubstitutions) {
       // Compare the type arguments of the same class, so that corresponding positions line up.
       alignedSub = alignedToClass(sub, sup.getJavaType(), types);
     }
     AnnotatedTypeMirror subATM = alignedSub.getAnnotatedType().deepCopy();
     AnnotatedTypeMirror supATM = sup.getAnnotatedType().deepCopy();
-    if (weakPositions) {
-      replaceWeakPositions(
-          subATM, supATM, weakPositions(alignedSub, subATM, qh), weakPositions(sup, supATM, qh));
+    if (mayHaveIgnoredSubstitutions) {
+      replaceIgnoredSubstitutions(
+          subATM,
+          supATM,
+          ignoredSubstitutions(alignedSub, subATM, qh),
+          ignoredSubstitutions(sup, supATM, qh));
     }
     if (sub.ignoreAnnotations) {
       subATM.replaceAnnotations(qh.getBottomAnnotations());
@@ -99,15 +102,15 @@ final class IgnoredAnnotations {
    */
   static ReplacedTypes replaceIgnoredForEquality(
       AbstractType type1, AbstractType type2, QualifierHierarchy qh) {
-    boolean weakPositions = hasOrigin(type1) || hasOrigin(type2);
-    if (!type1.ignoreAnnotations && !type2.ignoreAnnotations && !weakPositions) {
+    boolean mayHaveIgnoredSubstitutions = hasOrigin(type1) || hasOrigin(type2);
+    if (!type1.ignoreAnnotations && !type2.ignoreAnnotations && !mayHaveIgnoredSubstitutions) {
       return new ReplacedTypes(type1.getAnnotatedType(), type2.getAnnotatedType());
     }
     AnnotatedTypeMirror atm1 = type1.getAnnotatedType().deepCopy();
     AnnotatedTypeMirror atm2 = type2.getAnnotatedType().deepCopy();
-    if (weakPositions) {
-      replaceWeakPositions(
-          atm1, atm2, weakPositions(type1, atm1, qh), weakPositions(type2, atm2, qh));
+    if (mayHaveIgnoredSubstitutions) {
+      replaceIgnoredSubstitutions(
+          atm1, atm2, ignoredSubstitutions(type1, atm1, qh), ignoredSubstitutions(type2, atm2, qh));
     }
     if (type1.ignoreAnnotations) {
       copyRootAnnotations(atm2, atm1);
@@ -120,19 +123,20 @@ final class IgnoredAnnotations {
   /**
    * Returns the annotated types of {@code type1} and {@code type2}, in the order given, for
    * combining them into their least upper bound, whose Java type is {@code lubType}. If either type
-   * has weak positions, then both are viewed as the class of {@code lubType}, and a weak position
-   * of one has the annotations of the corresponding position of the other, so that it contributes
-   * nothing to the result. The roots are not replaced. If nothing is replaced, the result holds the
-   * types' own annotated types; otherwise it holds copies.
+   * has ignored substitutions, then both are viewed as the class of {@code lubType}, and an ignored
+   * substitution of one has the annotations of the corresponding position of the other, so that it
+   * contributes nothing to the result. The roots are not replaced. If nothing is replaced, the
+   * result holds the types' own annotated types; otherwise it holds copies.
    *
    * @param type1 a type
    * @param type2 a type
    * @param lubType the Java type of the least upper bound of {@code type1} and {@code type2}
    * @param qh the qualifier hierarchy
    * @param types the type utilities
-   * @return the annotated types of {@code type1} and {@code type2}, with weak positions replaced
+   * @return the annotated types of {@code type1} and {@code type2}, with ignored substitutions
+   *     replaced
    */
-  static ReplacedTypes replaceWeakForCombining(
+  static ReplacedTypes replaceIgnoredForCombining(
       AbstractType type1,
       AbstractType type2,
       TypeMirror lubType,
@@ -149,8 +153,11 @@ final class IgnoredAnnotations {
     }
     AnnotatedTypeMirror atm1 = aligned1.getAnnotatedType().deepCopy();
     AnnotatedTypeMirror atm2 = aligned2.getAnnotatedType().deepCopy();
-    replaceWeakPositions(
-        atm1, atm2, weakPositions(aligned1, atm1, qh), weakPositions(aligned2, atm2, qh));
+    replaceIgnoredSubstitutions(
+        atm1,
+        atm2,
+        ignoredSubstitutions(aligned1, atm1, qh),
+        ignoredSubstitutions(aligned2, atm2, qh));
     return new ReplacedTypes(atm1, atm2);
   }
 
@@ -216,7 +223,8 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns true if {@code type} is a proper type with an origin, and so may have weak positions.
+   * Returns true if {@code type} is a proper type with an origin, and so may have ignored
+   * substitutions.
    *
    * @param type a type
    * @return true if {@code type} is a proper type with an origin
@@ -226,15 +234,15 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns the weak positions of {@code atm}, which is {@code type}'s annotated type or a deep
-   * copy of it. The result is compared by identity.
+   * Returns the ignored substitutions of {@code atm}, which is {@code type}'s annotated type or a
+   * deep copy of it. The result is compared by identity.
    *
    * @param type a type
    * @param atm the annotated type of {@code type}, or a deep copy of it
    * @param qh the qualifier hierarchy
-   * @return the weak positions of {@code atm}
+   * @return the ignored substitutions of {@code atm}
    */
-  private static Set<AnnotatedTypeMirror> weakPositions(
+  private static Set<AnnotatedTypeMirror> ignoredSubstitutions(
       AbstractType type, AnnotatedTypeMirror atm, QualifierHierarchy qh) {
     if (!(type instanceof ProperType properType)) {
       return Collections.emptySet();
@@ -244,17 +252,18 @@ final class IgnoredAnnotations {
       return Collections.emptySet();
     }
     Set<AnnotatedTypeMirror> result = Collections.newSetFromMap(new IdentityHashMap<>());
-    collectWeakPositions(
+    collectIgnoredSubstitutions(
         origin.getAnnotatedType(), atm, origin.getMap(), qh, new HashSet<>(), result);
     return result;
   }
 
   /**
-   * Adds to {@code result} each weak position of {@code atm}, which is {@code origin} with
-   * instantiations substituted. A position is weak if it corresponds to a use, in {@code origin},
-   * of a variable with a weak instantiation, where the use's own annotations do not cover every
-   * qualifier hierarchy (see {@link UseOfVariable#applyInstantiations}), or if it is a weak
-   * position of the instantiation that was substituted there.
+   * Adds to {@code result} each ignored substitution of {@code atm}, which is {@code origin} with
+   * instantiations substituted. A position is an ignored substitution if it corresponds to a use,
+   * in {@code origin}, of a variable whose instantiation ignores annotations, where the use's own
+   * annotations do not cover every qualifier hierarchy (see {@link
+   * UseOfVariable#applyInstantiations}), or if it is an ignored substitution of the instantiation
+   * that was substituted there.
    *
    * @param origin a type that mentions inference variables
    * @param atm {@code origin} with instantiations substituted
@@ -262,9 +271,9 @@ final class IgnoredAnnotations {
    * @param qh the qualifier hierarchy
    * @param visiting the variables whose instantiations are being scanned; an F-bounded variable's
    *     instantiation can mention the variable itself
-   * @param result the set to which to add weak positions
+   * @param result the set to which to add ignored substitutions
    */
-  private static void collectWeakPositions(
+  private static void collectIgnoredSubstitutions(
       AnnotatedTypeMirror origin,
       AnnotatedTypeMirror atm,
       Theta map,
@@ -278,13 +287,13 @@ final class IgnoredAnnotations {
         if (instantiation == null) {
           return;
         }
-        if (VariableBounds.isWeakInstantiation(instantiation)
+        if (instantiation.ignoreAnnotations
             && nonPolymorphicCount(origin, qh) < qh.getTopAnnotations().size()) {
           result.add(atm);
         }
         InferenceType instantiationOrigin = instantiation.getOrigin();
         if (instantiationOrigin != null && visiting.add(variable)) {
-          collectWeakPositions(
+          collectIgnoredSubstitutions(
               instantiationOrigin.getAnnotatedType(),
               atm,
               instantiationOrigin.getMap(),
@@ -308,11 +317,11 @@ final class IgnoredAnnotations {
         AnnotatedDeclaredType originEnclosing = originDT.getEnclosingType();
         AnnotatedDeclaredType atmEnclosing = atmDT.getEnclosingType();
         if (originEnclosing != null && atmEnclosing != null) {
-          collectWeakPositions(originEnclosing, atmEnclosing, map, qh, visiting, result);
+          collectIgnoredSubstitutions(originEnclosing, atmEnclosing, map, qh, visiting, result);
         }
       }
       case ARRAY ->
-          collectWeakPositions(
+          collectIgnoredSubstitutions(
               ((AnnotatedArrayType) origin).getComponentType(),
               ((AnnotatedArrayType) atm).getComponentType(),
               map,
@@ -322,9 +331,9 @@ final class IgnoredAnnotations {
       case WILDCARD -> {
         AnnotatedWildcardType originWT = (AnnotatedWildcardType) origin;
         AnnotatedWildcardType atmWT = (AnnotatedWildcardType) atm;
-        collectWeakPositions(
+        collectIgnoredSubstitutions(
             originWT.getExtendsBound(), atmWT.getExtendsBound(), map, qh, visiting, result);
-        collectWeakPositions(
+        collectIgnoredSubstitutions(
             originWT.getSuperBound(), atmWT.getSuperBound(), map, qh, visiting, result);
       }
       case INTERSECTION ->
@@ -340,15 +349,15 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Calls {@link #collectWeakPositions} on corresponding elements of the two lists, if they have
-   * the same length.
+   * Calls {@link #collectIgnoredSubstitutions} on corresponding elements of the two lists, if they
+   * have the same length.
    *
    * @param origins types that mention inference variables
    * @param atms {@code origins} with instantiations substituted
    * @param map the inference variables of {@code origins}
    * @param qh the qualifier hierarchy
    * @param visiting the variables whose instantiations are being scanned
-   * @param result the set to which to add weak positions
+   * @param result the set to which to add ignored substitutions
    */
   private static void collectPairwise(
       List<? extends AnnotatedTypeMirror> origins,
@@ -362,7 +371,7 @@ final class IgnoredAnnotations {
     }
     Iterator<? extends AnnotatedTypeMirror> atmIter = atms.iterator();
     for (AnnotatedTypeMirror origin : origins) {
-      collectWeakPositions(origin, atmIter.next(), map, qh, visiting, result);
+      collectIgnoredSubstitutions(origin, atmIter.next(), map, qh, visiting, result);
     }
   }
 
@@ -384,34 +393,34 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Gives each weak position of {@code atm1} the annotations of the corresponding position of
-   * {@code atm2}, and vice versa. Positions correspond only where the two types have the same
+   * Gives each ignored substitution of {@code atm1} the annotations of the corresponding position
+   * of {@code atm2}, and vice versa. Positions correspond only where the two types have the same
    * structure; elsewhere, nothing is replaced.
    *
    * @param atm1 a type; side-effected by this method
    * @param atm2 a type; side-effected by this method
-   * @param weak1 the weak positions of {@code atm1}
-   * @param weak2 the weak positions of {@code atm2}
+   * @param ignored1 the ignored substitutions of {@code atm1}
+   * @param ignored2 the ignored substitutions of {@code atm2}
    */
-  private static void replaceWeakPositions(
+  private static void replaceIgnoredSubstitutions(
       AnnotatedTypeMirror atm1,
       AnnotatedTypeMirror atm2,
-      Set<AnnotatedTypeMirror> weak1,
-      Set<AnnotatedTypeMirror> weak2) {
-    if (weak1.contains(atm1)) {
+      Set<AnnotatedTypeMirror> ignored1,
+      Set<AnnotatedTypeMirror> ignored2) {
+    if (ignored1.contains(atm1)) {
       copyRootAnnotations(boundOf(atm2), atm1);
       return;
     }
-    if (weak2.contains(atm2)) {
+    if (ignored2.contains(atm2)) {
       copyRootAnnotations(boundOf(atm1), atm2);
       return;
     }
     if (atm1.getKind() != atm2.getKind()) {
       // A type argument is compared with a wildcard's bound; see #boundOf.
       if (atm1.getKind() == TypeKind.WILDCARD) {
-        replaceWeakPositions(boundOf(atm1), atm2, weak1, weak2);
+        replaceIgnoredSubstitutions(boundOf(atm1), atm2, ignored1, ignored2);
       } else if (atm2.getKind() == TypeKind.WILDCARD) {
-        replaceWeakPositions(atm1, boundOf(atm2), weak1, weak2);
+        replaceIgnoredSubstitutions(atm1, boundOf(atm2), ignored1, ignored2);
       }
       return;
     }
@@ -423,26 +432,27 @@ final class IgnoredAnnotations {
         List<AnnotatedTypeMirror> args2 = dt2.getTypeArguments();
         if (args1.size() == args2.size()) {
           for (int i = 0; i < args1.size(); i++) {
-            replaceWeakPositions(args1.get(i), args2.get(i), weak1, weak2);
+            replaceIgnoredSubstitutions(args1.get(i), args2.get(i), ignored1, ignored2);
           }
         }
         AnnotatedDeclaredType enclosing1 = dt1.getEnclosingType();
         AnnotatedDeclaredType enclosing2 = dt2.getEnclosingType();
         if (enclosing1 != null && enclosing2 != null) {
-          replaceWeakPositions(enclosing1, enclosing2, weak1, weak2);
+          replaceIgnoredSubstitutions(enclosing1, enclosing2, ignored1, ignored2);
         }
       }
       case ARRAY ->
-          replaceWeakPositions(
+          replaceIgnoredSubstitutions(
               ((AnnotatedArrayType) atm1).getComponentType(),
               ((AnnotatedArrayType) atm2).getComponentType(),
-              weak1,
-              weak2);
+              ignored1,
+              ignored2);
       case WILDCARD -> {
         AnnotatedWildcardType wt1 = (AnnotatedWildcardType) atm1;
         AnnotatedWildcardType wt2 = (AnnotatedWildcardType) atm2;
-        replaceWeakPositions(wt1.getExtendsBound(), wt2.getExtendsBound(), weak1, weak2);
-        replaceWeakPositions(wt1.getSuperBound(), wt2.getSuperBound(), weak1, weak2);
+        replaceIgnoredSubstitutions(
+            wt1.getExtendsBound(), wt2.getExtendsBound(), ignored1, ignored2);
+        replaceIgnoredSubstitutions(wt1.getSuperBound(), wt2.getSuperBound(), ignored1, ignored2);
       }
       default -> {}
     }
