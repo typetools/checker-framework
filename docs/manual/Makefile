@@ -20,13 +20,19 @@ manual.pdf: *.tex plume-bib figures-all check-labels
 .PHONY: html
 html: manual.html manual-multipage.html
 
+# `lwarpmk limages` converts images in background processes and exits before
+# they finish.  Those processes inherit lwarpmk's standard error, so reading
+# it through a pipe until end-of-file waits for every conversion to finish.
+# The argument is the lwarpmk project.
+LWARPMK_LIMAGES = bash -o pipefail -c 'lwarpmk limages -p "$$0" 2>&1 | cat'
+
 # lwarpmk requires configuration files that are written when LaTeX processes
 # the source file in print mode.  Creating manual.pdf does so for manual.tex.
 # Each lwarpmk command must select its project with -p.  Otherwise, lwarpmk
 # uses lwarpmk.conf, which is for whichever project LaTeX processed last.
 manual.html: manual.pdf manual.css lwarp-postprocess sidetoc.js CFLogo.png favicon-checkerframework.png
 	lwarpmk html -p manual
-	lwarpmk limages -p manual
+	${LWARPMK_LIMAGES} manual
 	./lwarp-postprocess manual.html
 
 # The HTML files of the multi-page version of the manual, other than lwarp's
@@ -41,7 +47,7 @@ manual-multipage.html: manual.pdf manual-multipage.tex manual.css lwarp-postproc
 	pdflatex -interaction=nonstopmode manual-multipage.tex
 	\rm -f manual-*.html
 	lwarpmk html -p manual-multipage
-	lwarpmk limages -p manual-multipage
+	${LWARPMK_LIMAGES} manual-multipage
 	./lwarp-postprocess $$(${MULTIPAGE_HTML_FILES})
 
 ../../checker/bin-devel/.git-scripts:
