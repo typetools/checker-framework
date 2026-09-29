@@ -18,6 +18,12 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
 source "$SCRIPT_DIR"/clone-related.sh
 
+# Beam's Gradle version cannot run on a JDK newer than 21.
+if ! "$JAVA_HOME/bin/java" -version 2>&1 | grep -q 'version "21[."]'; then
+  echo "$0: JAVA_HOME=$JAVA_HOME is not JDK 21; set JAVA21_HOME to a JDK 21." >&2
+  exit 1
+fi
+
 gradle_retry assembleForJavac -Dorg.gradle.internal.http.socketTimeout=60000 -Dorg.gradle.internal.http.connectionTimeout=60000
 
 "$SCRIPT_DIR/.git-scripts/git-clone-related" typetools beam
