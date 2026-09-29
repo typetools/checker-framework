@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Resource Leak Checker for must-call obligations}{resource-leak-checker}
 
 The Resource Leak Checker guarantees that every resource is closed rather
@@ -507,8 +506,8 @@ sound:
 \item any method that re-assigns a non-final, owning field of an object
   must be annotated with a \<@CreatesMustCallFor> annotation
   whose expression is a reference to that object.
-\item when a non-final, owning field $f$ is re-assigned at statement $s$,
-  at the program point before $s$, $f$'s must-call obligations must have been satisfied.
+\item when a non-final, owning field \textit{f} is re-assigned at statement \textit{s},
+  at the program point before \textit{s}, \textit{f}'s must-call obligations must have been satisfied.
 \end{itemize}
 \noindent
 The first rule ensures that \<close()> is called after the last call
