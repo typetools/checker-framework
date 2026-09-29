@@ -123,6 +123,10 @@ tasks.register("copyToWebsite", Copy) {
     into("manual")
     rename("CFCheckmark_favicon.png", "favicon-checkerframework.png")
   }
+  from("docs/logo/Checkmark/CFCheckmark_favicon.png") {
+    into("annotation-file-utilities")
+    rename("CFCheckmark_favicon.png", "favicon-checkerframework.png")
+  }
 
   // Copy manual files
   from("docs/manual") {

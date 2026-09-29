@@ -31,7 +31,13 @@
 Section~\refwithpageparen{installation}
 describes how to \textbf{install and use} pluggable type-checkers.
 
-\warpHTMLonly{This manual is also available in \href{https://checkerframework.org/manual/checker-framework-manual.pdf}{PDF}.}
+\warpHTMLonly{This manual is also available
+  \ifdefined\CFmultipage
+  as a \href{manual.html}{single HTML page}
+  \else
+  as a \href{manual-multipage.html}{multi-page HTML version}
+  \fi
+  and in \href{https://checkerframework.org/manual/checker-framework-manual.pdf}{PDF}.}
 
 \warpHTMLonly{\setcounter{tocdepth}{1}}
 % Not supported by lwarp, so don't bother: \dominitoc

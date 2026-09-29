@@ -657,6 +657,7 @@ tasks.register("zip", Zip) {
         "docs/manual/manual-*.html",
         "docs/manual/manual.pdf",
         "docs/manual/*.css",
+        "docs/manual/favicon-checkerframework.png",
         "docs/manual/figures/*.svg",
         "docs/manual/manual-images/**",
         "docs/manual/manual-multipage-images/**",

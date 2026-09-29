@@ -1,8 +1,42 @@
-/* Styling for the HTML version of the Checker Framework manual, produced by lwarp. */
+/* Styling for the HTML version of the Checker Framework manual, produced by lwarp.
+   The annotation file format manual uses a copy of this file. */
 
 @import url("lwarp_sagebrush.css") ;
 
+/* For contrast with the text, use solid, light backgrounds instead of
+   lwarp_sagebrush.css's gradients and darker colors. */
+h1, h2, div.abstract, div.epigraph, div.dictum, .example, .sidebar,
+nav.topnavigation, nav.botnavigation, header, footer, div.sidetoccontainer {
+  background-image: none;
+}
+body { background: white; }
+h1, h2, header, footer, div.sidetoccontainer { background-color: #FCFCF9; }
+div.abstract, div.epigraph, div.dictum, .example, .sidebar,
+div.minipage, figure, div.marginblock {
+  background-color: #FAFAF6;
+}
+nav.topnavigation, nav.botnavigation { background-color: #EEF0EE; }
+
+/* Code blocks.  The cool gray contrasts with the warm tints above. */
+pre.verbatim, pre.alltt {
+  background-color: #F3F5F8;
+  border: 1px solid #D5DAE1;
+  border-left: 3px solid #8A9BB5;
+  border-radius: 3px;
+  padding: .5em .8em;
+}
+
 img { max-width: 100%; max-height: 100%; }
+
+/* Conventional link colors, instead of lwarp_sagebrush.css's green and brown
+   with text shadows.  lwarp.css makes the side table of contents's links black. */
+a:link { color: #1A0DAB; }
+a:visited { color: #681DA8; }
+a:link, a:visited, a:hover, a:active,
+nav.sidetoc a:hover {
+  text-shadow: none;
+}
+a:hover, nav.sidetoc a:hover { color: #1A0DAB; text-decoration: underline; }
 
 /* The link from a section heading to itself.  See \selflink in manual-style.tex. */
 span.selflink {
@@ -12,3 +46,20 @@ span.selflink {
   background: url("figures/chainlink.svg") no-repeat center / contain;
 }
 a:has(> span.selflink) { color: inherit; text-decoration: none; }
+
+/* In the side table of contents, the current chapter (marked by
+   lwarp-postprocess) and the section that the reader is viewing (marked by
+   sidetoc.js).  Every entry reserves room for the current section's left
+   border, so highlighting an entry does not shift its text.  The padding
+   exceeds lwarp.css's negative text-indent, which would put the first line of
+   an entry under the border. */
+nav.sidetoc p a {
+  display: block;
+  border-left: 3px solid transparent;
+  padding-left: calc(.5em + 3px);
+}
+nav.sidetoc a[aria-current="page"] { font-weight: bold; }
+nav.sidetoc a.sidetoc-current {
+  border-left-color: #304070;
+  background-color: #E4E9F2;
+}

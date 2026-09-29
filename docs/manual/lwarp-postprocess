@@ -22,6 +22,10 @@ This script:
  * gives each section's link to itself (see \selflink in manual-style.tex) an
    accessible name.  The link's icon is a CSS background image, so otherwise
    a screen reader would announce an empty link.
+ * marks, in the side table of contents of each page of a multi-page
+   document, the entry for the page's chapter with aria-current="page".
+ * inlines sidetoc.js into each page that has a side table of contents.  The
+   script highlights the entry for the section that the reader is viewing.
  * adds a favicon, if file favicon-checkerframework.png exists in the same
    directory as the HTML file.
 """
@@ -31,13 +35,19 @@ import sys
 from pathlib import Path
 
 # A heading, followed by its anchors:  lwarp's autopage anchor (whose number
-# matches the heading's autosec number) and then any LaTeX labels.  After this
-# script moves the anchors before the heading, the heading no longer matches.
-# The heading's contents must not extend past its end tag; otherwise, a heading
-# with no autopage anchor would make the regex scan to the end of the file.
+# matches the heading's autosec number) and then any LaTeX labels.  A heading
+# is an <h1>...<h6> element or, for \paragraph and \subparagraph, a run-in
+# <span> at the start of a <p> element.  After this script moves the anchors
+# before the heading, the heading no longer matches.
+# The heading's contents must not extend past its end tag (or, for a run-in
+# heading, past its paragraph); otherwise, a heading with no autopage anchor
+# would make the regex scan to the end of the file.  A run-in heading contains
+# nested <span> elements, so its end is the </span> that precedes its anchors.
 HEADING_RE = re.compile(
-    r'(<h[1-6] id="autosec-([0-9]+)">(?:(?!</h[1-6]>).)*</h[1-6]>)'
-    r'(\s*<a id="[^"]*-autopage-\2"></a>(?:\s*<a id="[^"]+"></a>)*)',
+    r'(?P<heading><h[1-6] id="autosec-(?P<hnum>[0-9]+)">(?:(?!</h[1-6]>).)*</h[1-6]>'
+    r'|<span class="(?:sub)?paragraph" id="autosec-(?P<pnum>[0-9]+)">(?:(?!</p>).)*?</span>)'
+    r'(?P<anchors>\s*<a id="[^"]*-autopage-(?:(?P=hnum)|(?P=pnum))"></a>'
+    r'(?:\s*<a id="[^"]+"></a>)*)',
     re.DOTALL,
 )
 ANCHOR_RE = re.compile(r'<a id="([^"]+)"></a>')
@@ -54,6 +64,10 @@ CODE_STYLE = (
     ' "Andale Mono", "Courier New", monospace; font-size: 100%; }</style>'
 )
 
+SIDETOC_SCRIPT = (
+    "<script>\n" + (Path(__file__).parent / "sidetoc.js").read_text(encoding="utf-8") + "</script>"
+)
+
 FAVICON_FILE = "favicon-checkerframework.png"
 FAVICON = f'<link rel="icon" href="{FAVICON_FILE}" type="image/png" />'
 
@@ -66,13 +80,13 @@ def main(filenames: list[str]) -> None:
     autosec_to_label = {}
     for text in contents.values():
         for m in HEADING_RE.finditer(text):
-            labels = ANCHOR_RE.findall(m.group(3))[1:]
+            labels = ANCHOR_RE.findall(m["anchors"])[1:]
             if labels:
-                autosec_to_label["autosec-" + m.group(2)] = labels[0]
+                autosec_to_label["autosec-" + (m["hnum"] or m["pnum"])] = labels[0]
 
     def move_anchors(m: re.Match[str]) -> str:
-        anchors = [f'<a id="{a}"></a>' for a in ANCHOR_RE.findall(m.group(3))]
-        return "\n".join(anchors) + "\n" + m.group(1)
+        anchors = [f'<a id="{a}"></a>' for a in ANCHOR_RE.findall(m["anchors"])]
+        return "\n".join(anchors) + "\n" + m["heading"]
 
     def retarget(m: re.Match[str]) -> str:
         return m.group(1) + autosec_to_label.get(m.group(2), m.group(2)) + '"'
@@ -86,6 +100,14 @@ def main(filenames: list[str]) -> None:
         text = text.replace("<kbd>", "<code>").replace("</kbd>", "</code>")
         if CODE_STYLE not in text:
             text = text.replace("</head>", CODE_STYLE + "\n</head>", 1)
+        page = re.escape(Path(filename).name)
+        text = re.sub(
+            rf'(<a\s+href="{page}#[^"]*"\s+class="tocchapter")(?!\s+aria-current)',
+            r'\1 aria-current="page"',
+            text,
+        )
+        if 'class="sidetoccontainer"' in text and SIDETOC_SCRIPT not in text:
+            text = text.replace("</head>", SIDETOC_SCRIPT + "\n</head>", 1)
         if FAVICON not in text and (Path(filename).parent / FAVICON_FILE).exists():
             text = text.replace("<head>\n", "<head>\n" + FAVICON + "\n", 1)
         Path(filename).write_text(text, encoding="utf-8")

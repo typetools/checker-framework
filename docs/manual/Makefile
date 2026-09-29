@@ -22,9 +22,11 @@ html: manual.html manual-multipage.html
 
 # lwarpmk requires configuration files that are written when LaTeX processes
 # the source file in print mode.  Creating manual.pdf does so for manual.tex.
-manual.html: manual.pdf manual.css lwarp-postprocess CFLogo.png favicon-checkerframework.png
-	lwarpmk html manual
-	lwarpmk limages manual
+# Each lwarpmk command must select its project with -p.  Otherwise, lwarpmk
+# uses lwarpmk.conf, which is for whichever project LaTeX processed last.
+manual.html: manual.pdf manual.css lwarp-postprocess sidetoc.js CFLogo.png favicon-checkerframework.png
+	lwarpmk html -p manual
+	lwarpmk limages -p manual
 	./lwarp-postprocess manual.html
 
 # The HTML files of the multi-page version of the manual, other than lwarp's
@@ -35,11 +37,11 @@ MULTIPAGE_HTML_FILES = ls manual-*.html | grep -v '_html\.html$$'
 # invocations from running in parallel, because they write the same files.
 # The rule removes existing pages, so that no page remains from a
 # previous build in which a chapter had a different name.
-manual-multipage.html: manual.pdf manual-multipage.tex manual.css lwarp-postprocess CFLogo.png favicon-checkerframework.png | manual.html
+manual-multipage.html: manual.pdf manual-multipage.tex manual.css lwarp-postprocess sidetoc.js CFLogo.png favicon-checkerframework.png | manual.html
 	pdflatex -interaction=nonstopmode manual-multipage.tex
 	\rm -f manual-*.html
-	lwarpmk html manual-multipage
-	lwarpmk limages manual-multipage
+	lwarpmk html -p manual-multipage
+	lwarpmk limages -p manual-multipage
 	./lwarp-postprocess $$(${MULTIPAGE_HTML_FILES})
 
 ../../checker/bin-devel/.git-scripts:
