@@ -1,4 +1,3 @@
-\htmlhr
 
 % Arguments are: class name, formal parameter list
 \def\reflectionAnno#1#2{\refqualclass{common/reflection/qual}{#1}\code{#2}}
@@ -201,8 +200,8 @@ The MethodVal Checker defines the following annotations:
 \begin{description}
 \item[\reflectionAnno{MethodVal}{(String[] className, String[] methodName, int[] params)}]
 Indicates that an expression of type \<Method> or \<Constructor> has a
-run-time value in a given set.  If the set has size $n$, then each of
-\<@MethodVal>'s arguments is an array of size $n$, and the $i$th method in the set is
+run-time value in a given set.  If the set has size \textit{n}, then each of
+\<@MethodVal>'s arguments is an array of size \textit{n}, and the \textit{i}th method in the set is
 represented by \{ className[i], methodName[i], params[i] \}.
 For a constructor, the method name is ``\code{<init>}''.
 % to avoid an additional annotation for constructors.
