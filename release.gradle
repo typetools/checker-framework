@@ -123,14 +123,23 @@ tasks.register("copyToWebsite", Copy) {
     into("manual")
     rename("CFCheckmark_favicon.png", "favicon-checkerframework.png")
   }
+  from("docs/logo/Checkmark/CFCheckmark_favicon.png") {
+    into("annotation-file-utilities")
+    rename("CFCheckmark_favicon.png", "favicon-checkerframework.png")
+  }
 
   // Copy manual files
   from("docs/manual") {
     into("manual")
     include("manual.html",
+        "manual-*.html",
         "manual.pdf",
-        "*.svg",
-        "manual001.png")
+        "*.css",
+        "figures/*.svg",
+        "manual-images/**",
+        "manual-multipage-images/**")
+    // lwarp's intermediate files, such as manual-multipage_html.html.
+    exclude("*_html.*")
   }
 
   // Copy developer docs
@@ -160,6 +169,8 @@ tasks.register("copyToWebsite", Copy) {
     include("annotation-file-utilities.html")
     include("annotation-file-format.html")
     include("annotation-file-format.pdf")
+    include("*.css")
+    include("annotation-file-format-images/**")
     include("figures/*.svg")
     include("figures/*.png")
     include("figures/*.gif")

@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Advanced type system features}{advanced-type-system-features}
 
 This chapter describes features that are automatically supported by every
@@ -940,41 +939,41 @@ represent kilometers or miles.
 Type systems that support a run-time test are:
 \begin{itemize}
 \item
-  \ahrefloc{nullness-checker}{Nullness Checker} for null pointer errors
+  \hyperref[nullness-checker]{Nullness Checker} for null pointer errors
   (see \chapterpageref{nullness-checker})
 \item
-  \ahrefloc{map-key-checker}{Map Key Checker} to track which values are
+  \hyperref[map-key-checker]{Map Key Checker} to track which values are
   keys in a map (see \chapterpageref{map-key-checker})
 \item
-  \ahrefloc{optional-checker}{Optional Checker} for errors in using the
+  \hyperref[optional-checker]{Optional Checker} for errors in using the
   \sunjavadoc{java.base/java/util/Optional.html}{Optional} type (see
   \chapterpageref{optional-checker})
 \item
-  \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
+  \hyperref[lock-checker]{Lock Checker} for concurrency and lock errors
   (see \chapterpageref{lock-checker})
 \item
-  \ahrefloc{index-checker}{Index Checker} for array accesses
+  \hyperref[index-checker]{Index Checker} for array accesses
   (see \chapterpageref{index-checker})
 % Uncomment when the Non-Empty Checker is ready to be publicized.
 % \item
-%   \ahrefloc{non-empty-checker}{Non-Empty Checker} to determine whether a
+%   \hyperref[non-empty-checker]{Non-Empty Checker} to determine whether a
 %   collection, iterator, iterable, or map is non-empty (see \chapterpageref{non-empty-checker})
 \item
-  \ahrefloc{resource-leak-checker}{Resource Leak Checker} for ensuring that resources are disposed of properly
+  \hyperref[resource-leak-checker]{Resource Leak Checker} for ensuring that resources are disposed of properly
   (see \chapterpageref{resource-leak-checker})
 \item
-  \ahrefloc{sql-quotes-checker}{SQL Quotes Checker} to mitigate SQL injection
+  \hyperref[sql-quotes-checker]{SQL Quotes Checker} to mitigate SQL injection
   attacks
   (see \chapterpageref{sql-quotes-checker})
 \item
-  \ahrefloc{regex-checker}{Regex Checker} to prevent use of syntactically
+  \hyperref[regex-checker]{Regex Checker} to prevent use of syntactically
   invalid regular expressions (see \chapterpageref{regex-checker})
 \item
-  \ahrefloc{formatter-checker}{Format String Checker} to ensure that format
+  \hyperref[formatter-checker]{Format String Checker} to ensure that format
   strings have the right number and type of \<\%> directives (see
   \chapterpageref{formatter-checker})
 \item
-  \ahrefloc{i18n-formatter-checker}{Internationalization Format String Checker}
+  \hyperref[i18n-formatter-checker]{Internationalization Format String Checker}
   to ensure that i18n format strings have the right number and type of
   \<\{\}> directives (see \chapterpageref{i18n-formatter-checker})
 \end{itemize}
@@ -985,25 +984,25 @@ additional implementation work, are:
 
 \begin{itemize}
 \item
-  \ahrefloc{interning-checker}{Interning Checker} for errors in equality
+  \hyperref[interning-checker]{Interning Checker} for errors in equality
   testing and interning (see \chapterpageref{interning-checker})
 \item
-  \ahrefloc{propkey-checker}{Property File Checker} to ensure that valid
+  \hyperref[propkey-checker]{Property File Checker} to ensure that valid
   keys are used for property files and resource bundles (see
   \chapterpageref{propkey-checker})
 \item
-  \ahrefloc{i18n-checker}{Internationalization Checker} to
+  \hyperref[i18n-checker]{Internationalization Checker} to
   ensure that code is properly internationalized (see
   \sectionpageref{i18n-checker})
 % The Compiler Message Key Checker is neither here nor in the introduction
 % chapter because it is really meant for Checker Framework developers and
 % as sample code, and is not meant for Checker Framework users at large.
 \item
-  \ahrefloc{signature-checker}{Signature String Checker} to ensure that the
+  \hyperref[signature-checker]{Signature String Checker} to ensure that the
   string representation of a type is properly used, for example in
   \<Class.forName> (see \chapterpageref{signature-checker})
 \item
-  \ahrefloc{constant-value-checker}{Constant Value Checker} to determine
+  \hyperref[constant-value-checker]{Constant Value Checker} to determine
   whether an expression's value can be known at compile time
   (see \chapterpageref{constant-value-checker})
 \end{itemize}
@@ -1013,45 +1012,45 @@ Type systems that cannot support a run-time test are:
 
 \begin{itemize}
 \item
-  \ahrefloc{initialization-checker}{Initialization Checker} to ensure all
+  \hyperref[initialization-checker]{Initialization Checker} to ensure all
   fields are set in the constructor (see
   \sectionpageref{initialization-checker})
 \item
-  \ahrefloc{called-methods-checker}{Called Methods Checker} for
+  \hyperref[called-methods-checker]{Called Methods Checker} for
   the builder pattern (see \chapterpageref{called-methods-checker})
 \item
-  \ahrefloc{fenum-checker}{Fake Enum Checker} to allow type-safe fake enum
+  \hyperref[fenum-checker]{Fake Enum Checker} to allow type-safe fake enum
   patterns and type aliases or typedefs (see \chapterpageref{fenum-checker})
 \item
-  \ahrefloc{tainting-checker}{Tainting Checker} for trust and security errors
+  \hyperref[tainting-checker]{Tainting Checker} for trust and security errors
   (see \chapterpageref{tainting-checker})
 \item
-  \ahrefloc{guieffect-checker}{GUI Effect Checker} to ensure that non-GUI
+  \hyperref[guieffect-checker]{GUI Effect Checker} to ensure that non-GUI
   threads do not access the UI, which would crash the application
   (see \chapterpageref{guieffect-checker})
 \item
-  \ahrefloc{units-checker}{Units Checker} to ensure operations are
+  \hyperref[units-checker]{Units Checker} to ensure operations are
   performed on correct units of measurement
   (see \chapterpageref{units-checker})
 \item
-  \ahrefloc{signedness-checker}{Signedness Checker} to
+  \hyperref[signedness-checker]{Signedness Checker} to
   ensure unsigned and signed values are not mixed
   (see \chapterpageref{signedness-checker})
 \item
-  \ahrefloc{purity-checker}{Purity Checker} to identify whether
+  \hyperref[purity-checker]{Purity Checker} to identify whether
   methods have side effects (see \chapterpageref{purity-checker})
 \item
-  \ahrefloc{initialized-fields-checker}{Initialized Fields Checker} to ensure all
+  \hyperref[initialized-fields-checker]{Initialized Fields Checker} to ensure all
   fields are set in the constructor (see
   \chapterpageref{initialized-fields-checker})
 \item
-  \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
+  \hyperref[aliasing-checker]{Aliasing Checker} to identify whether
   expressions have aliases (see \chapterpageref{aliasing-checker})
 \item
-  \ahrefloc{must-call-checker}{Must Call Checker} to over-approximate the
+  \hyperref[must-call-checker]{Must Call Checker} to over-approximate the
   methods that should be called on an object before it is de-allocated (see \chapterpageref{must-call-checker})
 \item
-  \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
+  \hyperref[subtyping-checker]{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})
 \end{itemize}
 

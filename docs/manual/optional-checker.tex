@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Optional Checker for possibly-present data}{optional-checker}
 
 Use of the Optional Checker guarantees that your program will not suffer
@@ -173,9 +172,7 @@ See Chapter~\ref{suppressing-warnings} for additional usages.
 An example use is
 \end{sloppypar}
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
     // might return a possibly-empty Optional
     Optional<T> wrapWithOptional(...) { ... }
@@ -185,9 +182,7 @@ An example use is
       @Present Optional<T> optX = wrapWithOptional(x);
     }
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 The Optional Checker also permits the use of method calls and assertions to
 suppress warnings; see immediately below.
