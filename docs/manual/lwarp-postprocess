@@ -1,0 +1,117 @@
+#!/usr/bin/env python3
+r"""Post-process the HTML files that lwarp produces for the manual.
+
+Usage:  lwarp-postprocess FILE.html ...
+
+This script:
+ * retargets cross-references of the form "#autosec-99" to use the LaTeX
+   label of the section instead, such as "#introduction".  lwarp's table of
+   contents uses "autosec" anchors, which change whenever the manual is
+   reordered or a section is added.  Users who follow a link from the table
+   of contents may bookmark or share it, so the table of contents should use
+   stable anchors.  This requires that each sectioning command in the LaTeX
+   source is immediately followed by a \label command, as \sectionAndLabel does.
+ * moves the anchors for a heading's labels to just before the heading.  lwarp
+   places them after the heading, so a browser that follows a link to a
+   section scrolls the section's heading off the top of the window.
+ * removes target="_blank", which lwarp adds to every external link.  Without
+   it, the user decides whether to open a link in a new browser tab.
+ * replaces <kbd> by <code>.  lwarp renders every \texttt as <kbd>, which
+   means keyboard input.  In the manuals, \texttt is program text.  The
+   added CSS rule styles <code> as lwarp.css styles <kbd>.
+ * gives each section's link to itself (see \selflink in manual-style.tex) an
+   accessible name.  The link's icon is a CSS background image, so otherwise
+   a screen reader would announce an empty link.
+ * marks, in the side table of contents of each page of a multi-page
+   document, the entry for the page's chapter with aria-current="page".
+ * inlines sidetoc.js into each page that has a side table of contents.  The
+   script highlights the entry for the section that the reader is viewing.
+ * adds a favicon, if file favicon-checkerframework.png exists in the same
+   directory as the HTML file.
+"""
+
+import re
+import sys
+from pathlib import Path
+
+# A heading, followed by its anchors:  lwarp's autopage anchor (whose number
+# matches the heading's autosec number) and then any LaTeX labels.  A heading
+# is an <h1>...<h6> element or, for \paragraph and \subparagraph, a run-in
+# <span> at the start of a <p> element.  After this script moves the anchors
+# before the heading, the heading no longer matches.
+# The heading's contents must not extend past its end tag (or, for a run-in
+# heading, past its paragraph); otherwise, a heading with no autopage anchor
+# would make the regex scan to the end of the file.  A run-in heading contains
+# nested <span> elements, so its end is the </span> that precedes its anchors.
+HEADING_RE = re.compile(
+    r'(?P<heading><h[1-6] id="autosec-(?P<hnum>[0-9]+)">(?:(?!</h[1-6]>).)*</h[1-6]>'
+    r'|<span class="(?:sub)?paragraph" id="autosec-(?P<pnum>[0-9]+)">(?:(?!</p>).)*?</span>)'
+    r'(?P<anchors>\s*<a id="[^"]*-autopage-(?:(?P=hnum)|(?P=pnum))"></a>'
+    r'(?:\s*<a id="[^"]+"></a>)*)',
+    re.DOTALL,
+)
+ANCHOR_RE = re.compile(r'<a id="([^"]+)"></a>')
+
+# A section's link to itself, which \selflink creates.  lwarp's line wrapping
+# may put a newline between attributes or tags.
+SELFLINK_RE = re.compile(r'(<a\s+href="[^"]*")(>\s*<span\s+class="selflink">\s*</span>\s*</a>)')
+SELFLINK_LABEL = ' aria-label="Link to this section"'
+
+# lwarp.css's rule for kbd, applied to code instead.
+CODE_STYLE = (
+    '<style>code { font-family: "DejaVu Mono", "Bitstream Vera Mono",'
+    ' "Lucida Console", "Nimbus Mono L", "Liberation Mono", "FreeMono",'
+    ' "Andale Mono", "Courier New", monospace; font-size: 100%; }</style>'
+)
+
+SIDETOC_SCRIPT = (
+    "<script>\n" + (Path(__file__).parent / "sidetoc.js").read_text(encoding="utf-8") + "</script>"
+)
+
+FAVICON_FILE = "favicon-checkerframework.png"
+FAVICON = f'<link rel="icon" href="{FAVICON_FILE}" type="image/png" />'
+
+
+def main(filenames: list[str]) -> None:
+    """Post-process the given HTML files, which are the pages of one document."""
+    contents = {filename: Path(filename).read_text(encoding="utf-8") for filename in filenames}
+
+    # Anchors are unique across all the files of a multi-page document.
+    autosec_to_label = {}
+    for text in contents.values():
+        for m in HEADING_RE.finditer(text):
+            labels = ANCHOR_RE.findall(m["anchors"])[1:]
+            if labels:
+                autosec_to_label["autosec-" + (m["hnum"] or m["pnum"])] = labels[0]
+
+    def move_anchors(m: re.Match[str]) -> str:
+        anchors = [f'<a id="{a}"></a>' for a in ANCHOR_RE.findall(m["anchors"])]
+        return "\n".join(anchors) + "\n" + m["heading"]
+
+    def retarget(m: re.Match[str]) -> str:
+        return m.group(1) + autosec_to_label.get(m.group(2), m.group(2)) + '"'
+
+    for filename, text in contents.items():
+        text = re.sub(r'(href="[^"#]*#)(autosec-[0-9]+)"', retarget, text)
+        text = HEADING_RE.sub(move_anchors, text)
+        text = SELFLINK_RE.sub(r"\1" + SELFLINK_LABEL + r"\2", text)
+        # lwarp's line wrapping may put a newline on either side.
+        text = re.sub(r'\s+target="_blank"', "", text)
+        text = text.replace("<kbd>", "<code>").replace("</kbd>", "</code>")
+        if CODE_STYLE not in text:
+            text = text.replace("</head>", CODE_STYLE + "\n</head>", 1)
+        page = re.escape(Path(filename).name)
+        text = re.sub(
+            rf'(<a\s+href="{page}#[^"]*"\s+class="tocchapter")(?!\s+aria-current)',
+            r'\1 aria-current="page"',
+            text,
+        )
+        if 'class="sidetoccontainer"' in text and SIDETOC_SCRIPT not in text:
+            text = text.replace("</head>", SIDETOC_SCRIPT + "\n</head>", 1)
+        if FAVICON not in text and (Path(filename).parent / FAVICON_FILE).exists():
+            text = text.replace("<head>\n", "<head>\n" + FAVICON + "\n", 1)
+        Path(filename).write_text(text, encoding="utf-8")
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
