@@ -96,6 +96,104 @@ public class ToIndexFileConverterTest {
     Assert.fail("no method " + method + " in class " + className + System.lineSeparator() + jaif);
   }
 
+  /** A method's JVML descriptor uses the erasure of each type variable. */
+  @Test
+  public void testTypeVariableErasure() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import java.util.List;",
+            "class MyClass<S extends CharSequence> {",
+            "  <T extends Number, U> void myMethod(T t, U u, S s, Object o) {}",
+            "  <V extends List<?>> void myOtherMethod(V v) {}",
+            "}");
+    assertMethod(
+        jaif,
+        "MyClass",
+        "myMethod(Ljava/lang/Number;Ljava/lang/Object;Ljava/lang/CharSequence;Ljava/lang/Object;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Ljava/util/List;)V");
+  }
+
+  /** A single-type import shadows a type of the same name in the current package. */
+  @Test
+  public void testSingleTypeImportShadowsCurrentPackage() throws Exception {
+    String jaif =
+        convert(
+            "package java.util;",
+            "import java.awt.List;",
+            "class MyClass {",
+            "  void myMethod(List l) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/awt/List;)V");
+  }
+
+  /** A type in the current package shadows a type of the same name that is imported on demand. */
+  @Test
+  public void testCurrentPackageShadowsOnDemandImport() throws Exception {
+    String jaif =
+        convert(
+            "package java.util;",
+            "import java.awt.*;",
+            "class MyClass {",
+            "  void myMethod(List l) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/List;)V");
+  }
+
+  /** A qualified type name refers to the type that it names, regardless of imports. */
+  @Test
+  public void testQualifiedTypeIgnoresImports() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import java.util.List;",
+            "class MyClass {",
+            "  void myMethod(java.awt.List l) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/awt/List;)V");
+  }
+
+  /** A type that the stub file declares is qualified by the stub file's package. */
+  @Test
+  public void testStubDeclaredType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Local {}",
+            "class MyClass {",
+            "  void myMethod(Local l) {}",
+            "  <T extends Local> void myOtherMethod(T t) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/Local;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Lp/Local;)V");
+  }
+
+  /**
+   * The members of a nested class, enum, or record belong to the nested type, not to the class that
+   * encloses it.
+   */
+  @Test
+  public void testNestedTypeMembers() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass {",
+            "  class MyNestedClass {",
+            "    void myNestedMethod() {}",
+            "  }",
+            "  enum MyEnum {",
+            "    A;",
+            "    void myEnumMethod() {}",
+            "  }",
+            "  record MyRecord(int x) {",
+            "    void myRecordMethod() {}",
+            "  }",
+            "}");
+    assertMethod(jaif, "MyClass$MyNestedClass", "myNestedMethod()V");
+    assertMethod(jaif, "MyClass$MyEnum", "myEnumMethod()V");
+    assertMethod(jaif, "MyClass$MyRecord", "myRecordMethod()V");
+  }
+
   /**
    * Converts a stub file that declares a class {@code p.C}, and returns the scene element for the
    * first parameter of the given method.
@@ -130,6 +228,37 @@ public class ToIndexFileConverterTest {
             "}");
     assertMethod(
         jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/ToIndexFileConverter;)V");
+  }
+
+  /** A method's JVML descriptor uses the binary name of an imported nested class. */
+  @Test
+  public void testImportedNestedClass() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import java.util.Map.Entry;",
+            "import java.lang.Character.*;",
+            "class MyClass {",
+            "  void myMethod(Entry e) {}",
+            "  void myOtherMethod(UnicodeBlock b) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Ljava/lang/Character$UnicodeBlock;)V");
+  }
+
+  /** An enum constant with a class body does not crash the converter. */
+  @Test
+  public void testEnumConstantWithClassBody() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "enum MyEnum {",
+            "  A {",
+            "    void myConstantMethod() {}",
+            "  };",
+            "  void myEnumMethod() {}",
+            "}");
+    assertMethod(jaif, "MyEnum", "myEnumMethod()V");
   }
 
   /**
