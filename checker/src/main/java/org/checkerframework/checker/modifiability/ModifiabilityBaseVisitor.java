@@ -274,35 +274,32 @@ public class ModifiabilityBaseVisitor
    * and no method can be called on such a receiver. Writing it is always a mistake, whatever the
    * enclosing class's constructors declare, and whether or not the method has a body.
    *
+   * <p>The Iterator hierarchy is not checked: its bottom qualifier is its positive qualifier, and
+   * writing that on a receiver is legitimate.
+   *
    * @param method a method declaration
    */
   private void checkReceiverNotBottom(MethodTree method) {
+    if (!atypeFactory.hasNegativeCapability()) {
+      // This is the Iterator hierarchy.
+      return;
+    }
     if (method.getReceiverParameter() == null) {
       // The receiver qualifier was defaulted, so the programmer did not write the bottom
       // qualifier on it.
       return;
     }
     AnnotatedDeclaredType receiverType = atypeFactory.getAnnotatedType(method).getReceiverType();
-    if (receiverType == null) {
+    if (receiverType == null || !atypeFactory.isRelevant(receiverType.getUnderlyingType())) {
       return;
     }
     AnnotationMirror receiverAnno =
         receiverType.getPrimaryAnnotationInHierarchy(atypeFactory.topAnnotation());
-    if (receiverAnno == null) {
-      return;
+    AnnotationMirror bottom =
+        atypeFactory.getQualifierHierarchy().getBottomAnnotation(atypeFactory.topAnnotation());
+    if (receiverAnno != null && AnnotationUtils.areSameByName(receiverAnno, bottom)) {
+      checker.reportError(method, "bottom.annotation.on.receiver");
     }
-    // Every modifiability hierarchy contains a top qualifier, a positive qualifier, and a
-    // polymorphic qualifier.  Every hierarchy but the Iterator one also contains a negative and a
-    // bottom qualifier.  There is no predicate for the bottom annotation, so it is recognized by
-    // eliminating all the others.  (In the Iterator hierarchy, the positive qualifier is the
-    // bottom qualifier, and writing it on a receiver is legitimate.)
-    if (AnnotationUtils.areSameByName(receiverAnno, atypeFactory.topAnnotation())
-        || AnnotationUtils.areSameByName(receiverAnno, atypeFactory.polyCapability())
-        || AnnotationUtils.areSameByName(receiverAnno, positiveCapability())
-        || isNegativeCapability(receiverAnno)) {
-      return;
-    }
-    checker.reportError(method, "bottom.annotation.on.receiver");
   }
 
   /**
@@ -427,8 +424,8 @@ public class ModifiabilityBaseVisitor
     // java.lang.UnsupportedOperationException does.
     TypeMirror unsupportedOperationException =
         TypesUtils.typeFromClass(UnsupportedOperationException.class, types, elements);
-    return types.isSubtype(
-        types.erasure(TreeUtils.typeOf(exception)), types.erasure(unsupportedOperationException));
+    return TypesUtils.isErasedSubtype(
+        TreeUtils.typeOf(exception), unsupportedOperationException, types);
   }
 
   /**

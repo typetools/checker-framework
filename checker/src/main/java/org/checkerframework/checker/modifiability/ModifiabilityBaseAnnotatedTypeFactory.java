@@ -31,6 +31,26 @@ import org.checkerframework.javacutil.TypesUtils;
 /** Shared annotated type factory logic for the Modifiability sub-checkers. */
 public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+  /** Fully-qualified class name of {@link Modifiable}. */
+  private static final String MODIFIABLE_NAME =
+      "org.checkerframework.checker.modifiability.qual.Modifiable";
+
+  /** Fully-qualified class name of {@link Unmodifiable}. */
+  private static final String UNMODIFIABLE_NAME =
+      "org.checkerframework.checker.modifiability.qual.Unmodifiable";
+
+  /** Fully-qualified class name of {@link PolyModifiable}. */
+  private static final String POLY_MODIFIABLE_NAME =
+      "org.checkerframework.checker.modifiability.qual.PolyModifiable";
+
+  /** Fully-qualified class name of {@link MaybeModifiable}. */
+  private static final String MAYBE_MODIFIABLE_NAME =
+      "org.checkerframework.checker.modifiability.qual.MaybeModifiable";
+
+  /** Fully-qualified class name of {@link UnmodifiableParam}. */
+  private static final String UNMODIFIABLE_PARAM_NAME =
+      "org.checkerframework.checker.modifiability.qual.UnmodifiableParam";
+
   /** The {@code @}{@link IteratorPolyMod} qualifier. */
   protected final AnnotationMirror ITERATOR_POLY_MOD;
 
@@ -262,28 +282,32 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
       AnnotationMirror annotation, @Nullable TypeMirror tm) {
     if (expandsModifiabilityAliases()) {
       TypeMirror bound = tm == null ? null : TypesUtils.upperBound(tm);
-      if (areSameByClass(annotation, Modifiable.class)
-          || areSameByClass(annotation, Unmodifiable.class)) {
-        boolean weaken =
-            bound != null
-                // `tm != null` is redundant because if `bound` is non-null, then so is `tm`.
-                && tm != null
-                && (lacksCapability(bound, this::typeLacksCapability)
-                    || ((tm.getKind() == TypeKind.TYPEVAR || tm.getKind() == TypeKind.WILDCARD)
-                        && someInstantiationLacksCapability(bound)));
-        if (weaken) {
+      String name = AnnotationUtils.annotationName(annotation);
+      switch (name) {
+        case MODIFIABLE_NAME, UNMODIFIABLE_NAME -> {
+          boolean weaken =
+              bound != null
+                  // `tm != null` is redundant because if `bound` is non-null, then so is `tm`.
+                  && tm != null
+                  && (lacksCapability(bound, this::typeLacksCapability)
+                      || ((tm.getKind() == TypeKind.TYPEVAR || tm.getKind() == TypeKind.WILDCARD)
+                          && someInstantiationLacksCapability(bound)));
+          if (weaken) {
+            return topAnnotation();
+          }
+          return name.equals(MODIFIABLE_NAME) ? positiveCapability() : negativeCapability();
+        }
+        case POLY_MODIFIABLE_NAME -> {
+          return bound != null && lacksCapability(bound, this::polyLacksCapability)
+              ? topAnnotation()
+              : polyCapability();
+        }
+        case MAYBE_MODIFIABLE_NAME, UNMODIFIABLE_PARAM_NAME -> {
           return topAnnotation();
         }
-        return areSameByClass(annotation, Modifiable.class)
-            ? positiveCapability()
-            : negativeCapability();
-      } else if (areSameByClass(annotation, PolyModifiable.class)) {
-        return bound != null && lacksCapability(bound, this::polyLacksCapability)
-            ? topAnnotation()
-            : polyCapability();
-      } else if (areSameByClass(annotation, MaybeModifiable.class)
-          || areSameByClass(annotation, UnmodifiableParam.class)) {
-        return topAnnotation();
+        default -> {
+          // Not a whole-modifiability alias.
+        }
       }
     }
     return super.canonicalAnnotation(annotation);
