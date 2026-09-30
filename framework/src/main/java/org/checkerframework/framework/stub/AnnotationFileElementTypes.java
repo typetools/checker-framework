@@ -498,7 +498,9 @@ public class AnnotationFileElementTypes {
             }
           };
 
-      if (canTransferAnnotationsToSameName && enclosingType.getKind() == ElementKind.RECORD) {
+      if (canTransferAnnotationsToSameName
+          && enclosingType != null
+          && enclosingType.getKind() == ElementKind.RECORD) {
         AnnotationFileParser.RecordStub recordStub =
             annotationFileAnnos.records.get(ElementUtils.getQualifiedName(enclosingType));
         if (recordStub != null

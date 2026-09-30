@@ -17,4 +17,17 @@ public class RelevantTypeVariable<T extends CharSequence> {
   }
 
   static <U extends CharSequence> void expectsSibling1(@AinferSibling1 U u) {}
+
+  // Likewise when a use of the type variable is the element type of an array type.
+  T[] arrayField;
+
+  void assignArrayField(@AinferSibling1 T[] t) {
+    // :: warning: [assignment]
+    arrayField = t;
+  }
+
+  void useArrayField() {
+    // :: warning: [argument]
+    expectsSibling1(arrayField[0]);
+  }
 }

@@ -24,6 +24,10 @@ The Checker Framework runs under JDK 27 -- that is, it runs on a version 27 JVM.
 
 The Checker Framework runs noticeably faster, due to performance tuning.
 
+The HTML version of the manual has a new look.  In addition to the
+single-page version, there is a
+[multi-page version](https://checkerframework.org/manual/manual-multipage.html).
+
 ### Changes for type system implementers
 
 `JavaParserUtil`: moved `DEFAULT_LANGUAGE_LEVEL`, `parseCompilationUnit()`,
