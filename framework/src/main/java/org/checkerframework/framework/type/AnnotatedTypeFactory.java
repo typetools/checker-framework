@@ -74,6 +74,7 @@ import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
@@ -5298,10 +5299,31 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return isSameTypeModuloCaptures(
             ((ArrayType) t1).getComponentType(), ((ArrayType) t2).getComponentType());
       }
+      case WILDCARD -> {
+        WildcardType w1 = (WildcardType) t1;
+        WildcardType w2 = (WildcardType) t2;
+        return isSameBoundModuloCaptures(w1.getExtendsBound(), w2.getExtendsBound())
+            && isSameBoundModuloCaptures(w1.getSuperBound(), w2.getSuperBound());
+      }
       default -> {
         return types.isSameType(t1, t2);
       }
     }
+  }
+
+  /**
+   * Returns true if {@code b1} and {@code b2} are the same wildcard bound, modulo captured type
+   * variables. A missing bound is only the same as another missing bound.
+   *
+   * @param b1 a wildcard bound, or null if the wildcard has no such bound
+   * @param b2 a wildcard bound, or null if the wildcard has no such bound
+   * @return true if {@code b1} and {@code b2} are the same bound modulo captured type variables
+   */
+  private boolean isSameBoundModuloCaptures(@Nullable TypeMirror b1, @Nullable TypeMirror b2) {
+    if (b1 == null) {
+      return b2 == null;
+    }
+    return b2 != null && isSameTypeModuloCaptures(b1, b2);
   }
 
   /**

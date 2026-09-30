@@ -114,6 +114,22 @@ public class Issue8053 {
     return types.stream().map(t -> lowerWildBoundedParam(t)).collect(Collectors.toList());
   }
 
+  // Another type argument contains a wildcard, which must compare equal when the javac ground
+  // type is matched against the inferred type.
+  interface Getter3<K, V, W> {}
+
+  static native <P> Getter3<P, ? super Number, List<?>> lowerWildNestedWild(P p);
+
+  static List<Getter3<?, ? super Number, List<?>>> lowerBoundedWildcardNestedWildcard(
+      List<String> types) {
+    return types.stream().map(t -> lowerWildNestedWild(t)).collect(Collectors.toList());
+  }
+
+  static List<Getter3<?, ?, List<?>>> lowerBoundedWildcardNestedWildcardLooseTarget(
+      List<String> types) {
+    return types.stream().map(t -> lowerWildNestedWild(t)).collect(Collectors.toList());
+  }
+
   // The wildcard is not the last type argument, so the capture variable that must be resolved
   // before the result variable is the first one.
   static native <P> Getter<?, P> wildFirst(P p);
