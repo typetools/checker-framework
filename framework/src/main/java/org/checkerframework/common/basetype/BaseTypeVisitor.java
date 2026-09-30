@@ -1150,18 +1150,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Returns the purity of a method or lambda body, for the purpose of inferring or suggesting a
-   * purity annotation. Unlike type-checking, inference does not apply the {@code -Aassume*}
-   * command-line options: an inferred or suggested annotation outlives the command line that
-   * produced it, and would be trusted by a later run that makes no such assumption.
+   * Returns the purity of the code of a method or lambda, for the purpose of inferring or
+   * suggesting a purity annotation. Unlike type-checking, inference does not apply the {@code
+   * -Aassume*} command-line options: an inferred or suggested annotation outlives the command line
+   * that produced it, and would be trusted by a later run that makes no such assumption.
    *
-   * @param body the path to the body, or null if the method has no body
-   * @return the purity of {@code body}, ignoring the {@code -Aassume*} command-line options
+   * @param code the paths to the code that runs as part of the method or lambda: its body and, for
+   *     a constructor, the instance initializers it runs; empty if the method has no body
+   * @return the purity of {@code code}, ignoring the {@code -Aassume*} command-line options
    */
-  private PurityResult purityForInference(@Nullable TreePath body) {
-    return body == null
+  private PurityResult purityForInference(List<TreePath> code) {
+    return code.isEmpty()
         ? new PurityResult()
-        : PurityChecker.checkPurity(body, atypeFactory, false, false, false);
+        : PurityChecker.checkPurity(code, atypeFactory, false, false, false);
   }
 
   /**
@@ -1223,30 +1224,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             || purityKinds.contains(PurityKind.DETERMINISTIC);
 
     TreePath body = atypeFactory.getPath(tree.getBody());
-    if (needToCheck && needPurityResult) {
-      PurityResult r;
-      if (body == null) {
-        r = new PurityResult();
-      } else {
-        List<TreePath> toCheck = new ArrayList<>(2);
-        toCheck.add(body);
-        if (TreeUtils.isConstructor(tree)) {
-          MethodInvocationTree explicitCall = TreeUtils.getExplicitConstructorCall(tree);
-          if (explicitCall == null || !TreeUtils.isThisConstructorCall(explicitCall)) {
-            // The class's instance initializers run as part of this constructor.  If instead it
-            // delegates to another constructor of the same class, they run as part of that one,
-            // and this constructor is checked at its call to it, like any other method call.
-            toCheck.addAll(TreePathUtil.getInstanceInitializers(body));
-          }
-        }
-        r =
-            PurityChecker.checkPurity(
-                toCheck,
-                atypeFactory,
-                assumeSideEffectFree,
-                assumeDeterministic,
-                assumePureGetters);
+    // The code whose purity determines the method's purity.  A constructor that delegates to
+    // another constructor of the same class is checked at its call to it, like any other method
+    // call, so the instance initializers are included only for a constructor that runs them.
+    List<TreePath> toCheck = new ArrayList<>(2);
+    if (body != null) {
+      toCheck.add(body);
+      if (TreeUtils.isConstructor(tree)) {
+        toCheck.addAll(TreePathUtil.getInstanceInitializersRunBy(tree, body));
       }
+    }
+    if (needToCheck && needPurityResult) {
+      PurityResult r =
+          toCheck.isEmpty()
+              ? new PurityResult()
+              : PurityChecker.checkPurity(
+                  toCheck,
+                  atypeFactory,
+                  assumeSideEffectFree,
+                  assumeDeterministic,
+                  assumePureGetters);
       if (!r.isPure(purityKinds)) {
         reportPurityErrors(r, purityKinds);
       }
@@ -1254,7 +1251,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     if (suggestPureMethods && !TreeUtils.isSynthetic(tree)) {
       // Issue a warning if the method is pure, but not annotated as such.
-      EnumSet<PurityKind> additionalKinds = purityForInference(body).getKinds().clone();
+      EnumSet<PurityKind> additionalKinds = purityForInference(toCheck).getKinds().clone();
       if (!infer) {
         // During WPI, propagate all purity kinds, even those that are already
         // present (because they were inferred in a previous WPI round).
@@ -2818,7 +2815,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // A lambda implements the functional interface method, so it constrains that method's
       // purity just as an overriding method does; see the treatment of overridden methods in
       // `checkPurityAnnotations`.
-      EnumSet<PurityKind> lambdaKinds = purityForInference(body).getKinds().clone();
+      EnumSet<PurityKind> lambdaKinds =
+          purityForInference(Collections.singletonList(body)).getKinds().clone();
       if (functionalMethod.getReturnType().getKind() == TypeKind.VOID) {
         lambdaKinds.remove(PurityKind.DETERMINISTIC);
       }
