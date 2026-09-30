@@ -7,7 +7,6 @@ import java.util.Objects;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
 import org.checkerframework.checker.modifiability.qual.Modifiable;
-import org.checkerframework.checker.modifiability.qual.Shrinkable;
 
 /**
  * An {@link AElement} that represents a type might have annotations on inner types ("generic/array"
@@ -24,7 +23,7 @@ import org.checkerframework.checker.modifiability.qual.Shrinkable;
 public class ATypeElement extends AElement {
 
   /** The annotated inner types; map key is the inner type location. */
-  public final @Shrinkable VivifyingMap<List<TypePathEntry>, ATypeElement> innerTypes =
+  public final @Modifiable VivifyingMap<List<TypePathEntry>, ATypeElement> innerTypes =
       newVivifyingLHMap_ATE();
 
   /**

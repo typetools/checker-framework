@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
 import org.checkerframework.checker.modifiability.qual.Shrinkable;
 
 /**
@@ -45,7 +46,9 @@ public class AExpression extends AElement {
   /**
    * The method's annotated lambda expressions; map key is the offset of the invokedynamic bytecode
    */
-  public final @Shrinkable VivifyingMap<RelativeLocation, AMethod> funs =
+  @SuppressWarnings("modifiability:assignment") // The anonymous subclass's constructor result
+  // is the top qualifier, so it does not propagate the backing map's @Modifiable type.
+  public final @Modifiable VivifyingMap<RelativeLocation, AMethod> funs =
       new VivifyingMap<>(new LinkedHashMap<>()) {
         @Override
         public AMethod createValueFor(RelativeLocation k) {
