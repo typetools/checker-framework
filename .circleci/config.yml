@@ -65,6 +65,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -110,6 +127,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -155,6 +189,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -199,6 +250,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -244,6 +312,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -289,6 +374,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -333,6 +435,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -378,6 +497,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -421,6 +557,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -465,6 +618,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &sourcefull-cache source-v1full-{{ .Branch }}-{{ .Revision }}
@@ -513,6 +683,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &sourcefull-cache source-v1full-{{ .Branch }}-{{ .Revision }}
@@ -561,6 +748,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &sourcefull-cache source-v1full-{{ .Branch }}-{{ .Revision }}
@@ -609,6 +813,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -652,6 +873,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -696,6 +934,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -740,6 +995,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -784,6 +1056,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -829,6 +1118,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -873,6 +1179,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -918,6 +1241,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}

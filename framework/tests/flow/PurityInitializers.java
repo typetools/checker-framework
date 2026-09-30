@@ -17,7 +17,7 @@ public class PurityInitializers {
 
   // The effects of a field initializer are effects of the constructor.
   static class FieldInitializer {
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     int x = bump();
 
     @SideEffectFree
@@ -29,7 +29,7 @@ public class PurityInitializers {
     int x;
 
     {
-      // :: error: [purity.not.sideeffectfree.call]
+      // :: error: [purity.call]
       bump();
     }
 
@@ -40,7 +40,7 @@ public class PurityInitializers {
   // The initializers run as part of each constructor, but each of their effects is one error, not
   // one error per constructor.
   static class TwoConstructors {
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     int x = bump();
 
     @SideEffectFree
@@ -72,13 +72,13 @@ public class PurityInitializers {
     static int s;
 
     {
-      // :: error: [purity.not.sideeffectfree.assign.field]
+      // :: error: [purity.assign.field]
       s = 1;
     }
 
     @SideEffectFree
     AssignStaticField() {
-      // :: error: [purity.not.sideeffectfree.assign.field]
+      // :: error: [purity.assign.field]
       s = 2;
     }
   }
@@ -110,7 +110,7 @@ public class PurityInitializers {
   // A constructor that delegates via this(...) does not run the initializers a second time, so
   // their effects are reported only once, for the constructor that does run them.
   static class Delegating {
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     int x = bump();
 
     @SideEffectFree
@@ -132,7 +132,7 @@ public class PurityInitializers {
     // The error is for the implicit call to the superclass constructor `Enum(String, int)`, which
     // is not annotated; it is unrelated to the enum constants above.
     @SideEffectFree
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     SomeEnum(int i) {
       x = i;
     }
@@ -144,7 +144,7 @@ public class PurityInitializers {
     class Local {
       int x;
 
-      // :: error: [purity.not.sideeffectfree.call]
+      // :: error: [purity.call]
       int y = bump();
 
       {
@@ -164,11 +164,11 @@ public class PurityInitializers {
   Object anonymousClass() {
     // The error is for the call to the superclass constructor `Object()`, which is not annotated;
     // it is unrelated to the initializers below.
-    // :: error: [purity.not.sideeffectfree.call]
+    // :: error: [purity.call]
     return new Object() {
       int x;
 
-      // :: error: [purity.not.sideeffectfree.call]
+      // :: error: [purity.call]
       int y = bump();
 
       {
@@ -186,7 +186,7 @@ public class PurityInitializers {
       static int s;
 
       static {
-        // :: error: [purity.not.sideeffectfree.assign.field]
+        // :: error: [purity.assign.field]
         s = 1;
       }
 

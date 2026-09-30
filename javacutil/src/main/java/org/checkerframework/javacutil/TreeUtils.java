@@ -310,17 +310,17 @@ public final class TreeUtils {
   // This section of the file groups methods by their receiver type; that is, it puts all
   // `elementFrom*(FooTree)` methods together.
 
-  // TODO: Document when this may return null.
   /**
    * Returns the type element corresponding to the given class declaration.
    *
-   * <p>This method returns null instead of crashing when no element exists for the class tree,
-   * which can happen for certain kinds of anonymous classes, such as Ordering$1 in
-   * PolyCollectorTypeVar.java in the all-systems test suite and "class MyFileFilter" in
-   * PurgeTxnLog.java.
+   * <p>This method returns null for a local or anonymous class whose enclosing top-level class has
+   * not yet been attributed. javac attributes one top-level class at a time, but the Checker
+   * Framework may visit an entire compilation unit (e.g., when processing an ajava file) after only
+   * its first class is attributed. An example is Ordering$1 in PolyCollectorTypeVars.java in the
+   * all-systems test suite.
    *
    * @param tree class declaration
-   * @return the element for the given class
+   * @return the element for the given class, or null if {@code tree} has not been attributed
    */
   public static @Nullable TypeElement elementFromDeclaration(ClassTree tree) {
     TypeElement result = (TypeElement) TreeInfo.symbolFor((JCTree) tree);
@@ -330,7 +330,7 @@ public final class TreeUtils {
   /**
    * Returns the type element corresponding to the given class declaration.
    *
-   * <p>The TypeElement may be null for an anonymous class.
+   * <p>The TypeElement may be null for a local or anonymous class that has not been attributed.
    *
    * @param tree the {@link ClassTree} node to get the element for
    * @return the {@link TypeElement} for the given tree
@@ -627,13 +627,14 @@ public final class TreeUtils {
    * Returns the VariableElement corresponding to the given variable declaration.
    *
    * @param tree the variable
-   * @return the element for the given variable
+   * @return the element for the given variable, or null if {@code tree} has not been attributed
    */
   public static @Nullable VariableElement elementFromDeclaration(VariableTree tree) {
     VariableElement result = (VariableElement) TreeInfo.symbolFor((JCTree) tree);
-    // `result` can be null, for example for this variable declaration:
-    //   PureFunc f1 = TestPure1::myPureMethod;
-    // TODO: check claim above. Initializer expression should have no impact on variable.
+    // `result` is null for a local variable whose enclosing top-level class has not yet been
+    // attributed.  javac attributes one top-level class at a time, but the Checker Framework may
+    // visit an entire compilation unit (e.g., when processing an ajava file) after only its first
+    // class is attributed.
     return result;
   }
 

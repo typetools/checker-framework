@@ -11,11 +11,18 @@ The new `wpi2.sh` script does whole-program inference, but requires buildfile ed
 
 Purity Checker:
 
+* Renamed message keys `purity.not.deterministic.X`,
+  `purity.not.sideeffectfree.X`, and
+  `purity.not.deterministic.not.sideeffectfree.X` to `purity.X`.
 * `-AcheckPurityAnnotations` issues warnings that it missed previously.
 
 The Checker Framework runs under JDK 27 -- that is, it runs on a version 27 JVM.
 
 The Checker Framework runs noticeably faster, due to performance tuning.
+
+The HTML version of the manual has a new look.  In addition to the
+single-page version, there is a
+[multi-page version](https://checkerframework.org/manual/manual-multipage.html).
 
 ### Changes for type system implementers
 

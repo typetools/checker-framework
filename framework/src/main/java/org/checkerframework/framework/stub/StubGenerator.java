@@ -177,7 +177,7 @@ public class StubGenerator {
       out.println(";");
       out.println();
     }
-    String fullClassName = ElementUtils.getQualifiedClassName(typeElement).toString();
+    String fullClassName = typeElement.getQualifiedName().toString();
 
     // The class name, including the names of any outer classes, but not the package name.
     String className;

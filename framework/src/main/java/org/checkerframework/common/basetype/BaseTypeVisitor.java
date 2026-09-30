@@ -1606,6 +1606,33 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
   }
 
+  /** The purity property that a method was required to have, but does not have. */
+  private enum PurityViolation {
+    /** The method was required to be deterministic. */
+    DETERMINISTIC("deterministic", "non-deterministic"),
+    /** The method was required to be side-effect-free. */
+    SIDE_EFFECT_FREE("side-effect-free", "side-effecting"),
+    /** The method was required to be both deterministic and side-effect-free. */
+    BOTH("deterministic side-effect-free", "non-deterministic side-effecting");
+
+    /** How to describe the purity that the method was required to have. */
+    private final String purityAdjective;
+
+    /** How to describe a callee that does not have the required purity. */
+    private final String calleeAdjective;
+
+    /**
+     * Creates a PurityViolation.
+     *
+     * @param purityAdjective how to describe the purity that the method was required to have
+     * @param calleeAdjective how to describe a callee that does not have the required purity
+     */
+    PurityViolation(String purityAdjective, String calleeAdjective) {
+      this.purityAdjective = purityAdjective;
+      this.calleeAdjective = calleeAdjective;
+    }
+  }
+
   /**
    * Reports errors found during purity checking.
    *
@@ -1618,25 +1645,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     violations.removeAll(result.getKinds());
     if (violations.contains(PurityKind.DETERMINISTIC)
         || violations.contains(PurityKind.SIDE_EFFECT_FREE)) {
-      String msgKeyPrefix;
+      PurityViolation violation;
       if (!violations.contains(PurityKind.SIDE_EFFECT_FREE)) {
-        msgKeyPrefix = "purity.not.deterministic.";
+        violation = PurityViolation.DETERMINISTIC;
       } else if (!violations.contains(PurityKind.DETERMINISTIC)) {
-        msgKeyPrefix = "purity.not.sideeffectfree.";
+        violation = PurityViolation.SIDE_EFFECT_FREE;
       } else {
-        msgKeyPrefix = "purity.not.deterministic.not.sideeffectfree.";
+        violation = PurityViolation.BOTH;
       }
       for (ImpurityReason r : result.getNotBothReasons()) {
-        reportPurityError(msgKeyPrefix, r);
+        reportPurityError(violation, r);
       }
       if (violations.contains(PurityKind.SIDE_EFFECT_FREE)) {
         for (ImpurityReason r : result.getNotSEFreeReasons()) {
-          reportPurityError("purity.not.sideeffectfree.", r);
+          reportPurityError(PurityViolation.SIDE_EFFECT_FREE, r);
         }
       }
       if (violations.contains(PurityKind.DETERMINISTIC)) {
         for (ImpurityReason r : result.getNotDetReasons()) {
-          reportPurityError("purity.not.deterministic.", r);
+          reportPurityError(PurityViolation.DETERMINISTIC, r);
         }
       }
     }
@@ -1645,14 +1672,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Reports a single purity error.
    *
-   * @param msgKeyPrefix the prefix of the message key to use when reporting
+   * @param violation the purity property that the method was required to have, but does not have
    * @param r the result to report
    */
-  private void reportPurityError(String msgKeyPrefix, ImpurityReason r) {
+  private void reportPurityError(PurityViolation violation, ImpurityReason r) {
     String reason = r.msgId();
     Tree tree = r.tree();
-    @SuppressWarnings("compilermessages")
-    @CompilerMessageKey String msgKey = msgKeyPrefix + reason;
+    @CompilerMessageKey String msgKey =
+        switch (reason) {
+          case "assign.array" -> "purity.assign.array";
+          case "assign.field" -> "purity.assign.field";
+          case "call" -> "purity.call";
+          case "catch" -> "purity.catch";
+          case "object.creation" -> "purity.object.creation";
+          default -> customPurityMessageKey(reason);
+        };
     Object[] args;
     if (reason.equals("call")) {
       ExecutableElement calleeElement;
@@ -1661,9 +1695,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       } else {
         calleeElement = TreeUtils.elementFromUse((NewClassTree) tree);
       }
-      args = new Object[] {calleeElement.getEnclosingElement(), calleeElement.getSimpleName()};
+      args =
+          new Object[] {
+            violation.calleeAdjective,
+            calleeElement.getEnclosingElement(),
+            calleeElement.getSimpleName(),
+            violation.purityAdjective
+          };
     } else {
-      args = new Object[0];
+      args = new Object[] {violation.purityAdjective};
     }
     // The same tree can be checked more than once:  an initializer is checked as part of every
     // constructor that runs it, and every checker of a compound checker checks purity
@@ -1674,6 +1714,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     } else {
       checker.reportOnce(path, new DiagMessage(Diagnostic.Kind.ERROR, msgKey, args));
     }
+  }
+
+  /**
+   * Returns the message key for a purity violation reason other than those that {@link
+   * PurityChecker} produces. A checker that records its own reason, by calling {@code
+   * PurityResult.addNotDetReason}, {@code addNotSEFreeReason}, or {@code addNotBothReason}, must
+   * define the returned key in its own {@code messages.properties} file.
+   *
+   * @param reason the reason for the purity violation
+   * @return the message key for the reason
+   */
+  @SuppressWarnings("compilermessages") // the key is defined by the checker that uses the reason
+  private static @CompilerMessageKey String customPurityMessageKey(String reason) {
+    return "purity." + reason;
   }
 
   /**

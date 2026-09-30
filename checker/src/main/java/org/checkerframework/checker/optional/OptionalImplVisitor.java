@@ -161,14 +161,22 @@ public class OptionalImplVisitor
   }
 
   /**
-   * Returns true iff {@code expression} is a call to java.util.Optional.get.
+   * If {@code expression} is a call to java.util.Optional.get, returns its receiver. Otherwise,
+   * returns null.
    *
-   * @param expression an expression
-   * @return true iff {@code expression} is a call to java.util.Optional.get
+   * @param expression an expression, or null
+   * @return the receiver of the call to java.util.Optional.get, or null if {@code expression} is
+   *     not such a call
    */
-  private boolean isCallToGet(ExpressionTree expression) {
+  private @Nullable ExpressionTree asCallToGet(@Nullable ExpressionTree expression) {
+    if (expression == null) {
+      return null;
+    }
     ProcessingEnvironment env = checker.getProcessingEnvironment();
-    return TreeUtils.isMethodInvocation(expression, optionalGet, env);
+    if (!TreeUtils.isMethodInvocation(expression, optionalGet, env)) {
+      return null;
+    }
+    return TreeUtils.getReceiverTree(expression);
   }
 
   /**
@@ -178,7 +186,7 @@ public class OptionalImplVisitor
    *     the receiver is empty
    * @param receiver the receiver of the call
    */
-  private record IsPresentCall(boolean isPresent, @Nullable ExpressionTree receiver) {}
+  private record IsPresentCall(boolean isPresent, ExpressionTree receiver) {}
 
   /**
    * Returns whether the expression is a call to {@code Optional.isPresent} or to {@code
@@ -199,13 +207,17 @@ public class OptionalImplVisitor
           negate = !negate;
         }
         case METHOD_INVOCATION -> {
+          boolean isPresent;
           if (TreeUtils.isMethodInvocation(expression, optionalIsPresent, env)) {
-            return new IsPresentCall(!negate, TreeUtils.getReceiverTree(expression));
+            isPresent = !negate;
           } else if (TreeUtils.isMethodInvocation(expression, optionalIsEmpty, env)) {
-            return new IsPresentCall(negate, TreeUtils.getReceiverTree(expression));
+            isPresent = negate;
           } else {
             return null;
           }
+          @SuppressWarnings("nullness:assignment") // isPresent and isEmpty always have a receiver
+          @NonNull ExpressionTree receiver = TreeUtils.getReceiverTree(expression);
+          return new IsPresentCall(isPresent, receiver);
         }
         default -> {
           return null;
@@ -285,15 +297,12 @@ public class OptionalImplVisitor
     if (!(trueExpr instanceof MethodInvocationTree)) {
       return;
     }
-    ExpressionTree trueReceiver = TreeUtils.getReceiverTree(trueExpr);
-    if (!isCallToGet(trueReceiver)) {
+    ExpressionTree getReceiver = asCallToGet(TreeUtils.getReceiverTree(trueExpr));
+    if (getReceiver == null) {
       return;
     }
 
-    @SuppressWarnings("nullness:assignment") // a call to `get()` has a receiver
-    @NonNull ExpressionTree getReceiver = TreeUtils.getReceiverTree(trueReceiver);
-    @SuppressWarnings("nullness:assignment") // a call to `isPresent()` has a receiver
-    @NonNull ExpressionTree receiver = isPresentCall.receiver();
+    ExpressionTree receiver = isPresentCall.receiver();
     if (sameExpression(receiver, getReceiver)) {
       ExecutableElement ele = TreeUtils.elementFromUse((MethodInvocationTree) trueExpr);
       checker.reportWarning(
@@ -378,8 +387,7 @@ public class OptionalImplVisitor
       elseStmt = tmp;
     }
 
-    ExpressionTree isPresentReceiver = TreeUtils.getReceiverTree(condExpr);
-    if (isPresentReceiver instanceof MethodInvocationTree iprMit) {
+    if (isPresentCall.receiver() instanceof MethodInvocationTree iprMit) {
       ExecutableElement ele = TreeUtils.elementFromUse(iprMit);
       boolean isPure =
           PurityUtils.isDeterministic(atypeFactory, ele)
@@ -491,13 +499,11 @@ public class OptionalImplVisitor
       return;
     }
     ExpressionTree invokArg = TreeUtils.withoutParens(invokArgs.get(0));
-    if (!isCallToGet(invokArg)) {
+    ExpressionTree getReceiver = asCallToGet(invokArg);
+    if (getReceiver == null) {
       return;
     }
-    @SuppressWarnings("nullness:assignment") // a call to `isPresent()` has a receiver
-    @NonNull ExpressionTree isPresentReceiver = isPresentCall.receiver();
-    @SuppressWarnings("nullness:assignment") // a call to `get()` has a receiver
-    @NonNull ExpressionTree getReceiver = TreeUtils.getReceiverTree(invokArg);
+    ExpressionTree isPresentReceiver = isPresentCall.receiver();
     if (!isPresentReceiver.toString().equals(getReceiver.toString())) {
       return;
     }
