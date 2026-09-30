@@ -2,11 +2,19 @@
 // it must not refine the reference to non-null.
 
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 public class StaticMethodReceiverRefinement {
   static void staticMethod() {}
 
+  @Pure
+  static int pureStaticMethod() {
+    return 0;
+  }
+
   void instanceMethod() {}
+
+  @Nullable StaticMethodReceiverRefinement field;
 
   static void nullLocal() {
     StaticMethodReceiverRefinement obj = null;
@@ -25,5 +33,11 @@ public class StaticMethodReceiverRefinement {
     // :: error: (dereference.of.nullable)
     obj.instanceMethod();
     obj.instanceMethod();
+  }
+
+  void nullableFieldPure() {
+    field.pureStaticMethod();
+    // :: error: (dereference.of.nullable)
+    field.instanceMethod();
   }
 }

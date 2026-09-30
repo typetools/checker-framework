@@ -40,7 +40,6 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
@@ -406,6 +405,9 @@ public class NullnessTransfer
    * SideEffectFree or the receiver is unassignable. Only if either one of the two is true, is the
    * receiver made non-null. Similar logic is applied to the arguments of the invocation.
    *
+   * <p>The receiver of a static method invocation is never made non-null, because the invocation
+   * does not dereference it.
+   *
    * <p>Provided that m is of a type that implements interface java.util.Map:
    *
    * <ul>
@@ -425,7 +427,7 @@ public class NullnessTransfer
         atypeFactory.isSideEffectFree(method) || PurityUtils.isSideEffectFree(atypeFactory, method);
     Node receiver = n.getTarget().getReceiver();
     // A static method invocation does not dereference its receiver.
-    if (!ElementUtils.isStatic(method)
+    if (!n.getTarget().isStatic()
         && (nonNullAssumptionAfterInvocation
             || isMethodSideEffectFree
             || !JavaExpression.fromNode(receiver).isAssignableByOtherCode())) {
