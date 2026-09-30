@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
@@ -98,7 +99,7 @@ public class ProperType extends AbstractType {
   }
 
   /** Asserts that this type is not void, which a proper type cannot represent. */
-  private void verifyType() {
+  private void verifyType(@UnknownInitialization(ProperType.class) ProperType this) {
     assert type.getKind() != TypeKind.VOID : "ProperType created for void type: " + type;
   }
 
