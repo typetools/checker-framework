@@ -21,6 +21,7 @@ import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -398,7 +399,7 @@ public final class Resolution {
               lubProperType.create(
                   lubProperType.getAnnotatedType().deepCopy(), lubProperType.ignoreAnnotations);
       QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
-      Set<AnnotationMirror> lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
+      AnnotationMirrorSet lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
       if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
         Set<? extends AnnotationMirror> newLubAnnos =
             qh.leastUpperBoundsQualifiersOnly(
