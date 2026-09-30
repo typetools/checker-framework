@@ -1,0 +1,30 @@
+% Workarounds for lwarp problems, used by the Checker Framework manual and by
+% the Annotation File Utilities manual.  Input this file after loading lwarp.
+% It affects only the HTML version.
+
+\begin{warpHTML}
+
+% lwarp escapes < within Verbatim, but not in ordinary text, \texttt, or
+% alltt.  A browser would treat text such as "List<Object>" as an HTML tag and
+% not display it.  So, within the document, < is an active character that
+% produces an HTML entity.  (An unescaped > is legal in HTML text.  Leaving >
+% alone lets it continue to delimit arguments, as in the manual's \<...>.)
+\begingroup
+\catcode`\<=\active
+\gdef<{\ifmmode\string<\else\textless\fi}
+\endgroup
+\AfterEndPreamble{\catcode`\<=\active}
+% \@noligs, which alltt calls, redefines < to print itself.
+% Ligatures are irrelevant in HTML.
+\makeatletter
+\def\verbatim@nolig@list{\do\`\do\>\do\,\do\'\do\-}
+\makeatother
+
+% BibTeX's alpha style defines \etalchar using math mode, which lwarp would
+% convert to an image, and which fails within a citation.
+\newcommand{\etalchar}[1]{\textsuperscript{#1}}
+% The .bbl file uses \newcommand to define \etalchar.
+\pretocmd{\bibliography}{\let\etalchar\relax}{}{}
+\AtBeginEnvironment{thebibliography}{\renewcommand{\etalchar}[1]{\textsuperscript{#1}}}
+
+\end{warpHTML}

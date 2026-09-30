@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Lock Checker}{lock-checker}
 
 The Lock Checker prevents certain concurrency errors by enforcing a
@@ -19,13 +18,13 @@ command-line option is always enabled for the Lock Checker (see Section~\ref{faq
 \sectionAndLabel{What the Lock Checker guarantees}{lock-guarantees}
 
 The Lock Checker gives the following guarantee.
-Suppose that expression $e$ has type
+Suppose that expression \textit{e} has type
 \<\refqualclass{checker/lock/qual}{GuardedBy}(\ttlcb"x", "y.z"\ttrcb)>.
-Then the value computed for $e$ is only dereferenced by a thread when the
+Then the value computed for \textit{e} is only dereferenced by a thread when the
 thread holds locks \<x> and \<y.z>.
 Dereferencing a value is reading or writing one of its fields.
-The guarantee about $e$'s value
-holds not only if the expression $e$ is dereferenced
+The guarantee about \textit{e}'s value
+holds not only if the expression \textit{e} is dereferenced
 directly, but also if the value was first copied into a variable,
 returned as the
 result of a method call, etc.
@@ -145,7 +144,7 @@ parameters --- see Section~\ref{climb-to-top}).
 Figure~\ref{fig-lock-guardedby-hierarchy} shows the type hierarchy of these
 qualifiers.
 All \code{@GuardedBy} annotations are incomparable:
-if \emph{exprSet1} $\neq$ \emph{exprSet2}, then \code{@GuardedBy(\emph{exprSet1})} and
+if \emph{exprSet1} \neqsym{} \emph{exprSet2}, then \code{@GuardedBy(\emph{exprSet1})} and
 \code{@GuardedBy(\emph{exprSet2})} are siblings in the type hierarchy.
 You might expect that
 \<@GuardedBy(\{"x", "y"\}) T> is a subtype of \<@GuardedBy(\{"x"\}) T>.  The
@@ -360,15 +359,15 @@ the \<@GuardedBy> type hierarchy, including \<@GuardedBy(\{\})>.
 \begin{description}
 
 \item[Overriding methods annotated with \code{@Holding}]
-  If class $B$ overrides method $m$ from class $A$, then the expressions in
-  $B$'s \<@Holding>
-  annotation must be a subset of those in $A$'s \<@Holding>
+  If class \textit{B} overrides method \textit{m} from class \textit{A}, then the expressions in
+  \textit{B}'s \<@Holding>
+  annotation must be a subset of those in \textit{A}'s \<@Holding>
   annotation.
 
 \item[Overriding methods annotated with side effect annotations]
-  If class $B$ overrides method $m$ from class $A$, then
-  the side effect annotation on $B$'s declaration of $m$
-  must be at least as strong as that in $A$'s declaration of $m$.
+  If class \textit{B} overrides method \textit{m} from class \textit{A}, then
+  the side effect annotation on \textit{B}'s declaration of \textit{m}
+  must be at least as strong as that in \textit{A}'s declaration of \textit{m}.
   From weakest to strongest, the side effect annotations
   processed by the Lock Checker are:
 \begin{verbatim}
@@ -508,7 +507,7 @@ class MyOtherClass {
 \textbf{@GuardedBy(exprSet)}
 
 The following example demonstrates the reason the Lock Checker enforces this
-rule:  if \emph{exprSet1} $\neq$ \emph{exprSet2}, then
+rule:  if \emph{exprSet1} \neqsym{} \emph{exprSet2}, then
 \code{@GuardedBy(\emph{exprSet1})} and \code{@GuardedBy(\emph{exprSet2})} are siblings in the type
 hierarchy.
 
@@ -898,8 +897,7 @@ Section~\ref{declaration-annotations-moved}.
 % These lists should be kept in sync with LockAnnotatedTypeFactory.java .
 \begin{figure}
 \begin{center}
-% The ~ around the text makes things look better in Hevea (and not terrible
-% in LaTeX).
+% The ~ around the text adds space between the text and the table rules.
 
 \begin{tabular}{ll}
 \begin{tabular}{|l|}
@@ -908,19 +906,14 @@ Section~\ref{declaration-annotations-moved}.
  ~javax.annotation.concurrent.GuardedBy~ \\ \hline
 \end{tabular}
 &
-$\Rightarrow$
-%HEVEA ~org.checkerframework.checker.lock.qual.GuardedBy (for fields) or \ldots Holding (for methods)~
-%BEGIN LATEX
+\Rightarrowsym{}
 \begin{tabular}{l}
  ~org.checkerframework.checker.lock.qual.GuardedBy (for fields), or~ \\
  ~org.checkerframework.checker.lock.qual.Holding (for methods)~
 \end{tabular}
-%END LATEX
 \end{tabular}
 \end{center}
-%BEGIN LATEX
-\vspace{-1.5\baselineskip}
-%END LATEX
+\warpprintonly{\vspace{-1.5\baselineskip}}
 \caption{Correspondence between other lock annotations and the
   Checker Framework's annotations.}
 \label{fig-lock-refactoring}
