@@ -5262,15 +5262,39 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns true if {@code t1} and {@code t2} are the same type, except that where one has a
-   * captured type variable the other may have a different captured type variable.
+   * captured type variable the other may have a different captured type variable with the same
+   * bounds, modulo captured type variables.
    *
    * @param t1 a type
    * @param t2 a type
    * @return true if {@code t1} and {@code t2} are the same type modulo captured type variables
    */
   private boolean isSameTypeModuloCaptures(TypeMirror t1, TypeMirror t2) {
+    return isSameTypeModuloCaptures(t1, t2, new IdentityHashMap<>());
+  }
+
+  /**
+   * Returns true if {@code t1} and {@code t2} are the same type modulo captured type variables.
+   *
+   * @param t1 a type
+   * @param t2 a type
+   * @param visited the pairs of captured type variables whose bounds are being compared, from a
+   *     captured type variable in {@code t1} to the one in {@code t2}
+   * @return true if {@code t1} and {@code t2} are the same type modulo captured type variables
+   */
+  private boolean isSameTypeModuloCaptures(
+      TypeMirror t1, TypeMirror t2, IdentityHashMap<TypeMirror, TypeMirror> visited) {
     if (TypesUtils.isCapturedTypeVariable(t1) && TypesUtils.isCapturedTypeVariable(t2)) {
-      return true;
+      TypeMirror previous = visited.get(t1);
+      if (previous != null) {
+        // A bound refers back to a captured type variable whose bounds are being compared.
+        return types.isSameType(previous, t2);
+      }
+      visited.put(t1, t2);
+      TypeVariable v1 = (TypeVariable) t1;
+      TypeVariable v2 = (TypeVariable) t2;
+      return isSameTypeModuloCaptures(v1.getUpperBound(), v2.getUpperBound(), visited)
+          && isSameTypeModuloCaptures(v1.getLowerBound(), v2.getLowerBound(), visited);
     }
     if (t1.getKind() != t2.getKind()) {
       return false;
@@ -5279,31 +5303,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       case DECLARED -> {
         DeclaredType d1 = (DeclaredType) t1;
         DeclaredType d2 = (DeclaredType) t2;
-        if (!d1.asElement().equals(d2.asElement())
-            || !isSameTypeModuloCaptures(d1.getEnclosingType(), d2.getEnclosingType())) {
-          return false;
-        }
-        List<? extends TypeMirror> args1 = d1.getTypeArguments();
-        List<? extends TypeMirror> args2 = d2.getTypeArguments();
-        if (args1.size() != args2.size()) {
-          return false;
-        }
-        for (int i = 0; i < args1.size(); i++) {
-          if (!isSameTypeModuloCaptures(args1.get(i), args2.get(i))) {
-            return false;
-          }
-        }
-        return true;
+        return d1.asElement().equals(d2.asElement())
+            && isSameTypeModuloCaptures(d1.getEnclosingType(), d2.getEnclosingType(), visited)
+            && isSameTypesModuloCaptures(d1.getTypeArguments(), d2.getTypeArguments(), visited);
       }
       case ARRAY -> {
         return isSameTypeModuloCaptures(
-            ((ArrayType) t1).getComponentType(), ((ArrayType) t2).getComponentType());
+            ((ArrayType) t1).getComponentType(), ((ArrayType) t2).getComponentType(), visited);
+      }
+      case INTERSECTION -> {
+        return isSameTypesModuloCaptures(
+            ((IntersectionType) t1).getBounds(), ((IntersectionType) t2).getBounds(), visited);
       }
       case WILDCARD -> {
         WildcardType w1 = (WildcardType) t1;
         WildcardType w2 = (WildcardType) t2;
-        return isSameBoundModuloCaptures(w1.getExtendsBound(), w2.getExtendsBound())
-            && isSameBoundModuloCaptures(w1.getSuperBound(), w2.getSuperBound());
+        return isSameBoundModuloCaptures(w1.getExtendsBound(), w2.getExtendsBound(), visited)
+            && isSameBoundModuloCaptures(w1.getSuperBound(), w2.getSuperBound(), visited);
       }
       default -> {
         return types.isSameType(t1, t2);
@@ -5312,18 +5328,47 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * Returns true if {@code ts1} and {@code ts2} have the same length and their corresponding
+   * elements are the same type modulo captured type variables.
+   *
+   * @param ts1 a list of types
+   * @param ts2 a list of types
+   * @param visited the pairs of captured type variables whose bounds are being compared
+   * @return true if {@code ts1} and {@code ts2} are pairwise the same modulo captured type
+   *     variables
+   */
+  private boolean isSameTypesModuloCaptures(
+      List<? extends TypeMirror> ts1,
+      List<? extends TypeMirror> ts2,
+      IdentityHashMap<TypeMirror, TypeMirror> visited) {
+    if (ts1.size() != ts2.size()) {
+      return false;
+    }
+    for (int i = 0; i < ts1.size(); i++) {
+      if (!isSameTypeModuloCaptures(ts1.get(i), ts2.get(i), visited)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Returns true if {@code b1} and {@code b2} are the same wildcard bound, modulo captured type
    * variables. A missing bound is only the same as another missing bound.
    *
    * @param b1 a wildcard bound, or null if the wildcard has no such bound
    * @param b2 a wildcard bound, or null if the wildcard has no such bound
+   * @param visited the pairs of captured type variables whose bounds are being compared
    * @return true if {@code b1} and {@code b2} are the same bound modulo captured type variables
    */
-  private boolean isSameBoundModuloCaptures(@Nullable TypeMirror b1, @Nullable TypeMirror b2) {
+  private boolean isSameBoundModuloCaptures(
+      @Nullable TypeMirror b1,
+      @Nullable TypeMirror b2,
+      IdentityHashMap<TypeMirror, TypeMirror> visited) {
     if (b1 == null) {
       return b2 == null;
     }
-    return b2 != null && isSameTypeModuloCaptures(b1, b2);
+    return b2 != null && isSameTypeModuloCaptures(b1, b2, visited);
   }
 
   /**
