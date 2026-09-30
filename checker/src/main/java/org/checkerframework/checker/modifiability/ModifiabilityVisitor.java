@@ -13,7 +13,13 @@ import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** Visitor for the aggregate ModifiabilityChecker. */
+/**
+ * Visitor for the aggregate ModifiabilityChecker.
+ *
+ * <p>The checks in this class are in the aggregate checker rather than in {@link
+ * ModifiabilityBaseVisitor} because they do not depend on a modifiability hierarchy; running them
+ * in each sub-checker would issue the same error five times.
+ */
 public class ModifiabilityVisitor extends SourceVisitor<Void, Void> {
 
   /** Fully-qualified name for {@link UnmodifiableParam}. */
@@ -95,10 +101,6 @@ public class ModifiabilityVisitor extends SourceVisitor<Void, Void> {
    * without overriding it does not support the operation. A method with no body, such as an
    * abstract method, has no implementation to make the promise about, so it is an error too.
    *
-   * <p>This check is in the aggregate checker rather than in {@link ModifiabilityBaseVisitor}
-   * because it does not depend on a modifiability hierarchy; running it in each sub-checker would
-   * issue the same error five times.
-   *
    * @param tree a method declaration
    */
   private void checkThrowsUnsupportedOperation(MethodTree tree) {
@@ -116,12 +118,12 @@ public class ModifiabilityVisitor extends SourceVisitor<Void, Void> {
    * method that has exactly one formal parameter, which is not a varargs parameter, and a non-void
    * result.
    *
-   * <p>The annotation relates the method's result to its first argument, so it says nothing about
-   * such a method. Worse, on a method with more than one formal parameter it would silently use the
-   * first argument, which need not be the one that the programmer had in mind. A varargs method is
-   * rejected for the same reason: a call's first argument is an element of the varargs array rather
-   * than the sole formal parameter, so the annotation would relate the result to a value of a
-   * different type.
+   * <p>These restrictions follow from what the annotation means: the method preserves modifiability
+   * capabilities from its argument to its result. That requires a result and exactly one argument.
+   * With more than one formal parameter, it would be ambiguous which argument the result depends
+   * on. A varargs parameter is excluded because a call's argument may be an element of the varargs
+   * array rather than the array itself, and that element has a different type than the formal
+   * parameter.
    *
    * @param tree a method declaration
    */

@@ -10,7 +10,9 @@ import org.checkerframework.framework.source.SourceChecker;
 /**
  * Base class for the Modifiability sub-checkers.
  *
- * <p>This class exists so that the sub-checkers share two things:
+ * <p>The sub-checkers' shared type-checking logic is in {@link
+ * ModifiabilityBaseAnnotatedTypeFactory} and {@link ModifiabilityBaseVisitor}. In addition, this
+ * class lets the sub-checkers share:
  *
  * <ul>
  *   <li>The {@code messages.properties} file in {@code org.checkerframework.checker.modifiability},
@@ -20,6 +22,7 @@ import org.checkerframework.framework.source.SourceChecker;
  *       keys would need to be duplicated in each sub-checker's package.
  *   <li>The stub files in {@code org.checkerframework.checker.modifiability}; see {@link
  *       #getExtraStubFiles}.
+ *   <li>The Iterator Checker as a subchecker; see {@link #usesIteratorChecker}.
  * </ul>
  */
 public abstract class ModifiabilityBaseChecker extends BaseTypeChecker {
