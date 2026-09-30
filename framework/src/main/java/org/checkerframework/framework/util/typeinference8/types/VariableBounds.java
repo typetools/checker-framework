@@ -722,8 +722,7 @@ public class VariableBounds {
     constraints.applyInstantiations();
 
     // An instantiation that was made by substituting one that ignores annotations is substituted
-    // again
-    // when that one changes; see ProperType#origin.
+    // again when that one changes; see ProperType#origin.
     if (instantiation != null) {
       AbstractType refreshed =
           refreshedInstantiation != null
