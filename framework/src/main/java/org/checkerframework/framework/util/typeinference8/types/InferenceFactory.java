@@ -1039,17 +1039,42 @@ public class InferenceFactory {
     }
     assert lubATM != null && lubTM != null
         : "@AssumeAssertion(nullness): properTypes has at least two elements";
-    // If the result has the Java type of an input that records its ignored substitutions, then it
-    // has the same structure as that input, so it keeps that record; see ProperType#origin.  Its
-    // ignored substitutions have the other inputs' annotations now, and they are substituted again
-    // when the instantiations that ignore annotations change.
+    // If the result has the Java type of an input that records its ignored substitutions, and
+    // differs from that input only at its root and at those ignored substitutions, then it keeps
+    // that record; see ProperType#origin.  Its ignored substitutions have the other inputs'
+    // annotations now, and they are substituted again when the instantiations that ignore
+    // annotations change.  A result that differs elsewhere cannot keep the record, because a type
+    // with an origin computes its parts from the origin.
     for (ProperType properType : properTypes) {
       if (properType.getOrigin() != null
-          && context.types.isSameType((Type) properType.getJavaType(), (Type) lubTM)) {
+          && context.types.isSameType((Type) properType.getJavaType(), (Type) lubTM)
+          && differsOnlyAtRootOrIgnored(properType, lubATM)) {
         return properType.withAnnotatedType(lubATM, ignoreAnnotations);
       }
     }
     return new ProperType(lubATM, context, ignoreAnnotations);
+  }
+
+  /**
+   * Returns true if {@code atm}, whose Java type is that of {@code properType}, has the same
+   * annotations as {@code properType} everywhere except at the root and at the ignored
+   * substitutions of {@code properType}; see {@link ProperType#getOrigin}.
+   *
+   * @param properType a type with an origin
+   * @param atm an annotated type with the same Java type as {@code properType}
+   * @return true if {@code atm} differs from {@code properType} only at the root and at ignored
+   *     substitutions
+   */
+  private boolean differsOnlyAtRootOrIgnored(ProperType properType, AnnotatedTypeMirror atm) {
+    AnnotatedTypeMirror sameRoot = properType.getAnnotatedType().deepCopy();
+    IgnoredAnnotations.copyRootAnnotations(atm, sameRoot);
+    ReplacedTypes compared =
+        IgnoredAnnotations.replaceIgnoredForEquality(
+            properType.withAnnotatedType(sameRoot, false),
+            new ProperType(atm, context),
+            typeFactory.getQualifierHierarchy());
+    return typeFactory.getTypeHierarchy().isSubtype(compared.type1(), compared.type2())
+        && typeFactory.getTypeHierarchy().isSubtype(compared.type2(), compared.type1());
   }
 
   /**

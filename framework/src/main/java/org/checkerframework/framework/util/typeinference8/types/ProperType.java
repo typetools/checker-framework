@@ -171,18 +171,26 @@ public class ProperType extends AbstractType {
    * part of the origin is not a proper type once instantiations are applied, then the part is
    * computed from {@link #type} instead.
    *
+   * <p>If {@code sharesRoot} is true, then the root of the part is the root of this type, or it has
+   * this type's root annotations, so the part computed from the origin gets the root annotations
+   * and {@link #ignoreAnnotations} of the part computed from {@link #type}; see {@link
+   * #withRootOf}.
+   *
    * @param part computes the part of a type
    * @param plain computes the part of this type from {@link #type}
+   * @param sharesRoot true if the root of the part is determined by the root of this type
    * @return the part of this type
    */
   private @Nullable AbstractType partFromOrigin(
-      Function<AbstractType, @Nullable AbstractType> part, Supplier<@Nullable AbstractType> plain) {
+      Function<AbstractType, @Nullable AbstractType> part,
+      Supplier<@Nullable AbstractType> plain,
+      boolean sharesRoot) {
     if (origin != null) {
       AbstractType derived = part.apply(origin);
       if (derived != null) {
         AbstractType result = derived.applyInstantiations();
         if (result.isProper()) {
-          return result;
+          return sharesRoot ? withRootOf((ProperType) result, plain.get()) : result;
         }
       }
     }
@@ -190,17 +198,43 @@ public class ProperType extends AbstractType {
   }
 
   /**
+   * Returns {@code derived}, a part of this type computed from {@link #origin}, with the root
+   * annotations and {@link #ignoreAnnotations} of {@code plainPart}, the same part computed from
+   * {@link #type}. The origin's root annotations are not this type's: they may have been changed
+   * since this type was made, for example by {@link UseOfVariable#applyInstantiations} or {@link
+   * #withAnnotatedType}.
+   *
+   * @param derived a part of this type computed from {@link #origin}
+   * @param plainPart the same part of this type computed from {@link #type}, or null
+   * @return {@code derived}, with the root annotations of {@code plainPart}
+   */
+  private ProperType withRootOf(ProperType derived, @Nullable AbstractType plainPart) {
+    if (plainPart == null) {
+      return derived;
+    }
+    // `derived` may be an instantiation that is stored as a bound, so copy before mutating.
+    AnnotatedTypeMirror atm = derived.getAnnotatedType().deepCopy();
+    IgnoredAnnotations.copyRootAnnotations(plainPart.getAnnotatedType(), atm);
+    return derived.withAnnotatedType(atm, plainPart.ignoreAnnotations);
+  }
+
+  /**
    * Returns parts of this type, computed from {@link #origin} if this type has one; see {@link
    * #partFromOrigin}. If any part of the origin is not a proper type once instantiations are
    * applied, then all the parts are computed from {@link #type} instead.
    *
+   * <p>If {@code sharesRoot} is true, then each part gets the root annotations of the corresponding
+   * part computed from {@link #type}, as in {@link #partFromOrigin}.
+   *
    * @param parts computes the parts of a type
    * @param plain computes the parts of this type from {@link #type}
+   * @param sharesRoot true if the root of each part is determined by the root of this type
    * @return the parts of this type
    */
   private @Nullable List<AbstractType> partsFromOrigin(
       Function<AbstractType, @Nullable List<AbstractType>> parts,
-      Supplier<@Nullable List<AbstractType>> plain) {
+      Supplier<@Nullable List<AbstractType>> plain,
+      boolean sharesRoot) {
     if (origin != null) {
       List<AbstractType> derived = parts.apply(origin);
       if (derived != null) {
@@ -212,58 +246,80 @@ public class ProperType extends AbstractType {
           }
           result.add(r);
         }
+        if (sharesRoot) {
+          List<AbstractType> plainParts = plain.get();
+          if (plainParts != null && plainParts.size() == result.size()) {
+            for (int i = 0; i < result.size(); i++) {
+              result.set(i, withRootOf((ProperType) result.get(i), plainParts.get(i)));
+            }
+          }
+        }
         return result;
       }
     }
     return plain.get();
   }
 
+  /**
+   * Returns true if this type is a wildcard or an intersection type with a primary annotation. Then
+   * its bounds have its primary annotations, as {@code AnnotatedWildcardType} and {@code
+   * AnnotatedIntersectionType} ensure.
+   *
+   * @return true if the bounds of this type have its primary annotations
+   */
+  private boolean boundsShareRoot() {
+    return !type.getPrimaryAnnotations().isEmpty();
+  }
+
   @Override
   public @Nullable List<AbstractType> getTypeArguments() {
-    return partsFromOrigin(AbstractType::getTypeArguments, super::getTypeArguments);
+    return partsFromOrigin(AbstractType::getTypeArguments, super::getTypeArguments, false);
   }
 
   @Override
   public @Nullable AbstractType getEnclosingType() {
-    return partFromOrigin(AbstractType::getEnclosingType, super::getEnclosingType);
+    return partFromOrigin(AbstractType::getEnclosingType, super::getEnclosingType, false);
   }
 
   @Override
   public @Nullable AbstractType getComponentType() {
-    return partFromOrigin(AbstractType::getComponentType, super::getComponentType);
+    return partFromOrigin(AbstractType::getComponentType, super::getComponentType, false);
   }
 
   @Override
   public @Nullable AbstractType asSuper(TypeMirror superType) {
-    return partFromOrigin(t -> t.asSuper(superType), () -> super.asSuper(superType));
+    return partFromOrigin(t -> t.asSuper(superType), () -> super.asSuper(superType), true);
   }
 
   @Override
   public @Nullable List<AbstractType> getFunctionTypeParameterTypes() {
     return partsFromOrigin(
-        AbstractType::getFunctionTypeParameterTypes, super::getFunctionTypeParameterTypes);
+        AbstractType::getFunctionTypeParameterTypes, super::getFunctionTypeParameterTypes, false);
   }
 
   @Override
   public @Nullable AbstractType getFunctionTypeReturnType() {
     return partFromOrigin(
-        AbstractType::getFunctionTypeReturnType, super::getFunctionTypeReturnType);
+        AbstractType::getFunctionTypeReturnType, super::getFunctionTypeReturnType, false);
   }
 
   @Override
   public @Nullable AbstractType getWildcardLowerBound() {
-    return partFromOrigin(AbstractType::getWildcardLowerBound, super::getWildcardLowerBound);
+    return partFromOrigin(
+        AbstractType::getWildcardLowerBound, super::getWildcardLowerBound, boundsShareRoot());
   }
 
   @Override
   public @Nullable AbstractType getWildcardUpperBound() {
-    return partFromOrigin(AbstractType::getWildcardUpperBound, super::getWildcardUpperBound);
+    return partFromOrigin(
+        AbstractType::getWildcardUpperBound, super::getWildcardUpperBound, boundsShareRoot());
   }
 
   @Override
   public List<AbstractType> getIntersectionBounds() {
     List<AbstractType> result =
-        partsFromOrigin(AbstractType::getIntersectionBounds, super::getIntersectionBounds);
+        partsFromOrigin(
+            AbstractType::getIntersectionBounds, super::getIntersectionBounds, boundsShareRoot());
     assert result != null : "@AssumeAssertion(nullness): getIntersectionBounds is non-null";
     return result;
   }
