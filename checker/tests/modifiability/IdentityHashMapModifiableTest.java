@@ -14,8 +14,11 @@ public class IdentityHashMapModifiableTest {
     boolean removed = identityMap.remove("key", "value2");
   }
 
-  // TODO: The checker does not yet know that a map's keySet(), values(), and entrySet() views
-  // support removal but not addition.
+  void testViews(@Modifiable IdentityHashMap<String, String> m) {
+    m.keySet().remove("k"); // OK
+    // :: error: [method.invocation]
+    m.keySet().add("k");
+  }
 
   void testEntries() {
     @Modifiable IdentityHashMap<String, String> identityMap = new IdentityHashMap<>();
