@@ -40,6 +40,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
@@ -423,9 +424,11 @@ public class NullnessTransfer
     boolean isMethodSideEffectFree =
         atypeFactory.isSideEffectFree(method) || PurityUtils.isSideEffectFree(atypeFactory, method);
     Node receiver = n.getTarget().getReceiver();
-    if (nonNullAssumptionAfterInvocation
-        || isMethodSideEffectFree
-        || !JavaExpression.fromNode(receiver).isAssignableByOtherCode()) {
+    // A static method invocation does not dereference its receiver.
+    if (!ElementUtils.isStatic(method)
+        && (nonNullAssumptionAfterInvocation
+            || isMethodSideEffectFree
+            || !JavaExpression.fromNode(receiver).isAssignableByOtherCode())) {
       // Make receiver non-null.
       makeNonNull(result, receiver);
     }
