@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Suppressing warnings}{suppressing-warnings}
 
 %% This feels redundant.
@@ -125,17 +124,13 @@ Each warning message from the compiler gives the most specific
 suppression string that can be used to suppress that warning.
 An example is ``\<dereference.of.nullable>'' in
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
 MyFile.java:107: error: [dereference.of.nullable] dereference of possibly-null reference myList
           myList.add(elt);
           ^
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 \noindent
 You are allowed to use any substring of a message key, so long as the
@@ -222,34 +217,26 @@ safe.  This example uses the Tainting Checker
 (declared) type \<@Tainted String>, but you know that the run-time value of
 \<expr> is untainted.
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   @SuppressWarnings("tainting:cast.unsafe") // expr is untainted because ... [explanation goes here]
   @Untainted String myvar = expr;
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 \noindent
 Java does not permit annotations (such as \<@SuppressWarnings>) on
 assignments (or on other statements or expressions), so
 it would have been \emph{illegal} to write
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   @Untainted String myvar;
   ...
   @SuppressWarnings("tainting:cast.unsafe") // expr is untainted because ...
   myvar = expr;
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 
 \subsectionAndLabel{Good practices when suppressing warnings}{suppresswarnings-best-practices}
@@ -695,7 +682,7 @@ Another scenario is when a file contains multiple top-level classes, only
 one of which has a name that corresponds to the file name.
 
 
-\sectionAndLabel{\code{-Alint} command-line option\label{lint-options}}{alint}
+\sectionAndLabel{\code{-Alint} command-line option}{alint}\label{lint-options}
 
 The \code{-Alint} option enables or disables optional checks, analogously to
 javac's \code{-Xlint} option.

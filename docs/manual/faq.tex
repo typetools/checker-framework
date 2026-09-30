@@ -1,21 +1,17 @@
-\htmlhr
 \chapterAndLabel{Frequently Asked Questions (FAQs)}{faq}
 
 These are some common questions about the Checker Framework and about
 pluggable type-checking in general.  Feel free to suggest improvements to
 the answers, or other questions to include here.
 
-% Not supported by Hevea, so don't bother; instead do by hand:
+% Not supported by lwarp, so don't bother; instead do by hand:
 % \minitoc
 
-%BEGIN LATEX
-~
-%END LATEX
+\warpprintonly{~}
 
-%BEGIN LATEX
-\newcommand{\faqtocpara}[1]{\paragraph{#1} ~}
-%END LATEX
-%HEVEA \newcommand{\faqtocpara}[1]{\textbf{#1}}
+\ifbool{warpingHTML}
+  {\newcommand{\faqtocpara}[1]{\textbf{#1}}}
+  {\newcommand{\faqtocpara}[1]{\paragraph{#1} ~}}
 
 
 \noindent
@@ -264,7 +260,7 @@ get experience with an existing type-checker before you write your own new
 checker.
 
 Many users are tempted to start with the
-\ahrefloc{nullness-checker}{Nullness Checker} (see
+\hyperref[nullness-checker]{Nullness Checker} (see
 \chapterpageref{nullness-checker}), since null pointer errors are common
 and familiar.  The Nullness Checker works very well, but be warned of three
 facts that make the absence of null pointer exceptions challenging to
@@ -438,16 +434,12 @@ Here is an example that invalidates this general argument.  Consider a
 binary search routine.  Its specification requires that clients pass in a
 sorted array.
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   /** Return index of the search key, if it is contained in the sorted array a; otherwise ... */
   int binarySearch(Object @Sorted [] a, Object key)
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 The \<binarySearch> routine is fast --- it runs in O(log n) time where n is
 the length of the array.  If the routine had to validate that its input
@@ -838,8 +830,8 @@ There are several reasons for this design choice.
   type-checker.
 
   A related issue is that determining which values can be returned by a
-  method $m$ requires analyzing $m$'s body, which requires analyzing
-  all the methods called by $m$, and so forth.  This quickly devolves to
+  method \textit{m} requires analyzing \textit{m}'s body, which requires analyzing
+  all the methods called by \textit{m}, and so forth.  This quickly devolves to
   analyzing the whole program.
   Determining all possible values assigned to a field is equally hard.
 
@@ -1389,20 +1381,20 @@ The popular
 \href{https://github.com/google/google-java-format}{google-java-format}
 tool formats type annotations incorrectly, with type annotations on their
 own line instead of on the same line as the type they modify.  (Actually,
-you can see from method \ahref{https://github.com/google/google-java-format/blob/master/core/src/main/java/com/google/googlejavaformat/java/JavaInputAstVisitor.java}{\<JavaInputAstVisitor>}\<.typeAnnotations()> that
+you can see from method \href{https://github.com/google/google-java-format/blob/master/core/src/main/java/com/google/googlejavaformat/java/JavaInputAstVisitor.java}{\<JavaInputAstVisitor>}\<.typeAnnotations()> that
 it handles two of the many type annotations --- \<@Nullable> and \<@NonNull> --- correctly,
 but all other type annotations incorrectly!  This would be fixed by merging
-\ahref{https://github.com/google/google-java-format/pull/802}{pull request
+\href{https://github.com/google/google-java-format/pull/802}{pull request
   \#802}.)
 Until this bug in google-java-format is fixed, you have these options:
 \begin{itemize}
 \item
   Run google-java-format via
-  \ahref{https://github.com/diffplug/spotless}{Spotless} and use the
-  \ahref{https://github.com/diffplug/spotless/tree/main/plugin-gradle#formatannotations}{\<formatAnnotations>}
+  \href{https://github.com/diffplug/spotless}{Spotless} and use the
+  \href{https://github.com/diffplug/spotless/tree/main/plugin-gradle#formatannotations}{\<formatAnnotations>}
   step to correct the formatting of type annotations.
 \item
-  Run google-java-format via \ahref{https://github.com/plume-lib/run-google-java-format}{run-google-java-format}.
+  Run google-java-format via \href{https://github.com/plume-lib/run-google-java-format}{run-google-java-format}.
 %% Uncomment when the successor to https://github.com/palantir/palantir-java-format/pull/805 is merged.
 % \item
 %   Use
@@ -1420,17 +1412,17 @@ how to fix the formatting.
 
 \begin{itemize}
 \item
-  For \ahref{https://github.com/diffplug/spotless}{Spotless}, change your
+  For \href{https://github.com/diffplug/spotless}{Spotless}, change your
   configuration to indicate the new type qualifiers.  If you use the
-  \ahref{https://github.com/diffplug/spotless/tree/main/plugin-gradle}{Spotless
+  \href{https://github.com/diffplug/spotless/tree/main/plugin-gradle}{Spotless
   plugin for Gradle}, edit your \<build.gradle> file to change
   \<formatAnnotations()> to (for example)
   \<formatAnnotations().addTypeAnnotation("Growable").addTypeAnnotation("Modifiable")...>.
 \item
   For
-  \ahref{https://github.com/plume-lib/run-google-java-format}{run-google-java-format},
+  \href{https://github.com/plume-lib/run-google-java-format}{run-google-java-format},
   make a pull request to change variable \<type\_annotations> in file
-  \ahref{https://github.com/plume-lib/run-google-java-format/blob/master/fixup-google-java-format.py}{fixup-google-java-format.py}.
+  \href{https://github.com/plume-lib/run-google-java-format/blob/master/fixup-google-java-format.py}{fixup-google-java-format.py}.
 %% Write text about palantir-java-format when it is uncommented in the list above.
 \end{itemize}
 
@@ -1802,8 +1794,8 @@ the declared type of the left-hand side.
   The return type of \<Sub.m> must be equal to or a subtype of the return
   type of \<Super.m> (this is called ``covariance'').
   %
-  The type of formal parameter $i$ of \<Sub.m> must be equal to or a
-  \emph{super}type of the type of formal parameter $i$ in \<Super.m> (this
+  The type of formal parameter \textit{i} of \<Sub.m> must be equal to or a
+  \emph{super}type of the type of formal parameter \textit{i} in \<Super.m> (this
   is called ``contravariance'').
 
 \end{itemize}

@@ -173,13 +173,14 @@ os.environ["PATH"] = PATH
 
 # Tools that must be on your PATH (besides common Unix ones like grep)
 TOOLS = [
-    "hevea",
-    "perl",
+    "dot",
+    "git",
     "java",
     "latex",
+    "lwarpmk",
     "mvn",
-    "git",
+    "pdftotext",
+    "perl",
     "uv",
-    "dot",
     EDITOR,
 ]

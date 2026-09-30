@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Map Key Checker}{map-key-checker}
 
 The Map Key Checker tracks which values are keys for which maps.  If variable
@@ -98,9 +97,7 @@ and wildcards.
 
 Here is a comparison of two choices for lower bounds:
 
-%BEGIN LATEX
-\medskip
-%END LATEX
+\warpprintonly{\medskip}
 
 \noindent
 \begin{tabular}{ll}
@@ -123,16 +120,13 @@ Here is a comparison of two choices for lower bounds:
 \code{class MySet2<T> implements Set<T> \{ \}} &
                 \code{class MySet2<@KeyForBottom T> implements Set<T> \{ \}} \\
 \code{MySet2<@KeyFor("m") String> s2; // OK}
-%HEVEA~~~
  &
                 \code{MySet2<@KeyFor("m") String> s2; // OK} \\
 
 % List<@KeyFor("m")> // ERROR unless List's type argument has lower bound of @KeyForBottom.
 \end{tabular}
 
-%BEGIN LATEX
-\medskip
-%END LATEX
+\warpprintonly{\medskip}
 
 
 If lower bounds are defaulted to \code{@KeyForBottom} (which is not
