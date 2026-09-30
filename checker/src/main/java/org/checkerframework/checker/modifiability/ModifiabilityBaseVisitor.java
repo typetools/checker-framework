@@ -94,9 +94,17 @@ public class ModifiabilityBaseVisitor
     processClassMembers(tree);
   }
 
+  @Override
+  public void processMethodTree(String className, MethodTree tree) {
+    super.processMethodTree(className, tree);
+    if (!TreeUtils.isConstructor(tree)) {
+      checkReceiverNotBottom(tree);
+    }
+  }
+
   /**
-   * Processes the members of a class: checks that no method writes the bottom qualifier on its
-   * receiver, and checks the constructors against one another and against the method bodies.
+   * Processes the members of a class: checks the constructors against one another and against the
+   * method bodies.
    *
    * @param tree a class
    */
@@ -121,12 +129,6 @@ public class ModifiabilityBaseVisitor
           methods.add(mt);
         }
       }
-    }
-
-    // Writing the bottom qualifier on a receiver is an error no matter what the class's
-    // constructors say, so this check is done before, and independently of, the checks below.
-    for (MethodTree method : methods) {
-      checkReceiverNotBottom(method);
     }
 
     boolean thisClassWarned = false;
@@ -193,7 +195,7 @@ public class ModifiabilityBaseVisitor
   private void checkInheritedImplementations(
       ClassTree tree, TypeElement classElement, AnnotationMirror constructorAnno) {
     if (!atypeFactory.hasNegativeCapability()
-        || !AnnotationUtils.areSameByName(constructorAnno, positiveCapability())) {
+        || !AnnotationUtils.areSameByName(constructorAnno, atypeFactory.positiveCapability())) {
       // The class does not claim the capability, so an inherited implementation that throws
       // UnsupportedOperationException agrees with what the class says about itself.  (In the
       // Iterator hierarchy, which has no negative qualifier, no implementation throws
@@ -215,7 +217,8 @@ public class ModifiabilityBaseVisitor
         continue;
       }
       AnnotatedDeclaredType receiverType = atypeFactory.getAnnotatedType(method).getReceiverType();
-      if (receiverType == null || !receiverType.hasPrimaryAnnotation(positiveCapability())) {
+      if (receiverType == null
+          || !receiverType.hasPrimaryAnnotation(atypeFactory.positiveCapability())) {
         continue;
       }
       checker.reportError(
@@ -335,8 +338,8 @@ public class ModifiabilityBaseVisitor
       // nothing, and a negative or bottom qualifier is not a requirement that this method must
       // live up to.
       if (overriddenReceiver != null
-          && overriddenReceiver.hasPrimaryAnnotation(positiveCapability())) {
-        return positiveCapability();
+          && overriddenReceiver.hasPrimaryAnnotation(atypeFactory.positiveCapability())) {
+        return atypeFactory.positiveCapability();
       }
     }
     return null;
@@ -351,7 +354,7 @@ public class ModifiabilityBaseVisitor
    */
   private void checkImplOK(
       MethodTree method, AnnotationMirror receiverAnno, AnnotationMirror constructorAnno) {
-    if (!AnnotationUtils.areSameByName(receiverAnno, positiveCapability())) {
+    if (!AnnotationUtils.areSameByName(receiverAnno, atypeFactory.positiveCapability())) {
       // The receiver does not require the capability -- it is the top, polymorphic, negative, or
       // bottom qualifier -- so the method body is unconstrained.  (Writing the bottom qualifier on
       // a receiver is diagnosed by checkReceiverNotBottom.)
@@ -369,7 +372,7 @@ public class ModifiabilityBaseVisitor
       if (!implIsUOE(method, types, elements)) {
         checker.reportError(method, "method.implementation.not.uoe", constructorAnnoName);
       }
-    } else if (AnnotationUtils.areSameByName(constructorAnno, positiveCapability())) {
+    } else if (AnnotationUtils.areSameByName(constructorAnno, atypeFactory.positiveCapability())) {
       if (implIsUOE(method, types, elements)) {
         checker.reportError(method, "method.implementation.is.uoe", constructorAnnoName);
       }
@@ -429,16 +432,6 @@ public class ModifiabilityBaseVisitor
   }
 
   /**
-   * Returns the positive qualifier for this checker's modifiability hierarchy, such as
-   * {@code @Growable}, {@code @SeqGrowable}, {@code @Shrinkable}, or {@code @Replaceable}.
-   *
-   * @return this checker's positive capability qualifier
-   */
-  private AnnotationMirror positiveCapability() {
-    return atypeFactory.positiveCapability();
-  }
-
-  /**
    * Checks the normal override rules, then requires overrides to preserve any positive
    * modifiability receiver capability from the overridden method.
    *
@@ -490,10 +483,8 @@ public class ModifiabilityBaseVisitor
       return true;
     }
 
-    AnnotationMirror positiveCapability = positiveCapability();
-
-    if (overriddenReceiver.hasPrimaryAnnotation(positiveCapability)
-        && !overriderReceiver.hasPrimaryAnnotation(positiveCapability)) {
+    if (overriddenReceiver.hasPrimaryAnnotation(atypeFactory.positiveCapability())
+        && !overriderReceiver.hasPrimaryAnnotation(atypeFactory.positiveCapability())) {
       // Use FoundRequired, as the framework's own `override.receiver` report does, so that the
       // message key is rendered the same way no matter which check produced it.
       FoundRequired pair = FoundRequired.of(overriderReceiver, overriddenReceiver);
