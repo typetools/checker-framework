@@ -116,7 +116,7 @@ public class ProperType extends AbstractType {
     this.qualifierVars = qualifierVars;
     this.origin = origin;
     this.originStamp = origin == null ? 0 : instantiationStamp(origin);
-    verifyType();
+    verifyType(this.type);
   }
 
   /**
@@ -131,7 +131,7 @@ public class ProperType extends AbstractType {
     this.qualifierVars = AnnotationMirrorMap.emptyMap();
     this.origin = null;
     this.originStamp = 0;
-    verifyType();
+    verifyType(this.type);
   }
 
   /**
@@ -146,7 +146,7 @@ public class ProperType extends AbstractType {
     this.qualifierVars = AnnotationMirrorMap.emptyMap();
     this.origin = null;
     this.originStamp = 0;
-    verifyType();
+    verifyType(this.type);
   }
 
   /**
@@ -324,8 +324,12 @@ public class ProperType extends AbstractType {
     return result;
   }
 
-  /** Asserts that this type is not void, which a proper type cannot represent. */
-  private void verifyType() {
+  /**
+   * Asserts that {@code type} is not void, which a proper type cannot represent.
+   *
+   * @param type the annotated type of a proper type
+   */
+  private static void verifyType(AnnotatedTypeMirror type) {
     assert type.getKind() != TypeKind.VOID : "ProperType created for void type: " + type;
   }
 

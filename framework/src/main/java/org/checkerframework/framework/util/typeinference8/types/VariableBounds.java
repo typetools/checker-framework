@@ -228,12 +228,13 @@ public class VariableBounds {
    * Adds {@code otherType} as bound against this variable. A proper {@code EQUAL} bound is boxed
    * before it is added.
    *
-   * @param parent the constraint whose reduction created this bound
+   * @param parent the constraint whose reduction created this bound, or null if the bound did not
+   *     come from reducing a constraint
    * @param kind the kind of bound
    * @param otherType the bound type
    * @return if a new bound was added
    */
-  public boolean addBound(Constraint parent, BoundKind kind, AbstractType otherType) {
+  public boolean addBound(@Nullable Constraint parent, BoundKind kind, AbstractType otherType) {
     if (otherType.isUseOfVariable() && ((UseOfVariable) otherType).getVariable() == variable) {
       return false;
     }
@@ -324,7 +325,7 @@ public class VariableBounds {
    */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public void addConstraintsFromComplementaryBounds(
-      Constraint parent, BoundKind kind, AbstractType boundType) {
+      @Nullable Constraint parent, BoundKind kind, AbstractType boundType) {
     switch (kind) {
       case EQUAL -> {
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
@@ -420,7 +421,7 @@ public class VariableBounds {
    * @param kind the kind of the new constraint
    */
   private void addComplementaryBoundConstraint(
-      Constraint parent, AbstractType s, AbstractType t, Kind kind) {
+      @Nullable Constraint parent, AbstractType s, AbstractType t, Kind kind) {
     constraints.add(new Typing(parent, "From complementary bound", s, t, kind, false));
   }
 
@@ -482,7 +483,7 @@ public class VariableBounds {
    * @return the constraints between the type arguments to {@code s} and {@code t}
    */
   private List<Typing> getConstraintsFromParameterized(
-      Constraint parent, AbstractType s, AbstractType t) {
+      @Nullable Constraint parent, AbstractType s, AbstractType t) {
     ParameterizedSupers pair = context.inferenceTypeFactory.getParameterizedSupers(s, t);
 
     if (pair == null) {
@@ -517,7 +518,7 @@ public class VariableBounds {
    * @param constraints the list to which to add the implied constraints
    */
   private void addConstraintsFromTypeArguments(
-      Constraint parent,
+      @Nullable Constraint parent,
       AbstractType s,
       AbstractType sAsSuper,
       AbstractType t,
@@ -650,7 +651,9 @@ public class VariableBounds {
    */
   public Set<ProperType> findLowerBoundsForAnnotations() {
     Set<ProperType> set = findProperLowerBounds();
-    for (AbstractType bound : bounds.get(BoundKind.EQUAL)) {
+    @SuppressWarnings("nullness:assignment") // every BoundKind is a key of `bounds`
+    @NonNull Set<AbstractType> equalBounds = bounds.get(BoundKind.EQUAL);
+    for (AbstractType bound : equalBounds) {
       if (bound.isProper() && bound.ignoreAnnotations) {
         set.add((ProperType) bound);
       }

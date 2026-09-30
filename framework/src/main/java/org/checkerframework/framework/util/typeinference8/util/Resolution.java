@@ -503,6 +503,7 @@ public final class Resolution {
       boolean includesEqualBounds,
       Java8InferenceContext context) {
     ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
+    assert lubProperType != null : "@AssumeAssertion(nullness): lowerBounds is nonempty";
     Set<AbstractQualifier> qualifierLowerBounds =
         ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
     if (!qualifierLowerBounds.isEmpty()) {
