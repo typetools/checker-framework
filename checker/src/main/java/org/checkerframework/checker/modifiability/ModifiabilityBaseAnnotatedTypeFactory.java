@@ -282,8 +282,7 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
       AnnotationMirror annotation, @Nullable TypeMirror tm) {
     if (expandsModifiabilityAliases()) {
       TypeMirror bound = tm == null ? null : TypesUtils.upperBound(tm);
-      String name = AnnotationUtils.annotationName(annotation);
-      switch (name) {
+      switch (AnnotationUtils.annotationName(annotation)) {
         case MODIFIABLE_NAME, UNMODIFIABLE_NAME -> {
           boolean weaken =
               bound != null
@@ -295,7 +294,9 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
           if (weaken) {
             return topAnnotation();
           }
-          return name.equals(MODIFIABLE_NAME) ? positiveCapability() : negativeCapability();
+          return areSameByClass(annotation, Modifiable.class)
+              ? positiveCapability()
+              : negativeCapability();
         }
         case POLY_MODIFIABLE_NAME -> {
           return bound != null && lacksCapability(bound, this::polyLacksCapability)
