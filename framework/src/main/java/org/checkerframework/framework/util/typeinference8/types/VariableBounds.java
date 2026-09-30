@@ -12,6 +12,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -196,7 +197,9 @@ public class VariableBounds {
    * any, choosing among them as {@link #addBound} does.
    */
   private void setInstantiationFromEqualBounds() {
-    for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
+    @SuppressWarnings("nullness:assignment") // every BoundKind is a key of `bounds`
+    @NonNull Set<AbstractType> equalBounds = bounds.get(BoundKind.EQUAL);
+    for (AbstractType t : equalBounds) {
       if (t.isProper()) {
         setInstantiationFromEqualBound((ProperType) t);
       }
@@ -244,7 +247,9 @@ public class VariableBounds {
       boundType = boxedType;
       setInstantiationFromEqualBound(boxedType);
     }
-    if (bounds.get(kind).add(boundType)) {
+    @SuppressWarnings("nullness:assignment") // every BoundKind is a key of `bounds`
+    @NonNull Set<AbstractType> boundsOfKind = bounds.get(kind);
+    if (boundsOfKind.add(boundType)) {
       addConstraintsFromComplementaryBounds(parent, kind, boundType);
       if (!boundType.ignoreAnnotations) {
         Set<AbstractQualifier> aQuals = boundType.getQualifiers();
