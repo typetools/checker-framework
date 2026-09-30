@@ -260,7 +260,7 @@ public abstract class AbstractType {
    * function type. Otherwise, {@code functionType} is null. Initialized by {@link
    * #getFunctionType()}.
    */
-  protected AnnotatedExecutableType functionType = null;
+  protected @Nullable AnnotatedExecutableType functionType = null;
 
   /**
    * Returns true if this {@link AbstractType} is a functional interface type.
