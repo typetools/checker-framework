@@ -319,6 +319,7 @@ public class InvocationTypeInference {
   public InferenceResult infer(MemberReferenceTree invocation) throws FalseBoundException {
 
     ProperType target = context.inferenceTypeFactory.getTargetType();
+    assert target != null : "@AssumeAssertion(nullness): a method reference has a target type";
     AbstractType target1 =
         InferenceType.create(
             target.getAnnotatedType(),
@@ -572,7 +573,9 @@ public class InvocationTypeInference {
       }
       if (compatibility) {
         BoundSet resolve = Resolution.resolve(alpha, b2, context);
-        ProperType u = (ProperType) alpha.getBounds().getInstantiation().capture(context);
+        ProperType alphaInstantiation = alpha.getInstantiation();
+        assert alphaInstantiation != null : "@AssumeAssertion(nullness): alpha was just resolved";
+        ProperType u = (ProperType) alphaInstantiation.capture(context);
         String source =
             "Constraint between method call type and target type for method call (compatibility"
                 + " constraint): "

@@ -128,8 +128,9 @@ public class UseOfVariable extends AbstractType {
 
   @Override
   public AbstractType applyInstantiations() {
-    if (this.variable.getInstantiation() != null) {
-      return this.variable.getInstantiation();
+    ProperType instantiation = this.variable.getInstantiation();
+    if (instantiation != null) {
+      return instantiation;
     }
 
     return this;
