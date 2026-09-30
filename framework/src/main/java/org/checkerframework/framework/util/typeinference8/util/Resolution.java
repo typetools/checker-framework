@@ -252,7 +252,7 @@ public final class Resolution {
    *     as}
    */
   private static boolean hasUnresolvedEqualBoundToCaptureWithin(Variable v, Set<Variable> as) {
-    for (AbstractType t : v.getBounds().bounds.get(VariableBounds.BoundKind.EQUAL)) {
+    for (AbstractType t : v.getBounds().getBoundsOfKind(VariableBounds.BoundKind.EQUAL)) {
       for (Variable mentioned : t.getInferenceVariables()) {
         if (mentioned.isCaptureVariable()
             && as.contains(mentioned)
@@ -388,7 +388,7 @@ public final class Resolution {
   private void resolveWithLowerBounds(Variable ai, Set<ProperType> lowerBounds) {
     ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
     Set<AbstractQualifier> qualifierLowerBounds =
-        ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
+        ai.getBounds().getQualifierBoundsOfKind(BoundKind.LOWER);
     if (!qualifierLowerBounds.isEmpty()) {
       // `lub` may return a type that shares its AnnotatedTypeMirror with one of `lowerBounds`,
       // which is still stored in a hash set of bounds.  Replacing annotations in place would
@@ -455,7 +455,7 @@ public final class Resolution {
 
       Set<? extends AnnotationMirror> lowerBoundAnnos;
       Set<AbstractQualifier> qualifierLowerBounds =
-          ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
+          ai.getBounds().getQualifierBoundsOfKind(BoundKind.LOWER);
       if (!qualifierLowerBounds.isEmpty()) {
         QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
         lowerBoundAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
@@ -490,7 +490,7 @@ public final class Resolution {
       }
       Set<? extends AnnotationMirror> upperBoundAnnos;
       Set<AbstractQualifier> qualifierUpperBounds =
-          ai.getBounds().qualifierBounds.get(BoundKind.UPPER);
+          ai.getBounds().getQualifierBoundsOfKind(BoundKind.UPPER);
       if (!qualifierUpperBounds.isEmpty()) {
         upperBoundAnnos = AbstractQualifier.glb(qualifierUpperBounds, context);
         if (upperBound != null) {
