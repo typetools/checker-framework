@@ -60,7 +60,6 @@ public abstract class VivifyingMap<K, V> extends WrapperMap<K, V> {
    *
    * <p>The receiver must be {@code @Shrinkable}, because pruning removes entries from the map.
    */
-  @SuppressWarnings("modifiability:assignment") // entrySet() is not @IteratorPolyMod.
   public void prune(@Shrinkable VivifyingMap<K, V> this) {
     // It would be cleaner to write
     //   for (Map.Entry<K, V> entry : entrySet()) {

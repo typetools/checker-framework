@@ -4,10 +4,13 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import org.checkerframework.checker.modifiability.qual.Growable;
+import org.checkerframework.checker.modifiability.qual.IteratorPolyMod;
 import org.checkerframework.checker.modifiability.qual.Modifiable;
 import org.checkerframework.checker.modifiability.qual.PolyModifiable;
+import org.checkerframework.checker.modifiability.qual.PolyShrinkable;
 import org.checkerframework.checker.modifiability.qual.Replaceable;
 import org.checkerframework.checker.modifiability.qual.Shrinkable;
+import org.checkerframework.checker.modifiability.qual.Ungrowable;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 /**
@@ -47,9 +50,15 @@ public class WrapperMap<K, V> implements Map<K, V> {
     return back.containsValue(value);
   }
 
-  @SuppressWarnings("keyfor") // use of delegate object
+  @SuppressWarnings({
+    "keyfor", // use of delegate object
+    "modifiability:return" // see comment in body
+  })
   @Override
-  public @PolyModifiable Set<Map.Entry<K, V>> entrySet(@PolyModifiable WrapperMap<K, V> this) {
+  public @IteratorPolyMod @PolyShrinkable @Ungrowable Set<Map.@PolyModifiable Entry<K, V>> entrySet(
+      @PolyModifiable WrapperMap<K, V> this) {
+    // `back` is @Modifiable, so each of its views is at least as capable as the polymorphic
+    // qualifier requires, whatever this WrapperMap's qualifier is.
     return back.entrySet();
   }
 
@@ -63,9 +72,15 @@ public class WrapperMap<K, V> implements Map<K, V> {
     return back.isEmpty();
   }
 
-  @SuppressWarnings("keyfor") // use of delegate object
+  @SuppressWarnings({
+    "keyfor", // use of delegate object
+    "modifiability:return" // see comment in body
+  })
   @Override
-  public @PolyModifiable Set<K> keySet(@PolyModifiable WrapperMap<K, V> this) {
+  public @IteratorPolyMod @PolyShrinkable @Ungrowable Set<K> keySet(
+      @PolyShrinkable WrapperMap<K, V> this) {
+    // `back` is @Modifiable, so each of its views is at least as capable as the polymorphic
+    // qualifier requires, whatever this WrapperMap's qualifier is.
     return back.keySet();
   }
 
@@ -98,8 +113,12 @@ public class WrapperMap<K, V> implements Map<K, V> {
     return back.size();
   }
 
+  @SuppressWarnings("modifiability:return") // see comment in body
   @Override
-  public @PolyModifiable Collection<V> values(@PolyModifiable WrapperMap<K, V> this) {
+  public @IteratorPolyMod @PolyShrinkable @Ungrowable Collection<V> values(
+      @PolyShrinkable WrapperMap<K, V> this) {
+    // `back` is @Modifiable, so each of its views is at least as capable as the polymorphic
+    // qualifier requires, whatever this WrapperMap's qualifier is.
     return back.values();
   }
 
