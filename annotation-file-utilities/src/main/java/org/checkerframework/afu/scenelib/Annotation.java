@@ -14,6 +14,8 @@ import java.util.Objects;
 import java.util.StringJoiner;
 import org.checkerframework.afu.scenelib.el.AnnotationDef;
 import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
+import org.checkerframework.checker.modifiability.qual.Growable;
+import org.checkerframework.checker.modifiability.qual.Replaceable;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -114,7 +116,9 @@ public final class Annotation {
    * @param ja the java.lang.annotation.Annotation to make an Annotation for
    * @param adefs a cache from which to look up (or insert into) AnnotationDefs
    */
-  public Annotation(java.lang.annotation.Annotation ja, Map<String, AnnotationDef> adefs) {
+  // TODO: `adefs` need not be `@Replaceable`.  Use the Map Key checker to avoid a warning.
+  public Annotation(
+      java.lang.annotation.Annotation ja, @Growable @Replaceable Map<String, AnnotationDef> adefs) {
     Class<? extends java.lang.annotation.Annotation> jaType = ja.annotationType();
     String name = jaType.getName();
     if (adefs.containsKey(name)) {

@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
 
 public class GenericsCasts {
   // Cast from a raw type to a generic type
@@ -26,7 +27,7 @@ public class GenericsCasts {
   // are currently problematic.
   // TODO: try to find a problem with skipping this check.
   class Test<K extends Object, V extends Object> {
-    class Entry<K extends Object, V extends Object> extends LinkedList<K> {}
+    @Modifiable class Entry<K extends Object, V extends Object> extends LinkedList<K> {}
 
     class Queue<T extends Object> {
       List<? extends T> poll() {

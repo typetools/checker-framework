@@ -1,0 +1,752 @@
+\chapterAndLabel{Modifiability Checker}{modifiability-checker}
+
+\newcommand{\UnsupportedOperationException}{\<Un\-sup\-port\-ed\-Op\-er\-a\-tion\-Ex\-cep\-tion>}
+
+In the Java Collections Framework, an \emph{optional} method is one that a class may or may not support.
+If a method is unsupported, calling it throws \UnsupportedOperationException.
+The Modifiability Checker verifies that optional methods related to modifying collections are only
+called if they are supported, thus eliminating the possibility of an
+\UnsupportedOperationException\  at run time.
+(It is possible to write a checker that warns about other unsupported
+methods, but the Modifiability Checker focuses on those issued when modifying collections.)
+
+An example of an optional method is
+\sunjavadoc{java.base/java/util/Collection.html\#add(E)}{add}.  Some
+subclasses of \<Collection> support \<add>, and others (such as the
+result of calling
+\sunjavadoc{java.base/java/util/Collections.html\#unmodifiableCollection(java.util.Collection)}{Collections.unmodifiableCollection})
+do not support \<add>.
+
+If the Modifiability Checker issues no warning, then your program is
+guaranteed not to throw \UnsupportedOperationException\ due to invoking an
+optional method (such as
+\sunjavadoc{java.base/java/util/Collection.html\#add(E)}{add} or
+\sunjavadoc{java.base/java/util/Collection.html\#remove(java.lang.Object)}{remove})
+on an unmodifiable collection.
+(For brevity, this chapter generally uses
+just ``collection'' to mean ``collection, map, or iterator''.)
+
+In addition to preventing UOEs, the Modifiability Checker ensures that collections
+that the user intends to be unmodifiable have an unmodifiable run-time implementation.
+
+
+To run the Modifiability Checker:
+
+\begin{Verbatim}
+javac -processor org.checkerframework.checker.modifiability.ModifiabilityChecker MyFile.java
+\end{Verbatim}
+
+\sectionAndLabel{Unmodifiable collections}{modifiability-unmodifiable-collections}
+
+An \emph{unmodifiable collection} is one that throws
+\UnsupportedOperationException\ if a mutating method is called.
+The JDK provides many such collections, for example, the results of:
+\begin{itemize}
+\item
+  \sunjavadoc{java.base/java/util/List.html\#of(E...)}{\code{List.of()}},
+  \sunjavadoc{java.base/java/util/List.html\#copyOf(java.util.Collection)}{\code{List.copyOf()}}
+\item
+  \sunjavadoc{java.base/java/util/Set.html\#of(E...)}{\code{Set.of()}},
+  \sunjavadoc{java.base/java/util/Set.html\#copyOf(java.util.Collection)}{\code{Set.copyOf()}}
+\item
+  \sunjavadoc{java.base/java/util/Map.html\#of(K,V,K,V)}{\code{Map.of()}},
+  \sunjavadoc{java.base/java/util/Map.html\#copyOf(java.util.Map)}{\code{Map.copyOf()}}
+\item
+  \sunjavadoc{java/util/Collections.html\#emptyList()}{\code{Collections.emptyList()}},
+  \sunjavadoc{java/util/Collections.html\#emptySet()}{\code{Collections.emptySet()}},
+  \sunjavadoc{java/util/Collections.html\#emptyMap()}{\code{Collections.emptyMap()}}
+\item
+  \sunjavadoc{java.base/java/util/Collections.html\#unmodifiableList(java.util.List)}{\code{Collections.unmodifiableList()}},
+  \sunjavadoc{java.base/java/util/Collections.html\#unmodifiableSet(java.util.Set)}{\code{Collections.unmodifiableSet()}},
+  \sunjavadoc{java.base/java/util/Collections.html\#unmodifiableMap(java.util.Map)}{\code{Collections.unmodifiableMap()}}
+\end{itemize}
+
+A \emph{modifiable collection} supports calling at least one optional mutating method. In general,
+classes support groups of methods which correspond to four different ways a collection can be modified.
+A collection may support modifying a collection through one or more of the capabilities
+\textbf{Grow}, \textbf{Sequential Grow}, \textbf{Shrink}, and \textbf{Replace}.
+
+\begin{itemize}
+    \item \textbf{Grow}: The collection can grow by adding new elements
+      (\<add>, \<addAll>, \<offer>, \ldots) at arbitrary locations.
+       Not to be confused with sequential grow.
+    \item \textbf{Sequential Grow}: The sequenced collection can grow by adding new
+      elements at the beginning or end (\<addFirst>, \<addLast>,
+      \<offerFirst>, \<offerLast>, \<push>, \<putFirst>,
+      \<putLast>, \ldots).
+
+      The Sequential Grow capability is needed for collections, such as
+      \sunjavadoc{java.base/java/util/TreeSet.html}{\code{TreeSet}}, that
+      support grow operations (like \<add> and \<addAll>) but do not
+      support sequential grow operations (like \<addFirst> and
+      \<addLast>).  The declaration of \<TreeSet> is annotated as \<@Growable @SeqUngrowable>.
+
+      ``Sequential Grow'' is shortened to ``SeqGrow'' in the rest of the manual.
+    \item \textbf{Shrink}: The collection can shrink by removing
+      existing elements (\<remove>, \<removeAll>, \<clear>, \<retainAll>, \<poll>, \<pop>, \ldots).
+    \item \textbf{Replace}: The collection can replace existing
+      elements with new values at specific locations/keys (\<List.set>, \<Map.replace>, \<Map.replaceAll>,
+       \<ListIterator.set>,  \<Collections.sort>, \<Map.Entry.setValue>, \ldots).
+\end{itemize}
+
+\noindent
+Some collections can also be modified through their iterator; see Section~\ref{modifiability-iterator-behavior}.
+
+The following table summarizes the main method families that may be called
+for each capability.  It is not a list of every overload.  Read-only
+methods such as \<get>, \<contains>, \<size>, \<isEmpty>, \<iterator>, and
+\<entrySet> do not require a modifiability capability.
+
+\noindent
+\begin{tabular}{lp{0.75\linewidth}}
+Capability required & Method families \\
+\<@Growable> &
+  \<Collection.add>, \<addAll>, \<List.add>,
+  \<List.addAll>, \<Queue.add>, \<Queue.offer>, \<BlockingQueue.put>,
+  timed \<offer>, \<TransferQueue.transfer>, \<tryTransfer>,
+  \<Map.putIfAbsent>, \<Map.computeIfAbsent>, \<ListIterator.add>,
+  legacy \<Vector> insertion methods, and \<Collections.addAll> \\
+\<@SeqGrowable> &
+  \<SequencedCollection.addFirst>, \<addLast>, \<Deque.addFirst>,
+  \<addLast>, \<offerFirst>, \<offerLast>, \<push>,
+  \<BlockingDeque.putFirst>, \<putLast>, timed \<offerFirst>,
+  timed \<offerLast>, \<SequencedMap.putFirst>, \<putLast> \\
+\<@Shrinkable> &
+  \<Collection.remove>, \<removeAll>, \<retainAll>,
+  \<removeIf>, \<clear>, \<List.remove>, \<Queue.remove>, \<poll>,
+  \<BlockingQueue.take>, timed \<poll>, \<Deque.pop>, \<removeFirst>,
+  \<removeLast>, \<pollFirst>, \<pollLast>, occurrence-removal methods,
+  \<Map.remove>, conditional \<remove>, \<Map.clear>,
+  \<NavigableMap.pollFirstEntry>, \<pollLastEntry>, \<Iterator.remove>,
+  and legacy \<Vector> removal methods \\
+\<@Replaceable> &
+  \<List.set>, \<List.replaceAll>,
+  \<List.sort>, \<Map.replace>, \<Map.replaceAll>,
+  \<Map.Entry.setValue>, \<ListIterator.set>, and mutating
+  \<Collections> algorithms such as \<sort>, \<reverse>, \<shuffle>,
+  \<swap>, \<fill>, \<copy>, \<rotate>, and \<replaceAll>, plus
+  legacy \<Vector> replacement methods \\
+Combined capabilities &
+  \<Map.put> and \<putAll> require \<@Growable @Replaceable>;
+  \<Map.computeIfPresent> requires \<@Shrinkable @Replaceable>;
+  \<Map.compute> and \<merge> require
+  \<@Growable @Shrinkable @Replaceable>;
+  \<BlockingQueue.drainTo> requires a \<@Shrinkable> receiver and a
+  \<@Growable> target collection \\
+\end{tabular}
+
+An overriding method must preserve positive modifiability receiver
+requirements exactly.  For example, if a superclass method has a
+\<@Growable>, \<@SeqGrowable>, \<@Shrinkable>, or \<@Replaceable> receiver,
+then the overriding method must require that same positive receiver
+capability; it may not drop or weaken the requirement.
+
+\sectionAndLabel{Modifiability annotations}{modifiability-annotations}
+
+The Modifiability Checker uses \textbf{multiple independent 4-element
+hierarchies}, one per capability.  Every collection type carries exactly
+one qualifier from each hierarchy.  The checker also uses an additional
+2-element hierarchy to express whether a collection's iterator preserves the
+collection's capabilities:  whether \<remove()> can be called on the iterator,
+and, for a \<ListIterator>, whether \<add()> and \<set()> can be called.
+
+\begin{figure}
+\begin{smaller}
+  \centering
+  \begin{minipage}{0.85\linewidth}
+\begin{verbatim}
+  Grow hierarchy           SeqGrow hierarchy             Shrink hierarchy              Replace hierarchy             Iterator hierarchy
+
+    @MaybeGrowable          @MaybeSeqGrowable         @MaybeShrinkable               @MaybeReplaceable           @MaybeIteratorPolyMod
+      /      \                 /       \                    /       \                    /       \                          |
+ @Growable @Ungrowable   @SeqGrowable @SeqUngrowable  @Shrinkable @Unshrinkable   @Replaceable @Unreplaceable               |
+      \      /                 \       /                    \       /                    \       /                          |
+    @BottomGrowable        @BottomSeqGrowable          @BottomShrinkable              @BottomReplaceable            @IteratorPolyMod
+\end{verbatim}
+  \end{minipage}
+\end{smaller}
+  \caption{Independent modifiability qualifier hierarchies.
+    Each annotated type carries one qualifier from each hierarchy.}
+  \label{fig-modifiability-lattice}
+\end{figure}
+
+Figure~\ref{fig-modifiability-lattice} shows the hierarchies.
+Each hierarchy is type-checked individually.
+An assignment \code{T x = y} is valid only if the compile-time type of \code{y} is a
+subtype of (or equal to) \code{T} in every hierarchy simultaneously.  For
+example, \code{\emph{@Growable} @MaybeSeqGrowable @MaybeShrinkable @MaybeReplaceable List} is a
+subtype of \code{\emph{@MaybeGrowable} @MaybeSeqGrowable @MaybeShrinkable @MaybeReplaceable List}
+(because \<@Growable> $\le$ \<@MaybeGrowable>), but it is \emph{not} a
+subtype of \code{\emph{@Ungrowable} @MaybeSeqGrowable @MaybeShrinkable @MaybeReplaceable List}
+(because \<@Growable> and \<@Ungrowable> are incomparable siblings in the
+Grow hierarchy).
+
+\subsectionAndLabel{Alias annotations}{modifiability-aliases}
+
+For convenience, the Modifiability Checker provides five alias
+annotations.  They are not part of any hierarchy; the checker expands
+each one into its constituent qualifiers when it appears in source code.
+
+\begin{description}
+
+\item[\refqualclass{checker/modifiability/qual}{Modifiable}]
+Alias for \code{@Growable @SeqGrowable @Shrinkable @Replaceable} (but see
+Section \ref{modifiability-types-lacking-methods} for exceptions).  Calling
+any mutating operation on this collection will not throw
+\UnsupportedOperationException.
+
+\item[\refqualclass{checker/modifiability/qual}{Unmodifiable}]
+Alias for \code{@Ungrowable @SeqUngrowable @Unshrinkable @Unreplaceable} (but see
+Section~\ref{modifiability-types-lacking-methods} for exceptions).  The
+collection is definitely unmodifiable: calling any mutating operation
+always throws \UnsupportedOperationException.  The checker issues a warning
+at every invocation of a grow, seq-grow, shrink, or replace operation.
+
+\item[\refqualclass{checker/modifiability/qual}{MaybeModifiable}]
+Alias for \code{@MaybeGrowable @MaybeSeqGrowable @MaybeShrinkable @MaybeReplaceable}.
+The checker cannot determine the modifiability of the collection.
+The checker conservatively issues a warning at every invocation of a grow,
+seq-grow, shrink, or replace operation.
+
+\item[\refqualclass{checker/modifiability/qual}{UnmodifiableParam}]
+Syntactic sugar for \refqualclass{checker/modifiability/qual}{MaybeModifiable}.
+It may only be written within a formal parameter type to indicate that the
+method does not modify the parameter.  This annotation (and
+\refqualclass{checker/modifiability/qual}{MaybeModifiable}) enable the
+programmer to distinguish between a data structure's capability to perform
+a modification and the programmer's intent about whether a modification
+should occur.
+\refqualclass{checker/modifiability/qual}{UnmodifiableParam}
+may appear nested within a parameter type, such as in
+\code{List<@UnmodifiableParam List<String>\relax>}.
+
+\refqualclass{checker/modifiability/qual}{UnmodifiableParam} represents
+\emph{reference unmodifiability}:  no modification may happen through the
+reference, but an alias may modify the value.  By contrast,
+\refqualclass{checker/modifiability/qual}{Unmodifiable} is object
+unmodifiability:  no alias may modify the value.
+
+\item[\refqualclass{checker/modifiability/qual}{PolyModifiable}]
+Alias for \code{@PolyGrowable @PolySeqGrowable @PolyShrinkable @PolyReplaceable}
+(see Section~\ref{modifiability-polymorphic}).
+
+\end{description}
+
+\noindent
+Examples using alias annotations:
+
+\begin{Verbatim}
+  @Modifiable List<String> mod = new ArrayList<>();  // all four capabilities
+  @Unmodifiable List<String> unmod = List.of("a");   // no capabilities
+  @MaybeModifiable List<String> unknown = ...;  // capabilities are unknown at compile time
+  void foo(@UnmodifiableParam List<String> list) { ... }  // foo does not modify list
+\end{Verbatim}
+
+\subsectionAndLabel{Qualifiers}{modifiability-qualifiers}
+
+\subsubsectionAndLabel{The Grow hierarchy}{modifiability-grow-hierarchy}
+
+\begin{description}
+\item[\refqualclass{checker/modifiability/qual}{MaybeGrowable}]
+The top qualifier in the Grow hierarchy.
+The checker cannot determine whether this collection supports grow
+operations.
+Calling grow operations such as \code{add}, \code{addAll}, etc.\ on this
+collection \emph{may} throw \UnsupportedOperationException.
+This is the default qualifier for unannotated types in the
+Grow hierarchy.
+
+\item[\refqualclass{checker/modifiability/qual}{Growable}]
+Calling grow operations such as \code{add}, \code{addAll}, etc.\ on this
+collection \emph{will not} throw \UnsupportedOperationException.
+
+\item[\refqualclass{checker/modifiability/qual}{Ungrowable}]
+Calling grow operations such as \code{add}, \code{addAll}, etc.\ on this
+collection \emph{will} throw \UnsupportedOperationException.
+
+\item[\refqualclass{checker/modifiability/qual}{BottomGrowable}]
+The bottom qualifier in the Grow hierarchy.  Programmers should rarely write it.
+\end{description}
+
+\subsubsectionAndLabel{The SeqGrow hierarchy}{modifiability-seqgrow-hierarchy}
+
+\begin{description}
+\item[\refqualclass{checker/modifiability/qual}{MaybeSeqGrowable}]
+The top qualifier in the SeqGrow hierarchy.
+The checker cannot determine whether this collection or map supports sequenced grow
+operations.
+Calling sequenced grow operations such as \code{addFirst}, \code{addLast},
+\code{putFirst}, and \code{putLast} on this collection or map \emph{may}
+throw \UnsupportedOperationException.
+This is the default qualifier for unannotated types in the
+SeqGrow hierarchy.
+
+\item[\refqualclass{checker/modifiability/qual}{SeqGrowable}]
+Sequenced grow operations, such as \code{addFirst} and \code{addLast} for
+collections or \code{putFirst} and \code{putLast} for maps, \emph{will not}
+throw \UnsupportedOperationException.
+
+\item[\refqualclass{checker/modifiability/qual}{SeqUngrowable}]
+Sequenced grow operations, such as \code{addFirst} and \code{addLast} for
+collections or \code{putFirst} and \code{putLast} for maps, \emph{will}
+throw \UnsupportedOperationException.
+For example, \<TreeSet> and \<ConcurrentSkipListSet> support ordinary
+\<add> but throw \UnsupportedOperationException\ for explicit positional
+insertion with \<addFirst> and \<addLast>.
+Similarly, \<TreeMap> and \<ConcurrentSkipListMap> support ordinary \<put>
+but throw \UnsupportedOperationException\ for explicit positional updates
+with \<putFirst> and \<putLast>.
+
+\item[\refqualclass{checker/modifiability/qual}{BottomSeqGrowable}]
+The bottom qualifier in the SeqGrow hierarchy.  Programmers should rarely write it.
+\end{description}
+
+\subsubsectionAndLabel{The Shrink hierarchy}{modifiability-shrink-hierarchy}
+
+\begin{description}
+\item[\refqualclass{checker/modifiability/qual}{MaybeShrinkable}]
+The top qualifier in the Shrink hierarchy.
+The checker cannot determine whether this collection supports shrink
+operations.
+Calling shrink operations such as \code{remove}, \code{clear}, etc.\ on
+this collection \emph{may} throw \UnsupportedOperationException.
+This is the default qualifier for unannotated types in the
+Shrink hierarchy.
+
+\item[\refqualclass{checker/modifiability/qual}{Shrinkable}]
+Calling shrink operations such as \code{remove}, \code{clear}, etc.\ on
+this collection \emph{will not} throw \UnsupportedOperationException.
+
+\item[\refqualclass{checker/modifiability/qual}{Unshrinkable}]
+Calling shrink operations such as \code{remove}, \code{clear}, etc.\ on
+this collection \emph{will} throw \UnsupportedOperationException.
+
+\item[\refqualclass{checker/modifiability/qual}{BottomShrinkable}]
+The bottom qualifier in the Shrink hierarchy.  Programmers should rarely write it.
+\end{description}
+
+\subsubsectionAndLabel{The Replace hierarchy}{modifiability-replace-hierarchy}
+
+\begin{description}
+\item[\refqualclass{checker/modifiability/qual}{MaybeReplaceable}]
+The top qualifier in the Replace hierarchy.
+The checker cannot determine whether this collection supports replace
+operations.
+Calling replace operations such as \code{set}, \code{replaceAll}, etc.\
+on this collection \emph{may} throw \UnsupportedOperationException.
+This is the default qualifier for unannotated types in the
+Replace hierarchy.
+
+\item[\refqualclass{checker/modifiability/qual}{Replaceable}]
+Calling replace operations such as \code{set}, \code{replaceAll}, etc.\
+on this collection \emph{will not} throw \UnsupportedOperationException.
+
+\item[\refqualclass{checker/modifiability/qual}{Unreplaceable}]
+Calling replace operations such as \code{set}, \code{replaceAll}, etc.\
+on this collection \emph{will} throw \UnsupportedOperationException.
+
+\item[\refqualclass{checker/modifiability/qual}{BottomReplaceable}]
+The bottom qualifier in the Replace hierarchy.  Programmers should rarely write it.
+\end{description}
+
+\subsubsectionAndLabel{The Iterator hierarchy}{modifiability-iterator-hierarchy}
+
+\begin{description}
+\item[\refqualclass{checker/modifiability/qual}{MaybeIteratorPolyMod}]
+The top qualifier.
+The checker cannot determine whether this collection's \code{iterator()} is
+\<@PolyShrinkable>.
+This is the default qualifier for unannotated types.
+
+\item[\refqualclass{checker/modifiability/qual}{IteratorPolyMod}]
+This collection's \code{iterator()} is \<@PolyShrinkable>.  That is, if
+collection \<c> is \<@Shrinkable>, then \<c.iterator()> is also
+\<@Shrinkable>.
+
+\end{description}
+
+It might seem that it is sufficient to simply annotate \<iterator()>
+directly, as in
+
+\begin{Verbatim}
+class List {
+  @MaybeShrinkable Iterator iterator() { ... }
+}
+class ArrayList {
+  @PolyShrinkable Iterator iterator(@PolyShrinkable ArrayList this) { ... }
+}
+class CopyOnWriteArrayList {
+  @Unshrinkable Iterator iterator(@PolyShrinkable CopyOnWriteArrayList this) { ... }
+}
+\end{Verbatim}
+
+That approach would be sound but imprecise.
+In practice, many expressions of static type \<List> evaluate to
+\<ArrayList>s or other classes with \<@PolyShrinkable> \<iterator()> methods.
+The \<@IteratorPolyMod> annotation is similar to writing the hypothetical
+annotation \<@RuntimeType("ArrayList")>:  it indicates a property that is
+more precise than the declared type.
+
+
+\subsectionAndLabel{Polymorphic qualifiers}{modifiability-polymorphic}
+
+A polymorphic qualifier (Section~\ref{method-qualifier-polymorphism})
+specifies that a method's return type has the
+same qualifier (in some hierarchy) as a formal parameter type (possibly
+the receiver).
+
+\begin{description}
+
+\item[\refqualclass{checker/modifiability/qual}{PolyGrowable}]
+Polymorphic qualifier for the Grow hierarchy.
+The return type's growability matches the growability of whichever
+formal parameter is annotated with \<@PolyGrowable>.
+
+\item[\refqualclass{checker/modifiability/qual}{PolySeqGrowable}]
+Polymorphic qualifier for the SeqGrow hierarchy.
+The return type's seq-growability matches the seq-growability of
+whichever formal parameter is annotated with \<@PolySeqGrowable>.
+
+\item[\refqualclass{checker/modifiability/qual}{PolyShrinkable}]
+Polymorphic qualifier for the Shrink hierarchy.
+The return type's shrinkability qualifier matches the shrinkability of
+whichever formal parameter is annotated with \<@PolyShrinkable>.
+Useful for methods such as \code{Map.keySet()} that preserve shrinkability while
+returning an \<@Ungrowable> view.
+
+\item[\refqualclass{checker/modifiability/qual}{PolyReplaceable}]
+Polymorphic qualifier for the Replace hierarchy.
+The return type's replaceability matches the replaceability of
+whichever formal parameter is annotated with \<@PolyReplaceable>.
+
+\item[\refqualclass{checker/modifiability/qual}{PolyIteratorPolyMod}]
+Polymorphic qualifier for the Iterator hierarchy.
+The return type's iterator-preservation qualifier matches the
+iterator-preservation qualifier of whichever formal parameter is annotated
+with \<@PolyIteratorPolyMod>.
+
+\item[\refqualclass{checker/modifiability/qual}{PolyModifiable}]
+Alias for \code{@PolyGrowable @PolySeqGrowable @PolyShrinkable @PolyReplaceable}.
+Preserves all four capabilities simultaneously.
+Use on methods such as \code{Collections.synchronizedList} that
+do not change modifiability.
+
+\end{description}
+
+
+\subsectionAndLabel{Modifiability method annotations}{modifiability-method-annotations}
+
+The Modifiability Checker supports method annotations that specify method
+behavior.
+
+\begin{description}
+
+\item[\refqualclass{checker/modifiability/qual}{PreservesModifiability}]
+Indicates that if the argument to the method is modifiable, then the returned collection is
+also modifiable. However, if the argument is unmodifiable, then the returned collection may or may
+not be unmodifiable. This is useful for methods that may return their argument, or may return a
+new modifiable collection.
+For example, if the argument is \<@Growable>, then the returned collection is also
+\<@Growable>. But if the argument is \<@Ungrowable>, then the return collection is \<@MaybeGrowable>.
+More generally, if the argument is \<@Growable>, \<@Shrinkable>,
+\<@Replaceable>, \<@SeqGrowable>, or \<@IteratorPolyMod>, then the Modifiability Checker
+treats the return value as having that same capability. If the argument has
+any other qualifier, the return type is the top qualifier (\<@MaybeGrowable>,
+\<@MaybeSeqGrowable>, \<@MaybeShrinkable>, \<@MaybeReplaceable>, or \<@MaybeIteratorPolyMod>) in
+the corresponding hierarchy.
+
+This annotation may only be written on non-void, one-argument method
+declarations.  The formal parameter may not be a varargs parameter, because
+the first argument of a call to a varargs method is an element of the varargs
+array rather than the sole formal parameter.
+
+\item[\refqualclass{checker/modifiability/qual}{ThrowsUnsupportedOperation}]
+Indicates that the method's implementation always throws
+\UnsupportedOperationException.  Write it on a skeletal implementation, such
+as one in \<java.util.AbstractList>, that a subclass is expected to override.
+
+A subclass that inherits the implementation, without overriding it, does not
+support the operation, even if the subclass declares that it does.  The
+Modifiability Checker issues an error for such a subclass; see
+Section~\ref{modifiability-inherited-implementations}.  Without the
+annotation, it could not, because the body of an inherited method is compiled
+separately and the checker sees only its signature.
+
+The Modifiability Checker verifies the annotation on every method that it
+compiles:  the body must be exactly
+\<throw new UnsupportedOperationException(...)>.
+
+Do not write the annotation on a method that throws
+\UnsupportedOperationException\ only because some other method does, such as
+\<AbstractList.add(E)>, whose body is \<add(size(), e)>.  A subclass that
+overrides the other method makes such a method work.
+
+\end{description}
+
+\subsectionAndLabel{Inherited implementations}{modifiability-inherited-implementations}
+
+The Modifiability Checker requires the constructors of a class to agree with
+the class's method bodies:  if the constructors are \<@Ungrowable>, then every
+method with a \<@Growable> receiver must throw \UnsupportedOperationException,
+and if the constructors are \<@Growable>, then no such method may.
+
+A class does not escape the requirement by inheriting a method rather than
+declaring it.  For example, this class does not support \<add()>, because
+\<AbstractList> implements \<add(int, E)> by throwing
+\UnsupportedOperationException:
+
+\begin{Verbatim}
+  // error: the inherited implementation of add(int, E) throws
+  class GrowableList extends AbstractList<String> {
+    @Growable GrowableList() {}
+    ...
+  }
+\end{Verbatim}
+
+The checker knows that an inherited implementation throws
+\UnsupportedOperationException\ if the method is annotated
+\<@ThrowsUnsupportedOperation>, or if the method's class declares the negative
+qualifier on its constructors, in which case the checker already verified that
+the method throws.  The checker cannot tell for any other inherited method, so
+it says nothing about one.
+
+\sectionAndLabel{\<@Modifiable> and \<@Unmodifiable> for types without grow, seq-grow, shrink, and/or replace methods}{modifiability-types-lacking-methods}
+
+Ordinarily, the declaration
+\<@Modifiable MyClass x;> is equivalent to
+\<@Growable @SeqGrowable @Shrinkable @Replaceable MyClass x;>,
+and
+\<@Unmodifiable MyClass x;> is equivalent to
+\<@Ungrowable @SeqUngrowable @Unshrinkable @Unreplaceable MyClass x;>.
+
+However, some types lack methods for one or more mutation
+capabilities.  In such cases, the Modifiability Checker weakens the
+structurally unavailable component to the corresponding top qualifier.
+For example, \<Iterator> has
+\<remove> but not \<add> or \<set>, so \<@Modifiable Iterator> expands to
+\<@MaybeGrowable @MaybeSeqGrowable @Shrinkable @MaybeReplaceable Iterator>.
+
+
+\subsectionAndLabel{Alternative design: use negative capability rather than top qualifier}{modifiability-modifiable-must-be-top}
+
+An alternative design would make \<Modifiable Iterator> expand to
+\<@Ungrowable @Shrinkable @Unreplaceable Iterator>.
+That would be incorrect, because not every \<Iterator> is \<@Ungrowable> and \<@Unreplaceable>.
+For example, the static type \<Iterator> does not declare \<add> or \<set>
+(they are structurally unavailable), but its subtype
+\<ListIterator> and does declare those methods.
+Therefore \<@Modifiable Iterator> should not mean that every
+iterator is incapable of grow and replace; it means only that those capabilities
+are not known from the static type \<Iterator>.
+
+Similarly, \<Queue> does not declare replacement methods, but a variable
+with declared type
+\<Queue> may contain a \<LinkedList>, which does support
+replacement operations.
+
+Using the top qualifier for structurally unavailable methods ensures that
+code like this type-checks:
+
+\begin{Verbatim}
+@Replaceable LinkedList list = ...;
+Queue q = list;
+@Replaceable LinkedList list2 = (LinkedList) q; // still @Replaceable
+\end{Verbatim}
+
+
+\subsectionAndLabel{Expansion rules for \<@Modifiable> and \<@Unmodifiable>}{modifiability-modifiable-expansion-rules}
+
+The following rules define this weakening.  A capability is weakened to the
+corresponding \<@Maybe*> qualifier when the type satisfies that capability's
+condition in the table below.  For every other type, \<@Modifiable> expands to
+the capability's positive qualifier, such as \<@Growable>, and
+\<@Unmodifiable> expands to the capability's negative qualifier, such as
+\<@Ungrowable>.
+
+
+
+\noindent
+\begin{tabular}{l|l}
+\multicolumn{2}{c}{Weakening conditions for
+\<@Modifiable>/\<@Unmodifiable>. ``$\backslash$'' means set difference.  A
+type includes its subtypes.} \\ \hline
+& Expands to \<@Maybe*> \\ \hline
+Grow
+& \<Map.Entry> or (\<Iterator>$\backslash$\<ListIterator>) \\
+SeqGrow
+& not \<SequencedCollection>, \<SequencedMap>, or \<Deque> \\
+Shrink
+& \<Map.Entry> \\
+Replace
+& exact \<Collection>, any \<Set>, (\<Queue>$\backslash$\<LinkedList>), \\
+&  or (\<Iterator>$\backslash$\<ListIterator>) \\
+\end{tabular}
+
+These rules describe alias expansion, not the full specification of every JDK
+type.  The JDK annotations may still give a more precise capability for a
+particular declaration.  For instance, \<SortedSet> is a
+\<SequencedCollection> and \<SortedMap> is a \<SequencedMap>, so their
+seq-grow component is structurally relevant and is not weakened to
+\<@MaybeSeqGrowable>.  Their JDK declarations are annotated
+\<@SeqUngrowable>, because their positional insertion methods such as
+\<addFirst>, \<addLast>, \<putFirst>, and \<putLast> always throw
+\UnsupportedOperationException.
+
+
+\subsectionAndLabel{Example expansions for \<@Modifiable> and \<@Unmodifiable>}{modifiability-modifiable-expansion-examples}
+
+The following are representative canonical expansions.
+
+\noindent
+\begin{smaller}
+\setlength{\tabcolsep}{.33\tabcolsep}
+\begin{tabular}{rlcrrrrl}
+\<@Modifiable> & \<Collection> & = & \<@Growable> & \<@MaybeSeqGrowable> & \<@Shrinkable> & \<@MaybeReplaceable> & \<Collection> \\
+\<@Unmodifiable> & \<Collection> & = & \<@Ungrowable> & \<@MaybeSeqGrowable> & \<@Unshrinkable> & \<@MaybeReplaceable> & \<Collection> \\
+\<@Modifiable> & \<Queue>    & = & \<@Growable> & \<@MaybeSeqGrowable> & \<@Shrinkable> & \<@MaybeReplaceable> & \<Queue> \\
+\<@Unmodifiable> & \<Queue>    & = & \<@Ungrowable> & \<@MaybeSeqGrowable> & \<@Unshrinkable> & \<@MaybeReplaceable> & \<Queue> \\
+\<@Modifiable> & \<Deque>    & = & \<@Growable> & \<@SeqGrowable> & \<@Shrinkable> & \<@MaybeReplaceable> & \<Deque> \\
+\<@Unmodifiable> & \<Deque>    & = & \<@Ungrowable> & \<@SeqUngrowable> & \<@Unshrinkable> & \<@MaybeReplaceable> & \<Deque> \\
+\<@Modifiable> & \<Map>      & = & \<@Growable> & \<@MaybeSeqGrowable> & \<@Shrinkable> & \<@Replaceable> & \<Map> \\
+\<@Unmodifiable> & \<Map>      & = & \<@Ungrowable> & \<@MaybeSeqGrowable> & \<@Unshrinkable> & \<@Unreplaceable> & \<Map> \\
+\<@Modifiable> & \<SequencedMap> & = & \<@Growable> & \<@SeqGrowable> & \<@Shrinkable> & \<@Replaceable> & \<SequencedMap> \\
+\<@Unmodifiable> & \<SequencedMap> & = & \<@Ungrowable> & \<@SeqUngrowable> & \<@Unshrinkable> & \<@Unreplaceable> & \<SequencedMap> \\
+\<@Modifiable> & \<Set>      & = & \<@Growable> & \<@MaybeSeqGrowable> & \<@Shrinkable> & \<@MaybeReplaceable> & \<Set> \\
+\<@Unmodifiable> & \<Set>      & = & \<@Ungrowable> & \<@MaybeSeqGrowable> & \<@Unshrinkable> & \<@MaybeReplaceable> & \<Set> \\
+\<@Modifiable> & \<Iterator> & = & \<@MaybeGrowable> & \<@MaybeSeqGrowable> & \<@Shrinkable> & \<@MaybeReplaceable> & \<Iterator> \\
+\<@Unmodifiable> & \<Iterator> & = & \<@MaybeGrowable> & \<@MaybeSeqGrowable> & \<@Unshrinkable> & \<@MaybeReplaceable> & \<Iterator> \\
+\<@Modifiable> & \<ListIterator> & = & \<@Growable> & \<@MaybeSeqGrowable> & \<@Shrinkable> & \<@Replaceable> & \<ListIterator> \\
+\<@Unmodifiable> & \<ListIterator> & = & \<@Ungrowable> & \<@MaybeSeqGrowable> & \<@Unshrinkable> & \<@Unreplaceable> & \<ListIterator> \\
+\<Map.@Modifiable> & \<Entry> & = & \<@MaybeGrowable> & \<@MaybeSeqGrowable> & \<@MaybeShrinkable> & \<@Replaceable> & \<Map.Entry> \\
+\<Map.@Unmodifiable> & \<Entry> & = & \<@MaybeGrowable> & \<@MaybeSeqGrowable> & \<@MaybeShrinkable> & \<@Unreplaceable> & \<Map.Entry> \\
+\end{tabular}
+\end{smaller}
+
+
+\subsectionAndLabel{Expansion rules for \<@PolyModifiable>}{modifiability-polymodifiable-expansion-rules}
+
+\<@PolyModifiable> is weakened in only one case: on \<Map.Entry>, its grow,
+seq-grow, and shrink components are the corresponding \<@Maybe*> qualifiers,
+because no \<Map.Entry> has methods for those capabilities.  Every other type
+keeps all four polymorphic qualifiers, even a type such as \<Iterator> or
+\<Queue> whose \<@Modifiable> expansion is weakened, because a variable of
+such a type may hold a value of a subtype, such as \<ListIterator> or
+\<LinkedList>, that does have the methods.
+
+
+\sectionAndLabel{Behavior of the \<iterator()> method}{modifiability-iterator-behavior}
+
+By default, the signature of \<Collection.iterator()> is
+
+\begin{Verbatim}
+@MaybeShrinkable Iterator iterator()
+\end{Verbatim}
+
+However, for some subclasses of \<Collection>, the signature of
+\<iterator()> is
+
+\begin{Verbatim}
+@PolyShrinkable Iterator iterator(@PolyShrinkable MySubclassOfCollection this)
+\end{Verbatim}
+
+A collection uses the second signature if the collection is
+\<@IteratorPolyMod>.  The collection uses the first signature if the
+collection is \<@MaybeIteratorPolyMod>.
+
+Here are examples of its use:
+
+\begin{Verbatim}
+  @IteratorPolyMod @Shrinkable List<String> list = ...;
+  @Shrinkable Iterator<String> it = list.iterator();
+  it.remove();  // OK
+
+  @IteratorPolyMod @Unshrinkable List<String> list2 = ...;
+  @Unshrinkable Iterator<String> it2 = list2.iterator();
+  it2.remove();  // Error: it2 is @Unshrinkable
+
+  @Shrinkable List<String> list3 = ...;
+  @MaybeShrinkable Iterator<String> it3 = list3.iterator();
+  it3.remove();  // Error: list3 does not have @IteratorPolyMod
+\end{Verbatim}
+
+\sectionAndLabel{Examples of Modifiability Checker warnings}{modifiability-examples}
+
+\begin{Verbatim}
+import java.util.*;
+import org.checkerframework.checker.modifiability.qual.*;
+
+class Demo {
+
+  void basicUsage() {
+    // @Modifiable is an alias for @Growable @SeqGrowable @Shrinkable @Replaceable
+    @Modifiable List<String> mod = new ArrayList<>();
+    mod.add("a");     // OK: @Growable guarantees add() works
+    mod.addFirst("z"); // OK: @SeqGrowable guarantees addFirst() works
+    mod.remove("a");  // OK: @Shrinkable guarantees remove() works
+    mod.set(0, "b");  // OK: @Replaceable guarantees set() works
+
+    // @Unmodifiable is an alias for @Ungrowable @SeqUngrowable @Unshrinkable @Unreplaceable
+    @Unmodifiable List<String> unmod = List.of("a", "b");
+    unmod.add("c");   // Error: add() requires @Growable, got @Ungrowable
+    unmod.addFirst("d"); // Error: addFirst() requires @SeqGrowable, got @SeqUngrowable
+    unmod.get(0);     // OK: read-only access needs no capability
+  }
+
+  void fineGrainedPermissions(@Growable List<String> g,
+                              @Shrinkable List<String> s,
+                              @Replaceable List<String> r) {
+    // Growable list allows adding elements
+    g.add("a");       // OK
+    g.remove("a");    // Error: remove() requires @Shrinkable
+    g.set(0, "b");    // Error: set() requires @Replaceable
+
+    // Shrinkable list allows removing elements
+    s.remove("a");    // OK
+    s.add("a");       // Error: add() requires @Growable
+
+    // Replaceable list allows updating elements
+    r.set(0, "b");    // OK
+    r.add("b");       // Error: add() requires @Growable
+  }
+
+  void combinedPermissions(@Growable @Replaceable Map<String, String> map) {
+    // Map.put requires both Grow and Replace capabilities
+    map.put("key", "value");  // OK
+
+    // Map.remove requires Shrink capability
+    map.remove("key");        // Error: @MaybeShrinkable (default) !<: @Shrinkable
+  }
+
+  // @PolyModifiable preserves all four capabilities
+  @PolyModifiable List<String> wrap(@PolyModifiable List<String> list) {
+    return list;
+  }
+
+  void testPoly(@Modifiable List<String> mod, @Growable @Shrinkable List<String> gs) {
+    @Modifiable List<String> m = wrap(mod);            // OK
+    @Growable @Shrinkable List<String> gs2 = wrap(gs); // OK
+    // :: error: [assignment]
+    @Modifiable List<String> bad = wrap(gs);  // Error: gs has @MaybeSeqGrowable and @MaybeReplaceable
+  }
+}
+\end{Verbatim}
+
+% LocalWords:  Modifiability modifiability copyOf emptyList emptySet gsr
+% LocalWords:  emptyMap unmodifiableList unmodifiableSet unmodifiableMap
+% LocalWords:  toArray addAll removeAll retainAll replaceAll setValue Un
+% LocalWords:  MaybeModifiable UnmodifiableParam Growable MaybeGrowable MaybeShrinkable
+% LocalWords:  MaybeReplaceable MaybeSeqGrowable growable seq ListIterator
+% LocalWords:  PolyModifiable PolySeqGrowable addFirst synchronizedList Un
+% LocalWords:  PolyShrinkable PolyGrowable PolyReplaceable SeqGrow Deque
+% LocalWords:  addLast offerFirst offerLast putFirst putLast unreplaceable seq-growability
+% LocalWords:  SequencedMap SortedMap unmodifiableCollection entrySet
+% LocalWords:  SeqGrowable SeqUngrowable BottomSeqGrowable Growability shrinkability replacability
+% LocalWords:  growability Shrinkable Replaceable Ungrowable Unshrinkable
+% LocalWords:  Unreplaceable BottomGrowable BottomShrinkable BottomReplaceable
+% LocalWords:  MaybeIteratorPolyMod IteratorPolyMod PolyIteratorPolyMod PreservesModifiability
+% LocalWords:  BlockingQueue TransferQueue tryTransfer putIfAbsent putAll
+% LocalWords:  SequencedCollection BlockingDeque removeIf removeFirst
+% LocalWords:  removeLast pollFirst pollLast NavigableMap pollFirstEntry
+% LocalWords:  pollLastEntry computeIfPresent drainTo unmodifiability
+% LocalWords:  seqgrow ConcurrentSkipListSet ConcurrentSkipListMap keySet
+% LocalWords:  RuntimeType MyClass SortedSet

@@ -7,6 +7,10 @@
 
 ### User-visible changes
 
+The new Modifiability Checker warns when a program might throw
+`UnsupportedOperationException` at run time because it calls a mutating method on
+a collection that does not support the method.
+
 The new `wpi2.sh` script does whole-program inference, but requires buildfile edits.
 
 Purity Checker:
