@@ -745,7 +745,7 @@ jobs:
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
-      image: mdernst/cf-ubuntu-jdk25:latest
+      image: mdernst/cf-ubuntu-jdk21:latest
     timeout-minutes: 70
     env:
       GRADLE_USER_HOME: /github/home/.gradle
@@ -773,14 +773,14 @@ jobs:
       - name: test-beam-part1.sh
         run: ./checker/bin-devel/test-beam-part1.sh
         env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+          ORG_GRADLE_PROJECT_jdkTestVersion: "21"
   beam_part2_jdk21:
     needs:
       - canary_jobs
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
-      image: mdernst/cf-ubuntu-jdk25:latest
+      image: mdernst/cf-ubuntu-jdk21:latest
     timeout-minutes: 70
     env:
       GRADLE_USER_HOME: /github/home/.gradle
@@ -808,7 +808,7 @@ jobs:
       - name: test-beam-part2.sh
         run: ./checker/bin-devel/test-beam-part2.sh
         env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+          ORG_GRADLE_PROJECT_jdkTestVersion: "21"
 
   plume_lib_jdk25:
     needs:

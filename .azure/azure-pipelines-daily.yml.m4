@@ -76,8 +76,8 @@ guava_job(21)
 guava_job(canary_jdk)
 guava_job(latest_jdk)
 
-ifelse([Beam's Gradle runs on JDK 21 whatever the job's JDK (see clone-related.sh), so one JDK suffices.])dnl
-beam_job(canary_jdk)
+ifelse([Beam's Gradle build only runs on JDK 21.])dnl
+beam_job(21)
 
 plume_lib_job(17)
 plume_lib_job(21)

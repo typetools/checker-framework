@@ -278,16 +278,12 @@ ifelse($1,canary_jdk,,[dnl
 boilerplate(ubuntu, $1, test-guava-part2.sh, ./checker/bin-devel/test-guava-part2.sh)dnl
 ])dnl
 dnl
-ifelse([Takes 1 argument: the JDK version of the job's image. The jobs are
-named for JDK 21 whatever the image, because clone-related.sh runs Gradle on
-JDK 21 and Beam's Gradle version cannot run on a newer JDK, so Beam is compiled
-and type-checked only on JDK 21.])dnl
 define([beam_job], [dnl
-  job_name(beam_part1_jdk21)
+  job_name(beam_part1_jdk$1)
     dependsOn:
       - canary_jobs
 boilerplate(ubuntu, $1, test-beam-part1.sh, ./checker/bin-devel/test-beam-part1.sh)dnl
-  job_name(beam_part2_jdk21)
+  job_name(beam_part2_jdk$1)
     dependsOn:
       - canary_jobs
 boilerplate(ubuntu, $1, test-beam-part2.sh, ./checker/bin-devel/test-beam-part2.sh)dnl

@@ -1236,7 +1236,7 @@ jobs:
 
   beam_part1_jdk21:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk21'
     resource_class: large
     environment:
       TERM: dumb
@@ -1284,10 +1284,10 @@ jobs:
           command: ./checker/bin-devel/test-beam-part1.sh
           no_output_timeout: "50m"
           environment:
-            ORG_GRADLE_PROJECT_jdkTestVersion: 25
+            ORG_GRADLE_PROJECT_jdkTestVersion: 21
   beam_part2_jdk21:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk25'
+      - image: 'mdernst/cf-ubuntu-jdk21'
     resource_class: large
     environment:
       TERM: dumb
@@ -1335,7 +1335,7 @@ jobs:
           command: ./checker/bin-devel/test-beam-part2.sh
           no_output_timeout: "50m"
           environment:
-            ORG_GRADLE_PROJECT_jdkTestVersion: 25
+            ORG_GRADLE_PROJECT_jdkTestVersion: 21
 
   plume_lib_jdk25:
     docker:
