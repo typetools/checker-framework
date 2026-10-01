@@ -47,7 +47,9 @@ import org.checkerframework.afu.scenelib.type.ArrayType;
 import org.checkerframework.afu.scenelib.type.BoundedType;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
+import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.objectweb.asm.TypePath;
 
@@ -179,7 +181,7 @@ public class Insertions implements Iterable<Insertion> {
   }
 
   @Override
-  public Iterator<Insertion> iterator() {
+  public @PolyOwningCollection Iterator<Insertion> iterator(@PolyOwningCollection Insertions this) {
     return new Iterator<>() {
       private Iterator<Map<String, Set<Insertion>>> miter = store.values().iterator();
       // These two fields are initially empty iterators, but are set the first time that hasNext is
@@ -205,7 +207,7 @@ public class Insertions implements Iterable<Insertion> {
 
       @Override
       @SideEffectsOnly("this")
-      public Insertion next() {
+      public @NotOwning Insertion next() {
         if (hasNext()) {
           return iiter.next();
         }
