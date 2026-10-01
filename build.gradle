@@ -651,6 +651,7 @@ tasks.register("zip", Zip) {
         "docs/annotation-file-utilities/annotation-file-format.pdf",
         "docs/annotation-file-utilities/annotation-file-format.html",
         "docs/annotation-file-utilities/*.css",
+        "docs/annotation-file-utilities/figures/chainlink.svg",
         "docs/annotation-file-utilities/annotation-file-format-images/**",
         "docs/annotation-file-utilities/*.png",
         "docs/manual/manual.html",
