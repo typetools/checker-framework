@@ -68,8 +68,8 @@ public class PurityFunctionalOverride {
   }
 
   /**
-   * A call through GenericSuper checks nothing about the argument, whose declared type is a type
-   * variable, so this body cannot assume that the argument is side-effect-free.
+   * A call through GenericSuper whose type argument is a type variable checks nothing about the
+   * argument, so this body cannot assume that the argument is side-effect-free.
    */
   static class GenericSub extends GenericSuper<Function<String, Integer>> {
     @Override
@@ -79,8 +79,16 @@ public class PurityFunctionalOverride {
     }
   }
 
+  /** The argument is checked against the type of the parameter at the call site. */
   void callsThroughGenericSupertype(GenericSuper<Function<String, Integer>> receiver, String s) {
+    receiver.m(t -> t.length(), s);
+    // :: error: [purity.assign.field]
     receiver.m(t -> count++, s);
+  }
+
+  /** Here the type of the parameter at the call site is T, which is not a functional interface. */
+  <T> void callsThroughTypeVariable(GenericSuper<T> receiver, T f, String s) {
+    receiver.m(f, s);
   }
 
   /**

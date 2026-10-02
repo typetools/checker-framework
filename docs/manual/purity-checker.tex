@@ -136,7 +136,8 @@ method of the parameter's type other than its functional method, such as
 The assumption also does not apply if the method overrides a method that
 makes the same promise but whose parameter at that position has a type
 variable as its type, because a call through the overridden method relies on
-the promise without checking the argument.  An overridden method that makes
+the promise without checking the argument when the type variable is not
+instantiated with a functional interface at the call.  An overridden method that makes
 no promise does not limit the assumption:  a call through it may pass an
 argument with side effects, but that call does not rely on the purity of the
 method either.
@@ -157,8 +158,15 @@ parameter must have the purity that the method promises (side-effect-free for
 a \<@SideEffectsOnly> method).  For a varargs parameter whose element type is
 a functional interface, such as \<Runnable...>, each argument that the call
 passes as an element of the array is checked, as is each initializer of an
-array literal such as \<new Runnable[] \{...\}> that the call passes.  How the
-argument is checked depends on its form:
+array literal such as \<new Runnable[] \{...\}> that the call passes.  A
+parameter whose type is a type variable of its class, such as \<T> in
+\<@SideEffectFree int apply(T t)> in \code{interface I<T>}, is a
+functional-interface parameter at a call whose receiver instantiates \<T>
+with a functional interface:  a call through \code{I<Supplier<Integer>>} checks
+its argument against \<Supplier.get>.  A parameter whose type is a type
+variable of the method itself, such as the parameter of \<List.of(E)>, is
+not:  the method cannot call its argument.  How the argument is checked
+depends on its form:
 
 \begin{itemize}
 \item
