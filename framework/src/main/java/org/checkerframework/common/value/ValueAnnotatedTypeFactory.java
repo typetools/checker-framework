@@ -726,18 +726,19 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param typeMirror the Java type on which {@code annos} are written
    * @return {@code annos}, with every special int range replaced by the equivalent int range
    */
-  @SuppressWarnings("interning:not.interned") // the method returns its argument if unchanged
   /*package-private*/ AnnotationMirrorSet convertSpecialIntRangeToStandardIntRange(
       AnnotationMirrorSet annos, TypeMirror typeMirror) {
     AnnotationMirrorSet result = null;
     for (AnnotationMirror anno : annos) {
-      AnnotationMirror converted = convertSpecialIntRangeToStandardIntRange(anno, typeMirror);
-      if (converted != anno) {
-        if (result == null) {
-          result = new AnnotationMirrorSet(annos);
+      switch (AnnotationUtils.annotationName(anno)) {
+        case INTRANGE_FROMPOS_NAME, INTRANGE_FROMNONNEG_NAME, INTRANGE_FROMGTENEGONE_NAME -> {
+          if (result == null) {
+            result = new AnnotationMirrorSet(annos);
+          }
+          result.remove(anno);
+          result.add(convertSpecialIntRangeToStandardIntRange(anno, typeMirror));
         }
-        result.remove(anno);
-        result.add(converted);
+        default -> {}
       }
     }
     return result == null ? annos : result;
