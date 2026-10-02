@@ -18,7 +18,7 @@ annotation-file-format.pdf: plume-bib figures
 
 # lwarpmk requires configuration files that are written when LaTeX processes
 # the source file in print mode, which creating the .pdf file does.
-annotation-file-format.html: annotation-file-format.pdf manual.css favicon-checkerframework.png ../manual/lwarp-workarounds.tex ../manual/lwarp-postprocess ../manual/ifptex.sty
+annotation-file-format.html: annotation-file-format.pdf manual.css figures/chainlink.svg favicon-checkerframework.png ../manual/lwarp-workarounds.tex ../manual/lwarp-postprocess ../manual/ifptex.sty
 	lwarpmk html -p annotation-file-format
 # lwarp writes the image list only if the document has images that lwarp
 # renders from LaTeX, and `lwarpmk limages` fails if the list does not exist.
@@ -29,6 +29,10 @@ annotation-file-format.html: annotation-file-format.pdf manual.css favicon-check
 # copied, not referenced, because the website puts the two manuals in
 # different directories.
 manual.css: ../manual/manual.css
+	cp -p $< $@
+
+# manual.css refers to this image.
+figures/chainlink.svg: ../manual/figures/chainlink.svg
 	cp -p $< $@
 
 favicon-checkerframework.png: ../logo/Checkmark/CFCheckmark_favicon.png
@@ -42,6 +46,6 @@ clean:
 	@latexmk -silent -C annotation-file-format.tex || latexmk -C annotation-file-format.tex
 	@\rm -f annotation-file-format_html.* *.lwarpmkconf lwarpmk.conf *.cut *.sidetoc lwarp.ist lwarp.xdy
 	@\rm -f lwarp_mathjax.txt lwarp_one_limage.txt sample_project.css *-images.txt
-	@\rm -f annotation-file-format.html manual.css favicon-checkerframework.png lwarp.css lwarp_formal.css lwarp_sagebrush.css
+	@\rm -f annotation-file-format.html manual.css figures/chainlink.svg favicon-checkerframework.png lwarp.css lwarp_formal.css lwarp_sagebrush.css
 	@\rm -rf annotation-file-format-images
 	@make -C figures --quiet clean
