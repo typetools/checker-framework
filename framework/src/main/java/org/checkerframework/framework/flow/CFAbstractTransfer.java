@@ -477,6 +477,10 @@ public abstract class CFAbstractTransfer<
         PurityChecker.checkPurity(
             expressionOrStatement,
             aTypeFactory,
+            // The enclosing method's functional-interface parameters hold values that its
+            // caller was required to check, whenever the checked code runs.
+            TreePathUtil.enclosingMethod(expressionOrStatement),
+            aTypeFactory.getProcessingEnv(),
             isAssumeSideEffectFreeEnabled,
             isAssumeDeterministicEnabled,
             aTypeFactory.getChecker().hasOption("assumePureGetters"));
