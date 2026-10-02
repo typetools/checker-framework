@@ -133,12 +133,24 @@ method of the parameter's type other than its functional method, such as
   }
 \end{Verbatim}
 
-The assumption also does not apply if the method overrides a method that does
-not make the same promise for that parameter, such as one whose parameter at
-that position has a type variable as its type, because a call through the
-overridden method does not check the argument.  For the same reason, a method
-reference to such a method is an error if a call through the functional
-method that it implements would not check the argument.
+The assumption also does not apply if the method overrides a method that
+makes the same promise but whose parameter at that position has a type
+variable as its type, because a call through the overridden method relies on
+the promise without checking the argument.  An overridden method that makes
+no promise does not limit the assumption:  a call through it may pass an
+argument with side effects, but that call does not rely on the purity of the
+method either.
+
+The exception is code that calls the functional method of one of its own
+functional-interface parameters, which relies on the call's purity even if
+the functional method makes no promise.  Suppose that class \<C> implements
+interface \<I>, and \<C.apply> is \<@SideEffectFree> but \<I.apply> is not.
+Then passing a \<C> where an \<I> is required, to a parameter of a
+\<@SideEffectFree> method, is an error if \<C.apply> assumes that its own
+functional-interface argument is side-effect-free, because a call through
+\<I.apply> does not check that argument.  The same holds for a method
+reference to \<C.apply>, which is also an error wherever the functional
+method that it implements makes the promise without checking the argument.
 
 At each call to such a method, every argument passed to a functional-interface
 parameter must have the purity that the method promises (side-effect-free for

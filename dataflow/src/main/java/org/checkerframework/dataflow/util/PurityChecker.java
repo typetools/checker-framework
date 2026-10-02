@@ -259,10 +259,18 @@ public final class PurityChecker {
    *
    * <p>A call reaches {@code method} through its own declaration or through any declaration that it
    * overrides, and each call checks its arguments against the declaration that it invokes; see
-   * {@link #functionalParameterKinds}. The result is therefore what every one of those declarations
-   * requires of the argument, and it is empty if any of them does not declare a
+   * {@link #functionalParameterKinds}. A call through an overridden declaration that requires less
+   * of the argument also relies on less: it does not rely on purity that the declaration does not
+   * promise. The exception is an overridden declaration that promises purity but does not declare a
    * functional-interface parameter at {@code index}, as when the overridden parameter's type is a
-   * type variable that the overriding class instantiates with a functional interface.
+   * type variable that the overriding class instantiates with a functional interface. A call
+   * through it relies on the promise without checking the argument, so the result excludes the
+   * purity that it promises.
+   *
+   * <p>Code that calls the functional method of a functional-interface parameter relies on the
+   * purity of that call even when the functional method promises none. Such code may run {@code
+   * method} with an argument that no declaration checked, so {@code BaseTypeVisitor} checks the
+   * code that is passed as a functional argument against the result of this method.
    *
    * @param annoProvider the annotation provider
    * @param method a method or constructor
@@ -284,10 +292,8 @@ public final class PurityChecker {
       if (result.isEmpty()) {
         break;
       }
-      if (hasFunctionalInterfaceParameter(overridden, index, env)) {
-        result.retainAll(functionalParameterKinds(annoProvider, overridden));
-      } else {
-        result.clear();
+      if (!hasFunctionalInterfaceParameter(overridden, index, env)) {
+        result.removeAll(functionalParameterKinds(annoProvider, overridden));
       }
     }
     return result;

@@ -83,12 +83,14 @@ public class PurityFunctionalOverride {
     receiver.m(t -> count++, s);
   }
 
-  /** A call through Unrelated checks nothing, so the override cannot assume anything. */
+  /**
+   * A call through Unrelated checks nothing, but it also does not rely on the override's purity, so
+   * the override may assume what its own annotation requires.
+   */
   static class AnnotatedSubOfUnrelated extends Unrelated {
     @Override
     @SideEffectFree
     int m(Function<String, Integer> f, String s) {
-      // :: error: [purity.call]
       return f.apply(s);
     }
   }
