@@ -132,7 +132,11 @@ public class InvocationTypeInference {
    * @param factory the annotated type factory to use
    * @param pathToExpression path to the expression for which inference is performed
    */
-  @SuppressWarnings("this-escape")
+  @SuppressWarnings({
+    "nullness:argument", // Java8InferenceContext doesn't use "this" during construction
+    "nullness:assignment", // Java8InferenceContext doesn't use "this" during construction
+    "this-escape"
+  })
   public InvocationTypeInference(AnnotatedTypeFactory factory, TreePath pathToExpression) {
     this.checker = factory.getChecker();
     this.context = new Java8InferenceContext(factory, pathToExpression, this);
