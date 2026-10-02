@@ -1935,9 +1935,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return;
       }
       argKinds = implementationPurityKinds(argFunction);
-      argKinds.addAll(
-          PurityChecker.functionalParameterPurity(
-              atypeFactory, argument, TreePathUtil.enclosingMethod(getCurrentPath()), env));
+      MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
+      if (PurityChecker.isFunctionalMethodOfParameter(
+          argument, argFunction, enclosingMethod, env)) {
+        // The argument is a functional-interface parameter of the enclosing method, and the
+        // caller of that method was required to check the code that argFunction runs.
+        argKinds.addAll(
+            PurityChecker.functionalParameterPurity(atypeFactory, argument, enclosingMethod, env));
+      }
       checkImplementationFunctionalParameters(
           arg, argFunction, paramFunction, 0, required, "purity.functional.argument.parameter");
     }
@@ -2029,7 +2034,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * <p>This is {@code paramFunction} itself when {@code type} is the functional interface, but an
    * argument may also be of a class type, including an anonymous class, that implements the
-   * interface. The implementation is what will run, so its annotations are what matter.
+   * interface. The implementation is what will run, so its annotations are what matter. Likewise, a
+   * functional subinterface may implement {@code paramFunction} with a default method and declare
+   * an unrelated abstract method as its own functional method; the default method is what runs.
    *
    * @param type the type of an argument
    * @param paramFunction the functional method of the parameter's type
@@ -2038,9 +2045,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   private @Nullable ExecutableElement functionalMethodOf(
       TypeMirror type, ExecutableElement paramFunction, ProcessingEnvironment env) {
+    Elements elements = env.getElementUtils();
     TypeMirror functionalType = PurityChecker.functionalInterfaceType(type, env);
     if (functionalType != null) {
-      return TypesUtils.findFunction(functionalType, env);
+      ExecutableElement function = TypesUtils.findFunction(functionalType, env);
+      TypeElement functionalTypeElement = TypesUtils.getTypeElement(functionalType);
+      if (function.equals(paramFunction)
+          || (functionalTypeElement != null
+              && elements.overrides(function, paramFunction, functionalTypeElement))) {
+        return function;
+      }
     }
     if (type.getKind() == TypeKind.TYPEVAR) {
       type = TypesUtils.upperBound(type);
@@ -2054,7 +2068,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (typeElement == null) {
       return null;
     }
-    Elements elements = env.getElementUtils();
     // The members of a class that inherits its implementation from a superclass include both
     // that implementation and the interface's abstract method.  The implementation is what runs.
     ExecutableElement abstractMatch = null;
