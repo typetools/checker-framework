@@ -48,4 +48,63 @@ public class PurityFunctionalSubinterface {
     // :: error: [purity.functional.argument]
     return m(g, s);
   }
+
+  /** R's functional method is go, which is unrelated to Runnable.run. */
+  interface R extends Runnable {
+    @Override
+    default void run() {
+      count++;
+    }
+
+    @SideEffectFree
+    void go();
+  }
+
+  /** Like R, but its implementation of Runnable.run is side-effect-free. */
+  interface PureRun extends Runnable {
+    @Override
+    @SideEffectFree
+    default void run() {}
+
+    void go();
+  }
+
+  @SideEffectFree
+  static void takesRunnable(Runnable r) {}
+
+  /** A lambda cast to R implements R.go, but a call to r.run() runs R.run. */
+  void castsCode() {
+    // :: error: [purity.functional.argument]
+    takesRunnable((R) () -> {});
+    // :: error: [purity.functional.argument]
+    takesRunnable((R) PurityFunctionalSubinterface::pureStatic);
+    takesRunnable((PureRun) () -> {});
+  }
+
+  @SideEffectFree
+  static void pureStatic() {}
+
+  interface Takes<F extends Runnable> {
+    @SideEffectFree
+    void take(F f);
+  }
+
+  /**
+   * A call through Takes checks its argument against Runnable.run, not against PureRun.go, so the
+   * body may not assume that p.go() is side-effect-free.
+   */
+  static class TakesPureRun implements Takes<PureRun> {
+    @Override
+    @SideEffectFree
+    public void take(PureRun p) {
+      // :: error: [purity.call]
+      p.go();
+    }
+  }
+
+  /** A lambda passed to Takes<R>.take implements R.go, but the callee runs R.run. */
+  void passesToInstantiation(Takes<R> t) {
+    // :: error: [purity.functional.argument]
+    t.take(() -> {});
+  }
 }

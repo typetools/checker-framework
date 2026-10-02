@@ -1655,15 +1655,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * purity that the callee requires of it, because the callee's body is permitted to call it.
    *
    * <p>How the argument is checked depends on its form. The body of a lambda is checked directly. A
-   * method reference is checked against the declaration of the method it refers to. Each result
-   * expression of a conditional or switch expression is checked on its own, because the type of
-   * such an expression is the parameter's type and says nothing about the code that any result
-   * expression denotes. An effectively final functional-interface parameter of the enclosing method
-   * needs no check, since the caller of that method already performed one. Each initializer of an
-   * array literal is checked on its own, because such an argument is the array that a varargs call
-   * passes in its array form. Any other argument is checked against the functional method of its
-   * declared type. A cast of an argument that denotes code is ignored; see {@link
-   * #withoutCastsOfCode}.
+   * method reference is checked against the declaration of the method it refers to. A lambda or
+   * method reference whose functional method does not override the parameter's, because its type is
+   * a functional subinterface that declares an unrelated functional method, is checked like any
+   * other argument, since the subinterface's implementation of the parameter's functional method is
+   * what runs. Each result expression of a conditional or switch expression is checked on its own,
+   * because the type of such an expression is the parameter's type and says nothing about the code
+   * that any result expression denotes. An effectively final functional-interface parameter of the
+   * enclosing method needs no check, since the caller of that method already performed one. Each
+   * initializer of an array literal is checked on its own, because such an argument is the array
+   * that a varargs call passes in its array form. Any other argument is checked against the
+   * functional method of its declared type. A cast of an argument that denotes code is ignored; see
+   * {@link #withoutCastsOfCode}.
    *
    * <p>This check is skipped for a requirement that the parameter's own functional method already
    * makes, because {@link #checkLambdaPurity} and {@link
@@ -1840,8 +1843,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       ExecutableElement callee) {
     ProcessingEnvironment env = atypeFactory.getProcessingEnv();
     ExpressionTree argument = withoutCastsOfCode(arg);
+    // A lambda or method reference whose type is a functional subinterface may implement an
+    // abstract method that is unrelated to paramFunction; then the subinterface's implementation
+    // of paramFunction is what runs, so the argument is checked against that implementation.
+    boolean implementsParamFunction =
+        !(argument instanceof LambdaExpressionTree || argument instanceof MemberReferenceTree)
+            || implementsFunction(argument, paramFunction, env);
 
-    if (argument instanceof LambdaExpressionTree lambda) {
+    if (implementsParamFunction && argument instanceof LambdaExpressionTree lambda) {
       TreePath lambdaPath = new TreePath(getCurrentPath(), argument);
       PurityResult r =
           PurityChecker.checkPurity(
@@ -1896,7 +1905,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     EnumSet<PurityKind> argKinds;
-    if (argument instanceof MemberReferenceTree memberReference) {
+    MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
+    if (implementsParamFunction && argument instanceof MemberReferenceTree memberReference) {
       if (isArrayConstructorReference(memberReference)) {
         // Creating an array modifies nothing that exists before the call.  It is not
         // deterministic, like any object creation.
@@ -1904,16 +1914,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       } else {
         ExecutableElement referenced = (ExecutableElement) TreeUtils.elementFromUse(argument);
         argKinds = implementationPurityKinds(referenced);
-        MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
-        ExpressionTree qualifier = memberReference.getQualifierExpression();
-        if (PurityChecker.isFunctionalMethodOfParameter(
-            qualifier, referenced, enclosingMethod, env)) {
-          // `f::apply`, where `f` is a functional-interface parameter of the enclosing method,
-          // denotes the code that the caller of that method was required to check.
-          argKinds.addAll(
-              PurityChecker.functionalParameterPurity(
-                  atypeFactory, qualifier, enclosingMethod, env));
-        }
+        // `f::apply`, where `f` is a functional-interface parameter of the enclosing method,
+        // denotes the code that the caller of that method was required to check.
+        argKinds.addAll(
+            PurityChecker.functionalParameterCallPurity(
+                atypeFactory,
+                memberReference.getQualifierExpression(),
+                referenced,
+                enclosingMethod,
+                env));
         // The check of the method reference against its functional method already covers the
         // purity that the functional method promises.
         EnumSet<PurityKind> relied = EnumSet.copyOf(required);
@@ -1935,20 +1944,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return;
       }
       argKinds = implementationPurityKinds(argFunction);
-      MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
-      if (PurityChecker.isFunctionalMethodOfParameter(
-          argument, argFunction, enclosingMethod, env)) {
-        // The argument is a functional-interface parameter of the enclosing method, and the
-        // caller of that method was required to check the code that argFunction runs.
-        argKinds.addAll(
-            PurityChecker.functionalParameterPurity(atypeFactory, argument, enclosingMethod, env));
-      }
+      // If the argument is a functional-interface parameter of the enclosing method, the caller
+      // of that method was required to check the code that argFunction runs.
+      argKinds.addAll(
+          PurityChecker.functionalParameterCallPurity(
+              atypeFactory, argument, argFunction, enclosingMethod, env));
       checkImplementationFunctionalParameters(
           arg, argFunction, paramFunction, 0, required, "purity.functional.argument.parameter");
     }
 
     if (!argKinds.containsAll(required)) {
-      checker.reportError(
+      reportErrorOnce(
           arg,
           "purity.functional.argument",
           param.getSimpleName(),
@@ -2016,7 +2022,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
       }
       if (!provided.containsAll(assumed)) {
-        checker.reportError(
+        reportErrorOnce(
             reportTree,
             messageKey,
             implementationParams.get(i).getSimpleName(),
@@ -2026,6 +2032,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             purityKindsToString(provided));
       }
     }
+  }
+
+  /**
+   * Returns true if the functional method that {@code code} implements is {@code paramFunction} or
+   * overrides it.
+   *
+   * @param code a lambda expression or method reference
+   * @param paramFunction the functional method of a parameter's type
+   * @param env the processing environment
+   * @return true if {@code code} implements {@code paramFunction}
+   */
+  private static boolean implementsFunction(
+      ExpressionTree code, ExecutableElement paramFunction, ProcessingEnvironment env) {
+    TypeMirror functionalType = PurityChecker.functionalInterfaceType(TreeUtils.typeOf(code), env);
+    return functionalType == null
+        || PurityChecker.isSameOrOverrides(
+            TypesUtils.findFunction(functionalType, env), paramFunction, env);
   }
 
   /**
@@ -2049,10 +2072,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     TypeMirror functionalType = PurityChecker.functionalInterfaceType(type, env);
     if (functionalType != null) {
       ExecutableElement function = TypesUtils.findFunction(functionalType, env);
-      TypeElement functionalTypeElement = TypesUtils.getTypeElement(functionalType);
-      if (function.equals(paramFunction)
-          || (functionalTypeElement != null
-              && elements.overrides(function, paramFunction, functionalTypeElement))) {
+      if (PurityChecker.isSameOrOverrides(function, paramFunction, env)) {
         return function;
       }
     }
@@ -2222,8 +2242,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       args = new Object[] {violation.purityAdjective};
     }
     // The same tree can be checked more than once:  an initializer is checked as part of every
-    // constructor that runs it, and every checker of a compound checker checks purity
-    // independently.  Report each message at each tree only once.
+    // constructor that runs it.
+    reportErrorOnce(tree, msgKey, args);
+  }
+
+  /**
+   * Reports an error at {@code tree}, unless this checker or another checker of the same compound
+   * checker has already reported it there. Every checker of a compound checker checks purity
+   * independently, so a purity error would otherwise be reported once per checker.
+   *
+   * @param tree the tree at which to report the error
+   * @param msgKey the message key
+   * @param args the arguments of the message
+   */
+  private void reportErrorOnce(Tree tree, @CompilerMessageKey String msgKey, Object... args) {
     TreePath path = atypeFactory.getPath(tree);
     if (path == null) {
       checker.reportError(tree, msgKey, args);

@@ -75,11 +75,12 @@ public final class PurityChecker {
    * @param enclosingMethod the method declaration that lexically encloses {@code statement}, or
    *     null if none does. A call to the functional method of one of that method's
    *     functional-interface parameters has the purity that the method's callers required of the
-   *     argument; see {@link #functionalParameterPurity(AnnotationProvider, ExpressionTree,
-   *     MethodTree, ProcessingEnvironment)}. Pass the enclosing method for a lambda body too: the
-   *     body is checked against the functional method that the lambda implements, but the enclosing
-   *     method's parameters still hold values that its caller was required to check, whenever the
-   *     lambda runs. Pass null for an arbitrary expression, which no method's contract governs.
+   *     argument; see {@link #functionalParameterCallPurity(AnnotationProvider, ExpressionTree,
+   *     ExecutableElement, MethodTree, ProcessingEnvironment)}. Pass the enclosing method for a
+   *     lambda body too: the body is checked against the functional method that the lambda
+   *     implements, but the enclosing method's parameters still hold values that its caller was
+   *     required to check, whenever the lambda runs. Pass null for an arbitrary expression, which
+   *     no method's contract governs.
    * @param env the processing environment; used only if {@code enclosingMethod} is non-null
    * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
    * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
@@ -174,73 +175,36 @@ public final class PurityChecker {
   }
 
   /**
-   * Returns true if {@code expr} is an effectively final functional-interface parameter of {@code
-   * method} and {@code invoked} is the functional method of {@code expr}'s type.
+   * Returns the purity that a call of {@code invoked} on {@code expr} may be assumed to have beyond
+   * {@code invoked}'s own annotations, if {@code expr} is an effectively final functional-interface
+   * parameter of {@code method} and {@code invoked} is the functional method of {@code expr}'s type
+   * (or overrides it); otherwise returns an empty set. See {@link #functionalParameterPurity(
+   * AnnotationProvider, ExecutableElement, int, ProcessingEnvironment)}.
    *
    * <p>The code that such an expression denotes has the purity that {@code method} promises,
    * because at every call to {@code method} the argument was required to have it. Only the
    * functional method carries that guarantee; a default method such as {@code Function.andThen}
    * does not.
    *
+   * @param annoProvider the annotation provider
    * @param expr an expression, or null
    * @param invoked a method that {@code expr} is used to invoke or to refer to
    * @param method a method or constructor declaration, or null
    * @param env the processing environment
-   * @return true if {@code invoked} is the functional method of a functional-interface parameter of
-   *     {@code method}
+   * @return the purity that the call may be assumed to have, or an empty set
    */
-  public static boolean isFunctionalMethodOfParameter(
+  public static EnumSet<PurityKind> functionalParameterCallPurity(
+      AnnotationProvider annoProvider,
       @Nullable ExpressionTree expr,
       ExecutableElement invoked,
       @Nullable MethodTree method,
       ProcessingEnvironment env) {
-    TypeMirror parameterType = functionalInterfaceParameterType(expr, method, env);
-    if (parameterType == null) {
-      return false;
-    }
-    ExecutableElement functionalMethod = TypesUtils.findFunction(parameterType, env);
-    @SuppressWarnings("interning:not.interned") // Checking for exact object.
-    boolean isFunctionalMethod = invoked == functionalMethod;
-    return isFunctionalMethod
-        || env.getElementUtils()
-            .overrides(invoked, functionalMethod, (TypeElement) invoked.getEnclosingElement());
-  }
-
-  /**
-   * Returns the functional interface type of {@code expr}, if {@code expr} is an effectively final
-   * formal parameter of {@code method} whose type is a functional interface; otherwise returns
-   * null.
-   *
-   * @param expr an expression, or null
-   * @param method a method or constructor declaration, or null
-   * @param env the processing environment
-   * @return the functional interface type of {@code expr}, or null
-   */
-  private static @Nullable TypeMirror functionalInterfaceParameterType(
-      @Nullable ExpressionTree expr, @Nullable MethodTree method, ProcessingEnvironment env) {
-    VariableElement parameter = effectivelyFinalParameter(expr, method);
-    return parameter == null ? null : functionalInterfaceType(parameter.asType(), env);
-  }
-
-  /**
-   * Returns the purity that the functional method of {@code expr} may be assumed to have beyond its
-   * own annotations, if {@code expr} is an effectively final functional-interface parameter of
-   * {@code method}; otherwise returns an empty set. See {@link #functionalParameterPurity(
-   * AnnotationProvider, ExecutableElement, int, ProcessingEnvironment)}.
-   *
-   * @param annoProvider the annotation provider
-   * @param expr an expression, or null
-   * @param method a method or constructor declaration, or null
-   * @param env the processing environment
-   * @return the purity that the code {@code expr} denotes may be assumed to have
-   */
-  public static EnumSet<PurityKind> functionalParameterPurity(
-      AnnotationProvider annoProvider,
-      @Nullable ExpressionTree expr,
-      @Nullable MethodTree method,
-      ProcessingEnvironment env) {
     VariableElement parameter = effectivelyFinalParameter(expr, method);
     if (parameter == null) {
+      return EnumSet.noneOf(PurityKind.class);
+    }
+    ExecutableElement parameterFunction = functionalMethodOfType(parameter.asType(), env);
+    if (parameterFunction == null || !isSameOrOverrides(invoked, parameterFunction, env)) {
       return EnumSet.noneOf(PurityKind.class);
     }
     assert method != null
@@ -261,11 +225,14 @@ public final class PurityChecker {
    * overrides, and each call checks its arguments against the declaration that it invokes; see
    * {@link #functionalParameterKinds}. A call through an overridden declaration that requires less
    * of the argument also relies on less: it does not rely on purity that the declaration does not
-   * promise. The exception is an overridden declaration that promises purity but does not declare a
-   * functional-interface parameter at {@code index}, as when the overridden parameter's type is a
-   * type variable that the overriding class instantiates with a functional interface. A call
-   * through it relies on the promise without checking the argument, so the result excludes the
-   * purity that it promises.
+   * promise. The exception is an overridden declaration that promises purity but whose parameter at
+   * {@code index} does not have the functional method of {@code method}'s parameter: either it is
+   * not a functional interface, as when the overridden parameter's type is a type variable that the
+   * overriding class instantiates with a functional interface, or its functional method is one that
+   * the functional method of {@code method}'s parameter does not override, as when the overriding
+   * class instantiates the type variable with a functional subinterface that declares an unrelated
+   * functional method. A call through such a declaration relies on the promise without checking the
+   * code that {@code method}'s parameter runs, so the result excludes the purity that it promises.
    *
    * <p>Code that calls the functional method of a functional-interface parameter relies on the
    * purity of that call even when the functional method promises none. Such code may run {@code
@@ -283,7 +250,8 @@ public final class PurityChecker {
       ExecutableElement method,
       int index,
       ProcessingEnvironment env) {
-    if (!hasFunctionalInterfaceParameter(method, index, env)) {
+    ExecutableElement parameterFunction = parameterFunctionalMethod(method, index, env);
+    if (parameterFunction == null) {
       return EnumSet.noneOf(PurityKind.class);
     }
     EnumSet<PurityKind> result = functionalParameterKinds(annoProvider, method);
@@ -292,7 +260,9 @@ public final class PurityChecker {
       if (result.isEmpty()) {
         break;
       }
-      if (!hasFunctionalInterfaceParameter(overridden, index, env)) {
+      ExecutableElement overriddenFunction = parameterFunctionalMethod(overridden, index, env);
+      if (overriddenFunction == null
+          || !isSameOrOverrides(parameterFunction, overriddenFunction, env)) {
         result.removeAll(functionalParameterKinds(annoProvider, overridden));
       }
     }
@@ -300,20 +270,51 @@ public final class PurityChecker {
   }
 
   /**
-   * Returns true if {@code method}'s formal parameter at {@code index} exists and its type is a
-   * functional interface. A varargs parameter's type is an array, which is not.
+   * Returns the functional method of the type of {@code method}'s formal parameter at {@code
+   * index}, or null if that parameter does not exist or its type is not a functional interface. A
+   * varargs parameter's type is an array, which is not.
    *
    * @param method a method or constructor
    * @param index the index of a formal parameter
    * @param env the processing environment
-   * @return true if the parameter at {@code index} has a functional interface type
+   * @return the functional method of the parameter's type, or null
    */
-  private static boolean hasFunctionalInterfaceParameter(
+  private static @Nullable ExecutableElement parameterFunctionalMethod(
       ExecutableElement method, int index, ProcessingEnvironment env) {
     List<? extends VariableElement> parameters = method.getParameters();
-    return 0 <= index
-        && index < parameters.size()
-        && functionalInterfaceType(parameters.get(index).asType(), env) != null;
+    if (index < 0 || index >= parameters.size()) {
+      return null;
+    }
+    return functionalMethodOfType(parameters.get(index).asType(), env);
+  }
+
+  /**
+   * Returns the functional method of {@code type}, or null if {@code type} is not a functional
+   * interface type; see {@link #functionalInterfaceType}.
+   *
+   * @param type a type
+   * @param env the processing environment
+   * @return the functional method of {@code type}, or null
+   */
+  private static @Nullable ExecutableElement functionalMethodOfType(
+      TypeMirror type, ProcessingEnvironment env) {
+    TypeMirror functionalType = functionalInterfaceType(type, env);
+    return functionalType == null ? null : TypesUtils.findFunction(functionalType, env);
+  }
+
+  /**
+   * Returns true if {@code method} is {@code other} or overrides it.
+   *
+   * @param method a method
+   * @param other another method
+   * @param env the processing environment
+   * @return true if {@code method} is {@code other} or overrides it
+   */
+  public static boolean isSameOrOverrides(
+      ExecutableElement method, ExecutableElement other, ProcessingEnvironment env) {
+    return method.equals(other)
+        || env.getElementUtils()
+            .overrides(method, other, (TypeElement) method.getEnclosingElement());
   }
 
   /**
@@ -613,11 +614,8 @@ public final class PurityChecker {
         // There is no enclosing method, or it promises nothing.
         return EnumSet.noneOf(PurityKind.class);
       }
-      ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
-      if (!isFunctionalMethodOfParameter(receiver, invoked, enclosingMethod, env)) {
-        return EnumSet.noneOf(PurityKind.class);
-      }
-      return functionalParameterPurity(annoProvider, receiver, enclosingMethod, env);
+      return PurityChecker.functionalParameterCallPurity(
+          annoProvider, TreeUtils.getReceiverTree(tree), invoked, enclosingMethod, env);
     }
 
     @Override
