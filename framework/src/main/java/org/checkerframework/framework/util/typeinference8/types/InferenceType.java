@@ -194,6 +194,15 @@ public final class InferenceType extends AbstractType {
     return abstractTypes;
   }
 
+  /**
+   * Returns the mapping from type variables to the inference variables of this type.
+   *
+   * @return the mapping from type variables to the inference variables of this type
+   */
+  Theta getMap() {
+    return map;
+  }
+
   @Override
   public AbstractType create(AnnotatedTypeMirror type, boolean ignoreAnnotations) {
     return create(type, map, qualifierVars, context, ignoreAnnotations);
@@ -265,6 +274,33 @@ public final class InferenceType extends AbstractType {
     return variables;
   }
 
+  /**
+   * Returns true if one of {@code instantiated}, a list of instantiated variables, is mentioned by
+   * this type and has an instantiation with ignored annotations: one that ignores annotations
+   * itself (see {@link AbstractType#ignoreAnnotations}), or one that has ignored substitutions (see
+   * {@link ProperType#getOrigin}).
+   *
+   * @param instantiated variables, each of which has an instantiation
+   * @return true if one of {@code instantiated} is mentioned by this type and has an instantiation
+   *     with ignored annotations
+   */
+  private boolean substitutesIgnoredAnnotations(List<Variable> instantiated) {
+    Collection<Variable> mentioned = null;
+    for (Variable alpha : instantiated) {
+      ProperType instantiation = alpha.getInstantiation();
+      if (instantiation != null
+          && (instantiation.ignoreAnnotations || instantiation.getOrigin() != null)) {
+        if (mentioned == null) {
+          mentioned = getInferenceVariables();
+        }
+        if (mentioned.contains(alpha)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   @Override
   public AbstractType applyInstantiations() {
     List<TypeVariable> typeVariables = new ArrayList<>();
@@ -301,6 +337,11 @@ public final class InferenceType extends AbstractType {
     AbstractType newAbstractType =
         createIgnoreInstantiated(
             newATM, newTypeJava, map, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations);
+    if (newAbstractType.isProper() && substitutesIgnoredAnnotations(instantiations)) {
+      // Record which positions are ignored substitutions; see ProperType#origin.
+      newAbstractType =
+          new ProperType(newATM, AnnotationMirrorMap.emptyMap(), context, ignoreAnnotations, this);
+    }
 
     // Also apply instantiations to function type.
     AnnotatedExecutableType unsubedFunctionType = getFunctionType();

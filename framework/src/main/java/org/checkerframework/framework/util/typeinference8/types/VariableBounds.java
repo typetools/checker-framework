@@ -50,6 +50,11 @@ public class VariableBounds {
   private @Nullable ProperType instantiation = null;
 
   /**
+   * The number of times {@link #instantiation} has been set; see {@link #getInstantiationChanges}.
+   */
+  private int instantiationChanges = 0;
+
+  /**
    * Bounds on this variable. Stored as a map from kind of bound (upper, lower, equal) to a set of
    * {@link AbstractType}s.
    */
@@ -186,17 +191,26 @@ public class VariableBounds {
     assert !type.getTypeKind().isPrimitive()
         : "instantiation of " + variable + " is the primitive type " + type;
     instantiation = type;
+    instantiationChanges++;
   }
 
   /**
-   * Sets {@code instantiation} to {@code type}, a proper {@code EQUAL} bound, unless the current
-   * instantiation is a better choice. A bound whose annotations are respected is a better choice
-   * than one whose annotations are ignored, because the annotations of the latter are arbitrary.
-   * For example, if {@code U} is a type variable, then the formula {@code @NonNull T = @NonNull U}
-   * yields the bound {@code T = @NonNull U}, whose annotations are ignored because the use of
-   * {@code T} has a primary annotation (see {@link UseOfVariable#addBound}). Instantiating {@code
-   * T} to {@code @NonNull U} would conflict with a bound {@code T = U} that comes from a use of
-   * {@code T} without a primary annotation. Otherwise, the later bound is used.
+   * Returns the number of times this variable's instantiation has been set. A type made by
+   * substituting an instantiation that ignores annotations uses it to tell when to substitute
+   * again; see {@link ProperType#applyInstantiations}.
+   *
+   * @return the number of times this variable's instantiation has been set
+   */
+  int getInstantiationChanges() {
+    return instantiationChanges;
+  }
+
+  /**
+   * Makes {@code type}, a proper {@code EQUAL} bound of this variable, its instantiation, unless
+   * {@code type} ignores annotations and the current instantiation does not (see {@link
+   * AbstractType#ignoreAnnotations}). A bound whose annotations are respected determines this
+   * variable's annotations, so a bound that ignores annotations never replaces it, and it always
+   * replaces one that does. Among bounds of the same kind, the later one is used.
    *
    * @param type a proper {@code EQUAL} bound of this variable
    */
@@ -207,9 +221,8 @@ public class VariableBounds {
   }
 
   /**
-   * Sets {@code instantiation} from a proper {@code EQUAL} bound, if this variable has one. If
-   * there is more than one such bound, the choice matches {@link #addBound}, which calls {@link
-   * #setInstantiationFromEqualBound} for each proper {@code EQUAL} bound that it adds.
+   * Sets {@code instantiation} from the proper {@code EQUAL} bounds of this variable, if it has
+   * any, choosing among them as {@link #addBound} does.
    */
   private void setInstantiationFromEqualBounds() {
     for (AbstractType t : getBoundsOfKind(BoundKind.EQUAL)) {
@@ -655,6 +668,25 @@ public class VariableBounds {
   }
 
   /**
+   * Returns the bounds that determine this variable's annotations when its instantiation ignores
+   * annotations: all lower bounds that are proper types, and all proper {@code EQUAL} bounds that
+   * ignore annotations (see {@link AbstractType#ignoreAnnotations}). Such an {@code EQUAL} bound
+   * gives this variable's Java type, but it says no more about its annotations than a lower bound
+   * does.
+   *
+   * @return all proper lower bounds and all proper {@code EQUAL} bounds that ignore annotations
+   */
+  public Set<ProperType> findLowerBoundsForAnnotations() {
+    Set<ProperType> set = findProperLowerBounds();
+    for (AbstractType bound : getBoundsOfKind(BoundKind.EQUAL)) {
+      if (bound.isProper() && bound.ignoreAnnotations) {
+        set.add((ProperType) bound);
+      }
+    }
+    return set;
+  }
+
+  /**
    * Returns all upper bounds that are proper types.
    *
    * @return all upper bounds that are proper types
@@ -687,6 +719,8 @@ public class VariableBounds {
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public boolean applyInstantiationsToBounds() {
     boolean changed = false;
+    // The new version of the bound that is this variable's instantiation, if that bound changes.
+    AbstractType refreshedInstantiation = null;
     for (Set<AbstractType> boundList : bounds.values()) {
       if (boundList.isEmpty()) {
         // Most variables have no bound of most kinds, and iterating a LinkedHashSet allocates.
@@ -701,6 +735,9 @@ public class VariableBounds {
       for (AbstractType bound : boundList) {
         AbstractType newBound = bound.applyInstantiations();
         if (newBound != bound) {
+          if (bound == instantiation) {
+            refreshedInstantiation = newBound;
+          }
           boundListChanged = true;
           if (!boundList.contains(newBound)) {
             changed = true;
@@ -717,8 +754,20 @@ public class VariableBounds {
     }
     constraints.applyInstantiations();
 
-    // An instantiation from a bound whose annotations are ignored gives way to a bound that has
-    // just become proper and whose annotations are respected.
+    // An instantiation that was made by substituting one that ignores annotations is substituted
+    // again when that one changes; see ProperType#origin.
+    if (instantiation != null) {
+      AbstractType refreshed =
+          refreshedInstantiation != null
+              ? refreshedInstantiation
+              : instantiation.applyInstantiations();
+      if (refreshed != instantiation) {
+        setInstantiation((ProperType) refreshed);
+        changed = true;
+      }
+    }
+
+    // A bound that has just become proper can replace an instantiation that ignores annotations.
     if (changed && (instantiation == null || instantiation.ignoreAnnotations)) {
       setInstantiationFromEqualBounds();
     }
