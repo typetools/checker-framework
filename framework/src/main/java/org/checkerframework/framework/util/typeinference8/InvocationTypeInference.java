@@ -135,7 +135,8 @@ public class InvocationTypeInference {
   @SuppressWarnings({
     "nullness:argument", // Java8InferenceContext stores "this" but doesn't use it during
     // construction
-    "nullness:assignment", // ditto
+    "nullness:assignment", // Java8InferenceContext stores "this" but doesn't use it during
+    // construction
     "this-escape"
   })
   public InvocationTypeInference(AnnotatedTypeFactory factory, TreePath pathToExpression) {

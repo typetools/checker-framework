@@ -83,7 +83,7 @@ import org.checkerframework.javacutil.TypesUtils;
   @SuppressWarnings({
     "interning:argument", // "this" is interned
     "nullness:argument", // VariableBounds stores "this" but doesn't use it during construction
-    "nullness:assignment", // ditto
+    "nullness:assignment", // VariableBounds stores "this" but doesn't use it during construction
     "this-escape"
   })
   protected Variable(
