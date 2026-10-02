@@ -4,6 +4,7 @@ r"""Post-process the HTML files that lwarp produces for the manual.
 Usage:  lwarp-postprocess FILE.html ...
 
 This script:
+ * removes LaTeX escapes, such as the backslash of "\#", from link URLs.
  * retargets cross-references of the form "#autosec-99" to use the LaTeX
    label of the section instead, such as "#introduction".  lwarp's table of
    contents uses "autosec" anchors, which change whenever the manual is
@@ -68,6 +69,24 @@ SIDETOC_SCRIPT = (
     "<script>\n" + (Path(__file__).parent / "sidetoc.js").read_text(encoding="utf-8") + "</script>"
 )
 
+# A link target.  Unlike hyperref, lwarp does not unescape \href's URL, so
+# the URL keeps the backslash of each \#, \%, and \_.  Some TeX installations
+# instead expand \_ to "\protect \T1\textunderscore".  A URL must use \# and
+# \% when it is in the argument of a macro, such as \refmethod in
+# manual-style.tex.
+HREF_RE = re.compile(r'href="[^"]*"')
+HREF_ESCAPE_RE = re.compile(r"\\([#%_])|\\protect\s*\\T1\\textunderscore\s*")
+
+
+def unescape_href(m: re.Match[str]) -> str:
+    """Remove LaTeX escapes from the URL of a link.
+
+    Returns:
+        the link's href attribute, with the escapes removed
+    """
+    return HREF_ESCAPE_RE.sub(lambda e: e.group(1) or "_", m.group(0))
+
+
 FAVICON_FILE = "favicon-checkerframework.png"
 FAVICON = f'<link rel="icon" href="{FAVICON_FILE}" type="image/png" />'
 
@@ -92,6 +111,7 @@ def main(filenames: list[str]) -> None:
         return m.group(1) + autosec_to_label.get(m.group(2), m.group(2)) + '"'
 
     for filename, text in contents.items():
+        text = HREF_RE.sub(unescape_href, text)
         text = re.sub(r'(href="[^"#]*#)(autosec-[0-9]+)"', retarget, text)
         text = HEADING_RE.sub(move_anchors, text)
         text = SELFLINK_RE.sub(r"\1" + SELFLINK_LABEL + r"\2", text)

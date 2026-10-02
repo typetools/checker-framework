@@ -228,8 +228,7 @@ public class VariableBounds {
    * Adds {@code otherType} as bound against this variable. A proper {@code EQUAL} bound is boxed
    * before it is added.
    *
-   * @param parent the constraint whose reduction created this bound, or null if the bound did not
-   *     come from reducing a constraint
+   * @param parent the constraint whose reduction created this bound, or null if no constraint did
    * @param kind the kind of bound
    * @param otherType the bound type
    * @return if a new bound was added
@@ -319,7 +318,7 @@ public class VariableBounds {
   /**
    * Add constraints created via incorporation of the bound. See JLS 18.3.1.
    *
-   * @param parent the constraint whose reduction created this bound
+   * @param parent the constraint whose reduction created this bound, or null if no constraint did
    * @param kind the kind of bound
    * @param boundType the type of the bound
    */

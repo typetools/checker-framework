@@ -64,7 +64,8 @@ public abstract class TypeConstraint implements Constraint {
   /**
    * Creates a type constraint.
    *
-   * @param parent the constraint whose reduction created this constraint
+   * @param parent the constraint whose reduction created this constraint, or null if no constraint
+   *     did
    * @param T the type of the right-hand side of the constraint
    */
   protected TypeConstraint(@Nullable Constraint parent, AbstractType T) {
@@ -250,7 +251,7 @@ public abstract class TypeConstraint implements Constraint {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

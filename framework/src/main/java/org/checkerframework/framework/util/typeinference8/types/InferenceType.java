@@ -210,7 +210,7 @@ public final class InferenceType extends AbstractType {
 
   @Override
   @SuppressWarnings("interning:not.interned") // maps should be ==
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

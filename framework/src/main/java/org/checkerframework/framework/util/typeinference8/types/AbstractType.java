@@ -280,7 +280,7 @@ public abstract class AbstractType {
    * function type. Otherwise, {@code functionType} is null. Initialized by {@link
    * #getFunctionType()}.
    */
-  protected AnnotatedExecutableType functionType = null;
+  protected @Nullable AnnotatedExecutableType functionType = null;
 
   /**
    * Returns true if this {@link AbstractType} is a functional interface type.
@@ -757,7 +757,7 @@ public abstract class AbstractType {
   // equals and hashCode are abstract so that a subclass must implement them.  A subclass that needs
   // to compare the fields of this class can use sameInferenceProblem and inferenceProblemHashCode.
   @Override
-  public abstract boolean equals(Object o);
+  public abstract boolean equals(@Nullable Object o);
 
   @Override
   public abstract int hashCode();

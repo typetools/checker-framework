@@ -4,8 +4,8 @@
 
 \title{The Checker Framework Manual: \\ Custom pluggable types for Java}
 \author{\url{https://checkerframework.org}}
-\newcommand{\ReleaseVersion}{4.2.3}
-\newcommand{\ReleaseDate}{2026-09-01}
+\newcommand{\ReleaseVersion}{4.3.0}
+\newcommand{\ReleaseDate}{2026-10-01}
 \date{Version \ReleaseVersion\ (\ReleaseDate)}
 
 \begin{document}
@@ -77,6 +77,9 @@ describes how to \textbf{install and use} pluggable type-checkers.
 
 % These are focused on ints:
 \input{signedness-checker.tex}
+
+%% Checker related to UnsupportedOperationException
+\input{modifiability-checker.tex}
 
 % Checkers that tend to be used as components of other checkers rather
 % than used for their own sake:
