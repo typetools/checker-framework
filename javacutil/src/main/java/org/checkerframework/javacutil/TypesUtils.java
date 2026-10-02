@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -1682,6 +1683,131 @@ public final class TypesUtils {
     return unboxedKind == TypeKind.BYTE
         || unboxedKind == TypeKind.SHORT
         || unboxedKind == TypeKind.CHAR;
+  }
+
+  /**
+   * Returns true if {@code t1} and {@code t2} are the same type, except that where one has a
+   * captured type variable the other may have a different captured type variable with the same
+   * bounds, modulo captured type variables.
+   *
+   * @param t1 a type
+   * @param t2 a type
+   * @param types the type utilities
+   * @return true if {@code t1} and {@code t2} are the same type modulo captured type variables
+   */
+  public static boolean isSameTypeModuloCaptures(TypeMirror t1, TypeMirror t2, Types types) {
+    return isSameTypeModuloCaptures(t1, t2, types, new IdentityHashMap<>());
+  }
+
+  /**
+   * Returns true if {@code t1} and {@code t2} are the same type modulo captured type variables.
+   *
+   * @param t1 a type
+   * @param t2 a type
+   * @param types the type utilities
+   * @param visited the pairs of captured type variables whose bounds are being compared, from a
+   *     captured type variable in {@code t1} to the one in {@code t2}
+   * @return true if {@code t1} and {@code t2} are the same type modulo captured type variables
+   */
+  private static boolean isSameTypeModuloCaptures(
+      TypeMirror t1, TypeMirror t2, Types types, IdentityHashMap<TypeMirror, TypeMirror> visited) {
+    if (isCapturedTypeVariable(t1) && isCapturedTypeVariable(t2)) {
+      TypeMirror previous = visited.get(t1);
+      if (previous != null) {
+        // A bound refers back to a captured type variable whose bounds are being compared.
+        return types.isSameType(previous, t2);
+      }
+      visited.put(t1, t2);
+      TypeVariable v1 = (TypeVariable) t1;
+      TypeVariable v2 = (TypeVariable) t2;
+      return isSameTypeModuloCaptures(v1.getUpperBound(), v2.getUpperBound(), types, visited)
+          && isSameTypeModuloCaptures(v1.getLowerBound(), v2.getLowerBound(), types, visited);
+    }
+    if (t1.getKind() != t2.getKind()) {
+      return false;
+    }
+    switch (t1.getKind()) {
+      case DECLARED -> {
+        DeclaredType d1 = (DeclaredType) t1;
+        DeclaredType d2 = (DeclaredType) t2;
+        return d1.asElement().equals(d2.asElement())
+            && isSameTypeModuloCaptures(
+                d1.getEnclosingType(), d2.getEnclosingType(), types, visited)
+            && isSameTypesModuloCaptures(
+                d1.getTypeArguments(), d2.getTypeArguments(), types, visited);
+      }
+      case ARRAY -> {
+        return isSameTypeModuloCaptures(
+            ((ArrayType) t1).getComponentType(),
+            ((ArrayType) t2).getComponentType(),
+            types,
+            visited);
+      }
+      case INTERSECTION -> {
+        return isSameTypesModuloCaptures(
+            ((IntersectionType) t1).getBounds(),
+            ((IntersectionType) t2).getBounds(),
+            types,
+            visited);
+      }
+      case WILDCARD -> {
+        WildcardType w1 = (WildcardType) t1;
+        WildcardType w2 = (WildcardType) t2;
+        return isSameBoundModuloCaptures(w1.getExtendsBound(), w2.getExtendsBound(), types, visited)
+            && isSameBoundModuloCaptures(w1.getSuperBound(), w2.getSuperBound(), types, visited);
+      }
+      default -> {
+        return types.isSameType(t1, t2);
+      }
+    }
+  }
+
+  /**
+   * Returns true if {@code ts1} and {@code ts2} have the same length and their corresponding
+   * elements are the same type modulo captured type variables.
+   *
+   * @param ts1 a list of types
+   * @param ts2 a list of types
+   * @param types the type utilities
+   * @param visited the pairs of captured type variables whose bounds are being compared
+   * @return true if {@code ts1} and {@code ts2} are pairwise the same modulo captured type
+   *     variables
+   */
+  private static boolean isSameTypesModuloCaptures(
+      List<? extends TypeMirror> ts1,
+      List<? extends TypeMirror> ts2,
+      Types types,
+      IdentityHashMap<TypeMirror, TypeMirror> visited) {
+    if (ts1.size() != ts2.size()) {
+      return false;
+    }
+    for (int i = 0; i < ts1.size(); i++) {
+      if (!isSameTypeModuloCaptures(ts1.get(i), ts2.get(i), types, visited)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Returns true if {@code b1} and {@code b2} are the same wildcard bound, modulo captured type
+   * variables. A missing bound is only the same as another missing bound.
+   *
+   * @param b1 a wildcard bound, or null if the wildcard has no such bound
+   * @param b2 a wildcard bound, or null if the wildcard has no such bound
+   * @param types the type utilities
+   * @param visited the pairs of captured type variables whose bounds are being compared
+   * @return true if {@code b1} and {@code b2} are the same bound modulo captured type variables
+   */
+  private static boolean isSameBoundModuloCaptures(
+      @Nullable TypeMirror b1,
+      @Nullable TypeMirror b2,
+      Types types,
+      IdentityHashMap<TypeMirror, TypeMirror> visited) {
+    if (b1 == null) {
+      return b2 == null;
+    }
+    return b2 != null && isSameTypeModuloCaptures(b1, b2, types, visited);
   }
 
   /**
