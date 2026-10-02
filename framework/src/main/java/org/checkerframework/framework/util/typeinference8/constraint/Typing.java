@@ -60,7 +60,8 @@ public class Typing extends TypeConstraint {
   /**
    * Creates a typing constraint.
    *
-   * @param parent the constraint whose reduction created this constraint
+   * @param parent the constraint whose reduction created this constraint, or null if no constraint
+   *     did
    * @param S left-hand side type
    * @param t right-hand side type
    * @param kind the kind of constraint
@@ -85,7 +86,8 @@ public class Typing extends TypeConstraint {
   /**
    * Creates a typing constraint.
    *
-   * @param parent the constraint whose reduction created this constraint
+   * @param parent the constraint whose reduction created this constraint, or null if no constraint
+   *     did
    * @param S left-hand side type
    * @param t right-hand side type
    * @param kind the kind of constraint
@@ -103,7 +105,8 @@ public class Typing extends TypeConstraint {
   /**
    * Creates a typing constraint.
    *
-   * @param parent the constraint whose reduction created this constraint
+   * @param parent the constraint whose reduction created this constraint, or null if no constraint
+   *     did
    * @param S left-hand side type
    * @param t right-hand side type
    * @param kind the kind of constraint
@@ -657,7 +660,7 @@ public class Typing extends TypeConstraint {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }
