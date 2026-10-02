@@ -133,10 +133,8 @@ public class InvocationTypeInference {
    * @param pathToExpression path to the expression for which inference is performed
    */
   @SuppressWarnings({
-    "nullness:argument", // Java8InferenceContext stores "this" but doesn't use it during
-    // construction
-    "nullness:assignment", // Java8InferenceContext stores "this" but doesn't use it during
-    // construction
+    "nullness:argument", // Java8InferenceContext doesn't use "this" during construction
+    "nullness:assignment", // Java8InferenceContext doesn't use "this" during construction
     "this-escape"
   })
   public InvocationTypeInference(AnnotatedTypeFactory factory, TreePath pathToExpression) {
