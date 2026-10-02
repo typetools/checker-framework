@@ -3,9 +3,21 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
+## Version 4.3.1 (2026-11-01)
+
+### User-visible changes
+
+### Changes for type system implementers
+
+### Closed issues
+
 ## Version 4.3.0 (2026-10-01)
 
 ### User-visible changes
+
+The new Modifiability Checker warns when a program might throw
+`UnsupportedOperationException` at run time because it calls a mutating method on
+a collection that does not support the method.
 
 The new `wpi2.sh` script does whole-program inference, but requires buildfile edits.
 
@@ -42,6 +54,12 @@ Methods that used to return (or accept) an `IPair` now use a record with
 meaningful component names.
 
 ### Closed issues
+
+\#294, #1170, #1184, #1256, #1440, #1444, #1669, #2090, #2172, #2429, #2448,
+\#2561, #2637, #2704, #2722, #2770, #2896, #2995, #3015, #3025, #3027, #3146,
+\#3281, #3624, #4690, #4708, #4754, #5064, #5201, #6038, #6716, #6741, #6748,
+\#6756, #6768, #6832, #6881, #7023, #7049, #7064, #7311, #7683, #8053, #8054,
+\#8055, #8167, #8168, #8169, #8238, #8261, #8284.
 
 ## Version 4.2.3 (2026-09-01)
 

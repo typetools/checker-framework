@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.util.typeinference8.types.AbstractQualifier;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
@@ -59,12 +60,13 @@ public class Typing extends TypeConstraint {
   /**
    * Creates a typing constraint.
    *
-   * @param parent the constraint whose reduction created this constraint
+   * @param parent the constraint whose reduction created this constraint, or null if no constraint
+   *     did
    * @param S left-hand side type
    * @param t right-hand side type
    * @param kind the kind of constraint
    */
-  public Typing(Constraint parent, AbstractType S, AbstractType t, Kind kind) {
+  public Typing(@Nullable Constraint parent, AbstractType S, AbstractType t, Kind kind) {
     this(parent, S, t, kind, false);
   }
 
@@ -84,21 +86,27 @@ public class Typing extends TypeConstraint {
   /**
    * Creates a typing constraint.
    *
-   * @param parent the constraint whose reduction created this constraint
+   * @param parent the constraint whose reduction created this constraint, or null if no constraint
+   *     did
    * @param S left-hand side type
    * @param t right-hand side type
    * @param kind the kind of constraint
    * @param covarTypeArg true if the constraint is for a covariant type argument
    */
   public Typing(
-      Constraint parent, AbstractType S, AbstractType t, Kind kind, boolean covarTypeArg) {
+      @Nullable Constraint parent,
+      AbstractType S,
+      AbstractType t,
+      Kind kind,
+      boolean covarTypeArg) {
     this(parent, S, t, kind, covarTypeArg, false);
   }
 
   /**
    * Creates a typing constraint.
    *
-   * @param parent the constraint whose reduction created this constraint
+   * @param parent the constraint whose reduction created this constraint, or null if no constraint
+   *     did
    * @param S left-hand side type
    * @param t right-hand side type
    * @param kind the kind of constraint
@@ -107,7 +115,7 @@ public class Typing extends TypeConstraint {
    *     two proper types; see {@link #qualifiersMustMatch}
    */
   public Typing(
-      Constraint parent,
+      @Nullable Constraint parent,
       AbstractType S,
       AbstractType t,
       Kind kind,
@@ -140,7 +148,7 @@ public class Typing extends TypeConstraint {
    *     two proper types; see {@link #qualifiersMustMatch}
    */
   public Typing(
-      Constraint parent,
+      @Nullable Constraint parent,
       String description,
       AbstractType S,
       AbstractType t,
@@ -652,7 +660,7 @@ public class Typing extends TypeConstraint {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

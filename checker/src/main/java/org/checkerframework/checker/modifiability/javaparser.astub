@@ -1,0 +1,13 @@
+import org.checkerframework.checker.modifiability.qual.Modifiable;
+
+package com.github.javaparser.ast.stmt;
+
+class BlockStmt {
+  public @Modifiable NodeList<Statement> getStatements() {}
+}
+
+package com.github.javaparser.ast;
+
+class CompilationUnit {
+  public @Modifiable NodeList<ImportDeclaration> getImports() {}
+}

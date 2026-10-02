@@ -14,6 +14,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
 import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.modifiability.qual.Shrinkable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** An annotated method; contains bounds, return, parameters, receiver, and throws. */
@@ -28,7 +29,7 @@ public class AMethod extends ADeclaration {
   private /*@Nullable*/ List<? extends TypeParameterElement> typeParameters = null;
 
   /** The method's annotated type parameter bounds. */
-  public final VivifyingMap<BoundLocation, ATypeElement> bounds =
+  public final @Shrinkable VivifyingMap<BoundLocation, ATypeElement> bounds =
       ATypeElement.<BoundLocation>newVivifyingLHMap_ATE();
 
   /** The return type of the method, or null if the method's return type is unknown or void. */
@@ -41,10 +42,11 @@ public class AMethod extends ADeclaration {
   public final AField receiver; // initialized in constructor
 
   /** The method's annotated parameters; map key is parameter index, starting at 0. */
-  public final VivifyingMap<Integer, AField> parameters = AField.<Integer>newVivifyingLHMap_AF();
+  public final @Shrinkable VivifyingMap<Integer, AField> parameters =
+      AField.<Integer>newVivifyingLHMap_AF();
 
   /** Exceptions that are thrown. */
-  public final VivifyingMap<TypeIndexLocation, ATypeElement> throwsException =
+  public final @Shrinkable VivifyingMap<TypeIndexLocation, ATypeElement> throwsException =
       ATypeElement.<TypeIndexLocation>newVivifyingLHMap_ATE();
 
   /**
@@ -52,14 +54,16 @@ public class AMethod extends ADeclaration {
    * expression.
    */
   // TODO: The map value type should probably be ATypeElement instead.
-  public final VivifyingMap<String, AField> preconditions = AField.newVivifyingLHMap_AF();
+  public final @Shrinkable VivifyingMap<String, AField> preconditions =
+      AField.newVivifyingLHMap_AF();
 
   /**
    * Types of expressions at exit from the method. The map key is the string representation of the
    * expression.
    */
   // TODO: The map value type should probably be ATypeElement instead.
-  public final VivifyingMap<String, AField> postconditions = AField.newVivifyingLHMap_AF();
+  public final @Shrinkable VivifyingMap<String, AField> postconditions =
+      AField.newVivifyingLHMap_AF();
 
   /**
    * Clients set this before printing the AMethod.

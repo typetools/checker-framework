@@ -12,6 +12,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -160,14 +161,34 @@ public class VariableBounds {
   }
 
   /**
+   * Sets {@code instantiation} to {@code type}, a proper {@code EQUAL} bound, unless the current
+   * instantiation is a better choice. A bound whose annotations are respected is a better choice
+   * than one whose annotations are ignored, because the annotations of the latter are arbitrary.
+   * For example, if {@code U} is a type variable, then the formula {@code @NonNull T = @NonNull U}
+   * yields the bound {@code T = @NonNull U}, whose annotations are ignored because the use of
+   * {@code T} has a primary annotation (see {@link UseOfVariable#addBound}). Instantiating {@code
+   * T} to {@code @NonNull U} would conflict with a bound {@code T = U} that comes from a use of
+   * {@code T} without a primary annotation. Otherwise, the later bound is used.
+   *
+   * @param type a proper {@code EQUAL} bound of this variable
+   */
+  private void setInstantiationFromEqualBound(ProperType type) {
+    if (instantiation == null || !type.ignoreAnnotations || instantiation.ignoreAnnotations) {
+      setInstantiation(type);
+    }
+  }
+
+  /**
    * Sets {@code instantiation} from a proper {@code EQUAL} bound, if this variable has one. If
-   * there is more than one such bound, the last one is used, matching {@link #addBound}, which
-   * overwrites the instantiation for each proper {@code EQUAL} bound that it adds.
+   * there is more than one such bound, the choice matches {@link #addBound}, which calls {@link
+   * #setInstantiationFromEqualBound} for each proper {@code EQUAL} bound that it adds.
    */
   private void setInstantiationFromEqualBounds() {
-    for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
+    @SuppressWarnings("nullness:assignment") // every BoundKind is a key of `bounds`
+    @NonNull Set<AbstractType> equalBounds = bounds.get(BoundKind.EQUAL);
+    for (AbstractType t : equalBounds) {
       if (t.isProper()) {
-        setInstantiation((ProperType) t);
+        setInstantiationFromEqualBound((ProperType) t);
       }
     }
   }
@@ -194,12 +215,12 @@ public class VariableBounds {
    * Adds {@code otherType} as bound against this variable. A proper {@code EQUAL} bound is boxed
    * before it is added.
    *
-   * @param parent the constraint whose reduction created this bound
+   * @param parent the constraint whose reduction created this bound, or null if no constraint did
    * @param kind the kind of bound
    * @param otherType the bound type
    * @return if a new bound was added
    */
-  public boolean addBound(Constraint parent, BoundKind kind, AbstractType otherType) {
+  public boolean addBound(@Nullable Constraint parent, BoundKind kind, AbstractType otherType) {
     if (otherType.isUseOfVariable() && ((UseOfVariable) otherType).getVariable() == variable) {
       return false;
     }
@@ -211,9 +232,11 @@ public class VariableBounds {
       // yields a reference type.
       ProperType boxedType = ((ProperType) otherType).boxType();
       boundType = boxedType;
-      setInstantiation(boxedType);
+      setInstantiationFromEqualBound(boxedType);
     }
-    if (bounds.get(kind).add(boundType)) {
+    @SuppressWarnings("nullness:assignment") // every BoundKind is a key of `bounds`
+    @NonNull Set<AbstractType> boundsOfKind = bounds.get(kind);
+    if (boundsOfKind.add(boundType)) {
       addConstraintsFromComplementaryBounds(parent, kind, boundType);
       if (!boundType.ignoreAnnotations) {
         Set<AbstractQualifier> aQuals = boundType.getQualifiers();
@@ -282,13 +305,13 @@ public class VariableBounds {
   /**
    * Add constraints created via incorporation of the bound. See JLS 18.3.1.
    *
-   * @param parent the constraint whose reduction created this bound
+   * @param parent the constraint whose reduction created this bound, or null if no constraint did
    * @param kind the kind of bound
    * @param boundType the type of the bound
    */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public void addConstraintsFromComplementaryBounds(
-      Constraint parent, BoundKind kind, AbstractType boundType) {
+      @Nullable Constraint parent, BoundKind kind, AbstractType boundType) {
     switch (kind) {
       case EQUAL -> {
         for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
@@ -384,7 +407,7 @@ public class VariableBounds {
    * @param kind the kind of the new constraint
    */
   private void addComplementaryBoundConstraint(
-      Constraint parent, AbstractType s, AbstractType t, Kind kind) {
+      @Nullable Constraint parent, AbstractType s, AbstractType t, Kind kind) {
     constraints.add(new Typing(parent, "From complementary bound", s, t, kind, false));
   }
 
@@ -446,7 +469,7 @@ public class VariableBounds {
    * @return the constraints between the type arguments to {@code s} and {@code t}
    */
   private List<Typing> getConstraintsFromParameterized(
-      Constraint parent, AbstractType s, AbstractType t) {
+      @Nullable Constraint parent, AbstractType s, AbstractType t) {
     ParameterizedSupers pair = context.inferenceTypeFactory.getParameterizedSupers(s, t);
 
     if (pair == null) {
@@ -481,7 +504,7 @@ public class VariableBounds {
    * @param constraints the list to which to add the implied constraints
    */
   private void addConstraintsFromTypeArguments(
-      Constraint parent,
+      @Nullable Constraint parent,
       AbstractType s,
       AbstractType sAsSuper,
       AbstractType t,
@@ -666,7 +689,9 @@ public class VariableBounds {
     }
     constraints.applyInstantiations();
 
-    if (changed && instantiation == null) {
+    // An instantiation from a bound whose annotations are ignored gives way to a bound that has
+    // just become proper and whose annotations are respected.
+    if (changed && (instantiation == null || instantiation.ignoreAnnotations)) {
       setInstantiationFromEqualBounds();
     }
     return changed;
