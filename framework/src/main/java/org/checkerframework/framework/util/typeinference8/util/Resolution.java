@@ -356,7 +356,7 @@ public final class Resolution {
    * Resolves {@code ai} by instantiating it to the greatest lower bound of its proper upper bounds.
    *
    * @param ai a variable to resolve
-   * @param upperBounds {@code ai}'s set of proper upper bounds
+   * @param upperBounds {@code ai}'s nonempty set of proper upper bounds
    */
   private void resolveWithUpperBounds(Variable ai, Set<ProperType> upperBounds) {
     ProperType ti = null;
@@ -377,6 +377,7 @@ public final class Resolution {
     if (useRuntimeException) {
       ti = context.inferenceTypeFactory.getRuntimeException();
     }
+    assert ti != null : "@AssumeAssertion(nullness): upperBounds is nonempty";
     ai.getBounds().addBound(null, BoundKind.EQUAL, ti);
   }
 
@@ -384,10 +385,11 @@ public final class Resolution {
    * Resolve {@code ai} by instantiating it to the least upper bound of its proper lower bounds.
    *
    * @param ai a variable to resolve
-   * @param lowerBounds {@code ai}'s set of proper lower bounds
+   * @param lowerBounds {@code ai}'s nonempty set of proper lower bounds
    */
   private void resolveWithLowerBounds(Variable ai, Set<ProperType> lowerBounds) {
     ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
+    assert lubProperType != null : "@AssumeAssertion(nullness): lowerBounds is nonempty";
     Set<AbstractQualifier> qualifierLowerBounds =
         ai.getBounds().getQualifierBoundsOfKind(BoundKind.LOWER);
     if (!qualifierLowerBounds.isEmpty()) {

@@ -209,7 +209,7 @@ public abstract class TypeConstraint implements Constraint {
       case SWITCH_EXPRESSION -> {
         List<Variable> inputs = new ArrayList<>();
 
-        SwitchExpressionScanner<Boolean, Void> scanner =
+        SwitchExpressionScanner<@Nullable Boolean, Void> scanner =
             new FunctionalSwitchExpressionScanner<>(
                 (ExpressionTree exTree, Void unused) ->
                     inputs.addAll(getInputVariablesForExpression(exTree)),

@@ -537,7 +537,11 @@ public class VariableBounds {
     String description = "Constraint from parameterized bound";
 
     List<AbstractType> sAsSuperTypeArguments = sAsSuper.getTypeArguments();
+    assert sAsSuperTypeArguments != null
+        : "@AssumeAssertion(nullness): sAsSuper is a declared type";
     List<AbstractType> tAsSuperTypeArguments = tAsSuper.getTypeArguments();
+    assert tAsSuperTypeArguments != null
+        : "@AssumeAssertion(nullness): tAsSuper is a declared type";
     if (sAsSuperTypeArguments.size() != tAsSuperTypeArguments.size()) {
       if (sAsSuper.isRaw() || tAsSuper.isRaw()) {
         // A raw type has no type arguments, so the two types imply nothing about one another's.
