@@ -160,7 +160,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

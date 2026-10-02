@@ -96,6 +96,11 @@ The Checker Framework comes with checkers for specific types of errors:
   ensure unsigned and signed values are not mixed
   (see \chapterpageref{signedness-checker})
 \item
+  \hyperref[modifiability-checker]{Modifiability Checker} to
+  warn about a possible \<UnsupportedOperationException> at run time when
+  modifying a collection
+  (see \chapterpageref{modifiability-checker})
+\item
   \hyperref[purity-checker]{Purity Checker} to identify whether
   methods have side effects (see \chapterpageref{purity-checker})
 \item
@@ -211,7 +216,7 @@ optional step.
 \item
   Download the Checker Framework distribution:
   \warpprintonly{\\}
-  \url{https://checkerframework.org/checker-framework-4.2.3.zip}
+  \url{https://checkerframework.org/checker-framework-4.3.0.zip}
 
   For example, on Unix you can run: \<wget https://checkerframework.org/checker-framework-\ReleaseVersion{}.zip>
 
