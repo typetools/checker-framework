@@ -480,6 +480,8 @@ public final class Resolution {
       }
 
       Set<AbstractType> upperBounds = ai.getBounds().upperBounds();
+      // Omit bounds that mention variables outside `as`, such as `alpha` in `ai <: alpha`.
+      upperBounds.removeIf(u -> !as.containsAll(u.getInferenceVariables()));
       AbstractType upperBound = context.inferenceTypeFactory.glb(upperBounds);
       if (upperBound != null) {
         // `glb` returns its argument when `upperBounds` is a singleton, and that type is still

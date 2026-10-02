@@ -7,6 +7,9 @@ import java.util.Set;
 import java.util.StringJoiner;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
+import org.checkerframework.checker.modifiability.qual.Growable;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
+import org.checkerframework.checker.modifiability.qual.Replaceable;
 
 /**
  * An {@code AElement} represents a Java element and the annotations it carries. Some {@code
@@ -22,7 +25,7 @@ public class AElement implements Cloneable {
    * The top-level annotations directly on this element. Annotations on subelements are in those
    * subelements' {@code tlAnnotationsHere} sets, not here.
    */
-  public final Set<Annotation> tlAnnotationsHere;
+  public final @Modifiable Set<Annotation> tlAnnotationsHere;
 
   // TODO: What about methods; is `type` the return type?
   /**
@@ -201,7 +204,9 @@ public class AElement implements Cloneable {
    * @param <K> the type of the map keys
    * @return a new vivifying map from keys to {@link AElement}s
    */
-  static <K extends Object> VivifyingMap<K, AElement> newVivifyingLHMap_AE() {
+  @SuppressWarnings("modifiability:return") // The anonymous subclass's constructor result
+  // is the top qualifier, so it does not propagate the backing map's @Modifiable type.
+  static <K extends Object> @Modifiable VivifyingMap<K, AElement> newVivifyingLHMap_AE() {
     return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public AElement createValueFor(K k) {
@@ -245,7 +250,7 @@ public class AElement implements Cloneable {
     // `@Nullable Object`, to `WrapperMap.get(Object)`, whose parameter is `@NonNull`.
   })
   static <K, V extends AElement> void copyMapContents(
-      VivifyingMap<K, V> orig, VivifyingMap<K, V> copy) {
+      VivifyingMap<K, V> orig, @Growable @Replaceable VivifyingMap<K, V> copy) {
     for (K key : orig.keySet()) {
       V val = orig.get(key);
       copy.put(key, (V) val.clone());
