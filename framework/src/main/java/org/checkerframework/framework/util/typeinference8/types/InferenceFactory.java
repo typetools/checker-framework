@@ -144,9 +144,12 @@ public class InferenceFactory {
       List<Variable> classTypeArgVars) {
     TypeMirror enclosingTypeMirror = typeMirror.getEnclosingType();
     if (enclosingTypeMirror.getKind() == TypeKind.DECLARED) {
+      AnnotatedDeclaredType enclosingType = type.getEnclosingType();
+      assert enclosingType != null
+          : "@AssumeAssertion(nullness): the underlying type has a declared enclosing type";
       createVariables(
           (DeclaredType) enclosingTypeMirror,
-          type.getEnclosingType(),
+          enclosingType,
           memRef,
           context,
           map,
@@ -252,6 +255,8 @@ public class InferenceFactory {
       }
       case RETURN -> {
         Tree enclosing = TreePathUtil.enclosingMethodOrLambda(path);
+        assert enclosing != null
+            : "@AssumeAssertion(nullness): a return statement is in a method or lambda";
         if (enclosing instanceof MethodTree methodTree) {
           AnnotatedTypeMirror res = factory.getMethodReturnType(methodTree);
           return new ProperType(res, this.context);
@@ -477,8 +482,7 @@ public class InferenceFactory {
       }
       if (receiverType == null) {
         executableType = (ExecutableType) ele.asType();
-      }
-      if (executableType == null) {
+      } else if (executableType == null) {
         javax.lang.model.util.Types types = context.env.getTypeUtils();
         executableType = (ExecutableType) types.asMemberOf(receiverType, ele);
       }
@@ -492,8 +496,9 @@ public class InferenceFactory {
       List<? extends Tree> typeArgs = TreeUtils.getTypeArgumentsToNewClassTree(newClassTree);
       if (!typeArgs.isEmpty()) {
         ExecutableElement e = TreeUtils.elementFromUse(newClassTree);
-        List<? extends TypeParameterElement> typeParams =
-            ElementUtils.enclosingTypeElement(e).getTypeParameters();
+        TypeElement classElt = ElementUtils.enclosingTypeElement(e);
+        assert classElt != null : "@AssumeAssertion(nullness): a constructor is in a class";
+        List<? extends TypeParameterElement> typeParams = classElt.getTypeParameters();
         List<TypeVariable> typeVariables = new ArrayList<>();
         for (TypeParameterElement typeParam : typeParams) {
           typeVariables.add((TypeVariable) typeParam.asType());
@@ -604,6 +609,7 @@ public class InferenceFactory {
       // for the class type parameters, too.
       Element classEle =
           ElementUtils.enclosingTypeElement(TreeUtils.elementFromUse((NewClassTree) invocation));
+      assert classEle != null : "@AssumeAssertion(nullness): a constructor is in a class";
       if (classEle.getSimpleName().contentEquals("")) {
         classEle =
             ((DeclaredType) TreeUtils.typeOf(((NewClassTree) invocation).getIdentifier()))
@@ -767,6 +773,7 @@ public class InferenceFactory {
     // Don't save this theta, because there is also a noncapture theta for this tree.
     DeclaredType underlying = (DeclaredType) capturedType.getJavaType();
     TypeElement ele = TypesUtils.getTypeElement(underlying);
+    assert ele != null : "@AssumeAssertion(nullness): underlying is a declared type";
     AnnotatedDeclaredType classType = typeFactory.getAnnotatedType(ele);
     Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
     Theta map = new Theta();
@@ -844,6 +851,7 @@ public class InferenceFactory {
         // inferred.
         // So use the type declared type.
         TypeElement typeEle = TypesUtils.getTypeElement(enclosingType.getUnderlyingType());
+        assert typeEle != null : "@AssumeAssertion(nullness): enclosingType is a declared type";
         enclosingType = typeFactory.getAnnotatedType(typeEle);
       }
     } else if (memRefKind == MemberReferenceKind.UNBOUND) {
@@ -855,6 +863,7 @@ public class InferenceFactory {
         // argument of the JLS 15.13.1 type to search, or, if there is none, to an inference
         // variable.
         TypeElement typeEle = TypesUtils.getTypeElement(enclosingType.getUnderlyingType());
+        assert typeEle != null : "@AssumeAssertion(nullness): enclosingType is a declared type";
         enclosingType = typeFactory.getAnnotatedType(typeEle);
       }
     } else if (memRefKind == MemberReferenceKind.STATIC) {
@@ -868,6 +877,8 @@ public class InferenceFactory {
     // The ::method element, see JLS 15.13.1 Compile-Time Declaration of a Method Reference
     ExecutableElement compileTimeDeclaration =
         (ExecutableElement) TreeUtils.elementFromTree(memRef);
+    assert compileTimeDeclaration != null
+        : "@AssumeAssertion(nullness): javac resolved the method reference";
 
     if (enclosingType.getKind() == TypeKind.DECLARED) {
       enclosingType = AbstractType.makeGround((AnnotatedDeclaredType) enclosingType, typeFactory);

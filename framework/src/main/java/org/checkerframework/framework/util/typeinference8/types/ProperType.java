@@ -304,15 +304,21 @@ public class ProperType extends AbstractType {
   }
 
   @Override
-  public @Nullable AbstractType getWildcardLowerBound() {
-    return partFromOrigin(
-        AbstractType::getWildcardLowerBound, super::getWildcardLowerBound, boundsShareRoot());
+  public AbstractType getWildcardLowerBound() {
+    AbstractType result =
+        partFromOrigin(
+            AbstractType::getWildcardLowerBound, super::getWildcardLowerBound, boundsShareRoot());
+    assert result != null : "@AssumeAssertion(nullness): getWildcardLowerBound is non-null";
+    return result;
   }
 
   @Override
-  public @Nullable AbstractType getWildcardUpperBound() {
-    return partFromOrigin(
-        AbstractType::getWildcardUpperBound, super::getWildcardUpperBound, boundsShareRoot());
+  public AbstractType getWildcardUpperBound() {
+    AbstractType result =
+        partFromOrigin(
+            AbstractType::getWildcardUpperBound, super::getWildcardUpperBound, boundsShareRoot());
+    assert result != null : "@AssumeAssertion(nullness): getWildcardUpperBound is non-null";
+    return result;
   }
 
   @Override

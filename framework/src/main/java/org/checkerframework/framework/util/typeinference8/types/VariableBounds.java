@@ -12,7 +12,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -113,20 +112,50 @@ public class VariableBounds {
     qualifierBounds.put(BoundKind.LOWER, new LinkedHashSet<>());
   }
 
+  /**
+   * Returns the value to which {@code map} maps {@code kind}.
+   *
+   * @param <V> the type of the values in {@code map}
+   * @param map a map with a value for every {@link BoundKind}
+   * @param kind a kind of bound
+   * @return the value to which {@code map} maps {@code kind}
+   */
+  @SuppressWarnings("nullness:return") // every map passed here has a value for every BoundKind
+  static <V> V getOfKind(EnumMap<BoundKind, V> map, BoundKind kind) {
+    return map.get(kind);
+  }
+
+  /**
+   * Returns the bounds of kind {@code kind} on this variable.
+   *
+   * @param kind a kind of bound
+   * @return the bounds of kind {@code kind} on this variable
+   */
+  public Set<AbstractType> getBoundsOfKind(BoundKind kind) {
+    return getOfKind(bounds, kind);
+  }
+
+  /**
+   * Returns the qualifier bounds of kind {@code kind} on this variable.
+   *
+   * @param kind a kind of bound
+   * @return the qualifier bounds of kind {@code kind} on this variable
+   */
+  public Set<AbstractQualifier> getQualifierBoundsOfKind(BoundKind kind) {
+    return getOfKind(qualifierBounds, kind);
+  }
+
   /** Save the current bounds in case the first attempt at resolution fails. */
   public void save() {
-    savedBounds = new EnumMap<>(BoundKind.class);
-    savedBounds.put(BoundKind.EQUAL, new LinkedHashSet<>(bounds.get(BoundKind.EQUAL)));
-    savedBounds.put(BoundKind.UPPER, new LinkedHashSet<>(bounds.get(BoundKind.UPPER)));
-    savedBounds.put(BoundKind.LOWER, new LinkedHashSet<>(bounds.get(BoundKind.LOWER)));
-
-    savedQualifierBounds = new EnumMap<>(BoundKind.class);
-    savedQualifierBounds.put(
-        BoundKind.EQUAL, new LinkedHashSet<>(qualifierBounds.get(BoundKind.EQUAL)));
-    savedQualifierBounds.put(
-        BoundKind.UPPER, new LinkedHashSet<>(qualifierBounds.get(BoundKind.UPPER)));
-    savedQualifierBounds.put(
-        BoundKind.LOWER, new LinkedHashSet<>(qualifierBounds.get(BoundKind.LOWER)));
+    EnumMap<BoundKind, LinkedHashSet<AbstractType>> newSavedBounds = new EnumMap<>(BoundKind.class);
+    EnumMap<BoundKind, LinkedHashSet<AbstractQualifier>> newSavedQualifierBounds =
+        new EnumMap<>(BoundKind.class);
+    for (BoundKind kind : BoundKind.values()) {
+      newSavedBounds.put(kind, new LinkedHashSet<>(getBoundsOfKind(kind)));
+      newSavedQualifierBounds.put(kind, new LinkedHashSet<>(getQualifierBoundsOfKind(kind)));
+    }
+    savedBounds = newSavedBounds;
+    savedQualifierBounds = newSavedQualifierBounds;
   }
 
   /**
@@ -137,20 +166,19 @@ public class VariableBounds {
     EnumMap<BoundKind, LinkedHashSet<AbstractType>> savedBounds = this.savedBounds;
     EnumMap<BoundKind, LinkedHashSet<AbstractQualifier>> savedQualifierBounds =
         this.savedQualifierBounds;
-    assert savedBounds != null && savedQualifierBounds != null : "restore() called before save()";
+    if (savedBounds == null || savedQualifierBounds == null) {
+      throw new BugInCF("restore() called before save()");
+    }
     instantiation = null;
     bounds.clear();
-    bounds.put(BoundKind.EQUAL, new LinkedHashSet<>(savedBounds.get(BoundKind.EQUAL)));
-    bounds.put(BoundKind.UPPER, new LinkedHashSet<>(savedBounds.get(BoundKind.UPPER)));
-    bounds.put(BoundKind.LOWER, new LinkedHashSet<>(savedBounds.get(BoundKind.LOWER)));
+    for (BoundKind kind : BoundKind.values()) {
+      bounds.put(kind, new LinkedHashSet<>(getOfKind(savedBounds, kind)));
+    }
     setInstantiationFromEqualBounds();
     qualifierBounds.clear();
-    qualifierBounds.put(
-        BoundKind.EQUAL, new LinkedHashSet<>(savedQualifierBounds.get(BoundKind.EQUAL)));
-    qualifierBounds.put(
-        BoundKind.UPPER, new LinkedHashSet<>(savedQualifierBounds.get(BoundKind.UPPER)));
-    qualifierBounds.put(
-        BoundKind.LOWER, new LinkedHashSet<>(savedQualifierBounds.get(BoundKind.LOWER)));
+    for (BoundKind kind : BoundKind.values()) {
+      qualifierBounds.put(kind, new LinkedHashSet<>(getOfKind(savedQualifierBounds, kind)));
+    }
   }
 
   /**
@@ -197,9 +225,7 @@ public class VariableBounds {
    * any, choosing among them as {@link #addBound} does.
    */
   private void setInstantiationFromEqualBounds() {
-    @SuppressWarnings("nullness:assignment") // every BoundKind is a key of `bounds`
-    @NonNull Set<AbstractType> equalBounds = bounds.get(BoundKind.EQUAL);
-    for (AbstractType t : equalBounds) {
+    for (AbstractType t : getBoundsOfKind(BoundKind.EQUAL)) {
       if (t.isProper()) {
         setInstantiationFromEqualBound((ProperType) t);
       }
@@ -247,9 +273,7 @@ public class VariableBounds {
       boundType = boxedType;
       setInstantiationFromEqualBound(boxedType);
     }
-    @SuppressWarnings("nullness:assignment") // every BoundKind is a key of `bounds`
-    @NonNull Set<AbstractType> boundsOfKind = bounds.get(kind);
-    if (boundsOfKind.add(boundType)) {
+    if (getBoundsOfKind(kind).add(boundType)) {
       addConstraintsFromComplementaryBounds(parent, kind, boundType);
       if (!boundType.ignoreAnnotations) {
         Set<AbstractQualifier> aQuals = boundType.getQualifiers();
@@ -269,7 +293,7 @@ public class VariableBounds {
   public void addQualifierBound(BoundKind kind, Set<? extends AbstractQualifier> qualifiers) {
     addConstraintsFromComplementaryQualifierBounds(kind, qualifiers);
     addConstraintsFromComplementaryBounds(kind, qualifiers);
-    qualifierBounds.get(kind).addAll(qualifiers);
+    getQualifierBoundsOfKind(kind).addAll(qualifiers);
   }
 
   /**
@@ -280,24 +304,24 @@ public class VariableBounds {
    */
   public void addConstraintsFromComplementaryQualifierBounds(
       BoundKind kind, Set<? extends AbstractQualifier> qualifiers) {
-    Set<AbstractQualifier> equalBounds = qualifierBounds.get(BoundKind.EQUAL);
+    Set<AbstractQualifier> equalBounds = getQualifierBoundsOfKind(BoundKind.EQUAL);
     switch (kind) {
       case EQUAL -> {
         addQualifierConstraint(qualifiers, equalBounds, Kind.QUALIFIER_EQUALITY);
         addQualifierConstraint(
-            qualifierBounds.get(BoundKind.LOWER), qualifiers, Kind.QUALIFIER_SUBTYPE);
+            getQualifierBoundsOfKind(BoundKind.LOWER), qualifiers, Kind.QUALIFIER_SUBTYPE);
         addQualifierConstraint(
-            qualifiers, qualifierBounds.get(BoundKind.UPPER), Kind.QUALIFIER_SUBTYPE);
+            qualifiers, getQualifierBoundsOfKind(BoundKind.UPPER), Kind.QUALIFIER_SUBTYPE);
       }
       case LOWER -> {
         addQualifierConstraint(qualifiers, equalBounds, Kind.QUALIFIER_SUBTYPE);
         addQualifierConstraint(
-            qualifiers, qualifierBounds.get(BoundKind.UPPER), Kind.QUALIFIER_SUBTYPE);
+            qualifiers, getQualifierBoundsOfKind(BoundKind.UPPER), Kind.QUALIFIER_SUBTYPE);
       }
       default -> { // UPPER
         addQualifierConstraint(equalBounds, qualifiers, Kind.QUALIFIER_SUBTYPE);
         addQualifierConstraint(
-            qualifierBounds.get(BoundKind.LOWER), qualifiers, Kind.QUALIFIER_SUBTYPE);
+            getQualifierBoundsOfKind(BoundKind.LOWER), qualifiers, Kind.QUALIFIER_SUBTYPE);
       }
     }
   }
@@ -327,41 +351,41 @@ public class VariableBounds {
       @Nullable Constraint parent, BoundKind kind, AbstractType boundType) {
     switch (kind) {
       case EQUAL -> {
-        for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
+        for (AbstractType t : getBoundsOfKind(BoundKind.EQUAL)) {
           if (boundType != t) {
             addComplementaryBoundConstraint(parent, boundType, t, Kind.TYPE_EQUALITY);
           }
         }
-        for (AbstractType t : bounds.get(BoundKind.LOWER)) {
+        for (AbstractType t : getBoundsOfKind(BoundKind.LOWER)) {
           if (boundType != t) {
             addComplementaryBoundConstraint(parent, t, boundType, Kind.SUBTYPE);
           }
         }
-        for (AbstractType t : bounds.get(BoundKind.UPPER)) {
+        for (AbstractType t : getBoundsOfKind(BoundKind.UPPER)) {
           if (boundType != t) {
             addComplementaryBoundConstraint(parent, boundType, t, Kind.SUBTYPE);
           }
         }
       }
       case LOWER -> {
-        for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
+        for (AbstractType t : getBoundsOfKind(BoundKind.EQUAL)) {
           if (boundType != t) {
             addComplementaryBoundConstraint(parent, boundType, t, Kind.SUBTYPE);
           }
         }
-        for (AbstractType t : bounds.get(BoundKind.UPPER)) {
+        for (AbstractType t : getBoundsOfKind(BoundKind.UPPER)) {
           if (boundType != t) {
             addComplementaryBoundConstraint(parent, boundType, t, Kind.SUBTYPE);
           }
         }
       }
       case UPPER -> {
-        for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
+        for (AbstractType t : getBoundsOfKind(BoundKind.EQUAL)) {
           if (boundType != t) {
             addComplementaryBoundConstraint(parent, t, boundType, Kind.SUBTYPE);
           }
         }
-        for (AbstractType t : bounds.get(BoundKind.LOWER)) {
+        for (AbstractType t : getBoundsOfKind(BoundKind.LOWER)) {
           if (boundType != t) {
             addComplementaryBoundConstraint(parent, t, boundType, Kind.SUBTYPE);
           }
@@ -372,7 +396,7 @@ public class VariableBounds {
         // then for all i (1 <= i <= n), if Si and Ti are types (not wildcards),
         // the constraint formula <Si = Ti> is implied.
         if (boundType.isInferenceType() || boundType.isProper()) {
-          for (AbstractType t : bounds.get(BoundKind.UPPER)) {
+          for (AbstractType t : getBoundsOfKind(BoundKind.UPPER)) {
             // `boundType` has already been added to the upper bounds.
             if (boundType != t && (t.isProper() || t.isInferenceType())) {
               constraints.addAll(getConstraintsFromParameterized(parent, boundType, t));
@@ -390,21 +414,21 @@ public class VariableBounds {
       switch (kind) {
         case EQUAL -> {
           // boundVar = this variable, so every qualifier bound holds of boundVar as well.
-          boundVar.addQualifierBound(BoundKind.EQUAL, qualifierBounds.get(BoundKind.EQUAL));
-          boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.LOWER));
-          boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.UPPER));
+          boundVar.addQualifierBound(BoundKind.EQUAL, getQualifierBoundsOfKind(BoundKind.EQUAL));
+          boundVar.addQualifierBound(BoundKind.LOWER, getQualifierBoundsOfKind(BoundKind.LOWER));
+          boundVar.addQualifierBound(BoundKind.UPPER, getQualifierBoundsOfKind(BoundKind.UPPER));
         }
         case LOWER -> {
           // boundVar <: this variable, so from `this variable = q` and `this variable <: q` it
           // follows that boundVar <: q.  Nothing follows from `q <: this variable`.
-          boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.EQUAL));
-          boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.UPPER));
+          boundVar.addQualifierBound(BoundKind.UPPER, getQualifierBoundsOfKind(BoundKind.EQUAL));
+          boundVar.addQualifierBound(BoundKind.UPPER, getQualifierBoundsOfKind(BoundKind.UPPER));
         }
         case UPPER -> {
           // this variable <: boundVar, so from `this variable = q` and `q <: this variable` it
           // follows that q <: boundVar.  Nothing follows from `this variable <: q`.
-          boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.EQUAL));
-          boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.LOWER));
+          boundVar.addQualifierBound(BoundKind.LOWER, getQualifierBoundsOfKind(BoundKind.EQUAL));
+          boundVar.addQualifierBound(BoundKind.LOWER, getQualifierBoundsOfKind(BoundKind.LOWER));
         }
       }
     }
@@ -433,27 +457,27 @@ public class VariableBounds {
   public void addConstraintsFromComplementaryBounds(
       BoundKind kind, Set<? extends AbstractQualifier> s) {
     // Copy bound to equal variables
-    for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
+    for (AbstractType t : getBoundsOfKind(BoundKind.EQUAL)) {
       if (t.isUseOfVariable()) {
         VariableBounds otherBounds = ((UseOfVariable) t).getVariable().getBounds();
-        otherBounds.qualifierBounds.get(kind).addAll(s);
+        otherBounds.getQualifierBoundsOfKind(kind).addAll(s);
       }
     }
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {
-      for (AbstractType t : bounds.get(BoundKind.LOWER)) {
+      for (AbstractType t : getBoundsOfKind(BoundKind.LOWER)) {
         if (t.isUseOfVariable()) {
           VariableBounds otherBounds = ((UseOfVariable) t).getVariable().getBounds();
-          otherBounds.qualifierBounds.get(BoundKind.UPPER).addAll(s);
+          otherBounds.getQualifierBoundsOfKind(BoundKind.UPPER).addAll(s);
         }
       }
     }
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.LOWER) {
-      for (AbstractType t : bounds.get(BoundKind.UPPER)) {
+      for (AbstractType t : getBoundsOfKind(BoundKind.UPPER)) {
         if (t.isUseOfVariable()) {
           VariableBounds otherBounds = ((UseOfVariable) t).getVariable().getBounds();
-          otherBounds.qualifierBounds.get(BoundKind.LOWER).addAll(s);
+          otherBounds.getQualifierBoundsOfKind(BoundKind.LOWER).addAll(s);
         }
       }
     }
@@ -526,7 +550,11 @@ public class VariableBounds {
     String description = "Constraint from parameterized bound";
 
     List<AbstractType> sAsSuperTypeArguments = sAsSuper.getTypeArguments();
+    assert sAsSuperTypeArguments != null
+        : "@AssumeAssertion(nullness): sAsSuper is a declared type";
     List<AbstractType> tAsSuperTypeArguments = tAsSuper.getTypeArguments();
+    assert tAsSuperTypeArguments != null
+        : "@AssumeAssertion(nullness): tAsSuper is a declared type";
     if (sAsSuperTypeArguments.size() != tAsSuperTypeArguments.size()) {
       if (sAsSuper.isRaw() || tAsSuper.isRaw()) {
         // A raw type has no type arguments, so the two types imply nothing about one another's.
@@ -615,7 +643,7 @@ public class VariableBounds {
    */
   public boolean onlyProperBounds() {
     for (BoundKind k : BoundKind.values()) {
-      for (AbstractType bound : bounds.get(k)) {
+      for (AbstractType bound : getBoundsOfKind(k)) {
         if (!bound.isProper()) {
           return false;
         }
@@ -631,7 +659,7 @@ public class VariableBounds {
    */
   public Set<ProperType> findProperLowerBounds() {
     LinkedHashSet<ProperType> set = new LinkedHashSet<>();
-    for (AbstractType bound : bounds.get(BoundKind.LOWER)) {
+    for (AbstractType bound : getBoundsOfKind(BoundKind.LOWER)) {
       if (bound.isProper()) {
         set.add((ProperType) bound);
       }
@@ -650,9 +678,7 @@ public class VariableBounds {
    */
   public Set<ProperType> findLowerBoundsForAnnotations() {
     Set<ProperType> set = findProperLowerBounds();
-    @SuppressWarnings("nullness:assignment") // every BoundKind is a key of `bounds`
-    @NonNull Set<AbstractType> equalBounds = bounds.get(BoundKind.EQUAL);
-    for (AbstractType bound : equalBounds) {
+    for (AbstractType bound : getBoundsOfKind(BoundKind.EQUAL)) {
       if (bound.isProper() && bound.ignoreAnnotations) {
         set.add((ProperType) bound);
       }
@@ -667,7 +693,7 @@ public class VariableBounds {
    */
   public Set<ProperType> findProperUpperBounds() {
     LinkedHashSet<ProperType> set = new LinkedHashSet<>();
-    for (AbstractType bound : bounds.get(BoundKind.UPPER)) {
+    for (AbstractType bound : getBoundsOfKind(BoundKind.UPPER)) {
       if (bound.isProper()) {
         set.add((ProperType) bound);
       }
@@ -682,7 +708,7 @@ public class VariableBounds {
    * @return all upper bounds
    */
   public Set<AbstractType> upperBounds() {
-    return new LinkedHashSet<>(bounds.get(BoundKind.UPPER));
+    return new LinkedHashSet<>(getBoundsOfKind(BoundKind.UPPER));
   }
 
   /**
@@ -805,12 +831,12 @@ public class VariableBounds {
    *     a type argument
    */
   public boolean hasWildcardParameterizedLowerOrEqualBound() {
-    for (AbstractType type : bounds.get(BoundKind.EQUAL)) {
+    for (AbstractType type : getBoundsOfKind(BoundKind.EQUAL)) {
       if (!type.isUseOfVariable() && type.isWildcardParameterizedType()) {
         return true;
       }
     }
-    for (AbstractType type : bounds.get(BoundKind.LOWER)) {
+    for (AbstractType type : getBoundsOfKind(BoundKind.LOWER)) {
       if (!type.isUseOfVariable() && type.isWildcardParameterizedType()) {
         return true;
       }
@@ -829,7 +855,7 @@ public class VariableBounds {
    */
   public boolean hasLowerBoundDifferentParam() {
     List<AbstractType> parameteredTypes = new ArrayList<>();
-    for (AbstractType type : bounds.get(BoundKind.LOWER)) {
+    for (AbstractType type : getBoundsOfKind(BoundKind.LOWER)) {
       if (type.isProper() && type.isParameterizedType()) {
         parameteredTypes.add(type);
       }
@@ -883,7 +909,7 @@ public class VariableBounds {
    *     is a parameterization
    */
   public boolean hasRawTypeLowerOrEqualBound(AbstractType t) {
-    for (AbstractType type : bounds.get(BoundKind.LOWER)) {
+    for (AbstractType type : getBoundsOfKind(BoundKind.LOWER)) {
       if (type.isUseOfVariable()) {
         continue;
       }
@@ -893,7 +919,7 @@ public class VariableBounds {
       }
     }
 
-    for (AbstractType type : bounds.get(BoundKind.EQUAL)) {
+    for (AbstractType type : getBoundsOfKind(BoundKind.EQUAL)) {
       if (type.isUseOfVariable()) {
         continue;
       }
@@ -920,19 +946,19 @@ public class VariableBounds {
 
     // Only concerned with bounds against proper types or inference types.
     List<AbstractType> upperBoundsNonVar = new ArrayList<>();
-    for (AbstractType bound : bounds.get(VariableBounds.BoundKind.UPPER)) {
+    for (AbstractType bound : getBoundsOfKind(VariableBounds.BoundKind.UPPER)) {
       if (bound.isProper() || bound.isInferenceType()) {
         upperBoundsNonVar.add(bound);
       }
     }
     List<AbstractType> lowerBoundsNonVar = new ArrayList<>();
-    for (AbstractType bound : bounds.get(VariableBounds.BoundKind.LOWER)) {
+    for (AbstractType bound : getBoundsOfKind(VariableBounds.BoundKind.LOWER)) {
       if (bound.isProper() || bound.isInferenceType()) {
         lowerBoundsNonVar.add(bound);
       }
     }
 
-    for (AbstractType bound : bounds.get(VariableBounds.BoundKind.EQUAL)) {
+    for (AbstractType bound : getBoundsOfKind(VariableBounds.BoundKind.EQUAL)) {
       if (bound.isProper() || bound.isInferenceType()) {
         if (TypesUtils.isCapturedTypeVariable(bound.getJavaType())) {
           // Unlike javac, the Checker Framework may infer an expression a second time, against a

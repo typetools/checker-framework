@@ -356,7 +356,7 @@ public class LubGlbChecker extends BaseTypeChecker {
     // `hasLowerBoundDifferentParam` reads only the bounds and the context, so the variable whose
     // bounds these are does not matter.
     VariableBounds bounds = new VariableBounds(null, context);
-    Set<AbstractType> lowerBounds = bounds.bounds.get(BoundKind.LOWER);
+    Set<AbstractType> lowerBounds = bounds.getBoundsOfKind(BoundKind.LOWER);
     lowerBounds.add(comparedList);
     lowerBounds.add(ignoredList);
     check(lowerBounds.size() == 2, "a set of two unequal lower bounds is " + lowerBounds);

@@ -266,8 +266,9 @@ public final class InferenceType extends AbstractType {
     for (TypeVariable typeVar :
         ContainsInferenceVariable.getMentionedTypeVariables(
             map.getTypeVariables(), type.getUnderlyingType())) {
-      @SuppressWarnings("nullness:assignment") // getMentionedTypeVariables returns keys of `map`
       Variable variable = map.get(typeVar);
+      assert variable != null
+          : "@AssumeAssertion(nullness): getMentionedTypeVariables returns keys of `map`";
       variables.add(variable);
     }
     return variables;
@@ -307,9 +308,10 @@ public final class InferenceType extends AbstractType {
     List<Variable> instantiations = new ArrayList<>();
 
     for (Variable alpha : map.values()) {
-      if (alpha.getInstantiation() != null) {
+      ProperType instantiation = alpha.getInstantiation();
+      if (instantiation != null) {
         typeVariables.add(alpha.getJavaType());
-        arguments.add(alpha.getBounds().getInstantiation().getJavaType());
+        arguments.add(instantiation.getJavaType());
         instantiations.add(alpha);
       }
     }
@@ -323,7 +325,10 @@ public final class InferenceType extends AbstractType {
     Map<TypeVariable, AnnotatedTypeMirror> mapping = new LinkedHashMap<>();
 
     for (Variable alpha : instantiations) {
-      AnnotatedTypeMirror instantiation = alpha.getBounds().getInstantiation().getAnnotatedType();
+      ProperType alphaInstantiation = alpha.getInstantiation();
+      assert alphaInstantiation != null
+          : "@AssumeAssertion(nullness): `instantiations` contains only instantiated variables";
+      AnnotatedTypeMirror instantiation = alphaInstantiation.getAnnotatedType();
       context.typeFactory.initializeAtm(instantiation);
       mapping.put(alpha.getJavaType(), instantiation);
     }
