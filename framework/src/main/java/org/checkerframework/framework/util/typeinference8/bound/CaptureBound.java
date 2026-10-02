@@ -152,7 +152,8 @@ public final class CaptureBound {
         }
         // Give alphai the wildcard's bound; see this method's Javadoc.
         if (t.capturedTypeArg.isUpperBoundedWildcard()) {
-          AbstractType T = t.capturedTypeArg.getWildcardUpperBound();
+          @SuppressWarnings("nullness:assignment") // `capturedTypeArg` is a wildcard.
+          @NonNull AbstractType T = t.capturedTypeArg.getWildcardUpperBound();
           t.alpha.getBounds().addBound(null, VariableBounds.BoundKind.UPPER, T);
         } else if (t.capturedTypeArg.isLowerBoundedWildcard()) {
           @SuppressWarnings("nullness:assignment") // `capturedTypeArg` is a wildcard.
