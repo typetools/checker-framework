@@ -52,6 +52,7 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -3884,7 +3885,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   private String fileAndLineNumber(Tree tree) {
     StringBuilder result = new StringBuilder();
-    result.append(Paths.get(root.getSourceFile().getName()).getFileName().toString());
+    String sourceFileName = root.getSourceFile().getName();
+    Path simpleFileName = Paths.get(sourceFileName).getFileName();
+    result.append(simpleFileName == null ? sourceFileName : simpleFileName.toString());
     @SuppressWarnings("removal") // getStartPosition(Tree) requires JDK 27
     long valuePos = positions.getStartPosition(root, tree);
     LineMap lineMap = root.getLineMap();
