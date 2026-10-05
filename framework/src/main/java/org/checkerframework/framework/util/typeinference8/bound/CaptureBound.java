@@ -67,12 +67,15 @@ public final class CaptureBound {
     this.invocation = invocation;
     DeclaredType underlying = (DeclaredType) capturedType.getJavaType();
     TypeElement ele = TypesUtils.getTypeElement(underlying);
+    assert ele != null : "@AssumeAssertion(nullness): underlying is a declared type";
     this.map = context.inferenceTypeFactory.createThetaForCapture(invocation, capturedType);
 
     lhs = (InferenceType) context.inferenceTypeFactory.getTypeOfElement(ele, map);
 
     Iterator<Variable> alphas = this.map.values().iterator();
-    Iterator<AbstractType> args = capturedType.getTypeArguments().iterator();
+    List<AbstractType> capturedTypeArgs = capturedType.getTypeArguments();
+    assert capturedTypeArgs != null : "@AssumeAssertion(nullness): capturedType is a declared type";
+    Iterator<AbstractType> args = capturedTypeArgs.iterator();
     for (TypeParameterElement pEle : ele.getTypeParameters()) {
       AbstractType Bi = context.inferenceTypeFactory.getTypeOfBound(pEle, map);
       AbstractType Ai = args.next();

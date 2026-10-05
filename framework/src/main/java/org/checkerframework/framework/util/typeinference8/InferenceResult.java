@@ -192,7 +192,9 @@ public class InferenceResult {
       TypeVariable typeVariable = tv.getUnderlyingType();
       for (TypeVariable t : new HashSet<>(map.keySet())) {
         if (TypesUtils.areSame(t, typeVariable)) {
-          map.put(typeVariable, map.remove(t));
+          AnnotatedTypeMirror type = map.remove(t);
+          assert type != null : "@AssumeAssertion(nullness): t is a key of map";
+          map.put(typeVariable, type);
         }
       }
     }

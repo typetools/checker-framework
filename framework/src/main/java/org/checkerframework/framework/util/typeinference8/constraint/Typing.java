@@ -304,7 +304,10 @@ public class Typing extends TypeConstraint {
       }
 
       List<AbstractType> Bs = sAsSuper.getTypeArguments();
-      Iterator<AbstractType> As = T.getTypeArguments().iterator();
+      assert Bs != null : "@AssumeAssertion(nullness): sAsSuper is a declared type";
+      List<AbstractType> tTypeArgs = T.getTypeArguments();
+      assert tTypeArgs != null : "@AssumeAssertion(nullness): T is a parameterized type";
+      Iterator<AbstractType> As = tTypeArgs.iterator();
       List<Integer> covariantArgIndexes =
           context
               .typeFactory
@@ -383,7 +386,11 @@ public class Typing extends TypeConstraint {
     if (msArrayType.isPrimitiveArray() && T.isPrimitiveArray()) {
       return ConstraintSet.TRUE;
     } else {
-      return new Typing(this, msArrayType.getComponentType(), T.getComponentType(), Kind.SUBTYPE);
+      AbstractType sComponentType = msArrayType.getComponentType();
+      assert sComponentType != null : "@AssumeAssertion(nullness): msArrayType is an array type";
+      AbstractType tComponentType = T.getComponentType();
+      assert tComponentType != null : "@AssumeAssertion(nullness): T is an array type";
+      return new Typing(this, sComponentType, tComponentType, Kind.SUBTYPE);
     }
   }
 
@@ -493,10 +500,19 @@ public class Typing extends TypeConstraint {
       if (superS != null && superS.isRaw()) {
         return ReductionResult.UNCHECKED_CONVERSION;
       }
-    } else if (T.getTypeKind() == TypeKind.ARRAY && T.getComponentType().isParameterizedType()) {
-      AbstractType superS = S.asSuper(T.getJavaType());
-      if (superS != null && superS.getComponentType().isRaw()) {
-        return ReductionResult.UNCHECKED_CONVERSION;
+    } else if (T.getTypeKind() == TypeKind.ARRAY) {
+      AbstractType tComponentType = T.getComponentType();
+      assert tComponentType != null : "@AssumeAssertion(nullness): T is an array type";
+      if (tComponentType.isParameterizedType()) {
+        AbstractType superS = S.asSuper(T.getJavaType());
+        if (superS != null) {
+          AbstractType superSComponentType = superS.getComponentType();
+          assert superSComponentType != null
+              : "@AssumeAssertion(nullness): superS is a supertype of S that is an array type";
+          if (superSComponentType.isRaw()) {
+            return ReductionResult.UNCHECKED_CONVERSION;
+          }
+        }
       }
     }
 

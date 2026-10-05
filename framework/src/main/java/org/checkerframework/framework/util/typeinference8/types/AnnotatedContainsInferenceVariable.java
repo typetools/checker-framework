@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -78,12 +79,12 @@ public final class AnnotatedContainsInferenceVariable {
     }
 
     @Override
-    public Boolean visit(AnnotatedTypeMirror t, Void aVoid) {
+    public Boolean visit(@Nullable AnnotatedTypeMirror t, Void aVoid) {
       return t != null && t.accept(this, aVoid);
     }
 
     @Override
-    public Boolean visit(AnnotatedTypeMirror t) {
+    public Boolean visit(@Nullable AnnotatedTypeMirror t) {
       return t != null && t.accept(this, null);
     }
 
