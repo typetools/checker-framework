@@ -1,5 +1,6 @@
 // An inherited implementation that assumes the purity of a functional-interface argument, paired
-// with an interface method that only a subclass implements with it, is not checked.
+// with an interface method that only a subclass implements with it, is checked at a call whose
+// parameter type is a type variable of the callee.
 
 import java.util.function.Supplier;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -20,17 +21,16 @@ public class PurityInheritedImplementationGap {
   }
 
   /** Base.apply implements I<Supplier<Integer>>.apply, but only in Sub. */
-  // :: error: [purity.functional.argument.parameter]
   static class Sub extends Base implements I<Supplier<Integer>> {}
 
-  /** The parameter type at this call is T, so the argument is not checked. */
+  /** The parameter type at this call is T, which is inferred to be Supplier<Integer>. */
   @SideEffectFree
   static <T> int callThrough(I<T> i, T t) {
     return i.apply(t);
   }
 
   static int unannotated() {
-    // callThrough is side-effect-free, yet this increments count.
+    // :: error: [purity.assign.field]
     return callThrough(new Sub(), () -> count++);
   }
 }

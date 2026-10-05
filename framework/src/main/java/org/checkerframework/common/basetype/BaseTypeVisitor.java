@@ -70,13 +70,11 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
@@ -1674,13 +1672,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * makes, because {@link #checkLambdaPurity} and {@link
    * BaseTypeVisitor.OverrideChecker#checkMethodReferencePurity} check that.
    *
-   * <p>A parameter whose declared type is a type variable of the callee's class is checked against
-   * the functional method of its type at the call site, in which the receiver's type arguments are
-   * substituted for the class's type variables. A call through {@code I<Supplier<Integer>>} of
-   * {@code @SideEffectFree int apply(T t)} may run an implementation whose parameter is a {@code
-   * Supplier<Integer>} and that calls it. A parameter whose declared type is a type variable of the
-   * callee itself, such as the parameter of {@code List.of(E)}, is not checked: no implementation
-   * of the callee knows that the argument is a functional interface.
+   * <p>A parameter whose declared type is a type variable is checked against the functional method
+   * of its type at the call site, in which the receiver's type arguments and the callee's inferred
+   * or explicit type arguments are substituted for the type variables. A call through {@code
+   * I<Supplier<Integer>>} of {@code @SideEffectFree int apply(T t)} may run an implementation whose
+   * parameter is a {@code Supplier<Integer>} and that calls it. A callee that receives a
+   * functional-interface argument through a type variable of its own, such as {@code List.of(E)},
+   * is assumed to call it, too.
    *
    * @param callee the invoked method or constructor
    * @param calleeType the type of {@code callee} at the call site, or null if it is not known
@@ -1719,7 +1717,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       ExecutableElement paramFunction = parameterFunctionalMethod(callee, paramIndex);
       if (paramFunction == null
           && paramTypesAtCall != null
-          && isClassTypeVariable(parameterArgumentType(callee, paramIndex, null))) {
+          && parameterArgumentType(callee, paramIndex, null).getKind() == TypeKind.TYPEVAR) {
         paramFunction =
             functionalMethodOfType(
                 parameterArgumentType(
@@ -1784,19 +1782,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     ProcessingEnvironment env = atypeFactory.getProcessingEnv();
     TypeMirror functionalType = PurityChecker.functionalInterfaceType(type, env);
     return functionalType == null ? null : TypesUtils.findFunction(functionalType, env);
-  }
-
-  /**
-   * Returns true if {@code type} is a type variable that a class or interface declares, rather than
-   * a method or constructor.
-   *
-   * @param type a type
-   * @return true if {@code type} is a type variable of a class or interface
-   */
-  private static boolean isClassTypeVariable(TypeMirror type) {
-    return type.getKind() == TypeKind.TYPEVAR
-        && ((TypeParameterElement) ((TypeVariable) type).asElement()).getGenericElement()
-            instanceof TypeElement;
   }
 
   /**

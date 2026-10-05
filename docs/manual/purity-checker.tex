@@ -159,14 +159,14 @@ a \<@SideEffectsOnly> method).  For a varargs parameter whose element type is
 a functional interface, such as \<Runnable...>, each argument that the call
 passes as an element of the array is checked, as is each initializer of an
 array literal such as \<new Runnable[] \{...\}> that the call passes.  A
-parameter whose type is a type variable of its class, such as \<T> in
-\<@SideEffectFree int apply(T t)> in \code{interface I<T>}, is a
-functional-interface parameter at a call whose receiver instantiates \<T>
-with a functional interface:  a call through \code{I<Supplier<Integer>>} checks
-its argument against \<Supplier.get>.  A parameter whose type is a type
-variable of the method itself, such as the parameter of \<List.of(E)>, is
-not:  the method cannot call its argument.  How the argument is checked
-depends on its form:
+parameter whose type is a type variable is a functional-interface parameter
+at a call that instantiates the type variable with a functional interface.
+For \<T> in \<@SideEffectFree int apply(T t)> in \code{interface I<T>}, a
+call through \code{I<Supplier<Integer>>} checks its argument against
+\<Supplier.get>.  Likewise, a call \<List.of(() -> count++)> that instantiates
+\<E> in \<List.of(E)> with \<Runnable> checks its argument against
+\<Runnable.run>:  a method that is passed a functional-interface argument is
+assumed to call it.  How the argument is checked depends on its form:
 
 \begin{itemize}
 \item

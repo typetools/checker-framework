@@ -1,7 +1,7 @@
 import java.util.function.Supplier;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
-/** A parameter whose type is a type variable of its class is checked at the call site. */
+/** A parameter whose type is a type variable is checked at the call site. */
 public class PurityClassTypeVariableArgument {
   static int count;
 
@@ -56,10 +56,11 @@ public class PurityClassTypeVariableArgument {
   }
 
   void others(Box<Runnable> b) {
-    // Method type variables are not checked.
+    // Method type variables are checked, too.
+    // :: error: [purity.assign.field]
     java.util.List<Runnable> l = java.util.List.of(() -> count++);
+    // :: error: [purity.assign.field]
     Runnable r = id(() -> count++);
-    // Class type variables are.
     // :: error: [purity.assign.field]
     b.put(() -> count++);
     // :: error: [purity.assign.field]
