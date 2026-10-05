@@ -521,6 +521,7 @@ public class ProperType extends AbstractType {
     int result = 31 + inferenceProblemHashCode();
     result = 31 * result + Objects.hashCode(qualifierVars);
     result = 31 * result + Objects.hashCode(type);
+    result = 31 * result + Boolean.hashCode(origin == null);
     return 31 * result + Kind.PROPER.hashCode();
   }
 
