@@ -526,7 +526,9 @@ public class Expression extends TypeConstraint {
     List<AbstractType> APrimes = new ArrayList<>();
     Iterator<Variable> alphaIter = alphas.iterator();
     boolean hasWildcard = false;
-    for (AbstractType Ai : t.getTypeArguments()) {
+    List<AbstractType> As = t.getTypeArguments();
+    assert As != null : "@AssumeAssertion(nullness): t is a wildcard-parameterized declared type";
+    for (AbstractType Ai : As) {
       Variable alphaI = alphaIter.next();
       // If B contains an instantiation (18.1.3) for alphai, T, then A'i = T.
       AbstractType AiPrime = alphaI.getBounds().getInstantiation();
@@ -623,7 +625,7 @@ public class Expression extends TypeConstraint {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

@@ -31,10 +31,10 @@ public class UseOfVariable extends AbstractType {
   private final boolean hasPrimaryAnno;
 
   /** The bottom annotations for each hierarchy that has a primary annotation on this use. */
-  private final Set<AnnotationMirror> bots;
+  private final AnnotationMirrorSet bots;
 
   /** The top annotations for each hierarchy that has a primary annotation on this use. */
-  private final Set<AnnotationMirror> tops;
+  private final AnnotationMirrorSet tops;
 
   /** The annotated type variable for this use. */
   private final AnnotatedTypeVariable type;
@@ -128,8 +128,9 @@ public class UseOfVariable extends AbstractType {
 
   @Override
   public AbstractType applyInstantiations() {
-    if (this.variable.getInstantiation() != null) {
-      return this.variable.getInstantiation();
+    ProperType instantiation = this.variable.getInstantiation();
+    if (instantiation != null) {
+      return instantiation;
     }
 
     return this;
@@ -221,7 +222,7 @@ public class UseOfVariable extends AbstractType {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

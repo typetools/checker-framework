@@ -52,7 +52,6 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -459,6 +458,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * <p>Subclasses may override this method to disable the test even if the "ajavaChecks" option is
    * provided.
    */
+  @SuppressWarnings("removal") // getStartPosition(Tree) requires JDK 27
   protected void testJointJavacJavaParserVisitor() {
     if (root == null || !ajavaChecks) {
       return;
@@ -3883,7 +3883,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   private String fileAndLineNumber(Tree tree) {
     StringBuilder result = new StringBuilder();
-    result.append(Paths.get(root.getSourceFile().getName()).getFileName().toString());
+    String sourceFileName = root.getSourceFile().getName();
+    // The name is a display name, not necessarily a valid host path, so do not use Paths.get().
+    int lastSeparator = Math.max(sourceFileName.lastIndexOf('/'), sourceFileName.lastIndexOf('\\'));
+    String simpleFileName = sourceFileName.substring(lastSeparator + 1);
+    result.append(simpleFileName.isEmpty() ? sourceFileName : simpleFileName);
+    @SuppressWarnings("removal") // getStartPosition(Tree) requires JDK 27
     long valuePos = positions.getStartPosition(root, tree);
     LineMap lineMap = root.getLineMap();
     if (valuePos != -1 && lineMap != null) {
