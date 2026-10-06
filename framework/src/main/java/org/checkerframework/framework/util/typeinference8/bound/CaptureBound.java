@@ -71,16 +71,22 @@ public final class CaptureBound {
 
     lhs = (InferenceType) context.inferenceTypeFactory.getTypeOfElement(ele, map);
 
-    Iterator<Variable> alphas = this.map.values().iterator();
     List<AbstractType> capturedTypeArgs = capturedType.getTypeArguments();
     assert capturedTypeArgs != null : "@AssumeAssertion(nullness): capturedType is a declared type";
+    // Set whether each variable captures a wildcard before adding any bounds, because adding a
+    // bound to one variable may create constraints that mention the others.
+    Iterator<Variable> alphas = this.map.values().iterator();
+    for (AbstractType Ai : capturedTypeArgs) {
+      ((CaptureVariable) alphas.next()).setCapturedWildcard(Ai.getTypeKind() == TypeKind.WILDCARD);
+    }
+
+    alphas = this.map.values().iterator();
     Iterator<AbstractType> args = capturedTypeArgs.iterator();
     for (TypeParameterElement pEle : ele.getTypeParameters()) {
       AbstractType Bi = context.inferenceTypeFactory.getTypeOfBound(pEle, map);
       AbstractType Ai = args.next();
 
       CaptureVariable alphai = (CaptureVariable) alphas.next();
-      alphai.setCapturedWildcard(Ai.getTypeKind() == TypeKind.WILDCARD);
       captureVariables.add(alphai);
       alphai.initialBounds(map);
 

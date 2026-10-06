@@ -492,7 +492,7 @@ public class VariableBounds {
    * @param t a type argument
    * @return the constraints between the type arguments to {@code s} and {@code t}
    */
-  private List<Typing> getConstraintsFromParameterized(
+  private List<Constraint> getConstraintsFromParameterized(
       @Nullable Constraint parent, AbstractType s, AbstractType t) {
     ParameterizedSupers pair = context.inferenceTypeFactory.getParameterizedSupers(s, t);
 
@@ -500,7 +500,7 @@ public class VariableBounds {
       return new ArrayList<>();
     }
 
-    List<Typing> constraints = new ArrayList<>();
+    List<Constraint> constraints = new ArrayList<>();
     // An inner class type's own type arguments are not all of the type arguments it mentions; its
     // enclosing types contribute more, which getTypeArguments() omits.
     AbstractType sAsSuper = pair.aAsSuper();
@@ -533,7 +533,7 @@ public class VariableBounds {
       AbstractType sAsSuper,
       AbstractType t,
       AbstractType tAsSuper,
-      List<Typing> constraints) {
+      List<Constraint> constraints) {
     String description = "Constraint from parameterized bound";
 
     List<AbstractType> sAsSuperTypeArguments = sAsSuper.getTypeArguments();
@@ -575,10 +575,71 @@ public class VariableBounds {
             !covariantArgIndexes.contains(i)
                 && !isSelfReferentialTypeArgument(sAsSuper, s, si)
                 && !isSelfReferentialTypeArgument(tAsSuper, t, ti);
-        constraints.add(
-            new Typing(parent, description, si, ti, Kind.TYPE_EQUALITY, qualifiersMustMatch));
+        if (!isJavacNoOpEquality(si, ti)) {
+          constraints.add(
+              new Typing(parent, description, si, ti, Kind.TYPE_EQUALITY, qualifiersMustMatch));
+        } else if (qualifiersMustMatch && !si.ignoreAnnotations && !ti.ignoreAnnotations) {
+          // javac has no qualifiers, so its rule says nothing about them; keep their equality.
+          ConstraintSet qualifierConstraints = new ConstraintSet();
+          QualifierTyping.addQualifierConstraints(
+              qualifierConstraints,
+              AbstractQualifier.removeUnsolvedPolymorphic(si.getQualifiers()),
+              AbstractQualifier.removeUnsolvedPolymorphic(ti.getQualifiers()),
+              Kind.QUALIFIER_EQUALITY);
+          while (!qualifierConstraints.isEmpty()) {
+            constraints.add(qualifierConstraints.pop());
+          }
+        }
       }
     }
+  }
+
+  /**
+   * Returns true if the Java-type part of the constraint {@code a = b}, implied by two
+   * parameterized bounds, would have no effect in javac: one of {@code a} and {@code b} is a use of
+   * a capture variable for a wildcard, and the other is not a use of an ordinary inference
+   * variable.
+   *
+   * <p>javac does not add bounds to an inference variable for a captured wildcard during
+   * incorporation (see {@code Type.UndetVar#addBound}): its bounds are those of the captured type
+   * variable. An equality between such a variable and another type has an effect only if the other
+   * type is an ordinary inference variable, which receives the bound. A capture variable for a
+   * non-wildcard type argument is ordinary in this sense: javac has no such variable, but uses the
+   * type argument itself. JLS 18.3.1 does not make this exception. Without it, a capture variable
+   * whose type parameter is F-bounded, such as the capture of {@code ? extends Integer} for {@code
+   * V extends Comparable<V>}, has upper bounds {@code Integer} and {@code Comparable<α>}, which
+   * imply {@code α = Integer}. That bound contradicts the captured type variable that javac infers
+   * for {@code α}. See tests/all-systems/Issue8323.java.
+   *
+   * @param a a type argument of one bound
+   * @param b the corresponding type argument of another bound
+   * @return true if javac would ignore the constraint {@code a = b}
+   */
+  private static boolean isJavacNoOpEquality(AbstractType a, AbstractType b) {
+    return (isUseOfCapturedWildcard(a) && !isUseOfOrdinaryVariable(b))
+        || (isUseOfCapturedWildcard(b) && !isUseOfOrdinaryVariable(a));
+  }
+
+  /**
+   * Returns true if {@code type} is a use of a capture variable for a wildcard.
+   *
+   * @param type a type
+   * @return true if {@code type} is a use of a capture variable for a wildcard
+   */
+  private static boolean isUseOfCapturedWildcard(AbstractType type) {
+    return type.isUseOfVariable() && ((UseOfVariable) type).getVariable().isCapturedWildcard();
+  }
+
+  /**
+   * Returns true if {@code type} is a use of an inference variable that is not a capture variable
+   * for a wildcard.
+   *
+   * @param type a type
+   * @return true if {@code type} is a use of an inference variable that is not a capture variable
+   *     for a wildcard
+   */
+  private static boolean isUseOfOrdinaryVariable(AbstractType type) {
+    return type.isUseOfVariable() && !((UseOfVariable) type).getVariable().isCapturedWildcard();
   }
 
   /**
@@ -911,11 +972,13 @@ public class VariableBounds {
 
     for (AbstractType bound : getBoundsOfKind(VariableBounds.BoundKind.EQUAL)) {
       if (bound.isProper() || bound.isInferenceType()) {
-        if (TypesUtils.isCapturedTypeVariable(bound.getJavaType())) {
+        if (TypesUtils.isCapturedOrSyntheticTypeVariable(bound.getJavaType())) {
           // Unlike javac, the Checker Framework may infer an expression a second time, against a
           // target type that a previous inference produced; in that case, ignore this bound
           // (adding no constraints for it) so that this inference reuses the exact value that the
-          // previous inference computed.
+          // previous inference computed.  That value is a captured type variable, or, if the
+          // capture variable's bound mentions itself, a fresh type variable that javac creates in
+          // Infer#instantiateAsUninferredVars.
           continue;
         }
         // var = R implies the bound false

@@ -977,6 +977,24 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns true if {@code type} is a type variable that the compiler created rather than one that
+   * is declared in source code: either a captured type variable, or a fresh type variable that
+   * javac's type inference creates for an inference variable whose bounds mention itself.
+   *
+   * @param type a type mirror
+   * @return true if {@code type} is a captured or synthetic type variable
+   */
+  public static boolean isCapturedOrSyntheticTypeVariable(TypeMirror type) {
+    if (isCapturedTypeVariable(type)) {
+      return true;
+    }
+    return type.getKind() == TypeKind.TYPEVAR
+        && (((Type.TypeVar) TypeAnnotationUtils.unannotatedType(type)).tsym.flags()
+                & Flags.SYNTHETIC)
+            != 0;
+  }
+
+  /**
    * If {@code typeVar} is a captured type variable, then returns its underlying wildcard; otherwise
    * returns {@code null}.
    *
