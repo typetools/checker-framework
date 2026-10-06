@@ -1826,7 +1826,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * functional-interface parameter. See {@link #checkFunctionalArguments}.
    *
    * <p>Inference cannot annotate a lambda expression or a method reference, so it cannot make an
-   * argument meet such a requirement; inferring the kind would introduce errors at call sites.
+   * argument meet such a requirement; inferring the kind would introduce errors at call sites. A
+   * parameter whose type is a type variable bounded by {@code Object} is a functional-interface
+   * parameter at any call that instantiates the type variable with a functional interface, whose
+   * functional method may make no promise, so no kind is inferred for a method with such a
+   * parameter.
    *
    * <p>Discarding one kind can make another one required: determinism is required of an argument
    * that returns no value only when the argument is known to be side-effect-free. The computation
@@ -1845,6 +1849,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         ExecutableElement paramFunction = parameterFunctionalMethod(method, i);
         if (paramFunction != null) {
           required.addAll(purityRequiredOfArgument(paramFunction, result, false));
+        } else if (mayBeInstantiatedWithFunctionalInterface(
+            parameterArgumentType(method, i, null))) {
+          required.addAll(result);
         }
       }
       if (required.isEmpty()) {
@@ -1853,6 +1860,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       result.removeAll(required);
     }
     return result;
+  }
+
+  /**
+   * Returns true if {@code type} is a type variable that a call may instantiate with a functional
+   * interface, even though its upper bound is not one. A type variable whose upper bound is a
+   * functional interface is handled by {@link #parameterFunctionalMethod}. A type variable bounded
+   * by an interface with no abstract methods, such as {@code Serializable}, is not handled,
+   * although a call may instantiate it with an intersection that includes a functional interface.
+   *
+   * @param type a type
+   * @return true if {@code type} is a type variable whose upper bound is {@code Object}
+   */
+  private static boolean mayBeInstantiatedWithFunctionalInterface(TypeMirror type) {
+    return type.getKind() == TypeKind.TYPEVAR && TypesUtils.isObject(TypesUtils.upperBound(type));
   }
 
   /**

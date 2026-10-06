@@ -163,8 +163,8 @@ parameter whose type is a type variable is a functional-interface parameter
 at a call that instantiates the type variable with a functional interface.
 For \<T> in \<@SideEffectFree int apply(T t)> in \code{interface I<T>}, a
 call through \code{I<Supplier<Integer>>} checks its argument against
-\<Supplier.get>.  Likewise, a call \<List.of(() -> count++)> that instantiates
-\<E> in \<List.of(E)> with \<Runnable> checks its argument against
+\<Supplier.get>.  Likewise, a call \code{List.<Runnable>of(() -> count++)}
+that instantiates \<E> in \<List.of(E)> with \<Runnable> checks its argument against
 \<Runnable.run>:  a method that is passed a functional-interface argument is
 assumed to call it.  How the argument is checked depends on its form:
 
