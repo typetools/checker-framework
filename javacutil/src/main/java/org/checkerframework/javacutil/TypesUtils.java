@@ -1720,8 +1720,11 @@ public final class TypesUtils {
       visited.put(t1, t2);
       TypeVariable v1 = (TypeVariable) t1;
       TypeVariable v2 = (TypeVariable) t2;
-      return isSameTypeModuloCaptures(v1.getUpperBound(), v2.getUpperBound(), types, visited)
-          && isSameTypeModuloCaptures(v1.getLowerBound(), v2.getLowerBound(), types, visited);
+      boolean result =
+          isSameTypeModuloCaptures(v1.getUpperBound(), v2.getUpperBound(), types, visited)
+              && isSameTypeModuloCaptures(v1.getLowerBound(), v2.getLowerBound(), types, visited);
+      visited.remove(t1);
+      return result;
     }
     if (t1.getKind() != t2.getKind()) {
       return false;
