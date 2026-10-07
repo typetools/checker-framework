@@ -122,32 +122,46 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
       }
       // mostSpecific is null if the two types are not comparable.  This is normally
       // because one of this or other is a type variable and annotations is empty, but the
-      // other annotations are not empty.  In this case, copy the keyForMaps and to the
-      // value with the no annotations and return it as most specific.
+      // other annotations are not empty.  In this case, add the keyForMaps to the value with
+      // no annotations and return it as most specific.
       if (other.getAnnotations().isEmpty()) {
-        other.addKeyFor(this.keyForMaps);
-        return other;
+        return other.withKeyFor(this.keyForMaps);
       } else if (this.getAnnotations().isEmpty()) {
-        this.addKeyFor(other.keyForMaps);
-        return this;
+        return this.withKeyFor(other.keyForMaps);
       }
       return null;
     }
 
-    mostSpecific.addKeyFor(this.keyForMaps);
+    mostSpecific = mostSpecific.withKeyFor(this.keyForMaps);
     if (other != null) {
-      mostSpecific.addKeyFor(other.keyForMaps);
+      mostSpecific = mostSpecific.withKeyFor(other.keyForMaps);
     }
     return mostSpecific;
   }
 
-  private void addKeyFor(Set<String> newKeyForMaps) {
-    if (newKeyForMaps == null || newKeyForMaps.isEmpty()) {
-      return;
+  /**
+   * Returns a value that is like this one, but whose keyForMaps also contains {@code
+   * newKeyForMaps}. Does not side-effect this value, which might be shared by multiple stores.
+   *
+   * @param newKeyForMaps the maps to add, or null
+   * @return a value like this one whose keyForMaps also contains {@code newKeyForMaps}; it is
+   *     {@code this} if this value's keyForMaps already contains {@code newKeyForMaps}
+   */
+  private KeyForValue withKeyFor(@Nullable Set<String> newKeyForMaps) {
+    if (newKeyForMaps == null
+        || newKeyForMaps.isEmpty()
+        || (keyForMaps != null && keyForMaps.containsAll(newKeyForMaps))) {
+      return this;
     }
-    if (keyForMaps == null) {
-      keyForMaps = new LinkedHashSet<>(MapsP.mapCapacity(newKeyForMaps.size()));
+    KeyForValue result = new KeyForValue(analysis, getAnnotations(), getUnderlyingType());
+    Set<String> resultKeyForMaps =
+        new LinkedHashSet<>(
+            MapsP.mapCapacity((keyForMaps == null ? 0 : keyForMaps.size()) + newKeyForMaps.size()));
+    if (keyForMaps != null) {
+      resultKeyForMaps.addAll(keyForMaps);
     }
-    keyForMaps.addAll(newKeyForMaps);
+    resultKeyForMaps.addAll(newKeyForMaps);
+    result.keyForMaps = resultKeyForMaps;
+    return result;
   }
 }

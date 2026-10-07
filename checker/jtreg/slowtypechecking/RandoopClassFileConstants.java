@@ -23,11 +23,11 @@
  *
  * -AslowTypecheckingSeconds is set low enough that a performance regression produces a
  * "slow.typechecking" warning, and -Werror turns that warning into a test failure.  Measured
- * through jtreg on an otherwise idle machine: 5 seconds, versus 14 seconds before the store-merging
- * optimizations that this test guards, the main one being that an upper bound of an abstract value
- * and itself is that value.  The threshold below is more than double the 5 seconds, because a
- * loaded continuous-integration machine is much slower than an idle one, and it is still below the
- * 14 seconds.
+ * through jtreg on an otherwise idle machine: 5 seconds.  Without the store-merging optimizations
+ * that this test guards, the main one being that an upper bound of an abstract value and itself is
+ * that value, it takes 14 seconds.  The threshold below is more than double the 5 seconds, because
+ * a loaded continuous-integration machine is much slower than an idle one, and it is still below
+ * the 14 seconds.
  *
  * @compile/timeout=600 -Werror -processor org.checkerframework.common.value.ValueChecker -AslowTypecheckingSeconds=12 RandoopClassFileConstants.java
  */

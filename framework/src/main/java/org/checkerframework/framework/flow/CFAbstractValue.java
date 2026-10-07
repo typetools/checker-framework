@@ -531,6 +531,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * @param shouldWiden true if the lub should perform widening
    * @return the least upper bound of this and {@code other}
    */
+  @SuppressWarnings("interning:not.interned") // identity test is a fast special case
   private V upperBound(@Nullable V other, boolean shouldWiden) {
     if (other == null) {
       @SuppressWarnings("unchecked")
@@ -539,8 +540,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
     // An upper bound of a value and itself is that value.  Testing for this is worthwhile because
     // merging the stores at a control-flow join point computes an upper bound for every expression
-    // in the store, and most of those expressions have the same value along both branches.
-    if (upperBoundOfEqualValuesIsThis() && this.equals(other)) {
+    // in the store, and most of those expressions have the same value along both branches.  The
+    // identity test is sound for every subclass; the equality test is sound only for a subclass
+    // that opts in.
+    if (this == other || (upperBoundOfEqualValuesIsThis() && this.equals(other))) {
       @SuppressWarnings("unchecked")
       V v = (V) this;
       return v;
