@@ -31,6 +31,7 @@ import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -260,7 +261,7 @@ public abstract class AbstractType {
    * function type. Otherwise, {@code functionType} is null. Initialized by {@link
    * #getFunctionType()}.
    */
-  protected AnnotatedExecutableType functionType = null;
+  protected @Nullable AnnotatedExecutableType functionType = null;
 
   /**
    * Returns true if this {@link AbstractType} is a functional interface type.
@@ -650,32 +651,32 @@ public abstract class AbstractType {
   }
 
   /**
-   * If this type is a wildcard, returns its lower bound; otherwise, returns null.
+   * Returns the lower bound of this wildcard. Must only be called on a wildcard.
    *
-   * @return the lower bound of this wildcard type, or null if this type is not a wildcard
+   * @return the lower bound of this wildcard type
+   * @throws BugInCF if this type is not a wildcard
    */
-  public @Nullable AbstractType getWildcardLowerBound() {
-    if (getJavaType().getKind() == TypeKind.WILDCARD) {
-      return create(
-          ((AnnotatedWildcardType) getAnnotatedType()).getSuperBound(), ignoreAnnotations);
+  public AbstractType getWildcardLowerBound() {
+    if (getJavaType().getKind() != TypeKind.WILDCARD) {
+      throw new BugInCF("getWildcardLowerBound called on non-wildcard " + this);
     }
-    return null;
+    return create(((AnnotatedWildcardType) getAnnotatedType()).getSuperBound(), ignoreAnnotations);
   }
 
   /**
-   * If this type is a wildcard, returns its upper bound; otherwise, returns null. If the wildcard
+   * Returns the upper bound of this wildcard. Must only be called on a wildcard. If the wildcard
    * has no explicit upper bound, the returned type is the upper bound of the type variable to which
    * the wildcard is bound; see {@link AnnotatedWildcardType#getExtendsBound()}.
    *
-   * @return the upper bound of this wildcard type, or null if this type is not a wildcard
+   * @return the upper bound of this wildcard type
+   * @throws BugInCF if this type is not a wildcard
    */
-  public @Nullable AbstractType getWildcardUpperBound() {
-    if (getJavaType().getKind() == TypeKind.WILDCARD) {
-      return create(
-          ((AnnotatedWildcardType) getAnnotatedType()).getExtendsBound(), ignoreAnnotations);
-    } else {
-      return null;
+  public AbstractType getWildcardUpperBound() {
+    if (getJavaType().getKind() != TypeKind.WILDCARD) {
+      throw new BugInCF("getWildcardUpperBound called on non-wildcard " + this);
     }
+    return create(
+        ((AnnotatedWildcardType) getAnnotatedType()).getExtendsBound(), ignoreAnnotations);
   }
 
   /**
@@ -735,7 +736,7 @@ public abstract class AbstractType {
   // equals and hashCode are abstract so that a subclass must implement them.  A subclass that needs
   // to compare the fields of this class can use sameInferenceProblem and inferenceProblemHashCode.
   @Override
-  public abstract boolean equals(Object o);
+  public abstract boolean equals(@Nullable Object o);
 
   @Override
   public abstract int hashCode();

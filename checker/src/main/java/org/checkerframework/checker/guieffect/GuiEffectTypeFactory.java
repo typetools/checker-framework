@@ -31,6 +31,7 @@ import org.checkerframework.checker.guieffect.qual.UI;
 import org.checkerframework.checker.guieffect.qual.UIEffect;
 import org.checkerframework.checker.guieffect.qual.UIPackage;
 import org.checkerframework.checker.guieffect.qual.UIType;
+import org.checkerframework.checker.modifiability.qual.Growable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -60,7 +61,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
    * uses this set and the type annotations of the functional interface of the lambda to figure out
    * if it can affect the UI or not.
    */
-  protected final Set<LambdaExpressionTree> uiLambdas = new HashSet<>();
+  protected final @Growable Set<LambdaExpressionTree> uiLambdas = new HashSet<>();
 
   /**
    * Keeps track of all anonymous inner classes with inferred UIEffect.
@@ -71,7 +72,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
    * #getAnnotatedType(Tree) getAnnotatedType} will treat this inner class as if it had been
    * annotated with @UI.
    */
-  protected final Set<TypeElement> uiAnonClasses = new HashSet<>();
+  protected final @Growable Set<TypeElement> uiAnonClasses = new HashSet<>();
 
   /** The @{@link AlwaysSafe} annotation. */
   protected final AnnotationMirror ALWAYSSAFE =
