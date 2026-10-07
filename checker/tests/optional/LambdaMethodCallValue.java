@@ -64,6 +64,34 @@ class Main {
     }
   }
 
+  // A lambda's body may call a functional-interface parameter of the enclosing method.  The
+  // caller of that method was required to pass pure code, so the call does not discard
+  // refinements.  (This test does not use -AcheckPurityAnnotations, so the bodies below are not
+  // checked against their purity annotations.)
+  @Pure
+  String test8(OptContainer container, List<String> strs, Consumer<String> op) {
+    if (container.getOpt().isPresent()) {
+      strs.forEach(
+          s -> {
+            container.getOpt().get(); // OK
+            op.accept(s);
+          });
+    }
+    return "";
+  }
+
+  /** An unannotated method promises nothing about the code it is passed. */
+  void test9(OptContainer container, List<String> strs, Consumer<String> op) {
+    if (container.getOpt().isPresent()) {
+      strs.forEach(
+          s -> {
+            // :: error: [method.invocation]
+            container.getOpt().get(); // Not ok:  the lambda body is not pure
+            op.accept(s);
+          });
+    }
+  }
+
   class OptContainer {
 
     @SuppressWarnings("optional:field") // Don't care about this warning, unrelated to the test case
