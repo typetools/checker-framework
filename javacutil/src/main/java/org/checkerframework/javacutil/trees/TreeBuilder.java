@@ -497,10 +497,13 @@ public class TreeBuilder {
    * @return a MemberSelectTree that accesses the *Value() method of the expression
    */
   public MemberSelectTree buildPrimValueMethodAccess(Tree expr) {
-    TypeMirror boxedType = modelTypes.erasure(TreeUtils.typeOf(expr));
+    TypeMirror exprType = TreeUtils.typeOf(expr);
+    TypeMirror boxedType = TypesUtils.boxedPrimitiveForUnboxing(exprType, modelTypes);
+    if (boxedType == null) {
+      throw new BugInCF("Cannot unbox %s of type %s", expr, exprType);
+    }
     TypeElement boxedElement = (TypeElement) ((DeclaredType) boxedType).asElement();
 
-    assert TypesUtils.isBoxedPrimitive(boxedType);
     TypeMirror unboxedType = modelTypes.unboxedType(boxedType);
 
     // Find the *Value() method of the boxed type
