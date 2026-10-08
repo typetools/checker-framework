@@ -7,13 +7,9 @@
 
 ### User-visible changes
 
-Fixed a crash when unboxing wrapper-bounded type variables in numeric operations.
-
 ### Changes for type system implementers
 
 ### Closed issues
-
-\#8328.
 
 ## Version 4.3.0 (2026-10-01)
 
