@@ -337,7 +337,7 @@ public class WholeProgramInferenceImplementation<T> implements WholeProgramInfer
         // The AFU's org.checkerframework.afu.annotator.Main produces a non-compilable
         // source file when JAIF-based WPI tries to output an annotated varargs parameter,
         // such as when running the test
-        // checker/tests/ainfer-testchecker/non-annotated/AnonymousAndInnerClass.java.
+        // framework/tests/all-systems/AnonymousAndInnerClass.java.
         // Until that bug is fixed, do not attempt to infer information about varargs
         // parameters in JAIF mode.
         if (showWpiFailedInferences) {
