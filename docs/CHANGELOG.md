@@ -3,7 +3,7 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 4.3.1 (2026-11-01)
+## Version 4.3.2 (2026-11-01)
 
 ### User-visible changes
 
@@ -25,6 +25,12 @@ that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
 
 ### Closed issues
+
+## Version 4.3.1 (2026-10-08)
+
+### Closed issues
+
+\#8325.
 
 ## Version 4.3.0 (2026-10-01)
 
