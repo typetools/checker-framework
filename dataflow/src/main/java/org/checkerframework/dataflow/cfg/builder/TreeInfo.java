@@ -5,11 +5,12 @@ import javax.lang.model.type.TypeMirror;
 /** A tuple with 4 named elements. */
 /*package-private*/ interface TreeInfo {
   /**
-   * Returns true if this is boxed.
+   * Returns true if unboxing conversion applies to this: it is a boxed primitive, or a type
+   * variable or intersection type whose erasure is a boxed primitive.
    *
-   * @return true if this is boxed
+   * @return true if unboxing conversion applies to this
    */
-  boolean isBoxed();
+  boolean isUnboxable();
 
   /**
    * Returns true if this is numeric.

@@ -889,7 +889,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *     node
    */
   protected Node unbox(Node node) {
-    if (isUnboxable(node.getType())) {
+    if (TypesUtils.isUnboxable(node.getType(), types)) {
 
       MemberSelectTree primValueSelect = treeBuilder.buildPrimValueMethodAccess(node.getTree());
       handleArtificialTree(primValueSelect);
@@ -915,47 +915,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
   }
 
-  /**
-   * Returns true if unboxing conversion (JLS 5.1.8) applies to the given type: it is a boxed
-   * primitive, or a type variable or intersection type whose erasure is a boxed primitive.
-   *
-   * <p>Javac's unboxing API accepts wrapper classes, such as {@code Integer}, but rejects type
-   * variables. For example, erasing {@code T} when {@code T extends Integer} produces {@code
-   * Integer}, which the API can unbox to {@code int}. Erasure handles both ordinary and captured
-   * type variables.
-   *
-   * @param type a type
-   * @return true if unboxing conversion applies to the given type
-   */
-  protected boolean isUnboxable(TypeMirror type) {
-    return TypesUtils.isBoxedPrimitive(types.erasure(type));
-  }
-
-  /**
-   * Returns the primitive type that unboxing conversion produces for the given type.
-   *
-   * @param type a type for which {@link #isUnboxable} returns true
-   * @return the primitive type that unboxing conversion produces for the given type
-   */
-  protected TypeMirror unboxedTypeOf(TypeMirror type) {
-    return types.unboxedType(types.erasure(type));
-  }
-
-  /**
-   * If unboxing conversion applies to the given type, returns the resulting primitive type;
-   * otherwise returns the given type.
-   *
-   * @param type a type
-   * @return the unboxed version of the given type, or the given type itself
-   */
-  protected TypeMirror unboxedTypeIfUnboxable(TypeMirror type) {
-    return isUnboxable(type) ? unboxedTypeOf(type) : type;
-  }
-
   private TreeInfo getTreeInfo(Tree tree) {
     TypeMirror type = TreeUtils.typeOf(tree);
-    boolean boxed = isUnboxable(type);
-    TypeMirror unboxedType = boxed ? unboxedTypeOf(type) : type;
+    TypeMirror boxedType = TypesUtils.boxedPrimitiveForUnboxing(type, types);
+    boolean unboxable = boxedType != null;
+    TypeMirror unboxedType = boxedType == null ? type : types.unboxedType(boxedType);
 
     boolean bool = TypesUtils.isBooleanType(unboxedType);
     boolean numeric = TypesUtils.isNumeric(unboxedType);
@@ -967,8 +931,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       }
 
       @Override
-      public boolean isBoxed() {
-        return boxed;
+      public boolean isUnboxable() {
+        return unboxable;
       }
 
       @Override
@@ -1045,7 +1009,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return true if the argument type is a numeric primitive or can be unboxed to one
    */
   protected boolean isNumericOrBoxed(TypeMirror type) {
-    return TypesUtils.isNumeric(unboxedTypeIfUnboxable(type));
+    return TypesUtils.isNumeric(TypesUtils.unboxedTypeOrSelf(type, types));
   }
 
   /**
@@ -1058,13 +1022,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return a TypeMirror representing the binary numeric promoted type
    */
   protected TypeMirror binaryPromotedType(TypeMirror left, TypeMirror right) {
-    if (!left.getKind().isPrimitive()) {
-      left = unboxedTypeOf(left);
-    }
-
-    if (!right.getKind().isPrimitive()) {
-      right = unboxedTypeOf(right);
-    }
+    left = TypesUtils.unboxedTypeOrSelf(left, types);
+    right = TypesUtils.unboxedTypeOrSelf(right, types);
 
     TypeKind promotedTypeKind = TypeKindUtils.widenedNumericType(left, right);
     return types.getPrimitiveType(promotedTypeKind);
@@ -1142,8 +1101,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return a Node with the value narrowed and boxed to the destType, which may be the input node
    */
   protected Node narrowAndBox(Node node, TypeMirror destType) {
-    if (TypesUtils.isBoxedPrimitive(destType)) {
-      return box(narrow(node, types.unboxedType(destType)));
+    TypeMirror boxedDestType = TypesUtils.boxedPrimitiveForUnboxing(destType, types);
+    if (boxedDestType != null) {
+      return box(narrow(node, types.unboxedType(boxedDestType)));
     } else {
       return narrow(node, destType);
     }
@@ -1159,13 +1119,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected boolean conversionRequiresNarrowing(TypeMirror varType, Node node) {
     // Narrowing is restricted to cases where the left-hand side is byte, char, short or Byte,
     // Char, Short and the right-hand side is a constant.
-    TypeMirror unboxedVarType =
-        TypesUtils.isBoxedPrimitive(varType) ? types.unboxedType(varType) : varType;
-    TypeKind unboxedVarKind = unboxedVarType.getKind();
-    boolean isLeftNarrowableTo =
-        unboxedVarKind == TypeKind.BYTE
-            || unboxedVarKind == TypeKind.SHORT
-            || unboxedVarKind == TypeKind.CHAR;
+    boolean isLeftNarrowableTo = TypesUtils.canBeNarrowingPrimitiveConversion(varType, types);
     boolean isRightConstant = node instanceof ValueLiteralNode;
     return isLeftNarrowableTo && isRightConstant;
   }
@@ -1194,7 +1148,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     boolean isRightNumeric = TypesUtils.isNumeric(nodeType);
     boolean isRightPrimitive = TypesUtils.isPrimitive(nodeType);
-    boolean isRightBoxed = isUnboxable(nodeType);
+    boolean isRightUnboxable = TypesUtils.isUnboxable(nodeType, types);
     boolean isRightReference = nodeType instanceof ReferenceType;
     boolean isLeftNumeric = TypesUtils.isNumeric(varType);
     boolean isLeftPrimitive = TypesUtils.isPrimitive(varType);
@@ -1213,7 +1167,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       } else {
         node = box(node);
       }
-    } else if (isRightBoxed && isLeftPrimitive) {
+    } else if (isRightUnboxable && isLeftPrimitive) {
       node = unbox(node);
       nodeType = node.getType();
 
@@ -1430,13 +1384,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // If the operand is byte or Byte and the whole expression is
     // short, then convert to short.
-    boolean isBoxedPrimitive = isUnboxable(nodeType);
-    TypeMirror unboxedNodeType = isBoxedPrimitive ? unboxedTypeOf(nodeType) : nodeType;
-    TypeMirror unboxedDestType =
-        TypesUtils.isBoxedPrimitive(destType) ? types.unboxedType(destType) : destType;
+    TypeMirror boxedNodeType = TypesUtils.boxedPrimitiveForUnboxing(nodeType, types);
+    boolean isNodeUnboxable = boxedNodeType != null;
+    TypeMirror unboxedNodeType =
+        boxedNodeType == null ? nodeType : types.unboxedType(boxedNodeType);
+    TypeMirror unboxedDestType = TypesUtils.unboxedTypeOrSelf(destType, types);
     if (TypesUtils.isNumeric(unboxedNodeType) && TypesUtils.isNumeric(unboxedDestType)) {
       if (unboxedNodeType.getKind() == TypeKind.BYTE && destType.getKind() == TypeKind.SHORT) {
-        if (isBoxedPrimitive) {
+        if (isNodeUnboxable) {
           node = unbox(node);
         }
         return widen(node, destType);
@@ -1446,7 +1401,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // is the unboxed version of it, then apply unboxing.
       TypeKind destKind = destType.getKind();
       if (destKind == TypeKind.BYTE || destKind == TypeKind.CHAR || destKind == TypeKind.SHORT) {
-        if (isBoxedPrimitive) {
+        if (isNodeUnboxable) {
           return unbox(node);
         } else if (nodeType.getKind() == TypeKind.INT) {
           return narrow(node, destType);
@@ -4037,7 +3992,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
         if (leftInfo.isNumeric()
             && rightInfo.isNumeric()
-            && !(leftInfo.isBoxed() && rightInfo.isBoxed())) {
+            && !(leftInfo.isUnboxable() && rightInfo.isUnboxable())) {
           // JLS 15.21.1 numerical equality
           TypeMirror promotedType =
               binaryPromotedType(leftInfo.unboxedType(), rightInfo.unboxedType());
@@ -4045,10 +4000,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           right = binaryNumericPromotion(right, promotedType);
         } else if (leftInfo.isBoolean()
             && rightInfo.isBoolean()
-            && !(leftInfo.isBoxed() && rightInfo.isBoxed())) {
+            && !(leftInfo.isUnboxable() && rightInfo.isUnboxable())) {
           // JLS 15.21.2 boolean equality
-          left = unboxAsNeeded(left, leftInfo.isBoxed());
-          right = unboxAsNeeded(right, rightInfo.isBoxed());
+          left = unboxAsNeeded(left, leftInfo.isUnboxable());
+          right = unboxAsNeeded(right, rightInfo.isUnboxable());
         }
 
         if (kind == Tree.Kind.EQUAL_TO) {
@@ -4064,8 +4019,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         TypeMirror leftType = TreeUtils.typeOf(leftTree);
         TypeMirror rightType = TreeUtils.typeOf(rightTree);
         boolean isBooleanOp =
-            TypesUtils.isBooleanType(unboxedTypeIfUnboxable(leftType))
-                && TypesUtils.isBooleanType(unboxedTypeIfUnboxable(rightType));
+            TypesUtils.isBooleanType(TypesUtils.unboxedTypeOrSelf(leftType, types))
+                && TypesUtils.isBooleanType(TypesUtils.unboxedTypeOrSelf(rightType, types));
 
         Node left;
         Node right;
