@@ -30,4 +30,11 @@ public class TypeVarPrimitivesNullness {
     // :: error: [unboxing.of.nullable]
     long l = tLong;
   }
+
+  <T extends @Nullable Integer> void add(T t) {
+    // :: error: [unboxing.of.nullable]
+    int result = t + 1;
+    // The unboxing operation establishes that t is non-null on the normal path.
+    t.toString();
+  }
 }
