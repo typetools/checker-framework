@@ -34,7 +34,8 @@ public class TypeVarPrimitivesNullness {
   <T extends @Nullable Integer> void add(T t) {
     // :: error: [unboxing.of.nullable]
     int result = t + 1;
-    // The unboxing operation establishes that t is non-null on the normal path.
+    // Make sure CFG construction was sufficient to capture that t must be non-null at this point,
+    // since the unboxing must have succeeded
     t.toString();
   }
 }
