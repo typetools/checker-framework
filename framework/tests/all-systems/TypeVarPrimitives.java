@@ -44,6 +44,14 @@ public class TypeVarPrimitives {
     return (b & true) || b == false;
   }
 
+  <T extends Boolean> boolean compoundBoolean(T t) {
+    boolean x = true;
+    x &= t;
+    x |= t;
+    x ^= t;
+    return x;
+  }
+
   long captured(java.util.List<? extends Integer> l) {
     return l.get(0) * 2L;
   }
