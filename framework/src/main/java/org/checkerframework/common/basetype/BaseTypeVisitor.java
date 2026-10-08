@@ -1745,37 +1745,72 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Returns the subset of {@code kinds} that whole-program inference may infer for {@code method}:
-   * those that no call to {@code method} would require of an argument that is passed to a
-   * functional-interface parameter. See {@link #checkFunctionalArguments}.
+   * Returns the purity kinds that whole-program inference may infer for {@code method}: the kinds
+   * that annotations written on {@code method} guarantee, plus those of {@code kinds} that no call
+   * to {@code method} would newly require of an argument that is passed to a functional-interface
+   * parameter. See {@link #checkFunctionalArguments}.
    *
    * <p>Inference cannot annotate a lambda expression or a method reference, so it cannot make an
-   * argument meet such a requirement; inferring the kind would introduce errors at call sites.
+   * argument meet such a requirement; inferring the kind would introduce errors at call sites. A
+   * requirement that the written annotations already impose is not new, and the written kinds are
+   * always retained, so that inference neither weakens nor contradicts the written contract.
    *
    * <p>Discarding one kind can make another one required: determinism is required of an argument
    * that returns no value only when the argument is known to be side-effect-free. The computation
-   * therefore repeats until what remains requires nothing.
+   * therefore repeats until what remains requires nothing new.
    *
    * @param method a method or constructor
    * @param kinds the purity kinds that might be inferred for {@code method}
-   * @return the subset of {@code kinds} that calls to {@code method} would not require of arguments
+   * @return the written kinds of {@code method}, plus the subset of {@code kinds} that calls to
+   *     {@code method} would not newly require of arguments
    */
   private EnumSet<PurityKind> kindsSafeToInfer(
       ExecutableElement method, EnumSet<PurityKind> kinds) {
     ProcessingEnvironment env = atypeFactory.getProcessingEnv();
+    EnumSet<PurityKind> written = writtenPurityKinds(method);
     EnumSet<PurityKind> result = EnumSet.copyOf(kinds);
-    while (!result.isEmpty()) {
-      EnumSet<PurityKind> required = EnumSet.noneOf(PurityKind.class);
+    result.addAll(written);
+    while (!result.equals(written)) {
+      // Each kind in `newlyRequired` is in `result` but not in `written`, because a written kind
+      // that is required of an argument is required already by the written kinds alone.
+      EnumSet<PurityKind> newlyRequired = EnumSet.noneOf(PurityKind.class);
       for (int i = 0; i < method.getParameters().size(); i++) {
         ExecutableElement paramFunction = PurityChecker.parameterFunctionalMethod(method, i, env);
         if (paramFunction != null) {
-          required.addAll(purityRequiredOfArgument(paramFunction, result, false));
+          EnumSet<PurityKind> required = purityRequiredOfArgument(paramFunction, result, false);
+          required.removeAll(purityRequiredOfArgument(paramFunction, written, false));
+          newlyRequired.addAll(required);
         }
       }
-      if (required.isEmpty()) {
+      if (newlyRequired.isEmpty()) {
         break;
       }
-      result.removeAll(required);
+      result.removeAll(newlyRequired);
+    }
+    return result;
+  }
+
+  /**
+   * Returns the purity kinds that the purity annotations written on {@code method} -- in source
+   * code or in an annotation file -- guarantee, ignoring those that {@code method} inherits.
+   *
+   * @param method a method or constructor
+   * @return the purity kinds that the annotations written on {@code method} guarantee
+   */
+  private EnumSet<PurityKind> writtenPurityKinds(ExecutableElement method) {
+    EnumSet<PurityKind> result = EnumSet.noneOf(PurityKind.class);
+    AnnotationMirror pure = atypeFactory.getDeclAnnotation(method, Pure.class);
+    if (pure != null && atypeFactory.isDeclAnnotationWrittenOn(method, pure)) {
+      result.add(PurityKind.SIDE_EFFECT_FREE);
+      result.add(PurityKind.DETERMINISTIC);
+    }
+    AnnotationMirror sideEffectFree = atypeFactory.getDeclAnnotation(method, SideEffectFree.class);
+    if (sideEffectFree != null && atypeFactory.isDeclAnnotationWrittenOn(method, sideEffectFree)) {
+      result.add(PurityKind.SIDE_EFFECT_FREE);
+    }
+    AnnotationMirror deterministic = atypeFactory.getDeclAnnotation(method, Deterministic.class);
+    if (deterministic != null && atypeFactory.isDeclAnnotationWrittenOn(method, deterministic)) {
+      result.add(PurityKind.DETERMINISTIC);
     }
     return result;
   }
