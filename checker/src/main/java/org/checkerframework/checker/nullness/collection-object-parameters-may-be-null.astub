@@ -182,8 +182,8 @@ class Vector<E> {
 package java.util.concurrent;
 
 public class ArrayBlockingQueue<E> {
-    public boolean removeAll(Collection<?> c);
-    public boolean retainAll(Collection<?> c);
+    public boolean remove(@Nullable Object o);
+    public boolean contains(@Nullable Object o);
 }
 
 public class ConcurrentLinkedDeque<E> {
@@ -210,8 +210,6 @@ public class ConcurrentSkipListSet<E>
 
 public class CopyOnWriteArrayList<E>
     implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
-    public int indexOf(@Nullable Object o);
-    public int lastIndexOf(@Nullable Object o);
     public boolean removeAll(Collection<?> c);
     public boolean retainAll(Collection<?> c);
 }
@@ -229,13 +227,15 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
 }
 
 class LinkedBlockingDeque<E> {
-    public boolean removeAll(Collection<?> c);
-    public boolean retainAll(Collection<?> c);
+    public boolean removeFirstOccurrence(@Nullable Object o);
+    public boolean removeLastOccurrence(@Nullable Object o);
+    public boolean remove(@Nullable Object o);
+    public boolean contains(@Nullable Object o);
 }
 
 class LinkedBlockingQueue<E> {
-    public boolean removeAll(Collection<?> c);
-    public boolean retainAll(Collection<?> c);
+    public boolean remove(@Nullable Object o);
+    public boolean contains(@Nullable Object o);
 }
 
 class LinkedTransferQueue<E> {
@@ -244,8 +244,8 @@ class LinkedTransferQueue<E> {
 }
 
 class PriorityBlockingQueue<E> {
-    public boolean removeAll(Collection<?> c);
-    public boolean retainAll(Collection<?> c);
+    public boolean remove(@Nullable Object o);
+    public boolean contains(@Nullable Object o);
 }
 
 public class SynchronousQueue<E> extends AbstractQueue<E>
