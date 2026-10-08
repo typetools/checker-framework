@@ -1012,7 +1012,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Compute the type to which two numeric types must be promoted before performing a binary numeric
-   * operation on them. The input types must both be numeric and the output type is primitive.
+   * operation on them. The input types must both be convertible to numeric primitive types, and the
+   * output type is primitive.
+   *
+   * <p>Javac's unboxing API accepts wrapper classes, such as {@code Integer}, but rejects type
+   * variables. For example, erasing {@code T} when {@code T extends Integer} produces {@code Integer},
+   * which the API can unbox to {@code int}. Erasure handles both ordinary and captured type variables.
    *
    * @param left the type of the left operand
    * @param right the type of the right operand
@@ -1020,21 +1025,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   protected TypeMirror binaryPromotedType(TypeMirror left, TypeMirror right) {
     if (!left.getKind().isPrimitive()) {
-      if (TypesUtils.isCapturedTypeVariable(left)) {
-        // This doesn't seem legal according to the JLS, but javac accepts it.
-        left = types.unboxedType(TypesUtils.upperBound(left));
-      } else {
-        left = types.unboxedType(left);
-      }
+      left = types.unboxedType(types.erasure(left));
     }
 
     if (!right.getKind().isPrimitive()) {
-      if (TypesUtils.isCapturedTypeVariable(right)) {
-        // This doesn't seem legal according to the JLS, but javac accepts it.
-        right = types.unboxedType(TypesUtils.upperBound(right));
-      } else {
-        right = types.unboxedType(right);
-      }
+      right = types.unboxedType(types.erasure(right));
     }
 
     TypeKind promotedTypeKind = TypeKindUtils.widenedNumericType(left, right);
