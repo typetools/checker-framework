@@ -78,6 +78,18 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
     return accumulatedValues;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>{@link #equals} does not account for {@link #accumulatedValues}, which {@link #upperBound}
+   * intersects. Two values can be equal and yet have different accumulated values, because {@link
+   * #mostSpecific} creates a value that has accumulated values but no annotations.
+   */
+  @Override
+  protected boolean upperBoundOfEqualValuesIsThis() {
+    return accumulatedValues == null;
+  }
+
   @Override
   protected AccumulationValue upperBound(
       @Nullable AccumulationValue other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {
