@@ -1,8 +1,5 @@
 package org.checkerframework.framework.test.junit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,6 +13,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -77,16 +75,16 @@ public class TypeVariableUnboxingCFGTest {
    * @param primitiveKind the expected primitive result type
    */
   private void assertUnboxing(Node operand, String methodName, TypeKind primitiveKind) {
-    assertTrue(
+    Assert.assertTrue(
         "Expected an unboxing method invocation: " + operand,
         operand instanceof MethodInvocationNode);
     MethodAccessNode access = ((MethodInvocationNode) operand).getTarget();
-    assertEquals(methodName, access.getMethod().getSimpleName().toString());
-    assertEquals(TypeKind.TYPEVAR, access.getReceiver().getType().getKind());
-    assertEquals(primitiveKind, operand.getType().getKind());
+    Assert.assertEquals(methodName, access.getMethod().getSimpleName().toString());
+    Assert.assertEquals(TypeKind.TYPEVAR, access.getReceiver().getType().getKind());
+    Assert.assertEquals(primitiveKind, operand.getType().getKind());
     Block block = access.getBlock();
-    assertTrue("Expected an exception block for unboxing", block instanceof ExceptionBlock);
-    assertTrue(
+    Assert.assertTrue("Expected an exception block for unboxing", block instanceof ExceptionBlock);
+    Assert.assertTrue(
         ((ExceptionBlock) block)
             .getExceptionalSuccessors().entrySet().stream()
                 .anyMatch(
