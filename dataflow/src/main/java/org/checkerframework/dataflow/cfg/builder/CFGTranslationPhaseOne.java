@@ -1016,8 +1016,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * output type is primitive.
    *
    * <p>Javac's unboxing API accepts wrapper classes, such as {@code Integer}, but rejects type
-   * variables. For example, erasing {@code T} when {@code T extends Integer} produces {@code Integer},
-   * which the API can unbox to {@code int}. Erasure handles both ordinary and captured type variables.
+   * variables. For example, erasing {@code T} when {@code T extends Integer} produces {@code
+   * Integer}, which the API can unbox to {@code int}. Erasure handles both ordinary and captured
+   * type variables.
    *
    * @param left the type of the left operand
    * @param right the type of the right operand
