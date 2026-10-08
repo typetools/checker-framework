@@ -4,6 +4,8 @@ import com.sun.source.tree.MethodTree;
 import java.util.EnumSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
@@ -164,6 +166,20 @@ public final class PurityUtils {
       result.add(PurityKind.DETERMINISTIC);
     }
     return result;
+  }
+
+  /**
+   * Adds {@link PurityKind#DETERMINISTIC} to {@code kinds} if {@code kinds} contains {@link
+   * PurityKind#SIDE_EFFECT_FREE} and {@code returnType} is void: two calls of a side-effect-free
+   * method that returns no value return the same (absent) value.
+   *
+   * @param kinds the purity of a call; modified by this method
+   * @param returnType the type of the value that the call returns
+   */
+  public static void addDeterminismOfVoidCall(EnumSet<PurityKind> kinds, TypeMirror returnType) {
+    if (returnType.getKind() == TypeKind.VOID && kinds.contains(PurityKind.SIDE_EFFECT_FREE)) {
+      kinds.add(PurityKind.DETERMINISTIC);
+    }
   }
 
   /**
