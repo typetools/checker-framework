@@ -1992,7 +1992,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       return;
     }
     TypeElement classElt = TreeUtils.elementFromDeclaration(classTree);
-    if (classElt.getKind().isInterface()
+    if (classElt == null
+        || classElt.getKind().isInterface()
         || !(classElt.getSuperclass() instanceof DeclaredType superclassType)) {
       return;
     }
