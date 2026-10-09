@@ -6,7 +6,7 @@
  */
 
 @SuppressWarnings("unneeded.suppression")
-class UnneededSuppressionsClassAnnotated {
+class UnneededSuppressionsClassUnprefixedRequirePrefix {
 
   @SuppressWarnings("nullness:return")
   public String getClassAndUid0() {

@@ -1,16 +1,23 @@
 package org.checkerframework.common.wholeprograminference;
 
 import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.type.PrimitiveType;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage.FieldAnnos;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.BugInCF;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -44,6 +51,67 @@ public class WholeProgramInferenceJavaParserStorageTest {
             "org.checkerframework", '\\'));
     Assert.assertEquals(
         "org", WholeProgramInferenceJavaParserStorage.packageNameToDirectory("org", '\\'));
+  }
+
+  /**
+   * Tests that {@link FieldAnnos#transferAnnotations} reports a {@link BugInCF}, rather than
+   * silently discarding the inferred annotations, when the wrapped variable declarator has no
+   * parent node.
+   */
+  @Test
+  public void testTransferAnnotationsWithoutParent() {
+    VariableDeclarator declaration = new VariableDeclarator(PrimitiveType.intType(), "f");
+    Assert.assertFalse(declaration.getParentNode().isPresent());
+
+    BugInCF exception = assertTransferAnnotationsThrows(declaration);
+    Assert.assertTrue(exception.getMessage(), exception.getMessage().contains("found null [null]"));
+    // The declarator is left entirely unchanged.
+    Assert.assertFalse(declaration.getParentNode().isPresent());
+    Assert.assertEquals("int", declaration.getTypeAsString());
+    Assert.assertEquals("f", declaration.getNameAsString());
+    Assert.assertTrue(declaration.getType().getAnnotations().isEmpty());
+  }
+
+  /**
+   * Tests that {@link FieldAnnos#transferAnnotations} reports a {@link BugInCF}, rather than
+   * silently discarding the inferred annotations, when the wrapped variable declarator's parent is
+   * not a {@code FieldDeclaration}.
+   */
+  @Test
+  public void testTransferAnnotationsWithNonFieldParent() {
+    // A local variable declaration, whose declarator's parent is a VariableDeclarationExpr.
+    VariableDeclarator declaration =
+        StaticJavaParser.parseStatement("int f;")
+            .asExpressionStmt()
+            .getExpression()
+            .asVariableDeclarationExpr()
+            .getVariable(0);
+    Node declarationParent = declaration.getParentNode().orElse(null);
+    Assert.assertTrue(declarationParent instanceof VariableDeclarationExpr);
+
+    BugInCF exception = assertTransferAnnotationsThrows(declaration);
+    Assert.assertTrue(
+        exception.getMessage(), exception.getMessage().contains("VariableDeclarationExpr"));
+    Assert.assertTrue(declaration.getType().getAnnotations().isEmpty());
+  }
+
+  /**
+   * Asserts that {@link FieldAnnos#transferAnnotations} throws {@link BugInCF} for a {@link
+   * FieldAnnos} that wraps {@code declaration} and that has an inferred type.
+   *
+   * @param declaration the variable declarator to wrap
+   * @return the thrown exception
+   */
+  private static BugInCF assertTransferAnnotationsThrows(VariableDeclarator declaration) {
+    FieldAnnos fieldAnnos = new FieldAnnos(declaration);
+    // Initialize the inferred type, so that transferAnnotations() would attempt a real transfer
+    // if it did not stop at the unexpected parent node.
+    AnnotatedTypeMirror intType =
+        AnnotatedTypeMirror.createType(
+            env.getTypeUtils().getPrimitiveType(TypeKind.INT), typeFactory, false);
+    fieldAnnos.getType(intType, typeFactory);
+
+    return Assert.assertThrows(BugInCF.class, fieldAnnos::transferAnnotations);
   }
 
   /**

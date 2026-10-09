@@ -25,6 +25,13 @@ public class FieldAccess extends JavaExpression {
   protected final VariableElement field;
 
   /**
+   * The cached hash code, or 0 if it has not yet been computed. A FieldAccess is immutable, so the
+   * hash code is computed at most once. Caching it is worthwhile because every store operation
+   * hashes the expressions in the store.
+   */
+  private int hashCode = 0;
+
+  /**
    * Returns the receiver.
    *
    * @return the receiver
@@ -114,7 +121,10 @@ public class FieldAccess extends JavaExpression {
 
   @Override
   public int hashCode() {
-    return Objects.hash(getField(), getReceiver());
+    if (hashCode == 0) {
+      hashCode = Objects.hash(getField(), getReceiver());
+    }
+    return hashCode;
   }
 
   @Override

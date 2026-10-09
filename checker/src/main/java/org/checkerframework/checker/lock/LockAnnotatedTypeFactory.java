@@ -510,14 +510,15 @@ public class LockAnnotatedTypeFactory
   }
 
   /**
-   * Indicates which side effect annotation is present on the given method. If more than one
-   * annotation is present, this method issues an error (if issueErrorIfMoreThanOnePresent is true)
-   * and returns the annotation providing the weakest guarantee. Only call with
-   * issueErrorIfMoreThanOnePresent == true when visiting a method definition. This prevents
-   * multiple errors being issued for the same method (as would occur if
-   * issueErrorIfMoreThanOnePresent were set to true when visiting method invocations). If no
-   * annotation is present, return RELEASESNOLOCKS as the default, and MAYRELEASELOCKS as the
-   * conservative default.
+   * Indicates which side effect annotation is present on the given method. Returns LOCKINGFREE
+   * rather than PURE or SIDEEFFECTFREE. If no annotation is present, returns RELEASESNOLOCKS as the
+   * default, and MAYRELEASELOCKS as the conservative default.
+   *
+   * <p>If more than one annotation is present, this method issues an error (if
+   * issueErrorIfMoreThanOnePresent is true) and returns the annotation providing the weakest
+   * guarantee. Only call with issueErrorIfMoreThanOnePresent == true when visiting a method
+   * definition. This prevents multiple errors being issued for the same method (as would occur if
+   * issueErrorIfMoreThanOnePresent were set to true when visiting method invocations).
    *
    * @param methodElement the method element
    * @param issueErrorIfMoreThanOnePresent if true, issue an error if more than one side effect
@@ -536,6 +537,9 @@ public class LockAnnotatedTypeFactory
         EnumSet.noneOf(SideEffectAnnotation.class);
     for (SideEffectAnnotation sea : SideEffectAnnotation.values()) {
       if (getDeclAnnotationNoAliases(methodElement, sea.getAnnotationClass()) != null) {
+        if (sea == SideEffectAnnotation.PURE || sea == SideEffectAnnotation.SIDEEFFECTFREE) {
+          sea = SideEffectAnnotation.LOCKINGFREE;
+        }
         sideEffectAnnotationPresent.add(sea);
       }
     }
@@ -548,7 +552,12 @@ public class LockAnnotatedTypeFactory
           : SideEffectAnnotation.RELEASESNOLOCKS;
     }
 
-    if (count > 1 && issueErrorIfMoreThanOnePresent) {
+    if (count == 1) {
+      return sideEffectAnnotationPresent.iterator().next();
+    }
+    // count > 1
+
+    if (issueErrorIfMoreThanOnePresent) {
       // TODO: Turn on after figuring out how this interacts with inherited annotations.
       // checker.reportError(methodElement, "multiple.sideeffect.annotations");
     }

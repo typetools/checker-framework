@@ -4,9 +4,9 @@ JAVA_VER := $(shell java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s/
 
 # Delomboking seems to mess up line numbers. The actual error is on line 13, but the error appears on line 12.
 # So check for both the error message and make sure it is for the right assignment.
-# As of 2026-03-11 (Lombok 1.18.44), lombok does not support JDK 26; see https://projectlombok.org/changelog .
+# As of 2026-09-01 (Lombok 1.18.48), lombok does not support JDK 28; see https://projectlombok.org/changelog .
 all:
-ifeq (${JAVA_VER},26)
+ifeq (${JAVA_VER},28)
 	@echo "Skipping test because lombok does not work under Java ${JAVA_VER}"
 else
 	- ../../../gradlew build > Out.txt 2>&1

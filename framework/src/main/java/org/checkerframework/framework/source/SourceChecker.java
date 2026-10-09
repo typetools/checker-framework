@@ -93,7 +93,6 @@ import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
-import org.plumelib.util.IPair;
 import org.plumelib.util.MapsP;
 import org.plumelib.util.SystemP;
 import org.plumelib.util.UtilP;
@@ -641,7 +640,15 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * rendering, because two checkers of a compound checker produce equal text from arguments that
    * are not {@code equals()} to one another.
    */
-  private final Set<IPair<Tree, String>> reportOnceReported = new HashSet<>();
+  private final Set<TreeAndMessage> reportOnceReported = new HashSet<>();
+
+  /**
+   * A tree and the string rendering of a message reported at it.
+   *
+   * @param tree a tree
+   * @param message the string rendering of a message reported at {@code tree}
+   */
+  private record TreeAndMessage(Tree tree, String message) {}
 
   /**
    * The compilation unit that contains the trees in {@link #reportOnceReported}, or null if that
@@ -1486,7 +1493,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       ultimateParent.reportOnceReported.clear();
       ultimateParent.reportOnceCompilationUnit = root;
     }
-    if (!ultimateParent.reportOnceReported.add(IPair.of(path.getLeaf(), d.toString()))) {
+    if (!ultimateParent.reportOnceReported.add(new TreeAndMessage(path.getLeaf(), d.toString()))) {
       return;
     }
     // The message does not depend on which checker computed it, so honor a `@SuppressWarnings`
@@ -1838,7 +1845,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @return the most specific SuppressWarnings string for the warning/error being printed
    */
   private String suppressWarningsString(Set<String> allPrefixes, String messageKey) {
-    Collection<String> prefixes = new TreeSet<>(allPrefixes);
+    NavigableSet<String> prefixes = new TreeSet<>(allPrefixes);
     prefixes.remove(SUPPRESS_ALL_PREFIX);
     if (showSuppressWarningsStrings) {
       List<String> list = new ArrayList<>(prefixes);
@@ -1854,7 +1861,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
       if (prefixes.contains(defaultPrefix)) {
         return defaultPrefix + ":" + messageKey;
       } else {
-        String firstKey = prefixes.iterator().next();
+        String firstKey = prefixes.first();
         return firstKey + ":" + messageKey;
       }
     } else {
@@ -1898,7 +1905,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
 
     SourcePositions sourcePositions = trees.getSourcePositions();
+    @SuppressWarnings("removal") // getStartPosition(Tree) requires JDK 27
     long start = sourcePositions.getStartPosition(currentRoot, tree);
+    @SuppressWarnings("removal") // getEndPosition(Tree) requires JDK 27
     long end = sourcePositions.getEndPosition(currentRoot, tree);
 
     return "( " + start + ", " + end + " )";
@@ -2957,9 +2966,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
         // prefix:partial-message-key.
         if (prefixes.contains(currentSuppressWarningsInEffect)) {
           // The value in the @SuppressWarnings is exactly a prefix.
-          // Suppress the warning unless its message key is "unneeded.suppression".
-          boolean result = !messageKey.equals("unneeded.suppression");
-          return result;
+          if (!messageKey.equals("unneeded.suppression")) {
+            return true;
+          }
+          // An "unneeded.suppression" warning is suppressed only by the exact message key, so
+          // this prefix does not suppress it.  Proceed to the next SuppressWarnings string,
+          // which might be the exact message key.
+          continue;
         } else if (requirePrefixInWarningSuppressions) {
           // A prefix is required, but this SuppressWarnings string does not have a
           // prefix.
@@ -2968,9 +2981,13 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
             || currentSuppressWarningsInEffect.equals("allcheckers")) {
           // Prefixes aren't required and the whole SuppressWarnings string is
           // the messagekey "all" or the checkername "allcheckers".
-          // Suppress the warning unless its message key is "unneeded.suppression".
-          boolean result = !messageKey.equals("unneeded.suppression");
-          return result;
+          if (!messageKey.equals("unneeded.suppression")) {
+            return true;
+          }
+          // An "unneeded.suppression" warning is suppressed only by the exact message key, so
+          // "all" and "allcheckers" do not suppress it.  Proceed to the next SuppressWarnings
+          // string, which might be the exact message key.
+          continue;
         }
         // The currentSuppressWarningsInEffect is not a checker name, so
         // it might be a message key.
@@ -2985,6 +3002,16 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
           continue;
         }
         messageKeyInEffect = currentSuppressWarningsInEffect.substring(colonPos + 1);
+      }
+      if (messageKey.equals("unneeded.suppression")) {
+        // An "unneeded.suppression" warning is suppressed only by the exact message key, not by
+        // a partial message key such as "suppression".  Otherwise, a @SuppressWarnings string
+        // that the programmer wrote for some other warning would silently disable
+        // -AwarnUnneededSuppressions.
+        if (messageKeyInEffect.equals("unneeded.suppression")) {
+          return true;
+        }
+        continue;
       }
       // Check if the message key in the warning suppression is part of the message key that
       // the checker is emitting.
@@ -3255,13 +3282,34 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   //
 
   /**
-   * Log (that is, print) a user error.
+   * Returns the line separator to use when printing exceptions: the value of the {@code
+   * -AexceptionLineSeparator} command-line option, or the system line separator if that option was
+   * not supplied or was supplied without a value.
+   *
+   * @return the line separator to use when printing exceptions
+   */
+  private String getExceptionLineSeparator() {
+    String result = getOptions().get("exceptionLineSeparator");
+    return result == null ? System.lineSeparator() : result;
+  }
+
+  /**
+   * Log (that is, print) a user error, along with its causes if it has any.
    *
    * @param ce the user error to output
    */
   private void logUserError(UserError ce) {
-    String msg = ce.getMessage();
-    printMessage(msg);
+    if (ce.getCause() == null) {
+      printMessage(ce.getMessage());
+      return;
+    }
+    String lineSeparator = getExceptionLineSeparator();
+    StringJoiner msg = new StringJoiner(lineSeparator);
+    msg.add(ce.getMessage());
+    for (Throwable cause = ce.getCause(); cause != null; cause = cause.getCause()) {
+      msg.add("  Underlying cause: " + cause);
+    }
+    printMessage(msg.toString());
   }
 
   /**
@@ -3301,8 +3349,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param culprit a message to print about the cause
    */
   private void logBug(Throwable ce, String culprit) {
-    String lineSeparator =
-        getOptions().getOrDefault("exceptionLineSeparator", System.lineSeparator());
+    String lineSeparator = getExceptionLineSeparator();
     StringJoiner msg = new StringJoiner(lineSeparator);
     if (ce.getCause() != null && ce.getCause() instanceof OutOfMemoryError) {
       msg.add(
@@ -3312,11 +3359,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
               Runtime.getRuntime().totalMemory(),
               Runtime.getRuntime().freeMemory()));
     } else {
-      String message;
-      if (getOptions().containsKey("exceptionLineSeparator")) {
-        message = ce.getMessage().replaceAll(System.lineSeparator(), lineSeparator);
-      } else {
-        message = ce.getMessage();
+      String message = ce.getMessage();
+      if (!lineSeparator.equals(System.lineSeparator())) {
+        message = message.replaceAll(System.lineSeparator(), lineSeparator);
       }
       msg.add(message);
       boolean noPrintErrorStack =

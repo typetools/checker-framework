@@ -1,6 +1,8 @@
 package org.checkerframework.framework.flow;
 
+import com.sun.source.tree.CompilationUnitTree;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -113,6 +115,33 @@ public abstract class CFAbstractAnalysis<
       sideEffectsOnlyExpressionsCache = new IdentityHashMap<>();
 
   /**
+   * Cache for {@link StringToJavaExpression#atMethodDecl}, as called by {@link
+   * #computeSideEffectsOnlyExpressions}. Parsing an expression in the scope of the method that
+   * declares the {@code @SideEffectsOnly} annotation does not depend on the call site, so every
+   * call to a given method can share one parse; only the subsequent viewpoint adaptation differs.
+   *
+   * <p>The parse resolves names with respect to the compilation unit that is being compiled, so
+   * {@link #seOnlyParseCacheRoot} records that compilation unit and {@link
+   * #parseSideEffectsOnlyExpression} discards the cache when it changes.
+   *
+   * <p>Expressions that fail to parse are not cached: the exception is reported once per call site,
+   * and such expressions are rare.
+   */
+  private final Map<SeOnlyParseCacheKey, JavaExpression> seOnlyParseCache = new HashMap<>(2);
+
+  /**
+   * A key for {@link #seOnlyParseCache}: an expression of a {@code @SideEffectsOnly} annotation,
+   * together with the method on whose declaration the annotation appears.
+   *
+   * @param declaringMethod the method on whose declaration the annotation appears
+   * @param expression the expression as written in the annotation
+   */
+  private record SeOnlyParseCacheKey(ExecutableElement declaringMethod, String expression) {}
+
+  /** The compilation unit for which {@link #seOnlyParseCache} holds; null if the cache is empty. */
+  private @Nullable CompilationUnitTree seOnlyParseCacheRoot;
+
+  /**
    * Create a CFAbstractAnalysis.
    *
    * @param checker a checker that contains command-line arguments and other information
@@ -193,6 +222,34 @@ public abstract class CFAbstractAnalysis<
   }
 
   /**
+   * Parses one expression of a {@code @SideEffectsOnly} annotation, in the scope of the method that
+   * declares the annotation. The result is memoized in {@link #seOnlyParseCache}, because the parse
+   * is the same for every call site of {@code declaringMethod}.
+   *
+   * @param expression an expression of a {@code @SideEffectsOnly} annotation
+   * @param declaringMethod the method on whose declaration the annotation appears
+   * @return {@code expression}, parsed in the scope of {@code declaringMethod}
+   * @throws JavaExpressionParseException if {@code expression} cannot be parsed
+   */
+  private JavaExpression parseSideEffectsOnlyExpression(
+      String expression, ExecutableElement declaringMethod) throws JavaExpressionParseException {
+    CompilationUnitTree root = checker.getPathToCompilationUnit().getCompilationUnit();
+    @SuppressWarnings("interning:not.interned") // checking for identity, for caching
+    boolean differentTree = seOnlyParseCacheRoot != root;
+    if (differentTree) {
+      seOnlyParseCache.clear();
+      seOnlyParseCacheRoot = root;
+    }
+    SeOnlyParseCacheKey key = new SeOnlyParseCacheKey(declaringMethod, expression);
+    JavaExpression result = seOnlyParseCache.get(key);
+    if (result == null) {
+      result = StringToJavaExpression.atMethodDecl(expression, declaringMethod, checker);
+      seOnlyParseCache.put(key, result);
+    }
+    return result;
+  }
+
+  /**
    * One expression of a {@code @SideEffectsOnly} annotation, viewpoint-adapted to a call site.
    *
    * @param declaringMethod the method on whose declaration the annotation appears
@@ -242,7 +299,7 @@ public abstract class CFAbstractAnalysis<
           // `methodInvocationNode.getTree()`; that tree is null for a call that corresponds to no
           // AST tree, such as the `Iterator.next()` that an enhanced for loop is desugared to.
           JavaExpression exprJe =
-              StringToJavaExpression.atMethodDecl(seOnlyExpr, declaringMethod, checker)
+              parseSideEffectsOnlyExpression(seOnlyExpr, declaringMethod)
                   .atMethodInvocation(methodInvocationNode);
 
           if (exprJe.containsUnknown()) {

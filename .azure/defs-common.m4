@@ -3,7 +3,7 @@ changequote(`[',`]')dnl
 ifelse([The built-in "dnl" m4 macro means "discard to next line."])dnl
 define([canary_os], [ubuntu])dnl
 define([canary_jdk], [25])dnl
-define([latest_jdk], [26])dnl
+define([latest_jdk], [27])dnl
 define([canary_version], [canary_os[]_jdk[]canary_jdk])dnl
 define([docker_userid], [mdernst])
 define([docker_testing], [])dnl

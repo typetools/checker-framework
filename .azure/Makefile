@@ -1,6 +1,9 @@
 .PHONY: all test clean default
 default: all
+# `make all` currently does nothing in this directory.
 all:
+	${MAKE} -C ../.circleci/
+	${MAKE} -C ../.github/workflows/
 
 test: all
 
@@ -14,7 +17,7 @@ PLUME_SCRIPTS=../checker/bin-devel/.plume-scripts
 #	@chmod -w $@
 
 ${PLUME_SCRIPTS}:
-	cd .. && ./gradlew -q getPlumeScripts
+	../checker/bin-devel/clone-plume-scripts.sh
 
 clean:
 	@rm -f azure-pipelines.yml azure-pipelines-daily.yml

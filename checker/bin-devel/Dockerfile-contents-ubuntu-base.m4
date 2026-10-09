@@ -40,6 +40,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   unzip \
   wget
 
+ifelse([Latest version appears at https://downloads.apache.org/maven/maven-4/ .])dnl
 define(`maven_version', `4.0.0-rc-6')dnl
 # The checksum is the .sha512 file beside the tarball in the URL below.
 # Update it whenever the Maven version defined above changes.

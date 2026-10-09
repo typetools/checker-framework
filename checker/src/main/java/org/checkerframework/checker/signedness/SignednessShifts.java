@@ -14,7 +14,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.plumelib.util.IPair;
 
 /**
  * This file contains code to special-case shifts whose result does not depend on the MSB of the
@@ -215,12 +214,12 @@ public final class SignednessShifts {
    */
   /*package-private*/ static boolean isMaskedShiftEitherSignedness(
       BinaryTree shiftExpr, TreePath path) {
-    IPair<Tree, Tree> enclosingPair = TreePathUtil.enclosingNonParen(path);
+    TreePathUtil.EnclosingNonParen enclosingPair = TreePathUtil.enclosingNonParen(path);
     // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
-    Tree enclosing = enclosingPair.first;
+    Tree enclosing = enclosingPair.enclosing();
     // enclosingChild is a child of enclosing:  shiftExpr or a parenthesized version of it.
     @SuppressWarnings("interning:assignment") // comparing AST nodes
-    @InternedDistinct Tree enclosingChild = enclosingPair.second;
+    @InternedDistinct Tree enclosingChild = enclosingPair.enclosingChild();
 
     if (!isMask(enclosing)) {
       return false;
@@ -265,7 +264,7 @@ public final class SignednessShifts {
   /*package-private*/ static boolean isCastedShiftEitherSignedness(
       BinaryTree shiftExpr, TreePath path) {
     // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
-    Tree enclosing = TreePathUtil.enclosingNonParen(path).first;
+    Tree enclosing = TreePathUtil.enclosingNonParen(path).enclosing();
 
     PrimitiveTypeTree castPrimitiveType = primitiveTypeCast(enclosing);
     if (castPrimitiveType == null) {
