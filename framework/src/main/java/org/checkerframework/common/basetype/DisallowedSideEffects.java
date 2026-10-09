@@ -47,6 +47,8 @@ import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
+import org.checkerframework.dataflow.util.PurityChecker;
+import org.checkerframework.dataflow.util.PurityKind;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.StringToJavaExpression;
@@ -331,6 +333,16 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       return;
     }
     AnnotatedTypeFactory atypeFactory = checker.getTypeFactory();
+    if (PurityChecker.functionalParameterCallPurity(
+            atypeFactory,
+            TreeUtils.getReceiverTree(node),
+            invokedElem,
+            TreePathUtil.enclosingMethod(getCurrentPath()),
+            atypeFactory.getProcessingEnv())
+        .contains(PurityKind.SIDE_EFFECT_FREE)) {
+      // The call runs code that every caller of the enclosing method was required to check.
+      return;
+    }
     // The callee might inherit its `@SideEffectsOnly` annotation rather than declare it, and
     // `@SideEffectsOnly` is not inherited as an annotation, so `getDeclAnnotation` would not find
     // it; see `AnnotatedTypeFactory.getSideEffectsOnlyExpressionMap`.

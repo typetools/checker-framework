@@ -49,13 +49,11 @@ public class PurityFunctionalArgumentKinds {
 
   @Pure
   int pureCallsParameter(Function<String, Integer> f, String s) {
-    // :: error: [purity.call]
     return f.apply(s);
   }
 
   @Deterministic
   int deterministicCallsParameter(Function<String, Integer> f, String s) {
-    // :: error: [purity.call]
     return f.apply(s);
   }
 

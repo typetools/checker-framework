@@ -33,7 +33,6 @@ public class PurityFunctionalSubinterface {
 
   @SideEffectFree
   static int m(Function<String, Integer> f, String s) {
-    // :: error: [purity.call]
     return f.apply(s);
   }
 

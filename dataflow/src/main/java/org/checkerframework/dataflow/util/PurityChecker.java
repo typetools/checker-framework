@@ -72,6 +72,16 @@ public final class PurityChecker {
    *
    * @param statement the statement to check
    * @param annoProvider the annotation provider
+   * @param enclosingMethod the method declaration that lexically encloses {@code statement}, or
+   *     null if none does. A call to the functional method of one of that method's
+   *     functional-interface parameters has the purity that the method's callers required of the
+   *     argument; see {@link #functionalParameterCallPurity(AnnotationProvider, ExpressionTree,
+   *     ExecutableElement, MethodTree, ProcessingEnvironment)}. Pass the enclosing method for a
+   *     lambda body too: the body is checked against the functional method that the lambda
+   *     implements, but the enclosing method's parameters still hold values that its caller was
+   *     required to check, whenever the lambda runs. Pass null for an arbitrary expression, which
+   *     no method's contract governs.
+   * @param env the processing environment; used only if {@code enclosingMethod} is non-null
    * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
    * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
    * @param assumePureGetters true if all getter methods should be assumed to be @Pure
@@ -81,12 +91,16 @@ public final class PurityChecker {
   public static PurityResult checkPurity(
       TreePath statement,
       AnnotationProvider annoProvider,
+      @Nullable MethodTree enclosingMethod,
+      @Nullable ProcessingEnvironment env,
       boolean assumeSideEffectFree,
       boolean assumeDeterministic,
       boolean assumePureGetters) {
     return checkPurity(
         Collections.singletonList(statement),
         annoProvider,
+        enclosingMethod,
+        env,
         assumeSideEffectFree,
         assumeDeterministic,
         assumePureGetters);
@@ -96,13 +110,17 @@ public final class PurityChecker {
    * Compute whether the given statements, taken together, are side-effect-free, deterministic, or
    * both. Returns a result that can be queried.
    *
-   * <p>Use this rather than calling {@link #checkPurity(TreePath, AnnotationProvider, boolean,
-   * boolean, boolean)} once per statement, for code that runs as a unit but is not contiguous in
-   * the source code: a constructor together with the instance initializers that run as part of it,
-   * for example.
+   * <p>Use this rather than calling {@link #checkPurity(TreePath, AnnotationProvider, MethodTree,
+   * ProcessingEnvironment, boolean, boolean, boolean)} once per statement, for code that runs as a
+   * unit but is not contiguous in the source code: a constructor together with the instance
+   * initializers that run as part of it, for example.
    *
    * @param statements the statements to check
    * @param annoProvider the annotation provider
+   * @param enclosingMethod the method declaration that lexically encloses {@code statements}, or
+   *     null if none does; see {@link #checkPurity(TreePath, AnnotationProvider, MethodTree,
+   *     ProcessingEnvironment, boolean, boolean, boolean)}
+   * @param env the processing environment; used only if {@code enclosingMethod} is non-null
    * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
    * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
    * @param assumePureGetters true if all getter methods should be assumed to be @Pure
@@ -112,12 +130,19 @@ public final class PurityChecker {
   public static PurityResult checkPurity(
       List<TreePath> statements,
       AnnotationProvider annoProvider,
+      @Nullable MethodTree enclosingMethod,
+      @Nullable ProcessingEnvironment env,
       boolean assumeSideEffectFree,
       boolean assumeDeterministic,
       boolean assumePureGetters) {
     PurityCheckerHelper helper =
         new PurityCheckerHelper(
-            annoProvider, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
+            annoProvider,
+            enclosingMethod,
+            env,
+            assumeSideEffectFree,
+            assumeDeterministic,
+            assumePureGetters);
     for (TreePath statement : statements) {
       helper.scan(statement, null);
     }
@@ -584,6 +609,20 @@ public final class PurityChecker {
     /** The annotation provider (typically an AnnotatedTypeFactory). */
     protected final AnnotationProvider annoProvider;
 
+    /** The method declaration that lexically encloses the checked statement, or null if none. */
+    private final @Nullable MethodTree enclosingMethod;
+
+    /** The processing environment; null if {@link #enclosingMethod} is null. */
+    private final @Nullable ProcessingEnvironment env;
+
+    /**
+     * The purity that {@link #enclosingMethod} promises for the functional method of its
+     * functional-interface parameters, before accounting for the methods that it overrides. Empty
+     * if there is no enclosing method or it has no purity annotation, in which case no call gets
+     * the assumption.
+     */
+    private final EnumSet<PurityKind> functionalParameterKinds;
+
     /**
      * True if all methods should be assumed to be @SideEffectFree, for the purposes of
      * org.checkerframework.dataflow analysis.
@@ -606,19 +645,53 @@ public final class PurityChecker {
      * Create a PurityCheckerHelper.
      *
      * @param annoProvider the annotation provider
+     * @param enclosingMethod the method declaration that lexically encloses the checked statement,
+     *     or null if none does
+     * @param env the processing environment; used only if {@code enclosingMethod} is non-null
      * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
      * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
      * @param assumePureGetters true if getter methods should be assumed to be @Pure
      */
     public PurityCheckerHelper(
         AnnotationProvider annoProvider,
+        @Nullable MethodTree enclosingMethod,
+        @Nullable ProcessingEnvironment env,
         boolean assumeSideEffectFree,
         boolean assumeDeterministic,
         boolean assumePureGetters) {
       this.annoProvider = annoProvider;
+      this.enclosingMethod = enclosingMethod;
+      this.env = env;
+      this.functionalParameterKinds =
+          enclosingMethod == null || env == null
+              ? EnumSet.noneOf(PurityKind.class)
+              : functionalParameterKinds(
+                  annoProvider, TreeUtils.elementFromDeclaration(enclosingMethod), env);
       this.assumeSideEffectFree = assumeSideEffectFree;
       this.assumeDeterministic = assumeDeterministic;
       this.assumePureGetters = assumePureGetters;
+    }
+
+    /**
+     * Returns the purity that {@code tree} may be assumed to have beyond {@code invoked}'s own
+     * annotations: if {@code tree} invokes the functional method of an effectively final
+     * functional-interface parameter of the method being checked, the purity that every call to the
+     * method required of the argument; otherwise, an empty set.
+     *
+     * @param tree a method invocation
+     * @param invoked the invoked method
+     * @return the purity that a call to a functional-interface parameter of the enclosing method
+     *     may be assumed to have, or an empty set
+     */
+    private EnumSet<PurityKind> functionalParameterCallPurity(
+        MethodInvocationTree tree, ExecutableElement invoked) {
+      ProcessingEnvironment env = this.env;
+      if (functionalParameterKinds.isEmpty() || env == null) {
+        // There is no enclosing method, or it promises nothing.
+        return EnumSet.noneOf(PurityKind.class);
+      }
+      return PurityChecker.functionalParameterCallPurity(
+          annoProvider, TreeUtils.getReceiverTree(tree), invoked, enclosingMethod, env);
     }
 
     @Override
@@ -697,6 +770,7 @@ public final class PurityChecker {
     public Void visitMethodInvocation(MethodInvocationTree tree, Void ignore) {
       ExecutableElement elt = TreeUtils.elementFromUse(tree);
       EnumSet<PurityKind> callKinds = EnumSet.copyOf(PurityUtils.getPurityKinds(annoProvider, elt));
+      callKinds.addAll(functionalParameterCallPurity(tree, elt));
       boolean pureGetter = assumePureGetters && ElementUtils.isGetter(elt);
       if (assumeSideEffectFree || pureGetter) {
         callKinds.add(PurityKind.SIDE_EFFECT_FREE);

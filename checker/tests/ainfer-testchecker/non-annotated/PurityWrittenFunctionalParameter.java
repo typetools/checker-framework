@@ -1,7 +1,6 @@
 // Inference must retain a purity annotation that is written on a method with a
 // functional-interface parameter, even though the annotation requires the arguments to that
-// parameter to have the same purity.  The bodies do not use the parameters, so inference would
-// infer every purity kind, but it may not infer the kinds that are not written.
+// parameter to have the same purity.
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -17,26 +16,28 @@ public class PurityWrittenFunctionalParameter {
 
   @SideEffectFree
   static Integer sideEffectFree(Function<Integer, Integer> f) {
-    return 1;
+    return f.apply(1);
   }
 
   @Deterministic
   static Integer deterministic(Function<Integer, Integer> f) {
-    return 1;
+    return f.apply(1);
   }
 
   @Pure
   static Integer pure(Function<Integer, Integer> f) {
-    return 1;
+    return f.apply(1);
   }
 
   @Pure
   static Object pureSupplier(Supplier<Object> s) {
-    return "";
+    return s.get();
   }
 
   @SideEffectFree
-  static void sideEffectFreeVoid(Runnable r) {}
+  static void sideEffectFreeVoid(Runnable r) {
+    r.run();
+  }
 
   @SuppressWarnings("ainfertest")
   @EnsuresQualifierIf(expression = "#1", result = true, qualifier = AinferSibling1.class)

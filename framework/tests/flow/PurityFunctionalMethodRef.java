@@ -9,13 +9,11 @@ public class PurityFunctionalMethodRef {
 
   @SideEffectFree
   static int applyStatic(Function<String, Integer> f, String s) {
-    // :: error: [purity.call]
     return f.apply(s);
   }
 
   @SideEffectFree
   int applyInstance(Function<String, Integer> f, String s) {
-    // :: error: [purity.call]
     return f.apply(s);
   }
 
@@ -57,7 +55,6 @@ public class PurityFunctionalMethodRef {
   /** The body relies on the purity of calls to u.apply, but those calls check no argument. */
   @SideEffectFree
   static int runsUnannotated(UnannotatedApplier u) {
-    // :: error: [purity.call]
     return u.apply(s -> 0, "");
   }
 

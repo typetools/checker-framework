@@ -11,7 +11,6 @@ public class PurityInheritedImplementationGap {
   static class Base {
     @SideEffectFree
     public int apply(Supplier<Integer> s) {
-      // :: error: [purity.call]
       return s.get();
     }
   }

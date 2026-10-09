@@ -48,7 +48,6 @@ public class PurityNonFunctionalSingleMethodInterface {
 
   @SideEffectFree
   static int applyStringFunction(StringFunction f) {
-    // :: error: [purity.call]
     return f.apply("");
   }
 

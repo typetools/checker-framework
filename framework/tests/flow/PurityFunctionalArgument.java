@@ -297,6 +297,14 @@ public class PurityFunctionalArgument {
         s);
   }
 
+  // A lambda's body may call a functional-interface parameter of the enclosing method, which holds
+  // a value that the caller of that method was required to check, whenever the lambda runs.
+
+  @SideEffectFree
+  int lambdaCallsEnclosingParameter(Function<String, Integer> f, String s) {
+    return callee(t -> f.apply(t), s);
+  }
+
   int unannotatedMethodsLambdaCallsParameter(Function<String, Integer> f, String s) {
     // :: error: [purity.call]
     return callee(t -> f.apply(t), s);
@@ -318,7 +326,6 @@ public class PurityFunctionalArgument {
 
   @SideEffectFree
   static String[] arrayCallee(IntFunction<String[]> generator) {
-    // :: error: [purity.call]
     return generator.apply(0);
   }
 

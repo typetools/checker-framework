@@ -25,7 +25,6 @@ public class PurityFunctionalArgumentSoundness {
 
   @SideEffectFree
   static SideEffectFreeSupplier wrap(Function<Integer, Integer> f) {
-    // :: error: [purity.call]
     return () -> f.apply(1);
   }
 
@@ -49,7 +48,6 @@ public class PurityFunctionalArgumentSoundness {
 
   @SideEffectFree
   static void run(Runnable r) {
-    // :: error: [purity.call]
     r.run();
   }
 

@@ -90,16 +90,70 @@ reported only when purity annotations are checked, such as with
 
 \subsectionAndLabel{Functional-interface parameters of methods with purity annotations}{purity-functional-interface-parameters}
 
-A method annotated with a purity annotation promises that purity for the code
-that it is handed through its functional-interface parameters.  A
-functional-interface parameter is one whose type, or the interface that
-declares the type's functional method, is annotated with
-\<@FunctionalInterface>, as \<Function>, \<Runnable>, and the other interfaces
-in \<java.util.function> are.  A parameter of a type such as \<Iterable>,
-\<AutoCloseable>, or \<Comparable> is not one, even though the type has a
-single abstract method.  For example, \<Optional.map> is
-\<@SideEffectFree>, and its documentation requires that ``the mapper must not
-have side effects''.
+A method annotated with a purity annotation may call the functional method of
+its own functional-interface parameters.  A functional-interface parameter is
+one whose type, or the interface that declares the type's functional method,
+is annotated with \<@FunctionalInterface>, as \<Function>, \<Runnable>, and
+the other interfaces in \<java.util.function> are.  A parameter of a type such
+as \<Iterable>, \<AutoCloseable>, or \<Comparable> is not one, even though the
+type has a single abstract method.  A call to the functional method of such a
+parameter is treated as having the purity that the method promises:
+
+\begin{itemize}
+\item
+  In a \refqualclass{dataflow/qual}{SideEffectFree} method, the call is
+  treated as side-effect-free.
+\item
+  In a \refqualclass{dataflow/qual}{Deterministic} method, the call is
+  treated as deterministic.
+\item
+  In a \refqualclass{dataflow/qual}{Pure} method, the call is treated as
+  pure.
+\iffalse
+\item
+  In a \refqualclass{dataflow/qual}{SideEffectsOnly} method, the call is
+  treated as side-effect-free.  The method itself may modify the expressions
+  listed in its annotation, but the code it is handed may not modify anything.
+\fi
+\end{itemize}
+
+\begin{Verbatim}
+  @SideEffectFree
+  int m(Function<String, Integer> f, String s) {
+    return f.apply(s);  // permitted: apply is treated as side-effect-free
+  }
+\end{Verbatim}
+
+The assumption applies only when the parameter is effectively final and the
+functional method is called directly on the parameter.  It does not apply to a
+call through a local variable or field that aliases the parameter, nor to a
+method of the parameter's type other than its functional method, such as
+\<Function.andThen>:
+
+\begin{Verbatim}
+  @SideEffectFree
+  int m2(Function<String, Integer> f, String s) {
+    Function<String, Integer> g = f;
+    return g.apply(s);  // error: g is not a parameter
+  }
+\end{Verbatim}
+
+A call may reach the method through any method that it overrides, and such a
+call checks its arguments only against the overridden method's promise.  So
+the method may assume only the purity that it and every method it overrides
+promise for that parameter.  An overridden method that makes no promise, or
+whose parameter at that position is not a functional interface (for example,
+its type is a type variable), guarantees nothing, and the assumption does not
+apply.
+
+Two other ways of running a method are not overriding, and each is checked
+against the same rule.  A method reference to a method that relies on its
+functional-interface argument being pure is an error if the functional method
+that the reference implements does not guarantee that purity
+(\<purity.methodref.functional.parameter>).  A class that inherits such a
+method from its superclass, and in doing so implements an interface method
+that does not guarantee that purity, is an error
+(\<purity.inherited.functional.parameter>).
 
 At each call to such a method, every argument passed to a functional-interface
 parameter must have the purity that the method promises (side-effect-free for
@@ -115,47 +169,19 @@ of a varargs array.  How the argument is checked depends on its form:
 \item
   A lambda is checked via its body, which must have the required purity.
 \item
-  An effectively final functional-interface parameter of the enclosing
-  method has the purity that the enclosing method promises, because each
-  caller of the enclosing method was required to check it.
-\item
   Any other argument is checked via the functional method of the argument's
   declared type, which must have the required purity annotations.
 \end{itemize}
 
 \begin{Verbatim}
-  @SideEffectFree
-  int m(Function<String, Integer> f, String s) { ... }
-
   m(String::length, "hi");   // OK: String.length() is side-effect-free
   m(s -> s.length(), "hi");  // OK: the lambda body is side-effect-free
   m(s -> count++, "hi");     // error: the lambda body has a side effect
-
-  @SideEffectFree
-  int forwarder(Function<String, Integer> g) {
-    return m(g, "hi");       // OK: g is a parameter of a side-effect-free method
-  }
 
   void caller(Function<String, Integer> g) {
     m(g, "hi");              // error: [purity.functional.argument] Function.apply is not @SideEffectFree
   }
 \end{Verbatim}
-
-A call may reach the method through any method that it overrides, and such a
-call checks its arguments only against the overridden method's promise.  So
-the method may rely only on the purity that it and every method it overrides
-promise for that parameter.  An overridden method that makes no promise, or
-whose parameter at that position is not a functional interface (for example,
-its type is a type variable), guarantees nothing.
-
-Two other ways of running a method are not overriding, and each is checked
-against the same rule.  A method reference to a method that relies on its
-functional-interface argument being pure is an error if the functional method
-that the reference implements does not guarantee that purity
-(\<purity.methodref.functional.parameter>).  A class that inherits such a
-method from its superclass, and in doing so implements an interface method
-that does not guarantee that purity, is an error
-(\<purity.inherited.functional.parameter>).
 
 If the functional method returns \<void>, a \<@Pure> method requires only
 that the argument be side-effect-free, because a side-effect-free call that
@@ -167,6 +193,23 @@ deterministic:
 
 \begin{Verbatim}
   Objects.requireNonNull(x, () -> String.format("bad %s", y));  // error: [purity.call]
+\end{Verbatim}
+
+The assumption affects purity checking, and the dataflow analysis of a lambda
+in the method body, but not the dataflow analysis of the body itself.  A
+direct call to a functional-interface parameter in the body still discards
+refinements of fields, as a call to any method that is not annotated as
+side-effect-free does:
+
+\begin{Verbatim}
+  @SideEffectFree
+  int m(Function<String, Integer> f, String s) {
+    if (this.x != null) {
+      f.apply(s);
+      return this.x.hashCode();  // error: [dereference.of.nullable]
+    }
+    return 0;
+  }
 \end{Verbatim}
 
 %% TODO: we could implement a type system for functional interfaces with a

@@ -16,7 +16,6 @@ public class PurityFunctionalInherited {
     /** The body assumes that {@code s} is side-effect-free. */
     @SideEffectFree
     public int apply(Supplier<Integer> s) {
-      // :: error: [purity.call]
       return s.get();
     }
   }
@@ -74,7 +73,6 @@ public class PurityFunctionalInherited {
   /** The body relies on the purity of calls to u.apply, but those calls check no argument. */
   @SideEffectFree
   static int runsUnannotated(Unannotated u) {
-    // :: error: [purity.call]
     return u.apply(() -> 0);
   }
 
