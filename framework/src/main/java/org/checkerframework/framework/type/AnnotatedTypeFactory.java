@@ -5213,6 +5213,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           final AnnotatedTypeMirror newArg;
           if (types.isSameType(wildcardUbType, correctArgType)) {
             newArg = wildcardType.getExtendsBound().deepCopy();
+          } else if (TypesUtils.isSameTypeModuloCaptures(wildcardUbType, correctArgType, types)) {
+            // Keep the annotations on the bounds of the captured type variables, too.  This
+            // includes the case where correctArgType is itself a captured type variable.
+            newArg = this.toAnnotatedType(correctArgType, false);
+            replaceAnnotations(wildcardType.getExtendsBound(), newArg);
           } else if (correctArgType.getKind() == TypeKind.TYPEVAR) {
             newArg = this.toAnnotatedType(correctArgType, false);
             AnnotatedTypeVariable newArgAsTypeVar = (AnnotatedTypeVariable) newArg;
@@ -5222,10 +5227,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             newArgAsTypeVar
                 .getLowerBound()
                 .replaceAnnotations(wildcardType.getSuperBound().getPrimaryAnnotations());
-          } else if (TypesUtils.isSameTypeModuloCaptures(wildcardUbType, correctArgType, types)) {
-            // Keep the annotations on the bounds of the captured type variables, too.
-            newArg = this.toAnnotatedType(correctArgType, false);
-            replaceAnnotations(wildcardType.getExtendsBound(), newArg);
           } else {
             newArg = this.toAnnotatedType(correctArgType, false);
             newArg.replaceAnnotations(wildcardType.getExtendsBound().getPrimaryAnnotations());
@@ -5251,9 +5252,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             getTypeVarSubstitutor().substitute(typeVarToTypeArg, groundFunctionalType);
     groundFunctionalType.addAnnotations(functionalType.getPrimaryAnnotations());
 
-    // When the groundTargetJavaType is different from the underlying type of functionalType,
-    // only the main annotations are copied.  Add default annotations in places without
-    // annotations.
+    // When the groundTargetJavaType is different from the underlying type of functionalType
+    // (other than by captured type variables), only the main annotations are copied.  Add
+    // default annotations in places without annotations.
     addDefaultAnnotations(groundFunctionalType);
     return groundFunctionalType;
   }

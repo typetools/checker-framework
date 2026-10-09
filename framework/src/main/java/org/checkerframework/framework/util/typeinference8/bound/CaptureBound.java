@@ -116,12 +116,17 @@ public final class CaptureBound {
    * <p>Also, reduces and incorporates the constraint {@code G<a1,...,an> -> target}. See JLS
    * 18.5.2.1.
    *
-   * <p>If {@code Ai} is {@code ? extends T}, this also adds the bound {@code alphai <: T}, and if
-   * {@code Ai} is {@code ? super T}, the bound {@code T <: alphai}. JLS 18.3.2 does not imply these
-   * bounds: the wildcard's bound appears only in conditional rules. But JLS 18.4 builds the fresh
-   * type variable for {@code alphai} out of {@code alphai}'s own bounds, so without them the fresh
-   * type variable would not have the bounds that capture conversion (JLS 5.1.10) gives it. javac's
-   * inference variable for a capture has the capture's bounds.
+   * <p>If {@code Ai} is {@code ? extends T}, this also adds the bound {@code alphai <: T}. JLS
+   * 18.3.2 does not imply this bound: the wildcard's bound appears only in conditional rules. But
+   * JLS 18.4 builds the fresh type variable for {@code alphai} out of {@code alphai}'s own bounds,
+   * so without it the fresh type variable would not have the upper bound that capture conversion
+   * (JLS 5.1.10) gives it.
+   *
+   * <p>If {@code Ai} is {@code ? super T}, the fresh type variable likewise needs lower bound
+   * {@code T}. But the bound {@code T <: alphai} is not added, because incorporating it with {@code
+   * alphai <: Bi theta} would imply {@code T <: Bi theta}, which capture conversion does not
+   * require. Instead, {@code T} is recorded on {@code alphai} and used only by resolution. See
+   * {@link CaptureVariable#getWildcardLowerBound()}.
    *
    * @param target the target type
    * @param context the context
@@ -157,8 +162,7 @@ public final class CaptureBound {
           AbstractType T = t.capturedTypeArg.getWildcardUpperBound();
           t.alpha.getBounds().addBound(null, VariableBounds.BoundKind.UPPER, T);
         } else if (t.capturedTypeArg.isLowerBoundedWildcard()) {
-          AbstractType T = t.capturedTypeArg.getWildcardLowerBound();
-          t.alpha.getBounds().addBound(null, VariableBounds.BoundKind.LOWER, T);
+          t.alpha.setWildcardLowerBound(t.capturedTypeArg.getWildcardLowerBound());
         }
       }
     }

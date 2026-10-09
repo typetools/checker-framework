@@ -1686,9 +1686,26 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if {@code t1} and {@code t2} are the same type, except that where one has a
-   * captured type variable the other may have a different captured type variable with the same
-   * bounds, modulo captured type variables.
+   * Returns true if {@code t1} and {@code t2} are the same type, except that captured type
+   * variables in {@code t1} may differ from the corresponding captured type variables in {@code
+   * t2}.
+   *
+   * <p>More precisely, returns true if there is a one-to-one correspondence between the captured
+   * type variables of {@code t1} and those of {@code t2} such that:
+   *
+   * <ul>
+   *   <li>replacing each captured type variable of {@code t1} by its counterpart makes {@code t1}
+   *       the same type as {@code t2}, and
+   *   <li>the upper and lower bounds of each pair of corresponding captured type variables are
+   *       likewise the same, under the same correspondence.
+   * </ul>
+   *
+   * A wildcard that lacks an extends or super bound matches only a wildcard that also lacks that
+   * bound. Bounds that refer, directly or indirectly, back to a captured type variable (such as
+   * {@code CAP#1 extends Comparable<CAP#1>}) are handled by assuming that a pair of captured type
+   * variables corresponds while their bounds are compared.
+   *
+   * <p>This relation is symmetric.
    *
    * @param t1 a type
    * @param t2 a type
@@ -1696,8 +1713,26 @@ public final class TypesUtils {
    * @return true if {@code t1} and {@code t2} are the same type modulo captured type variables
    */
   public static boolean isSameTypeModuloCaptures(TypeMirror t1, TypeMirror t2, Types types) {
-    return isSameTypeModuloCaptures(t1, t2, types, new IdentityHashMap<>());
+    return isSameTypeModuloCaptures(
+        t1, t2, types, new CaptureCorrespondence(new IdentityHashMap<>(), new IdentityHashMap<>()));
   }
+
+  /**
+   * A one-to-one correspondence between captured type variables, built up by {@link
+   * #isSameTypeModuloCaptures(TypeMirror, TypeMirror, Types, CaptureCorrespondence)}.
+   *
+   * <p>A pair stays in the correspondence after its bounds are compared. This is sound because
+   * every comparison is a conjunction: if comparing any pair's bounds fails, then the whole
+   * comparison fails. Keeping the pairs also means that each pair's bounds are compared at most
+   * once.
+   *
+   * @param forward a map from captured type variables in the first type to those in the second,
+   *     without type annotations
+   * @param backward the inverse of {@code forward}
+   */
+  private record CaptureCorrespondence(
+      IdentityHashMap<TypeMirror, TypeMirror> forward,
+      IdentityHashMap<TypeMirror, TypeMirror> backward) {}
 
   /**
    * Returns true if {@code t1} and {@code t2} are the same type modulo captured type variables.
@@ -1705,26 +1740,31 @@ public final class TypesUtils {
    * @param t1 a type
    * @param t2 a type
    * @param types the type utilities
-   * @param visited the pairs of captured type variables whose bounds are being compared, from a
-   *     captured type variable in {@code t1} to the one in {@code t2}
+   * @param visited the correspondence between the captured type variables of {@code t1} and those
+   *     of {@code t2}; this method may add pairs to it
    * @return true if {@code t1} and {@code t2} are the same type modulo captured type variables
    */
   private static boolean isSameTypeModuloCaptures(
-      TypeMirror t1, TypeMirror t2, Types types, IdentityHashMap<TypeMirror, TypeMirror> visited) {
+      TypeMirror t1, TypeMirror t2, Types types, CaptureCorrespondence visited) {
     if (isCapturedTypeVariable(t1) && isCapturedTypeVariable(t2)) {
-      TypeMirror previous = visited.get(t1);
-      if (previous != null) {
-        // A bound refers back to a captured type variable whose bounds are being compared.
-        return types.isSameType(previous, t2);
+      // Strip type annotations so that each captured type variable has one canonical object.
+      TypeMirror key1 = TypeAnnotationUtils.unannotatedType(t1);
+      TypeMirror key2 = TypeAnnotationUtils.unannotatedType(t2);
+      TypeMirror previous1 = visited.forward().get(key1);
+      TypeMirror previous2 = visited.backward().get(key2);
+      if (previous1 != null || previous2 != null) {
+        // The pair is already being compared, or has been compared successfully.
+        return previous1 != null
+            && previous2 != null
+            && types.isSameType(previous1, key2)
+            && types.isSameType(previous2, key1);
       }
-      visited.put(t1, t2);
+      visited.forward().put(key1, key2);
+      visited.backward().put(key2, key1);
       TypeVariable v1 = (TypeVariable) t1;
       TypeVariable v2 = (TypeVariable) t2;
-      boolean result =
-          isSameTypeModuloCaptures(v1.getUpperBound(), v2.getUpperBound(), types, visited)
-              && isSameTypeModuloCaptures(v1.getLowerBound(), v2.getLowerBound(), types, visited);
-      visited.remove(t1);
-      return result;
+      return isSameTypeModuloCaptures(v1.getUpperBound(), v2.getUpperBound(), types, visited)
+          && isSameTypeModuloCaptures(v1.getLowerBound(), v2.getLowerBound(), types, visited);
     }
     if (t1.getKind() != t2.getKind()) {
       return false;
@@ -1759,6 +1799,12 @@ public final class TypesUtils {
         return isSameBoundModuloCaptures(w1.getExtendsBound(), w2.getExtendsBound(), types, visited)
             && isSameBoundModuloCaptures(w1.getSuperBound(), w2.getSuperBound(), types, visited);
       }
+      case TYPEVAR -> {
+        // At most one of t1 and t2 is a captured type variable.
+        return !isCapturedTypeVariable(t1)
+            && !isCapturedTypeVariable(t2)
+            && areSame((TypeVariable) t1, (TypeVariable) t2);
+      }
       default -> {
         return types.isSameType(t1, t2);
       }
@@ -1772,7 +1818,7 @@ public final class TypesUtils {
    * @param ts1 a list of types
    * @param ts2 a list of types
    * @param types the type utilities
-   * @param visited the pairs of captured type variables whose bounds are being compared
+   * @param visited the correspondence between captured type variables
    * @return true if {@code ts1} and {@code ts2} are pairwise the same modulo captured type
    *     variables
    */
@@ -1780,7 +1826,7 @@ public final class TypesUtils {
       List<? extends TypeMirror> ts1,
       List<? extends TypeMirror> ts2,
       Types types,
-      IdentityHashMap<TypeMirror, TypeMirror> visited) {
+      CaptureCorrespondence visited) {
     if (ts1.size() != ts2.size()) {
       return false;
     }
@@ -1799,14 +1845,14 @@ public final class TypesUtils {
    * @param b1 a wildcard bound, or null if the wildcard has no such bound
    * @param b2 a wildcard bound, or null if the wildcard has no such bound
    * @param types the type utilities
-   * @param visited the pairs of captured type variables whose bounds are being compared
+   * @param visited the correspondence between captured type variables
    * @return true if {@code b1} and {@code b2} are the same bound modulo captured type variables
    */
   private static boolean isSameBoundModuloCaptures(
       @Nullable TypeMirror b1,
       @Nullable TypeMirror b2,
       Types types,
-      IdentityHashMap<TypeMirror, TypeMirror> visited) {
+      CaptureCorrespondence visited) {
     if (b1 == null) {
       return b2 == null;
     }
