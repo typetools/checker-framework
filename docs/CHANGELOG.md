@@ -7,6 +7,15 @@
 
 ### User-visible changes
 
+Under `-AcheckPurityAnnotations`, each argument passed to a functional-interface
+parameter of a method with a purity annotation must have that purity, or the new
+error `purity.functional.argument` is issued.  This affects calls to JDK methods
+such as `Optional.map` and `Comparator.comparing` that are passed lambdas with
+side effects, and calls to `@Pure` methods such as
+`Objects.requireNonNull(T, Supplier)` that are passed a lambda that is not
+deterministic, such as one that calls `String.format`.  See the manual section
+"Lambdas, method references, and functional interfaces".
+
 ### Changes for type system implementers
 
 ### Closed issues
