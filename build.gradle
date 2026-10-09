@@ -635,7 +635,9 @@ tasks.register("zip", Zip) {
     "docs/tutorial/src/**",
     "docs/tutorial/test/**",
     "docs/tutorial/Makefile",
-    "docs/tutorial/README")
+    "docs/tutorial/README",
+    // lwarp's intermediate files, such as manual-multipage_html.html.
+    "docs/manual/*_html.*")
 
     include("README.html",
         "LICENSE.txt",
@@ -648,11 +650,18 @@ tasks.register("zip", Zip) {
         "docs/annotation-file-utilities/annotation-file-utilities.html",
         "docs/annotation-file-utilities/annotation-file-format.pdf",
         "docs/annotation-file-utilities/annotation-file-format.html",
+        "docs/annotation-file-utilities/*.css",
+        "docs/annotation-file-utilities/figures/chainlink.svg",
+        "docs/annotation-file-utilities/annotation-file-format-images/**",
         "docs/annotation-file-utilities/*.png",
         "docs/manual/manual.html",
+        "docs/manual/manual-*.html",
         "docs/manual/manual.pdf",
-        "docs/manual/*.svg",
-        "docs/manual/manual001.png",
+        "docs/manual/*.css",
+        "docs/manual/favicon-checkerframework.png",
+        "docs/manual/figures/*.svg",
+        "docs/manual/manual-images/**",
+        "docs/manual/manual-multipage-images/**",
         "docs/examples/InterningExample.java",
         "docs/examples/InterningExampleWithWarnings.java",
         "docs/examples/NullnessExample.java",
@@ -722,9 +731,7 @@ clean {
   delete("${afuManualDir}/annotation-file-format.aux")
   delete("${afuManualDir}/annotation-file-format.blg")
   delete("${afuManualDir}/annotation-file-format.dvi")
-  delete("${afuManualDir}/annotation-file-format.haux")
   delete("${afuManualDir}/annotation-file-format.html")
-  delete("${afuManualDir}/annotation-file-format.htoc")
   delete("${afuManualDir}/annotation-file-format.log")
   delete("${afuManualDir}/annotation-file-format.pdf")
   delete("${afuManualDir}/annotation-file-format.toc")
@@ -795,7 +802,7 @@ tasks.register("makeCfManual", Exec) {
   dependsOn("allJavadoc")
   description = "Build the Checker Framework manual"
   // Don't make all because it will re-run allJavadoc which causes problems when building the release.
-  commandLine("make", "-C", "docs/manual/", "manual.pdf", "manual.html")
+  commandLine("make", "-C", "docs/manual/", "manual.pdf", "html")
 }
 
 tasks.register("makeAfuManual", Exec) {
@@ -984,6 +991,17 @@ subprojects {
         "org.checkerframework.checker.resourceleak.ResourceLeakChecker")
     rootProject.createCheckTypeTask(project.name, "Signature",
         "org.checkerframework.checker.signature.SignatureChecker")
+    rootProject.createCheckTypeTask(project.name, "Modifiability",
+        "org.checkerframework.checker.modifiability.ModifiabilityChecker",
+        [
+          // The Modifiability Checker is under development and this codebase is not yet free of
+          // its errors, so `-Awarns` downgrades them to warnings.  This means that the
+          // `checkModifiability` task always succeeds; it enforces nothing, but it does detect a
+          // crash of the checker.  Remove `-Awarns` when the codebase issues no modifiability
+          // errors.
+          "-Awarns",
+          "-Afilenames",
+        ])
 
     // The checkNullness task runs on all code, but it only *checks* the following code:
     //  * All files outside the "framework", "checker", and "annotation-file-utilities" subprojects.
@@ -1200,7 +1218,8 @@ subprojects {
     tasks.register("typecheck-part1") {
       description = "Run the Checker Framework on itself (part 1)"
       group = "Verification"
-      dependsOn("checkCompilerMessages", "checkFormatter", "checkInterning", "checkOptional", "checkPurity")
+      dependsOn("checkCompilerMessages", "checkFormatter", "checkInterning", "checkModifiability", "checkOptional")
+      // Can't run "checkPurity" because it issues too many warnings.
     }
     tasks.register("typecheck-part2") {
       description = "Run the Checker Framework on itself (part 2)"

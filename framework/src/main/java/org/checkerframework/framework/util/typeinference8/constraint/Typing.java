@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.util.typeinference8.types.AbstractQualifier;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
@@ -59,12 +60,13 @@ public class Typing extends TypeConstraint {
   /**
    * Creates a typing constraint.
    *
-   * @param parent the constraint whose reduction created this constraint
+   * @param parent the constraint whose reduction created this constraint, or null if no constraint
+   *     did
    * @param S left-hand side type
    * @param t right-hand side type
    * @param kind the kind of constraint
    */
-  public Typing(Constraint parent, AbstractType S, AbstractType t, Kind kind) {
+  public Typing(@Nullable Constraint parent, AbstractType S, AbstractType t, Kind kind) {
     this(parent, S, t, kind, false);
   }
 
@@ -84,21 +86,27 @@ public class Typing extends TypeConstraint {
   /**
    * Creates a typing constraint.
    *
-   * @param parent the constraint whose reduction created this constraint
+   * @param parent the constraint whose reduction created this constraint, or null if no constraint
+   *     did
    * @param S left-hand side type
    * @param t right-hand side type
    * @param kind the kind of constraint
    * @param covarTypeArg true if the constraint is for a covariant type argument
    */
   public Typing(
-      Constraint parent, AbstractType S, AbstractType t, Kind kind, boolean covarTypeArg) {
+      @Nullable Constraint parent,
+      AbstractType S,
+      AbstractType t,
+      Kind kind,
+      boolean covarTypeArg) {
     this(parent, S, t, kind, covarTypeArg, false);
   }
 
   /**
    * Creates a typing constraint.
    *
-   * @param parent the constraint whose reduction created this constraint
+   * @param parent the constraint whose reduction created this constraint, or null if no constraint
+   *     did
    * @param S left-hand side type
    * @param t right-hand side type
    * @param kind the kind of constraint
@@ -107,7 +115,7 @@ public class Typing extends TypeConstraint {
    *     two proper types; see {@link #qualifiersMustMatch}
    */
   public Typing(
-      Constraint parent,
+      @Nullable Constraint parent,
       AbstractType S,
       AbstractType t,
       Kind kind,
@@ -140,7 +148,7 @@ public class Typing extends TypeConstraint {
    *     two proper types; see {@link #qualifiersMustMatch}
    */
   public Typing(
-      Constraint parent,
+      @Nullable Constraint parent,
       String description,
       AbstractType S,
       AbstractType t,
@@ -275,7 +283,20 @@ public class Typing extends TypeConstraint {
       // constraint reduces to the following new constraints:
       // for all i (1 <= i <= n), <Bi <= Ai>.
 
-      AbstractType sAsSuper = S.asSuper(T.getJavaType());
+      // JLS 4.10.2 defines the supertypes of a wildcard-parameterized type G<...> as the
+      // supertypes of capture(G<...>), so a capture-converted type is one of the candidates that
+      // "among the supertypes of S" offers.  javac chooses that candidate, by capture-converting
+      // the subtype side of every subtyping test.  Choosing S itself instead would make the
+      // containment constraints below have a wildcard on the left, which reduces to false whenever
+      // Ai is not a wildcard.
+      // Only a proper type is captured: in an InferenceType, an inference variable is represented
+      // by the type variable it stands for, so capturing `G<? extends alpha>` would replace the
+      // wildcard by a capture variable and lose alpha.
+      // A raw T is skipped because this method returns UNCHECKED_CONVERSION for it below, without
+      // looking at the type arguments that capture conversion would have changed.
+      AbstractType capturedS =
+          !T.isRaw() && S.isProper() && S.isWildcardParameterizedType() ? S.capture(context) : S;
+      AbstractType sAsSuper = capturedS.asSuper(T.getJavaType());
       if (sAsSuper == null) {
         return ConstraintSet.FALSE;
       } else if (sAsSuper.isRaw() || T.isRaw()) {
@@ -283,7 +304,10 @@ public class Typing extends TypeConstraint {
       }
 
       List<AbstractType> Bs = sAsSuper.getTypeArguments();
-      Iterator<AbstractType> As = T.getTypeArguments().iterator();
+      assert Bs != null : "@AssumeAssertion(nullness): sAsSuper is a declared type";
+      List<AbstractType> tTypeArgs = T.getTypeArguments();
+      assert tTypeArgs != null : "@AssumeAssertion(nullness): T is a parameterized type";
+      Iterator<AbstractType> As = tTypeArgs.iterator();
       List<Integer> covariantArgIndexes =
           context
               .typeFactory
@@ -362,7 +386,11 @@ public class Typing extends TypeConstraint {
     if (msArrayType.isPrimitiveArray() && T.isPrimitiveArray()) {
       return ConstraintSet.TRUE;
     } else {
-      return new Typing(this, msArrayType.getComponentType(), T.getComponentType(), Kind.SUBTYPE);
+      AbstractType sComponentType = msArrayType.getComponentType();
+      assert sComponentType != null : "@AssumeAssertion(nullness): msArrayType is an array type";
+      AbstractType tComponentType = T.getComponentType();
+      assert tComponentType != null : "@AssumeAssertion(nullness): T is an array type";
+      return new Typing(this, sComponentType, tComponentType, Kind.SUBTYPE);
     }
   }
 
@@ -472,10 +500,19 @@ public class Typing extends TypeConstraint {
       if (superS != null && superS.isRaw()) {
         return ReductionResult.UNCHECKED_CONVERSION;
       }
-    } else if (T.getTypeKind() == TypeKind.ARRAY && T.getComponentType().isParameterizedType()) {
-      AbstractType superS = S.asSuper(T.getJavaType());
-      if (superS != null && superS.getComponentType().isRaw()) {
-        return ReductionResult.UNCHECKED_CONVERSION;
+    } else if (T.getTypeKind() == TypeKind.ARRAY) {
+      AbstractType tComponentType = T.getComponentType();
+      assert tComponentType != null : "@AssumeAssertion(nullness): T is an array type";
+      if (tComponentType.isParameterizedType()) {
+        AbstractType superS = S.asSuper(T.getJavaType());
+        if (superS != null) {
+          AbstractType superSComponentType = superS.getComponentType();
+          assert superSComponentType != null
+              : "@AssumeAssertion(nullness): superS is a supertype of S that is an array type";
+          if (superSComponentType.isRaw()) {
+            return ReductionResult.UNCHECKED_CONVERSION;
+          }
+        }
       }
     }
 
@@ -639,7 +676,7 @@ public class Typing extends TypeConstraint {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

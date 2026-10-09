@@ -31,4 +31,32 @@ class UnneededSuppressionsNullnessTest {
   public String getClassAndUid6() {
     return "hello";
   }
+
+  @SuppressWarnings({"nullness", "unneeded.suppression"})
+  public String getClassAndUid7() {
+    return "hello";
+  }
+
+  @SuppressWarnings({"nullness", "nullness:unneeded.suppression"})
+  public String getClassAndUid8() {
+    return "hello";
+  }
+
+  // A partial message key does not suppress the "unneeded.suppression" warning; only the
+  // complete message key does.
+
+  @SuppressWarnings({"nullness", "suppression"})
+  public String getClassAndUid9() {
+    return "hello";
+  }
+
+  @SuppressWarnings({"nullness", "unneeded"})
+  public String getClassAndUid10() {
+    return "hello";
+  }
+
+  @SuppressWarnings({"nullness", "nullness:suppression"})
+  public String getClassAndUid11() {
+    return "hello";
+  }
 }

@@ -1,2 +1,6 @@
 UnneededSuppressionsNullnessTest.java:10:3: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "nullness:return" is not used by NullnessChecker
-1 warning
+UnneededSuppressionsNullnessTest.java:48:3: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "nullness" is not used by NullnessChecker
+UnneededSuppressionsNullnessTest.java:53:3: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "nullness" is not used by NullnessChecker
+UnneededSuppressionsNullnessTest.java:58:3: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "nullness" is not used by NullnessChecker
+UnneededSuppressionsNullnessTest.java:58:3: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "nullness:suppression" is not used by NullnessChecker
+5 warnings
