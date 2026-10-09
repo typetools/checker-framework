@@ -17,10 +17,12 @@ public final class AnnotationFactory {
   public static final AnnotationFactory saf = new AnnotationFactory();
 
   /**
-   * Returns an {@link AnnotationBuilder} appropriate for building an {@link Annotation} of the
-   * given type name.
+   * Returns an {@link AnnotationBuilder} appropriate for building an {@link Annotation} with the
+   * given definition.
    *
    * @param def the definition for the annotation to be built
+   * @param source where the annotation came from, such as a filename
+   * @return an {@link AnnotationBuilder} for the given definition
    */
   public AnnotationBuilder beginAnnotation(AnnotationDef def, String source) {
     return new AnnotationBuilder(def, source);

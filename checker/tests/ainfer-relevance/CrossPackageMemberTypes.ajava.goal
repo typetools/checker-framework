@@ -1,0 +1,58 @@
+import java.nio.CharBuffer;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+import otherpkg.PackagePrivateMemberTypes;
+
+// A subclass does not inherit a package-private member type of a superclass that is declared in a
+// different package, so such a member type is not in scope in the subclass.  Inference must resolve
+// the name
+// "CharBuffer" to the single-type import `java.nio.CharBuffer`, which is relevant because it is a
+// subtype of `CharSequence`, rather than to `otherpkg.PackagePrivateMemberTypes.CharBuffer`, which
+// is package-private, is not inherited, and is irrelevant.
+//
+// By contrast, a protected member type is inherited even from a different package, so inference
+// must resolve the name "Protected" to `otherpkg.PackagePrivateMemberTypes.Protected`, which is
+// relevant.
+//
+// If inference resolves either name incorrectly and therefore discards the annotation, then the
+// second (validation) pass of this test issues the warnings that are written below.
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
+public class CrossPackageMemberTypes extends PackagePrivateMemberTypes {
+
+    @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 CharBuffer charBufferField;
+
+    @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 Protected protectedField;
+
+    @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "this.protectedField" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
+    @org.checkerframework.dataflow.qual.Impure
+    void assignFields() {
+        charBufferField = getSibling1CharBuffer();
+        protectedField = getSibling1Protected();
+    }
+
+    @org.checkerframework.dataflow.qual.Impure
+    void useFields() {
+        // :: warning: [argument]
+        expectsSibling1CharBuffer(charBufferField);
+        // :: warning: [argument]
+        expectsSibling1Protected(protectedField);
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    void expectsSibling1CharBuffer(CrossPackageMemberTypes this, CharBuffer b) {
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    void expectsSibling1Protected(CrossPackageMemberTypes this, Protected p) {
+    }
+
+    @org.checkerframework.dataflow.qual.Pure
+    CharBuffer getSibling1CharBuffer(CrossPackageMemberTypes this) {
+        return null;
+    }
+
+    @org.checkerframework.framework.qual.RequiresQualifier(expression = { "this.charBufferField" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
+    @org.checkerframework.dataflow.qual.Pure
+    Protected getSibling1Protected(CrossPackageMemberTypes this) {
+        return null;
+    }
+}

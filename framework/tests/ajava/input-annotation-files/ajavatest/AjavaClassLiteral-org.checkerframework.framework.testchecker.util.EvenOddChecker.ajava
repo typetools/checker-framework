@@ -1,0 +1,14 @@
+package ajavatest;
+
+public class AjavaClassLiteral {
+
+  /** An annotation type that is nested within the class being parsed. */
+  public @interface NestedAnno {}
+
+  @org.checkerframework.framework.qual.Unused(when = NestedAnno.class)
+  Object f = new Object();
+
+  Object getF() {
+    return f;
+  }
+}

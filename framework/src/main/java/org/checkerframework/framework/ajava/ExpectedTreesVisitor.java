@@ -14,6 +14,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -26,6 +27,7 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.YieldTree;
@@ -289,12 +291,20 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
     // expression statement itself.
     Void result = super.visitExpressionStatement(tree, p);
     if (tree.getExpression() instanceof MethodInvocationTree invocation) {
-      if (invocation.getMethodSelect() instanceof IdentifierTree identifier) {
+      ExpressionTree methodSelect = invocation.getMethodSelect();
+      if (methodSelect instanceof IdentifierTree identifier) {
         if (identifier.getName().contentEquals("this")
             || identifier.getName().contentEquals("super")) {
           trees.remove(tree);
           trees.remove(identifier);
         }
+      } else if (methodSelect instanceof MemberSelectTree memberSelect
+          && memberSelect.getIdentifier().contentEquals("super")) {
+        // A qualified superclass constructor invocation such as "outer.super()".  JavaParser
+        // stores the receiver in the explicit constructor invocation itself, so only the
+        // enclosing expression statement has no corresponding JavaParser node.  (The member
+        // select is removed by visitMethodInvocation.)
+        trees.remove(tree);
       }
     }
 
@@ -373,6 +383,17 @@ public class ExpectedTreesVisitor extends TreeScannerWithDefaults {
 
     scan(tree.getBody(), p);
     return null;
+  }
+
+  @Override
+  public Void visitTypeCast(TypeCastTree tree, Void p) {
+    if (tree.getExpression() instanceof MemberReferenceTree) {
+      // JavaParser does not parse a cast of a method reference correctly, so
+      // JointJavacJavaParserVisitor skips the cast and its subtrees:
+      // https://github.com/javaparser/javaparser/issues/3855
+      return null;
+    }
+    return super.visitTypeCast(tree, p);
   }
 
   @Override

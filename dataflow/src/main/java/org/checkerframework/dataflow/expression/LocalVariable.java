@@ -20,6 +20,13 @@ public class LocalVariable extends JavaExpression {
   protected final VariableElement element;
 
   /**
+   * The cached hash code, or 0 if it has not yet been computed. A LocalVariable is immutable, so
+   * the hash code is computed at most once. Caching it is worthwhile because every store operation
+   * hashes the expressions in the store.
+   */
+  private int hashCode = 0;
+
+  /**
    * Creates a new LocalVariable.
    *
    * @param localVar a CFG local variable
@@ -95,8 +102,11 @@ public class LocalVariable extends JavaExpression {
 
   @Override
   public int hashCode() {
-    VarSymbol vs = (VarSymbol) element;
-    return Objects.hash(vs.pos, vs.name, vs.owner);
+    if (hashCode == 0) {
+      VarSymbol vs = (VarSymbol) element;
+      hashCode = Objects.hash(vs.pos, vs.name, vs.owner);
+    }
+    return hashCode;
   }
 
   @Override

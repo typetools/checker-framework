@@ -4,6 +4,69 @@ ifelse([The built-in "dnl" m4 macro means "discard to next line".])dnl
 dnl
 define([job_name], [$1:])
 dnl
+ifelse([CircleCI's "checksum" template accepts a single file, so concatenate
+every file that pins a dependency version. Add to this list any file that
+gains a hardcoded dependency or plugin version.])dnl
+define([gradle_restore_cache], [dnl
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-])dnl
+dnl
+define([gradle_save_cache], [dnl
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper])dnl
+dnl
+define([clone_plume_scripts_step], [dnl
+      - run:
+          name: clone_plume_scripts
+          command: ./checker/bin-devel/clone-plume-scripts.sh])dnl
+dnl
+ifelse([CircleCI's "Auto-cancel redundant workflows" setting never cancels a
+workflow on the default branch. This step makes a job do no work if its commit
+is no longer the tip of its branch, because a later push will test the branch.
+If the project defines the CIRCLE_TOKEN environment variable (a CircleCI API
+token), the step cancels the workflow, so the untested commit shows as
+"canceled" rather than as passing. Otherwise, or if cancellation fails,
+"circleci-agent step halt" ends the job successfully, and the commit's status
+is green although it was not tested. The step does nothing if "git ls-remote"
+stalls (transfers under 1000 bytes/second for 30 seconds) or otherwise
+fails, or finds no such branch, as for a pull request from a fork, whose
+CIRCLE_BRANCH is "pull/NNNN".])dnl
+define([halt_if_superseded_step], [dnl
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi])dnl
+dnl
 ifelse([Takes 4 arguments: OS, JDK version number, name, command line.])dnl
 define([boilerplate], [dnl
     docker:
@@ -12,6 +75,7 @@ define([boilerplate], [dnl
     environment:
       TERM: dumb
     steps:
+halt_if_superseded_step()
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -23,6 +87,7 @@ define([boilerplate], [dnl
           key: *source-cache
           paths:
             - .git
+gradle_restore_cache()
       - run:
           name: $3
           command: $4
@@ -43,6 +108,7 @@ ifelse($3,test-cftests-nonjunit.sh,[],
 ])dnl
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: $2
+gradle_save_cache()
 ])dnl
 dnl
 ifelse([This macro takes 1-3 arguments: the JDK version and optionally a docker
@@ -54,6 +120,7 @@ define([circleci_boilerplate], [dnl
     environment:
       TERM: dumb
     steps:
+halt_if_superseded_step()
       - restore_cache:
           keys:
             - &source$3-cache source-v1$3-{{ .Branch }}-{{ .Revision }}
@@ -64,7 +131,8 @@ define([circleci_boilerplate], [dnl
       - save_cache:
           key: *source$3-cache
           paths:
-            - .git])dnl
+            - .git
+gradle_restore_cache()])dnl
 dnl
 ifelse([Each macro takes one argument, the JDK version.])dnl
 dnl
@@ -101,14 +169,13 @@ dnl
 define([misc_job], [dnl
   job_name(misc_jdk$1)
 circleci_boilerplate($1,-plus,full)
-      - run:
-          name: getPlumeScripts
-          command: ./gradlew -q getPlumeScripts
+clone_plume_scripts_step()
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: $1
+gradle_save_cache()
 ])dnl
 dnl
 define([typecheck_job], [dnl

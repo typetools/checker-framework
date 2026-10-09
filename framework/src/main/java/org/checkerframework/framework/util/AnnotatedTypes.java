@@ -48,6 +48,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.AsSuperVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SyntheticArrays;
+import org.checkerframework.framework.util.TypeArgumentMapper.TypeParameterMapping;
 import org.checkerframework.framework.util.typeinference8.InferenceResult;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -56,7 +57,6 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsP;
-import org.plumelib.util.IPair;
 import org.plumelib.util.StringsP;
 
 /**
@@ -191,7 +191,7 @@ public final class AnnotatedTypes {
       return;
     }
 
-    Set<IPair<Integer, Integer>> typeArgMap =
+    Set<TypeParameterMapping> typeArgMap =
         TypeArgumentMapper.mapTypeArgumentIndices(
             (TypeElement) declaredSubtype.getUnderlyingType().asElement(),
             (TypeElement) declaredAsSuper.getUnderlyingType().asElement(),
@@ -201,14 +201,14 @@ public final class AnnotatedTypes {
       return;
     }
 
-    List<IPair<Integer, Integer>> orderedByDestination = new ArrayList<>(typeArgMap);
-    orderedByDestination.sort(Comparator.comparingInt(o -> o.second));
+    List<TypeParameterMapping> orderedByDestination = new ArrayList<>(typeArgMap);
+    orderedByDestination.sort(Comparator.comparingInt(TypeParameterMapping::supertypeIndex));
 
     if (typeArgMap.size() == ((AnnotatedDeclaredType) supertype).getTypeArguments().size()) {
       List<? extends AnnotatedTypeMirror> subTypeArgs = declaredSubtype.getTypeArguments();
       List<AnnotatedTypeMirror> newTypeArgs =
           CollectionsP.mapList(
-              mapping -> subTypeArgs.get(mapping.first).deepCopy(), orderedByDestination);
+              mapping -> subTypeArgs.get(mapping.subtypeIndex()).deepCopy(), orderedByDestination);
       declaredAsSuper.setTypeArguments(newTypeArgs);
     } else {
       declaredAsSuper.setTypeArguments(Collections.emptyList());
@@ -228,16 +228,17 @@ public final class AnnotatedTypes {
    * of {@code superType}, then this method returns the result of calling {@code
    * asSuper(atypeFactory, type.getEnclosingType(), superType)}.
    *
-   * <p>Otherwise, throws {@link BugInCF}.
+   * <p>Otherwise, this method returns null.
    *
    * @param types types utils
    * @param atypeFactory the type factory
    * @param type a type
    * @param superType a supertype of {@code type} or a supertype of an enclosing type of {@code
    *     type}
-   * @return {@code type} or an enclosing type of {@code type} as {@code superType}
+   * @return {@code type} or an enclosing type of {@code type} as {@code superType}, or null if
+   *     neither {@code type} nor a type that encloses it is a subtype of {@code superType}
    */
-  private static AnnotatedTypeMirror asOuterSuper(
+  private static @Nullable AnnotatedTypeMirror asOuterSuper(
       Types types,
       AnnotatedTypeFactory atypeFactory,
       AnnotatedTypeMirror type,
@@ -255,7 +256,7 @@ public final class AnnotatedTypes {
         enclosingType = enclosingType.getEnclosingType();
       }
       if (enclosingType == null) {
-        throw new BugInCF("Enclosing type not found: type: %s supertype: %s", dt, superType);
+        return null;
       }
       return asSuper(atypeFactory, dt, superType);
     }
@@ -498,14 +499,43 @@ public final class AnnotatedTypes {
     //      supertype of passed type)
     // 3. Substitute for type variables if any exist
     TypeElement enclosingClassOfMember = ElementUtils.enclosingTypeElement(member);
+    if (!TypesUtils.isGenericOrEnclosedByGeneric(enclosingClassOfMember)) {
+      // No type variable is in scope in member's declaration, so there is nothing to substitute.
+      // Testing this first avoids searching the supertypes of `receiverType` for a member of a
+      // non-generic declaration, such as any member of Object.
+      return memberType;
+    }
     DeclaredType enclosingType = (DeclaredType) enclosingClassOfMember.asType();
     Map<TypeVariable, AnnotatedTypeMirror> mappings = new HashMap<>();
+
+    // Per JLS 4.5.2, the type of an inherited member comes from the supertype that corresponds to
+    // the class that declares it, so the type variables in scope in member's declaration are
+    // instantiated by that supertype and by the types that enclose it.  Those are not always the
+    // types that enclose `receiverType`: a class may extend an inner class of a class that does
+    // not enclose it, as in `class Sub extends Gen<String>.Inner`.  Even when both are possible,
+    // the supertype wins; see `Issue8168.java` in checker/tests/nullness.
+    AnnotatedTypeMirror searchRoot =
+        asOuterSuper(
+            types,
+            atypeFactory,
+            receiverType,
+            atypeFactory.getAnnotatedType(enclosingClassOfMember));
+    if (searchRoot == null) {
+      // `receiverType` is not a subtype of member's declaring class, so no supertype of it
+      // instantiates the type variables that member's declaration uses.  Search `receiverType`
+      // itself, which at least instantiates the type variables of the classes that enclose it.
+      // Callers that view a constructor as a member of a type pass the type being constructed,
+      // not the enclosing instance, so that the type variables of the constructor's own class
+      // are instantiated; see `constructorFromUse` and `methodFromUse` in
+      // `AnnotatedTypeFactory`.
+      searchRoot = receiverType;
+    }
 
     // Look for all enclosing types that have type variables
     // and collect type to be substituted for those type variables
     while (enclosingType != null) {
       TypeElement enclosingTypeElement = (TypeElement) enclosingType.asElement();
-      addTypeVarMappings(types, atypeFactory, receiverType, enclosingTypeElement, mappings);
+      addTypeVarMappings(types, atypeFactory, searchRoot, enclosingTypeElement, mappings);
       TypeMirror enclosingOfEnclosing = enclosingType.getEnclosingType();
       if (enclosingOfEnclosing != null && enclosingOfEnclosing.getKind() == TypeKind.DECLARED) {
         enclosingType = (DeclaredType) enclosingOfEnclosing;
@@ -533,6 +563,9 @@ public final class AnnotatedTypes {
     AnnotatedDeclaredType enclosingType = atypeFactory.getAnnotatedType(enclosingClassOfElem);
     AnnotatedDeclaredType base =
         (AnnotatedDeclaredType) asOuterSuper(types, atypeFactory, t, enclosingType);
+    if (base == null) {
+      throw new BugInCF("Enclosing type not found: type: %s supertype: %s", t, enclosingType);
+    }
     base = (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(base);
 
     List<AnnotatedTypeVariable> ownerParams =
@@ -944,7 +977,8 @@ public final class AnnotatedTypes {
 
   /**
    * Returns the annotated greatest lower bound of {@code subtype} and {@code supertype}, where the
-   * underlying Java types are in a subtyping relationship.
+   * underlying Java type of {@code subtype} is a subtype of the underlying Java type of {@code
+   * superType}.
    *
    * <p>This handles cases 1, 2, and 3 mentioned in the Javadoc of {@link
    * #annotatedGLB(AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)}.
@@ -984,8 +1018,24 @@ public final class AnnotatedTypes {
           // The superAnno is lower than the lower bound annotation, so add it.
           glb.addAnnotation(superAnno);
         } // else don't add any annotation.
-      } else {
-        throw new BugInCF("GLB: subtype: %s, supertype: %s", subtype, supertype);
+      } else { // superAnno == null && subAnno != null
+        if (supertype.getKind() != TypeKind.TYPEVAR) {
+          throw new BugInCF("Missing primary annotations: supertype: %s", supertype);
+        }
+
+        // The supertype is a type variable with no primary annotation, so it stands for the
+        // range of its bounds.  Its greatest possible annotation is its effective upper bound
+        // annotation, so the result is the greatest lower bound of that and subAnno.  (The two
+        // are not necessarily comparable; the underlying Java types are in a subtyping
+        // relationship, but their annotations need not be.)
+        AnnotationMirrorSet ub = findEffectiveAnnotations(qualHierarchy, supertype);
+        AnnotationMirror superUBAnno = qualHierarchy.findAnnotationInHierarchy(ub, top);
+        if (superUBAnno == null) {
+          glb.addAnnotation(subAnno);
+        } else {
+          glb.addAnnotation(
+              qualHierarchy.greatestLowerBoundShallow(subAnno, subTM, superUBAnno, superTM));
+        }
       }
     }
     return glb;
@@ -1137,26 +1187,33 @@ public final class AnnotatedTypes {
   /**
    * Returns the depth of the array type of the provided array.
    *
-   * @param array the type of the array
+   * @param arrayType the type of the array
    * @return the depth of the provided array
    */
-  public static int getArrayDepth(AnnotatedArrayType array) {
+  public static int getArrayDepth(AnnotatedArrayType arrayType) {
     int counter = 0;
-    AnnotatedTypeMirror type = array;
-    while (type.getKind() == TypeKind.ARRAY) {
+    AnnotatedTypeMirror componentType = arrayType;
+    while (componentType.getKind() == TypeKind.ARRAY) {
       counter++;
-      type = ((AnnotatedArrayType) type).getComponentType();
+      componentType = ((AnnotatedArrayType) componentType).getComponentType();
     }
     return counter;
   }
 
-  // The innermost *array* type.
-  public static AnnotatedTypeMirror innerMostType(AnnotatedTypeMirror t) {
-    AnnotatedTypeMirror inner = t;
-    while (inner.getKind() == TypeKind.ARRAY) {
-      inner = ((AnnotatedArrayType) inner).getComponentType();
+  /**
+   * Returns the innermost component type of {@code type}, which is also called the "element type"
+   * of {@code type}. Returns {@code type} itself if {@code type} is not an array type.
+   *
+   * @param type a type
+   * @return the innermost component type of {@code type}, or {@code type} if it is not an array
+   *     type
+   */
+  public static AnnotatedTypeMirror innermostComponentType(AnnotatedTypeMirror type) {
+    AnnotatedTypeMirror componentType = type;
+    while (componentType.getKind() == TypeKind.ARRAY) {
+      componentType = ((AnnotatedArrayType) componentType).getComponentType();
     }
-    return inner;
+    return componentType;
   }
 
   /**

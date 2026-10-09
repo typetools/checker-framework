@@ -22,9 +22,9 @@ compile:
 	${MAKE} -C units-extension
 # The Maven example downloads a lot.  Try twice in case of network lossage.
 	${MAKE} -C MavenExample || (sleep 60 && echo "Trying again:" && ${MAKE} -C MavenExample)
-# As of 2026-03-11 (Lombok 1.18.44), delombok does not support JDK 26.
+# As of 2026-09-01 (Lombok 1.18.48), delombok does not support JDK 28.
 	JAVA_VER=$$(java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//') && \
-	if [ "$${JAVA_VER}" -lt "26" ]; then ${MAKE} -C lombok; fi
+	if [ "$${JAVA_VER}" -lt "28" ]; then ${MAKE} -C lombok; fi
 	${MAKE} -C errorprone
 
 # TODO: type check the different files with the right checker;

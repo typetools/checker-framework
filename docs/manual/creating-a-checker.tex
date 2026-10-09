@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{How to create a new checker}{creating-a-checker}
 \label{writing-a-checker} % for old links; don't use any more!
 
@@ -95,8 +94,6 @@ Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
 %% Strictly speaking, "Subtyping Checker" should sit on top of Checker
 %% Framework and below all the specific checkers.  But omit it for simplicity.
 
-% Unfortunately, Hevea inserts a horizontal line between every pair of rows
-% regardless of whether there is a \hline or \cline.  So, make paragraphs.
 \begin{center}
 \begin{tabular}{|p{\bw}|p{\bw}|p{\bw}|p{\bw}|p{.4\bw}|p{\bw}|p{1.5\bw}|p{1\bw}|}
 \cline{1-4} \cline{6-6}
@@ -114,7 +111,7 @@ Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
 Other \par tools
 \\ \hline
 \multicolumn{6}{|p{6\bw}|}{\centering Checker Framework \par (enables creation of pluggable type-checkers)} &
-\multicolumn{2}{p{3\bw}|}{\centering \href{https://checkerframework.org/annotation-file-utilities/}{Annotation File Utilities} \par (\code{.java} $\leftrightarrow$ \code{.class} files)}
+\multicolumn{2}{p{3\bw}|}{\centering \href{https://checkerframework.org/annotation-file-utilities/}{Annotation File Utilities} \par (\code{.java} \leftrightarrowsym{} \code{.class} files)}
 \\ \hline
 \multicolumn{8}{|p{8.5\bw}|}{\centering
   \href{https://checkerframework.org/jsr308/}{Java type annotations} syntax
@@ -579,8 +576,8 @@ hierarchy.
 
 \item \refqualclass{framework/qual}{SubtypeOf} denotes that a qualifier is a subtype of
   another qualifier or qualifiers, specified as an array of class
-  literals.  For example, for any type $T$,
-  \refqualclass{checker/nullness/qual}{NonNull} $T$ is a subtype of \refqualclass{checker/nullness/qual}{Nullable} $T$:
+  literals.  For example, for any type \textit{T},
+  \refqualclass{checker/nullness/qual}{NonNull} \textit{T} is a subtype of \refqualclass{checker/nullness/qual}{Nullable} \textit{T}:
 
   \begin{Verbatim}
     @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
@@ -790,7 +787,7 @@ The \refqualclass{framework/qual}{RelevantJavaTypes}
 annotation on the checker class indicates that its qualifiers may only be
 written on those types, their subtypes, and their supertypes.
 
-As an example of relevant types, the \ahrefloc{formatter-checker}{Format
+As an example of relevant types, the \hyperref[formatter-checker]{Format
 String Checker} is relevant only to \<CharSequence> and its subtypes such
 as \<String>.  You cannot write \refqualclass{checker/formatter/qual}{Format}
 on a \<List> or a \<Number>.
@@ -924,7 +921,7 @@ One reason is that the default type for local variables is the top
 qualifier, and there must be an unambiguous choice for the default type.
 
 
-\subsectionAndLabel{Annotations whose argument is a Java expression (dependent type annotations)\label{expression-annotations}}{dependent-types}
+\subsectionAndLabel{Annotations whose argument is a Java expression (dependent type annotations)}{dependent-types}\label{expression-annotations}
 
 Sometimes, an annotation needs to refer to a Java expression.
 Section~\ref{java-expressions-as-arguments} gives examples of such
@@ -1547,15 +1544,11 @@ the types in either or both of the following ways:
 As an example (and as the running example of implementing a dataflow
 refinement), the \code{RegexUtil.asRegex} method is declared as:
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   @Regex(0) String asRegex(String s, int groups) { ... }
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 \noindent
 This annotation is sound and conservative:  it says that an expression such
@@ -1639,9 +1632,7 @@ a transfer class.)
 % \code{createFlowTransferFunction} method in your type factory to return a new instance
 % of the extended \refclass{framework/flow}{CFTransfer}.
 %
-% %BEGIN LATEX
 % \begin{smaller}
-% %END LATEX
 % \begin{Verbatim}
 %   @Override
 %   public CFTransfer createFlowTransferFunction(
@@ -1649,9 +1640,7 @@ a transfer class.)
 %       return new RegexTransfer((CFAnalysis) analysis);
 %   }
 % \end{Verbatim}
-% %BEGIN LATEX
 % \end{smaller}
-% %END LATEX
 
 %% The text below is true, but not required.
 %\item \textbf{Create a class that extends
@@ -1674,18 +1663,14 @@ a transfer class.)
 %  \refclass{checker/regex/classic}{RegexTransfer} instance:
 %  \end{sloppypar}
 %
-%%BEGIN LATEX
-%\begin{smaller}
-%%END LATEX
+% \begin{smaller}
 %\begin{Verbatim}
 %  @Override
 %  public RegexTransfer createTransferFunction() {
 %      return new RegexTransfer(this);
 %  }
 %\end{Verbatim}
-%%BEGIN LATEX
-%\end{smaller}
-%%END LATEX
+% \end{smaller}
 %
 %\item \textbf{Configure the checker's type factory to use the extended
 %    \refclass{framework/flow}{CFAbstractAnalysis}}
@@ -1697,9 +1682,7 @@ a transfer class.)
 %of the extended \refclass{framework/flow}{CFAbstractAnalysis}.
 %\end{sloppypar}
 %
-%%BEGIN LATEX
-%\begin{smaller}
-%%END LATEX
+% \begin{smaller}
 %\begin{Verbatim}
 %  @Override
 %  protected RegexAnalysis createFlowAnalysis(
@@ -1708,9 +1691,7 @@ a transfer class.)
 %      return new RegexAnalysis(checker, this, fieldValues);
 %  }
 %\end{Verbatim}
-%%BEGIN LATEX
-%\end{smaller}
-%%END LATEX
+% \end{smaller}
 
 
 \subsectionAndLabel{Override methods that handle Nodes of interest}{creating-dataflow-override-methods}
@@ -1734,16 +1715,12 @@ For example, the Regex Checker refines the type based on a call to the
 \refclass{checker/regex}{RegexTransfer} overrides the
 \code{visitMethodInvocation} method:
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   public TransferResult<CFValue, CFStore> visitMethodInvocation(
     MethodInvocationNode n, TransferInput<CFValue, CFStore> in)  { ... }
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 
 \subsubsectionAndLabel{Program representation}{creating-dataflow-representation}
@@ -1852,9 +1829,7 @@ instance of the desired run-time test or operation.  For example,
 invocation, but the \refclass{checker/regex}{RegexTransfer} should only refine
 the result of \code{RegexUtil.asRegex} invocations:
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   @Override
   public TransferResult<CFValue, CFStore> visitMethodInvocation(...)
@@ -1871,9 +1846,7 @@ the result of \code{RegexUtil.asRegex} invocations:
                  "asRegex", String.class, int.class)) {
             ...
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 \item \textbf{Determine the refined type}
 
@@ -1889,9 +1862,7 @@ could be extended to use the value of the argument if it was any compile-time
 constant or was inferred at compile time by another analysis, such as the
 Constant Value Checker (\chapterpageref{constant-value-checker}).
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   AnnotationMirror regexAnnotation;
   Node count = n.getArgument(1);
@@ -1905,9 +1876,7 @@ Constant Value Checker (\chapterpageref{constant-value-checker}).
     regexAnnotation = AnnotationBuilder.fromClass(factory.getElementUtils(), Regex.class);
   }
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 
 \item \textbf{Return a \refclass{dataflow/analysis}{TransferResult} with the
@@ -1922,30 +1891,22 @@ the run-time test itself, it will update the result type and not the
 A \refclass{framework/flow}{CFValue} is created to hold the type inferred.
 \refclass{framework/flow}{CFValue} is a wrapper class for values being inferred
 by dataflow:
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   CFValue newResultValue = analysis.createSingleAnnotationValue(regexAnnotation,
       result.getResultValue().getType().getUnderlyingType());
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 Then, \<RegexTransfer>'s \code{visitMethodInvocation} creates and returns a
 \refclass{dataflow/analysis}{TransferResult} using \code{newResultValue} as the
 result type.
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   return new RegularTransferResult<>(newResultValue, result.getRegularStore());
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 As a result of this code, when the Regex Checker encounters a
 \code{RegexUtil.asRegex} method call, the checker will refine the return
@@ -2374,9 +2335,7 @@ no arguments.
 
 The following example demonstrates how these options are used:
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
 $ javac -processor org.checkerframework.checker.interning.InterningChecker \
     docs/examples/InterningExampleWithWarnings.java -Ashowchecks -Anomsgtext -Afilenames
@@ -2396,9 +2355,7 @@ docs/examples/InterningExampleWithWarnings.java:21: (not.interned)
    expected: DECLARED java.lang.String
 1 error
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 \subsectionAndLabel{Using an external debugger}{creating-debugging-options-external}
 
@@ -2491,8 +2448,9 @@ For a chapter or (sub)*section, use \verb|\sectionAndLabel{Section title}{sectio
 Section labels should start with the checker
 name (as in \verb|bellyrub-examples|) and not with ``\<sec:>''.
 Figure labels should start with ``fig-\emph{checkername}'' and not with ``fig:''.
-These conventions are for the benefit of the Hevea program that produces
-the HTML version of the manual.
+The \verb|\sectionAndLabel| convention is required by the
+\<lwarp-postprocess> script, which makes the HTML version of the manual use
+stable, label-based anchors in cross-references.
 Use \verb|\begin{figure}| for all figures, including those whose
 content is a table, in order to have a single consistent numbering for all
 figures.
@@ -2760,7 +2718,7 @@ without warnings or errors.
 %%  LocalWords:  RegexUtil LockTransfer FormatterTransfer CFValue argfile
 %%  LocalWords:  RegexTransfer's newResultValue subcheckers taglet tex XXX
 %%  LocalWords:  ParameterizedCheckerTest AoutputArgsToFile ManualTaglet
-%%  LocalWords:  Hevea Hitchhiker's compilermsgs args Poly MyTypeSystem
+%%  LocalWords:  Hitchhiker's compilermsgs args Poly MyTypeSystem
 %%  LocalWords:  I18nChecker i18n I18nSubchecker LocalizableKeyChecker ast
 %%  LocalWords:  MyChecker MyHelperChecker getImmediateSubcheckerClasses
 %%  LocalWords:  MyChecker's subchecker plugins ElementType myClass myflag

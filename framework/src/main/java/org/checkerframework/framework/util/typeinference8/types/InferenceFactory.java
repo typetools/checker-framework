@@ -13,7 +13,6 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
@@ -22,7 +21,6 @@ import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -67,7 +65,6 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.IPair;
 
 /** Factory that creates AbstractTypes. */
 public class InferenceFactory {
@@ -145,9 +142,12 @@ public class InferenceFactory {
       List<Variable> classTypeArgVars) {
     TypeMirror enclosingTypeMirror = typeMirror.getEnclosingType();
     if (enclosingTypeMirror.getKind() == TypeKind.DECLARED) {
+      AnnotatedDeclaredType enclosingType = type.getEnclosingType();
+      assert enclosingType != null
+          : "@AssumeAssertion(nullness): the underlying type has a declared enclosing type";
       createVariables(
           (DeclaredType) enclosingTypeMirror,
-          type.getEnclosingType(),
+          enclosingType,
           memRef,
           context,
           map,
@@ -252,8 +252,9 @@ public class InferenceFactory {
         return new ProperType(res, this.context);
       }
       case RETURN -> {
-        Set<Kind> kinds = EnumSet.of(Tree.Kind.LAMBDA_EXPRESSION, Tree.Kind.METHOD);
-        Tree enclosing = TreePathUtil.enclosingOfKind(path, kinds);
+        Tree enclosing = TreePathUtil.enclosingMethodOrLambda(path);
+        assert enclosing != null
+            : "@AssumeAssertion(nullness): a return statement is in a method or lambda";
         if (enclosing instanceof MethodTree methodTree) {
           AnnotatedTypeMirror res = factory.getMethodReturnType(methodTree);
           return new ProperType(res, this.context);
@@ -479,8 +480,7 @@ public class InferenceFactory {
       }
       if (receiverType == null) {
         executableType = (ExecutableType) ele.asType();
-      }
-      if (executableType == null) {
+      } else if (executableType == null) {
         javax.lang.model.util.Types types = context.env.getTypeUtils();
         executableType = (ExecutableType) types.asMemberOf(receiverType, ele);
       }
@@ -494,8 +494,9 @@ public class InferenceFactory {
       List<? extends Tree> typeArgs = TreeUtils.getTypeArgumentsToNewClassTree(newClassTree);
       if (!typeArgs.isEmpty()) {
         ExecutableElement e = TreeUtils.elementFromUse(newClassTree);
-        List<? extends TypeParameterElement> typeParams =
-            ElementUtils.enclosingTypeElement(e).getTypeParameters();
+        TypeElement classElt = ElementUtils.enclosingTypeElement(e);
+        assert classElt != null : "@AssumeAssertion(nullness): a constructor is in a class";
+        List<? extends TypeParameterElement> typeParams = classElt.getTypeParameters();
         List<TypeVariable> typeVariables = new ArrayList<>();
         for (TypeParameterElement typeParam : typeParams) {
           typeVariables.add((TypeVariable) typeParam.asType());
@@ -606,6 +607,7 @@ public class InferenceFactory {
       // for the class type parameters, too.
       Element classEle =
           ElementUtils.enclosingTypeElement(TreeUtils.elementFromUse((NewClassTree) invocation));
+      assert classEle != null : "@AssumeAssertion(nullness): a constructor is in a class";
       if (classEle.getSimpleName().contentEquals("")) {
         classEle =
             ((DeclaredType) TreeUtils.typeOf(((NewClassTree) invocation).getIdentifier()))
@@ -769,6 +771,7 @@ public class InferenceFactory {
     // Don't save this theta, because there is also a noncapture theta for this tree.
     DeclaredType underlying = (DeclaredType) capturedType.getJavaType();
     TypeElement ele = TypesUtils.getTypeElement(underlying);
+    assert ele != null : "@AssumeAssertion(nullness): underlying is a declared type";
     AnnotatedDeclaredType classType = typeFactory.getAnnotatedType(ele);
     Iterator<AnnotatedTypeMirror> iter = classType.getTypeArguments().iterator();
     Theta map = new Theta();
@@ -846,6 +849,7 @@ public class InferenceFactory {
         // inferred.
         // So use the type declared type.
         TypeElement typeEle = TypesUtils.getTypeElement(enclosingType.getUnderlyingType());
+        assert typeEle != null : "@AssumeAssertion(nullness): enclosingType is a declared type";
         enclosingType = typeFactory.getAnnotatedType(typeEle);
       }
     } else if (memRefKind == MemberReferenceKind.UNBOUND) {
@@ -857,6 +861,7 @@ public class InferenceFactory {
         // argument of the JLS 15.13.1 type to search, or, if there is none, to an inference
         // variable.
         TypeElement typeEle = TypesUtils.getTypeElement(enclosingType.getUnderlyingType());
+        assert typeEle != null : "@AssumeAssertion(nullness): enclosingType is a declared type";
         enclosingType = typeFactory.getAnnotatedType(typeEle);
       }
     } else if (memRefKind == MemberReferenceKind.STATIC) {
@@ -870,6 +875,8 @@ public class InferenceFactory {
     // The ::method element, see JLS 15.13.1 Compile-Time Declaration of a Method Reference
     ExecutableElement compileTimeDeclaration =
         (ExecutableElement) TreeUtils.elementFromTree(memRef);
+    assert compileTimeDeclaration != null
+        : "@AssumeAssertion(nullness): javac resolved the method reference";
 
     if (enclosingType.getKind() == TypeKind.DECLARED) {
       enclosingType = AbstractType.makeGround((AnnotatedDeclaredType) enclosingType, typeFactory);
@@ -892,18 +899,25 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns the pair of {@code a} as the least upper bound of {@code a} and {@code b} and {@code b}
-   * as the least upper bound of {@code a} and {@code b}. Returns null if that least upper bound is
-   * not a parameterized type or if either {@code a} or {@code b} has no supertype that is the same
-   * class as that least upper bound.
+   * Two types viewed as their least upper bound.
+   *
+   * @param aAsSuper the first type, viewed as the least upper bound of the two types
+   * @param bAsSuper the second type, viewed as the least upper bound of the two types
+   */
+  public record ParameterizedSupers(AbstractType aAsSuper, AbstractType bAsSuper) {}
+
+  /**
+   * Returns {@code a} as the least upper bound of {@code a} and {@code b}, and {@code b} as the
+   * least upper bound of {@code a} and {@code b}. Returns null if that least upper bound is not a
+   * parameterized type or if either {@code a} or {@code b} has no supertype that is the same class
+   * as that least upper bound.
    *
    * @param a type
    * @param b type
-   * @return the pair of {@code a} as the least upper bound of {@code a} and {@code b} and {@code b}
-   *     as the least upper bound of {@code a} and {@code b}, or null
+   * @return {@code a} and {@code b}, each as the least upper bound of {@code a} and {@code b}, or
+   *     null
    */
-  public @Nullable IPair<AbstractType, AbstractType> getParameterizedSupers(
-      AbstractType a, AbstractType b) {
+  public @Nullable ParameterizedSupers getParameterizedSupers(AbstractType a, AbstractType b) {
     TypeMirror aTypeMirror = a.getJavaType();
     TypeMirror bTypeMirror = b.getJavaType();
     // com.sun.tools.javac.comp.Infer#getParameterizedSupers
@@ -924,7 +938,7 @@ public class InferenceFactory {
       return null;
     }
 
-    return IPair.of(aAsSuper, bAsSuper);
+    return new ParameterizedSupers(aAsSuper, bAsSuper);
   }
 
   /**
@@ -970,6 +984,11 @@ public class InferenceFactory {
   /**
    * Returns the least upper bounds of {@code properTypes}, or null if {@code properTypes} is empty.
    *
+   * <p>The result may share its {@link AnnotatedTypeMirror} with an element of {@code properTypes};
+   * in particular, it does when {@code properTypes} has one element. A caller must not mutate the
+   * result's annotated type in place, because an element of {@code properTypes} may be stored in a
+   * hash set of bounds, whose hash code would change.
+   *
    * @param properTypes types to lub
    * @return the least upper bounds of {@code properTypes}, or null
    */
@@ -978,36 +997,33 @@ public class InferenceFactory {
       return null;
     }
 
-    TypeMirror lubTM = null;
-    AnnotatedTypeMirror lubATM = null;
-    boolean ignoreAnnotations = false;
-    for (ProperType properType : properTypes) {
+    Iterator<ProperType> iter = properTypes.iterator();
+    ProperType first = iter.next();
+    TypeMirror lubTM = first.getJavaType();
+    AnnotatedTypeMirror lubATM = first.getAnnotatedType();
+    boolean ignoreAnnotations = first.ignoreAnnotations;
+    while (iter.hasNext()) {
+      ProperType properType = iter.next();
       AnnotatedTypeMirror atm = properType.getAnnotatedType();
       TypeMirror tm = properType.getJavaType();
-      if (lubATM == null) {
-        lubATM = atm;
-        lubTM = tm;
-        ignoreAnnotations = properType.ignoreAnnotations;
+      lubTM = lub(context.env, lubTM, tm);
+      if (properType.ignoreAnnotations == ignoreAnnotations) {
+        lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubATM, atm, lubTM);
+      } else if (properType.ignoreAnnotations) {
+        // Only `lubATM`'s annotations are meaningful, so keep them.
+        lubATM =
+            AnnotatedTypes.asSuper(
+                typeFactory, lubATM, AnnotatedTypeMirror.createType(lubTM, typeFactory, false));
       } else {
-        lubTM = lub(context.env, lubTM, tm);
-        if (properType.ignoreAnnotations == ignoreAnnotations) {
-          lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubATM, atm, lubTM);
-        } else if (properType.ignoreAnnotations) {
-          // Only `lubATM`'s annotations are meaningful, so keep them.
-          lubATM =
-              AnnotatedTypes.asSuper(
-                  typeFactory, lubATM, AnnotatedTypeMirror.createType(lubTM, typeFactory, false));
-        } else {
-          // Only `atm`'s annotations are meaningful, so keep them.
-          lubATM =
-              AnnotatedTypes.asSuper(
-                  typeFactory, atm, AnnotatedTypeMirror.createType(lubTM, typeFactory, false));
-        }
-        // The annotations of a type that ignores annotations put no constraint on the result, so
-        // the result ignores annotations only if every type does.  This is the same rule as in
-        // `glb`.
-        ignoreAnnotations = ignoreAnnotations && properType.ignoreAnnotations;
+        // Only `atm`'s annotations are meaningful, so keep them.
+        lubATM =
+            AnnotatedTypes.asSuper(
+                typeFactory, atm, AnnotatedTypeMirror.createType(lubTM, typeFactory, false));
       }
+      // The annotations of a type that ignores annotations put no constraint on the result, so
+      // the result ignores annotations only if every type does.  This is the same rule as in
+      // `glb`.
+      ignoreAnnotations = ignoreAnnotations && properType.ignoreAnnotations;
     }
     return new ProperType(lubATM, context, ignoreAnnotations);
   }
@@ -1015,6 +1031,10 @@ public class InferenceFactory {
   /**
    * Returns the greatest lower bound of {@code abstractTypes}, or null if {@code abstractTypes} is
    * empty.
+   *
+   * <p>As with {@link #lub(Set)}, the result may share its {@link AnnotatedTypeMirror} with an
+   * element of {@code abstractTypes} -- it returns the element itself when {@code abstractTypes}
+   * has one element -- so a caller must not mutate the result's annotated type in place.
    *
    * @param abstractTypes types to glb
    * @return the greatest lower bound of {@code abstractTypes}, or null
@@ -1049,6 +1069,14 @@ public class InferenceFactory {
       glb = glbATM.getUnderlyingType();
     }
     if (a.ignoreAnnotations != b.ignoreAnnotations) {
+      @SuppressWarnings("interning:not.interned") // Checking for exact object.
+      boolean glbIsArgument = glbATM == aAtm || glbATM == bAtm;
+      if (glbIsArgument) {
+        // `AnnotatedTypes#annotatedGLB` returned one of its arguments, whose annotated type may be
+        // stored in a hash set of bounds.  Replacing annotations in place would change that bound's
+        // hash code while it is in the set, so copy before mutating.
+        glbATM = glbATM.deepCopy();
+      }
       if (a.ignoreAnnotations) {
         glbATM.replaceAnnotations(bAtm.getPrimaryAnnotations());
       } else {
@@ -1193,17 +1221,25 @@ public class InferenceFactory {
             context.env.getTypeUtils());
     AnnotatedWildcardType wildcardAtm =
         (AnnotatedWildcardType) AnnotatedTypeMirror.createType(wildcard, typeFactory, false);
+    // Copy the bounds' annotated types, because `setSuperBound` and `setExtendsBound` call
+    // `fixupBoundAnnotations`, which replaces annotations in the type that was just installed, and
+    // the argument types may be stored in a hash set of bounds, whose hash code would change.
     if (lowerBound != null) {
-      wildcardAtm.setSuperBound(lowerBound.getAnnotatedType());
+      wildcardAtm.setSuperBound(lowerBound.getAnnotatedType().deepCopy());
     }
     if (upperBound != null) {
-      wildcardAtm.setExtendsBound(upperBound.getAnnotatedType());
+      wildcardAtm.setExtendsBound(upperBound.getAnnotatedType().deepCopy());
     }
     return new ProperType(wildcardAtm, context);
   }
 
   /**
    * Creates a fresh type variable using the upper and lower bounds provided.
+   *
+   * <p>This method takes ownership of the annotated types of {@code lowerBound} and {@code
+   * upperBound}: it installs them in the fresh type variable and mutates them in place. The caller
+   * must not pass a type whose annotated type is shared, such as one that is stored in a hash set
+   * of bounds.
    *
    * @param lowerBound a proper type or null
    * @param lowerBoundAnnos annotations to use if {@code lowerBound} is null; a hierarchy that it
@@ -1229,6 +1265,9 @@ public class InferenceFactory {
     // Initialize bounds.
     typeVariable.getUpperBound();
     typeVariable.getLowerBound();
+    // These mutate the bounds' annotated types in place (via `setLowerBound`/`setUpperBound`, which
+    // call `fixupBoundAnnotations`, and via `addDefaultAnnotations` and
+    // `capturedTypeVarSubstitutor.substitute` below), so the caller must own them; see the Javadoc.
     if (lowerBound != null) {
       typeVariable.setLowerBound(lowerBound.getAnnotatedType());
     } else {

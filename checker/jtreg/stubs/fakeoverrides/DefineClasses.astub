@@ -1,9 +1,24 @@
 package fakeoverrides;
+import java.util.List;
+import java.util.Map;
 import org.checkerframework.checker.tainting.qual.Untainted;
 
 class SuperClass implements SuperInterface {
     // fake override:
     @Untainted int m();
+    // fake override, with a type argument in a formal parameter type:
+    @Untainted int g(List<String> l);
+    // fake override, with a partially-qualified nested formal parameter type:
+    @Untainted int nested(Map.Entry<String, String> e);
+    // fake override, with a wildcard type argument in a formal parameter type:
+    @Untainted int wildcard(List<? extends Number> l);
+    // fake override, with a varargs formal parameter:
+    @Untainted int varargs(String... s);
+    // fake override, with a type argument on an enclosing type:
+    @Untainted int enclosing(Enclosing<String>.Nested<Integer> e);
+    // fake override of a method whose type variable has an intersection bound; the stub file
+    // writes the erasure, which is the leftmost bound:
+    @Untainted int intersection(Number t);
 }
 
 interface SubInterface extends SuperInterface {

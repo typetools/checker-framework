@@ -3,7 +3,6 @@ package org.checkerframework.framework.util.typeinference8.types;
 import com.sun.source.tree.ExpressionTree;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
@@ -66,7 +65,7 @@ public abstract class AbstractExecutableType {
     this.context = context;
     this.typeFactory = context.typeFactory;
 
-    SimpleAnnotatedTypeScanner<Void, Set<AnnotationMirror>> polymorphicQualifierCollector =
+    SimpleAnnotatedTypeScanner<Void, AnnotationMirrorSet> polymorphicQualifierCollector =
         new SimpleAnnotatedTypeScanner<>(
             (type, polys) -> {
               for (AnnotationMirror a : type.getPrimaryAnnotations()) {
@@ -76,7 +75,7 @@ public abstract class AbstractExecutableType {
               }
               return null;
             });
-    Set<AnnotationMirror> polys = new AnnotationMirrorSet();
+    AnnotationMirrorSet polys = new AnnotationMirrorSet();
     polymorphicQualifierCollector.visit(annotatedExecutableType, polys);
     AnnotationMirrorMap<QualifierVar> qualifierVars = new AnnotationMirrorMap<>();
     for (AnnotationMirror poly : polys) {
