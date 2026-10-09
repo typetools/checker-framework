@@ -1,5 +1,3 @@
-// @skip-test until the bug is fixed
-
 public class AnonymousAndInnerClass {
   class MyInnerClass {
     public MyInnerClass() {}

@@ -2616,7 +2616,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     ExecutableElement constructor = constructorType.getElement();
     CharSequence constructorName = ElementUtils.getSimpleDescription(constructor);
 
-    checkArguments(params, passedArguments, constructorName, constructor.getParameters());
+    List<? extends VariableElement> paramNames = constructor.getParameters();
+    if (TreeUtils.isAnonymousConstructorWithExplicitEnclosingExpression(constructor, tree)) {
+      // Like `params`, omit the enclosing-instance parameter.
+      paramNames = paramNames.subList(1, paramNames.size());
+    }
+    checkArguments(params, passedArguments, constructorName, paramNames);
     checkVarargs(constructorType, tree);
 
     List<AnnotatedTypeParameterBounds> paramBounds =
