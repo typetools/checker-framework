@@ -116,6 +116,18 @@ public final class CaptureBound {
    * <p>Also, reduces and incorporates the constraint {@code G<a1,...,an> -> target}. See JLS
    * 18.5.2.1.
    *
+   * <p>If {@code Ai} is {@code ? extends T}, this also adds the bound {@code alphai <: T}. JLS
+   * 18.3.2 does not imply this bound: the wildcard's bound appears only in conditional rules. But
+   * JLS 18.4 builds the fresh type variable for {@code alphai} out of {@code alphai}'s own bounds,
+   * so without it the fresh type variable would not have the upper bound that capture conversion
+   * (JLS 5.1.10) gives it.
+   *
+   * <p>If {@code Ai} is {@code ? super T}, the fresh type variable likewise needs lower bound
+   * {@code T}. But the bound {@code T <: alphai} is not added, because incorporating it with {@code
+   * alphai <: Bi theta} would imply {@code T <: Bi theta}, which capture conversion does not
+   * require. Instead, {@code T} is recorded on {@code alphai} and used only by resolution. See
+   * {@link CaptureVariable#getWildcardLowerBound()}.
+   *
    * @param target the target type
    * @param context the context
    * @return the result of incorporation
@@ -145,23 +157,12 @@ public final class CaptureBound {
         } else {
           set.addAll(newCon);
         }
+        // Give alphai the wildcard's bound; see this method's Javadoc.
         if (t.capturedTypeArg.isUpperBoundedWildcard()) {
-          // If Ai is `? extends T`, add the bound alphai <: T, so that the fresh type variable
-          // that resolution creates for alphai has upper bound glb(T, Bi theta), which is the
-          // upper bound that capture conversion (JLS 5.1.10) gives it.
-          //
-          // JLS 18.3.2 does not state this bound: it implies only alphai <: Bi theta, and the
-          // wildcard's own bound T appears solely in the conditional rules that
-          // getWildcardConstraints implements just above.  JLS 18.4 then builds the fresh type
-          // variable out of alphai's own bounds, so without this bound T is lost and the capture
-          // variable comes out with upper bound Object.  javac does not lose it, because it
-          // applies real capture conversion to the return type rather than encoding capture as a
-          // set of inference variables.  See tests/all-systems/CapturedWildcardBound.java.
-          //
-          // The symmetric bound for `? super T` is deliberately not added; see
-          // CapturedWildcardBound#twoLevelSuper.
           AbstractType T = t.capturedTypeArg.getWildcardUpperBound();
           t.alpha.getBounds().addBound(null, VariableBounds.BoundKind.UPPER, T);
+        } else if (t.capturedTypeArg.isLowerBoundedWildcard()) {
+          t.alpha.setWildcardLowerBound(t.capturedTypeArg.getWildcardLowerBound());
         }
       }
     }
