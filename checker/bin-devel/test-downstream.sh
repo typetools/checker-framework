@@ -15,5 +15,6 @@ source "$SCRIPT_DIR"/clone-related.sh
 ## These are here so they can be run by pull requests.
 ## Exceptions:
 ##  * plume-lib is run by test-plume-lib.sh
+##  * beam is run by test-beam.sh
 ##  * daikon-typecheck is run as a separate CI job
 ##  * guava is run as a separate CI job
