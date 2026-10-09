@@ -1,21 +1,29 @@
 \chapterAndLabel{Purity Checker}{purity-checker}
 
-The Purity Checker identifies methods that have no side effects, that
-return the same value each time they are called on the same argument, or both.
+A \emph{side-effect-free} method is one that has no externally-visible side
+effects:  it changes no object that exists when it is called, except in ways
+that no caller can observe, such as updating a private cache.
+A \emph{deterministic} method returns the same value each time it is called
+on the same arguments.
+A \emph{pure} method is both side-effect-free and deterministic.
+The Purity Checker can check and infer all three types of methods,
+and ``purity'' refers to all concepts.
 
-Purity analysis aids type refinement (Section~\ref{type-refinement}).
+All checkers utilize purity annotations to aid type refinement
+(Section~\ref{type-refinement}).  By default, purity annotations are
+trusted, not checked.
 
-All checkers utilize purity annotations on called methods.
-You do not need to run the Purity Checker directly.
-However, you may run just the Purity Checker by
-supplying the following command-line option to javac:
+To check purity annotations, pass \<-AcheckPurityAnnotations> to any
+checker.
+To run \emph{only} the Purity Checker (this is uncommon),
+supply the following command-line option to javac:
 \code{-processor org.checkerframework.framework.util.PurityChecker}.
 That implies \<-AcheckPurityAnnotations>, so you do not need to supply
 both options.
 
-The Checker Framework can infer purity annotations.
-If you supply the command-line option \<-AsuggestPureMethods>, then the
-Checker Framework will suggest methods that can be marked as
+To infer purity annotations,
+supply the command-line option \<-AsuggestPureMethods>.
+The Checker Framework will suggest methods that can be marked as
 \<@SideEffectFree>, \<@Deterministic>, or \<@Pure>.
 In addition, such suggestions are output by \<-Ainfer> and when using
 whole-program inference.
@@ -44,10 +52,46 @@ whole-program inference.
 \end{description}
 
 
+\sectionAndLabel{Lambdas, method references, and functional interfaces}{purity-functional-interfaces}
+
+Creating a lambda, or declaring a local or anonymous class, is not itself a
+side effect.  A lambda expression evaluates to an object but does not run the code
+in the lambda's body.  A side-effect-free method may therefore create a lambda
+whose body has side effects:
+
+\begin{Verbatim}
+  @SideEffectFree
+  Runnable makeRunnable() {
+    return () -> count++;  // OK: creating the lambda has no side effect
+  }
+\end{Verbatim}
+
+\noindent
+The effects of the body occur where the functional method is invoked, and
+each such invocation is checked on its own.
+
+The body of a lambda is checked against the purity annotations on the
+functional interface method that the lambda implements, not against those on
+the method that creates the lambda.  The errors shown in this section are
+reported only when purity annotations are checked, such as with
+\<-AcheckPurityAnnotations>; they are not reported by default or by
+\<-Ainfer>.  For example:
+
+\begin{Verbatim}
+  @FunctionalInterface
+  interface PureSupplier {
+    @SideEffectFree String get();
+  }
+
+  PureSupplier s1 = () -> "hello";                  // OK
+  PureSupplier s2 = () -> { count++; return ""; };  // error: the body has a side effect
+\end{Verbatim}
+
+
 \sectionAndLabel{Purity annotations are trusted}{purity-trusted}
 
-By default, purity annotations are trusted.  Purity annotations on called
-methods affect type-checking of client code.  However, you can make a
+By default, purity annotations are trusted by every checker built with the
+Checker Framework, and the Purity Checker is not run.  However, you can make a
 mistake
 %
 by writing \refqualclass{dataflow/qual}{SideEffectFree} on the
@@ -141,5 +185,6 @@ of the following is true:
 \end{itemize}
 
 
-%%  LocalWords:  AsuggestPureMethods AcheckPurityAnnotations
-%%  LocalWords:  AsuppressWarnings AassumeSideEffectFree
+%%  LocalWords:  AsuggestPureMethods AcheckPurityAnnotations Ainfer
+%%  LocalWords:  AsuppressWarnings AassumeSideEffectFree SideEffectsOnly
+% LocalWords:  TODO AassumeDeterministic AassumePure AassumePureGetters
