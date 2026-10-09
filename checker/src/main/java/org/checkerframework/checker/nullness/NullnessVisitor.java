@@ -771,6 +771,11 @@ public class NullnessVisitor
   @Override
   public Void visitConditionalExpression(ConditionalExpressionTree tree, Void p) {
     checkForNullability(tree.getCondition(), CONDITION_NULLABLE);
+    // super checks a standalone conditional's operands, but not a poly conditional's.
+    if (TreeUtils.isPolyExpression(tree) && isPrimitive(tree)) {
+      checkForNullability(tree.getTrueExpression(), UNBOXING_OF_NULLABLE);
+      checkForNullability(tree.getFalseExpression(), UNBOXING_OF_NULLABLE);
+    }
     return super.visitConditionalExpression(tree, p);
   }
 

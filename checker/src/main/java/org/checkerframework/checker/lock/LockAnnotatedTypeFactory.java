@@ -649,6 +649,11 @@ public class LockAnnotatedTypeFactory
       return mType;
     }
 
+    if (!inferTypeArgs) {
+      // Computing an argument's type here could re-enter inference for that argument.
+      return mType;
+    }
+
     List<? extends ExpressionTree> methodInvocationTreeArguments = mit.getArguments();
     List<AnnotatedTypeMirror> paramTypes =
         AnnotatedTypes.adaptParameters(this, invokedMethod, methodInvocationTreeArguments, tree);
