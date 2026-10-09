@@ -103,12 +103,23 @@ ifelse($3,test-cftests-nonjunit.sh,[],
        $3,test-guava-part2.sh,[dnl
           no_output_timeout: "50m"
 ],
+       $3,test-beam-part1.sh,[dnl
+          no_output_timeout: "50m"
+],
+       $3,test-beam-part2.sh,[dnl
+          no_output_timeout: "50m"
+],
        [dnl
           no_output_timeout: "30m"
 ])dnl
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: $2
-gradle_save_cache()
+ifelse([Beam's dependencies are several gigabytes, so the Beam jobs restore
+another job's cache, via the "gradle-v1-" key prefix, and never save.])dnl
+ifelse($3,test-beam-part1.sh,[],
+       $3,test-beam-part2.sh,[],
+       [gradle_save_cache()
+])dnl
 ])dnl
 dnl
 ifelse([This macro takes 1-3 arguments: the JDK version and optionally a docker
@@ -203,6 +214,13 @@ define([guava_job], [dnl
 boilerplate(ubuntu, $1, test-guava-part1.sh, ./checker/bin-devel/test-guava-part1.sh)dnl
   job_name(guava_part2_jdk$1)
 boilerplate(ubuntu, $1, test-guava-part2.sh, ./checker/bin-devel/test-guava-part2.sh)dnl
+])dnl
+dnl
+define([beam_job], [dnl
+  job_name(beam_part1_jdk$1)
+boilerplate(ubuntu, $1, test-beam-part1.sh, ./checker/bin-devel/test-beam-part1.sh)dnl
+  job_name(beam_part2_jdk$1)
+boilerplate(ubuntu, $1, test-beam-part2.sh, ./checker/bin-devel/test-beam-part2.sh)dnl
 ])dnl
 dnl
 define([plume_lib_job], [dnl
