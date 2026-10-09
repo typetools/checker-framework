@@ -73,8 +73,9 @@ public final class CaptureBound {
 
     List<AbstractType> capturedTypeArgs = capturedType.getTypeArguments();
     assert capturedTypeArgs != null : "@AssumeAssertion(nullness): capturedType is a declared type";
-    // Set whether each variable captures a wildcard before adding any bounds, because adding a
-    // bound to one variable may create constraints that mention the others.
+    // Mark which capture variables capture a wildcard before calling initialBounds on any of them.
+    // initialBounds on one variable can add a bound that mentions another variable, and
+    // incorporating that bound checks whether the other variable captures a wildcard.
     Iterator<Variable> alphas = this.map.values().iterator();
     for (AbstractType Ai : capturedTypeArgs) {
       ((CaptureVariable) alphas.next()).setCapturedWildcard(Ai.getTypeKind() == TypeKind.WILDCARD);

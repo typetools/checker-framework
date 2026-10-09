@@ -575,7 +575,12 @@ public class VariableBounds {
             !covariantArgIndexes.contains(i)
                 && !isSelfReferentialTypeArgument(sAsSuper, s, si)
                 && !isSelfReferentialTypeArgument(tAsSuper, t, ti);
-        if (!isJavacNoOpEquality(si, ti)) {
+        // JLS 18.3.1 implies si = ti.  javac deviates: it adds no bound to a capture variable for
+        // a wildcard (Type.UndetVar#addBound), so the equality matters only when the other side is
+        // an ordinary inference variable.  Follow javac; otherwise, the capture α of
+        // `? extends Integer` for `V extends Comparable<V>` gets α = Integer from its upper bounds
+        // Integer and Comparable<α>, contradicting javac and crashing.  See Issue8323.java.
+        if (!hasCapturedWildcardButNoOrdinaryVariable(si, ti)) {
           constraints.add(
               new Typing(parent, description, si, ti, Kind.TYPE_EQUALITY, qualifiersMustMatch));
         } else if (qualifiersMustMatch && !si.ignoreAnnotations && !ti.ignoreAnnotations) {
@@ -595,27 +600,15 @@ public class VariableBounds {
   }
 
   /**
-   * Returns true if the Java-type part of the constraint {@code a = b}, implied by two
-   * parameterized bounds, would have no effect in javac: one of {@code a} and {@code b} is a use of
-   * a capture variable for a wildcard, and the other is not a use of an ordinary inference
-   * variable.
+   * Returns true if one of {@code a} and {@code b} is a use of a capture variable for a wildcard
+   * and the other is not a use of an ordinary inference variable.
    *
-   * <p>javac does not add bounds to an inference variable for a captured wildcard during
-   * incorporation (see {@code Type.UndetVar#addBound}): its bounds are those of the captured type
-   * variable. An equality between such a variable and another type has an effect only if the other
-   * type is an ordinary inference variable, which receives the bound. A capture variable for a
-   * non-wildcard type argument is ordinary in this sense: javac has no such variable, but uses the
-   * type argument itself. JLS 18.3.1 does not make this exception. Without it, a capture variable
-   * whose type parameter is F-bounded, such as the capture of {@code ? extends Integer} for {@code
-   * V extends Comparable<V>}, has upper bounds {@code Integer} and {@code Comparable<α>}, which
-   * imply {@code α = Integer}. That bound contradicts the captured type variable that javac infers
-   * for {@code α}. See tests/all-systems/Issue8323.java.
-   *
-   * @param a a type argument of one bound
-   * @param b the corresponding type argument of another bound
-   * @return true if javac would ignore the constraint {@code a = b}
+   * @param a a type
+   * @param b another type
+   * @return true if one of {@code a} and {@code b} is a use of a capture variable for a wildcard
+   *     and the other is not a use of an ordinary inference variable
    */
-  private static boolean isJavacNoOpEquality(AbstractType a, AbstractType b) {
+  private static boolean hasCapturedWildcardButNoOrdinaryVariable(AbstractType a, AbstractType b) {
     return (isUseOfCapturedWildcard(a) && !isUseOfOrdinaryVariable(b))
         || (isUseOfCapturedWildcard(b) && !isUseOfOrdinaryVariable(a));
   }
