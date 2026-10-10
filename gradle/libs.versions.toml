@@ -18,7 +18,7 @@ jgit-version = "7.8.0.202609011348-r"
 # See https://mvnrepository.com/artifact/org.apache.spark/spark-sql .
 spark-sql = "org.apache.spark:spark-sql_2.13:4.2.0"
 
-asm = "org.ow2.asm:asm:9.10.1"
+asm = "org.ow2.asm:asm:9.11"
 
 auto-value = "com.google.auto.value:auto-value:1.11.1"
 
