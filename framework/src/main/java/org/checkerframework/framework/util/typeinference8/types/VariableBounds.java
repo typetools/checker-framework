@@ -584,13 +584,22 @@ public class VariableBounds {
           constraints.add(
               new Typing(parent, description, si, ti, Kind.TYPE_EQUALITY, qualifiersMustMatch));
         } else if (qualifiersMustMatch && !si.ignoreAnnotations && !ti.ignoreAnnotations) {
-          // javac has no qualifiers, so its rule says nothing about them; keep their equality.
+          // javac has no qualifiers, so its rule says nothing about them; keep their equality.  A
+          // use of a variable without a primary annotation has no qualifiers, so its variable
+          // gets the other side's qualifiers as a bound instead.
+          Set<? extends AbstractQualifier> siQualifiers =
+              AbstractQualifier.removeUnsolvedPolymorphic(si.getQualifiers());
+          Set<? extends AbstractQualifier> tiQualifiers =
+              AbstractQualifier.removeUnsolvedPolymorphic(ti.getQualifiers());
+          if (si.isUseOfVariable()) {
+            ((UseOfVariable) si).addQualifierBound(BoundKind.EQUAL, tiQualifiers);
+          }
+          if (ti.isUseOfVariable()) {
+            ((UseOfVariable) ti).addQualifierBound(BoundKind.EQUAL, siQualifiers);
+          }
           ConstraintSet qualifierConstraints = new ConstraintSet();
           QualifierTyping.addQualifierConstraints(
-              qualifierConstraints,
-              AbstractQualifier.removeUnsolvedPolymorphic(si.getQualifiers()),
-              AbstractQualifier.removeUnsolvedPolymorphic(ti.getQualifiers()),
-              Kind.QUALIFIER_EQUALITY);
+              qualifierConstraints, siQualifiers, tiQualifiers, Kind.QUALIFIER_EQUALITY);
           while (!qualifierConstraints.isEmpty()) {
             constraints.add(qualifierConstraints.pop());
           }
