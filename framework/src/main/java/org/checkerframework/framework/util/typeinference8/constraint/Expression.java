@@ -298,11 +298,15 @@ public class Expression extends TypeConstraint {
     // return type of the invocation type (15.12.2.6) of the compile-time declaration.
     // If R' is void, the constraint reduces to false; otherwise, the constraint reduces
     // to <R' -> R>.  R, the result of the function type, is the local variable `r`.
+    // JLS 15.12.2.6: if unchecked conversion was necessary for the compile-time declaration to be
+    // applicable, the return type of its invocation type is the erasure of its return type.
+    AbstractType invocationReturn =
+        b2.isUncheckedConversion(memRef) ? compileTimeReturn.getErased() : compileTimeReturn;
     return ReductionResultPair.of(
         new ConstraintSet(
             new Typing(
                 this,
-                compileTimeReturn.capture(context),
+                invocationReturn.capture(context),
                 r,
                 TypeConstraint.Kind.TYPE_COMPATIBILITY)),
         b2);
