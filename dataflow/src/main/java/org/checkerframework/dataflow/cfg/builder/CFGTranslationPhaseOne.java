@@ -915,6 +915,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
   }
 
+  /**
+   * Returns information about the tree's type for deciding which operand conversions to apply.
+   * Records whether unboxing conversion applies and whether the type is numeric or boolean after
+   * unboxing. The recorded type is the unboxed type if unboxing applies, or the original type
+   * otherwise.
+   *
+   * @param tree the tree whose type to inspect
+   * @return information about the tree's type and its unboxing conversion
+   */
   private TreeInfo getTreeInfo(Tree tree) {
     TypeMirror type = TreeUtils.typeOf(tree);
     TypeMirror boxedType = TypesUtils.boxedPrimitiveForUnboxing(type, types);
@@ -3682,7 +3691,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           TypeMirror promotedType = binaryPromotedType(leftType, rightType);
           targetRHS = binaryNumericPromotion(targetLHS, promotedType);
           value = binaryNumericPromotion(value, promotedType);
-        } else if (TypesUtils.isBooleanType(leftType) && TypesUtils.isBooleanType(rightType)) {
+        } else if (TypesUtils.isBooleanType(TypesUtils.unboxedTypeOrSelf(leftType, types))
+            && TypesUtils.isBooleanType(TypesUtils.unboxedTypeOrSelf(rightType, types))) {
           targetRHS = unbox(targetLHS);
           value = unbox(value);
         } else {

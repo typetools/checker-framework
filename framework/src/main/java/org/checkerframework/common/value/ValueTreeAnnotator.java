@@ -32,6 +32,7 @@ import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -129,9 +130,10 @@ class ValueTreeAnnotator extends TreeAnnotator {
           (AnnotatedTypeMirror.AnnotatedArrayType) type.getComponentType());
     }
     AnnotationMirror dimType =
-        atypeFactory
-            .getAnnotatedType(dimensions.get(0))
-            .getPrimaryAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
+        AnnotatedTypes.findEffectiveAnnotationInHierarchy(
+            atypeFactory.getQualifierHierarchy(),
+            atypeFactory.getAnnotatedType(dimensions.get(0)),
+            atypeFactory.UNKNOWNVAL);
 
     if (AnnotationUtils.areSameByName(dimType, atypeFactory.BOTTOMVAL)) {
       type.replaceAnnotation(atypeFactory.BOTTOMVAL);
