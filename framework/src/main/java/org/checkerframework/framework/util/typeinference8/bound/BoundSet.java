@@ -182,7 +182,7 @@ public class BoundSet implements ReductionResult {
    * Returns true if unchecked conversion was necessary for the method or compile-time declaration
    * of {@code expression} to be applicable: either this is the bound set of {@code expression} and
    * {@link #isUncheckedConversion()} is true, or {@code expression} is nested within the invocation
-   * whose bound set this is and {@link #attributeUncheckedConversionTo} was called for it.
+   * whose bound set this is and {@link #attributeUncheckedConversionTo} recorded it.
    *
    * @param expression a method invocation, class instance creation, or method reference
    * @return true if unchecked conversion was necessary for {@code expression}'s method or
@@ -211,21 +211,11 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Records that whether unchecked conversion was necessary to reduce and incorporate this bound
-   * set, so far, is a property of {@code expression} alone, and clears {@link
-   * #isUncheckedConversion()}.
+   * If {@link #isUncheckedConversion()} is true, records that unchecked conversion was necessary
+   * for the method or compile-time declaration of {@code expression} to be applicable, and sets
+   * {@link #isUncheckedConversion()} to false.
    *
-   * <p>This is called on the bound set B2 of {@code expression}, a method invocation, class
-   * instance creation, or method reference that is nested within an enclosing invocation, before B2
-   * becomes part of the enclosing invocation's bound set. Whether unchecked conversion was
-   * necessary for {@code expression}'s own method or compile-time declaration to be applicable
-   * determines only {@code expression}'s own invocation type. javac does not erase the return type
-   * of the enclosing invocation in that case. Unchecked conversion that is necessary to reduce
-   * {@code expression}'s constraint against its target type, which is a formal parameter type of
-   * the enclosing method, is necessary for the enclosing invocation, and is recorded afterward in
-   * {@link #isUncheckedConversion()} as usual.
-   *
-   * @param expression the nested expression whose bound set B2 this is
+   * @param expression a method invocation, class instance creation, or method reference
    */
   public void attributeUncheckedConversionTo(ExpressionTree expression) {
     if (uncheckedConversion) {
