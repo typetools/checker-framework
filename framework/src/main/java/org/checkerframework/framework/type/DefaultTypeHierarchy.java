@@ -628,6 +628,15 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
     AnnotatedTypeFactory typeFactory = subtype.atypeFactory;
 
+    // If the erased Java type of subtype is not a subtype of supertype, then castedAsSuper
+    // would crash in AsSuperVisitor.  This can happen when raw type erasure during type
+    // argument inference produces an unrelated type (e.g. Object instead of List).
+    Types types = checker.getTypeUtils();
+    if (!types.isSubtype(
+        types.erasure(subtype.getUnderlyingType()), types.erasure(supertype.getUnderlyingType()))) {
+      return false;
+    }
+
     // JLS 11: 4.10.2. Subtyping among Class and Interface Types
     // 4th paragraph, bullet 1.
     AnnotatedDeclaredType subtypeAsSuper =

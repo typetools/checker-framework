@@ -26,6 +26,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.types.ContainsInferenceVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
+import org.checkerframework.framework.util.typeinference8.util.FalseBoundException;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -144,6 +145,12 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         }
         return result.swapTypeVariables(executableType, expressionTree);
       }
+    } catch (FalseBoundException ex) {
+      // FalseBoundException means the Java types made inference produce FALSE (e.g. raw type
+      // erasure producing Object where a parameterized type is expected).  This is a Java type
+      // limitation, not a Checker Framework bug, so always handle it gracefully.
+      return new InferenceResult(
+          Collections.emptyList(), false, true, "FalseBoundException: " + ex.getLocalizedMessage());
     } catch (Exception ex) {
       if (typeFactory
           .getChecker()
@@ -151,12 +158,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         // This should never happen, if javac infers type arguments so should the Checker
         // Framework. However, given how buggy javac inference is, this probably will, so
         // deal with it gracefully.
-        return new InferenceResult(
-            Collections.emptyList(),
-            false,
-            true,
-            true,
-            "An exception occurred: " + ex.getLocalizedMessage());
+        return inferenceFailedResult(ex);
       }
       throw BugInCF.addLocation(outerTree, ex);
     } finally {
@@ -164,6 +166,21 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         java8InferenceStack.pop();
       }
     }
+  }
+
+  /**
+   * Returns an {@link InferenceResult} indicating that type argument inference failed.
+   *
+   * @param ex the exception that caused inference to fail
+   * @return a failed inference result whose message includes the exception detail
+   */
+  private static InferenceResult inferenceFailedResult(Exception ex) {
+    return new InferenceResult(
+        Collections.emptyList(),
+        false,
+        true,
+        true,
+        "An exception occurred: " + ex.getLocalizedMessage());
   }
 
   @Override
