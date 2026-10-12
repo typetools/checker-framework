@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util.typeinference8.bound;
 
+import com.sun.source.tree.ExpressionTree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -50,6 +51,15 @@ public class BoundSet implements ReductionResult {
   private boolean uncheckedConversion;
 
   /**
+   * The method invocations, class instance creations, and method references, nested within the
+   * invocation whose bound set this is, for which unchecked conversion was necessary for their own
+   * method or compile-time declaration to be applicable. The invocation type of each of these has
+   * an erased return type (JLS 15.12.2.6), but that does not make unchecked conversion necessary
+   * for the enclosing invocation, so it is not recorded in {@link #uncheckedConversion}.
+   */
+  private final Set<ExpressionTree> uncheckedNestedExpressions;
+
+  /**
    * Creates a bound set.
    *
    * @param context the context
@@ -61,6 +71,7 @@ public class BoundSet implements ReductionResult {
     this.context = context;
     this.containsFalse = false;
     this.uncheckedConversion = false;
+    this.uncheckedNestedExpressions = new LinkedHashSet<>();
   }
 
   /**
@@ -74,6 +85,7 @@ public class BoundSet implements ReductionResult {
     this.captures = new LinkedHashSet<>(toCopy.captures);
     this.variables = new LinkedHashSet<>(toCopy.variables);
     this.uncheckedConversion = toCopy.uncheckedConversion;
+    this.uncheckedNestedExpressions = new LinkedHashSet<>(toCopy.uncheckedNestedExpressions);
     this.annoInferenceFailed = toCopy.annoInferenceFailed;
     this.errorMsg = toCopy.errorMsg;
   }
@@ -123,6 +135,7 @@ public class BoundSet implements ReductionResult {
     changed |= variables.addAll(newSet.variables);
     containsFalse |= newSet.containsFalse;
     uncheckedConversion |= newSet.uncheckedConversion;
+    uncheckedNestedExpressions.addAll(newSet.uncheckedNestedExpressions);
     annoInferenceFailed |= newSet.annoInferenceFailed;
     if (this.errorMsg.isEmpty()) {
       this.errorMsg = newSet.errorMsg;
@@ -163,6 +176,62 @@ public class BoundSet implements ReductionResult {
    */
   public void setUncheckedConversion(boolean uncheckedConversion) {
     this.uncheckedConversion = uncheckedConversion;
+  }
+
+  /**
+   * Returns true if unchecked conversion was necessary for the method or compile-time declaration
+   * of {@code expression} to be applicable: either this is the bound set of {@code expression} and
+   * {@link #isUncheckedConversion()} is true, or {@code expression} is nested within the invocation
+   * whose bound set this is and {@link #attributeUncheckedConversionTo} was called for it.
+   *
+   * @param expression a method invocation, class instance creation, or method reference
+   * @return true if unchecked conversion was necessary for {@code expression}'s method or
+   *     compile-time declaration to be applicable
+   */
+  public boolean isUncheckedConversion(ExpressionTree expression) {
+    return uncheckedConversion || uncheckedNestedExpressions.contains(expression);
+  }
+
+  /**
+   * Returns the expressions for which unchecked conversion was necessary for their own method or
+   * compile-time declaration to be applicable. That includes {@code expression}, the invocation
+   * whose bound set this is, if {@link #isUncheckedConversion()} is true.
+   *
+   * @param expression the method invocation, class instance creation, or method reference whose
+   *     bound set this is
+   * @return the expressions for which unchecked conversion was necessary for their own method or
+   *     compile-time declaration to be applicable
+   */
+  public Set<ExpressionTree> getUncheckedExpressions(ExpressionTree expression) {
+    Set<ExpressionTree> result = new LinkedHashSet<>(uncheckedNestedExpressions);
+    if (uncheckedConversion) {
+      result.add(expression);
+    }
+    return result;
+  }
+
+  /**
+   * Records that whether unchecked conversion was necessary to reduce and incorporate this bound
+   * set, so far, is a property of {@code expression} alone, and clears {@link
+   * #isUncheckedConversion()}.
+   *
+   * <p>This is called on the bound set B2 of {@code expression}, a method invocation, class
+   * instance creation, or method reference that is nested within an enclosing invocation, before B2
+   * becomes part of the enclosing invocation's bound set. Whether unchecked conversion was
+   * necessary for {@code expression}'s own method or compile-time declaration to be applicable
+   * determines only {@code expression}'s own invocation type. javac does not erase the return type
+   * of the enclosing invocation in that case. Unchecked conversion that is necessary to reduce
+   * {@code expression}'s constraint against its target type, which is a formal parameter type of
+   * the enclosing method, is necessary for the enclosing invocation, and is recorded afterward in
+   * {@link #isUncheckedConversion()} as usual.
+   *
+   * @param expression the nested expression whose bound set B2 this is
+   */
+  public void attributeUncheckedConversionTo(ExpressionTree expression) {
+    if (uncheckedConversion) {
+      uncheckedNestedExpressions.add(expression);
+      uncheckedConversion = false;
+    }
   }
 
   /**

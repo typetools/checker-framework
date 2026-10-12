@@ -78,7 +78,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         if (instantiated.isEmpty()) {
           return InferenceResult.emptyResult();
         }
-        return new InferenceResult(instantiated, false, false, "");
+        return new InferenceResult(instantiated, Collections.emptySet(), false, "");
       }
     }
     // Null if outerTree is a member reference.
@@ -153,7 +153,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         // deal with it gracefully.
         return new InferenceResult(
             Collections.emptyList(),
-            false,
+            Collections.emptySet(),
             true,
             true,
             "An exception occurred: " + ex.getLocalizedMessage());
