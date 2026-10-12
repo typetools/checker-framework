@@ -275,14 +275,13 @@ public final class InferenceType extends AbstractType {
   }
 
   /**
-   * Returns true if one of {@code instantiated}, a list of instantiated variables, is mentioned by
-   * this type and has an instantiation with ignored annotations: one that ignores annotations
-   * itself (see {@link AbstractType#ignoreAnnotations}), or one that has ignored substitutions (see
-   * {@link ProperType#getOrigin}).
+   * Returns true if this type mentions a variable in {@code instantiated} whose instantiation
+   * ignores annotations (see {@link AbstractType#ignoreAnnotations}) or has an origin (see {@link
+   * ProperType#getOrigin}).
    *
    * @param instantiated variables, each of which has an instantiation
-   * @return true if one of {@code instantiated} is mentioned by this type and has an instantiation
-   *     with ignored annotations
+   * @return true if this type mentions a variable in {@code instantiated} whose instantiation
+   *     ignores annotations or has an origin
    */
   private boolean substitutesIgnoredAnnotations(List<Variable> instantiated) {
     Collection<Variable> mentioned = null;

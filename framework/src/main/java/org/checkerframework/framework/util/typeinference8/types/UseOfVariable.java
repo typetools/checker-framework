@@ -130,10 +130,8 @@ public class UseOfVariable extends AbstractType {
    * {@inheritDoc}
    *
    * <p>If the variable is instantiated, then the result is its instantiation, except that each
-   * primary annotation on this use replaces the instantiation's annotation in the same hierarchy. A
-   * polymorphic qualifier is not copied, because a proper type's annotations are compared as
-   * written, so a polymorphic qualifier on one would be treated as a concrete qualifier rather than
-   * as its {@link QualifierVar}.
+   * primary annotation on this use, other than a polymorphic qualifier, replaces the
+   * instantiation's annotation in the same hierarchy.
    *
    * <p>The result ignores annotations if this use does, or if the instantiation does and the
    * annotations copied from this use do not cover every qualifier hierarchy.
@@ -145,6 +143,8 @@ public class UseOfVariable extends AbstractType {
       return this;
     }
     QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
+    // A proper type's annotations are compared as written, so a polymorphic qualifier on one would
+    // be treated as a concrete qualifier rather than as its QualifierVar.
     AnnotationMirrorSet annosToCopy = new AnnotationMirrorSet();
     for (AnnotationMirror anno : type.getPrimaryAnnotations()) {
       if (!qh.isPolymorphicQualifier(anno)) {
@@ -198,7 +198,7 @@ public class UseOfVariable extends AbstractType {
 
   /**
    * Returns a copy of {@code bound} that ignores its root annotations, and whose annotated type is
-   * a deep copy that may be mutated. A proper type keeps its record of its ignored substitutions;
+   * a deep copy that may be mutated. If {@code bound} is a proper type, the copy has its origin;
    * see {@link ProperType#getOrigin}.
    *
    * @param bound a type
@@ -214,7 +214,10 @@ public class UseOfVariable extends AbstractType {
 
   /**
    * Adds a bound for this variable. If this use has a primary annotation, or ignores annotations,
-   * then the bound says nothing about the variable's annotations, so it ignores annotations.
+   * then the bound added is a copy of {@code bound} that ignores its root annotations; a lower
+   * bound's root annotations are bottom and an upper bound's are top. If this use has a primary
+   * annotation, then an {@code EQUAL} bound that is not a type variable is added as both an upper
+   * and a lower bound instead.
    *
    * @param parent the constraint whose reduction created this bound
    * @param kind the kind of bound

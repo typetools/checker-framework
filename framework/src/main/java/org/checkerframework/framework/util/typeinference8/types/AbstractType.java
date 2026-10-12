@@ -70,22 +70,20 @@ public abstract class AbstractType {
   /**
    * True if the primary annotations of this type should be ignored, because they do not constrain
    * any inference variable's annotations. For a type variable or a wildcard, this includes the
-   * primary annotations of its bounds, which its primary annotation determines. It does not include
-   * annotations nested in this type, such as those of its type arguments or its component type:
-   * those are compared, unless they are at a position that ignores annotations itself.
+   * primary annotations of its bounds. It does not include annotations nested in this type, such as
+   * those of its type arguments or its component type.
    *
-   * <p>This field is true for a bound that {@link UseOfVariable#addBound} creates from a use of an
-   * inference variable that has a primary annotation, such as {@code @Nullable T}. That annotation
-   * overrides the variable's annotation at this use, so a formula such as {@code @Nullable T
-   * <: @Nullable String} relates only the Java types of {@code T} and {@code String}; the bound's
-   * annotations must not influence the inferred annotations of {@code T}. This field is also true
-   * for a type derived from such a bound.
+   * <p>For example, this field is true for a bound that {@link UseOfVariable#addBound} creates from
+   * a use of an inference variable that has a primary annotation, such as {@code @Nullable T}. That
+   * annotation overrides {@code T}'s, so the formula {@code @Nullable T <: @Nullable String}
+   * relates only the Java types of {@code T} and {@code String}. This field is also true for a type
+   * derived from such a bound.
    *
    * <p>A proper {@code EQUAL} bound whose field is true, such as {@code T = @NonNull U} from the
    * formula {@code @NonNull T = @NonNull U}, can become a variable's instantiation. It then gives
-   * only the variable's Java type: a Java-type-only instantiation. Its annotations come from the
-   * variable's other bounds instead; see {@link
-   * org.checkerframework.framework.util.typeinference8.util.Resolution#resolveIgnoredAnnotations}.
+   * only the variable's Java type; its annotations come from the variable's other bounds (see
+   * {@link
+   * org.checkerframework.framework.util.typeinference8.util.Resolution#resolveIgnoredAnnotations}).
    * A position where such an instantiation was substituted is an ignored substitution; see {@link
    * ProperType#getOrigin}.
    *

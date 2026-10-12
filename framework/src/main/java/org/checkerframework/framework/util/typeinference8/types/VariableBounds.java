@@ -195,9 +195,7 @@ public class VariableBounds {
   }
 
   /**
-   * Returns the number of times this variable's instantiation has been set. A type made by
-   * substituting an instantiation that ignores annotations uses it to tell when to substitute
-   * again; see {@link ProperType#applyInstantiations}.
+   * Returns the number of times this variable's instantiation has been set.
    *
    * @return the number of times this variable's instantiation has been set
    */
@@ -208,9 +206,7 @@ public class VariableBounds {
   /**
    * Makes {@code type}, a proper {@code EQUAL} bound of this variable, its instantiation, unless
    * {@code type} ignores annotations and the current instantiation does not (see {@link
-   * AbstractType#ignoreAnnotations}). A bound whose annotations are respected determines this
-   * variable's annotations, so a bound that ignores annotations never replaces it, and it always
-   * replaces one that does. Among bounds of the same kind, the later one is used.
+   * AbstractType#ignoreAnnotations}). Among bounds of the same kind, the later one is used.
    *
    * @param type a proper {@code EQUAL} bound of this variable
    */
@@ -222,7 +218,7 @@ public class VariableBounds {
 
   /**
    * Sets {@code instantiation} from the proper {@code EQUAL} bounds of this variable, if it has
-   * any, choosing among them as {@link #addBound} does.
+   * any, choosing among them as {@link #setInstantiationFromEqualBound} does.
    */
   private void setInstantiationFromEqualBounds() {
     for (AbstractType t : getBoundsOfKind(BoundKind.EQUAL)) {
@@ -668,15 +664,14 @@ public class VariableBounds {
   }
 
   /**
-   * Returns the bounds that determine this variable's annotations when its instantiation ignores
-   * annotations: all lower bounds that are proper types, and all proper {@code EQUAL} bounds that
-   * ignore annotations (see {@link AbstractType#ignoreAnnotations}). Such an {@code EQUAL} bound
-   * gives this variable's Java type, but it says no more about its annotations than a lower bound
-   * does.
+   * Returns all lower bounds that are proper types, and all proper {@code EQUAL} bounds that ignore
+   * annotations (see {@link AbstractType#ignoreAnnotations}).
    *
    * @return all proper lower bounds and all proper {@code EQUAL} bounds that ignore annotations
    */
   public Set<ProperType> findLowerBoundsForAnnotations() {
+    // An EQUAL bound that ignores annotations gives this variable's Java type, but it says no more
+    // about its annotations than a lower bound does.
     Set<ProperType> set = findProperLowerBounds();
     for (AbstractType bound : getBoundsOfKind(BoundKind.EQUAL)) {
       if (bound.isProper() && bound.ignoreAnnotations) {

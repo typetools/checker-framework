@@ -23,10 +23,9 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
 /**
  * Utility methods for comparing types some of whose annotations are ignored.
  *
- * <p>Two kinds of position in a type have annotations that are ignored. Both kinds of annotations
- * come from a formula about a use of an inference variable that has an explicit primary annotation,
- * such as {@code @Nullable T}. That annotation overrides the variable's, so they say nothing about
- * the variable's annotations. The two kinds are:
+ * <p>Two kinds of position in a type have annotations that are ignored, because they come from a
+ * formula about a use of an inference variable that has an explicit primary annotation, such as
+ * {@code @Nullable T}, and so say nothing about the variable's annotations:
  *
  * <ul>
  *   <li>the root of a type whose {@link AbstractType#ignoreAnnotations} is true: its primary
@@ -47,12 +46,11 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns the annotated types of {@code sub} and {@code sup}, in that order, for checking that
-   * {@code sub} is a subtype of {@code sup}. The root of a type that ignores annotations has bottom
-   * annotations if it is {@code sub}, and top annotations if it is {@code sup}, so that it
-   * satisfies the check. An ignored substitution has the annotations of the corresponding position
-   * of the other type. If neither type has an ignored position, the result holds the types' own
-   * annotated types; otherwise it holds copies.
+   * Returns the annotated types of {@code sub} and {@code sup}, in that order, with their ignored
+   * positions replaced. The root of a type that ignores annotations has bottom annotations if it is
+   * {@code sub}, and top annotations if it is {@code sup}. An ignored substitution has the
+   * annotations of the corresponding position of the other type. If neither type has an ignored
+   * position, the result holds the types' own annotated types; otherwise it holds copies.
    *
    * @param sub the potential subtype
    * @param sup the potential supertype
@@ -90,8 +88,8 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns the annotated types of {@code type1} and {@code type2}, in that order, for checking
-   * that the two, which have the same Java type, are equal. An ignored position of one type has the
+   * Returns the annotated types of {@code type1} and {@code type2}, which have the same Java type,
+   * in that order, with their ignored positions replaced. An ignored position of one type has the
    * annotations of the corresponding position of the other type. If neither type has an ignored
    * position, the result holds the types' own annotated types; otherwise it holds copies.
    *
@@ -121,11 +119,10 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns the annotated types of {@code type1} and {@code type2}, in the order given, for
-   * combining them into their least upper bound, whose Java type is {@code lubType}. If either type
-   * has ignored substitutions, then both are viewed as the class of {@code lubType}, and an ignored
-   * substitution of one has the annotations of the corresponding position of the other, so that it
-   * contributes nothing to the result. The roots are not replaced. If nothing is replaced, the
+   * Returns the annotated types of {@code type1} and {@code type2}, in the order given, with their
+   * ignored substitutions replaced. If either type has ignored substitutions, then both are viewed
+   * as the class of {@code lubType}, and an ignored substitution of one has the annotations of the
+   * corresponding position of the other. The roots are not replaced. If nothing is replaced, the
    * result holds the types' own annotated types; otherwise it holds copies.
    *
    * @param type1 a type
@@ -181,14 +178,14 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns true if comparing {@code type1} and {@code type2} is decided by their roots alone,
-   * because at least one of them ignores its root annotations and neither has any other position
-   * with annotations. Then the comparison succeeds without looking at the types; see {@link
-   * #replaceIgnoredForSubtype} and {@link #replaceIgnoredForEquality}.
+   * Returns true if at least one of {@code type1} and {@code type2} ignores its root annotations,
+   * neither has an origin (see {@link ProperType#getOrigin}), and neither has an annotated position
+   * other than its root.
    *
    * @param type1 a type
    * @param type2 a type
-   * @return true if the comparison of {@code type1} and {@code type2} is decided by an ignored root
+   * @return true if one of {@code type1} and {@code type2} ignores its root annotations and neither
+   *     has an origin or an annotated position other than its root
    */
   static boolean decidedByIgnoredRoot(AbstractType type1, AbstractType type2) {
     return (type1.ignoreAnnotations || type2.ignoreAnnotations)
@@ -199,8 +196,8 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns true if {@code type} has no annotated position other than its root. A type variable is
-   * not considered, because the bounds of its declaration can have type arguments.
+   * Returns true if {@code type} has no annotated position other than its root. Returns false for a
+   * type variable.
    *
    * @param type an annotated type
    * @return true if {@code type} has no annotated position other than its root
@@ -217,14 +214,14 @@ final class IgnoredAnnotations {
         return true;
       }
       default -> {
+        // A type variable's bounds can have type arguments.
         return type.getKind().isPrimitive();
       }
     }
   }
 
   /**
-   * Returns true if {@code type} is a proper type with an origin, and so may have ignored
-   * substitutions.
+   * Returns true if {@code type} is a proper type with an origin; see {@link ProperType#getOrigin}.
    *
    * @param type a type
    * @return true if {@code type} is a proper type with an origin
@@ -235,7 +232,7 @@ final class IgnoredAnnotations {
 
   /**
    * Returns the ignored substitutions of {@code atm}, which is {@code type}'s annotated type or a
-   * deep copy of it. The result is compared by identity.
+   * deep copy of it. The result is an identity set.
    *
    * @param type a type
    * @param atm the annotated type of {@code type}, or a deep copy of it
@@ -259,18 +256,21 @@ final class IgnoredAnnotations {
 
   /**
    * Adds to {@code result} each ignored substitution of {@code atm}, which is {@code origin} with
-   * instantiations substituted. A position is an ignored substitution if it corresponds to a use,
-   * in {@code origin}, of a variable whose instantiation ignores annotations, where the use's own
-   * annotations do not cover every qualifier hierarchy (see {@link
-   * UseOfVariable#applyInstantiations}), or if it is an ignored substitution of the instantiation
-   * that was substituted there.
+   * instantiations substituted. A position of {@code atm} is an ignored substitution if the
+   * corresponding position of {@code origin} is a use of a variable such that either:
+   *
+   * <ul>
+   *   <li>the variable's instantiation ignores annotations, and the use's non-polymorphic primary
+   *       annotations do not cover every qualifier hierarchy (see {@link
+   *       UseOfVariable#applyInstantiations}), or
+   *   <li>the position is an ignored substitution of the variable's instantiation.
+   * </ul>
    *
    * @param origin a type that mentions inference variables
    * @param atm {@code origin} with instantiations substituted
    * @param map the inference variables of {@code origin}
    * @param qh the qualifier hierarchy
-   * @param visiting the variables whose instantiations are being scanned; an F-bounded variable's
-   *     instantiation can mention the variable itself
+   * @param visiting the variables whose instantiations are being scanned
    * @param result the set to which to add ignored substitutions
    */
   private static void collectIgnoredSubstitutions(
@@ -292,6 +292,7 @@ final class IgnoredAnnotations {
           result.add(atm);
         }
         InferenceType instantiationOrigin = instantiation.getOrigin();
+        // An F-bounded variable's instantiation can mention the variable itself.
         if (instantiationOrigin != null && visiting.add(variable)) {
           collectIgnoredSubstitutions(
               instantiationOrigin.getAnnotatedType(),
@@ -459,12 +460,11 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns the bound of {@code type} that a type argument is compared with, if {@code type} is a
-   * wildcard: its lower bound if it has one, otherwise its upper bound. Returns any other type
-   * itself.
+   * Returns the lower bound of {@code type} if it is a wildcard that has one, its upper bound if it
+   * is a wildcard that does not, and {@code type} itself otherwise.
    *
    * @param type a type
-   * @return the bound of {@code type} that a type argument is compared with, or {@code type}
+   * @return the lower or upper bound of {@code type} if it is a wildcard, otherwise {@code type}
    */
   private static AnnotatedTypeMirror boundOf(AnnotatedTypeMirror type) {
     if (type instanceof AnnotatedWildcardType wildcard) {
@@ -476,10 +476,9 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Gives {@code target} the root annotations of {@code source}. If {@code source} is a use of a
-   * type variable without a primary annotation, then its annotations are those of its bounds, so
-   * {@code target}, if it is also a type variable, gets those bounds' annotations and no primary
-   * annotation.
+   * Gives {@code target} the root annotations of {@code source}. If both are type variables and
+   * {@code source} has no primary annotation, then {@code target}'s primary annotations are removed
+   * and its bounds get the primary annotations of {@code source}'s bounds.
    *
    * @param source the type whose root annotations to copy
    * @param target the type whose root annotations to replace; side-effected by this method

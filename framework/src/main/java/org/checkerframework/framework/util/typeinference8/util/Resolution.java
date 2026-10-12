@@ -116,20 +116,16 @@ public final class Resolution {
   }
 
   /**
-   * Resolves the annotations of each variable in {@code vars} whose instantiation ignores
-   * annotations (see {@link AbstractType#ignoreAnnotations}). Such an instantiation gives only the
-   * variable's Java type: its annotations say nothing about the variable's, because they were
-   * related to an explicit annotation on a use of the variable, so this method takes the
-   * annotations from the variable's other bounds instead. As {@link #resolveWithLowerBounds} would,
-   * it adds the bound {@code var = t}, where {@code t} is the least upper bound of the variable's
-   * proper lower bounds, with its qualifier lower bounds applied, viewed as the variable's Java
-   * type ({@link AbstractType#asSuper}). Every lower bound is a subtype of that Java type, so
-   * {@code t} is too. If the variable has no proper lower bound, then {@code t} is the
-   * instantiation with the qualifier lower bounds applied, and it still ignores annotations.
+   * For each variable in {@code vars} whose instantiation ignores annotations (see {@link
+   * AbstractType#ignoreAnnotations}), adds the bound {@code var = t}, where {@code t} is {@link
+   * #lubOfLowerBounds} of the variable's proper lower bounds, viewed as the instantiation's Java
+   * type (see {@link #viewAs}). If the variable has no proper lower bound, or that view cannot be
+   * computed, then {@code t} is {@link #lubOfLowerBounds} of {@link
+   * org.checkerframework.framework.util.typeinference8.types.VariableBounds#findLowerBoundsForAnnotations}.
+   * Then incorporates the new bounds.
    *
-   * <p>If {@code t} respects annotations, then it replaces the instantiation. A type that was made
-   * by substituting the instantiation has recorded where (see {@link
-   * ProperType#applyInstantiations}), so incorporating the new bound substitutes {@code t} there.
+   * <p>If {@code t} respects annotations, then it replaces the instantiation, and incorporation
+   * substitutes {@code t} wherever the old instantiation was substituted.
    *
    * @param vars variables, each of which has an instantiation
    * @param boundSet the bound set that includes {@code vars}
@@ -144,6 +140,9 @@ public final class Resolution {
       if (instantiation == null || !instantiation.ignoreAnnotations) {
         continue;
       }
+      // The instantiation gives only the variable's Java type: its annotations say nothing about
+      // the variable's, because they were related to an explicit annotation on a use of the
+      // variable.  Every lower bound is a subtype of that Java type, so `t` is too.
       ProperType t = null;
       Set<ProperType> lowerBounds = var.getBounds().findProperLowerBounds();
       if (!lowerBounds.isEmpty()) {
@@ -166,8 +165,8 @@ public final class Resolution {
 
   /**
    * Returns {@code type} viewed as {@code javaType}, a supertype of it, or null if that view cannot
-   * be computed. A type variable, including a captured one, is viewed through its upper bounds,
-   * whose annotations it has; another type is viewed through {@link AbstractType#asSuper}.
+   * be computed. A type variable, including a captured one, is viewed through its upper bound;
+   * another type is viewed through {@link AbstractType#asSuper}.
    *
    * @param type a proper type
    * @param javaType a supertype of the Java type of {@code type}
@@ -488,13 +487,10 @@ public final class Resolution {
    * @param ai a variable
    * @param lowerBounds a nonempty set of proper types, each of which is a lower bound of {@code ai}
    *     or has the Java type of {@code ai}
-   * @param includesEqualBounds true if {@code lowerBounds} may include {@code EQUAL} bounds that
-   *     ignore annotations (see {@link AbstractType#ignoreAnnotations}), whose root annotations say
-   *     nothing about {@code ai}'s in any hierarchy. A proper lower bound's root annotations say
-   *     nothing about {@code ai}'s only in the hierarchies of the use's explicit primary
-   *     annotation, where {@link
-   *     org.checkerframework.framework.util.typeinference8.types.UseOfVariable#addBound} made them
-   *     bottom, so lubbing them is already correct.
+   * @param includesEqualBounds if true, and the least upper bound ignores annotations (see {@link
+   *     AbstractType#ignoreAnnotations}) and is not a type variable, then its root annotations are
+   *     replaced by the least upper bound of the qualifier lower bounds of {@code ai}, rather than
+   *     lubbed with them
    * @param context the context
    * @return the least upper bound of {@code lowerBounds}, with the qualifier lower bounds of {@code
    *     ai} applied
@@ -527,6 +523,9 @@ public final class Resolution {
         // its upper bound.
         lubProperType.getAnnotatedType().replaceAnnotations(lubAnnos);
       } else if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
+        // A proper lower bound's root annotations say nothing about `ai`'s only in the hierarchies
+        // of the use's explicit primary annotation, where UseOfVariable#addBound made them bottom,
+        // so lubbing them is already correct.
         Set<? extends AnnotationMirror> newLubAnnos =
             qh.leastUpperBoundsQualifiersOnly(
                 lubAnnos, lubProperType.getAnnotatedType().getPrimaryAnnotations());
