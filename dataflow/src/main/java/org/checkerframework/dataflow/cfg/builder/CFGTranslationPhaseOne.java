@@ -926,9 +926,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private TreeInfo getTreeInfo(Tree tree) {
     TypeMirror type = TreeUtils.typeOf(tree);
-    TypeMirror boxedType = TypesUtils.boxedPrimitiveForUnboxing(type, types);
-    boolean unboxable = boxedType != null;
-    TypeMirror unboxedType = boxedType == null ? type : types.unboxedType(boxedType);
+    boolean unboxable = TypesUtils.isUnboxable(type, types);
+    TypeMirror unboxedType = TypesUtils.unboxedTypeOrSelf(type, types);
 
     boolean bool = TypesUtils.isBooleanType(unboxedType);
     boolean numeric = TypesUtils.isNumeric(unboxedType);
@@ -1393,10 +1392,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // If the operand is byte or Byte and the whole expression is
     // short, then convert to short.
-    TypeMirror boxedNodeType = TypesUtils.boxedPrimitiveForUnboxing(nodeType, types);
-    boolean isNodeUnboxable = boxedNodeType != null;
-    TypeMirror unboxedNodeType =
-        boxedNodeType == null ? nodeType : types.unboxedType(boxedNodeType);
+    boolean isNodeUnboxable = TypesUtils.isUnboxable(nodeType, types);
+    TypeMirror unboxedNodeType = TypesUtils.unboxedTypeOrSelf(nodeType, types);
     TypeMirror unboxedDestType = TypesUtils.unboxedTypeOrSelf(destType, types);
     if (TypesUtils.isNumeric(unboxedNodeType) && TypesUtils.isNumeric(unboxedDestType)) {
       if (unboxedNodeType.getKind() == TypeKind.BYTE && destType.getKind() == TypeKind.SHORT) {
