@@ -133,6 +133,9 @@ class ValueTreeAnnotator extends TreeAnnotator {
         atypeFactory
             .getAnnotatedType(dimensions.get(0))
             .getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
+    if (dimType == null) {
+      return;
+    }
 
     if (AnnotationUtils.areSameByName(dimType, atypeFactory.BOTTOMVAL)) {
       type.replaceAnnotation(atypeFactory.BOTTOMVAL);
