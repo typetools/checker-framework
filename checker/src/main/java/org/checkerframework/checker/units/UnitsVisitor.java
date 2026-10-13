@@ -7,7 +7,6 @@ import org.checkerframework.checker.units.qual.UnknownUnits;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.AnnotatedTypes;
 
 /**
  * Units visitor.
@@ -32,10 +31,7 @@ public class UnitsVisitor extends BaseTypeVisitor<UnitsAnnotatedTypeFactory> {
       if (!typeHierarchy.isSubtypeShallowEffective(exprType, varType)) {
         checker.reportError(tree, "compound.assignment", varType, exprType);
       }
-    } else if (!atypeFactory.areSameByClass(
-        AnnotatedTypes.findEffectiveAnnotationInHierarchy(
-            atypeFactory.getQualifierHierarchy(), exprType, atypeFactory.TOP),
-        UnknownUnits.class)) {
+    } else if (!exprType.hasAnnotation(UnknownUnits.class)) {
       // Only allow mul/div with unqualified units
       checker.reportError(tree, "compound.assignment", varType, exprType);
     }
