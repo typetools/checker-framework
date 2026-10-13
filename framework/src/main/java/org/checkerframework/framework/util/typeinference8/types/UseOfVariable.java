@@ -190,7 +190,7 @@ public class UseOfVariable extends AbstractType {
    * @param kind the kind of bound
    * @param annotations the qualifiers to add
    */
-  public void addQualifierBound(BoundKind kind, Set<AbstractQualifier> annotations) {
+  public void addQualifierBound(BoundKind kind, Set<? extends AbstractQualifier> annotations) {
     if (!hasPrimaryAnno && !ignoreAnnotations) {
       variable.getBounds().addQualifierBound(kind, annotations);
     }
