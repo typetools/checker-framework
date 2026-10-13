@@ -18,6 +18,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -438,8 +439,8 @@ class ValueTreeAnnotator extends TreeAnnotator {
       }
     }
 
-    if (!methodIsStaticallyExecutable(TreeUtils.elementFromUse(tree))
-        || !handledByValueChecker(type)) {
+    ExecutableElement method = TreeUtils.elementFromUse(tree);
+    if (!methodIsStaticallyExecutable(method) || !handledByValueChecker(type)) {
       return null;
     }
 
@@ -473,9 +474,17 @@ class ValueTreeAnnotator extends TreeAnnotator {
       argValues = null;
     } else {
       argValues = new ArrayList<>(arguments.size());
-      for (ExpressionTree argument : arguments) {
+      List<? extends VariableElement> parameters = method.getParameters();
+      for (int i = 0; i < arguments.size(); i++) {
+        ExpressionTree argument = arguments.get(i);
         AnnotatedTypeMirror argType = atypeFactory.getAnnotatedType(argument);
-        List<?> values = getValues(argType, argType.getUnderlyingType());
+        TypeMirror argumentType = argType.getUnderlyingType();
+        if (i < parameters.size() && parameters.get(i).asType().getKind().isPrimitive()) {
+          // Synthetic boxing calls can use a tree from before a narrowing conversion, such as
+          // Byte.valueOf(t + 1). Convert its values to the primitive parameter type for reflection.
+          argumentType = parameters.get(i).asType();
+        }
+        List<?> values = getValues(argType, argumentType);
         if (values == null || values.isEmpty()) {
           // Values aren't known, so don't try to evaluate the method.
           return null;
