@@ -1130,7 +1130,19 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitDeconstructorPattern(
       DeconstructorPatternNode n, TransferInput<V, S> in) {
-    // TODO: Implement getting the type of a DeconstructorPatternTree.
+    Tree recordPattern = n.getTree();
+    assert recordPattern != null : "@AssumeAssertion(nullness): a pattern node has a tree";
+    List<AnnotatedTypeMirror> componentTypes =
+        analysis.atypeFactory.getRecordPatternComponentTypes(recordPattern);
+    List<Node> nestedPatterns = n.getNestedPatterns();
+    for (int i = 0; i < nestedPatterns.size(); i++) {
+      if (nestedPatterns.get(i) instanceof LocalVariableNode bindingVar) {
+        JavaExpression expr = JavaExpression.fromNode(bindingVar);
+        for (AnnotationMirror anno : componentTypes.get(i).getPrimaryAnnotations()) {
+          in.getRegularStore().insertOrRefine(expr, anno);
+        }
+      }
+    }
     V value = null;
     return createTransferResult(value, in);
   }
@@ -1145,7 +1157,8 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitInstanceOf(InstanceOfNode node, TransferInput<V, S> in) {
     TransferResult<V, S> result = super.visitInstanceOf(node, in);
-    for (LocalVariableNode bindingVar : node.getBindingVariables()) {
+    // Binding variables nested in a record pattern are refined by visitDeconstructorPattern.
+    if (node.getPatternNode() instanceof LocalVariableNode bindingVar) {
       JavaExpression expr = JavaExpression.fromNode(bindingVar);
       AnnotatedTypeMirror expType =
           analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());

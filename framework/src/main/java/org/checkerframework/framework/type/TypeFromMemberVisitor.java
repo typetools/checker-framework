@@ -17,6 +17,7 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.util.AnnotatedTypeProjection;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -48,7 +49,24 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
         || variableTree.getType() == null) {
       // VariableTree#getType returns null for binding variables from a
       // DeconstructionPatternTree.
-      result = f.type(variableTree);
+      AnnotatedTypeMirror componentType =
+          elt.getKind() == ElementKind.BINDING_VARIABLE
+              ? f.getRecordComponentTypeOfVarPattern(variableTree)
+              : null;
+      // The type of a `var` pattern is the upward projection of the component type (JLS 14.30.1).
+      AnnotatedTypeMirror projectedType =
+          componentType == null ? null : AnnotatedTypeProjection.upward(f, componentType);
+      // javac does not always project the type of a `var` pattern, so compare only erasures.
+      if (projectedType != null
+          && f.types.isSameType(
+              f.types.erasure(projectedType.getUnderlyingType()),
+              f.types.erasure(TreeUtils.typeOf(variableTree)))) {
+        result = projectedType;
+        // Let normal defaulting happen for the primary annotation.
+        result.clearPrimaryAnnotations();
+      } else {
+        result = f.type(variableTree);
+      }
     } else {
       // (variableTree.getType() does not include the annotation before the type, so those
       // are added to the type below).

@@ -154,6 +154,7 @@ import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.DeconstructionPatternUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
@@ -445,7 +446,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (getCurrentPath() != null) {
       this.atypeFactory.setVisitorTreePath(new TreePath(getCurrentPath(), tree));
     }
+    if (TreeUtils.isDeconstructionPatternTree(tree)) {
+      checkRecordPatternTypeInference(tree);
+    }
     return super.scan(tree, p);
+  }
+
+  /**
+   * Reports a "type.arguments.not.inferred" error if the type arguments of the record pattern
+   * {@code recordPattern} cannot be inferred.
+   *
+   * @param recordPattern a {@code DeconstructionPatternTree}
+   */
+  protected void checkRecordPatternTypeInference(Tree recordPattern) {
+    String errorMessage = atypeFactory.getRecordPatternInferenceError(recordPattern);
+    if (errorMessage != null) {
+      checker.reportError(
+          recordPattern,
+          "type.arguments.not.inferred",
+          DeconstructionPatternUtils.getDeconstructor(recordPattern),
+          errorMessage);
+    }
   }
 
   /**

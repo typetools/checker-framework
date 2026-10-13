@@ -1707,6 +1707,9 @@ public final class TypesUtils {
    * name and the same enclosing element. Unlike {@link Types#isSameType(TypeMirror, TypeMirror)},
    * they do not have to be the same object.
    *
+   * <p>Captured type variables, including fresh type variables, all have the same name and
+   * enclosing element, so two of them are the same only if they have the same element.
+   *
    * <p>This method is needed when a type has gone through type variable substitution, but only some
    * of the type variables were substituted. Also, a new {@link TypeVariable} object is created as
    * the type of a tree created by {@link org.checkerframework.javacutil.trees.TreeBuilder}.
@@ -1720,6 +1723,9 @@ public final class TypesUtils {
   public static boolean areSame(TypeVariable typeVariable1, TypeVariable typeVariable2) {
     if (typeVariable1 == typeVariable2) {
       return true;
+    }
+    if (isCapturedTypeVariable(typeVariable1) || isCapturedTypeVariable(typeVariable2)) {
+      return typeVariable1.asElement().equals(typeVariable2.asElement());
     }
     Name otherName = typeVariable2.asElement().getSimpleName();
     Element otherEnclosingElement = typeVariable2.asElement().getEnclosingElement();
@@ -1745,6 +1751,9 @@ public final class TypesUtils {
     // converted to a String because areSame compares names with Name.contentEquals, and Name does
     // not specify that its hashCode is consistent with contentEquals.
     Element element = typeVariable.asElement();
+    if (isCapturedTypeVariable(typeVariable)) {
+      return System.identityHashCode(element);
+    }
     return Objects.hash(element.getSimpleName().toString(), element.getEnclosingElement());
   }
 }

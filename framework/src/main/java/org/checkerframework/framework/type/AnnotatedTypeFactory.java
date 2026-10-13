@@ -12,6 +12,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -20,6 +21,8 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.SwitchExpressionTree;
+import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
@@ -65,6 +68,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -128,6 +132,7 @@ import org.checkerframework.framework.util.FieldInvariants;
 import org.checkerframework.framework.util.TreePathCacher;
 import org.checkerframework.framework.util.TypeInformationPresenter;
 import org.checkerframework.framework.util.typeinference8.DefaultTypeArgumentInference;
+import org.checkerframework.framework.util.typeinference8.RecordPatternTypeInference;
 import org.checkerframework.framework.util.typeinference8.TypeArgumentInference;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationFormatter;
@@ -140,6 +145,8 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.DeconstructionPatternUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.PatternCaseLabelUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -5319,6 +5326,139 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
     }
     return false;
+  }
+
+  /**
+   * Returns the annotated type of the record pattern {@code recordPattern}, whose type arguments
+   * are inferred from the type of the values that are matched against it (JLS 18.5.5).
+   *
+   * @param recordPattern a {@code DeconstructionPatternTree}
+   * @return the annotated type of {@code recordPattern}
+   */
+  public AnnotatedDeclaredType getRecordPatternType(Tree recordPattern) {
+    TreePath path = getPath(recordPattern);
+    AnnotatedTypeMirror matchedType = path == null ? null : getTypeMatchedByPattern(path);
+    AnnotatedDeclaredType patternType =
+        path == null || matchedType == null
+            ? null
+            : new RecordPatternTypeInference(this, path).infer(matchedType);
+    return patternType == null ? getDefaultRecordPatternType(recordPattern) : patternType;
+  }
+
+  /**
+   * Returns a description of why the type arguments of the record pattern {@code recordPattern}
+   * cannot be inferred, or null if they can be. When they cannot be, {@link #getRecordPatternType}
+   * returns the Java type of {@code recordPattern} with default annotations.
+   *
+   * @param recordPattern a {@code DeconstructionPatternTree}
+   * @return a description of why inference fails for {@code recordPattern}, or null
+   */
+  public @Nullable String getRecordPatternInferenceError(Tree recordPattern) {
+    TreePath path = getPath(recordPattern);
+    AnnotatedTypeMirror matchedType = path == null ? null : getTypeMatchedByPattern(path);
+    if (path == null || matchedType == null) {
+      return null;
+    }
+    RecordPatternTypeInference inference = new RecordPatternTypeInference(this, path);
+    inference.infer(matchedType);
+    return inference.getErrorMessage();
+  }
+
+  /**
+   * Returns the Java type of the record pattern {@code recordPattern}, with default annotations.
+   *
+   * @param recordPattern a {@code DeconstructionPatternTree}
+   * @return the Java type of {@code recordPattern}, with default annotations
+   */
+  public AnnotatedDeclaredType getDefaultRecordPatternType(Tree recordPattern) {
+    AnnotatedDeclaredType type =
+        (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(recordPattern), false);
+    addDefaultAnnotations(type);
+    return type;
+  }
+
+  /**
+   * Returns the annotated types of the record components of the record pattern {@code
+   * recordPattern}, in declaration order. These are the types that the nested patterns of {@code
+   * recordPattern} are matched against.
+   *
+   * @param recordPattern a {@code DeconstructionPatternTree}
+   * @return the annotated types of the record components of {@code recordPattern}
+   */
+  public List<AnnotatedTypeMirror> getRecordPatternComponentTypes(Tree recordPattern) {
+    AnnotatedDeclaredType patternType = getRecordPatternType(recordPattern);
+    // Use the accessors' return types, so that a pattern variable has the same type as an
+    // invocation of the corresponding accessor.
+    AnnotatedTypeMirror receiverType = applyCaptureConversion(patternType);
+    TypeElement record = TypesUtils.getTypeElement(patternType.getUnderlyingType());
+    assert record != null : "@AssumeAssertion(nullness): a record pattern's type is a record";
+    List<AnnotatedTypeMirror> componentTypes = new ArrayList<>();
+    for (RecordComponentElement component : record.getRecordComponents()) {
+      ExecutableElement accessor = component.getAccessor();
+      componentTypes.add(
+          AnnotatedTypes.asMemberOf(types, this, receiverType, accessor).getReturnType());
+    }
+    return componentTypes;
+  }
+
+  /**
+   * Returns the annotated type of the record component that the {@code var} pattern variable {@code
+   * bindingVariable} is matched against, or null if {@code bindingVariable} is not declared by a
+   * {@code var} pattern nested in a record pattern.
+   *
+   * @param bindingVariable a binding variable
+   * @return the annotated type of the record component that {@code bindingVariable} is matched
+   *     against, or null
+   */
+  public @Nullable AnnotatedTypeMirror getRecordComponentTypeOfVarPattern(
+      VariableTree bindingVariable) {
+    // The type of a `var` pattern is null, or erroneous if javac has reported an error.
+    if (bindingVariable.getType() != null
+        && !TreeUtils.isVariableTreeDeclaredUsingVar(bindingVariable)) {
+      return null;
+    }
+    TreePath path = getPath(bindingVariable);
+    if (path == null) {
+      return null;
+    }
+    TreePath bindingPatternPath = path.getParentPath();
+    Tree recordPattern = bindingPatternPath.getParentPath().getLeaf();
+    if (!TreeUtils.isDeconstructionPatternTree(recordPattern)) {
+      return null;
+    }
+    int index =
+        DeconstructionPatternUtils.getNestedPatterns(recordPattern)
+            .indexOf(bindingPatternPath.getLeaf());
+    return getRecordPatternComponentTypes(recordPattern).get(index);
+  }
+
+  /**
+   * Returns the annotated type of the values that the pattern at {@code patternPath} is matched
+   * against, or null if the pattern is not in an {@code instanceof} expression, a {@code case}
+   * label, or a record pattern.
+   *
+   * @param patternPath the path to a pattern
+   * @return the annotated type of the values that the pattern is matched against, or null
+   */
+  private @Nullable AnnotatedTypeMirror getTypeMatchedByPattern(TreePath patternPath) {
+    Tree pattern = patternPath.getLeaf();
+    TreePath parentPath = patternPath.getParentPath();
+    Tree parent = parentPath.getLeaf();
+    if (parent instanceof InstanceOfTree instanceOfTree) {
+      return getAnnotatedType(instanceOfTree.getExpression());
+    } else if (TreeUtils.isDeconstructionPatternTree(parent)) {
+      int index = DeconstructionPatternUtils.getNestedPatterns(parent).indexOf(pattern);
+      return getRecordPatternComponentTypes(parent).get(index);
+    } else if (PatternCaseLabelUtils.isPatternCaseLabelTree(parent)) {
+      // The parent of the case label is a case, whose parent is a switch.
+      Tree switchTree = parentPath.getParentPath().getParentPath().getLeaf();
+      ExpressionTree selector =
+          switchTree instanceof SwitchTree switchStatement
+              ? switchStatement.getExpression()
+              : ((SwitchExpressionTree) switchTree).getExpression();
+      return getAnnotatedType(selector);
+    }
+    return null;
   }
 
   /**
