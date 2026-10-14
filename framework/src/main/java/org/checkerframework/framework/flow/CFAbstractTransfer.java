@@ -1360,6 +1360,16 @@ public abstract class CFAbstractTransfer<
           strengthenAnnotationOfEqualTo(
               result, caseOperand, assign.getTarget(), caseValue, switchValue, false);
 
+      Tree selectorTree = assign.getExpression().getTree();
+      if (caseOperand instanceof LocalVariableNode bindingVar && selectorTree != null) {
+        // The case label is a type pattern, so the binding variable has the selector's value.
+        JavaExpression bindingExpr = JavaExpression.fromNode(bindingVar);
+        AnnotatedTypeMirror selectorType = analysis.atypeFactory.getAnnotatedType(selectorTree);
+        for (AnnotationMirror anno : selectorType.getAnnotations()) {
+          result.getThenStore().insertOrRefine(bindingExpr, anno);
+        }
+      }
+
       // Lub the result of one case label constant with the result of the others.
       if (lubResult == null) {
         lubResult = result;
