@@ -47,6 +47,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeVariableSubstitutor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
@@ -55,6 +56,7 @@ import org.checkerframework.framework.util.typeinference8.constraint.Typing;
 import org.checkerframework.framework.util.typeinference8.util.CheckedExceptionsUtil;
 import org.checkerframework.framework.util.typeinference8.util.CheckedExceptionsUtil.ThrownCheckedException;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext.ReplacedTypes;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -996,36 +998,85 @@ public class InferenceFactory {
     if (properTypes.isEmpty()) {
       return null;
     }
+    if (properTypes.size() == 1) {
+      // Return the type itself, which keeps any record of its ignored substitutions; see
+      // ProperType#origin.
+      return properTypes.iterator().next();
+    }
 
+    QualifierHierarchy qh = typeFactory.getQualifierHierarchy();
     Iterator<ProperType> iter = properTypes.iterator();
     ProperType first = iter.next();
     TypeMirror lubTM = first.getJavaType();
     AnnotatedTypeMirror lubATM = first.getAnnotatedType();
+    // The least upper bound so far, as a type, so that its ignored substitutions, if it is still
+    // one of `properTypes`, can be found; see IgnoredAnnotations#replaceIgnoredForCombining.
+    ProperType lubSoFar = first;
     boolean ignoreAnnotations = first.ignoreAnnotations;
     while (iter.hasNext()) {
       ProperType properType = iter.next();
-      AnnotatedTypeMirror atm = properType.getAnnotatedType();
-      TypeMirror tm = properType.getJavaType();
-      lubTM = lub(context.env, lubTM, tm);
+      lubTM = lub(context.env, lubTM, properType.getJavaType());
+      ReplacedTypes combined =
+          IgnoredAnnotations.replaceIgnoredForCombining(
+              lubSoFar, properType, lubTM, qh, context.modelTypes);
+      lubATM = combined.type1();
+      AnnotatedTypeMirror atm = combined.type2();
       if (properType.ignoreAnnotations == ignoreAnnotations) {
         lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubATM, atm, lubTM);
       } else if (properType.ignoreAnnotations) {
-        // Only `lubATM`'s annotations are meaningful, so keep them.
-        lubATM =
-            AnnotatedTypes.asSuper(
-                typeFactory, lubATM, AnnotatedTypeMirror.createType(lubTM, typeFactory, false));
+        // Only the root annotations of `atm` are ignored.  Make them bottom, so that its root
+        // puts no constraint on the result, and lub the rest.
+        AnnotatedTypeMirror neutral = atm.deepCopy();
+        neutral.replaceAnnotations(qh.getBottomAnnotations());
+        lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubATM, neutral, lubTM);
       } else {
-        // Only `atm`'s annotations are meaningful, so keep them.
-        lubATM =
-            AnnotatedTypes.asSuper(
-                typeFactory, atm, AnnotatedTypeMirror.createType(lubTM, typeFactory, false));
+        // Only the root annotations of `lubATM` are ignored; see the previous case.
+        AnnotatedTypeMirror neutral = lubATM.deepCopy();
+        neutral.replaceAnnotations(qh.getBottomAnnotations());
+        lubATM = AnnotatedTypes.leastUpperBound(typeFactory, neutral, atm, lubTM);
       }
-      // The annotations of a type that ignores annotations put no constraint on the result, so
-      // the result ignores annotations only if every type does.  This is the same rule as in
-      // `glb`.
+      // The root annotations of a type that ignores annotations put no constraint on the
+      // result, so the result ignores annotations only if every type does.  This is the same
+      // rule as in `glb`.
       ignoreAnnotations = ignoreAnnotations && properType.ignoreAnnotations;
+      lubSoFar = new ProperType(lubATM, context, ignoreAnnotations);
+    }
+    // If the result has the Java type of an input that records its ignored substitutions, and
+    // differs from that input only at its root and at those ignored substitutions, then it keeps
+    // that record; see ProperType#origin.  Its ignored substitutions have the other inputs'
+    // annotations now, and they are substituted again when the instantiations that ignore
+    // annotations change.  A result that differs elsewhere cannot keep the record, because a type
+    // with an origin computes its parts from the origin.
+    for (ProperType properType : properTypes) {
+      if (properType.getOrigin() != null
+          && context.types.isSameType((Type) properType.getJavaType(), (Type) lubTM)
+          && differsOnlyAtRootOrIgnored(properType, lubATM)) {
+        return properType.withAnnotatedType(lubATM, ignoreAnnotations);
+      }
     }
     return new ProperType(lubATM, context, ignoreAnnotations);
+  }
+
+  /**
+   * Returns true if {@code atm}, whose Java type is that of {@code properType}, has the same
+   * annotations as {@code properType} everywhere except at the root and at the ignored
+   * substitutions of {@code properType}; see {@link ProperType#getOrigin}.
+   *
+   * @param properType a type with an origin
+   * @param atm an annotated type with the same Java type as {@code properType}
+   * @return true if {@code atm} differs from {@code properType} only at the root and at ignored
+   *     substitutions
+   */
+  private boolean differsOnlyAtRootOrIgnored(ProperType properType, AnnotatedTypeMirror atm) {
+    AnnotatedTypeMirror sameRoot = properType.getAnnotatedType().deepCopy();
+    IgnoredAnnotations.copyRootAnnotations(atm, sameRoot);
+    ReplacedTypes compared =
+        IgnoredAnnotations.replaceIgnoredForEquality(
+            properType.withAnnotatedType(sameRoot, false),
+            new ProperType(atm, context),
+            typeFactory.getQualifierHierarchy());
+    return typeFactory.getTypeHierarchy().isSubtype(compared.type1(), compared.type2())
+        && typeFactory.getTypeHierarchy().isSubtype(compared.type2(), compared.type1());
   }
 
   /**
