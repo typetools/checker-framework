@@ -2367,16 +2367,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param typeElement type of the enclosing type to return
    * @param tree location to use
    * @return the enclosing type at the location of {@code tree} that is the same type as {@code
-   *     typeElement}
+   *     typeElement}, or null if there is no such type
    */
-  public AnnotatedDeclaredType getEnclosingType(TypeElement typeElement, Tree tree) {
+  public @Nullable AnnotatedDeclaredType getEnclosingType(TypeElement typeElement, Tree tree) {
     AnnotatedDeclaredType thisType = getSelfType(tree);
-    while (!TypesUtils.isErasedSameType(
-        thisType.getUnderlyingType(), typeElement.asType(), types)) {
+    while (thisType != null
+        && !TypesUtils.isErasedSameType(
+            thisType.getUnderlyingType(), typeElement.asType(), types)) {
       thisType = thisType.getEnclosingType();
-      if (thisType == null) {
-        throw new BugInCF("No enclosing type of %s is %s", tree, typeElement);
-      }
     }
     return thisType;
   }
