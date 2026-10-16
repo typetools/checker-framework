@@ -51,7 +51,7 @@ public class Expression extends TypeConstraint {
    * @param expressionTree the expression for the constraint
    * @param t the type that the expression is compatible in a loose invocation context
    */
-  public Expression(Constraint parent, ExpressionTree expressionTree, AbstractType t) {
+  public Expression(@Nullable Constraint parent, ExpressionTree expressionTree, AbstractType t) {
     super(parent, t);
     assert expressionTree != null;
     this.expression = expressionTree;
