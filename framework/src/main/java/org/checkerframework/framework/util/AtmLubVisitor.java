@@ -347,18 +347,27 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
       AnnotationMirror lower2 = qualHierarchy.findAnnotationInHierarchy(type2LowerBoundAnnos, top);
       AnnotationMirror upper1 = type1.getAnnotationInHierarchy(lower1);
       AnnotationMirror upper2 = type2.getAnnotationInHierarchy(lower1);
+      if (upper1 == null || upper2 == null) {
+        // The lub of the bounds, already stored in lub, comes from the annotated type alone.
+        continue;
+      }
 
-      if (qualHierarchy.isSubtypeShallow(upper2, typeMirror2, upper1, typeMirror1)
+      if (lower2 != null
+          && qualHierarchy.isSubtypeShallow(upper2, typeMirror2, upper1, typeMirror1)
           && qualHierarchy.isSubtypeShallow(upper1, typeMirror1, upper2, typeMirror2)
           && qualHierarchy.isSubtypeShallow(lower1, typeMirror1, lower2, typeMirror2)
           && qualHierarchy.isSubtypeShallow(lower2, typeMirror2, lower1, typeMirror1)) {
         continue;
       }
 
-      if (!qualHierarchy.isSubtypeShallow(upper2, typeMirror2, lower1, typeMirror1)
-          && !qualHierarchy.isSubtypeShallow(upper1, typeMirror1, lower2, typeMirror2)) {
-        lub.replaceAnnotation(
-            qualHierarchy.leastUpperBoundShallow(upper1, typeMirror1, upper2, typeMirror2));
+      if (lower2 == null
+          || (!qualHierarchy.isSubtypeShallow(upper2, typeMirror2, lower1, typeMirror1)
+              && !qualHierarchy.isSubtypeShallow(upper1, typeMirror1, lower2, typeMirror2))) {
+        AnnotationMirror lubAnno =
+            qualHierarchy.leastUpperBoundShallow(upper1, typeMirror1, upper2, typeMirror2);
+        assert lubAnno != null
+            : "@AssumeAssertion(nullness): upper1 and upper2 are in the same hierarchy";
+        lub.replaceAnnotation(lubAnno);
       }
     }
   }
