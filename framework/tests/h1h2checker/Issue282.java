@@ -1,4 +1,5 @@
-// @skip-test until the bug is fixed
+// @skip-test until the Checker Framework checks the enclosing expression of a `new` against the
+// inner class constructor's receiver type (the "enclosingexpr" errors below).
 
 import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
 

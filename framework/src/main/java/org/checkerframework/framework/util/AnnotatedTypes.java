@@ -23,7 +23,6 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -1066,26 +1065,13 @@ public final class AnnotatedTypes {
 
     List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
 
-    // Handle anonymous constructors that extend a class with an enclosing type,
-    // as in `new MyClass() { ... }`.
-    ExecutableElement methodElement = method.getElement();
-    if (methodElement.getKind() == ElementKind.CONSTRUCTOR
-        && methodElement.getEnclosingElement().getSimpleName().contentEquals("")) {
-      DeclaredType t =
-          TypesUtils.getSuperClassOrInterface(
-              methodElement.getEnclosingElement().asType(), atypeFactory.types);
-      TypeMirror enclosingType = t.getEnclosingType();
-      if (enclosingType != null) {
-        if (!parameters.isEmpty()) {
-          if (atypeFactory.types.isSameType(enclosingType, parameters.get(0).getUnderlyingType())) {
-            if (args.isEmpty()
-                || !atypeFactory.types.isSameType(
-                    TreeUtils.typeOf(args.get(0)), parameters.get(0).getUnderlyingType())) {
-              parameters = parameters.subList(1, parameters.size());
-            }
-          }
-        }
-      }
+    // Handle anonymous constructors that extend a class with an enclosing type, as in
+    // `outer.new Inner() { ... }`. The anonymous constructor has an extra first parameter for the
+    // enclosing instance, which is not among the arguments.
+    if (invok instanceof NewClassTree newClassTree
+        && TreeUtils.isAnonymousConstructorWithExplicitEnclosingExpression(
+            method.getElement(), newClassTree)) {
+      parameters = parameters.subList(1, parameters.size());
     }
 
     // Handle vararg methods.
