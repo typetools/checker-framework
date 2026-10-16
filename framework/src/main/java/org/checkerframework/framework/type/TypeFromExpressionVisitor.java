@@ -256,7 +256,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     if (tree.getIdentifier().contentEquals("this")) {
       // Tree is "MyClass.this", where "MyClass" may be the innermost enclosing type or any
       // outer type.
-      @SuppressWarnings("nullness:argument") // MyClass.this implies MyClass encloses the tree
+      @SuppressWarnings({"nullness:argument", "nullness:assignment"}) // MyClass.this encloses tree
       @NonNull AnnotatedDeclaredType enclosingType =
           f.getEnclosingType(TypesUtils.getTypeElement(TreeUtils.typeOf(tree)), tree);
       return enclosingType;
