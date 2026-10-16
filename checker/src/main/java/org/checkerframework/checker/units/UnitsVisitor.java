@@ -31,7 +31,7 @@ public class UnitsVisitor extends BaseTypeVisitor<UnitsAnnotatedTypeFactory> {
       if (!typeHierarchy.isSubtypeShallowEffective(exprType, varType)) {
         checker.reportError(tree, "compound.assignment", varType, exprType);
       }
-    } else if (!exprType.hasPrimaryAnnotation(UnknownUnits.class)) {
+    } else if (!exprType.hasAnnotation(UnknownUnits.class)) {
       // Only allow mul/div with unqualified units
       checker.reportError(tree, "compound.assignment", varType, exprType);
     }

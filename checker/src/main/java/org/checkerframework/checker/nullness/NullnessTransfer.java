@@ -405,6 +405,9 @@ public class NullnessTransfer
    * SideEffectFree or the receiver is unassignable. Only if either one of the two is true, is the
    * receiver made non-null. Similar logic is applied to the arguments of the invocation.
    *
+   * <p>The receiver of a static method invocation is never made non-null, because the invocation
+   * does not dereference it.
+   *
    * <p>Provided that m is of a type that implements interface java.util.Map:
    *
    * <ul>
@@ -423,9 +426,11 @@ public class NullnessTransfer
     boolean isMethodSideEffectFree =
         atypeFactory.isSideEffectFree(method) || PurityUtils.isSideEffectFree(atypeFactory, method);
     Node receiver = n.getTarget().getReceiver();
-    if (nonNullAssumptionAfterInvocation
-        || isMethodSideEffectFree
-        || !JavaExpression.fromNode(receiver).isAssignableByOtherCode()) {
+    // A static method invocation does not dereference its receiver.
+    if (!n.getTarget().isStatic()
+        && (nonNullAssumptionAfterInvocation
+            || isMethodSideEffectFree
+            || !JavaExpression.fromNode(receiver).isAssignableByOtherCode())) {
       // Make receiver non-null.
       makeNonNull(result, receiver);
     }
