@@ -6,7 +6,6 @@ import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import java.util.Collection;
-import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -22,13 +21,13 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A testing class that can be used to test {@link TypeElement}. In particular it tests that the
- * types read from classfiles are the same to the ones from java files.
+ * types read from classfiles are the same to the ones from Java files.
  *
  * <p>For testing, you need to do the following:
  *
@@ -64,31 +63,30 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
     // Print types of classes, methods, and fields
     @Override
-    public void processClassTree(ClassTree node) {
-      TypeElement element = TreeUtils.elementFromDeclaration(node);
+    public void processClassTree(ClassTree tree) {
+      TypeElement element = TreeUtils.elementFromDeclaration(tree);
       currentClass = element.getSimpleName().toString();
 
-      AnnotatedDeclaredType type = atypeFactory.getAnnotatedType(node);
-      System.out.println(node.getSimpleName() + "\t" + type + "\t" + type.directSupertypes());
+      AnnotatedDeclaredType type = atypeFactory.getAnnotatedType(tree);
+      System.out.println(tree.getSimpleName() + "\t" + type + "\t" + type.directSupertypes());
 
-      super.processClassTree(node);
+      super.processClassTree(tree);
     }
 
     @Override
-    public Void visitMethod(MethodTree node, Void p) {
-      ExecutableElement elem = TreeUtils.elementFromDeclaration(node);
+    public void processMethodTree(String className, MethodTree tree) {
+      ExecutableElement elem = TreeUtils.elementFromDeclaration(tree);
 
-      AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node);
+      AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
       System.out.println(currentClass + "." + elem + "\t\t" + type);
       // Don't dig deeper
-      return null;
     }
 
     @Override
-    public Void visitVariable(VariableTree node, Void p) {
-      VariableElement elem = TreeUtils.elementFromDeclaration(node);
+    public Void visitVariable(VariableTree tree, Void p) {
+      VariableElement elem = TreeUtils.elementFromDeclaration(tree);
       if (elem.getKind().isField()) {
-        AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node);
+        AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
         System.out.println(currentClass + "." + elem + "\t\t" + type);
       }
 
@@ -137,8 +135,8 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
     // output fields and methods
     for (Element enclosedElt : typeElt.getEnclosedElements()) {
-      if (enclosedElt instanceof TypeElement) {
-        printClassType((TypeElement) enclosedElt, atypeFactory);
+      if (enclosedElt instanceof TypeElement te) {
+        printClassType(te, atypeFactory);
       }
       if (!enclosedElt.getKind().isField() && !(enclosedElt instanceof ExecutableElement)) {
         continue;
@@ -155,6 +153,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
    */
   public static class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
+    @SuppressWarnings("this-escape")
     public GeneralAnnotatedTypeFactory(BaseTypeChecker checker) {
       super(checker);
       postInit();
@@ -162,9 +161,9 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
     @Override
     public void postProcessClassTree(ClassTree tree) {
-      // Do not store the qualifiers determined by this factory.  This factory adds declaration
-      // annotations as type annotations, because TypeFromElement needs to read declaration
-      // annotations and this factory blindly supports all annotations.
+      // Do not store the qualifiers determined by this factory.  This factory adds
+      // declaration annotations as type annotations, because TypeFromElement needs to read
+      // declaration annotations and this factory blindly supports all annotations.
       // When storing those annotation to bytecode, the compiler chokes.  See testcase
       // tests/nullness/GeneralATFStore.java
     }
@@ -177,14 +176,23 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-      return new GeneralQualifierHierarchy();
+      return new GeneralQualifierHierarchy(null);
     }
 
     /**
      * A very limited QualifierHierarchy that is used for access to qualifiers from different type
      * systems.
      */
-    static class GeneralQualifierHierarchy implements QualifierHierarchy {
+    static class GeneralQualifierHierarchy extends QualifierHierarchy {
+
+      /**
+       * Creates a new GeneralQualifierHierarchy.
+       *
+       * @param atypeFactory the associated type factory
+       */
+      public GeneralQualifierHierarchy(GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
+        super(atypeFactory);
+      }
 
       // Always return true
       @Override
@@ -213,41 +221,36 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
       // Not needed - raises error.
       @Override
-      public Set<AnnotationMirror> getTopAnnotations() {
+      public AnnotationMirrorSet getTopAnnotations() {
         throw new BugInCF("GeneralQualifierHierarchy:getTopAnnotations() shouldn't be called");
       }
 
-      // Not needed - should raise error. Unfortunately, in inference we ask for bottom annotations.
+      // Not needed - should raise error. Unfortunately, in inference we ask for bottom
+      // annotations.
       // Return a dummy value that does no harm.
       @Override
-      public Set<AnnotationMirror> getBottomAnnotations() {
+      public AnnotationMirrorSet getBottomAnnotations() {
         // throw new BugInCF("GeneralQualifierHierarchy.getBottomAnnotations()
         // shouldn't be called");
-        return AnnotationUtils.createAnnotationSet();
+        return new AnnotationMirrorSet();
       }
 
       // Not needed - raises error.
       @Override
-      public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+      public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
         throw new BugInCF("GeneralQualifierHierarchy.isSubtype() shouldn't be called.");
       }
 
       // Not needed - raises error.
       @Override
-      public boolean isSubtype(
-          Collection<? extends AnnotationMirror> rhs, Collection<? extends AnnotationMirror> lhs) {
-        throw new BugInCF("GeneralQualifierHierarchy.isSubtype() shouldn't be called.");
-      }
-
-      // Not needed - raises error.
-      @Override
-      public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+      public AnnotationMirror leastUpperBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
         throw new BugInCF("GeneralQualifierHierarchy.leastUpperBound() shouldn't be called.");
       }
 
       // Not needed - raises error.
       @Override
-      public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+      public AnnotationMirror greatestLowerBoundQualifiers(
+          AnnotationMirror a1, AnnotationMirror a2) {
         throw new BugInCF("GeneralQualifierHierarchy.greatestLowerBound() shouldn't be called.");
       }
 

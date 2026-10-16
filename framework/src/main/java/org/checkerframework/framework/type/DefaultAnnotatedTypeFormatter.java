@@ -4,10 +4,12 @@ import com.sun.tools.javac.code.Type;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -20,10 +22,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
-import org.checkerframework.framework.util.AnnotationFormatter;
-import org.checkerframework.framework.util.DefaultAnnotationFormatter;
+import org.checkerframework.javacutil.AnnotationFormatter;
+import org.checkerframework.javacutil.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.WeakIdentityHashMap;
 
 /**
  * An AnnotatedTypeFormatter used by default by all AnnotatedTypeFactory (and therefore all
@@ -33,6 +36,8 @@ import org.checkerframework.javacutil.TypesUtils;
  * @see org.checkerframework.framework.type.AnnotatedTypeMirror#toString
  */
 public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
+
+  /** The formatting visitor. */
   protected final FormattingVisitor formattingVisitor;
 
   /**
@@ -46,8 +51,8 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
   /**
    * @param printVerboseGenerics for type parameters, their uses, and wildcards, print more
    *     information
-   * @param defaultPrintInvisibleAnnos whether or not this AnnotatedTypeFormatter should print
-   *     invisible annotations
+   * @param defaultPrintInvisibleAnnos true if this AnnotatedTypeFormatter should print invisible
+   *     annotations
    */
   public DefaultAnnotatedTypeFormatter(
       boolean printVerboseGenerics, boolean defaultPrintInvisibleAnnos) {
@@ -58,8 +63,8 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
    * @param formatter an object that converts annotation mirrors to strings
    * @param printVerboseGenerics for type parameters, their uses, and wildcards, print more
    *     information
-   * @param defaultPrintInvisibleAnnos whether or not this AnnotatedTypeFormatter should print
-   *     invisible annotations
+   * @param defaultPrintInvisibleAnnos true if this AnnotatedTypeFormatter should print invisible
+   *     annotations
    */
   public DefaultAnnotatedTypeFormatter(
       AnnotationFormatter formatter,
@@ -76,14 +81,44 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     this.formattingVisitor = visitor;
   }
 
+  /**
+   * Maps from type variables to deterministic IDs. This is useful for comparing output across two
+   * runs of the Checker Framework.
+   *
+   * <p>This map is necessary for deterministic and informative output. javac might print two
+   * distinct capture-converted variables as "capture#222" if the second is created after the first
+   * is garbage-collected, or if they just happen to have the same hash code based on memory layout.
+   * Such javac output is misleading because it looks like the two printed representations refer to
+   * the same variable.
+   *
+   * <p>This map contains type variables that have been formatted. Therefore, the numbers may differ
+   * between Checker Framework runs if the different runs print different values (say, one of them
+   * prints more type variables than the other).
+   */
+  protected static final Map<TypeVariable, Integer> captureConversionIds =
+      new WeakIdentityHashMap<>();
+
+  /** The last deterministic capture conversion ID that was used. */
+  protected static int prevCaptureConversionId = 0;
+
+  /**
+   * Returns a deterministic capture conversion ID for the given javac captured type.
+   *
+   * @param capturedType a type variable, which must be a capture-converted type variable
+   * @return a deterministic capture conversion ID
+   */
+  static int getCaptureConversionId(TypeVariable capturedType) {
+    return captureConversionIds.computeIfAbsent(capturedType, key -> ++prevCaptureConversionId);
+  }
+
   @Override
-  public String format(final AnnotatedTypeMirror type) {
+  public String format(AnnotatedTypeMirror type) {
     formattingVisitor.resetPrintVerboseSettings();
     return formattingVisitor.visit(type);
   }
 
   @Override
-  public String format(final AnnotatedTypeMirror type, final boolean printVerbose) {
+  public String format(AnnotatedTypeMirror type, boolean printVerbose) {
     formattingVisitor.setVerboseSettings(printVerbose);
     return formattingVisitor.visit(type);
   }
@@ -96,15 +131,15 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     protected final AnnotationFormatter annoFormatter;
 
     /**
-     * Represents whether or not invisible annotations should be printed if the client of this class
-     * does not use the printInvisibleAnnos parameter.
+     * True if invisible annotations should be printed if the client of this class does not use the
+     * printInvisibleAnnos parameter.
      */
     protected final boolean defaultInvisiblesSetting;
 
     /**
      * For a given call to format, this setting specifies whether or not to printInvisibles. If a
      * user did not specify a printInvisible parameter in the call to format then this value will
-     * equal DefaultAnnotatedTypeFormatter.defaultInvisibleSettings for this object
+     * equal DefaultAnnotatedTypeFormatter.defaultInvisiblesSetting for this object
      */
     protected boolean currentPrintInvisibleSetting;
 
@@ -113,10 +148,20 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
 
     /**
      * Prints type variables in a less ambiguous manner using [] to delimit them. Always prints both
-     * bounds even if they lower bound is an AnnotatedNull type.
+     * bounds even if the lower bound is an AnnotatedNull type.
      */
     protected boolean currentPrintVerboseGenerics;
 
+    /** True if the visitor is currently printing a raw type. */
+    protected boolean currentlyPrintingRaw;
+
+    /**
+     * Creates the visitor.
+     *
+     * @param annoFormatter formatter used for {@code AnnotationMirror}s
+     * @param printVerboseGenerics if true, verbosely print type variables and wildcards
+     * @param defaultInvisiblesSetting if true, print invisible qualifiers
+     */
     public FormattingVisitor(
         AnnotationFormatter annoFormatter,
         boolean printVerboseGenerics,
@@ -126,6 +171,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
       this.currentPrintVerboseGenerics = printVerboseGenerics;
       this.defaultInvisiblesSetting = defaultInvisiblesSetting;
       this.currentPrintInvisibleSetting = false;
+      this.currentlyPrintingRaw = false;
     }
 
     /** Set the current verbose settings to use while printing. */
@@ -142,21 +188,21 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
 
     /**
      * Print, to sb, {@code keyWord} followed by {@code field}. NULL types are substituted with
-     * their annotations followed by " Void"
+     * their annotations followed by " Void".
      */
     @SideEffectFree
     protected void printBound(
-        final String keyWord,
-        final AnnotatedTypeMirror field,
-        final Set<AnnotatedTypeMirror> visiting,
-        final StringBuilder sb) {
+        String keyWord,
+        AnnotatedTypeMirror field,
+        Set<AnnotatedTypeMirror> visiting,
+        StringBuilder sb) {
       if (!currentPrintVerboseGenerics && (field == null || field.getKind() == TypeKind.NULL)) {
         return;
       }
 
-      sb.append(" ");
+      sb.append(' ');
       sb.append(keyWord);
-      sb.append(" ");
+      sb.append(' ');
 
       if (field == null) {
         sb.append("<null>");
@@ -165,7 +211,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
       } else {
         sb.append(
             annoFormatter.formatAnnotationString(
-                field.getAnnotations(), currentPrintInvisibleSetting));
+                field.getPrimaryAnnotations(), currentPrintInvisibleSetting));
         sb.append("Void");
       }
     }
@@ -187,11 +233,12 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
       if (type.isDeclaration() && currentPrintInvisibleSetting) {
         sb.append("/*DECL*/ ");
       }
-      if (type.getEnclosingType() != null) {
-        sb.append(this.visit(type.getEnclosingType(), visiting));
+
+      if (type.enclosingType != null) {
+        sb.append(this.visit(type.enclosingType, visiting));
         sb.append('.');
       }
-      final Element typeElt = type.getUnderlyingType().asElement();
+      Element typeElt = type.getUnderlyingType().asElement();
       String smpl = typeElt.getSimpleName().toString();
       if (smpl.isEmpty()) {
         // For anonymous classes smpl is empty - toString
@@ -200,26 +247,47 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
       }
       sb.append(
           annoFormatter.formatAnnotationString(
-              type.getAnnotations(), currentPrintInvisibleSetting));
+              type.getPrimaryAnnotations(), currentPrintInvisibleSetting));
       sb.append(smpl);
 
+      boolean oldPrintingRaw = currentlyPrintingRaw;
+      if (type.isUnderlyingTypeRaw()) {
+        currentlyPrintingRaw = true;
+      }
       if (type.typeArgs != null) {
         // getTypeArguments sets the field if it does not already exist.
-        final List<AnnotatedTypeMirror> typeArgs = type.typeArgs;
+        List<AnnotatedTypeMirror> typeArgs = type.typeArgs;
         if (!typeArgs.isEmpty()) {
           StringJoiner sj = new StringJoiner(", ", "<", ">");
-          for (AnnotatedTypeMirror typeArg : typeArgs) {
-            sj.add(visit(typeArg, visiting));
+          if (!currentPrintVerboseGenerics && currentlyPrintingRaw) {
+            sj.add("/*RAW*/");
+          } else {
+            for (AnnotatedTypeMirror typeArg : typeArgs) {
+              sj.add(visit(typeArg, visiting));
+            }
           }
           sb.append(sj);
         }
+      } else if (type.isUnderlyingTypeRaw() && !currentPrintVerboseGenerics) {
+        // A raw type's declaration has type parameters, and every one of its type arguments
+        // would print as "/*RAW*/", so there is no need to initialize them just to print them.
+        sb.append("</*RAW*/>");
+      } else {
+        sb.append('<');
+        sb.append("/*Type args not initialized*/");
+        sb.append('>');
       }
+      currentlyPrintingRaw = oldPrintingRaw;
       return sb.toString();
     }
 
     @Override
     public String visitIntersection(
         AnnotatedIntersectionType type, Set<AnnotatedTypeMirror> visiting) {
+      if (type.bounds == null) {
+        return "/*Intersection not initialized*/";
+      }
+
       StringBuilder sb = new StringBuilder();
 
       boolean isFirst = true;
@@ -235,6 +303,10 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
 
     @Override
     public String visitUnion(AnnotatedUnionType type, Set<AnnotatedTypeMirror> visiting) {
+      if (type.alternatives == null) {
+        return "/*Union not initialized*/";
+      }
+
       StringBuilder sb = new StringBuilder();
 
       boolean isFirst = true;
@@ -251,17 +323,21 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     @Override
     public String visitExecutable(AnnotatedExecutableType type, Set<AnnotatedTypeMirror> visiting) {
       StringBuilder sb = new StringBuilder();
-      if (!type.getTypeVariables().isEmpty()) {
+      if (type.typeVarTypes == null || !type.typeVarTypes.isEmpty()) {
         StringJoiner sj = new StringJoiner(", ", "<", "> ");
-        for (AnnotatedTypeVariable atv : type.getTypeVariables()) {
-          sj.add(visit(atv, visiting));
+        if (type.typeVarTypes == null) {
+          sj.add("/*Type var not initialized*/");
+        } else {
+          for (AnnotatedTypeVariable atv : type.getTypeVariables()) {
+            sj.add(visit(atv, visiting));
+          }
         }
-        sb.append(sj.toString());
+        sb.append(sj);
       }
-      if (type.getReturnType() != null) {
+      if (type.returnType != null) {
         sb.append(visit(type.getReturnType(), visiting));
       } else {
-        sb.append("<UNKNOWNRETURN>");
+        sb.append("/*Return type not initialized*/");
       }
       sb.append(' ');
       if (type.getElement() != null) {
@@ -270,26 +346,31 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         sb.append("METHOD");
       }
       sb.append('(');
-      AnnotatedDeclaredType rcv = type.getReceiverType();
+      AnnotatedDeclaredType rcv = type.receiverType;
       if (rcv != null) {
         sb.append(visit(rcv, visiting));
         sb.append(" this");
       }
-      if (!type.getParameterTypes().isEmpty()) {
+      if (type.paramTypes == null) {
+        sb.append("/*Parameters not initialized*/");
+      } else if (!type.paramTypes.isEmpty()) {
+        // If a receiver was printed, a leading separator is needed before the first parameter.
+        if (rcv != null) {
+          sb.append(", ");
+        }
+        StringJoiner sj = new StringJoiner(", ");
         int p = 0;
-        for (AnnotatedTypeMirror atm : type.getParameterTypes()) {
-          if (rcv != null || p > 0) {
-            sb.append(", ");
-          }
-          sb.append(visit(atm, visiting));
+        for (AnnotatedTypeMirror atm : type.paramTypes) {
           // Output some parameter names to make it look more like a method.
           // TODO: go to the element and look up real parameter names, maybe.
-          sb.append(" p");
-          sb.append(p++);
+          sj.add(visit(atm, visiting) + " p" + p++);
         }
+        sb.append(sj);
       }
       sb.append(')');
-      if (!type.getThrownTypes().isEmpty()) {
+      if (type.thrownTypes == null) {
+        sb.append("/*Throws not initialized*/");
+      } else if (!type.thrownTypes.isEmpty()) {
         sb.append(" throws ");
         for (AnnotatedTypeMirror atm : type.getThrownTypes()) {
           sb.append(visit(atm, visiting));
@@ -305,16 +386,20 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
       AnnotatedArrayType array = type;
       AnnotatedTypeMirror component;
       while (true) {
-        component = array.getComponentType();
-        if (!array.getAnnotations().isEmpty()) {
+        component = array.componentType;
+        if (!array.getPrimaryAnnotations().isEmpty()) {
           sb.append(' ');
           sb.append(
               annoFormatter.formatAnnotationString(
-                  array.getAnnotations(), currentPrintInvisibleSetting));
+                  array.getPrimaryAnnotations(), currentPrintInvisibleSetting));
         }
         sb.append("[]");
         if (!(component instanceof AnnotatedArrayType)) {
-          sb.insert(0, visit(component, visiting));
+          if (component == null) {
+            sb.insert(0, "/*Not Initialized*/");
+          } else {
+            sb.insert(0, visit(component, visiting));
+          }
           break;
         }
         array = (AnnotatedArrayType) component;
@@ -325,14 +410,20 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     @Override
     public String visitTypeVariable(AnnotatedTypeVariable type, Set<AnnotatedTypeMirror> visiting) {
       StringBuilder sb = new StringBuilder();
-      if (TypesUtils.isCaptured(type.underlyingType)) {
-        String underlyingType = type.underlyingType.toString();
-        // underlyingType has this form: "capture#826 of ? extends java.lang.Object".
+      if (TypesUtils.isCapturedTypeVariable(type.underlyingType)) {
+        // underlyingType.toString() has this form: "capture#826 of ? extends
+        // java.lang.Object".
+        //   assert underlyingType.toString().startsWith("capture#");
         // We output only the "capture#826" part.
-        // NOTE: The number is the hash code of the captured type, so it's nondeterministic, but it
-        // is still important to print it in order to tell the difference between two captured
-        // types.
-        sb.append(underlyingType, 0, underlyingType.indexOf(" of "));
+
+        // TODO: If deterministic output is not needed, we could avoid the use of
+        // getCaptureConversionId() by using this code instead:
+        //   sb.append(underlyingType, 0, underlyingType.indexOf(" of "));
+        // The choice would be controlled by a command-line argument.
+
+        // We output a deterministic number; we prefix it by "0"
+        // so we know whether a number is deterministic or from javac.
+        sb.append("capture#0").append(getCaptureConversionId((TypeVariable) type.underlyingType));
       } else {
         sb.append(type.underlyingType);
       }
@@ -345,12 +436,12 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         try {
           visiting.add(type);
           if (currentPrintVerboseGenerics) {
-            sb.append("[");
+            sb.append('[');
           }
           printBound("extends", type.getUpperBoundField(), visiting, sb);
           printBound("super", type.getLowerBoundField(), visiting, sb);
           if (currentPrintVerboseGenerics) {
-            sb.append("]");
+            sb.append(']');
           }
 
         } finally {
@@ -376,34 +467,38 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     @Override
     public String visitNull(AnnotatedNullType type, Set<AnnotatedTypeMirror> visiting) {
       return annoFormatter.formatAnnotationString(
-              type.getAnnotations(), currentPrintInvisibleSetting)
+              type.getPrimaryAnnotations(), currentPrintInvisibleSetting)
           + "NullType";
     }
 
     @Override
     public String visitWildcard(AnnotatedWildcardType type, Set<AnnotatedTypeMirror> visiting) {
       StringBuilder sb = new StringBuilder();
-      if (type.isUninferredTypeArgument()) {
-        sb.append("/*INFERENCE FAILED for:*/ ");
+      if (type.isTypeArgOfRawType()) {
+        if (currentlyPrintingRaw) {
+          sb.append("/*RAW TYPE ARGUMENT:*/ ");
+        } else {
+          sb.append("/*INFERENCE FAILED for:*/ ");
+        }
       }
 
       sb.append(
           annoFormatter.formatAnnotationString(
-              type.getAnnotationsField(), currentPrintInvisibleSetting));
+              type.getPrimaryAnnotationsField(), currentPrintInvisibleSetting));
 
-      sb.append("?");
+      sb.append('?');
       if (!visiting.contains(type)) {
 
         try {
           visiting.add(type);
 
           if (currentPrintVerboseGenerics) {
-            sb.append("[");
+            sb.append('[');
           }
           printBound("extends", type.getExtendsBoundField(), visiting, sb);
           printBound("super", type.getSuperBoundField(), visiting, sb);
           if (currentPrintVerboseGenerics) {
-            sb.append("]");
+            sb.append(']');
           }
 
         } finally {
@@ -414,9 +509,9 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     }
 
     @SideEffectFree
-    protected String formatFlatType(final AnnotatedTypeMirror flatType) {
+    protected String formatFlatType(AnnotatedTypeMirror flatType) {
       return annoFormatter.formatAnnotationString(
-              flatType.getAnnotations(), currentPrintInvisibleSetting)
+              flatType.getPrimaryAnnotations(), currentPrintInvisibleSetting)
           + TypeAnnotationUtils.unannotatedType((Type) flatType.getUnderlyingType());
     }
   }

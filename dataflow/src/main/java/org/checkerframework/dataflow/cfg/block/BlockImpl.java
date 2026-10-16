@@ -1,9 +1,9 @@
 package org.checkerframework.dataflow.cfg.block;
 
-import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.plumelib.util.ArraySet;
 
 /** Base class of the {@link Block} implementation hierarchy. */
 public abstract class BlockImpl implements Block {
@@ -15,14 +15,11 @@ public abstract class BlockImpl implements Block {
   protected final Set<BlockImpl> predecessors;
 
   /** The unique ID for the next-created object. */
-  static final AtomicLong nextUid = new AtomicLong(0);
+  private static final AtomicLong nextUid = new AtomicLong(0);
+
   /** The unique ID of this object. */
-  final long uid = nextUid.getAndIncrement();
-  /**
-   * Returns the unique ID of this object.
-   *
-   * @return the unique ID of this object
-   */
+  private final transient long uid = nextUid.getAndIncrement();
+
   @Override
   public long getUid(@UnknownInitialization BlockImpl this) {
     return uid;
@@ -35,7 +32,8 @@ public abstract class BlockImpl implements Block {
    */
   protected BlockImpl(BlockType type) {
     this.type = type;
-    this.predecessors = new LinkedHashSet<>();
+    // Most blocks have few predecessors.
+    this.predecessors = new ArraySet<>(2);
   }
 
   @Override
@@ -45,8 +43,9 @@ public abstract class BlockImpl implements Block {
 
   @Override
   public Set<Block> getPredecessors() {
-    // Not "Collections.unmodifiableSet(predecessors)" which has nondeterministic iteration order.
-    return new LinkedHashSet<>(predecessors);
+    // Not "Collections.unmodifiableSet(predecessors)" which has nondeterministic iteration
+    // order.
+    return new ArraySet<>(predecessors);
   }
 
   public void addPredecessor(BlockImpl pred) {

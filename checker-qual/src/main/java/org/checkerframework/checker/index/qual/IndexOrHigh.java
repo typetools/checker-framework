@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * sequence's length.
  *
  * <p>The <a
- * href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Arrays.html#binarySearch(java.lang.Object%5B%5D,int,int,java.lang.Object)">
+ * href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Arrays.html#binarySearch(java.lang.Object%5B%5D,int,int,java.lang.Object)">
  * {@code Arrays.binarySearch}</a> method is declared as
  *
  * <pre>{@code
@@ -22,17 +22,22 @@ import java.lang.annotation.Target;
  *
  * <p>Writing {@code @IndexOrHigh("arr")} is equivalent to writing {@link NonNegative @NonNegative}
  * {@link LTEqLengthOf @LTEqLengthOf("arr")}, and that is how it is treated internally by the
- * checker. Thus, if you write an {@code @IndexFor("arr")} annotation, you might see warnings about
- * {@code @NonNegative} or {@code @LTEqLengthOf}.
+ * checker. Thus, if you write an {@code @IndexOrHigh("arr")} annotation, you might see warnings
+ * about {@code @NonNegative} or {@code @LTEqLengthOf}.
  *
  * @see NonNegative
- * @see LTLengthOf
+ * @see LTEqLengthOf
  * @checker_framework.manual #index-checker Index Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface IndexOrHigh {
-  /** Sequences that the annotated expression is a valid index for or is equal to the lengeth of. */
+  /**
+   * The annotated expression is a valid index for, or is equal to the length of, each sequence.
+   *
+   * @return sequences that the annotated expression is a valid index for or is equal to the length
+   *     of
+   */
   String[] value();
 }

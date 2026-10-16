@@ -8,44 +8,45 @@ public class Commitment {
 
   @NonNull String t;
 
-  // :: error: (initialization.field.type)
+  // :: error: [initialization.field.type]
   @NonNull @UnderInitialization String a;
-  // :: error: (initialization.field.type)
+  // :: error: [initialization.field.type]
   @Initialized String b;
   @UnknownInitialization @Nullable String c;
 
-  // :: error: (initialization.constructor.return.type)
+  // :: error: [initialization.constructor.return.type]
   public @UnderInitialization Commitment(int i) {
     a = "";
     t = "";
     b = "";
   }
 
-  // :: error: (initialization.constructor.return.type)
+  // :: error: [initialization.constructor.return.type]
   public @Initialized Commitment(int i, int j) {
     a = "";
     t = "";
     b = "";
   }
 
-  // :: error: (initialization.constructor.return.type)
-  // :: error: (nullness.on.constructor)
+  // :: error: [initialization.constructor.return.type]
+  // :: error: [nullness.on.constructor]
   public @Initialized @NonNull Commitment(boolean i) {
     a = "";
     t = "";
     b = "";
   }
 
-  // :: error: (nullness.on.constructor)
-  public @Nullable Commitment(char i) {
+  public
+  // :: error: [nullness.on.constructor]
+  @Nullable Commitment(char i) {
     a = "";
     t = "";
     b = "";
   }
 
-  // :: error: (initialization.fields.uninitialized)
+  // :: error: [initialization.fields.uninitialized]
   public Commitment() {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     t.toLowerCase();
 
     t = "";
@@ -54,23 +55,23 @@ public class Commitment {
 
     @UnknownInitialization @NonNull Commitment c1 = this;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Initialized @NonNull Commitment c2 = this;
   }
 
-  // :: error: (initialization.fields.uninitialized)
+  // :: error: [initialization.fields.uninitialized]
   public Commitment(@UnknownInitialization Commitment arg) {
     t = "";
 
-    // :: error: (argument)
+    // :: error: [argument]
     @UnderInitialization Commitment t = new Commitment(this, 1);
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Initialized Commitment t1 = new Commitment(this);
 
     @UnderInitialization Commitment t2 = new Commitment(this);
   }
 
-  // :: error: (initialization.fields.uninitialized)
+  // :: error: [initialization.fields.uninitialized]
   public Commitment(Commitment arg, int i) {}
 }

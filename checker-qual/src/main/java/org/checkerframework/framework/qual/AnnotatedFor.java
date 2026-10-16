@@ -9,10 +9,11 @@ import java.lang.annotation.Target;
 /**
  * Indicates that this class has been annotated for the given type system. For example,
  * {@code @AnnotatedFor({"nullness", "regex"})} indicates that the class has been annotated with
- * annotations such as {@code @Nullable} and {@code @Regex}.
+ * annotations such as {@code @Nullable} and {@code @Regex}. The argument to {@code AnnotatedFor} is
+ * not an annotation name, but a checker name.
  *
- * <p>You should only use this annotation in a partially-annotated library. There is no point to
- * using it in a fully-annotated library nor in an application that does not export APIs for
+ * <p>You should only use this annotation in a partially annotated library. There is no point to
+ * using it in a fully annotated library nor in an application that does not export APIs for
  * clients.
  *
  * <p>This annotation has no effect unless the {@code
@@ -30,7 +31,7 @@ import java.lang.annotation.Target;
 public @interface AnnotatedFor {
   /**
    * Returns the type systems for which the class has been annotated. Legal arguments are any string
-   * that may be passed to the {@code -processor} command-line argument: the fully-qualified class
+   * that may be passed to the {@code -processor} command-line argument: the fully qualified class
    * name for the checker, or a shorthand for built-in checkers. Using the annotation with no
    * arguments, as in {@code @AnnotatedFor({})}, has no effect.
    *

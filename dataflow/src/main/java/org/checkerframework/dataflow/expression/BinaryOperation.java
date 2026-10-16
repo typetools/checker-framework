@@ -7,14 +7,17 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.BugInCF;
 
 /** JavaExpression for binary operations. */
 public class BinaryOperation extends JavaExpression {
 
   /** The binary operation kind. */
   protected final Tree.Kind operationKind;
+
   /** The left operand. */
   protected final JavaExpression left;
+
   /** The right operand. */
   protected final JavaExpression right;
 
@@ -72,12 +75,17 @@ public class BinaryOperation extends JavaExpression {
     return right;
   }
 
+  @SuppressWarnings("unchecked") // generic cast
   @Override
-  public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
     if (getClass() == clazz) {
-      return true;
+      return (T) this;
     }
-    return left.containsOfClass(clazz) || right.containsOfClass(clazz);
+    T result = left.containedOfClass(clazz);
+    if (result != null) {
+      return result;
+    }
+    return right.containedOfClass(clazz);
   }
 
   @Override
@@ -86,21 +94,45 @@ public class BinaryOperation extends JavaExpression {
   }
 
   @Override
-  public boolean isUnassignableByOtherCode() {
-    return left.isUnassignableByOtherCode() && right.isUnassignableByOtherCode();
+  public boolean isAssignableByOtherCode() {
+    return left.isAssignableByOtherCode() || right.isAssignableByOtherCode();
   }
 
   @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return left.isUnmodifiableByOtherCode() && right.isUnmodifiableByOtherCode();
+  public boolean isModifiableByOtherCode() {
+    return left.isModifiableByOtherCode() || right.isModifiableByOtherCode();
+  }
+
+  @Override
+  public boolean equals(@Nullable Object other) {
+    if (!(other instanceof BinaryOperation biOp)) {
+      return false;
+    }
+    if (operationKind != biOp.getOperationKind()) {
+      return false;
+    }
+    if (isCommutative()) {
+      return (left.equals(biOp.left) && right.equals(biOp.right))
+          || (left.equals(biOp.right) && right.equals(biOp.left));
+    }
+    return left.equals(biOp.left) && right.equals(biOp.right);
+  }
+
+  @Override
+  public int hashCode() {
+    if (isCommutative()) {
+      // Use a commutative combination of the operands' hash codes so that equal operands in
+      // swapped order (for which `equals()` returns true) hash identically.
+      return Objects.hash(operationKind, left.hashCode() + right.hashCode());
+    }
+    return Objects.hash(operationKind, left, right);
   }
 
   @Override
   public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof BinaryOperation)) {
+    if (!(je instanceof BinaryOperation other)) {
       return false;
     }
-    BinaryOperation other = (BinaryOperation) je;
     return operationKind == other.getOperationKind()
         && left.syntacticEquals(other.left)
         && right.syntacticEquals(other.right);
@@ -119,47 +151,17 @@ public class BinaryOperation extends JavaExpression {
         || right.containsModifiableAliasOf(store, other);
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(operationKind, left, right);
-  }
-
-  @Override
-  public boolean equals(@Nullable Object other) {
-    if (!(other instanceof BinaryOperation)) {
-      return false;
-    }
-    BinaryOperation biOp = (BinaryOperation) other;
-    if (!(operationKind == biOp.getOperationKind())) {
-      return false;
-    }
-    if (isCommutative()) {
-      return (left.equals(biOp.left) && right.equals(biOp.right))
-          || (left.equals(biOp.right) && right.equals(biOp.left));
-    }
-    return left.equals(biOp.left) && right.equals(biOp.right);
-  }
-
   /**
    * Returns true if the binary operation is commutative, e.g., x + y == y + x.
    *
    * @return true if the binary operation is commutative
    */
   private boolean isCommutative() {
-    switch (operationKind) {
-      case PLUS:
-      case MULTIPLY:
-      case AND:
-      case OR:
-      case XOR:
-      case EQUAL_TO:
-      case NOT_EQUAL_TO:
-      case CONDITIONAL_AND:
-      case CONDITIONAL_OR:
-        return true;
-      default:
-        return false;
-    }
+    return switch (operationKind) {
+      case PLUS, MULTIPLY, AND, OR, XOR, EQUAL_TO, NOT_EQUAL_TO, CONDITIONAL_AND, CONDITIONAL_OR ->
+          true;
+      default -> false;
+    };
   }
 
   @Override
@@ -168,54 +170,34 @@ public class BinaryOperation extends JavaExpression {
   }
 
   /**
-   * Return the Java source code representation of the given operation.
+   * Returns the Java source code representation of the given operation.
    *
    * @param operationKind an unary operation kind
    * @return the Java source code representation of the given operation
    */
   private String operationKindToString(Tree.Kind operationKind) {
-    switch (operationKind) {
-      case CONDITIONAL_AND:
-        return "&&";
-      case AND:
-        return "&";
-      case OR:
-        return "|";
-      case DIVIDE:
-        return "/";
-      case EQUAL_TO:
-        return "==";
-      case GREATER_THAN:
-        return ">";
-      case GREATER_THAN_EQUAL:
-        return ">=";
-      case LEFT_SHIFT:
-        return "<<";
-      case LESS_THAN:
-        return "<";
-      case LESS_THAN_EQUAL:
-        return "<=";
-      case MINUS:
-        return "-";
-      case MULTIPLY:
-        return "*";
-      case NOT_EQUAL_TO:
-        return "!=";
-      case CONDITIONAL_OR:
-        return "||";
-      case PLUS:
-        return "+";
-      case REMAINDER:
-        return "%";
-      case RIGHT_SHIFT:
-        return ">>";
-      case UNSIGNED_RIGHT_SHIFT:
-        return ">>>";
-      case XOR:
-        return "^";
-      default:
-        throw new Error("unhandled " + operationKind);
-    }
+    return switch (operationKind) {
+      case CONDITIONAL_AND -> "&&";
+      case AND -> "&";
+      case OR -> "|";
+      case DIVIDE -> "/";
+      case EQUAL_TO -> "==";
+      case GREATER_THAN -> ">";
+      case GREATER_THAN_EQUAL -> ">=";
+      case LEFT_SHIFT -> "<<";
+      case LESS_THAN -> "<";
+      case LESS_THAN_EQUAL -> "<=";
+      case MINUS -> "-";
+      case MULTIPLY -> "*";
+      case NOT_EQUAL_TO -> "!=";
+      case CONDITIONAL_OR -> "||";
+      case PLUS -> "+";
+      case REMAINDER -> "%";
+      case RIGHT_SHIFT -> ">>";
+      case UNSIGNED_RIGHT_SHIFT -> ">>>";
+      case XOR -> "^";
+      default -> throw new BugInCF("unhandled " + operationKind);
+    };
   }
 
   @Override

@@ -66,7 +66,7 @@ public @interface EnsuresKeyFor {
   @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
   @PostconditionAnnotation(qualifier = KeyFor.class)
   @InheritedAnnotation
-  @interface List {
+  public static @interface List {
     /**
      * Returns the repeatable annotations.
      *

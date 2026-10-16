@@ -1,0 +1,6 @@
+import org.checkerframework.checker.mustcall.qual.*;
+
+package com.sun.tools.javac.processing;
+
+@MustCall({})
+public class JavacProcessingEnvironment implements ProcessingEnvironment, Closeable {}

@@ -35,9 +35,9 @@ public class Issue574 {
     @UnderInitialization(Number.class) Object l5 = flag ? o4 : o5;
     @UnderInitialization(Number.class) Object l6 = flag ? o4 : o6;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     @UnderInitialization(Character.class) Object l7 = flag ? o1 : o2;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @UnderInitialization(Integer.class) Object l8 = flag ? o4 : o5;
   }
 
@@ -47,7 +47,7 @@ public class Issue574 {
     @UnderInitialization(Object.class) Object l2 = flag ? o1 : i1;
     @UnderInitialization(Object.class) Object l3 = flag ? o1 : o3;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     @UnderInitialization(Character.class) Object l4 = flag ? o1 : i1;
   }
 }

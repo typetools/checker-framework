@@ -1,7 +1,7 @@
 // Test case for Issue 1027:
 // https://github.com/typetools/checker-framework/issues/1027
 
-// Use  -J-XX:MaxJavaStackTraceDepth=1000000 as parameter
+// Use -J-XX:MaxJavaStackTraceDepth=1000000 as parameter
 // to javac to see a longer stacktrace.
 
 import java.util.Map;
@@ -19,7 +19,7 @@ public class Issue1027 {
     void bar(Function<T, String> p) {}
   }
 
-  @SuppressWarnings("nullness")
+  @SuppressWarnings({"nullness", "keyfor"})
   Repr<@KeyFor("this") String> foo() {
     return null;
   }

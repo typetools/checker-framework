@@ -13,10 +13,7 @@ import org.checkerframework.dataflow.cfg.block.ConditionalBlockImpl;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlockImpl;
 import org.checkerframework.dataflow.cfg.block.RegularBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
-
-/* --------------------------------------------------------- */
-/* Phase Three */
-/* --------------------------------------------------------- */
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Class that performs phase three of the translation process. In particular, the following
@@ -37,42 +34,57 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
  * Eliminating the second type of degenerate cases might introduce cases of the third problem. These
  * are also removed.
  */
-public class CFGTranslationPhaseThree {
+public final class CFGTranslationPhaseThree {
+
+  /** Do not instantiate. */
+  private CFGTranslationPhaseThree() {
+    throw new Error("Do not instantiate");
+  }
 
   /** A simple wrapper object that holds a basic block and allows to set one of its successors. */
-  protected interface PredecessorHolder {
+  protected static interface PredecessorHolder {
+    /**
+     * Sets the successor.
+     *
+     * @param b the new successor
+     */
     void setSuccessor(BlockImpl b);
 
+    /**
+     * Returns the block.
+     *
+     * @return the block
+     */
     BlockImpl getBlock();
   }
 
   /**
    * Perform phase three on the control flow graph {@code cfg}.
    *
-   * @param cfg the control flow graph. Ownership is transfered to this method and the caller is not
-   *     allowed to read or modify {@code cfg} after the call to {@code process} any more.
+   * @param cfg the control flow graph. Ownership is transferred to this method and the caller is
+   *     not allowed to read or modify {@code cfg} after the call to {@code process} any more.
    * @return the resulting control flow graph
    */
-  @SuppressWarnings("nullness") // TODO: successors
   public static ControlFlowGraph process(ControlFlowGraph cfg) {
-    Set<Block> worklist = cfg.getAllBlocks();
-    Set<Block> dontVisit = new HashSet<>();
+    Set<Block> blocks = cfg.getAllBlocks();
+    Set<Block> removedBlocks = new HashSet<>();
 
     // note: this method has to be careful when relinking basic blocks
     // to not forget to adjust the predecessors, too
 
     // fix predecessor lists by removing any unreachable predecessors
-    for (Block c : worklist) {
+    for (Block c : blocks) {
       BlockImpl cur = (BlockImpl) c;
-      for (Block pred : new HashSet<>(cur.getPredecessors())) {
-        if (!worklist.contains(pred)) {
+      for (Block pred : cur.getPredecessors()) {
+        if (!blocks.contains(pred)) {
           cur.removePredecessor((BlockImpl) pred);
         }
       }
     }
 
     // remove empty blocks
-    for (Block cur : worklist) {
+    Set<Block> dontVisit = new HashSet<>();
+    for (Block cur : blocks) {
       if (dontVisit.contains(cur)) {
         continue;
       }
@@ -93,6 +105,7 @@ public class CFGTranslationPhaseThree {
             succ.removePredecessor(block);
             p.setSuccessor(succ);
           }
+          removedBlocks.addAll(emptyBlocks);
         }
       }
     }
@@ -126,23 +139,66 @@ public class CFGTranslationPhaseThree {
     }
     */
 
-    // merge consecutive basic blocks if possible
-    worklist = cfg.getAllBlocks();
-    for (Block cur : worklist) {
-      if (cur.getType() == BlockType.REGULAR_BLOCK) {
-        RegularBlockImpl b = (RegularBlockImpl) cur;
-        Block succ = b.getRegularSuccessor();
-        if (succ.getType() == BlockType.REGULAR_BLOCK) {
-          RegularBlockImpl rs = (RegularBlockImpl) succ;
-          if (rs.getPredecessors().size() == 1) {
-            b.setSuccessor(rs.getRegularSuccessor());
-            b.addNodes(rs.getNodes());
-            rs.getRegularSuccessor().removePredecessor(rs);
+    blocks.removeAll(removedBlocks);
+    mergeConsecutiveBlocks(blocks);
+    return cfg;
+  }
+
+  /**
+   * Simplify the CFG by merging consecutive single-successor blocks.
+   *
+   * @param blocks the set of blocks to process
+   */
+  @SuppressWarnings({
+    "interning:not.interned", // CFG node comparisons
+    "nullness" // TODO: successors
+  })
+  /*package-protected*/ static void mergeConsecutiveBlocks(Set<Block> blocks) {
+
+    // This transformation removes blocks from the CFG.
+    // We might process a block AFTER it has been removed and its nodes have been moved
+    // somewhere else.  When this happens the correct behavior is to just skip the removed
+    // block; to do so, we need to remember which blocks have been removed.
+    Set<Block> removedBlocks = new HashSet<>();
+
+    for (Block cur : blocks) {
+      // Skip this block if it was already merged into another.
+      if (removedBlocks.contains(cur)) {
+        continue;
+      }
+
+      // There may be many blocks to merge in series.
+      //
+      // ... \                   /> ...
+      // ... --> cur -> b2 -> b3 -> ...
+      // ... /                   \> ...
+      //
+      // This loop merges the successor into `cur` until it can't do so anymore.
+      boolean didMerge;
+      do {
+        didMerge = false;
+        if (cur.getType() == BlockType.REGULAR_BLOCK) {
+          RegularBlockImpl b = (RegularBlockImpl) cur;
+          Block succ = b.getRegularSuccessor();
+          if (succ.getType() == BlockType.REGULAR_BLOCK) {
+            RegularBlockImpl rs = (RegularBlockImpl) succ;
+            if (rs.getRegularSuccessor() == rs) {
+              // Do not attempt to merge a block with a self edge (which would
+              // infinite-loop if it were run), as it leads to non-termination
+              // in the merging algorithm.
+              break;
+            }
+            if (rs.getPredecessors().size() == 1) {
+              b.setSuccessor(rs.getRegularSuccessor());
+              b.addNodes(rs.getNodes());
+              rs.getRegularSuccessor().removePredecessor(rs);
+              removedBlocks.add(rs);
+              didMerge = true;
+            }
           }
         }
-      }
+      } while (didMerge);
     }
-    return cfg;
   }
 
   /**
@@ -152,15 +208,15 @@ public class CFGTranslationPhaseThree {
    *
    * @param start the starting point of the search (an empty, regular basic block)
    * @param emptyBlocks a set to be filled by this method with all empty basic blocks found
-   *     (including {@code start}).
+   *     (including {@code start})
    * @param predecessors a set to be filled by this method with all predecessors
    * @return the single successor of the set of the empty basic blocks
    */
   @SuppressWarnings({
-    "interning:not.interned", // AST node comparisons
+    "interning:not.interned", // CFG node comparisons
     "nullness" // successors
   })
-  protected static BlockImpl computeNeighborhoodOfEmptyBlock(
+  /*package-protected*/ static BlockImpl computeNeighborhoodOfEmptyBlock(
       RegularBlockImpl start,
       Set<RegularBlockImpl> emptyBlocks,
       Set<PredecessorHolder> predecessors) {
@@ -194,32 +250,23 @@ public class CFGTranslationPhaseThree {
    *
    * @param start the starting point of the search (an empty, regular basic block)
    * @param emptyBlocks a set to be filled by this method with all empty basic blocks found
-   *     (including {@code start}).
+   *     (including {@code start})
    * @param predecessors a set to be filled by this method with all predecessors
    */
-  protected static void computeNeighborhoodOfEmptyBlockBackwards(
+  /*package-protected*/ static void computeNeighborhoodOfEmptyBlockBackwards(
       RegularBlockImpl start,
       Set<RegularBlockImpl> emptyBlocks,
       Set<PredecessorHolder> predecessors) {
 
     RegularBlockImpl cur = start;
     emptyBlocks.add(cur);
-    for (final Block p : cur.getPredecessors()) {
+    for (Block p : cur.getPredecessors()) {
       BlockImpl pred = (BlockImpl) p;
       switch (pred.getType()) {
-        case SPECIAL_BLOCK:
-          // add pred correctly to predecessor list
-          predecessors.add(getPredecessorHolder(pred, cur));
-          break;
-        case CONDITIONAL_BLOCK:
-          // add pred correctly to predecessor list
-          predecessors.add(getPredecessorHolder(pred, cur));
-          break;
-        case EXCEPTION_BLOCK:
-          // add pred correctly to predecessor list
-          predecessors.add(getPredecessorHolder(pred, cur));
-          break;
-        case REGULAR_BLOCK:
+        case SPECIAL_BLOCK, CONDITIONAL_BLOCK, EXCEPTION_BLOCK ->
+            // add pred correctly to predecessor list
+            predecessors.add(getPredecessorHolder(pred, cur));
+        case REGULAR_BLOCK -> {
           RegularBlockImpl r = (RegularBlockImpl) pred;
           if (r.isEmpty()) {
             // recursively look backwards
@@ -230,13 +277,13 @@ public class CFGTranslationPhaseThree {
             // add pred correctly to predecessor list
             predecessors.add(getPredecessorHolder(pred, cur));
           }
-          break;
+        }
       }
     }
   }
 
   /**
-   * Return a predecessor holder that can be used to set the successor of {@code pred} in the place
+   * Returns a predecessor holder that can be used to set the successor of {@code pred} in the place
    * where previously the edge pointed to {@code cur}. Additionally, the predecessor holder also
    * takes care of unlinking (i.e., removing the {@code pred} from {@code cur's} predecessors).
    *
@@ -245,15 +292,16 @@ public class CFGTranslationPhaseThree {
    * @return a predecessor holder to set the successor of {@code pred}
    */
   @SuppressWarnings("interning:not.interned") // AST node comparisons
-  protected static PredecessorHolder getPredecessorHolder(
-      final BlockImpl pred, final BlockImpl cur) {
+  /*package-protected*/ static PredecessorHolder getPredecessorHolder(
+      BlockImpl pred, BlockImpl cur) {
     switch (pred.getType()) {
-      case SPECIAL_BLOCK:
+      case SPECIAL_BLOCK -> {
         SingleSuccessorBlockImpl s = (SingleSuccessorBlockImpl) pred;
         return singleSuccessorHolder(s, cur);
-      case CONDITIONAL_BLOCK:
+      }
+      case CONDITIONAL_BLOCK -> {
         // add pred correctly to predecessor list
-        final ConditionalBlockImpl c = (ConditionalBlockImpl) pred;
+        ConditionalBlockImpl c = (ConditionalBlockImpl) pred;
         if (c.getThenSuccessor() == cur) {
           return new PredecessorHolder() {
             @Override
@@ -282,15 +330,16 @@ public class CFGTranslationPhaseThree {
             }
           };
         }
-      case EXCEPTION_BLOCK:
+      }
+      case EXCEPTION_BLOCK -> {
         // add pred correctly to predecessor list
-        final ExceptionBlockImpl e = (ExceptionBlockImpl) pred;
+        ExceptionBlockImpl e = (ExceptionBlockImpl) pred;
         if (e.getSuccessor() == cur) {
           return singleSuccessorHolder(e, cur);
         } else {
           @SuppressWarnings("keyfor:assignment") // ignore keyfor type
           Set<Map.Entry<TypeMirror, Set<Block>>> entrySet = e.getExceptionalSuccessors().entrySet();
-          for (final Map.Entry<TypeMirror, Set<Block>> entry : entrySet) {
+          for (Map.Entry<TypeMirror, Set<Block>> entry : entrySet) {
             if (entry.getValue().contains(cur)) {
               return new PredecessorHolder() {
                 @Override
@@ -307,12 +356,13 @@ public class CFGTranslationPhaseThree {
             }
           }
         }
-        throw new Error("Unreachable");
-      case REGULAR_BLOCK:
+        throw new BugInCF("Unreachable");
+      }
+      case REGULAR_BLOCK -> {
         RegularBlockImpl r = (RegularBlockImpl) pred;
         return singleSuccessorHolder(r, cur);
-      default:
-        throw new Error("Unexpected block type " + pred.getType());
+      }
+      default -> throw new BugInCF("Unexpected block type " + pred.getType());
     }
   }
 
@@ -320,11 +370,13 @@ public class CFGTranslationPhaseThree {
    * Returns a {@link PredecessorHolder} that sets the successor of a single successor block {@code
    * s}.
    *
+   * @param s a block whose single successor to set
+   * @param old the previous successor, which is being replaced
    * @return a {@link PredecessorHolder} that sets the successor of a single successor block {@code
    *     s}
    */
-  protected static PredecessorHolder singleSuccessorHolder(
-      final SingleSuccessorBlockImpl s, final BlockImpl old) {
+  /*package-protected*/ static PredecessorHolder singleSuccessorHolder(
+      SingleSuccessorBlockImpl s, BlockImpl old) {
     return new PredecessorHolder() {
       @Override
       public void setSuccessor(BlockImpl b) {

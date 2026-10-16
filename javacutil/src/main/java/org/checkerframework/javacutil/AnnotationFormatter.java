@@ -1,4 +1,4 @@
-package org.checkerframework.framework.util;
+package org.checkerframework.javacutil;
 
 import java.util.Collection;
 import javax.lang.model.element.AnnotationMirror;
@@ -11,7 +11,7 @@ public interface AnnotationFormatter {
    * Converts a collection of annotation mirrors into a String.
    *
    * @param annos a collection of annotations to print
-   * @param printInvisible whether or not to print "invisible" annotation mirrors
+   * @param printInvisible if true, print "invisible" annotation mirrors
    * @see org.checkerframework.framework.qual.InvisibleQualifier
    * @return a string representation of annos
    */

@@ -5,6 +5,7 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.Pretty;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
@@ -40,13 +41,13 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
 public class TreePrinter extends AbstractTypeProcessor {
   @Override
   public void typeProcess(TypeElement element, TreePath tree) {
-    final StringWriter out = new StringWriter();
-    final Pretty pretty = new Pretty(out, true);
+    StringWriter out = new StringWriter();
+    Pretty pretty = new Pretty(out, true);
 
     try {
       pretty.printUnit((JCCompilationUnit) tree.getCompilationUnit(), null);
     } catch (IOException e) {
-      throw new Error(e);
+      throw new UncheckedIOException(e);
     }
     System.out.println(out.toString());
   }

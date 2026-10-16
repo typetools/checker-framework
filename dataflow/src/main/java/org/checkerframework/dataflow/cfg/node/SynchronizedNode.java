@@ -1,25 +1,27 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import com.sun.source.tree.Tree;
+import com.sun.source.tree.SynchronizedTree;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
- * This represents the start and end of synchronized code block. If startOfBlock == true it is the
+ * This represents the start and end of a synchronized code block. If startOfBlock == true it is the
  * node preceding a synchronized code block. Otherwise it is the node immediately after a
  * synchronized code block.
  */
 public class SynchronizedNode extends Node {
 
-  protected final @Nullable Tree tree;
+  protected final SynchronizedTree tree;
   protected final Node expression;
   protected final boolean startOfBlock;
 
-  public SynchronizedNode(@Nullable Tree tree, Node expression, boolean startOfBlock, Types types) {
+  public SynchronizedNode(
+      SynchronizedTree tree, Node expression, boolean startOfBlock, Types types) {
     super(types.getNoType(TypeKind.NONE));
     this.tree = tree;
     this.expression = expression;
@@ -27,7 +29,7 @@ public class SynchronizedNode extends Node {
   }
 
   @Override
-  public @Nullable Tree getTree() {
+  public SynchronizedTree getTree() {
     return tree;
   }
 
@@ -49,16 +51,15 @@ public class SynchronizedNode extends Node {
     StringBuilder sb = new StringBuilder();
     sb.append("synchronized (");
     sb.append(expression);
-    sb.append(")");
+    sb.append(')');
     return sb.toString();
   }
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof SynchronizedNode)) {
+    if (!(obj instanceof SynchronizedNode other)) {
       return false;
     }
-    SynchronizedNode other = (SynchronizedNode) obj;
     return Objects.equals(getTree(), other.getTree())
         && getExpression().equals(other.getExpression())
         && startOfBlock == other.startOfBlock;
@@ -70,6 +71,7 @@ public class SynchronizedNode extends Node {
   }
 
   @Override
+  @SideEffectFree
   public Collection<Node> getOperands() {
     return Collections.emptyList();
   }

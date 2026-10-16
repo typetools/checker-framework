@@ -21,15 +21,19 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class Heuristics {
 
+  /** Do not instantiate. */
+  private Heuristics() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
-   * Determines whether a tree has a particular set of direct parents, ignoring blocks and
-   * parentheses.
+   * Returns true if a tree has a particular set of direct parents, ignoring blocks and parentheses.
    *
    * <p>For example, to test whether an expression (specified by {@code path}) is immediately
    * contained by an if statement which is immediately contained in a method, one would invoke:
    *
    * <pre>
-   * matchParents(path, Kind.IF, Kind.METHOD)
+   * matchParents(path, Kind.IF, Tree.Kind.METHOD)
    * </pre>
    *
    * @param path the path to match
@@ -52,7 +56,7 @@ public class Heuristics {
         break;
       }
 
-      if (tree.getKind() == Tree.Kind.BLOCK || tree.getKind() == Tree.Kind.PARENTHESIZED) {
+      if (tree instanceof BlockTree || tree instanceof ParenthesizedTree) {
         parentPath = parentPath.getParentPath();
         continue;
       }
@@ -68,13 +72,13 @@ public class Heuristics {
   public static class Matcher extends SimpleTreeVisitor<Boolean, Void> {
 
     @Override
-    protected Boolean defaultAction(Tree node, Void p) {
+    protected Boolean defaultAction(Tree tree, Void p) {
       return false;
     }
 
     @Override
-    public Boolean visitParenthesized(ParenthesizedTree node, Void p) {
-      return visit(node.getExpression(), p);
+    public Boolean visitParenthesized(ParenthesizedTree tree, Void p) {
+      return visit(tree.getExpression(), p);
     }
 
     /**
@@ -109,8 +113,7 @@ public class Heuristics {
       assert p.getLeaf() == stmt;
 
       while (p != null && p.getLeaf() instanceof StatementTree) {
-        if (p.getParentPath().getLeaf() instanceof BlockTree) {
-          BlockTree block = (BlockTree) p.getParentPath().getLeaf();
+        if (p.getParentPath().getLeaf() instanceof BlockTree block) {
           for (StatementTree st : block.getStatements()) {
             if (st == p.getLeaf()) {
               break;
@@ -163,12 +166,16 @@ public class Heuristics {
 
   /**
    * {@code match()} returns true if called on a path whose leaf is within the "then" clause of an
-   * if whose conditon matches the matcher (supplied at object initialization). Also returns true if
-   * the leaf is within the "else" of a negated condition that matches the supplied matcher.
+   * if whose condition matches the matcher (supplied at object initialization). Also returns true
+   * if the leaf is within the "else" of a negated condition that matches the supplied matcher.
    */
   public static class WithinTrueBranch extends Matcher {
+    /** conditionMatcher for the condition */
     private final Matcher matcher;
-    /** @param conditionMatcher for the condition */
+
+    /**
+     * @param conditionMatcher for the condition
+     */
     public WithinTrueBranch(Matcher conditionMatcher) {
       this.matcher = conditionMatcher;
     }
@@ -178,8 +185,7 @@ public class Heuristics {
     public boolean match(TreePath path) {
       TreePath prev = path, p = path.getParentPath();
       while (p != null) {
-        if (p.getLeaf().getKind() == Tree.Kind.IF) {
-          IfTree ifTree = (IfTree) p.getLeaf();
+        if (p.getLeaf() instanceof IfTree ifTree) {
           ExpressionTree cond = TreeUtils.withoutParens(ifTree.getCondition());
           if (ifTree.getThenStatement() == prev.getLeaf() && matcher.match(new TreePath(p, cond))) {
             return true;

@@ -1,46 +1,51 @@
 package org.checkerframework.framework.stub;
 
-import java.io.FileReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.checkerframework.afu.scenelib.Annotation;
+import org.checkerframework.afu.scenelib.Annotations;
+import org.checkerframework.afu.scenelib.el.ABlock;
+import org.checkerframework.afu.scenelib.el.AClass;
+import org.checkerframework.afu.scenelib.el.ADeclaration;
+import org.checkerframework.afu.scenelib.el.AElement;
+import org.checkerframework.afu.scenelib.el.AExpression;
+import org.checkerframework.afu.scenelib.el.AField;
+import org.checkerframework.afu.scenelib.el.AMethod;
+import org.checkerframework.afu.scenelib.el.AScene;
+import org.checkerframework.afu.scenelib.el.ATypeElement;
+import org.checkerframework.afu.scenelib.el.ATypeElementWithType;
+import org.checkerframework.afu.scenelib.el.AnnotationDef;
+import org.checkerframework.afu.scenelib.el.DefException;
+import org.checkerframework.afu.scenelib.el.ElementVisitor;
+import org.checkerframework.afu.scenelib.field.ArrayAFT;
+import org.checkerframework.afu.scenelib.field.BasicAFT;
+import org.checkerframework.afu.scenelib.io.IndexFileParser;
+import org.checkerframework.afu.scenelib.io.IndexFileWriter;
+import org.checkerframework.afu.scenelib.io.ParseException;
 import org.checkerframework.checker.signature.qual.BinaryName;
-import scenelib.annotations.Annotation;
-import scenelib.annotations.Annotations;
-import scenelib.annotations.el.ABlock;
-import scenelib.annotations.el.AClass;
-import scenelib.annotations.el.ADeclaration;
-import scenelib.annotations.el.AElement;
-import scenelib.annotations.el.AExpression;
-import scenelib.annotations.el.AField;
-import scenelib.annotations.el.AMethod;
-import scenelib.annotations.el.AScene;
-import scenelib.annotations.el.ATypeElement;
-import scenelib.annotations.el.ATypeElementWithType;
-import scenelib.annotations.el.AnnotationDef;
-import scenelib.annotations.el.DefException;
-import scenelib.annotations.el.ElementVisitor;
-import scenelib.annotations.field.ArrayAFT;
-import scenelib.annotations.field.BasicAFT;
-import scenelib.annotations.io.IndexFileParser;
-import scenelib.annotations.io.IndexFileWriter;
-import scenelib.annotations.io.ParseException;
+import org.plumelib.util.ArraySet;
 
 /**
  * Utility that generates {@code @AnnotatedFor} class annotations. The {@link #main} method acts as
  * a filter: it reads a JAIF from standard input and writes an augmented JAIF to standard output.
  */
-public class AddAnnotatedFor {
+public final class AddAnnotatedFor {
   /** Definition of {@code @AnnotatedFor} annotation. */
-  private static AnnotationDef adAnnotatedFor;
+  private static final AnnotationDef adAnnotatedFor;
 
   static {
     Class<?> annotatedFor = org.checkerframework.framework.qual.AnnotatedFor.class;
@@ -60,26 +65,41 @@ public class AddAnnotatedFor {
             "AddAnnotatedFor.<clinit>");
   }
 
+  /** Do not instantiate. */
+  private AddAnnotatedFor() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * Reads JAIF from the file indicated by the first element, or standard input if the argument
    * array is empty; inserts any appropriate {@code @AnnotatedFor} annotations, based on the
    * annotations defined in the input JAIF; and writes the augmented JAIF to standard output.
+   *
+   * @param args one jaif file, or empty to read from standard input
+   * @throws IOException if there is trouble reading or writing a file
+   * @throws DefException if two definitions cannot be unified
+   * @throws ParseException if the file is malformed
    */
   public static void main(String[] args) throws IOException, DefException, ParseException {
-    AScene scene = new AScene();
-    String filename;
-    Reader r;
-    if (args.length > 0) {
-      filename = args[0];
-      r = new FileReader(filename);
-    } else {
-      filename = "System.in";
-      r = new InputStreamReader(System.in);
+    if (args.length > 1) {
+      System.err.println("Supply 0 or 1 command-line arguments.");
+      System.exit(1);
     }
-    IndexFileParser.parse(new LineNumberReader(r), filename, scene);
+    AScene scene = new AScene();
+    boolean useFile = args.length == 1;
+    String filename = useFile ? args[0] : "System.in";
+    try (Reader r =
+        useFile
+            ? Files.newBufferedReader(Paths.get(filename), StandardCharsets.UTF_8)
+            : new InputStreamReader(System.in, StandardCharsets.UTF_8)) {
+      IndexFileParser.parse(new LineNumberReader(r), filename, scene);
+    }
     scene.prune();
     addAnnotatedFor(scene);
-    IndexFileWriter.write(scene, new PrintWriter(System.out, true));
+    IndexFileWriter.write(
+        scene,
+        new PrintWriter(
+            new BufferedWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8)), true));
   }
 
   /**
@@ -89,7 +109,7 @@ public class AddAnnotatedFor {
    */
   public static void addAnnotatedFor(AScene scene) {
     for (AClass clazz : new HashSet<>(scene.classes.values())) {
-      Set<String> annotatedFor = new HashSet<>(2); // usually few @AnnotatedFor are applicable
+      Set<String> annotatedFor = new ArraySet<>(2); // usually few @AnnotatedFor are applicable
       clazz.accept(annotatedForVisitor, annotatedFor);
       if (!annotatedFor.isEmpty()) {
         // Set eliminates duplicates, but it must be converted to List; for whatever reason,
@@ -106,15 +126,15 @@ public class AddAnnotatedFor {
    * These need to be the arguments to an {@code AnnotatedFor} annotation on the class, so that all
    * of the given type systems are run.
    */
-  private static ElementVisitor<Void, Set<String>> annotatedForVisitor =
-      new ElementVisitor<Void, Set<String>>() {
+  private static final ElementVisitor<Void, Set<String>> annotatedForVisitor =
+      new ElementVisitor<>() {
         @Override
-        public Void visitAnnotationDef(AnnotationDef el, final Set<String> annotatedFor) {
+        public Void visitAnnotationDef(AnnotationDef el, Set<String> annotatedFor) {
           return null;
         }
 
         @Override
-        public Void visitBlock(ABlock el, final Set<String> annotatedFor) {
+        public Void visitBlock(ABlock el, Set<String> annotatedFor) {
           for (AField e : el.locals.values()) {
             e.accept(this, annotatedFor);
           }
@@ -122,7 +142,7 @@ public class AddAnnotatedFor {
         }
 
         @Override
-        public Void visitClass(AClass el, final Set<String> annotatedFor) {
+        public Void visitClass(AClass el, Set<String> annotatedFor) {
           for (ATypeElement e : el.bounds.values()) {
             e.accept(this, annotatedFor);
           }
@@ -148,7 +168,7 @@ public class AddAnnotatedFor {
         }
 
         @Override
-        public Void visitDeclaration(ADeclaration el, final Set<String> annotatedFor) {
+        public Void visitDeclaration(ADeclaration el, Set<String> annotatedFor) {
           for (ATypeElement e : el.insertAnnotations.values()) {
             e.accept(this, annotatedFor);
           }
@@ -159,7 +179,7 @@ public class AddAnnotatedFor {
         }
 
         @Override
-        public Void visitExpression(AExpression el, final Set<String> annotatedFor) {
+        public Void visitExpression(AExpression el, Set<String> annotatedFor) {
           for (ATypeElement e : el.calls.values()) {
             e.accept(this, annotatedFor);
           }
@@ -182,7 +202,7 @@ public class AddAnnotatedFor {
         }
 
         @Override
-        public Void visitField(AField el, final Set<String> annotatedFor) {
+        public Void visitField(AField el, Set<String> annotatedFor) {
           if (el.init != null) {
             el.init.accept(this, annotatedFor);
           }
@@ -190,7 +210,7 @@ public class AddAnnotatedFor {
         }
 
         @Override
-        public Void visitMethod(AMethod el, final Set<String> annotatedFor) {
+        public Void visitMethod(AMethod el, Set<String> annotatedFor) {
           if (el.body != null) {
             el.body.accept(this, annotatedFor);
           }
@@ -213,7 +233,7 @@ public class AddAnnotatedFor {
         }
 
         @Override
-        public Void visitTypeElement(ATypeElement el, final Set<String> annotatedFor) {
+        public Void visitTypeElement(ATypeElement el, Set<String> annotatedFor) {
           for (ATypeElement e : el.innerTypes.values()) {
             e.accept(this, annotatedFor);
           }
@@ -221,13 +241,12 @@ public class AddAnnotatedFor {
         }
 
         @Override
-        public Void visitTypeElementWithType(
-            ATypeElementWithType el, final Set<String> annotatedFor) {
+        public Void visitTypeElementWithType(ATypeElementWithType el, Set<String> annotatedFor) {
           return visitTypeElement(el, annotatedFor);
         }
 
         @Override
-        public Void visitElement(AElement el, final Set<String> annotatedFor) {
+        public Void visitElement(AElement el, Set<String> annotatedFor) {
           for (Annotation a : el.tlAnnotationsHere) {
             String s = a.def().name;
             int j = s.indexOf(".qual.");

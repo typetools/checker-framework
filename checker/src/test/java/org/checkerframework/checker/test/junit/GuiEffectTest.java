@@ -13,11 +13,7 @@ public class GuiEffectTest extends CheckerFrameworkPerDirectoryTest {
    * @param testFiles the files containing test code, which will be type-checked
    */
   public GuiEffectTest(List<File> testFiles) {
-    super(
-        testFiles,
-        org.checkerframework.checker.guieffect.GuiEffectChecker.class,
-        "guieffect",
-        "-Anomsgtext");
+    super(testFiles, org.checkerframework.checker.guieffect.GuiEffectChecker.class, "guieffect");
     // , "-Alint=debugSpew");
   }
 

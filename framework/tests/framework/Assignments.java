@@ -13,9 +13,9 @@ public class Assignments {
   }
 
   public void testCompound() {
-    // :: warning: (cast.unsafe)
+    // :: warning: [cast.unsafe]
     @Odd String s = (@Odd String) "foo";
-    // :: warning: (cast.unsafe)
+    // :: warning: [cast.unsafe]
     @Odd String t = (@Odd String) "bar";
     s += t;
 
@@ -33,7 +33,7 @@ public class Assignments {
 
   public void testMethodInvocation() {
     // TODO anonymous constructor
-    // TODO isEnumSuper
+    // TODO isEnumSuperCall
     // @see Varargs
 
     @Odd String s = null;
@@ -52,7 +52,7 @@ public class Assignments {
 
   public void testVariable() {
     @Odd String s = null;
-    // :: warning: (cast.unsafe)
+    // :: warning: [cast.unsafe]
     @Odd String t = (@Odd String) "foo";
     @Odd String u = s;
     String v = s;

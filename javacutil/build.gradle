@@ -1,50 +1,57 @@
 plugins {
-    id 'java-library'
+  id("java-library")
 }
 
-repositories {
-    mavenCentral()
+configurations {
+  implementation.extendsFrom(annotatedGuava)
 }
 
 dependencies {
-    implementation project(':checker-qual')
+  implementation(project(":checker-qual"))
 
-    // This is used by org.checkerframework.javacutil.TypesUtils.isImmutableTypeInJdk.
-    // https://mvnrepository.com/artifact/org.plumelib/plume-util
-    implementation 'org.plumelib:plume-util:1.5.3'
+  testImplementation(libs.junit)
 
-    // External dependencies:
-    // If you add an external dependency, you must shadow its packages both in checker.jar and
-    // and dataflow-shaded.jar.
-    // See the comment in ../build.gradle in the shadowJar block and ../dataflow/build.gradle in
-    // shadowJar block.
+  // This is used by org.checkerframework.javacutil.TypesUtils.isImmutableTypeInJdk.
+  // https://mvnrepository.com/artifact/org.plumelib/plume-util
+  implementation(libs.hashmap.util)
+  implementation(libs.plume.util)
+  implementation(libs.reflection.util)
+
+  // External dependencies:
+  // If you add an external dependency, you must shadow its packages both in checker.jar and
+  // and dataflow-shaded.jar.
+  // Update relocations in these locations:
+  //   * in ../build.gradle in the shadowJar block.
+  //   * in ../dataflow/build.gradle in the createDataflowShaded task.
 }
 
 apply from: rootProject.file("gradle-mvn-push.gradle")
 
 final javacUtilPom(publication) {
-    sharedPublicationConfiguration(publication)
-    publication.from components.java
+  rootProject.sharedPublicationConfiguration(publication)
+  publication.from(components.java)
 
-    publication.pom {
-        name = 'Javacutil'
-        description = 'javacutil contains utility classes for the javac compiler.'
-        licenses {
-            license {
-                name = 'GNU General Public License, version 2 (GPL2), with the classpath exception'
-                url = 'http://www.gnu.org/software/classpath/license.html'
-                distribution = 'repo'
-            }
-        }
+  publication.pom {
+    name = "Javacutil"
+    description = "javacutil contains utility classes for the javac compiler."
+    licenses {
+      license {
+        name = "GNU General Public License, version 2 (GPL2), with the classpath exception"
+        url = "https://www.gnu.org/software/classpath/license.html"
+        distribution = "repo"
+      }
     }
+  }
 }
+
 publishing {
-    publications {
-        javacUtil(MavenPublication) {
-            javacUtilPom it
-        }
+  publications {
+    javacUtil(MavenPublication) {
+      javacUtilPom(it)
     }
+  }
 }
+
 signing {
-    sign publishing.publications.javacUtil
+  sign(publishing.publications.javacUtil)
 }

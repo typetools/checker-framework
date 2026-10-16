@@ -2,7 +2,6 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol;
 import java.util.List;
@@ -11,6 +10,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
@@ -26,7 +26,6 @@ import org.checkerframework.framework.util.element.TypeVarUseApplier;
 import org.checkerframework.framework.util.element.VariableApplier;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 
 /**
  * Utility methods for adding the annotations that are stored in an Element to the type that
@@ -34,7 +33,7 @@ import org.checkerframework.javacutil.Pair;
  *
  * <p>In a way, this class is a hack: the Type representation for the Elements should contain all
  * annotations that we want. However, due to <a
- * href="http://mail.openjdk.java.net/pipermail/type-annotations-dev/2013-December/001449.html">javac
+ * href="https://mail.openjdk.org/pipermail/type-annotations-dev/2013-December/001449.html">javac
  * bugs</a> decoding the type annotations from the Element is necessary.
  *
  * <p>Even once these bugs are fixed, this class might be useful: in TypesIntoElements it is easy to
@@ -43,7 +42,12 @@ import org.checkerframework.javacutil.Pair;
  * interaction between TypeFromElement and TypesIntoElements allows us to write the defaulted
  * annotations into the Element and have them read later by other parts.
  */
-public class ElementAnnotationApplier {
+public final class ElementAnnotationApplier {
+
+  /** Do not instantiate. */
+  private ElementAnnotationApplier() {
+    throw new AssertionError("Class ElementAnnotationApplier cannot be instantiated.");
+  }
 
   /**
    * Add all of the relevant annotations stored in Element to type. This includes both top-level
@@ -72,9 +76,7 @@ public class ElementAnnotationApplier {
    * @param typeFactory the typeFactory used to create the given type
    */
   public static void apply(
-      final AnnotatedTypeMirror type,
-      final Element element,
-      final AnnotatedTypeFactory typeFactory) {
+      AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory) {
     try {
       try {
         applyInternal(type, element, typeFactory);
@@ -89,7 +91,12 @@ public class ElementAnnotationApplier {
     }
   }
 
-  /** Issues an "invalid.annotation.location.bytecode warning. */
+  /**
+   * Issues an "invalid.annotation.location.bytecode" warning.
+   *
+   * @param element the location at which to report the warning
+   * @param typeFactory the factory that reports the warning
+   */
   private static void reportInvalidLocation(Element element, AnnotatedTypeFactory typeFactory) {
     Element report = element;
     if (element.getEnclosingElement().getKind() == ElementKind.METHOD) {
@@ -109,7 +116,7 @@ public class ElementAnnotationApplier {
 
   /** Same as apply except that annotations aren't copied from type parameter declarations. */
   private static void applyInternal(
-      final AnnotatedTypeMirror type, final Element element, final AnnotatedTypeFactory typeFactory)
+      final AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory)
       throws UnexpectedAnnotationLocationException {
 
     if (element == null) {
@@ -119,7 +126,7 @@ public class ElementAnnotationApplier {
       TypeVarUseApplier.apply(type, element, typeFactory);
 
     } else if (VariableApplier.accepts(type, element)) {
-      if (element.getKind() != ElementKind.LOCAL_VARIABLE) {
+      if (!ElementUtils.isLocalVariable(element)) {
         // For local variables we have the source code,
         // so there is no need to look at the Element.
         // This is needed to avoid a bug in the JDK:
@@ -140,7 +147,7 @@ public class ElementAnnotationApplier {
       MethodTypeParamApplier.apply((AnnotatedTypeVariable) type, element, typeFactory);
 
     } else if (ParamApplier.accepts(type, element)) {
-      ParamApplier.apply(type, element, typeFactory);
+      ParamApplier.apply(type, (VariableElement) element, typeFactory);
 
     } else if (isCaptureConvertedTypeVar(element)) {
       // Types resulting from capture conversion cannot have explicit annotations
@@ -175,22 +182,32 @@ public class ElementAnnotationApplier {
   }
 
   /**
+   * A lambda parameter declaration and the lambda that declares it.
+   *
+   * @param param a lambda's formal parameter declaration
+   * @param lambda the lambda that declares {@code param}
+   */
+  public record LambdaParam(VariableTree param, LambdaExpressionTree lambda) {}
+
+  /**
    * Helper method to get the lambda tree for ParamApplier. Ideally, this method would be located in
    * ElementAnnotationUtil but since AnnotatedTypeFactory.declarationFromElement is protected, it
    * has been placed here.
    *
    * @param varEle the element that may represent a lambda's parameter
-   * @return a LambdaExpressionTree if the varEle represents a parameter in a lambda expression,
-   *     otherwise null
+   * @param typeFactory the type factory
+   * @return the parameter declaration and its LambdaExpressionTree if {@code varEle} represents a
+   *     parameter in a lambda expression, otherwise null
    */
-  public static Pair<VariableTree, LambdaExpressionTree> getParamAndLambdaTree(
+  public static @Nullable LambdaParam getParamAndLambdaTree(
       VariableElement varEle, AnnotatedTypeFactory typeFactory) {
     VariableTree paramDecl = (VariableTree) typeFactory.declarationFromElement(varEle);
 
     if (paramDecl != null) {
-      final Tree parentTree = typeFactory.getPath(paramDecl).getParentPath().getLeaf();
-      if (parentTree != null && parentTree.getKind() == Kind.LAMBDA_EXPRESSION) {
-        return Pair.of(paramDecl, (LambdaExpressionTree) parentTree);
+      @SuppressWarnings("nullness:dereference.of.nullable") // paramDecl is in the current file
+      Tree parentTree = typeFactory.getPath(paramDecl).getParentPath().getLeaf();
+      if (parentTree instanceof LambdaExpressionTree let) {
+        return new LambdaParam(paramDecl, let);
       }
     }
 
@@ -203,8 +220,8 @@ public class ElementAnnotationApplier {
    * @param element the element which type represents
    * @return true if type was generated via capture conversion false otherwise
    */
-  private static boolean isCaptureConvertedTypeVar(final Element element) {
-    final Element enclosure = element.getEnclosingElement();
+  private static boolean isCaptureConvertedTypeVar(Element element) {
+    Element enclosure = element.getEnclosingElement();
     return (((Symbol) enclosure).kind == com.sun.tools.javac.code.Kinds.Kind.NIL);
   }
 
@@ -212,19 +229,25 @@ public class ElementAnnotationApplier {
    * Annotates uses of type variables with annotation written explicitly on the type parameter
    * declaration and/or its upper bound.
    */
-  private static class TypeVarAnnotator extends AnnotatedTypeScanner<Void, AnnotatedTypeFactory> {
+  private static final class TypeVarAnnotator
+      extends AnnotatedTypeScanner<Void, AnnotatedTypeFactory> {
+
+    /** Creates a new TypeVarAnnotator. */
+    TypeVarAnnotator() {}
+
     @Override
     public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeFactory factory) {
       TypeParameterElement tpelt = (TypeParameterElement) type.getUnderlyingType().asElement();
 
-      if (type.getAnnotations().isEmpty()
-          && type.getUpperBound().getAnnotations().isEmpty()
+      if (type.getPrimaryAnnotations().isEmpty()
+          && type.getUpperBound().getPrimaryAnnotations().isEmpty()
           && tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
         try {
-          ElementAnnotationApplier.applyInternal(type, tpelt, factory);
+          applyInternal(type, tpelt, factory);
         } catch (UnexpectedAnnotationLocationException e) {
-          // The above is the second call to applyInternal on this type and element, so any errors
-          // were already reported by the first call. (See the only use of this class.)
+          // The above is the second call to applyInternal on this type and element, so
+          // any errors were already reported by the first call. (See the only use of this
+          // class.)
         }
       }
       return super.visitTypeVariable(type, factory);

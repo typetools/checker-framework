@@ -1,13 +1,15 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.CaseTree;
-import com.sun.source.tree.Tree.Kind;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.plumelib.util.StringsP;
 
 /**
  * A node for a case in a switch statement. Although a case has no abstract value, it can imply
@@ -21,33 +23,71 @@ public class CaseNode extends Node {
 
   /** The tree for this node. */
   protected final CaseTree tree;
-  /** The switch expression. */
-  protected final Node switchExpr;
-  /** The case expression to match the switch expression against. */
-  protected final Node caseExpr;
+
+  /**
+   * The Node for the assignment of the switch selector expression to a synthetic local variable.
+   */
+  protected final AssignmentNode selectorExprAssignment;
+
+  /**
+   * The case expressions to match the switch expression against: the operands of (possibly
+   * multiple) case labels.
+   */
+  protected final List<Node> caseExprs;
+
+  /** The guard (the expression in the {@code when} clause) for this case. */
+  protected final @Nullable Node guard;
 
   /**
    * Create a new CaseNode.
    *
    * @param tree the tree for this node
-   * @param switchExpr the switch expression
-   * @param caseExpr the case expression to match the switch expression against
+   * @param selectorExprAssignment the Node for the assignment of the switch selector expression to
+   *     a synthetic local variable
+   * @param caseExprs the case expression(s) to match the switch expression against
+   * @param guard the guard expression or null
    * @param types a factory of utility methods for operating on types
    */
-  public CaseNode(CaseTree tree, Node switchExpr, Node caseExpr, Types types) {
+  public CaseNode(
+      CaseTree tree,
+      AssignmentNode selectorExprAssignment,
+      List<Node> caseExprs,
+      @Nullable Node guard,
+      Types types) {
     super(types.getNoType(TypeKind.NONE));
-    assert tree.getKind() == Kind.CASE;
     this.tree = tree;
-    this.switchExpr = switchExpr;
-    this.caseExpr = caseExpr;
+    this.selectorExprAssignment = selectorExprAssignment;
+    this.caseExprs = caseExprs;
+    this.guard = guard;
   }
 
-  public Node getSwitchOperand() {
-    return switchExpr;
+  /**
+   * The Node for the assignment of the switch selector expression to a synthetic local variable.
+   * This is used to refine the type of the switch selector expression in a case block.
+   *
+   * @return the assignment of the switch selector expression to a synthetic local variable
+   */
+  public AssignmentNode getSwitchOperand() {
+    return selectorExprAssignment;
   }
 
-  public Node getCaseOperand() {
-    return caseExpr;
+  /**
+   * Gets the nodes corresponding to the case expressions. There can be multiple expressions since
+   * Java 12.
+   *
+   * @return the nodes corresponding to the (potentially multiple) case expressions
+   */
+  public List<Node> getCaseOperands() {
+    return caseExprs;
+  }
+
+  /**
+   * Gets the node for the guard (the expression in the {@code when} clause).
+   *
+   * @return the node for the guard
+   */
+  public @Nullable Node getGuard() {
+    return guard;
   }
 
   @Override
@@ -62,26 +102,30 @@ public class CaseNode extends Node {
 
   @Override
   public String toString() {
-    return "case " + getCaseOperand() + ":";
+    return "case " + StringsP.join(", ", getCaseOperands()) + ":";
   }
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof CaseNode)) {
+    if (!(obj instanceof CaseNode other)) {
       return false;
     }
-    CaseNode other = (CaseNode) obj;
     return getSwitchOperand().equals(other.getSwitchOperand())
-        && getCaseOperand().equals(other.getCaseOperand());
+        && getCaseOperands().equals(other.getCaseOperands());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getSwitchOperand(), getCaseOperand());
+    return Objects.hash(getSwitchOperand(), getCaseOperands());
   }
 
   @Override
+  @SideEffectFree
   public Collection<Node> getOperands() {
-    return Arrays.asList(getSwitchOperand(), getCaseOperand());
+    List<Node> caseOperands = getCaseOperands();
+    ArrayList<Node> operands = new ArrayList<>(caseOperands.size() + 1);
+    operands.add(getSwitchOperand());
+    operands.addAll(caseOperands);
+    return operands;
   }
 }

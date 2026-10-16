@@ -12,8 +12,8 @@ import org.checkerframework.javacutil.TreeUtils;
 class TypeFromClassVisitor extends TypeFromTreeVisitor {
 
   @Override
-  public AnnotatedTypeMirror visitClass(ClassTree node, AnnotatedTypeFactory f) {
-    TypeElement elt = TreeUtils.elementFromDeclaration(node);
+  public AnnotatedTypeMirror visitClass(ClassTree tree, AnnotatedTypeFactory f) {
+    TypeElement elt = TreeUtils.elementFromDeclaration(tree);
     AnnotatedTypeMirror result = f.toAnnotatedType(elt.asType(), true);
 
     ElementAnnotationApplier.apply(result, elt, f);

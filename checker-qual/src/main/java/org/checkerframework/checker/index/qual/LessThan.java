@@ -15,8 +15,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * <p>If an expression's type has this annotation, then at run time, the expression evaluates to a
  * value that is less than the value of the expression in the annotation.
  *
- * <p>{@code @LessThan("end + 1")} is equivalent to {@code @LessThanOrEqual("end")}.
- *
  * <p>Subtyping:
  *
  * <ul>
@@ -24,24 +22,24 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *   <li>{@code @LessThan({"a", "b"})} is not related to {@code @LessThan({"a", "c"})}.
  * </ul>
  *
- * @checker_framework.manual #index-inequalities Index Chceker Inequalities
+ * @checker_framework.manual #index-inequalities Index Checker Inequalities
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @SubtypeOf({LessThanUnknown.class})
-// TODO: I chose to implement less than rather than greater than because in most of the case studies
-// false positives, the bigger value is final or effectively final, so it can appear in a dependent
-// annotation without causing soundness issues.
+// TODO: I chose to implement less than rather than greater than because in most of the false
+// positives in the case studies, the bigger value is final or effectively final, so it can
+// appear in a dependent annotation without causing soundness issues.
 public @interface LessThan {
   /**
    * The annotated expression's value is less than this expression.
    *
    * <p>The expressions in {@code value} may be addition/subtraction of any number of Java
-   * expressions. For example, {@code @LessThan(value = "x + y + 2"}}.
+   * expressions. For example, {@code @LessThan(value = "x + y + 2")}.
    *
-   * <p>The expression in {@code value} must be final or constant or the addition/subtract of final
-   * or constant expressions.
+   * <p>The expression in {@code value} must be final or constant, or the addition/subtraction of
+   * final or constant expressions.
    */
   @JavaExpression
   String[] value();

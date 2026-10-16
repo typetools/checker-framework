@@ -1,12 +1,13 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * A node for the cast operator:
@@ -15,13 +16,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class TypeCastNode extends Node {
 
-  protected final Tree tree;
+  protected final TypeCastTree tree;
   protected final Node operand;
 
   /** For Types.isSameType. */
   protected final Types types;
 
-  public TypeCastNode(Tree tree, Node operand, TypeMirror type, Types types) {
+  public TypeCastNode(TypeCastTree tree, Node operand, TypeMirror type, Types types) {
     super(type);
     this.tree = tree;
     this.operand = operand;
@@ -33,7 +34,7 @@ public class TypeCastNode extends Node {
   }
 
   @Override
-  public Tree getTree() {
+  public TypeCastTree getTree() {
     return tree;
   }
 
@@ -49,10 +50,9 @@ public class TypeCastNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof TypeCastNode)) {
+    if (!(obj instanceof TypeCastNode other)) {
       return false;
     }
-    TypeCastNode other = (TypeCastNode) obj;
     return getOperand().equals(other.getOperand()) && types.isSameType(getType(), other.getType());
   }
 
@@ -62,6 +62,7 @@ public class TypeCastNode extends Node {
   }
 
   @Override
+  @SideEffectFree
   public Collection<Node> getOperands() {
     return Collections.singletonList(getOperand());
   }

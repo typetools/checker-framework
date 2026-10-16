@@ -4,6 +4,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
@@ -26,7 +28,7 @@ import org.checkerframework.javacutil.BugInCF;
  *
  * @param <V> the abstract value type to be tracked by the analysis
  * @param <S> the store type used in the analysis
- * @param <T> the transfer function type that is used to approximate runtime behavior
+ * @param <T> the transfer function type that is used to approximate run-time behavior
  */
 public class BackwardAnalysisImpl<
         V extends AbstractValue<V>, S extends Store<S>, T extends BackwardTransferFunction<V, S>>
@@ -62,7 +64,7 @@ public class BackwardAnalysisImpl<
    *
    * @param transferFunction the transfer function
    */
-  public BackwardAnalysisImpl(@Nullable T transferFunction) {
+  public BackwardAnalysisImpl(T transferFunction) {
     this();
     this.transferFunction = transferFunction;
   }
@@ -76,7 +78,7 @@ public class BackwardAnalysisImpl<
     try {
       init(cfg);
       while (!worklist.isEmpty()) {
-        Block b = worklist.poll();
+        Block b = worklist.remove();
         performAnalysisBlock(b);
       }
     } finally {
@@ -89,84 +91,75 @@ public class BackwardAnalysisImpl<
   @Override
   public void performAnalysisBlock(Block b) {
     switch (b.getType()) {
-      case REGULAR_BLOCK:
-        {
-          RegularBlock rb = (RegularBlock) b;
-          TransferInput<V, S> inputAfter = getInput(rb);
-          assert inputAfter != null : "@AssumeAssertion(nullness): invariant";
-          currentInput = inputAfter.copy();
-          Node firstNode = null;
-          boolean addToWorklistAgain = false;
-          List<Node> nodeList = rb.getNodes();
-          ListIterator<Node> reverseIter = nodeList.listIterator(nodeList.size());
-          while (reverseIter.hasPrevious()) {
-            Node node = reverseIter.previous();
-            assert currentInput != null : "@AssumeAssertion(nullness): invariant";
-            TransferResult<V, S> transferResult = callTransferFunction(node, currentInput);
-            addToWorklistAgain |= updateNodeValues(node, transferResult);
-            currentInput = new TransferInput<>(node, this, transferResult);
-            firstNode = node;
-          }
-          // Propagate store to predecessors
-          for (Block pred : rb.getPredecessors()) {
-            assert currentInput != null : "@AssumeAssertion(nullness): invariant";
-            propagateStoresTo(
-                pred, firstNode, currentInput, FlowRule.EACH_TO_EACH, addToWorklistAgain);
-          }
-          break;
-        }
-      case EXCEPTION_BLOCK:
-        {
-          ExceptionBlock eb = (ExceptionBlock) b;
-          TransferInput<V, S> inputAfter = getInput(eb);
-          assert inputAfter != null : "@AssumeAssertion(nullness): invariant";
-          currentInput = inputAfter.copy();
-          Node node = eb.getNode();
+      case REGULAR_BLOCK -> {
+        RegularBlock rb = (RegularBlock) b;
+        TransferInput<V, S> inputAfter = getInput(rb);
+        assert inputAfter != null : "@AssumeAssertion(nullness): invariant";
+        currentInput = inputAfter.copy();
+        Node firstNode = null;
+        boolean addToWorklistAgain = false;
+        List<Node> nodeList = rb.getNodes();
+        ListIterator<Node> reverseIter = nodeList.listIterator(nodeList.size());
+        while (reverseIter.hasPrevious()) {
+          Node node = reverseIter.previous();
+          assert currentInput != null : "@AssumeAssertion(nullness): invariant";
           TransferResult<V, S> transferResult = callTransferFunction(node, currentInput);
-          boolean addToWorklistAgain = updateNodeValues(node, transferResult);
-          // Merge transferResult with exceptionStore if there exists one
-          S exceptionStore = exceptionStores.get(eb);
-          S mergedStore =
-              exceptionStore != null
-                  ? transferResult.getRegularStore().leastUpperBound(exceptionStore)
-                  : transferResult.getRegularStore();
-          for (Block pred : eb.getPredecessors()) {
-            addStoreAfter(pred, node, mergedStore, addToWorklistAgain);
-          }
-          break;
+          addToWorklistAgain |= updateNodeValues(node, transferResult);
+          currentInput = new TransferInput<>(node, this, transferResult);
+          firstNode = node;
         }
-      case CONDITIONAL_BLOCK:
-        {
-          ConditionalBlock cb = (ConditionalBlock) b;
-          TransferInput<V, S> inputAfter = getInput(cb);
-          assert inputAfter != null : "@AssumeAssertion(nullness): invariant";
-          TransferInput<V, S> input = inputAfter.copy();
-          for (Block pred : cb.getPredecessors()) {
+        // Propagate store to predecessors
+        for (Block pred : rb.getPredecessors()) {
+          assert currentInput != null : "@AssumeAssertion(nullness): invariant";
+          propagateStoresTo(
+              pred, firstNode, currentInput, FlowRule.EACH_TO_EACH, addToWorklistAgain);
+        }
+      }
+      case EXCEPTION_BLOCK -> {
+        ExceptionBlock eb = (ExceptionBlock) b;
+        TransferInput<V, S> inputAfter = getInput(eb);
+        assert inputAfter != null : "@AssumeAssertion(nullness): invariant";
+        currentInput = inputAfter.copy();
+        Node node = eb.getNode();
+        TransferResult<V, S> transferResult = callTransferFunction(node, currentInput);
+        boolean addToWorklistAgain = updateNodeValues(node, transferResult);
+        // Merge transferResult with exceptionStore if there exists one
+        S exceptionStore = exceptionStores.get(eb);
+        S mergedStore =
+            exceptionStore != null
+                ? transferResult.getRegularStore().leastUpperBound(exceptionStore)
+                : transferResult.getRegularStore();
+        for (Block pred : eb.getPredecessors()) {
+          addStoreAfter(pred, node, mergedStore, addToWorklistAgain);
+        }
+      }
+      case CONDITIONAL_BLOCK -> {
+        ConditionalBlock cb = (ConditionalBlock) b;
+        TransferInput<V, S> inputAfter = getInput(cb);
+        assert inputAfter != null : "@AssumeAssertion(nullness): invariant";
+        TransferInput<V, S> input = inputAfter.copy();
+        for (Block pred : cb.getPredecessors()) {
+          propagateStoresTo(pred, null, input, FlowRule.EACH_TO_EACH, false);
+        }
+      }
+      case SPECIAL_BLOCK -> {
+        // Special basic blocks are empty and cannot throw exceptions,
+        // thus there is no need to perform any analysis.
+        SpecialBlock sb = (SpecialBlock) b;
+        SpecialBlockType sType = sb.getSpecialType();
+        if (sType == SpecialBlockType.ENTRY) {
+          // storage the store at entry
+          storeAtEntry = outStores.get(sb);
+        } else {
+          assert sType == SpecialBlockType.EXIT || sType == SpecialBlockType.EXCEPTIONAL_EXIT;
+          TransferInput<V, S> input = getInput(sb);
+          assert input != null : "@AssumeAssertion(nullness): invariant";
+          for (Block pred : sb.getPredecessors()) {
             propagateStoresTo(pred, null, input, FlowRule.EACH_TO_EACH, false);
           }
-          break;
         }
-      case SPECIAL_BLOCK:
-        {
-          // Special basic blocks are empty and cannot throw exceptions,
-          // thus there is no need to perform any analysis.
-          SpecialBlock sb = (SpecialBlock) b;
-          final SpecialBlockType sType = sb.getSpecialType();
-          if (sType == SpecialBlockType.ENTRY) {
-            // storage the store at entry
-            storeAtEntry = outStores.get(sb);
-          } else {
-            assert sType == SpecialBlockType.EXIT || sType == SpecialBlockType.EXCEPTIONAL_EXIT;
-            TransferInput<V, S> input = getInput(sb);
-            assert input != null : "@AssumeAssertion(nullness): invariant";
-            for (Block pred : sb.getPredecessors()) {
-              propagateStoresTo(pred, null, input, FlowRule.EACH_TO_EACH, false);
-            }
-          }
-          break;
-        }
-      default:
-        throw new BugInCF("Unexpected block type: " + b.getType());
+      }
+      default -> throw new BugInCF("Unexpected block type: " + b.getType());
     }
   }
 
@@ -247,31 +240,29 @@ public class BackwardAnalysisImpl<
    * @param pred the basic block
    * @param node the node of the basic block {@code b}
    * @param s the store being added
-   * @param addBlockToWorklist whether the basic block {@code b} should be added back to {@code
+   * @param addBlockToWorklist true if the basic block {@code b} should be added back to {@code
    *     Worklist}
    */
   protected void addStoreAfter(Block pred, @Nullable Node node, S s, boolean addBlockToWorklist) {
-    // If the block pred is an exception block, decide whether the block of passing node is an
-    // exceptional successor of the block pred
-    if (pred instanceof ExceptionBlock
-        && ((ExceptionBlock) pred).getSuccessor() != null
-        && node != null) {
-      @Nullable Block succBlock = ((ExceptionBlock) pred).getSuccessor();
-      @Nullable Block block = node.getBlock();
-      if (succBlock != null && block != null && succBlock.getUid() == block.getUid()) {
-        // If the block of passing node is an exceptional successor of Block pred, propagate
-        // store to the exceptionStores. Currently it doesn't track the label of an
-        // exceptional edge from exception block to its exceptional successors in backward
-        // direction. Instead, all exception stores of exceptional successors of an
-        // exception block will merge to one exception store at the exception block
-        ExceptionBlock ebPred = (ExceptionBlock) pred;
-        S exceptionStore = exceptionStores.get(ebPred);
-        S newExceptionStore = (exceptionStore != null) ? exceptionStore.leastUpperBound(s) : s;
-        if (!newExceptionStore.equals(exceptionStore)) {
-          exceptionStores.put(ebPred, newExceptionStore);
-          inputs.put(ebPred, new TransferInput<V, S>(node, this, newExceptionStore));
-          addBlockToWorklist = true;
-        }
+    // If the block `pred` is an exception block, decide whether the block of passing node is an
+    // exceptional successor of the block `pred`.
+    TypeMirror excSuccType = getSuccExceptionType(pred, node);
+    if (excSuccType != null) {
+      if (isIgnoredExceptionType(excSuccType)) {
+        return;
+      }
+      // If the block of passing node is an exceptional successor of Block pred, propagate
+      // store to the exceptionStores. Currently it doesn't track the label of an
+      // exceptional edge from exception block to its exceptional successors in backward
+      // direction. Instead, all exception stores of exceptional successors of an
+      // exception block will merge to one exception store at the exception block
+      ExceptionBlock ebPred = (ExceptionBlock) pred;
+      S exceptionStore = exceptionStores.get(ebPred);
+      S newExceptionStore = (exceptionStore != null) ? exceptionStore.leastUpperBound(s) : s;
+      if (!newExceptionStore.equals(exceptionStore)) {
+        exceptionStores.put(ebPred, newExceptionStore);
+        inputs.put(ebPred, new TransferInput<>(node, this, newExceptionStore));
+        addBlockToWorklist = true;
       }
     } else {
       S predOutStore = getStoreAfter(pred);
@@ -288,13 +279,42 @@ public class BackwardAnalysisImpl<
   }
 
   /**
+   * Checks if the block for a node is an exceptional successor of a predecessor block, and if so,
+   * returns the exception type for the control-flow edge.
+   *
+   * @param pred the predecessor block
+   * @param node the successor node
+   * @return the exception type leading to a control flow edge from {@code pred} to the block for
+   *     {@code node}, if it exists; {@code null} otherwise
+   */
+  private @Nullable TypeMirror getSuccExceptionType(Block pred, @Nullable Node node) {
+    if (!(pred instanceof ExceptionBlock predExceptionBlock) || node == null) {
+      return null;
+    }
+    Block block = node.getBlock();
+    if (block == null) {
+      return null;
+    }
+    Map<TypeMirror, Set<Block>> exceptionalSuccessors =
+        predExceptionBlock.getExceptionalSuccessors();
+    for (Map.Entry<TypeMirror, Set<Block>> excTypeEntry : exceptionalSuccessors.entrySet()) {
+      for (Block excSuccBlock : excTypeEntry.getValue()) {
+        if (excSuccBlock.getUid() == block.getUid()) {
+          return excTypeEntry.getKey();
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
    * Returns the store corresponding to the location right after the basic block {@code b}.
    *
    * @param b the given block
    * @return the store right after the given block
    */
   protected @Nullable S getStoreAfter(Block b) {
-    return readFromStore(outStores, b);
+    return outStores.get(b);
   }
 
   @Override
@@ -303,7 +323,8 @@ public class BackwardAnalysisImpl<
       Analysis.BeforeOrAfter preOrPost,
       TransferInput<V, S> blockTransferInput,
       IdentityHashMap<Node, V> nodeValues,
-      Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>> analysisCaches) {
+      @Nullable Map<TransferInput<V, S>, IdentityHashMap<Node, TransferResult<V, S>>>
+          analysisCaches) {
     Block block = node.getBlock();
     assert block != null : "@AssumeAssertion(nullness): invariant";
     Node oldCurrentNode = currentNode;
@@ -314,55 +335,55 @@ public class BackwardAnalysisImpl<
     isRunning = true;
     try {
       switch (block.getType()) {
-        case REGULAR_BLOCK:
-          {
-            RegularBlock rBlock = (RegularBlock) block;
-            // Apply transfer function to contents until we found the node we are looking for.
-            TransferInput<V, S> store = blockTransferInput;
-            List<Node> nodeList = rBlock.getNodes();
-            ListIterator<Node> reverseIter = nodeList.listIterator(nodeList.size());
-            while (reverseIter.hasPrevious()) {
-              Node n = reverseIter.previous();
-              setCurrentNode(n);
-              if (n == node && preOrPost == Analysis.BeforeOrAfter.AFTER) {
-                return store.getRegularStore();
-              }
-              // Copy the store to avoid changing other blocks' transfer inputs in
-              // {@link #inputs}
-              TransferResult<V, S> transferResult = callTransferFunction(n, store.copy());
-              if (n == node) {
-                return transferResult.getRegularStore();
-              }
-              store = new TransferInput<>(n, this, transferResult);
+        case REGULAR_BLOCK -> {
+          RegularBlock rBlock = (RegularBlock) block;
+          // Apply transfer function to contents until we found the node we are
+          // looking for.
+          TransferInput<V, S> store = blockTransferInput;
+          List<Node> nodeList = rBlock.getNodes();
+          ListIterator<Node> reverseIter = nodeList.listIterator(nodeList.size());
+          while (reverseIter.hasPrevious()) {
+            Node n = reverseIter.previous();
+            setCurrentNode(n);
+            if (n == node && preOrPost == Analysis.BeforeOrAfter.AFTER) {
+              return store.getRegularStore();
             }
-            throw new BugInCF("node %s is not in node.getBlock()=%s", node, block);
+            // Copy the store to avoid changing other blocks' transfer inputs in
+            // {@link #inputs}
+            TransferResult<V, S> transferResult = callTransferFunction(n, store.copy());
+            if (n == node) {
+              return transferResult.getRegularStore();
+            }
+            store = new TransferInput<>(n, this, transferResult);
           }
-        case EXCEPTION_BLOCK:
-          {
-            ExceptionBlock eb = (ExceptionBlock) block;
-            if (eb.getNode() != node) {
-              throw new BugInCF(
-                  "Node should be equal to eb.getNode(). But get: node: "
-                      + node
-                      + "\teb.getNode(): "
-                      + eb.getNode());
-            }
-            if (preOrPost == Analysis.BeforeOrAfter.AFTER) {
-              return blockTransferInput.getRegularStore();
-            }
-            setCurrentNode(node);
-            // Copy the store to avoid changing other blocks' transfer inputs in {@link #inputs}
-            TransferResult<V, S> transferResult =
-                callTransferFunction(node, blockTransferInput.copy());
-            // Merge transfer result with the exception store of this exceptional block
-            S exceptionStore = exceptionStores.get(eb);
-            return exceptionStore == null
-                ? transferResult.getRegularStore()
-                : transferResult.getRegularStore().leastUpperBound(exceptionStore);
+          throw new BugInCF("node %s is not in node.getBlock()=%s", node, block);
+        }
+        case EXCEPTION_BLOCK -> {
+          ExceptionBlock eb = (ExceptionBlock) block;
+          if (eb.getNode() != node) {
+            throw new BugInCF(
+                "Node should be equal to eb.getNode(). But get: node: "
+                    + node
+                    + "\teb.getNode(): "
+                    + eb.getNode());
           }
-        default:
-          // Only regular blocks and exceptional blocks can hold nodes.
-          throw new BugInCF("Unexpected block type: " + block.getType());
+          if (preOrPost == Analysis.BeforeOrAfter.AFTER) {
+            return blockTransferInput.getRegularStore();
+          }
+          setCurrentNode(node);
+          // Copy the store to avoid changing other blocks' transfer inputs in {@link
+          // #inputs}
+          TransferResult<V, S> transferResult =
+              callTransferFunction(node, blockTransferInput.copy());
+          // Merge transfer result with the exception store of this exceptional block
+          S exceptionStore = exceptionStores.get(eb);
+          return exceptionStore == null
+              ? transferResult.getRegularStore()
+              : transferResult.getRegularStore().leastUpperBound(exceptionStore);
+        }
+        default ->
+            // Only regular blocks and exceptional blocks can hold nodes.
+            throw new BugInCF("Unexpected block type: " + block.getType());
       }
 
     } finally {

@@ -3,7 +3,7 @@
 
 /**
  * This test came from running the compilermsgs checker in the checker-framework/checker directory
- * It's to test the result of type argument inference. We used to have the following return found:
+ * It's to test the result of type argument inference. We used to have the following "return" found:
  * FlowAnalysis[ extends @UnknownPropertyKey CFAbstractAnalysis<Value[ extends @UnknownPropertyKey
  * CFAbstractValue<Value[ extends @UnknownPropertyKey CFAbstractValue<Value>
  * super @UnknownPropertyKey Void]> super @UnknownPropertyKey Void], Store[
@@ -66,7 +66,7 @@ class CFAbstractValue<V extends CFAbstractValue<V>> {}
 
 class CFAbstractAnalysis<V extends CFAbstractValue<V>> {}
 
-class GenericAnnotatedTypeFactory<
+class GenericAnnotatedTypeFactoryInferTypeArgs<
     Value extends CFAbstractValue<Value>, FlowAnalysis extends CFAbstractAnalysis<Value>> {
 
   @SuppressWarnings("immutability:type.argument")
@@ -75,7 +75,7 @@ class GenericAnnotatedTypeFactory<
     return result;
   }
 
-  @SuppressWarnings({"nullness:return", "lock:return", "immutabilitysub:type.argument"})
+  @SuppressWarnings({"nullness:return", "immutabilitysub:type.argument"})
   public static <T> T invokeConstructorFor() {
     return null;
   }

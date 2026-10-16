@@ -17,8 +17,16 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  *
  * <p>An expression of type {@code @UnknownInitialization(T.class)} refers to an object that has all
  * fields of {@code T} (and any super-classes) initialized. Just {@code @UnknownInitialization} is
- * equivalent to {@code @UnknownInitialization(Object.class)}. Please see the manual for examples of
- * how to use the annotation (the link appears below).
+ * equivalent to {@code @UnknownInitialization(Object.class)}.
+ *
+ * <p>A common use is
+ *
+ * <pre>{@code
+ * void myMethod(@UnknownInitialization(MyClass.class) MyClass this, ...) { ... }
+ * }</pre>
+ *
+ * which allows {@code myMethod} to be called from the {@code MyClass} constructor. See the manual
+ * for more examples of how to use the annotation (the link appears below).
  *
  * <p>Reading a field of an object of type {@code @UnknownInitialization} might yield a value that
  * does not correspond to the declared type qualifier for that field. For instance, consider a
@@ -26,7 +34,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  *
  * <pre>@NonNull Object f;</pre>
  *
- * In a partially-initialized object, field {@code f} might be {@code null} despite its
+ * In a partially initialized object, field {@code f} might be {@code null} despite its
  * {@literal @}{@link NonNull} type annotation.
  *
  * <p>What type qualifiers on the field are considered depends on the checker; for instance, the

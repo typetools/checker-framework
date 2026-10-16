@@ -35,9 +35,10 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
    * Annotations imported by the file, stored as a mapping from names to the TypeElements for the
    * annotations. Contains entries for the simple and fully qualified names of each annotation.
    */
-  private Map<String, TypeElement> allAnnotations;
+  private final Map<String, TypeElement> allAnnotations;
+
   /** Element utilities. */
-  private Elements elements;
+  private final Elements elements;
 
   /**
    * Constructs a {@code TypeAnnotationMover}.
@@ -45,7 +46,7 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
    * @param allAnnotations the annotations imported by the file, as a mapping from annotation name
    *     to TypeElement. There should be two entries for each annotation: the annotation's simple
    *     name and its fully-qualified name both mapped to its TypeElement.
-   * @param elements Element utilities
+   * @param elements the Element utilities
    */
   public TypeAnnotationMover(Map<String, TypeElement> allAnnotations, Elements elements) {
     this.allAnnotations = new HashMap<>(allAnnotations);
@@ -97,13 +98,14 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
    * Given a declaration, returns a List of annotations currently in declaration position that can't
    * possibly be declaration annotations for that type of declaration.
    *
-   * @param node JavaParser node for declaration
+   * @param node a JavaParser node for declaration
    * @param declarationType the type of declaration {@code node} represents; always FIELD or METHOD
    * @return a list of annotations in declaration position that should be on the declaration's type
    */
   private List<AnnotationExpr> getAnnotationsToMove(
       NodeWithAnnotations<?> node, ElementType declarationType) {
-    List<AnnotationExpr> annosToMove = new ArrayList<>();
+    // There are usually no annotations that need to be moved.
+    List<AnnotationExpr> annosToMove = new ArrayList<>(0);
     for (AnnotationExpr annotation : node.getAnnotations()) {
       if (!isPossiblyDeclarationAnnotation(annotation, declarationType)) {
         annosToMove.add(annotation);
@@ -159,7 +161,7 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
   }
 
   /**
-   * Returns whether the annotation represented by {@code annotationDeclaration} might be a
+   * Returns true if the annotation represented by {@code annotationDeclaration} might be a
    * declaration annotation for {@code declarationType}. This holds if the TypeElement has no
    * {@code @Target} meta-annotation, or if {@code declarationType} is a target of the annotation.
    *
@@ -197,7 +199,7 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
   }
 
   /**
-   * Returns whether {@code type} has a name containing multiple parts separated by dots, e.g.
+   * Returns true if {@code type} has a name containing multiple parts separated by dots, e.g.
    * "java.lang.String" or "Outer.Inner".
    *
    * <p>Annotations should not be moved onto a Type for which this method returns true. A type like

@@ -14,7 +14,7 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.NullType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.SimpleTypeVisitor7;
+import javax.lang.model.util.SimpleTypeVisitor8;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
@@ -41,13 +41,16 @@ import org.checkerframework.javacutil.TypesUtils;
 public class FormatterTreeUtil {
   /** The checker. */
   public final BaseTypeChecker checker;
+
   /** The processing environment. */
   public final ProcessingEnvironment processingEnv;
 
   /** The value() element/field of an @Format annotation. */
   protected final ExecutableElement formatValueElement;
+
   /** The value() element/field of an @InvalidFormat annotation. */
   protected final ExecutableElement invalidFormatValueElement;
+
   // private final ExecutableElement formatArgTypesElement;
 
   public FormatterTreeUtil(BaseTypeChecker checker) {
@@ -66,7 +69,7 @@ public class FormatterTreeUtil {
   }
 
   /** Describes the ways a format method may be invoked. */
-  public static enum InvocationType {
+  public enum InvocationType {
     /**
      * The parameters are passed as varargs. For example:
      *
@@ -86,7 +89,7 @@ public class FormatterTreeUtil {
      * <blockquote>
      *
      * <pre>
-     * Object[] a = new Object[]{"Example",7};
+     * Object[] a = new Object[] {"Example",7};
      * String.format("%s %d", a);
      * </pre>
      *
@@ -95,7 +98,7 @@ public class FormatterTreeUtil {
     ARRAY,
 
     /**
-     * A null array is passed to the format method. This happens seldomly.
+     * A null array is passed to the format method. This happens seldom.
      *
      * <blockquote>
      *
@@ -108,20 +111,14 @@ public class FormatterTreeUtil {
     NULLARRAY;
   }
 
-  /** A wrapper around a value of type E, plus an ExpressionTree location. */
-  public static class Result<E> {
-    private final E value;
-    public final ExpressionTree location;
-
-    public Result(E value, ExpressionTree location) {
-      this.value = value;
-      this.location = location;
-    }
-
-    public E value() {
-      return value;
-    }
-  }
+  /**
+   * A wrapper around a value of type E, plus an ExpressionTree location.
+   *
+   * @param <E> the type of the wrapped value
+   * @param value the wrapped value
+   * @param location the location of the value
+   */
+  public record Result<E>(E value, ExpressionTree location) {}
 
   /**
    * Returns true if the call is to a method with the @ReturnsFormat annotation. An example of such
@@ -133,20 +130,20 @@ public class FormatterTreeUtil {
     return anno != null;
   }
 
-  private ConversionCategory[] asFormatCallCategoriesLowLevel(MethodInvocationNode node) {
+  private ConversionCategory @Nullable [] asFormatCallCategoriesLowLevel(
+      MethodInvocationNode node) {
     Node vararg = node.getArgument(1);
-    if (!(vararg instanceof ArrayCreationNode)) {
+    if (!(vararg instanceof ArrayCreationNode acn)) {
       return null;
     }
-    List<Node> convs = ((ArrayCreationNode) vararg).getInitializers();
+    List<Node> convs = acn.getInitializers();
     ConversionCategory[] res = new ConversionCategory[convs.size()];
     for (int i = 0; i < convs.size(); ++i) {
       Node conv = convs.get(i);
-      if (conv instanceof FieldAccessNode) {
-        Class<? extends Object> clazz =
-            TypesUtils.getClassFromType(((FieldAccessNode) conv).getType());
+      if (conv instanceof FieldAccessNode fan) {
+        Class<? extends Object> clazz = TypesUtils.getClassFromType(fan.getType());
         if (clazz == ConversionCategory.class) {
-          res[i] = ConversionCategory.valueOf(((FieldAccessNode) conv).getFieldName());
+          res[i] = ConversionCategory.valueOf(fan.getFieldName());
           continue; /* avoid returning null */
         }
       }
@@ -161,14 +158,14 @@ public class FormatterTreeUtil {
   }
 
   /**
-   * Returns true if {@code node} is a call to a method annotated with {@code @FormatMethod}.
+   * Returns true if {@code tree} is a call to a method annotated with {@code @FormatMethod}.
    *
-   * @param node a method call
+   * @param tree a method call
    * @param atypeFactory a type factory
-   * @return true if {@code node} is a call to a method annotated with {@code @FormatMethod}
+   * @return true if {@code tree} is a call to a method annotated with {@code @FormatMethod}
    */
-  public boolean isFormatMethodCall(MethodInvocationTree node, AnnotatedTypeFactory atypeFactory) {
-    ExecutableElement method = TreeUtils.elementFromUse(node);
+  public boolean isFormatMethodCall(MethodInvocationTree tree, AnnotatedTypeFactory atypeFactory) {
+    ExecutableElement method = TreeUtils.elementFromUse(tree);
     AnnotationMirror anno = atypeFactory.getDeclAnnotation(method, FormatMethod.class);
     return anno != null;
   }
@@ -191,8 +188,9 @@ public class FormatterTreeUtil {
     ExecutableElement methodElement = TreeUtils.elementFromUse(invocationTree);
     int formatStringIndex = FormatterVisitor.formatStringIndex(methodElement);
     if (formatStringIndex == -1) {
-      // Reporting the error is redundant if the method was declared in source code, because the
-      // visitor will have reported it; but it is necessary if the method was declared in byte code.
+      // Reporting the error is redundant if the method was declared in source code, because
+      // the visitor will have reported it; but it is necessary if the method was declared in
+      // byte code.
       atypeFactory
           .getChecker()
           .reportError(invocationTree, "format.method", methodElement.getSimpleName());
@@ -207,15 +205,19 @@ public class FormatterTreeUtil {
   }
 
   /** Represents a format method invocation in the syntax tree. */
-  public class FormatCall {
+  public final class FormatCall {
     /** The call itself. */
-    final MethodInvocationTree invocationTree;
+    /*package-private*/ final MethodInvocationTree invocationTree;
+
     /** The format string argument. */
     private final ExpressionTree formatStringTree;
+
     /** The type of the format string argument. */
     private final AnnotatedTypeMirror formatStringType;
+
     /** The arguments that follow the format string argument. */
     private final List<? extends ExpressionTree> args;
+
     /** The type factory. */
     private final AnnotatedTypeFactory atypeFactory;
 
@@ -248,10 +250,10 @@ public class FormatterTreeUtil {
      * @return an error description if the format string is not annotated as {@code @Format}, or
      *     null if it is
      */
-    public final Result<String> errMissingFormatAnnotation() {
-      if (!formatStringType.hasAnnotation(Format.class)) {
+    public final @Nullable Result<String> errMissingFormatAnnotation() {
+      if (!formatStringType.hasPrimaryAnnotation(Format.class)) {
         String msg = "(is a @Format annotation missing?)";
-        AnnotationMirror inv = formatStringType.getAnnotation(InvalidFormat.class);
+        AnnotationMirror inv = formatStringType.getPrimaryAnnotation(InvalidFormat.class);
         if (inv != null) {
           msg = invalidFormatAnnotationToErrorMessage(inv);
         }
@@ -269,12 +271,12 @@ public class FormatterTreeUtil {
       InvocationType type = InvocationType.VARARG;
 
       if (args.size() == 1) {
-        final ExpressionTree first = args.get(0);
+        ExpressionTree first = args.get(0);
         TypeMirror argType = atypeFactory.getAnnotatedType(first).getUnderlyingType();
         // figure out if argType is an array
         type =
             argType.accept(
-                new SimpleTypeVisitor7<InvocationType, Class<Void>>() {
+                new SimpleTypeVisitor8<>() {
                   @Override
                   protected InvocationType defaultAction(TypeMirror e, Class<Void> p) {
                     // not an array
@@ -288,16 +290,16 @@ public class FormatterTreeUtil {
                     return first.accept(
                         new SimpleTreeVisitor<InvocationType, Class<Void>>() {
                           @Override
-                          protected InvocationType defaultAction(Tree node, Class<Void> p) {
+                          protected InvocationType defaultAction(Tree tree, Class<Void> p) {
                             // just a normal array
                             return InvocationType.ARRAY;
                           }
 
                           @Override
-                          public InvocationType visitTypeCast(TypeCastTree node, Class<Void> p) {
+                          public InvocationType visitTypeCast(TypeCastTree tree, Class<Void> p) {
                             // it's a (Object[])null
                             return atypeFactory
-                                        .getAnnotatedType(node.getExpression())
+                                        .getAnnotatedType(tree.getExpression())
                                         .getUnderlyingType()
                                         .getKind()
                                     == TypeKind.NULL
@@ -330,7 +332,7 @@ public class FormatterTreeUtil {
      * @see ConversionCategory
      */
     public final ConversionCategory[] getFormatCategories() {
-      AnnotationMirror anno = formatStringType.getAnnotation(Format.class);
+      AnnotationMirror anno = formatStringType.getPrimaryAnnotation(Format.class);
       return formatAnnotationToCategories(anno);
     }
 
@@ -384,7 +386,7 @@ public class FormatterTreeUtil {
 
       // is it the null literal
       return type.accept(
-          new SimpleTypeVisitor7<Boolean, Class<Void>>() {
+          new SimpleTypeVisitor8<>() {
             @Override
             protected Boolean defaultAction(TypeMirror e, Class<Void> p) {
               // it's not the null literal
@@ -440,8 +442,7 @@ public class FormatterTreeUtil {
    * @param invalidFormatString an invalid formatter string
    * @return an {@link InvalidFormat} annotation with the given string as its value
    */
-  // package-private
-  AnnotationMirror stringToInvalidFormatAnnotation(String invalidFormatString) {
+  /*package-private*/ AnnotationMirror stringToInvalidFormatAnnotation(String invalidFormatString) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, InvalidFormat.class);
     builder.setValue("value", invalidFormatString);
     return builder.build();

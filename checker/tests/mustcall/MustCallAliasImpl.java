@@ -1,7 +1,5 @@
-// A simple test that the extra obligations that MustCallAlias imposes are
-// respected.
-
-// @skip-test until the checks are implemented
+// A simple test that MustCallAlias annotations in source code don't issue
+// bogus annotations.on.use errors.
 
 import java.io.*;
 import org.checkerframework.checker.mustcall.qual.*;

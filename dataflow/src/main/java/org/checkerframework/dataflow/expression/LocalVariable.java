@@ -2,12 +2,11 @@ package org.checkerframework.dataflow.expression;
 
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.Objects;
-import javax.lang.model.element.Element;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -18,7 +17,14 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 public class LocalVariable extends JavaExpression {
   /** The element for this local variable. */
-  protected final Element element;
+  protected final VariableElement element;
+
+  /**
+   * The cached hash code, or 0 if it has not yet been computed. A LocalVariable is immutable, so
+   * the hash code is computed at most once. Caching it is worthwhile because every store operation
+   * hashes the expressions in the store.
+   */
+  private int hashCode = 0;
 
   /**
    * Creates a new LocalVariable.
@@ -31,42 +37,13 @@ public class LocalVariable extends JavaExpression {
   }
 
   /**
-   * Creates a LocalVariable
+   * Creates a new LocalVariable.
    *
    * @param element the element for the local variable
    */
-  public LocalVariable(Element element) {
+  public LocalVariable(VariableElement element) {
     super(ElementUtils.getType(element));
     this.element = element;
-  }
-
-  @Override
-  public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof LocalVariable)) {
-      return false;
-    }
-    LocalVariable other = (LocalVariable) obj;
-
-    return sameElement(element, other.element);
-  }
-
-  /**
-   * Returns true if the two elements are the same.
-   *
-   * @param element1 the first element to compare
-   * @param element2 the second element to compare
-   * @return true if the two elements are the same
-   */
-  protected static boolean sameElement(Element element1, Element element2) {
-    VarSymbol vs1 = (VarSymbol) element1;
-    VarSymbol vs2 = (VarSymbol) element2;
-    // The code below isn't just return vs1.equals(vs2) because an element might be
-    // different between subcheckers.  The owner of a lambda parameter is the enclosing
-    // method, so a local variable and a lambda parameter might have the same name and the
-    // same owner.  pos is used to differentiate this case.
-    return vs1.pos == vs2.pos
-        && vs1.name.contentEquals(vs2.name)
-        && vs1.owner.toString().equals(vs2.owner.toString());
   }
 
   /**
@@ -74,17 +51,8 @@ public class LocalVariable extends JavaExpression {
    *
    * @return the element for this variable
    */
-  public Element getElement() {
+  public VariableElement getElement() {
     return element;
-  }
-
-  @Override
-  public int hashCode() {
-    VarSymbol vs = (VarSymbol) element;
-    return Objects.hash(
-        vs.name.toString(),
-        TypeAnnotationUtils.unannotatedType(vs.type).toString(),
-        vs.owner.toString());
   }
 
   @Override
@@ -97,9 +65,10 @@ public class LocalVariable extends JavaExpression {
     return super.toStringDebug() + " [owner=" + ((VarSymbol) element).owner + "]";
   }
 
+  @SuppressWarnings("unchecked") // generic cast
   @Override
-  public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
-    return getClass() == clazz;
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
+    return getClass() == clazz ? (T) this : null;
   }
 
   @Override
@@ -108,11 +77,43 @@ public class LocalVariable extends JavaExpression {
   }
 
   @Override
-  public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof LocalVariable)) {
+  public boolean isAssignableByOtherCode() {
+    return false;
+  }
+
+  @Override
+  public boolean isModifiableByOtherCode() {
+    return !TypesUtils.isImmutableTypeInJdk(((VarSymbol) element).type);
+  }
+
+  @Override
+  public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+    return visitor.visitLocalVariable(this, p);
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof LocalVariable other)) {
       return false;
     }
-    LocalVariable other = (LocalVariable) je;
+
+    return sameElement(element, other.element);
+  }
+
+  @Override
+  public int hashCode() {
+    if (hashCode == 0) {
+      VarSymbol vs = (VarSymbol) element;
+      hashCode = Objects.hash(vs.pos, vs.name, vs.owner);
+    }
+    return hashCode;
+  }
+
+  @Override
+  public boolean syntacticEquals(JavaExpression je) {
+    if (!(je instanceof LocalVariable other)) {
+      return false;
+    }
     return this.equals(other);
   }
 
@@ -121,18 +122,21 @@ public class LocalVariable extends JavaExpression {
     return syntacticEquals(other);
   }
 
-  @Override
-  public boolean isUnassignableByOtherCode() {
-    return true;
-  }
-
-  @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return TypesUtils.isImmutableTypeInJdk(((VarSymbol) element).type);
-  }
-
-  @Override
-  public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
-    return visitor.visitLocalVariable(this, p);
+  /**
+   * Returns true if the two elements are the same.
+   *
+   * @param element1 the first element to compare
+   * @param element2 the second element to compare
+   * @return true if the two elements are the same
+   */
+  protected static boolean sameElement(VariableElement element1, VariableElement element2) {
+    VarSymbol vs1 = (VarSymbol) element1;
+    VarSymbol vs2 = (VarSymbol) element2;
+    // If a LocalVariable is created via JavaExpressionParseUtil#parse, then `vs1.equals(vs2)`
+    // will not return true even if the elements represent the same local variable.
+    // The owner of a lambda parameter is the enclosing method, so a local variable and a lambda
+    // parameter might have the same name and the same owner. Use pos to differentiate this
+    // case.
+    return vs1.pos == vs2.pos && vs1.name == vs2.name && vs1.owner.equals(vs2.owner);
   }
 }

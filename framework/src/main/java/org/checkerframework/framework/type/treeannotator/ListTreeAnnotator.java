@@ -37,8 +37,8 @@ public class ListTreeAnnotator extends TreeAnnotator {
     super(null);
     List<TreeAnnotator> annotatorList = new ArrayList<>(annotators.size());
     for (TreeAnnotator annotator : annotators) {
-      if (annotator instanceof ListTreeAnnotator) {
-        annotatorList.addAll(((ListTreeAnnotator) annotator).annotators);
+      if (annotator instanceof ListTreeAnnotator lta) {
+        annotatorList.addAll(lta.annotators);
       } else {
         annotatorList.add(annotator);
       }
@@ -47,9 +47,9 @@ public class ListTreeAnnotator extends TreeAnnotator {
   }
 
   @Override
-  public Void defaultAction(Tree node, AnnotatedTypeMirror type) {
+  public Void defaultAction(Tree tree, AnnotatedTypeMirror type) {
     for (TreeAnnotator annotator : annotators) {
-      annotator.visit(node, type);
+      annotator.visit(tree, type);
     }
 
     return null;

@@ -1,17 +1,19 @@
 package org.checkerframework.checker.mustcall;
 
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -19,6 +21,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
+import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
@@ -34,7 +37,7 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  * Transfer function for the must-call type system. Its primary purposes are (1) to create temporary
  * variables for expressions (which allow those expressions to have refined information in the
  * store, which the consistency checker can use), and (2) to reset refined information when a method
- * annotated with @CreatesObligation is called.
+ * annotated with @CreatesMustCallFor is called.
  */
 public class MustCallTransfer extends CFTransfer {
 
@@ -42,13 +45,22 @@ public class MustCallTransfer extends CFTransfer {
   private final TreeBuilder treeBuilder;
 
   /** The type factory. */
-  private MustCallAnnotatedTypeFactory atypeFactory;
+  private final MustCallAnnotatedTypeFactory atypeFactory;
 
   /**
    * A cache for the default type for java.lang.String, to avoid needing to look it up for every
    * implicit string conversion. See {@link #getDefaultStringType(StringConversionNode)}.
    */
   private @MonotonicNonNull AnnotationMirror defaultStringType;
+
+  /** True if -AnoCreatesMustCallFor was passed on the command line. */
+  private final boolean noCreatesMustCallFor;
+
+  /**
+   * True if -AenableWpiForRlc was passed on the command line. See {@link
+   * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   */
+  private final boolean enableWpiForRlc;
 
   /**
    * Create a MustCallTransfer.
@@ -58,6 +70,9 @@ public class MustCallTransfer extends CFTransfer {
   public MustCallTransfer(CFAnalysis analysis) {
     super(analysis);
     atypeFactory = (MustCallAnnotatedTypeFactory) analysis.getTypeFactory();
+    noCreatesMustCallFor =
+        atypeFactory.getChecker().hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR);
+    enableWpiForRlc = atypeFactory.getChecker().hasOption(ResourceLeakChecker.ENABLE_WPI_FOR_RLC);
     ProcessingEnvironment env = atypeFactory.getChecker().getProcessingEnvironment();
     treeBuilder = new TreeBuilder(env);
   }
@@ -89,7 +104,8 @@ public class MustCallTransfer extends CFTransfer {
       this.defaultStringType =
           atypeFactory
               .getAnnotatedType(TypesUtils.getTypeElement(n.getType()))
-              .getAnnotationInHierarchy(atypeFactory.TOP);
+              .getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
+      assert this.defaultStringType != null : "@AssumeAssertion(nullness): same hierarchy";
     }
     return this.defaultStringType;
   }
@@ -100,15 +116,15 @@ public class MustCallTransfer extends CFTransfer {
     TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(n, in);
 
     updateStoreWithTempVar(result, n);
-    if (!atypeFactory.getChecker().hasOption(MustCallChecker.NO_CREATES_OBLIGATION)) {
+    if (!noCreatesMustCallFor) {
       List<JavaExpression> targetExprs =
-          CreatesObligationElementSupplier.getCreatesObligationExpressions(
+          CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
               n, atypeFactory, atypeFactory);
       for (JavaExpression targetExpr : targetExprs) {
         AnnotationMirror defaultType =
             atypeFactory
                 .getAnnotatedType(TypesUtils.getTypeElement(targetExpr.getType()))
-                .getAnnotationInHierarchy(atypeFactory.TOP);
+                .getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
 
         if (result.containsTwoStores()) {
           CFStore thenStore = result.getThenStore();
@@ -138,8 +154,42 @@ public class MustCallTransfer extends CFTransfer {
     CFValue defaultTypeAsCFValue =
         analysis.createSingleAnnotationValue(defaultType, expr.getType());
     CFValue newValue = defaultTypeAsCFValue.leastUpperBound(value);
-    store.clearValue(expr);
-    store.insertValue(expr, newValue);
+    store.replaceValue(expr, newValue);
+  }
+
+  /**
+   * See {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   *
+   * @param tree a tree
+   * @return false if Resource Leak Checker is running as one of the upstream checkers and the
+   *     -AenableWpiForRlc flag is not passed as a command line argument, otherwise returns the
+   *     result of the super call
+   */
+  @Override
+  protected boolean shouldPerformWholeProgramInference(Tree tree) {
+    if (!isWpiEnabledForRLC()
+        && atypeFactory.getCheckerNames().contains(ResourceLeakChecker.class.getCanonicalName())) {
+      return false;
+    }
+    return super.shouldPerformWholeProgramInference(tree);
+  }
+
+  /**
+   * See {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   *
+   * @param expressionTree a tree
+   * @param lhsTree its element
+   * @return false if Resource Leak Checker is running as one of the upstream checkers and the
+   *     -AenableWpiForRlc flag is not passed as a command line argument, otherwise returns the
+   *     result of the super call
+   */
+  @Override
+  protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
+    if (!isWpiEnabledForRLC()
+        && atypeFactory.getCheckerNames().contains(ResourceLeakChecker.class.getCanonicalName())) {
+      return false;
+    }
+    return super.shouldPerformWholeProgramInference(expressionTree, lhsTree);
   }
 
   @Override
@@ -154,13 +204,29 @@ public class MustCallTransfer extends CFTransfer {
   public TransferResult<CFValue, CFStore> visitTernaryExpression(
       TernaryExpressionNode node, TransferInput<CFValue, CFStore> input) {
     TransferResult<CFValue, CFStore> result = super.visitTernaryExpression(node, input);
-    updateStoreWithTempVar(result, node);
+    if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
+      // Add the synthetic variable created during CFG construction to the temporary
+      // variable map (rather than creating a redundant temp var)
+      atypeFactory.tempVars.put(node.getTree(), node.getTernaryExpressionVar());
+    }
+    return result;
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitSwitchExpressionNode(
+      SwitchExpressionNode node, TransferInput<CFValue, CFStore> input) {
+    TransferResult<CFValue, CFStore> result = super.visitSwitchExpressionNode(node, input);
+    if (!TypesUtils.isPrimitiveOrBoxed(node.getType())) {
+      // Add the synthetic variable created during CFG construction to the temporary
+      // variable map (rather than creating a redundant temp var)
+      atypeFactory.tempVars.put(node.getTree(), node.getSwitchExpressionVar());
+    }
     return result;
   }
 
   /**
    * This method either creates or looks up the temp var t for node, and then updates the store to
-   * give t the same type as node.
+   * give t the same type as {@code node}.
    *
    * @param node the node to be assigned to a temporary variable
    * @param result the transfer result containing the store to be modified
@@ -174,7 +240,7 @@ public class MustCallTransfer extends CFTransfer {
         AnnotationMirror anm =
             atypeFactory
                 .getAnnotatedType(node.getTree())
-                .getAnnotationInHierarchy(atypeFactory.TOP);
+                .getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
         insertIntoStores(result, localExp, anm == null ? atypeFactory.TOP : anm);
       }
     }
@@ -204,6 +270,12 @@ public class MustCallTransfer extends CFTransfer {
   /**
    * Creates a variable declaration for the given expression node, if possible.
    *
+   * <p>Note that error reporting code assumes that the names of temporary variables are not legal
+   * Java identifiers (see <a
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-3.html#jls-3.8">JLS 3.8</a>). The
+   * temporary variable names generated here include an {@code '-'} character to make the names
+   * invalid.
+   *
    * @param node an expression node
    * @return a variable tree for the node, or null if an appropriate containing element cannot be
    *     located
@@ -214,10 +286,12 @@ public class MustCallTransfer extends CFTransfer {
     Element enclosingElement;
     TreePath path = atypeFactory.getPath(tree);
     if (path == null) {
-      enclosingElement = TreeUtils.elementFromTree(tree).getEnclosingElement();
+      enclosingElement = TreeUtils.elementFromUse(tree).getEnclosingElement();
     } else {
-      ClassTree classTree = TreePathUtil.enclosingClass(path);
-      enclosingElement = TreeUtils.elementFromTree(classTree);
+      // Issue 6473
+      // Adjusts handling of nearest enclosing element for temporary variables.
+      // This approach ensures the correct enclosing element (method or class) is determined.
+      enclosingElement = TreePathUtil.findNearestEnclosingElement(path);
     }
     if (enclosingElement == null) {
       return null;
@@ -229,16 +303,29 @@ public class MustCallTransfer extends CFTransfer {
   }
 
   /** A unique identifier counter for node names. */
-  protected long uid = 0;
+  private static AtomicLong uid = new AtomicLong();
 
   /**
-   * Creates a unique, abitrary string that can be used as a name for a temporary variable, using
+   * Creates a unique, arbitrary string that can be used as a name for a temporary variable, using
    * the given prefix. Can be used up to Long.MAX_VALUE times.
+   *
+   * <p>Note that the correctness of the Resource Leak Checker depends on these names actually being
+   * unique, because {@code LocalVariableNode}s derived from them are used as keys in a map.
    *
    * @param prefix the prefix for the name
    * @return a unique name that starts with the prefix
    */
   protected String uniqueName(String prefix) {
-    return prefix + "-" + uid++;
+    return prefix + "-" + uid.getAndIncrement();
+  }
+
+  /**
+   * Checks if WPI is enabled for the Resource Leak Checker inference. See {@link
+   * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
+   *
+   * @return returns true if WPI is enabled for the Resource Leak Checker
+   */
+  protected boolean isWpiEnabledForRLC() {
+    return enableWpiForRlc;
   }
 }

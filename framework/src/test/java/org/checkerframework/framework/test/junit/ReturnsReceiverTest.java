@@ -14,13 +14,7 @@ import org.junit.runners.Parameterized.Parameters;
  */
 public class ReturnsReceiverTest extends CheckerFrameworkPerDirectoryTest {
   public ReturnsReceiverTest(List<File> testFiles) {
-    super(
-        testFiles,
-        ReturnsReceiverChecker.class,
-        "returnsreceiver",
-        "-Anomsgtext",
-        "-Astubs=stubs/",
-        "-nowarn");
+    super(testFiles, ReturnsReceiverChecker.class, "returnsreceiver", "-Astubs=stubs/", "-nowarn");
   }
 
   @Parameters

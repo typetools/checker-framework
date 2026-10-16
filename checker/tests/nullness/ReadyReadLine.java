@@ -11,7 +11,7 @@ public class ReadyReadLine {
     }
 
     if (buf.readLine() != null) {
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       buf.readLine().toString();
     }
   }
@@ -27,7 +27,7 @@ class MyBufferedReader {
   @Pure
   public boolean ready() throws Exception {
     // don't bother with implementation.
-    // :: error: (contracts.conditional.postcondition)
+    // :: error: [contracts.conditional.postcondition]
     return true;
   }
 }

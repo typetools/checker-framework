@@ -15,6 +15,7 @@ public class Unknown extends JavaExpression {
 
   /** String representation of the expression that has no corresponding {@code JavaExpression}. */
   private final String originalExpression;
+
   /**
    * Create a new Unknown JavaExpression.
    *
@@ -28,7 +29,7 @@ public class Unknown extends JavaExpression {
    * Create a new Unknown JavaExpression.
    *
    * @param type the Java type of this
-   * @param originalExpression String representation of the expression that has no corresponding
+   * @param originalExpression a String representation of the expression that has no corresponding
    *     {@code JavaExpression}
    */
   public Unknown(TypeMirror type, String originalExpression) {
@@ -55,24 +56,8 @@ public class Unknown extends JavaExpression {
   }
 
   @Override
-  public boolean equals(@Nullable Object obj) {
-    return obj == this;
-  }
-
-  // Overridden to avoid an error "overrides equals, but does not override hashCode"
-  @Override
-  public int hashCode() {
-    return System.identityHashCode(this);
-  }
-
-  @Override
   public String toString() {
     return originalExpression;
-  }
-
-  @Override
-  public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
-    return getClass() == clazz;
   }
 
   @Override
@@ -81,13 +66,24 @@ public class Unknown extends JavaExpression {
   }
 
   @Override
-  public boolean isUnassignableByOtherCode() {
-    return false;
+  public boolean isAssignableByOtherCode() {
+    return true;
   }
 
   @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return false;
+  public boolean isModifiableByOtherCode() {
+    return true;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    return obj == this;
+  }
+
+  // Overridden to avoid an error "overrides equals, but does not override hashCode"
+  @Override
+  public int hashCode() {
+    return System.identityHashCode(this);
   }
 
   @Override
@@ -103,6 +99,12 @@ public class Unknown extends JavaExpression {
   @Override
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
     return true;
+  }
+
+  @SuppressWarnings("unchecked") // generic cast
+  @Override
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
+    return getClass() == clazz ? (T) this : null;
   }
 
   @Override

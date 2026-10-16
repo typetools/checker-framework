@@ -16,10 +16,16 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
  */
 public abstract class TypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
 
-  protected final AnnotatedTypeFactory typeFactory;
+  /** The type factory. */
+  protected final AnnotatedTypeFactory atypeFactory;
 
-  protected TypeAnnotator(AnnotatedTypeFactory typeFactory) {
-    this.typeFactory = typeFactory;
+  /**
+   * Creates a new TypeAnnotator.
+   *
+   * @param atypeFactory the type factory
+   */
+  protected TypeAnnotator(AnnotatedTypeFactory atypeFactory) {
+    this.atypeFactory = atypeFactory;
   }
 
   /**
@@ -27,7 +33,7 @@ public abstract class TypeAnnotator extends AnnotatedTypeScanner<Void, Void> {
    *
    * <p>If this method adds annotations to the type of method parameters, then {@link
    * org.checkerframework.framework.type.GenericAnnotatedTypeFactory#addComputedTypeAnnotations(Element,
-   * AnnotatedTypeMirror)} should be overriden and the same annotations added to the type of
+   * AnnotatedTypeMirror)} should be overridden and the same annotations added to the type of
    * elements with kind {@link javax.lang.model.element.ElementKind#PARAMETER}. Likewise for return
    * types.
    */

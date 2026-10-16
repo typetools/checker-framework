@@ -1,8 +1,7 @@
 // Test case for Issue 3281:
 // https://github.com/typetools/checker-framework/issues/3281
 
-// @skip-test until the bug is fixed
-
+import java.util.regex.Pattern;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.regex.util.RegexUtil;
 
@@ -14,7 +13,7 @@ public class Issue3281 {
 
   void m1(String s) {
     if (true) {
-      // :: error: (argument)
+      // :: error: [argument]
       Pattern.compile(s);
     }
   }
@@ -22,7 +21,7 @@ public class Issue3281 {
   void m2(String s) {
     RegexUtil.isRegex(s);
     if (true) {
-      // :: error: (argument)
+      // :: error: [argument]
       Pattern.compile(s);
     }
   }
@@ -30,7 +29,7 @@ public class Issue3281 {
   void m2f(String s) {
     RegexUtil.isRegex(s);
     if (true) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       f = s;
     }
   }
@@ -44,6 +43,7 @@ public class Issue3281 {
   void m4(String s, String s2) {
     RegexUtil.isRegex(s);
     if (RegexUtil.isRegex(s2)) {
+      // :: error: [argument]
       Pattern.compile(s);
     }
   }
@@ -51,7 +51,7 @@ public class Issue3281 {
   void m4f(String s, String s2) {
     RegexUtil.isRegex(s);
     if (RegexUtil.isRegex(s2)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       f = s;
     }
   }
@@ -59,8 +59,22 @@ public class Issue3281 {
   void m5f(String s, String s2) {
     RegexUtil.isRegex(s);
     if (b) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       f = s;
     }
   }
+
+  void foo(String s1, String s2) {
+    bar(
+        RegexUtil.isRegex(s1),
+        // :: error: [argument]
+        Pattern.compile(s1));
+    boolean b;
+    bar(
+        b = RegexUtil.isRegex(s2),
+        // :: error: [argument]
+        Pattern.compile(s2));
+  }
+
+  void bar(boolean b, Object o) {}
 }

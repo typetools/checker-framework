@@ -24,6 +24,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
@@ -43,11 +44,14 @@ import org.checkerframework.javacutil.TypesUtils;
 public class DefaultForTypeAnnotator extends TypeAnnotator {
 
   /** Map from {@link TypeKind} to annotations. */
-  private final Map<TypeKind, Set<AnnotationMirror>> typeKinds;
+  private final Map<TypeKind, AnnotationMirrorSet> typeKinds;
+
   /** Map from {@link AnnotatedTypeMirror} classes to annotations. */
-  private final Map<Class<? extends AnnotatedTypeMirror>, Set<AnnotationMirror>> atmClasses;
+  private final Map<Class<? extends AnnotatedTypeMirror>, AnnotationMirrorSet> atmClasses;
+
   /** Map from fully qualified class name strings to annotations. */
-  private final Map<String, Set<AnnotationMirror>> types;
+  private final Map<String, AnnotationMirrorSet> types;
+
   /**
    * A list where each element associates an annotation with name regexes and name exception
    * regexes.
@@ -61,6 +65,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
    * Creates a {@link DefaultForTypeAnnotator} from the given checker, using that checker to
    * determine the annotations that are in the type hierarchy.
    */
+  @SuppressWarnings("this-escape")
   public DefaultForTypeAnnotator(AnnotatedTypeFactory typeFactory) {
     super(typeFactory);
     this.typeKinds = new EnumMap<>(TypeKind.class);
@@ -161,19 +166,19 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
     }
 
     if (qname != null) {
-      Set<AnnotationMirror> fromQname = types.get(qname);
+      AnnotationMirrorSet fromQname = types.get(qname);
       if (fromQname != null) {
         type.addMissingAnnotations(fromQname);
       }
     }
 
     // If the type's kind or class is in the appropriate map, annotate the type.
-    Set<AnnotationMirror> fromKind = typeKinds.get(type.getKind());
+    AnnotationMirrorSet fromKind = typeKinds.get(type.getKind());
     if (fromKind != null) {
       type.addMissingAnnotations(fromKind);
     } else if (!atmClasses.isEmpty()) {
       Class<? extends AnnotatedTypeMirror> t = type.getClass();
-      Set<AnnotationMirror> fromClass = atmClasses.get(t);
+      AnnotationMirrorSet fromClass = atmClasses.get(t);
       if (fromClass != null) {
         type.addMissingAnnotations(fromClass);
       }
@@ -194,7 +199,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
         addTypes(Void.class, bottom);
       }
     } else {
-      Set<AnnotationMirror> annos = types.get(Void.class.getCanonicalName());
+      AnnotationMirrorSet annos = types.get(Void.class.getCanonicalName());
       for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
         if (qualHierarchy.findAnnotationInHierarchy(annos, top) == null) {
           addTypes(Void.class, qualHierarchy.getBottomAnnotation(top));
@@ -216,9 +221,9 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
     // TODO: Check whether the annotation is applicable to this Java type?
     AnnotationMirror defaultAnno = listOfNameRegexes.getDefaultAnno(name);
     if (defaultAnno != null) {
-      if (typeFactory
+      if (atypeFactory
               .getQualifierHierarchy()
-              .findAnnotationInHierarchy(type.getAnnotations(), defaultAnno)
+              .findAnnotationInHierarchy(type.getPrimaryAnnotations(), defaultAnno)
           == null) {
         type.addAnnotation(defaultAnno);
       }
@@ -247,9 +252,13 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
    * A list where each element associates an annotation with name regexes and name exception
    * regexes.
    */
-  private static class ListOfNameRegexes extends ArrayList<NameRegexes> {
+  private static final class ListOfNameRegexes extends ArrayList<NameRegexes> {
 
+    /** The serial version UID. */
     static final long serialVersionUID = 20200218L;
+
+    /** Creates a new ListOfNameRegexes. */
+    ListOfNameRegexes() {}
 
     /**
      * Update this list from the {@code names} and {@code namesExceptions} fields of a @DefaultFor
@@ -258,6 +267,9 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
      * @param theQual the qualifier that a @DefaultFor annotation is written on
      * @param defaultFor the @DefaultFor annotation written on {@code theQual}
      */
+    @SuppressWarnings(
+        "regex:argument") // annotation element values; validity checked by PatternSyntaxException
+    // catch
     void add(AnnotationMirror theQual, DefaultFor defaultFor) {
       if (defaultFor.names().length != 0) {
         NameRegexes thisName = new NameRegexes(theQual);
@@ -305,7 +317,7 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
           if (result == null) {
             result = nameRegexes.anno;
           } else {
-            // This could combine the annotatations instead, but I think doing so
+            // This could combine the annotations instead, but I think doing so
             // silently would confuse users.
             throw new TypeSystemError(
                 "Multiple annotations are applicable to the name \"%s\"", name);
@@ -323,8 +335,10 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
   private static class NameRegexes {
     /** The annotation. */
     final AnnotationMirror anno;
+
     /** The name regexes. */
     final List<Pattern> names = new ArrayList<>(0);
+
     /** The name exception regexes. */
     final List<Pattern> namesExceptions = new ArrayList<>(0);
 

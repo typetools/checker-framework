@@ -1,13 +1,14 @@
 package org.checkerframework.checker.index.lowerbound;
 
 import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.Set;
 import org.checkerframework.checker.index.inequality.LessThanChecker;
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SuppressWarningsPrefix;
 
 /**
@@ -35,7 +36,7 @@ public class LowerBoundChecker extends BaseTypeChecker {
    * These collection classes have some subtypes whose length can change and some subtypes whose
    * length cannot change. Lower bound checker warnings are skipped at uses of them.
    */
-  private HashSet<String> collectionBaseTypeNames;
+  private final HashSet<String> collectionBaseTypeNames;
 
   /**
    * A type-checker for preventing fixed-length sequences such as arrays or strings from being
@@ -58,9 +59,8 @@ public class LowerBoundChecker extends BaseTypeChecker {
   }
 
   @Override
-  protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-    LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
-        super.getImmediateSubcheckerClasses();
+  protected Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
+    Set<Class<? extends SourceChecker>> checkers = super.getImmediateSubcheckerClasses();
     checkers.add(ValueChecker.class);
     checkers.add(LessThanChecker.class);
     checkers.add(SearchIndexChecker.class);

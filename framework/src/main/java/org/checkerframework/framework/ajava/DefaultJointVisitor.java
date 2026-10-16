@@ -7,12 +7,14 @@ import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.AnnotationMemberDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.CompactConstructorDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
+import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.ArrayAccessExpr;
 import com.github.javaparser.ast.expr.AssignExpr;
@@ -32,9 +34,11 @@ import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.expr.PatternExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.expr.SingleMemberAnnotationExpr;
 import com.github.javaparser.ast.expr.SuperExpr;
+import com.github.javaparser.ast.expr.SwitchExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.modules.ModuleDeclaration;
@@ -63,6 +67,7 @@ import com.github.javaparser.ast.stmt.SynchronizedStmt;
 import com.github.javaparser.ast.stmt.ThrowStmt;
 import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.stmt.WhileStmt;
+import com.github.javaparser.ast.stmt.YieldStmt;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.IntersectionType;
@@ -134,18 +139,22 @@ import com.sun.source.tree.WildcardTree;
  * this class, extend it and override a {@code process} method.
  */
 public class DefaultJointVisitor extends JointJavacJavaParserVisitor {
-  @Override
-  public void processAnnotation(AnnotationTree javacTree, NormalAnnotationExpr javaParserNode) {}
+
+  /** Creates a DefaultJointVisitor. */
+  public DefaultJointVisitor() {}
 
   @Override
-  public void processAnnotation(AnnotationTree javacTree, MarkerAnnotationExpr javaParserNode) {}
+  public void processAnnotatedType(AnnotatedTypeTree javacTree, Node javaParserNode) {}
 
   @Override
   public void processAnnotation(
       AnnotationTree javacTree, SingleMemberAnnotationExpr javaParserNode) {}
 
   @Override
-  public void processAnnotatedType(AnnotatedTypeTree javacTree, Node javaParserNode) {}
+  public void processAnnotation(AnnotationTree javacTree, MarkerAnnotationExpr javaParserNode) {}
+
+  @Override
+  public void processAnnotation(AnnotationTree javacTree, NormalAnnotationExpr javaParserNode) {}
 
   @Override
   public void processArrayAccess(ArrayAccessTree javacTree, ArrayAccessExpr javaParserNode) {}
@@ -161,6 +170,9 @@ public class DefaultJointVisitor extends JointJavacJavaParserVisitor {
 
   @Override
   public void processBinary(BinaryTree javacTree, BinaryExpr javaParserNode) {}
+
+  @Override
+  public void processBindingPattern(Tree javacTree, PatternExpr javaParserNode) {}
 
   @Override
   public void processBlock(BlockTree javacTree, BlockStmt javaParserNode) {}
@@ -184,8 +196,15 @@ public class DefaultJointVisitor extends JointJavacJavaParserVisitor {
   public void processClass(ClassTree javacTree, EnumDeclaration javaParserNode) {}
 
   @Override
+  public void processClass(ClassTree javacTree, RecordDeclaration javaParserNode) {}
+
+  @Override
   public void processCompilationUnit(
       CompilationUnitTree javacTree, CompilationUnit javaParserNode) {}
+
+  @Override
+  public void processCompoundAssignment(
+      CompoundAssignmentTree javacTree, AssignExpr javaParserNode) {}
 
   @Override
   public void processConditionalExpression(
@@ -207,7 +226,7 @@ public class DefaultJointVisitor extends JointJavacJavaParserVisitor {
   public void processExports(ExportsTree javacTree, ModuleExportsDirective javaParserNode) {}
 
   @Override
-  public void processExpressionStatemen(
+  public void processExpressionStatement(
       ExpressionStatementTree javacTree, ExpressionStmt javaParserNode) {}
 
   @Override
@@ -254,21 +273,21 @@ public class DefaultJointVisitor extends JointJavacJavaParserVisitor {
   public void processLiteral(LiteralTree javacTree, BinaryExpr javaParserNode) {}
 
   @Override
-  public void processLiteral(LiteralTree javacTree, UnaryExpr javaParserNode) {}
+  public void processLiteral(LiteralTree javacTree, LiteralExpr javaParserNode) {}
 
   @Override
-  public void processLiteral(LiteralTree javacTree, LiteralExpr javaParserNode) {}
+  public void processLiteral(LiteralTree javacTree, UnaryExpr javaParserNode) {}
 
   @Override
   public void processMemberReference(
       MemberReferenceTree javacTree, MethodReferenceExpr javaParserNode) {}
 
   @Override
-  public void processMemberSelect(MemberSelectTree javacTree, ClassExpr javaParserNode) {}
-
-  @Override
   public void processMemberSelect(
       MemberSelectTree javacTree, ClassOrInterfaceType javaParserNode) {}
+
+  @Override
+  public void processMemberSelect(MemberSelectTree javacTree, ClassExpr javaParserNode) {}
 
   @Override
   public void processMemberSelect(MemberSelectTree javacTree, FieldAccessExpr javaParserNode) {}
@@ -277,19 +296,22 @@ public class DefaultJointVisitor extends JointJavacJavaParserVisitor {
   public void processMemberSelect(MemberSelectTree javacTree, Name javaParserNode) {}
 
   @Override
-  public void processMemberSelect(MemberSelectTree javacTree, ThisExpr javaParserNode) {}
-
-  @Override
   public void processMemberSelect(MemberSelectTree javacTree, SuperExpr javaParserNode) {}
 
   @Override
-  public void processMethod(MethodTree javacTree, MethodDeclaration javaParserNode) {}
+  public void processMemberSelect(MemberSelectTree javacTree, ThisExpr javaParserNode) {}
+
+  @Override
+  public void processMethod(MethodTree javacTree, AnnotationMemberDeclaration javaParserNode) {}
+
+  @Override
+  public void processMethod(MethodTree javacTree, CompactConstructorDeclaration javaParserNode) {}
 
   @Override
   public void processMethod(MethodTree javacTree, ConstructorDeclaration javaParserNode) {}
 
   @Override
-  public void processMethod(MethodTree javacTree, AnnotationMemberDeclaration javaParserNode) {}
+  public void processMethod(MethodTree javacTree, MethodDeclaration javaParserNode) {}
 
   @Override
   public void processMethodInvocation(
@@ -340,6 +362,9 @@ public class DefaultJointVisitor extends JointJavacJavaParserVisitor {
   public void processSwitch(SwitchTree javacTree, SwitchStmt javaParserNode) {}
 
   @Override
+  public void processSwitchExpression(Tree javacTree, SwitchExpr javaParserNode) {}
+
+  @Override
   public void processSynchronized(SynchronizedTree javacTree, SynchronizedStmt javaParserNode) {}
 
   @Override
@@ -382,6 +407,5 @@ public class DefaultJointVisitor extends JointJavacJavaParserVisitor {
   public void processWildcard(WildcardTree javacTree, WildcardType javaParserNode) {}
 
   @Override
-  public void processCompoundAssignment(
-      CompoundAssignmentTree javacTree, AssignExpr javaParserNode) {}
+  public void processYield(Tree javacTree, YieldStmt javaParserNode) {}
 }

@@ -1,31 +1,39 @@
-package org.checkerframework.framework.util;
+package org.checkerframework.javacutil;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.qual.InvisibleQualifier;
-import org.checkerframework.javacutil.BugInCF;
+import org.plumelib.util.ArrayMap;
 
 /** A utility for converting AnnotationMirrors to Strings. It omits full package names. */
 public class DefaultAnnotationFormatter implements AnnotationFormatter {
+  /** Creates a DefaultAnnotationFormatter. */
+  public DefaultAnnotationFormatter() {}
 
   /**
    * Returns true if, by default, anno should not be printed.
    *
-   * @see org.checkerframework.framework.qual.InvisibleQualifier
+   * @param anno an annotation to check for printability/invisibility
    * @return true if anno's declaration was qualified by InvisibleQualifier
+   * @see org.checkerframework.framework.qual.InvisibleQualifier
    */
   public static boolean isInvisibleQualified(AnnotationMirror anno) {
     TypeElement annoElement = (TypeElement) anno.getAnnotationType().asElement();
-    return annoElement.getAnnotation(InvisibleQualifier.class) != null;
+    for (AnnotationMirror metaAnno : annoElement.getAnnotationMirrors()) {
+      if (AnnotationUtils.areSameByName(
+          metaAnno, "org.checkerframework.framework.qual.InvisibleQualifier")) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -33,7 +41,7 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
    * terminated by a space character, obeying the printInvisible parameter.
    *
    * @param annos a collection of annotations to print
-   * @param printInvisible whether or not to print "invisible" annotation mirrors
+   * @param printInvisible if true, print "invisible" annotation mirrors
    * @return the list of annotations converted to a String
    */
   @Override
@@ -50,7 +58,7 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
         continue;
       }
       formatAnnotationMirror(obj, sb);
-      sb.append(" ");
+      sb.append(' ');
     }
     return sb.toString();
   }
@@ -71,13 +79,18 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
     return sb.toString();
   }
 
-  /** A helper method to output a single AnnotationMirror, without showing full package names. */
+  /**
+   * A helper method to output a single AnnotationMirror, without showing full package names.
+   *
+   * @param am the annotation to format
+   * @param sb where to output the annotation's formatted representation
+   */
   protected void formatAnnotationMirror(AnnotationMirror am, StringBuilder sb) {
-    sb.append("@");
+    sb.append('@');
     sb.append(am.getAnnotationType().asElement().getSimpleName());
     Map<ExecutableElement, AnnotationValue> args = removeDefaultValues(am.getElementValues());
     if (!args.isEmpty()) {
-      sb.append("(");
+      sb.append('(');
       boolean oneValue = false;
       if (args.size() == 1) {
         Map.Entry<ExecutableElement, AnnotationValue> first = args.entrySet().iterator().next();
@@ -87,19 +100,19 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
         }
       }
       if (!oneValue) {
-        boolean notfirst = false;
+        StringJoiner sj = new StringJoiner(", ");
         for (Map.Entry<ExecutableElement, AnnotationValue> arg : args.entrySet()) {
           if (!"{}".equals(arg.getValue().toString())) {
-            if (notfirst) {
-              sb.append(", ");
-            }
-            notfirst = true;
-            sb.append(arg.getKey().getSimpleName() + "=");
-            formatAnnotationMirrorArg(arg.getValue(), sb);
+            StringBuilder argSb = new StringBuilder();
+            argSb.append(arg.getKey().getSimpleName());
+            argSb.append('=');
+            formatAnnotationMirrorArg(arg.getValue(), argSb);
+            sj.add(argSb);
           }
         }
+        sb.append(sj);
       }
-      sb.append(")");
+      sb.append(')');
     }
   }
 
@@ -108,11 +121,12 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
    * the default value.
    *
    * @param elementValues a mapping of annotation element to annotation value
-   * @return a new map with only the not default default values of {@code elementValues}
+   * @return a new map with only the non-default values of {@code elementValues}
    */
   private Map<ExecutableElement, AnnotationValue> removeDefaultValues(
       Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues) {
-    Map<ExecutableElement, AnnotationValue> nonDefaults = new LinkedHashMap<>();
+    // Most annotations have no elements.
+    Map<ExecutableElement, AnnotationValue> nonDefaults = new ArrayMap<>(0);
     elementValues.forEach(
         (element, value) -> {
           if (element.getDefaultValue() == null
@@ -133,20 +147,19 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
       if (vallist.size() == 1) {
         formatAnnotationMirrorArg(vallist.get(0), sb);
       } else {
-        sb.append('{');
-        boolean notfirst = false;
+        StringJoiner sj = new StringJoiner(", ", "{", "}");
         for (AnnotationValue nav : vallist) {
-          if (notfirst) {
-            sb.append(", ");
-          }
-          notfirst = true;
-          formatAnnotationMirrorArg(nav, sb);
+          StringBuilder navSb = new StringBuilder();
+          formatAnnotationMirrorArg(nav, navSb);
+          sj.add(navSb);
         }
-        sb.append('}');
+        sb.append(sj);
       }
     } else if (VariableElement.class.isAssignableFrom(val.getClass())) {
       VariableElement ve = (VariableElement) val;
-      sb.append(ve.getEnclosingElement().getSimpleName() + "." + ve.getSimpleName());
+      sb.append(ve.getEnclosingElement().getSimpleName());
+      sb.append('.');
+      sb.append(ve.getSimpleName());
     } else {
       sb.append(av.toString());
     }

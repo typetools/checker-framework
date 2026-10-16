@@ -1,17 +1,16 @@
 package org.checkerframework.framework.type;
 
 import com.google.common.collect.Ordering;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -28,6 +27,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -40,15 +40,21 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.afu.scenelib.el.AField;
+import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceImplementation;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage.InferredDeclared;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.Analysis.BeforeOrAfter;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
+import org.checkerframework.dataflow.analysis.ReturnStatementStore;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -56,17 +62,17 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
-import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
-import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.visualize.DOTCFGVisualizer;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFAbstractValue;
@@ -85,6 +91,7 @@ import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.qual.TypeUseLocation;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.poly.DefaultQualifierPolymorphism;
@@ -99,31 +106,26 @@ import org.checkerframework.framework.type.typeannotator.IrrelevantTypeAnnotator
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.ContractsFromMethod;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnnotator;
-import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
-import org.plumelib.util.CollectionsPlume;
-import org.plumelib.util.SystemPlume;
-import scenelib.annotations.el.AField;
-import scenelib.annotations.el.AMethod;
+import org.plumelib.util.CollectionsP;
+import org.plumelib.util.MapsP;
+import org.plumelib.util.SystemP;
 
 /**
  * A factory that extends {@link AnnotatedTypeFactory} to optionally use flow-sensitive qualifier
@@ -142,13 +144,19 @@ public abstract class GenericAnnotatedTypeFactory<
         FlowAnalysis extends CFAbstractAnalysis<Value, Store, TransferFunction>>
     extends AnnotatedTypeFactory {
 
-  /** Should use flow by default. */
-  protected static boolean flowByDefault = true;
+  /**
+   * If true, output verbose, low-level debugging messages. Also see {@code TreeAnnotator.debug} and
+   * {@link AnnotatedTypeFactory#debugGat}.
+   */
+  private static final boolean debug = false;
 
   /** To cache the supported monotonic type qualifiers. */
-  private Set<Class<? extends Annotation>> supportedMonotonicQuals;
+  private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
 
-  /** to annotate types based on the given tree */
+  /**
+   * Used to annotate types based on the given un-annotated types. The type may be for source code
+   * or bytecode.
+   */
   protected TypeAnnotator typeAnnotator;
 
   /** for use in addAnnotationsFromDefaultForType */
@@ -157,7 +165,7 @@ public abstract class GenericAnnotatedTypeFactory<
   /** for use in addAnnotationsFromDefaultForType */
   private DefaultForTypeAnnotator defaultForTypeAnnotator;
 
-  /** to annotate types based on the given un-annotated types */
+  /** Used to annotate types based on a given tree. */
   protected TreeAnnotator treeAnnotator;
 
   /** to handle any polymorphic types */
@@ -169,12 +177,12 @@ public abstract class GenericAnnotatedTypeFactory<
   /** To handle dependent type annotations and contract expressions. */
   protected DependentTypesHelper dependentTypesHelper;
 
-  /** to handle method pre- and postconditions */
-  protected ContractsFromMethod contractsUtils;
+  /** To handle method pre- and postconditions. */
+  protected final ContractsFromMethod contractsUtils;
 
   /**
    * The Java types on which users may write this type system's type annotations. null means no
-   * restrictions. Arrays are handled by separate field {@code #arraysAreRelevant}.
+   * restrictions. Arrays are handled by separate field {@link #arrayTypesAreRelevant}.
    *
    * <p>If the relevant type is generic, this contains its erasure.
    *
@@ -182,15 +190,15 @@ public abstract class GenericAnnotatedTypeFactory<
    * {@code Class<?>} objects because the elements will be compared to TypeMirrors for which Class
    * objects may not exist (they might not be on the classpath).
    */
-  public @Nullable Set<TypeMirror> relevantJavaTypes;
+  public final @Nullable Set<TypeMirror> relevantJavaTypes;
 
-  /**
-   * Whether users may write type annotations on arrays. Ignored unless {@link #relevantJavaTypes}
-   * is non-null.
-   */
-  boolean arraysAreRelevant = false;
+  /** True if users may write type annotations from this type system on arrays. */
+  protected final boolean arrayTypesAreRelevant;
 
   // Flow related fields
+
+  /** Should flow be used by default? */
+  protected static boolean flowByDefault = true;
 
   /**
    * Should use flow-sensitive type refinement analysis? This value can be changed when an
@@ -230,7 +238,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @see GenericAnnotatedTypeFactory#applyLocalVariableQualifierParameterDefaults
    */
-  private Set<VariableElement> variablesUnderInitialization;
+  private final Set<VariableElement> variablesUnderInitialization = new HashSet<>();
 
   /**
    * Caches types of initializers for local variables with a qualifier parameter, so that they
@@ -238,7 +246,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @see GenericAnnotatedTypeFactory#applyLocalVariableQualifierParameterDefaults
    */
-  private Map<Tree, AnnotatedTypeMirror> initializerCache;
+  private final Map<Tree, AnnotatedTypeMirror> initializerCache;
 
   /**
    * Should the analysis assume that side effects to a value can change the type of aliased
@@ -262,6 +270,10 @@ public abstract class GenericAnnotatedTypeFactory<
   // Set in postInit only
   protected Store emptyStore;
 
+  /**
+   * {@code analysis.getResult()} is the result of the most recent analysis. Compare to {@link
+   * #flowResult}.
+   */
   // Set in postInit only
   protected FlowAnalysis analysis;
 
@@ -282,6 +294,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * @see AnalysisResult#runAnalysisFor(Node, Analysis.BeforeOrAfter, TransferInput,
    *     IdentityHashMap, Map)
    */
+  // This is only used in `getStoreBefore()` and `getStoreAfter()`.
+  // We do not understand its relationship to the `analysisCaches` field of each result.
   protected final Map<
           TransferInput<Value, Store>, IdentityHashMap<Node, TransferResult<Value, Store>>>
       flowResultAnalysisCaches;
@@ -294,7 +308,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * <p>The initial capacity of the map is set by {@link #getCacheSize()}.
    */
-  protected @Nullable Map<Tree, ControlFlowGraph> subcheckerSharedCFG;
+  protected @MonotonicNonNull Map<Tree, ControlFlowGraph> subcheckerSharedCFG;
 
   /**
    * If true, {@link #setRoot(CompilationUnitTree)} should clear the {@link #subcheckerSharedCFG}
@@ -315,8 +329,9 @@ public abstract class GenericAnnotatedTypeFactory<
    * Creates a type factory. Its compilation unit is not yet set.
    *
    * @param checker the checker to which this type factory belongs
-   * @param useFlow whether flow analysis should be performed
+   * @param useFlow true if flow analysis should be performed
    */
+  @SuppressWarnings("this-escape")
   protected GenericAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
     super(checker);
 
@@ -324,23 +339,22 @@ public abstract class GenericAnnotatedTypeFactory<
     this.shouldDefaultTypeVarLocals = useFlow;
     this.useFlow = useFlow;
 
-    this.variablesUnderInitialization = new HashSet<>();
-    this.scannedClasses = new HashMap<>();
     this.flowResult = null;
-    this.regularExitStores = null;
-    this.exceptionalExitStores = null;
-    this.methodInvocationStores = null;
-    this.returnStatementStores = null;
+    this.regularExitStores = new IdentityHashMap<>();
+    this.exceptionalExitStores = new IdentityHashMap<>();
+    this.methodInvocationStores = new IdentityHashMap<>();
+    this.returnStatementStores = new IdentityHashMap<>();
 
     this.initializationStore = null;
     this.initializationStaticStore = null;
 
     this.cfgVisualizer = createCFGVisualizer();
+    this.handleCFGViz = checker.hasOption("flowdotdir") || checker.hasOption("cfgviz");
 
     if (shouldCache) {
       int cacheSize = getCacheSize();
-      flowResultAnalysisCaches = CollectionUtils.createLRUCache(cacheSize);
-      initializerCache = CollectionUtils.createLRUCache(cacheSize);
+      flowResultAnalysisCaches = MapsP.createLruCache(cacheSize);
+      initializerCache = MapsP.createLruCache(cacheSize);
     } else {
       flowResultAnalysisCaches = null;
       initializerCache = null;
@@ -350,25 +364,28 @@ public abstract class GenericAnnotatedTypeFactory<
         checker.getClass().getAnnotation(RelevantJavaTypes.class);
     if (relevantJavaTypesAnno == null) {
       this.relevantJavaTypes = null;
-      this.arraysAreRelevant = true;
+      this.arrayTypesAreRelevant = true;
     } else {
       Types types = getChecker().getTypeUtils();
       Elements elements = getElementUtils();
       Class<?>[] classes = relevantJavaTypesAnno.value();
-      this.relevantJavaTypes = new HashSet<>(CollectionsPlume.mapCapacity(classes.length));
-      this.arraysAreRelevant = false;
+      Set<TypeMirror> relevantJavaTypesTemp = new HashSet<>(MapsP.mapCapacity(classes.length));
+      boolean arrayTypesAreRelevantTemp = false;
       for (Class<?> clazz : classes) {
         if (clazz == Object[].class) {
-          arraysAreRelevant = true;
+          arrayTypesAreRelevantTemp = true;
         } else if (clazz.isArray()) {
           throw new TypeSystemError(
               "Don't use arrays other than Object[] in @RelevantJavaTypes on "
                   + this.getClass().getSimpleName());
         } else {
           TypeMirror relevantType = TypesUtils.typeFromClass(clazz, types, elements);
-          relevantJavaTypes.add(types.erasure(relevantType));
+          TypeMirror erased = types.erasure(relevantType);
+          relevantJavaTypesTemp.add(erased);
         }
       }
+      this.relevantJavaTypes = Collections.unmodifiableSet(relevantJavaTypesTemp);
+      this.arrayTypesAreRelevant = arrayTypesAreRelevantTemp;
     }
 
     contractsUtils = createContractsFromMethod();
@@ -382,7 +399,8 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   @Override
-  protected void postInit() {
+  protected void postInit(
+      @UnderInitialization(GenericAnnotatedTypeFactory.class) GenericAnnotatedTypeFactory<Value, Store, TransferFunction, FlowAnalysis> this) {
     super.postInit();
 
     this.dependentTypesHelper = createDependentTypesHelper();
@@ -394,7 +412,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
     this.poly = createQualifierPolymorphism();
 
-    this.analysis = createFlowAnalysis(new ArrayList<>());
+    this.analysis = createFlowAnalysis();
     this.transfer = analysis.getTransferFunction();
     this.emptyStore = analysis.createEmptyStore(transfer.usesSequentialSemantics());
 
@@ -410,7 +428,7 @@ public abstract class GenericAnnotatedTypeFactory<
   @Override
   public void preProcessClassTree(ClassTree classTree) {
     if (this.everUseFlow) {
-      checkAndPerformFlowAnalysis(classTree);
+      performFlowAnalysisForClassOnce(classTree);
     }
   }
 
@@ -425,13 +443,19 @@ public abstract class GenericAnnotatedTypeFactory<
 
   @Override
   public void setRoot(@Nullable CompilationUnitTree root) {
+    if (this.defaultQualifierForUseTypeAnnotator == null) {
+      throw new TypeSystemError(
+          "Does the constructor for %s call postInit()?", this.getClass().getSimpleName());
+    }
+
     super.setRoot(root);
     this.scannedClasses.clear();
+    this.reachableNodes.clear();
     this.flowResult = null;
-    this.regularExitStores = null;
-    this.exceptionalExitStores = null;
-    this.methodInvocationStores = null;
-    this.returnStatementStores = null;
+    this.regularExitStores.clear();
+    this.exceptionalExitStores.clear();
+    this.methodInvocationStores.clear();
+    this.returnStatementStores.clear();
     this.initializationStore = null;
     this.initializationStaticStore = null;
 
@@ -483,7 +507,7 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Returns an immutable set of the <em>monotonic</em> type qualifiers supported by this checker.
    *
-   * @return the monotonic type qualifiers supported this processor, or an empty set if none
+   * @return the monotonic type qualifiers supported by this processor, or an empty set if none
    * @see MonotonicQualifier
    */
   public final Set<Class<? extends Annotation>> getSupportedMonotonicTypeQualifiers() {
@@ -548,11 +572,21 @@ public abstract class GenericAnnotatedTypeFactory<
   protected TypeAnnotator createTypeAnnotator() {
     List<TypeAnnotator> typeAnnotators = new ArrayList<>(1);
     if (relevantJavaTypes != null) {
-      typeAnnotators.add(
-          new IrrelevantTypeAnnotator(this, getQualifierHierarchy().getTopAnnotations()));
+      typeAnnotators.add(new IrrelevantTypeAnnotator(this));
     }
     typeAnnotators.add(new PropagationTypeAnnotator(this));
     return new ListTypeAnnotator(typeAnnotators);
+  }
+
+  /**
+   * Returns the annotations that should appear on the given irrelevant Java type. If the type is
+   * relevant, this method's behavior is undefined.
+   *
+   * @param tm an irrelevant Java type
+   * @return the annotations that should appear on the given irrelevant Java type
+   */
+  public AnnotationMirrorSet annotationsForIrrelevantJavaType(TypeMirror tm) {
+    return getQualifierHierarchy().getTopAnnotations();
   }
 
   /**
@@ -591,9 +625,12 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * <p>Subclasses have to override this method to create the appropriate analysis if they do not
    * follow the checker naming convention.
+   *
+   * @return the appropriate flow analysis class that is used for the org.checkerframework.dataflow
+   *     analysis
    */
   @SuppressWarnings({"unchecked", "rawtypes"})
-  protected FlowAnalysis createFlowAnalysis(List<Pair<VariableElement, Value>> fieldValues) {
+  protected FlowAnalysis createFlowAnalysis() {
 
     // Try to reflectively load the visitor.
     Class<?> checkerClass = checker.getClass();
@@ -602,8 +639,8 @@ public abstract class GenericAnnotatedTypeFactory<
       FlowAnalysis result =
           BaseTypeChecker.invokeConstructorFor(
               BaseTypeChecker.getRelatedClassName(checkerClass, "Analysis"),
-              new Class<?>[] {BaseTypeChecker.class, this.getClass(), List.class},
-              new Object[] {checker, this, fieldValues});
+              new Class<?>[] {BaseTypeChecker.class, this.getClass()},
+              new Object[] {checker, this});
       if (result != null) {
         return result;
       }
@@ -611,23 +648,21 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     // If an analysis couldn't be loaded reflectively, return the default.
-    List<Pair<VariableElement, CFValue>> tmp =
-        CollectionsPlume.mapList(
-            (Pair<VariableElement, Value> fieldVal) ->
-                Pair.of(fieldVal.first, (CFValue) fieldVal.second),
-            fieldValues);
-    return (FlowAnalysis) new CFAnalysis(checker, (GenericAnnotatedTypeFactory) this, tmp);
+    return (FlowAnalysis) new CFAnalysis(checker, (GenericAnnotatedTypeFactory) this);
   }
 
   /**
-   * Returns the appropriate transfer function that is used for the org.checkerframework.dataflow
-   * analysis.
+   * Returns the appropriate transfer function that is used for the given
+   * org.checkerframework.dataflow analysis.
    *
    * <p>This implementation uses the checker naming convention to create the appropriate transfer
    * function. If no transfer function is found, it returns an instance of {@link CFTransfer}.
    *
    * <p>Subclasses have to override this method to create the appropriate transfer function if they
    * do not follow the checker naming convention.
+   *
+   * @param analysis a dataflow analysis
+   * @return a new transfer function
    */
   // A more precise type for the parameter would be FlowAnalysis, which
   // is the type parameter bounded by the current parameter type CFAbstractAnalysis<Value, Store,
@@ -697,10 +732,20 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   @Override
-  public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
-    AnnotatedDeclaredType superResult = super.fromNewClass(newClassTree);
-    dependentTypesHelper.atExpression(superResult, newClassTree);
+  protected List<AnnotatedTypeMirror> getExplicitNewClassClassTypeArgs(NewClassTree newClassTree) {
+    List<AnnotatedTypeMirror> superResult = super.getExplicitNewClassClassTypeArgs(newClassTree);
+    for (AnnotatedTypeMirror superR : superResult) {
+      dependentTypesHelper.atExpression(superR, newClassTree);
+    }
     return superResult;
+  }
+
+  @Override
+  public AnnotationMirrorSet getExplicitNewClassAnnos(NewClassTree newClassTree) {
+    AnnotationMirrorSet superResult = super.getExplicitNewClassAnnos(newClassTree);
+    AnnotatedTypeMirror dummy = getAnnotatedNullType(superResult);
+    dependentTypesHelper.atExpression(dummy, newClassTree);
+    return dummy.getPrimaryAnnotations();
   }
 
   /**
@@ -770,14 +815,14 @@ public abstract class GenericAnnotatedTypeFactory<
    * defaults that cannot be specified with a {@link DefaultFor} or {@link
    * DefaultQualifierInHierarchy} meta-annotations.
    *
-   * @param defs QualifierDefault object to which defaults are added
+   * @param defs the QualifierDefault object to which defaults are added
    */
   protected void addCheckedCodeDefaults(QualifierDefaults defs) {
     // Add defaults from @DefaultFor and @DefaultQualifierInHierarchy
     for (Class<? extends Annotation> qual : getSupportedTypeQualifiers()) {
       DefaultFor defaultFor = qual.getAnnotation(DefaultFor.class);
       if (defaultFor != null) {
-        final TypeUseLocation[] locations = defaultFor.value();
+        TypeUseLocation[] locations = defaultFor.value();
         defs.addCheckedCodeDefaults(AnnotationBuilder.fromClass(elements, qual), locations);
       }
 
@@ -817,9 +862,9 @@ public abstract class GenericAnnotatedTypeFactory<
   protected void checkForDefaultQualifierInHierarchy(QualifierDefaults defs) {
     if (!defs.hasDefaultsForCheckedCode()) {
       throw new BugInCF(
-          "GenericAnnotatedTypeFactory.createQualifierDefaults: "
-              + "@DefaultQualifierInHierarchy or @DefaultFor(TypeUseLocation.OTHERWISE) not found. "
-              + "Every checker must specify a default qualifier. "
+          "GenericAnnotatedTypeFactory.createQualifierDefaults:"
+              + " @DefaultQualifierInHierarchy or @DefaultFor(TypeUseLocation.OTHERWISE)"
+              + " not found. Every checker must specify a default qualifier. "
               + getSortedQualifierNames());
     }
 
@@ -864,72 +909,63 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Gets the type of the resulting constructor call of a MemberReferenceTree.
+   * Returns the primary annotation with {@code clazz} on {@code expression}'s type, at a particular
+   * location. The returned annotation may be null even if the expression should have a primary
+   * annotation of {@code clazz}. This is because {@link JavaExpression}s do not always have enough
+   * information to get an annotated type.
    *
-   * @param memberReferenceTree MemberReferenceTree where the member is a constructor
-   * @param constructorType AnnotatedExecutableType of the declaration of the constructor
-   * @return AnnotatedTypeMirror of the resulting type of the constructor
-   */
-  public AnnotatedTypeMirror getResultingTypeOfConstructorMemberReference(
-      MemberReferenceTree memberReferenceTree, AnnotatedExecutableType constructorType) {
-    assert memberReferenceTree.getMode() == MemberReferenceTree.ReferenceMode.NEW;
-
-    // The return type for constructors should only have explicit annotations from the
-    // constructor.  Recreate some of the logic from TypeFromTree.visitNewClass here.
-
-    // The return type of the constructor will be the type of the expression of the member
-    // reference tree.
-    AnnotatedDeclaredType constructorReturnType =
-        (AnnotatedDeclaredType) fromTypeTree(memberReferenceTree.getQualifierExpression());
-
-    // Keep only explicit annotations and those from @Poly
-    AnnotatedTypes.copyOnlyExplicitConstructorAnnotations(
-        this, constructorReturnType, constructorType);
-
-    // Now add back defaulting.
-    addComputedTypeAnnotations(memberReferenceTree.getQualifierExpression(), constructorReturnType);
-    return constructorReturnType;
-  }
-
-  /**
-   * Returns the primary annotation on expression if it were evaluated at path.
+   * <p>This method should only be used if a tree, element, or node is not available for {@code
+   * expression}. Use {@link #getAnnotatedType(Tree)} or {@link #getAnnotatedType(Element)} instead.
    *
-   * @param expression a Java expression
+   * @param expression the expression for which the annotation is returned
    * @param tree current tree
    * @param path location at which expression is evaluated
-   * @param clazz class of the annotation
-   * @return the annotation on expression or null if one does not exist
+   * @param clazz the annotation class for which to look
+   * @return the annotation of {@code clazz} on {@code expression}'s type, or null if one does not
+   *     exist or if {@code expression} does not have enough information to get the annotated type
    * @throws JavaExpressionParseException thrown if the expression cannot be parsed
    */
-  public AnnotationMirror getAnnotationFromJavaExpressionString(
+  public @Nullable AnnotationMirror getAnnotationFromJavaExpressionString(
       String expression, Tree tree, TreePath path, Class<? extends Annotation> clazz)
       throws JavaExpressionParseException {
-
     JavaExpression expressionObj = parseJavaExpressionString(expression, path);
     return getAnnotationFromJavaExpression(expressionObj, tree, clazz);
   }
 
   /**
-   * Returns the primary annotation on an expression, at a particular location.
+   * Returns the primary annotation with {@code clazz} on {@code expr}'s type, at a particular
+   * location. The returned annotation may be null even if the expression should have a primary
+   * annotation of {@code clazz}. This is because {@link JavaExpression}s do not always have enough
+   * information to get an annotated type.
+   *
+   * <p>This method should only be used if a tree, element, or node is not available for {@code
+   * expr}. Use {@link #getAnnotatedType(Tree)} or {@link #getAnnotatedType(Element)} instead.
    *
    * @param expr the expression for which the annotation is returned
    * @param tree current tree
-   * @param clazz the Class of the annotation
-   * @return the annotation on expression or null if one does not exist
+   * @param clazz the annotation class for which to look
+   * @return the annotation of {@code clazz} on {@code expr}'s type, or null if one does not exist
+   *     or if {@code expr} does not have enough information to get the annotated type
    */
-  public AnnotationMirror getAnnotationFromJavaExpression(
+  public @Nullable AnnotationMirror getAnnotationFromJavaExpression(
       JavaExpression expr, Tree tree, Class<? extends Annotation> clazz) {
     return getAnnotationByClass(getAnnotationsFromJavaExpression(expr, tree), clazz);
   }
 
   /**
-   * Returns the primary annotations on an expression, at a particular location.
+   * Returns the primary annotations on an expression, at a particular location. The returned set of
+   * annotations may be empty even if the expression should have primary annotations. This is
+   * because {@link JavaExpression} do not always have enough information to get an annotated type.
+   *
+   * <p>This method should only be used if a tree, element, or node is not available for {@code
+   * expr}. Use {@link #getAnnotatedType(Tree)} or {@link #getAnnotatedType(Element)} instead.
    *
    * @param expr the expression for which the annotation is returned
    * @param tree current tree
-   * @return the annotation on expression or null if one does not exist
+   * @return the annotations on the expression. May be empty if {@code expr} does not have enough
+   *     information to get the annotated type.
    */
-  public Set<AnnotationMirror> getAnnotationsFromJavaExpression(JavaExpression expr, Tree tree) {
+  public AnnotationMirrorSet getAnnotationsFromJavaExpression(JavaExpression expr, Tree tree) {
 
     // Look in the store
     if (CFAbstractStore.canInsertJavaExpression(expr)) {
@@ -938,26 +974,25 @@ public abstract class GenericAnnotatedTypeFactory<
       if (store != null) {
         Value value = store.getValue(expr);
         if (value != null) {
-          // Is it possible that this lacks some annotations that appear in the type factory?
           return value.getAnnotations();
         }
       }
     }
 
     // Look in the type factory, if not found in the store.
-    if (expr instanceof LocalVariable) {
-      Element ele = ((LocalVariable) expr).getElement();
+    if (expr instanceof LocalVariable lv) {
+      Element ele = lv.getElement();
       // Because of
       // https://github.com/eisop/checker-framework/issues/14
       // and the workaround in
       // org.checkerframework.framework.type.ElementAnnotationApplier.applyInternal
       // The annotationMirror may not contain all explicitly written annotations.
-      return getAnnotatedType(ele).getAnnotations();
-    } else if (expr instanceof FieldAccess) {
-      Element ele = ((FieldAccess) expr).getField();
-      return getAnnotatedType(ele).getAnnotations();
+      return getAnnotatedType(ele).getPrimaryAnnotations();
+    } else if (expr instanceof FieldAccess fa) {
+      Element ele = fa.getField();
+      return getAnnotatedType(ele).getPrimaryAnnotations();
     } else {
-      return Collections.emptySet();
+      return AnnotationMirrorSet.emptySet();
     }
   }
 
@@ -971,7 +1006,6 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public JavaExpression parseJavaExpressionString(String expression, TreePath currentPath)
       throws JavaExpressionParseException {
-
     return StringToJavaExpression.atPath(expression, currentPath, checker);
   }
 
@@ -985,12 +1019,20 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return the JavaExpression and offset for the given expression
    * @throws JavaExpressionParseException thrown if the expression cannot be parsed
    */
-  public Pair<JavaExpression, String> getExpressionAndOffsetFromJavaExpressionString(
+  public JavaExpressionAndOffset getExpressionAndOffsetFromJavaExpressionString(
       String expression, TreePath currentPath) throws JavaExpressionParseException {
-    Pair<String, String> p = getExpressionAndOffset(expression);
-    JavaExpression r = parseJavaExpressionString(p.first, currentPath);
-    return Pair.of(r, p.second);
+    ExpressionAndOffset p = getExpressionAndOffset(expression);
+    JavaExpression r = parseJavaExpressionString(p.expression(), currentPath);
+    return new JavaExpressionAndOffset(r, p.offset());
   }
+
+  /**
+   * A Java expression and a constant offset that is added to it.
+   *
+   * @param expression a Java expression
+   * @param offset a constant offset, as a string; "0" means no offset
+   */
+  public record JavaExpressionAndOffset(JavaExpression expression, String offset) {}
 
   /**
    * Returns the annotation mirror from dataflow for {@code expression}.
@@ -1006,15 +1048,44 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return an AnnotationMirror representing the type in the store at the given location from this
    *     type factory's type system, or null if one is not available
    */
-  public AnnotationMirror getAnnotationMirrorFromJavaExpressionString(
+  public @Nullable AnnotationMirror getAnnotationMirrorFromJavaExpressionString(
       String expression, Tree tree, TreePath currentPath) throws JavaExpressionParseException {
     JavaExpression je = parseJavaExpressionString(expression, currentPath);
     if (je == null || !CFAbstractStore.canInsertJavaExpression(je)) {
       return null;
     }
     Store store = getStoreBefore(tree);
+    if (store == null) {
+      return null;
+    }
     Value value = store.getValue(je);
-    return value != null ? value.getAnnotations().iterator().next() : null;
+    return value != null ? value.getAnnotations().first() : null;
+  }
+
+  /**
+   * Returns true if the {@code exprTree} is unreachable. This is a conservative estimate and may
+   * return {@code false} even though the {@code exprTree} is unreachable.
+   *
+   * @param exprTree an expression tree
+   * @return true if the {@code exprTree} is unreachable
+   */
+  public boolean isUnreachable(ExpressionTree exprTree) {
+    if (!everUseFlow) {
+      return false;
+    }
+    Set<Node> nodes = getNodesForTree(exprTree);
+    if (nodes == null) {
+      // Dataflow has no any information about the tree, so conservatively consider the tree
+      // reachable.
+      return false;
+    }
+    for (Node n : nodes) {
+      if (n.getTree() != null && reachableNodes.contains(n.getTree())) {
+        return false;
+      }
+    }
+    // None of the corresponding nodes is reachable, so this tree is dead.
+    return true;
   }
 
   /**
@@ -1029,47 +1100,64 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /** Map from ClassTree to their dataflow analysis state. */
-  protected final Map<ClassTree, ScanState> scannedClasses;
+  protected final Map<ClassTree, ScanState> scannedClasses = new HashMap<>();
 
   /**
-   * The result of the flow analysis. Invariant:
+   * A set of trees whose corresponding nodes are reachable. This is not an exhaustive set of
+   * reachable trees. Use {@link #isUnreachable(ExpressionTree)} instead of this set directly.
+   *
+   * <p>This cannot be a set of Nodes, because two LocalVariableNodes are equal if they have the
+   * same name but represent different uses of the variable. So instead of storing Nodes, it stores
+   * the result of {@code Node#getTree}.
+   */
+  private final Set<Tree> reachableNodes = new HashSet<>();
+
+  /**
+   * The merged result of all the analyses performed in the current compilation unit. Invariant:
    *
    * <pre>
    *  scannedClasses.get(c) == FINISHED for some class c &rArr; flowResult != null
    * </pre>
    *
    * Note that flowResult contains analysis results for Trees from multiple classes which are
-   * produced by multiple calls to performFlowAnalysis.
+   * produced by multiple calls to performFlowAnalysisForClass.
    */
-  protected AnalysisResult<Value, Store> flowResult;
+  protected @MonotonicNonNull AnalysisResult<Value, Store> flowResult;
 
   /**
    * A mapping from methods (or other code blocks) to their regular exit store (used to check
    * postconditions).
    */
-  protected IdentityHashMap<Tree, Store> regularExitStores;
+  protected final IdentityHashMap<Tree, Store> regularExitStores;
 
   /** A mapping from methods (or other code blocks) to their exceptional exit store. */
-  protected IdentityHashMap<Tree, Store> exceptionalExitStores;
+  protected final IdentityHashMap<Tree, Store> exceptionalExitStores;
 
   /** A mapping from methods to a list with all return statements and the corresponding store. */
-  protected IdentityHashMap<MethodTree, List<Pair<ReturnNode, TransferResult<Value, Store>>>>
+  protected final IdentityHashMap<MethodTree, List<ReturnStatementStore<Value, Store>>>
       returnStatementStores;
 
-  /**
-   * A mapping from methods to their a list with all return statements and the corresponding store.
-   */
+  /** A mapping from a method invocation to its corresponding store. */
   protected IdentityHashMap<MethodInvocationTree, Store> methodInvocationStores;
 
   /**
    * Returns the regular exit store for a method or another code block (such as static
-   * initializers).
+   * initializers). Returns {@code null} if there is no such store. This can happen because the
+   * method cannot exit through the regular exit block, or it is abstract or in an interface.
    *
    * @param tree a MethodTree or other code block, such as a static initializer
-   * @return the regular exit store, or {@code null}, if there is no such store (because the method
-   *     cannot exit through the regular exit block).
+   * @return the regular exit store, or {@code null}
    */
   public @Nullable Store getRegularExitStore(Tree tree) {
+    if (regularExitStores == null) {
+      if (tree instanceof MethodTree mt) {
+        if (mt.getBody() == null) {
+          // No body: the method is abstract or in an interface
+          return null;
+        }
+      }
+      throw new BugInCF("regularExitStores==null for [" + tree.getClass() + "]" + tree);
+    }
     return regularExitStores.get(tree);
   }
 
@@ -1093,45 +1181,23 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return a list of all return statements of {@code method} paired with their corresponding
    *     {@link TransferResult} or an empty list if {@code method} has no return statements
    */
-  public List<Pair<ReturnNode, TransferResult<Value, Store>>> getReturnStatementStores(
-      MethodTree methodTree) {
-    assert returnStatementStores.containsKey(methodTree);
-    return returnStatementStores.get(methodTree);
+  public List<ReturnStatementStore<Value, Store>> getReturnStatementStores(MethodTree methodTree) {
+    List<ReturnStatementStore<Value, Store>> result = returnStatementStores.get(methodTree);
+    assert result != null : "@AssumeAssertion(nullness): methodTree was analyzed";
+    return result;
   }
 
   /**
    * Returns the store immediately before a given {@link Tree}.
    *
+   * @param tree the tree
    * @return the store immediately before a given {@link Tree}
    */
-  public Store getStoreBefore(Tree tree) {
-    if (!analysis.isRunning()) {
-      return flowResult.getStoreBefore(tree);
+  public @Nullable Store getStoreBefore(Tree tree) {
+    if (analysis.isRunning()) {
+      return analysis.getStoreBefore(tree, flowResultAnalysisCaches);
     }
-    Set<Node> nodes = analysis.getNodesForTree(tree);
-    if (nodes != null) {
-      return getStoreBefore(nodes);
-    } else {
-      return flowResult.getStoreBefore(tree);
-    }
-  }
-
-  /**
-   * Returns the store immediately before a given Set of {@link Node}s.
-   *
-   * @return the store immediately before a given Set of {@link Node}s
-   */
-  public Store getStoreBefore(Set<Node> nodes) {
-    Store merge = null;
-    for (Node aNode : nodes) {
-      Store s = getStoreBefore(aNode);
-      if (merge == null) {
-        merge = s;
-      } else if (s != null) {
-        merge = merge.leastUpperBound(s);
-      }
-    }
-    return merge;
+    return flowResult.getStoreBefore(tree);
   }
 
   /**
@@ -1140,22 +1206,11 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param node a node whose pre-store to return
    * @return the store immediately before {@code node}
    */
-  public Store getStoreBefore(Node node) {
-    if (!analysis.isRunning()) {
-      return flowResult.getStoreBefore(node);
+  public @Nullable Store getStoreBefore(Node node) {
+    if (analysis.isRunning()) {
+      return analysis.getStoreBefore(node, flowResultAnalysisCaches);
     }
-    TransferInput<Value, Store> prevStore = analysis.getInput(node.getBlock());
-    if (prevStore == null) {
-      return null;
-    }
-    Store store =
-        AnalysisResult.runAnalysisFor(
-            node,
-            Analysis.BeforeOrAfter.BEFORE,
-            prevStore,
-            analysis.getNodeValues(),
-            flowResultAnalysisCaches);
-    return store;
+    return flowResult.getStoreBefore(node);
   }
 
   /**
@@ -1166,31 +1221,11 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param tree the tree whose post-store to return
    * @return the store immediately after a given tree
    */
-  public Store getStoreAfter(Tree tree) {
-    if (!analysis.isRunning()) {
-      return flowResult.getStoreAfter(tree);
+  public @Nullable Store getStoreAfter(Tree tree) {
+    if (analysis.isRunning()) {
+      return analysis.getStoreAfter(tree, flowResultAnalysisCaches);
     }
-    Set<Node> nodes = analysis.getNodesForTree(tree);
-    return getStoreAfter(nodes);
-  }
-
-  /**
-   * Returns the store immediately after a given set of nodes.
-   *
-   * @param nodes the nodes whose post-stores to LUB
-   * @return the LUB of the stores store immediately after {@code nodes}
-   */
-  public Store getStoreAfter(Set<Node> nodes) {
-    Store merge = null;
-    for (Node node : nodes) {
-      Store s = getStoreAfter(node);
-      if (merge == null) {
-        merge = s;
-      } else if (s != null) {
-        merge = merge.leastUpperBound(s);
-      }
-    }
-    return merge;
+    return flowResult.getStoreAfter(tree);
   }
 
   /**
@@ -1200,31 +1235,25 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return the store immediately after a given {@link Node}
    */
   public Store getStoreAfter(Node node) {
-    if (!analysis.isRunning()) {
-      return flowResult.getStoreAfter(node);
+    if (analysis.isRunning()) {
+      return analysis.getStoreAfter(node, flowResultAnalysisCaches);
     }
-    Store res =
-        AnalysisResult.runAnalysisFor(
-            node,
-            Analysis.BeforeOrAfter.AFTER,
-            analysis.getInput(node.getBlock()),
-            analysis.getNodeValues(),
-            flowResultAnalysisCaches);
-    return res;
+    return flowResult.getStoreAfter(node);
   }
 
   /**
    * See {@link org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)}.
    *
+   * @param tree a tree
    * @return the {@link Node}s for a given {@link Tree}
    * @see org.checkerframework.dataflow.analysis.AnalysisResult#getNodesForTree(Tree)
    */
-  public Set<Node> getNodesForTree(Tree tree) {
+  public @Nullable Set<Node> getNodesForTree(Tree tree) {
     return flowResult.getNodesForTree(tree);
   }
 
   /**
-   * Return the first {@link Node} for a given {@link Tree} that has class {@code kind}.
+   * Returns the first {@link Node} for a given {@link Tree} that has class {@code kind}.
    *
    * <p>You probably don't want to use this function: iterate over the result of {@link
    * #getNodesForTree(Tree)} yourself or ask for a conservative approximation of the store using
@@ -1240,7 +1269,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @see #getStoreBefore(Tree)
    * @see #getStoreAfter(Tree)
    */
-  public <T extends Node> T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
+  public <T extends Node> @Nullable T getFirstNodeOfKindForTree(Tree tree, Class<T> kind) {
     Set<Node> nodes = getNodesForTree(tree);
     for (Node node : nodes) {
       if (node.getClass() == kind) {
@@ -1255,9 +1284,28 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @return the value of effectively final local variables
    */
-  public HashMap<Element, Value> getFinalLocalValues() {
+  public Map<VariableElement, Value> getFinalLocalValues() {
     return flowResult.getFinalLocalValues();
   }
+
+  /**
+   * A class tree and the store to use when analyzing it.
+   *
+   * @param <S> the store type used in the analysis
+   * @param classTree a class tree
+   * @param store the store captured where {@code classTree} is declared, or null if there is none
+   */
+  public record ClassAndStore<S>(ClassTree classTree, @Nullable S store) {}
+
+  /**
+   * A lambda and the store to use when analyzing it.
+   *
+   * @param <S> the store type used in the analysis
+   * @param lambda a lambda
+   * @param store the store captured where {@code lambda} is declared, or null if the lambda is
+   *     unreachable
+   */
+  public record LambdaAndStore<S>(LambdaExpressionTree lambda, @Nullable S store) {}
 
   /**
    * Perform a org.checkerframework.dataflow analysis over a single class tree and its nested
@@ -1265,57 +1313,65 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @param classTree the class to analyze
    */
-  protected void performFlowAnalysis(ClassTree classTree) {
+  protected void performFlowAnalysisForClass(ClassTree classTree) {
     if (flowResult == null) {
-      regularExitStores = new IdentityHashMap<>();
-      exceptionalExitStores = new IdentityHashMap<>();
-      returnStatementStores = new IdentityHashMap<>();
-      flowResult = new AnalysisResult<>(flowResultAnalysisCaches);
+      this.regularExitStores.clear();
+      this.exceptionalExitStores.clear();
+      this.returnStatementStores.clear();
+      this.flowResult = new AnalysisResult<>(flowResultAnalysisCaches);
     }
 
     // no need to scan annotations
-    if (classTree.getKind() == Kind.ANNOTATION_TYPE) {
+    if (classTree.getKind() == Tree.Kind.ANNOTATION_TYPE) {
       // Mark finished so that default annotations will be applied.
       scannedClasses.put(classTree, ScanState.FINISHED);
       return;
     }
 
-    Queue<Pair<ClassTree, Store>> queue = new ArrayDeque<>();
-    List<Pair<VariableElement, Value>> fieldValues = new ArrayList<>();
+    // class trees and their initial stores
+    Queue<ClassAndStore<Store>> classQueue = new ArrayDeque<>();
+    List<FieldInitialValue<Value>> fieldValues = new ArrayList<>();
 
     // No captured store for top-level classes.
-    queue.add(Pair.of(classTree, null));
+    classQueue.add(new ClassAndStore<>(classTree, null));
 
-    while (!queue.isEmpty()) {
-      final Pair<ClassTree, Store> qel = queue.remove();
-      final ClassTree ct = qel.first;
-      final Store capturedStore = qel.second;
+    while (!classQueue.isEmpty()) {
+      ClassAndStore<Store> qel = classQueue.remove();
+      ClassTree ct = qel.classTree();
+      Store capturedStore = qel.store();
       scannedClasses.put(ct, ScanState.IN_PROGRESS);
 
-      TreePath preTreePath = visitorState.getPath();
-      AnnotatedDeclaredType preClassType = visitorState.getClassType();
-      ClassTree preClassTree = visitorState.getClassTree();
-      AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
-      MethodTree preMT = visitorState.getMethodTree();
+      TreePath preTreePath = getVisitorTreePath();
 
-      // Don't use getPath, because that depends on the visitorState path.
-      visitorState.setPath(TreePath.getPath(this.root, ct));
-      visitorState.setClassType(getAnnotatedType(TreeUtils.elementFromDeclaration(ct)));
-      visitorState.setClassTree(ct);
-      visitorState.setMethodReceiver(null);
-      visitorState.setMethodTree(null);
+      // Don't call AnnotatedTypeFactory#getPath, because it uses visitorTreePath.
+      setVisitorTreePath(TreePath.getPath(this.root, ct));
 
       // start with the captured store as initialization store
       initializationStaticStore = capturedStore;
       initializationStore = capturedStore;
 
-      Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue = new ArrayDeque<>();
+      // The store is null if the lambda is unreachable.
+      Queue<LambdaAndStore<Store>> lambdaQueue = new ArrayDeque<>();
 
+      // Queue up classes (for top-level `while` loop) and methods (for within this `try`
+      // construct); analyze top-level blocks and variable initializers as they are
+      // encountered.
       try {
         List<CFGMethod> methods = new ArrayList<>();
-        for (Tree m : ct.getMembers()) {
+        List<? extends Tree> members = ct.getMembers();
+        if (!Ordering.from(sortVariablesFirst).isOrdered(members)) {
+          members = new ArrayList<>(members);
+          // Process variables before methods, so all field initializers are observed
+          // before the constructor is analyzed and reports uninitialized variables.
+          members.sort(sortVariablesFirst);
+        }
+        for (Tree m : members) {
           switch (m.getKind()) {
-            case METHOD:
+            case CLASS, RECORD, ANNOTATION_TYPE, INTERFACE, ENUM ->
+                // Visit inner and nested class trees.
+                // TODO: Use no store for them? What can be captured?
+                classQueue.add(new ClassAndStore<>((ClassTree) m, capturedStore));
+            case METHOD -> {
               MethodTree mt = (MethodTree) m;
 
               // Skip abstract and native methods because they have no body.
@@ -1331,107 +1387,93 @@ public abstract class GenericAnnotatedTypeFactory<
 
               // Wait with scanning the method until all other members
               // have been processed.
-              CFGMethod met = new CFGMethod(mt, ct);
-              methods.add(met);
-              break;
-            case VARIABLE:
+              CFGMethod method = new CFGMethod(mt, ct);
+              methods.add(method);
+            }
+            case VARIABLE -> {
+              // A top-level variable is a field.
               VariableTree vt = (VariableTree) m;
               ExpressionTree initializer = vt.getInitializer();
+              AnnotatedTypeMirror declaredType = getAnnotatedTypeLhs(vt);
+              Value declaredValue = analysis.createAbstractValue(declaredType);
+              FieldAccess fieldExpr = (FieldAccess) JavaExpression.fromVariableTree(vt);
               // analyze initializer if present
+              Value initializerValue = null;
               if (initializer != null) {
                 boolean isStatic = vt.getModifiers().getFlags().contains(Modifier.STATIC);
-                analyze(
-                    queue,
-                    lambdaQueue,
-                    new CFGStatement(vt, ct),
-                    fieldValues,
-                    classTree,
-                    true,
-                    true,
-                    isStatic,
-                    capturedStore);
-                Value value = flowResult.getValue(initializer);
-                if (vt.getModifiers().getFlags().contains(Modifier.FINAL) && value != null) {
-                  // Store the abstract value for the field.
-                  VariableElement element = TreeUtils.elementFromDeclaration(vt);
-                  fieldValues.add(Pair.of(element, value));
-                }
+                ControlFlowGraph cfg =
+                    analyze(
+                        classQueue,
+                        lambdaQueue,
+                        new CFGStatement(vt, ct),
+                        fieldValues,
+                        null,
+                        /* isInitializationCode= */ true,
+                        /* updateInitializationStore= */ true,
+                        isStatic,
+                        capturedStore);
+                postAnalyze(cfg);
+                initializerValue = flowResult.getValue(initializer);
               }
-              break;
-            case CLASS:
-            case ANNOTATION_TYPE:
-            case INTERFACE:
-            case ENUM:
-              // Visit inner and nested class trees.
-              // TODO: Use no store for them? What can be captured?
-              queue.add(Pair.of((ClassTree) m, capturedStore));
-              break;
-            case BLOCK:
+              fieldValues.add(new FieldInitialValue<>(fieldExpr, declaredValue, initializerValue));
+            }
+            case BLOCK -> {
               BlockTree b = (BlockTree) m;
-              analyze(
-                  queue,
-                  lambdaQueue,
-                  new CFGStatement(b, ct),
-                  fieldValues,
-                  ct,
-                  true,
-                  true,
-                  b.isStatic(),
-                  capturedStore);
-              break;
-            default:
-              assert false : "Unexpected member: " + m.getKind();
-              break;
+              ControlFlowGraph cfg =
+                  analyze(
+                      classQueue,
+                      lambdaQueue,
+                      new CFGStatement(b, ct),
+                      fieldValues,
+                      null,
+                      true,
+                      true,
+                      b.isStatic(),
+                      capturedStore);
+              postAnalyze(cfg);
+            }
+            default -> throw new BugInCF("Unexpected member: " + m.getKind());
           }
         }
 
         // Now analyze all methods.
         // TODO: at this point, we don't have any information about
         // fields of superclasses.
-        for (CFGMethod met : methods) {
-          analyze(
-              queue,
-              lambdaQueue,
-              met,
-              fieldValues,
-              classTree,
-              TreeUtils.isConstructor(met.getMethod()),
-              false,
-              false,
-              capturedStore);
+        for (CFGMethod method : methods) {
+          performFlowAnalysisForMethod(ct, method, classQueue, fieldValues, capturedStore);
         }
 
         while (!lambdaQueue.isEmpty()) {
-          Pair<LambdaExpressionTree, Store> lambdaPair = lambdaQueue.poll();
+          LambdaAndStore<Store> lambdaPair = lambdaQueue.remove();
+          @SuppressWarnings("nullness:argument") // the lambda is in the current compilation unit
           MethodTree mt =
-              (MethodTree) TreePathUtil.enclosingOfKind(getPath(lambdaPair.first), Kind.METHOD);
-          analyze(
-              queue,
-              lambdaQueue,
-              new CFGLambda(lambdaPair.first, classTree, mt),
-              fieldValues,
-              classTree,
-              false,
-              false,
-              false,
-              lambdaPair.second);
+              (MethodTree)
+                  TreePathUtil.enclosingOfKind(getPath(lambdaPair.lambda()), Tree.Kind.METHOD);
+          ControlFlowGraph cfg =
+              analyze(
+                  classQueue,
+                  lambdaQueue,
+                  new CFGLambda(lambdaPair.lambda(), ct, mt),
+                  fieldValues,
+                  null,
+                  false,
+                  false,
+                  false,
+                  lambdaPair.store());
+          postAnalyze(cfg);
         }
 
-        // by convention we store the static initialization store as the regular exit
+        // By convention, we store the static initialization store as the regular exit
         // store of the class node, so that it can later be used to check
         // that all fields are initialized properly.
-        // see InitializationVisitor.visitClass
+        // See InitializationVisitor.visitClass().
         if (initializationStaticStore == null) {
           regularExitStores.put(ct, emptyStore);
         } else {
           regularExitStores.put(ct, initializationStaticStore);
         }
       } finally {
-        visitorState.setPath(preTreePath);
-        visitorState.setClassType(preClassType);
-        visitorState.setClassTree(preClassTree);
-        visitorState.setMethodReceiver(preAMT);
-        visitorState.setMethodTree(preMT);
+        setVisitorTreePath(preTreePath);
       }
 
       scannedClasses.put(ct, ScanState.FINISHED);
@@ -1439,32 +1481,162 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
+   * Analyzes {@code method} and all lambdas contained within it.
+   *
+   * @param classTree class tree containing {@code method}
+   * @param method method to analyze
+   * @param classQueue classes found within {@code method} are added to this queue
+   * @param fieldValues the abstract values for all fields of the same class
+   * @param capturedStore the input Store to use
+   */
+  private void performFlowAnalysisForMethod(
+      ClassTree classTree,
+      CFGMethod method,
+      Queue<ClassAndStore<Store>> classQueue,
+      List<FieldInitialValue<Value>> fieldValues,
+      @Nullable Store capturedStore) {
+    // Each value is a list containing one element for each `return` statement in the lambda (which
+    // is the map key).
+    Map<LambdaExpressionTree, List<AnnotationMirrorSet>> lambdaToResultTypes = new HashMap<>();
+    Map<LambdaExpressionTree, ControlFlowGraph> lambdaToCFG = new HashMap<>();
+    ControlFlowGraph methodCFG = null;
+    MethodTree methodTree = method.getMethod();
+
+    boolean isConstructor = TreeUtils.isConstructor(method.getMethod());
+
+    // Analyze `method` and all lambdas contained in `method` until the type of the lambda result
+    // expressions do not change.
+    boolean firstIteration = true;
+    while (true) {
+      Queue<ClassAndStore<Store>> classQueueInMethod = new ArrayDeque<>();
+      Queue<LambdaAndStore<Store>> lambdaQueueInMethod = new ArrayDeque<>();
+      methodCFG =
+          analyze(
+              classQueueInMethod,
+              lambdaQueueInMethod,
+              method,
+              fieldValues,
+              methodCFG,
+              isConstructor,
+              /* updateInitializationStore= */ false,
+              /* isStatic= */ false,
+              capturedStore);
+      boolean anyLambdaResultChanged = false;
+      while (!lambdaQueueInMethod.isEmpty()) {
+        LambdaAndStore<Store> lambdaPair = lambdaQueueInMethod.remove();
+        LambdaExpressionTree lambda = lambdaPair.lambda();
+        ControlFlowGraph cfgLambda =
+            analyze(
+                classQueueInMethod,
+                lambdaQueueInMethod,
+                new CFGLambda(lambda, classTree, methodTree),
+                fieldValues,
+                lambdaToCFG.get(lambda),
+                /* isInitializationCode= */ false,
+                /* updateInitializationStore= */ false,
+                /* isStatic= */ false,
+                lambdaPair.store());
+        lambdaToCFG.put(lambda, cfgLambda);
+
+        List<AnnotationMirrorSet> returnedExpressionAnnos =
+            CollectionsP.mapList(
+                tree -> getAnnotatedType(tree).getPrimaryAnnotations(),
+                TreeUtils.getReturnedExpressions(lambda));
+        List<AnnotationMirrorSet> prevReturnedExpressionAnnos = lambdaToResultTypes.get(lambda);
+        if (prevReturnedExpressionAnnos == null
+            || !prevReturnedExpressionAnnos.equals(returnedExpressionAnnos)) {
+          anyLambdaResultChanged = true;
+        }
+        lambdaToResultTypes.put(lambda, returnedExpressionAnnos);
+      }
+
+      if (!anyLambdaResultChanged
+          || (firstIteration && containsAllVoidLambdas(lambdaToCFG.keySet()))) {
+        classQueue.addAll(classQueueInMethod);
+        break; // Done with this method.
+      } else {
+        if (fromExpressionTreeCache != null) {
+          // If one cache is not null, then neither are the others.
+          fromExpressionTreeCache.clear();
+          fromMemberTreeCache.clear();
+          fromTypeTreeCache.clear();
+        }
+        firstIteration = false;
+      }
+    }
+    postAnalyze(methodCFG);
+    lambdaToCFG.values().forEach(this::postAnalyze);
+  }
+
+  /**
+   * Returns true if every lambda in {@code lambdas} has a void return type; otherwise false.
+   *
+   * @param lambdas lambdas that are all contained within the same method
+   * @return true if no lambda has a non-void return type
+   */
+  private boolean containsAllVoidLambdas(Set<LambdaExpressionTree> lambdas) {
+    for (LambdaExpressionTree lambda : lambdas) {
+      if (TypesUtils.findFunctionType(TreeUtils.typeOf(lambda), processingEnv)
+              .getReturnType()
+              .getKind()
+          != TypeKind.VOID) {
+        // The lambda return type is not void.
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** Sorts a list of trees with the variables first. */
+  private final Comparator<Tree> sortVariablesFirst =
+      (t1, t2) -> {
+        boolean variable1 = t1 instanceof VariableTree;
+        boolean variable2 = t2 instanceof VariableTree;
+        if (variable1 && !variable2) {
+          return -1;
+        } else if (!variable1 && variable2) {
+          return 1;
+        } else {
+          return 0;
+        }
+      };
+
+  /**
    * Analyze the AST {@code ast} and store the result. Additional operations that should be
    * performed after analysis should be implemented in {@link #postAnalyze(ControlFlowGraph)}.
    *
-   * @param queue the queue for encountered class trees and their initial stores
+   * @param classQueue the queue for encountered class trees and their initial stores
    * @param lambdaQueue the queue for encountered lambda expression trees and their initial stores
    * @param ast the AST to analyze
    * @param fieldValues the abstract values for all fields of the same class
-   * @param currentClass the class we are currently looking at
+   * @param cfg control flow graph to use; if null, one will be created and returned
    * @param isInitializationCode are we analyzing a (static/non-static) initializer block of a class
    * @param updateInitializationStore should the initialization store be updated
    * @param isStatic are we analyzing a static construct
    * @param capturedStore the input Store to use for captured variables, e.g. in a lambda
+   * @return the control flow graph for {@code ast}, which is {@code cfg} if {@code cfg} is non-null
    * @see #postAnalyze(org.checkerframework.dataflow.cfg.ControlFlowGraph)
    */
-  protected void analyze(
-      Queue<Pair<ClassTree, Store>> queue,
-      Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue,
+  protected ControlFlowGraph analyze(
+      Queue<ClassAndStore<Store>> classQueue,
+      Queue<LambdaAndStore<Store>> lambdaQueue,
       UnderlyingAST ast,
-      List<Pair<VariableElement, Value>> fieldValues,
-      ClassTree currentClass,
+      List<FieldInitialValue<Value>> fieldValues,
+      @Nullable ControlFlowGraph cfg,
       boolean isInitializationCode,
       boolean updateInitializationStore,
       boolean isStatic,
-      Store capturedStore) {
-    ControlFlowGraph cfg = CFCFGBuilder.build(root, ast, checker, this, processingEnv);
-
+      @Nullable Store capturedStore) {
+    if (cfg == null) {
+      cfg = CFCFGBuilder.build(root, ast, checker, this, processingEnv);
+      cfg.getAllNodes(this::isIgnoredExceptionType)
+          .forEach(
+              node -> {
+                if (node.getTree() != null) {
+                  reachableNodes.add(node.getTree());
+                }
+              });
+    }
     if (isInitializationCode) {
       Store initStore = !isStatic ? initializationStore : initializationStaticStore;
       if (initStore != null) {
@@ -1533,31 +1705,43 @@ public abstract class GenericAnnotatedTypeFactory<
 
     // add classes declared in CFG
     for (ClassTree cls : cfg.getDeclaredClasses()) {
-      queue.add(Pair.of(cls, getStoreBefore(cls)));
+      classQueue.add(new ClassAndStore<>(cls, getStoreBefore(cls)));
     }
     // add lambdas declared in CFG
     for (LambdaExpressionTree lambda : cfg.getDeclaredLambdas()) {
-      lambdaQueue.add(Pair.of(lambda, getStoreBefore(lambda)));
+      lambdaQueue.add(new LambdaAndStore<>(lambda, getStoreBefore(lambda)));
     }
+    return cfg;
+  }
 
-    postAnalyze(cfg);
+  /**
+   * Returns true if {@code typeMirror} is an exception type that should be ignored.
+   *
+   * @param typeMirror an exception type
+   * @return true if {@code typeMirror} is an exception type that should be ignored
+   */
+  public boolean isIgnoredExceptionType(TypeMirror typeMirror) {
+    return false;
   }
 
   /**
    * Perform any additional operations on a CFG. Called once per CFG, after the CFG has been
-   * analyzed by {@link #analyze(Queue, Queue, UnderlyingAST, List, ClassTree, boolean, boolean,
-   * boolean, CFAbstractStore)}. This method can be used to initialize additional state or to
-   * perform any analyses that are easier to perform on the CFG instead of the AST.
+   * analyzed by {@link #analyze(Queue, Queue, UnderlyingAST, List, ControlFlowGraph, boolean,
+   * boolean, boolean, CFAbstractStore)}. If the CFG is analyzed more than once, this method is
+   * still only called one time after the last time the CFG is analyzed. This method can be used to
+   * initialize additional state or to perform any analyzes that are easier to perform on the CFG
+   * instead of the AST.
    *
    * @param cfg the CFG
-   * @see #analyze(java.util.Queue, java.util.Queue,
-   *     org.checkerframework.dataflow.cfg.UnderlyingAST, java.util.List,
-   *     com.sun.source.tree.ClassTree, boolean, boolean, boolean,
-   *     org.checkerframework.framework.flow.CFAbstractStore)
+   * @see #analyze(Queue, Queue, UnderlyingAST, List, ControlFlowGraph, boolean, boolean, boolean,
+   *     CFAbstractStore)
    */
   protected void postAnalyze(ControlFlowGraph cfg) {
     handleCFGViz(cfg);
   }
+
+  /** True if handling CFG visualization is necessary. */
+  private final boolean handleCFGViz;
 
   /**
    * Handle the visualization of the CFG, if necessary.
@@ -1565,8 +1749,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param cfg the CFG
    */
   protected void handleCFGViz(ControlFlowGraph cfg) {
-    if (checker.hasOption("flowdotdir") || checker.hasOption("cfgviz")) {
-      getCFGVisualizer().visualize(cfg, cfg.getEntryBlock(), analysis);
+    if (handleCFGViz) {
+      getCFGVisualizer().visualizeWithAction(cfg, cfg.getEntryBlock(), analysis);
     }
   }
 
@@ -1579,8 +1763,9 @@ public abstract class GenericAnnotatedTypeFactory<
    * this default is too conservative. So this method is used instead of {@link
    * GenericAnnotatedTypeFactory#getAnnotatedTypeLhs(Tree)}.
    *
-   * <p>{@link TypeArgInferenceUtil#assignedToVariable(AnnotatedTypeFactory, Tree)} explains why a
-   * different type is used.
+   * <p>{@link
+   * org.checkerframework.framework.util.typeinference8.types.InferenceFactory#assignedToVariable(AnnotatedTypeFactory,
+   * Tree)} explains why a different type is used.
    *
    * @param lhsTree left-hand side of an assignment
    * @return AnnotatedTypeMirror of {@code lhsTree}
@@ -1594,7 +1779,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns the type of a left-hand side of an assignment.
+   * Returns the type of the left-hand side of an assignment.
    *
    * <p>The default implementation returns the type without considering dataflow type refinement.
    * Subclass can override this method and add additional logic for computing the type of a LHS.
@@ -1603,6 +1788,14 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return AnnotatedTypeMirror of {@code lhsTree}
    */
   public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree lhsTree) {
+
+    if (lhsTree instanceof VariableTree variableTree
+        && TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)) {
+      // If a variable is declared with var, then the type of the LHS depends on the type of the RHS
+      // which requires dataflow to be typed properly.
+      return getAnnotatedType(lhsTree);
+    }
+
     AnnotatedTypeMirror res;
     boolean oldUseFlow = useFlow;
     boolean oldShouldCache = shouldCache;
@@ -1611,28 +1804,23 @@ public abstract class GenericAnnotatedTypeFactory<
     // be called from elsewhere and would expect flow-sensitive type refinements.
     shouldCache = false;
     switch (lhsTree.getKind()) {
-      case VARIABLE:
-      case IDENTIFIER:
-      case MEMBER_SELECT:
-      case ARRAY_ACCESS:
-        res = getAnnotatedType(lhsTree);
-        break;
-      case PARENTHESIZED:
-        res = getAnnotatedTypeLhs(TreeUtils.withoutParens((ExpressionTree) lhsTree));
-        break;
-      default:
+      case VARIABLE, IDENTIFIER, MEMBER_SELECT, ARRAY_ACCESS -> res = getAnnotatedType(lhsTree);
+      case PARENTHESIZED ->
+          res = getAnnotatedTypeLhs(TreeUtils.withoutParens((ExpressionTree) lhsTree));
+      default -> {
         if (TreeUtils.isTypeTree(lhsTree)) {
           // lhsTree is a type tree at the pseudo assignment of a returned expression to
           // declared return type.
           res = getAnnotatedType(lhsTree);
         } else {
           throw new BugInCF(
-              "GenericAnnotatedTypeFactory: Unexpected tree passed to getAnnotatedTypeLhs. "
-                  + "lhsTree: "
+              "GenericAnnotatedTypeFactory: Unexpected tree passed to"
+                  + " getAnnotatedTypeLhs. lhsTree: "
                   + lhsTree
                   + " Tree.Kind: "
                   + lhsTree.getKind());
         }
+      }
     }
     useFlow = oldUseFlow;
     shouldCache = oldShouldCache;
@@ -1655,17 +1843,14 @@ public abstract class GenericAnnotatedTypeFactory<
     // Get the synthetic NewArray tree that dataflow creates as the last argument of a call to a
     // vararg method. Do this by getting the MethodInvocationNode to which "tree" maps. The last
     // argument node of the MethodInvocationNode stores the synthetic NewArray tree.
-    List<Node> args;
-    switch (tree.getKind()) {
-      case METHOD_INVOCATION:
-        args = getFirstNodeOfKindForTree(tree, MethodInvocationNode.class).getArguments();
-        break;
-      case NEW_CLASS:
-        args = getFirstNodeOfKindForTree(tree, ObjectCreationNode.class).getArguments();
-        break;
-      default:
-        throw new BugInCF("Unexpected kind of tree: " + tree);
-    }
+    List<Node> args =
+        switch (tree.getKind()) {
+          case METHOD_INVOCATION ->
+              getFirstNodeOfKindForTree(tree, MethodInvocationNode.class).getArguments();
+          case NEW_CLASS ->
+              getFirstNodeOfKindForTree(tree, ObjectCreationNode.class).getArguments();
+          default -> throw new BugInCF("Unexpected kind of tree: " + tree);
+        };
 
     assert !args.isEmpty() : "Arguments are empty";
     Node varargsArray = args.get(args.size() - 1);
@@ -1673,32 +1858,36 @@ public abstract class GenericAnnotatedTypeFactory<
     return varargtype;
   }
 
-  /* Returns the type of a right-hand side of an assignment for unary operation like prefix or
-   * postfix increment or decrement.
+  /**
+   * Returns the type of {@code v + 1} or {@code v - 1} where {@code v} is the expression in the
+   * postfixed increment or decrement expression.
    *
-   * @param tree unary operation tree for compound assignment
+   * @param tree a postfixed increment or decrement tree
    * @return AnnotatedTypeMirror of a right-hand side of an assignment for unary operation
    */
   public AnnotatedTypeMirror getAnnotatedTypeRhsUnaryAssign(UnaryTree tree) {
     if (!useFlow) {
       return getAnnotatedType(tree);
     }
-    AssignmentNode n = flowResult.getAssignForUnaryTree(tree);
-    return getAnnotatedType(n.getExpression().getTree());
+    BinaryTree binaryTree = flowResult.getPostfixBinaryTree(tree);
+    return getAnnotatedType(binaryTree);
   }
 
   @Override
-  public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
-    ParameterizedExecutableType mType = super.constructorFromUse(tree);
-    AnnotatedExecutableType method = mType.executableType;
+  protected ParameterizedExecutableType constructorFromUse(
+      NewClassTree tree, boolean inferTypeArgs) {
+    ParameterizedExecutableType mType = super.constructorFromUse(tree, inferTypeArgs);
+    AnnotatedExecutableType method = mType.executableType();
     dependentTypesHelper.atConstructorInvocation(method, tree);
     return mType;
   }
 
   @Override
   protected void constructorFromUsePreSubstitution(
-      NewClassTree tree, AnnotatedExecutableType type) {
-    poly.resolve(tree, type);
+      NewClassTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
+    if (resolvePolyQuals) {
+      poly.resolve(tree, type);
+    }
   }
 
   @Override
@@ -1727,12 +1916,45 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
+   * Removes all primary annotations on a copy of the type and calculates the default annotations
+   * that apply to the copied type, without type refinements.
+   *
+   * @param tree tree where the type is used
+   * @param type type to determine the defaulted version for
+   * @return the annotated type mirror with default annotations
+   */
+  public AnnotatedTypeMirror getDefaultAnnotations(Tree tree, AnnotatedTypeMirror type) {
+    AnnotatedTypeMirror copy = type.deepCopy();
+    copy.removePrimaryAnnotations(type.getPrimaryAnnotations());
+    addComputedTypeAnnotations(tree, copy, false);
+    return copy;
+  }
+
+  /**
+   * Like {@link #getDefaultAnnotations(Tree, AnnotatedTypeMirror)}.
+   *
+   * <p>For use ONLY by the {@code -AwarnRedundantAnnotations} command-line option. May add fewer
+   * annotations than {@link #getDefaultAnnotations(Tree, AnnotatedTypeMirror)}.
+   *
+   * @param tree tree where the type is used
+   * @param type type to determine the defaulted version for
+   * @return the annotated type mirror with default annotations
+   */
+  public AnnotatedTypeMirror getDefaultAnnotationsForWarnRedundant(
+      Tree tree, AnnotatedTypeMirror type) {
+    AnnotatedTypeMirror copy = type.deepCopy();
+    copy.removePrimaryAnnotations(type.getPrimaryAnnotations());
+    addComputedTypeAnnotationsForWarnRedundant(tree, copy, false);
+    return copy;
+  }
+
+  /**
    * Like {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}. Overriding implementations
    * typically simply pass the boolean to calls to super.
    *
    * @param tree an AST node
    * @param type the type obtained from tree
-   * @param iUseFlow whether to use information from dataflow analysis
+   * @param iUseFlow if true, use information from dataflow analysis
    */
   protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
     if (root == null && ajavaTypes.isParsing()) {
@@ -1764,24 +1986,28 @@ public abstract class GenericAnnotatedTypeFactory<
     applyQualifierParameterDefaults(tree, type);
     log("%s GATF.addComputedTypeAnnotations#3(%s, %s)%n", thisClass, treeString, type);
     treeAnnotator.visit(tree, type);
-    log("%s GATF.addComputedTypeAnnotations#4(%s, %s)%n", thisClass, treeString, type);
+    log(
+        "%s GATF.addComputedTypeAnnotations#4(%s, %s)%n  treeAnnotator=%s%n",
+        thisClass, treeString, type, treeAnnotator);
     if (TreeUtils.isExpressionTree(tree)) {
-      // If a tree annotator, did not add a type, add the DefaultForUse default.
+      // If a tree annotator did not add a type, add the DefaultForUse default.
       addAnnotationsFromDefaultForType(TreeUtils.elementFromTree(tree), type);
       log("%s GATF.addComputedTypeAnnotations#5(%s, %s)%n", thisClass, treeString, type);
     }
     typeAnnotator.visit(type, null);
-    log("%s GATF.addComputedTypeAnnotations#6(%s, %s)%n", thisClass, treeString, type);
+    log(
+        "%s GATF.addComputedTypeAnnotations#6(%s, %s)%n  typeAnnotator=%s%n",
+        thisClass, treeString, type, typeAnnotator);
     defaults.annotate(tree, type);
     log("%s GATF.addComputedTypeAnnotations#7(%s, %s)%n", thisClass, treeString, type);
 
     if (iUseFlow) {
-      Value as = getInferredValueFor(tree);
-      if (as != null) {
-        applyInferredAnnotations(type, as);
+      Value inferred = getInferredValueFor(tree);
+      if (inferred != null) {
+        applyInferredAnnotations(type, inferred);
         log(
-            "%s GATF.addComputedTypeAnnotations#8(%s, %s), as=%s%n",
-            thisClass, treeString, type, as);
+            "%s GATF.addComputedTypeAnnotations#8(%s, %s), inferred=%s%n",
+            thisClass, treeString, type, inferred);
       }
     }
     log(
@@ -1790,36 +2016,61 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
+   * Like {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)}.
+   *
+   * <p>For use ONLY by the {@code -AwarnRedundantAnnotations} command-line option. May add fewer
+   * annotations than {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)}.
+   *
+   * @param tree an AST node
+   * @param type the type obtained from tree
+   * @param iUseFlow if true, use information from dataflow analysis
+   */
+  protected void addComputedTypeAnnotationsForWarnRedundant(
+      Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+    // Default implementation does nothing special.
+    addComputedTypeAnnotations(tree, type, iUseFlow);
+  }
+
+  /**
    * Flow analysis will be performed if all of the following are true.
    *
    * <ul>
-   *   <li>tree is a {@link ClassTree}
-   *   <li>Flow analysis has not already been performed on tree
+   *   <li>{@code tree} is a {@link ClassTree}
+   *   <li>Flow analysis has not already been performed on {@code tree}
    * </ul>
    *
-   * @param tree the tree to check and possibly perform flow analysis on
+   * @param classTree the tree to check and possibly perform flow analysis on
    */
-  protected void checkAndPerformFlowAnalysis(Tree tree) {
+  protected void performFlowAnalysisForClassOnce(ClassTree classTree) {
     // For performance reasons, we require that getAnnotatedType is called
     // on the ClassTree before it's called on any code contained in the class,
     // so that we can perform flow analysis on the class.  Previously we
     // used TreePath.getPath to find enclosing classes, but that call
-    // alone consumed more than 10% of execution time.  See BaseTypeVisitor
-    // .visitClass for the call to getAnnotatedType that triggers analysis.
-    if (tree instanceof ClassTree) {
-      ClassTree classTree = (ClassTree) tree;
-      if (!scannedClasses.containsKey(classTree)) {
-        performFlowAnalysis(classTree);
-      }
+    // alone consumed more than 10% of execution time.  See
+    // BaseTypeVisitor.visitClass for the call to getAnnotatedType that
+    // triggers analysis.
+    if (!scannedClasses.containsKey(classTree)) {
+      performFlowAnalysisForClass(classTree);
     }
   }
 
   /**
    * Returns the inferred value (by the org.checkerframework.dataflow analysis) for a given tree.
+   *
+   * @param tree the tree
+   * @return the value for the tree, if one has been computed by dataflow. If no value has been
+   *     computed, null is returned (this does not mean that no value will ever be computed for the
+   *     given tree).
    */
-  public Value getInferredValueFor(Tree tree) {
+  public @Nullable Value getInferredValueFor(Tree tree) {
     if (tree == null) {
       throw new BugInCF("GenericAnnotatedTypeFactory.getInferredValueFor called with null tree");
+    }
+    if (!analysis.isRunning() && flowResult == null) {
+      // When parsing stub or ajava files, the analysis is not running (it has not yet
+      // started), and flowResult is null (no analysis has occurred). Instead of attempting to
+      // find a non-existent inferred type, return null.
+      return null;
     }
     Value as = null;
     if (analysis.isRunning()) {
@@ -1834,11 +2085,14 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Applies the annotations inferred by the org.checkerframework.dataflow analysis to the type
    * {@code type}.
+   *
+   * @param type the type to modify
+   * @param inferred the inferred annotations to apply
    */
-  protected void applyInferredAnnotations(AnnotatedTypeMirror type, Value as) {
+  protected void applyInferredAnnotations(AnnotatedTypeMirror type, Value inferred) {
     DefaultInferredTypesApplier applier =
         new DefaultInferredTypesApplier(getQualifierHierarchy(), this);
-    applier.applyInferredType(type, as.getAnnotations(), as.getUnderlyingType());
+    applier.applyInferredType(type, inferred.getAnnotations(), inferred.getUnderlyingType());
   }
 
   /**
@@ -1872,20 +2126,22 @@ public abstract class GenericAnnotatedTypeFactory<
       return;
     }
     switch (elt.getKind()) {
-      case CONSTRUCTOR:
-      case METHOD:
-      case FIELD:
-      case LOCAL_VARIABLE:
-      case PARAMETER:
-        break;
-      default:
+      case CONSTRUCTOR,
+          METHOD,
+          FIELD,
+          RESOURCE_VARIABLE,
+          EXCEPTION_PARAMETER,
+          LOCAL_VARIABLE,
+          PARAMETER -> {} // continue below
+      default -> {
         return;
+      }
     }
 
     applyLocalVariableQualifierParameterDefaults(elt, type);
 
     TypeElement enclosingClass = ElementUtils.enclosingTypeElement(elt);
-    Set<AnnotationMirror> tops;
+    AnnotationMirrorSet tops;
     if (enclosingClass != null) {
       tops = getQualifierParameterHierarchies(enclosingClass);
     } else {
@@ -1894,7 +2150,7 @@ public abstract class GenericAnnotatedTypeFactory<
     if (tops.isEmpty()) {
       return;
     }
-    Set<AnnotationMirror> polyWithQualParam = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet polyWithQualParam = new AnnotationMirrorSet();
     for (AnnotationMirror top : tops) {
       AnnotationMirror poly = qualHierarchy.getPolymorphicAnnotation(top);
       if (poly != null) {
@@ -1921,18 +2177,18 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param type where the defaults are applied
    */
   private void applyLocalVariableQualifierParameterDefaults(Element elt, AnnotatedTypeMirror type) {
-    if (elt.getKind() != ElementKind.LOCAL_VARIABLE
+    if (!ElementUtils.isLocalVariable(elt)
         || getQualifierParameterHierarchies(type).isEmpty()
         || variablesUnderInitialization.contains(elt)) {
       return;
     }
 
     Tree declTree = declarationFromElement(elt);
-    if (declTree == null || declTree.getKind() != Kind.VARIABLE) {
+    if (!(declTree instanceof VariableTree declVt)) {
       return;
     }
 
-    ExpressionTree initializer = ((VariableTree) declTree).getInitializer();
+    ExpressionTree initializer = declVt.getInitializer();
     if (initializer == null) {
       return;
     }
@@ -1954,8 +2210,8 @@ public abstract class GenericAnnotatedTypeFactory<
       }
     }
 
-    Set<AnnotationMirror> qualParamTypes = AnnotationUtils.createAnnotationSet();
-    for (AnnotationMirror initializerAnnotation : initializerType.getAnnotations()) {
+    AnnotationMirrorSet qualParamTypes = new AnnotationMirrorSet();
+    for (AnnotationMirror initializerAnnotation : initializerType.getPrimaryAnnotations()) {
       if (hasQualifierParameterInHierarchy(
           type, qualHierarchy.getTopAnnotation(initializerAnnotation))) {
         qualParamTypes.add(initializerAnnotation);
@@ -1988,18 +2244,20 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   @Override
-  public ParameterizedExecutableType methodFromUse(MethodInvocationTree tree) {
-    ParameterizedExecutableType mType = super.methodFromUse(tree);
-    AnnotatedExecutableType method = mType.executableType;
+  protected ParameterizedExecutableType methodFromUse(
+      MethodInvocationTree tree, boolean inferTypeArg) {
+    ParameterizedExecutableType mType = super.methodFromUse(tree, inferTypeArg);
+    AnnotatedExecutableType method = mType.executableType();
     dependentTypesHelper.atMethodInvocation(method, tree);
     return mType;
   }
 
   @Override
-  public void methodFromUsePreSubstitution(ExpressionTree tree, AnnotatedExecutableType type) {
-    super.methodFromUsePreSubstitution(tree, type);
-    if (tree instanceof MethodInvocationTree) {
-      poly.resolve((MethodInvocationTree) tree, type);
+  public void methodFromUsePreSubstitution(
+      ExpressionTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
+    super.methodFromUsePreSubstitution(tree, type, resolvePolyQuals);
+    if (tree instanceof MethodInvocationTree mit && resolvePolyQuals) {
+      poly.resolve(mit, type);
     }
   }
 
@@ -2021,25 +2279,60 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns the AnnotatedTypeFactory of the subchecker and copies the current visitor state to the
-   * sub-factory so that the types are computed properly. Because the visitor state is copied, call
-   * this method each time a subfactory is needed rather than store the returned subfactory in a
-   * field.
+   * Returns the type factory used by a subchecker. Throws an exception if no matching subchecker
+   * was found or if the type factory is null. The caller must know the exact checker class to
+   * request.
    *
-   * @see BaseTypeChecker#getTypeFactoryOfSubchecker(Class)
+   * <p>Because the visitor path is copied, call this method each time a subfactory is needed rather
+   * than store the returned subfactory in a field.
+   *
+   * @param subCheckerClass the exact class of the subchecker
+   * @param <T> the type of {@code subCheckerClass}'s {@link AnnotatedTypeFactory}
+   * @return the AnnotatedTypeFactory of the subchecker; never null
+   * @see #getTypeFactoryOfSubcheckerOrNull
    */
   @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
-  public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker>
-      T getTypeFactoryOfSubchecker(Class<U> checkerClass) {
-    T subFactory = checker.getTypeFactoryOfSubchecker(checkerClass);
-    if (subFactory != null && subFactory.getVisitorState() != null) {
-      // Copy the visitor state so that the types are computed properly.
-      VisitorState subFactoryVisitorState = subFactory.getVisitorState();
-      subFactoryVisitorState.setPath(visitorState.getPath());
-      subFactoryVisitorState.setClassTree(visitorState.getClassTree());
-      subFactoryVisitorState.setClassType(visitorState.getClassType());
-      subFactoryVisitorState.setMethodTree(visitorState.getMethodTree());
-      subFactoryVisitorState.setMethodReceiver(visitorState.getMethodReceiver());
+  public final <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>> T getTypeFactoryOfSubchecker(
+      Class<? extends SourceChecker> subCheckerClass) {
+    T result = getTypeFactoryOfSubcheckerOrNull(subCheckerClass);
+    if (result == null) {
+      throw new TypeSystemError(
+          "In "
+              + this.getClass().getSimpleName()
+              + ", no type factory found for "
+              + subCheckerClass.getSimpleName()
+              + ".");
+    }
+    return result;
+  }
+
+  /**
+   * Returns the type factory used by a subchecker. Returns null if no matching subchecker was found
+   * or if the type factory is null. The caller must know the exact checker class to request.
+   *
+   * <p>Because the visitor path is copied, call this method each time a subfactory is needed rather
+   * than store the returned subfactory in a field.
+   *
+   * @param subCheckerClass the exact class of the subchecker
+   * @param <T> the type of {@code subCheckerClass}'s {@link AnnotatedTypeFactory}
+   * @return the AnnotatedTypeFactory of the subchecker or null if no subchecker exists
+   * @see #getTypeFactoryOfSubchecker
+   */
+  @SuppressWarnings("TypeParameterUnusedInFormals") // Intentional abuse
+  public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>>
+      @Nullable T getTypeFactoryOfSubcheckerOrNull(Class<? extends SourceChecker> subCheckerClass) {
+    SourceChecker subSouceChecker = checker.getSubchecker(subCheckerClass);
+    if (subSouceChecker == null || !(subSouceChecker instanceof BaseTypeChecker subchecker)) {
+      return null;
+    }
+
+    @SuppressWarnings(
+        "unchecked" // This might not be safe, but the caller of the method should use the
+    // correct type.
+    )
+    T subFactory = (T) subchecker.getTypeFactory();
+    if (subFactory != null) {
+      subFactory.setVisitorTreePath(getVisitorTreePath());
     }
     return subFactory;
   }
@@ -2069,11 +2362,11 @@ public abstract class GenericAnnotatedTypeFactory<
     if (checker.hasOption("flowdotdir")) {
       String flowdotdir = checker.getOption("flowdotdir");
       if (flowdotdir.equals("")) {
-        throw new UserError("Emtpy string provided for -Aflowdotdir command-line argument");
+        throw new UserError("Empty string provided for -Aflowdotdir command-line argument");
       }
       boolean verbose = checker.hasOption("verbosecfg");
 
-      Map<String, Object> args = new HashMap<>(2);
+      Map<String, Object> args = new HashMap<>(4);
       args.put("outdir", flowdotdir);
       args.put("verbose", verbose);
       args.put("checkerName", getCheckerName());
@@ -2082,13 +2375,12 @@ public abstract class GenericAnnotatedTypeFactory<
       res.init(args);
       return res;
     } else if (checker.hasOption("cfgviz")) {
-      String cfgviz = checker.getOption("cfgviz");
-      if (cfgviz == null) {
+      List<String> opts = checker.getStringsOption("cfgviz", ',');
+      if (opts.isEmpty()) {
         throw new UserError(
             "-Acfgviz specified without arguments, should be -Acfgviz=VizClassName[,opts,...]");
       }
-      String[] opts = cfgviz.split(",");
-      String vizClassName = opts[0];
+      String vizClassName = opts.get(0);
       if (!Signatures.isBinaryName(vizClassName)) {
         throw new UserError(
             "Bad -Acfgviz class name \"%s\", should be a binary name.", vizClassName);
@@ -2103,6 +2395,9 @@ public abstract class GenericAnnotatedTypeFactory<
 
       CFGVisualizer<Value, Store, TransferFunction> res =
           BaseTypeChecker.invokeConstructorFor(vizClassName, null, null);
+      if (res == null) {
+        throw new UserError("Can't load " + vizClassName);
+      }
       res.init(args);
       return res;
     }
@@ -2127,21 +2422,16 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param opts the CFG visualization options
    * @return a map that represents the options
    */
-  private Map<String, Object> processCFGVisualizerOption(String[] opts) {
-    Map<String, Object> res = new HashMap<>(opts.length - 1);
+  private Map<String, Object> processCFGVisualizerOption(List<String> opts) {
+    Map<String, Object> res = new HashMap<>(MapsP.mapCapacity(opts.size() - 1));
     // Index 0 is the visualizer class name and can be ignored.
-    for (int i = 1; i < opts.length; ++i) {
-      String opt = opts[i];
-      String[] split = opt.split("=");
+    for (int i = 1; i < opts.size(); ++i) {
+      String opt = opts.get(i);
+      String[] split = opt.split("=", -1);
       switch (split.length) {
-        case 1:
-          res.put(split[0], true);
-          break;
-        case 2:
-          res.put(split[0], split[1]);
-          break;
-        default:
-          throw new UserError("Too many '=' in cfgviz option: " + opt);
+        case 1 -> res.put(split[0], true);
+        case 2 -> res.put(split[0], split[1]);
+        default -> throw new UserError("Too many '=' in cfgviz option: " + opt);
       }
     }
     return res;
@@ -2162,7 +2452,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Adds default qualifiers based on the underlying type of {@code type} to {@code type}. If {@code
-   * element} is a local variable, then the defaults are not added.
+   * element} is a local variable, or if the type already has an annotation from the relevant type
+   * hierarchy, then the defaults are not added.
    *
    * <p>(This uses both the {@link DefaultQualifierForUseTypeAnnotator} and {@link
    * DefaultForTypeAnnotator}.)
@@ -2172,9 +2463,11 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   protected void addAnnotationsFromDefaultForType(
       @Nullable Element element, AnnotatedTypeMirror type) {
-    if (element != null && element.getKind() == ElementKind.LOCAL_VARIABLE) {
+    if (element != null && ElementUtils.isLocalVariable(element)) {
+      // It's a local variable.
       if (type.getKind() == TypeKind.DECLARED) {
-        // If this is a type for a local variable, don't apply the default to the primary location.
+        // If this is a type for a local variable, don't apply the default to the primary
+        // location.
         AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
         if (declaredType.getEnclosingType() != null) {
           defaultQualifierForUseTypeAnnotator.visit(declaredType.getEnclosingType());
@@ -2185,20 +2478,18 @@ public abstract class GenericAnnotatedTypeFactory<
           defaultForTypeAnnotator.visit(typeArg);
         }
       } else if (type.getKind().isPrimitive()) {
-        // Don't apply the default for local variables with primitive types.
+        // Don't apply the default for local variables with primitive types. (The primary
+        // location is the only location, so this is a special case of the above.)
       } else {
         defaultQualifierForUseTypeAnnotator.visit(type);
         defaultForTypeAnnotator.visit(type);
       }
     } else {
+      // It's not a local variable.
       defaultQualifierForUseTypeAnnotator.visit(type);
       defaultForTypeAnnotator.visit(type);
     }
   }
-
-  // You can change this temporarily to produce verbose logs.
-  /** Whether to output verbose, low-level debugging messages. */
-  private static final boolean debug = false;
 
   /**
    * Output a message, if logging is on.
@@ -2209,42 +2500,82 @@ public abstract class GenericAnnotatedTypeFactory<
   @FormatMethod
   private static void log(String format, Object... args) {
     if (debug) {
-      SystemPlume.sleep(1); // logging can interleave with typechecker output
+      System.out.flush();
+      SystemP.sleep(1); // logging can interleave with typechecker output
       System.out.printf(format, args);
     }
   }
 
-  /**
-   * Cache of types found that are relevantTypes or subclass of supported types. Used so that
-   * isSubtype doesn't need to be called repeatedly on the same types.
-   */
-  private Map<TypeMirror, Boolean> allFoundRelevantTypes = CollectionUtils.createLRUCache(300);
+  /** For each type, whether it is relevant. A cache to avoid repeated re-computation. */
+  private final Map<TypeMirror, Boolean> isRelevantCache = MapsP.createLruCache(300);
 
   /**
-   * Returns true if users can write type annotations from this type system on the given Java type.
+   * Returns true if users can write type annotations from this type system directly on the given
+   * Java type.
+   *
+   * <p>For a compound type, returns true only if a programmer may write a type qualifier on the top
+   * level of the compound type. That is, this method may return false, when it is possible to write
+   * type qualifiers on elements of the type.
+   *
+   * <p>Subclasses should override {@code #isRelevantImpl} instead of this method.
    *
    * @param tm a type
-   * @return true if users can write type annotations from this type system on the given Java type
+   * @return true if users can write type annotations from this type system directly on the given
+   *     Java type
    */
-  public boolean isRelevant(TypeMirror tm) {
-    tm = types.erasure(tm);
-    Boolean cachedResult = allFoundRelevantTypes.get(tm);
+  public final boolean isRelevant(TypeMirror tm) {
+    if (relevantJavaTypes == null) {
+      return true;
+    }
+    if (tm.getKind() != TypeKind.PACKAGE && tm.getKind() != TypeKind.MODULE) {
+      tm = types.erasure(tm);
+    }
+    Boolean cachedResult = isRelevantCache.get(tm);
     if (cachedResult != null) {
       return cachedResult;
     }
-    boolean result = isRelevantHelper(tm);
-    allFoundRelevantTypes.put(tm, result);
+    boolean result = isRelevantImpl(tm);
+    isRelevantCache.put(tm, result);
     return result;
   }
 
   /**
+   * Returns true if users can write type annotations from this type system directly on the given
+   * Java type.
+   *
+   * <p>For a compound type, returns true only if it a programmer may write a type qualifier on the
+   * top level of the compound type. That is, this method may return false, when it is possible to
+   * write type qualifiers on elements of the type.
+   *
+   * <p>Subclasses should override {@code #isRelevantImpl} instead of this method.
+   *
+   * @param tm a type
+   * @return true if users can write type annotations from this type system directly on the given
+   *     Java type
+   */
+  public final boolean isRelevant(AnnotatedTypeMirror tm) {
+    return isRelevant(tm.getUnderlyingType());
+  }
+
+  /**
    * Returns true if users can write type annotations from this type system on the given Java type.
-   * Does not use a cache. Is a helper method for {@link #isRelevant}.
+   * Does not use a cache.
+   *
+   * <p>Clients should never call this. Call {@link #isRelevant} instead. This is a helper method
+   * for {@link #isRelevant}.
+   *
+   * <p>An override must handle every type, including the types for which this implementation
+   * returns true immediately: those in {@link #relevantJavaTypes}, and every type if {@code
+   * relevantJavaTypes == null}. An override may call {@code super} to do so.
    *
    * @param tm a type
    * @return true if users can write type annotations from this type system on the given Java type
    */
-  private boolean isRelevantHelper(TypeMirror tm) {
+  protected boolean isRelevantImpl(TypeMirror tm) {
+
+    if (relevantJavaTypes == null) {
+      return true;
+    }
 
     if (relevantJavaTypes.contains(tm)) {
       return true;
@@ -2252,127 +2583,228 @@ public abstract class GenericAnnotatedTypeFactory<
 
     switch (tm.getKind()) {
 
-        // Primitives have no subtyping relationships, but the lookup might have failed
-        // because tm has metadata such as annotations.
-      case BOOLEAN:
-      case BYTE:
-      case CHAR:
-      case DOUBLE:
-      case FLOAT:
-      case INT:
-      case LONG:
-      case SHORT:
+      // Primitives have no subtyping relationships, but the lookup might have failed
+      // because tm has metadata such as annotations.
+      case BOOLEAN, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SHORT -> {
         for (TypeMirror relevantJavaType : relevantJavaTypes) {
           if (types.isSameType(tm, relevantJavaType)) {
             return true;
           }
         }
         return false;
+      }
 
-        // Void is never relevant
-      case VOID:
+      // Void is never relevant
+      case VOID -> {
         return false;
+      }
 
-      case ARRAY:
-        return arraysAreRelevant;
+      case ARRAY -> {
+        return arrayTypesAreRelevant;
+      }
 
-      case DECLARED:
+      case DECLARED -> {
         for (TypeMirror relevantJavaType : relevantJavaTypes) {
           if (types.isSubtype(relevantJavaType, tm) || types.isSubtype(tm, relevantJavaType)) {
             return true;
           }
         }
         return false;
+      }
 
-      case TYPEVAR:
+      case TYPEVAR -> {
         return isRelevant(((TypeVariable) tm).getUpperBound());
+      }
 
-      default:
-        throw new BugInCF("isRelevantHelper(%s): Unexpected TypeKind %s", tm, tm.getKind());
+      case NULL -> {
+        for (TypeMirror relevantJavaType : relevantJavaTypes) {
+          switch (relevantJavaType.getKind()) {
+            case BOOLEAN:
+            case BYTE:
+            case CHAR:
+            case DOUBLE:
+            case FLOAT:
+            case INT:
+            case LONG:
+            case SHORT:
+              continue;
+
+            case ERROR:
+            case NONE:
+            case VOID:
+              continue;
+
+            case MODULE:
+            case PACKAGE:
+              continue;
+
+            case NULL:
+            default:
+              return true;
+          }
+        }
+        return false;
+      }
+
+      case EXECUTABLE, MODULE, PACKAGE -> {
+        return false;
+      }
+
+      default -> throw new BugInCF("isRelevantImpl(%s): Unexpected TypeKind %s", tm, tm.getKind());
     }
   }
 
   /**
-   * Return the type of the default value of the given type. The default value is 0, false, or null.
+   * Returns true if users can write type annotations from this type system on array types.
+   *
+   * @return true if users can write type annotations from this type system on array types
+   */
+  public final boolean arrayTypesAreRelevant() {
+    return arrayTypesAreRelevant;
+  }
+
+  /** The cached message about relevant types. */
+  private @MonotonicNonNull String irrelevantExtraMessage = null;
+
+  /**
+   * Returns a string that can be passed to the "anno.on.irrelevant" error, giving information about
+   * which types are relevant.
+   *
+   * @return a string that can be passed to the "anno.on.irrelevant" error, possibly the empty
+   *     string
+   */
+  public String irrelevantExtraMessage() {
+    if (irrelevantExtraMessage == null) {
+      if (relevantJavaTypes == null) {
+        irrelevantExtraMessage = "";
+      } else {
+        irrelevantExtraMessage = "; only applicable to " + relevantJavaTypes;
+        if (arrayTypesAreRelevant) {
+          irrelevantExtraMessage += " and arrays";
+        }
+      }
+    }
+    return irrelevantExtraMessage;
+  }
+
+  /**
+   * Returns the type of the default value of the given type. The default value is 0, false, or
+   * null.
    *
    * @param typeMirror a type
    * @return the annotated type of {@code type}'s default value
    */
   // TODO: Cache results to avoid recomputation.
   public AnnotatedTypeMirror getDefaultValueAnnotatedType(TypeMirror typeMirror) {
-    AnnotatedTypeMirror defaultValue = AnnotatedTypeMirror.createType(typeMirror, this, false);
-    addComputedTypeAnnotations(
-        TreeUtils.getDefaultValueTree(typeMirror, processingEnv), defaultValue, false);
-    return defaultValue;
+    Tree defaultValueTree = TreeUtils.getDefaultValueTree(typeMirror, processingEnv);
+    TypeMirror defaultValueTM = TreeUtils.typeOf(defaultValueTree);
+    AnnotatedTypeMirror defaultValueATM =
+        AnnotatedTypeMirror.createType(defaultValueTM, this, false);
+    addComputedTypeAnnotations(defaultValueTree, defaultValueATM, false);
+    return defaultValueATM;
   }
 
   /**
-   * Return the contract annotations (that is, pre- and post-conditions) for the given AMethod. Does
-   * not modify the AMethod. This method must only be called when using WholeProgramInferenceScenes.
+   * Returns the contract annotations (that is, pre- and post-conditions) for the given AMethod.
+   * Does not modify the AMethod.
    *
-   * @param m AFU representation of a method
-   * @return contract annotations for the method
+   * <p>This overload must only be called when using WholeProgramInferenceScenes.
+   *
+   * @param m the AFU representation of a method
+   * @return the contract annotations for the method
    */
   public List<AnnotationMirror> getContractAnnotations(AMethod m) {
     List<AnnotationMirror> preconds = getPreconditionAnnotations(m);
     List<AnnotationMirror> postconds = getPostconditionAnnotations(m, preconds);
+
     List<AnnotationMirror> result = preconds;
     result.addAll(postconds);
     return result;
   }
 
   /**
-   * Return the precondition annotations for the given AMethod. Does not modify the AMethod. This
-   * method must only be called when using WholeProgramInferenceScenes.
+   * Returns the precondition annotations for the given AMethod. Does not modify the AMethod.
    *
-   * @param m AFU representation of a method
-   * @return precondition annotations for the method
+   * <p>This overload must only be called when using WholeProgramInferenceScenes.
+   *
+   * @param m the AFU representation of a method
+   * @return the precondition annotations for the method
    */
   public List<AnnotationMirror> getPreconditionAnnotations(AMethod m) {
-    List<AnnotationMirror> result = new ArrayList<>(m.getPreconditions().size());
-    for (Map.Entry<VariableElement, AField> entry : m.getPreconditions().entrySet()) {
-      WholeProgramInferenceImplementation<?> wholeProgramInference =
-          (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
-      WholeProgramInferenceScenesStorage storage =
-          (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
-      TypeMirror typeMirror = entry.getKey().asType();
+    int size = m.getPreconditions().size();
+    List<AnnotationMirror> result = new ArrayList<>(size);
+    if (size == 0) {
+      return result;
+    }
+
+    WholeProgramInferenceImplementation<?> wholeProgramInference =
+        (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
+    WholeProgramInferenceScenesStorage storage =
+        (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
+
+    for (Map.Entry<String, AField> entry : m.getPreconditions().entrySet()) {
+      TypeMirror typeMirror = entry.getValue().getTypeMirror();
+      if (typeMirror == null) {
+        throw new BugInCF(
+            "null TypeMirror in AField inferred by WPI precondition inference. AField: "
+                + entry.getValue().toString());
+      }
+
+      AnnotatedTypeMirror declaredType = storage.getPreconditionDeclaredType(m, entry.getKey());
       AnnotatedTypeMirror inferredType =
           storage.atmFromStorageLocation(typeMirror, entry.getValue().type);
-      result.addAll(getPreconditionAnnotation(entry.getKey(), inferredType));
+      result.addAll(getPreconditionAnnotations(entry.getKey(), inferredType, declaredType));
     }
-    Collections.sort(result, Ordering.usingToString());
+    result.sort(Ordering.usingToString());
     return result;
   }
 
   /**
-   * Return the postcondition annotations for the given AMethod. Does not modify the AMethod. This
-   * method must only be called when using WholeProgramInferenceScenes.
+   * Returns the postcondition annotations for the given AMethod. Does not modify the AMethod.
    *
-   * @param m AFU representation of a method
+   * <p>This overload must only be called when using WholeProgramInferenceScenes.
+   *
+   * @param m the AFU representation of a method
    * @param preconds the precondition annotations for the method; used to suppress redundant
    *     postconditions
-   * @return postcondition annotations for the method
+   * @return the postcondition annotations for the method
    */
   public List<AnnotationMirror> getPostconditionAnnotations(
       AMethod m, List<AnnotationMirror> preconds) {
-    List<AnnotationMirror> result = new ArrayList<>(m.getPostconditions().size());
-    for (Map.Entry<VariableElement, AField> entry : m.getPostconditions().entrySet()) {
-      WholeProgramInferenceImplementation<?> wholeProgramInference =
-          (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
-      WholeProgramInferenceScenesStorage storage =
-          (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
-      TypeMirror typeMirror = entry.getKey().asType();
+    int size = m.getPostconditions().size();
+    List<AnnotationMirror> result = new ArrayList<>(size);
+    if (size == 0) {
+      return result;
+    }
+
+    WholeProgramInferenceImplementation<?> wholeProgramInference =
+        (WholeProgramInferenceImplementation<?>) getWholeProgramInference();
+    WholeProgramInferenceScenesStorage storage =
+        (WholeProgramInferenceScenesStorage) wholeProgramInference.getStorage();
+
+    for (Map.Entry<String, AField> entry : m.getPostconditions().entrySet()) {
+      TypeMirror typeMirror = entry.getValue().getTypeMirror();
+      if (typeMirror == null) {
+        throw new BugInCF(
+            "null TypeMirror in AField inferred by WPI postcondition inference. AField: "
+                + entry.getValue().toString());
+      }
+
+      AnnotatedTypeMirror declaredType = storage.getPostconditionDeclaredType(m, entry.getKey());
       AnnotatedTypeMirror inferredType =
           storage.atmFromStorageLocation(typeMirror, entry.getValue().type);
-      result.addAll(getPostconditionAnnotation(entry.getKey(), inferredType, preconds));
+      result.addAll(
+          getPostconditionAnnotations(entry.getKey(), inferredType, declaredType, preconds));
     }
-    Collections.sort(result, Ordering.usingToString());
+    result.sort(Ordering.usingToString());
     return result;
   }
 
   /**
-   * Return the contract annotations (that is, pre- and post-conditions) for the given
+   * Returns the contract annotations (that is, pre- and post-conditions) for the given
    * CallableDeclarationAnnos. Does not modify the CallableDeclarationAnnos.
+   *
+   * <p>This overload must only be called when using WholeProgramInferenceJavaParserStorage.
    *
    * @param methodAnnos annotation data for a method
    * @return contract annotations for the method
@@ -2381,14 +2813,17 @@ public abstract class GenericAnnotatedTypeFactory<
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
     List<AnnotationMirror> preconds = getPreconditionAnnotations(methodAnnos);
     List<AnnotationMirror> postconds = getPostconditionAnnotations(methodAnnos, preconds);
+
     List<AnnotationMirror> result = preconds;
     result.addAll(postconds);
     return result;
   }
 
   /**
-   * Return the precondition annotations for the given CallableDeclarationAnnos. Does not modify the
-   * CallableDeclarationAnnos.
+   * Returns the precondition annotations for the given CallableDeclarationAnnos. Does not modify
+   * the CallableDeclarationAnnos.
+   *
+   * <p>This overload must only be called when using WholeProgramInferenceJavaParserStorage.
    *
    * @param methodAnnos annotation data for a method
    * @return precondition annotations for the method
@@ -2396,17 +2831,20 @@ public abstract class GenericAnnotatedTypeFactory<
   public List<AnnotationMirror> getPreconditionAnnotations(
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos) {
     List<AnnotationMirror> result = new ArrayList<>();
-    for (Map.Entry<VariableElement, AnnotatedTypeMirror> entry :
-        methodAnnos.getFieldToPreconditions().entrySet()) {
-      result.addAll(getPreconditionAnnotation(entry.getKey(), entry.getValue()));
+    for (Map.Entry<String, InferredDeclared> entry : methodAnnos.getPreconditions().entrySet()) {
+      result.addAll(
+          getPreconditionAnnotations(
+              entry.getKey(), entry.getValue().inferred(), entry.getValue().declared()));
     }
-    Collections.sort(result, Ordering.usingToString());
+    result.sort(Ordering.usingToString());
     return result;
   }
 
   /**
-   * Return the postcondition annotations for the given CallableDeclarationAnnos. Does not modify
+   * Returns the postcondition annotations for the given CallableDeclarationAnnos. Does not modify
    * the CallableDeclarationAnnos.
+   *
+   * <p>This overload must only be called when using WholeProgramInferenceJavaParserStorage.
    *
    * @param methodAnnos annotation data for a method
    * @param preconds the precondition annotations for the method; used to suppress redundant
@@ -2417,77 +2855,89 @@ public abstract class GenericAnnotatedTypeFactory<
       WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos methodAnnos,
       List<AnnotationMirror> preconds) {
     List<AnnotationMirror> result = new ArrayList<>();
-    for (Map.Entry<VariableElement, AnnotatedTypeMirror> entry :
-        methodAnnos.getFieldToPostconditions().entrySet()) {
-      result.addAll(getPostconditionAnnotation(entry.getKey(), entry.getValue(), preconds));
+    for (Map.Entry<String, InferredDeclared> entry : methodAnnos.getPostconditions().entrySet()) {
+      result.addAll(
+          getPostconditionAnnotations(
+              entry.getKey(), entry.getValue().inferred(), entry.getValue().declared(), preconds));
     }
-    Collections.sort(result, Ordering.usingToString());
+    result.sort(Ordering.usingToString());
     return result;
   }
 
   /**
-   * Return a list of precondition annotations for the given field. Returns an empty list if none
-   * can be created, because the qualifier has elements/arguments, which {@code @RequiresQualifier}
-   * does not support.
+   * Returns a list of inferred {@code @RequiresQualifier} annotations for the given expression. By
+   * default this list does not include any qualifier that has elements/arguments, which
+   * {@code @RequiresQualifier} does not support. Subclasses may remove this restriction by
+   * overriding {@link #createRequiresOrEnsuresQualifier}.
    *
-   * <p>This is of the form {@code @RequiresQualifier(expression="this.elt",
-   * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
-   * {@code @B} which is a sub-qualifier of {@code @A}.
+   * <p>Each annotation in the list is of the form
+   * {@code @RequiresQualifier(expression="expression", qualifier=MyQual.class)}. {@code expression}
+   * must be a valid Java Expression string, in the same format used by {@link RequiresQualifier}.
    *
-   * @param elt element for a field, which is declared in the same class as the method
-   * @param inferredType the type of the field, on method entry
+   * @param expression an expression
+   * @param inferredType the type of the expression, on method entry
+   * @param declaredType the declared type of the expression
    * @return precondition annotations for the element (possibly an empty list)
    */
-  public List<AnnotationMirror> getPreconditionAnnotation(
-      VariableElement elt, AnnotatedTypeMirror inferredType) {
-    return getPreOrPostconditionAnnotation(elt, inferredType, BeforeOrAfter.BEFORE, null);
+  public final List<AnnotationMirror> getPreconditionAnnotations(
+      String expression, AnnotatedTypeMirror inferredType, AnnotatedTypeMirror declaredType) {
+    return getPreOrPostconditionAnnotations(
+        expression, inferredType, declaredType, BeforeOrAfter.BEFORE, null);
   }
 
   /**
-   * Returns an {@code @EnsuresQualifier} annotation for the given field. Returns an empty list if
-   * none can be created, because the qualifier has elements/arguments, which
-   * {@code @EnsuresQualifier} does not support.
+   * Returns a list of inferred {@code @EnsuresQualifier} annotations for the given expression. By
+   * default this list does not include any qualifier that has elements/arguments, which
+   * {@code @EnsuresQualifier} does not support; and, preconditions are not used to suppress
+   * redundant postconditions. Subclasses may remove these restrictions by overriding {@link
+   * #createRequiresOrEnsuresQualifier}.
    *
-   * <p>This implementation makes no assumptions about preconditions suppressing postconditions, but
-   * subclasses may do so.
+   * <p>Each annotation in the list is of the form {@code @EnsuresQualifier(expression="expression",
+   * qualifier=MyQual.class)}. {@code expression} must be a valid Java Expression string, in the
+   * same format used by {@link EnsuresQualifier}.
    *
-   * <p>This is of the form {@code @EnsuresQualifier(expression="this.elt", qualifier=MyQual.class)}
-   * when elt is declared as {@code @A} or {@code @Poly*} and f contains {@code @B} which is a
-   * sub-qualifier of {@code @A}.
-   *
-   * @param elt element for a field
-   * @param inferredType the type of the field, on method exit
+   * @param expression an expression
+   * @param inferredType the type of the expression, on method exit
+   * @param declaredType the declared type of the expression
    * @param preconds the precondition annotations for the method; used to suppress redundant
    *     postconditions
    * @return postcondition annotations for the element (possibly an empty list)
    */
-  public List<AnnotationMirror> getPostconditionAnnotation(
-      VariableElement elt, AnnotatedTypeMirror inferredType, List<AnnotationMirror> preconds) {
-    return getPreOrPostconditionAnnotation(elt, inferredType, BeforeOrAfter.AFTER, preconds);
+  public final List<AnnotationMirror> getPostconditionAnnotations(
+      String expression,
+      AnnotatedTypeMirror inferredType,
+      AnnotatedTypeMirror declaredType,
+      List<AnnotationMirror> preconds) {
+    return getPreOrPostconditionAnnotations(
+        expression, inferredType, declaredType, BeforeOrAfter.AFTER, preconds);
   }
 
   /**
-   * Helper method for {@link #getPreconditionAnnotation} and {@link #getPostconditionAnnotation}.
+   * Creates pre- and postcondition annotations. Helper method for {@link
+   * #getPreconditionAnnotations} and {@link #getPostconditionAnnotations}.
    *
    * <p>Returns a {@code @RequiresQualifier} or {@code @EnsuresQualifier} annotation for the given
-   * field. Returns an empty list if none can be created, because the qualifier has
+   * expression. Returns an empty list if none can be created, because the qualifier has
    * elements/arguments, which {@code @RequiresQualifier} and {@code @EnsuresQualifier} do not
    * support.
    *
    * <p>This implementation makes no assumptions about preconditions suppressing postconditions, but
    * subclasses may do so.
    *
-   * @param elt element for a field
-   * @param inferredType the type of the field, on method entry or exit (depending on the value of
-   *     {@code preOrPost})
-   * @param preOrPost whether to return preconditions or postconditions
+   * @param expression an expression whose type annotations to return
+   * @param inferredType the type of the expression, on method entry or exit (depending on the value
+   *     of {@code preOrPost})
+   * @param declaredType the declared type of the expression, which is used to determine if the
+   *     inferred type supplies no additional information beyond the declared type
+   * @param preOrPost what to return: preconditions or postconditions
    * @param preconds the precondition annotations for the method; used to suppress redundant
    *     postconditions; non-null exactly when {@code preOrPost} is {@code AFTER}
    * @return precondition or postcondition annotations for the element (possibly an empty list)
    */
-  protected List<AnnotationMirror> getPreOrPostconditionAnnotation(
-      VariableElement elt,
+  protected List<AnnotationMirror> getPreOrPostconditionAnnotations(
+      String expression,
       AnnotatedTypeMirror inferredType,
+      AnnotatedTypeMirror declaredType,
       Analysis.BeforeOrAfter preOrPost,
       @Nullable List<AnnotationMirror> preconds) {
     assert (preOrPost == BeforeOrAfter.BEFORE) == (preconds == null);
@@ -2496,70 +2946,77 @@ public abstract class GenericAnnotatedTypeFactory<
       return Collections.emptyList();
     }
 
-    AnnotatedTypeMirror declaredType = fromElement(elt);
-
     // TODO: should this only check the top-level annotations?
     if (declaredType.equals(inferredType)) {
       return Collections.emptyList();
     }
 
-    List<AnnotationMirror> result = new ArrayList<AnnotationMirror>();
-    for (AnnotationMirror inferredAm : inferredType.getAnnotations()) {
-      AnnotationMirror declaredAm = declaredType.getAnnotationInHierarchy(inferredAm);
-      if (declaredAm == null && declaredType.getKind() != TypeKind.TYPEVAR) {
-        // There is no explicitly-written annotation for the given qualifier hierarchy.
-        // Determine the default.
-        addComputedTypeAnnotations(elt, declaredType);
-        declaredAm = declaredType.getAnnotationInHierarchy(inferredAm);
-        if (declaredAm == null) {
-          throw new BugInCF(
-              "getPreOrPostconditionAnnotation(%s, %s): no defaulted annotation%n  declaredType=%s"
-                  + "  [%s %s]%n  inferredType=%s  [%s %s]%n",
-              elt,
-              inferredType,
-              declaredType.toString(true),
-              declaredType.getKind(),
-              declaredType.getClass(),
-              inferredType.toString(true),
-              inferredType.getKind(),
-              inferredType.getClass());
-        }
-      }
-
+    List<AnnotationMirror> result = new ArrayList<>();
+    for (AnnotationMirror inferredAm : inferredType.getPrimaryAnnotations()) {
+      AnnotationMirror declaredAm = declaredType.getPrimaryAnnotationInHierarchy(inferredAm);
       if (declaredAm == null || AnnotationUtils.areSame(inferredAm, declaredAm)) {
         continue;
       }
-      // inferredAm must be a subtype of declaredAm (since they are not equal).
-      AnnotationMirror anno = requiresOrEnsuresQualifierAnno(elt, inferredAm, preOrPost);
+      AnnotationMirror anno =
+          createRequiresOrEnsuresQualifier(
+              expression, inferredAm, declaredType, preOrPost, preconds);
       if (anno != null) {
         result.add(anno);
       }
     }
-
     return result;
   }
 
   /**
-   * Returns a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
-   * the given field. Returns null if none can be created, because the qualifier has
-   * elements/arguments, which {@code @RequiresQualifier} and {@code @EnsuresQualifier} do not
-   * support.
-   *
-   * <p>This is of the form {@code @RequiresQualifier(expression="this.elt",
-   * qualifier=MyQual.class)} or {@code @EnsuresQualifier(expression="this.elt",
-   * qualifier=MyQual.class)} when elt is declared as {@code @A} or {@code @Poly*} and f contains
-   * {@code @B} which is a sub-qualifier of {@code @A}.
-   *
-   * @param fieldElement a field
-   * @param qualifier the qualifier that must be present
-   * @param preOrPost whether to return a precondition or postcondition annotation
-   * @return a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
-   *     the given field, or null
+   * Matches parameter expressions as they appear in {@link EnsuresQualifier} and {@link
+   * RequiresQualifier} annotations, e.g. "#1", "#2", etc.
    */
-  protected @Nullable AnnotationMirror requiresOrEnsuresQualifierAnno(
-      VariableElement fieldElement, AnnotationMirror qualifier, Analysis.BeforeOrAfter preOrPost) {
+  protected static final Pattern formalParameterPattern = Pattern.compile("^#[0-9]+$");
+
+  /**
+   * Creates a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
+   * the given expression.
+   *
+   * <p>This is of the form {@code @RequiresQualifier(expression="expression",
+   * qualifier=MyQual.class)} or {@code @EnsuresQualifier(expression="expression",
+   * qualifier=MyQual.class)}, where "expression" is exactly the string {@code expression} and
+   * MyQual is the annotation represented by {@code qualifier}.
+   *
+   * <p>Returns null if the expression is invalid when combined with the kind of annotation: for
+   * example, precondition annotations on "this" and parameters ("#1", etc.) are not supported,
+   * because receiver/parameter annotations should be inferred instead.
+   *
+   * <p>This implementation returns null if no annotation can be created, because the qualifier has
+   * elements/arguments, which {@code @RequiresQualifier} and {@code @EnsuresQualifier} do not
+   * support. Subclasses may override this method to return qualifiers that do have arguments
+   * instead of returning null.
+   *
+   * @param expression the expression to which the qualifier applies
+   * @param qualifier the qualifier that must be present
+   * @param declaredType the declared type of the expression, which is used to avoid inferring
+   *     redundant pre- or postcondition annotations
+   * @param preOrPost what to return: a precondition or postcondition annotation
+   * @param preconds the list of precondition annotations; used to suppress redundant
+   *     postconditions; non-null exactly when {@code preOrPost} is {@code BeforeOrAfter.BEFORE}
+   * @return a {@code RequiresQualifier("...")} or {@code EnsuresQualifier("...")} annotation for
+   *     the given expression, or null
+   */
+  protected @Nullable AnnotationMirror createRequiresOrEnsuresQualifier(
+      String expression,
+      AnnotationMirror qualifier,
+      AnnotatedTypeMirror declaredType,
+      Analysis.BeforeOrAfter preOrPost,
+      @Nullable List<AnnotationMirror> preconds) {
+
+    // Do not generate RequiresQualifier annotations for "this" or parameter expressions.
+    if (preOrPost == BeforeOrAfter.BEFORE
+        && ("this".equals(expression) || formalParameterPattern.matcher(expression).matches())) {
+      return null;
+    }
+
     if (!qualifier.getElementValues().isEmpty()) {
-      // @RequiresQualifier does not yet support annotations with elements/arguments.
+      // @RequiresQualifier and @EnsuresQualifier do not yet support annotations with
+      // elements/arguments.
       return null;
     }
 
@@ -2567,8 +3024,6 @@ public abstract class GenericAnnotatedTypeFactory<
         new AnnotationBuilder(
             processingEnv,
             preOrPost == BeforeOrAfter.BEFORE ? RequiresQualifier.class : EnsuresQualifier.class);
-    String receiver = JavaExpression.getImplicitReceiver(fieldElement).toString();
-    String expression = receiver + "." + fieldElement.getSimpleName();
     builder.setValue("expression", new String[] {expression});
     builder.setValue("qualifier", AnnotationUtils.annotationMirrorToClass(qualifier));
     return builder.build();
@@ -2584,7 +3039,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * @param tree the source code corresponding to cfg
    * @param cfg the control flow graph to use for tree
-   * @return whether a shared CFG was found to actually add to (duplicate keys also return true)
+   * @return true if a shared CFG was found to actually add to (duplicate keys also return true)
    */
   public boolean addSharedCFGForTree(Tree tree, ControlFlowGraph cfg) {
     if (!shouldCache) {
@@ -2616,9 +3071,30 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Get the shared control flow graph used for {@code tree} by this checker's topmost superchecker.
-   * Returns null if no information is available about the given tree, or if this checker has a
-   * parent checker that does not have a GenericAnnotatedTypeFactory.
+   * {@inheritDoc}
+   *
+   * <p>Because a group of subcheckers shares control flow graphs, and therefore the artificial
+   * trees in them, this returns the ultimate parent checker's map: the one whose CFG builder
+   * created the artificial trees, and the one that {@link #clearSharedCFG} clears.
+   */
+  @Override
+  protected Map<Tree, Element> artificialTreeMap() {
+    if (!hasOrIsSubchecker) {
+      return super.artificialTreeMap();
+    }
+    BaseTypeChecker ultimateParent = this.checker.getUltimateParentChecker();
+    @SuppressWarnings("interning") // Checking reference equality.
+    boolean parentIsThisChecker = ultimateParent == this.checker;
+    if (parentIsThisChecker) {
+      return super.artificialTreeMap();
+    }
+    return ultimateParent.getTypeFactory().artificialTreeMap();
+  }
+
+  /**
+   * Returns the shared control flow graph used for {@code tree} by this checker's topmost
+   * superchecker. Returns null if no information is available about the given tree, or if this
+   * checker has a parent checker that does not have a GenericAnnotatedTypeFactory.
    *
    * <p>Calls to this method should be guarded by checking {@link #hasOrIsSubchecker}; it is
    * nonsensical to have a shared CFG when a checker is running alone.
@@ -2660,7 +3136,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * @return the {@code result} element of {@code contractAnnotation}, or null if it doesn't have a
    *     {@code result} element
    */
-  public Boolean getEnsuresQualifierIfResult(
+  public @Nullable Boolean getEnsuresQualifierIfResult(
       Contract.Kind kind, AnnotationMirror contractAnnotation) {
     if (kind == Contract.Kind.CONDITIONALPOSTCONDITION) {
       if (contractAnnotation instanceof EnsuresQualifierIf) {
@@ -2688,10 +3164,10 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param kind the kind of {@code contractAnnotation}
    * @param contractAnnotation a {@link RequiresQualifier}, {@link EnsuresQualifier}, or {@link
    *     EnsuresQualifierIf}
-   * @return the {@code result} element of {@code contractAnnotation}, or null if it doesn't have a
-   *     {@code result} element
+   * @return the {@code expression} or {@code value} element of {@code contractAnnotation}, or null
+   *     if it doesn't have one
    */
-  public List<String> getContractExpressions(
+  public @Nullable List<String> getContractExpressions(
       Contract.Kind kind, AnnotationMirror contractAnnotation) {
     // First, handle framework annotations.
     if (contractAnnotation instanceof RequiresQualifier) {

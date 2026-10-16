@@ -20,5 +20,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf(Frequency.class)
 @UnitsRelations(FrequencyRelations.class)
 public @interface Hz {
-    Prefix value() default Prefix.one;
+  Prefix value() default Prefix.one;
 }

@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -20,9 +21,11 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 @AnnotatedFor("nullness")
 public class DiagMessage {
   /** The kind of message. */
-  private final Kind kind;
+  private final Diagnostic.Kind kind;
+
   /** The message key. */
   private final @CompilerMessageKey String messageKey;
+
   /** The arguments that will be interpolated into the localized message. */
   private final Object[] args;
 
@@ -33,7 +36,7 @@ public class DiagMessage {
    * @param messageKey the message key
    * @param args the arguments that will be interpolated into the localized message
    */
-  public DiagMessage(Kind kind, @CompilerMessageKey String messageKey, Object... args) {
+  public DiagMessage(Diagnostic.Kind kind, @CompilerMessageKey String messageKey, Object... args) {
     this.kind = kind;
     this.messageKey = messageKey;
     if (args == null) {
@@ -44,11 +47,31 @@ public class DiagMessage {
   }
 
   /**
+   * Creates a DiagMessage corresponding to the given Java Expression parse exception.
+   *
+   * @param jppe a Java Expression parse exception
+   */
+  public DiagMessage(JavaExpressionParseException jppe) {
+    this(Diagnostic.Kind.ERROR, jppe.getErrorKey(), jppe.getArgs());
+  }
+
+  /**
+   * Create a DiagMessage with kind ERROR.
+   *
+   * @param messageKey the message key
+   * @param args the arguments that will be interpolated into the localized message
+   * @return a new DiagMessage
+   */
+  public static DiagMessage error(@CompilerMessageKey String messageKey, Object... args) {
+    return new DiagMessage(Diagnostic.Kind.ERROR, messageKey, args);
+  }
+
+  /**
    * Returns the kind of this DiagMessage.
    *
    * @return the kind of this DiagMessage
    */
-  public Kind getKind() {
+  public Diagnostic.Kind getKind() {
     return this.kind;
   }
 
@@ -72,11 +95,9 @@ public class DiagMessage {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof DiagMessage)) {
+    if (!(obj instanceof DiagMessage other)) {
       return false;
     }
-
-    DiagMessage other = (DiagMessage) obj;
 
     return (kind == other.kind
         && messageKey.equals(other.messageKey)
@@ -106,7 +127,8 @@ public class DiagMessage {
    * @param list2 a list of DiagMessage, or null
    * @return the concatenation of the lists
    */
-  public static List<DiagMessage> mergeLists(List<DiagMessage> list1, List<DiagMessage> list2) {
+  public static @Nullable List<DiagMessage> mergeLists(
+      @Nullable List<DiagMessage> list1, @Nullable List<DiagMessage> list2) {
     if (list1 == null || list1.isEmpty()) {
       return list2;
     } else if (list2 == null || list2.isEmpty()) {

@@ -1,12 +1,14 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -21,20 +23,30 @@ import org.checkerframework.javacutil.TreeUtils;
 public class ArrayAccessNode extends Node {
 
   /** The corresponding ArrayAccessTree. */
-  protected final Tree tree;
+  protected final ArrayAccessTree tree;
 
   /** The array expression being accessed. */
   protected final Node array;
 
-  /** The index expresssion used to access the array. */
+  /** The index expression used to access the array. */
   protected final Node index;
 
   /**
    * If this ArrayAccessNode is a node for an array desugared from an enhanced for loop, then the
    * {@code arrayExpression} field is the expression in the for loop, e.g., {@code arr} in {@code
    * for(Object o: arr}.
+   *
+   * <p>Is set by {@link #setArrayExpression}.
    */
   protected @Nullable ExpressionTree arrayExpression;
+
+  /**
+   * If this ArrayAccessNode is a node for an array access desugared from an enhanced for loop, then
+   * the {@code enhancedForLoop} field is the {@code EnhancedForLoopTree} AST node.
+   *
+   * <p>Is set by {@link #setEnhancedForLoop}.
+   */
+  protected @Nullable EnhancedForLoopTree enhancedForLoop;
 
   /**
    * Create an ArrayAccessNode.
@@ -43,9 +55,8 @@ public class ArrayAccessNode extends Node {
    * @param array the node for the array expression being accessed
    * @param index the node for the index used to access the array
    */
-  public ArrayAccessNode(Tree t, Node array, Node index) {
+  public ArrayAccessNode(ArrayAccessTree t, Node array, Node index) {
     super(TreeUtils.typeOf(t));
-    assert t instanceof ArrayAccessTree;
     this.tree = t;
     this.array = array;
     this.index = index;
@@ -74,7 +85,28 @@ public class ArrayAccessNode extends Node {
   }
 
   /**
-   * Get the node that represents the array expression being accessed.
+   * If this ArrayAccessNode is a node for an array access desugared from an enhanced for loop, then
+   * return the {@code EnhancedForLoopTree} AST node. Otherwise, return null.
+   *
+   * @return the {@code EnhancedForLoopTree}, or null if this is not an array access desugared from
+   *     an enhanced for loop
+   */
+  public @Nullable EnhancedForLoopTree getEnhancedForLoop() {
+    return enhancedForLoop;
+  }
+
+  /**
+   * Set the enhanced for loop from which {@code this} is desugared from.
+   *
+   * @param enhancedForLoop the {@code EnhancedForLoopTree}
+   * @see #getEnhancedForLoop()
+   */
+  public void setEnhancedForLoop(@Nullable EnhancedForLoopTree enhancedForLoop) {
+    this.enhancedForLoop = enhancedForLoop;
+  }
+
+  /**
+   * Returns the node that represents the array expression being accessed.
    *
    * @return the array expression node
    */
@@ -87,7 +119,7 @@ public class ArrayAccessNode extends Node {
   }
 
   @Override
-  public Tree getTree() {
+  public ArrayAccessTree getTree() {
     return tree;
   }
 
@@ -104,10 +136,9 @@ public class ArrayAccessNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ArrayAccessNode)) {
+    if (!(obj instanceof ArrayAccessNode other)) {
       return false;
     }
-    ArrayAccessNode other = (ArrayAccessNode) obj;
     return getArray().equals(other.getArray()) && getIndex().equals(other.getIndex());
   }
 
@@ -117,6 +148,7 @@ public class ArrayAccessNode extends Node {
   }
 
   @Override
+  @SideEffectFree
   public Collection<Node> getOperands() {
     return Arrays.asList(getArray(), getIndex());
   }

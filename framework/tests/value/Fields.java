@@ -8,13 +8,13 @@ public class Fields {
   public void innerClassFields() {
     @IntVal({9}) int x = java.util.zip.Deflater.BEST_COMPRESSION;
     @IntVal({4}) int a = BorderUIResource.TitledBorderUIResource.ABOVE_BOTTOM;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @IntVal({0}) int b = BorderUIResource.TitledBorderUIResource.ABOVE_BOTTOM;
   }
 
   public void inClassFields() {
     @IntVal({1}) int a = field;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @IntVal({0}) int b = field;
   }
 
@@ -23,26 +23,26 @@ public class Fields {
     @IntVal({16}) byte y = Character.FORMAT;
 
     @BoolVal({false}) boolean a = Boolean.FALSE;
-    // :: error: (assignment)
+    // :: error: [assignment]
     a = Boolean.TRUE;
 
     @IntVal({4}) int b = java.util.Calendar.MAY;
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = java.util.Calendar.APRIL;
 
     @IntVal({9}) int c = java.util.zip.Deflater.BEST_COMPRESSION;
-    // :: error: (assignment)
+    // :: error: [assignment]
     c = java.util.zip.Deflater.BEST_SPEED;
 
     @IntVal({1024}) int d = java.awt.GridBagConstraints.ABOVE_BASELINE;
-    // :: error: (assignment)
+    // :: error: [assignment]
     d = java.awt.GridBagConstraints.LAST_LINE_END;
   }
 
   void innerFieldTest() {
     @StringVal("section_number") String a = InnerStaticClass.INNER_STATIC_FIELD;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     @StringVal("") String b = InnerStaticClass.INNER_STATIC_FIELD;
   }
 

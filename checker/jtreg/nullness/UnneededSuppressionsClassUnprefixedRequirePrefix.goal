@@ -1,0 +1,2 @@
+UnneededSuppressionsClassUnprefixedRequirePrefix.java:11:3: compiler.warn.proc.messager: [nullness:unneeded.suppression] warning suppression "nullness:return" is not used by NullnessChecker
+1 warning

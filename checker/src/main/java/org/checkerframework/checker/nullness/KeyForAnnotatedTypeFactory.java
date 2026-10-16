@@ -1,6 +1,7 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
@@ -8,12 +9,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.PolyKeyFor;
@@ -21,19 +20,23 @@ import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.DefaultTypeHierarchy;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.SubtypeIsSupersetQualifierHierarchy;
-import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.util.StringToJavaExpression;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 public class KeyForAnnotatedTypeFactory
@@ -42,22 +45,26 @@ public class KeyForAnnotatedTypeFactory
   /** The @{@link UnknownKeyFor} annotation. */
   protected final AnnotationMirror UNKNOWNKEYFOR =
       AnnotationBuilder.fromClass(elements, UnknownKeyFor.class);
+
   /** The @{@link KeyForBottom} annotation. */
   protected final AnnotationMirror KEYFORBOTTOM =
       AnnotationBuilder.fromClass(elements, KeyForBottom.class);
 
   /** The canonical name of the KeyFor class. */
-  protected final @CanonicalName String KEYFOR_NAME = KeyFor.class.getCanonicalName();
+  protected static final @CanonicalName String KEYFOR_NAME = KeyFor.class.getCanonicalName();
 
   /** The Map.containsKey method. */
   private final ExecutableElement mapContainsKey =
       TreeUtils.getMethod("java.util.Map", "containsKey", 1, processingEnv);
+
   /** The Map.get method. */
   private final ExecutableElement mapGet =
       TreeUtils.getMethod("java.util.Map", "get", 1, processingEnv);
+
   /** The Map.put method. */
   private final ExecutableElement mapPut =
       TreeUtils.getMethod("java.util.Map", "put", 2, processingEnv);
+
   /** The KeyFor.value field/element. */
   protected final ExecutableElement keyForValueElement =
       TreeUtils.getMethod(KeyFor.class, "value", 0, processingEnv);
@@ -77,6 +84,7 @@ public class KeyForAnnotatedTypeFactory
    *
    * @param checker the associated checker
    */
+  @SuppressWarnings("this-escape")
   public KeyForAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, true);
 
@@ -103,19 +111,11 @@ public class KeyForAnnotatedTypeFactory
   }
 
   @Override
-  public ParameterizedExecutableType constructorFromUse(NewClassTree tree) {
-    ParameterizedExecutableType result = super.constructorFromUse(tree);
-    keyForPropagator.propagateNewClassTree(tree, result.executableType.getReturnType(), this);
+  protected ParameterizedExecutableType constructorFromUse(
+      NewClassTree tree, boolean inferTypeArgs) {
+    ParameterizedExecutableType result = super.constructorFromUse(tree, inferTypeArgs);
+    keyForPropagator.propagateNewClassTree(tree, result.executableType().getReturnType(), this);
     return result;
-  }
-
-  @Override
-  protected TypeHierarchy createTypeHierarchy() {
-    return new KeyForTypeHierarchy(
-        checker,
-        getQualifierHierarchy(),
-        checker.getBooleanOption("ignoreRawTypeArguments", true),
-        checker.hasOption("invariantArrays"));
   }
 
   @Override
@@ -124,43 +124,10 @@ public class KeyForAnnotatedTypeFactory
         super.createTreeAnnotator(), new KeyForPropagationTreeAnnotator(this, keyForPropagator));
   }
 
-  // TODO: work on removing this class
-  protected static class KeyForTypeHierarchy extends DefaultTypeHierarchy {
-
-    public KeyForTypeHierarchy(
-        BaseTypeChecker checker,
-        QualifierHierarchy qualifierHierarchy,
-        boolean ignoreRawTypes,
-        boolean invariantArrayComponents) {
-      super(checker, qualifierHierarchy, ignoreRawTypes, invariantArrayComponents);
-    }
-
-    @Override
-    protected boolean isSubtype(
-        AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top) {
-      // TODO: THIS IS FROM THE OLD TYPE HIERARCHY.  WE SHOULD FIX DATA-FLOW/PROPAGATION TO DO
-      // THE RIGHT THING
-      if (supertype.getKind() == TypeKind.TYPEVAR && subtype.getKind() == TypeKind.TYPEVAR) {
-        // TODO: Investigate whether there is a nicer and more proper way to
-        // get assignments between two type variables working.
-        if (supertype.getAnnotations().isEmpty()) {
-          return true;
-        }
-      }
-
-      // Otherwise Covariant would cause trouble.
-      if (subtype.hasAnnotation(KeyForBottom.class)) {
-        return true;
-      }
-      return super.isSubtype(subtype, supertype, top);
-    }
-  }
-
   @Override
-  protected KeyForAnalysis createFlowAnalysis(
-      List<Pair<VariableElement, KeyForValue>> fieldValues) {
+  protected KeyForAnalysis createFlowAnalysis() {
     // Explicitly call the constructor instead of using reflection.
-    return new KeyForAnalysis(checker, this, fieldValues);
+    return new KeyForAnalysis(checker, this);
   }
 
   @Override
@@ -200,11 +167,11 @@ public class KeyForAnnotatedTypeFactory
    *
    * @param mapExpression expression that has type Map
    * @param tree expression that might be a key for the map
-   * @return whether or not the expression is a key for the map
+   * @return true if the expression is a key for the map
    */
   public boolean isKeyForMap(String mapExpression, ExpressionTree tree) {
-    // This test only has an effect if the Map Key Checker is being run on its own.  If the Nullness
-    // Checker is being run, then -AassumeKeyFor disables the Map Key Checker.
+    // This test only has an effect if the Map Key Checker is being run on its own.  If the
+    // Nullness Checker is being run, then -AassumeKeyFor disables the Map Key Checker.
     if (assumeKeyFor) {
       return true;
     }
@@ -224,8 +191,9 @@ public class KeyForAnnotatedTypeFactory
   }
 
   @Override
-  public QualifierHierarchy createQualifierHierarchy() {
-    return new SubtypeIsSupersetQualifierHierarchy(getSupportedTypeQualifiers(), processingEnv);
+  protected QualifierHierarchy createQualifierHierarchy() {
+    return new SubtypeIsSupersetQualifierHierarchy(
+        getSupportedTypeQualifiers(), processingEnv, KeyForAnnotatedTypeFactory.this);
   }
 
   /** Returns true if the node is an invocation of Map.containsKey. */
@@ -262,5 +230,74 @@ public class KeyForAnnotatedTypeFactory
   @Override
   public boolean shouldWarnIfStubRedundantWithBytecode() {
     return false;
+  }
+
+  @Override
+  protected DependentTypesHelper createDependentTypesHelper() {
+    return new KeyForDependentTypesHelper(this);
+  }
+
+  /**
+   * Converts KeyFor annotations with errors into {@code @UnknownKeyFor} in the type of method
+   * invocations. This changes all qualifiers on the type of a method invocation expression, even
+   * qualifiers that are not primary annotations. This is unsound for qualifiers on type arguments
+   * or array elements on modifiable objects.
+   *
+   * <p>For example, if the type of some method called, {@code getList(...)}, is changed from {@code
+   * List<@KeyFor("a ? b : c") String>} to {@code List<@UnknownKeyFor String>}, then the returned
+   * list may have @UnknownKeyFor strings added.
+   *
+   * <pre>{@code
+   * List<String> l = getList(...);
+   * l.add(randoString);
+   * }</pre>
+   *
+   * This is probably ok for the KeyFor Checker because most of the collections of keys are
+   * unmodifiable.
+   */
+  static class KeyForDependentTypesHelper extends DependentTypesHelper {
+
+    /**
+     * Creates a {@code KeyForDependentTypesHelper}.
+     *
+     * @param factory annotated type factory
+     */
+    public KeyForDependentTypesHelper(AnnotatedTypeFactory factory) {
+      super(factory);
+    }
+
+    @Override
+    public void atMethodInvocation(
+        AnnotatedExecutableType methodType, MethodInvocationTree methodInvocationTree) {
+      if (!hasDependentAnnotations()) {
+        return;
+      }
+      Element methodElt = TreeUtils.elementFromUse(methodInvocationTree);
+
+      // The annotations on `declaredMethodType` will be copied to `methodType`.
+      AnnotatedExecutableType declaredMethodType =
+          (AnnotatedExecutableType) factory.getAnnotatedType(methodElt);
+      if (!hasDependentType(declaredMethodType)) {
+        return;
+      }
+
+      StringToJavaExpression stringToJavaExpr;
+      stringToJavaExpr =
+          stringExpr -> {
+            JavaExpression result =
+                StringToJavaExpression.atMethodInvocation(
+                    stringExpr, methodInvocationTree, factory.getChecker());
+            Unknown unknown = result.containedOfClass(Unknown.class);
+            if (unknown != null) {
+              throw JavaExpressionParseException.construct(
+                  result.toString(), "Expression " + unknown.toString() + " is unparsable.");
+            }
+            return result;
+          };
+
+      convertAnnotatedTypeMirror(stringToJavaExpr, declaredMethodType);
+      this.viewpointAdaptedCopier.visit(declaredMethodType, methodType);
+      this.errorAnnoReplacer.visit(methodType.getReturnType());
+    }
   }
 }

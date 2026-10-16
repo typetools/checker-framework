@@ -4,9 +4,11 @@ import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * Exception type indicating a mistake by a type system built using the Checker Framework. For
- * example, misusing a meta-annotation on a qualifier. These should only be thrown by the framework
- * package.
+ * Exception type indicating a mistake in a type system built using the Checker Framework. For
+ * example, misusing a meta-annotation on a qualifier.
+ *
+ * <p>To indicate a bug in the framework, use {@link BugInCF}. To indicate that an end user (a
+ * programmer running a type-checker) made a mistake, use {@link UserError}.
  */
 @SuppressWarnings("serial")
 public class TypeSystemError extends RuntimeException {
@@ -19,7 +21,7 @@ public class TypeSystemError extends RuntimeException {
   public TypeSystemError(String message) {
     super(message);
     if (message == null) {
-      throw new Error("Must have a detail message.");
+      throw new BugInCF("Must have a detail message.");
     }
   }
 

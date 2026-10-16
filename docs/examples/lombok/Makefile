@@ -1,14 +1,24 @@
-.PHONY: all
+JAVA_VER := $(shell java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1 | sed 's/-ea//')
+
+.PHONY: all clean test
 
 # Delomboking seems to mess up line numbers. The actual error is on line 13, but the error appears on line 12.
 # So check for both the error message and make sure it is for the right assignment.
-all: clean
+# As of 2026-09-01 (Lombok 1.18.48), lombok does not support JDK 28; see https://projectlombok.org/changelog .
+all:
+ifeq (${JAVA_VER},28)
+	@echo "Skipping test because lombok does not work under Java ${JAVA_VER}"
+else
 	- ../../../gradlew build > Out.txt 2>&1
-	(grep -qF "User.java:9: error: [argument] incompatible argument for parameter y of y." Out.txt \
+	(grep -qF "User.java:9: error: [argument] incompatible argument for parameter y of FooBuilder.y." Out.txt \
 	  && grep -qF "Foo.java:12: error: [assignment] incompatible types in assignment." Out.txt \
 	  && grep -qF "y = null; // error" Out.txt) \
 	 || (echo "===== start of Out.txt =====" && cat Out.txt && echo "===== end of Out.txt =====" && false)
+all: clean
+endif
+
+test: all
 
 clean:
-	../../../gradlew clean
-	rm -f Out.txt
+	@../../../gradlew clean
+	@rm -f Out.txt

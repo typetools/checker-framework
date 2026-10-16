@@ -1,0 +1,13 @@
+<!-- This file goes in your home directory. -->
+
+<server>
+  <id>central</id>
+  <configuration>
+    <httpConfiguration>
+      <all>
+        <connectionTimeout>120000</connectionTimeout> <!-- 2 minutes -->
+        <readTimeout>120000</readTimeout> <!-- 2 minutes -->
+      </all>
+    </httpConfiguration>
+  </configuration>
+</server>

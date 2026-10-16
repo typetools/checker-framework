@@ -9,16 +9,25 @@ import org.checkerframework.javacutil.AnnotationUtils;
 /**
  * Represents a mapping from an Annotation to a TypeUseLocation it should be applied to during
  * defaulting. The Comparable ordering of this class first tests location then tests annotation
- * ordering (via {@link org.checkerframework.javacutil.AnnotationUtils}).
+ * ordering (via {@link AnnotationUtils}).
  *
  * <p>It also has a handy toString method that is useful for debugging.
  */
 public class Default implements Comparable<Default> {
   // please remember to add any fields to the hashcode calculation
+  /** The default annotation mirror. */
   public final AnnotationMirror anno;
+
+  /** The type use location. */
   public final TypeUseLocation location;
 
-  public Default(final AnnotationMirror anno, final TypeUseLocation location) {
+  /**
+   * Construct a Default object.
+   *
+   * @param anno the default annotation mirror
+   * @param location the type use location
+   */
+  public Default(AnnotationMirror anno, TypeUseLocation location) {
     this.anno = anno;
     this.location = location;
   }

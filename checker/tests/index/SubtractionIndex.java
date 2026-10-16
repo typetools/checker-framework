@@ -3,7 +3,7 @@ import org.checkerframework.common.value.qual.MinLen;
 
 // @skip-test until the type system is enriched so it can express either
 //   * N = Grid.length and N-1 = Grid.length-1, or
-//   * i < N  and i <= N-1
+//   * i < N and i <= N-1
 
 public class SubtractionIndex {
 

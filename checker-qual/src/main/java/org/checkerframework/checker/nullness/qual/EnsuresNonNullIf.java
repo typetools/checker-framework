@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
 // TODO: In a fix for https://tinyurl.com/cfissue/1917, add the text:  Every prefix expression is
-// also non-null; for example, {@code @EnsuresNonNullIf(expression="a.b.c", results=true)} implies
+// also non-null; for example, {@code @EnsuresNonNullIf(expression="a.b.c", result=true)} implies
 // that both {@code a.b} and {@code a.b.c} are non-null if the method returns {@code true}.
 /**
  * Indicates that the given expressions are non-null, if the method returns the given result (either
@@ -46,8 +46,7 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  *   }}</pre>
  *
  * An {@code EnsuresNonNullIf} annotation that refers to a private field is useful for verifying
- * that client code performs needed checks in the right order, even if the client code cannot
- * directly affect the field.
+ * that a method establishes a property, even though client code cannot directly affect the field.
  *
  * <p><b>Method calls:</b> If {@link Class#isArray()} returns true, then {@link
  * Class#getComponentType()} returns non-null. You can express this relationship as:
@@ -76,14 +75,6 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @Repeatable(EnsuresNonNullIf.List.class)
 public @interface EnsuresNonNullIf {
   /**
-   * Returns Java expression(s) that are non-null after the method returns the given result.
-   *
-   * @return Java expression(s) that are non-null after the method returns the given result
-   * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
-   */
-  String[] expression();
-
-  /**
    * Returns the return value of the method under which the postcondition holds.
    *
    * @return the return value of the method under which the postcondition holds
@@ -91,7 +82,15 @@ public @interface EnsuresNonNullIf {
   boolean result();
 
   /**
-   * * A wrapper annotation that makes the {@link EnsuresNonNullIf} annotation repeatable.
+   * Returns Java expression(s) that are non-null after the method returns the given result.
+   *
+   * @return the Java expression(s) that are non-null after the method returns the given result
+   * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
+   */
+  String[] expression();
+
+  /**
+   * A wrapper annotation that makes the {@link EnsuresNonNullIf} annotation repeatable.
    *
    * <p>Programmers generally do not need to write this. It is created by Java when a programmer
    * writes more than one {@link EnsuresNonNullIf} annotation at the same location.
@@ -101,7 +100,7 @@ public @interface EnsuresNonNullIf {
   @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
   @ConditionalPostconditionAnnotation(qualifier = NonNull.class)
   @InheritedAnnotation
-  @interface List {
+  public static @interface List {
     /**
      * Returns the repeatable annotations.
      *

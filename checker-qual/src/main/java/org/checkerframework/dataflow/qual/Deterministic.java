@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * A method is called <em>deterministic</em> if it returns the same value (according to {@code ==})
- * every time it is called with the same parameters and in the same environment. The parameters
+ * every time it is called with the same arguments and in the same environment. The arguments
  * include the receiver, and the environment includes all of the Java heap (that is, all fields of
  * all objects and all static variables).
  *
@@ -41,13 +41,13 @@ import java.lang.annotation.Target;
  *
  * <ol>
  *   <li>Assignment to any expression, except for local variables and method parameters.<br>
- *       (Note that storing into an array element, such a {@code a[i] = x}, is not an assignment to
+ *       (Note that storing into an array element, such as {@code a[i] = x}, is not an assignment to
  *       a variable and is therefore forbidden.)
  *   <li>A method invocation of a method that is not {@link Deterministic}.
  *   <li>Construction of a new object.
  *   <li>Catching any exceptions. This restriction prevents a method from obtaining a reference to a
- *       newly-created exception object and using these objects (or some property thereof) to change
- *       the method's return value. For instance, the following method must be forbidden.
+ *       newly created exception object and using these objects (or some property thereof) to change
+ *       the method's return value. For instance, the following method is forbidden.
  *       <!-- "<code>" instead of "{@code ...}" because of at-sign at beginning of line -->
  *       <pre><code>@Deterministic
  * int f() {

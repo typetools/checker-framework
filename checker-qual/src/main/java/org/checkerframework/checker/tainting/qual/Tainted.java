@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Denotes a possibly-tainted value: at run time, the value might be tainted or might be untainted.
+ * Denotes a possibly tainted value: at run time, the value might be tainted or might be untainted.
  *
  * @see Untainted
  * @see org.checkerframework.checker.tainting.TaintingChecker
@@ -18,6 +18,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@DefaultQualifierInHierarchy
 @SubtypeOf({})
+@DefaultQualifierInHierarchy
 public @interface Tainted {}

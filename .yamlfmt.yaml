@@ -1,0 +1,4 @@
+formatter:
+  retain_line_breaks: true
+  scan_folded_as_literal: true
+  drop_unnecessary_doc_start: false

@@ -1,0 +1,694 @@
+\chapterAndLabel{Resource Leak Checker for must-call obligations}{resource-leak-checker}
+
+The Resource Leak Checker guarantees that every resource is closed rather
+than leaked.  Examples of resources are a channel, executor,
+\<ExecutionControl>, file, \<FileLock>, \<Formatter>, reader,
+\<Scanner>, socket, stream, writer, etc.
+
+More precisely, the Resource Leak Checker guarantees that the program
+fulfills every object's must-call obligations before the object is
+de-allocated.
+
+A resource leak occurs when a program does not explicitly dispose of some finite
+underlying resource, such as a socket, file descriptor, or database connection.  To dispose
+of the resource, the program should call some method on an object.
+(De-allocating or garbage-collecting the object is not sufficient.)  For
+example, the program must call \<close()> on every object that implements the
+interface \<java.io.Closeable>.
+
+The Resource Leak Checker can check any property of the form ``the programmer
+must call each method in a set of methods \emph{M} at least once
+on object \emph{O} before \emph{O} is de-allocated''.  For resource leaks,
+by default \emph{M} is the set containing
+\<close()> and \emph{O} is any object that implements the interface
+\<java.io.Closeable>.  You can extend this guarantee to other types and methods
+by writing \<@MustCall> or \<@InheritableMustCall> annotations, as described in
+Section~\ref{must-call-annotations}.
+
+The Resource Leak Checker works in three stages:
+\begin{enumerate}
+\item The Must Call Checker (\chapterpageref{must-call-checker})
+  over-approximates each expression's must-call methods as a
+  \refqualclass{checker/mustcall/qual}{MustCall} type.
+\item The Called Methods Checker (\chapterpageref{called-methods-checker})
+  under-approximates each expression's definitely-called methods as a
+  \refqualclass{checker/calledmethods/qual}{CalledMethods} type.
+\item When any program element goes out of scope (i.e., it is ready to be
+  de-allocated), the Resource Leak Checker compares the types
+  \<@MustCall(\emph{MC})> and \<@CalledMethods(\emph{CM})>.  It reports an error
+  if there exists some method in \emph{MC} that is not in \emph{CM}.
+\end{enumerate}
+
+
+\sectionAndLabel{How to run the Resource Leak Checker}{resource-leak-run-checker}
+
+Run one of these lines:
+
+\begin{Verbatim}
+javac -processor resourceleak MyFile.java ...
+javac -processor org.checkerframework.checker.resourceleak.ResourceLeakChecker MyFile.java ...
+\end{Verbatim}
+
+The Resource Leak Checker supports all the command-line arguments
+listed in Section~\ref{called-methods-run-checker} for
+the Called Methods Checker, plus five others:
+
+\begin{description}
+\item[\<-ApermitStaticOwning>]
+  See Section~\ref{resource-leak-owning-fields}.
+\item[\<-AresourceLeakIgnoredExceptions=...>]
+  See Section~\ref{resource-leak-ignored-exceptions}.
+\item[\<-ApermitInitializationLeak>]
+  See Section~\ref{resource-leak-field-initialization}.
+\item[\<-AenableReturnsReceiverForRlc>]
+  Enables the Returns Receiver Checker (Chapter~\ref{returns-receiver-checker})
+  when running this checker. By default, the Returns Receiver Checker is
+  disabled when running the Called Methods Checker as part of the RLC,
+  because it has a significant type-checking cost but provides little benefit in the common case,
+  since resources are rarely combined with fluent builders.
+\item[\<-AenableWpiForRlc>]
+  See Section~\ref{resource-leak-checker-references}.
+\end{description}
+
+If you are running the Resource Leak Checker, then there is no need to run
+the Must Call Checker (\chapterpageref{must-call-checker}), because the
+Resource Leak Checker does so automatically.
+
+
+\sectionAndLabel{Resource Leak Checker annotations}{resource-leak-annotations}
+
+The Resource Leak Checker relies on the type qualifiers of two other checkers:
+the Must Call Checker (Section~\ref{must-call-annotations}) and
+the Called Methods Checker (Section~\ref{called-methods-spec}). You might need
+to write qualifiers from either type hierarchy. The most common annotations from
+these checkers that you might need to write are:
+
+\begin{description}
+
+\item[\refqualclasswithparams{checker/mustcall/qual}{MustCall}{String[] value}]
+for example on an element with compile-time type \<Object> that might contain a \<Socket>.
+See Section~\ref{must-call-annotations}.
+
+\item[\refqualclasswithparams{checker/mustcall/qual}{InheritableMustCall}{String[] value}]
+on any classes defined in your program that have must-call obligations. See Section~\ref{must-call-on-class}.
+
+\item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethods} and/or
+      \refqualclass{checker/calledmethods/qual}{EnsuresCalledMethodsOnException}]
+on a method in your code that fulfills a must-call obligation of one of its parameters or of a field.
+See Section~\ref{called-methods-ensurescalledmethods}.
+
+\end{description}
+
+The Resource Leak Checker supports annotations that express
+aliasing patterns related to resource leaks:
+
+\begin{description}
+
+\item[\refqualclass{checker/mustcall/qual}{Owning}]
+\item[\refqualclass{checker/mustcall/qual}{NotOwning}]
+  expresses ownership.  When two aliases exist to the same Java object,
+  \<@Owning> and \<@NotOwning> indicate which of the two is responsible for
+  fulfilling must-call obligations.
+  Constructor results are always \<@Owning>. Method returns default to
+  \<@Owning>.  Formal parameters and fields default to \<@NotOwning>.
+  For more details, see Section~\ref{resource-leak-ownership}.
+
+\item[\refqualclass{checker/mustcall/qual}{MustCallAlias}]
+  represents a ``resource-aliasing'' relationship.  Resource aliases are
+  distinct Java objects that control the same resource(s):
+  fulfilling the must-call obligations of one object also
+  fulfills the obligations of the other object.  For details,
+  see Section~\ref{resource-leak-resource-alias}.
+
+\end{description}
+
+The Resource Leak Checker also supports an annotation to permit re-assigning
+fields or re-opening resources:
+
+\begin{description}
+
+\item[\refqualclasswithparams{checker/mustcall/qual}{CreatesMustCallFor}{String value}]
+  is a declaration annotation that indicates that after a call to a method
+  with this annotation, none of the must-call obligations of the in-scope, owning expression
+  listed in \<value> have been met.
+  In other words, the annotated method ``resets'' the must-call obligations of the expression.
+  Multiple \<@CreatesMustCallFor>
+  annotations can be written on the same method.  Section~\ref{resource-leak-createsmustcallfor}
+  explains how this annotation permits re-assignment of owning
+  fields or the re-opening of resources.
+
+\end{description}
+
+
+\sectionAndLabel{Example of how safe resource usage is verified}{resource-leak-example}
+
+Consider the following example of safe use of a \<Socket>, in which the comments indicate the
+inferred Must Call and Called Methods type qualifiers for \<s>:
+\begin{verbatim}
+{
+  Socket s = null;
+  // 1. @MustCall({}) @CalledMethodsBottom
+  try {
+    s = new Socket(myHost, myPort);
+    // 2. @MustCall("close") @CalledMethods({})
+  } catch (Exception e) {
+    // do nothing
+  } finally {
+    if (s != null) {
+      s.close();
+      // 3. @MustCall("close") @CalledMethods("close")
+    } else {
+      // do nothing
+      // 4. @MustCall("close") @CalledMethodsBottom
+    }
+    // 5. @MustCall("close") @CalledMethods("close")
+  }
+  // 6. @MustCall("close") @CalledMethods("close")
+}
+\end{verbatim}
+
+At point 1, \<s>'s type qualifiers are the type qualifiers of \<null>:
+\<null> has no must-call obligations (\<@MustCall(\{\})>),
+and methods cannot be called on it (\<@CalledMethodsBottom>).
+
+At point 2, \<s> is a new \<Socket> object, which
+has a must-call obligation (\<@MustCall("close")>)
+and has had no methods called on it (\<@CalledMethods(\{\})>).
+
+At point 3, \<close()> has definitely been called on \<s>, so
+\<s>'s Called Methods type is updated. Note that the Must Call type
+does not change.
+
+At point 4, \<s> is definitely \<null> and its type is adjusted accordingly.
+
+At point 5, \<s>'s type is the least upper bound of the types at points 3
+and 4.
+
+At point 6, \<s> goes out of scope.  The Resource Leak Checker reports a
+\<required.method.not.called> error if the Must Call set contains any
+element that the Called Methods set does not.
+
+
+\sectionAndLabel{Aliased references and ownership transfer}{resource-leak-ownership}
+
+Resource leak checking is complicated by aliasing.  Multiple expressions
+may evaluate to the same Java object, but each object only needs to be
+closed once.  (Section~\ref{resource-leak-resource-alias} describes a
+related situation called ``resource aliasing'', when multiple Java objects
+refer to the same underlying resource.)
+
+For example, consider the following code that safely closes a \<Socket>:
+
+\begin{verbatim}
+  void example(String myHost, int myPort) throws IOException {
+    Socket s = new Socket(myHost, myPort);
+    closeSocket(s);
+  }
+  void closeSocket(@Owning @MustCall("close") Socket t) {
+    try {
+      t.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+\end{verbatim}
+
+There are two aliases for a socket object: \<s> in \<example()> and \<t> in
+\<closeSocket()>.  Ordinarily, the Resource Leak Checker requires that
+\<close()> is called on every expression of type \<Socket>, but that is not
+necessary here.  The Resource Leak Checker should not warn when
+\<s> goes out of scope in \<example()>, because \<closeSocket()> takes ownership
+of the socket --- that is, \<closeSocket()> takes responsibility for closing
+it. The \<@Owning> annotation on \<t>'s declaration expresses this fact; it
+tells the Resource Leak Checker that \<t> is the reference that must be
+closed, and its alias \<s> need not be closed.
+
+Constructor results are always \<@Owning>.
+Method returns default to \<@Owning>,
+and parameters and fields default to \<@NotOwning>. This treatment of parameter and
+return types ensures sound handling of unannotated third-party libraries: any
+object returned from such a library will be tracked by default, and the checker
+never assumes that passing an object to an unannotated library will satisfy its obligations.
+
+\<@Owning> and \<@NotOwning> always \emph{transfer} must-call obligations: must-call
+obligations are conserved (i.e., neither created nor destroyed) by ownership annotations.
+Writing \<@Owning> or \<@NotOwning> can never make the checker
+unsound:  a real warning can never be hidden by them.
+As with any annotation, incorrect or missing annotations can lead to false positive warnings.
+
+\subsectionAndLabel{Owning parameters and exceptions}{resource-leak-owning-parameters-and-exceptions}
+
+When \<@Owning> is written on a method parameter, the method only takes ownership of the
+parameter when it returns normally.  In this example, the Resource Leak Checker will report
+an error in the \<example> method and allow the definition of \<closeSocket>:
+
+\begin{verbatim}
+  void example(String myHost, int myPort) throws Exception {
+    // Error: `s` is not closed on all paths
+    Socket s = new Socket(myHost, myPort);
+
+    // `closeSocket` does not have to close `s` when it throws IOException.
+    // Instead, this method has to catch the exception and close `s`.
+    closeSocket(s);
+  }
+
+  void closeSocket(@Owning Socket t) throws IOException {
+    throw new IOException();
+  }
+\end{verbatim}
+
+Sometimes a method really does promise to call some methods on an \<@Owning> parameter,
+even if it throws an exception.  The annotation \<@EnsuresCalledMethodsOnException> can
+overcome this limitation.  For example, a constructor that throws an exception might
+choose to close an \<@Owning> parameter instead of letting ownership remain with the caller:
+
+\begin{verbatim}
+  @EnsuresCalledMethodsOnException(value = "#1", methods = "close")
+  public Constructor(@Owning Closeable resource) {
+    this.resource = resource;
+    try {
+      initialize();
+    } catch (Exception e) {
+      resource.close();
+      throw e;
+    }
+  }
+\end{verbatim}
+
+\subsectionAndLabel{Owning fields}{resource-leak-owning-fields}
+
+Unannotated fields are treated as non-owning.
+
+For \textbf{final, non-static owning fields},
+the Resource Leak Checker enforces the ``resource acquisition is
+initialization (RAII)'' programming idiom.  Some
+destructor-like method \<d()> must satisfy the field's must-call obligation
+(and this fact must be expressed via an \<@EnsuresCalledMethods> annotation on \<d()>),
+and the enclosing class must have a \<@MustCall("d")> obligation to
+ensure the destructor is called. In addition to the \<@EnsuresCalledMethods> annotation,
+which guarantees that the field(s) it references have their must-call obligations satisfied
+on non-exceptional paths, the Resource Leak Checker requires those fields to have their must-call
+obligations satisfied on all paths in (only) the destructor, and will issue a \<contracts.exceptional.postcondition>
+error if they are not satisfied. Resolve this error by ensuring that the required methods are called
+on all exceptional paths.
+
+\textbf{Non-final, non-static owning fields} usually require one or more \<@CreatesMustCallFor> annotations
+when they might be re-assigned. See Section~\ref{resource-leak-createsmustcallfor} for
+more details on how to annotate a non-final, non-static owning field.
+
+Owning fields are treated slightly differently in constructors versus normal methods.
+In normal methods, assigning a value to an owning field always satisfies the object's
+must-call obligations.  However, within a constructor, those obligations are only
+satisfied if the constructor returns normally.  If the constructor throws an exception,
+the constructed object will not be accessible afterward, and therefore its fields need
+to be closed before it exits.
+
+This constructor safely closes the object it allocates before throwing an exception:
+\begin{verbatim}
+  private final @Owning Socket socket;
+
+  public ConstructorThatCanThrow() throws IOException {
+    Socket s = new Socket(myHost, myPort);
+    try {
+      initialize(s); // may throw IOException
+    } catch (Exception e) {
+      s.close();
+      throw e;
+    }
+    this.socket = s;
+  }
+\end{verbatim}
+
+An assignment to a \textbf{static owning field} does not satisfy a
+must-call obligation; for example,
+
+\begin{smaller}
+\begin{Verbatim}
+  static @Owning PrintWriter debugLog = new PrintWriter("debug.log");
+\end{Verbatim}
+\end{smaller}
+
+\noindent
+The Resource Leak Checker issues a warning about every assignment of an
+object with a must-call annotation into a static owning field,
+indicating that the obligation of the field's content might not be
+satisfied.  When those fields are used throughout execution, until the
+program exits, there is no good place to dispose of them, so these warnings
+might not be useful.  The \<-ApermitStaticOwning> command-line argument
+suppresses warnings related to static owning fields.  This can help in
+checking legacy code.  It permits only a small number of resources to be retained
+throughout execution, related to the number of such fields and assignments
+to them.
+
+
+\sectionAndLabel{Resource aliasing}{resource-leak-resource-alias}
+
+A \emph{resource alias} set is a set of Java objects that
+correspond to the same underlying system resource.
+Calling a must-call method on any member of a resource-alias set
+fulfills that obligation for all members of the set.
+Members of the set may have different Java types.
+
+Programmers most often encounter resource aliasing when using \emph{wrapper types}.
+For example, the Java \<Buffered\-Output\-Stream> wrapper adds buffering to a
+delegate stream.
+The wrapper's \<close()> method invokes \<close()> on the delegate.  Calling
+\<close()> on either object has the same effect:  it closes the underlying resource.
+
+A resource aliasing relationship is expressed in source code via a pair of \<@MustCallAlias> annotations:
+one on a parameter of a method or constructor, and another on its return type.
+For example, the annotated JDK contains this constructor of \<BufferedOutputStream>:
+\begin{Verbatim}
+@MustCallAlias BufferedOutputStream(@MustCallAlias OutputStream out);
+\end{Verbatim}
+
+When a pair of \<@MustCallAlias> annotations is written on a method or constructor \<m>'s return type
+and its parameter \<p>, the Resource Leak Checker requires one of the following:
+\begin{enumerate}
+\item \<p> is passed to another method or constructor (including \<super>) in a
+  \<@MustCallAlias> position, and \<m> returns that method's result, or
+\item \<p> is stored in the only \<@Owning> field of the enclosing class (a class with more than one
+  \<@Owning> field cannot have a resource alias relationship).
+\end{enumerate}
+
+\subsectionAndLabel{A complete wrapper type example}{resource-leak-wrapper-type-example}
+
+Here is a complete example of a type \<InputStreamWrapper> that wraps an \<InputStream> as a resource alias.  Defining a wrapper type typically involves combined usage of \<@InheritableMustCall>, \<@EnsuresCalledMethods>, an \<@Owning> field, and \<@MustCallAlias>.  The \<test> method shows that the checker is able to verify code that releases an \<InputStream> using either the \<InputStream> directly or a wrapping \<InputStreamWrapper>.
+
+\begin{verbatim}
+@InheritableMustCall("dispose")
+class InputStreamWrapper {
+  private final @Owning InputStream stream;
+
+  @MustCallAlias InputStreamWrapper(@MustCallAlias InputStream stream) {
+    this.stream = stream;
+  }
+
+  @EnsuresCalledMethods(value = "this.stream", methods = "close")
+  public void dispose() throws IOException {
+    this.stream.close();
+  }
+
+  /** Shows that either the stream or the wrapper can be closed. */
+  static void test(@Owning InputStream stream, boolean b) throws IOException {
+    InputStreamWrapper wrapper = new InputStreamWrapper(stream);
+    if (b) {
+      stream.close();
+    } else {
+      wrapper.dispose();
+    }
+  }
+}
+\end{verbatim}
+
+
+\sectionAndLabel{Creating obligations (how to re-assign a non-final owning field)}{resource-leak-createsmustcallfor}
+
+Consider a class that has must-call obligations; that is, the class
+declaration is annotated with \<@MustCall(...)>.
+Every constructor implicitly creates obligations for the newly-created object.
+Non-constructor methods may also create obligations
+when re-assigning non-final owning fields or allocating
+new system-level resources.
+
+A post-condition annotation,
+\<@CreatesMustCallFor>,
+indicates for which expression an obligation is created.
+If you write \<@CreatesMustCallFor(>\emph{T}\<)> on a method \emph{N} that
+overrides a method \emph{M}, then \emph{M} must also be annotated as
+\<@CreatesMustCallFor(>\emph{T}\<)>.  (\emph{M} may also have other
+\<@CreatesMustCallFor> annotations that \emph{N} does not.)
+
+\<@CreatesMustCallFor> allows the Resource Leak Checker to verify uses of non-final fields
+that contain a resource, even if they are re-assigned. Consider
+the following example:
+
+\begin{verbatim}
+  @MustCall("close") // default qualifier for uses of SocketContainer
+  class SocketContainer {
+    private @Owning Socket sock;
+
+    public SocketContainer() { sock = ...; }
+
+    void close() { sock.close(); }
+
+    @CreatesMustCallFor("this")
+    void reconnect() {
+      if (!sock.isClosed()) {
+        sock.close();
+      }
+      sock = ...;
+    }
+  }
+\end{verbatim}
+
+In the lifetime of a \<SocketContainer> object, \<sock>
+might be re-assigned arbitrarily many times: once at each
+call to \<reconnect()>. This code is safe, however: \<reconnect()>
+ensures that \<sock> is closed before re-assigning it.
+
+Sections~\ref{resource-leak-createsmustcallfor-callsite}
+and~\ref{resource-leak-createsmustcallfor-declaration}
+explain how the Resource Leak Checker verifies uses and declarations of
+methods annotated with \<@CreatesMustCallFor>.
+
+
+\subsectionAndLabel{Requirements at a call site of a \<@CreatesMustCallFor> method}{resource-leak-createsmustcallfor-callsite}
+
+At a call site to a method annotated as
+\<@CreatesMustCallFor(>\emph{expr}\<)>, the Resource Leak Checker:
+\begin{enumerate}
+\item
+  Treats any existing \<@MustCall> obligations of \emph{expr} as \emph{satisfied}.
+\item
+  Creates a fresh obligation to check, as if \emph{expr} were assigned to a newly-allocated
+  object (i.e., as if \emph{expr} were a constructor result).
+\item
+  Un-refines the type in the Called Methods Checker's type hierarchy for \emph{expr} to
+  \<@CalledMethods(\{\})>, if it had any other Called Methods type.
+\item
+  Requires that the expression corresponding to \emph{expr} (that is, \emph{expr}
+  viewpoint-adapted to the method call site) is owned; that is, it is
+  annotated or defaulted as \<@Owning>.  Otherwise, the checker
+  will issue a \<reset.not.owning> error at the call site. You can avoid this
+  error by extracting \emph{expr} into a new local variable (because
+  locals are \<@Owning> by default) and replacing all instances of \emph{expr}
+  in the call with references to the new local variable.
+\end{enumerate}
+
+Treating the obligation before the call as satisfied is sound: the
+checker creates a new obligation for calls to \<@CreatesMustCallFor> methods,
+and the Must Call Checker (\chapterpageref{must-call-checker}) ensures the
+\<@MustCall> type for the target expression will have a \emph{superset} of any methods
+present before the call. Intuitively, calling a \<@CreatesMustCallFor> method
+``resets'' the obligations of the target expression, so whether they were satisfied before
+the call or not is irrelevant.
+
+If a \<@CreatesMustCallFor>
+method \emph{n} is invoked within a method \emph{m} that has a \<@CreatesMustCallFor> annotation,
+and the \<@CreatesMustCallFor> annotations on \emph{n} and \emph{m} have
+the same target expression --- imposing the obligation produced by calling \emph{n} on the caller of \emph{m} --- then
+the newly-created obligation is treated as satisfied immediately
+at the call site of \emph{n} in the body of \emph{m} (because it is imposed at call sites of \emph{m}
+instead).
+
+
+\subsectionAndLabel{Requirements at a declaration of a \<@CreatesMustCallFor> method}{resource-leak-createsmustcallfor-declaration}
+
+Any method that re-assigns a non-final, owning field of some object \<obj>
+must be annotated \<@CreatesMustCallFor("obj")>.
+Other methods may also be annotated with \<@CreatesMustCallFor>.
+
+The Resource Leak Checker enforces two rules to ensure that re-assignments
+to non-final, owning fields (like \<sock> in method \<reconnect> above) are
+sound:
+\begin{itemize}
+\item any method that re-assigns a non-final, owning field of an object
+  must be annotated with a \<@CreatesMustCallFor> annotation
+  whose expression is a reference to that object.
+\item when a non-final, owning field \textit{f} is re-assigned at statement \textit{s},
+  at the program point before \textit{s}, \textit{f}'s must-call obligations must have been satisfied.
+\end{itemize}
+\noindent
+The first rule ensures that \<close()> is called after the last call
+to \<reconnect()>, and the second rule ensures that \<reconnect()>
+safely closes \<sock> before re-assigning it. Because the Called Methods Checker
+treats calls to a \<@CreatesMustCallFor> method like \<reconnect()> as if the call might
+cause arbitrary side effects, after such a call the only method known to have been
+definitely called is the \<@CreatesMustCallFor> method: previous called
+methods (including \<close()>) do not appear in the \<@CalledMethods> type qualifier.
+
+% TODO: should this section also include text about unconnected sockets, or is what's here sufficient?
+
+
+\sectionAndLabel{Ignored exception types}{resource-leak-ignored-exceptions}
+
+The Resource Leak Checker checks that an element's must-call obligations
+are fulfilled when that element may go out of scope: at the end of its
+lexical scope or when control may be transferred to the end of its lexical
+scope, such as via a \<break> or \<continue> statement or via throwing an
+exception.  As an example of an exception, consider the following method:
+
+\begin{verbatim}
+  void foo() {
+    Socket s = ...;
+    bar();
+    s.close();
+  }
+\end{verbatim}
+
+If \<bar> is declared to throw an exception, the Resource Leak Checker
+warns that a \<Socket> may be leaked.  If \<bar> throws an exception, the
+only reference to \<s> is lost, which could lead to a resource leak.
+
+The Resource Leak Checker ignores control flow due to some exceptions.
+
+\begin{itemize}
+\item
+By default, the Resource Leak Checker ignores run-time errors that can occur
+unpredictably at most points in the program. For example, the JVM can throw
+an \<OutOfMemoryError> on any allocation.  Similarly,
+\<ClassCircularityError>, \<ClassFormatError>, and \<NoClassDefFoundError>
+may occur at any reference to a class.  Such exceptions usually terminate
+the program, and in that case unclosed resources do not matter.
+Furthermore, any method can throw \<RuntimeException>, and the Checker
+Framework pessimistically assumes one can be thrown at every call site.
+Accounting for such exceptions would lead to vast numbers of
+false positive warnings, so the Resource Leak Checker assumes they are
+never thrown.  Strictly speaking, this is an unsoundness:  it can lead to
+false negatives (missed resource leaks) if the programmer catches these
+exceptions, which is a discouraged practice.
+
+\item
+The Resource Leak Checker also ignores exception types that can be verified
+to never occur.  In particular, the Resource Leak Checker ignores \<NullPointerException>s
+(use the Nullness Checker, \chapterpageref{nullness-checker}) and
+\<ArrayIndexOutOfBoundsException>s and \<NegativeArraySizeException>s (use the Index
+Checker, \chapterpageref{index-checker}). Other exception types may be added to this
+list in the future.  Please let us know if there is a type that you think should
+be ignored by filing an issue listing both the exception type and the
+verification tool.
+\end{itemize}
+
+The set of ignored exception types can be controlled with the option
+\<-AresourceLeakIgnoredExceptions=...>.  The option takes a comma-separated list of
+fully-qualified exception types.  A type can be prefixed with \<=> to ignore exactly
+that type and not its subclasses.  For example, for a very pedantic set of ignored
+exceptions, use either of these, which have the same effect:
+
+\begin{verbatim}
+  -AresourceLeakIgnoredExceptions="java.lang.Error,=java.lang.NullPointerException"
+  -AresourceLeakIgnoredExceptions="=java.lang.NullPointerException,java.lang.Error"
+\end{verbatim}
+
+Both of these ignore \<java.lang.Error> (and all its subclasses) as well as
+\<java.lang.NullPointerException> (but not its subclasses).
+
+The keyword \<default> will expand to the default set of ignored exceptions.  So,
+to add an additional exception to the set of ignored exceptions, use one of these:
+
+\begin{verbatim}
+  -AresourceLeakIgnoredExceptions="default,package.MyCustomException"
+  -AresourceLeakIgnoredExceptions="default,=package.MyCustomException"
+\end{verbatim}
+
+\sectionAndLabel{Errors about field initialization}{resource-leak-field-initialization}
+
+% Arguably, this is working around a bug in the
+% MustCallConsistencyAnalyzer, which could be improved to avoid issuing
+% these false positive warnings.
+
+The Resource Leak Checker warns about re-assignments to owning fields,
+because the value that was overwritten might not have had its obligations
+satisfied.  Such a warning is not necessary on the first assignment to a
+field, since the field had no content before the assignment.  Sometimes,
+the Resource Leak Checker is unable to determine that an assignment is the
+first one, so it conservatively assumes the assignment is a re-assignment
+and issues an error.
+
+One way to prevent this false positive warning is to declare the field as \<final>.
+
+Alternately, to suppress all warnings related to field assignments in the
+constructor and in initializer blocks, pass the
+\<-ApermitInitializationLeak> command-line argument.  This makes the
+checker unsound:  the Resource Leak Checker will not warn if the constructor
+and initializers set a field more than once.  The amount of leakage is
+limited to how many times the field is set.
+
+\sectionAndLabel{Errors about unknown must-call obligations}{resource-leak-generic-unknown}
+
+The Resource Leak Checker issues a \<required.method.not.known> error
+when a variable with the type \<@MustCallUnknown> has a must-call obligation.
+\<@MustCallUnknown> rarely occurs, but if you encounter this error, usually
+the right thing to do is to write an explicit \<@MustCall> annotation
+on the indicated expression (e.g., as a cast), because the Must Call Checker
+will only use \<@MustCallUnknown> as a default when encountering a language
+feature that it is unable to reason about.
+
+\sectionAndLabel{Collections of resources}{resource-leak-collections}
+
+The Resource Leak Checker cannot verify code that stores a collection of
+resources in a generic collection (e.g., \<java.util.List>) and then
+resolves the obligations of each element of the collection at once (e.g.,
+by iterating over the \<List>).  In the future, the checker will support
+this.  The remainder of this section explains the implementation issues;
+most users can skip it.
+
+The first implementation issue is that \<@Owning> and \<@NotOwning> are
+declaration annotations rather than type qualifiers, so they cannot be
+written on type arguments. It is possible under the current design to have
+an \code{@Owning List<Socket>}, but not a \code{List<@Owning Socket>}.
+It would be better to make \<@Owning> a type annotation, but this is a
+challenging design problem.
+
+The second implementation issue is the defaulting rule for \<@MustCall> on
+type variable upper bounds.  Currently, this default is \<@MustCall(\{\})>,
+which prevents many false positives in code with type variables that makes
+no use of resources --- an important design principle.
+However, this defaulting rule does have an unfortunate consequence: it is
+an error to write \code{List<Socket>} or any other type with a concrete
+type argument where the type argument itself isn't \<@MustCall(\{\})>. A programmer who
+needs to write such a type while using the Resource Leak Checker has a few
+choices, all of which have some downsides:
+
+\begin{itemize}
+\item Write \code{List<? extends Socket>}. This rejects calls to \<add()>
+or other methods that require an instance of the type variable, but it
+preserves some of the behavior (e.g., calls to \<remove()> are permitted).
+This is the best choice most of the time if the \<List> is not intended to
+be owning.
+\item Write \code{List<@MustCall Socket>}. This makes it an error to
+add a Socket to the list, since the type of the Socket is
+\<@MustCall("close")> but the list requires \<@MustCall(\{\})>.
+\item Suppress one or more warnings.
+\end{itemize}
+
+The recommended way to use the Resource Leak Checker in this situation is
+to rewrite the code to avoid a \<List> of owning resources. If rewriting is
+not possible, the programmer will probably need to suppress a warning and
+then verify the code using a method other than the Resource Leak Checker.
+
+
+\sectionAndLabel{Further reading}{resource-leak-checker-references}
+
+The paper ``Lightweight and Modular Resource Leak
+Verification''~\cite{KelloggSSE2021} (ESEC/FSE 2021,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/resource-leak-esecfse2021.pdf})
+gives more details about the Resource Leak Checker.
+
+The Resource Leak Checker uses a specialized algorithm to infer annotations
+when whole program inference (WPI, Section~\ref{whole-program-inference})
+is enabled.  The algorithm is described in the paper ``Inference of
+Resource Management Specifications''~\cite{ShadabGTEKLLS2023} (OOPSLA 2023,
+\myurl{https://homes.cs.washington.edu/~mernst/pubs/resource-inference-oopsla2023-abstract.html}).
+
+
+% LocalWords:  de subchecker OutputStream MustCall MustCallUnknown RAII Un
+% LocalWords:  PolyMustCall InheritableMustCall MultiRandSelector callsite
+% LocalWords:  Partitioner CalledMethods AnoLightweightOwnership NotOwning
+% LocalWords:  AnoResourceAliasing MustCallAlias AnoCreatesMustCallFor
+% LocalWords:  EnsuresCalledMethods CreatesMustCallFor expr Verification''
+% LocalWords:  closeSocket destructor'' destructor BufferedOutputStream
+% LocalWords:  AnoResourceAliases createsmustcallfor SocketContainer
+% LocalWords:  CalledMethodsBottom ArrayIndexOutOfBoundsException
+% LocalWords:  NegativeArraySizeException

@@ -13,7 +13,7 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * TargetedElementAnnotationApplier filters annotations for an element into 3 groups. TARGETED
@@ -29,11 +29,15 @@ import org.plumelib.util.StringsPlume;
  */
 abstract class TargetedElementAnnotationApplier {
   /**
-   * Three annotation types that may be encountered when calling getRawTypeAttributes. see sift().
+   * Three annotation groups that may be encountered when calling getRawTypeAttributes. See {@link
+   * #sift}.
    */
-  static enum TargetClass {
+  protected enum TargetClass {
+    /** The annotation that should be applied to the current object. */
     TARGETED,
+    /** The annotation is valid but we will ignore it. */
     VALID,
+    /** The annotation is neither targeted nor valid. */
     INVALID
   }
 
@@ -48,7 +52,7 @@ abstract class TargetedElementAnnotationApplier {
    * annotations that have these target types will be passed to handleTargeted.
    *
    * @return the TargetTypes that identify annotations we wish to apply with this object. Any
-   *     annotations that have these target types will be passed to handleTargeted
+   *     annotations that have these target types will be passed to handleTargeted.
    */
   protected abstract TargetType[] annotatedTargets();
 
@@ -88,7 +92,7 @@ abstract class TargetedElementAnnotationApplier {
    * @param type the type to annotate
    * @param element an element identifying type
    */
-  TargetedElementAnnotationApplier(final AnnotatedTypeMirror type, final Element element) {
+  TargetedElementAnnotationApplier(AnnotatedTypeMirror type, Element element) {
     this.type = type;
     this.element = element;
   }
@@ -136,8 +140,8 @@ abstract class TargetedElementAnnotationApplier {
         remainingInfo.add(r.toString() + " (" + r.position + ")");
       }
       msg.add(remainingInfo.toString());
-      msg.add("Targeted annotations: " + StringsPlume.join(", ", annotatedTargets()));
-      msg.add("Valid annotations: " + StringsPlume.join(", ", validTargets()));
+      msg.add("Targeted annotations: " + StringsP.join(", ", annotatedTargets()));
+      msg.add("Valid annotations: " + StringsP.join(", ", validTargets()));
 
       throw new BugInCF(msg.toString());
     }
@@ -152,17 +156,17 @@ abstract class TargetedElementAnnotationApplier {
    * @return a {@literal Map<TargetClass => Annotations>.}
    */
   protected Map<TargetClass, List<Attribute.TypeCompound>> sift(
-      final Iterable<Attribute.TypeCompound> typeCompounds) {
+      Iterable<Attribute.TypeCompound> typeCompounds) {
 
-    final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToCompound =
+    Map<TargetClass, List<Attribute.TypeCompound>> targetClassToCompound =
         new EnumMap<>(TargetClass.class);
     for (TargetClass targetClass : TargetClass.values()) {
       targetClassToCompound.put(targetClass, new ArrayList<>());
     }
 
-    for (final Attribute.TypeCompound typeCompound : typeCompounds) {
-      final TargetType typeCompoundTarget = typeCompound.position.type;
-      final List<Attribute.TypeCompound> destList;
+    for (Attribute.TypeCompound typeCompound : typeCompounds) {
+      TargetType typeCompoundTarget = typeCompound.position.type;
+      List<Attribute.TypeCompound> destList;
 
       if (ElementAnnotationUtil.contains(typeCompoundTarget, annotatedTargets())) {
         destList = targetClassToCompound.get(TargetClass.TARGETED);
@@ -199,8 +203,7 @@ abstract class TargetedElementAnnotationApplier {
               + element);
     }
 
-    final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToAnno =
-        sift(getRawTypeAttributes());
+    Map<TargetClass, List<Attribute.TypeCompound>> targetClassToAnno = sift(getRawTypeAttributes());
 
     handleInvalid(targetClassToAnno.get(TargetClass.INVALID));
     handleValid(targetClassToAnno.get(TargetClass.VALID));

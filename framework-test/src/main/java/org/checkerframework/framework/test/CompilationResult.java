@@ -24,9 +24,10 @@ public class CompilationResult {
   }
 
   /**
-   * Returns whether or not compilation succeeded without errors or exceptions.
+   * Returns true if compilation succeeded without errors or exceptions. May return true if
+   * compilation issued warnings.
    *
-   * @return whether or not compilation succeeded without errors or exceptions
+   * @return true if compilation succeeded without errors or exceptions
    */
   public boolean compiledWithoutError() {
     return compiledWithoutError;

@@ -1,7 +1,7 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -14,9 +14,16 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class BitwiseAndNode extends BinaryOperationNode {
 
+  /**
+   * Constructs a {@link BitwiseAndNode}.
+   *
+   * @param tree the binary tree
+   * @param left the left operand
+   * @param right the right operand
+   */
   public BitwiseAndNode(BinaryTree tree, Node left, Node right) {
     super(tree, left, right);
-    assert tree.getKind() == Kind.AND;
+    assert tree.getKind() == Tree.Kind.AND;
   }
 
   @Override
@@ -31,10 +38,9 @@ public class BitwiseAndNode extends BinaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof BitwiseAndNode)) {
+    if (!(obj instanceof BitwiseAndNode other)) {
       return false;
     }
-    BitwiseAndNode other = (BitwiseAndNode) obj;
     return getLeftOperand().equals(other.getLeftOperand())
         && getRightOperand().equals(other.getRightOperand());
   }

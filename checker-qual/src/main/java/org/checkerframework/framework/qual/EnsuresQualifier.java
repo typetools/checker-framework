@@ -61,9 +61,9 @@ public @interface EnsuresQualifier {
   @Retention(RetentionPolicy.RUNTIME)
   @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
   @InheritedAnnotation
-  @interface List {
+  public static @interface List {
     /**
-     * Return the repeatable annotations.
+     * Returns the repeatable annotations.
      *
      * @return the repeatable annotations
      */

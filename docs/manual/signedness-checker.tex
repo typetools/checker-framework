@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Signedness Checker}{signedness-checker}
 
 The Signedness Checker guarantees that signed and unsigned integral values are not mixed
@@ -22,15 +21,30 @@ Floating-point types \<float>, \<double>, \<Float>, and \<Double> are always sig
 
 Signedness is primarily about how the bits of the representation are
 \emph{interpreted}, not about the values that it can represent.  An unsigned value
-is always positive, but just because a variable's value is positive does
-not mean that it should be marked as \<@Unsigned>.  If variable $v$ will be
+is always non-negative, but just because a variable's value is non-negative does
+not mean that it should be marked as \<@Unsigned>.  If variable \textit{v} will be
 compared to a signed value, or used in arithmetic operations with a signed
-value, then $v$ should have signed type.
+value, then \textit{v} should have signed type.
 To indicate the range of possible values for a variable, use the
 \refqualclass{checker/index/qual}{NonNegative} annotation of the Index
 Checker (see \chapterpageref{index-checker}) or the
 \refqualclass{common/value/qual}{IntRange} annotation of the Constant Value
 Checker (see \chapterpageref{constant-value-checker}).
+
+The Signedness Checker trusts a \refqualclass{checker/index/qual}{NonNegative}
+or \refqualclass{checker/index/qual}{Positive} annotation on a \<byte>,
+\<short>, \<int>, or \<long> expression.  To verify these annotations, also
+run the Index Checker.  A \<char> is always non-negative, so these
+annotations do not affect a \<char> expression; a \<char> expression has
+type \<@SignedPositive> only when range analysis determines that its value is
+between 0 and 127.
+
+Additional details appear in the paper
+``Preventing signedness errors in numerical computations in
+Java''~\cite{Mackie2016} (FSE 2016).
+
+To run the Signedness Checker, run javac with
+\<-processor org.checkerframework.checker.signedness.SignednessChecker>.
 
 
 \sectionAndLabel{Annotations}{signedness-checker-annotations}
@@ -62,30 +76,28 @@ These are the qualifiers in the signedness type system:
     This is the default annotation.
 
 \item[\refqualclass{checker/signedness/qual}{SignedPositive}]
-    indicates that a value is known at compile time to be in the positive
+    indicates that a value is known at compile time to be in the non-negative
     signed range, so it has the same interpretation as signed or unsigned
     and may be used with either interpretation.  (Equivalently, the most
     significant bit is guaranteed to be 0.)  Programmers should usually
     write \refqualclass{checker/signedness/qual}{Signed} or
     \refqualclass{checker/signedness/qual}{Unsigned} instead.
 
-\item[\refqualclass{checker/signedness/qual}{SignedPositiveFromUnsigned}]
-    indicates that a value is in the positive signed range, as with
-    \refqualclass{checker/signedness/qual}{SignedPositive}.  Furthermore,
-    the value was derived from values that can be interpreted as
-    \refqualclass{checker/signedness/qual}{Unsigned}.  Programmers should
-    rarely write this annotation.
-
 \item[\refqualclass{checker/signedness/qual}{SignednessGlb}]
     indicates that a value may be interpreted as unsigned or signed.  It
     covers the same cases as
     \refqualclass{checker/signedness/qual}{SignedPositive}, plus manifest literals, to
     prevent the programmer from having to annotate them all explicitly.
-    This annotation should almost never be written by the
-    programmer.
+    \emph{Programmers should rarely write this annotation,
+    except on fields whose value is a negative manifest literal.}
 
  \item[\refqualclass{checker/signedness/qual}{PolySigned}]
    indicates qualifier polymorphism.
+   When two formal parameter types are annotated with
+   \refqualclass{checker/signedness/qual}{PolySigned}, the two arguments
+   at a call site
+   must have the same signedness type annotation.  (This differs from the
+   standard rule for polymorphic qualifiers.)
    For a description of qualifier polymorphism, see
    Section~\ref{method-qualifier-polymorphism}.
 
@@ -115,30 +127,15 @@ Signedness Checker treats it in one of the following ways:
     All \code{byte}, \code{short}, \code{int}, and \code{long} literals default
     to \refqualclass{checker/signedness/qual}{SignednessGlb}.
     \item
-    All \code{byte}, \code{short}, \code{int}, and \code{long} variables default
-    to \refqualclass{checker/signedness/qual}{Signed}.
+    All \code{char} and \code{Character} expressions are
+    \refqualclass{checker/signedness/qual}{Unsigned}; this cannot be changed.
     \item
-    All other expressions default to \refqualclass{checker/signedness/qual}{UnknownSignedness}.
+    All \code{char} and \code{Character} variables are
+    \refqualclass{checker/signedness/qual}{Unsigned}; this cannot be changed.
+    \item
+    All other expressions default to \refqualclass{checker/signedness/qual}{Signed}.
 
 \end{itemize}
-
-
-\subsectionAndLabel{Widening conversions}{signedness-checker-widening-conversions}
-
-Figure~\ref{fig-signedness-hierarchy} shows the type qualifier hierarchy.
-When upcasting among integral types, the expression has type
-\<@SignedPositive> because the value is guaranteed to be within the signed
-positive range.  For example:
-
-\begin{Verbatim}
-@Signed int sint;
-@Unsigned int uint;
-@SignedPositive long splong1 = sint;   // legal
-@SignedPositive long splong2 = uint;   // legal
-... (long) sint ...   // this expression has type @SignedPositive long
-... (long) uint ...   // this expression has type @SignedPositive long
-\end{Verbatim}
-
 
 \sectionAndLabel{Prohibited operations}{signedness-checker-prohibited-operations}
 
@@ -214,7 +211,7 @@ are illegal.  Other uses of operators are prohibited for similar reasons.
 \subsectionAndLabel{Permitted shifts}{signedness-checker-permitted-shifts}
 
 As exceptions to the rules given above, the Signedness Checker permits
-certain right shifts which are immediately followed by a cast or
+certain right shifts that are immediately followed by a cast or
 masking operation.
 
 For example, right shift by 8 then mask by 0xFF evaluates to the same value
@@ -272,10 +269,9 @@ unsigned type may not participate in a division, as shown in
 Sections~\ref{signedness-checker-prohibited-operations}
 and~\ref{signedness-checker-rationale}.  However, if a constant is assigned
 to a variable that was declared with \<@Unsigned> type, then --- just like
-the constant --- the variable may be treated as either signed or unsigned.
-For example, it can participate in division.  Since the result of the
-division is signed, you cannot accidentally assign the division result to
-an \<@Unsigned> variable.
+the constant --- the variable may be treated as either signed or unsigned,
+due to local type refinement (Section~\ref{type-refinement}).
+For example, it can participate in division.
 
 \begin{Verbatim}
     void useLocalVariables() {
@@ -290,6 +286,32 @@ an \<@Unsigned> variable.
         int x = u1 / u2; // OK; computation over constants, interpreted as signed; result is signed
     }
 \end{Verbatim}
+
+To prevent local type refinement, use a cast:
+\begin{Verbatim}
+        @Unsigned int u1 = (@Unsigned int) 2147483646;
+\end{Verbatim}
+
+Note that type-checking produces a different result for \<int x = u1 / u2;>
+here than in the similar example in
+Section~\ref{signedness-checker-rationale}.  In
+Section~\ref{signedness-checker-rationale}, the method is reading fields,
+and all it knows is the declared type of the field.  In
+Section~\ref{signedness-refinement}, the method is
+reading a local variable, and dataflow (that is, flow-sensitive type
+refinement) refines the types of local variables.
+
+
+\sectionAndLabel{Instantiating polymorphism}{signedness-instantiating-polymorphism}
+
+When calling a method with formal parameters annotated as
+\refqualclass{checker/signedness/qual}{PolySigned}, all arguments for
+\<@PolySigned> formal parameters must have comparable types.  (One way to
+do this is for all types to be the same.)  This is different than the usual
+rules for polymorphic qualifiers.  If you violate this rule, then the
+Signedness Checker's error messages can be obscure, because they are about
+\<@SignednessBottom>.  You can fix the signedness error messages by casting
+the arguments.
 
 
 \sectionAndLabel{Other signedness annotations}{signedness-other-annotations}
@@ -309,7 +331,7 @@ Signedness Checker, as described in Figure~\ref{fig-signedness-refactoring}.
 % These lists should be kept in sync with SignednessAnnotatedTypeFactory.java .
 \begin{figure}
 \begin{center}
-% The ~ around the text makes things look better in Hevea (and not terrible
+% The ~ around the text makes things look better in HTML (and not terrible
 % in LaTeX).
 \begin{tabular}{ll}
 \begin{tabular}{|l|}
@@ -317,19 +339,17 @@ Signedness Checker, as described in Figure~\ref{fig-signedness-refactoring}.
  ~jdk.jfr.Unsigned~ \\ \hline
 \end{tabular}
 &
-$\Rightarrow$
+\Rightarrowsym{}
 ~org.checkerframework.checker.signedness.qual.Unsigned~
 \end{tabular}
 \end{center}
-%BEGIN LATEX
-\vspace{-1.5\baselineskip}
-%END LATEX
+\warpprintonly{\vspace{-1.5\baselineskip}}
 \caption{Correspondence between other signedness annotations
   and the Checker Framework's annotations.}
 \label{fig-signedness-refactoring}
 \end{figure}
 
 % LocalWords:  Signedness signedness IntRange bitwise SignedPositive myInt
-% LocalWords:  SignedPositiveFromUnsigned SignednessGlb PolySigned qual
+% LocalWords:  SignednessGlb PolySigned qual
 % LocalWords:  UnknownSignedness SignednessBottom upcasting comparators
 % LocalWords:  SignednessUtil SignednessUtilExtra

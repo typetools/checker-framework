@@ -1,0 +1,5 @@
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+record PairRecord(String key, @Nullable Object value) {
+  PairRecord(@Nullable String val);
+}

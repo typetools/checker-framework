@@ -3,13 +3,23 @@ package org.checkerframework.dataflow.util;
 import com.sun.source.tree.MethodTree;
 import java.util.EnumSet;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.dataflow.expression.ArrayAccess;
+import org.checkerframework.dataflow.expression.ClassName;
+import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.FormalParameter;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
+import org.checkerframework.dataflow.expression.SuperReference;
+import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.Pure.Kind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -20,14 +30,23 @@ import org.checkerframework.javacutil.TreeUtils;
  * @see Deterministic
  * @see Pure
  */
-public class PurityUtils {
+public final class PurityUtils {
+
+  /** Do not instantiate. */
+  private PurityUtils() {
+    throw new Error("Do not instantiate PurityUtils.");
+  }
+
+  /** Represents a method that is both deterministic and side-effect free. */
+  private static final EnumSet<PurityKind> detAndSeFree =
+      EnumSet.of(PurityKind.DETERMINISTIC, PurityKind.SIDE_EFFECT_FREE);
 
   /**
    * Does the method {@code methodTree} have any purity annotation?
    *
    * @param provider how to get annotations
    * @param methodTree a method to test
-   * @return whether the method has any purity annotations
+   * @return true if the method has any purity annotations
    */
   public static boolean hasPurityAnnotation(AnnotationProvider provider, MethodTree methodTree) {
     return !getPurityKinds(provider, methodTree).isEmpty();
@@ -38,9 +57,10 @@ public class PurityUtils {
    *
    * @param provider how to get annotations
    * @param methodElement a method to test
-   * @return whether the method has any purity annotations
+   * @return true if the method has any purity annotations
    */
-  public static boolean hasPurityAnnotation(AnnotationProvider provider, Element methodElement) {
+  public static boolean hasPurityAnnotation(
+      AnnotationProvider provider, ExecutableElement methodElement) {
     return !getPurityKinds(provider, methodElement).isEmpty();
   }
 
@@ -49,10 +69,10 @@ public class PurityUtils {
    *
    * @param provider how to get annotations
    * @param methodTree a method to test
-   * @return whether the method is deterministic
+   * @return true if the method is deterministic
    */
   public static boolean isDeterministic(AnnotationProvider provider, MethodTree methodTree) {
-    Element methodElement = TreeUtils.elementFromTree(methodTree);
+    ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodTree);
     if (methodElement == null) {
       throw new BugInCF("Could not find element for tree: " + methodTree);
     }
@@ -64,50 +84,42 @@ public class PurityUtils {
    *
    * @param provider how to get annotations
    * @param methodElement a method to test
-   * @return whether the method is deterministic
+   * @return true if the method is deterministic
    */
-  public static boolean isDeterministic(AnnotationProvider provider, Element methodElement) {
-    EnumSet<Pure.Kind> kinds = getPurityKinds(provider, methodElement);
-    return kinds.contains(Kind.DETERMINISTIC);
-  }
-
-  /**
-   * Is the method {@code methodTree} side-effect-free?
-   *
-   * @param provider how to get annotations
-   * @param methodTree a method to test
-   * @return whether the method is side-effect-free
-   */
-  public static boolean isSideEffectFree(AnnotationProvider provider, MethodTree methodTree) {
-    Element methodElement = TreeUtils.elementFromTree(methodTree);
-    if (methodElement == null) {
-      throw new BugInCF("Could not find element for tree: " + methodTree);
-    }
-    return isSideEffectFree(provider, methodElement);
+  public static boolean isDeterministic(
+      AnnotationProvider provider, ExecutableElement methodElement) {
+    EnumSet<PurityKind> kinds = getPurityKinds(provider, methodElement);
+    return kinds.contains(PurityKind.DETERMINISTIC);
   }
 
   /**
    * Is the method {@code methodElement} side-effect-free?
    *
+   * <p>This method does not use, and has different semantics than, {@link
+   * AnnotationProvider#isSideEffectFree}. This method is concerned only with standard purity
+   * annotations.
+   *
    * @param provider how to get annotations
    * @param methodElement a method to test
-   * @return whether the method is side-effect-free
+   * @return true if the method is side-effect-free
    */
-  public static boolean isSideEffectFree(AnnotationProvider provider, Element methodElement) {
-    EnumSet<Pure.Kind> kinds = getPurityKinds(provider, methodElement);
-    return kinds.contains(Kind.SIDE_EFFECT_FREE);
+  public static boolean isSideEffectFree(
+      AnnotationProvider provider, ExecutableElement methodElement) {
+    EnumSet<PurityKind> kinds = getPurityKinds(provider, methodElement);
+    return kinds.contains(PurityKind.SIDE_EFFECT_FREE);
   }
 
   /**
-   * Returns the types of purity of the method {@code methodTree}.
+   * Returns the purity annotations on the method {@code methodTree}.
    *
-   * @param provider how to get annotations
+   * @param provider how to get annotations. Its {@link AnnotationProvider#isSideEffectFree} and
+   *     {@link AnnotationProvider#isDeterministic} methods are not used.
    * @param methodTree a method to test
    * @return the types of purity of the method {@code methodTree}
    */
-  public static EnumSet<Pure.Kind> getPurityKinds(
+  public static EnumSet<PurityKind> getPurityKinds(
       AnnotationProvider provider, MethodTree methodTree) {
-    Element methodElement = TreeUtils.elementFromTree(methodTree);
+    ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodTree);
     if (methodElement == null) {
       throw new BugInCF("Could not find element for tree: " + methodTree);
     }
@@ -115,30 +127,88 @@ public class PurityUtils {
   }
 
   /**
-   * Returns the types of purity of the method {@code methodElement}.
+   * Returns the purity annotations on the method {@code methodElement}. {@code @Pure} is treated as
+   * an alias for {@code @SideEffectFree} and {@code @Deterministic}.
    *
-   * @param provider how to get annotations
+   * @param provider how to get annotations. Its {@link AnnotationProvider#isSideEffectFree} and
+   *     {@link AnnotationProvider#isDeterministic} methods are not used.
    * @param methodElement a method to test
    * @return the types of purity of the method {@code methodElement}
    */
-  // TODO: should the return type be an EnumSet?
-  public static EnumSet<Pure.Kind> getPurityKinds(
-      AnnotationProvider provider, Element methodElement) {
+  public static EnumSet<PurityKind> getPurityKinds(
+      AnnotationProvider provider, ExecutableElement methodElement) {
+    // Special case for record accessors
+    if (ElementUtils.isRecordAccessor(methodElement)
+        && ElementUtils.isAutoGeneratedRecordMember(methodElement)) {
+      return detAndSeFree;
+    }
+
     AnnotationMirror pureAnnotation = provider.getDeclAnnotation(methodElement, Pure.class);
+    if (pureAnnotation != null) {
+      return detAndSeFree;
+    }
+
     AnnotationMirror sefAnnotation =
         provider.getDeclAnnotation(methodElement, SideEffectFree.class);
     AnnotationMirror detAnnotation = provider.getDeclAnnotation(methodElement, Deterministic.class);
 
-    if (pureAnnotation != null) {
-      return EnumSet.of(Kind.DETERMINISTIC, Kind.SIDE_EFFECT_FREE);
+    if (sefAnnotation != null && detAnnotation != null) {
+      return detAndSeFree;
     }
-    EnumSet<Pure.Kind> result = EnumSet.noneOf(Pure.Kind.class);
+
+    EnumSet<PurityKind> result = EnumSet.noneOf(PurityKind.class);
     if (sefAnnotation != null) {
-      result.add(Kind.SIDE_EFFECT_FREE);
+      result.add(PurityKind.SIDE_EFFECT_FREE);
     }
     if (detAnnotation != null) {
-      result.add(Kind.DETERMINISTIC);
+      result.add(PurityKind.DETERMINISTIC);
     }
     return result;
+  }
+
+  /**
+   * Returns true if the given expression is pure: evaluating it has no side effect, and, in an
+   * unchanged environment, every evaluation yields the same location or value.
+   *
+   * <p>In one way, this method is more conservative than {@code isDeterministic}: it returns false
+   * for an expression such as {@code a + b}, which is pure but denotes no location that a method
+   * could modify.
+   *
+   * @param provider how to get annotations
+   * @param expression an expression
+   * @return true if the given expression is pure
+   */
+  public static boolean isPure(AnnotationProvider provider, JavaExpression expression) {
+    if (expression instanceof LocalVariable
+        || expression instanceof FormalParameter
+        || expression instanceof ThisReference
+        || expression instanceof SuperReference
+        || expression instanceof ClassName
+        || expression instanceof ValueLiteral) {
+      return true;
+    } else if (expression instanceof FieldAccess fieldAccess) {
+      return isPure(provider, fieldAccess.getReceiver());
+    } else if (expression instanceof ArrayAccess arrayAccess) {
+      return isPure(provider, arrayAccess.getArray()) && isPure(provider, arrayAccess.getIndex());
+    } else if (expression instanceof MethodCall methodCall) {
+      // The call is pure only if the method is effectively `@Pure`.
+      EnumSet<PurityKind> purityKinds = getPurityKinds(provider, methodCall.getElement());
+      if (!purityKinds.contains(PurityKind.DETERMINISTIC)
+          || !purityKinds.contains(PurityKind.SIDE_EFFECT_FREE)) {
+        return false;
+      }
+      // For a static method, the receiver is a ClassName, which is pure.
+      if (!isPure(provider, methodCall.getReceiver())) {
+        return false;
+      }
+      for (JavaExpression argument : methodCall.getArguments()) {
+        if (!isPure(provider, argument)) {
+          return false;
+        }
+      }
+      return true;
+    } else {
+      return false;
+    }
   }
 }

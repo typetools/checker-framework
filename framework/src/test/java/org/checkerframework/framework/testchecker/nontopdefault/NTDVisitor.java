@@ -19,8 +19,8 @@ public class NTDVisitor extends BaseTypeVisitor<NTDAnnotatedTypeFactory> {
       AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
     // eg for the statement "@NTDSide Double x;" the declarationType is @NTDMiddle
     // Double, and the useType is @NTDSide Double
-    if (declarationType.getEffectiveAnnotation(NTDMiddle.class) != null
-        && useType.getEffectiveAnnotation(NTDBottom.class) == null) {
+    if (declarationType.getAnnotation(NTDMiddle.class) != null
+        && useType.getAnnotation(NTDBottom.class) == null) {
       return true;
     } else {
       // otherwise check the usage using super

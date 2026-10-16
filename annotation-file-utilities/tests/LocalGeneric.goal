@@ -1,0 +1,10 @@
+package org.checkerframework.afu.annotator.tests;
+
+import java.util.List;
+
+public class LocalGeneric {
+  public void foo() {
+    @java.lang.UnderInitialization List<@java.lang.Tainted Integer> var = null;
+    System.out.println(var);
+  }
+}

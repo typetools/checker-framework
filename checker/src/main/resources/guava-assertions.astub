@@ -1,0 +1,438 @@
+package com.google.common.base;
+
+import org.checkerframework.dataflow.qual.AssertMethod;
+import org.checkerframework.dataflow.qual.Pure;
+
+public final class Preconditions {
+  private Preconditions() {}
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(boolean expression);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(boolean expression,Object errorMessage);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression,
+      String errorMessageTemplate,
+      Object... errorMessageArgs);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(boolean expression, String errorMessageTemplate, char p1);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(boolean expression, String errorMessageTemplate, int p1);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(boolean expression, String errorMessageTemplate, long p1);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression, String errorMessageTemplate,Object p1);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression, String errorMessageTemplate, char p1, char p2);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression, String errorMessageTemplate, char p1, int p2);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression, String errorMessageTemplate, char p1, long p2);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression, String errorMessageTemplate, char p1,Object p2);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression, String errorMessageTemplate, int p1, char p2);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression, String errorMessageTemplate, int p1, int p2);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression, String errorMessageTemplate, int p1, long p2);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression, String errorMessageTemplate, int p1,Object p2);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression, String errorMessageTemplate, long p1, char p2);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression, String errorMessageTemplate, long p1, int p2);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression, String errorMessageTemplate, long p1, long p2);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression, String errorMessageTemplate, long p1,Object p2);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression, String errorMessageTemplate,Object p1, char p2);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression, String errorMessageTemplate,Object p1, int p2);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression, String errorMessageTemplate,Object p1, long p2);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression,
+      String errorMessageTemplate,
+     Object p1,
+     Object p2);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression,
+      String errorMessageTemplate,
+     Object p1,
+     Object p2,
+     Object p3);
+
+  @AssertMethod(IllegalArgumentException.class)
+  public static void checkArgument(
+      boolean expression,
+      String errorMessageTemplate,
+     Object p1,
+     Object p2,
+     Object p3,
+     Object p4);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(boolean expression);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(boolean expression,Object errorMessage);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(
+      boolean expression,
+     String errorMessageTemplate,
+      Object... errorMessageArgs);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(boolean expression, String errorMessageTemplate, char p1);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(boolean expression, String errorMessageTemplate, int p1);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(boolean expression, String errorMessageTemplate, long p1);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(
+      boolean expression, String errorMessageTemplate,Object p1);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(boolean expression, String errorMessageTemplate, char p1, char p2);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(boolean expression, String errorMessageTemplate, char p1, int p2);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(boolean expression, String errorMessageTemplate, char p1, long p2);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(
+      boolean expression, String errorMessageTemplate, char p1,Object p2);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(boolean expression, String errorMessageTemplate, int p1, char p2);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(boolean expression, String errorMessageTemplate, int p1, int p2);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(boolean expression, String errorMessageTemplate, int p1, long p2);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(
+      boolean expression, String errorMessageTemplate, int p1,Object p2);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(boolean expression, String errorMessageTemplate, long p1, char p2);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(boolean expression, String errorMessageTemplate, long p1, int p2);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(boolean expression, String errorMessageTemplate, long p1, long p2);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(
+      boolean expression, String errorMessageTemplate, long p1,Object p2);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(
+      boolean expression, String errorMessageTemplate,Object p1, char p2);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(
+      boolean expression, String errorMessageTemplate,Object p1, int p2);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(
+      boolean expression, String errorMessageTemplate,Object p1, long p2);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(
+      boolean expression,
+      String errorMessageTemplate,
+     Object p1,
+     Object p2);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(
+      boolean expression,
+      String errorMessageTemplate,
+     Object p1,
+     Object p2,
+     Object p3);
+
+  @AssertMethod(IllegalStateException.class)
+  public static void checkState(
+      boolean expression,
+      String errorMessageTemplate,
+     Object p1,
+     Object p2,
+     Object p3,
+     Object p4);
+
+  public static <T> T checkNotNull(T reference);
+
+  public static <T> T checkNotNull(T reference,Object errorMessage);
+
+  public static <T> T checkNotNull(
+     T reference,
+      String errorMessageTemplate,
+      Object... errorMessageArgs);
+
+  public static <T> T checkNotNull(
+     T reference, String errorMessageTemplate, char p1);
+
+  public static <T> T checkNotNull(T reference, String errorMessageTemplate, int p1);
+
+  public static <T> T checkNotNull(
+     T reference, String errorMessageTemplate, long p1);
+
+  public static <T> T checkNotNull(
+     T reference, String errorMessageTemplate,Object p1);
+
+  public static <T> T checkNotNull(
+     T reference, String errorMessageTemplate, char p1, char p2);
+
+  public static <T> T checkNotNull(
+     T reference, String errorMessageTemplate, char p1, int p2);
+
+  public static <T> T checkNotNull(
+     T reference, String errorMessageTemplate, char p1, long p2);
+
+  public static <T> T checkNotNull(
+     T reference, String errorMessageTemplate, char p1,Object p2);
+
+  public static <T> T checkNotNull(
+     T reference, String errorMessageTemplate, int p1, char p2);
+
+  public static <T> T checkNotNull(
+     T reference, String errorMessageTemplate, int p1, int p2);
+
+  public static <T> T checkNotNull(
+     T reference, String errorMessageTemplate, int p1, long p2);
+
+  public static <T> T checkNotNull(
+     T reference, String errorMessageTemplate, int p1,Object p2);
+
+  public static <T> T checkNotNull(
+     T reference, String errorMessageTemplate, long p1, char p2);
+
+  public static <T> T checkNotNull(
+     T reference, String errorMessageTemplate, long p1, int p2);
+
+  public static <T> T checkNotNull(
+     T reference, String errorMessageTemplate, long p1, long p2);
+
+  public static <T> T checkNotNull(
+     T reference, String errorMessageTemplate, long p1,Object p2);
+
+  public static <T> T checkNotNull(
+     T reference, String errorMessageTemplate,Object p1, char p2);
+
+  public static <T> T checkNotNull(
+     T reference, String errorMessageTemplate,Object p1, int p2);
+
+  public static <T> T checkNotNull(
+     T reference, String errorMessageTemplate,Object p1, long p2);
+
+  public static <T> T checkNotNull(
+     T reference,
+      String errorMessageTemplate,
+     Object p1,
+     Object p2);
+
+  public static <T> T checkNotNull(
+     T reference,
+      String errorMessageTemplate,
+     Object p1,
+     Object p2,
+     Object p3);
+
+  public static <T> T checkNotNull(
+     T reference,
+      String errorMessageTemplate,
+     Object p1,
+     Object p2,
+     Object p3,
+     Object p4);
+
+  public static int checkElementIndex(int index, int size);
+
+  public static int checkElementIndex(int index, int size, String desc);
+
+  private static String badElementIndex(int index, int size, String desc);
+
+  public static int checkPositionIndex(int index, int size);
+
+  public static int checkPositionIndex(int index, int size, String desc);
+
+  private static String badPositionIndex(int index, int size, String desc);
+
+  public static void checkPositionIndexes(int start, int end, int size);
+
+  private static String badPositionIndexes(int start, int end, int size);
+}
+
+public final class Verify {
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(boolean expression);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(boolean expression, String errorMessageTemplate, Object... errorMessageArgs);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(boolean expression, String errorMessageTemplate, char p1);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(boolean expression, String errorMessageTemplate, int p1);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(boolean expression, String errorMessageTemplate, long p1);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(boolean expression, String errorMessageTemplate, Object p1);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(boolean expression, String errorMessageTemplate, char p1, char p2);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(boolean expression, String errorMessageTemplate, int p1, char p2);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(boolean expression, String errorMessageTemplate, long p1, char p2);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(boolean expression, String errorMessageTemplate,Object p1, char p2);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(boolean expression, String errorMessageTemplate, char p1, int p2);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(boolean expression, String errorMessageTemplate, int p1, int p2);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(boolean expression, String errorMessageTemplate, long p1, int p2);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(
+      boolean expression, String errorMessageTemplate,Object p1, int p2);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(boolean expression, String errorMessageTemplate, char p1, long p2);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(boolean expression, String errorMessageTemplate, int p1, long p2);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(boolean expression, String errorMessageTemplate, long p1, long p2);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(
+      boolean expression, String errorMessageTemplate,Object p1, long p2);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(
+      boolean expression, String errorMessageTemplate, char p1,Object p2);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(
+      boolean expression, String errorMessageTemplate, int p1,Object p2);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(
+      boolean expression, String errorMessageTemplate, long p1,Object p2);
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(
+      boolean expression,
+      String errorMessageTemplate,
+     Object p1,
+     Object p2);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(
+      boolean expression,
+      String errorMessageTemplate,
+     Object p1,
+     Object p2,
+     Object p3);
+
+  @AssertMethod(VerifyException.class)
+  @Pure
+  public static void verify(
+      boolean expression,
+      String errorMessageTemplate,
+     Object p1,
+     Object p2,
+     Object p3,
+     Object p4);
+
+}

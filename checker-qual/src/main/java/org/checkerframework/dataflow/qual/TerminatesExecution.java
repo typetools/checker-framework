@@ -28,6 +28,17 @@ import java.lang.annotation.Target;
  * <p>This annotation is inherited by subtypes, just as if it were meta-annotated with
  * {@code @InheritedAnnotation}.
  *
+ * <p>The Checker Framework recognizes this annotation, but the Java compiler {@code javac} does
+ * not. After calling a method annotated with {@code TerminatesExecution}, to prevent a {@code
+ * javac} diagnostic, you generally need to insert a {@code throw} statement (which you know will
+ * never execute):
+ *
+ * <pre>
+ * ...
+ * myTerminatingMethod();
+ * throw new Error("unreachable");
+ * </pre>
+ *
  * @checker_framework.manual #type-refinement Automatic type refinement (flow-sensitive type
  *     qualifier inference)
  */

@@ -18,7 +18,7 @@ public class NestedAggregateCheckerTest extends CheckerFrameworkPerDirectoryTest
    * @param testFiles the files containing test code, which will be type-checked
    */
   public NestedAggregateCheckerTest(List<File> testFiles) {
-    super(testFiles, NestedAggregateChecker.class, "", "-Anomsgtext", "-AcheckPurityAnnotations");
+    super(testFiles, NestedAggregateChecker.class, "", "-AcheckPurityAnnotations");
   }
 
   @Parameters

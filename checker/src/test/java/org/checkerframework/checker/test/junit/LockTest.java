@@ -13,11 +13,11 @@ public class LockTest extends CheckerFrameworkPerDirectoryTest {
    * @param testFiles the files containing test code, which will be type-checked
    */
   public LockTest(List<File> testFiles) {
-    super(testFiles, org.checkerframework.checker.lock.LockChecker.class, "lock", "-Anomsgtext");
+    super(testFiles, org.checkerframework.checker.lock.LockChecker.class, "lock");
   }
 
   @Parameters
   public static String[] getTestDirs() {
-    return new String[] {"lock", "all-systems"};
+    return new String[] {"lock", "lock-records", "all-systems"};
   }
 }

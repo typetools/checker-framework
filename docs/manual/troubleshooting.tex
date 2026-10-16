@@ -1,18 +1,22 @@
-\htmlhr
 \chapterAndLabel{Troubleshooting, getting help, and contributing}{troubleshooting}
 
 \begin{sloppypar}
 The manual might already answer your question, so first please look for
 your answer in the manual,
 including this chapter and the FAQ (Chapter~\ref{faq}).
-If not, you can use the mailing list,
-\code{checker-framework-discuss@googlegroups.com}, to ask other users for
-help.  For archives and to subscribe, see \url{https://groups.google.com/forum/#!forum/checker-framework-discuss}.
-To report bugs, please see Section~\ref{reporting-bugs}.
+If you think you have found a bug in the Checker Framework,
+please report it (see Section~\ref{reporting-bugs}).
+For discussions of broad interest, you can use the mailing list,
+\code{checker-framework-discuss@googlegroups.com}.
+For archives and to subscribe, see \url{https://groups.google.com/forum/#!forum/checker-framework-discuss}.
 If you want to help out, you can give feedback (including on the
-documentation), choose a bug and fix it, or select a
+documentation), choose a bug and fix it (start with those labeled
+\href{https://github.com/typetools/checker-framework/issues?q=is\%3Aissue+is\%3Aopen+label\%3A\%22good+first+issue\%22}{``good
+first
+issue''}),
+or select a
 project from the ideas list at
-\url{https://rawgit.com/typetools/checker-framework/master/docs/developer/gsoc-ideas.html}.
+\url{https://checkerframework.org/manual/new-contributor-projects.html}.
 \end{sloppypar}
 
 
@@ -24,10 +28,7 @@ To verify that you are using the compiler you think you are, you can add
 \code{-version} to the command line.  For instance, instead of running
 \code{javac -g MyFile.java}, you can run \code{javac \underline{-version} -g
   MyFile.java}.  Then, javac will print out its version number in addition
-to doing its normal processing.  Note that if you are running under Java 8,
-\<\$CHECKERFRAMEWORK/bin/javac -version> prints ``javac (version info
-not available)'' because it uses the Error Prone compiler which does not
-provide version information.
+to doing its normal processing.
 
 \end{itemize}
 
@@ -36,16 +37,12 @@ provide version information.
 
 If you get the following error while compiling the Checker Framework itself:
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
 checker-framework/stubparser/dist/stubparser.jar(org/checkerframework/stubparser/ast/CompilationUnit.class):
 warning: [classfile] Signature attribute introduced in version 49.0 class files is ignored in version 46.0 class files
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 \noindent
 and you have used Eclipse to compile the Checker Framework, then probably
@@ -68,21 +65,17 @@ This section describes some possible problems and solutions.
 \begin{itemize}
 \item
   \label{no-such-field-error-release}
-  An error that includes \<java.lang.NoSuchFieldError: RELEASE"> means that
+  An error that includes \<java.lang.NoSuchFieldError: RELEASE> means that
   you are not using the correct compiler (you are not using a Java 9+ compiler).
 
 \item
 If you get the error
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
 com.sun.tools.javac.code.Symbol$CompletionFailure: class file for com.sun.source.tree.Tree not found
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 \noindent
 then you are using the source installation and file \code{tools.jar} is not
@@ -92,9 +85,7 @@ on your classpath.  See the installation instructions
 \item
 If you get an error like one of the following,
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
 ...\build.xml:59: Error running ${env.CHECKERFRAMEWORK}\checker\bin\javac.bat compiler
 \end{Verbatim}
@@ -106,9 +97,7 @@ If you get an error like one of the following,
 \begin{Verbatim}
 error: Annotation processor 'org.checkerframework.checker.signedness.SignednessChecker' not found
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 \noindent
 then the problem may be that you have not set the \code{CHECKERFRAMEWORK} environment
@@ -146,23 +135,6 @@ time.  For example, maybe when you compiled the code, the \<@Nullable>
 annotation was available, but it was not available at run time.
 
 \item
-If you get an error that contains lines like these:
-
-\begin{Verbatim}
-Caused by: java.util.zip.ZipException: error in opening zip file
-    at java.util.zip.ZipFile.open(Native Method)
-    at java.util.zip.ZipFile.<init>(ZipFile.java:131)
-\end{Verbatim}
-
-\noindent
-then one possibility is that you have installed the Checker Framework in a
-directory that contains special characters that Java's ZipFile
-implementation cannot handle.  For instance, if the directory name contains
-``\<+>'', then Java 1.6 throws a ZipException, and Java 1.7 throws a
-FileNotFoundException and prints out the directory name with ``\<+>''
-replaced by blanks.
-
-\item
 The Checker Framework sometimes runs out of memory when processing very
 large Java files, or files with very large methods.
 
@@ -178,28 +150,32 @@ then either give the JVM more memory when running the Checker Framework, or
 split your files and methods into smaller ones, or both.
 
 \item
-Versions of \ahref{https://errorprone.info/}{Error Prone} before 2.4.0 are
+% Error Prone 2.5.0 was released in January 2021
+Versions of \href{https://errorprone.info/}{Error Prone} before 2.4.0 are
 incompatible with the Checker Framework.  (More precisely, each version of
 Error Prone before 2.4.0 is compatible with only one specific version of
 the Checker Framework.)  Those versions of Error Prone
-use an outdated version of the Checker Framework's dataflow analysis
-library, which conflicts with the Checker Framework itself.
+use outdated versions of the Checker Framework's dataflow analysis
+library, each of which is compatible with only one version of the Checker Framework.
 
 If you wish to use both Error Prone and the Checker Framework, then use
 Error Prone version 2.4.0 or later.
 If you cannot upgrade to Error Prone 2.4.0 or later, there is a way to
 still use both tools.  The
-\ahreforurl{https://github.com/kelloggm/checkerframework-gradle-plugin\#incompatibility-with-error-prone}{Gradle
+\ahreforurl{https://github.com/typetools/checker-framework-gradle-plugin\#incompatibility-with-error-prone-234-and-earlier}{Gradle
   plugin documentation} shows how to do so if you use the Gradle build
 system.
 
 \item
+% NullAway 0.9.2 was released in July 2021.
 Versions 0.9.0 and 0.9.1 of
-\ahref{https://github.com/uber/NullAway}{NullAway} are compatible
+\href{https://github.com/uber/NullAway}{NullAway} are compatible
 only with Checker Framework version 3.6.0 through 3.8.0.  Those versions of
-Error Prone use version 3.6.0 of the Checker Framework's dataflow analysis
-without shading it.  If you want to use a newer version of the Checker
-Framework, then use an older or newer version of NullAway.
+NullAway use version 3.6.0 of the Checker Framework's dataflow analysis
+library without shading it.  As of version 0.9.2, NullAway uses a shaded version of
+the library, so this conflict no longer exists.
+If you want to use a version of the Checker Framework newer than 3.8.0 with
+NullAway in the same build, then use NullAway 0.9.2 or later.
 
 \end{itemize}
 
@@ -291,7 +267,7 @@ give unexpected results.
   \item
     Perhaps your proof was incomplete or incorrect.  Your proof might
     depend on some fact you didn't write down, such as ``method
-    \<m> has no side effects.''  In this case, you should revise your proof
+    \<m> has no side effects''.  In this case, you should revise your proof
     and add more annotations to your Java code.
   \item
     Perhaps your proof is incorrect, and the errors indicate where.
@@ -355,10 +331,14 @@ dereference can occur at the given location, because \<isCompleted()> might set
 the field \<currentOutgoing> to \<null>.
 
 If you want to communicate that
-isCompleted() does not set the field \<currentOutgoing> to \<null>, you can use
-\<\refqualclass{dataflow/qual}{Pure}>,
-\<\refqualclass{dataflow/qual}{SideEffectFree}>,
-or \<\refqualclass{checker/nullness/qual}{EnsuresNonNull}> on the
+\<isCompleted()> does not set the field \<currentOutgoing> to \<null>, you can use
+\refqualclass{dataflow/qual}{Pure},
+\refqualclass{dataflow/qual}{SideEffectFree},
+\iffalse
+\refqualclass{dataflow/qual}{SideEffectsOnly} (with no expression that can
+affect \<currentOutgoing>),
+\fi
+or \refqualclass{checker/nullness/qual}{EnsuresNonNull} on the
 declaration of \<isCompleted()>; see Sections~\ref{type-refinement-purity}
 and~\ref{nullness-method-annotations}.
 
@@ -370,9 +350,9 @@ been annotated, so default annotations are being used.
 
 To solve the problem, add the missing annotations to the library (see
 Chapter~\ref{annotating-libraries}).  The
-annotations might appear in stub files (which appear
-in an \code{.astub} file together with the checker's source code)
-or in the form of annotated libraries (which appear
+annotations might appear in stub files (\code{.astub} files distributed
+with the checker's source code)
+or in annotated libraries (which appear
 in \url{https://github.com/typetools/}).
 
 \item
@@ -403,7 +383,7 @@ mypackage/MyClass.java:2044: warning: incompatible types in assignment.
 \end{Verbatim}
 
 \noindent
-A value that can be assigned to a variable of type \<T extends @MyQualifier
+A value can be assigned to a variable of type \<T extends @MyQualifier
 Object> only if that value is of the bottom type, since the bottom type is
 the only one that is a subtype of every subtype of \<T extends @MyQualifier
 Object>.  The value \<null> satisfies this for the Java type system, and it
@@ -451,7 +431,8 @@ error: annotation type not applicable to this kind of declaration
 indicates that you are using a definition of \<@NonNull> that is a
 declaration annotation, which cannot be used in that syntactic location.
 For example, many legacy annotations such as those listed in
-Figure~\ref{fig-nullness-refactoring} are declaration annotations.  You can
+Figures~\ref{fig-nullness-refactoring-nonnull} and \ref{fig-nullness-refactoring-nullable}
+are declaration annotations.  You can
 fix the problem by instead using a definition of \<@NonNull> that is a type
 annotation, such as the Checker Framework's annotations; often this only
 requires changing an \<import> statement.
@@ -517,6 +498,7 @@ public String(char value[], @IndexFor("#1") int offset, @IndexOrHigh("#1") int c
     } catch (Throwable e) {
         t.toString(); // Nullness Checker issues spurious (dereference.of.nullable)
     }
+  }
 \end{Verbatim}
 \end{smaller}
 
@@ -566,7 +548,7 @@ fixes, new features, new checkers, and other improvements.
 Please ensure that your bug report is clear and that it is complete.
 Otherwise, we may be unable to understand it or to reproduce it, either of
 which would prevent us from helping you.  Your bug report should include at
-least the following 4 parts: commands, inputs, outputs, and expectation.
+least the following 4 parts: commands, inputs, output, and expectation.
 
 % If you update this, also update ../../.github/ISSUE_TEMPLATE
 \begin{description}
@@ -576,12 +558,15 @@ least the following 4 parts: commands, inputs, outputs, and expectation.
 
   In the simplest case, you will provide one command of
   the form \<javac -processor ... MyFile.java>.  In more complex cases, it
-  might be a set of commands clone a repository, check out a branch, and
+  might be a set of commands to clone a repository, check out a branch, and
   run a build command.  Include commands to install software and set
   environment variables if necessary.
 
   If you encountered the problem in an IDE, reproduce it from the command
   line; if you cannot, report the bug to the IDE integration.
+  If you encountered the problem when using a build system, it is most
+  useful to the Checker Framework developers if you provide a single
+  \<javac> command rather than a build file.
 
   It can be helpful to add \\
   \code{-version -Aversion -AprintGitProperties -verbose -AprintVerboseGenerics} \\
@@ -642,7 +627,7 @@ least the following 4 parts: commands, inputs, outputs, and expectation.
 
 When reporting bugs, please focus on realistic scenarios and well-written
 code.  We are sure that you can make up artificial code that stymies the
-type-checker!  Those aren't a good use of your time to report nor the
+type-checker!  That is not a good use of your time to report, nor of the
 maintainers' time to evaluate and fix.
 
 
@@ -679,8 +664,6 @@ the Checker Framework, rather than an official release.
 % checkers and of the checker framework.  It may also help you to debug
 % problems more effectively.
 
-Note the JDK requirements (Section~\ref{installation}).
-
 
 \subsectionAndLabel{Install prerequisites}{building-prerequisites}
 
@@ -696,77 +679,124 @@ for example, other Linux distributions will be similar to Ubuntu.
 %  * the default location of CTSYM, in checker/jdk/Makefile.
 Put the setting of the \<JAVA\_HOME> environment variable in a startup file
 such as \<.bash\_profile> or \<.bashrc>, if \<JAVA\_HOME> is not already
-set appropriately.  It must be the location of your JDK 8 or JDK 11
-installation (not the JRE installation, and not JDK 7 or earlier).
+set appropriately.  It must be the location of your JDK
+installation (not the JRE installation).
 You may need to log out and log back in for the setting to take effect.
 
 \begin{description}
 \item[Ubuntu]
-  Run the following commands:
+\label{building-prerequisites-ubuntu}
+  Run the following commands, which should be the same as those in
+  \<checker/bin-devel/Dockerfile-ubuntu-jdk\emph{XX}-plus>, where \emph{XX}
+  is a JDK version such as 17, 21, 25, etc.:
 
-% Keep this up to date with ../../checker/bin-devel/Dockerfile-ubuntu-jdk11-plus
+(If your build fails
+because it is missing a package, try the commands there and report a bug
+in this manual.)
+
+% Keep this in sync with ../../checker/bin-devel/Dockerfile-ubuntu-jdk25-plus
+% ... but before diffing with that, diff with
+%   ../../checker/bin-devel/Dockerfile-contents-ubuntu-base.m4
+%   ../../checker/bin-devel/Dockerfile-contents-ubuntu-plus.m4
+
 \begin{Verbatim}
-sudo apt-get -qqy update
-sudo apt-get -qqy install \
- openjdk-11-jdk \
- ant cpp git gradle jq libcurl3-gnutls \
- make maven mercurial python3-pip python3-requests unzip wget \
- dia hevea imagemagick latexmk librsvg2-bin maven rsync \
- texlive-font-utils texlive-fonts-recommended \
- texlive-latex-base texlive-latex-extra texlive-latex-recommended
-pip3 install html5validator
+sudo apt -qqy update
+# Dependencies for building and running the Checker Framework.
+sudo apt -qqy install \
+  ant \
+  cpp \
+  git \
+  jq \
+  jtreg8 \
+  libcurl3-gnutls \
+  make \
+  maven \
+  python3-requests \
+  python3-setuptools \
+  unzip \
+  wget
+# Dependencies for developing the Checker Framework.
+sudo apt -qqy install \
+  autoconf \
+  devscripts \
+  dia \
+  graphviz \
+  imagemagick \
+  junit \
+  latexmk \
+  librsvg2-bin \
+  libasound2-dev libcups2-dev libfontconfig1-dev \
+  libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
+  pdf2svg \
+  poppler-utils \
+  rsync \
+  shellcheck \
+  shfmt \
+  texlive-extra-utils \
+  texlive-font-utils \
+  texlive-fonts-recommended \
+  texlive-latex-base \
+  texlive-latex-extra \
+  texlive-latex-recommended
+
+# Install uv (manages Python dependencies).
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH=$HOME/.local/bin:$PATH
+
+# Install prek (pre-commit hook).
+uv tool install prek
+
+# Install the JDK.
+sudo apt -qqy install \
+  openjdk-25-jdk \
+&& update-java-alternatives --set java-1.25.0-openjdk-amd64
+export JAVA25_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 \end{Verbatim}
+
 
   You may have to answer questions about which time zone your computer is in.
 
 In a startup file, write:
 % Can someone give a simpler command?
 % Command taken from:
-%   https://github.com/typetools/checker-framework/blob/master/checker/bin-devel/build.sh#L19
-%BEGIN LATEX
+%   https://github.com/typetools/checker-framework/blob/master/checker/bin-devel/clone-related.sh
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   export JAVA_HOME=${JAVA_HOME:-$(dirname "$(dirname "$(readlink -f "$(which javac)")")")}
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
-\item[Mac OS]
-  If you employ \ahref{https://brew.sh}{homebrew} to install packages, run
+\item[macOS]
+\label{building-prerequisites-macos}
+  If you employ \href{https://brew.sh}{homebrew} to install packages, run
   the following commands:
 
 \begin{Verbatim}
 brew update
-brew install git ant hevea maven mercurial librsvg unzip make
-brew tap AdoptOpenJDK/openjdk
-brew install --cask adoptopenjdk11
+brew install git graphviz ant maven librsvg poppler unzip make
+brew install --cask temurin17
 brew install --cask mactex
 \end{Verbatim}
 
-Make a \<latex> directory and copy \<hevea.sty> file into it (you may need to update the version number \<2.31>):
+Note: Running \<brew install --cask temurin17> is only necessary if you do not
+already have a JDK that is compatible with the Checker Framework installed.
+
+If \<echo \$JAVA\_HOME> outputs nothing (that is, if the \<JAVA\_HOME>
+environment variable is not set), then write the following
+in a startup file:
 
 \begin{Verbatim}
-mkdir -p $HOME/Library/texmf/tex/latex
-cp -p /usr/local/Cellar/hevea/2.31/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
-\end{Verbatim}
-
-Note: If copy permission is denied, try \<sudo>.
-
-In a startup file, write:
-
-\begin{Verbatim}
-export JAVA_HOME=$(/usr/libexec/java_home -v 1.11)
+export JAVA_HOME=$(/usr/libexec/java_home -v XX)
 \end{Verbatim}
 or
 \begin{Verbatim}
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-XX.jdk/Contents/Home/
 \end{Verbatim}
 
+In the command, \emph{XX} is a JDK version such as 17, 21, 25, etc.
 
 \item[Windows]
-  To build on Windows 10,
+  To build on Windows 10 or later,
   run \<bash> to obtain a version of
   Ubuntu (provided by the Windows Subsystem for Linux) and follow the Ubuntu
   instructions.
@@ -787,7 +817,7 @@ Obtain the latest source code from the version control repository:
 
 \begin{Verbatim}
 git clone https://github.com/typetools/checker-framework.git checker-framework
-export CHECKERFRAMEWORK=`pwd`/checker-framework
+export CHECKERFRAMEWORK=$(pwd)/checker-framework
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
 
@@ -807,7 +837,7 @@ You might want to add an \<export CHECKERFRAMEWORK=...> line to your
 \begin{enumerate}
 
 \item
-Run \code{./gradlew assemble} to build the Checker Framework:
+As with any Gradle project, run \code{./gradlew assemble} to build the Checker Framework:
 
 \begin{Verbatim}
   cd $CHECKERFRAMEWORK
@@ -819,6 +849,10 @@ Run \code{./gradlew assemble} to build the Checker Framework:
 Your antivirus program (e.g., Windows Security Virus \& threat protection)
 might make the build run very slowly, or might make it seem to stall.  Just
 give it time.
+
+If compilation fails, but you have not made any changes, then perhaps one
+of the supporting repositories is in an inconsistent state; see
+Section~\ref{building-related-repositories}.
 
 \item
 Once it is built, you may wish to put the Checker Framework's \<javac>
@@ -834,6 +868,16 @@ identical to the javac Java compiler.
 
 Putting the Checker Framework's \<javac> earlier in your \<PATH> will
 ensure that the Checker Framework's version is used.
+
+\item
+If you wish to use Maven or Gradle, publish the Checker Framework artifacts
+to a local Maven repository by running \code{./gradlew publishToMavenLocal}:
+\begin{Verbatim}
+  cd $CHECKERFRAMEWORK
+  ./gradlew publishToMavenLocal
+\end{Verbatim}
+Then use the Maven or Gradle instructions, but modify the version number for the Checker Framework artifacts.
+Use the version number that is output when you run \code{./gradlew version}.
 
 \item Test that everything works:
 
@@ -869,14 +913,14 @@ Run \code{make} in the \code{docs/manual} directory to build both the PDF and HT
 \subsectionAndLabel{Code style, IDE configuration, pull requests, etc.}{building-developer-manual}
 
 Please see the
-\href{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html}{Checker Framework Developer Manual}.
+\href{https://checkerframework.org/manual/developer-manual.html}{Checker Framework Developer Manual}.
 
 
 \subsectionAndLabel{Enable continuous integration builds}{building-ci}
 
 We strongly recommend that you enable continuous integration (CI) builds on
 your fork of the projects, so that you learn quickly about errors.  See the
-\ahref{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html\#ci}{CI
+\href{https://checkerframework.org/manual/developer-manual.html\#ci}{CI
   instructions} in the Checker Framework Developer Manual.
 
 
@@ -888,12 +932,39 @@ Install Docker on your local computer, then perform commands like the
 following to get a shell within Docker:
 
 \begin{Verbatim}
-docker pull mdernst/cf-ubuntu-jdk8
-docker run -it mdernst/cf-ubuntu-jdk8 /bin/bash
+docker pull mdernst/cf-ubuntu-jdk21
+docker run -it mdernst/cf-ubuntu-jdk21 /bin/bash
 \end{Verbatim}
 
 Then, you can run arbitrary commands, including those that appear in the
-CI configuration files.
+CI configuration files.  For example:
+
+\begin{Verbatim}
+git clone --filter=blob:none -b docker-ubuntu-24-10 https://github.com/mernst/checker-framework.git
+cd checker-framework
+export CHECKERFRAMEWORK=$(pwd)
+alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
+export NO_WRITE_VERIFICATION_METADATA=true
+checker/bin-devel/test-cftests-junit.sh
+\end{Verbatim}
+
+
+\subsectionAndLabel{Related repositories}{building-related-repositories}
+
+Building the Checker Framework depends on other repositories, such as
+\href{https://github.com/typetools/jdk/}{Annotated JDK}.
+You need to have compatible versions of each.
+
+After you \<git pull> in one of the repositories, you should do so in the
+others as well.  The script \<checker/bin-devel/clone-related.sh> pulls all the
+related repositories, so to build the latest development version of the
+Checker Framework you can do
+
+\begin{Verbatim}
+cd $CHECKERFRAMEWORK
+git pull
+checker/bin-devel/clone-related.sh
+\end{Verbatim}
 
 
 \sectionAndLabel{Contributing}{contributing}
@@ -901,12 +972,13 @@ CI configuration files.
 We welcome contributions and pull requests.  Section~\ref{build-source}
 tells you how to set up your development environment to compile the Checker
 Framework, and the
-\href{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html}{Checker
+\href{https://checkerframework.org/manual/developer-manual.html}{Checker
   Framework Developer Manual} gives more information.
 
 One good way to contribute is to give feedback about your use of the tool.
 There is a list
-  of potential projects for new contributors at \url{https://rawgit.com/typetools/checker-framework/master/docs/developer/gsoc-ideas.html}.
+of potential projects for new contributors at
+\url{https://checkerframework.org/manual/new-contributor-projects.html}.
 Or, you can fix a bug that
 you have encountered during your use of the Checker Framework.
 
@@ -914,13 +986,13 @@ you have encountered during your use of the Checker Framework.
 \subsectionAndLabel{Contributing fixes (creating a pull request)}{pull-request}
 
 Please see the
-\ahref{https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html#pull-requests}{pull
+\href{https://checkerframework.org/manual/developer-manual.html#pull-requests}{pull
   requests} section of the Checker Framework Developer Manual.
 Thanks in advance for your contributions!
 
 The easiest bugs to fix for a newcomer are
-\ahref{https://github.com/typetools/checker-framework/issues?q=is\%3Aopen+is\%3Aissue+label\%3A\%22help+wanted\%22}{labeled
-  as ``help wanted''}.
+\href{https://github.com/typetools/checker-framework/issues?q=is\%3Aopen+is\%3Aissue+label\%3A\%22good+first+issue\%22}{labeled
+  as ``good first issue''}.
 
 Please do not spam the issue tracker with requests to assign an issue to
 you.  If you want to contribute by fixing an issue, just open a pull
@@ -933,138 +1005,6 @@ to assist you.  If you don't know how to get started fixing a particular
 bug, then you should contribute to the project in other ways.  Thanks!
 
 
-\sectionAndLabel{Publications}{publications}
-
-Here are two technical papers about the Checker Framework itself:
-
-\begin{itemize}
-\item
-``Practical pluggable types for Java''~\cite{PapiACPE2008}
-(ISSTA 2008, \myurl{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008.pdf})
-describes the design and implementation of the Checker Framework.
-The paper also describes case
-studies in which the Nullness, Interning, Javari, and IGJ Checkers found
-previously-unknown errors in real software.
-The case studies also yielded new insights about type systems.
-
-\item
-``Building and using pluggable
-type-checkers''~\cite{DietlDEMS2011}
-(ICSE 2011, \myurl{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-icse2011.pdf})
-discusses further experience with the Checker Framework, increasing the
-number of lines of verified code to 3 million.  The case studies are of the
-Fake Enum, Signature String, Interning, and Nullness Checkers.
-The paper also evaluates the ease
-of pluggable type-checking with the Checker Framework:  type-checkers
-were easy to write, easy for novices to use, and effective in finding
-errors.
-\end{itemize}
-
-Here are some papers about type systems that were implemented and evaluated
-using the Checker Framework:
-
-\begin{description}
-\item[Nullness (Chapter~\ref{nullness-checker})]
-See the two papers about the Checker Framework, described above.
-
-\item[Rawness initialization (Section~\ref{initialization-rawness-checker})]
-``Inference of field initialization'' (ICSE 2011, \myurl{https://homes.cs.washington.edu/~mernst/pubs/initialization-icse2011-abstract.html})
-describes inference for the Rawness Initialization Checker.
-
-\item[Interning (Chapter~\ref{interning-checker})]
-See the two papers about the Checker Framework, described above.
-
-\item[Locking (Chapter~\ref{lock-checker})]
-``Locking discipline inference and checking'' (ICSE 2016,
-\myurl{https://homes.cs.washington.edu/~mernst/pubs/locking-inference-checking-icse2016-abstract.html})
-describes the Lock Checker.
-
-\item[Fake enumerations, type aliases, and typedefs (Chapter~\ref{fenum-checker})]
-See the ICSE 2011 paper about the Checker Framework, described above.
-
-\item[Regular expressions (Chapter~\ref{regex-checker})]
-``A type system for regular expressions''~\cite{SpishakDE2012} (FTfJP 2012, \myurl{https://homes.cs.washington.edu/~mernst/pubs/regex-types-ftfjp2012-abstract.html})
-            describes the Regex Checker.
-
-\item[Format Strings (Chapter~\ref{formatter-checker})]
-``A type system for format strings''~\cite{WeitzKSE2014} (ISSTA 2014, \myurl{https://homes.cs.washington.edu/~mernst/pubs/format-string-issta2014-abstract.html})
-            describes the Format String Checker.
-
-\item[Signature strings (Chapter~\ref{signature-checker})]
-See the ICSE 2011 paper about the Checker Framework, described above.
-
-\item[GUI Effects (Chapter~\ref{guieffect-checker})]
-``JavaUI: Effects for controlling UI object access''~\cite{GordonDEG2013} (ECOOP 2013, \myurl{https://homes.cs.washington.edu/~mernst/pubs/gui-thread-ecoop2013-abstract.html})
-            describes the GUI Effect Checker.
-
-\item
-``Verification games: Making verification fun'' (FTfJP 2012, \myurl{https://homes.cs.washington.edu/~mernst/pubs/verigames-ftfjp2012-abstract.html})
-            describes a general inference approach that, at the time, had only been implemented for the Nullness Checker (Section~\ref{nullness-checker}).
-
-\item[Thread locality (Section~\ref{loci-thread-locality-checker})]
-``Loci: Simple thread-locality for Java''~\cite{WrigstadPMZV2009} (ECOOP 2009,
-\myurl{http://janvitek.org/pubs/ecoop09.pdf})
-
-\item[Security (Section~\ref{sparta-checker})]
-``Static analysis of implicit control flow: Resolving Java reflection and
-  Android intents''~\cite{BarrosJMVDdAE2015} (ASE 2015,
-  \myurl{https://homes.cs.washington.edu/~mernst/pubs/implicit-control-flow-ase2015-abstract.html})
-  describes the SPARTA toolset and information flow type-checker.
-
-``Boolean formulas for the static identification of injection attacks in
-  Java''~\cite{ErnstLMSS2015} (LPAR 2015, \myurl{https://homes.cs.washington.edu/~mernst/pubs/detect-injections-lpar2015-abstract.html})
-
-\item[\href{https://ece.uwaterloo.ca/~wdietl/ownership/}{Generic Universe
-    Types} (Section~\ref{gut-checker})]
-``Tunable static inference for Generic Universe Types'' (ECOOP 2011, \myurl{https://homes.cs.washington.edu/~mernst/pubs/tunable-typeinf-ecoop2011-abstract.html})
-            describes inference for the Generic Universe Types type system.
-
-Another implementation of Universe Types and \href{http://www.cs.rpi.edu/~huangw5/cf-inference/}{ownership types} is  described in
-``Inference and checking of object ownership''~\cite{HuangDME2012} (ECOOP 2012, \myurl{https://homes.cs.washington.edu/~mernst/pubs/infer-ownership-ecoop2012-abstract.html}).
-
-\item[Approximate data (Section~\ref{enerj-checker})]
-``EnerJ: Approximate Data Types for Safe and General Low-Power Computation''~\cite{SampsonDFGCG2011} (PLDI 2011, \myurl{https://homes.cs.washington.edu/~luisceze/publications/Enerj-pldi2011.pdf})
-
-\item[Information flow and tainting (Section~\ref{sparta-checker})]
-``Collaborative Verification of Information Flow
-for a High-Assurance App Store''~\cite{ErnstJMDPRKBBHVW2014} (CCS 2014, \myurl{https://homes.cs.washington.edu/~mernst/pubs/infoflow-ccs2014.pdf}) describes the SPARTA information flow type system.
-
-\item[IGJ and OIGJ immutability (Section~\ref{igj-checker})]
-``Object and reference immutability using Java generics''~\cite{ZibinPAAKE2007} (ESEC/FSE 2007, \myurl{https://homes.cs.washington.edu/~mernst/pubs/immutability-generics-fse2007-abstract.html})
-and
-``Ownership and immutability in generic Java''~\cite{ZibinPLAE2010} (OOPSLA 2010, \myurl{https://homes.cs.washington.edu/~mernst/pubs/ownership-immutability-oopsla2010-abstract.html})
-            describe the IGJ and OIGJ immutability type systems.
-For further case studies, also see the ISSTA 2008 paper about the Checker
-Framework, described above.
-
-\item[Javari immutability (Section~\ref{javari-checker})]
-``Javari: Adding reference immutability to Java''~\cite{TschantzE2005} (OOPSLA 2005, \myurl{https://homes.cs.washington.edu/~mernst/pubs/ref-immutability-oopsla2005-abstract.html})
-            describes the Javari type system.
-For inference, see
-``Inference of reference immutability''~\cite{QuinonezTE2008} (ECOOP 2008, \myurl{https://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-ecoop2008-abstract.html})
-and
-``Parameter reference immutability: Formal definition, inference tool, and comparison''~\cite{ArtziQKE2009} (J.ASE 2009, \myurl{https://homes.cs.washington.edu/~mernst/pubs/mutability-jase2009-abstract.html}).
-For further case studies, also see the ISSTA 2008 paper about the Checker
-Framework, described above.
-
-\item[ReIm immutability]
-% TODO:  (Section~\ref{reim-checker})
-``ReIm \& ReImInfer: Checking and inference of reference immutability and method purity''~\cite{HuangMDE2012} (OOPSLA 2012, \myurl{https://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-oopsla2012-abstract.html})
-            describes the ReIm immutability type system.
-
-\end{description}
-
-In addition to these papers that discuss use the Checker Framework
-directly, other academic papers use the Checker Framework in their
-implementation or evaluation.
-Most educational use of the Checker
-Framework is never published, and most commercial use of the Checker
-Framework is never discussed publicly.
-
-(If you know of a paper or other use that is not listed here, please inform
-the Checker Framework developers so we can add it.)
-
-
 \sectionAndLabel{Credits and changelog}{credits}
 
 Differences from previous versions of the checkers and framework can be found
@@ -1074,6 +1014,7 @@ Checker Framework distribution and is also available on the web at
 
 Developers who have contributed code to the Checker Framework include
 \input{contributors.tex}
+
 In addition, too many users to list have provided valuable feedback, which
 has improved the toolset's design and implementation.
 Thanks for your help!
@@ -1086,21 +1027,303 @@ Two different licenses apply to different parts of the Checker Framework.
 \item
 The Checker Framework itself is licensed under the GNU General Public License
 (GPL), version 2, with the classpath exception.
-The GPL is the same license that OpenJDK is licensed
+This is the same license that OpenJDK is licensed
 under.  Just as compiling your code with javac does not infect your code
 with the GPL, type-checking your code with the Checker Framework does not
 infect your code with the GPL\@.  Running the Checker Framework during
-development has no effect on your intellectual property or licensing.  If
-you want to ship the Checker Framework as part of your product, then your
-product must be licensed under the GPL\@.
+development has no effect on your intellectual property or licensing.
+
+If you want to ship the Checker Framework as part of your product, then
+your product may need to be licensed under the GPL\@.  Because of the
+classpath exception, you can include parts of the Checker Framework in your
+product, even if your product uses a different license.  For example,
+Google's \href{https://github.com/google/error-prone}{Error Prone} and
+Uber's \href{https://github.com/uber/NullAway}{NullAway} both use the
+Checker Framework internally, but neither one is licensed under the GPL\@.
+
 \item
 The more permissive MIT License applies
 to code that you might want to include in your own
 program, such as the annotations and run-time utility classes.
 \end{itemize}
+
 \noindent
 For details, see file
-\ahref{https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt}{\<LICENSE.txt>}.
+\href{https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt}{\<LICENSE.txt>}.
+
+
+\sectionAndLabel{Publications}{publications}
+
+Here are some papers that use the Checker Framework;
+for instance, they build a type-checker on top of the Checker Framework, or
+their methodology depends on using the Checker Framework.
+(The list does not include papers that merely cite the Checker Framework.)
+This list is \emph{incomplete}; if you know of a paper that
+is missing, please let us know so that we can add it.
+Most educational use of the Checker Framework is never published, and most
+commercial use of the Checker Framework is never discussed publicly.
+Most of the papers are available for free online; do a web search on the
+title.
+
+\begin{itemize}
+% To populate this list, use 3 searches for "checker framework" (because each one misses some papers):
+% TODO: add searches for citations of some of my papers, such as our two main papers and also tool papers.
+
+% https://dl.acm.org/action/doSearch?AllField=%22checker+framework%22&sortBy=Ppub_asc&expand=all
+% https://scholar.google.com/scholar?q=%22checker+framework%22+or+checkerframework&hl=en&as_sdt=0%2C48&as_ylo=2013&as_yhi=2013
+% https://www.semanticscholar.org/search?year%5B0%5D=2011&year%5B1%5D=2011&fos%5B0%5D=computer-science&q=%22checker%20framework%22&sort=relevance
+
+% 2008
+\item
+  Practical pluggable types for Java (ISSTA 2008)~\cite{PapiACPE2008}
+\item
+  % Tool paper
+  Building and using pluggable type systems with the Checker Framework
+  (ECOOP 2008)~\cite{Ernst2008}
+
+% 2009
+\item
+  Type-Based Object Immutability with Flexible Initialization (ECOOP
+  2009)~\cite{HaackP2009}
+
+% 2010
+\item
+  The nullness analyser of Julia (LPAR 2010)~\cite{Spoto10:LPAR}
+\item
+  Static checking of safety critical Java annotations (JTRES 2010)~\cite{TangPJ2010}
+\item
+  Ownership and immutability in generic Java (OOPSLA 2010)~\cite{ZibinPLAE2010}
+\item
+  Rethinking the economics of software engineering (FOSER 2010)~\cite{SchillerE2010}
+\item
+  Applying uniqueness to the Java language (Master's Thesis, 2010)~\cite{Harper2010}
+\item
+  TIFI+: A Type Checker for Object Immutability with Flexible
+  Initialization (Diploma thesis, 2010)~\cite{Noack2010}
+
+
+% 2011
+\item
+  Building and using pluggable type-checkers (ICSE 2011)~\cite{DietlDEMS2011}
+\item
+  Inference of field initialization (ICSE 2011)~\cite{SpotoE2011}
+\item
+  EnerJ: approximate data types for safe and general low-power computation
+  (PLDI 2011)~\cite{SampsonDFGCG2011}
+\item
+  Tunable static inference for generic universe types (ECOOP 2011)~\cite{DietlEM2011}
+\item
+  Separating ownership topology and encapsulation with generic universe
+  types (TOPLAS 2011)~\cite{DietlDM2011}
+\item
+  The design, implementation and evaluation of a pluggable type checker for
+  thread-locality in Java (Master's Thesis, 2011)~\cite{Sherwany2011}
+\item
+  Towards Effective Inference and Checking of Ownership Types (IWACO 2011)~\cite{HuangM2011}
+\item
+  Static Dominance Inference (TOOLS 2011)~\cite{MilanovaV2011}
+\item
+  A Static Memory Safety Annotation System for Safety Critical Java (RTSS 2011)~\cite{TangPNV2011}
+
+% 2012
+\item
+  Inference and checking of object ownership (ECOOP 2012)~\cite{HuangDME2012}
+\item
+  A type system for regular expressions (FTfJP 2012)~\cite{SpishakDE2012}
+\item
+  Verification games: making verification fun (FTfJP 2012)~\cite{DietlDEMWCPP2012}
+\item
+  Reim \& ReImInfer: checking and inference of reference immutability and
+  method purity (OOPSLA 2012)~\cite{HuangMDE2012}
+\item
+  ReImInfer: method purity inference for Java (FSE 2012)~\cite{HuangM2012}
+\item
+  Inference and checking of context-sensitive pluggable types (FSE 2012)~\cite{MilanovaH2012}
+\item
+  Documenting Java database access with type annotations (WorldComp 2012)~\cite{Bergstein2012}
+
+% 2013
+\item
+  Immutability (book chapter, 2013)~\cite{PotaninOZE2013}
+\item
+  JavaUI: Effects for controlling UI object access (ECOOP 2013)~\cite{GordonDEG2013}
+\item
+  Reified type parameters using Java annotations (GPCE 2013)~\cite{GerakiosBS2013}
+\item
+  Evaluating the Accuracy of Annotations in the Loci 3.0 Pluggable Type
+  Checker (Master's Thesis, 2013)~\cite{Zaza2013}
+\item
+  Composing polymorphic information flow systems with reference
+  immutability (FTfJP 2013)~\cite{MilanovaH2013}
+
+
+% 2014
+\item
+  Type-based taint analysis for Java web applications (FASE 2014)~\cite{HuangDM2014}
+\item
+  A type system for format strings (ISSTA 2014)~\cite{WeitzKSE2014}
+\item
+  Collaborative verification of information flow for a high-assurance app
+  store (CCS 2014)~\cite{ErnstJMDPRKBBHVW2014}
+\item
+  Cascade: A universal type qualifier inference tool (ICSE 2015)~\cite{VakilianPEJ2015}
+\item
+  An inference and checking framework for context-sensitive pluggable types
+  (PhD thesis, 2014)~\cite{Huang2014}
+\item
+  CFL-reachability and context-sensitive integrity types (PPPJ 2014)~\cite{MilanovaHD2014}
+
+
+% 2015
+\item
+  Static analysis of implicit control flow: resolving Java reflection and
+  Android intents (ASE 2015)~\cite{BarrosJMVDdAE2015}
+\item
+  Scalable and Precise Taint Analysis for Android (ISSTA 2015)~\cite{HuangDMD2015}
+\item
+  A context-sensitive security type system for Java (Master's thesis, 2015)~\cite{Kaiser2015}
+
+
+% 2016
+\item
+  Locking discipline inference and checking (ICSE 2016)~\cite{ErnstLMST2016}
+\item
+  Semantics for locking specifications (NFM 2016)~\cite{ErnstMMS2016}
+\item
+  JCrypt: Towards computation over encrypted data (PPPJ 2016)~\cite{DongMD2016:JCrypt}
+\item
+  Preventing signedness errors in numerical computations in Java (FSE
+  2016)~\cite{Mackie2016}
+\item
+  Enforcing correct array indexes with a type system (FSE 2016)~\cite{Santino2016}
+\item
+  Gradual Pluggable Typing in Java (Master's Thesis, 2016)~\cite{Brotherston2016}
+\item
+  Security analysis of the IRMA app using SPARTA and fuzzing (Bachelor
+  Thesis, 2016)~\cite{Brinker2016}
+\item
+  Static Analysis and Program Transformation for Secure Computation on the
+  Cloud (ISSTA 2016 Doctoral Symposium)~\cite{DongMD2016:secure-cloud}
+\item
+  Towards using concurrent Java API correctly (ICECCS 2016)~\cite{LiuBSD2016}
+\item
+  Reflection-aware static analysis of Android apps (ASE 2016)~\cite{LiBOK2016}
+\item
+  A crowdsourcing game for formal software verification (Bachelor's thesis)~\cite{Irini2016}
+\item
+  Exploring Language Support for Immutability (ICSE 2016)~\cite{CoblenzSAMWS2016}
+
+
+% 2017
+\item
+  Granullar: Gradual nullable types for {Java} (CC 2017)~\cite{BrotherstonDL2017}
+\item
+  Type checking for reliable APIs (WAPI 2017)~\cite{KechagiaS2017}
+\item
+  Glacier: transitive class immutability for Java (ICSE 2017)~\cite{CoblenzNAMS2017}
+\item
+  A General Pluggable Type Inference Framework and its use for Data-flow
+  Analysis (Master's Thesis, 2017)~\cite{Li2017}
+\item
+  Null safety benchmarks for object initialization (ISP RAS, 2017)~\cite{Kogtenkov2017}
+\item
+  Static analysis and program transformation for secure computation on the
+  cloud (PhD Thesis, 2017)~\cite{Dong2017}
+\item
+  Spartan Jester: end-to-end information flow control for hybrid Android
+  applications (SPW 2017)~\cite{SextonCN2017}
+
+% DARPA report: Static Program Analysis for Reliable, Trusted Apps
+
+% 2018
+\item
+  Lightweight verification of array indexing (ISSTA 2018)~\cite{KelloggDME2018}
+\item
+  Safe Stream-based Programming with Refinement Types (ASE 2018)~\cite{SteinCSC2018}
+\item
+  Don't miss the end: Preventing unsafe end-of-file comparisons (NFM 2018)~\cite{ChenD2018}
+\item
+  Context sensitive typechecking and inference: ownership and immutability
+  (Master's Thesis, 2018)~\cite{Ta2018}
+\item
+  Usable and Sound Static Analysis through its Integration into Automated
+  and Interactive Workflows (Master's Thesis, 2018)~\cite{Valgma2018}
+\item
+  Pluggable properties for program understanding: Ontic type checking and
+  inference (Master's Thesis, 2018)~\cite{Chen2018}
+\item
+  Definite reference mutability (ECOOP 2018)~\cite{Milanova2018}
+\item
+  Googletest to CUTE converter (Technical report, 2018)~\cite{GschwindV2018}
+
+% Implementierung eines automatischen Refactorings zur Reduzierung von dupliziertem Quellcode
+% https://elib.uni-stuttgart.de/handle/11682/10449
+
+% 2019
+\item
+  NullAway: Practical type-based null safety for Java (ESEC/FSE 2019)~\cite{BanerjeeCS2019}
+\item
+  Compile-time detection of machine image sniping (ASE 2019)~\cite{Kellogg2019}
+\item
+  Type-Directed Bounding of Collections in Reactive Programs (VMCAI 2019)~\cite{LuCCT2019}
+\item
+  Scala with Explicit Nulls (Master's Thesis, 2019)~\cite{NietoRodriguez2019}
+\item
+  A machine-checked proof of security for AWS Key Management Service (CCS, 2019)~\cite{AlmeidaBBCCGPPST2019}
+
+% 2020
+\item
+  Synthesis of assurance cases for software certification (ICSE NIER 2020)~\cite{BagheriKM2020}
+\item
+  Verifying object construction (ICSE 2020)~\cite{KelloggRSSE2020}
+\item
+  Precise inference of expressive units of measurement types (OOPSLA 2020)~\cite{XiangLD2020}
+\item
+  Rethinking safe consistency in distributed object-oriented programming
+  (OOPSLA 2020)~\cite{KohlerEWMS2020}
+\item
+  Continuous compliance (ASE 2020)~\cite{KelloggSTE2020}
+\item
+  Light-weight verification of cryptographic API usage (Master's Thesis, 2020)~\cite{Xing2020}
+\item
+  Type checking and whole-program inference for value range analysis (Master's Thesis, 2020)~\cite{Xiang2020}
+\item
+  User-Centered Design of Principled Programming Languages (PhD thesis, 2020)~\cite{Coblenz2020}
+\item
+  Behavioural types for memory and method safety in a core object-oriented
+  language (APLAS 2020)~\cite{BravettiFGHJKR2020}
+\item
+  Scala with Explicit Nulls (ECOOP 2020)~\cite{NietoZLCP2020}
+
+% 2021
+\item
+  Property Types in {Java}: Combining Type Systems and Deductive Verification
+  (Master's Thesis, 2021)~\cite{Lanzinger2021}
+\item
+  Interval Type Inference: Improvements and Evaluations
+  (Master's Thesis, 2021)~\cite{Wang2021}
+\item
+  Coping with the reality: adding crucial features to a
+  typestate-oriented language (Master's Thesis, 2021)~\cite{daLuzMotaM2021}
+\item
+  Java Typestate Checker (Coordination 2021)~\cite{MotaGR2021}
+\item
+  Ensuring correct cryptographic algorithm and provider usage at compile time
+  (FTfJP 2021)~\cite{XingCD2021}
+\item
+  Scalability and Precision by Combining Expressive Type Systems and
+  Deductive Verification (OOPSLA 2021)~\cite{LanzingerWUD2021}
+\item
+  Automatic Annotation of Confidential Data in Java Code (FPS 2021)~\cite{BastysBRS2021}
+
+% 2022
+\item
+  Accumulation Analysis (ECOOP 2022)~\cite{KelloggSSE2022}
+\item
+  Lightweight Verification via Specialized Typecheckers (PhD thesis, 2022)~\cite{Kellogg2022}
+
+
+\end{itemize}
 
 
 
@@ -1118,7 +1341,7 @@ For details, see file
 %%  LocalWords:  Asumu Takikawa Brotherston McArthur Luo Bayne Coblenz Lai
 %%  LocalWords:  Barros Athaydes Ren Oblak Heule Steph Trask Stalnaker
 %%  LocalWords:  toolset's typechecking LiteralKind reifiable plaintext
-%%  LocalWords:  astub homebrew hevea allTests AatfDoNotCache Java''
+%%  LocalWords:  astub homebrew allTests AatfDoNotCache Java''
 %%  LocalWords:  compileJava typedefs LPAR Tunable OIGJ sudo wanted''
 % LocalWords:  addStandardLiteralQualifiers AprintGitProperties checkers''
 % LocalWords:  expressions'' strings'' access'' intents'' ownership''

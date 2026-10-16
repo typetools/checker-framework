@@ -14,11 +14,10 @@ import java.lang.annotation.Target;
  *
  * <p>The {@code @FieldInvariant} annotation does not currently accommodate type qualifiers with
  * attributes, such as {@code @MinLen(1)}. In this case, the type system should implement its own
- * field invariant annotation and override {@link
- * org.checkerframework.framework.type.AnnotatedTypeFactory#getFieldInvariantDeclarationAnnotations()}
- * and {@link
- * org.checkerframework.framework.type.AnnotatedTypeFactory#getFieldInvariants(javax.lang.model.element.TypeElement)}.
- * See {@link org.checkerframework.common.value.qual.MinLenFieldInvariant} for example.
+ * field invariant annotation and override {@code
+ * AnnotatedTypeFactory.getFieldInvariantDeclarationAnnotations()} and {@code
+ * AnnotatedTypeFactory.getFieldInvariants()}. See {@link
+ * org.checkerframework.common.value.qual.MinLenFieldInvariant} for an example.
  *
  * @checker_framework.manual #field-invariants Field invariants
  */

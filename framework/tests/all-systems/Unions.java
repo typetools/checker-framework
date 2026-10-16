@@ -1,3 +1,4 @@
+@SuppressWarnings("ainfertest") // only check WPI for crashes
 public class Unions {
   void foo1(MyInterface<Throwable> param) throws Throwable {
     try {

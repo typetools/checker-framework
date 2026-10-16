@@ -24,7 +24,6 @@ public class NullnessAssertsTest extends CheckerFrameworkPerDirectoryTest {
         "nullness",
         "-AcheckPurityAnnotations",
         "-AassumeAssertionsAreEnabled",
-        "-Anomsgtext",
         "-Xlint:deprecation",
         "-Alint=soundArrayCreationNullness," + NullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
   }

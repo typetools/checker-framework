@@ -5,7 +5,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedSet;
+import java.util.NavigableSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 
 /**
@@ -21,8 +21,8 @@ public abstract class InitializationChecker extends BaseTypeChecker {
   protected InitializationChecker() {}
 
   @Override
-  public SortedSet<String> getSuppressWarningsPrefixes() {
-    SortedSet<String> result = super.getSuppressWarningsPrefixes();
+  public NavigableSet<String> getSuppressWarningsPrefixes() {
+    NavigableSet<String> result = super.getSuppressWarningsPrefixes();
     // "fbc" is for backward compatibility only.
     // Notes:
     //   * "fbc" suppresses *all* warnings, not just those related to initialization.  See
@@ -36,11 +36,19 @@ public abstract class InitializationChecker extends BaseTypeChecker {
   public static List<VariableTree> getAllFields(ClassTree clazz) {
     List<VariableTree> fields = new ArrayList<>();
     for (Tree t : clazz.getMembers()) {
-      if (t.getKind() == Tree.Kind.VARIABLE) {
-        VariableTree vt = (VariableTree) t;
+      if (t instanceof VariableTree vt) {
         fields.add(vt);
       }
     }
     return fields;
+  }
+
+  @Override
+  protected boolean messageKeyMatches(
+      String messageKey, String messageKeyInSuppressWarningsString) {
+    // Also support the shorter keys used by typetools
+    return super.messageKeyMatches(messageKey, messageKeyInSuppressWarningsString)
+        || super.messageKeyMatches(
+            messageKey.replace(".invalid", ""), messageKeyInSuppressWarningsString);
   }
 }

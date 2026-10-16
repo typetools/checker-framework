@@ -5,7 +5,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.AnnotationMirrorMap;
+import org.checkerframework.javacutil.AnnotationMirrorMap;
 
 /**
  * Default implementation of {@link AbstractQualifierPolymorphism}. The polymorphic qualifiers for a
@@ -35,10 +35,20 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
   @Override
   protected void replace(
       AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirror> replacements) {
+    if (replacements.isEmpty() && type.getAnnotation() != null) {
+      // If the 'replacements' map is empty, it is likely a case where a method with
+      // a varargs parameter was invoked with zero varargs actuals.
+      // In this case, the polymorphic qualifiers should be replaced with the top type in
+      // the qualifier hierarchy, since there is no further information to deduce.
+      AnnotationMirror effectiveAnno = type.getAnnotation();
+      if (qualHierarchy.isPolymorphicQualifier(effectiveAnno)) {
+        replacements.put(effectiveAnno, qualHierarchy.getTopAnnotation(effectiveAnno));
+      }
+    }
     for (Map.Entry<AnnotationMirror, AnnotationMirror> pqentry : replacements.entrySet()) {
       AnnotationMirror poly = pqentry.getKey();
-      if (type.hasAnnotation(poly)) {
-        type.removeAnnotation(poly);
+      if (type.hasPrimaryAnnotation(poly)) {
+        type.removePrimaryAnnotation(poly);
         AnnotationMirror qual;
         if (polyInstantiationForQualifierParameter.containsKey(poly)) {
           qual = polyInstantiationForQualifierParameter.get(poly);
@@ -50,7 +60,11 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
     }
   }
 
-  /** Combines the two annotations using the least upper bound. */
+  /**
+   * This implementation combines the two annotations using the least upper bound.
+   *
+   * <p>{@inheritDoc}
+   */
   @Override
   protected AnnotationMirror combine(
       AnnotationMirror polyQual, AnnotationMirror a1, AnnotationMirror a2) {
@@ -59,6 +73,6 @@ public class DefaultQualifierPolymorphism extends AbstractQualifierPolymorphism 
     } else if (a2 == null) {
       return a1;
     }
-    return qualHierarchy.leastUpperBound(a1, a2);
+    return qualHierarchy.leastUpperBoundQualifiersOnly(a1, a2);
   }
 }

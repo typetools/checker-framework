@@ -23,22 +23,22 @@ public class ChainAssignment {
   }
 
   void n1() {
-    // :: error: (assignment)
+    // :: error: [assignment]
     x = y = null;
   }
 
   void n2() {
-    // :: error: (assignment)
+    // :: error: [assignment]
     this.x = this.y = null;
   }
 
   void n3() {
-    // :: error: (assignment)
+    // :: error: [assignment]
     x = this.y = null;
   }
 
   void n4() {
-    // :: error: (assignment)
+    // :: error: [assignment]
     this.x = y = null;
   }
 }

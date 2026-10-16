@@ -1,0 +1,15 @@
+/*
+ * @test
+ * @summary Test -AwarnUnneededSuppressions
+ *
+ * @compile/ref=UnneededSuppressionsClassUnprefixedRequirePrefix.goal -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AwarnUnneededSuppressions -ArequirePrefixInWarningSuppressions UnneededSuppressionsClassUnprefixedRequirePrefix.java
+ */
+
+@SuppressWarnings("unneeded.suppression")
+class UnneededSuppressionsClassUnprefixedRequirePrefix {
+
+  @SuppressWarnings("nullness:return")
+  public String getClassAndUid0() {
+    return "hello";
+  }
+}

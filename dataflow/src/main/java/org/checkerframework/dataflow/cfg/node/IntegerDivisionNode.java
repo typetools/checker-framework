@@ -1,7 +1,7 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -14,9 +14,16 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class IntegerDivisionNode extends BinaryOperationNode {
 
+  /**
+   * Constructs an {@link IntegerDivisionNode}.
+   *
+   * @param tree the binary tree
+   * @param left the left operand
+   * @param right the right operand
+   */
   public IntegerDivisionNode(BinaryTree tree, Node left, Node right) {
     super(tree, left, right);
-    assert tree.getKind() == Kind.DIVIDE;
+    assert tree.getKind() == Tree.Kind.DIVIDE;
   }
 
   @Override
@@ -31,10 +38,9 @@ public class IntegerDivisionNode extends BinaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof IntegerDivisionNode)) {
+    if (!(obj instanceof IntegerDivisionNode other)) {
       return false;
     }
-    IntegerDivisionNode other = (IntegerDivisionNode) obj;
     return getLeftOperand().equals(other.getLeftOperand())
         && getRightOperand().equals(other.getRightOperand());
   }

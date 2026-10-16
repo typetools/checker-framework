@@ -1,18 +1,51 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#"
-  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg"
-  xmlns="http://www.w3.org/2000/svg" width="860" height="410" viewBox="-2 -2 1205 565"
-  version="1.1">
-  <metadata id="metadata84">
+<svg
+   width="1030"
+   height="410"
+   viewBox="-2 -2 1443.1977 565"
+   version="1.1"
+   id="svg199"
+   sodipodi:docname="value-subtyping.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview201"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="1.6069767"
+     inkscape:cx="432.17801"
+     inkscape:cy="205.04342"
+     inkscape:window-width="2560"
+     inkscape:window-height="1536"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg199" />
+  <metadata
+     id="metadata84">
     <rdf:RDF>
-      <cc:Work rdf:about="">
+      <cc:Work
+         rdf:about="">
         <dc:format>image/svg+xml</dc:format>
-        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
       </cc:Work>
     </rdf:RDF>
   </metadata>
-  <style type="text/css">
+  <style
+     type="text/css"
+     id="style3">
     rect{
     fill:#fff;
     stroke:#000;
@@ -43,152 +76,571 @@
     stroke:#808080;
     }
   </style>
-  <defs>
-    <marker id="arrow" orient="auto" markerWidth="5"
-      markerHeight="5" refY="2.5" refX="0">
-      <path style="fill:#000;" d="M5,0 L0,2.5 L5,5" />
+  <defs
+     id="defs8">
+    <marker
+       id="arrow"
+       orient="auto"
+       markerWidth="5"
+       markerHeight="5"
+       refY="2.5"
+       refX="0">
+      <path
+         style="fill:#000000"
+         d="M 5,0 0,2.5 5,5"
+         id="path5" />
+    </marker>
+    <marker
+       id="arrow-3"
+       orient="auto"
+       markerWidth="5"
+       markerHeight="5"
+       refY="2.5"
+       refX="0">
+      <path
+         style="fill:#000000"
+         d="M 5,0 0,2.5 5,5"
+         id="path5-6" />
+    </marker>
+    <marker
+       id="marker251"
+       orient="auto"
+       markerWidth="5"
+       markerHeight="5"
+       refY="2.5"
+       refX="0">
+      <path
+         style="fill:#000000"
+         d="M 5,0 0,2.5 5,5"
+         id="path249" />
+    </marker>
+    <marker
+       id="arrow-2"
+       orient="auto"
+       markerWidth="5"
+       markerHeight="5"
+       refY="2.5"
+       refX="0">
+      <path
+         style="fill:#000000"
+         d="M 5,0 0,2.5 5,5"
+         id="path5-7" />
+    </marker>
+    <marker
+       id="arrow-9"
+       orient="auto"
+       markerWidth="5"
+       markerHeight="5"
+       refY="2.5"
+       refX="0">
+      <path
+         style="fill:#000000"
+         d="M 5,0 0,2.5 5,5"
+         id="path5-3" />
     </marker>
   </defs>
-  <g id="value-subtyping">
-    <g id="sub-top">
-      <rect x="510" y="0" width="130" height="40" class="gray" />
-      <text x="575" y="24.10753822px" class="gray">@UnknownVal</text>
+  <g
+     id="value-subtyping"
+     transform="translate(78.465126)">
+    <g
+       id="sub-top">
+      <rect
+         x="510"
+         y="0"
+         width="130"
+         height="40"
+         class="gray"
+         id="rect10" />
+      <text
+         x="575"
+         y="24.107538"
+         class="gray"
+         id="text12">@UnknownVal</text>
     </g>
-    <g id="sub-intval">
-      <rect x="350" y="90" width="130" height="40" />
-      <text x="415" y="114.10753822px">@IntVal(long[])</text>
+    <g
+       id="sub-intval">
+      <rect
+         x="350"
+         y="90"
+         width="130"
+         height="40"
+         id="rect15" />
+      <text
+         x="415"
+         y="114.10754"
+         id="text17">@IntVal(long[])</text>
     </g>
-    <g id="sub-intrange">
-      <rect x="170" y="90" width="170" height="40" />
-      <text x="255" y="114.10753822px">@IntRange(long,long)</text>
+    <g
+       id="sub-intrange">
+      <rect
+         x="170"
+         y="90"
+         width="170"
+         height="40"
+         id="rect20" />
+      <text
+         x="255"
+         y="114.10754"
+         id="text22">@IntRange(long,long)</text>
     </g>
-    <g id="sub-doubleval">
-      <rect x="490" y="90" width="170" height="40" />
-      <text x="575" y="114.10753822px">@DoubleVal(double[])</text>
+    <g
+       id="sub-doubleval">
+      <rect
+         x="490"
+         y="90"
+         width="170"
+         height="40"
+         id="rect25" />
+      <text
+         x="575"
+         y="114.10754"
+         id="text27">@DoubleVal(double[])</text>
     </g>
-    <g id="sub-boolval">
-      <rect x="0" y="90" width="160" height="40" />
-      <text x="80" y="114.10753822px">@BoolVal(boolean[])</text>
+    <g
+       id="sub-boolval">
+      <rect
+         x="0"
+         y="90"
+         width="160"
+         height="40"
+         id="rect30" />
+      <text
+         x="80"
+         y="114.10754"
+         id="text32">@BoolVal(boolean[])</text>
     </g>
-    <g id="sub-stringval">
-      <rect x="670" y="90" width="170" height="40" />
-      <text x="755" y="114.10753822px">@StringVal(String[])</text>
+    <g
+       id="sub-stringval">
+      <rect
+         x="670"
+         y="90"
+         width="170"
+         height="40"
+         id="rect35" />
+      <text
+         x="755"
+         y="114.10754"
+         id="text37">@StringVal(String[])</text>
     </g>
-    <g id="sub-arraylen">
-      <rect x="850" y="90" width="140" height="40" />
-      <text x="920" y="114.10753822px">@ArrayLen(int[])</text>
+    <g
+       id="sub-arraylen">
+      <rect
+         x="850"
+         y="90"
+         width="140"
+         height="40"
+         id="rect40" />
+      <text
+         x="920"
+         y="114.10754"
+         id="text42">@ArrayLen(int[])</text>
     </g>
-    <g id="sub-arraylenrange">
-      <rect x="1000" y="90" width="200" height="40" />
-      <text x="1100" y="114.10753822px">@ArrayLenRange(int,int)</text>
+    <g
+       id="sub-arraylenrange">
+      <rect
+         x="1000"
+         y="90"
+         width="200"
+         height="40"
+         id="rect45" />
+      <text
+         x="1100"
+         y="114.10754"
+         id="text47">@ArrayLenRange(int,int)</text>
     </g>
-    <g id="sub-bot">
-      <rect x="510" y="180" width="130" height="40" class="gray" />
-      <text x="575" y="204.10753822px" class="gray">@BottomVal</text>
+    <g
+       id="sub-bot">
+      <rect
+         x="510"
+         y="180"
+         width="130"
+         height="40"
+         class="gray"
+         id="rect50" />
+      <text
+         x="575"
+         y="204.10754"
+         class="gray"
+         id="text52">@BottomVal</text>
     </g>
-    <polyline points="575,40 575,90" />
-    <polyline points="575,65 80,65 80,90" class="noarrow" />
-    <polyline points="575,65 1100,65 1100,90" class="noarrow" />
-    <polyline points="255,65 255,90" class="noarrow" />
-    <polyline points="415,65 415,90" class="noarrow" />
-    <polyline points="755,65 755,90" class="noarrow" />
-    <polyline points="920,65 920,90" class="noarrow" />
-
-    <polyline points="575,130 575,180" />
-    <polyline points="80,130 80,155 575,155" />
-    <polyline points="1100,130 1100,155 570,155" />
-    <polyline points="255,130 255,155" />
-    <polyline points="415,130 415,155" />
-    <polyline points="755,130 755,155" />
-    <polyline points="920,130 920,155" />
+    <polyline
+       points="575,40 575,90"
+       id="polyline55" />
+    <polyline
+       points="575,65 80,65 80,90"
+       class="noarrow"
+       id="polyline57" />
+    <polyline
+       points="575,65 1100,65 1100,90"
+       class="noarrow"
+       id="polyline59" />
+    <polyline
+       points="255,65 255,90"
+       class="noarrow"
+       id="polyline61" />
+    <polyline
+       points="415,65 415,90"
+       class="noarrow"
+       id="polyline63" />
+    <polyline
+       points="755,65 755,90"
+       class="noarrow"
+       id="polyline65" />
+    <polyline
+       points="920,65 920,90"
+       class="noarrow"
+       id="polyline67" />
+    <polyline
+       points="575,130 575,180"
+       id="polyline69" />
+    <polyline
+       points="80,130 80,155 575,155"
+       id="polyline71" />
+    <polyline
+       points="1100,130 1100,155 570,155"
+       id="polyline73" />
+    <polyline
+       points="255,130 255,155"
+       id="polyline75" />
+    <polyline
+       points="415,130 415,155"
+       id="polyline77" />
+    <polyline
+       points="755,130 755,155"
+       id="polyline79" />
+    <polyline
+       points="920,130 920,155"
+       id="polyline81" />
   </g>
-  <g id="numeric-subtyping">
-    <g id="num-int-range-0-200">
-      <rect x="35" y="240" width="200" height="40" />
-      <text x="135" y="264.10753822px">@IntRange(from=0,to=200)</text>
-    </g>
-    <g id="num-int-1">
-      <rect x="310" y="400" width="130" height="40" />
-      <text x="375" y="424.10753822px">@IntVal(1)</text>
-    </g>
-    <g id="num-int-1-2">
-      <rect x="310" y="320" width="130" height="40" />
-      <text x="375" y="344.10753822px">@IntVal({1,2})</text>
-    </g>
-    <g id="num-int-range-0-1">
-      <rect x="35" y="320" width="200" height="40" />
-      <text x="135" y="344.10753822px">@IntRange(from=0,to=1)</text>
-    </g>
-    <g id="num-double-1">
-      <rect x="490" y="320" width="130" height="40" />
-      <text x="555" y="344.10753822px">@DoubleVal(1.0)</text>
-    </g>
-    <g id="num-double-0-2">
-      <rect x="270" y="240" width="210" height="40" />
-      <text x="375" y="264.10753822px">@DoubleVal({0.0,1.0,2.0})</text>
-    </g>
-
-    <polyline points="135,280 135,320" />
-    <polyline points="375,280 375,320" />
-    <polyline points="375,360 375,400" />
-
-    <polyline points="195,280 315,320" />
-    <polyline points="315,280 195,320" />
-    <polyline points="435,280 555,320" />
-    <polyline points="195,360 315,400" />
-    <polyline points="555,360 435,400" />
-
+  <g
+     id="num-int-range-0-200"
+     transform="translate(-33.62791)">
+    <rect
+       x="35"
+       y="240"
+       width="200"
+       height="40"
+       id="rect84" />
+    <text
+       x="135"
+       y="264.10754"
+       id="text86">@IntRange(from=0,to=200)</text>
   </g>
-  <g id="array-subtyping">
-    <g id="string-a">
-      <rect x="800" y="520" width="130" height="40" />
-      <text x="865" y="544.10753822px">@StringVal("a")</text>
-    </g>
-    <g id="string-a-aa">
-      <rect x="650" y="450" width="190" height="40" />
-      <text x="745" y="474.10753822px">@StringVal({"a","aa"})</text>
-    </g>
-    <g id="string-a-b">
-      <rect x="895" y="450" width="180" height="40" />
-      <text x="985" y="474.10753822px">@StringVal({"a","b"})</text>
-    </g>
-    <g id="string-a-aa-b">
-      <rect x="755" y="380" width="220" height="40" />
-      <text x="865" y="404.10753822px">@StringVal({"a","aa","b"})</text>
-    </g>
-    <g id="matches-regex-a-star">
-      <rect x="650" y="320" width="170" height="40" />
-      <text x="740" y="344.10753822px">@MatchesRegex("a*")</text>
-    </g>
-    <g id="matches-regex-a-star-b-star">
-      <rect x="630" y="240" width="230" height="40" />
-      <text x="745" y="264.10753822px">@MatchesRegex({"a*", "b*"})</text>
-    </g>
-
-    <g id="arraylen-1">
-      <rect x="1040" y="380" width="130" height="40" />
-      <text x="1105" y="404.10753822px">@ArrayLen(1)</text>
-    </g>
-    <g id="arraylen-1-2">
-      <rect x="915" y="310" width="140" height="40" />
-      <text x="985" y="334.10753822px">@ArrayLen({1,2})</text>
-    </g>
-    <g id="arraylenrange">
-      <rect x="895" y="240" width="180" height="40" />
-      <text x="985" y="264.10753822px">@ArrayLenRange(0,200)</text>
-    </g>
-
-    <polyline points="985,280 985,310" />
-    <polyline points="1015,350 1075,380" />
-    <polyline points="955,350 895,380" />
-    <polyline points="835,420 775,450" />
-    <polyline points="895,420 955,450" />
-    <polyline points="1075,420 1015,450" />
-    <polyline points="955,490 895,520" />
-    <polyline points="775,490 835,520" />
-    <polyline points="720,360 720,450" />
-    <polyline points="720,280 720,320" />
-    <polyline points="820,280 870,380" />
-
+  <g
+     id="num-int-1"
+     transform="translate(-33.62791)">
+    <rect
+       x="310"
+       y="400"
+       width="130"
+       height="40"
+       id="rect89" />
+    <text
+       x="375"
+       y="424.10754"
+       id="text91">@IntVal(1)</text>
   </g>
+  <g
+     id="num-int-1-2"
+     transform="translate(-33.62791)">
+    <rect
+       x="310"
+       y="320"
+       width="130"
+       height="40"
+       id="rect94" />
+    <text
+       x="375"
+       y="344.10754"
+       id="text96">@IntVal({1,2})</text>
+  </g>
+  <g
+     id="num-int-range-0-1"
+     transform="translate(-33.62791)">
+    <rect
+       x="35"
+       y="320"
+       width="200"
+       height="40"
+       id="rect99" />
+    <text
+       x="135"
+       y="344.10754"
+       id="text101">@IntRange(from=0,to=1)</text>
+  </g>
+  <rect
+     x="439.55807"
+     y="320"
+     width="130"
+     height="40"
+     id="rect104" />
+  <text
+     x="504.55814"
+     y="344.10754"
+     id="text106">@DoubleVal(1.0)</text>
+  <g
+     id="num-double-0-2"
+     transform="translate(-33.62791)">
+    <rect
+       x="270"
+       y="240"
+       width="210"
+       height="40"
+       id="rect109" />
+    <text
+       x="375"
+       y="264.10754"
+       id="text111">@DoubleVal({0.0,1.0,2.0})</text>
+  </g>
+  <polyline
+     points="135,280 135,320"
+     id="polyline114"
+     transform="translate(-33.62791)" />
+  <polyline
+     points="375,280 375,320"
+     id="polyline116"
+     transform="translate(-33.62791)" />
+  <polyline
+     points="375,360 375,400"
+     id="polyline118"
+     transform="translate(-33.62791)" />
+  <polyline
+     points="195,280 315,320"
+     id="polyline120"
+     transform="translate(-33.62791)" />
+  <polyline
+     points="315,280 195,320"
+     id="polyline122"
+     transform="translate(-33.62791)" />
+  <polyline
+     points="435,280 555,320"
+     id="polyline124"
+     transform="translate(-33.62791)" />
+  <polyline
+     points="195,360 315,400"
+     id="polyline126"
+     transform="translate(-33.62791)" />
+  <polyline
+     points="555,360 435,400"
+     id="polyline128"
+     transform="translate(-33.62791)" />
+  <g
+     id="string-a"
+     transform="translate(299.84916)">
+    <rect
+       x="800"
+       y="520"
+       width="130"
+       height="40"
+       id="rect131" />
+    <text
+       x="865"
+       y="544.10754"
+       id="text133">@StringVal(&quot;a&quot;)</text>
+  </g>
+  <g
+     id="string-a-aa"
+     transform="translate(299.84916)">
+    <rect
+       x="650"
+       y="450"
+       width="190"
+       height="40"
+       id="rect136" />
+    <text
+       x="745"
+       y="474.10754"
+       id="text138">@StringVal({&quot;a&quot;,&quot;aa&quot;})</text>
+  </g>
+  <g
+     id="string-a-b"
+     transform="translate(299.84916)">
+    <rect
+       x="895"
+       y="450"
+       width="180"
+       height="40"
+       id="rect141" />
+    <text
+       x="985"
+       y="474.10754"
+       id="text143">@StringVal({&quot;a&quot;,&quot;b&quot;})</text>
+  </g>
+  <g
+     id="string-a-aa-b"
+     transform="translate(299.84916)">
+    <rect
+       x="755"
+       y="380"
+       width="220"
+       height="40"
+       id="rect146" />
+    <text
+       x="865"
+       y="404.10754"
+       id="text148">@StringVal({&quot;a&quot;,&quot;aa&quot;,&quot;b&quot;})</text>
+  </g>
+  <g
+     id="matches-regex-a-star"
+     transform="translate(299.84916)">
+    <rect
+       x="650"
+       y="320"
+       width="170"
+       height="40"
+       id="rect151" />
+    <text
+       x="740"
+       y="344.10754"
+       id="text153">@MatchesRegex(&quot;a*&quot;)</text>
+  </g>
+  <g
+     id="matches-regex-a-star-b-star"
+     transform="translate(299.84916)">
+    <rect
+       x="630"
+       y="240"
+       width="230"
+       height="40"
+       id="rect156" />
+    <text
+       x="745"
+       y="264.10754"
+       id="text158">@MatchesRegex({&quot;a*&quot;, &quot;b*&quot;})</text>
+  </g>
+  <g
+     id="arraylen-1"
+     transform="translate(257.81421)">
+    <rect
+       x="1040"
+       y="380"
+       width="130"
+       height="40"
+       id="rect161" />
+    <text
+       x="1105"
+       y="404.10754"
+       id="text163">@ArrayLen(1)</text>
+  </g>
+  <g
+     id="arraylen-1-2"
+     transform="translate(299.84916)">
+    <rect
+       x="915"
+       y="310"
+       width="140"
+       height="40"
+       id="rect166" />
+    <text
+       x="985"
+       y="334.10754"
+       id="text168">@ArrayLen({1,2})</text>
+  </g>
+  <g
+     id="arraylenrange"
+     transform="translate(299.84916)">
+    <rect
+       x="895"
+       y="240"
+       width="180"
+       height="40"
+       id="rect171" />
+    <text
+       x="985"
+       y="264.10754"
+       id="text173">@ArrayLenRange(0,200)</text>
+  </g>
+  <polyline
+     points="985,280 985,310"
+     id="polyline176"
+     transform="translate(299.84916)" />
+  <polyline
+     points="1015,350 1075,380"
+     id="polyline178"
+     transform="translate(299.84916)" />
+  <polyline
+     points="955,350 895,380"
+     id="polyline180"
+     transform="translate(299.84916)" />
+  <polyline
+     points="835,420 775,450"
+     id="polyline182"
+     transform="translate(299.84916)" />
+  <polyline
+     points="895,420 955,450"
+     id="polyline184"
+     transform="translate(299.84916)" />
+  <polyline
+     points="1075,420 1015,450"
+     id="polyline186"
+     transform="translate(299.84916)" />
+  <polyline
+     points="955,490 895,520"
+     id="polyline188"
+     transform="translate(299.84916)" />
+  <polyline
+     points="775,490 835,520"
+     id="polyline190"
+     transform="translate(299.84916)" />
+  <polyline
+     points="720,360 720,450"
+     id="polyline192"
+     transform="translate(299.84916)" />
+  <rect
+     x="680.09961"
+     y="447.83698"
+     width="190"
+     height="40"
+     id="rect136-0" />
+  <text
+     x="775.09961"
+     y="471.94452"
+     id="text138-6">@StringVal({&quot;c&quot;,&quot;cc&quot;})</text>
+  <polyline
+     points="720,360 720,450"
+     id="polyline192-2"
+     transform="translate(30.09959,-2.1630304)"
+     style="fill:none;stroke:#000000;stroke-width:3.2;stroke-dasharray:0, 5, 1000;marker-start:url(#arrow-9)" />
+  <polyline
+     points="720,280 720,320"
+     id="polyline194"
+     transform="translate(299.84916)" />
+  <polyline
+     points="820,280 870,380"
+     id="polyline196"
+     transform="translate(299.84916)" />
+  <g
+     id="matches-regex-a-star-7"
+     transform="translate(-13.003633,-1.788207)">
+    <rect
+       x="639.08496"
+       y="320.16492"
+       width="280.79279"
+       height="39.670177"
+       id="rect151-5" />
+    <text
+       x="782.03461"
+       y="344.10754"
+       id="text153-3">@DoesNotMatchRegex({&quot;a*&quot;,&quot;b*&quot;}))</text>
+  </g>
+  <rect
+     x="678.64709"
+     y="238.21179"
+     width="230"
+     height="40"
+     id="rect156-6" />
+  <text
+     x="793.64709"
+     y="262.31934"
+     id="text158-2">@DoesNotMatchRegex({&quot;b*&quot;})</text>
+  <polyline
+     points="720,280 720,320"
+     id="polyline194-9"
+     transform="translate(29.031255,-1.788207)"
+     style="fill:none;stroke:#000000;stroke-width:3.2;stroke-dasharray:0, 5, 1000;marker-start:url(#arrow-3)" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:3.20026;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#arrow-2)"
+     d="M 891.19251,279.37975 984.8836,447.7049"
+     id="path17328"
+     sodipodi:nodetypes="cc" />
 </svg>

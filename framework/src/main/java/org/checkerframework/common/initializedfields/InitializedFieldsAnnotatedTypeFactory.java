@@ -1,38 +1,32 @@
 package org.checkerframework.common.initializedfields;
 
 import com.sun.source.tree.VariableTree;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Options;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.common.accumulation.AccumulationAnalysis;
 import org.checkerframework.common.accumulation.AccumulationAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.initializedfields.qual.EnsuresInitializedFields;
 import org.checkerframework.common.initializedfields.qual.InitializedFields;
 import org.checkerframework.common.initializedfields.qual.InitializedFieldsBottom;
+import org.checkerframework.framework.source.SourceChecker;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.ContractsFromMethod;
 import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.UserError;
 
@@ -43,26 +37,34 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
    * The type factories that determine whether the default value is consistent with the annotated
    * type. If empty, warn about all uninitialized fields.
    */
-  List<GenericAnnotatedTypeFactory<?, ?, ?, ?>> defaultValueAtypeFactories;
+  private final List<GenericAnnotatedTypeFactory<?, ?, ?, ?>> defaultValueAtypeFactories;
 
   /**
    * Creates a new InitializedFieldsAnnotatedTypeFactory.
    *
    * @param checker the checker
    */
+  @SuppressWarnings("this-escape")
   public InitializedFieldsAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, InitializedFields.class, InitializedFieldsBottom.class);
 
-    String[] checkerNames = getCheckerNames();
+    List<String> checkerNames = getCheckerNames();
 
-    defaultValueAtypeFactories = new ArrayList<>();
+    // There are usually few subcheckers.
+    defaultValueAtypeFactories = new ArrayList<>(2);
     for (String checkerName : checkerNames) {
       if (checkerName.equals(InitializedFieldsChecker.class.getCanonicalName())) {
         continue;
       }
       @SuppressWarnings("signature:argument") // -processor is a binary name
-      GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = getTypeFactory(checkerName);
+      GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = createTypeFactoryForProcessor(checkerName);
       if (atf != null) {
+        // Add all the subcheckers so that default values are checked for the subcheckers.
+        for (SourceChecker subchecker : atf.getChecker().getSubcheckers()) {
+          if (subchecker instanceof BaseTypeChecker btc) {
+            defaultValueAtypeFactories.add(btc.getTypeFactory());
+          }
+        }
         defaultValueAtypeFactories.add(atf);
       }
     }
@@ -71,40 +73,14 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
   }
 
   /**
-   * Returns the names of the annotation processors that are being run.
-   *
-   * @return the names of the annotation processors that are being run
-   */
-  @SuppressWarnings("JdkObsolete") // ClassLoader.getResources returns an Enumeration
-  private String[] getCheckerNames() {
-    Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
-    String processorArg = Options.instance(context).get("-processor");
-    if (processorArg != null) {
-      return processorArg.split(",");
-    }
-    try {
-      String filename = "META-INF/services/javax.annotation.processing.Processor";
-      List<String> lines = new ArrayList<>();
-      Enumeration<URL> urls = getClass().getClassLoader().getResources(filename);
-      while (urls.hasMoreElements()) {
-        URL url = urls.nextElement();
-        BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
-        lines.addAll(in.lines().collect(Collectors.toList()));
-      }
-      String[] result = lines.toArray(new String[0]);
-      return result;
-    } catch (IOException e) {
-      throw new BugInCF(e);
-    }
-  }
-
-  /**
-   * Returns the type factory for the given annotation processor, if it is type-checker.
+   * Creates a new type factory for the given annotation processor, if it is a type-checker. This
+   * does NOT return an existing type factory.
    *
    * @param processorName the fully-qualified class name of an annotation processor
    * @return the type factory for the given annotation processor, or null if it's not a checker
    */
-  GenericAnnotatedTypeFactory<?, ?, ?, ?> getTypeFactory(@BinaryName String processorName) {
+  private @Nullable GenericAnnotatedTypeFactory<?, ?, ?, ?> createTypeFactoryForProcessor(
+      @BinaryName String processorName) {
     try {
       Class<?> checkerClass = Class.forName(processorName);
       if (!BaseTypeChecker.class.isAssignableFrom(checkerClass)) {
@@ -135,11 +111,14 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
     return new InitializedFieldsContractsFromMethod(this);
   }
 
+  /** An array consisting only of the string "this". */
+  private static final String[] thisStringArray = new String[] {"this"};
+
   /**
    * A subclass of ContractsFromMethod that adds a postcondition contract to each constructor,
    * requiring that it initializes all fields.
    */
-  private class InitializedFieldsContractsFromMethod extends ContractsFromMethod {
+  public class InitializedFieldsContractsFromMethod extends ContractsFromMethod {
     /**
      * Creates an InitializedFieldsContractsFromMethod for the given factory.
      *
@@ -174,7 +153,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
             {
               AnnotationBuilder builder =
                   new AnnotationBuilder(processingEnv, EnsuresInitializedFields.class);
-              builder.setValue("value", new String[] {"this"});
+              builder.setValue("value", thisStringArray);
               builder.setValue("fields", fieldsToInitialize);
               ensuresAnno = builder.build();
             }
@@ -209,7 +188,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
    */
   // It is a bit wasteful that this is recomputed for each constructor.
   private String[] fieldsToInitialize(TypeElement type) {
-    List<String> result = new ArrayList<String>();
+    List<String> result = new ArrayList<>();
 
     for (Element member : type.getEnclosedElements()) {
 
@@ -232,11 +211,11 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
       }
     }
 
-    return result.toArray(new String[result.size()]);
+    return result.toArray(new String[0]);
   }
 
   /**
-   * Returns true if the default field value (0, false, or null) is consistent with the field's
+   * Returns true if the default field value (0, 0.0, false, or null) is consistent with the field's
    * declared type.
    *
    * @param field a field
@@ -250,7 +229,12 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
     for (GenericAnnotatedTypeFactory<?, ?, ?, ?> defaultValueAtypeFactory :
         defaultValueAtypeFactories) {
       defaultValueAtypeFactory.setRoot(root);
-
+      // Set the root on all the subcheckers, too.
+      for (SourceChecker subchecker : defaultValueAtypeFactory.getChecker().getSubcheckers()) {
+        AnnotatedTypeFactory subATF =
+            defaultValueAtypeFactory.getTypeFactoryOfSubchecker(subchecker.getClass());
+        subATF.setRoot(root);
+      }
       AnnotatedTypeMirror fieldType = defaultValueAtypeFactory.getAnnotatedType(field);
       AnnotatedTypeMirror defaultValueType =
           defaultValueAtypeFactory.getDefaultValueAnnotatedType(fieldType.getUnderlyingType());
@@ -260,5 +244,11 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
     }
 
     return true;
+  }
+
+  // Overridden because there is no InitializedFieldsAnalysis.
+  @Override
+  protected AccumulationAnalysis createFlowAnalysis() {
+    return new AccumulationAnalysis(this.getChecker(), this);
   }
 }

@@ -2,26 +2,37 @@ package org.checkerframework.dataflow.util;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.Pure.Kind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.AnnotationProvider;
-import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -31,11 +42,22 @@ import org.checkerframework.javacutil.TreeUtils;
  * org.checkerframework.dataflow.qual.Pure}) of a statement or expression. The entry point is method
  * {@link #checkPurity}.
  *
+ * <p>This class does not check {@link org.checkerframework.dataflow.qual.SideEffectsOnly}, which is
+ * the other purity annotation. Verifying {@code @SideEffectsOnly} requires parsing the Java
+ * expressions in the annotation and viewpoint-adapting them at each call site, which this module
+ * cannot do. {@code org.checkerframework.common.basetype.DisallowedSideEffects}, which {@code
+ * BaseTypeVisitor} calls, checks {@code @SideEffectsOnly}.
+ *
  * @see SideEffectFree
  * @see Deterministic
  * @see Pure
  */
-public class PurityChecker {
+public final class PurityChecker {
+
+  /** Do not instantiate. */
+  private PurityChecker() {
+    throw new Error("Do not instantiate");
+  }
 
   /**
    * Compute whether the given statement is side-effect-free, deterministic, or both. Returns a
@@ -45,6 +67,7 @@ public class PurityChecker {
    * @param annoProvider the annotation provider
    * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
    * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
+   * @param assumePureGetters true if all getter methods should be assumed to be @Pure
    * @return information about whether the given statement is side-effect-free, deterministic, or
    *     both
    */
@@ -52,10 +75,45 @@ public class PurityChecker {
       TreePath statement,
       AnnotationProvider annoProvider,
       boolean assumeSideEffectFree,
-      boolean assumeDeterministic) {
+      boolean assumeDeterministic,
+      boolean assumePureGetters) {
+    return checkPurity(
+        Collections.singletonList(statement),
+        annoProvider,
+        assumeSideEffectFree,
+        assumeDeterministic,
+        assumePureGetters);
+  }
+
+  /**
+   * Compute whether the given statements, taken together, are side-effect-free, deterministic, or
+   * both. Returns a result that can be queried.
+   *
+   * <p>Use this rather than calling {@link #checkPurity(TreePath, AnnotationProvider, boolean,
+   * boolean, boolean)} once per statement, for code that runs as a unit but is not contiguous in
+   * the source code: a constructor together with the instance initializers that run as part of it,
+   * for example.
+   *
+   * @param statements the statements to check
+   * @param annoProvider the annotation provider
+   * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
+   * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
+   * @param assumePureGetters true if all getter methods should be assumed to be @Pure
+   * @return information about whether the given statements are side-effect-free, deterministic, or
+   *     both
+   */
+  public static PurityResult checkPurity(
+      List<TreePath> statements,
+      AnnotationProvider annoProvider,
+      boolean assumeSideEffectFree,
+      boolean assumeDeterministic,
+      boolean assumePureGetters) {
     PurityCheckerHelper helper =
-        new PurityCheckerHelper(annoProvider, assumeSideEffectFree, assumeDeterministic);
-    helper.scan(statement, null);
+        new PurityCheckerHelper(
+            annoProvider, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
+    for (TreePath statement : statements) {
+      helper.scan(statement, null);
+    }
     return helper.purityResult;
   }
 
@@ -65,27 +123,40 @@ public class PurityChecker {
    */
   public static class PurityResult {
 
+    /** Creates a new PurityResult. */
+    public PurityResult() {}
+
+    /**
+     * A reason that a method is impure: a tree, and a message key explaining what is wrong with it.
+     *
+     * @param tree the tree that makes the method impure
+     * @param msgId the message key for the reason that {@code tree} makes the method impure
+     */
+    public record ImpurityReason(Tree tree, String msgId) {}
+
     /** Reasons that the referenced method is not side-effect-free. */
-    protected final List<Pair<Tree, String>> notSEFreeReasons = new ArrayList<>(1);
+    protected final List<ImpurityReason> notSEFreeReasons = new ArrayList<>(1);
 
     /** Reasons that the referenced method is not deterministic. */
-    protected final List<Pair<Tree, String>> notDetReasons = new ArrayList<>(1);
+    protected final List<ImpurityReason> notDetReasons = new ArrayList<>(1);
 
     /** Reasons that the referenced method is not side-effect-free and deterministic. */
-    protected final List<Pair<Tree, String>> notBothReasons = new ArrayList<>(1);
+    protected final List<ImpurityReason> notBothReasons = new ArrayList<>(1);
 
     /**
-     * Contains all the varieties of purity that the expression has. Starts out with all varieties,
-     * and elements are removed from it as violations are found.
+     * Contains the varieties of purity that the expression has. Starts out with the purities that a
+     * method body can be analyzed for ({@link PurityKind#SIDE_EFFECT_FREE} and {@link
+     * PurityKind#DETERMINISTIC}), and elements are removed from it as violations are found.
      */
-    protected EnumSet<Pure.Kind> kinds = EnumSet.allOf(Pure.Kind.class);
+    protected EnumSet<PurityKind> kinds =
+        EnumSet.of(PurityKind.SIDE_EFFECT_FREE, PurityKind.DETERMINISTIC);
 
     /**
-     * Return the kinds of purity that the method has.
+     * Returns the kinds of purity that the method has.
      *
      * @return the kinds of purity that the method has
      */
-    public EnumSet<Pure.Kind> getKinds() {
+    public EnumSet<PurityKind> getKinds() {
       return kinds;
     }
 
@@ -95,16 +166,16 @@ public class PurityChecker {
      * @param otherKinds the varieties of purity to check
      * @return true if the method is pure with respect to all the given kinds
      */
-    public boolean isPure(EnumSet<Pure.Kind> otherKinds) {
+    public boolean isPure(EnumSet<PurityKind> otherKinds) {
       return kinds.containsAll(otherKinds);
     }
 
     /**
-     * Get the reasons why the method is not side-effect-free.
+     * Returns the reasons why the method is not side-effect-free.
      *
      * @return the reasons why the method is not side-effect-free
      */
-    public List<Pair<Tree, String>> getNotSEFreeReasons() {
+    public List<ImpurityReason> getNotSEFreeReasons() {
       return notSEFreeReasons;
     }
 
@@ -115,16 +186,16 @@ public class PurityChecker {
      * @param msgId why the tree is not side-effect-free
      */
     public void addNotSEFreeReason(Tree t, String msgId) {
-      notSEFreeReasons.add(Pair.of(t, msgId));
-      kinds.remove(Kind.SIDE_EFFECT_FREE);
+      notSEFreeReasons.add(new ImpurityReason(t, msgId));
+      kinds.remove(PurityKind.SIDE_EFFECT_FREE);
     }
 
     /**
-     * Get the reasons why the method is not deterministic.
+     * Returns the reasons why the method is not deterministic.
      *
      * @return the reasons why the method is not deterministic
      */
-    public List<Pair<Tree, String>> getNotDetReasons() {
+    public List<ImpurityReason> getNotDetReasons() {
       return notDetReasons;
     }
 
@@ -135,16 +206,16 @@ public class PurityChecker {
      * @param msgId why the tree is not deterministic
      */
     public void addNotDetReason(Tree t, String msgId) {
-      notDetReasons.add(Pair.of(t, msgId));
-      kinds.remove(Kind.DETERMINISTIC);
+      notDetReasons.add(new ImpurityReason(t, msgId));
+      kinds.remove(PurityKind.DETERMINISTIC);
     }
 
     /**
-     * Get the reasons why the method is not both side-effect-free and deterministic.
+     * Returns the reasons why the method is not both side-effect-free and deterministic.
      *
      * @return the reasons why the method is not both side-effect-free and deterministic
      */
-    public List<Pair<Tree, String>> getNotBothReasons() {
+    public List<ImpurityReason> getNotBothReasons() {
       return notBothReasons;
     }
 
@@ -155,20 +226,39 @@ public class PurityChecker {
      * @param msgId why the tree is not deterministic and side-effect-free
      */
     public void addNotBothReason(Tree t, String msgId) {
-      notBothReasons.add(Pair.of(t, msgId));
-      kinds.remove(Kind.DETERMINISTIC);
-      kinds.remove(Kind.SIDE_EFFECT_FREE);
+      notBothReasons.add(new ImpurityReason(t, msgId));
+      kinds.remove(PurityKind.DETERMINISTIC);
+      kinds.remove(PurityKind.SIDE_EFFECT_FREE);
+    }
+
+    @Override
+    public String toString() {
+      return String.join(
+          System.lineSeparator(),
+          "PurityResult{",
+          "  notSEF: " + notSEFreeReasons,
+          "  notDet: " + notDetReasons,
+          "  notBoth: " + notBothReasons,
+          "}");
     }
   }
 
   // TODO: It would be possible to improve efficiency by visiting fewer nodes.  This would require
   // overriding more visit* methods.  I'm not sure whether such an optimization would be worth it.
 
-  /** Helper class to keep {@link PurityChecker}'s interface clean. */
+  /**
+   * Helper class to keep {@link PurityChecker}'s interface clean.
+   *
+   * <p>The scanner is run on statements and on the class members that contain code that runs during
+   * construction (a field declaration or an initializer block). It is not run on a class or method
+   * declaration.
+   */
   protected static class PurityCheckerHelper extends TreePathScanner<Void, Void> {
 
+    /** The purity result. */
     PurityResult purityResult = new PurityResult();
 
+    /** The annotation provider (typically an AnnotatedTypeFactory). */
     protected final AnnotationProvider annoProvider;
 
     /**
@@ -184,132 +274,229 @@ public class PurityChecker {
     private final boolean assumeDeterministic;
 
     /**
+     * True if all getter methods should be assumed to be @SideEffectFree and @Deterministic, for
+     * the purposes of org.checkerframework.dataflow analysis.
+     */
+    private final boolean assumePureGetters;
+
+    /**
      * Create a PurityCheckerHelper.
      *
      * @param annoProvider the annotation provider
      * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
      * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
+     * @param assumePureGetters true if getter methods should be assumed to be @Pure
      */
     public PurityCheckerHelper(
         AnnotationProvider annoProvider,
         boolean assumeSideEffectFree,
-        boolean assumeDeterministic) {
+        boolean assumeDeterministic,
+        boolean assumePureGetters) {
       this.annoProvider = annoProvider;
       this.assumeSideEffectFree = assumeSideEffectFree;
       this.assumeDeterministic = assumeDeterministic;
+      this.assumePureGetters = assumePureGetters;
     }
 
     @Override
-    public Void visitCatch(CatchTree node, Void ignore) {
-      purityResult.addNotDetReason(node, "catch");
-      return super.visitCatch(node, ignore);
+    public Void visitCatch(CatchTree tree, Void ignore) {
+      purityResult.addNotDetReason(tree, "catch");
+      return super.visitCatch(tree, ignore);
     }
 
+    /**
+     * Evaluating a lambda expression creates an object; it does not run the lambda's body.
+     *
+     * <p>Creating an object is not deterministic, just as a {@code new} expression is not; see
+     * {@link #visitNewClass}.
+     *
+     * <p>The body's effects occur where the lambda's functional method is invoked, and that
+     * invocation is checked like any other method call. Therefore, do not scan the body. The body
+     * is checked elsewhere, against the purity annotations on the functional method that the lambda
+     * implements; see {@code BaseTypeVisitor#checkLambdaPurity}.
+     *
+     * @param tree a lambda expression
+     * @param ignore an unused parameter
+     * @return null
+     */
     @Override
-    public Void visitMethodInvocation(MethodInvocationTree node, Void ignore) {
-      Element elt = TreeUtils.elementFromUse(node);
-      if (!PurityUtils.hasPurityAnnotation(annoProvider, elt)) {
-        purityResult.addNotBothReason(node, "call");
-      } else {
-        EnumSet<Pure.Kind> purityKinds =
-            (assumeDeterministic && assumeSideEffectFree)
-                // Avoid computation if not necessary
-                ? EnumSet.of(Kind.DETERMINISTIC, Kind.SIDE_EFFECT_FREE)
-                : PurityUtils.getPurityKinds(annoProvider, elt);
-        boolean det = assumeDeterministic || purityKinds.contains(Kind.DETERMINISTIC);
-        boolean seFree = assumeSideEffectFree || purityKinds.contains(Kind.SIDE_EFFECT_FREE);
-        if (!det && !seFree) {
-          purityResult.addNotBothReason(node, "call");
-        } else if (!det) {
-          purityResult.addNotDetReason(node, "call");
-        } else if (!seFree) {
-          purityResult.addNotSEFreeReason(node, "call");
+    public Void visitLambdaExpression(LambdaExpressionTree tree, Void ignore) {
+      purityResult.addNotDetReason(tree, "object.creation");
+      return null;
+    }
+
+    /**
+     * Evaluating a method reference creates an object; it does not run the referenced method.
+     *
+     * <p>Creating an object is not deterministic, just as a {@code new} expression is not; see
+     * {@link #visitNewClass}. JLS 15.13.3 leaves it unspecified whether two evaluations of the same
+     * method reference produce the same object.
+     *
+     * <p>The referenced method's effects occur where the functional method is invoked, and that
+     * invocation is checked like any other method call.
+     *
+     * <p>Do scan the children. The qualifier expression of {@code EXPR::m} is evaluated where the
+     * method reference appears, unlike the body of a lambda.
+     *
+     * @param tree a method reference
+     * @param ignore an unused parameter
+     * @return null
+     */
+    @Override
+    public Void visitMemberReference(MemberReferenceTree tree, Void ignore) {
+      purityResult.addNotDetReason(tree, "object.creation");
+      return super.visitMemberReference(tree, ignore);
+    }
+
+    /**
+     * Declaring a local or anonymous class has no side effect. The class's methods are checked
+     * against their own purity annotations, like the methods of any other class.
+     *
+     * <p>Do scan the class's non-method members. Attributing a field initializer or an initializer
+     * block to the method that contains the class declaration is conservative: the effect is
+     * reported even if the class is never instantiated.
+     *
+     * @param tree a class declaration
+     * @param ignore an unused parameter
+     * @return null
+     */
+    @Override
+    public Void visitClass(ClassTree tree, Void ignore) {
+      for (Tree member : tree.getMembers()) {
+        if (!(member instanceof MethodTree)) {
+          scan(member, ignore);
         }
       }
-      return super.visitMethodInvocation(node, ignore);
+      return null;
     }
 
     @Override
-    public Void visitNewClass(NewClassTree node, Void ignore) {
+    public Void visitMethodInvocation(MethodInvocationTree tree, Void ignore) {
+      ExecutableElement elt = TreeUtils.elementFromUse(tree);
+      EnumSet<PurityKind> eltPurityKinds = PurityUtils.getPurityKinds(annoProvider, elt);
+      boolean pureGetter = assumePureGetters && ElementUtils.isGetter(elt);
+      boolean seFree =
+          assumeSideEffectFree
+              || pureGetter
+              || eltPurityKinds.contains(PurityKind.SIDE_EFFECT_FREE);
+      boolean det =
+          assumeDeterministic
+              || pureGetter
+              || eltPurityKinds.contains(PurityKind.DETERMINISTIC)
+              // A side-effect-free method with no return value is deterministic:  two calls
+              // return the same (absent) value.  This includes a `this()` or `super()` call,
+              // whose element's return type is void.
+              || (seFree && elt.getReturnType().getKind() == TypeKind.VOID);
+      if (!det && !seFree) {
+        purityResult.addNotBothReason(tree, "call");
+      } else if (!det) {
+        purityResult.addNotDetReason(tree, "call");
+      } else if (!seFree) {
+        purityResult.addNotSEFreeReason(tree, "call");
+      }
+      return super.visitMethodInvocation(tree, ignore);
+    }
+
+    @Override
+    public Void visitNewClass(NewClassTree tree, Void ignore) {
       // Ordinarily, "new MyClass()" is forbidden.  It is permitted, however, when it is the
       // expression in "throw EXPR;".  (In the future, more expressions could be permitted.)
       //
-      // The expression in "throw EXPR;" is allowed to be non-@Deterministic, so long as it is not
-      // within a catch block that could catch an exception that the statement throws.  For example,
-      // EXPR can be object creation (a "new" expression) or can call a non-deterministic method.
+      // The expression in "throw EXPR;" is allowed to be non-@Deterministic, so long as it is
+      // not within a catch block that could catch an exception that the statement throws.
+      // For example, EXPR can be object creation (a "new" expression) or can call a
+      // non-deterministic method.
       //
       // Coarse rule (currently implemented):
       //  * permit only "throw new SomeExpression(args)", where the constructor is
       //    @SideEffectFree and the args are pure, and forbid all enclosing try statements
       //    that have a catch clause.
       // More precise rule:
-      //  * permit other non-deterministic expresssions within throw (at which time move this
+      //  * permit other non-deterministic expressions within throw (at which time move this
       //    logic to visitThrow()).
       //  * the only bad try statements are those with a catch block that is:
       //     * unchecked exceptions
-      //        * checked = Exception or lower, but excluding RuntimeException and its subclasses
+      //        * checked = Exception or lower, but excluding RuntimeException and its
+      //          subclasses
       //     * super- or sub-classes of the type of _expr_
       //        * if _expr_ is exactly "new SomeException", this can be changed to just
       //          "superclasses of SomeException".
-      //     * super- or sub-classes of exceptions declared to be thrown by any component of _expr_.
-      //     * need to check every containing try statement, not just the nearest enclosing one.
+      //     * super- or sub-classes of exceptions declared to be thrown by any component of
+      //       _expr_.
+      //     * need to check every containing try statement, not just the nearest enclosing
+      //       one.
 
-      // Object creation is usually prohibited, but permit "throw new SomeException();" if it is not
-      // contained within any try statement that has a catch clause.  (There is no need to check the
-      // latter condition, because the Purity Checker forbids all catch statements.)
+      // Object creation is usually prohibited, but permit "throw new SomeException();" if it
+      // is not contained within any try statement that has a catch clause.  (There is no need
+      // to check the latter condition, because the Purity Checker forbids all catch
+      // statements.)
       Tree parent = getCurrentPath().getParentPath().getLeaf();
-      boolean okThrowDeterministic = parent.getKind() == Tree.Kind.THROW;
+      boolean okThrowDeterministic = parent instanceof ThrowTree;
 
-      Element ctorElement = TreeUtils.elementFromUse(node);
-      boolean deterministic = assumeDeterministic || okThrowDeterministic;
+      ExecutableElement ctorElement = TreeUtils.elementFromUse(tree);
+      boolean deterministic =
+          assumeDeterministic
+              || okThrowDeterministic
+              // No need to check assumePureGetters because a constructor is never a
+              // getter.
+              || PurityUtils.isDeterministic(annoProvider, ctorElement);
       boolean sideEffectFree =
           assumeSideEffectFree || PurityUtils.isSideEffectFree(annoProvider, ctorElement);
-      // This does not use "addNotBothReason" because the reasons are different:  one is because the
-      // constructor is called at all, and the other is because the constuctor is not
-      // side-effect-free.
+      // This does not use "addNotBothReason" because the reasons are different:  one is
+      // because the constructor is called at all, and the other is because the constructor is
+      // not side-effect-free.
       if (!deterministic) {
-        purityResult.addNotDetReason(node, "object.creation");
+        purityResult.addNotDetReason(tree, "object.creation");
       }
       if (!sideEffectFree) {
-        purityResult.addNotSEFreeReason(node, "call");
+        purityResult.addNotSEFreeReason(tree, "call");
       }
 
       // TODO: if okThrowDeterministic, permit arguments to the newClass to be
       // non-deterministic (don't add those to purityResult), but still don't permit them to
       // have side effects.  This should probably wait until a rewrite of the Purity Checker.
-      return super.visitNewClass(node, ignore);
+      return super.visitNewClass(tree, ignore);
     }
 
     @Override
-    public Void visitAssignment(AssignmentTree node, Void ignore) {
-      ExpressionTree variable = node.getVariable();
+    public Void visitAssignment(AssignmentTree tree, Void ignore) {
+      ExpressionTree variable = tree.getVariable();
       assignmentCheck(variable);
-      return super.visitAssignment(node, ignore);
+      return super.visitAssignment(tree, ignore);
     }
 
     @Override
-    public Void visitUnary(UnaryTree node, Void ignore) {
-      switch (node.getKind()) {
-        case POSTFIX_DECREMENT:
-        case POSTFIX_INCREMENT:
-        case PREFIX_DECREMENT:
-        case PREFIX_INCREMENT:
-          ExpressionTree expression = node.getExpression();
+    public Void visitUnary(UnaryTree tree, Void ignore) {
+      switch (tree.getKind()) {
+        case POSTFIX_DECREMENT, POSTFIX_INCREMENT, PREFIX_DECREMENT, PREFIX_INCREMENT -> {
+          ExpressionTree expression = tree.getExpression();
           assignmentCheck(expression);
-          break;
-        default:
+        }
+        default -> {
           // Nothing to do
-          break;
+        }
       }
-      return super.visitUnary(node, ignore);
+      return super.visitUnary(tree, ignore);
     }
 
     /**
-     * Check whether {@code variable} is permitted on the left-hand-side of an assignment.
+     * Returns true if {@code variable} is permitted on the left-hand-side of an assignment.
      *
      * @param variable the lhs to check
      */
     protected void assignmentCheck(ExpressionTree variable) {
+      variable = TreeUtils.withoutParens(variable);
+      VariableElement fieldElt = TreeUtils.asFieldAccess(variable);
+      if (fieldElt != null
+          // A static field is visible to other code even while an object is being constructed,
+          // so assigning one is a side effect wherever the assignment appears.
+          && !ElementUtils.isStatic(fieldElt)
+          && isFieldInCurrentClass(fieldElt)
+          && inConstructorOrInstanceInitializer()) {
+        // assigning an instance field in a constructor or an instance initializer
+        // TODO: add a check for ArrayAccessTree too.
+        return;
+      }
       if (TreeUtils.isFieldAccess(variable)) {
         // lhs is a field access
         purityResult.addNotBothReason(variable, "assign.field");
@@ -323,6 +510,74 @@ public class PurityChecker {
     }
 
     /**
+     * Returns true if the current path is in a constructor, or in an instance initializer (an
+     * instance initializer block, or the initializer of a non-static field) of the class that
+     * immediately encloses it, and is not within a lambda expression. Such code runs while the
+     * object is being constructed, before the object is visible to other code.
+     *
+     * <p>{@link #assignmentCheck} permits such code to assign to a field of its own class, because
+     * the object is not yet visible to other code. That reasoning does not extend to a lambda that
+     * the code creates: the lambda's body may run long after construction has finished, when the
+     * object is visible. Nor does it extend to a static initializer block or the initializer of a
+     * static field, which run at class initialization rather than during construction.
+     *
+     * <p>This differs from {@link TreePathUtil#inConstructor} for code in a local or anonymous
+     * class: an initializer of such a class runs when the class is instantiated, so what matters is
+     * the class member that encloses the code, not the method that encloses the class declaration.
+     *
+     * @return true if the current path is in a constructor or an instance initializer, and within
+     *     no lambda expression
+     */
+    private boolean inConstructorOrInstanceInitializer() {
+      // The search stops at the innermost enclosing class, because a method or lambda outside
+      // that class does not contain the current path's code:  the code of a field initializer
+      // or initializer block runs when the class is instantiated or initialized.
+      Tree child = null;
+      for (TreePath path = getCurrentPath(); path != null; path = path.getParentPath()) {
+        Tree leaf = path.getLeaf();
+        if (leaf instanceof MethodTree methodTree) {
+          return TreeUtils.isConstructor(methodTree);
+        } else if (leaf instanceof LambdaExpressionTree) {
+          return false;
+        } else if (leaf instanceof ClassTree) {
+          // No method or lambda intervenes between the class and the code, so `child` is the
+          // member of the class that contains the code:  an initializer block or a field
+          // declaration.
+          if (child instanceof BlockTree blockTree) {
+            return !blockTree.isStatic();
+          } else if (child instanceof VariableTree variableTree) {
+            VariableElement fieldElt = TreeUtils.elementFromDeclaration(variableTree);
+            // A field of an interface is implicitly static, so consult the element rather than
+            // the modifiers of the declaration.
+            return fieldElt != null && !ElementUtils.isStatic(fieldElt);
+          } else {
+            return false;
+          }
+        }
+        child = leaf;
+      }
+      // The scan started outside any class declaration, so the code is not in a constructor or an
+      // instance initializer.
+      return false;
+    }
+
+    /**
+     * Returns true if the given field is defined by the current class.
+     *
+     * @param fieldElt a field
+     * @return true if the given field is defined by the current class
+     */
+    private boolean isFieldInCurrentClass(VariableElement fieldElt) {
+      ClassTree currentTypeTree = TreePathUtil.enclosingClass(getCurrentPath());
+      assert currentTypeTree != null : "@AssumeAssertion(nullness)";
+      TypeElement currentType = TreeUtils.elementFromDeclaration(currentTypeTree);
+      assert currentType != null : "@AssumeAssertion(nullness)";
+      TypeElement definesField = ElementUtils.enclosingTypeElement(fieldElt);
+      assert definesField != null : "@AssumeAssertion(nullness)";
+      return currentType.equals(definesField);
+    }
+
+    /**
      * Checks if the argument is a local variable.
      *
      * @param variable the tree to check
@@ -333,10 +588,10 @@ public class PurityChecker {
     }
 
     @Override
-    public Void visitCompoundAssignment(CompoundAssignmentTree node, Void ignore) {
-      ExpressionTree variable = node.getVariable();
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void ignore) {
+      ExpressionTree variable = tree.getVariable();
       assignmentCheck(variable);
-      return super.visitCompoundAssignment(node, ignore);
+      return super.visitCompoundAssignment(tree, ignore);
     }
   }
 }

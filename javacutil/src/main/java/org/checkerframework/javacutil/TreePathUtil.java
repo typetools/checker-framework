@@ -1,15 +1,28 @@
 package org.checkerframework.javacutil;
 
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.Element;
@@ -25,104 +38,155 @@ public final class TreePathUtil {
 
   /** Do not instantiate; this class is a collection of static methods. */
   private TreePathUtil() {
-    throw new Error("Class TreeUtils cannot be instantiated.");
+    throw new BugInCF("Class TreeUtils cannot be instantiated.");
   }
 
-  ///
-  /// Retrieving a path
-  ///
+  //
+  // Retrieving a path (from another path)
+  //
 
   /**
-   * Gets path to the first (innermost) enclosing tree of the specified kind.
+   * Gets path to the first (innermost) enclosing tree of the given kind. May return {@code path}
+   * itself.
    *
    * @param path the path defining the tree node
    * @param kind the kind of the desired tree
    * @return the path to the enclosing tree of the given type, {@code null} otherwise
    */
-  public static @Nullable TreePath pathTillOfKind(final TreePath path, final Tree.Kind kind) {
+  public static @Nullable TreePath pathTillOfKind(TreePath path, Tree.Kind kind) {
     return pathTillOfKind(path, EnumSet.of(kind));
   }
 
   /**
-   * Gets path to the first (innermost) enclosing tree with any one of the specified kinds.
+   * Gets path to the first (innermost) enclosing tree with any one of the given kinds. May return
+   * {@code path} itself.
    *
    * @param path the path defining the tree node
    * @param kinds the set of kinds of the desired tree
    * @return the path to the enclosing tree of the given type, {@code null} otherwise
    */
-  public static @Nullable TreePath pathTillOfKind(final TreePath path, final Set<Tree.Kind> kinds) {
-    TreePath p = path;
-
-    while (p != null) {
-      Tree leaf = p.getLeaf();
-      assert leaf != null;
-      if (kinds.contains(leaf.getKind())) {
+  public static @Nullable TreePath pathTillOfKind(TreePath path, Set<Tree.Kind> kinds) {
+    for (TreePath p = path; p != null; p = p.getParentPath()) {
+      if (kinds.contains(p.getLeaf().getKind())) {
         return p;
       }
-      p = p.getParentPath();
     }
-
     return null;
   }
 
   /**
    * Gets path to the first (innermost) enclosing class tree, where class is defined by the {@link
-   * TreeUtils#classTreeKinds()} method.
+   * TreeUtils#classTreeKinds()} method. May return {@code path} itself.
    *
    * @param path the path defining the tree node
    * @return the path to the enclosing class tree, {@code null} otherwise
    */
-  public static @Nullable TreePath pathTillClass(final TreePath path) {
+  public static @Nullable TreePath pathTillClass(TreePath path) {
     return pathTillOfKind(path, TreeUtils.classTreeKinds());
   }
 
   /**
-   * Gets path to the first (innermost) enclosing method tree.
+   * Gets path to the first (innermost) enclosing method tree. May return {@code path} itself.
    *
    * @param path the path defining the tree node
    * @return the path to the enclosing class tree, {@code null} otherwise
    */
-  public static @Nullable TreePath pathTillMethod(final TreePath path) {
+  public static @Nullable TreePath pathTillMethod(TreePath path) {
     return pathTillOfKind(path, Tree.Kind.METHOD);
   }
 
-  ///
-  /// Retrieving a tree
-  ///
+  /**
+   * Returns the instance field initializers and instance initializer blocks of the class that
+   * encloses the given code. They run as part of every constructor that does not delegate to
+   * another constructor of the same class.
+   *
+   * @param path the path defining the tree node
+   * @return paths to the instance initializers of the class that encloses {@code path}
+   */
+  public static List<TreePath> getInstanceInitializers(TreePath path) {
+    TreePath pathOfClass = pathTillClass(path);
+    if (pathOfClass == null) {
+      return Collections.emptyList();
+    }
+    ClassTree classTree = (ClassTree) pathOfClass.getLeaf();
+    if (classTree.getKind() == Kind.INTERFACE || classTree.getKind() == Kind.ANNOTATION_TYPE) {
+      // An interface has no instance initializers:  every field of an interface is static, and an
+      // interface may not contain an initializer block.  A field of an interface is implicitly
+      // static, so its modifiers do not necessarily contain `static`.
+      return Collections.emptyList();
+    }
+    List<TreePath> result = new ArrayList<>(2);
+    for (Tree member : classTree.getMembers()) {
+      if (member instanceof VariableTree variable) {
+        // A static field's initializer runs at class initialization rather than at construction.
+        // (This also excludes an enum constant, which is static.)
+        if (variable.getInitializer() != null
+            && !variable.getModifiers().getFlags().contains(Modifier.STATIC)) {
+          result.add(new TreePath(pathOfClass, member));
+        }
+      } else if (member instanceof BlockTree block && !block.isStatic()) {
+        result.add(new TreePath(pathOfClass, member));
+      }
+    }
+    return result;
+  }
 
   /**
-   * Gets the first (innermost) enclosing tree in path, of the specified kind.
+   * Returns the instance field initializers and instance initializer blocks that run as part of the
+   * given constructor: those of its class, unless it delegates to another constructor of the same
+   * class, in which case they run as part of that one.
+   *
+   * @param constructor a constructor declaration
+   * @param path a path to {@code constructor} or to code within it
+   * @return paths to the instance initializers that run as part of {@code constructor}
+   */
+  public static List<TreePath> getInstanceInitializersRunBy(MethodTree constructor, TreePath path) {
+    MethodInvocationTree explicitCall = TreeUtils.getExplicitConstructorCall(constructor);
+    if (explicitCall != null && TreeUtils.isThisConstructorCall(explicitCall)) {
+      return Collections.emptyList();
+    }
+    return getInstanceInitializers(path);
+  }
+
+  //
+  // Retrieving a tree (from a path)
+  //
+
+  /**
+   * Gets the first (innermost) enclosing tree in path, of the given kind. May return the leaf of
+   * {@code path} itself.
    *
    * @param path the path defining the tree node
    * @param kind the kind of the desired tree
    * @return the enclosing tree of the given type as given by the path, {@code null} otherwise
    */
-  public static @Nullable Tree enclosingOfKind(final TreePath path, final Tree.Kind kind) {
+  public static @Nullable Tree enclosingOfKind(TreePath path, Tree.Kind kind) {
     return enclosingOfKind(path, EnumSet.of(kind));
   }
 
   /**
-   * Gets the first (innermost) enclosing tree in path, with any one of the specified kinds.
+   * Gets the first (innermost) enclosing tree in path, with any one of the given kinds. May return
+   * the leaf of {@code path} itself.
    *
    * @param path the path defining the tree node
    * @param kinds the set of kinds of the desired tree
    * @return the enclosing tree of the given type as given by the path, {@code null} otherwise
    */
-  public static @Nullable Tree enclosingOfKind(final TreePath path, final Set<Tree.Kind> kinds) {
+  public static @Nullable Tree enclosingOfKind(TreePath path, Set<Tree.Kind> kinds) {
     TreePath p = pathTillOfKind(path, kinds);
     return (p == null) ? null : p.getLeaf();
   }
 
   /**
-   * Gets the first (innermost) enclosing tree in path, of the specified class.
+   * Gets the first (innermost) enclosing tree in path, of the given class. May return the leaf of
+   * {@code path} itself.
    *
    * @param <T> the type of {@code treeClass}
    * @param path the path defining the tree node
    * @param treeClass the class of the desired tree
    * @return the enclosing tree of the given type as given by the path, {@code null} otherwise
    */
-  public static <T extends Tree> @Nullable T enclosingOfClass(
-      final TreePath path, final Class<T> treeClass) {
+  public static <T extends Tree> @Nullable T enclosingOfClass(TreePath path, Class<T> treeClass) {
     TreePath p = path;
 
     while (p != null) {
@@ -137,32 +201,45 @@ public final class TreePathUtil {
   }
 
   /**
+   * Gets the path to nearest enclosing declaration (class, method, or variable) of the tree node
+   * defined by the given {@link TreePath}. May return the leaf of {@code path} itself.
+   *
+   * @param path the path defining the tree node
+   * @return path to the nearest enclosing class/method/variable in the path, or {@code null} if one
+   *     does not exist
+   */
+  public static @Nullable TreePath enclosingDeclarationPath(TreePath path) {
+    return pathTillOfKind(path, TreeUtils.declarationTreeKinds());
+  }
+
+  /**
    * Gets the enclosing class of the tree node defined by the given {@link TreePath}. It returns a
    * {@link Tree}, from which {@code checkers.types.AnnotatedTypeMirror} or {@link Element} can be
-   * obtained.
+   * obtained. May return the leaf of {@code path} itself.
    *
    * @param path the path defining the tree node
    * @return the enclosing class (or interface) as given by the path, or {@code null} if one does
    *     not exist
    */
-  public static @Nullable ClassTree enclosingClass(final TreePath path) {
+  public static @Nullable ClassTree enclosingClass(TreePath path) {
     return (ClassTree) enclosingOfKind(path, TreeUtils.classTreeKinds());
   }
 
   /**
-   * Gets the enclosing variable of a tree node defined by the given {@link TreePath}.
+   * Gets the enclosing variable of a tree node defined by the given {@link TreePath}. May return
+   * the leaf of {@code path} itself.
    *
    * @param path the path defining the tree node
    * @return the enclosing variable as given by the path, or {@code null} if one does not exist
    */
-  public static @Nullable VariableTree enclosingVariable(final TreePath path) {
+  public static @Nullable VariableTree enclosingVariable(TreePath path) {
     return (VariableTree) enclosingOfKind(path, Tree.Kind.VARIABLE);
   }
 
   /**
    * Gets the enclosing method of the tree node defined by the given {@link TreePath}. It returns a
    * {@link Tree}, from which an {@code checkers.types.AnnotatedTypeMirror} or {@link Element} can
-   * be obtained.
+   * be obtained. May return the leaf of {@code path} itself.
    *
    * <p>Also see {@code AnnotatedTypeFactory#getEnclosingMethod} and {@code
    * AnnotatedTypeFactory#getEnclosingClassOrMethod}, which do not require a TreePath.
@@ -170,25 +247,26 @@ public final class TreePathUtil {
    * @param path the path defining the tree node
    * @return the enclosing method as given by the path, or {@code null} if one does not exist
    */
-  public static @Nullable MethodTree enclosingMethod(final TreePath path) {
+  public static @Nullable MethodTree enclosingMethod(TreePath path) {
     return (MethodTree) enclosingOfKind(path, Tree.Kind.METHOD);
   }
 
   /**
    * Gets the enclosing method or lambda expression of the tree node defined by the given {@link
    * TreePath}. It returns a {@link Tree}, from which an {@code checkers.types.AnnotatedTypeMirror}
-   * or {@link Element} can be obtained.
+   * or {@link Element} can be obtained. May return the leaf of {@code path} itself.
    *
    * @param path the path defining the tree node
    * @return the enclosing method or lambda as given by the path, or {@code null} if one does not
    *     exist
    */
-  public static @Nullable Tree enclosingMethodOrLambda(final TreePath path) {
-    return enclosingOfKind(path, EnumSet.of(Tree.Kind.METHOD, Kind.LAMBDA_EXPRESSION));
+  public static @Nullable Tree enclosingMethodOrLambda(TreePath path) {
+    return enclosingOfKind(path, EnumSet.of(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION));
   }
 
   /**
-   * Returns the top-level block that encloses the given path, or null if none does.
+   * Returns the top-level block that encloses the given path, or null if none does. Never returns
+   * the leaf of {@code path} itself.
    *
    * @param path a path
    * @return the top-level block that encloses the given path, or null if none does
@@ -200,64 +278,71 @@ public final class TreePathUtil {
       path = parentPath;
       parentPath = parentPath.getParentPath();
     }
-    if (path.getLeaf().getKind() == Tree.Kind.BLOCK) {
+    if (path.getLeaf() instanceof BlockTree) {
       return (BlockTree) path.getLeaf();
     }
     return null;
   }
 
   /**
-   * Gets the first (innermost) enclosing tree in path, that is not a parenthesis.
+   * The result of {@link #enclosingNonParen}: a non-parenthesis tree and the child of it that led
+   * to the queried tree.
+   *
+   * @param enclosing a tree that is not a {@code ParenthesizedTree}
+   * @param enclosingChild the child of {@code enclosing} that is the queried tree or is a
+   *     parenthesized version of it
+   */
+  public record EnclosingNonParen(Tree enclosing, Tree enclosingChild) {}
+
+  /**
+   * Gets the first (innermost) enclosing tree in path, that is not a parenthesis. Never returns the
+   * leaf of {@code path} itself.
    *
    * @param path the path defining the tree node
-   * @return a pair of a non-parenthesis tree that contains the argument, and its child that is the
-   *     argument or is a parenthesized version of it
+   * @return a non-parenthesis tree that contains the argument, and its child that is the argument
+   *     or is a parenthesized version of it
    */
-  public static Pair<Tree, Tree> enclosingNonParen(final TreePath path) {
+  public static EnclosingNonParen enclosingNonParen(TreePath path) {
     TreePath parentPath = path.getParentPath();
     Tree enclosing = parentPath.getLeaf();
     Tree enclosingChild = path.getLeaf();
-    while (enclosing.getKind() == Kind.PARENTHESIZED) {
+    while (enclosing instanceof ParenthesizedTree) {
       parentPath = parentPath.getParentPath();
       enclosingChild = enclosing;
       enclosing = parentPath.getLeaf();
     }
-    return Pair.of(enclosing, enclosingChild);
+    return new EnclosingNonParen(enclosing, enclosingChild);
   }
 
   /**
-   * Returns the "assignment context" for the leaf of {@code treePath}, which is often the leaf of
-   * the parent of {@code treePath}. (Does not handle pseudo-assignment of an argument to a
-   * parameter or a receiver expression to a receiver.) This is not the same as {@code
-   * org.checkerframework.dataflow.cfg.node.AssignmentContext}, which represents the left-hand side
-   * rather than the assignment itself.
+   * Returns the tree representing the context for the poly expression which is the leaf of {@code
+   * treePath}. The context then can be used to find the target type of the poly expression. Returns
+   * null if the leaf of {@code treePath} is not a poly expression.
    *
-   * <p>The assignment context for {@code treePath} is the leaf of its parent, if that leaf is one
-   * of the following trees:
-   *
-   * <ul>
-   *   <li>AssignmentTree
-   *   <li>CompoundAssignmentTree
-   *   <li>MethodInvocationTree
-   *   <li>NewArrayTree
-   *   <li>NewClassTree
-   *   <li>ReturnTree
-   *   <li>VariableTree
-   * </ul>
-   *
-   * If the parent is a ConditionalExpressionTree we need to distinguish two cases: If the leaf is
-   * either the then or else branch of the ConditionalExpressionTree, then recurse on the parent. If
-   * the leaf is the condition of the ConditionalExpressionTree, then return null to not consider
-   * this assignment context.
-   *
-   * <p>If the leaf is a ParenthesizedTree, then recurse on the parent.
-   *
-   * <p>Otherwise, null is returned.
+   * @param treePath a path. If the leaf of the path is a poly expression, then its context is
+   *     returned.
+   * @return the tree representing the context for the poly expression which is the leaf of {@code
+   *     treePath}; or null if the leaf is not a poly expression
+   */
+  public static @Nullable Tree getContextForPolyExpression(TreePath treePath) {
+    // If a lambda or a method reference is the expression in a type cast, then the type cast is
+    // the context.  If a method or constructor invocation is the expression in a type cast,
+    // then the invocation has no context.
+    boolean isLambdaOrMethodRef =
+        treePath.getLeaf() instanceof LambdaExpressionTree
+            || treePath.getLeaf() instanceof MemberReferenceTree;
+    return getContextForPolyExpression(treePath, isLambdaOrMethodRef);
+  }
+
+  /**
+   * Implementation of {@link #getContextForPolyExpression(TreePath)}.
    *
    * @param treePath a path
+   * @param isLambdaOrMethodRef if the call is getting the context of a lambda or method reference
    * @return the assignment context as described, {@code null} otherwise
    */
-  public static @Nullable Tree getAssignmentContext(final TreePath treePath) {
+  private static @Nullable Tree getContextForPolyExpression(
+      TreePath treePath, boolean isLambdaOrMethodRef) {
     TreePath parentPath = treePath.getParentPath();
 
     if (parentPath == null) {
@@ -266,14 +351,33 @@ public final class TreePathUtil {
 
     Tree parent = parentPath.getLeaf();
     switch (parent.getKind()) {
-      case ASSIGNMENT: // See below for CompoundAssignmentTree.
-      case METHOD_INVOCATION:
-      case NEW_ARRAY:
-      case NEW_CLASS:
-      case RETURN:
-      case VARIABLE:
+      case ASSIGNMENT, LAMBDA_EXPRESSION, METHOD_INVOCATION, NEW_ARRAY, RETURN -> {
+        // See below for CompoundAssignmentTree.
         return parent;
-      case CONDITIONAL_EXPRESSION:
+      }
+      case NEW_CLASS -> {
+        @SuppressWarnings("interning:not.interned") // Checking for exact object.
+        boolean enclosingExpr =
+            ((NewClassTree) parent).getEnclosingExpression() == treePath.getLeaf();
+        if (enclosingExpr) {
+          return null;
+        }
+        return parent;
+      }
+      case TYPE_CAST -> {
+        if (isLambdaOrMethodRef) {
+          return parent;
+        } else {
+          return null;
+        }
+      }
+      case VARIABLE -> {
+        if (TreeUtils.isVariableTreeDeclaredUsingVar((VariableTree) parent)) {
+          return null;
+        }
+        return parent;
+      }
+      case CONDITIONAL_EXPRESSION -> {
         ConditionalExpressionTree cet = (ConditionalExpressionTree) parent;
         @SuppressWarnings("interning:not.interned") // AST node comparison
         boolean conditionIsLeaf = (cet.getCondition() == treePath.getLeaf());
@@ -283,22 +387,60 @@ public final class TreePathUtil {
           return null;
         }
         // Otherwise use the context of the ConditionalExpressionTree.
-        return getAssignmentContext(parentPath);
-      case PARENTHESIZED:
-        return getAssignmentContext(parentPath);
-      default:
+        return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
+      }
+      case PARENTHESIZED -> {
+        return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
+      }
+      case CASE -> {
+        @SuppressWarnings("interning:not.interned") // AST node comparison
+        boolean guardIsLeaf =
+            TreeUtilsAfterJava17.CaseUtils.getGuard((CaseTree) parent) == treePath.getLeaf();
+        if (guardIsLeaf) {
+          // The assignment context for the guard is simply boolean.
+          // No point in going on.
+          return null;
+        }
+        // Otherwise use the context of the CaseTree.
+        return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
+      }
+      case YIELD -> {
+        // A yield statement is only legal within a switch expression. Walk up the path
+        // to the case tree instead of the switch expression tree so the code remains
+        // backward compatible.
+        TreePath pathToCase = pathTillOfKind(parentPath, Kind.CASE);
+        assert pathToCase != null
+            : "@AssumeAssertion(nullness): yield statements must be enclosed in a CaseTree";
+        parentPath = pathToCase.getParentPath();
+        return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
+      }
+      case SWITCH_EXPRESSION -> {
+        @SuppressWarnings("interning:not.interned") // AST node comparison
+        boolean switchIsLeaf =
+            ((SwitchExpressionTree) parent).getExpression() == treePath.getLeaf();
+        if (switchIsLeaf) {
+          // The assignment context for the conditional guard is simply
+          // boolean. No point in going on.
+          return null;
+        }
+        // Otherwise use the context of the ConditionalExpressionTree.
+        return getContextForPolyExpression(parentPath, isLambdaOrMethodRef);
+      }
+      default -> {
+
         // 11 Tree.Kinds are CompoundAssignmentTrees,
         // so use instanceof rather than listing all 11.
         if (parent instanceof CompoundAssignmentTree) {
           return parent;
         }
         return null;
+      }
     }
   }
 
-  ///
-  /// Predicates
-  ///
+  //
+  // Predicates
+  //
 
   /**
    * Returns true if the tree is in a constructor or an initializer block.
@@ -315,7 +457,7 @@ public final class TreePathUtil {
   /**
    * Returns true if the leaf of the tree path is in a static scope.
    *
-   * @param path TreePath whose leaf may or may not be in static scope
+   * @param path a TreePath whose leaf may or may not be in static scope
    * @return true if the leaf of the tree path is in a static scope
    */
   public static boolean isTreeInStaticScope(TreePath path) {
@@ -330,7 +472,7 @@ public final class TreePathUtil {
       return block.isStatic();
     }
 
-    // check if its in a variable initializer
+    // check if it's in a variable initializer
     Tree t = enclosingVariable(path);
     if (t != null) {
       return ((VariableTree) t).getModifiers().getFlags().contains(Modifier.STATIC);
@@ -342,12 +484,50 @@ public final class TreePathUtil {
     return false;
   }
 
-  ///
-  /// Formatting
-  ///
+  /**
+   * Returns true if the path is to a top-level (not within a loop) assignment within an initializer
+   * block. The initializer block might be instance or static. Will return true for a re-assignment
+   * even if there is another initialization (within this initializer block, another initializer
+   * block, a constructor, or the variable declaration).
+   *
+   * @param path the path to test
+   * @return true if the path is to an initialization within an initializer block
+   */
+  public static boolean isTopLevelAssignmentInInitializerBlock(TreePath path) {
+    TreePath origPath = path;
+    if (!(path.getLeaf() instanceof AssignmentTree)) {
+      return false;
+    }
+    path = path.getParentPath();
+    if (!(path.getLeaf() instanceof ExpressionStatementTree)) {
+      return false;
+    }
+    Tree prevLeaf = path.getLeaf();
+    path = path.getParentPath();
+
+    for (Iterator<Tree> itor = path.iterator(); itor.hasNext(); ) {
+      Tree leaf = itor.next();
+      switch (leaf.getKind()) {
+        case CLASS, ENUM, PARAMETERIZED_TYPE -> {
+          return prevLeaf instanceof BlockTree;
+        }
+        case COMPILATION_UNIT ->
+            throw new BugInCF("found COMPILATION_UNIT in " + toString(origPath));
+        case DO_WHILE_LOOP, ENHANCED_FOR_LOOP, FOR_LOOP, LAMBDA_EXPRESSION, METHOD -> {
+          return false;
+        }
+        default -> prevLeaf = leaf;
+      }
+    }
+    throw new BugInCF("path did not contain method or class: " + toString(origPath));
+  }
+
+  //
+  // Formatting
+  //
 
   /**
-   * Return a printed representation of a TreePath.
+   * Returns a printed representation of a TreePath.
    *
    * @param path a TreePath
    * @return a printed representation of the given TreePath
@@ -375,5 +555,26 @@ public final class TreePathUtil {
       return "null";
     }
     return TreeUtils.toStringTruncated(path.getLeaf(), length);
+  }
+
+  /**
+   * Retrieves the nearest enclosing method or class element for the specified path in the AST. This
+   * utility method prioritizes method elements over class elements. It returns the element of the
+   * closest method scope if available; otherwise, it defaults to the enclosing class scope.
+   *
+   * @param path the {@link TreePath} to analyze for the nearest enclosing scope
+   * @return the {@link Element} of the nearest enclosing method or class, or {@code null} if no
+   *     such enclosing element can be found
+   */
+  public static @Nullable Element findNearestEnclosingElement(TreePath path) {
+    MethodTree enclosingMethodTree = enclosingMethod(path);
+    if (enclosingMethodTree != null) {
+      return TreeUtils.elementFromDeclaration(enclosingMethodTree);
+    }
+    ClassTree enclosingClassTree = enclosingClass(path);
+    if (enclosingClassTree != null) {
+      return TreeUtils.elementFromDeclaration(enclosingClassTree);
+    }
+    return null;
   }
 }

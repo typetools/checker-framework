@@ -11,8 +11,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
- * Utility class for the Nullness Checker, providing every method in {@link java.util.Optional}, but
- * written for possibly-null references rather than for the {@code Optional} type.
+ * Utility class providing every method in {@link java.util.Optional}, but written for possibly-null
+ * references rather than for the {@code Optional} type.
  *
  * <p>To avoid the need to write the {@code Opt} class name at invocation sites, do:
  *
@@ -23,11 +23,11 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  * <pre>import static org.checkerframework.checker.nullness.util.Opt.*;</pre>
  *
  * <p><b>Runtime Dependency</b>: If you use this class, you must distribute (or link to) {@code
- * checker-qual.jar}, along with your binaries. Or, you can can copy this class into your own
- * project.
+ * checker-qual.jar}, along with your binaries. Or, you can copy this class into your own project.
  *
  * @see java.util.Optional
  */
+@SuppressWarnings("PMD.ShortClassName")
 @AnnotatedFor("nullness")
 public final class Opt {
 
@@ -75,6 +75,25 @@ public final class Opt {
   }
 
   /**
+   * If primary is non-null, invoke the specified consumer with the value, otherwise invoke the
+   * empty action.
+   *
+   * @param <T> the type of the argument
+   * @param primary the nullable value
+   * @param action the consumer to be executed if primary is non-null
+   * @param emptyAction the action to be executed if primary is null
+   * @see java.util.Optional#ifPresentOrElse(Consumer, Runnable)
+   */
+  public static <T> void ifPresentOrElse(
+      T primary, Consumer<@NonNull ? super @NonNull T> action, Runnable emptyAction) {
+    if (primary != null) {
+      action.accept(primary);
+    } else {
+      emptyAction.run();
+    }
+  }
+
+  /**
    * If primary is non-null, and its value matches the given predicate, return the value. If primary
    * is null or its non-null value does not match the predicate, return null.
    *
@@ -107,7 +126,7 @@ public final class Opt {
   // flatMap would have the same signature and implementation as map
 
   /**
-   * Return primary if it is non-null. If primary is null, return other.
+   * Returns primary if it is non-null. If primary is null, return other.
    *
    * @see java.util.Optional#orElse(Object)
    */
@@ -116,8 +135,8 @@ public final class Opt {
   }
 
   /**
-   * Return primary if it is non-null. If primary is null, invoke {@code other} and return the
-   * result of that invocation.
+   * Returns {@code primary} if it is non-null. If {@code primary} is null, invoke {@code other} and
+   * return the result of that invocation.
    *
    * @see java.util.Optional#orElseGet(Supplier)
    */
@@ -126,7 +145,7 @@ public final class Opt {
   }
 
   /**
-   * Return primary if it is non-null. If primary is null, throw an exception to be created by the
+   * Returns primary if it is non-null. If primary is null, throw an exception to be created by the
    * provided supplier.
    *
    * @see java.util.Optional#orElseThrow(Supplier)

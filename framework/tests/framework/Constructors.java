@@ -5,7 +5,7 @@ public class Constructors {
 
   public void testConstructors() {
     Constructors c = null;
-    // :: warning: (cast.unsafe.constructor.invocation)
+    // :: warning: [cast.unsafe.constructor.invocation]
     new @Odd Constructors(c);
   }
 
@@ -15,9 +15,9 @@ public class Constructors {
   public void testStaticAnonymousConstructor() {
     String notOdd = "m";
 
-    // :: error: (argument)
+    // :: error: [argument]
     new Constructors(notOdd, 0); // error
-    // :: error: (argument)
+    // :: error: [argument]
     new Constructors(notOdd, 0) {}; // error
   }
 
@@ -30,9 +30,9 @@ public class Constructors {
   public static void testAnonymousConstructor() {
     Constructors m = new Constructors(null) {};
     String notOdd = "m";
-    // :: error: (argument)
+    // :: error: [argument]
     m.new MyConstructors(notOdd); // error
-    // :: error: (argument)
+    // :: error: [argument]
     m.new MyConstructors(notOdd) {}; // error
   }
 

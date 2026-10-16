@@ -8,7 +8,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.StringsP;
 
 /** JavaExpression for literals. */
 public class ValueLiteral extends JavaExpression {
@@ -17,7 +19,7 @@ public class ValueLiteral extends JavaExpression {
   protected final @Nullable Object value;
 
   /** The negative of Long.MIN_VALUE, which does not fit in a long. */
-  private final BigInteger NEGATIVE_LONG_MIN_VALUE = new BigInteger("9223372036854775808");
+  private static final BigInteger NEGATIVE_LONG_MIN_VALUE = new BigInteger("9223372036854775808");
 
   /**
    * Creates a ValueLiteral from the node with the given type.
@@ -37,7 +39,7 @@ public class ValueLiteral extends JavaExpression {
    * @param type type of the literal
    * @param value the literal value
    */
-  public ValueLiteral(TypeMirror type, Object value) {
+  public ValueLiteral(TypeMirror type, @Nullable Object value) {
     super(type);
     this.value = value;
   }
@@ -50,11 +52,11 @@ public class ValueLiteral extends JavaExpression {
   public ValueLiteral negate() {
     if (TypesUtils.isIntegralPrimitive(type)) {
       if (value == null) {
-        throw new Error("null value of integral type " + type);
+        throw new BugInCF("null value of integral type " + type);
       }
       return new ValueLiteral(type, negateBoxedPrimitive(value));
     }
-    throw new Error(String.format("cannot negate: %s type=%s", this, type));
+    throw new BugInCF(String.format("cannot negate: %s type=%s", this, type));
   }
 
   /**
@@ -64,29 +66,29 @@ public class ValueLiteral extends JavaExpression {
    * @return a boxed primitive that is the negation of the argument
    */
   private Object negateBoxedPrimitive(Object o) {
-    if (value instanceof Byte) {
-      return (byte) -(Byte) value;
+    if (value instanceof Byte b) {
+      return (byte) -b;
     }
-    if (value instanceof Short) {
-      return (short) -(Short) value;
+    if (value instanceof Short s) {
+      return (short) -s;
     }
-    if (value instanceof Integer) {
-      return -(Integer) value;
+    if (value instanceof Integer i) {
+      return -i;
     }
-    if (value instanceof Long) {
-      return -(Long) value;
+    if (value instanceof Long l) {
+      return -l;
     }
-    if (value instanceof Float) {
-      return -(Float) value;
+    if (value instanceof Float f) {
+      return -f;
     }
-    if (value instanceof Double) {
-      return -(Double) value;
+    if (value instanceof Double d) {
+      return -d;
     }
     if (value instanceof BigInteger) {
       assert value.equals(NEGATIVE_LONG_MIN_VALUE);
       return Long.MIN_VALUE;
     }
-    throw new Error("Cannot be negated: " + o + " " + o.getClass());
+    throw new BugInCF("Cannot be negated: " + o + " " + o.getClass());
   }
 
   /**
@@ -98,9 +100,10 @@ public class ValueLiteral extends JavaExpression {
     return value;
   }
 
+  @SuppressWarnings("unchecked") // generic cast
   @Override
-  public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
-    return getClass() == clazz;
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
+    return getClass() == clazz ? (T) this : null;
   }
 
   @Override
@@ -109,13 +112,28 @@ public class ValueLiteral extends JavaExpression {
   }
 
   @Override
-  public boolean isUnassignableByOtherCode() {
-    return true;
+  public boolean isAssignableByOtherCode() {
+    return false;
   }
 
   @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return true;
+  public boolean isModifiableByOtherCode() {
+    return false;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof ValueLiteral other)) {
+      return false;
+    }
+    // TODO:  Can this string comparison be cleaned up?
+    // Cannot use Types.isSameType(type, other.type) because we don't have a Types object.
+    return type.toString().equals(other.type.toString()) && Objects.equals(value, other.value);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(value, type.toString());
   }
 
   @Override
@@ -133,35 +151,18 @@ public class ValueLiteral extends JavaExpression {
     return false; // not modifiable
   }
 
-  /// java.lang.Object methods
-
-  @Override
-  public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ValueLiteral)) {
-      return false;
-    }
-    ValueLiteral other = (ValueLiteral) obj;
-    // TODO:  Can this string comparison be cleaned up?
-    // Cannot use Types.isSameType(type, other.type) because we don't have a Types object.
-    return type.toString().equals(other.type.toString()) && Objects.equals(value, other.value);
-  }
-
   @Override
   public String toString() {
-    if (TypesUtils.isString(type)) {
-      return "\"" + value + "\"";
+    if (value == null) {
+      return "null";
+    } else if (TypesUtils.isString(type)) {
+      return "\"" + StringsP.escapeJava((String) value) + "\"";
     } else if (type.getKind() == TypeKind.LONG) {
-      assert value != null : "@AssumeAssertion(nullness): invariant";
       return value.toString() + "L";
     } else if (type.getKind() == TypeKind.CHAR) {
-      return "\'" + value + "\'";
+      return StringsP.charLiteral((Character) value);
     }
-    return value == null ? "null" : value.toString();
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(value, type.toString());
+    return value.toString();
   }
 
   @Override

@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Initialized Fields Checker}{initialized-fields-checker}
 
 The Initialized Fields Checker warns if a constructor does not initialize a
@@ -70,7 +69,7 @@ import org.checkerframework.checker.index.qual.Positive;
 class MyClass {
   @Positive int x;
   MyClass() {
-    foo(this);
+    foo();
     x = 1;
   }
 
@@ -106,7 +105,7 @@ class MyClass {
 \end{Verbatim}
 
 When run by itself, the Initialized Fields Checker warns that fields \<y>
-and field \<z> are not set.
+and \<z> are not set.
 
 When run together with the Index Checker, the Initialized Fields Checker
 warns that field \<y> is not set.  It does not warn about field \<z>,
@@ -134,7 +133,7 @@ The Initialized Fields type system uses the following type annotations:
 \label{fig-initialized-fields-hierarchy}
 \end{figure}
 
-Figure~\ref{fig-initialized-fields-hierarchy} shows the the subtyping
+Figure~\ref{fig-initialized-fields-hierarchy} shows the subtyping
 relationships among the type qualifiers.
 
 There is also a method declaration annotation:
@@ -148,7 +147,7 @@ There is also a method declaration annotation:
 
 \sectionAndLabel{Comparison to the Initialization Checker}{initialized-fields-vs-initialization}
 
-The Initialized Fields Checker is a lightweight version of the  Initialization Checker
+The Initialized Fields Checker is a lightweight version of the Initialization Checker
 (Section~\ref{initialization-checker}).  Here is a comparison between them.
 
 \noindent

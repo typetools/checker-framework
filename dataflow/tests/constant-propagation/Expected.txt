@@ -1,0 +1,81 @@
+2 -> 3 EACH_TO_EACH
+3 -> 4 EACH_TO_EACH
+4 -> 8 THEN_TO_BOTH
+4 -> 10 ELSE_TO_BOTH
+8 -> 11 EACH_TO_EACH
+10 -> 11 EACH_TO_EACH
+11 -> 0 EACH_TO_EACH
+
+2:
+Process order: 1
+TransferInput#0
+Before:   constant propagation = {}
+~~~~~~~~~
+<entry>
+
+3:
+Process order: 2
+TransferInput#1
+Before:   constant propagation = {}
+~~~~~~~~~
+a   [ VariableDeclaration ]
+0   [ IntegerLiteral ]    > 0
+a = 0   [ Assignment ]    > 0
+b   [ VariableDeclaration ]
+a   [ LocalVariable ]    > 0
+5   [ IntegerLiteral ]    > 5
+(a > 5)   [ GreaterThan ]
+~~~~~~~~~
+AnalysisResult#0
+After:   constant propagation = {a=0}
+
+4:
+Process order: 3
+TransferInput#10
+Before:   constant propagation = {a=0}
+~~~~~~~~~
+ConditionalBlock: then: 8, else: 10
+
+8:
+Process order: 4
+TransferInput#12
+Before:   constant propagation = {a=0}
+~~~~~~~~~
+b   [ LocalVariable ]
+a   [ LocalVariable ]
+b = a   [ Assignment ]
+expression statement b = a   [ ExpressionStatement ]
+~~~~~~~~~
+AnalysisResult#0
+After:   constant propagation = {a=0, b=0}
+
+10:
+Process order: 5
+TransferInput#13
+Before:   constant propagation = {a=0}
+~~~~~~~~~
+b   [ LocalVariable ]
+4   [ IntegerLiteral ]
+b = 4   [ Assignment ]
+expression statement b = 4   [ ExpressionStatement ]
+~~~~~~~~~
+AnalysisResult#0
+After:   constant propagation = {a=0, b=4}
+
+11:
+Process order: 6
+TransferInput#25
+Before:   constant propagation = {a=0, b=T}
+~~~~~~~~~
+b   [ LocalVariable ]
+return b   [ Return ]
+~~~~~~~~~
+AnalysisResult#0
+After:   constant propagation = {a=0, b=T}
+
+0:
+Process order: 7
+TransferInput#29
+Before:   constant propagation = {a=0, b=T}
+~~~~~~~~~
+<exit>

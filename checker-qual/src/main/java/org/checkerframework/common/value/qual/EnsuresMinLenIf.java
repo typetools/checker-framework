@@ -28,6 +28,13 @@ import org.checkerframework.framework.qual.QualifierArgument;
 @Repeatable(EnsuresMinLenIf.List.class)
 public @interface EnsuresMinLenIf {
   /**
+   * Returns the return value of the method under which the postcondition holds.
+   *
+   * @return the return value of the method under which the postcondition holds
+   */
+  boolean result();
+
+  /**
    * Returns Java expression(s) that are a sequence with the given minimum length after the method
    * returns {@link #result}.
    *
@@ -36,13 +43,6 @@ public @interface EnsuresMinLenIf {
    * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
    */
   String[] expression();
-
-  /**
-   * Returns the return value of the method under which the postcondition to hold.
-   *
-   * @return the return value of the method under which the postcondition to hold
-   */
-  boolean result();
 
   /**
    * Returns the minimum number of elements in the sequence.
@@ -63,9 +63,9 @@ public @interface EnsuresMinLenIf {
   @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
   @ConditionalPostconditionAnnotation(qualifier = MinLen.class)
   @InheritedAnnotation
-  @interface List {
+  public static @interface List {
     /**
-     * Return the repeatable annotations.
+     * Returns the repeatable annotations.
      *
      * @return the repeatable annotations
      */

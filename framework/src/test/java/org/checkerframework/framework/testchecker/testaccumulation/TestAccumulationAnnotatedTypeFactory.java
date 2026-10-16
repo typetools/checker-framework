@@ -2,6 +2,8 @@ package org.checkerframework.framework.testchecker.testaccumulation;
 
 import com.sun.source.tree.MethodInvocationTree;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
+import org.checkerframework.common.accumulation.AccumulationAnalysis;
 import org.checkerframework.common.accumulation.AccumulationAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.testchecker.testaccumulation.qual.TestAccumulation;
@@ -22,6 +24,7 @@ public class TestAccumulationAnnotatedTypeFactory extends AccumulationAnnotatedT
    *
    * @param checker the checker
    */
+  @SuppressWarnings("this-escape")
   public TestAccumulationAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(
         checker,
@@ -56,18 +59,27 @@ public class TestAccumulationAnnotatedTypeFactory extends AccumulationAnnotatedT
       // CalledMethods requires special treatment of the return values of methods that return
       // their receiver: the default return type must include the method being invoked.
       //
-      // The basic accumulation analysis cannot handle this case - it can use the RR checker to
-      // transfer an annotation from the receiver to the return type, but because accumulation (has
-      // to) happen in dataflow, the correct annotation may not yet be available. The basic
-      // accumulation analysis therefore only supports "pass-through" returns receiver methods; it
-      // does not support automatically accumulating at the same time.
+      // The basic accumulation analysis cannot handle this case - it can use the RR checker
+      // to transfer an annotation from the receiver to the return type, but because
+      // accumulation (has to) happen in dataflow, the correct annotation may not yet be
+      // available. The basic accumulation analysis therefore only supports "pass-through"
+      // returns receiver methods; it does not support automatically accumulating at the same
+      // time.
       if (returnsThis(tree)) {
+        TypeMirror tm = type.getUnderlyingType();
         String methodName = TreeUtils.getMethodName(tree.getMethodSelect());
-        AnnotationMirror oldAnno = type.getAnnotationInHierarchy(top);
+        AnnotationMirror oldAnno = type.getPrimaryAnnotationInHierarchy(top);
         type.replaceAnnotation(
-            qualHierarchy.greatestLowerBound(oldAnno, createAccumulatorAnnotation(methodName)));
+            qualHierarchy.greatestLowerBoundShallow(
+                oldAnno, tm, createAccumulatorAnnotation(methodName), tm));
       }
       return super.visitMethodInvocation(tree, type);
     }
+  }
+
+  // Overridden because there is no TestAccumulationAnalysis.
+  @Override
+  protected AccumulationAnalysis createFlowAnalysis() {
+    return new AccumulationAnalysis(this.getChecker(), this);
   }
 }

@@ -13,7 +13,6 @@ public class CalledMethodsLombokTest extends CheckerFrameworkPerDirectoryTest {
         testFiles,
         CalledMethodsChecker.class,
         "calledmethods-delomboked",
-        "-Anomsgtext",
         "-nowarn",
         "-AsuppressWarnings=type.anno.before.modifier");
   }

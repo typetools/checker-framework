@@ -1,0 +1,8 @@
+package fakeChecker.qual:
+  annotation @Annotation:
+    enum EnumClass[] values
+
+package :
+class AnnotationEnumFieldInsertion:
+method test()V:
+insert-annotation Method.body, Block.statement 0, Variable.type: @fakeChecker.qual.Annotation(values={fakeChecker.qual.EnumClass.ENUM_CONSTANT})

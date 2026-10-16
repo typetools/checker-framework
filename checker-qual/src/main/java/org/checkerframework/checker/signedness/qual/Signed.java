@@ -6,8 +6,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeKind;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.UpperBoundFor;
 
 /**
@@ -20,6 +22,7 @@ import org.checkerframework.framework.qual.UpperBoundFor;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({UnknownSignedness.class})
+@DefaultQualifierInHierarchy
 @DefaultFor(
     typeKinds = {
       TypeKind.BYTE,
@@ -29,15 +32,9 @@ import org.checkerframework.framework.qual.UpperBoundFor;
       TypeKind.FLOAT,
       TypeKind.DOUBLE
     },
-    types = {
-      java.lang.Byte.class,
-      java.lang.Integer.class,
-      java.lang.Long.class,
-      java.lang.Short.class,
-      java.lang.Float.class,
-      java.lang.Double.class
-    })
+    types = {Byte.class, Integer.class, Long.class, Short.class, Float.class, Double.class},
+    value = TypeUseLocation.EXCEPTION_PARAMETER)
 @UpperBoundFor(
     typeKinds = {TypeKind.FLOAT, TypeKind.DOUBLE},
-    types = {java.lang.Float.class, java.lang.Double.class})
+    types = {Float.class, Double.class})
 public @interface Signed {}

@@ -1,0 +1,5 @@
+public class ClassTV3<X extends @GUT.quals.Peer Object, Y extends @GUT.quals.Rep Object, Z extends @GUT.quals.Any Object> {
+  X f;
+  Y g;
+  Z h;
+}

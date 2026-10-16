@@ -27,8 +27,8 @@ public class ReturnsReceiverVisitor extends BaseTypeVisitor<ReturnsReceiverAnnot
   }
 
   @Override
-  public Void visitAnnotation(AnnotationTree node, Void p) {
-    AnnotationMirror annot = TreeUtils.annotationFromAnnotationTree(node);
+  public Void visitAnnotation(AnnotationTree tree, Void p) {
+    AnnotationMirror annot = TreeUtils.annotationFromAnnotationTree(tree);
     // Warn if a @This annotation is in an illegal location.
     if (AnnotationUtils.areSame(annot, getTypeFactory().THIS_ANNOTATION)) {
       TreePath parentPath = getCurrentPath().getParentPath();
@@ -36,24 +36,22 @@ public class ReturnsReceiverVisitor extends BaseTypeVisitor<ReturnsReceiverAnnot
       Tree grandparent = parentPath.getParentPath().getLeaf();
       Tree greatGrandparent = parentPath.getParentPath().getParentPath().getLeaf();
       boolean isReturnAnnot =
-          grandparent instanceof MethodTree
-              && (parent.equals(((MethodTree) grandparent).getReturnType())
-                  || parent instanceof ModifiersTree);
+          grandparent instanceof MethodTree gpMt
+              && (parent.equals(gpMt.getReturnType()) || parent instanceof ModifiersTree);
       boolean isReceiverAnnot =
-          greatGrandparent instanceof MethodTree
-              && grandparent.equals(((MethodTree) greatGrandparent).getReceiverParameter())
+          greatGrandparent instanceof MethodTree ggpMt
+              && grandparent.equals(ggpMt.getReceiverParameter())
               && parent.equals(((VariableTree) grandparent).getModifiers());
       boolean isCastAnnot =
-          grandparent instanceof TypeCastTree
-              && parent.equals(((TypeCastTree) grandparent).getType());
+          grandparent instanceof TypeCastTree gpTct && parent.equals(gpTct.getType());
       if (!(isReturnAnnot || isReceiverAnnot || isCastAnnot)) {
-        checker.reportError(node, "this.location");
+        checker.reportError(tree, "this.location");
       }
       if (isReturnAnnot
           && ElementUtils.isStatic(TreeUtils.elementFromDeclaration((MethodTree) grandparent))) {
-        checker.reportError(node, "this.location");
+        checker.reportError(tree, "this.location");
       }
     }
-    return super.visitAnnotation(node, p);
+    return super.visitAnnotation(tree, p);
   }
 }

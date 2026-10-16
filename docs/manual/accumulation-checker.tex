@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Building an accumulation checker}{accumulation-checker}
 
 %% This chapter should appear after the "creating a checker" chapter, or perhaps as part of it,
@@ -38,13 +37,13 @@ Define 2 or 3 type qualifiers.
 \begin{itemize}
 \item
 The ``accumulator'' type qualifier has a single argument: a \<String[]> named
-\<value> that defaults to the an empty array.  Note that the Checker Framework's
+\<value> that defaults to an empty array.  Note that the Checker Framework's
 support for accumulation analysis requires you to accumulate a string representation
 of whatever you are accumulating. For example, when accumulating which methods have
 been called, you might choose to accumulate method names.
 
 The accumulator
-qualifier should have no supertypes (\<@SubtypeOf({})>) and should
+qualifier should have no supertypes (\<@SubtypeOf(\{\})>) and should
 be the default qualifier in the hierarchy (\<@DefaultQualifierInHierarchy>).
 
 An example of such a qualifier can be found in the Checker Framework's tests:
@@ -64,7 +63,7 @@ The predicate syntax supports
 \item \<||> disjunctions
 \item \<\&\&> conjunctions
 \item \<!> logical complement.  \<"!x"> means
-``it is not true that \<x> was definitely accumulated'' or, equivalently, ``there is no path on which \<x> was accumulated''.
+``it is not true that \<x> was definitely accumulated'' or, equivalently, ``there is some path on which \<x> was not accumulated''.
 Note that this does \textbf{not} mean ``\<x> was not accumulated'' --- it is not a violation of the specification \<"!x"> if \<x> is accumulated
 on some paths, but not others.
 \item \<(...)> parentheses for precedence
@@ -89,10 +88,10 @@ you defined a predicate annotation).
 Define a class that extends \refclass{common/accumulation}{AccumulationTransfer}.
 To update the estimate of what has been accumulated, override some method in
 \refclass{framework/flow}{CFAbstractTransfer} to call
-\refmethodterse{common/accumulation}{AccumulationTransfer}{accumulate}{-org.checkerframework.dataflow.cfg.node.Node-org.checkerframework.dataflow.analysis.TransferResult-java.lang.String...-}.
+\refmethodterse{common/accumulation}{AccumulationTransfer}{accumulate}{(org.checkerframework.dataflow.cfg.node.Node,org.checkerframework.dataflow.analysis.TransferResult,java.lang.String...)}.
 
 For example, to accumulate the names of methods called, a checker would override
-\refmethod{framework/flow}{CFAbstractTransfer}{visitMethodInvocation}{-org.checkerframework.dataflow.cfg.node.MethodInvocationNode-org.checkerframework.dataflow.analysis.TransferInput-} to:
+\refmethod{framework/flow}{CFAbstractTransfer}{visitMethodInvocation}{(org.checkerframework.dataflow.cfg.node.MethodInvocationNode,org.checkerframework.dataflow.analysis.TransferInput)} to:
 call \<super> to get a \<TransferResult>, compute the method name from the \<MethodInvocationNode>,
 and then call \<accumulate>.
 
@@ -100,15 +99,29 @@ and then call \<accumulate>.
 \paragraphAndLabel{Enforcing program properties}{accumulation-enforcing}
 
 At this point, your checker ensures that all annotations are consistent
-with one another and the souce code, and it flow-sensitively refines the
+with one another and the source code, and it flow-sensitively refines the
 annotations.
-Te enforce properties in the code being type-checked, write type rules
+To enforce properties in the code being type-checked, write type rules
 (Section~\ref{creating-extending-visitor}) that are specific to your type
 system.
 
 
+\sectionAndLabel{Publications}{accumulation-publications}
+
+The paper
+\href{https://homes.cs.washington.edu/~mernst/pubs/accumulation-analysis-ecoop2022.pdf}{``Accumulation
+  Analysis''}~\cite{KelloggSSE2022} describes theoretical properties of
+accumulation analysis.  The papers
+\href{https://homes.cs.washington.edu/~mernst/pubs/object-construction-icse2020.pdf}{``Verifying
+  Object Construction''}~\cite{KelloggRSSE2020} and
+\href{https://homes.cs.washington.edu/~mernst/pubs/resource-leak-esecfse2021.pdf}{``Lightweight
+  and modular resource leak verification''}~\cite{KelloggSSE2021} describe
+specific accumulation analyses.
+
+
 % LocalWords:  SubtypeOf TestAccumulation TestAccumulationBottom
-% LocalWords:  TestAccumulationPredicate AccumulationChecker
+% LocalWords:  TestAccumulationPredicate AccumulationChecker Analysis''
 % LocalWords:  AccumulationAnnotatedTypeFactory BaseTypeChecker
 % LocalWords:  AccumulationTransfer CFAbstractTransfer TransferResult
-% LocalWords:  visitMethodInvocation MethodInvocationNode
+% LocalWords:  visitMethodInvocation MethodInvocationNode Construction''
+% LocalWords:  verification''

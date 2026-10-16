@@ -7,13 +7,13 @@ public class Issue2865<T extends @Nullable Object> {
 
     public void f(T a) {
       new C(a);
-      // :: error: (argument)
+      // :: error: [argument]
       new C(null);
     }
   }
 
   void test(Issue2865<@NonNull String> s) {
-    // :: error: (argument)
+    // :: error: [argument]
     s.new C(null);
     s.new C("");
   }

@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -49,10 +50,9 @@ public class WideningConversionNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof WideningConversionNode)) {
+    if (!(obj instanceof WideningConversionNode other)) {
       return false;
     }
-    WideningConversionNode other = (WideningConversionNode) obj;
     return getOperand().equals(other.getOperand())
         && TypesUtils.areSamePrimitiveTypes(getType(), other.getType());
   }
@@ -63,6 +63,7 @@ public class WideningConversionNode extends Node {
   }
 
   @Override
+  @SideEffectFree
   public Collection<Node> getOperands() {
     return Collections.singletonList(getOperand());
   }

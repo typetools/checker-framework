@@ -13,7 +13,6 @@ public class CalledMethodsDisableReturnsReceiverTest extends CheckerFrameworkPer
         testFiles,
         CalledMethodsChecker.class,
         "calledmethods-disablereturnsreceiver",
-        "-Anomsgtext",
         "-AdisableReturnsReceiver",
         "-encoding",
         "UTF-8");

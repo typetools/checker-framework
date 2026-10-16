@@ -6,51 +6,53 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
-import java.util.Collections;
-import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
+import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TreeUtils;
 
+/** The visitor for Fenum Checker. */
 public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
+
+  /**
+   * Creates a Fenum Visitor.
+   *
+   * @param checker the checker
+   */
   public FenumVisitor(BaseTypeChecker checker) {
     super(checker);
   }
 
   @Override
-  public Void visitBinary(BinaryTree node, Void p) {
-    if (!TreeUtils.isStringConcatenation(node)) {
-      // TODO: ignore string concatenations
-
+  public Void visitBinary(BinaryTree tree, Void p) {
+    if (!TreeUtils.isStringConcatenation(tree)) {
       // The Fenum Checker is only concerned with primitive types, so just check that
       // the primary annotations are equivalent.
-      AnnotatedTypeMirror lhsAtm = atypeFactory.getAnnotatedType(node.getLeftOperand());
-      AnnotatedTypeMirror rhsAtm = atypeFactory.getAnnotatedType(node.getRightOperand());
+      AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(tree.getLeftOperand());
+      AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(tree.getRightOperand());
 
-      Set<AnnotationMirror> lhs = lhsAtm.getEffectiveAnnotations();
-      Set<AnnotationMirror> rhs = rhsAtm.getEffectiveAnnotations();
-      QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
-      if (!(qualHierarchy.isSubtype(lhs, rhs) || qualHierarchy.isSubtype(rhs, lhs))) {
-        checker.reportError(node, "binary", lhsAtm, rhsAtm);
+      if (!(typeHierarchy.isSubtypeShallowEffective(lhs, rhs)
+          || typeHierarchy.isSubtypeShallowEffective(rhs, lhs))) {
+        checker.reportError(tree, "binary", lhs, rhs);
       }
     }
-    return super.visitBinary(node, p);
+    return super.visitBinary(tree, p);
   }
 
   @Override
-  public Void visitSwitch(SwitchTree node, Void p) {
-    ExpressionTree expr = node.getExpression();
+  public Void visitSwitch(SwitchTree tree, Void p) {
+    ExpressionTree expr = tree.getExpression();
     AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(expr);
 
-    for (CaseTree caseExpr : node.getCases()) {
-      ExpressionTree realCaseExpr = caseExpr.getExpression();
-      if (realCaseExpr != null) {
+    for (CaseTree caseExpr : tree.getCases()) {
+      List<? extends ExpressionTree> realCaseExprs = caseExpr.getExpressions();
+      // Check all the case options against the switch expression type:
+      for (ExpressionTree realCaseExpr : realCaseExprs) {
         AnnotatedTypeMirror caseType = atypeFactory.getAnnotatedType(realCaseExpr);
 
         // There is currently no "switch" message key, so it is treated
@@ -58,7 +60,7 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
         this.commonAssignmentCheck(exprType, caseType, caseExpr, "type.incompatible");
       }
     }
-    return super.visitSwitch(node, p);
+    return super.visitSwitch(tree, p);
   }
 
   @Override
@@ -74,8 +76,8 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
   }
 
   @Override
-  protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
-    return Collections.singleton(atypeFactory.FENUM_UNQUALIFIED);
+  protected AnnotationMirrorSet getExceptionParameterLowerBoundAnnotations() {
+    return new AnnotationMirrorSet(atypeFactory.FENUM_UNQUALIFIED);
   }
 
   // TODO: should we require a match between switch expression and cases?

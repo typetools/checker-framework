@@ -1,17 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <title>Checker Framework developer manual</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" href="../manual/favicon-checkerframework.png" type="image/png"/>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="../manual/favicon-checkerframework.png" type="image/png">
 </head>
 <body>
 <h1 id="Checker_Framework_developer_manual">Checker Framework developer manual</h1>
 
 <p>
   If you wish to use the Checker Framework, see its user manual
-  (<a href="https://checkerframework.org/manual/">HTML</a>,
+  (HTML: <a href="https://checkerframework.org/manual/">one page</a>,
+  <a href="https://checkerframework.org/manual/manual-multipage.html">multiple pages</a>;
   <a href="https://checkerframework.org/manual/checker-framework-manual.pdf">PDF</a>).
 </p>
 
@@ -23,6 +24,7 @@ including people who wish to edit its source code or make pull requests.
 <p>Contents:</p>
 <!-- start toc.  do not edit; run html-update-toc instead -->
     <ul>
+      <li><a href="#building-from-source">Building the Checker Framework from source</a></li>
       <li><a href="#Directory_structure">Directory structure</a>
         <ul>
           <li><a href="#Related_repositories">Related repositories</a></li>
@@ -32,7 +34,7 @@ including people who wish to edit its source code or make pull requests.
         <ul>
           <li><a href="#testing-optimizations">Testing optimizations</a></li>
         </ul></li>
-      <li><a href="#Code_style">Code style</a></li>
+      <li><a href="#code-style">Code style</a></li>
       <li><a href="#IDE_configuration">IDE configuration</a></li>
       <li><a href="#pull-requests">Pull requests</a>
         <ul>
@@ -42,13 +44,28 @@ including people who wish to edit its source code or make pull requests.
       <li><a href="#github-configuration">GitHub configuration</a></li>
       <li><a href="#ci">Continuous Integration</a>
         <ul>
-          <li><a href="#ci-failure">What to do if a Continuous Integration build fails</a></li>
+          <li><a href="#ci-github-actions">GitHub Actions</a></li>
+          <li><a href="#ci-circleci">CircleCI</a></li>
+          <li><a href="#ci-related-projects">Continuous Integration failures in related projects (daikon, plume-lib, etc.)</a></li>
+          <li><a href="#ci-failure">Reproducing Continuous Integration build failures</a></li>
         </ul></li>
       <li><a href="#Documenting_refactoring_ideas">Documenting refactoring ideas</a></li>
       <li><a href="#annotated-library-version-numbers">Version numbers for annotated libraries</a></li>
       <li><a href="#Making_a_Checker_Framework_release">Making a Checker Framework release</a></li>
+      <li><a href="#Supporting_a_new_version_of_Java">Supporting a new version of Java</a></li>
+      <li><a href="#Case_studies">Describing a case study</a></li>
+      <li><a href="#Counting_annotations">Counting annotations</a></li>
+      <li><a href="#Build_historical">Building a historical version of the Checker Framework</a></li>
     </ul>
 <!-- end toc -->
+
+
+<h2 id="building-from-source">Building the Checker Framework from source</h2>
+
+<p>
+See section <a href="https://checkerframework.org/manual/#build-source">Building
+from source</a> in the Checker Framework manual.
+</p>
 
 
 <h2 id="Directory_structure">Directory structure</h2>
@@ -60,10 +77,10 @@ repository</a> contains several related projects:
 
 <dl>
   <dt><code>framework</code></dt>
-  <dd>the framework that enables building pluggable type checkers</dd>
+  <dd>the framework that enables building pluggable type-checkers</dd>
 
   <dt><code>checker</code></dt>
-  <dd>the type checkers provided with the Checker Framework</dd>
+  <dd>the type-checkers provided with the Checker Framework</dd>
 
   <dt><code>javacutil</code></dt>
   <dd>utilities for integrating with javac</dd>
@@ -86,8 +103,7 @@ The repository also contains the following directories:
 <p>
   The <a href="https://github.com/typetools/checker-framework"><code>checker-framework</code></a> project
   depends on
-  the <a href="https://github.com/typetools/jdk"><code>typetools/jdk</code></a> project,
-  the <a href="https://github.com/typetools/annotation-tools"><code>annotation-tools</code></a> project,
+  the <a href="https://github.com/typetools/jdk"><code>typetools/jdk</code></a> project
   and the <a href="https://github.com/typetools/stubparser"><code>stubparser</code></a> project.
 When making changes to one of these projects, you may also need to make changes to one or more of the others.
 </p>
@@ -102,14 +118,24 @@ The same is true for the other projects.
 </p>
 
 <p>
-If a change spans multiple projects, make pull requests for all of them.  Each pull request description's should link to all the others.
+You do not need to explicitly build the <code>jdk</code> repository.  Building
+the Checker Framework (say, via <code>./gradlew assemble</code>) automatically
+makes the Checker Framework use the annotated JDK that exists
+at <code>../jdk/</code> &mdash; that is, as a sibling directory of the Checker
+Framework named <code>jdk</code>.
+</p>
+
+<p>
+If a change spans multiple projects, make pull requests for all of them.
+Each pull request description should link to all the others.
 </p>
 
 <p>
 Furthermore, whenever you make a pull request from
 a <code>checker-framework</code> branch A into branch B, if B has a
 corresponding <code>jdk</code>
-branch, then A also needs one (even if identical to B's version).
+branch, then A also needs one.
+A needs the branch even if A's branch is identical to B's.
 </p>
 
 
@@ -134,12 +160,14 @@ wrapper</a>.
 Frequently-used tasks:
 </p>
 <ul>
-  <li> <code>assemble</code>: builds all jars.
+  <li> <code>assemble</code>: builds all artifacts, including jars and Javadoc jars.
+  <li> <code>assembleForJavac</code>: builds only the jars required to use <code>checker/bin/javac</code>; faster than <code>assemble</code>.
   <li> <code>build</code>: <code>assemble</code>, plus runs all JUnit tests.
   <li> <code>allTests</code>: runs all tests.
-  <li> <code>reformat</code>: reformats Java files.
-  <li> <code>NameOfJUnitTest</code>: runs the JUnit test with that name; for example, <code>NullnessTest</code>.
-  <li> <code>task</code>: lists tasks; use <code>--all</code> to see all tasks.
+  <li> <code>spotlessApply</code>: reformats Java files.
+  <li> <code>spotlessCheck</code>: checks formatting of Java files.
+  <li> <code><em>NameOfJUnitTest</em></code>: runs the JUnit test with that name; for example, <code>NullnessTest</code>.
+  <li> <code>tasks</code>: lists tasks; use <code>--all</code> to see all tasks.
 </ul>
 
 <p>
@@ -152,21 +180,40 @@ Alternatively, running <code>:framework:allTests</code> from the
 main directory or any subproject runs the <code>allTests</code> task only in the <code>framework</code> project.
 </p>
 
+<p>
+An iterative build-test-debug cycle where you assemble the Checker Framework
+and execute its tests can sometimes lead to a state where Gradle is not able to
+compile and build the system for no obvious reason.
+This is especially common when you kill tests before they fully finish, or kill
+compilation before it is fully complete, leading to a bad state or an
+inconsistent build cache.
+</p>
+
+<p>
+Below are some steps you might try to resolve this issue (in order):
+</p>
+<ul>
+  <li><code>./gradlew --no-build-cache assemble</code>: attempts to rebuild the Checker Framework without the build cache.
+  <li>Kill any Gradle daemons; run <code>./gradlew --status</code> to get a list of PIDs for Gradle.
+  <li><code>git clean -fdx</code>: removes all files that are not under version control. <b>Add or stash files that you would like to
+      keep before running this command</b>.
+  <li>Delete the Gradle build cache, usually located at <code>~/.gradle/caches</code>. Note: this will delete the entire build
+      cache, including the cache for other Gradle projects on your machine; the build step for the Checker Framework will need to re-download all required dependencies.
+</ul>
 
 <h2 id="tests">Testing the Checker Framework</h2>
 
 <p>
-For writing new test cases, see file <a href="https://raw.githubusercontent.com/typetools/checker-framework/master/checker/tests/README"><code>checker/tests/README</code></a>.
+For writing new test cases, see file <a href="https://github.com/typetools/checker-framework/blob/master/checker/tests/README.md"><code>checker/tests/README.md</code></a>.
 </p>
 
 
 <h3 id="testing-optimizations">Testing optimizations</h3>
 
 <p>
-To test an optimization that should speed up type-checking, see
-the <code>test-daikon.sh</code> stage of the <code>daikon_jdk8</code> job
-of the Azure Pipelines CI job.  Compare the run time of this stage (or of
-the entire <code>daikon_jdk8</code> job) between the master branch and a
+To test an optimization that should speed up type-checking, see a
+CI execution of <code>test-daikon-part<em>N</em>.sh</code>.
+Compare the run time between the master branch and a
 branch with your improvements.
 </p>
 
@@ -175,28 +222,27 @@ You can also compare run times of the Checker Framework test suite.
 </p>
 
 
-<h2 id="Code_style">Code style</h2>
+<h2 id="code-style">Code style</h2>
 
 <p>
 Code in this project follows the
 <a href="https://google.github.io/styleguide/javaguide.html">Google Java Style
-  Guide</a> (except 4 spaces are used for indentation),
+  Guide</a>,
 <a href="https://homes.cs.washington.edu/~mernst/advice/coding-style.html">Michael
-Ernst's coding style guidelines</a>, and <a href="http://www.oracle.com/technetwork/java/javase/documentation/codeconventions-136091.html#248">Oracle's
+Ernst's coding style guidelines</a>, and <a href="https://www.oracle.com/java/technologies/javase/codeconventions-indentation.html">Oracle's
 Java code conventions</a>.
 </p>
 
 <p>
-From the command line, you can format your code by running <code>./gradlew reformat</code>.
+From the command line, you can format your code by running <code>./gradlew spotlessApply</code>.
 You
 can <a href="https://github.com/google/google-java-format#using-the-formatter">configure
-your IDE</a> (Eclipse or IntelliJ) to use the formatting (don't forget the
-non-standard <code>-a</code> flag).
+your IDE</a> (Eclipse or IntelliJ) to use the formatting.
 </p>
 
 <p>
 We don't use <code>@author</code> Javadoc tags in code files.
-Doing so clutters the code, and is misleading once that individual
+Doing so clutters the code and is misleading once the author
 is no longer maintaining the code.
 Authorship (and who has made changes recently) can be obtained from the
 version control system, such as by running <code>git annotate <em>filename</em></code>.
@@ -205,6 +251,13 @@ version control system, such as by running <code>git annotate <em>filename</em><
 <p>
   Every class, method, and field (even private ones) must have a
   descriptive Javadoc comment.
+</p>
+
+<p>
+If a nested class has a very common and generic name, do
+not <code>import</code> it.  In code, write the outer and inner class name
+(as in <code>Tree.Kind</code> or <code>Map.Entry</code>) rather than just
+the simple name <code>Kind</code> or <code>Entry</code>.
 </p>
 
 
@@ -218,7 +271,7 @@ After that succeeds, import the projects into your IDE as Gradle projects.
 </p>
 
 <p>
-If your IDE cannot find <code>com.sun.source.*</code> packages, try changing the project JDK to JDK 11.
+If your IDE cannot find <code>com.sun.source.*</code> packages, try changing the project JDK to JDK 17 or JDK 21.
 </p>
 
 
@@ -236,8 +289,8 @@ necessary) revert.
 <p>
 The pull request title should clearly explain the change.  It will be used
 as the commit message for your change.  If the pull request fixes an issue
-in the issue tracker, its title should end with "; fixes #NNN" where NNN is
-the fixed issue.
+in the issue tracker, its title should end with "; fixes #NNN", where NNN is
+the number of the fixed issue.
 </p>
 
 <p>
@@ -284,13 +337,8 @@ Ernst's advice about creating GitHub pull requests</a>.
 </p>
 
 <p>
-Azure Pipelines has a bug:  whenever two CI jobs would run code with the same
-commit hash, it re-uses a previous execution result.  This is a bug because the
-CI job's behavior may depend on the branch name and other factors that are
-independent of the commit hash.  This means that you may see spurious successes
-or failures when your branch of (say) the <code>jdk</code> repository has the
-identical commit hash to some other branch that Azure Pipelines previous ran a
-job for.
+  You may need to make changes to multiple repositories.
+  See <a href="#Related_repositories">"Related repositories"</a> above.
 </p>
 
 
@@ -338,7 +386,7 @@ contributors</a>.
 <p>
 You will want your own GitHub fork of any project you plan to modify.  We
 recommend that, for each fork, you configure GitHub
-to <a href="https://help.github.com/en/github/administering-a-repository/managing-the-automatic-deletion-of-branches">delete
+to <a href="https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-the-automatic-deletion-of-branches">delete
 branches after they are merged</a>.
 </p>
 
@@ -346,57 +394,107 @@ branches after they are merged</a>.
 <h2 id="ci">Continuous Integration</h2>
 
 <p>
-The Checker Framework has continuous integration jobs that run in Azure
-Pipelines, CircleCI, and/or Travis CI on each push to GitHub.
-We recommend Azure Pipelines.
+The Checker Framework has continuous integration jobs that run in
+CircleCI and/or GitHub Actions on each push to GitHub.
 </p>
 
-<p>
-  To enable Azure Pipelines continuous integration for your fork:
-  (This is a summary of the <a href="https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops">Azure
-  Pipelines getting started directions</a>.)
-</p>
-<ul>
-  <li>Browse to <a href="https://dev.azure.com/">dev.azure.com</a>.
-      (You might need to create a (free) account.)</li>
-  <li>Click "Create a project to get started" and enter an appropriate name</li>
-  <li>Click "public".</li>
-  <li>Click "create project"</li>
-  <li>At the left, click the blue rocket labeled "pipelines"</li>
-  <li>Click "new pipeline"</li>
-  <li>Click "GitHub"
-      (You might need to authorize the app on GitHub.)</li>
-  <li>Click "Select a repository"</li>
-  <li>Choose <em>MYUSERID</em>/checker-framework</li>
-  <li>Choose the default radio button, "only selected repositories".  <b>Do not</b> choose "all repositories".</li>
-  <li>Choose "Existing Azure Pipelines YAML file"</li>
-  <li>Select "/azure-pipelines.yml" in the dropdown menu</li>
-  <li>Approve and install.</li>
-  <li>Click "run".</li>
-</ul>
+
+<h3 id="ci-github-actions">GitHub Actions</h3>
 
 <p>
-  To enable Travis CI continuous integration for your fork:
+  GitHub Actions CI should run automatically, without any setup on your part.
+</p>
+
+
+<h3 id="ci-circleci">CircleCI</h3>
+
+<p>
+  To enable CircleCI continuous integration for your fork:
 </p>
 <ul>
-  <li>Browse to <a href="https://travis-ci.com/">travis-ci.com</a></li>
-  <li>Click the downarrow for the dropdown, near your face in the upper right corner</li>
-  <li>Click settings</li>
-  <li>Find "checker-framework" in the list, and click the slider to enable it.</li>
+  <li>Browse to <a href="https://circleci.com/">circleci.com</a></li>
+  <li>Click "Log in"</li>
+  <li>Click "Log in with GitHub"</li>
+  <li>Authorize CircleCI on GitHub</li>
+  <li>Choose the organization; often it is your GitHub username</li>
+  <li>In the left bar, click "Projects"</li>
+  <li>Find "checker-framework" in the list, and click "set up" on the right</li>
+  <li>Choose the default radio button: "Fastest: Use the .circleci/config.yml in my repo"</li>
+  <li>Choose a branch that contains the .circleci/config.yml file, often the master branch</li>
+  <li>Click "Set up project".</li>
 </ul>
 
-
-<h3 id="ci-failure">What to do if a Continuous Integration build fails</h3>
+<h3 id="ci-related-projects">Continuous Integration failures in related projects (daikon, plume-lib, etc.)</h3>
 
 <p>
-Sometimes, CI tests for your pull request may fail even though your local build passed.
-This is usually because the CI service performed more tests than you ran locally.
+  Continuous integration type-checks external projects such as the daikon and
+  plume-lib libraries.  If you change the Checker Framework, then you might need
+  to change code being type-checked &mdash; for example, to fix a newly-revealed
+  defect (bug) or to remove a warning suppression that is no longer necessary.
 </p>
 
 <p>
-First, examine the CI service's logs, which contain diagnostic output from the
-failing command.  You can determine which command was run from the logs, or
-from the CI configuration file (such as <code>azure-pipelines.yml</code>).
+  Suppose that Checker Framework pull request #2222 is from fork ORG (that is,
+  GitHub organization ORG) and branch B.  The pull request is to
+  organization <code>typetools</code>, project <code>checker-framework</code>,
+  and branch <code>master</code>.
+</p>
+
+<ol>
+  <li>
+    Create a fork of the relevant project (such
+    as <a href="https://github.com/codespecs/daikon">daikon</a>
+    or <a href="https://github.com/plume-lib/plume-util">plume-util</a>) in
+    GitHub organization ORG.
+  </li>
+  <li>
+    Create a branch, in ORG, with exactly the same name as B.
+  </li>
+  <li>
+    Create a pull request for the new branch.  In the description of that pull
+    request, write "Merge with
+    https://github.com/typetools/checker-framework/pull/<em>2222</em>".
+  </li>
+  <li>
+    Edit the description of pull request #2222 to refer back to the
+    newly-created pull request:  "Merge with
+    https://github.com/<em>UPSTREAM_ORG</em>/<em>PROJECT</em>/pull/<em>NNN</em>".
+  </li>
+</ol>
+
+<p>
+  When CI runs for the new pull request, it will use your fork and branch of the
+  Checker Framework.  When CI runs for your Checker Framework pull request, it
+  will type-check the newly-created branch.  When all the CI runs pass, merge all
+  the branches in quick succession &mdash; that is, click the squash-and-merge
+  buttons one after another.
+</p>
+
+
+<h3 id="ci-failure">Reproducing Continuous Integration build failures</h3>
+
+<p>
+If a CI job fails, examine the CI logs.
+</p>
+
+<p>
+You can also run the same test locally.  Each CI job runs a different command.
+You can see the commands in
+file <a href="https://github.com/typetools/checker-framework/blob/master/.github/workflows/ci.yml"><code>.github/workflows/ci.yml</code></a>
+(usually on lines starting with <code>run:</code>) or in
+file <a href="https://github.com/typetools/checker-framework/blob/master/.circleci/config.yml"><code>.circleci/config.yml</code></a>
+(usually on lines starting with <code>command:</code>).
+</p>
+
+<p>
+Sometimes, CI tests for your pull request may fail even though the same command
+passed locally.  First, ensure you are using the same JDK.  Second, all CI tests
+are run in a Docker container, and you can use that container if necessary.  The
+container names are in
+file <a href="https://github.com/typetools/checker-framework/blob/master/.github/workflows/ci.yml"><code>.github/workflows/ci.yml</code></a>
+(on lines starting with <code>image:</code>) or in
+file <a href="https://github.com/typetools/checker-framework/blob/master/.circleci/config.yml"><code>.circleci/config.yml</code></a>
+(on lines starting with <code>- image:</code>).
 </p>
 
 
@@ -404,8 +502,8 @@ from the CI configuration file (such as <code>azure-pipelines.yml</code>).
 
 <p>
 Don't open issues for code improvement ideas (such as potential refactorings).
-If it can be described concisely and is unlikely to be rediscovered by other
-people, write a TODO comment in the code.  The code comment is more likely to be
+If the idea can be described concisely and is unlikely to be rediscovered by
+other people, write a TODO comment in the code.  The code comment is more likely to be
 noticed by someone
 working with the code, and it is equally easy to search for.  Furthermore,
 it doesn't clutter the issue tracker.  Clutter in the issue tracker reduces
@@ -421,7 +519,7 @@ lower-quality than it actually is.
   code appears in a fork in
   the <a href="https://github.com/typetools">GitHub <code>typetools</code>
   organization</a>.  Binaries are hosted
-  at <a href="https://search.maven.org/search?q=annotatedlib">Maven Central
+  at <a href="https://central.sonatype.com/search?q=annotatedlib">Maven Central
   in the <code>org.checkerframework.annotatedlib</code> group</a>.
 </p>
 
@@ -445,15 +543,171 @@ for example to 6.2.0.2.
 <h2 id="Making_a_Checker_Framework_release">Making a Checker Framework release</h2>
 
 <p>
-See a separate document about the
-<a href="release/README-release-process.html">Checker Framework release process</a>.
+See a separate document about the Checker Framework release process:
+<a href="https://htmlpreview.github.io/?https://github.com/typetools/checker-framework/blob/master/docs/developer/release/README-release-process.html">web version (from previous release)</a> or
+<!-- This relative URL works from a clone, but not from the web. -->
+<a href="release/README-release-process.html">local version (link works if
+  you are reading the Checker Framework Developer Manual from a clone of the
+  Checker Framework repository)</a>.
+</p>
+
+
+<h2 id="Supporting_a_new_version_of_Java">Supporting a new version of Java</h2>
+
+<p>
+To upgrade the Checker Framework to use a newer version of Java:
+</p>
+
+<pre>
+# Create a branch named "java-23".
+cd $t/checker-framework-fork-mernst-branch-master
+gnb java-23
+cd $t/checker-framework-fork-mernst-branch-java-23
+
+# Edit:
+checker/bin/wpi.sh
+checker/bin/wpi-many.sh (diff it against wpi.sh)
+# Rename and edit:
+checker/bin-devel/Dockerfile-ubuntu-jdkXX
+checker/bin-devel/Dockerfile-ubuntu-jdkXX-plus (diff it against Dockerfile-ubuntu-jdkXX)
+# Further search for: (java|jdk).?23\b
+# Don't push changes yet.
+
+# Use the latest version of Gradle, which supports the new JDK version
+# (see https://docs.gradle.org/current/userguide/compatibility.html):
+for wmtest in wpi-many-tests-bcel-util wpi-many-tests-bibtex-clean wpi-many-tests-ensures-called-methods wpi-many-tests-html-pretty-print wpi-many-tests-owning-field -wpi-many-tests-bibtex-clean ; do
+  cd $t/$wmtest && \
+  (./gradlew wrapper --gradle-version 8.10 && ./gradlew build --warning-mode=all) && \
+  git commit -m "Use Gradle 8.10" gradle/wrapper/gradle-wrapper.properties && \
+  git push
+done
+# Now update file checker/tests/wpi-many/testin.txt.
+
+# Build the Docker images for the newest JDK version (others need not be rebuilt).
+
+# Push changes.  Fix any build failures.
+</pre>
+
+
+<h2 id="Case_studies">Describing a case study</h2>
+
+<p>
+  After you have performed a case study of applying some checker to an
+  open-source codebase, you should have:
+</p>
+
+<ul>
+  <li>
+    the unannotated code, as of the time/commit you started annotating it.
+    This might be in your forked repository, or in an upstream repository.
+  </li>
+  <li>
+    the annotated code.  Typically, this is in a branch of your forked repository.
+
+    <p>
+    In the annotated code, each <code>@SuppressWarnings</code> annotation should have a brief justification, explaining why the code is correct and the warning is a false positive.
+    The justification should be a <code>//</code>-style comment, on the same line as the argument to <code>@SuppressWarnings</code>.  For example:
+    </p>
+
+<pre>
+  @SuppressWarnings("nullness:assignment") // dynamic check: checked against null immediately above
+
+  @SuppressWarnings({
+    "nullness:assignment" // dynamic check: checked against null immediately above
+  })
+</pre>
+
+    If there are more than about 10 warning suppressions, prefix each one by a
+    category followed by a colon (as with "dynamic check:" above), to aid in
+    computing statistics about the causes of false positive warnings.
+
+  </li>
+  <li>
+    the command to run the type-checker(s) on the annotated code.
+  </li>
+  <li>
+    a list of all the bugs you fixed, with a brief description of each.  The
+    description can point to pull requests, or commits, or just be text; provide
+    whatever is most helpful.
+  </li>
+</ul>
+
+
+<h2 id="Counting_annotations">Counting annotations</h2>
+
+<p>
+After you have annotated a project, you may wish to count the annotations that you have written.
+These programs will help you do that:
+</p>
+
+<ul>
+  <li><a href="https://checkerframework.org/api/org/checkerframework/common/util/count/AnnotationStatistics.html">AnnotationStatistics</a></li>
+  <li><a href="https://checkerframework.org/api/org/checkerframework/common/util/count/JavaCodeStatistics.html">JavaCodeStatistics</a></li>
+  <li><a href="https://checkerframework.org/api/org/checkerframework/common/util/count/report/ReportChecker.html">ReportChecker</a></li>
+  <li><a href="https://github.com/typetools/checker-framework/blob/master/checker/bin-devel/count-suppression-reasons">count-suppression-reasons</a></li>
+</ul>
+
+
+<h2 id="Build_historical">Building a historical version of the Checker Framework</h2>
+
+<p>
+The use of four different repositories, as explained in
+"<a href="#Related_repositories">Related repositories</a>" above, means that you
+cannot just check out an old version of the Checker Framework and build it
+with <code>./gradlew assemble</code>.  By default, the Checker Framework build
+uses the latest version of the other three repositories, which are rarely
+compatible with an old version of the Checker Framework.  One symptom of the
+problem is a "Can't find stubparser jar" error message.
+</p>
+
+<p>
+To build an old version of the Checker Framework, you need to use old versions
+of the other repositories as well.  Clone them into siblings of
+the <code>checker-framework/</code> directory that holds your old version of the
+Checker Framework.
+</p>
+
+<p>
+Here are <b>general rules</b>:
+If the Checker Framework version is a commit on branch B with date D, then use
+the commits on other repositories' branch B (or <code>master</code>, if branch B
+does not exist) that precede D.  (This isn't quite right, because the commits
+may have been made earlier but all pushed at the same time, so you might need to
+look at commits that are relatively soon after D.)  To obtain these, view the
+GitHub history and click on the pull request to see the commits that were merged
+into it.  You cannot obtain these from the Git history, because after a pull
+request is merged, the commits in the pull request branch are squashed and the
+branch is deleted.
+</p>
+
+<p>
+  Here are <b>special cases</b>:
+</p>
+<ul>
+  <li>
+    If you are building an old <em>released</em> version of the Checker Framework,
+    then <code>annotation-tools</code> should have a corresponding tag for the
+    release.
+  </li>
+  <li>
+    Recently, any Stubparser change that breaks building the Checker
+    Framework should have a new version number.  So you should check out
+    Stubparser to the commit that changed the version number (to what it is
+    in <code>checker-framework/build.gradle</code>).
+  </li>
+</ul>
+
+<p>
+  The script <code>checker/bin-devel/checkout-historical.sh</code> approximates
+  these rules.  It is able to build the Checker Framework back through at least
+  mid-April 2019.  It cannot build the Checker Framework as of mid-January 2019.
 </p>
 
 
 </body>
 </html>
 
-<!--  LocalWords:  TODO javacutil gradle javadoc reformats subprojects pre NullAway CircleCI travis ci downarrow dropdown MYUSERID NNN doesn
+<!--  LocalWords:  TODO javacutil gradle javadoc reformats subprojects pre NullAway CircleCI travis ci downarrow dropdown MYUSERID NNN doesn AnnotationStatistics JavaCodeStatistics stubparser wpi Dockerfile ubuntu jdkXX jdk wmtest bcel util bibtex html cd ReportChecker pids mernst gnb DevOps PIDs circleci repo
  -->
-<!--  LocalWords:  subproject personalblog changelog config SOMEDOMAIN YAML
+<!--  LocalWords:  subproject personalblog changelog config SOMEDOMAIN YAML isn
  -->

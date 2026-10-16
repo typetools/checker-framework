@@ -1,14 +1,10 @@
 package org.checkerframework.common.returnsreceiver;
 
-import java.lang.annotation.Annotation;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.returnsreceiver.qual.BottomThis;
 import org.checkerframework.common.returnsreceiver.qual.This;
-import org.checkerframework.common.returnsreceiver.qual.UnknownThis;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
@@ -20,8 +16,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
-   * The {@code @}{@link This} annotation. The field is package visible due to a use in {@link
-   * ReturnsReceiverVisitor}
+   * The {@code @}{@link This} annotation. The field is package visible (i.e., "package private")
+   * due to a use in {@link ReturnsReceiverVisitor}
    */
   final AnnotationMirror THIS_ANNOTATION;
 
@@ -30,15 +26,11 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
    *
    * @param checker the type-checker associated with this factory
    */
+  @SuppressWarnings("this-escape")
   public ReturnsReceiverAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     THIS_ANNOTATION = AnnotationBuilder.fromClass(elements, This.class);
     this.postInit();
-  }
-
-  @Override
-  protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    return getBundledTypeQualifiers(BottomThis.class, UnknownThis.class, This.class);
   }
 
   @Override
@@ -73,19 +65,17 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
       // If any FluentAPIGenerator indicates the method returns this,
       // add an @This annotation on the return type.
       if (FluentAPIGenerator.check(t)) {
-        if (!returnType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
-          returnType.addAnnotation(THIS_ANNOTATION);
-        }
+        returnType.addMissingAnnotation(THIS_ANNOTATION);
       }
 
-      // If return type is annotated with @This, add @This annotation to the receiver type.  We
-      // cannot yet default all receivers to be @This due to
+      // If return type is annotated with @This, add @This annotation to the receiver type.
+      // We cannot yet default all receivers to be @This due to
       // https://github.com/typetools/checker-framework/issues/2931
-      AnnotationMirror retAnnotation = returnType.getAnnotationInHierarchy(THIS_ANNOTATION);
+      AnnotationMirror retAnnotation = returnType.getPrimaryAnnotationInHierarchy(THIS_ANNOTATION);
       if (retAnnotation != null && AnnotationUtils.areSame(retAnnotation, THIS_ANNOTATION)) {
         AnnotatedTypeMirror.AnnotatedDeclaredType receiverType = t.getReceiverType();
-        if (receiverType != null && !receiverType.isAnnotatedInHierarchy(THIS_ANNOTATION)) {
-          receiverType.addAnnotation(THIS_ANNOTATION);
+        if (receiverType != null) {
+          receiverType.addMissingAnnotation(THIS_ANNOTATION);
         }
       }
       return super.visitExecutable(t, p);

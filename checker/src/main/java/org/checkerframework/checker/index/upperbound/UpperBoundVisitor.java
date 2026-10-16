@@ -6,7 +6,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.Collections;
 import java.util.List;
@@ -19,23 +18,26 @@ import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.samelen.SameLenAnnotatedTypeFactory;
 import org.checkerframework.checker.index.upperbound.UBQualifier.LessThanLengthOf;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.ValueLiteral;
+import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ExpressionAndOffset;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory.JavaExpressionAndOffset;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -74,12 +76,13 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
   /** Warns about LTLengthOf annotations with arguments whose lengths do not match. */
   @Override
-  public Void visitAnnotation(AnnotationTree node, Void p) {
-    AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(node);
+  public Void visitAnnotation(AnnotationTree tree, Void p) {
+    AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(tree);
     if (atypeFactory.areSameByClass(anno, LTLengthOf.class)) {
-      List<? extends ExpressionTree> args = node.getArguments();
+      List<? extends ExpressionTree> args = tree.getArguments();
       if (args.size() == 2) {
-        // If offsets are provided, there must be the same number of them as there are arrays.
+        // If offsets are provided, there must be the same number of them as there are
+        // arrays.
         List<String> sequences =
             AnnotationUtils.getElementValueArray(
                 anno, atypeFactory.ltLengthOfValueElement, String.class);
@@ -88,7 +91,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                 anno, atypeFactory.ltLengthOfOffsetElement, String.class, Collections.emptyList());
         if (sequences.size() != offsets.size() && !offsets.isEmpty()) {
           checker.reportError(
-              node, "different.length.sequences.offsets", sequences.size(), offsets.size());
+              tree, "different.length.sequences.offsets", sequences.size(), offsets.size());
           return null;
         }
       }
@@ -102,11 +105,11 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
       // check that each expression is parsable at the declaration of this class
       ClassTree enclosingClass = TreePathUtil.enclosingClass(getCurrentPath());
-      checkEffectivelyFinalAndParsable(seq, enclosingClass, node);
-      checkEffectivelyFinalAndParsable(from, enclosingClass, node);
-      checkEffectivelyFinalAndParsable(to, enclosingClass, node);
+      checkEffectivelyFinalAndParsable(seq, enclosingClass, tree);
+      checkEffectivelyFinalAndParsable(from, enclosingClass, tree);
+      checkEffectivelyFinalAndParsable(to, enclosingClass, tree);
     }
-    return super.visitAnnotation(node, p);
+    return super.visitAnnotation(tree, p);
   }
 
   /**
@@ -125,14 +128,14 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
           StringToJavaExpression.atTypeDecl(
               s, TreeUtils.elementFromDeclaration(classTree), checker);
     } catch (JavaExpressionParseException e) {
-      checker.report(whereToReportError, e.getDiagMessage());
+      checker.report(whereToReportError, new DiagMessage(e));
       return;
     }
     Element element = null;
-    if (je instanceof LocalVariable) {
-      element = ((LocalVariable) je).getElement();
-    } else if (je instanceof FieldAccess) {
-      element = ((FieldAccess) je).getField();
+    if (je instanceof LocalVariable lv) {
+      element = lv.getElement();
+    } else if (je instanceof FieldAccess fa) {
+      element = fa.getField();
     } else if (je instanceof ThisReference || je instanceof ValueLiteral) {
       return;
     }
@@ -194,11 +197,13 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
   }
 
   @Override
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       Tree varTree,
       ExpressionTree valueTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
+
+    boolean result = true;
 
     // check that when an assignment to a variable b declared as @HasSubsequence(a, from, to)
     // occurs, to <= a.length, i.e. to is @LTEqLengthOf(a).
@@ -231,6 +236,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             subSeq.array,
             subSeq.array,
             subSeq.array);
+        result = false;
       } else {
         checker.reportWarning(
             valueTree,
@@ -245,32 +251,37 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
       }
     }
 
-    super.commonAssignmentCheck(varTree, valueTree, errorKey, extraArgs);
+    result = super.commonAssignmentCheck(varTree, valueTree, errorKey, extraArgs) && result;
+    return result;
   }
 
   @Override
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       ExpressionTree valueTree,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
     AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueTree);
     commonAssignmentCheckStartDiagnostic(varType, valueType, valueTree);
+    boolean result = true;
+    String diagnosticMessage = "";
     if (!relaxedCommonAssignment(varType, valueTree)) {
       commonAssignmentCheckEndDiagnostic(
           "relaxedCommonAssignment did not succeed, now must call super",
           varType,
           valueType,
           valueTree);
-      super.commonAssignmentCheck(varType, valueTree, errorKey, extraArgs);
-    } else if (checker.hasOption("showchecks")) {
-      commonAssignmentCheckEndDiagnostic(
-          true, "relaxedCommonAssignment", varType, valueType, valueTree);
+      result = super.commonAssignmentCheck(varType, valueTree, errorKey, extraArgs);
+      if (!result && showchecks) {
+        diagnosticMessage = "relaxedCommonAssignment()=>false and super()=>false";
+      }
     }
+    commonAssignmentCheckEndDiagnostic(result, diagnosticMessage, varType, valueType, valueTree);
+    return result;
   }
 
   /**
-   * Returns whether the assignment is legal based on the relaxed assignment rules.
+   * Returns true if the assignment is legal based on the relaxed assignment rules.
    *
    * <p>The relaxed assignment rules are the following: Assuming the varType (left-hand side) is
    * less than the length of some array given some offset
@@ -298,8 +309,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
    * @return true if the assignment is legal based on special Upper Bound rules
    */
   private boolean relaxedCommonAssignment(AnnotatedTypeMirror varType, ExpressionTree valueExp) {
-    if (valueExp.getKind() == Kind.NEW_ARRAY && varType.getKind() == TypeKind.ARRAY) {
-      List<? extends ExpressionTree> expressions = ((NewArrayTree) valueExp).getInitializers();
+    if (valueExp instanceof NewArrayTree nat && varType.getKind() == TypeKind.ARRAY) {
+      List<? extends ExpressionTree> expressions = nat.getInitializers();
       if (expressions == null || expressions.isEmpty()) {
         return false;
       }
@@ -331,17 +342,22 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
    *
    * <p>This is useful for expressions like "n+1", for which {@link #parseJavaExpressionString}
    * returns null because the whole expression is not a receiver.
+   *
+   * @param s a Java expression, possibly with a constant offset
+   * @param atypeFactory the type factory
+   * @param currentPath the location at which {@code s} is evaluated
+   * @return the JavaExpression and offset for {@code s}, or null if {@code s} cannot be parsed
    */
-  static Pair<JavaExpression, String> getExpressionAndOffsetFromJavaExpressionString(
+  static @Nullable JavaExpressionAndOffset getExpressionAndOffsetFromJavaExpressionString(
       String s, UpperBoundAnnotatedTypeFactory atypeFactory, TreePath currentPath) {
 
-    Pair<String, String> p = AnnotatedTypeFactory.getExpressionAndOffset(s);
+    ExpressionAndOffset p = AnnotatedTypeFactory.getExpressionAndOffset(s);
 
-    JavaExpression je = parseJavaExpressionString(p.first, atypeFactory, currentPath);
+    JavaExpression je = parseJavaExpressionString(p.expression(), atypeFactory, currentPath);
     if (je == null) {
       return null;
     }
-    return Pair.of(je, p.second);
+    return new JavaExpressionAndOffset(je, p.offset());
   }
 
   /**
@@ -351,12 +367,15 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
    *
    * <p>This wraps GenericAnnotatedTypeFactory#parseJavaExpressionString.
    */
-  static JavaExpression parseJavaExpressionString(
+  static @Nullable JavaExpression parseJavaExpressionString(
       String s, UpperBoundAnnotatedTypeFactory atypeFactory, TreePath currentPath) {
     JavaExpression result;
     try {
       result = atypeFactory.parseJavaExpressionString(s, currentPath);
     } catch (JavaExpressionParseException e) {
+      // Do not report the error.  As the Javadoc says, failing to parse is an ordinary outcome
+      // for a string that is not a Java expression, such as "n+1".  If the string does come from
+      // an annotation, DependentTypesHelper reports the error.
       result = null;
     }
     return result;
@@ -403,8 +422,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
     // Take advantage of information available on a HasSubsequence(a, from, to) annotation
     // on the lhs qualifier (varLtlQual):
-    // this allows us to show that iff varLtlQual includes LTL(b), b has HSS, and expQual includes
-    // LTL(a, -from), then the LTL(b) can be removed from varLtlQual.
+    // this allows us to show that iff varLtlQual includes LTL(b), b has HSS, and expQual
+    // includes LTL(a, -from), then the LTL(b) can be removed from varLtlQual.
 
     UBQualifier newLHS = processSubsequenceForLHS(varLtlQual, expQual);
     if (newLHS.isUnknown()) {
@@ -451,7 +470,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     return true;
   }
 
-  /* Returns the new value of the left hand side after processing the arrays named in the lhs.
+  /* Returns the new value of the left-hand side after processing the arrays named in the lhs.
    * Iff varLtlQual includes LTL(lhsSeq),
    * lhsSeq has HSS, and expQual includes LTL(a, -from), then the LTL(lhsSeq) will be removed from varLtlQual
    */
@@ -481,7 +500,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
   }
 
   /**
-   * Tests whether replacing any of the arrays in sameLenArrays with arrayName makes expQual
+   * Returns true if replacing any of the arrays in sameLenArrays with arrayName makes expQual
    * equivalent to varQual.
    */
   private boolean testSameLen(

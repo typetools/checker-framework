@@ -1,0 +1,14 @@
+package org.checkerframework.afu.annotator.tests;
+
+import java.util.List;
+
+public class TypeCastMultiple {
+  public void foo(Object o) {
+    List myList = (@java.lang.UnderInitialization List) o;
+    Integer i = (@java.lang.Tainted Integer) o;
+    String s = (String) ((@java.lang.Tainted CharSequence) o);
+    Object n = (@A String & @B Comparable<@C String> & @D CharSequence) null;
+    System.out.println(myList);
+    System.out.println(i);
+  }
+}

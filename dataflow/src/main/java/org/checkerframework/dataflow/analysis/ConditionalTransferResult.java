@@ -4,15 +4,14 @@ import java.util.Map;
 import java.util.StringJoiner;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Implementation of a {@link TransferResult} with two non-exceptional stores. The 'then' store
  * contains information valid when the previous boolean-valued expression was true, and the 'else'
  * store contains information valid when the expression was false.
  *
- * <p>The result of {@code getRegularStore} will be the least upper bound of the two underlying
- * stores.
+ * <p>{@link #getRegularStore} returns the least upper bound of the two underlying stores.
  *
  * @param <V> type of the abstract value that is tracked
  * @param <S> the store type used in the analysis
@@ -20,7 +19,7 @@ import org.plumelib.util.StringsPlume;
 public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Store<S>>
     extends TransferResult<V, S> {
 
-  /** Whether the store changed. */
+  /** True if the store changed. */
   private final boolean storeChanged;
 
   /** The 'then' result store. */
@@ -45,7 +44,7 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
    * @param value the abstract value produced by the transfer function
    * @param thenStore 'then' result store
    * @param elseStore 'else' result store
-   * @param storeChanged whether the store changed
+   * @param storeChanged true if the store changed
    * @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)
    */
   public ConditionalTransferResult(
@@ -78,7 +77,7 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
    * @see #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)
    */
   public ConditionalTransferResult(
-      V value, S thenStore, S elseStore, Map<TypeMirror, S> exceptionalStores) {
+      V value, S thenStore, S elseStore, @Nullable Map<TypeMirror, S> exceptionalStores) {
     this(value, thenStore, elseStore, exceptionalStores, false);
   }
 
@@ -101,7 +100,7 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
    * @param thenStore {@link #thenStore}
    * @param elseStore {@link #elseStore}
    * @param exceptionalStores {@link #exceptionalStores}
-   * @param storeChanged whether the store changed; see {@link
+   * @param storeChanged true if the store changed; see {@link
    *     org.checkerframework.dataflow.analysis.TransferResult#storeChanged}.
    */
   public ConditionalTransferResult(
@@ -116,7 +115,6 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
     this.storeChanged = storeChanged;
   }
 
-  /** The regular result store. */
   @Override
   public S getRegularStore() {
     return thenStore.leastUpperBound(elseStore);
@@ -141,9 +139,9 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
   public String toString() {
     StringJoiner result = new StringJoiner(System.lineSeparator());
     result.add("RegularTransferResult(");
-    result.add("  resultValue = " + StringsPlume.indentLinesExceptFirst(2, resultValue));
-    result.add("  thenStore = " + StringsPlume.indentLinesExceptFirst(2, thenStore));
-    result.add("  elseStore = " + StringsPlume.indentLinesExceptFirst(2, elseStore));
+    result.add("  resultValue = " + StringsP.indentLinesExceptFirst(2, resultValue) + ",");
+    result.add("  thenStore = " + StringsP.indentLinesExceptFirst(2, thenStore) + ",");
+    result.add("  elseStore = " + StringsP.indentLinesExceptFirst(2, elseStore));
     result.add(")");
     return result.toString();
   }
@@ -151,5 +149,12 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
   @Override
   public boolean storeChanged() {
     return storeChanged;
+  }
+
+  @Override
+  public ConditionalTransferResult<V, S> withExceptionalStores(
+      Map<TypeMirror, S> exceptionalStores) {
+    return new ConditionalTransferResult<>(
+        resultValue, thenStore, elseStore, exceptionalStores, storeChanged);
   }
 }

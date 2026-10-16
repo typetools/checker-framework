@@ -7,6 +7,7 @@ import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * MarkerNodes are no-op Nodes used for debugging information. They can hold a Tree and a message,
@@ -44,16 +45,15 @@ public class MarkerNode extends Node {
     StringBuilder sb = new StringBuilder();
     sb.append("marker (");
     sb.append(message);
-    sb.append(")");
+    sb.append(')');
     return sb.toString();
   }
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof MarkerNode)) {
+    if (!(obj instanceof MarkerNode other)) {
       return false;
     }
-    MarkerNode other = (MarkerNode) obj;
     return Objects.equals(getTree(), other.getTree()) && getMessage().equals(other.getMessage());
   }
 
@@ -63,6 +63,7 @@ public class MarkerNode extends Node {
   }
 
   @Override
+  @SideEffectFree
   public Collection<Node> getOperands() {
     return Collections.emptyList();
   }

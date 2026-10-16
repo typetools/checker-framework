@@ -1,6 +1,6 @@
-# Run the following in both copies of the annotated JDK.  For example, in:
-cd $t/libraries/jdk-fork-mernst-branch-collection-object-parameters-may-be-null/src/java.base/share/classes
-cd $t/checker-framework-fork-mernst-branch-collection-object-parameters-may-be-null/checker/jdk/nullness/src
+# This file contains notes about creating file collection-object-parameters-may-be-null.astub .
+
+# Run the following in src/java.base/share/classes/ in the annotated JDK.
 
 
 rm -f *.txt

@@ -1,7 +1,7 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -23,7 +23,7 @@ public class ConditionalOrNode extends BinaryOperationNode {
    */
   public ConditionalOrNode(BinaryTree tree, Node left, Node right) {
     super(tree, left, right);
-    assert tree.getKind() == Kind.CONDITIONAL_OR;
+    assert tree.getKind() == Tree.Kind.CONDITIONAL_OR;
   }
 
   @Override
@@ -38,10 +38,9 @@ public class ConditionalOrNode extends BinaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ConditionalOrNode)) {
+    if (!(obj instanceof ConditionalOrNode other)) {
       return false;
     }
-    ConditionalOrNode other = (ConditionalOrNode) obj;
     return getLeftOperand().equals(other.getLeftOperand())
         && getRightOperand().equals(other.getRightOperand());
   }

@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * The syntax for binary names that appears in a class file, as defined in the <a
- * href="https://docs.oracle.com/javase/specs/jvms/se11/html/jvms-4.html#jvms-4.2">JVM
+ * href="https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-4.html#jvms-4.2">JVM
  * Specification, section 4.2</a>. A {@linkplain BinaryName binary name} is conceptually the name
  * for the class or interface in a compiled binary, but the actual representation of that name in
  * its class file is slightly different.

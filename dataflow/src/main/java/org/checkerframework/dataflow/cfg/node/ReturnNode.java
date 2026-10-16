@@ -1,17 +1,13 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ReturnTree;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.cfg.node.AssignmentContext.LambdaReturnContext;
-import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodReturnContext;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * A node for a return statement:
@@ -25,40 +21,37 @@ import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodReturnCont
  */
 public class ReturnNode extends Node {
 
-  protected final ReturnTree tree;
+  /** The return tree. */
+  protected final ReturnTree returnTree;
+
+  /** The node of the returned expression. */
   protected final @Nullable Node result;
 
-  public ReturnNode(ReturnTree t, @Nullable Node result, Types types, MethodTree methodTree) {
+  /**
+   * Creates a node for the given return statement.
+   *
+   * @param returnTree return tree
+   * @param result the returned expression
+   * @param types types util
+   */
+  public ReturnNode(ReturnTree returnTree, @Nullable Node result, Types types) {
     super(types.getNoType(TypeKind.NONE));
     this.result = result;
-    tree = t;
-    if (result != null) {
-      result.setAssignmentContext(new MethodReturnContext(methodTree));
-    }
+    this.returnTree = returnTree;
   }
 
-  public ReturnNode(
-      ReturnTree t,
-      @Nullable Node result,
-      Types types,
-      LambdaExpressionTree lambda,
-      MethodSymbol methodSymbol) {
-    super(types.getNoType(TypeKind.NONE));
-    this.result = result;
-    tree = t;
-    if (result != null) {
-      result.setAssignmentContext(new LambdaReturnContext(methodSymbol));
-    }
-  }
-
-  /** The result of the return node, {@code null} otherwise. */
+  /**
+   * The result of the return node, {@code null} otherwise.
+   *
+   * @return the result of the return node, {@code null} otherwise
+   */
   public @Nullable Node getResult() {
     return result;
   }
 
   @Override
   public ReturnTree getTree() {
-    return tree;
+    return returnTree;
   }
 
   @Override
@@ -76,10 +69,9 @@ public class ReturnNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ReturnNode)) {
+    if (!(obj instanceof ReturnNode other)) {
       return false;
     }
-    ReturnNode other = (ReturnNode) obj;
     return Objects.equals(result, other.result);
   }
 
@@ -89,6 +81,7 @@ public class ReturnNode extends Node {
   }
 
   @Override
+  @SideEffectFree
   public Collection<Node> getOperands() {
     if (result == null) {
       return Collections.emptyList();

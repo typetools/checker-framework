@@ -6,7 +6,6 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
@@ -28,10 +27,10 @@ import javax.lang.model.util.ElementFilter;
  * the {@code -proc:only} javac option to stop compilation after annotation processing. (But, in
  * general {@code -proc:only} causes type annotation processors not to be run.)
  *
- * <p>The utility will display the {@link Kind} of each node it encounters while scanning the AST,
- * indented according to its depth in the tree. Additionally, the names of identifiers and member
- * selection trees are displayed (since these names are not tree nodes and therefore not directly
- * visited during AST traversal).
+ * <p>The utility will display the {@link com.sun.source.tree.Tree.Kind Tree.Kind} of each node it
+ * encounters while scanning the AST, indented according to its depth in the tree. Additionally, the
+ * names of identifiers and member selection trees are displayed (since these names are not tree
+ * nodes and therefore not directly visited during AST traversal).
  *
  * @see org.checkerframework.common.util.debug.TreePrinter
  */
@@ -54,7 +53,7 @@ public class TreeDebug extends AbstractProcessor {
     }
 
     @Override
-    public Void scan(Tree node, Void p) {
+    public Void scan(Tree tree, Void p) {
 
       // Indent according to subtrees.
       if (getCurrentPath() != null) {
@@ -63,16 +62,16 @@ public class TreeDebug extends AbstractProcessor {
         }
       }
 
-      // Add node kind to the buffer.
-      if (node == null) {
+      // Add tree kind to the buffer.
+      if (tree == null) {
         buf.append("null");
       } else {
-        buf.append(node.getKind());
+        buf.append(tree.getKind());
       }
       buf.append(LINE_SEPARATOR);
 
       // Visit subtrees.
-      super.scan(node, p);
+      super.scan(tree, p);
 
       // Display and clear the buffer.
       System.out.print(buf.toString());
@@ -82,39 +81,39 @@ public class TreeDebug extends AbstractProcessor {
     }
 
     /**
-     * Splices additional information for a node into the buffer.
+     * Splices additional information for an AST node into the buffer.
      *
-     * @param text additional information for the node
+     * @param text additional information for the AST node
      */
-    private final void insert(Object text) {
+    private void insert(Object text) {
       buf.insert(buf.length() - 1, " ");
       buf.insert(buf.length() - 1, text);
     }
 
     @Override
-    public Void visitIdentifier(IdentifierTree node, Void p) {
-      insert(node);
-      return super.visitIdentifier(node, p);
+    public Void visitIdentifier(IdentifierTree tree, Void p) {
+      insert(tree);
+      return super.visitIdentifier(tree, p);
     }
 
     @Override
-    public Void visitMemberSelect(MemberSelectTree node, Void p) {
-      insert(node.getExpression() + "." + node.getIdentifier());
-      return super.visitMemberSelect(node, p);
+    public Void visitMemberSelect(MemberSelectTree tree, Void p) {
+      insert(tree.getExpression() + "." + tree.getIdentifier());
+      return super.visitMemberSelect(tree, p);
     }
 
     @Override
-    public Void visitNewArray(NewArrayTree node, Void p) {
-      insert(((JCNewArray) node).annotations);
+    public Void visitNewArray(NewArrayTree tree, Void p) {
+      insert(((JCNewArray) tree).annotations);
       insert("|");
-      insert(((JCNewArray) node).dimAnnotations);
-      return super.visitNewArray(node, p);
+      insert(((JCNewArray) tree).dimAnnotations);
+      return super.visitNewArray(tree, p);
     }
 
     @Override
-    public Void visitLiteral(LiteralTree node, Void p) {
-      insert(node.getValue());
-      return super.visitLiteral(node, p);
+    public Void visitLiteral(LiteralTree tree, Void p) {
+      insert(tree.getValue());
+      return super.visitLiteral(tree, p);
     }
   }
 

@@ -79,7 +79,7 @@ public class HelperMethodInitializesFields {
     z = 3;
   }
 
-  // Simple tests of  LUB
+  // Simple tests of LUB
 
   HelperMethodInitializesFields(boolean ignore1, int ignore) {
     z = 3;
@@ -111,7 +111,7 @@ public class HelperMethodInitializesFields {
     @InitializedFields({"x", "y", "z"}) HelperMethodInitializesFields hmif2 = this;
   }
 
-  // More complex tests of  LUB
+  // More complex tests of LUB
 
   HelperMethodInitializesFields(byte ignore1, int ignore) {
     y = 2;

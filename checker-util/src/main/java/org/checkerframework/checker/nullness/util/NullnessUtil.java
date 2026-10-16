@@ -17,8 +17,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  * <pre>import static org.checkerframework.checker.nullness.util.NullnessUtil.*;</pre>
  *
  * <p><b>Runtime Dependency</b>: If you use this class, you must distribute (or link to) {@code
- * checker-qual.jar}, along with your binaries. Or, you can can copy this class into your own
- * project.
+ * checker-qual.jar}, along with your binaries. Or, you can copy this class into your own project.
  */
 @SuppressWarnings({
   "nullness", // Nullness utilities are trusted regarding nullness.
@@ -49,7 +48,7 @@ public final class NullnessUtil {
    *
    *   // one way to use as a statement:
    *   castNonNull(possiblyNull3);
-   *   possiblyNull3.toString();`
+   *   possiblyNull3.toString();
    * </code></pre>
    *
    * The {@code castNonNull} method is intended to be used in situations where the programmer
@@ -82,7 +81,8 @@ public final class NullnessUtil {
    * @param message text to include if this method is misused
    * @return the argument, casted to have the type qualifier @NonNull
    */
-  public static @EnsuresNonNull("#1") <T extends @Nullable Object> @NonNull T castNonNull(
+  @EnsuresNonNull("#1")
+  public static <T extends @Nullable Object> @NonNull T castNonNull(
       @Nullable T ref, String message) {
     assert ref != null : "Misuse of castNonNull: called with a null argument: " + message;
     return (@NonNull T) ref;
@@ -278,11 +278,11 @@ public final class NullnessUtil {
     assert arr != null
         : "Misuse of castNonNullArray: called with a null array argument"
             + ((message == null) ? "" : (": " + message));
-    for (int i = 0; i < arr.length; ++i) {
-      assert arr[i] != null
+    for (T elt : arr) {
+      assert elt != null
           : "Misuse of castNonNull: called with a null array element"
               + ((message == null) ? "" : (": " + message));
-      checkIfArray(arr[i], message);
+      checkIfArray(elt, message);
     }
     return (@NonNull T[]) arr;
   }

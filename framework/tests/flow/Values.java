@@ -10,23 +10,23 @@ public class Values {
     foo1(o1);
     foo2(o2);
 
-    // :: error: (argument)
+    // :: error: [argument]
     foo1(o);
-    // :: error: (argument)
+    // :: error: [argument]
     foo2(o1);
-    // :: error: (argument)
+    // :: error: [argument]
     foo1(o2);
-    // :: error: (argument)
+    // :: error: [argument]
     foo(o2);
 
     o1 = o2;
     foo2(o1);
-    // :: error: (argument)
+    // :: error: [argument]
     foo1(o1);
 
     o2 = get1();
     foo1(o2);
-    // :: error: (argument)
+    // :: error: [argument]
     foo2(o2);
   }
 
@@ -46,24 +46,21 @@ public class Values {
     }
   }
 
-  void foo(@Value Object o) {}
+  void foo(@ValueTypeAnno Object o) {}
 
-  void foo1(@Value(1) Object o) {}
+  void foo1(@ValueTypeAnno(1) Object o) {}
 
-  void foo2(@Value(2) Object o) {}
+  void foo2(@ValueTypeAnno(2) Object o) {}
 
-  @SuppressWarnings("flowtest:return")
-  @Value Object get() {
+  @ValueTypeAnno Object get() {
     return null;
   }
 
-  @SuppressWarnings("flowtest:return")
-  @Value(1) Object get1() {
+  @ValueTypeAnno(1) Object get1() {
     return null;
   }
 
-  @SuppressWarnings("flowtest:return")
-  @Value(2) Object get2() {
+  @ValueTypeAnno(2) Object get2() {
     return null;
   }
 }

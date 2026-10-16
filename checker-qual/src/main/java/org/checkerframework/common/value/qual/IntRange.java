@@ -16,7 +16,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * <p>If only one of the {@code to} and {@code from} fields is set, then the other will default to
  * the max/min value of the type of the variable that is annotated. (In other words, the defaults
- * {@code Long.MIN_VALUE} and {@code Long.MAX_VALUE} are used only for \code{long}; appropriate
+ * {@code Long.MIN_VALUE} and {@code Long.MAX_VALUE} are used only for {@code long}; appropriate
  * values are used for other types.)
  *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
@@ -26,8 +26,17 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @SubtypeOf(UnknownVal.class)
 public @interface IntRange {
-  /** Smallest value in the range, inclusive. */
+  /**
+   * Smallest value in the range, inclusive.
+   *
+   * @return the smallest value in the range, inclusive
+   */
   long from() default Long.MIN_VALUE;
-  /** Largest value in the range, inclusive. */
+
+  /**
+   * Largest value in the range, inclusive.
+   *
+   * @return the largest value in the range, inclusive
+   */
   long to() default Long.MAX_VALUE;
 }

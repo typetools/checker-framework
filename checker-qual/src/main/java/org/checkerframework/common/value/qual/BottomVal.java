@@ -27,6 +27,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
   IntVal.class,
   StringVal.class,
   MatchesRegex.class,
+  DoesNotMatchRegex.class,
   ArrayLenRange.class,
   IntRange.class,
   IntRangeFromPositive.class,

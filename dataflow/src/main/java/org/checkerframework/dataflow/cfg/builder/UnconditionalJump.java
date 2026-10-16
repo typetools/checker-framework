@@ -4,7 +4,7 @@ import org.checkerframework.dataflow.analysis.Store.FlowRule;
 import org.checkerframework.dataflow.cfg.builder.ExtendedNode.ExtendedNodeType;
 
 /** An extended node of type {@link ExtendedNodeType#UNCONDITIONAL_JUMP}. */
-class UnconditionalJump extends ExtendedNode {
+/*package-private*/ class UnconditionalJump extends ExtendedNode {
 
   /** The jump target label. */
   protected final Label jumpTarget;
@@ -52,7 +52,7 @@ class UnconditionalJump extends ExtendedNode {
    * Produce a string representation.
    *
    * @return a string representation
-   * @see org.checkerframework.dataflow.cfg.builder.CFGBuilder.PhaseOneResult#nodeToString
+   * @see org.checkerframework.dataflow.cfg.builder.PhaseOneResult#nodeToString
    */
   @Override
   public String toString() {

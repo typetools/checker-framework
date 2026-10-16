@@ -20,9 +20,11 @@ import org.checkerframework.framework.qual.QualifierArgument;
  * <pre>
  * {@code @EnsuresLTLengthOf(value = "end", targetValue = "array", offset = "#1 - 1")
  *  public void shiftIndex(@NonNegative int x) {
- *      int newEnd = end - x;
- *      if (newEnd < 0) throw new RuntimeException();
- *      end = newEnd;
+ *    int newEnd = end - x;
+ *    if (newEnd < 0) {
+ *      throw new RuntimeException();
+ *    }
+ *    end = newEnd;
  *  }
  * }
  * </pre>
@@ -34,7 +36,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
  *
  * <pre>{@code
  * public void useShiftIndex(@NonNegative int x) {
- *    // :: error: (argument)
+ *    // :: error: [argument]
  *    Arrays.fill(array, end, end + x, null);
  *    shiftIndex(x);
  *    Arrays.fill(array, end, end + x, null);
@@ -45,6 +47,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
  * calling {@code shiftIndex(x)}, {@code end} has an annotation that allows the {@code end + x} to
  * be accepted as {@code @LTLengthOf("array")}.
  *
+ * @see EnsuresLTLengthOfIf
  * @see LTLengthOf
  * @checker_framework.manual #index-checker Index Checker
  */
@@ -65,7 +68,7 @@ public @interface EnsuresLTLengthOf {
   String[] value();
 
   /**
-   * Sequences, each of which is longer than the each of the expressions' value on successful method
+   * Sequences, each of which is longer than each of the expressions' values on successful method
    * termination.
    */
   @JavaExpression
@@ -74,7 +77,7 @@ public @interface EnsuresLTLengthOf {
 
   /**
    * This expression plus each of the value expressions is less than the length of the sequence on
-   * successful method termination. The {@code offset} element must ether be empty or the same
+   * successful method termination. The {@code offset} element must either be empty or the same
    * length as {@code targetValue}.
    *
    * @return the offset expressions
@@ -94,9 +97,9 @@ public @interface EnsuresLTLengthOf {
   @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
   @PostconditionAnnotation(qualifier = LTLengthOf.class)
   @InheritedAnnotation
-  @interface List {
+  public static @interface List {
     /**
-     * Return the repeatable annotations.
+     * Returns the repeatable annotations.
      *
      * @return the repeatable annotations
      */

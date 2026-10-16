@@ -11,7 +11,9 @@ import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractValue;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.plumelib.util.MapsP;
 
 /**
  * KeyForValue holds additional information about which maps this value is a key for. This extra
@@ -19,14 +21,18 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * type. For example,
  *
  * <pre>
- * {@code Map<T, Object> map = ...;}
- * {@code <T> T method(T param) { }
- *   if (map.contains(param) {
  *     {@code @NonNull Object o = map.get(param);}
+ * </pre>
+ *
+ * <pre><code>
+ * Map&lt;T, Object&gt; map = ...;
+ * &lt;T&gt; T method(T param) {
+ *   if (map.contains(param)) {
+ *    &nbsp;@NonNull Object o = map.get(param);
  *     return param;
  *   }
  * }
- * }</pre>
+ * </code></pre>
  *
  * Inside the if statement, {@code param} is a key for "map". This would normally be represented as
  * {@code @KeyFor("map") T}, but this is not a subtype of {@code T}, so the type cannot be refined.
@@ -41,10 +47,16 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
   // Cannot be final because lub re-assigns; add a new constructor to do this cleanly?
   private @Nullable Set<String> keyForMaps;
 
-  /** Create an instance. */
+  /**
+   * Create a KeyForValue.
+   *
+   * @param analysis the analysis
+   * @param annotations the annotations
+   * @param underlyingType the underlying type
+   */
   public KeyForValue(
       CFAbstractAnalysis<KeyForValue, ?, ?> analysis,
-      Set<AnnotationMirror> annotations,
+      AnnotationMirrorSet annotations,
       TypeMirror underlyingType) {
     super(analysis, annotations, underlyingType);
     KeyForAnnotatedTypeFactory atypeFactory =
@@ -67,28 +79,31 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
    * If the underlying type is a type variable or a wildcard, then this is a set of maps for which
    * this value is a key. Otherwise, it's null.
    */
-  public Set<String> getKeyForMaps() {
+  public @Nullable Set<String> getKeyForMaps() {
     return keyForMaps;
   }
 
   @Override
-  public KeyForValue leastUpperBound(KeyForValue other) {
-    KeyForValue lub = super.leastUpperBound(other);
+  protected KeyForValue upperBound(
+      @Nullable KeyForValue other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {
+    KeyForValue upperBound = super.upperBound(other, upperBoundTypeMirror, shouldWiden);
+
     if (other == null || other.keyForMaps == null || this.keyForMaps == null) {
-      return lub;
+      return upperBound;
     }
     // Lub the keyForMaps by intersecting the sets.
-    lub.keyForMaps = new LinkedHashSet<>(this.keyForMaps.size());
-    lub.keyForMaps.addAll(this.keyForMaps);
-    lub.keyForMaps.retainAll(other.keyForMaps);
-    if (lub.keyForMaps.isEmpty()) {
-      lub.keyForMaps = null;
+    upperBound.keyForMaps = new LinkedHashSet<>(this.keyForMaps.size());
+    upperBound.keyForMaps.addAll(this.keyForMaps);
+    upperBound.keyForMaps.retainAll(other.keyForMaps);
+    if (upperBound.keyForMaps.isEmpty()) {
+      upperBound.keyForMaps = null;
     }
-    return lub;
+    return upperBound;
   }
 
   @Override
-  public KeyForValue mostSpecific(KeyForValue other, KeyForValue backup) {
+  public @Nullable KeyForValue mostSpecific(
+      @Nullable KeyForValue other, @Nullable KeyForValue backup) {
     KeyForValue mostSpecific = super.mostSpecific(other, backup);
     if (mostSpecific == null) {
       if (other == null) {
@@ -120,7 +135,7 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
       return;
     }
     if (keyForMaps == null) {
-      keyForMaps = new LinkedHashSet<>();
+      keyForMaps = new LinkedHashSet<>(MapsP.mapCapacity(newKeyForMaps.size()));
     }
     keyForMaps.addAll(newKeyForMaps);
   }

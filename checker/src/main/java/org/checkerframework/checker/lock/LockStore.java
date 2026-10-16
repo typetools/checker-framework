@@ -1,10 +1,8 @@
 package org.checkerframework.checker.lock;
 
 import java.util.ArrayList;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnnotation;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
@@ -17,9 +15,8 @@ import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -71,29 +68,25 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
       // Expressions containing unknown expressions are not stored.
       return;
     }
-    if (je instanceof LocalVariable) {
-      LocalVariable localVar = (LocalVariable) je;
+    if (je instanceof LocalVariable localVar) {
       CFValue current = localVariableValues.get(localVar);
       CFValue value = changeLockAnnoToTop(je, current);
       if (value != null) {
         localVariableValues.put(localVar, value);
       }
-    } else if (je instanceof FieldAccess) {
-      FieldAccess fieldAcc = (FieldAccess) je;
+    } else if (je instanceof FieldAccess fieldAcc) {
       CFValue current = fieldValues.get(fieldAcc);
       CFValue value = changeLockAnnoToTop(je, current);
       if (value != null) {
         fieldValues.put(fieldAcc, value);
       }
-    } else if (je instanceof MethodCall) {
-      MethodCall method = (MethodCall) je;
-      CFValue current = methodValues.get(method);
+    } else if (je instanceof MethodCall method) {
+      CFValue current = methodCallExpressions.get(method);
       CFValue value = changeLockAnnoToTop(je, current);
       if (value != null) {
-        methodValues.put(method, value);
+        methodCallExpressions.put(method, value);
       }
-    } else if (je instanceof ArrayAccess) {
-      ArrayAccess arrayAccess = (ArrayAccess) je;
+    } else if (je instanceof ArrayAccess arrayAccess) {
       CFValue current = arrayValues.get(arrayAccess);
       CFValue value = changeLockAnnoToTop(je, current);
       if (value != null) {
@@ -101,8 +94,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
       }
     } else if (je instanceof ThisReference) {
       thisValue = changeLockAnnoToTop(je, thisValue);
-    } else if (je instanceof ClassName) {
-      ClassName className = (ClassName) je;
+    } else if (je instanceof ClassName className) {
       CFValue current = classValues.get(className);
       CFValue value = changeLockAnnoToTop(je, current);
       if (value != null) {
@@ -116,21 +108,21 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
   /**
    * Makes a new CFValue with the same annotations as currentValue except that the annotation in the
    * LockPossiblyHeld hierarchy is set to LockPossiblyHeld. If currentValue is null, then a new
-   * value is created where the annotation set is LockPossiblyHeld and GuardedByUnknown
+   * value is created where the annotation set is LockPossiblyHeld and GuardedByUnknown.
    */
-  private CFValue changeLockAnnoToTop(JavaExpression je, CFValue currentValue) {
+  private CFValue changeLockAnnoToTop(JavaExpression je, @Nullable CFValue currentValue) {
     if (currentValue == null) {
-      Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+      AnnotationMirrorSet set = new AnnotationMirrorSet();
       set.add(atypeFactory.GUARDEDBYUNKNOWN);
       set.add(atypeFactory.LOCKPOSSIBLYHELD);
       return analysis.createAbstractValue(set, je.getType());
     }
 
-    QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
-    Set<AnnotationMirror> currentSet = currentValue.getAnnotations();
+    QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
+    AnnotationMirrorSet currentSet = currentValue.getAnnotations();
     AnnotationMirror gb =
-        hierarchy.findAnnotationInHierarchy(currentSet, atypeFactory.GUARDEDBYUNKNOWN);
-    Set<AnnotationMirror> newSet = AnnotationUtils.createAnnotationSet();
+        qualHierarchy.findAnnotationInHierarchy(currentSet, atypeFactory.GUARDEDBYUNKNOWN);
+    AnnotationMirrorSet newSet = new AnnotationMirrorSet();
     newSet.add(atypeFactory.LOCKPOSSIBLYHELD);
     if (gb != null) {
       newSet.add(gb);
@@ -150,8 +142,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
       // The class name, however, is not.
       if (expr instanceof ThisReference) {
         initializeThisValue(atypeFactory.LOCKHELD, expr.getType());
-      } else if (expr instanceof FieldAccess) {
-        FieldAccess fieldAcc = (FieldAccess) expr;
+      } else if (expr instanceof FieldAccess fieldAcc) {
         if (!fieldAcc.isStatic() && fieldAcc.getReceiver() instanceof ThisReference) {
           insertValue(fieldAcc.getReceiver(), atypeFactory.LOCKHELD);
         }
@@ -169,29 +160,18 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
   }
 
   @Override
-  protected boolean isSideEffectFree(AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
-    LockAnnotatedTypeFactory lockAnnotatedTypeFactory = (LockAnnotatedTypeFactory) atypeFactory;
-    SourceChecker checker = lockAnnotatedTypeFactory.getChecker();
-    return checker.hasOption("assumeSideEffectFree")
-        || checker.hasOption("assumePure")
-        || lockAnnotatedTypeFactory.methodSideEffectAnnotation(method, false)
-            == SideEffectAnnotation.RELEASESNOLOCKS
-        || super.isSideEffectFree(atypeFactory, method);
-  }
-
-  @Override
-  public void updateForMethodCall(
-      MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, CFValue val) {
-    super.updateForMethodCall(n, atypeFactory, val);
+  public void updateForMethodCall(MethodInvocationNode n, CFValue val) {
+    super.updateForMethodCall(n, val);
     ExecutableElement method = n.getTarget().getMethod();
     // The following behavior is similar to setting the sideEffectsUnrefineAliases field of
-    // Lockannotatedtypefactory, but it affects only one of the two type hierarchies, so it
-    // cannot use that logic.
-    if (!isSideEffectFree(atypeFactory, method)) {
-      // After the call to super.updateForMethodCall, only final fields are left in fieldValues (if
-      // the method called is side-effecting). For the LockPossiblyHeld hierarchy, even a final
-      // field might be locked or unlocked by a side-effecting method.  So, final fields must be set
-      // to @LockPossiblyHeld, but the annotation in the GuardedBy hierarchy should not be changed.
+    // LockAnnotatedTypeFactory, but it affects only the LockPossiblyHeld type hierarchy (not
+    // the @GuardedBy hierarchy), so it cannot use that logic.
+    if (!atypeFactory.isSideEffectFree(method)) {
+      // After the call to super.updateForMethodCall, only final fields are left in
+      // fieldValues (if the method called is side-effecting). For the LockPossiblyHeld
+      // hierarchy, even a final field might be locked or unlocked by a side-effecting method.
+      // So, final fields must be set to @LockPossiblyHeld, but the annotation in the
+      // GuardedBy hierarchy should not be changed.
       for (FieldAccess field : new ArrayList<>(fieldValues.keySet())) {
         CFValue newValue = changeLockAnnoToTop(field, fieldValues.get(field));
         if (newValue != null) {
@@ -236,19 +216,17 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     //  * Locks are assumed to be effectively final, hence another thread will not
     //    side effect the lock expression that has value @LockHeld.
     if (hasLockHeld(value)) {
-      if (je instanceof FieldAccess) {
-        FieldAccess fieldAcc = (FieldAccess) je;
+      if (je instanceof FieldAccess fieldAcc) {
         CFValue oldValue = fieldValues.get(fieldAcc);
         CFValue newValue = value.mostSpecific(oldValue, null);
         if (newValue != null) {
           fieldValues.put(fieldAcc, newValue);
         }
-      } else if (je instanceof MethodCall) {
-        MethodCall method = (MethodCall) je;
-        CFValue oldValue = methodValues.get(method);
+      } else if (je instanceof MethodCall method) {
+        CFValue oldValue = methodCallExpressions.get(method);
         CFValue newValue = value.mostSpecific(oldValue, null);
         if (newValue != null) {
-          methodValues.put(method, newValue);
+          methodCallExpressions.put(method, newValue);
         }
       }
     }

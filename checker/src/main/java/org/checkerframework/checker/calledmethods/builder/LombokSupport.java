@@ -4,8 +4,6 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.VariableTree;
 import java.beans.Introspector;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +26,7 @@ import org.checkerframework.javacutil.ElementUtils;
 public class LombokSupport implements BuilderFrameworkSupport {
 
   /** The type factory. */
-  private CalledMethodsAnnotatedTypeFactory atypeFactory;
+  private final CalledMethodsAnnotatedTypeFactory atypeFactory;
 
   /**
    * Create a new LombokSupport.
@@ -39,29 +37,50 @@ public class LombokSupport implements BuilderFrameworkSupport {
     this.atypeFactory = atypeFactory;
   }
 
-  // The list is copied from lombok.core.handlers.HandlerUtil. The list cannot be used from that
-  // class directly because Lombok does not provide class files for its own implementation, to
-  // prevent itself from being accidentally added to clients' compile classpaths. This design
-  // decision means that it is impossible to depend directly on Lombok internals.
+  // The list is copied from lombok.core.handlers.HandlerUtil:
+  // https://github.com/projectlombok/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java
+  // The list cannot be used from that class directly because Lombok does not provide
+  // class files for its own implementation, to prevent itself from being accidentally
+  // added to clients' compile classpaths. This design decision means that it is
+  // impossible to depend directly on Lombok internals.
   /** The list of annotations that Lombok treats as non-null. */
   public static final List<String> NONNULL_ANNOTATIONS =
-      Collections.unmodifiableList(
-          Arrays.asList(
-              "android.annotation.NonNull",
-              "android.support.annotation.NonNull",
-              "com.sun.istack.internal.NotNull",
-              "edu.umd.cs.findbugs.annotations.NonNull",
-              "javax.annotation.Nonnull",
-              // "javax.validation.constraints.NotNull", // The field might contain a
-              // null value until it is persisted.
-              "lombok.NonNull",
-              "org.checkerframework.checker.nullness.qual.NonNull",
-              "org.eclipse.jdt.annotation.NonNull",
-              "org.eclipse.jgit.annotations.NonNull",
-              "org.jetbrains.annotations.NotNull",
-              "org.jmlspecs.annotation.NonNull",
-              "org.netbeans.api.annotations.common.NonNull",
-              "org.springframework.lang.NonNull"));
+      List.of(
+          "android.annotation.NonNull",
+          "android.support.annotation.NonNull",
+          "android.support.annotation.RecentlyNonNull",
+          "androidx.annotation.NonNull",
+          "androidx.annotation.RecentlyNonNull",
+          "com.android.annotations.NonNull",
+          "com.google.firebase.database.annotations.NotNull", // Even though it's in a
+          // database package, it does mean semantically: "Check if
+          // never null at the language level", and not 'db column cannot be null'.
+          "com.mongodb.lang.NonNull", // Even though mongo is a DB engine,
+          // this semantically refers to language, not DB table designs (mongo is a
+          // document DB engine, so this isn't surprising perhaps).
+          "com.sun.istack.NotNull",
+          "com.unboundid.util.NotNull",
+          "edu.umd.cs.findbugs.annotations.NonNull",
+          "io.micrometer.core.lang.NonNull",
+          "io.reactivex.annotations.NonNull",
+          "io.reactivex.rxjava3.annotations.NonNull",
+          "jakarta.annotation.Nonnull",
+          "javax.annotation.Nonnull",
+          // "javax.validation.constraints.NotNull", // The field might contain a
+          // null value until it is persisted.
+          "libcore.util.NonNull",
+          "lombok.NonNull",
+          "org.checkerframework.checker.nullness.qual.NonNull",
+          "org.checkerframework.checker.nullness.compatqual.NonNullDecl",
+          "org.checkerframework.checker.nullness.compatqual.NonNullType",
+          "org.codehaus.commons.nullanalysis.NotNull",
+          "org.eclipse.jdt.annotation.NonNull",
+          "org.jetbrains.annotations.NotNull",
+          "org.jmlspecs.annotation.NonNull",
+          "org.jspecify.annotations.NonNull",
+          "org.netbeans.api.annotations.common.NonNull",
+          "org.springframework.lang.NonNull",
+          "reactor.util.annotation.NonNull");
 
   /**
    * A map from elements that have a lombok.Builder.Default annotation to the simple property name
@@ -73,7 +92,7 @@ public class LombokSupport implements BuilderFrameworkSupport {
    * available and that method returns null). See the code in {@link
    * #getLombokRequiredProperties(Element)} that handles fields.
    */
-  private final Map<Element, Name> defaultedElements = new HashMap<>(2);
+  private final Map<Element, Name> defaultedElements = new HashMap<>(4);
 
   @Override
   public boolean isBuilderBuildMethod(ExecutableElement candidateBuildElement) {
@@ -140,14 +159,15 @@ public class LombokSupport implements BuilderFrameworkSupport {
    * @param lombokClassElement the class with the @lombok.Builder annotation
    * @return a list of required property names
    */
-  private List<String> getLombokRequiredProperties(final Element lombokClassElement) {
+  private List<String> getLombokRequiredProperties(Element lombokClassElement) {
     List<String> requiredPropertyNames = new ArrayList<>();
     List<String> defaultedPropertyNames = new ArrayList<>();
     for (Element member : lombokClassElement.getEnclosedElements()) {
       if (member.getKind() == ElementKind.FIELD) {
-        // Lombok never generates non-null fields with initializers in builders, unless the field is
-        // annotated with @Default or @Singular, which are handled elsewhere.  So, this code doesn't
-        // need to consider whether the field has or does not have initializers.
+        // Lombok never generates non-null fields with initializers in builders, unless the
+        // field is annotated with @Default or @Singular, which are handled elsewhere.  So,
+        // this code doesn't need to consider whether the field has or does not have
+        // initializers.
         for (AnnotationMirror anm :
             atypeFactory.getElementUtils().getAllAnnotationMirrors(member)) {
           if (NONNULL_ANNOTATIONS.contains(AnnotationUtils.annotationName(anm))) {
@@ -164,12 +184,13 @@ public class LombokSupport implements BuilderFrameworkSupport {
           defaultedPropertyNames.add(propName);
         }
       } else if (member.getKind().isClass() && member.toString().endsWith("Builder")) {
-        // Note that the test above will fail to catch builders generated by Lombok that have custom
-        // names using the builderClassName attribute. TODO: find a way to handle such builders too.
+        // Note that the test above will fail to catch builders generated by Lombok that
+        // have custom names using the builderClassName attribute. TODO: find a way to
+        // handle such builders too.
 
-        // If a field bar has an @Singular annotation, Lombok always generates a method called
-        // clearBar in the builder class itself. Therefore, search the builder for such a method,
-        // and extract the appropriate property name to treat as defaulted.
+        // If a field bar has an @Singular annotation, Lombok always generates a method
+        // called clearBar in the builder class itself. Therefore, search the builder for
+        // such a method, and extract the appropriate property name to treat as defaulted.
         for (Element builderMember : member.getEnclosedElements()) {
           if (builderMember.getKind() == ElementKind.METHOD
               && ElementUtils.hasAnnotation(builderMember, "lombok.Generated")) {
@@ -199,6 +220,6 @@ public class LombokSupport implements BuilderFrameworkSupport {
 
   @Override
   public void handleConstructor(NewClassTree tree, AnnotatedTypeMirror type) {
-    return;
+    // do nothing
   }
 }

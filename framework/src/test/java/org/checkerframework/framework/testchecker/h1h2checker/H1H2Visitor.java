@@ -38,7 +38,7 @@ public class H1H2Visitor extends BaseTypeVisitor<H1H2AnnotatedTypeFactory> {
             // An error specific to this type system, with no corresponding text
             // in a messages.properties file; this checker is just for testing.
             "h1h2checker.h1invalid.forbidden",
-            type.getAnnotations(),
+            type.getPrimaryAnnotations(),
             type.toString());
       }
       return super.visitDeclared(type, p);

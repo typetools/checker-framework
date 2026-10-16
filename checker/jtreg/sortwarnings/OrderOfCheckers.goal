@@ -1,0 +1,16 @@
+OrderOfCheckers.java:12:95: compiler.err.proc.messager: [[value, allcheckers]:assignment] incompatible types in assignment.
+found   : @UnknownVal int @UnknownVal []
+required: @UnknownVal int @BottomVal []
+OrderOfCheckers.java:12:95: compiler.err.proc.messager: [[index, searchindex, allcheckers]:assignment] incompatible types in assignment.
+found   : int []
+required: @SearchIndexBottom int []
+OrderOfCheckers.java:12:95: compiler.err.proc.messager: [[index, samelen, allcheckers]:assignment] incompatible types in assignment.
+found   : int @SameLen("y") []
+required: int @SameLenBottom []
+OrderOfCheckers.java:12:95: compiler.err.proc.messager: [[index, lowerbound, allcheckers]:assignment] incompatible types in assignment.
+found   : int []
+required: @GTENegativeOne int []
+OrderOfCheckers.java:12:95: compiler.err.proc.messager: [[index, upperbound, allcheckers]:assignment] incompatible types in assignment.
+found   : int []
+required: @UpperBoundBottom int []
+5 errors

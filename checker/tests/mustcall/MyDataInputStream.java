@@ -13,7 +13,7 @@ public class MyDataInputStream extends DataInputStream {
       ((ByteBufferPositionedReadable) in).readFully(position, buf);
     } else {
       throw new UnsupportedOperationException(
-          "Byte-buffer pread " + "unsupported by " + in.getClass().getCanonicalName());
+          "Byte-buffer pread unsupported by " + in.getClass().getCanonicalName());
     }
   }
 

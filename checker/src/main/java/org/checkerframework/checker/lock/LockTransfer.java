@@ -36,7 +36,7 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
    */
   public LockTransfer(LockAnalysis analysis, LockChecker checker) {
     // Always run the Lock Checker with -AconcurrentSemantics turned on.
-    super(analysis, /*useConcurrentSemantics=*/ true);
+    super(analysis, /* useConcurrentSemantics= */ true);
     this.atypeFactory = (LockAnnotatedTypeFactory) analysis.getTypeFactory();
   }
 
@@ -96,28 +96,29 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
 
     // Methods with the 'synchronized' modifier are holding the 'this' lock.
 
-    // There is a subtle difference between synchronized methods and constructors/initializers. A
-    // synchronized method is only taking the intrinsic lock of the current object. It says nothing
-    // about any fields of the current object.
+    // There is a subtle difference between synchronized methods and constructors/initializers.
+    // A synchronized method is only taking the intrinsic lock of the current object. It says
+    // nothing about any fields of the current object.
 
     // Furthermore, since the current object already exists, other objects may be guarded by the
-    // current object. So a synchronized method can affect the locking behavior of other objects.
+    // current object. So a synchronized method can affect the locking behavior of other
+    // objects.
 
-    // A constructor/initializer behaves as if the current object and all its non-static fields were
-    // held as locks. But in reality no locks are held.
+    // A constructor/initializer behaves as if the current object and all its non-static fields
+    // were held as locks. But in reality no locks are held.
 
-    // Furthermore, since the current object is being constructed, no other object can be guarded by
-    // it or any of its non-static fields.
+    // Furthermore, since the current object is being constructed, no other object can be
+    // guarded by it or any of its non-static fields.
 
     // Handle synchronized methods and constructors.
-    if (astKind == Kind.METHOD) {
+    if (astKind == UnderlyingAST.Kind.METHOD) {
       CFGMethod method = (CFGMethod) underlyingAST;
       MethodTree methodTree = method.getMethod();
 
       ExecutableElement methodElement = TreeUtils.elementFromDeclaration(methodTree);
 
       if (methodElement.getModifiers().contains(Modifier.SYNCHRONIZED)) {
-        final ClassTree classTree = method.getClassTree();
+        ClassTree classTree = method.getClassTree();
         TypeMirror classType = TreeUtils.typeOf(classTree);
 
         if (methodElement.getModifiers().contains(Modifier.STATIC)) {

@@ -1,6 +1,6 @@
 import org.checkerframework.checker.calledmethods.qual.*;
 
-/** Test for postcondition support via @EnsureCalledMethods. */
+/** Test for postcondition support via @EnsuresCalledMethods. */
 public class Postconditions {
   void build(@CalledMethods({"a", "b", "c"}) Postconditions this) {}
 
@@ -16,7 +16,7 @@ public class Postconditions {
   }
 
   @EnsuresCalledMethods(value = "#1", methods = "b")
-  // :: error: contracts.postcondition
+  // :: error: [contracts.postcondition]
   static void doesNotCallB(Postconditions x) {}
 
   @EnsuresCalledMethods(
@@ -61,7 +61,7 @@ public class Postconditions {
   static void invokeCallBAndCWrong() {
     Postconditions y = new Postconditions();
     callBAndC(y);
-    // :: error: finalizer.invocation
+    // :: error: [finalizer.invocation]
     y.build();
   }
 
@@ -83,7 +83,7 @@ public class Postconditions {
     if (ensuresABCIfTrue(p, b)) {
       p.build();
     } else {
-      // :: error: finalizer.invocation
+      // :: error: [finalizer.invocation]
       p.build();
     }
   }
@@ -94,6 +94,39 @@ public class Postconditions {
       p.a();
       throw new java.io.IOException();
     } catch (java.io.IOException e) {
+    }
+  }
+
+  @EnsuresCalledMethods(
+      value = {"#1", "#2"},
+      methods = "a")
+  static void callAOnBoth(Postconditions p1, Postconditions p2) {
+    p1.a();
+    p2.a();
+  }
+
+  @EnsuresCalledMethods(
+      value = {"#1", "#2"},
+      methods = "a")
+  static void callAOnBothCatchNPE(Postconditions p1, Postconditions p2) {
+    // postcondition is verified because the checker assumes NullPointerExceptions cannot occur
+    try {
+      p1.a();
+    } catch (NullPointerException e) {
+    }
+    p2.a();
+  }
+
+  @EnsuresCalledMethods(
+      value = {"#1", "#2"},
+      methods = "a")
+  static int callAOnBothFinallyNPE(Postconditions p1, Postconditions p2) {
+    // postcondition is verified because the checker assumes NullPointerExceptions cannot occur
+    try {
+      p1.a();
+    } finally {
+      p2.a();
+      return 0;
     }
   }
 }

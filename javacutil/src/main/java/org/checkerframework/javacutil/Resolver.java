@@ -16,8 +16,10 @@ import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Resolve;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Log;
+import com.sun.tools.javac.util.Log.DiscardDiagnosticHandler;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 import java.lang.reflect.Constructor;
@@ -26,6 +28,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -40,21 +43,57 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 // running the Checker Framework.  If this class is re-written, then that --add-opens should be
 // removed.
 public class Resolver {
+
+  /** Instance of {@link Resolve} for name resolution. */
   private final Resolve resolve;
+
+  /** Instance of {@link Names} for access to the compiler's name table. */
   private final Names names;
+
+  /** Instance of {@link Trees}. */
   private final Trees trees;
+
+  /** Instance of {@link Log} for error logs. */
   private final Log log;
 
+  /** {@code Resolve#findMethod} method. */
   private static final Method FIND_METHOD;
+
+  /** {@code Resolve#findVar} method. */
   private static final Method FIND_VAR;
+
+  /** {@code Resolve#findIdent} method. */
   private static final Method FIND_IDENT;
+
+  /** {@code Resolve#findIdentInType} method. */
   private static final Method FIND_IDENT_IN_TYPE;
+
+  /** {@code Resolve#findIdentInPackage} method. */
   private static final Method FIND_IDENT_IN_PACKAGE;
+
+  /** {@code Resolve#findType} method. */
   private static final Method FIND_TYPE;
 
+  /** {@code com.sun.tools.javac.comp.Resolve$AccessError} class. */
   private static final Class<?> ACCESSERROR;
+
+  /** {@code com.sun.tools.javac.comp.Resolve$AccessError#access} method. */
   // Note that currently access(...) is defined in InvalidSymbolError, a superclass of AccessError
   private static final Method ACCESSERROR_ACCESS;
+
+  /**
+   * Method for new Log.DiscardDiagnosticHandler. Before JDK 25, DiscardDiagnosticHandler was a
+   * static inner class of Log and an instance of log was passed as the first argument. Starting
+   * with JDK 25, DiscardDiagnosticHandler is an inner class of log.
+   */
+  private static final Constructor<DiscardDiagnosticHandler> NEW_DIAGNOSTIC_HANDLER;
+
+  /** The latest source version supported by this compiler. */
+  private static final int sourceVersionNumber =
+      Integer.parseInt(SourceVersion.latest().toString().substring("RELEASE_".length()));
+
+  /** True if we are running on at least Java 23. */
+  private static final boolean atLeastJava23 = sourceVersionNumber >= 23;
 
   static {
     try {
@@ -70,28 +109,53 @@ public class Resolver {
               boolean.class);
       FIND_METHOD.setAccessible(true);
 
-      FIND_VAR = Resolve.class.getDeclaredMethod("findVar", Env.class, Name.class);
+      if (atLeastJava23) {
+        FIND_VAR =
+            Resolve.class.getDeclaredMethod(
+                "findVar", DiagnosticPosition.class, Env.class, Name.class);
+      } else {
+        FIND_VAR = Resolve.class.getDeclaredMethod("findVar", Env.class, Name.class);
+      }
       FIND_VAR.setAccessible(true);
 
       FIND_IDENT =
-          Resolve.class.getDeclaredMethod("findIdent", Env.class, Name.class, KindSelector.class);
+          Resolve.class.getDeclaredMethod(
+              "findIdent", DiagnosticPosition.class, Env.class, Name.class, KindSelector.class);
       FIND_IDENT.setAccessible(true);
 
       FIND_IDENT_IN_TYPE =
           Resolve.class.getDeclaredMethod(
-              "findIdentInType", Env.class, Type.class, Name.class, KindSelector.class);
+              "findIdentInType",
+              DiagnosticPosition.class,
+              Env.class,
+              Type.class,
+              Name.class,
+              KindSelector.class);
       FIND_IDENT_IN_TYPE.setAccessible(true);
 
       FIND_IDENT_IN_PACKAGE =
           Resolve.class.getDeclaredMethod(
-              "findIdentInPackage", Env.class, TypeSymbol.class, Name.class, KindSelector.class);
+              "findIdentInPackage",
+              DiagnosticPosition.class,
+              Env.class,
+              TypeSymbol.class,
+              Name.class,
+              KindSelector.class);
       FIND_IDENT_IN_PACKAGE.setAccessible(true);
 
       FIND_TYPE = Resolve.class.getDeclaredMethod("findType", Env.class, Name.class);
       FIND_TYPE.setAccessible(true);
+
+      // Pre JDK 25:
+      //   new Log.DiscardDiagnosticHandler(log)
+      // JDK 25:
+      //   log.new DiscardDiagnosticHandler()
+      // But both of those are reflectively accessed the same way.
+      NEW_DIAGNOSTIC_HANDLER = Log.DiscardDiagnosticHandler.class.getConstructor(Log.class);
+      NEW_DIAGNOSTIC_HANDLER.setAccessible(true);
     } catch (Exception e) {
       Error err =
-          new AssertionError("Compiler 'Resolve' class doesn't contain required 'find' method");
+          new AssertionError("Compiler 'Resolve' class doesn't contain required 'find*' method");
       err.initCause(e);
       throw err;
     }
@@ -128,10 +192,11 @@ public class Resolver {
     while (scope == null && iter != null) {
       try {
         scope = (JavacScope) trees.getScope(iter);
-      } catch (Throwable t) {
-        // Work around Issue #1059 by skipping through the TreePath until something
-        // doesn't crash. This probably returns the class scope, so users might not
-        // get the variables they expect. But that is better than crashing.
+      } catch (NullPointerException t) {
+        // This statement fixes https://github.com/typetools/checker-framework/issues/1059 .
+        // It work around the crash by skipping through the TreePath until something doesn't
+        // crash. This probably returns the class scope, so users might not get the
+        // variables they expect. But that is better than crashing.
         iter = iter.getParentPath();
       }
     }
@@ -150,14 +215,16 @@ public class Resolver {
    * @return the {@code PackageSymbol} for the package if it is found, {@code null} otherwise
    */
   public @Nullable PackageSymbol findPackage(String name, TreePath path) {
-    Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
+    Log.DiagnosticHandler discardDiagnosticHandler = newDiagnosticHandler();
+
     try {
       Env<AttrContext> env = getEnvForPath(path);
-      Element res =
-          wrapInvocationOnResolveInstance(
-              FIND_IDENT, env, names.fromString(name), Kinds.KindSelector.PCK);
-      // findIdent will return a PackageSymbol even for a symbol that is not a package, such as
-      // a.b.c.MyClass.myStaticField. "exists()" must be called on it to ensure that it exists.
+      final Element res;
+      res = resolve(FIND_IDENT, null, env, names.fromString(name), Kinds.KindSelector.PCK);
+
+      // findIdent will return a PackageSymbol even for a symbol that is not a package,
+      // such as a.b.c.MyClass.myStaticField. "exists()" must be called on it to ensure
+      // that it exists.
       if (res.getKind() == ElementKind.PACKAGE) {
         PackageSymbol ps = (PackageSymbol) res;
         return ps.exists() ? ps : null;
@@ -182,18 +249,19 @@ public class Resolver {
    * @return the element for the field, {@code null} otherwise
    */
   public @Nullable VariableElement findField(String name, TypeMirror type, TreePath path) {
-    Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
+    Log.DiagnosticHandler discardDiagnosticHandler = newDiagnosticHandler();
     try {
       Env<AttrContext> env = getEnvForPath(path);
-      Element res =
-          wrapInvocationOnResolveInstance(
-              FIND_IDENT_IN_TYPE, env, type, names.fromString(name), Kinds.KindSelector.VAR);
+      final Element res;
+      res =
+          resolve(
+              FIND_IDENT_IN_TYPE, null, env, type, names.fromString(name), Kinds.KindSelector.VAR);
 
       if (res.getKind().isField()) {
         return (VariableElement) res;
       } else if (res.getKind() == ElementKind.OTHER && ACCESSERROR.isInstance(res)) {
         // Return the inaccessible field that was found
-        return (VariableElement) wrapInvocation(res, ACCESSERROR_ACCESS, null, null);
+        return (VariableElement) invokeNoException(res, ACCESSERROR_ACCESS, null, null);
       } else {
         // Most likely didn't find the field and the Element is a SymbolNotFoundError
         return null;
@@ -212,16 +280,30 @@ public class Resolver {
    * @return the element for the local variable, {@code null} otherwise
    */
   public @Nullable VariableElement findLocalVariableOrParameter(String name, TreePath path) {
-    Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
+    Log.DiagnosticHandler discardDiagnosticHandler = newDiagnosticHandler();
     try {
       Env<AttrContext> env = getEnvForPath(path);
-      Element res = wrapInvocationOnResolveInstance(FIND_VAR, env, names.fromString(name));
-      if (res.getKind() == ElementKind.LOCAL_VARIABLE || res.getKind() == ElementKind.PARAMETER) {
-        return (VariableElement) res;
+      // Either a VariableElement or a SymbolNotFoundError.
+      Element res;
+      if (atLeastJava23) {
+        res = resolve(FIND_VAR, null, env, names.fromString(name));
       } else {
-        // The Element might be FIELD or a SymbolNotFoundError.
-        return null;
+        res = resolve(FIND_VAR, env, names.fromString(name));
       }
+      // Every kind in the documentation of Element.getKind() is explicitly tested, possibly
+      // in the "default:" case.
+      return switch (res.getKind()) {
+        case EXCEPTION_PARAMETER, LOCAL_VARIABLE, PARAMETER, RESOURCE_VARIABLE, BINDING_VARIABLE ->
+            (VariableElement) res;
+        case ENUM_CONSTANT, FIELD -> null;
+        default -> {
+          if (res instanceof VariableElement) {
+            throw new BugInCF("unhandled variable ElementKind " + res.getKind());
+          }
+          // The Element might be a SymbolNotFoundError.
+          yield null;
+        }
+      };
     } finally {
       log.popDiagnosticHandler(discardDiagnosticHandler);
     }
@@ -238,10 +320,10 @@ public class Resolver {
    * @return the element for the class
    */
   public Element findClass(String name, TreePath path) {
-    Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
+    Log.DiagnosticHandler discardDiagnosticHandler = newDiagnosticHandler();
     try {
       Env<AttrContext> env = getEnvForPath(path);
-      return wrapInvocationOnResolveInstance(FIND_TYPE, env, names.fromString(name));
+      return resolve(FIND_TYPE, env, names.fromString(name));
     } finally {
       log.popDiagnosticHandler(discardDiagnosticHandler);
     }
@@ -256,12 +338,19 @@ public class Resolver {
    * @return the {@code ClassSymbol} for the class if it is found, {@code null} otherwise
    */
   public @Nullable ClassSymbol findClassInPackage(String name, PackageSymbol pck, TreePath path) {
-    Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
+    Log.DiagnosticHandler discardDiagnosticHandler = newDiagnosticHandler();
     try {
       Env<AttrContext> env = getEnvForPath(path);
-      Element res =
-          wrapInvocationOnResolveInstance(
-              FIND_IDENT_IN_PACKAGE, env, pck, names.fromString(name), Kinds.KindSelector.TYP);
+      final Element res;
+      res =
+          resolve(
+              FIND_IDENT_IN_PACKAGE,
+              null,
+              env,
+              pck,
+              names.fromString(name),
+              Kinds.KindSelector.TYP);
+
       if (ElementUtils.isTypeElement(res)) {
         return (ClassSymbol) res;
       } else {
@@ -280,6 +369,8 @@ public class Resolver {
    *
    * <p>(This method takes into account autoboxing.)
    *
+   * <p>This method is a wrapper around {@code com.sun.tools.javac.comp.Resolve.findMethod}.
+   *
    * @param methodName name of the method to find
    * @param receiverType type of the receiver of the method
    * @param path tree path
@@ -291,7 +382,7 @@ public class Resolver {
       TypeMirror receiverType,
       TreePath path,
       java.util.List<TypeMirror> argumentTypes) {
-    Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
+    Log.DiagnosticHandler discardDiagnosticHandler = newDiagnosticHandler();
     try {
       Env<AttrContext> env = getEnvForPath(path);
 
@@ -311,14 +402,22 @@ public class Resolver {
         Object methodContext = buildMethodContext();
         Object oldContext = getField(resolve, "currentResolutionContext");
         setField(resolve, "currentResolutionContext", methodContext);
-        Element result =
-            wrapInvocationOnResolveInstance(
-                FIND_METHOD, env, site, name, argtypes, typeargtypes, allowBoxing, useVarargs);
+        Element resolveResult =
+            resolve(FIND_METHOD, env, site, name, argtypes, typeargtypes, allowBoxing, useVarargs);
         setField(resolve, "currentResolutionContext", oldContext);
-        if (result.getKind() == ElementKind.METHOD || result.getKind() == ElementKind.CONSTRUCTOR) {
-          return (ExecutableElement) result;
+        ExecutableElement methodResult;
+        if (resolveResult.getKind() == ElementKind.METHOD
+            || resolveResult.getKind() == ElementKind.CONSTRUCTOR) {
+          methodResult = (ExecutableElement) resolveResult;
+        } else if (resolveResult.getKind() == ElementKind.OTHER
+            && ACCESSERROR.isInstance(resolveResult)) {
+          // Return the inaccessible method that was found.
+          methodResult =
+              (ExecutableElement) invokeNoException(resolveResult, ACCESSERROR_ACCESS, null, null);
+        } else {
+          methodResult = null;
         }
-        return null;
+        return methodResult;
       } catch (Throwable t) {
         Error err =
             new AssertionError(
@@ -336,10 +435,22 @@ public class Resolver {
     }
   }
 
-  /** Build an instance of {@code Resolve$MethodResolutionContext}. */
+  /**
+   * Build an instance of {@code Resolve$MethodResolutionContext}.
+   *
+   * @return a MethodResolutionContext
+   * @throws ClassNotFoundException if there is trouble constructing the instance
+   * @throws InstantiationException if there is trouble constructing the instance
+   * @throws IllegalAccessException if there is trouble constructing the instance
+   * @throws InvocationTargetException if there is trouble constructing the instance
+   * @throws NoSuchFieldException if there is trouble constructing the instance
+   */
   protected Object buildMethodContext()
-      throws ClassNotFoundException, InstantiationException, IllegalAccessException,
-          InvocationTargetException, NoSuchFieldException {
+      throws ClassNotFoundException,
+          InstantiationException,
+          IllegalAccessException,
+          InvocationTargetException,
+          NoSuchFieldException {
     // Class is not accessible, instantiate reflectively.
     Class<?> methCtxClss =
         Class.forName("com.sun.tools.javac.comp.Resolve$MethodResolutionContext");
@@ -384,26 +495,40 @@ public class Resolver {
   }
 
   /**
-   * Wrap a method invocation on the {@code resolve} object.
+   * Creates a new {@code DiscardDiagnosticHandler} with the current {@code log}.
+   *
+   * @return a new {@code DiscardDiagnosticHandler} with the current {@code log}
+   */
+  private Log.DiscardDiagnosticHandler newDiagnosticHandler() {
+    try {
+      return NEW_DIAGNOSTIC_HANDLER.newInstance(log);
+    } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+      throw new BugInCF(e);
+    }
+  }
+
+  /**
+   * Invoke the given method on the {@code resolve} field.
    *
    * @param method the method to called
    * @param args the arguments to the call
    * @return the result of invoking the method on {@code resolve} (as the receiver) and the
    *     arguments
    */
-  private Symbol wrapInvocationOnResolveInstance(Method method, Object... args) {
-    return wrapInvocation(resolve, method, args);
+  private Symbol resolve(Method method, @Nullable Object... args) {
+    return invokeNoException(resolve, method, args);
   }
 
   /**
-   * Invoke a method reflectively.
+   * Invoke a method reflectively. This is like {@code Method.invoke()}, but it throws no checked
+   * exceptions.
    *
    * @param receiver the receiver
    * @param method the method to called
    * @param args the arguments to the call
    * @return the result of invoking the method on the receiver and arguments
    */
-  private Symbol wrapInvocation(Object receiver, Method method, @Nullable Object... args) {
+  private Symbol invokeNoException(Object receiver, Method method, @Nullable Object... args) {
     try {
       @SuppressWarnings("nullness") // assume arguments are OK
       @NonNull Symbol res = (Symbol) method.invoke(receiver, args);
@@ -411,7 +536,7 @@ public class Resolver {
     } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
       throw new BugInCF(
           e,
-          "Unexpected reflection error in wrapInvocation(%s, %s, %s)",
+          "Unexpected reflection error in invokeNoException(%s, %s, %s)",
           receiver,
           method,
           Arrays.toString(args));

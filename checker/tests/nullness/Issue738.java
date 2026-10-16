@@ -15,15 +15,15 @@ public class Issue738 {
         methodB(is, os);
         break;
       case 2:
-        // :: error: (argument)
+        // :: error: [argument]
         methodB2(is, os);
         break;
       case 3:
-        // :: error: (type.argument)
+        // :: error: [type.arguments.not.inferred]
         methodB3(is, os);
         break;
       case 4:
-        // :: error: (type.argument)
+        // :: error: [type.arguments.not.inferred]
         methodB4(is, os);
         break;
     }

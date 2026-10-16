@@ -5,11 +5,12 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringJoiner;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
- * Elements of this enumeration are used in a {@link I18nFormat} annotation to indicate the valid
+ * Elements of this enumeration are used in an {@link I18nFormat} annotation to indicate the valid
  * types that may be passed as a format parameter. For example:
  *
  * <pre>{@literal @}I18nFormat({GENERAL, NUMBER}) String f = "{0}{1, number}";
@@ -64,10 +65,10 @@ public enum I18nConversionCategory {
   }
 
   /** Used by {@link #stringToI18nConversionCategory}. */
-  static I18nConversionCategory[] namedCategories = new I18nConversionCategory[] {DATE, NUMBER};
+  private static final I18nConversionCategory[] namedCategories = {DATE, NUMBER};
 
   /**
-   * Creates a conversion cagetogry from a string name.
+   * Creates a conversion category from a string name.
    *
    * <pre>
    * I18nConversionCategory.stringToI18nConversionCategory("number") == I18nConversionCategory.NUMBER;
@@ -89,18 +90,28 @@ public enum I18nConversionCategory {
     throw new IllegalArgumentException("Invalid format type " + string);
   }
 
-  private static <E> Set<E> arrayToSet(E[] a) {
+  /**
+   * Converts an array to a set.
+   *
+   * @param a an array
+   * @param <E> the type of array and set elements
+   * @return a set containing the array's elements
+   */
+  private static <E> @Modifiable Set<E> arrayToSet(E[] a) {
     return new HashSet<>(Arrays.asList(a));
   }
 
   /**
-   * Return true if a is a subset of b.
+   * Returns true if a is a subset of b.
    *
    * @return true if a is a subset of b
    */
   public static boolean isSubsetOf(I18nConversionCategory a, I18nConversionCategory b) {
     return intersect(a, b) == a;
   }
+
+  /** Conversion categories that need to be considered by {@link #intersect}. */
+  private static final I18nConversionCategory[] conversionCategoriesForIntersect = {DATE, NUMBER};
 
   /**
    * Returns the intersection of the two given I18nConversionCategories.
@@ -128,28 +139,28 @@ public enum I18nConversionCategory {
       return a;
     }
 
-    @SuppressWarnings("nullness:argument" // types field  is only null in UNUSED and GENERAL
+    @SuppressWarnings("nullness:argument" // types field is only null in UNUSED and GENERAL
     )
     Set<Class<?>> as = arrayToSet(a.types);
-    @SuppressWarnings("nullness:argument" // types field  is only null in UNUSED and GENERAL
+    @SuppressWarnings("nullness:argument" // types field is only null in UNUSED and GENERAL
     )
     Set<Class<?>> bs = arrayToSet(b.types);
     as.retainAll(bs); // intersection
-    for (I18nConversionCategory v : new I18nConversionCategory[] {DATE, NUMBER}) {
+    for (I18nConversionCategory v : conversionCategoriesForIntersect) {
       @SuppressWarnings("nullness:argument") // in those values, `types` field is non-null
       Set<Class<?>> vs = arrayToSet(v.types);
       if (vs.equals(as)) {
         return v;
       }
     }
-    throw new RuntimeException();
+    throw new RuntimeException("Could not compute intersect(" + a + ", " + b + ")");
   }
 
   /**
    * Returns the union of the two given I18nConversionCategories.
    *
    * <pre>
-   * I18nConversionCategory.intersect(DATE, NUMBER) == DATE;
+   * I18nConversionCategory.union(DATE, NUMBER) == DATE;
    * </pre>
    */
   public static I18nConversionCategory union(I18nConversionCategory a, I18nConversionCategory b) {
@@ -186,7 +197,7 @@ public enum I18nConversionCategory {
     return false;
   }
 
-  /** Returns a pretty printed {@link I18nConversionCategory}. */
+  /** Returns a pretty-printed {@link I18nConversionCategory}. */
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder(this.name());

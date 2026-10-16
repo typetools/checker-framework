@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.analysis;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.expression.JavaExpression;
 
@@ -18,14 +19,14 @@ public interface Store<S extends Store<S>> {
   // as a regular unconditional store.
   // Once we have some information for both the then and else store, we
   // create a TransferInput for the block and allow it to be analyzed.
-  public static enum Kind {
+  public enum Kind {
     THEN,
     ELSE,
     BOTH
   }
 
   /** A flow rule describes how stores flow along one edge between basic blocks. */
-  public static enum FlowRule {
+  public enum FlowRule {
     /**
      * The normal case: then store flows to the then store, and else store flows to the else store.
      */
@@ -38,10 +39,6 @@ public interface Store<S extends Store<S>> {
     THEN_TO_THEN,
     /** Else store flows to the else of successor. Then store is ignored. */
     ELSE_TO_ELSE,
-    /** Both stores flow to the then of successor. */
-    BOTH_TO_THEN,
-    /** Both stores flow to the else of successor. */
-    BOTH_TO_ELSE,
   }
 
   /**
@@ -103,4 +100,15 @@ public interface Store<S extends Store<S>> {
    * @return the String representation of this store
    */
   String visualize(CFGVisualizer<?, S, ?> viz);
+
+  // I'm not sure why this is necessary, but without it `Store.equals()` is treated as requiring a
+  // @NonNull argument.  TODO: fix.
+  /**
+   * Returns true if this is equal to the given argument.
+   *
+   * @param o the object to compare against this
+   * @return true if this is equal to the given argument
+   */
+  @Override
+  boolean equals(@Nullable Object o);
 }

@@ -3,8 +3,8 @@
  * @summary Test the defaulting mechanism for nullness in binary files.
  *
  * @ignore Temporarily, until safe defaults for unannotated libraries are the default
- * @compile -XDrawDiagnostics -Xlint:unchecked BinaryDefaultTestBinary.java
- * @compile/fail/ref=BinaryDefaultTest.out -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker BinaryDefaultTest.java
+ * @compile -Xlint:unchecked BinaryDefaultTestBinary.java
+ * @compile/fail/ref=BinaryDefaultTest.goal -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker BinaryDefaultTest.java
  */
 
 import org.checkerframework.checker.nullness.qual.NonNull;

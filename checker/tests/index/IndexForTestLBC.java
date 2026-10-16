@@ -15,10 +15,10 @@ public class IndexForTestLBC {
     test1(1);
     test1(2);
     test1(array.length);
-    // :: error: (argument)
+    // :: error: [argument]
     test1(array.length - 1);
     if (array.length > x) {
-      // :: error: (argument)
+      // :: error: [argument]
       test1(x);
     }
 

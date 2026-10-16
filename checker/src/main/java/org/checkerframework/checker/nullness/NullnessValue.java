@@ -1,6 +1,5 @@
 package org.checkerframework.checker.nullness;
 
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -11,12 +10,13 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Behaves just like {@link CFValue}, but additionally tracks whether at this point {@link PolyNull}
- * is known to be {@link NonNull} or {@link Nullable} (or not known to be either)
+ * is known to be {@link NonNull} or {@link Nullable} (or not known to be either).
  */
 public class NullnessValue extends CFAbstractValue<NullnessValue> {
 
@@ -26,16 +26,24 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
   /** True if, at this point, {@link PolyNull} is known to be {@link Nullable}. */
   protected boolean isPolyNullNull;
 
+  /**
+   * Creates a new NullnessValue.
+   *
+   * @param analysis the analysis
+   * @param annotations the annotations
+   * @param underlyingType the underlying type
+   */
   public NullnessValue(
       CFAbstractAnalysis<NullnessValue, ?, ?> analysis,
-      Set<AnnotationMirror> annotations,
+      AnnotationMirrorSet annotations,
       TypeMirror underlyingType) {
     super(analysis, annotations, underlyingType);
   }
 
   @Override
-  public NullnessValue leastUpperBound(NullnessValue other) {
-    NullnessValue result = super.leastUpperBound(other);
+  protected NullnessValue upperBound(
+      @Nullable NullnessValue other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {
+    NullnessValue result = super.upperBound(other, upperBoundTypeMirror, shouldWiden);
 
     AnnotationMirror resultNullableAnno =
         analysis.getTypeFactory().getAnnotationByClass(result.annotations, Nullable.class);
@@ -57,9 +65,9 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
   }
 
   /**
-   * Returns true if this value contans {@code @NonNull} or {@code @PolyNull}.
+   * Returns true if this value contains {@code @NonNull} or {@code @PolyNull}.
    *
-   * @return true if this value contans {@code @NonNull} or {@code @PolyNull}
+   * @return true if this value contains {@code @NonNull} or {@code @PolyNull}
    */
   @Pure
   private boolean containsNonNullOrPolyNull() {
@@ -68,9 +76,9 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
   }
 
   /**
-   * Returns true if this value contans {@code @Nullable} or {@code @PolyNull}.
+   * Returns true if this value contains {@code @Nullable} or {@code @PolyNull}.
    *
-   * @return true if this value contans {@code @Nullable} or {@code @PolyNull}
+   * @return true if this value contains {@code @Nullable} or {@code @PolyNull}
    */
   @Pure
   private boolean containsNullableOrPolyNull() {
@@ -85,9 +93,9 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
         + AnnotationUtils.toStringSimple(annotations)
         + ", "
         + TypesUtils.simpleTypeName(underlyingType)
-        + ", "
+        + ", poly nn/n="
         + (isPolyNullNonNull ? 't' : 'f')
-        + ' '
+        + '/'
         + (isPolyNullNull ? 't' : 'f')
         + '}';
   }

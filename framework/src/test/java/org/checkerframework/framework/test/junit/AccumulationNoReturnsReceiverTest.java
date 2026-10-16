@@ -12,13 +12,14 @@ import org.junit.runners.Parameterized.Parameters;
  */
 public class AccumulationNoReturnsReceiverTest extends CheckerFrameworkPerDirectoryTest {
 
-  /** @param testFiles the files containing test code, which will be type-checked */
+  /**
+   * @param testFiles the files containing test code, which will be type-checked
+   */
   public AccumulationNoReturnsReceiverTest(List<File> testFiles) {
     super(
         testFiles,
         TestAccumulationNoReturnsReceiverChecker.class,
         "accumulation-norr",
-        "-Anomsgtext",
         "-encoding",
         "UTF-8");
   }

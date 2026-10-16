@@ -7,6 +7,10 @@ public class BasicLockTest {
     public Object field;
   }
 
+  Object someValue = new Object();
+
+  MyClass newMyClass = new MyClass();
+
   MyClass myUnannotatedMethod(MyClass param) {
     return param;
   }
@@ -31,23 +35,23 @@ public class BasicLockTest {
   @MayReleaseLocks
   void testFields() {
     // Test in two ways that return values are @GuardedByUnknown.
-    // The first way is more durable as cannot.dereference is tied specifically to
-    // @GuardedByUnknown (and @GuardedByBottom, but it is unlikely to become the default for
-    // return values on unannotated methods).
-    // :: error: (lock.not.held) :: error: (argument)
-    myUnannotatedMethod(o1).field = new Object();
+    // The first way is more durable because the error on dereferencing the return value is
+    // tied specifically to @GuardedByUnknown (and @GuardedByBottom, but it is unlikely to
+    // become the default for return values on unannotated methods).
+    // :: error: [lock.not.held] :: error: [argument]
+    myUnannotatedMethod(o1).field = someValue;
     // The second way is less durable because the default for fields is currently @GuardedBy({})
     // but could be changed to @GuardedByUnknown.
-    // :: error: (assignment) :: error: (argument)
+    // :: error: [assignment] :: error: [argument]
     p1 = myUnannotatedMethod(o1);
 
     // Now test that an unannotated method behaves as if it's annotated with @MayReleaseLocks
     lockField.lock();
     myAnnotatedMethod2();
-    m.field = new Object();
+    m.field = someValue;
     myUnannotatedMethod2();
-    // :: error: (lock.not.held)
-    m.field = new Object();
+    // :: error: [lock.not.held]
+    m.field = someValue;
   }
 
   void unannotatedReleaseLock(ReentrantLock lock) {
@@ -56,30 +60,44 @@ public class BasicLockTest {
 
   @AnnotatedFor("lock")
   @MayReleaseLocks
-  void testLocalVariables() {
+  void testLocalVariables1() {
     MyClass o2 = new MyClass(), p2;
-    // :: error: (argument)
+    // :: error: [argument]
     p2 = myUnannotatedMethod(o2);
     MyClass o3 = new MyClass();
     myAnnotatedMethod(o3);
+  }
 
+  @AnnotatedFor("lock")
+  @MayReleaseLocks
+  void testLocalVariables2() {
     // Now test that an unannotated method behaves as if it's annotated with @MayReleaseLocks
     final @GuardedBy({}) ReentrantLock lock = new ReentrantLock();
-    @GuardedBy("lock") MyClass q = new MyClass();
+    @SuppressWarnings("lock:assignment") // prevents flow-sensitive type refinement
+    @GuardedBy("lock") MyClass q = newMyClass;
     lock.lock();
     myAnnotatedMethod2();
-    q.field = new Object();
+    q.field = someValue;
     // Should behave as @MayReleaseLocks, and *should* reset @LockHeld assumption about local
     // variable lock.
     myUnannotatedMethod2();
-    // :: error: (lock.not.held)
-    q.field = new Object();
+    // :: error: [lock.not.held]
+    q.field = someValue;
+  }
+
+  @AnnotatedFor("lock")
+  @MayReleaseLocks
+  void testLocalVariables3() {
+    // Now test that an unannotated method behaves as if it's annotated with @MayReleaseLocks
+    final @GuardedBy({}) ReentrantLock lock = new ReentrantLock();
+    @SuppressWarnings("lock:assignment") // prevents flow-sensitive type refinement
+    @GuardedBy("lock") MyClass q = newMyClass;
     lock.lock();
     // Should behave as @MayReleaseLocks, and *should* reset @LockHeld assumption about local
     // variable lock.
-    // :: error: (argument)
+    // :: error: [argument]
     unannotatedReleaseLock(lock);
-    // :: error: (lock.not.held)
-    q.field = new Object();
+    // :: error: [lock.not.held]
+    q.field = someValue;
   }
 }

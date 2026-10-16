@@ -4,6 +4,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
+import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,8 +16,9 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.util.Elements;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
@@ -59,9 +61,9 @@ import org.plumelib.reflection.Signatures;
  * <p>Handles multiple names for the same unit, with different prefixes, e.g. @kg is the same
  * as @g(Prefix.kilo).
  *
- * <p>Supports relations between units, e.g. if "m" is a variable of type "@m" and "s" is a variable
- * of type "@s", the division "m/s" is automatically annotated as "mPERs", the correct unit for the
- * result.
+ * <p>Supports relations between units. If {@code m} is a variable of type "@m" and {@code s} is a
+ * variable of type "@s", the division {@code m / s} is automatically annotated as "@mPERs", the
+ * correct unit for the result.
  */
 public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private static final Class<org.checkerframework.checker.units.qual.UnitsRelations>
@@ -76,9 +78,11 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The UnitsMultiple.prefix argument/element. */
   private final ExecutableElement unitsMultiplePrefixElement =
       TreeUtils.getMethod(UnitsMultiple.class, "prefix", 0, processingEnv);
+
   /** The UnitsMultiple.quantity argument/element. */
   private final ExecutableElement unitsMultipleQuantityElement =
       TreeUtils.getMethod(UnitsMultiple.class, "quantity", 0, processingEnv);
+
   /** The UnitsRelations.value argument/element. */
   private final ExecutableElement unitsRelationsValueElement =
       TreeUtils.getMethod(
@@ -88,7 +92,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Map from canonical class name to the corresponding UnitsRelations instance. We use the string
    * to prevent instantiating the UnitsRelations multiple times.
    */
-  private Map<@CanonicalName String, UnitsRelations> unitsRel;
+  private @MonotonicNonNull Map<@CanonicalName String, UnitsRelations> unitsRel;
 
   /** Map from canonical name of external qualifiers, to their Class. */
   private static final Map<@CanonicalName String, Class<? extends Annotation>> externalQualsMap =
@@ -96,6 +100,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   private static final Map<String, AnnotationMirror> aliasMap = new HashMap<>();
 
+  @SuppressWarnings("this-escape")
   public UnitsAnnotatedTypeFactory(BaseTypeChecker checker) {
     // use true to enable flow inference, false to disable it
     super(checker, false);
@@ -118,15 +123,15 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     String aname = AnnotationUtils.annotationName(anno);
 
     // See if we already have a map from this aliased annotation to its corresponding base unit
-    // annotation
-    if (aliasMap.containsKey(aname)) {
-      // if so return it
-      return aliasMap.get(aname);
+    // annotation.
+    AnnotationMirror result = aliasMap.get(aname);
+    if (result != null) {
+      // If so, return it.
+      return result;
     }
 
     boolean built = false;
-    AnnotationMirror result = null;
-    // if not, look for the UnitsMultiple meta annotations of this aliased annotation
+    // If not, look for the UnitsMultiple meta annotations of this aliased annotation.
     for (AnnotationMirror metaAnno : anno.getAnnotationType().asElement().getAnnotationMirrors()) {
       // see if the meta annotation is UnitsMultiple
       if (isUnitsMultiple(metaAnno)) {
@@ -144,9 +149,9 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             UnitsRelationsTools.buildAnnoMirrorWithSpecificPrefix(
                 processingEnv, baseUnitAnnoClass, prefix);
 
-        // TODO: assert that this annotation is a prefix multiple of a Unit that's in the supported
-        // type qualifiers list currently this breaks for externally loaded annotations if the order
-        // was an alias before a base annotation.
+        // TODO: assert that this annotation is a prefix multiple of a Unit that's in the
+        // supported type qualifiers list currently this breaks for externally loaded
+        // annotations if the order was an alias before a base annotation.
         // assert isSupportedQualifier(result);
 
         built = true;
@@ -193,36 +198,32 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   @Override
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    // get all the loaded annotations
+    // Get all the loaded annotations.
     Set<Class<? extends Annotation>> qualSet = getBundledTypeQualifiers();
 
-    // load all the external units
+    // Load all the units specified on the command line.
     loadAllExternalUnits();
-
-    // copy all loaded external Units to qual set
     qualSet.addAll(externalQualsMap.values());
 
     return qualSet;
   }
 
+  /** Loads all the externnal units specified on the command line. */
   private void loadAllExternalUnits() {
     // load external individually named units
-    String qualNames = checker.getOption("units");
-    if (qualNames != null) {
-      for (String qualName : qualNames.split(",")) {
-        if (!Signatures.isBinaryName(qualName)) {
-          throw new UserError("Malformed qualifier name \"%s\" in -Aunits=%s", qualName, qualNames);
-        }
-        loadExternalUnit(qualName);
+    for (String qualName : checker.getStringsOption("units", ',')) {
+      if (!Signatures.isBinaryName(qualName)) {
+        throw new UserError("Malformed qualifier name \"%s\" in -Aunits", qualName);
       }
+      loadExternalUnit(qualName);
     }
 
     // load external directories of units
-    String qualDirectories = checker.getOption("unitsDirs");
-    if (qualDirectories != null) {
-      for (String directoryName : qualDirectories.split(":")) {
-        loadExternalDirectory(directoryName);
+    for (String directoryName : checker.getStringsOption("unitsDirs", ':')) {
+      if (!new File(directoryName).exists()) {
+        throw new UserError("Nonexistent directory in -AunitsDirs: " + directoryName);
       }
+      loadExternalDirectory(directoryName);
     }
   }
 
@@ -250,7 +251,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /** Adds the annotation class to the external qualifier map if it is not an alias annotation. */
-  private void addUnitToExternalQualMap(final Class<? extends Annotation> annoClass) {
+  private void addUnitToExternalQualMap(Class<? extends Annotation> annoClass) {
     AnnotationMirror mirror =
         UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(
             processingEnv, annoClass.getCanonicalName());
@@ -305,7 +306,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Return the name of the given annotation, if it is meta-annotated with UnitsMultiple; otherwise
+   * Returns the name of the given annotation, if it is meta-annotated with UnitsMultiple; otherwise
    * return null.
    *
    * @param anno the annotation to examine
@@ -336,6 +337,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return areSameByClass(metaAnno, UnitsMultiple.class);
   }
 
+  /** A class loader for looking up annotations. */
+  private static final ClassLoader CLASSLOADER =
+      InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
+
   /**
    * Look for an @UnitsRelations annotation on the qualifier and add it to the list of
    * UnitsRelations.
@@ -356,8 +361,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         Class<?> valueElement;
         try {
-          ClassLoader classLoader = InternalUtils.getClassLoaderForClass(AnnotationUtils.class);
-          valueElement = Class.forName(theclassname, true, classLoader);
+          valueElement = Class.forName(theclassname, true, CLASSLOADER);
         } catch (ClassNotFoundException e) {
           String msg =
               String.format(
@@ -383,7 +387,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 classname,
                 unitsRelationsClass.getDeclaredConstructor().newInstance().init(processingEnv));
           } catch (Throwable e) {
-            throw new BugInCF("Throwable when instantiating UnitsRelations", e);
+            throw new TypeSystemError("Throwable when instantiating UnitsRelations", e);
           }
         }
       }
@@ -392,8 +396,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   @Override
   public TreeAnnotator createTreeAnnotator() {
-    // Don't call super.createTreeAnnotator because it includes PropagationTreeAnnotator which
-    // is incorrect.
+    // Don't call super.createTreeAnnotator() because it includes PropagationTreeAnnotator,
+    // but we want to use UnitsPropagationTreeAnnotator instead.
     return new ListTreeAnnotator(
         new UnitsPropagationTreeAnnotator(this),
         new LiteralTreeAnnotator(this).addStandardLiteralQualifiers(),
@@ -408,13 +412,13 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     // Handled completely by UnitsTreeAnnotator
     @Override
-    public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
+    public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
       return null;
     }
 
     // Handled completely by UnitsTreeAnnotator
     @Override
-    public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
       return null;
     }
   }
@@ -422,15 +426,21 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** A class for adding annotations based on tree. */
   private class UnitsTreeAnnotator extends TreeAnnotator {
 
+    /**
+     * Creates a new UnitsTreeAnnotator.
+     *
+     * @param atypeFactory the type factory
+     */
     UnitsTreeAnnotator(UnitsAnnotatedTypeFactory atypeFactory) {
       super(atypeFactory);
     }
 
+    @SuppressWarnings("DuplicateBranches")
     @Override
-    public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
-      AnnotatedTypeMirror lht = getAnnotatedType(node.getLeftOperand());
-      AnnotatedTypeMirror rht = getAnnotatedType(node.getRightOperand());
-      Tree.Kind kind = node.getKind();
+    public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
+      AnnotatedTypeMirror lht = getAnnotatedType(tree.getLeftOperand());
+      AnnotatedTypeMirror rht = getAnnotatedType(tree.getRightOperand());
+      Tree.Kind kind = tree.getKind();
 
       // Remove Prefix.one
       if (UnitsRelationsTools.getPrefix(lht) == Prefix.one) {
@@ -446,12 +456,12 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         if (bestres != null && res != null && !bestres.equals(res)) {
           checker.message(
-              Kind.WARNING,
+              Diagnostic.Kind.WARNING,
               "UnitsRelation mismatch, taking neither! Previous: "
                   + bestres
                   + " and current: "
                   + res);
-          return null; // super.visitBinary(node, type);
+          return null; // super.visitBinary(tree, type);
         }
 
         if (res != null) {
@@ -462,26 +472,26 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       if (bestres != null) {
         type.replaceAnnotation(bestres);
       } else {
-        // If none of the units relations classes could resolve the units, then apply default rules
+        // If none of the units relations classes could resolve the units, then apply
+        // default rules.
 
         switch (kind) {
-          case MINUS:
-          case PLUS:
-            if (lht.getAnnotations().equals(rht.getAnnotations())) {
+          case MINUS, PLUS -> {
+            if (lht.getPrimaryAnnotations().equals(rht.getPrimaryAnnotations())) {
               // The sum or difference has the same units as both operands.
-              type.replaceAnnotations(lht.getAnnotations());
+              type.replaceAnnotations(lht.getPrimaryAnnotations());
             } else {
               // otherwise it results in mixed
               type.replaceAnnotation(mixedUnits);
             }
-            break;
-          case DIVIDE:
-            if (lht.getAnnotations().equals(rht.getAnnotations())) {
+          }
+          case DIVIDE -> {
+            if (lht.getPrimaryAnnotations().equals(rht.getPrimaryAnnotations())) {
               // If the units of the division match, return TOP
               type.replaceAnnotation(TOP);
             } else if (UnitsRelationsTools.hasNoUnits(rht)) {
               // any unit divided by a scalar keeps that unit
-              type.replaceAnnotations(lht.getAnnotations());
+              type.replaceAnnotations(lht.getPrimaryAnnotations());
             } else if (UnitsRelationsTools.hasNoUnits(lht)) {
               // scalar divided by any unit returns mixed
               type.replaceAnnotation(mixedUnits);
@@ -491,29 +501,26 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
               // return mixed
               type.replaceAnnotation(mixedUnits);
             }
-            break;
-          case MULTIPLY:
+          }
+          case MULTIPLY -> {
             if (UnitsRelationsTools.hasNoUnits(lht)) {
               // any unit multiplied by a scalar keeps the unit
-              type.replaceAnnotations(rht.getAnnotations());
+              type.replaceAnnotations(rht.getPrimaryAnnotations());
             } else if (UnitsRelationsTools.hasNoUnits(rht)) {
               // any scalar multiplied by a unit becomes the unit
-              type.replaceAnnotations(lht.getAnnotations());
+              type.replaceAnnotations(lht.getPrimaryAnnotations());
             } else {
               // else it is a multiplication of two units that have no defined
               // relations from a relations class
               // return mixed
               type.replaceAnnotation(mixedUnits);
             }
-            break;
-          case REMAINDER:
-            // in modulo operation, it always returns the left unit regardless of what
-            // it is (unknown, or some unit)
-            type.replaceAnnotations(lht.getAnnotations());
-            break;
-          default:
-            // Placeholders for unhandled binary operations
-            // Do nothing
+          }
+          case REMAINDER ->
+              // in modulo operation, it always returns the left unit regardless of what
+              // it is (unknown, or some unit)
+              type.replaceAnnotations(lht.getPrimaryAnnotations());
+          default -> {} // Placeholders for unhandled binary operations; do nothing
         }
       }
 
@@ -521,37 +528,35 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
-      ExpressionTree var = node.getVariable();
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
+      ExpressionTree var = tree.getVariable();
       AnnotatedTypeMirror varType = getAnnotatedType(var);
 
-      type.replaceAnnotations(varType.getAnnotations());
+      type.replaceAnnotations(varType.getPrimaryAnnotations());
       return null;
     }
 
-    private AnnotationMirror useUnitsRelation(
+    private @Nullable AnnotationMirror useUnitsRelation(
         Tree.Kind kind, UnitsRelations ur, AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
 
-      AnnotationMirror res = null;
       if (ur != null) {
         switch (kind) {
-          case DIVIDE:
-            res = ur.division(lht, rht);
-            break;
-          case MULTIPLY:
-            res = ur.multiplication(lht, rht);
-            break;
-          default:
-            // Do nothing
+          case DIVIDE -> {
+            return ur.division(lht, rht);
+          }
+          case MULTIPLY -> {
+            return ur.multiplication(lht, rht);
+          }
+          default -> {} // Do nothing
         }
       }
-      return res;
+      return null;
     }
   }
 
   /** Set the Bottom qualifier as the bottom of the hierarchy. */
   @Override
-  public QualifierHierarchy createQualifierHierarchy() {
+  protected QualifierHierarchy createQualifierHierarchy() {
     return new UnitsQualifierHierarchy();
   }
 
@@ -560,7 +565,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected class UnitsQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
     /** Constructor. */
     public UnitsQualifierHierarchy() {
-      super(UnitsAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
+      super(
+          UnitsAnnotatedTypeFactory.this.getSupportedTypeQualifiers(),
+          elements,
+          UnitsAnnotatedTypeFactory.this);
     }
 
     @Override
@@ -604,7 +612,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           return lub;
         }
       }
-      throw new BugInCF("Unexpected QualifierKinds: %s %s", qualifierKind1, qualifierKind2);
+      throw new TypeSystemError("Unexpected QualifierKinds: %s %s", qualifierKind1, qualifierKind2);
     }
 
     @Override
@@ -667,7 +675,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Get the direct super qualifier for the given qualifier kind.
+     * Returns the direct super qualifier for the given qualifier kind.
      *
      * @param qualifierKind qualifier kind
      * @return direct super qualifier kind
@@ -678,14 +686,14 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return qualifierKind;
       }
       Set<QualifierKind> superQuals = new TreeSet<>(qualifierKind.getStrictSuperTypes());
-      while (superQuals.size() > 0) {
+      while (!superQuals.isEmpty()) {
         Set<QualifierKind> lowest = findLowestQualifiers(superQuals);
         if (lowest.size() == 1) {
           return lowest.iterator().next();
         }
         superQuals.removeAll(lowest);
       }
-      throw new BugInCF("No direct super qualifier found for %s", qualifierKind);
+      throw new TypeSystemError("No direct super qualifier found for %s", qualifierKind);
     }
   }
 

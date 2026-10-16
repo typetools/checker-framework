@@ -3,7 +3,7 @@ package org.checkerframework.dataflow.expression;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * This class calls {@link #convert(JavaExpression)} on each subexpression of the {@link
@@ -16,6 +16,8 @@ import org.plumelib.util.CollectionsPlume;
  * should override the visit method of kinds of JavaExpressions to convert.
  */
 public abstract class JavaExpressionConverter extends JavaExpressionVisitor<JavaExpression, Void> {
+  /** Creates a JavaExpressionConverter. */
+  public JavaExpressionConverter() {}
 
   /**
    * Converts {@code javaExpr} and returns the resulting {@code JavaExpression}.
@@ -34,8 +36,8 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
    * @return the list of converted expressions
    */
   public List<@PolyNull JavaExpression> convert(List<@PolyNull JavaExpression> list) {
-    return CollectionsPlume.mapList(
-        (@PolyNull JavaExpression expression) -> {
+    return CollectionsP.mapList(
+        expression -> {
           // Can't use a ternary operator because of:
           // https://github.com/typetools/checker-framework/issues/1170
           if (expression == null) {
@@ -99,6 +101,11 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
   @Override
   protected JavaExpression visitThisReference(ThisReference thisExpr, Void unused) {
     return thisExpr;
+  }
+
+  @Override
+  protected JavaExpression visitSuperReference(SuperReference superExpr, Void unused) {
+    return superExpr;
   }
 
   @Override

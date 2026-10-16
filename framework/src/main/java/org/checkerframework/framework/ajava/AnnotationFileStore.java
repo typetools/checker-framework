@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.checkerframework.framework.util.JavaParserUtil;
+import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -21,7 +22,7 @@ public class AnnotationFileStore {
    * Mapping from a fully qualified class name to the paths to annotation files that contain that
    * type.
    */
-  private Map<String, List<String>> annotationFiles;
+  private final Map<String, List<String>> annotationFiles;
 
   /** Constructs an {@code AnnotationFileStore}. */
   public AnnotationFileStore() {
@@ -45,7 +46,7 @@ public class AnnotationFileStore {
 
     if (location.isFile() && location.getName().endsWith(".ajava")) {
       try {
-        CompilationUnit root = JavaParserUtil.parseCompilationUnit(location);
+        CompilationUnit root = StaticJavaParserUtil.parseCompilationUnit(location);
         for (TypeDeclaration<?> type : root.getTypes()) {
           String name = JavaParserUtil.getFullyQualifiedName(type, root);
 

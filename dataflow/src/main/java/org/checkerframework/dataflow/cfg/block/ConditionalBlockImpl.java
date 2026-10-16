@@ -1,13 +1,13 @@
 package org.checkerframework.dataflow.cfg.block;
 
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store.FlowRule;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
+import org.plumelib.util.ArraySet;
 
 /** Implementation of a conditional basic block. */
 public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock {
@@ -68,7 +68,7 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
 
   @Override
   public Set<Block> getSuccessors() {
-    Set<Block> result = new LinkedHashSet<>(2);
+    Set<Block> result = new ArraySet<>(2);
     result.add(getThenSuccessor());
     result.add(getElseSuccessor());
     return result;

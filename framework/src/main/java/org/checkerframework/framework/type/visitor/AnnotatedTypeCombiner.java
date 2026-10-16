@@ -1,10 +1,9 @@
 package org.checkerframework.framework.type.visitor;
 
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 
 /** Changes each parameter type to be the GLB of the parameter type and visited type. */
@@ -19,9 +18,7 @@ public class AnnotatedTypeCombiner extends DoubleAnnotatedTypeScanner<Void> {
    */
   @SuppressWarnings("interning:not.interned") // assertion
   public static void combine(
-      final AnnotatedTypeMirror from,
-      final AnnotatedTypeMirror to,
-      final QualifierHierarchy hierarchy) {
+      AnnotatedTypeMirror from, AnnotatedTypeMirror to, QualifierHierarchy hierarchy) {
     if (from == to) {
       throw new BugInCF("from == to: %s", from);
     }
@@ -36,7 +33,7 @@ public class AnnotatedTypeCombiner extends DoubleAnnotatedTypeScanner<Void> {
    *
    * @param hierarchy the hierarchy used to the compute the GLB
    */
-  public AnnotatedTypeCombiner(final QualifierHierarchy hierarchy) {
+  public AnnotatedTypeCombiner(QualifierHierarchy hierarchy) {
     this.hierarchy = hierarchy;
   }
 
@@ -57,15 +54,17 @@ public class AnnotatedTypeCombiner extends DoubleAnnotatedTypeScanner<Void> {
    * @param from the first set of annotations
    * @param to the second set of annotations. This is modified by side-effect to hold the result.
    */
-  protected void combineAnnotations(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to) {
+  protected void combineAnnotations(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
 
-    Set<AnnotationMirror> combinedAnnotations = AnnotationUtils.createAnnotationSet();
+    AnnotationMirrorSet combinedAnnotations = new AnnotationMirrorSet();
 
     for (AnnotationMirror top : hierarchy.getTopAnnotations()) {
-      AnnotationMirror aFrom = from.getAnnotationInHierarchy(top);
-      AnnotationMirror aTo = to.getAnnotationInHierarchy(top);
+      AnnotationMirror aFrom = from.getPrimaryAnnotationInHierarchy(top);
+      AnnotationMirror aTo = to.getPrimaryAnnotationInHierarchy(top);
       if (aFrom != null && aTo != null) {
-        combinedAnnotations.add(hierarchy.greatestLowerBound(aFrom, aTo));
+        combinedAnnotations.add(
+            hierarchy.greatestLowerBoundShallow(
+                aFrom, from.getUnderlyingType(), aTo, to.getUnderlyingType()));
       } else if (aFrom != null) {
         combinedAnnotations.add(aFrom);
       } else if (aTo != null) {

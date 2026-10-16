@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.constantpropagation;
 
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.ForwardTransferFunction;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -21,9 +20,12 @@ public class ConstantPropagationTransfer
         TransferInput<Constant, ConstantPropagationStore>>
     implements ForwardTransferFunction<Constant, ConstantPropagationStore> {
 
+  /** Creates a ConstantPropagationTransfer. */
+  public ConstantPropagationTransfer() {}
+
   @Override
   public ConstantPropagationStore initialStore(
-      UnderlyingAST underlyingAST, @Nullable List<LocalVariableNode> parameters) {
+      UnderlyingAST underlyingAST, List<LocalVariableNode> parameters) {
     ConstantPropagationStore store = new ConstantPropagationStore();
     return store;
   }
@@ -48,10 +50,9 @@ public class ConstantPropagationTransfer
     ConstantPropagationStore p = pi.getRegularStore();
     Node target = n.getTarget();
     Constant info = null;
-    if (target instanceof LocalVariableNode) {
-      LocalVariableNode t = (LocalVariableNode) target;
+    if (target instanceof LocalVariableNode lvn) {
       info = p.getInformation(n.getExpression());
-      p.setInformation(t, info);
+      p.setInformation(lvn, info);
     }
     return new RegularTransferResult<>(info, p);
   }

@@ -45,9 +45,9 @@ public @interface EnsuresLockHeld {
   @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
   @PostconditionAnnotation(qualifier = LockHeld.class)
   @InheritedAnnotation
-  @interface List {
+  public static @interface List {
     /**
-     * Return the repeatable annotations.
+     * Returns the repeatable annotations.
      *
      * @return the repeatable annotations
      */

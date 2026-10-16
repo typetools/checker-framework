@@ -1,7 +1,5 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-// @skip-test We can only handle this after we get better method inference.
-
 interface Fn<T> {
   T func(T t);
 }

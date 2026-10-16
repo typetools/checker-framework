@@ -1,0 +1,8 @@
+// Tests that a record in a named package (not the default package) is found in the stub file.
+
+package disbaruse.records;
+
+import org.checkerframework.checker.testchecker.disbaruse.qual.DisbarUse;
+
+record DisbarredPackagedRecordByStubs(@DisbarUse String barred, String fine) {
+}

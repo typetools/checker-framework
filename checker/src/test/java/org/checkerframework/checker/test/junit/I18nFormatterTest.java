@@ -16,8 +16,7 @@ public class I18nFormatterTest extends CheckerFrameworkPerDirectoryTest {
     super(
         testFiles,
         org.checkerframework.checker.i18nformatter.I18nFormatterChecker.class,
-        "i18n-formatter",
-        "-Anomsgtext");
+        "i18n-formatter");
   }
 
   @Parameters

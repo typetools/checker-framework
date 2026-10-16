@@ -13,16 +13,16 @@ public class BoxedPrimitives {
   void argSigned(@Signed int x) {
     si = x;
     sbi = x;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ui = x;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ubi = x;
   }
 
   void argUnsigned(@Unsigned int x) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     si = x;
-    // :: error: (assignment)
+    // :: error: [assignment]
     sbi = x;
     ui = x;
     ubi = x;
@@ -31,16 +31,16 @@ public class BoxedPrimitives {
   void argSignedBoxed(@Signed Integer x) {
     si = x;
     sbi = x;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ui = x;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ubi = x;
   }
 
   void argUnsignedBoxed(@Unsigned Integer x) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     si = x;
-    // :: error: (assignment)
+    // :: error: [assignment]
     sbi = x;
     ui = x;
     ubi = x;
@@ -51,21 +51,21 @@ public class BoxedPrimitives {
     argSignedBoxed(si);
     argSigned(sbi);
     argSignedBoxed(sbi);
-    // :: error: (argument)
+    // :: error: [argument]
     argUnsigned(si);
-    // :: error: (argument)
+    // :: error: [argument]
     argUnsignedBoxed(si);
-    // :: error: (argument)
+    // :: error: [argument]
     argUnsigned(sbi);
-    // :: error: (argument)
+    // :: error: [argument]
     argUnsignedBoxed(sbi);
-    // :: error: (argument)
+    // :: error: [argument]
     argSigned(ui);
-    // :: error: (argument)
+    // :: error: [argument]
     argSignedBoxed(ui);
-    // :: error: (argument)
+    // :: error: [argument]
     argSigned(ubi);
-    // :: error: (argument)
+    // :: error: [argument]
     argSignedBoxed(ubi);
     argUnsigned(ui);
     argUnsignedBoxed(ui);

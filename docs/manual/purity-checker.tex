@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Purity Checker}{purity-checker}
 
 The Purity Checker identifies methods that have no side effects, that
@@ -8,9 +7,18 @@ Purity analysis aids type refinement (Section~\ref{type-refinement}).
 
 All checkers utilize purity annotations on called methods.
 You do not need to run the Purity Checker directly.
-However you may run just the Purity Checker by
-supplying the following command-line options to javac:
+However, you may run just the Purity Checker by
+supplying the following command-line option to javac:
 \code{-processor org.checkerframework.framework.util.PurityChecker}.
+That implies \<-AcheckPurityAnnotations>, so you do not need to supply
+both options.
+
+The Checker Framework can infer purity annotations.
+If you supply the command-line option \<-AsuggestPureMethods>, then the
+Checker Framework will suggest methods that can be marked as
+\<@SideEffectFree>, \<@Deterministic>, or \<@Pure>.
+In addition, such suggestions are output by \<-Ainfer> and when using
+whole-program inference.
 
 
 \sectionAndLabel{Purity annotations}{purity-annotations}
@@ -19,6 +27,11 @@ supplying the following command-line options to javac:
 
 \item[\refqualclass{dataflow/qual}{SideEffectFree}]
   indicates that the method has no externally-visible side effects.
+
+\iffalse
+\item[\refqualclass{dataflow/qual}{SideEffectsOnly}]
+  indicates that the method has limited externally-visible side effects.
+\fi
 
 \item[\refqualclass{dataflow/qual}{Deterministic}]
   indicates that if the method is called multiple times with identical
@@ -30,47 +43,44 @@ supplying the following command-line options to javac:
 
 \end{description}
 
-If you supply the command-line option \<-AsuggestPureMethods>, then the
-Checker Framework will suggest methods that can be marked as
-\<@SideEffectFree>, \<@Deterministic>, or \<@Pure>.
-
 
 \sectionAndLabel{Purity annotations are trusted}{purity-trusted}
 
-Currently, purity annotations are trusted.  Purity annotations on called
+By default, purity annotations are trusted.  Purity annotations on called
 methods affect type-checking of client code.  However, you can make a
-mistake by writing \<@SideEffectFree> on the declaration of a method that
-is not actually side-effect-free or by writing \<@Deterministic> on the
-declaration of a method that is not actually deterministic.
+mistake
+%
+by writing \refqualclass{dataflow/qual}{SideEffectFree} on the
+declaration of a method that is not side-effect-free,
+%
+\iffalse
+by writing \refqualclass{dataflow/qual}{SideEffectsOnly} on the
+declaration of a method that side-effects more than the listed expressions,
+\fi
+or
+%
+by writing \refqualclass{dataflow/qual}{Deterministic} on the
+declaration of a method that is not deterministic.
 
-To enable
-checking of the annotations, supply the command-line option
-\<-AcheckPurityAnnotations>.  It is not enabled by default because of a high false
+When you run the Purity Checker directly, it checks the annotations.
+To enable checking of the annotations when running any other checker,
+supply the command-line option \<-AcheckPurityAnnotations>.
+For checkers other than the Purity Checker, it is not enabled by default
+because of a high false
 positive rate.  In the future, after a new purity-checking analysis is
 implemented, the Checker Framework will default to checking purity
 annotations.
 
 
-\sectionAndLabel{Overriding methods must respect specifications in superclasses}{purity-override}
+\sectionAndLabel{Overriding methods inherit specifications from overridden methods}{purity-override}
 
-If a method in a superclass has a purity annotation, then every overriding
-definition must also have that purity annotation (or a stronger one).
+A purity annotation is inherited:  if a method in a superclass or
+superinterface has a purity annotation, then every overriding definition has
+that annotation too, even if the annotation is not written on the overriding
+definition.  An overriding definition may strengthen the specification by
+writing a stronger annotation, but it cannot weaken it.
 
-Here is an example error if this requirement is violated:
-
-\begin{mysmall}
-\begin{Verbatim}
-MyClass.java:1465: error: int hashCode() in MyClass cannot override int hashCode(Object this) in java.lang.Object;
-attempting to use an incompatible purity declaration
-    public int hashCode() {
-               ^
-  found   : []
-  required: [SIDE_EFFECT_FREE, DETERMINISTIC]
-\end{Verbatim}
-\end{mysmall}
-
-\noindent
-The reason for the error is that the \<Object> class is annotated as:
+For example, the \<Object> class is annotated as:
 
 \begin{Verbatim}
 class Object {
@@ -82,35 +92,54 @@ class Object {
 \noindent
 (where \refqualclass{dataflow/qual}{Pure} means both
 \refqualclass{dataflow/qual}{SideEffectFree} and
-\refqualclass{dataflow/qual}{Deterministic}).  Every overriding
-definition, including those in your program, must use be at least as strong
-a specification.  For \<hashCode>, every overriding definition must be
-annotated as \<@Pure>.
+\refqualclass{dataflow/qual}{Deterministic}).  Therefore, every definition
+of \<hashCode>, including those in your program, is implicitly annotated
+as \<@Pure> and its body is checked accordingly:
 
-You can fix the definition by adding \<@Pure> to your method definition.
-Alternately, you can suppress the warning.
-You can suppress each such warning individually using
-\<@SuppressWarnings("purity.overriding")>,
-or you can use the \<-AsuppressWarnings=purity.overriding>
-command-line argument to suppress all such warnings.
-% The \<-AassumeSideEffectFree> command-line argument suppresses the
-% warning, but it does more too; don't mention it here.
-In the future, the Checker Framework will support inheriting annotations
-from superclass definitions.
+\begin{mysmall}
+\begin{Verbatim}
+MyClass.java:1465: error: [purity.assign.field] field assignment not allowed in deterministic side-effect-free method
+    this.hash = h;
+        ^
+\end{Verbatim}
+\end{mysmall}
+
+\noindent
+You can fix the definition by making its body pure.  Alternately, you can
+suppress the warning; see \chapterpageref{suppressing-warnings}.
 
 
 \sectionAndLabel{Suppressing warnings}{purity-suppress-warnings}
 
 The command-line options \<-AassumeSideEffectFree>,
-\<-AassumeDeterministic>, \<-AassumePure> make the Checker Framework unsoundly
-assume that \emph{every} called method is side-effect-free, is
-deterministic, or is both, respectively.  This can make
+\<-AassumeDeterministic>, and \<-AassumePure> make the Checker Framework
+unsoundly assume that \emph{every} called method is side-effect-free, is
+deterministic, or is both, respectively.
+
+The command-line option \<-AassumePureGetters> makes the Checker Framework
+unsoundly assume that every getter method is side-effect-free and
+deterministic.  For the purposes of \<-AassumePureGetters>, a getter method
+is defined as an instance method with no formal parameters, whose name
+starts with ``get'', ``is'', ``not'', or ``has'' followed by an uppercase
+letter.
+
+These options can make
 flow-sensitive type refinement much more effective, since method calls will
 not cause the analysis to discard information that it has learned.
-However, this option can mask real errors.  It is most appropriate when you
-are starting out annotating a project, or if you are using the Checker
-Framework to find some bugs but not to give a guarantee that no more errors
-exist of the given type.
+However, these options can mask real errors.  They are most appropriate when one
+of the following is true:
+\begin{itemize}
+\item
+  You are starting out annotating a project.
+\item
+  You are using the Checker Framework to find bugs but not to give a
+  guarantee that no more errors exist of the given type.
+\item
+  You are working with an unannotated library that makes the given
+  assumptions, in which case (say) using \<-AassumePureGetters> is easier
+  than writing stub files for all the library's getter methods.
+\end{itemize}
+
 
 %%  LocalWords:  AsuggestPureMethods AcheckPurityAnnotations
 %%  LocalWords:  AsuppressWarnings AassumeSideEffectFree

@@ -2,14 +2,15 @@
 
 import org.checkerframework.checker.mustcall.qual.*;
 
-@MustCall("close") class PolyTests {
+@InheritableMustCall("close")
+class PolyTests {
   static @PolyMustCall Object id(@PolyMustCall Object obj) {
     return obj;
   }
 
   static void test1(@Owning @MustCall("close") Object o) {
     @MustCall("close") Object o1 = id(o);
-    // :: error: assignment
+    // :: error: [assignment]
     @MustCall({}) Object o2 = id(o);
   }
 
@@ -18,13 +19,11 @@ import org.checkerframework.checker.mustcall.qual.*;
     @MustCall({}) Object o2 = id(o);
   }
 
-  // These sort of constructors will always appear in stub files and are unverifiable for now.
-  @SuppressWarnings("mustcall:annotations.on.use")
   @PolyMustCall PolyTests(@PolyMustCall Object obj) {}
 
   static void test3(@Owning @MustCall({"close"}) Object o) {
     @MustCall("close") Object o1 = new PolyTests(o);
-    // :: error: assignment
+    // :: error: [assignment]
     @MustCall({}) Object o2 = new PolyTests(o);
   }
 
@@ -35,7 +34,7 @@ import org.checkerframework.checker.mustcall.qual.*;
 
   static void testArbitary(@Owning PolyTests p) {
     @MustCall("close") Object o1 = p;
-    // :: error: assignment
+    // :: error: [assignment]
     @MustCall({}) Object o2 = p;
   }
 }

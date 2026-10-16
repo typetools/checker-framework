@@ -1,7 +1,7 @@
 import org.checkerframework.checker.fenum.qual.Fenum;
 import qual.MyFenum;
 
-@SuppressWarnings("fenum:assignmenTestStatic") // initialization of fake enums
+@SuppressWarnings("fenum:assignmenTestStatic") // intentionally mangled warning suppression key
 class TestStatic {
   public static final @Fenum("A") int ACONST1 = 1;
   public static final @Fenum("A") int ACONST2 = 2;
@@ -50,18 +50,18 @@ public class FenumDemo {
       // ok
     }
 
-    // :: error: (binary)
+    // :: error: [binary]
     if (TestStatic.ACONST1 < TestStatic.BCONST2) {}
-    // :: error: (binary)
+    // :: error: [binary]
     if (TestStatic.ACONST1 == TestStatic.BCONST2) {}
-    // :: error: (binary)
+    // :: error: [binary]
     if (TestStatic.ACONST1 >= TestStatic.CCONST2) {}
 
-    // :: error: (binary)
+    // :: error: [binary]
     if (TestStatic.ACONST1 < 5) {}
-    // :: error: (binary)
+    // :: error: [binary]
     if (TestStatic.BCONST1 > 5) {}
-    // :: error: (binary)
+    // :: error: [binary]
     if (TestStatic.CCONST1 == 5) {}
   }
 }

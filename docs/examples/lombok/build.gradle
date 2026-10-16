@@ -1,29 +1,21 @@
-///////////////////////////////////////////////////////////////////////////
-/// Checker Framework pluggable type-checking and Lombok example
-///
+// ///////////////////////////////////////////////////////////////////////////
+// Checker Framework pluggable type-checking and Lombok example
+//
 
 plugins {
-    id 'java'
-    id "io.freefair.lombok" version "5.1.0"
-    // Checker Framework pluggable type-checking
-    id 'org.checkerframework' version '0.5.17'
-}
-
-apply plugin: 'org.checkerframework'
-
-def cfHome = "${projectDir}/../../.."
-dependencies {
-    compileOnly files(cfHome + "/checker/dist/checker-qual.jar")
-    testCompileOnly files(cfHome + "/checker/dist/checker-qual.jar")
-    checkerFramework files(cfHome + "/checker/dist/checker.jar")
+  id("java")
+  id("io.freefair.lombok").version("9.2.0")
+  // Checker Framework pluggable type-checking
+  id("org.checkerframework").version("1.0.2")
 }
 
 repositories {
-    mavenCentral()
+  mavenCentral()
 }
 
 checkerFramework {
-    checkers = [
-        'org.checkerframework.checker.nullness.NullnessChecker',
-    ]
+  version = "local"
+  checkers = [
+    "org.checkerframework.checker.nullness.NullnessChecker",
+  ]
 }

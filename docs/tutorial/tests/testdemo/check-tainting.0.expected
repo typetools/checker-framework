@@ -1,21 +1,18 @@
 
 clean:
-Deleting directory /Users/smillst/src/jsr308/checker-framework/tutorial/eclipse-projects/personalblog-demo/bin
 
 check-tainting:
-Created dir: /Users/smillst/src/jsr308/checker-framework/tutorial/eclipse-projects/personalblog-demo/bin
-Compiling 2 source files to /Users/smillst/src/jsr308/checker-framework/tutorial/eclipse-projects/personalblog-demo/bin
-javac 1.8.0-jsr308-3.12.0
-/home/mernst/research/types/checker-framework/tutorial/eclipse-projects/personalblog-demo/src/net/eyde/personalblog/service/PersonalBlogService.java:174: error: [argument] incompatible types in argument.
-                                + "%' order by post.created desc");
-                                  ^
+Created dir: /home/mernst/research/types/checker-framework-fork-mernst-branch-formatting/docs/tutorial/src/personalblog-demo/bin
+Compiling 2 source files to /home/mernst/research/types/checker-framework-fork-mernst-branch-formatting/docs/tutorial/src/personalblog-demo/bin
+javac 17.0.5
+/home/mernst/research/types/checker-framework-fork-mernst-branch-formatting/docs/tutorial/src/personalblog-demo/src/net/eyde/personalblog/service/PersonalBlogService.java:162: error: [argument] incompatible argument for parameter query of executeQuery.
+                + "%' order by post.created desc");
+                  ^
   found   : @Tainted String
   required: @Untainted String
 1 error
 
 BUILD FAILED
-/Users/smillst/src/jsr308/checker-framework/tutorial/eclipse-projects/personalblog-demo/build.xml:35: Compile failed; see the compiler error output for details.
+/home/mernst/research/types/checker-framework-fork-mernst-branch-formatting/docs/tutorial/src/personalblog-demo/build.xml:33: Compile failed; see the compiler error output for details.
 
-Total time: 3 seconds
-
-
+Total time: 1 second

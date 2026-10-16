@@ -9,6 +9,7 @@ import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.LengthOf;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.SameLen;
+import org.checkerframework.common.value.qual.MinLen;
 
 /** ArrayWrapper is a fixed-size generic collection. */
 public class ArrayWrapper<T> {
@@ -46,5 +47,19 @@ public class ArrayWrapper<T> {
     if (i < a.size()) {
       a.set(i, null);
     }
+  }
+
+  // The following methods are tests that sequence annotations work correctly with
+  // user-defined sequence types.
+
+  public static Object testSameLen(
+      @SameLen("#2") ArrayWrapper<? extends Object> a,
+      @SameLen("#1") ArrayWrapper<? extends Object> b,
+      @IndexFor("#1") int i) {
+    return b.get(i);
+  }
+
+  public static Object testMinLen(@MinLen(3) ArrayWrapper<? extends Object> a) {
+    return a.get(2);
   }
 }

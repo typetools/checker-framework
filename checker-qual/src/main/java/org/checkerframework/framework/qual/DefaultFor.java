@@ -42,8 +42,12 @@ public @interface DefaultFor {
 
   /**
    * Returns {@link Class}es for which an annotation should be applied. For example, if
-   * {@code @MyAnno} is meta-annotated with {@code @DefaultFor(classes=String.class)}, then every
+   * {@code @MyAnno} is meta-annotated with {@code @DefaultFor(types=String.class)}, then every
    * occurrence of {@code String} is actually {@code @MyAnno String}.
+   *
+   * <p>Only the given types, not their subtypes, receive the default. For instance, if the {@code
+   * types} element contains only {@code Iterable}, then the default does not apply to a variable or
+   * expression of type {@code Collection} which is a subtype of {@code Iterable}.
    *
    * @return {@link Class}es for which an annotation should be applied
    */

@@ -1,7 +1,7 @@
 package org.checkerframework.dataflow.cfg.builder;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
@@ -14,20 +14,23 @@ import org.checkerframework.dataflow.cfg.block.RegularBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock.SpecialBlockType;
 import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
+import org.checkerframework.dataflow.cfg.node.CatchMarkerNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.util.MostlySingleton;
+import org.checkerframework.javacutil.BugInCF;
+import org.plumelib.util.ArraySet;
 
 /** Class that performs phase two of the translation process. */
 @SuppressWarnings("nullness") // TODO
-public class CFGTranslationPhaseTwo {
+public final class CFGTranslationPhaseTwo {
 
+  /** Creates a new CFGTranslationPhaseTwo. */
   private CFGTranslationPhaseTwo() {}
 
   /**
    * Perform phase two of the translation.
    *
    * @param in the result of phase one
-   * @return a control flow graph that might still contain degenerate basic block (such as empty
+   * @return a control flow graph that might still contain degenerate basic blocks (such as empty
    *     regular basic blocks or conditional blocks with the same block as 'then' and 'else'
    *     successor)
    */
@@ -35,7 +38,7 @@ public class CFGTranslationPhaseTwo {
   public static ControlFlowGraph process(PhaseOneResult in) {
 
     Map<Label, Integer> bindings = in.bindings;
-    ArrayList<ExtendedNode> nodeList = in.nodeList;
+    List<ExtendedNode> nodeList = in.nodeList;
     // A leader is an extended node which will give rise to a basic block in phase two.
     Set<Integer> leaders = in.leaders;
 
@@ -46,7 +49,7 @@ public class CFGTranslationPhaseTwo {
     SpecialBlockImpl exceptionalExitBlock = new SpecialBlockImpl(SpecialBlockType.EXCEPTIONAL_EXIT);
 
     // record missing edges that will be added later
-    Set<MissingEdge> missingEdges = new MostlySingleton<>();
+    Set<MissingEdge> missingEdges = new ArraySet<>(1);
 
     // missing exceptional edges
     Set<MissingEdge> missingExceptionalEdges = new LinkedHashSet<>();
@@ -60,7 +63,7 @@ public class CFGTranslationPhaseTwo {
     int i = 0;
     for (ExtendedNode node : nodeList) {
       switch (node.getType()) {
-        case NODE:
+        case NODE -> {
           if (leaders.contains(i)) {
             RegularBlockImpl b = new RegularBlockImpl();
             block.setSuccessor(b);
@@ -76,53 +79,56 @@ public class CFGTranslationPhaseTwo {
             block.setSuccessor(exceptionalExitBlock);
             block = new RegularBlockImpl();
           }
-          break;
-        case CONDITIONAL_JUMP:
-          {
-            ConditionalJump cj = (ConditionalJump) node;
-            // Exception nodes may fall through to conditional jumps, so we set the block which is
-            // required for the insertion of missing edges.
-            node.setBlock(block);
-            assert block != null;
-            final ConditionalBlockImpl cb = new ConditionalBlockImpl();
-            if (cj.getTrueFlowRule() != null) {
-              cb.setThenFlowRule(cj.getTrueFlowRule());
-            }
-            if (cj.getFalseFlowRule() != null) {
-              cb.setElseFlowRule(cj.getFalseFlowRule());
-            }
-            block.setSuccessor(cb);
-            block = new RegularBlockImpl();
-
-            // use two anonymous SingleSuccessorBlockImpl that set the
-            // 'then' and 'else' successor of the conditional block
-            final Label thenLabel = cj.getThenLabel();
-            final Label elseLabel = cj.getElseLabel();
-            Integer target = bindings.get(thenLabel);
-            assert target != null;
-            missingEdges.add(
-                new MissingEdge(
-                    new RegularBlockImpl() {
-                      @Override
-                      public void setSuccessor(BlockImpl successor) {
-                        cb.setThenSuccessor(successor);
-                      }
-                    },
-                    target));
-            target = bindings.get(elseLabel);
-            assert target != null;
-            missingEdges.add(
-                new MissingEdge(
-                    new RegularBlockImpl() {
-                      @Override
-                      public void setSuccessor(BlockImpl successor) {
-                        cb.setElseSuccessor(successor);
-                      }
-                    },
-                    target));
-            break;
+        }
+        case CONDITIONAL_JUMP -> {
+          ConditionalJump cj = (ConditionalJump) node;
+          // Exception nodes may fall through to conditional jumps, so we set the
+          // block which is required for the insertion of missing edges.
+          node.setBlock(block);
+          assert block != null;
+          ConditionalBlockImpl cb = new ConditionalBlockImpl();
+          if (cj.getTrueFlowRule() != null) {
+            cb.setThenFlowRule(cj.getTrueFlowRule());
           }
-        case UNCONDITIONAL_JUMP:
+          if (cj.getFalseFlowRule() != null) {
+            cb.setElseFlowRule(cj.getFalseFlowRule());
+          }
+          block.setSuccessor(cb);
+          block = new RegularBlockImpl();
+
+          // use two anonymous SingleSuccessorBlockImpl that set the
+          // 'then' and 'else' successor of the conditional block
+          Label thenLabel = cj.getThenLabel();
+          Label elseLabel = cj.getElseLabel();
+          Integer target = bindings.get(thenLabel);
+          assert target != null;
+          missingEdges.add(
+              new MissingEdge(
+                  new RegularBlockImpl() {
+                    @Override
+                    public void setSuccessor(BlockImpl successor) {
+                      cb.setThenSuccessor(successor);
+                    }
+                  },
+                  target));
+          target = bindings.get(elseLabel);
+          if (target == null) {
+            throw new BugInCF(
+                String.format(
+                    "in conditional jump %s, no binding for elseLabel %s: %s",
+                    cj, elseLabel, bindings));
+          }
+          missingEdges.add(
+              new MissingEdge(
+                  new RegularBlockImpl() {
+                    @Override
+                    public void setSuccessor(BlockImpl successor) {
+                      cb.setElseSuccessor(successor);
+                    }
+                  },
+                  target));
+        }
+        case UNCONDITIONAL_JUMP -> {
           UnconditionalJump uj = (UnconditionalJump) node;
           if (leaders.contains(i)) {
             RegularBlockImpl b = new RegularBlockImpl();
@@ -141,8 +147,8 @@ public class CFGTranslationPhaseTwo {
             missingEdges.add(new MissingEdge(block, target, uj.getFlowRule()));
           }
           block = new RegularBlockImpl();
-          break;
-        case EXCEPTION_NODE:
+        }
+        case EXCEPTION_NODE -> {
           NodeWithExceptionsHolder en = (NodeWithExceptionsHolder) node;
           // create new exception block and link with previous block
           ExceptionBlockImpl e = new ExceptionBlockImpl();
@@ -153,8 +159,8 @@ public class CFGTranslationPhaseTwo {
           block = new RegularBlockImpl();
 
           // Ensure linking between e and next block (normal edge).
-          // Note: do not link to the next block for throw statements (these throw exceptions for
-          // sure).
+          // Note: do not link to the next block for throw statements (these throw
+          // exceptions for sure).
           if (!node.getTerminatesExecution()) {
             missingEdges.add(new MissingEdge(e, i + 1));
           }
@@ -164,12 +170,12 @@ public class CFGTranslationPhaseTwo {
             TypeMirror cause = entry.getKey();
             for (Label label : entry.getValue()) {
               Integer target = bindings.get(label);
-              // TODO: This is sometimes null; is this a problem?
+              // TODO: `target` is sometimes null; is this a problem?
               // assert target != null;
               missingExceptionalEdges.add(new MissingEdge(e, target, cause));
             }
           }
-          break;
+        }
       }
       i++;
     }
@@ -199,6 +205,14 @@ public class CFGTranslationPhaseTwo {
         // edge to specific target
         ExtendedNode extendedNode = nodeList.get(index);
         BlockImpl target = extendedNode.getBlock();
+        List<Node> targetNodes = target.getNodes();
+        Node firstNode = targetNodes.isEmpty() ? null : targetNodes.get(0);
+        if (firstNode instanceof CatchMarkerNode catchMarkerNode) {
+          TypeMirror catchType = catchMarkerNode.getCatchType();
+          if (in.types.isSubtype(catchType, cause)) {
+            cause = catchType;
+          }
+        }
         source.addExceptionalSuccessor(target, cause);
       }
     }
@@ -208,9 +222,9 @@ public class CFGTranslationPhaseTwo {
         regularExitBlock,
         exceptionalExitBlock,
         in.underlyingAST,
-        in.treeLookupMap,
-        in.convertedTreeLookupMap,
-        in.unaryAssignNodeLookupMap,
+        in.treeToCfgNodes,
+        in.treeToConvertedCfgNodes,
+        in.postfixTreeToCfgNodes,
         in.returnNodes,
         in.declaredClasses,
         in.declaredLambdas);

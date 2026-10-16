@@ -2,9 +2,11 @@ package org.checkerframework.checker.i18nformatter;
 
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
@@ -32,7 +34,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.plumelib.reflection.Signatures;
 
 /**
@@ -51,6 +53,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
   /** The @{@link I18nUnknownFormat} annotation. */
   protected final AnnotationMirror I18NUNKNOWNFORMAT =
       AnnotationBuilder.fromClass(elements, I18nUnknownFormat.class);
+
   /** The @{@link I18nFormatBottom} annotation. */
   protected final AnnotationMirror I18NFORMATBOTTOM =
       AnnotationBuilder.fromClass(elements, I18nFormatBottom.class);
@@ -58,9 +61,11 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
   /** The fully-qualified name of {@link I18nFormat}. */
   protected static final @CanonicalName String I18NFORMAT_NAME =
       I18nFormat.class.getCanonicalName();
+
   /** The fully-qualified name of {@link I18nInvalidFormat}. */
   protected static final @CanonicalName String I18NINVALIDFORMAT_NAME =
       I18nInvalidFormat.class.getCanonicalName();
+
   /** The fully-qualified name of {@link I18nFormatFor}. */
   protected static final @CanonicalName String I18NFORMATFOR_NAME =
       I18nFormatFor.class.getCanonicalName();
@@ -72,6 +77,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
   protected final I18nFormatterTreeUtil treeUtil = new I18nFormatterTreeUtil(checker);
 
   /** Create a new I18nFormatterAnnotatedTypeFactory. */
+  @SuppressWarnings("this-escape")
   public I18nFormatterAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
@@ -79,7 +85,10 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
   }
 
   /**
-   * Builds a map from a translation file key to its value in the file.
+   * Builds a map from a translation file key to its value in the file. Builds the map for all files
+   * in the "-Apropfiles" command-line argument.
+   *
+   * <p>Called only once, during initialization.
    *
    * @return a map from a translation file key to its value in the file
    */
@@ -87,82 +96,66 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
     Map<String, String> result = new HashMap<>();
 
     if (checker.hasOption("propfiles")) {
-      String names = checker.getOption("propfiles");
-      String[] namesArr = names.split(":");
-
-      if (namesArr == null) {
-        System.err.println("Couldn't parse the properties files: <" + names + ">");
-      } else {
-        for (String name : namesArr) {
-          try {
-            Properties prop = new Properties();
-
-            ClassLoader cl = this.getClass().getClassLoader();
-            if (cl == null) {
-              // The class loader is null if the system class loader was used.
-              cl = ClassLoader.getSystemClassLoader();
-            }
-            InputStream in = cl.getResourceAsStream(name);
-
-            if (in == null) {
-              // If the classloader didn't manage to load the file, try whether a
-              // FileInputStream works. For absolute paths this might help.
-              try {
-                in = new FileInputStream(name);
-              } catch (FileNotFoundException e) {
-                // ignore
-              }
-            }
-
-            if (in == null) {
-              System.err.println("Couldn't find the properties file: " + name);
-              // report(null, "propertykeychecker.filenotfound", name);
-              // return Collections.emptySet();
+      for (String propfile : checker.getStringsOption("propfiles", File.pathSeparator)) {
+        Properties prop = new Properties();
+        ClassLoader cl = this.getClass().getClassLoader();
+        if (cl == null) {
+          // The class loader is null if the system class loader was used.
+          cl = ClassLoader.getSystemClassLoader();
+        }
+        try (InputStream in = cl.getResourceAsStream(propfile)) {
+          if (in != null) {
+            prop.load(in);
+          } else {
+            // If the classloader didn't manage to load the file, try whether a
+            // FileInputStream works. For absolute paths this might help.
+            try (InputStream fis = Files.newInputStream(Paths.get(propfile))) {
+              prop.load(fis);
+            } catch (FileNotFoundException e) {
+              // The Property Key Checker's `propertykeychecker.filenotfound` message key
+              // describes this problem, but it cannot be used here: issuing a diagnostic
+              // requires an AST node, and this problem is not associated with one.
+              System.err.println("Couldn't find the properties file: " + propfile);
               continue;
             }
-
-            prop.load(in);
-
-            for (String key : prop.stringPropertyNames()) {
-              result.put(key, prop.getProperty(key));
-            }
-          } catch (Exception e) {
-            // TODO: is there a nicer way to report messages, that are not connected to
-            // an AST node?  One cannot use report, because it needs a node.
-            System.err.println("Exception in PropertyKeyChecker.keysOfPropertyFile: " + e);
-            e.printStackTrace();
           }
+
+          for (String key : prop.stringPropertyNames()) {
+            result.put(key, prop.getProperty(key));
+          }
+        } catch (Exception e) {
+          // TODO: is there a nicer way to report messages, that are not connected to
+          // an AST node?  One cannot use `report`, because it needs a node.
+          System.err.println(
+              "Exception in PropertyKeyChecker.keysOfPropertyFile while processing "
+                  + propfile
+                  + ": "
+                  + e);
+          e.printStackTrace();
         }
       }
     }
 
     if (checker.hasOption("bundlenames")) {
-      String bundleNames = checker.getOption("bundlenames");
-      String[] namesArr = bundleNames.split(":");
+      for (String bundleName : checker.getStringsOption("bundlenames", ':')) {
+        if (!Signatures.isBinaryName(bundleName)) {
+          System.err.println(
+              "Malformed resource bundle: <" + bundleName + "> should be a binary name.");
+          continue;
+        }
+        ResourceBundle bundle = ResourceBundle.getBundle(bundleName);
+        if (bundle == null) {
+          System.err.println(
+              "Couldn't find the resource bundle: <"
+                  + bundleName
+                  + "> for locale <"
+                  + Locale.getDefault()
+                  + ">.");
+          continue;
+        }
 
-      if (namesArr == null) {
-        System.err.println("Couldn't parse the resource bundles: <" + bundleNames + ">");
-      } else {
-        for (String bundleName : namesArr) {
-          if (!Signatures.isBinaryName(bundleName)) {
-            System.err.println(
-                "Malformed resource bundle: <" + bundleName + "> should be a binary name.");
-            continue;
-          }
-          ResourceBundle bundle = ResourceBundle.getBundle(bundleName);
-          if (bundle == null) {
-            System.err.println(
-                "Couldn't find the resource bundle: <"
-                    + bundleName
-                    + "> for locale <"
-                    + Locale.getDefault()
-                    + ">.");
-            continue;
-          }
-
-          for (String key : bundle.keySet()) {
-            result.put(key, bundle.getString(key));
-          }
+        for (String key : bundle.keySet()) {
+          result.put(key, bundle.getString(key));
         }
       }
     }
@@ -187,12 +180,10 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
 
     @Override
     public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-      if (!type.isAnnotatedInHierarchy(I18NUNKNOWNFORMAT)) {
+      if (!type.hasPrimaryAnnotationInHierarchy(I18NUNKNOWNFORMAT)) {
         String format = null;
         if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
           format = (String) tree.getValue();
-        } else if (tree.getKind() == Tree.Kind.CHAR_LITERAL) {
-          format = Character.toString((Character) tree.getValue());
         }
         if (format != null) {
           AnnotationMirror anno;
@@ -217,14 +208,19 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
 
     /** Qualifier kind for the @{@link I18nFormat} annotation. */
     private final QualifierKind I18NFORMAT_KIND;
+
     /** Qualifier kind for the @{@link I18nFormatFor} annotation. */
     private final QualifierKind I18NFORMATFOR_KIND;
+
     /** Qualifier kind for the @{@link I18nInvalidFormat} annotation. */
     private final QualifierKind I18NINVALIDFORMAT_KIND;
 
     /** Creates I18nFormatterQualifierHierarchy. */
     public I18nFormatterQualifierHierarchy() {
-      super(I18nFormatterAnnotatedTypeFactory.this.getSupportedTypeQualifiers(), elements);
+      super(
+          I18nFormatterAnnotatedTypeFactory.this.getSupportedTypeQualifiers(),
+          elements,
+          I18nFormatterAnnotatedTypeFactory.this);
       this.I18NFORMAT_KIND = this.getQualifierKind(I18NFORMAT_NAME);
       this.I18NFORMATFOR_KIND = this.getQualifierKind(I18NFORMATFOR_NAME);
       this.I18NINVALIDFORMAT_KIND = this.getQualifierKind(I18NINVALIDFORMAT_NAME);
@@ -257,7 +253,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
             treeUtil.getI18nInvalidFormatValue(subAnno),
             treeUtil.getI18nInvalidFormatValue(superAnno));
       }
-      throw new BugInCF("Unexpected QualifierKinds: %s %s", subKind, superKind);
+      throw new TypeSystemError("Unexpected QualifierKinds: %s %s", subKind, superKind);
     }
 
     @Override

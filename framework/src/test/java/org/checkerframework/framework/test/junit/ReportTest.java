@@ -7,13 +7,14 @@ import org.junit.runners.Parameterized.Parameters;
 
 public class ReportTest extends CheckerFrameworkPerDirectoryTest {
 
-  /** @param testFiles the files containing test code, which will be type-checked */
+  /**
+   * @param testFiles the files containing test code, which will be type-checked
+   */
   public ReportTest(List<File> testFiles) {
     super(
         testFiles,
-        org.checkerframework.common.util.report.ReportChecker.class,
+        org.checkerframework.common.util.count.report.ReportChecker.class,
         "report",
-        "-Anomsgtext",
         "-Astubs=tests/report/reporttest.astub");
   }
 

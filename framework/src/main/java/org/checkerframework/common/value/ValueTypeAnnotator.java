@@ -64,7 +64,7 @@ class ValueTypeAnnotator extends TypeAnnotator {
    * translate the annotation to {@code @IntRange(from = 1, to = Short.MAX_VALUE}.
    */
   private void replaceWithNewAnnoInSpecialCases(AnnotatedTypeMirror atm) {
-    AnnotationMirror anno = atm.getAnnotationInHierarchy(typeFactory.UNKNOWNVAL);
+    AnnotationMirror anno = atm.getPrimaryAnnotationInHierarchy(typeFactory.UNKNOWNVAL);
     if (anno == null || anno.getElementValues().isEmpty()) {
       return;
     }
@@ -99,22 +99,23 @@ class ValueTypeAnnotator extends TypeAnnotator {
       long to = typeFactory.getToValueFromIntRange(atm);
 
       if (from > to) {
-        // `from > to` either indicates a user error when writing an annotation or an error in the
-        // checker's implementation. `-from` should always be <= to. ValueVisitor#validateType will
-        // issue an error.
+        // `from > to` either indicates a user error when writing an annotation or an error
+        // in the checker's implementation. `-from` should always be <= to.
+        // ValueVisitor#validateType will issue an error.
         atm.replaceAnnotation(typeFactory.BOTTOMVAL);
       } else {
-        // Always do a replacement of the annotation here so that the defaults calculated above are
-        // correctly added to the annotation (assuming the annotation is well-formed).
+        // Always do a replacement of the annotation here so that the defaults calculated
+        // above are correctly added to the annotation (assuming the annotation is
+        // well-formed).
         atm.replaceAnnotation(typeFactory.createIntRangeAnnotation(from, to));
       }
     } else if (AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.ARRAYLENRANGE_NAME)) {
       int from = typeFactory.getArrayLenRangeFromValue(anno);
       int to = typeFactory.getArrayLenRangeToValue(anno);
       if (from > to) {
-        // `from > to` either indicates a user error when writing an annotation or an error in the
-        // checker's implementation `-from` should always be <= to. ValueVisitor#validateType will
-        // issue an error.
+        // `from > to` either indicates a user error when writing an annotation or an error
+        // in the checker's implementation `-from` should always be <= to.
+        // ValueVisitor#validateType will issue an error.
         atm.replaceAnnotation(typeFactory.BOTTOMVAL);
       } else if (from < 0) {
         // No array can have a length less than 0. Any time the type includes a from
@@ -137,13 +138,18 @@ class ValueTypeAnnotator extends TypeAnnotator {
       List<String> regexes =
           AnnotationUtils.getElementValueArray(
               anno, typeFactory.matchesRegexValueElement, String.class);
-      for (String regex : regexes) {
-        try {
-          Pattern.compile(regex);
-        } catch (PatternSyntaxException pse) {
-          atm.replaceAnnotation(typeFactory.BOTTOMVAL);
-          break;
-        }
+      if (!allRegexesCompile(regexes)) {
+        atm.replaceAnnotation(typeFactory.BOTTOMVAL);
+      }
+    } else if (AnnotationUtils.areSameByName(
+        anno, ValueAnnotatedTypeFactory.DOES_NOT_MATCH_REGEX_NAME)) {
+      // If the annotation contains an invalid regex, replace it with bottom. ValueVisitor
+      // will issue a warning where the annotation was written.
+      List<String> regexes =
+          AnnotationUtils.getElementValueArray(
+              anno, typeFactory.doesNotMatchRegexValueElement, String.class);
+      if (!allRegexesCompile(regexes)) {
+        atm.replaceAnnotation(typeFactory.BOTTOMVAL);
       }
     } else {
       // In here the annotation is @*Val where (*) is not Int, String but other types
@@ -156,5 +162,24 @@ class ValueTypeAnnotator extends TypeAnnotator {
         atm.replaceAnnotation(typeFactory.UNKNOWNVAL);
       }
     }
+  }
+
+  /**
+   * Returns true if all the given strings are valid regexes.
+   *
+   * @param regexes a list of strings that might all be regexes
+   * @return true if all the given strings are valid regexes
+   */
+  @SuppressWarnings(
+      "regex:argument") // strings are checked for validity by PatternSyntaxException catch
+  private boolean allRegexesCompile(List<String> regexes) {
+    for (String regex : regexes) {
+      try {
+        Pattern.compile(regex);
+      } catch (PatternSyntaxException e) {
+        return false;
+      }
+    }
+    return true;
   }
 }

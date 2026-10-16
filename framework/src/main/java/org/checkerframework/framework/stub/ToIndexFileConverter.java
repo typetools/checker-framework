@@ -34,43 +34,47 @@ import com.github.javaparser.ast.type.TypeParameter;
 import com.github.javaparser.ast.type.VoidType;
 import com.github.javaparser.ast.type.WildcardType;
 import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.checkerframework.afu.scenelib.Annotation;
+import org.checkerframework.afu.scenelib.el.AClass;
+import org.checkerframework.afu.scenelib.el.ADeclaration;
+import org.checkerframework.afu.scenelib.el.AElement;
+import org.checkerframework.afu.scenelib.el.AField;
+import org.checkerframework.afu.scenelib.el.AMethod;
+import org.checkerframework.afu.scenelib.el.AScene;
+import org.checkerframework.afu.scenelib.el.ATypeElement;
+import org.checkerframework.afu.scenelib.el.AnnotationDef;
+import org.checkerframework.afu.scenelib.el.BoundLocation;
+import org.checkerframework.afu.scenelib.el.DefException;
+import org.checkerframework.afu.scenelib.el.LocalLocation;
+import org.checkerframework.afu.scenelib.el.TypePathEntry;
+import org.checkerframework.afu.scenelib.io.IndexFileParser;
+import org.checkerframework.afu.scenelib.io.IndexFileWriter;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
-import org.checkerframework.framework.util.JavaParserUtil;
+import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.reflection.Signatures;
-import scenelib.annotations.Annotation;
-import scenelib.annotations.el.AClass;
-import scenelib.annotations.el.ADeclaration;
-import scenelib.annotations.el.AElement;
-import scenelib.annotations.el.AField;
-import scenelib.annotations.el.AMethod;
-import scenelib.annotations.el.AScene;
-import scenelib.annotations.el.ATypeElement;
-import scenelib.annotations.el.AnnotationDef;
-import scenelib.annotations.el.BoundLocation;
-import scenelib.annotations.el.DefException;
-import scenelib.annotations.el.LocalLocation;
-import scenelib.annotations.el.TypePathEntry;
-import scenelib.annotations.io.IndexFileParser;
-import scenelib.annotations.io.IndexFileWriter;
 
 /**
  * Convert a JAIF file plus a stub file into index files (JAIFs). Note that the resulting index
@@ -84,22 +88,48 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   // The possessive modifiers "*+" are for efficiency only.
   // private static Pattern packagePattern =
   //         Pattern.compile("\\bpackage *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
-  private static Pattern importPattern =
+  /** A pattern that matches an import statement. */
+  private static final Pattern importPattern =
       Pattern.compile("\\bimport *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
+
+  // The asm library is not on this class's compile classpath, so the following three constants
+  // are written literally rather than as references to fields of org.objectweb.asm.TypePath.
+
+  /**
+   * The {@code step} value of a {@link TypePathEntry} that steps from an array type to its
+   * component type; that is, {@code org.objectweb.asm.TypePath.ARRAY_ELEMENT}.
+   */
+  private static final int ARRAY_ELEMENT = 0;
+
+  /**
+   * The {@code step} value of a {@link TypePathEntry} that steps from a wildcard to its bound; that
+   * is, {@code org.objectweb.asm.TypePath.WILDCARD_BOUND}.
+   */
+  private static final int WILDCARD_BOUND = 2;
+
+  /**
+   * The {@code step} value of a {@link TypePathEntry} that steps from a parameterized type to one
+   * of its type arguments; that is, {@code org.objectweb.asm.TypePath.TYPE_ARGUMENT}.
+   */
+  private static final int TYPE_ARGUMENT = 3;
 
   /**
    * Package name that is active at the current point in the input file. Changes as package
-   * declarations are encountered.
+   * declarations are encountered. Null if the input file has no package declaration.
    */
-  private final @DotSeparatedIdentifiers String pkgName;
+  private final @Nullable @DotSeparatedIdentifiers String pkgName;
+
   /** Imports that appear in the stub file. */
   private final List<String> imports;
+
   /** A scene read from the input JAIF file, and will be written to the output JAIF file. */
   private final AScene scene;
 
   /**
-   * @param pkgDecl AST node for package declaration
-   * @param importDecls AST nodes for import declarations
+   * Creates a new ToIndexFileConverter.
+   *
+   * @param pkgDecl the AST node for package declaration
+   * @param importDecls the AST nodes for import declarations
    * @param scene scene for visitor methods to fill in
    */
   @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
@@ -154,8 +184,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       for (int i = 1; i < args.length; i++) {
         String f0 = args[i];
         String f1 = (f0.endsWith(".astub") ? f0.substring(0, f0.length() - 6) : f0) + ".jaif";
-        try (InputStream in = new FileInputStream(f0);
-            OutputStream out = new FileOutputStream(f1); ) {
+        try (InputStream in = new BufferedInputStream(Files.newInputStream(Paths.get(f0)));
+            OutputStream out = new BufferedOutputStream(new FileOutputStream(f1)); ) {
           convert(new AScene(scene), in, out);
         }
       }
@@ -171,7 +201,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *
    * @param scene the initial scene
    * @param in stubfile contents
-   * @param out JAIF representing augmented scene
+   * @param out the output stream for the JAIF file that holds the augmented scene
    * @throws ParseException if the stub file cannot be parsed
    * @throws DefException if two different definitions of the same annotation cannot be unified
    * @throws IOException if there is trouble with file reading or writing
@@ -180,7 +210,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       throws IOException, DefException, ParseException {
     StubUnit iu;
     try {
-      iu = JavaParserUtil.parseStubUnit(in);
+      iu = StaticJavaParserUtil.parseStubUnit(in);
     } catch (ParseProblemException e) {
       iu = null;
       throw new BugInCF(
@@ -190,7 +220,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
               + e.getMessage());
     }
     extractScene(iu, scene);
-    try (Writer w = new BufferedWriter(new OutputStreamWriter(out))) {
+    try (Writer w = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8))) {
       IndexFileWriter.write(scene, w);
     }
   }
@@ -225,7 +255,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * Builds simplified annotation from its declaration. Only the name is included, because stubfiles
    * do not generally have access to the full definitions of annotations.
    */
-  private static Annotation extractAnnotation(AnnotationExpr expr) {
+  private static @Nullable Annotation extractAnnotation(AnnotationExpr expr) {
     String exprName = expr.toString().substring(1); // leave off leading '@'
 
     // Eliminate jdk.Profile+Annotation, a synthetic annotation that
@@ -235,8 +265,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
     @SuppressWarnings("signature") // special case for annotations containing "+"
     AnnotationDef def =
-        new AnnotationDef(exprName, "ToIndexFileConverter.extractAnnotation(" + expr + ")");
-    def.setFieldTypes(Collections.emptyMap());
+        new AnnotationDef(
+            exprName,
+            Collections.emptyMap(),
+            "ToIndexFileConverter.extractAnnotation(" + expr + ")");
     return new Annotation(def, Collections.emptyMap());
   }
 
@@ -440,7 +472,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /** Copies information from an AST type node to an {@link ATypeElement}. */
-  private Void visitType(Type type, final ATypeElement elem) {
+  private Void visitType(Type type, ATypeElement elem) {
     List<AnnotationExpr> exprs = type.getAnnotations();
     if (exprs != null) {
       for (AnnotationExpr expr : exprs) {
@@ -457,10 +489,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /**
    * Copies information from an AST type node's inner type nodes to an {@link ATypeElement}.
    *
-   * @param type AST Type node to inspect
+   * @param type the AST Type node to inspect
    * @param elem destination type element
    */
-  private static Void visitInnerTypes(Type type, final ATypeElement elem) {
+  @SuppressWarnings("NotJavadoc") // Error Prone flags Javadoc comments on local class methods.
+  private static Void visitInnerTypes(Type type, ATypeElement elem) {
     return type.accept(
         new GenericVisitorAdapter<Void, List<TypePathEntry>>() {
           @Override
@@ -469,7 +502,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
               List<Type> typeArgs = type.getTypeArguments().get();
               for (int i = 0; i < typeArgs.size(); i++) {
                 Type inner = typeArgs.get(i);
-                List<TypePathEntry> ext = extendedTypePath(loc, 3, i);
+                List<TypePathEntry> ext = extendedTypePath(loc, TYPE_ARGUMENT, i);
                 visitInnerType(inner, ext);
               }
             }
@@ -478,19 +511,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
           @Override
           public Void visit(ArrayType type, List<TypePathEntry> loc) {
-            List<TypePathEntry> ext = loc;
-            int n = type.getArrayLevel();
-            Type currentType = type;
-            for (int i = 0; i < n; i++) {
-              ext = extendedTypePath(ext, 1, 0);
-              for (AnnotationExpr expr : currentType.getAnnotations()) {
-                ATypeElement typeElem = elem.innerTypes.getVivify(ext);
-                Annotation anno = extractAnnotation(expr);
-                typeElem.tlAnnotationsHere.add(anno);
-              }
-              currentType =
-                  ((com.github.javaparser.ast.type.ArrayType) currentType).getComponentType();
-            }
+            // The annotations on `type` itself apply to the array type, whose type path is `loc`;
+            // the caller has already recorded them.  This method handles the component type, which
+            // is one ARRAY_ELEMENT step deeper.  A multi-dimensional array is a nest of ArrayType
+            // nodes, so one step per call suffices.
+            List<TypePathEntry> ext = extendedTypePath(loc, ARRAY_ELEMENT, 0);
+            visitInnerType(type.getComponentType(), ext);
             return null;
           }
 
@@ -499,24 +525,36 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             ReferenceType lower = type.getExtendedType().orElse(null);
             ReferenceType upper = type.getSuperType().orElse(null);
             if (lower != null) {
-              List<TypePathEntry> ext = extendedTypePath(loc, 2, 0);
+              List<TypePathEntry> ext = extendedTypePath(loc, WILDCARD_BOUND, 0);
               visitInnerType(lower, ext);
             }
             if (upper != null) {
-              List<TypePathEntry> ext = extendedTypePath(loc, 2, 0);
+              List<TypePathEntry> ext = extendedTypePath(loc, WILDCARD_BOUND, 0);
               visitInnerType(upper, ext);
             }
             return null;
           }
 
-          /** Copies information from an AST inner type node to an {@link ATypeElement}. */
+          /**
+           * Copies information from an AST inner type node to an {@link ATypeElement}, then
+           * descends into the inner type's own inner types.
+           *
+           * @param type the AST node for the inner type
+           * @param loc the type path of {@code type}
+           */
           private void visitInnerType(Type type, List<TypePathEntry> loc) {
-            ATypeElement typeElem = elem.innerTypes.getVivify(loc);
             for (AnnotationExpr expr : type.getAnnotations()) {
               Annotation anno = extractAnnotation(expr);
-              typeElem.tlAnnotationsHere.add(anno);
-              type.accept(this, loc);
+              if (anno != null) {
+                // Vivify the entry for `loc` only when there is an annotation to put in it.  An
+                // entry with no annotations would be written to the JAIF as a content-free
+                // `inner-type` line.
+                elem.innerTypes.getVivify(loc).tlAnnotationsHere.add(anno);
+              }
             }
+            // Descend into the type's own inner types, exactly once, whether or not the type
+            // itself is annotated.
+            type.accept(this, loc);
           }
 
           /**
@@ -535,12 +573,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Computes a type's "binary name".
+   * Computes a type's JVML representation: its field descriptor, such as {@code I} for {@code int}
+   * or {@code [[Ljava/lang/String;} for {@code String[][]}. For {@code void}, the result is {@code
+   * V}.
    *
    * @param type the type
-   * @return the type's binary name
+   * @return the type's JVML representation
    */
-  private String getJVML(Type type) {
+  // Not private, so that it can be tested.
+  String getJVML(Type type) {
     return type.accept(
         new GenericVisitorAdapter<String, Void>() {
           @Override
@@ -561,26 +602,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
           @Override
           public String visit(PrimitiveType type, Void v) {
-            switch (type.getType()) {
-              case BOOLEAN:
-                return "Z";
-              case BYTE:
-                return "B";
-              case CHAR:
-                return "C";
-              case DOUBLE:
-                return "D";
-              case FLOAT:
-                return "F";
-              case INT:
-                return "I";
-              case LONG:
-                return "J";
-              case SHORT:
-                return "S";
-              default:
-                throw new BugInCF("unknown primitive type " + type);
-            }
+            return switch (type.getType()) {
+              case BOOLEAN -> "Z";
+              case BYTE -> "B";
+              case CHAR -> "C";
+              case DOUBLE -> "D";
+              case FLOAT -> "F";
+              case INT -> "I";
+              case LONG -> "J";
+              case SHORT -> "S";
+              default -> throw new BugInCF("unknown primitive type " + type);
+            };
           }
 
           @Override
@@ -588,9 +620,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             String typeName = type.getElementType().accept(this, null);
             StringBuilder sb = new StringBuilder();
             int n = type.getArrayLevel();
-            for (int i = 0; i < n; i++) {
-              sb.append("[");
-            }
+            sb.append("[".repeat(Math.max(0, n)));
             sb.append(typeName);
             return sb.toString();
           }
@@ -602,7 +632,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
           @Override
           public String visit(WildcardType type, Void v) {
-            return type.getSuperType().get().accept(this, null);
+            // The erasure of a wildcard is the erasure of its upper bound.  The upper bound of an
+            // unbounded wildcard, and of a "super" wildcard, is Object.
+            ReferenceType extendedType = type.getExtendedType().orElse(null);
+            if (extendedType == null) {
+              return "Ljava/lang/Object;";
+            }
+            return extendedType.accept(this, null);
           }
         },
         null);
@@ -615,7 +651,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @return fully qualified name of class that {@code className} identifies in the current context,
    *     or null if resolution fails
    */
-  private @BinaryName String resolve(@BinaryName String className) {
+  private @Nullable @BinaryName String resolve(@BinaryName String className) {
 
     if (pkgName != null) {
       String qualifiedName = Signatures.addPackage(pkgName, className);
@@ -655,7 +691,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @return fully qualified class name if resolution succeeds, null otherwise
    */
   @SuppressWarnings("signature") // string manipulation of signature strings
-  private static @BinaryName String mergeImport(String importName, @BinaryName String className) {
+  private static @Nullable @BinaryName String mergeImport(
+      String importName, @BinaryName String className) {
     if (importName.isEmpty() || importName.equals(className)) {
       return className;
     }
@@ -680,12 +717,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Finds {@link Class} corresponding to a name.
+   * Finds the {@link Class} corresponding to a name.
    *
    * @param className a class name
-   * @return {@link Class} object corresponding to className, or null if none found
+   * @return the {@link Class} object corresponding to {@code className}, or null if none found
    */
-  private static Class<?> loadClass(@ClassGetName String className) {
+  private static @Nullable Class<?> loadClass(@ClassGetName String className) {
     assert className != null;
     try {
       return Class.forName(className, false, null);

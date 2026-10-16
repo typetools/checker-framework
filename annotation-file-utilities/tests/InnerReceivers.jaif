@@ -1,0 +1,108 @@
+package:
+    annotation @A: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @B: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @C: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @D: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @D1: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @E: @java.lang.annotation.Target(value={TYPE_USE})
+        int value
+    annotation @F: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @F1: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @G: @java.lang.annotation.Target(value={TYPE_USE})
+        int value
+    annotation @H: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @I: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @I1: @java.lang.annotation.Target(value={TYPE_USE})
+        int value
+    annotation @J: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @K: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @L: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @M: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @N: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @O: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @P: @java.lang.annotation.Target(value={TYPE_USE})
+    annotation @X: @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+    // Try to insert a receiver parameter on a method declaration in an
+    // anonymous inner class. This is illegal, so should do nothing.
+    class InnerReceivers$1:
+        method m()V:
+            receiver: @X
+
+    class InnerReceivers$1$Inner:
+        method m()V:
+            receiver: @A
+        method m1()V:
+            receiver: @B
+
+    class InnerReceivers:
+        method m()V:
+            receiver: @C
+        method m1()V:
+            receiver: @D
+        method m2()V:
+            receiver: @D1
+
+    class InnerReceivers$Inner1:
+        method m()V:
+            receiver: @E(0)
+                inner-type 1, 0: @E(1)
+                inner-type 1, 0, 3, 0: @E(2)
+                inner-type 1, 0, 3, 1: @E(3)
+                // The following two annotations are in incorrect locations and
+                // should not be inserted.
+                inner-type 3, 0: @X
+                inner-type 3, 1: @X
+        method m1()V:
+            receiver: @F
+        method m2()V:
+            receiver: @F1
+
+    class InnerReceivers$Inner1$Inner2:
+        method m()V:
+            receiver: @G(0)
+                inner-type 1, 0: @G(1)
+                inner-type 1, 0, 3, 0: @G(2)
+                inner-type 1, 0, 3, 1: @G(3)
+                inner-type 1, 0, 1, 0: @G(4)
+        method m1()V:
+            receiver: @H
+
+    class InnerReceivers$StaticInner1:
+        method m()V:
+            receiver: @I
+                // Incorrect location, should not be inserted
+                inner-type 1, 0: @X
+        method m1()V:
+            receiver: @J
+        method m2()V:
+            receiver: @K
+
+    class InnerReceivers$StaticInner3:
+        method m()V:
+            receiver: @I1(0)
+                inner-type 3, 0: @I1(1)
+                inner-type 3, 1: @I1(2)
+                // Incorrect location, should not be inserted
+                inner-type 1, 0: @X
+        method m1()V:
+            receiver: @J
+        method m2()V:
+            receiver: @K
+
+    class Outer$StaticInner2:
+        method m()V:
+            receiver: @L
+                // Incorrect location, should not be inserted
+                inner-type 1, 0: @X
+        method m1()V:
+            receiver: @M
+        method m2()V:
+            receiver: @N
+
+    class Outer$StaticInner2$StaticInner3:
+        method m()V:
+            receiver: @O
+                // Incorrect location, should not be inserted
+                inner-type 1, 0: @X

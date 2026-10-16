@@ -1,6 +1,5 @@
 import org.checkerframework.checker.index.qual.LTLengthOf;
 
-@SuppressWarnings("lowerbound")
 public class UpperBoundRefinement {
   // If expression i has type @LTLengthOf(value = "f2", offset = "f1.length") int and expression
   // j is less than or equal to the length of f1, then the type of i + j is @LTLengthOf("f2")
@@ -32,7 +31,8 @@ public class UpperBoundRefinement {
 
     for (int i = 0; i <= a_index_max; i++) { // i has the same type as a_index_max
       for (int j = 0; j < sub.length; j++) { // j is @LTL("sub")
-        // i + j is safe here. Because j is LTL("sub"), it should count as ("-1 + sub.length")
+        // i + j is safe here.
+        // Because j is LTL("sub"), it should count as ("-1 + sub.length")
         double d = a[i + j];
       }
     }

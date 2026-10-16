@@ -5,7 +5,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 /**
  * Converts an AnnotatedTypeMirror mirror into a formatted string. For converting AnnotationMirrors:
  *
- * @see org.checkerframework.framework.util.AnnotationFormatter
+ * @see org.checkerframework.javacutil.AnnotationFormatter
  */
 public interface AnnotatedTypeFormatter {
   /**
@@ -23,7 +23,7 @@ public interface AnnotatedTypeFormatter {
    * Formats type into a String.
    *
    * @param type the type to be converted
-   * @param printVerbose whether or not to print verbosely
+   * @param printVerbose if true, print verbosely
    * @see org.checkerframework.framework.qual.InvisibleQualifier
    * @return a string representation of type
    */

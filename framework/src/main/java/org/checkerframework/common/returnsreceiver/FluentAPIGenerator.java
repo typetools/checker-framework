@@ -9,7 +9,7 @@ import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -39,6 +39,7 @@ public class FluentAPIGenerator {
    * Enum of supported fluent API generators. For such generators, the checker can automatically
    * add @This annotations on method return types in the generated code.
    */
+  @SuppressWarnings("NotJavadoc") // Error Prone flags Javadoc comments on local class methods.
   private enum FluentAPIGenerators {
     /**
      * The <a
@@ -47,24 +48,22 @@ public class FluentAPIGenerator {
      */
     AUTO_VALUE {
 
-      /**
-       * The qualified name of the AutoValue Builder annotation. This needs to be constructed
-       * dynamically due to a side effect of the shadow plugin. See {@link
-       * FluentAPIGenerators#AUTO_VALUE#getAutoValueBuilderCanonicalName()} for more information.
-       */
+      // The qualified name of the AutoValue Builder annotation. This needs to be constructed
+      // dynamically due to a side effect of the shadow plugin. See {@link
+      // getAutoValueBuilderCanonicalName()} for more information.
       private final String AUTO_VALUE_BUILDER = getAutoValueBuilderCanonicalName();
 
       @Override
       public boolean returnsThis(AnnotatedExecutableType t) {
         ExecutableElement element = t.getElement();
-        Element enclosingElement = element.getEnclosingElement();
+        TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
         boolean inAutoValueBuilder =
             AnnotationUtils.containsSameByName(
                 enclosingElement.getAnnotationMirrors(), AUTO_VALUE_BUILDER);
 
         if (!inAutoValueBuilder) {
           // see if superclass is an AutoValue Builder, to handle generated code
-          TypeMirror superclass = ((TypeElement) enclosingElement).getSuperclass();
+          TypeMirror superclass = enclosingElement.getSuperclass();
           // if enclosingElement is an interface, the superclass has TypeKind NONE
           if (superclass.getKind() != TypeKind.NONE) {
             // update enclosingElement to be for the superclass for this case
@@ -78,7 +77,7 @@ public class FluentAPIGenerator {
         if (inAutoValueBuilder) {
           AnnotatedTypeMirror returnType = t.getReturnType();
           if (returnType == null) {
-            throw new BugInCF("Return type cannot be null: " + t);
+            throw new TypeSystemError("Return type cannot be null: " + t);
           }
           return enclosingElement.equals(TypesUtils.getTypeElement(returnType.getUnderlyingType()));
         }
@@ -86,12 +85,13 @@ public class FluentAPIGenerator {
       }
 
       /**
-       * Get the qualified name of the AutoValue Builder annotation. This method constructs the
+       * Returns the qualified name of the AutoValue Builder annotation. This method constructs the
        * String dynamically, to ensure it does not get rewritten due to relocation of the {@code
        * "com.google"} package during the build process.
        *
        * @return {@code "com.google.auto.value.AutoValue.Builder"}
        */
+      @SuppressWarnings("NotJavadoc") // Error Prone flags Javadoc comments on local class methods.
       private @CanonicalName String getAutoValueBuilderCanonicalName() {
         String com = "com";
         @SuppressWarnings("signature:assignment") // string concatenation
@@ -115,7 +115,7 @@ public class FluentAPIGenerator {
         if (inLombokBuilder) {
           AnnotatedTypeMirror returnType = t.getReturnType();
           if (returnType == null) {
-            throw new BugInCF("Return type cannot be null: " + t);
+            throw new TypeSystemError("Return type cannot be null: " + t);
           }
           return enclosingElement.equals(TypesUtils.getTypeElement(returnType.getUnderlyingType()));
         }

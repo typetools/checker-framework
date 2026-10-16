@@ -5,7 +5,7 @@ public class ExceptionTest {
   public void foo() {
     int indexTooBig = 5;
     String s = "hello";
-    // :: warning: (method.evaluation.exception)
+    // :: warning: [method.evaluation.exception]
     char c = s.charAt(indexTooBig);
   }
 }

@@ -42,10 +42,10 @@ public @interface LTLengthOf {
 
   /**
    * This expression plus the annotated expression is less than the length of the sequence. The
-   * {@code offset} element must ether be empty or the same length as {@code value}.
+   * {@code offset} element must either be empty or the same length as {@code value}.
    *
    * <p>The expressions in {@code offset} may be addition/subtraction of any number of Java
-   * expressions. For example, {@code @LessThanLengthOf(value = "a", offset = "x + y + 2"}}.
+   * expressions. For example, {@code @LTLengthOf(value = "a", offset = "x + y + 2")}.
    */
   @JavaExpression
   String[] offset() default {};

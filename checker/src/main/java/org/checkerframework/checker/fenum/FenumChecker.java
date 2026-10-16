@@ -1,6 +1,6 @@
 package org.checkerframework.checker.fenum;
 
-import java.util.SortedSet;
+import java.util.NavigableSet;
 import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.subtyping.SubtypingChecker;
@@ -9,13 +9,13 @@ import org.checkerframework.framework.qual.StubFiles;
 /**
  * The main checker class for the Fake Enum Checker.
  *
- * <p>There are two options to distinguish different enumerators:
+ * <p>There are two ways to distinguish different enumerators:
  *
  * <ol>
  *   <li>{@code @Fenum("Name")}: introduces a fake enumerator with the name "Name". Enumerators with
  *       different names are distinct. The default name is empty, but you are encouraged to use a
  *       unique name for your purpose.
- *   <li>Alternatively, you can specify the annotation to use with the {@code -Aqual} command line
+ *   <li>Alternatively, you can specify the annotation to use with the {@code -Aqual} command-line
  *       argument.
  * </ol>
  *
@@ -26,7 +26,7 @@ import org.checkerframework.framework.qual.StubFiles;
 public class FenumChecker extends BaseTypeChecker {
 
   @Override
-  public SortedSet<String> getSuppressWarningsPrefixes() {
+  public NavigableSet<String> getSuppressWarningsPrefixes() {
     return SubtypingChecker.getSuppressWarningsPrefixes(
         this.visitor, super.getSuppressWarningsPrefixes());
   }

@@ -18,7 +18,6 @@ public class CompilerMessagesTest extends CheckerFrameworkPerDirectoryTest {
         testFiles,
         org.checkerframework.checker.compilermsgs.CompilerMessagesChecker.class,
         "compilermsg",
-        "-Anomsgtext",
         "-Apropfiles=tests/compilermsg/compiler.properties");
   }
 

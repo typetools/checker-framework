@@ -18,7 +18,7 @@ import org.checkerframework.javacutil.BugInCF;
 public class VariableApplier extends TargetedElementAnnotationApplier {
 
   /** Apply annotations from {@code element} to {@code type}. */
-  public static void apply(final AnnotatedTypeMirror type, final Element element)
+  public static void apply(AnnotatedTypeMirror type, Element element)
       throws UnexpectedAnnotationLocationException {
     new VariableApplier(type, element).extractAndApply();
   }
@@ -33,14 +33,14 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
    * @param typeMirror ignored
    * @return true if this is a variable declaration including fields an enum constants
    */
-  public static boolean accepts(final AnnotatedTypeMirror typeMirror, final Element element) {
+  public static boolean accepts(AnnotatedTypeMirror typeMirror, Element element) {
     return ElementAnnotationUtil.contains(element.getKind(), acceptedKinds)
         || element.getKind().isField();
   }
 
   private final Symbol.VarSymbol varSymbol;
 
-  VariableApplier(final AnnotatedTypeMirror type, final Element element) {
+  VariableApplier(AnnotatedTypeMirror type, Element element) {
     super(type, element);
     varSymbol = (Symbol.VarSymbol) element;
 
@@ -57,29 +57,39 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
     // need to look at, but it might not be set at this point.
   }
 
+  /** The annotated targets. */
+  private static final TargetType[] annotatedTargets =
+      new TargetType[] {
+        TargetType.LOCAL_VARIABLE,
+        TargetType.RESOURCE_VARIABLE,
+        TargetType.EXCEPTION_PARAMETER,
+        TargetType.FIELD
+      };
+
   @Override
   protected TargetType[] annotatedTargets() {
-    return new TargetType[] {
-      TargetType.LOCAL_VARIABLE,
-      TargetType.RESOURCE_VARIABLE,
-      TargetType.EXCEPTION_PARAMETER,
-      TargetType.FIELD
-    };
+    return annotatedTargets;
   }
+
+  /** The valid targets. */
+  private static final TargetType[] validTargets =
+      new TargetType[] {
+        TargetType.NEW,
+        TargetType.CAST,
+        TargetType.INSTANCEOF,
+        TargetType.METHOD_INVOCATION_TYPE_ARGUMENT,
+        TargetType.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT,
+        TargetType.METHOD_REFERENCE,
+        TargetType.CONSTRUCTOR_REFERENCE,
+        TargetType.METHOD_REFERENCE_TYPE_ARGUMENT,
+        TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT,
+        TargetType.METHOD_FORMAL_PARAMETER,
+        TargetType.CLASS_EXTENDS
+      };
 
   @Override
   protected TargetType[] validTargets() {
-    return new TargetType[] {
-      TargetType.NEW,
-      TargetType.CAST,
-      TargetType.INSTANCEOF,
-      TargetType.METHOD_INVOCATION_TYPE_ARGUMENT,
-      TargetType.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT,
-      TargetType.METHOD_REFERENCE,
-      TargetType.CONSTRUCTOR_REFERENCE,
-      TargetType.METHOD_REFERENCE_TYPE_ARGUMENT,
-      TargetType.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT
-    };
+    return validTargets;
   }
 
   @Override
@@ -93,7 +103,7 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
   }
 
   @Override
-  protected void handleTargeted(final List<TypeCompound> targeted)
+  protected void handleTargeted(List<TypeCompound> targeted)
       throws UnexpectedAnnotationLocationException {
     ElementAnnotationUtil.annotateViaTypeAnnoPosition(type, targeted);
   }

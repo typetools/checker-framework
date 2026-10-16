@@ -1,8 +1,9 @@
 package org.checkerframework.common.subtyping;
 
 import java.lang.annotation.Annotation;
+import java.util.Locale;
+import java.util.NavigableSet;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -40,8 +41,8 @@ public final class SubtypingChecker extends BaseTypeChecker {
    *     executed by checker
    * @return SuppressWarnings prefixes, based on the names of all the qualifiers
    */
-  public static SortedSet<String> getSuppressWarningsPrefixes(
-      SourceVisitor<?, ?> visitor, SortedSet<String> superSupportedTypeQualifiers) {
+  public static NavigableSet<String> getSuppressWarningsPrefixes(
+      SourceVisitor<?, ?> visitor, NavigableSet<String> superSupportedTypeQualifiers) {
     TreeSet<String> result = new TreeSet<>(superSupportedTypeQualifiers);
 
     // visitor can be null if there was an error when calling the visitor class's constructor --
@@ -50,7 +51,7 @@ public final class SubtypingChecker extends BaseTypeChecker {
       Set<Class<? extends Annotation>> annos =
           ((BaseTypeVisitor<?>) visitor).getTypeFactory().getSupportedTypeQualifiers();
       for (Class<? extends Annotation> anno : annos) {
-        result.add(anno.getSimpleName().toLowerCase());
+        result.add(anno.getSimpleName().toLowerCase(Locale.getDefault()));
       }
     }
 
@@ -58,7 +59,7 @@ public final class SubtypingChecker extends BaseTypeChecker {
   }
 
   @Override
-  public SortedSet<String> getSuppressWarningsPrefixes() {
+  public NavigableSet<String> getSuppressWarningsPrefixes() {
     return getSuppressWarningsPrefixes(this.visitor, super.getSuppressWarningsPrefixes());
   }
 }

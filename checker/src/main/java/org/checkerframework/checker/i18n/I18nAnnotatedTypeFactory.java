@@ -21,6 +21,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 
 public class I18nAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+  @SuppressWarnings("this-escape")
   public I18nAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.postInit();
@@ -28,6 +29,7 @@ public class I18nAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   @Override
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+    // The directory contains two type systems, I18nChecker and LocalizableKeyChecker.
     return new LinkedHashSet<>(Arrays.asList(Localized.class, UnknownLocalized.class));
   }
 
@@ -48,19 +50,19 @@ public class I18nAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
-      type.removeAnnotation(LOCALIZED);
+      type.removePrimaryAnnotation(LOCALIZED);
       return null;
     }
 
     @Override
-    public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
-      type.removeAnnotation(LOCALIZED);
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
+      type.removePrimaryAnnotation(LOCALIZED);
       return null;
     }
 
     @Override
     public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-      if (!type.isAnnotatedInHierarchy(LOCALIZED)) {
+      if (!type.hasPrimaryAnnotationInHierarchy(LOCALIZED)) {
         if (tree.getKind() == Tree.Kind.STRING_LITERAL && tree.getValue().equals("")) {
           type.addAnnotation(LOCALIZED);
         }

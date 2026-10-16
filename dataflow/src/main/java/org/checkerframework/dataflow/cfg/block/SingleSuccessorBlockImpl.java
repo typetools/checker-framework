@@ -11,7 +11,11 @@ import org.checkerframework.dataflow.analysis.Store.FlowRule;
  */
 public abstract class SingleSuccessorBlockImpl extends BlockImpl implements SingleSuccessorBlock {
 
-  /** Internal representation of the successor. */
+  /**
+   * Internal representation of the successor.
+   *
+   * <p>Is set by {@link #setSuccessor}.
+   */
   protected @Nullable BlockImpl successor;
 
   /**

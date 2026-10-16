@@ -5,7 +5,7 @@ public class CheckerFrameworkBuilder {
 
   /**
    * Most of this test was copied from
-   * https://raw.githubusercontent.com/rzwitserloot/lombok/master/test/transform/resource/after-delombok/CheckerFrameworkBuilder.java
+   * https://raw.githubusercontent.com/projectlombok/lombok/master/test/transform/resource/after-delombok/CheckerFrameworkBuilder.java
    * with the exception of the following lines until the next long comment. I have made one change
    * outside the scope of these comments: - I fixed the placement of the type annotations, which
    * were originally on scoping constructs. I think this is a bug in the delombok pretty-printer
@@ -21,13 +21,13 @@ public class CheckerFrameworkBuilder {
    * the copied code correctly.
    */
   public static void testOldCalledMethodsGood(
-          @org.checkerframework.checker.calledmethods.qual.CalledMethods({"y", "z"}) CheckerFrameworkBuilderBuilder pb) {
+      @org.checkerframework.checker.calledmethods.qual.CalledMethods({"y", "z"}) CheckerFrameworkBuilderBuilder pb) {
     pb.build();
   }
 
   public static void testOldCalledMethodsBad(
-          @org.checkerframework.checker.calledmethods.qual.CalledMethods({"y"}) CheckerFrameworkBuilderBuilder pb) {
-    // :: error: finalizer.invocation
+      @org.checkerframework.checker.calledmethods.qual.CalledMethods({"y"}) CheckerFrameworkBuilderBuilder pb) {
+    // :: error: [finalizer.invocation]
     pb.build(); // pb requires y, z
   }
 
@@ -37,7 +37,7 @@ public class CheckerFrameworkBuilder {
 
   public static void testOldRRBad() {
     CheckerFrameworkBuilder b =
-        // :: error: finalizer.invocation
+        // :: error: [finalizer.invocation]
         CheckerFrameworkBuilder.builder().z(6).build(); // also needs to call y
   }
 
@@ -84,8 +84,7 @@ public class CheckerFrameworkBuilder {
     @org.checkerframework.checker.builder.qual.ReturnsReceiver
     @java.lang.SuppressWarnings("all")
     public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder x(
-        CheckerFrameworkBuilder.
-            @org.checkerframework.checker.builder.qual.NotCalledMethods("x") CheckerFrameworkBuilderBuilder
+        CheckerFrameworkBuilder.@org.checkerframework.checker.builder.qual.NotCalledMethods("x") CheckerFrameworkBuilderBuilder
             this,
         final int x) {
       this.x$value = x;
@@ -96,8 +95,7 @@ public class CheckerFrameworkBuilder {
     @org.checkerframework.checker.builder.qual.ReturnsReceiver
     @java.lang.SuppressWarnings("all")
     public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder y(
-        CheckerFrameworkBuilder.
-            @org.checkerframework.checker.builder.qual.NotCalledMethods("y") CheckerFrameworkBuilderBuilder
+        CheckerFrameworkBuilder.@org.checkerframework.checker.builder.qual.NotCalledMethods("y") CheckerFrameworkBuilderBuilder
             this,
         final int y) {
       this.y = y;
@@ -107,8 +105,7 @@ public class CheckerFrameworkBuilder {
     @org.checkerframework.checker.builder.qual.ReturnsReceiver
     @java.lang.SuppressWarnings("all")
     public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder z(
-        CheckerFrameworkBuilder.
-            @org.checkerframework.checker.builder.qual.NotCalledMethods("z") CheckerFrameworkBuilderBuilder
+        CheckerFrameworkBuilder.@org.checkerframework.checker.builder.qual.NotCalledMethods("z") CheckerFrameworkBuilderBuilder
             this,
         final int z) {
       this.z = z;
@@ -118,7 +115,9 @@ public class CheckerFrameworkBuilder {
     @org.checkerframework.checker.builder.qual.ReturnsReceiver
     @java.lang.SuppressWarnings("all")
     public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder name(final String name) {
-      if (this.names == null) this.names = new java.util.ArrayList<String>();
+      if (this.names == null) {
+        this.names = new java.util.ArrayList<String>();
+      }
       this.names.add(name);
       return this;
     }
@@ -130,7 +129,9 @@ public class CheckerFrameworkBuilder {
       if (names == null) {
         throw new java.lang.NullPointerException("names cannot be null");
       }
-      if (this.names == null) this.names = new java.util.ArrayList<String>();
+      if (this.names == null) {
+        this.names = new java.util.ArrayList<String>();
+      }
       this.names.addAll(names);
       return this;
     }
@@ -138,15 +139,16 @@ public class CheckerFrameworkBuilder {
     @org.checkerframework.checker.builder.qual.ReturnsReceiver
     @java.lang.SuppressWarnings("all")
     public CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder clearNames() {
-      if (this.names != null) this.names.clear();
+      if (this.names != null) {
+        this.names.clear();
+      }
       return this;
     }
 
     @org.checkerframework.dataflow.qual.SideEffectFree
     @java.lang.SuppressWarnings("all")
     public CheckerFrameworkBuilder build(
-        CheckerFrameworkBuilder.
-            @org.checkerframework.checker.builder.qual.CalledMethods({"y", "z"}) CheckerFrameworkBuilderBuilder
+        CheckerFrameworkBuilder.@org.checkerframework.checker.builder.qual.CalledMethods({"y", "z"}) CheckerFrameworkBuilderBuilder
             this) {
       java.util.List<String> names;
       switch (this.names == null ? 0 : this.names.size()) {
@@ -161,7 +163,9 @@ public class CheckerFrameworkBuilder {
               java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(this.names));
       }
       int x$value = this.x$value;
-      if (!this.x$set) x$value = CheckerFrameworkBuilder.$default$x();
+      if (!this.x$set) {
+        x$value = CheckerFrameworkBuilder.$default$x();
+      }
       return new CheckerFrameworkBuilder(x$value, this.y, this.z, names);
     }
 
@@ -183,8 +187,8 @@ public class CheckerFrameworkBuilder {
 
   @org.checkerframework.dataflow.qual.SideEffectFree
   @java.lang.SuppressWarnings("all")
-  public static CheckerFrameworkBuilder.
-      @org.checkerframework.common.aliasing.qual.Unique CheckerFrameworkBuilderBuilder builder() {
+  public static CheckerFrameworkBuilder.@org.checkerframework.common.aliasing.qual.Unique CheckerFrameworkBuilderBuilder
+      builder() {
     return new CheckerFrameworkBuilder.CheckerFrameworkBuilderBuilder();
   }
 }

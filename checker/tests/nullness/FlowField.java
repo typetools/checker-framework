@@ -18,7 +18,7 @@ public class FlowField {
   }
 
   void testFields() {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     System.out.println(field.length());
   }
 
@@ -27,7 +27,7 @@ public class FlowField {
     nonnull.toString();
   }
 
-  static final String nonnull = new String();
+  private static final String nonnull = new String();
 
   class A {
     protected String field = null;
@@ -68,7 +68,7 @@ public class FlowField {
   }
 
   void testTwoLevels(@NonNull FlowField a, BooleanWrapper bwArg) {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     if (!(a.bw.hashCode() == 0)) // warning here
     return;
     Object o = a.bw.b; // but not here

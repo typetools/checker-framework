@@ -1,8 +1,5 @@
 import java.util.regex.MatchResult;
 
-// Outside of scope of the Regex Checker to verify an implementation of MatchResult,
-// so just check for crashes.
-@SuppressWarnings("regex")
 public class MyMatchResult implements MatchResult {
 
   @Override

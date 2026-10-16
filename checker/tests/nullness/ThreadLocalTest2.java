@@ -28,19 +28,19 @@ public class ThreadLocalTest2 {
   class MyThreadLocalNN extends ThreadLocal<@NonNull Integer> {
     @Override
     protected Integer initialValue() {
-      return new Integer(0);
+      return Integer.valueOf(0);
     }
   }
 
   class MyThreadLocalNnIncorrectOverride extends ThreadLocal<@NonNull Integer> {
     @Override
-    // :: error: (override.return)
+    // :: error: [override.return]
     protected @Nullable Integer initialValue() {
       return null;
     }
   }
 
-  // :: error: (method.not.overridden)
+  // :: error: [method.not.overridden]
   class MyThreadLocalNnNoOverride extends ThreadLocal<@NonNull Integer> {}
 
   class MyThreadLocalNble extends ThreadLocal<@Nullable Integer> {
@@ -53,16 +53,16 @@ public class ThreadLocalTest2 {
   class MyThreadLocalNbleStrongerOverride extends ThreadLocal<@Nullable Integer> {
     @Override
     protected @NonNull Integer initialValue() {
-      return new Integer(0);
+      return Integer.valueOf(0);
     }
   }
 
   class MyThreadLocalNbleNoOverride extends ThreadLocal<@Nullable Integer> {}
 
   void foo() {
-    // :: error: (type.argument)
+    // :: error: [type.argument]
     new ThreadLocal<@NonNull Object>();
-    // :: error: (type.argument)
+    // :: error: [type.argument]
     new InheritableThreadLocal<@NonNull Object>();
     new ThreadLocal<@Nullable Object>();
     new InheritableThreadLocal<@Nullable Object>();

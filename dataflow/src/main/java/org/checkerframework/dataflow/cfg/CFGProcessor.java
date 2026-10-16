@@ -28,14 +28,17 @@ public class CFGProcessor extends BasicTypeProcessor {
    * Qualified name of a specified class which includes a specified method to generate the CFG for.
    */
   private final String className;
+
   /** Name of a specified method to generate the CFG for. */
   private final String methodName;
 
   /** AST for source file. */
   private @Nullable CompilationUnitTree rootTree;
-  /** Tree node for the specified class. */
+
+  /** AST node for the specified class. */
   private @Nullable ClassTree classTree;
-  /** Tree node for the specified method. */
+
+  /** AST node for the specified method. */
   private @Nullable MethodTree methodTree;
 
   /** Result of CFG process; is set by {@link #typeProcessingOver}. */
@@ -44,8 +47,7 @@ public class CFGProcessor extends BasicTypeProcessor {
   /**
    * Create a CFG processor.
    *
-   * @param className the qualified name of class which includes the specified method to generate
-   *     the CFG for
+   * @param className the qualified name of class that defines the method
    * @param methodName the name of the method to generate the CFG for
    */
   public CFGProcessor(String className, String methodName) {
@@ -54,7 +56,7 @@ public class CFGProcessor extends BasicTypeProcessor {
   }
 
   /**
-   * Get the CFG process result.
+   * Returns the CFG process result.
    *
    * @return result of cfg process
    */
@@ -87,22 +89,22 @@ public class CFGProcessor extends BasicTypeProcessor {
     rootTree = root;
     return new TreePathScanner<Void, Void>() {
       @Override
-      public Void visitClass(ClassTree node, Void p) {
-        TypeElement el = TreeUtils.elementFromDeclaration(node);
-        if (el.getSimpleName().contentEquals(className)) {
-          classTree = node;
+      public Void visitClass(ClassTree tree, Void p) {
+        TypeElement el = TreeUtils.elementFromDeclaration(tree);
+        if (el != null && el.getSimpleName().contentEquals(className)) {
+          classTree = tree;
         }
-        return super.visitClass(node, p);
+        return super.visitClass(tree, p);
       }
 
       @Override
-      public Void visitMethod(MethodTree node, Void p) {
-        ExecutableElement el = TreeUtils.elementFromDeclaration(node);
-        if (el.getSimpleName().contentEquals(methodName)) {
-          methodTree = node;
-          // Stop execution by throwing an exception. This makes sure that compilation does not
-          // proceed, and thus the AST is not modified by further phases of the compilation (and we
-          // save the work to do the compilation).
+      public Void visitMethod(MethodTree tree, Void p) {
+        ExecutableElement el = TreeUtils.elementFromDeclaration(tree);
+        if (el != null && el.getSimpleName().contentEquals(methodName)) {
+          methodTree = tree;
+          // Stop execution by throwing an exception. This makes sure that compilation
+          // does not proceed, and thus the AST is not modified by further phases of the
+          // compilation (and we save the work to do the compilation).
           throw new RuntimeException();
         }
         return null;
@@ -119,8 +121,10 @@ public class CFGProcessor extends BasicTypeProcessor {
   public static class CFGProcessResult {
     /** Control flow graph. */
     private final @Nullable ControlFlowGraph controlFlowGraph;
+
     /** Did the CFG process succeed? */
     private final boolean isSuccess;
+
     /** Error message (when the CFG process failed). */
     private final @Nullable String errMsg;
 
@@ -129,7 +133,7 @@ public class CFGProcessor extends BasicTypeProcessor {
      *
      * @param cfg control flow graph
      */
-    CFGProcessResult(final ControlFlowGraph cfg) {
+    /*package-private*/ CFGProcessResult(ControlFlowGraph cfg) {
       this(cfg, true, null);
     }
 
@@ -138,7 +142,7 @@ public class CFGProcessor extends BasicTypeProcessor {
      *
      * @param errMsg the error message
      */
-    CFGProcessResult(final String errMsg) {
+    /*package-private*/ CFGProcessResult(String errMsg) {
       this(null, false, errMsg);
     }
 
@@ -163,8 +167,7 @@ public class CFGProcessor extends BasicTypeProcessor {
      */
     @Pure
     @EnsuresNonNullIf(expression = "getCFG()", result = true)
-    // TODO: add once #1307 is fixed
-    // @EnsuresNonNullIf(expression = "getErrMsg()", result = false)
+    @EnsuresNonNullIf(expression = "getErrMsg()", result = false)
     @SuppressWarnings("nullness:contracts.conditional.postcondition")
     public boolean isSuccess() {
       return isSuccess;

@@ -1,11 +1,10 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -14,19 +13,22 @@ import org.checkerframework.javacutil.TreeUtils;
  * <pre>
  *   <em>super</em>
  * </pre>
+ *
+ * Its {@link #type} field is the type of the class in which "super" appears, <em>not</em> the type
+ * to which the "super" identifier resolves.
  */
 public class SuperNode extends Node {
 
-  protected final Tree tree;
+  protected final IdentifierTree tree;
 
-  public SuperNode(Tree t) {
+  public SuperNode(IdentifierTree t) {
     super(TreeUtils.typeOf(t));
-    assert t instanceof IdentifierTree && ((IdentifierTree) t).getName().contentEquals("super");
+    assert t.getName().contentEquals("super");
     tree = t;
   }
 
   @Override
-  public Tree getTree() {
+  public IdentifierTree getTree() {
     return tree;
   }
 
@@ -35,13 +37,13 @@ public class SuperNode extends Node {
     return visitor.visitSuper(this, p);
   }
 
-  public String getName() {
-    return "super";
-  }
-
   @Override
   public String toString() {
-    return getName();
+    if (disambiguateOwner) {
+      return "super{owner=" + type + "}";
+    } else {
+      return "super";
+    }
   }
 
   @Override
@@ -51,10 +53,11 @@ public class SuperNode extends Node {
 
   @Override
   public int hashCode() {
-    return Objects.hash(getName());
+    return 109801370; // Objects.hash("super");
   }
 
   @Override
+  @SideEffectFree
   public Collection<Node> getOperands() {
     return Collections.emptyList();
   }

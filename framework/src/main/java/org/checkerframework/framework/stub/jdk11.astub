@@ -1,0 +1,182 @@
+// This file is for classes that appear in JDK 11 but not in JDK 17.
+
+package com.sun.javadoc;
+
+import java.io.File;
+import java.text.BreakIterator;
+import java.util.Locale;
+
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+
+public interface AnnotationDesc {
+    @Pure
+    boolean isSynthesized();
+}
+
+public interface ClassDoc extends ProgramElementDoc, Type {
+
+    @Pure
+    boolean isAbstract();
+
+    @Pure
+    boolean isSerializable();
+
+    @Pure
+    boolean isExternalizable();
+}
+
+public interface Doc extends Comparable<Object> {
+
+    @Pure
+    int compareTo(Object obj);
+
+    @Pure
+    boolean isField();
+
+    @Pure
+    boolean isEnumConstant();
+
+    @Pure
+    boolean isConstructor();
+
+    @Pure
+    boolean isMethod();
+
+    @Pure
+    boolean isAnnotationTypeElement();
+
+    @Pure
+    boolean isInterface();
+
+    @Pure
+    boolean isException();
+
+    @Pure
+    boolean isError();
+
+    @Pure
+    boolean isEnum();
+
+    @Pure
+    boolean isAnnotationType();
+
+    @Pure
+    boolean isOrdinaryClass();
+
+    @Pure
+    boolean isClass();
+
+    @Pure
+    boolean isIncluded();
+}
+
+
+public interface ExecutableMemberDoc extends MemberDoc {
+
+    @Pure
+    boolean isNative();
+
+    @Pure
+    boolean isSynchronized();
+
+    @Pure
+    public boolean isVarArgs();
+
+    @Pure
+    Type receiverType();
+}
+
+
+public interface FieldDoc extends MemberDoc {
+
+    @Pure
+    boolean isTransient();
+
+    @Pure
+    boolean isVolatile();
+}
+
+
+public interface MemberDoc extends ProgramElementDoc {
+
+    @Pure
+    boolean isSynthetic();
+}
+
+
+public interface MethodDoc extends ExecutableMemberDoc {
+
+    @Pure
+    boolean isAbstract();
+
+    @Pure
+    boolean isDefault();
+
+    @Pure
+    boolean overrides(MethodDoc meth);
+}
+
+
+public interface ParamTag extends Tag {
+
+    @Pure
+    boolean isTypeParameter();
+}
+
+
+public interface ProgramElementDoc extends Doc {
+
+    @Pure
+    boolean isPublic();
+
+    @Pure
+    boolean isProtected();
+
+    @Pure
+    boolean isPrivate();
+
+    @Pure
+    boolean isPackagePrivate();
+
+    @Pure
+    boolean isStatic();
+
+    @Pure
+    boolean isFinal();
+}
+
+
+public interface RootDoc extends Doc, DocErrorReporter {
+
+    @SideEffectFree
+    String[] [] options();
+
+    @SideEffectFree
+    ClassDoc [] specifiedClasses();
+
+    @SideEffectFree
+    ClassDoc[] classes();
+}
+
+
+public interface SourcePosition {
+    @SideEffectFree
+    File file();
+
+    @Pure
+    int line();
+
+    @Pure
+    int column();
+
+    @SideEffectFree
+    String toString();
+}
+
+
+public interface Type {
+
+    @Pure
+    boolean isPrimitive();
+}

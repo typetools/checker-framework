@@ -1,6 +1,5 @@
 package org.checkerframework.framework.type;
 
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -8,7 +7,9 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypesUtils;
 
 /** Utility class for applying the annotations inferred by dataflow to a given type. */
 public class DefaultInferredTypesApplier {
@@ -41,9 +42,7 @@ public class DefaultInferredTypesApplier {
    * @param inferredTypeMirror underlying inferred type
    */
   public void applyInferredType(
-      final AnnotatedTypeMirror type,
-      final Set<AnnotationMirror> inferredSet,
-      TypeMirror inferredTypeMirror) {
+      AnnotatedTypeMirror type, AnnotationMirrorSet inferredSet, TypeMirror inferredTypeMirror) {
     if (inferredSet == null) {
       return;
     }
@@ -55,7 +54,7 @@ public class DefaultInferredTypesApplier {
         inferredTypeMirror = ((WildcardType) inferredTypeMirror).getExtendsBound();
       }
     }
-    for (final AnnotationMirror top : hierarchy.getTopAnnotations()) {
+    for (AnnotationMirror top : hierarchy.getTopAnnotations()) {
       AnnotationMirror inferred = hierarchy.findAnnotationInHierarchy(inferredSet, top);
 
       apply(type, inferred, inferredTypeMirror, top);
@@ -67,7 +66,7 @@ public class DefaultInferredTypesApplier {
       AnnotationMirror inferred,
       TypeMirror inferredTypeMirror,
       AnnotationMirror top) {
-    AnnotationMirror primary = type.getAnnotationInHierarchy(top);
+    AnnotationMirror primary = type.getPrimaryAnnotationInHierarchy(top);
     if (inferred == null) {
 
       if (primary == null) {
@@ -80,11 +79,13 @@ public class DefaultInferredTypesApplier {
       }
     } else {
       if (primary == null) {
-        Set<AnnotationMirror> lowerbounds =
+        AnnotationMirrorSet lowerbounds =
             AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, type);
         primary = hierarchy.findAnnotationInHierarchy(lowerbounds, top);
       }
-      if ((omitSubtypingCheck || hierarchy.isSubtype(inferred, primary))) {
+      if ((omitSubtypingCheck
+          || hierarchy.isSubtypeShallow(
+              inferred, inferredTypeMirror, primary, type.getUnderlyingType()))) {
         type.replaceAnnotation(inferred);
       }
     }
@@ -98,13 +99,17 @@ public class DefaultInferredTypesApplier {
     if (inferredTypeMirror.getKind() != TypeKind.TYPEVAR) {
       throw new BugInCF("Inferred value should not be missing annotations: " + inferredTypeMirror);
     }
+    if (TypesUtils.isCapturedTypeVariable(inferredTypeMirror)) {
+      return;
+    }
 
     TypeVariable typeVar = (TypeVariable) inferredTypeMirror;
     AnnotatedTypeVariable typeVariableDecl =
         (AnnotatedTypeVariable) factory.getAnnotatedType(typeVar.asElement());
-    AnnotationMirror upperBound = typeVariableDecl.getEffectiveAnnotationInHierarchy(top);
+    AnnotationMirror upperBound = typeVariableDecl.getAnnotationInHierarchy(top);
 
-    if (omitSubtypingCheck || hierarchy.isSubtype(upperBound, notInferred)) {
+    if (omitSubtypingCheck
+        || hierarchy.isSubtypeShallow(upperBound, typeVar, notInferred, type.getUnderlyingType())) {
       type.replaceAnnotation(upperBound);
     }
   }
@@ -120,12 +125,17 @@ public class DefaultInferredTypesApplier {
     TypeVariable typeVar = (TypeVariable) inferredTypeMirror;
     AnnotatedTypeVariable typeVariableDecl =
         (AnnotatedTypeVariable) factory.getAnnotatedType(typeVar.asElement());
-    AnnotationMirror upperBound = typeVariableDecl.getEffectiveAnnotationInHierarchy(top);
-    if (omitSubtypingCheck || hierarchy.isSubtype(upperBound, previousAnnotation)) {
-      annotatedTypeVariable.removeAnnotationInHierarchy(top);
-      AnnotationMirror ub = typeVariableDecl.getUpperBound().getAnnotationInHierarchy(top);
+    AnnotationMirror upperBound = typeVariableDecl.getAnnotationInHierarchy(top);
+    if (omitSubtypingCheck
+        || hierarchy.isSubtypeShallow(
+            upperBound,
+            typeVariableDecl.getUnderlyingType(),
+            previousAnnotation,
+            annotatedTypeVariable.getUnderlyingType())) {
+      annotatedTypeVariable.removePrimaryAnnotationInHierarchy(top);
+      AnnotationMirror ub = typeVariableDecl.getUpperBound().getPrimaryAnnotationInHierarchy(top);
       apply(annotatedTypeVariable.getUpperBound(), ub, typeVar.getUpperBound(), top);
-      AnnotationMirror lb = typeVariableDecl.getLowerBound().getAnnotationInHierarchy(top);
+      AnnotationMirror lb = typeVariableDecl.getLowerBound().getPrimaryAnnotationInHierarchy(top);
       apply(annotatedTypeVariable.getLowerBound(), lb, typeVar.getLowerBound(), top);
     }
   }

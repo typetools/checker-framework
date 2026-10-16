@@ -9,7 +9,6 @@ import org.checkerframework.checker.fenum.qual.Fenum;
 import org.checkerframework.checker.fenum.qual.FenumBottom;
 import org.checkerframework.checker.fenum.qual.FenumTop;
 import org.checkerframework.checker.fenum.qual.FenumUnqualified;
-import org.checkerframework.checker.fenum.qual.PolyFenum;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -20,7 +19,7 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.QualifierKindHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
 
@@ -28,17 +27,20 @@ import org.plumelib.reflection.Signatures;
 public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** AnnotationMirror for {@link FenumUnqualified}. */
-  protected AnnotationMirror FENUM_UNQUALIFIED;
+  protected final AnnotationMirror FENUM_UNQUALIFIED;
+
   /** AnnotationMirror for {@link FenumBottom}. */
-  protected AnnotationMirror FENUM_BOTTOM;
+  protected final AnnotationMirror FENUM_BOTTOM;
+
   /** AnnotationMirror for {@link FenumTop}. */
-  protected AnnotationMirror FENUM_TOP;
+  protected final AnnotationMirror FENUM_TOP;
 
   /**
    * Create a FenumAnnotatedTypeFactory.
    *
    * @param checker checker
    */
+  @SuppressWarnings("this-escape")
   public FenumAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
@@ -58,33 +60,25 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   @Override
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
     // Load everything in qual directory, and top, bottom, unqualified, and fake enum
-    Set<Class<? extends Annotation>> qualSet =
-        getBundledTypeQualifiers(
-            FenumTop.class,
-            Fenum.class,
-            FenumUnqualified.class,
-            FenumBottom.class,
-            PolyFenum.class);
+    Set<Class<? extends Annotation>> qualSet = getBundledTypeQualifiers();
 
     // Load externally defined quals given in the -Aquals and/or -AqualDirs options
-    String qualNames = checker.getOption("quals");
-    String qualDirectories = checker.getOption("qualDirs");
 
     // load individually named qualifiers
-    if (qualNames != null) {
-      for (String qualName : qualNames.split(",")) {
-        if (!Signatures.isBinaryName(qualName)) {
-          throw new UserError("Malformed qualifier \"%s\" in -Aquals=%s", qualName, qualNames);
-        }
-        qualSet.add(loader.loadExternalAnnotationClass(qualName));
+    for (String qualName : checker.getStringsOption("quals", ',')) {
+      if (!Signatures.isBinaryName(qualName)) {
+        throw new UserError("Malformed qualifier \"%s\" in -Aquals", qualName);
       }
+      Class<? extends Annotation> annoClass = loader.loadExternalAnnotationClass(qualName);
+      if (annoClass == null) {
+        throw new UserError("Cannot load qualifier \"%s\" in -Aquals", qualName);
+      }
+      qualSet.add(annoClass);
     }
 
     // load directories of qualifiers
-    if (qualDirectories != null) {
-      for (String dirName : qualDirectories.split(":")) {
-        qualSet.addAll(loader.loadExternalAnnotationClassesFromDirectory(dirName));
-      }
+    for (String dirName : checker.getStringsOption("qualDirs", ',')) {
+      qualSet.addAll(loader.loadExternalAnnotationClassesFromDirectory(dirName));
     }
 
     // TODO: warn if no qualifiers given?
@@ -93,7 +87,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   @Override
-  public QualifierHierarchy createQualifierHierarchy() {
+  protected QualifierHierarchy createQualifierHierarchy() {
     return new FenumQualifierHierarchy(getSupportedTypeQualifiers(), elements);
   }
 
@@ -111,7 +105,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public FenumQualifierHierarchy(
         Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-      super(qualifierClasses, elements);
+      super(qualifierClasses, elements, FenumAnnotatedTypeFactory.this);
       this.FENUM_KIND =
           this.qualifierKindHierarchy.getQualifierKind(Fenum.class.getCanonicalName());
     }
@@ -149,7 +143,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (qualifierKind2 == FENUM_KIND) {
         return a2;
       }
-      throw new BugInCF("Unexpected QualifierKinds %s %s", qualifierKind1, qualifierKind2);
+      throw new TypeSystemError("Unexpected QualifierKinds %s %s", qualifierKind1, qualifierKind2);
     }
 
     @Override
@@ -166,7 +160,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (qualifierKind2 == FENUM_KIND) {
         return a1;
       }
-      throw new BugInCF("Unexpected QualifierKinds %s %s", qualifierKind1, qualifierKind2);
+      throw new TypeSystemError("Unexpected QualifierKinds %s %s", qualifierKind1, qualifierKind2);
     }
   }
 }

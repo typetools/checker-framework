@@ -1,6 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -14,9 +14,15 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 public class NumericalPlusNode extends UnaryOperationNode {
 
+  /**
+   * Constructs a {@link NumericalPlusNode}.
+   *
+   * @param tree the tree of the whole operation
+   * @param operand the operand of the operation
+   */
   public NumericalPlusNode(UnaryTree tree, Node operand) {
     super(tree, operand);
-    assert tree.getKind() == Kind.UNARY_PLUS;
+    assert tree.getKind() == Tree.Kind.UNARY_PLUS;
   }
 
   @Override
@@ -31,10 +37,9 @@ public class NumericalPlusNode extends UnaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof NumericalPlusNode)) {
+    if (!(obj instanceof NumericalPlusNode other)) {
       return false;
     }
-    NumericalPlusNode other = (NumericalPlusNode) obj;
     return getOperand().equals(other.getOperand());
   }
 

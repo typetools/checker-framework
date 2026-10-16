@@ -5,12 +5,12 @@ import org.checkerframework.common.value.qual.MinLen;
 
 public class MinLenFromPositive {
 
-  public @Positive int x = 0;
+  public @Positive int pos = 0;
 
   void testField() {
-    this.x = -1;
-    @IntRange(from = 1) int f = this.x;
-    int @MinLen(1) [] y = new int[x];
+    this.pos = -1;
+    @IntRange(from = 1) int f = this.pos;
+    int @MinLen(1) [] y = new int[pos];
   }
 
   void testArray(@Positive int @ArrayLen(1) [] x) {
@@ -19,7 +19,7 @@ public class MinLenFromPositive {
 
   void useTestArray(int @ArrayLen(1) [] x, int[] y) {
     testArray(x);
-    // :: error: (argument)
+    // :: error: [argument]
     testArray(y);
   }
 
@@ -40,9 +40,9 @@ public class MinLenFromPositive {
   }
 
   @Positive int plus(@Positive int x, @Positive int y) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     @IntRange(from = 0) int z = x + y;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @IntRange(from = 1) int q = x + y;
 
     return x + y;

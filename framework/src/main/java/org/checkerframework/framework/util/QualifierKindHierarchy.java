@@ -27,8 +27,8 @@ import org.checkerframework.javacutil.TypeSystemError;
  * <p>This interface is used by {@link NoElementQualifierHierarchy} and {@link
  * ElementQualifierHierarchy} (but <em>not</em> {@link MostlyNoElementQualifierHierarchy}) to
  * implement methods that compare {@link javax.lang.model.element.AnnotationMirror}s, such as {@link
- * org.checkerframework.framework.type.QualifierHierarchy#isSubtype(AnnotationMirror,
- * AnnotationMirror)}.
+ * org.checkerframework.framework.type.QualifierHierarchy#isSubtypeShallow(AnnotationMirror,
+ * TypeMirror, AnnotationMirror, TypeMirror)}.
  *
  * @see DefaultQualifierKindHierarchy
  * @see org.checkerframework.framework.util.DefaultQualifierKindHierarchy.DefaultQualifierKind
@@ -80,14 +80,13 @@ public interface QualifierKindHierarchy {
   List<? extends QualifierKind> allQualifierKinds();
 
   /**
-   * Returns the {@link QualifierKind} for the given annotation class name, or null if one does not
-   * exist.
+   * Returns the {@link QualifierKind} for the given annotation class name. Throws an exception if
+   * one does not exist.
    *
    * @param name canonical name of an annotation class
-   * @return the {@link QualifierKind} for the given annotation class name, or null if one does not
-   *     exist
+   * @return the {@link QualifierKind} for the given annotation class name
    */
-  @Nullable QualifierKind getQualifierKind(@CanonicalName String name);
+  QualifierKind getQualifierKind(@CanonicalName String name);
 
   /**
    * Returns the canonical name of {@code clazz}. Throws a {@link TypeSystemError} if {@code clazz}

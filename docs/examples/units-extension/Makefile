@@ -11,7 +11,10 @@ JAVAC?=../../../checker/bin/javac
 # for custom projects, it is best to encode the full root path as a variable
 PROJECTDIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
+.PHONY: all test clean
 all: compile-for-test named-quals-test qual-folder-test clean
+
+test: all
 
 demo:
 	$(JAVAC) $(JAVAOPTS) $(FILES)
@@ -24,16 +27,17 @@ compile-for-test:
 
 # test case for using externally defined units by explicitly naming them using the -Aunits option
 named-quals-test:
-	$(JAVAC) -classpath $(PROJECTDIR) -processor org.checkerframework.checker.units.UnitsChecker -Aunits=qual.Hz,qual.kHz,qual.Frequency UnitsExtensionDemo.java > Out.txt 2>&1 || true
+	-$(JAVAC) -classpath $(PROJECTDIR) -processor org.checkerframework.checker.units.UnitsChecker -Aunits=qual.Hz,qual.kHz,qual.Frequency UnitsExtensionDemo.java > Out.txt 2>&1
 	diff -u Expected.txt Out.txt
 	rm -f Out.txt
 
 # test case for using externally defined units by loading them from a directory using the -AunitsDirs option
 qual-folder-test:
-	$(JAVAC) -classpath $(PROJECTDIR) -processor org.checkerframework.checker.units.UnitsChecker -AunitsDirs=$(PROJECTDIR) UnitsExtensionDemo.java > Out.txt 2>&1 || true
+	-$(JAVAC) -classpath $(PROJECTDIR) -processor org.checkerframework.checker.units.UnitsChecker -AunitsDirs=$(PROJECTDIR) UnitsExtensionDemo.java > Out.txt 2>&1
 	diff -u Expected.txt Out.txt
 	rm -f Out.txt
 
 # test clean up
+.PHONY: clean
 clean:
-	rm -f qual/*.class
+	@rm -f qual/*.class

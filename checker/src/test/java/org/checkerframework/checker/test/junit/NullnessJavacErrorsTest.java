@@ -17,7 +17,6 @@ public class NullnessJavacErrorsTest extends CheckerFrameworkPerFileTest {
         org.checkerframework.checker.nullness.NullnessChecker.class,
         "nullness",
         "-AcheckPurityAnnotations",
-        "-Anomsgtext",
         "-Xlint:deprecation",
         "-Alint=soundArrayCreationNullness," + NullnessChecker.LINT_REDUNDANTNULLCOMPARISON);
   }

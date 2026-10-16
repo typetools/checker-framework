@@ -1,6 +1,8 @@
 package org.checkerframework.checker.calledmethods;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -8,16 +10,26 @@ import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.tools.Diagnostic;
 import org.checkerframework.checker.calledmethods.builder.BuilderFrameworkSupport;
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
+import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarargs;
 import org.checkerframework.common.accumulation.AccumulationVisitor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.framework.flow.CFAbstractStore;
+import org.checkerframework.framework.flow.CFAbstractValue;
+import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.StringToJavaExpression;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * This visitor implements the custom error message finalizer.invocation. It also supports counting
- * the number of framework build calls.
+ * This visitor implements the custom error message "finalizer.invocation". It also supports
+ * counting the number of framework build calls.
  */
 public class CalledMethodsVisitor extends AccumulationVisitor {
 
@@ -26,15 +38,90 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
    *
    * @param checker the type-checker associated with this visitor
    */
-  public CalledMethodsVisitor(final BaseTypeChecker checker) {
+  public CalledMethodsVisitor(BaseTypeChecker checker) {
     super(checker);
   }
 
+  /**
+   * Issue an error at every EnsuresCalledMethodsVarargs annotation, because using it is unsound.
+   */
   @Override
-  public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+  public Void visitAnnotation(AnnotationTree tree, Void p) {
+    AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(tree);
+    if (AnnotationUtils.areSameByName(
+            anno, "org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarargs")
+        // Temporary, for backward compatibility.
+        || AnnotationUtils.areSameByName(
+            anno, "org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethodsVarArgs")) {
+      // We can't verify these yet.  Emit an error (which will have to be suppressed) for now.
+      checker.report(tree, new DiagMessage(Diagnostic.Kind.ERROR, "ensuresvarargs.unverified"));
+    }
+    return super.visitAnnotation(tree, p);
+  }
 
+  @Override
+  @SuppressWarnings("deprecation") // EnsuresCalledMethodsVarArgs
+  public void processMethodTree(String className, MethodTree tree) {
+    ExecutableElement elt = TreeUtils.elementFromDeclaration(tree);
+    AnnotationMirror ecmv = atypeFactory.getDeclAnnotation(elt, EnsuresCalledMethodsVarargs.class);
+    if (ecmv != null) {
+      if (!elt.isVarArgs()) {
+        checker.report(tree, new DiagMessage(Diagnostic.Kind.ERROR, "ensuresvarargs.invalid"));
+      }
+    }
+    for (EnsuresCalledMethodOnExceptionContract postcond :
+        ((CalledMethodsAnnotatedTypeFactory) atypeFactory).getExceptionalPostconditions(elt)) {
+      checkExceptionalPostcondition(postcond, tree);
+    }
+    super.processMethodTree(className, tree);
+  }
+
+  /**
+   * Check if the given postcondition is really ensured by the body of the given method.
+   *
+   * @param postcond the postcondition to check
+   * @param tree the method
+   */
+  protected void checkExceptionalPostcondition(
+      EnsuresCalledMethodOnExceptionContract postcond, MethodTree tree) {
+    CFAbstractStore<?, ?> exitStore = atypeFactory.getExceptionalExitStore(tree);
+    if (exitStore == null) {
+      // If there is no exceptional exitStore, then the method cannot throw exceptions and
+      // there is no need to check anything.
+      return;
+    }
+
+    JavaExpression e;
+    try {
+      e = StringToJavaExpression.atMethodBody(postcond.expression(), tree, checker);
+    } catch (JavaExpressionParseException ex) {
+      checker.report(tree, new DiagMessage(ex));
+      return;
+    }
+
+    AnnotationMirror requiredAnno = atypeFactory.createAccumulatorAnnotation(postcond.method());
+
+    CFAbstractValue<?> value = exitStore.getValue(e);
+    AnnotationMirror inferredAnno = null;
+    if (value != null) {
+      AnnotationMirrorSet annos = value.getAnnotations();
+      inferredAnno = qualHierarchy.findAnnotationInSameHierarchy(annos, requiredAnno);
+    }
+
+    if (!checkContract(e, requiredAnno, inferredAnno, exitStore)) {
+      checker.reportError(
+          tree,
+          "contracts.exceptional.postcondition",
+          tree.getName(),
+          contractExpressionAndType(postcond.expression(), inferredAnno),
+          contractExpressionAndType(postcond.expression(), requiredAnno));
+    }
+  }
+
+  @Override
+  public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
     if (checker.getBooleanOption(CalledMethodsChecker.COUNT_FRAMEWORK_BUILD_CALLS)) {
-      ExecutableElement element = TreeUtils.elementFromUse(node);
+      ExecutableElement element = TreeUtils.elementFromUse(tree);
       for (BuilderFrameworkSupport builderFrameworkSupport :
           ((CalledMethodsAnnotatedTypeFactory) getTypeFactory()).getBuilderFrameworkSupports()) {
         if (builderFrameworkSupport.isBuilderBuildMethod(element)) {
@@ -43,17 +130,17 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
         }
       }
     }
-    return super.visitMethodInvocation(node, p);
+    return super.visitMethodInvocation(tree, p);
   }
 
-  /** Turns some method.invocation errors into finalizer.invocation errors. */
+  /** Turns some "method.invocation" errors into "finalizer.invocation" errors. */
   @Override
   protected void reportMethodInvocabilityError(
-      MethodInvocationTree node, AnnotatedTypeMirror found, AnnotatedTypeMirror expected) {
+      MethodInvocationTree tree, AnnotatedTypeMirror found, AnnotatedTypeMirror expected) {
 
-    AnnotationMirror expectedCM = expected.getAnnotation(CalledMethods.class);
+    AnnotationMirror expectedCM = expected.getPrimaryAnnotation(CalledMethods.class);
     if (expectedCM != null) {
-      AnnotationMirror foundCM = found.getAnnotation(CalledMethods.class);
+      AnnotationMirror foundCM = found.getPrimaryAnnotation(CalledMethods.class);
       Set<String> foundMethods =
           foundCM == null
               ? Collections.emptySet()
@@ -66,9 +153,9 @@ public class CalledMethodsVisitor extends AccumulationVisitor {
         }
       }
 
-      checker.reportError(node, "finalizer.invocation", missingMethods.toString());
+      checker.reportError(tree, "finalizer.invocation", missingMethods.toString());
     } else {
-      super.reportMethodInvocabilityError(node, found, expected);
+      super.reportMethodInvocabilityError(tree, found, expected);
     }
   }
 }

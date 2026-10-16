@@ -9,14 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
 /** Basic tests for the Called Methods Checker. */
 public class CalledMethodsTest extends CheckerFrameworkPerDirectoryTest {
   public CalledMethodsTest(List<File> testFiles) {
-    super(
-        testFiles,
-        CalledMethodsChecker.class,
-        "calledmethods",
-        "-Anomsgtext",
-        "-nowarn",
-        "-encoding",
-        "UTF-8");
+    super(testFiles, CalledMethodsChecker.class, "calledmethods", "-nowarn", "-encoding", "UTF-8");
   }
 
   @Parameters

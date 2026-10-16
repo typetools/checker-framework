@@ -12,8 +12,8 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.qual.UpperBoundFor;
-import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -21,9 +21,10 @@ import org.checkerframework.javacutil.TypesUtils;
 public class QualifierUpperBounds {
 
   /** Map from {@link TypeKind} to annotations. */
-  private final Map<TypeKind, Set<AnnotationMirror>> typeKinds;
+  private final Map<TypeKind, AnnotationMirrorSet> typeKinds;
+
   /** Map from canonical class name strings to annotations. */
-  private final Map<@CanonicalName String, Set<AnnotationMirror>> types;
+  private final Map<@CanonicalName String, AnnotationMirrorSet> types;
 
   /** {@link QualifierHierarchy} */
   private final QualifierHierarchy qualHierarchy;
@@ -34,6 +35,7 @@ public class QualifierUpperBounds {
    * Creates a {@link QualifierUpperBounds} from the given checker, using that checker to determine
    * the annotations that are in the type hierarchy.
    */
+  @SuppressWarnings("this-escape")
   public QualifierUpperBounds(AnnotatedTypeFactory typeFactory) {
     this.atypeFactory = typeFactory;
     this.typeKinds = new EnumMap<>(TypeKind.class);
@@ -79,7 +81,7 @@ public class QualifierUpperBounds {
     boolean res = qualHierarchy.updateMappingToMutableSet(typeKinds, typeKind, theQual);
     if (!res) {
       throw new BugInCF(
-          "QualifierUpperBounds: invalid update of typeKinds $s at %s with %s.",
+          "QualifierUpperBounds: invalid update of typeKinds %s at %s with %s.",
           typeKinds, typeKind, theQual);
     }
   }
@@ -90,7 +92,7 @@ public class QualifierUpperBounds {
     boolean res = qualHierarchy.updateMappingToMutableSet(types, typeNameString, theQual);
     if (!res) {
       throw new BugInCF(
-          "QualifierUpperBounds: invalid update of types $s at %s with %s.", types, type, theQual);
+          "QualifierUpperBounds: invalid update of types %s at %s with %s.", types, type, theQual);
     }
   }
 
@@ -100,7 +102,7 @@ public class QualifierUpperBounds {
    * @param type the TypeMirror
    * @return the set of qualifiers that are the upper bounds for a use of the type
    */
-  public Set<AnnotationMirror> getBoundQualifiers(TypeMirror type) {
+  public AnnotationMirrorSet getBoundQualifiers(TypeMirror type) {
     AnnotationMirrorSet bounds = new AnnotationMirrorSet();
     String qname;
     if (type.getKind() == TypeKind.DECLARED) {
@@ -114,14 +116,14 @@ public class QualifierUpperBounds {
     }
 
     if (qname != null && types.containsKey(qname)) {
-      Set<AnnotationMirror> fnd = types.get(qname);
+      AnnotationMirrorSet fnd = types.get(qname);
       addMissingAnnotations(bounds, fnd);
     }
 
     // If the type's kind is in the appropriate map, annotate the type.
 
     if (typeKinds.containsKey(type.getKind())) {
-      Set<AnnotationMirror> fnd = typeKinds.get(type.getKind());
+      AnnotationMirrorSet fnd = typeKinds.get(type.getKind());
       addMissingAnnotations(bounds, fnd);
     }
 
@@ -136,8 +138,8 @@ public class QualifierUpperBounds {
    * @param element element whose annotations to return
    * @return the explicit annotations on the element
    */
-  protected Set<AnnotationMirror> getAnnotationFromElement(Element element) {
-    return atypeFactory.fromElement(element).getAnnotations();
+  protected AnnotationMirrorSet getAnnotationFromElement(Element element) {
+    return atypeFactory.fromElement(element).getPrimaryAnnotations();
   }
 
   /**

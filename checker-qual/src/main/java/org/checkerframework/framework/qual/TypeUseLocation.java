@@ -17,8 +17,6 @@ public enum TypeUseLocation {
   /**
    * Apply default annotations to all unannotated raw types of local variables, casts, and
    * instanceof.
-   *
-   * <p>TODO: should cast/instanceof be separated?
    */
   LOCAL_VARIABLE,
 
@@ -44,14 +42,14 @@ public enum TypeUseLocation {
   CONSTRUCTOR_RESULT,
 
   /**
-   * Apply default annotations to unannotated lower bounds for type variables and wildcards both
-   * explicit ones in {@code extends} clauses, and implicit upper bounds when no explicit {@code
+   * Apply default annotations to unannotated lower bounds for type variables and wildcards: both
+   * explicit ones in {@code super} clauses, and implicit lower bounds when no explicit {@code
    * extends} or {@code super} clause is present.
    */
   LOWER_BOUND,
 
   /**
-   * Apply default annotations to unannotated, but explicit lower bounds: {@code <? super Object>}
+   * Apply default annotations to unannotated, but explicit lower bounds: {@code <? super Object>}.
    */
   EXPLICIT_LOWER_BOUND,
 
@@ -65,7 +63,7 @@ public enum TypeUseLocation {
    * clauses, and implicit upper bounds when no explicit {@code extends} or {@code super} clause is
    * present.
    *
-   * <p>Especially useful for parametrized classes that provide a lot of static methods with the
+   * <p>Especially useful for parameterized classes that provide a lot of static methods with the
    * same generic parameters as the class.
    */
   UPPER_BOUND,

@@ -1,6 +1,7 @@
 public class MultipleUnions {
   public static boolean flag = false;
 
+  @SuppressWarnings("ainfertest") // only check WPI for crashes
   void foo1(MyInterface<Throwable> param) throws Throwable {
     try {
       bar();

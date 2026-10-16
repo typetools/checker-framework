@@ -34,9 +34,9 @@ public class Issue556b {
 
     private Child() {
       // This call should not be legal, because at the time that the call occurs, the static
-      // initializers of Child have not yet finished executing and therefore CHILD and OBJ are not
-      // necessarily initialized and are not necessarily non-null.
-      // :: error: (method.invocation)
+      // initializers of Child have not yet finished executing and therefore CHILD and OBJ are
+      // not necessarily initialized and are not necessarily non-null.
+      // :: error: [method.invocation]
       super(OBJ);
     }
   }
@@ -52,9 +52,9 @@ public class Issue556b {
 
     private Child2() {
       // This call should not be legal, because at the time that the call occurs, the static
-      // initializers of Child have not yet finished executing and therefore CHILD and OBJ are not
-      // necessarily initialized and are not necessarily non-null.
-      // :: error: (method.invocation)
+      // initializers of Child have not yet finished executing and therefore CHILD and OBJ are
+      // not necessarily initialized and are not necessarily non-null.
+      // :: error: [method.invocation]
       super(OBJ);
     }
   }

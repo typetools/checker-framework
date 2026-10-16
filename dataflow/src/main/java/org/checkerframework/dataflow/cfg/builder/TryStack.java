@@ -4,16 +4,17 @@ import java.util.ArrayDeque;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.dataflow.util.MostlySingleton;
+import org.plumelib.util.ArraySet;
 
 /**
  * An exception stack represents the set of all try-catch blocks in effect at a given point in a
  * program. It maps an exception type to a set of Labels and it maps a block exit (via return or
  * fall-through) to a single Label.
  */
-class TryStack {
+/*package-private*/ class TryStack {
   /** The exit label. */
   protected final Label exitLabel;
+
   /** The try frames. */
   protected final ArrayDeque<TryFrame> frames;
 
@@ -50,7 +51,7 @@ class TryStack {
    */
   public Set<Label> possibleLabels(TypeMirror thrown) {
     // Work up from the innermost frame until the exception is known to be caught.
-    Set<Label> labels = new MostlySingleton<>();
+    Set<Label> labels = new ArraySet<>(1);
     for (TryFrame frame : frames) {
       if (frame.possibleLabels(thrown, labels)) {
         return labels;

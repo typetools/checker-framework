@@ -5,9 +5,8 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -54,14 +53,7 @@ public class FunctionalInterfaceNode extends Node {
 
   @Override
   public String toString() {
-    if (tree instanceof LambdaExpressionTree) {
-      return "FunctionalInterfaceNode:" + ((LambdaExpressionTree) tree).getBodyKind();
-    } else if (tree instanceof MemberReferenceTree) {
-      return "FunctionalInterfaceNode:" + ((MemberReferenceTree) tree).getName();
-    } else {
-      // This should never happen.
-      throw new BugInCF("Invalid tree in FunctionalInterfaceNode");
-    }
+    return tree.toString();
   }
 
   @Override
@@ -80,10 +72,11 @@ public class FunctionalInterfaceNode extends Node {
 
   @Override
   public int hashCode() {
-    return Objects.hash(tree);
+    return tree.hashCode();
   }
 
   @Override
+  @SideEffectFree
   public Collection<Node> getOperands() {
     return Collections.emptyList();
   }

@@ -32,6 +32,9 @@ import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.qual.SubstringIndexFor;
 import org.checkerframework.checker.index.searchindex.SearchIndexAnnotatedTypeFactory;
 import org.checkerframework.checker.index.searchindex.SearchIndexChecker;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signedness.qual.SignedPositive;
+import org.checkerframework.checker.signedness.qual.SignednessGlb;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
@@ -89,16 +92,21 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
   /** The canonical @{@link GTENegativeOne} annotation. */
   public final AnnotationMirror GTEN1 = AnnotationBuilder.fromClass(elements, GTENegativeOne.class);
+
   /** The canonical @{@link NonNegative} annotation. */
   public final AnnotationMirror NN = AnnotationBuilder.fromClass(elements, NonNegative.class);
+
   /** The canonical @{@link Positive} annotation. */
   public final AnnotationMirror POS = AnnotationBuilder.fromClass(elements, Positive.class);
+
   /** The bottom annotation. */
   public final AnnotationMirror BOTTOM =
       AnnotationBuilder.fromClass(elements, LowerBoundBottom.class);
+
   /** The canonical @{@link LowerBoundUnknown} annotation. */
   public final AnnotationMirror UNKNOWN =
       AnnotationBuilder.fromClass(elements, LowerBoundUnknown.class);
+
   /** The canonical @{@link PolyLowerBound} annotation. */
   public final AnnotationMirror POLY = AnnotationBuilder.fromClass(elements, PolyLowerBound.class);
 
@@ -110,17 +118,22 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    *
    * @param checker the type-checker
    */
+  @SuppressWarnings("this-escape")
   public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
-    // Any annotations that are aliased to @NonNegative, @Positive, or @GTENegativeOne must also be
-    // aliased in the constructor of ValueAnnotatedTypeFactory to the appropriate @IntRangeFrom*
-    // annotation.
+    // Any annotations that are aliased to @NonNegative, @Positive, or @GTENegativeOne must also
+    // be aliased in the constructor of ValueAnnotatedTypeFactory to the appropriate
+    // @IntRangeFrom* annotation.
+    addAliasedTypeAnnotation("javax.annotation.Nonnegative", NN);
     addAliasedTypeAnnotation(IndexFor.class, NN);
     addAliasedTypeAnnotation(IndexOrLow.class, GTEN1);
     addAliasedTypeAnnotation(IndexOrHigh.class, NN);
     addAliasedTypeAnnotation(LengthOf.class, NN);
     addAliasedTypeAnnotation(PolyIndex.class, POLY);
     addAliasedTypeAnnotation(SubstringIndexFor.class, GTEN1);
+
+    addAliasedTypeAnnotation(SignedPositive.class, NN);
+    addAliasedTypeAnnotation(SignednessGlb.class, NN);
 
     imf = new IndexMethodIdentifier(this);
 
@@ -150,13 +163,13 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   private void addLowerBoundTypeFromValueType(
       AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
     AnnotationMirror anm = getLowerBoundAnnotationFromValueType(valueType);
-    if (!type.isAnnotatedInHierarchy(UNKNOWN)) {
+    if (!type.hasPrimaryAnnotationInHierarchy(UNKNOWN)) {
       if (!areSameByClass(anm, LowerBoundUnknown.class)) {
         type.addAnnotation(anm);
       }
       return;
     }
-    if (qualHierarchy.isSubtype(anm, type.getAnnotationInHierarchy(UNKNOWN))) {
+    if (typeHierarchy.isSubtypeShallowEffective(anm, type)) {
       type.replaceAnnotation(anm);
     }
   }
@@ -179,6 +192,12 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     // the Value Checker, because dataflow is used to compute that type.  (Without this,
     // "int i = 1; --i;" fails.)
     if (tree != null
+        // Necessary to check that an ajava file isn't being parsed, because the call
+        // to the Value Checker's getAnnotatedType() method can fail during parsing:
+        // the check in GenericAnnotatedTypeFactory#addComputedTypeAnnotations only
+        // checks if the **current** type factory is parsing, not whether the parent
+        // checker's type factory is parsing.
+        && !ajavaTypes.isParsing()
         && TreeUtils.isExpressionTree(tree)
         && (iUseFlow || tree instanceof LiteralTree)) {
       AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
@@ -209,7 +228,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     if (possibleValues == null) {
       // possibleValues is null if there is no IntVal annotation on the type - such as
       // when there is a BottomVal annotation. In that case, give this the LBC's bottom type.
-      if (containsSameByClass(valueType.getAnnotations(), BottomVal.class)) {
+      if (containsSameByClass(valueType.getPrimaryAnnotations(), BottomVal.class)) {
         return BOTTOM;
       }
       return UNKNOWN;
@@ -256,11 +275,11 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      *  </pre>
      */
     private void promoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
-      if (typeSrc.hasAnnotation(POS)) {
+      if (typeSrc.hasPrimaryAnnotation(POS)) {
         typeDst.replaceAnnotation(POS);
-      } else if (typeSrc.hasAnnotation(NN)) {
+      } else if (typeSrc.hasPrimaryAnnotation(NN)) {
         typeDst.replaceAnnotation(POS);
-      } else if (typeSrc.hasAnnotation(GTEN1)) {
+      } else if (typeSrc.hasPrimaryAnnotation(GTEN1)) {
         typeDst.replaceAnnotation(NN);
       } else { // Only unknown is left.
         typeDst.replaceAnnotation(UNKNOWN);
@@ -278,9 +297,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      *  </pre>
      */
     private void demoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
-      if (typeSrc.hasAnnotation(POS)) {
+      if (typeSrc.hasPrimaryAnnotation(POS)) {
         typeDst.replaceAnnotation(NN);
-      } else if (typeSrc.hasAnnotation(NN)) {
+      } else if (typeSrc.hasPrimaryAnnotation(NN)) {
         typeDst.replaceAnnotation(GTEN1);
       } else { // GTEN1 and UNKNOWN both become UNKNOWN.
         typeDst.replaceAnnotation(UNKNOWN);
@@ -292,22 +311,15 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror typeDst) {
       AnnotatedTypeMirror typeSrc = getAnnotatedType(tree.getExpression());
       switch (tree.getKind()) {
-        case PREFIX_INCREMENT:
-          promoteType(typeSrc, typeDst);
-          break;
-        case PREFIX_DECREMENT:
-          demoteType(typeSrc, typeDst);
-          break;
-        case POSTFIX_INCREMENT:
-        case POSTFIX_DECREMENT:
-          // Do nothing. The CF should take care of these itself.
-          break;
-        case BITWISE_COMPLEMENT:
-          handleBitWiseComplement(
-              getSearchIndexAnnotatedTypeFactory().getAnnotatedType(tree.getExpression()), typeDst);
-          break;
-        default:
-          break;
+        case PREFIX_INCREMENT -> promoteType(typeSrc, typeDst);
+        case PREFIX_DECREMENT -> demoteType(typeSrc, typeDst);
+        case POSTFIX_INCREMENT,
+            POSTFIX_DECREMENT -> {} // Do nothing. The CF should take care of these itself.
+        case BITWISE_COMPLEMENT ->
+            handleBitWiseComplement(
+                getSearchIndexAnnotatedTypeFactory().getAnnotatedType(tree.getExpression()),
+                typeDst);
+        default -> {}
       }
       return super.visitUnary(tree, typeDst);
     }
@@ -323,7 +335,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      */
     private void handleBitWiseComplement(
         AnnotatedTypeMirror searchIndexType, AnnotatedTypeMirror typeDst) {
-      if (containsSameByClass(searchIndexType.getAnnotations(), NegativeIndexFor.class)) {
+      if (containsSameByClass(searchIndexType.getPrimaryAnnotations(), NegativeIndexFor.class)) {
         typeDst.addAnnotation(NN);
       }
     }
@@ -334,10 +346,12 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       if (imf.isMathMax(tree)) {
         ExpressionTree left = tree.getArguments().get(0);
         ExpressionTree right = tree.getArguments().get(1);
+        AnnotatedTypeMirror leftType = getAnnotatedType(left);
+        AnnotatedTypeMirror rightType = getAnnotatedType(right);
         type.replaceAnnotation(
-            qualHierarchy.greatestLowerBound(
-                getAnnotatedType(left).getAnnotationInHierarchy(POS),
-                getAnnotatedType(right).getAnnotationInHierarchy(POS)));
+            qualHierarchy.greatestLowerBoundShallow(
+                leftType.getPrimaryAnnotationInHierarchy(POS), leftType.getUnderlyingType(),
+                rightType.getPrimaryAnnotationInHierarchy(POS), rightType.getUnderlyingType()));
       }
       return super.visitMethodInvocation(tree, type);
     }
@@ -371,7 +385,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    * Looks up the minlen of a member select tree. Returns null if the tree doesn't represent an
    * array's length field.
    */
-  Integer getMinLenFromMemberSelectTree(MemberSelectTree tree) {
+  @Nullable Integer getMinLenFromMemberSelectTree(MemberSelectTree tree) {
     if (TreeUtils.isArrayLengthAccess(tree)) {
       return ValueCheckerUtils.getMinLenFromTree(tree, getValueAnnotatedTypeFactory());
     }
@@ -382,7 +396,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    * Looks up the minlen of a method invocation tree. Returns null if the tree doesn't represent an
    * string length method.
    */
-  Integer getMinLenFromMethodInvocationTree(MethodInvocationTree tree) {
+  @Nullable Integer getMinLenFromMethodInvocationTree(MethodInvocationTree tree) {
     if (imf.isLengthOfMethodInvocation(tree)) {
       return ValueCheckerUtils.getMinLenFromTree(tree, getValueAnnotatedTypeFactory());
     }
@@ -399,7 +413,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    * @return an AnnotationMirror representing the result if the special case is valid, or null if
    *     not
    */
-  AnnotationMirror checkForMathRandomSpecialCase(NumericalMultiplicationNode node) {
+  @Nullable AnnotationMirror checkForMathRandomSpecialCase(NumericalMultiplicationNode node) {
     AnnotationMirror forwardRes =
         checkForMathRandomSpecialCase(
             node.getLeftOperand().getTree(), node.getRightOperand().getTree());
@@ -416,13 +430,17 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   }
 
   /**
-   * Return true if randTree is a call to Math.random() or Random.nextDouble(), and arrLenTree is
-   * someArray.length.
+   * Returns a non-null value if randTree is a call to Math.random() or Random.nextDouble(), and
+   * arrLenTree is someArray.length.
+   *
+   * @param randTree a tree that might be a call to a {@code random} method
+   * @param arrLenTree a tree that might be an array length access
+   * @return a non-null value if randTree is a call to Math.random() or Random.nextDouble(), and
+   *     arrLenTree is someArray.length
    */
-  private AnnotationMirror checkForMathRandomSpecialCase(Tree randTree, Tree arrLenTree) {
-    if (randTree.getKind() == Tree.Kind.METHOD_INVOCATION
+  private @Nullable AnnotationMirror checkForMathRandomSpecialCase(Tree randTree, Tree arrLenTree) {
+    if (randTree instanceof MethodInvocationTree miTree
         && TreeUtils.isArrayLengthAccess(arrLenTree)) {
-      MethodInvocationTree miTree = (MethodInvocationTree) randTree;
 
       if (imf.isMathRandom(miTree, processingEnv)) {
         // This is Math.random() * array.length, which must be NonNegative
@@ -441,6 +459,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   public boolean isNonNegative(Tree tree) {
     // TODO: consolidate with the isNonNegative method in LowerBoundTransfer
     AnnotatedTypeMirror treeType = getAnnotatedType(tree);
-    return treeType.hasAnnotation(NonNegative.class) || treeType.hasAnnotation(Positive.class);
+    return treeType.hasPrimaryAnnotation(NonNegative.class)
+        || treeType.hasPrimaryAnnotation(Positive.class);
   }
 }

@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
  * @checker_framework.manual #defaults Default qualifier for unannotated types
  */
 @Documented
-@Retention(RetentionPolicy.SOURCE)
+@Retention(RetentionPolicy.RUNTIME)
 @Target({
   ElementType.PACKAGE,
   ElementType.TYPE,
@@ -80,9 +80,9 @@ public @interface DefaultQualifier {
     ElementType.LOCAL_VARIABLE,
     ElementType.PARAMETER
   })
-  @interface List {
+  public static @interface List {
     /**
-     * Return the repeatable annotations.
+     * Returns the repeatable annotations.
      *
      * @return the repeatable annotations
      */

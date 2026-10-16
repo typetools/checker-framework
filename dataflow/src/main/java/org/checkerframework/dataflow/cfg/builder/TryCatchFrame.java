@@ -9,18 +9,26 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.UnionType;
 import javax.lang.model.util.Types;
-import org.checkerframework.javacutil.Pair;
 
 /**
  * A TryCatchFrame contains an ordered list of catch labels that apply to exceptions with specific
  * types.
  */
-class TryCatchFrame implements TryFrame {
+/*package-private*/ class TryCatchFrame implements TryFrame {
+
+  /**
+   * The type caught by a catch block, and the label of that catch block.
+   *
+   * @param caughtType the type caught by the catch block
+   * @param label the label of the catch block
+   */
+  /*package-private*/ record CatchLabel(TypeMirror caughtType, Label label) {}
+
   /** The Types utilities. */
   protected final Types types;
 
-  /** An ordered list of pairs because catch blocks are ordered. */
-  protected final List<Pair<TypeMirror, Label>> catchLabels;
+  /** An ordered list of catch labels, because catch blocks are ordered. */
+  protected final List<CatchLabel> catchLabels;
 
   /**
    * Construct a TryCatchFrame.
@@ -28,7 +36,7 @@ class TryCatchFrame implements TryFrame {
    * @param types the Types utilities
    * @param catchLabels the catch labels
    */
-  public TryCatchFrame(Types types, List<Pair<TypeMirror, Label>> catchLabels) {
+  public TryCatchFrame(Types types, List<CatchLabel> catchLabels) {
     this.types = types;
     this.catchLabels = catchLabels;
   }
@@ -39,8 +47,8 @@ class TryCatchFrame implements TryFrame {
       return "TryCatchFrame: no catch labels.";
     } else {
       StringJoiner sb = new StringJoiner(System.lineSeparator(), "TryCatchFrame: ", "");
-      for (Pair<TypeMirror, Label> ptml : this.catchLabels) {
-        sb.add(ptml.first.toString() + " -> " + ptml.second.toString());
+      for (CatchLabel catchLabel : this.catchLabels) {
+        sb.add(catchLabel.caughtType() + " -> " + catchLabel.label());
       }
       return sb.toString();
     }
@@ -53,39 +61,38 @@ class TryCatchFrame implements TryFrame {
    */
   @Override
   public boolean possibleLabels(TypeMirror thrown, Set<Label> labels) {
-    // A conservative approach would be to say that every catch block might execute for any thrown
-    // exception, but we try to do better.
+    // A conservative approach would be to say that every catch block might execute for any
+    // thrown exception, but we try to do better.
     //
     // We rely on several assumptions that seem to hold as of Java 7.
-    // 1) An exception parameter in a catch block must be either a declared type or a union composed
-    //    of declared types, all of which are subtypes of Throwable.
-    // 2) A thrown type must either be a declared type or a variable that extends a declared type,
-    //    which is a subtype of Throwable.
+    // 1) An exception parameter in a catch block must be either a declared type or a union
+    // composed of declared types, all of which are subtypes of Throwable.
+    // 2) A thrown type must either be a declared type or a variable that extends a declared
+    // type, which is a subtype of Throwable.
     //
-    // Under those assumptions, if the thrown type (or its bound) is a subtype of the caught type
-    // (or one of its alternatives), then the catch block must apply and none of the later ones can
-    // apply.
-    // Otherwise, if the thrown type (or its bound) is a supertype of the caught type (or one of its
-    // alternatives), then the catch block may apply, but so may later ones.
-    // Otherwise, the thrown type and the caught type are unrelated declared types, so they do not
-    // overlap on any non-null value.
+    // Under those assumptions, if the thrown type (or its bound) is a subtype of the caught
+    // type (or one of its alternatives), then the catch block must apply and none of the later
+    // ones can apply.
+    // Otherwise, if the thrown type (or its bound) is a supertype of the caught type (or one of
+    // its alternatives), then the catch block may apply, but so may later ones.
+    // Otherwise, the thrown type and the caught type are unrelated declared types, so they do
+    // not overlap on any non-null value.
 
-    while (!(thrown instanceof DeclaredType)) {
+    while (!(thrown instanceof DeclaredType declaredThrown)) {
       assert thrown instanceof TypeVariable : "thrown type must be a variable or a declared type";
       thrown = ((TypeVariable) thrown).getUpperBound();
     }
-    DeclaredType declaredThrown = (DeclaredType) thrown;
     assert thrown != null : "thrown type must be bounded by a declared type";
 
-    for (Pair<TypeMirror, Label> pair : catchLabels) {
-      TypeMirror caught = pair.first;
+    for (CatchLabel catchLabel : catchLabels) {
+      TypeMirror caught = catchLabel.caughtType();
       boolean canApply = false;
 
       if (caught.getKind() == TypeKind.DECLARED) {
         DeclaredType declaredCaught = (DeclaredType) caught;
         if (types.isSubtype(declaredThrown, declaredCaught)) {
           // No later catch blocks can apply.
-          labels.add(pair.second);
+          labels.add(catchLabel.label());
           return true;
         } else if (types.isSubtype(declaredCaught, declaredThrown)) {
           canApply = true;
@@ -100,7 +107,7 @@ class TryCatchFrame implements TryFrame {
           DeclaredType declaredAlt = (DeclaredType) alternative;
           if (types.isSubtype(declaredThrown, declaredAlt)) {
             // No later catch blocks can apply.
-            labels.add(pair.second);
+            labels.add(catchLabel.label());
             return true;
           } else if (types.isSubtype(declaredAlt, declaredThrown)) {
             canApply = true;
@@ -109,7 +116,7 @@ class TryCatchFrame implements TryFrame {
       }
 
       if (canApply) {
-        labels.add(pair.second);
+        labels.add(catchLabel.label());
       }
     }
 

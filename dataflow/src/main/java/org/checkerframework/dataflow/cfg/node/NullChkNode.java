@@ -1,11 +1,11 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -16,13 +16,21 @@ import org.checkerframework.javacutil.TreeUtils;
  * </pre>
  */
 public class NullChkNode extends Node {
-
+  /** The entire tree of the null check. */
   protected final Tree tree;
+
+  /** The operand of the null check. */
   protected final Node operand;
 
+  /**
+   * Constructs a {@link NullChkNode}.
+   *
+   * @param tree the nullchk tree
+   * @param operand the operand of the null check
+   */
   public NullChkNode(Tree tree, Node operand) {
     super(TreeUtils.typeOf(tree));
-    assert tree.getKind() == Kind.OTHER;
+    assert tree.getKind() == Tree.Kind.OTHER;
     this.tree = tree;
     this.operand = operand;
   }
@@ -48,10 +56,9 @@ public class NullChkNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof NumericalPlusNode)) {
+    if (!(obj instanceof NumericalPlusNode other)) {
       return false;
     }
-    NumericalPlusNode other = (NumericalPlusNode) obj;
     return getOperand().equals(other.getOperand());
   }
 
@@ -61,6 +68,7 @@ public class NullChkNode extends Node {
   }
 
   @Override
+  @SideEffectFree
   public Collection<Node> getOperands() {
     return Collections.singletonList(getOperand());
   }

@@ -34,7 +34,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  *
  * @see AnnotationUtils
  */
-public class TypeAnnotationUtils {
+public final class TypeAnnotationUtils {
 
   // Class cannot be instantiated.
   private TypeAnnotationUtils() {
@@ -42,7 +42,7 @@ public class TypeAnnotationUtils {
   }
 
   /**
-   * Check whether a TypeCompound is contained in a list of TypeCompounds.
+   * Returns true if a TypeCompound is contained in a list of TypeCompounds.
    *
    * @param list the input list of TypeCompounds
    * @param tc the TypeCompound to find
@@ -137,9 +137,9 @@ public class TypeAnnotationUtils {
    * @return true if the two attributes are the same
    */
   private static boolean attributeEquals(Attribute a1, Attribute a2, Types types) {
-    if (a1 instanceof Attribute.Array && a2 instanceof Attribute.Array) {
-      List<Attribute> list1 = ((Attribute.Array) a1).getValue();
-      List<Attribute> list2 = ((Attribute.Array) a2).getValue();
+    if (a1 instanceof Attribute.Array aa1 && a2 instanceof Attribute.Array aa2) {
+      List<Attribute> list1 = aa1.getValue();
+      List<Attribute> list2 = aa2.getValue();
       if (list1.size() != list2.size()) {
         return false;
       }
@@ -150,44 +150,45 @@ public class TypeAnnotationUtils {
         }
       }
       return true;
-    } else if (a1 instanceof Attribute.Class && a2 instanceof Attribute.Class) {
-      Type t1 = ((Attribute.Class) a1).getValue();
-      Type t2 = ((Attribute.Class) a2).getValue();
+    } else if (a1 instanceof Attribute.Class ac1 && a2 instanceof Attribute.Class ac2) {
+      Type t1 = ac1.getValue();
+      Type t2 = ac2.getValue();
       return types.isSameType(t1, t2);
-    } else if (a1 instanceof Attribute.Constant && a2 instanceof Attribute.Constant) {
-      Object v1 = ((Attribute.Constant) a1).getValue();
-      Object v2 = ((Attribute.Constant) a2).getValue();
+    } else if (a1 instanceof Attribute.Constant ac1 && a2 instanceof Attribute.Constant ac2) {
+      Object v1 = ac1.getValue();
+      Object v2 = ac2.getValue();
       return v1.equals(v2);
-    } else if (a1 instanceof Attribute.Compound && a2 instanceof Attribute.Compound) {
-      // The annotation value is another annotation.  `a1` and `a2` implement AnnotationMirror.
-      DeclaredType t1 = ((Attribute.Compound) a1).getAnnotationType();
-      DeclaredType t2 = ((Attribute.Compound) a2).getAnnotationType();
+    } else if (a1 instanceof Attribute.Compound ac1 && a2 instanceof Attribute.Compound ac2) {
+      // The annotation value is another annotation.  `a1` and `a2` implement
+      // AnnotationMirror.
+      DeclaredType t1 = ac1.getAnnotationType();
+      DeclaredType t2 = ac2.getAnnotationType();
       if (!types.isSameType(t1, t2)) {
         return false;
       }
-      Map<Symbol.MethodSymbol, Attribute> map1 = ((Attribute.Compound) a1).getElementValues();
-      Map<Symbol.MethodSymbol, Attribute> map2 = ((Attribute.Compound) a2).getElementValues();
+      Map<Symbol.MethodSymbol, Attribute> map1 = ac1.getElementValues();
+      Map<Symbol.MethodSymbol, Attribute> map2 = ac2.getElementValues();
       // Is this test, which uses equals() for the keys, too strict?
       if (!map1.keySet().equals(map2.keySet())) {
         return false;
       }
-      for (Symbol.MethodSymbol key : map1.keySet()) {
-        Attribute attr1 = map1.get(key);
+      for (Map.Entry<Symbol.MethodSymbol, Attribute> map1entry : map1.entrySet()) {
+        Attribute attr1 = map1entry.getValue();
         @SuppressWarnings("nullness:assignment") // same keys in map1 & map2
-        @NonNull Attribute attr2 = map2.get(key);
+        @NonNull Attribute attr2 = map2.get(map1entry.getKey());
         if (!attributeEquals(attr1, attr2, types)) {
           return false;
         }
       }
       return true;
-    } else if (a1 instanceof Attribute.Enum && a2 instanceof Attribute.Enum) {
-      Symbol.VarSymbol s1 = ((Attribute.Enum) a1).getValue();
-      Symbol.VarSymbol s2 = ((Attribute.Enum) a2).getValue();
+    } else if (a1 instanceof Attribute.Enum ae1 && a2 instanceof Attribute.Enum ae2) {
+      Symbol.VarSymbol s1 = ae1.getValue();
+      Symbol.VarSymbol s2 = ae2.getValue();
       // VarSymbol.equals() is reference equality.
       return s1.equals(s2) || s1.toString().equals(s2.toString());
-    } else if (a1 instanceof Attribute.Error && a2 instanceof Attribute.Error) {
-      String s1 = ((Attribute.Error) a1).getValue();
-      String s2 = ((Attribute.Error) a2).getValue();
+    } else if (a1 instanceof Attribute.Error ae1 && a2 instanceof Attribute.Error ae2) {
+      String s1 = ae1.getValue();
+      String s2 = ae2.getValue();
       return s1.equals(s2);
     } else {
       return a1.equals(a2);
@@ -364,8 +365,8 @@ public class TypeAnnotationUtils {
 
     @Override
     public Attribute visitType(TypeMirror t, Void p) {
-      if (t instanceof Type) {
-        return new Attribute.Class(javacTypes, (Type) t);
+      if (t instanceof Type type) {
+        return new Attribute.Class(javacTypes, type);
       } else {
         throw new BugInCF("Unexpected type of TypeMirror: " + t.getClass());
       }
@@ -373,11 +374,8 @@ public class TypeAnnotationUtils {
 
     @Override
     public Attribute visitEnumConstant(VariableElement c, Void p) {
-      if (c instanceof Symbol.VarSymbol) {
-        Symbol.VarSymbol sym = (Symbol.VarSymbol) c;
-        if (sym.getKind() == ElementKind.ENUM_CONSTANT) {
-          return new Attribute.Enum(sym.type, sym);
-        }
+      if (c instanceof Symbol.VarSymbol sym && sym.getKind() == ElementKind.ENUM_CONSTANT) {
+        return new Attribute.Enum(sym.type, sym);
       }
       throw new BugInCF("Unexpected type of VariableElement: " + c.getClass());
     }
@@ -410,7 +408,7 @@ public class TypeAnnotationUtils {
   /**
    * Create an unknown TypeAnnotationPosition.
    *
-   * @return an unkown TypeAnnotationPosition
+   * @return an unknown TypeAnnotationPosition
    */
   public static TypeAnnotationPosition unknownTAPosition() {
     return TypeAnnotationPosition.unknown;
@@ -422,7 +420,7 @@ public class TypeAnnotationUtils {
    * @param pos the source tree position
    * @return a method return TypeAnnotationPosition
    */
-  public static TypeAnnotationPosition methodReturnTAPosition(final int pos) {
+  public static TypeAnnotationPosition methodReturnTAPosition(int pos) {
     return TypeAnnotationPosition.methodReturn(pos);
   }
 
@@ -432,7 +430,7 @@ public class TypeAnnotationUtils {
    * @param pos the source tree position
    * @return a method receiver TypeAnnotationPosition
    */
-  public static TypeAnnotationPosition methodReceiverTAPosition(final int pos) {
+  public static TypeAnnotationPosition methodReceiverTAPosition(int pos) {
     return TypeAnnotationPosition.methodReceiver(pos);
   }
 
@@ -443,7 +441,7 @@ public class TypeAnnotationUtils {
    * @param pos the source tree position
    * @return a method parameter TypeAnnotationPosition
    */
-  public static TypeAnnotationPosition methodParameterTAPosition(final int pidx, final int pos) {
+  public static TypeAnnotationPosition methodParameterTAPosition(int pidx, int pos) {
     return TypeAnnotationPosition.methodParameter(pidx, pos);
   }
 
@@ -454,7 +452,7 @@ public class TypeAnnotationUtils {
    * @param pos the source tree position
    * @return a method throws TypeAnnotationPosition
    */
-  public static TypeAnnotationPosition methodThrowsTAPosition(final int tidx, final int pos) {
+  public static TypeAnnotationPosition methodThrowsTAPosition(int tidx, int pos) {
     return TypeAnnotationPosition.methodThrows(TypeAnnotationPosition.emptyPath, null, tidx, pos);
   }
 
@@ -464,7 +462,7 @@ public class TypeAnnotationUtils {
    * @param pos the source tree position
    * @return a field TypeAnnotationPosition
    */
-  public static TypeAnnotationPosition fieldTAPosition(final int pos) {
+  public static TypeAnnotationPosition fieldTAPosition(int pos) {
     return TypeAnnotationPosition.field(pos);
   }
 
@@ -475,7 +473,7 @@ public class TypeAnnotationUtils {
    * @param pos the source tree position
    * @return a class extends TypeAnnotationPosition
    */
-  public static TypeAnnotationPosition classExtendsTAPosition(final int implidx, final int pos) {
+  public static TypeAnnotationPosition classExtendsTAPosition(int implidx, int pos) {
     return TypeAnnotationPosition.classExtends(implidx, pos);
   }
 
@@ -486,7 +484,7 @@ public class TypeAnnotationUtils {
    * @param pos the source tree position
    * @return a type parameter TypeAnnotationPosition
    */
-  public static TypeAnnotationPosition typeParameterTAPosition(final int tpidx, final int pos) {
+  public static TypeAnnotationPosition typeParameterTAPosition(int tpidx, int pos) {
     return TypeAnnotationPosition.typeParameter(TypeAnnotationPosition.emptyPath, null, tpidx, pos);
   }
 
@@ -497,8 +495,7 @@ public class TypeAnnotationUtils {
    * @param pos the source tree position
    * @return a method type parameter TypeAnnotationPosition
    */
-  public static TypeAnnotationPosition methodTypeParameterTAPosition(
-      final int tpidx, final int pos) {
+  public static TypeAnnotationPosition methodTypeParameterTAPosition(int tpidx, int pos) {
     return TypeAnnotationPosition.methodTypeParameter(
         TypeAnnotationPosition.emptyPath, null, tpidx, pos);
   }
@@ -509,10 +506,10 @@ public class TypeAnnotationUtils {
    * @param tpidx the type parameter index
    * @param bndidx the bound index
    * @param pos the source tree position
-   * @return a method parameter TypeAnnotationPosition
+   * @return a type parameter bound TypeAnnotationPosition
    */
   public static TypeAnnotationPosition typeParameterBoundTAPosition(
-      final int tpidx, final int bndidx, final int pos) {
+      int tpidx, int bndidx, int pos) {
     return TypeAnnotationPosition.typeParameterBound(
         TypeAnnotationPosition.emptyPath, null, tpidx, bndidx, pos);
   }
@@ -523,10 +520,10 @@ public class TypeAnnotationUtils {
    * @param tpidx the type parameter index
    * @param bndidx the bound index
    * @param pos the source tree position
-   * @return a method parameter TypeAnnotationPosition
+   * @return a method type parameter bound TypeAnnotationPosition
    */
   public static TypeAnnotationPosition methodTypeParameterBoundTAPosition(
-      final int tpidx, final int bndidx, final int pos) {
+      int tpidx, int bndidx, int pos) {
     return TypeAnnotationPosition.methodTypeParameterBound(
         TypeAnnotationPosition.emptyPath, null, tpidx, bndidx, pos);
   }
@@ -537,111 +534,73 @@ public class TypeAnnotationUtils {
    * @param tapos the input TypeAnnotationPosition
    * @return a copied TypeAnnotationPosition
    */
-  public static TypeAnnotationPosition copyTAPosition(final TypeAnnotationPosition tapos) {
-    TypeAnnotationPosition res;
-    switch (tapos.type) {
-      case CAST:
-        res =
-            TypeAnnotationPosition.typeCast(
-                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
-        break;
-      case CLASS_EXTENDS:
-        res =
-            TypeAnnotationPosition.classExtends(
-                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
-        break;
-      case CLASS_TYPE_PARAMETER:
-        res =
-            TypeAnnotationPosition.typeParameter(
-                tapos.location, tapos.onLambda, tapos.parameter_index, tapos.pos);
-        break;
-      case CLASS_TYPE_PARAMETER_BOUND:
-        res =
-            TypeAnnotationPosition.typeParameterBound(
-                tapos.location,
-                tapos.onLambda,
-                tapos.parameter_index,
-                tapos.bound_index,
-                tapos.pos);
-        break;
-      case CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT:
-        res =
-            TypeAnnotationPosition.constructorInvocationTypeArg(
-                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
-        break;
-      case CONSTRUCTOR_REFERENCE:
-        res = TypeAnnotationPosition.constructorRef(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT:
-        res =
-            TypeAnnotationPosition.constructorRefTypeArg(
-                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
-        break;
-      case EXCEPTION_PARAMETER:
-        res = TypeAnnotationPosition.exceptionParameter(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case FIELD:
-        res = TypeAnnotationPosition.field(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case INSTANCEOF:
-        res = TypeAnnotationPosition.instanceOf(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case LOCAL_VARIABLE:
-        res = TypeAnnotationPosition.localVariable(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case METHOD_FORMAL_PARAMETER:
-        res =
-            TypeAnnotationPosition.methodParameter(
-                tapos.location, tapos.onLambda, tapos.parameter_index, tapos.pos);
-        break;
-      case METHOD_INVOCATION_TYPE_ARGUMENT:
-        res =
-            TypeAnnotationPosition.methodInvocationTypeArg(
-                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
-        break;
-      case METHOD_RECEIVER:
-        res = TypeAnnotationPosition.methodReceiver(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case METHOD_REFERENCE:
-        res = TypeAnnotationPosition.methodRef(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case METHOD_REFERENCE_TYPE_ARGUMENT:
-        res =
-            TypeAnnotationPosition.methodRefTypeArg(
-                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
-        break;
-      case METHOD_RETURN:
-        res = TypeAnnotationPosition.methodReturn(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case METHOD_TYPE_PARAMETER:
-        res =
-            TypeAnnotationPosition.methodTypeParameter(
-                tapos.location, tapos.onLambda, tapos.parameter_index, tapos.pos);
-        break;
-      case METHOD_TYPE_PARAMETER_BOUND:
-        res =
-            TypeAnnotationPosition.methodTypeParameterBound(
-                tapos.location,
-                tapos.onLambda,
-                tapos.parameter_index,
-                tapos.bound_index,
-                tapos.pos);
-        break;
-      case NEW:
-        res = TypeAnnotationPosition.newObj(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case RESOURCE_VARIABLE:
-        res = TypeAnnotationPosition.resourceVariable(tapos.location, tapos.onLambda, tapos.pos);
-        break;
-      case THROWS:
-        res =
-            TypeAnnotationPosition.methodThrows(
-                tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
-        break;
-      case UNKNOWN:
-      default:
-        throw new BugInCF("Unexpected target type: " + tapos + " at " + tapos.type);
-    }
+  public static TypeAnnotationPosition copyTAPosition(TypeAnnotationPosition tapos) {
+    TypeAnnotationPosition res =
+        switch (tapos.type) {
+          case CAST ->
+              TypeAnnotationPosition.typeCast(
+                  tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+          case CLASS_EXTENDS ->
+              TypeAnnotationPosition.classExtends(
+                  tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+          case CLASS_TYPE_PARAMETER ->
+              TypeAnnotationPosition.typeParameter(
+                  tapos.location, tapos.onLambda, tapos.parameter_index, tapos.pos);
+          case CLASS_TYPE_PARAMETER_BOUND ->
+              TypeAnnotationPosition.typeParameterBound(
+                  tapos.location,
+                  tapos.onLambda,
+                  tapos.parameter_index,
+                  tapos.bound_index,
+                  tapos.pos);
+          case CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT ->
+              TypeAnnotationPosition.constructorInvocationTypeArg(
+                  tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+          case CONSTRUCTOR_REFERENCE ->
+              TypeAnnotationPosition.constructorRef(tapos.location, tapos.onLambda, tapos.pos);
+          case CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT ->
+              TypeAnnotationPosition.constructorRefTypeArg(
+                  tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+          case EXCEPTION_PARAMETER ->
+              TypeAnnotationPosition.exceptionParameter(tapos.location, tapos.onLambda, tapos.pos);
+          case FIELD -> TypeAnnotationPosition.field(tapos.location, tapos.onLambda, tapos.pos);
+          case INSTANCEOF ->
+              TypeAnnotationPosition.instanceOf(tapos.location, tapos.onLambda, tapos.pos);
+          case LOCAL_VARIABLE ->
+              TypeAnnotationPosition.localVariable(tapos.location, tapos.onLambda, tapos.pos);
+          case METHOD_FORMAL_PARAMETER ->
+              TypeAnnotationPosition.methodParameter(
+                  tapos.location, tapos.onLambda, tapos.parameter_index, tapos.pos);
+          case METHOD_INVOCATION_TYPE_ARGUMENT ->
+              TypeAnnotationPosition.methodInvocationTypeArg(
+                  tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+          case METHOD_RECEIVER ->
+              TypeAnnotationPosition.methodReceiver(tapos.location, tapos.onLambda, tapos.pos);
+          case METHOD_REFERENCE ->
+              TypeAnnotationPosition.methodRef(tapos.location, tapos.onLambda, tapos.pos);
+          case METHOD_REFERENCE_TYPE_ARGUMENT ->
+              TypeAnnotationPosition.methodRefTypeArg(
+                  tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+          case METHOD_RETURN ->
+              TypeAnnotationPosition.methodReturn(tapos.location, tapos.onLambda, tapos.pos);
+          case METHOD_TYPE_PARAMETER ->
+              TypeAnnotationPosition.methodTypeParameter(
+                  tapos.location, tapos.onLambda, tapos.parameter_index, tapos.pos);
+          case METHOD_TYPE_PARAMETER_BOUND ->
+              TypeAnnotationPosition.methodTypeParameterBound(
+                  tapos.location,
+                  tapos.onLambda,
+                  tapos.parameter_index,
+                  tapos.bound_index,
+                  tapos.pos);
+          case NEW -> TypeAnnotationPosition.newObj(tapos.location, tapos.onLambda, tapos.pos);
+          case RESOURCE_VARIABLE ->
+              TypeAnnotationPosition.resourceVariable(tapos.location, tapos.onLambda, tapos.pos);
+          case THROWS ->
+              TypeAnnotationPosition.methodThrows(
+                  tapos.location, tapos.onLambda, tapos.type_index, tapos.pos);
+          default -> throw new BugInCF("Unexpected target type: " + tapos + " at " + tapos.type);
+        };
     return res;
   }
 
@@ -651,8 +610,8 @@ public class TypeAnnotationUtils {
    * @param in the input type
    * @return the same underlying type, but without type annotations
    */
-  public static Type unannotatedType(final TypeMirror in) {
-    final Type impl = (Type) in;
+  public static Type unannotatedType(TypeMirror in) {
+    Type impl = (Type) in;
     if (impl.isPrimitive()) {
       // TODO: file an issue that stripMetadata doesn't work for primitives.
       // See eisop/checker-framework issue #21.

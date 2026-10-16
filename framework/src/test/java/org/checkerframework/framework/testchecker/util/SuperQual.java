@@ -6,7 +6,7 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /** A supertype of SubQual. */
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface SuperQual {}

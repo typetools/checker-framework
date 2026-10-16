@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.cfg.visualize;
 
+import java.io.PrintStream;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -28,9 +29,26 @@ public class StringCFGVisualizer<
         V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
     extends AbstractCFGVisualizer<V, S, T> {
 
+  /** Stream to output String representation to. */
+  protected PrintStream out;
+
+  /** Create a StringCFGVisualizer. */
+  public StringCFGVisualizer() {
+    out = System.out;
+  }
+
+  @Override
+  public void init(Map<String, Object> args) {
+    super.init(args);
+    PrintStream argout = (PrintStream) args.get("output");
+    if (argout != null) {
+      out = argout;
+    }
+  }
+
   @Override
   public String getSeparator() {
-    return "\n";
+    return System.lineSeparator();
   }
 
   @Override
@@ -38,6 +56,15 @@ public class StringCFGVisualizer<
       ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis) {
     String stringGraph = visualizeGraph(cfg, entry, analysis);
     return Collections.singletonMap("stringGraph", stringGraph);
+  }
+
+  @Override
+  public Map<String, Object> visualizeWithAction(
+      ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis) {
+    Map<String, Object> vis = visualize(cfg, entry, analysis);
+    String stringGraph = (String) vis.get("stringGraph");
+    out.println(stringGraph);
+    return vis;
   }
 
   @SuppressWarnings("keyfor:enhancedfor")
@@ -70,7 +97,7 @@ public class StringCFGVisualizer<
 
   @Override
   public String visualizeBlock(Block bb, @Nullable Analysis<V, S, T> analysis) {
-    return super.visualizeBlockHelper(bb, analysis, lineSeparator).trim();
+    return super.visualizeBlockWithSeparator(bb, analysis, lineSeparator).trim();
   }
 
   @Override
@@ -96,11 +123,6 @@ public class StringCFGVisualizer<
   public String visualizeBlockTransferInputAfter(Block bb, Analysis<V, S, T> analysis) {
     return super.visualizeBlockTransferInputHelper(
         VisualizeWhere.AFTER, bb, analysis, lineSeparator);
-  }
-
-  @Override
-  protected String format(Object obj) {
-    return obj.toString();
   }
 
   @Override

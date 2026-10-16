@@ -1,13 +1,13 @@
 package org.checkerframework.dataflow.cfg.node;
 
 import com.sun.source.tree.ThrowTree;
-import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * A node for exception throws:
@@ -32,7 +32,7 @@ public class ThrowNode extends Node {
   }
 
   @Override
-  public Tree getTree() {
+  public ThrowTree getTree() {
     return tree;
   }
 
@@ -48,10 +48,9 @@ public class ThrowNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ThrowNode)) {
+    if (!(obj instanceof ThrowNode other)) {
       return false;
     }
-    ThrowNode other = (ThrowNode) obj;
     return getExpression().equals(other.getExpression());
   }
 
@@ -61,6 +60,7 @@ public class ThrowNode extends Node {
   }
 
   @Override
+  @SideEffectFree
   public Collection<Node> getOperands() {
     return Collections.singletonList(expression);
   }
