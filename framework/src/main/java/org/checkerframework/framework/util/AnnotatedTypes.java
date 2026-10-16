@@ -768,7 +768,7 @@ public final class AnnotatedTypes {
             atypeFactory.getTypeArgumentInference().inferTypeArgs(atypeFactory, expr, preType);
         return new TypeArguments(
             inferenceResult.getTypeArgumentsForExpression(expr),
-            inferenceResult.isUncheckedConversion(),
+            inferenceResult.isUncheckedConversion(expr),
             inferenceResult.inferenceCrashed());
       }
       targs = memRef.getTypeArguments();
@@ -811,7 +811,7 @@ public final class AnnotatedTypes {
             atypeFactory.getTypeArgumentInference().inferTypeArgs(atypeFactory, expr, preType);
         return new TypeArguments(
             inferenceResult.getTypeArgumentsForExpression(expr),
-            inferenceResult.isUncheckedConversion(),
+            inferenceResult.isUncheckedConversion(expr),
             inferenceResult.inferenceCrashed());
       } else {
         return emptyFalsePair;

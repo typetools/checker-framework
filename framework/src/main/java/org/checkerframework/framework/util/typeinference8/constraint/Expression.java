@@ -190,6 +190,7 @@ public class Expression extends TypeConstraint {
         context.inferenceTypeFactory.createThetaForInvocation(
             expressionTree, executableType, context);
     BoundSet b2 = context.inference.createB2(executableType, args, map);
+    b2.attributeUncheckedConversionTo(expressionTree);
     return context.inference.createB3(b2, expressionTree, executableType, T, map);
   }
 
@@ -284,6 +285,7 @@ public class Expression extends TypeConstraint {
     BoundSet b2;
     if (TreeUtils.needsTypeArgInference(memRef)) {
       b2 = context.inference.createB2MethodRef(compileTimeDecl, functionTypeParams, map);
+      b2.attributeUncheckedConversionTo(memRef);
       if (!compileTimeReturn.isProper()) {
         return context.inference.createB3(b2, memRef, compileTimeDecl, r, map);
       }
@@ -296,11 +298,15 @@ public class Expression extends TypeConstraint {
     // return type of the invocation type (15.12.2.6) of the compile-time declaration.
     // If R' is void, the constraint reduces to false; otherwise, the constraint reduces
     // to <R' -> R>.  R, the result of the function type, is the local variable `r`.
+    // JLS 15.12.2.6: if unchecked conversion was necessary for the compile-time declaration to be
+    // applicable, the return type of its invocation type is the erasure of its return type.
+    AbstractType invocationReturn =
+        b2.isUncheckedConversion(memRef) ? compileTimeReturn.getErased() : compileTimeReturn;
     return ReductionResultPair.of(
         new ConstraintSet(
             new Typing(
                 this,
-                compileTimeReturn.capture(context),
+                invocationReturn.capture(context),
                 r,
                 TypeConstraint.Kind.TYPE_COMPATIBILITY)),
         b2);
