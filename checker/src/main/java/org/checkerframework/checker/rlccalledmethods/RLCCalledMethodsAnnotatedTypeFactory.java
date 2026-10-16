@@ -2,8 +2,6 @@ package org.checkerframework.checker.rlccalledmethods;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -55,12 +53,13 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory.ClassAndStore;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory.LambdaAndStore;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.plumelib.util.IPair;
 
 /**
  * The type factory for the RLCCalledMethodsChecker. The main difference between this and the Called
@@ -150,8 +149,8 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
 
   @Override
   protected ControlFlowGraph analyze(
-      Queue<IPair<ClassTree, @Nullable AccumulationStore>> classQueue,
-      Queue<IPair<LambdaExpressionTree, @Nullable AccumulationStore>> lambdaQueue,
+      Queue<ClassAndStore<AccumulationStore>> classQueue,
+      Queue<LambdaAndStore<AccumulationStore>> lambdaQueue,
       UnderlyingAST ast,
       List<FieldInitialValue<AccumulationValue>> fieldValues,
       @Nullable ControlFlowGraph cfg,

@@ -1,7 +1,7 @@
 package org.checkerframework.afu.annotator.find;
 
+import org.checkerframework.afu.annotator.find.Insertion.PackageAndAnnotation;
 import org.checkerframework.afu.scenelib.Annotation;
-import org.plumelib.util.IPair;
 
 /** Specifies an annotation to be inserted into a source file. */
 public class AnnotationInsertion extends Insertion {
@@ -110,11 +110,11 @@ public class AnnotationInsertion extends Insertion {
     // The method body will build up the result by modifying this variable.
     String result = fullyQualifiedAnnotationText;
     if (abbreviate) {
-      IPair<String, String> ps = removePackage(result);
-      String packageName = ps.first;
+      PackageAndAnnotation ps = removePackage(result);
+      String packageName = ps.packageName();
       if (packageName != null) {
         packageNames.add(packageName);
-        result = ps.second;
+        result = ps.annotation();
       }
     }
     if (!result.startsWith("@")) {

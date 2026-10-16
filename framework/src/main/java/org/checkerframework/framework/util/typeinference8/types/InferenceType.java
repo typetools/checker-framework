@@ -201,7 +201,7 @@ public final class InferenceType extends AbstractType {
 
   @Override
   @SuppressWarnings("interning:not.interned") // maps should be ==
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }
@@ -223,7 +223,12 @@ public final class InferenceType extends AbstractType {
 
   @Override
   public int hashCode() {
-    return Objects.hash(inferenceProblemHashCode(), qualifierVars, type, Kind.INFERENCE_TYPE);
+    // This is Objects.hash() expanded, to avoid allocating an array and boxing.  This method is
+    // hot: inference puts these types in hash sets and rebuilds those sets repeatedly.
+    int result = 31 + inferenceProblemHashCode();
+    result = 31 * result + Objects.hashCode(qualifierVars);
+    result = 31 * result + Objects.hashCode(type);
+    return 31 * result + Kind.INFERENCE_TYPE.hashCode();
   }
 
   @Override
@@ -252,8 +257,9 @@ public final class InferenceType extends AbstractType {
     for (TypeVariable typeVar :
         ContainsInferenceVariable.getMentionedTypeVariables(
             map.getTypeVariables(), type.getUnderlyingType())) {
-      @SuppressWarnings("nullness:assignment") // getMentionedTypeVariables returns keys of `map`
       Variable variable = map.get(typeVar);
+      assert variable != null
+          : "@AssumeAssertion(nullness): getMentionedTypeVariables returns keys of `map`";
       variables.add(variable);
     }
     return variables;
@@ -266,9 +272,10 @@ public final class InferenceType extends AbstractType {
     List<Variable> instantiations = new ArrayList<>();
 
     for (Variable alpha : map.values()) {
-      if (alpha.getInstantiation() != null) {
+      ProperType instantiation = alpha.getInstantiation();
+      if (instantiation != null) {
         typeVariables.add(alpha.getJavaType());
-        arguments.add(alpha.getBounds().getInstantiation().getJavaType());
+        arguments.add(instantiation.getJavaType());
         instantiations.add(alpha);
       }
     }
@@ -282,7 +289,10 @@ public final class InferenceType extends AbstractType {
     Map<TypeVariable, AnnotatedTypeMirror> mapping = new LinkedHashMap<>();
 
     for (Variable alpha : instantiations) {
-      AnnotatedTypeMirror instantiation = alpha.getBounds().getInstantiation().getAnnotatedType();
+      ProperType alphaInstantiation = alpha.getInstantiation();
+      assert alphaInstantiation != null
+          : "@AssumeAssertion(nullness): `instantiations` contains only instantiated variables";
+      AnnotatedTypeMirror instantiation = alphaInstantiation.getAnnotatedType();
       context.typeFactory.initializeAtm(instantiation);
       mapping.put(alpha.getJavaType(), instantiation);
     }

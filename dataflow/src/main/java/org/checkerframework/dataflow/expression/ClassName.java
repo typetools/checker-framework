@@ -1,6 +1,5 @@
 package org.checkerframework.dataflow.expression;
 
-import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
@@ -67,7 +66,7 @@ public class ClassName extends JavaExpression {
 
   @Override
   public int hashCode() {
-    return Objects.hash(typeString);
+    return typeString.hashCode();
   }
 
   @Override

@@ -1,10 +1,14 @@
 \documentclass{article}
+% The HTML version is produced by lwarp; see the Makefile.
+\usepackage[latexmk,HomeHTMLFilename=annotation-file-format,HTMLFilename={}]{lwarp}
+% manual.css is a copy of ../manual/manual.css; see the Makefile.
+\CSSFilename{manual.css}
+\input{../manual/lwarp-workarounds.tex}
 \usepackage{fancyvrb}
 \usepackage{graphicx}
 \usepackage{fullpage}
 \usepackage{relsize}
 \usepackage{url}
-\usepackage{hevea}
 \usepackage[shortcuts]{extdash}
 \usepackage{textcomp}
 % \usepackage{verbdef}
@@ -15,42 +19,44 @@
 \def\dblfloatpagefraction{\topfraction}  % default .5
 \def\textfraction{.1}
 
-%HEVEA \footerfalse    % Disable hevea advertisement in footer
-
+\begin{warpprint}
 \newcommand{\code}[1]{\ifmmode{\mbox{\relax\ttfamily{#1}}}\else{\relax\ttfamily #1}\fi}
-%% Hevea version omits "\smaller"
-%HEVEA \renewcommand{\code}[1]{\ifmmode{\mbox{\ttfamily{#1}}}\else{\ttfamily #1}\fi}
+\end{warpprint}
+\begin{warpHTML}
+\newcommand{\code}[1]{\texttt{#1}}
+\end{warpHTML}
 
+% The argument is the HEIGHT, not the width.  It is used only in print.
 \newcommand{\includeimage}[2]{
 \begin{center}
-\ifhevea\imgsrc{#1.png}\else
-\resizebox{!}{#2}{\includegraphics{figures/#1}}
-\vspace{-1.5\baselineskip}
-\fi
+\ifbool{warpingHTML}
+{\includegraphics{figures/#1}}
+{\resizebox{!}{#2}{\includegraphics{figures/#1}}
+\vspace{-1.5\baselineskip}}
 \end{center}}
 
+\begin{warpprint}
 % Add line between figure and text
 \makeatletter
 \def\topfigrule{\kern3\p@ \hrule \kern -3.4\p@} % the \hrule is .4pt high
 \def\botfigrule{\kern-3\p@ \hrule \kern 2.6\p@} % the \hrule is .4pt high
 \def\dblfigrule{\kern3\p@ \hrule \kern -3.4\p@} % the \hrule is .4pt high
 \makeatother
+\end{warpprint}
 
 
 \title{Annotation File Format Specification}
-% Hevea ignores \date, so move the date into \author
-\author{\url{https://checkerframework.org/annotation-file-utilities/} \\
-\today}
-\date{}
+\author{\url{https://checkerframework.org/annotation-file-utilities/}}
+\date{\today}
 
 \begin{document}
 
 \maketitle
 
-%HEVEA \setcounter{tocdepth}{2}
+\warpHTMLonly{\setcounter{tocdepth}{2}}
 \tableofcontents
 
-\section{Purpose:  External storage of annotations\label{purpose}}
+\section{Purpose:  External storage of annotations}\label{purpose}
 
 Java annotations are meta-data about Java program elements, as in
 ``\code{@Deprecated class Date \{ \ldots\ \}}''.
@@ -62,9 +68,7 @@ it inserts the annotations in the resulting \code{.class} file (as
 Sometimes, it is convenient to specify the annotations outside the source
 code or the \code{.class} file.
 \begin{itemize}
-%BEGIN LATEX
-\itemsep 0pt \parskip 0pt
-%END LATEX
+\warpprintonly{\itemsep 0pt \parskip 0pt}
 \item
   When source code is not available, a textual file provides a format for
   writing and storing annotations that is much easier to read and modify
@@ -133,26 +137,32 @@ annotation index file''), but this is not required.
 
 % \verbdef\lineend|"\n"|
 
-%BEGIN LATEX
+\begin{warpprint}
 \DefineShortVerb{\|}
 \SaveVerb{newline}|\n|
 \UndefineShortVerb{\|}
 \newcommand{\lineend}{\bnflit{\UseVerb{newline}}}
-%END LATEX
-%HEVEA \newcommand{\bs}{\char"5C}
-%HEVEA \newcommand{\lineend}{\bnflit{\bs{}n}}
+\end{warpprint}
+\begin{warpHTML}
+\newcommand{\lineend}{\bnflit{\textbackslash{}n}}
+\end{warpHTML}
 
 % literal
-\newcommand{\bnflit}[1]{\textrm{``}\textbf{#1}\textrm{''}}
+% lwarp truncates any line in a tabbing environment whose HTML markup is wider
+% than lwarp's intermediate PDF page, so the HTML version uses less markup.
+\ifbool{warpingHTML}
+  {\newcommand{\bnflit}[1]{\textquotedblleft\textbf{#1}\textquotedblright}}
+  {\newcommand{\bnflit}[1]{\textrm{``}\textbf{#1}\textrm{''}}}
 % non-terminal
 \newcommand{\bnfnt}[1]{\textsf{\emph{#1}}}
 % comment
 \newcommand{\bnfcmt}{\rm \# }
 % alternative
-\newcommand{\bnfor}{\ensuremath{|}}
+% In HTML, lwarp would render math as an image, which does not work in tabbing.
+\newcommand{\bnfor}{\ifbool{warpingHTML}{\textbar}{\ensuremath{|}}}
 
 
-\section{Grammar\label{grammar}}
+\section{Grammar}\label{grammar}
 
 This section describes the annotation file format in detail by presenting it in
 the form of a grammar. Section~\ref{grammar-conventions} details the conventions
@@ -161,7 +171,7 @@ basic structure of a Java program (classes, methods, etc.) in an annotation
 file. Section~\ref{annotations-grammar} shows how to add annotations to an
 annotation file.
 
-\subsection{Grammar conventions\label{grammar-conventions}}
+\subsection{Grammar conventions}\label{grammar-conventions}
 
 Throughout this document, ``name'' is any valid Java simple name or
 binary name, ``type'' is any valid type, ``value'' is any
@@ -193,7 +203,7 @@ The line end symbol \lineend{} is used for all the different line end
 conventions; that is, Windows- and Unix-style newlines are supported.
 
 
-\subsection{Java file grammar\label{java-file-grammar}}
+\subsection{Java file grammar}\label{java-file-grammar}
 
 This section shows how to represent the basic structure of a Java program
 (classes, methods, etc.) in an annotation file. For Java elements that can
@@ -211,7 +221,7 @@ Program elements that do not appear in the annotation file are treated as
 unannotated.
 
 
-\subsubsection{Package definitions\label{package-definitions}}
+\subsubsection{Package definitions}\label{package-definitions}
 
 At the root of an annotation file are one or more package definitions.
 A package definition describes a package containing a list of annotation
@@ -234,7 +244,7 @@ Use a package line of \code{package:} for the default package. Note that
 annotations on the default package are not allowed.
 
 
-\subsubsection{Class definitions\label{class-definitions}}
+\subsubsection{Class definitions}\label{class-definitions}
 
 A class definition describes the annotations present on a class declaration,
 as well as fields and methods of the class. It is organized according to
@@ -369,7 +379,7 @@ define annotations on code within static or instance initializer blocks.
 \end{tabbing}
 
 
-\subsubsection{Field definitions\label{field-definitions}}
+\subsubsection{Field definitions}\label{field-definitions}
 
 A field definition can have annotations on the declaration, the type of the
 field, or --- if in source code --- the field's initialization.
@@ -402,7 +412,7 @@ Source code annotations for the field initialization
 expression are valid on the field definition.
 
 
-\subsubsection{Method definitions\label{method-definitions}}
+\subsubsection{Method definitions}\label{method-definitions}
 
 A method definition can have annotations on the method declaration, in the
 method signature (return type, parameters, etc.), and in the method body.
@@ -510,7 +520,7 @@ first formal parameter. The receiver parameter is not index 0. Use the
 \bnfnt{receiver-definition} production to annotate the receiver parameter.
 
 
-\subsection{Bytecode locations\label{bytecode-locations}}
+\subsection{Bytecode locations}\label{bytecode-locations}
 
 Certain elements in the body of a method or the initialization expression of a
 field can be annotated. The \bnfnt{expression-annotations} rule describes the
@@ -556,7 +566,7 @@ a full typecast (\code{insert-annotation} instead of
 tool generates a full typecast if Java syntax requires one.
 
 
-\subsubsection{Bytecode offsets\label{bytecode-offsets}}
+\subsubsection{Bytecode offsets}\label{bytecode-offsets}
 
 For locations in bytecode, the
 annotation file uses offsets into the bytecode array of the class file to
@@ -570,7 +580,7 @@ offsets.  Non-expression annotations such as those on methods,
 fields, classes, etc., do not use a bytecode offset.
 
 
-\subsubsection{Source code indexes\label{source-code-indexes}}
+\subsubsection{Source code indexes}\label{source-code-indexes}
 
 For locations in source code, the annotation file indicates the kind of
 expression, plus a zero-based index to indicate which occurrence of that kind of
@@ -596,7 +606,7 @@ occurrences in nested classes are not included. Use a new
 insertions in a nested class.
 
 
-\subsubsection{Code locations grammar\label{code-grammar}}
+\subsubsection{Code locations grammar}\label{code-grammar}
 
 For each kind of expression, the grammar contains a separate location rule.
 This location rule contains the bytecode offset syntax followed by the
@@ -703,7 +713,7 @@ The grammar uses \bnflit{\#} for bytecode offsets and \bnflit{*} for source code
 \end{tabbing}
 
 
-\subsubsection{AST paths\label{ast-paths}}
+\subsubsection{AST paths}\label{ast-paths}
 
 A path through the AST (abstract
 syntax tree) specifies an arbitrary expression in source code to modify.
@@ -1033,14 +1043,14 @@ The following is the grammar for AST paths.
 \end{tabbing}
 
 
-\subsection{Annotations\label{annotations-grammar}}
+\subsection{Annotations}\label{annotations-grammar}
 
 This section describes the details of how annotations are defined, how
 annotations are used, and the different kinds of annotations in an annotation
 file.
 
 
-\subsubsection{Annotation definitions\label{annotation-definitions}}
+\subsubsection{Annotation definitions}\label{annotation-definitions}
 
 An annotation definition describes the annotation's fields and their
 types, so that they may be referenced in a compact way throughout the
@@ -1088,7 +1098,7 @@ that annotation in an annotation file.
 \end{tabbing}
 
 
-\subsubsection{Annotation uses\label{annotation-uses}}
+\subsubsection{Annotation uses}\label{annotation-uses}
 
 Java SE 8 has two kinds of annotations: ``declaration annotations'' and ``type
 annotations''. Declaration annotations can be written only on method formal
@@ -1186,7 +1196,7 @@ understanding, in Section 3.4 of the JSR 308 Specification.\footnotemark
 \footnotetext{\cftp}
 
 
-\section{Example\label{example}}
+\section{Example}\label{example}
 
 Consider the code of Figure~\ref{fig:java-example}.
 Figure~\ref{fig:annotation-file-examples} shows two legal annotation files,
@@ -1293,7 +1303,7 @@ class Foo:
 \end{figure}
 
 
-\section{Types and values\label{types-and-values}}
+\section{Types and values}\label{types-and-values}
 
 The Java language permits several types for annotation fields: primitives,
 \code{String}s, \code{java.lang.Class} tokens (possibly parameterized),
@@ -1383,7 +1393,7 @@ class Foo: @p1.ClassInfo(
 \end{verbatim}
 
 
-\section{Alternative formats\label{alternative-formats}}
+\section{Alternative formats}\label{alternative-formats}
 
 We mention multiple alternatives to the format described in this document.
 Each of them has its own merits.

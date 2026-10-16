@@ -208,8 +208,7 @@ final class ValueQualifierHierarchy extends ElementQualifierHierarchy {
       max = oldRange.to;
     }
 
-    Range result = Range.create(min, max);
-    return result;
+    return Range.create(min, max);
   }
 
   /**

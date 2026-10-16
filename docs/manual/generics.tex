@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Generics and polymorphism}{polymorphism}
 
 Section~\ref{generics} describes support for Java generics (also known as
@@ -128,15 +127,11 @@ To specify an exact bound, place the same annotation on both bounds.  For exampl
 
 It is an error if the lower bound is not a subtype of the upper bound.
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   class MyClass<@Nullable T extends @NonNull Object>  // error: @Nullable is not a subtype of @NonNull
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 
 \subsubsectionAndLabel{Defaults}{generics-defaults}
@@ -502,7 +497,7 @@ public static void addNumbers(List<? super @SignednessBottom Integer> list) { ..
 \end{Verbatim}
 
 
-\sectionAndLabel{Qualifier polymorphism for methods\label{qualifier-polymorphism}}{method-qualifier-polymorphism}
+\sectionAndLabel{Qualifier polymorphism for methods}{method-qualifier-polymorphism}\label{qualifier-polymorphism}
 
 Type qualifier polymorphism permits a single method to have multiple different qualified
 type signatures.
@@ -890,8 +885,8 @@ A qualifier on a use of \<StringBuffer> is treated as
 appearing both on the \<StringBuffer> and on its conceptual type argument.  That
 is:\\
 \begin{tt}
-  @Tainted StringBuffer $\approx$ @Tainted Collection<@Tainted Character>\\
-  @Untainted StringBuffer $\approx$ @Untainted Collection<@Untainted Character>
+  @Tainted StringBuffer \approxsym{} @Tainted Collection<@Tainted Character>\\
+  @Untainted StringBuffer \approxsym{} @Untainted Collection<@Untainted Character>
 \end{tt}
 
 If two types have different qualifier arguments, they have no subtyping
@@ -900,7 +895,7 @@ generic classes.)  In particular, \<@Untainted StringBuffer> is not a
 subtype of \<@Tainted StringBuffer>; an attempt to cast between them, in
 either direction, will yield an \<invariant.cast.unsafe> error.
 
-\<@HasQualifierParameter> is inherited.  If type $T$ has a
+\<@HasQualifierParameter> is inherited.  If type \textit{T} has a
 \<@HasQualifierParameter> annotation, then its subtypes are automatically
 treated as having the same annotation.
 

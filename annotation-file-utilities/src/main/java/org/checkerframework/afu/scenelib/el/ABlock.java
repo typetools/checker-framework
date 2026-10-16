@@ -3,6 +3,7 @@ package org.checkerframework.afu.scenelib.el;
 import java.util.Map;
 import java.util.Objects;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
+import org.checkerframework.checker.modifiability.qual.Shrinkable;
 
 /**
  * ABlock has local variables in scope. We currently directly use them only for static initializer
@@ -12,7 +13,7 @@ public class ABlock extends AExpression {
   // Currently we don't validate the local locations (e.g., that no two
   // distinct ranges for the same index overlap).
   /** The method's annotated local variables; map key contains local variable location numbers. */
-  public final VivifyingMap<LocalLocation, AField> locals =
+  public final @Shrinkable VivifyingMap<LocalLocation, AField> locals =
       AField.<LocalLocation>newVivifyingLHMap_AF();
 
   /**

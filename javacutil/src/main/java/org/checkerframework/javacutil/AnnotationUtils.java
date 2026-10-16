@@ -237,7 +237,13 @@ public final class AnnotationUtils {
       return false;
     }
     if (c1.size() == 1) {
-      return areSame(c1.iterator().next(), c2.iterator().next());
+      // Calling first() rather than iterator().next() avoids allocating two iterators.  This
+      // matters because comparing two dataflow values comes down to this test.
+      AnnotationMirror a1 =
+          c1 instanceof AnnotationMirrorSet s1 ? s1.first() : c1.iterator().next();
+      AnnotationMirror a2 =
+          c2 instanceof AnnotationMirrorSet s2 ? s2.first() : c2.iterator().next();
+      return areSame(a1, a2);
     }
 
     // while loop depends on NavigableSet implementation.
@@ -396,6 +402,7 @@ public final class AnnotationUtils {
    * @param a2 the second annotation
    * @return an ordering over AnnotationMirrors based on their name and values
    */
+  @Pure
   public static int compareAnnotationMirrors(AnnotationMirror a1, AnnotationMirror a2) {
     int nameComparison = compareByName(a1, a2);
     if (nameComparison != 0) {
@@ -1183,16 +1190,42 @@ public final class AnnotationUtils {
   @EqualsMethod
   private static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
 
+    // This method might return true even if these maps differ, because of default values.
+    Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = am1.getElementValues();
+    Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = am2.getElementValues();
+
+    // Fast path for when the two annotations give values to exactly the same elements: the
+    // elements that neither map mentions get the same default value in both annotations, so they
+    // need not be examined.  This avoids computing the annotation interface's elements, which is
+    // relatively expensive.
+    if (vals1.size() == vals2.size()) {
+      boolean sameKeys = true;
+      for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
+          vals1.entrySet()) {
+        AnnotationValue aval1 = entry.getValue();
+        AnnotationValue aval2 = vals2.get(entry.getKey());
+        if (aval2 == null) {
+          // The key sets differ, so fall through to the general algorithm below.
+          sameKeys = false;
+          break;
+        }
+        @SuppressWarnings("interning:not.interned") // optimization via equality test
+        boolean identical = aval1 == aval2;
+        if (!identical && !sameAnnotationValue(aval1, aval2)) {
+          return false;
+        }
+      }
+      if (sameKeys) {
+        return true;
+      }
+    }
+
     // Same elts for both annotations, because am1.getAnnotationType() == am2.getAnnotationType().
     List<ExecutableElement> elts =
         ElementFilter.methodsIn(am1.getAnnotationType().asElement().getEnclosedElements());
     if (elts.isEmpty()) {
       return true;
     }
-
-    // This method might return true even if these maps differ, because of default values.
-    Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = am1.getElementValues();
-    Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = am2.getElementValues();
 
     for (ExecutableElement meth : elts) {
       AnnotationValue aval1 = vals1.get(meth);

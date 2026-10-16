@@ -17,7 +17,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.plumelib.util.IPair;
 
 /**
  * Records any mapping between the type parameters of a subtype to the corresponding type parameters
@@ -67,15 +66,29 @@ public class TypeArgumentMapper {
   }
 
   /**
+   * A correspondence between a subtype's type parameter and a supertype's type parameter.
+   *
+   * @param subtypeIndex the index of a type parameter of the subtype
+   * @param supertypeIndex the index of the corresponding type parameter of the supertype
+   */
+  public record TypeParameterMapping(int subtypeIndex, int supertypeIndex) {}
+
+  /**
    * Returns a mapping from subtype's type parameter indices to the indices of corresponding type
    * parameters in supertype.
+   *
+   * @param subtype a type
+   * @param supertype a supertype of {@code subtype}
+   * @param types the type utilities
+   * @return a mapping from {@code subtype}'s type parameter indices to the indices of the
+   *     corresponding type parameters in {@code supertype}
    */
-  public static Set<IPair<Integer, Integer>> mapTypeArgumentIndices(
+  public static Set<TypeParameterMapping> mapTypeArgumentIndices(
       TypeElement subtype, TypeElement supertype, Types types) {
-    Set<IPair<Integer, Integer>> result = new HashSet<>();
+    Set<TypeParameterMapping> result = new HashSet<>();
     if (subtype.equals(supertype)) {
       for (int i = 0; i < subtype.getTypeParameters().size(); i++) {
-        result.add(IPair.of(Integer.valueOf(i), Integer.valueOf(i)));
+        result.add(new TypeParameterMapping(i, i));
       }
 
     } else {
@@ -89,8 +102,10 @@ public class TypeArgumentMapper {
 
         Set<TypeParameterElement> correspondingSuperArgs = subToSuperElements.get(subtypeParam);
         if (correspondingSuperArgs != null) {
-          for (TypeParameterElement supertypeParam : subToSuperElements.get(subtypeParam)) {
-            result.add(IPair.of(subtypeIndex, supertypeIndexes.get(supertypeParam)));
+          for (TypeParameterElement supertypeParam : correspondingSuperArgs) {
+            @SuppressWarnings("nullness:unboxing.of.nullable") // a type parameter of supertype
+            int supertypeIndex = supertypeIndexes.get(supertypeParam);
+            result.add(new TypeParameterMapping(subtypeIndex, supertypeIndex));
           }
         }
       }

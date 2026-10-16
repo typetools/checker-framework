@@ -1,26 +1,31 @@
 package org.checkerframework.framework.util.typeinference8.types;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.constraint.QualifierTyping;
 import org.checkerframework.framework.util.typeinference8.constraint.TypeConstraint;
 import org.checkerframework.framework.util.typeinference8.constraint.Typing;
+import org.checkerframework.framework.util.typeinference8.types.InferenceFactory.ParameterizedSupers;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsP;
-import org.plumelib.util.IPair;
 
 /** Data structure that stores the bounds of a variable. */
 public class VariableBounds {
@@ -61,6 +66,13 @@ public class VariableBounds {
   /** Constraints implied by complementary pairs of bounds found during incorporation. */
   public final ConstraintSet constraints = new ConstraintSet();
 
+  /**
+   * The supertypes of an enum class {@code E} whose type argument {@code E} bears a qualifier
+   * copied from {@code E} itself; see {@link #isSelfReferentialTypeArgument}.
+   */
+  private static final Set<String> ENUM_SELF_PARAMETERIZED =
+      new HashSet<>(Arrays.asList("java.lang.Enum", "java.lang.Comparable"));
+
   /** True if this variable has a throws bound. */
   private boolean hasThrowsBound = false;
 
@@ -95,20 +107,50 @@ public class VariableBounds {
     qualifierBounds.put(BoundKind.LOWER, new LinkedHashSet<>());
   }
 
+  /**
+   * Returns the value to which {@code map} maps {@code kind}.
+   *
+   * @param <V> the type of the values in {@code map}
+   * @param map a map with a value for every {@link BoundKind}
+   * @param kind a kind of bound
+   * @return the value to which {@code map} maps {@code kind}
+   */
+  @SuppressWarnings("nullness:return") // every map passed here has a value for every BoundKind
+  static <V> V getOfKind(EnumMap<BoundKind, V> map, BoundKind kind) {
+    return map.get(kind);
+  }
+
+  /**
+   * Returns the bounds of kind {@code kind} on this variable.
+   *
+   * @param kind a kind of bound
+   * @return the bounds of kind {@code kind} on this variable
+   */
+  public Set<AbstractType> getBoundsOfKind(BoundKind kind) {
+    return getOfKind(bounds, kind);
+  }
+
+  /**
+   * Returns the qualifier bounds of kind {@code kind} on this variable.
+   *
+   * @param kind a kind of bound
+   * @return the qualifier bounds of kind {@code kind} on this variable
+   */
+  public Set<AbstractQualifier> getQualifierBoundsOfKind(BoundKind kind) {
+    return getOfKind(qualifierBounds, kind);
+  }
+
   /** Save the current bounds in case the first attempt at resolution fails. */
   public void save() {
-    savedBounds = new EnumMap<>(BoundKind.class);
-    savedBounds.put(BoundKind.EQUAL, new LinkedHashSet<>(bounds.get(BoundKind.EQUAL)));
-    savedBounds.put(BoundKind.UPPER, new LinkedHashSet<>(bounds.get(BoundKind.UPPER)));
-    savedBounds.put(BoundKind.LOWER, new LinkedHashSet<>(bounds.get(BoundKind.LOWER)));
-
-    savedQualifierBounds = new EnumMap<>(BoundKind.class);
-    savedQualifierBounds.put(
-        BoundKind.EQUAL, new LinkedHashSet<>(qualifierBounds.get(BoundKind.EQUAL)));
-    savedQualifierBounds.put(
-        BoundKind.UPPER, new LinkedHashSet<>(qualifierBounds.get(BoundKind.UPPER)));
-    savedQualifierBounds.put(
-        BoundKind.LOWER, new LinkedHashSet<>(qualifierBounds.get(BoundKind.LOWER)));
+    EnumMap<BoundKind, LinkedHashSet<AbstractType>> newSavedBounds = new EnumMap<>(BoundKind.class);
+    EnumMap<BoundKind, LinkedHashSet<AbstractQualifier>> newSavedQualifierBounds =
+        new EnumMap<>(BoundKind.class);
+    for (BoundKind kind : BoundKind.values()) {
+      newSavedBounds.put(kind, new LinkedHashSet<>(getBoundsOfKind(kind)));
+      newSavedQualifierBounds.put(kind, new LinkedHashSet<>(getQualifierBoundsOfKind(kind)));
+    }
+    savedBounds = newSavedBounds;
+    savedQualifierBounds = newSavedQualifierBounds;
   }
 
   /**
@@ -119,20 +161,19 @@ public class VariableBounds {
     EnumMap<BoundKind, LinkedHashSet<AbstractType>> savedBounds = this.savedBounds;
     EnumMap<BoundKind, LinkedHashSet<AbstractQualifier>> savedQualifierBounds =
         this.savedQualifierBounds;
-    assert savedBounds != null && savedQualifierBounds != null : "restore() called before save()";
+    if (savedBounds == null || savedQualifierBounds == null) {
+      throw new BugInCF("restore() called before save()");
+    }
     instantiation = null;
     bounds.clear();
-    bounds.put(BoundKind.EQUAL, new LinkedHashSet<>(savedBounds.get(BoundKind.EQUAL)));
-    bounds.put(BoundKind.UPPER, new LinkedHashSet<>(savedBounds.get(BoundKind.UPPER)));
-    bounds.put(BoundKind.LOWER, new LinkedHashSet<>(savedBounds.get(BoundKind.LOWER)));
+    for (BoundKind kind : BoundKind.values()) {
+      bounds.put(kind, new LinkedHashSet<>(getOfKind(savedBounds, kind)));
+    }
     setInstantiationFromEqualBounds();
     qualifierBounds.clear();
-    qualifierBounds.put(
-        BoundKind.EQUAL, new LinkedHashSet<>(savedQualifierBounds.get(BoundKind.EQUAL)));
-    qualifierBounds.put(
-        BoundKind.UPPER, new LinkedHashSet<>(savedQualifierBounds.get(BoundKind.UPPER)));
-    qualifierBounds.put(
-        BoundKind.LOWER, new LinkedHashSet<>(savedQualifierBounds.get(BoundKind.LOWER)));
+    for (BoundKind kind : BoundKind.values()) {
+      qualifierBounds.put(kind, new LinkedHashSet<>(getOfKind(savedQualifierBounds, kind)));
+    }
   }
 
   /**
@@ -148,14 +189,32 @@ public class VariableBounds {
   }
 
   /**
+   * Sets {@code instantiation} to {@code type}, a proper {@code EQUAL} bound, unless the current
+   * instantiation is a better choice. A bound whose annotations are respected is a better choice
+   * than one whose annotations are ignored, because the annotations of the latter are arbitrary.
+   * For example, if {@code U} is a type variable, then the formula {@code @NonNull T = @NonNull U}
+   * yields the bound {@code T = @NonNull U}, whose annotations are ignored because the use of
+   * {@code T} has a primary annotation (see {@link UseOfVariable#addBound}). Instantiating {@code
+   * T} to {@code @NonNull U} would conflict with a bound {@code T = U} that comes from a use of
+   * {@code T} without a primary annotation. Otherwise, the later bound is used.
+   *
+   * @param type a proper {@code EQUAL} bound of this variable
+   */
+  private void setInstantiationFromEqualBound(ProperType type) {
+    if (instantiation == null || !type.ignoreAnnotations || instantiation.ignoreAnnotations) {
+      setInstantiation(type);
+    }
+  }
+
+  /**
    * Sets {@code instantiation} from a proper {@code EQUAL} bound, if this variable has one. If
-   * there is more than one such bound, the last one is used, matching {@link #addBound}, which
-   * overwrites the instantiation for each proper {@code EQUAL} bound that it adds.
+   * there is more than one such bound, the choice matches {@link #addBound}, which calls {@link
+   * #setInstantiationFromEqualBound} for each proper {@code EQUAL} bound that it adds.
    */
   private void setInstantiationFromEqualBounds() {
-    for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
+    for (AbstractType t : getBoundsOfKind(BoundKind.EQUAL)) {
       if (t.isProper()) {
-        setInstantiation((ProperType) t);
+        setInstantiationFromEqualBound((ProperType) t);
       }
     }
   }
@@ -182,12 +241,12 @@ public class VariableBounds {
    * Adds {@code otherType} as bound against this variable. A proper {@code EQUAL} bound is boxed
    * before it is added.
    *
-   * @param parent the constraint whose reduction created this bound
+   * @param parent the constraint whose reduction created this bound, or null if no constraint did
    * @param kind the kind of bound
    * @param otherType the bound type
    * @return if a new bound was added
    */
-  public boolean addBound(Constraint parent, BoundKind kind, AbstractType otherType) {
+  public boolean addBound(@Nullable Constraint parent, BoundKind kind, AbstractType otherType) {
     if (otherType.isUseOfVariable() && ((UseOfVariable) otherType).getVariable() == variable) {
       return false;
     }
@@ -199,9 +258,9 @@ public class VariableBounds {
       // yields a reference type.
       ProperType boxedType = ((ProperType) otherType).boxType();
       boundType = boxedType;
-      setInstantiation(boxedType);
+      setInstantiationFromEqualBound(boxedType);
     }
-    if (bounds.get(kind).add(boundType)) {
+    if (getBoundsOfKind(kind).add(boundType)) {
       addConstraintsFromComplementaryBounds(parent, kind, boundType);
       if (!boundType.ignoreAnnotations) {
         Set<AbstractQualifier> aQuals = boundType.getQualifiers();
@@ -221,7 +280,7 @@ public class VariableBounds {
   public void addQualifierBound(BoundKind kind, Set<? extends AbstractQualifier> qualifiers) {
     addConstraintsFromComplementaryQualifierBounds(kind, qualifiers);
     addConstraintsFromComplementaryBounds(kind, qualifiers);
-    qualifierBounds.get(kind).addAll(qualifiers);
+    getQualifierBoundsOfKind(kind).addAll(qualifiers);
   }
 
   /**
@@ -232,24 +291,24 @@ public class VariableBounds {
    */
   public void addConstraintsFromComplementaryQualifierBounds(
       BoundKind kind, Set<? extends AbstractQualifier> qualifiers) {
-    Set<AbstractQualifier> equalBounds = qualifierBounds.get(BoundKind.EQUAL);
+    Set<AbstractQualifier> equalBounds = getQualifierBoundsOfKind(BoundKind.EQUAL);
     switch (kind) {
       case EQUAL -> {
         addQualifierConstraint(qualifiers, equalBounds, Kind.QUALIFIER_EQUALITY);
         addQualifierConstraint(
-            qualifierBounds.get(BoundKind.LOWER), qualifiers, Kind.QUALIFIER_SUBTYPE);
+            getQualifierBoundsOfKind(BoundKind.LOWER), qualifiers, Kind.QUALIFIER_SUBTYPE);
         addQualifierConstraint(
-            qualifiers, qualifierBounds.get(BoundKind.UPPER), Kind.QUALIFIER_SUBTYPE);
+            qualifiers, getQualifierBoundsOfKind(BoundKind.UPPER), Kind.QUALIFIER_SUBTYPE);
       }
       case LOWER -> {
         addQualifierConstraint(qualifiers, equalBounds, Kind.QUALIFIER_SUBTYPE);
         addQualifierConstraint(
-            qualifiers, qualifierBounds.get(BoundKind.UPPER), Kind.QUALIFIER_SUBTYPE);
+            qualifiers, getQualifierBoundsOfKind(BoundKind.UPPER), Kind.QUALIFIER_SUBTYPE);
       }
       default -> { // UPPER
         addQualifierConstraint(equalBounds, qualifiers, Kind.QUALIFIER_SUBTYPE);
         addQualifierConstraint(
-            qualifierBounds.get(BoundKind.LOWER), qualifiers, Kind.QUALIFIER_SUBTYPE);
+            getQualifierBoundsOfKind(BoundKind.LOWER), qualifiers, Kind.QUALIFIER_SUBTYPE);
       }
     }
   }
@@ -264,62 +323,56 @@ public class VariableBounds {
    */
   private void addQualifierConstraint(
       Set<? extends AbstractQualifier> setT, Set<? extends AbstractQualifier> setS, Kind kind) {
-    for (AbstractQualifier t : setT) {
-      for (AbstractQualifier s : setS) {
-        if (!s.equals(t) && s.sameHierarchy(t)) {
-          constraints.add(new QualifierTyping(t, s, kind));
-        }
-      }
-    }
+    QualifierTyping.addQualifierConstraints(constraints, setT, setS, kind);
   }
 
   /**
    * Add constraints created via incorporation of the bound. See JLS 18.3.1.
    *
-   * @param parent the constraint whose reduction created this bound
+   * @param parent the constraint whose reduction created this bound, or null if no constraint did
    * @param kind the kind of bound
    * @param boundType the type of the bound
    */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public void addConstraintsFromComplementaryBounds(
-      Constraint parent, BoundKind kind, AbstractType boundType) {
+      @Nullable Constraint parent, BoundKind kind, AbstractType boundType) {
     switch (kind) {
       case EQUAL -> {
-        for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
+        for (AbstractType t : getBoundsOfKind(BoundKind.EQUAL)) {
           if (boundType != t) {
             addComplementaryBoundConstraint(parent, boundType, t, Kind.TYPE_EQUALITY);
           }
         }
-        for (AbstractType t : bounds.get(BoundKind.LOWER)) {
+        for (AbstractType t : getBoundsOfKind(BoundKind.LOWER)) {
           if (boundType != t) {
             addComplementaryBoundConstraint(parent, t, boundType, Kind.SUBTYPE);
           }
         }
-        for (AbstractType t : bounds.get(BoundKind.UPPER)) {
+        for (AbstractType t : getBoundsOfKind(BoundKind.UPPER)) {
           if (boundType != t) {
             addComplementaryBoundConstraint(parent, boundType, t, Kind.SUBTYPE);
           }
         }
       }
       case LOWER -> {
-        for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
+        for (AbstractType t : getBoundsOfKind(BoundKind.EQUAL)) {
           if (boundType != t) {
             addComplementaryBoundConstraint(parent, boundType, t, Kind.SUBTYPE);
           }
         }
-        for (AbstractType t : bounds.get(BoundKind.UPPER)) {
+        for (AbstractType t : getBoundsOfKind(BoundKind.UPPER)) {
           if (boundType != t) {
             addComplementaryBoundConstraint(parent, boundType, t, Kind.SUBTYPE);
           }
         }
       }
       case UPPER -> {
-        for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
+        for (AbstractType t : getBoundsOfKind(BoundKind.EQUAL)) {
           if (boundType != t) {
             addComplementaryBoundConstraint(parent, t, boundType, Kind.SUBTYPE);
           }
         }
-        for (AbstractType t : bounds.get(BoundKind.LOWER)) {
+        for (AbstractType t : getBoundsOfKind(BoundKind.LOWER)) {
           if (boundType != t) {
             addComplementaryBoundConstraint(parent, t, boundType, Kind.SUBTYPE);
           }
@@ -330,7 +383,7 @@ public class VariableBounds {
         // then for all i (1 <= i <= n), if Si and Ti are types (not wildcards),
         // the constraint formula <Si = Ti> is implied.
         if (boundType.isInferenceType() || boundType.isProper()) {
-          for (AbstractType t : bounds.get(BoundKind.UPPER)) {
+          for (AbstractType t : getBoundsOfKind(BoundKind.UPPER)) {
             // `boundType` has already been added to the upper bounds.
             if (boundType != t && (t.isProper() || t.isInferenceType())) {
               constraints.addAll(getConstraintsFromParameterized(parent, boundType, t));
@@ -348,21 +401,21 @@ public class VariableBounds {
       switch (kind) {
         case EQUAL -> {
           // boundVar = this variable, so every qualifier bound holds of boundVar as well.
-          boundVar.addQualifierBound(BoundKind.EQUAL, qualifierBounds.get(BoundKind.EQUAL));
-          boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.LOWER));
-          boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.UPPER));
+          boundVar.addQualifierBound(BoundKind.EQUAL, getQualifierBoundsOfKind(BoundKind.EQUAL));
+          boundVar.addQualifierBound(BoundKind.LOWER, getQualifierBoundsOfKind(BoundKind.LOWER));
+          boundVar.addQualifierBound(BoundKind.UPPER, getQualifierBoundsOfKind(BoundKind.UPPER));
         }
         case LOWER -> {
           // boundVar <: this variable, so from `this variable = q` and `this variable <: q` it
           // follows that boundVar <: q.  Nothing follows from `q <: this variable`.
-          boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.EQUAL));
-          boundVar.addQualifierBound(BoundKind.UPPER, qualifierBounds.get(BoundKind.UPPER));
+          boundVar.addQualifierBound(BoundKind.UPPER, getQualifierBoundsOfKind(BoundKind.EQUAL));
+          boundVar.addQualifierBound(BoundKind.UPPER, getQualifierBoundsOfKind(BoundKind.UPPER));
         }
         case UPPER -> {
           // this variable <: boundVar, so from `this variable = q` and `q <: this variable` it
           // follows that q <: boundVar.  Nothing follows from `this variable <: q`.
-          boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.EQUAL));
-          boundVar.addQualifierBound(BoundKind.LOWER, qualifierBounds.get(BoundKind.LOWER));
+          boundVar.addQualifierBound(BoundKind.LOWER, getQualifierBoundsOfKind(BoundKind.EQUAL));
+          boundVar.addQualifierBound(BoundKind.LOWER, getQualifierBoundsOfKind(BoundKind.LOWER));
         }
       }
     }
@@ -378,31 +431,8 @@ public class VariableBounds {
    * @param kind the kind of the new constraint
    */
   private void addComplementaryBoundConstraint(
-      Constraint parent, AbstractType s, AbstractType t, Kind kind) {
-    constraints.add(createImpliedConstraint(parent, "From complementary bound", s, t, kind));
-  }
-
-  /**
-   * Creates a constraint that incorporating a bound of this variable implies, recording how the
-   * constraint came about so that {@link TypeConstraint#constraintHistory} can explain it.
-   *
-   * @param parent the constraint whose reduction created the bound that implies the new constraint,
-   *     or null if no constraint did
-   * @param description how the bound gave rise to the new constraint
-   * @param s left-hand side type of the new constraint
-   * @param t right-hand side type of the new constraint
-   * @param kind the kind of the new constraint
-   * @return the new constraint
-   */
-  private Typing createImpliedConstraint(
-      Constraint parent, String description, AbstractType s, AbstractType t, Kind kind) {
-    Typing constraint = new Typing(parent, s, t, kind);
-    if (parent == null) {
-      constraint.source = description;
-    } else {
-      constraint.derivation = description;
-    }
-    return constraint;
+      @Nullable Constraint parent, AbstractType s, AbstractType t, Kind kind) {
+    constraints.add(new Typing(parent, "From complementary bound", s, t, kind, false));
   }
 
   /**
@@ -414,27 +444,27 @@ public class VariableBounds {
   public void addConstraintsFromComplementaryBounds(
       BoundKind kind, Set<? extends AbstractQualifier> s) {
     // Copy bound to equal variables
-    for (AbstractType t : bounds.get(BoundKind.EQUAL)) {
+    for (AbstractType t : getBoundsOfKind(BoundKind.EQUAL)) {
       if (t.isUseOfVariable()) {
         VariableBounds otherBounds = ((UseOfVariable) t).getVariable().getBounds();
-        otherBounds.qualifierBounds.get(kind).addAll(s);
+        otherBounds.getQualifierBoundsOfKind(kind).addAll(s);
       }
     }
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {
-      for (AbstractType t : bounds.get(BoundKind.LOWER)) {
+      for (AbstractType t : getBoundsOfKind(BoundKind.LOWER)) {
         if (t.isUseOfVariable()) {
           VariableBounds otherBounds = ((UseOfVariable) t).getVariable().getBounds();
-          otherBounds.qualifierBounds.get(BoundKind.UPPER).addAll(s);
+          otherBounds.getQualifierBoundsOfKind(BoundKind.UPPER).addAll(s);
         }
       }
     }
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.LOWER) {
-      for (AbstractType t : bounds.get(BoundKind.UPPER)) {
+      for (AbstractType t : getBoundsOfKind(BoundKind.UPPER)) {
         if (t.isUseOfVariable()) {
           VariableBounds otherBounds = ((UseOfVariable) t).getVariable().getBounds();
-          otherBounds.qualifierBounds.get(BoundKind.LOWER).addAll(s);
+          otherBounds.getQualifierBoundsOfKind(BoundKind.LOWER).addAll(s);
         }
       }
     }
@@ -448,40 +478,212 @@ public class VariableBounds {
    * ({@code 1 <= i <= n}), if Si and Ti are types (not wildcards), the constraint formula {@code
    * <Si = Ti>} is implied.
    *
+   * <p>If G is an inner class, then its enclosing types contribute type arguments as well, and the
+   * same constraint formula is implied between each pair of them.
+   *
+   * <p>The implied constraints ignore the qualifiers of a type argument that is {@link
+   * org.checkerframework.framework.qual.Covariant} or that is a self-reference to one of the
+   * bounds; see {@link #isSelfReferentialTypeArgument}. Two bounds imply nothing about such a
+   * qualifier.
+   *
    * @param parent the constraint whose reduction created the bound that implies the returned
    *     constraints, or null if no constraint did
    * @param s a type argument
    * @param t a type argument
    * @return the constraints between the type arguments to {@code s} and {@code t}
    */
-  private List<Typing> getConstraintsFromParameterized(
-      Constraint parent, AbstractType s, AbstractType t) {
-    String description = "Constraint from parameterized bound";
-
-    IPair<AbstractType, AbstractType> pair =
-        context.inferenceTypeFactory.getParameterizedSupers(s, t);
+  private List<Constraint> getConstraintsFromParameterized(
+      @Nullable Constraint parent, AbstractType s, AbstractType t) {
+    ParameterizedSupers pair = context.inferenceTypeFactory.getParameterizedSupers(s, t);
 
     if (pair == null) {
       return new ArrayList<>();
     }
 
-    List<AbstractType> ss = pair.first.getTypeArguments();
-    List<AbstractType> ts = pair.second.getTypeArguments();
-    if (ss.size() != ts.size()) {
-      throw new BugInCF(
-          "Parameterized supertypes %s and %s have different numbers of type arguments.",
-          pair.first, pair.second);
-    }
-
-    List<Typing> constraints = new ArrayList<>();
-    for (int i = 0; i < ss.size(); i++) {
-      AbstractType si = ss.get(i);
-      AbstractType ti = ts.get(i);
-      if (si.getTypeKind() != TypeKind.WILDCARD && ti.getTypeKind() != TypeKind.WILDCARD) {
-        constraints.add(createImpliedConstraint(parent, description, si, ti, Kind.TYPE_EQUALITY));
-      }
+    List<Constraint> constraints = new ArrayList<>();
+    // An inner class type's own type arguments are not all of the type arguments it mentions; its
+    // enclosing types contribute more, which getTypeArguments() omits.
+    AbstractType sAsSuper = pair.aAsSuper();
+    AbstractType tAsSuper = pair.bAsSuper();
+    while (sAsSuper != null && tAsSuper != null) {
+      addConstraintsFromTypeArguments(parent, s, sAsSuper, t, tAsSuper, constraints);
+      sAsSuper = sAsSuper.getEnclosingType();
+      tAsSuper = tAsSuper.getEnclosingType();
     }
     return constraints;
+  }
+
+  /**
+   * Adds to {@code constraints} the constraints between the type arguments of {@code sAsSuper} and
+   * those of {@code tAsSuper}, which are parameterizations of the same generic class: either a
+   * supertype of both {@code s} and {@code t}, or an enclosing type of that supertype.
+   *
+   * @param parent the constraint whose reduction created the bound that implies the new
+   *     constraints, or null if no constraint did
+   * @param s a bound of this variable
+   * @param sAsSuper a parameterized supertype of {@code s}, or an enclosing type of one
+   * @param t a bound of this variable
+   * @param tAsSuper the parameterization of the same class for {@code t} that {@code sAsSuper} is
+   *     for {@code s}
+   * @param constraints the list to which to add the implied constraints
+   */
+  private void addConstraintsFromTypeArguments(
+      @Nullable Constraint parent,
+      AbstractType s,
+      AbstractType sAsSuper,
+      AbstractType t,
+      AbstractType tAsSuper,
+      List<Constraint> constraints) {
+    String description = "Constraint from parameterized bound";
+
+    List<AbstractType> sAsSuperTypeArguments = sAsSuper.getTypeArguments();
+    assert sAsSuperTypeArguments != null
+        : "@AssumeAssertion(nullness): sAsSuper is a declared type";
+    List<AbstractType> tAsSuperTypeArguments = tAsSuper.getTypeArguments();
+    assert tAsSuperTypeArguments != null
+        : "@AssumeAssertion(nullness): tAsSuper is a declared type";
+    if (sAsSuperTypeArguments.size() != tAsSuperTypeArguments.size()) {
+      if (sAsSuper.isRaw() || tAsSuper.isRaw()) {
+        // A raw type has no type arguments, so the two types imply nothing about one another's.
+        return;
+      }
+      throw new BugInCF(
+          "Parameterized supertypes %s and %s have different numbers of type arguments.",
+          sAsSuper, tAsSuper);
+    }
+
+    // At a covariant type argument of G, a type whose supertype is one of these
+    // parameterizations can still be a subtype of the other, so the qualifiers need not match.
+    // The cast is safe because getTypeArguments() above returned non-null.
+    List<Integer> covariantArgIndexes =
+        context
+            .typeFactory
+            .getTypeHierarchy()
+            .getCovariantArgIndexes((AnnotatedDeclaredType) sAsSuper.getAnnotatedType());
+
+    for (int i = 0; i < sAsSuperTypeArguments.size(); i++) {
+      AbstractType si = sAsSuperTypeArguments.get(i);
+      AbstractType ti = tAsSuperTypeArguments.get(i);
+      if (si.getTypeKind() != TypeKind.WILDCARD && ti.getTypeKind() != TypeKind.WILDCARD) {
+        // If the type argument is covariant, then si and ti are merely supertypes of the
+        // corresponding type argument of this variable; that relates each of their qualifiers to
+        // that type argument's qualifier, but not to one another.  If the type argument is a
+        // self-reference to the bound with the bound's own qualifier, then that qualifier came
+        // from the bound rather than from a programmer.  In either case, the two bounds imply
+        // nothing about the two qualifiers.
+        boolean qualifiersMustMatch =
+            !covariantArgIndexes.contains(i)
+                && !isSelfReferentialTypeArgument(sAsSuper, s, si)
+                && !isSelfReferentialTypeArgument(tAsSuper, t, ti);
+        // JLS 18.3.1 implies si = ti.  javac deviates: it adds no bound to a capture variable for
+        // a wildcard (Type.UndetVar#addBound), so the equality matters only when the other side is
+        // an ordinary inference variable.  Follow javac; otherwise, the capture α of
+        // `? extends Integer` for `V extends Comparable<V>` gets α = Integer from its upper bounds
+        // Integer and Comparable<α>, contradicting javac and crashing.  See Issue8323.java.
+        if (!hasCapturedWildcardButNoOrdinaryVariable(si, ti)) {
+          constraints.add(
+              new Typing(parent, description, si, ti, Kind.TYPE_EQUALITY, qualifiersMustMatch));
+        } else if (qualifiersMustMatch && !si.ignoreAnnotations && !ti.ignoreAnnotations) {
+          // javac has no qualifiers, so its rule says nothing about them; keep their equality.  A
+          // use of a variable without a primary annotation has no qualifiers, so its variable
+          // gets the other side's qualifiers as a bound instead.
+          Set<? extends AbstractQualifier> siQualifiers =
+              AbstractQualifier.removeUnsolvedPolymorphic(si.getQualifiers());
+          Set<? extends AbstractQualifier> tiQualifiers =
+              AbstractQualifier.removeUnsolvedPolymorphic(ti.getQualifiers());
+          if (si.isUseOfVariable()) {
+            ((UseOfVariable) si).addQualifierBound(BoundKind.EQUAL, tiQualifiers);
+          }
+          if (ti.isUseOfVariable()) {
+            ((UseOfVariable) ti).addQualifierBound(BoundKind.EQUAL, siQualifiers);
+          }
+          ConstraintSet qualifierConstraints = new ConstraintSet();
+          QualifierTyping.addQualifierConstraints(
+              qualifierConstraints, siQualifiers, tiQualifiers, Kind.QUALIFIER_EQUALITY);
+          while (!qualifierConstraints.isEmpty()) {
+            constraints.add(qualifierConstraints.pop());
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Returns true if one of {@code a} and {@code b} is a use of a capture variable for a wildcard
+   * and the other is not a use of an ordinary inference variable.
+   *
+   * @param a a type
+   * @param b another type
+   * @return true if one of {@code a} and {@code b} is a use of a capture variable for a wildcard
+   *     and the other is not a use of an ordinary inference variable
+   */
+  private static boolean hasCapturedWildcardButNoOrdinaryVariable(AbstractType a, AbstractType b) {
+    return (isUseOfCapturedWildcard(a) && !isUseOfOrdinaryVariable(b))
+        || (isUseOfCapturedWildcard(b) && !isUseOfOrdinaryVariable(a));
+  }
+
+  /**
+   * Returns true if {@code type} is a use of a capture variable for a wildcard.
+   *
+   * @param type a type
+   * @return true if {@code type} is a use of a capture variable for a wildcard
+   */
+  private static boolean isUseOfCapturedWildcard(AbstractType type) {
+    return type.isUseOfVariable() && ((UseOfVariable) type).getVariable().isCapturedWildcard();
+  }
+
+  /**
+   * Returns true if {@code type} is a use of an inference variable that is not a capture variable
+   * for a wildcard.
+   *
+   * @param type a type
+   * @return true if {@code type} is a use of an inference variable that is not a capture variable
+   *     for a wildcard
+   */
+  private static boolean isUseOfOrdinaryVariable(AbstractType type) {
+    return type.isUseOfVariable() && !((UseOfVariable) type).getVariable().isCapturedWildcard();
+  }
+
+  /**
+   * Returns true if {@code typeArgument} is a self-reference to {@code type} that has the same
+   * qualifier as {@code type}. Only two kinds of {@code type} have such a type argument.
+   *
+   * <ul>
+   *   <li>A use of an F-bounded type variable, such as {@code S} declared as {@code S extends
+   *       Store<S>}: the upper bound of the use {@code @Nullable S} is {@code @Nullable
+   *       Store<@Nullable S>}, whose type argument has the qualifier that was written on the use.
+   *   <li>An enum class {@code E}: its supertype is {@code Enum<E>}, which in turn implements
+   *       {@code Comparable<E>}, and {@code SupertypeFinder.createEnumSuperType} copies the
+   *       qualifier of {@code E} onto the type argument of each.
+   * </ul>
+   *
+   * @param typeAsSuper a parameterized supertype of {@code type}
+   * @param type a type
+   * @param typeArgument a type argument of {@code typeAsSuper}
+   * @return true if {@code typeArgument} is a self-reference to {@code type} with the same
+   *     qualifier as {@code type}
+   */
+  private boolean isSelfReferentialTypeArgument(
+      AbstractType typeAsSuper, AbstractType type, AbstractType typeArgument) {
+    if (!context.typeFactory.types.isSameType(typeArgument.getJavaType(), type.getJavaType())) {
+      return false;
+    }
+    // A qualifier that differs from the one on `type` was written by a programmer at an invariant
+    // position, as in `enum E implements Box<@Untainted E>`.
+    if (!typeArgument.getQualifiers().equals(type.getQualifiers())) {
+      return false;
+    }
+    if (type.getTypeKind() == TypeKind.TYPEVAR) {
+      return true;
+    }
+    TypeElement element = TypesUtils.getTypeElement(type.getJavaType());
+    if (element == null || element.getKind() != ElementKind.ENUM) {
+      return false;
+    }
+    // Only `Enum<E>` and the `Comparable<E>` that it implements get their qualifier from `E`.  An
+    // interface that the enum declaration itself parameterizes by the enum, as in `enum E
+    // implements Box<E>`, has a written qualifier at an invariant position.
+    return TypesUtils.isDeclaredOfName(typeAsSuper.getJavaType(), ENUM_SELF_PARAMETERIZED);
   }
 
   /**
@@ -491,7 +693,7 @@ public class VariableBounds {
    */
   public boolean onlyProperBounds() {
     for (BoundKind k : BoundKind.values()) {
-      for (AbstractType bound : bounds.get(k)) {
+      for (AbstractType bound : getBoundsOfKind(k)) {
         if (!bound.isProper()) {
           return false;
         }
@@ -507,7 +709,7 @@ public class VariableBounds {
    */
   public Set<ProperType> findProperLowerBounds() {
     LinkedHashSet<ProperType> set = new LinkedHashSet<>();
-    for (AbstractType bound : bounds.get(BoundKind.LOWER)) {
+    for (AbstractType bound : getBoundsOfKind(BoundKind.LOWER)) {
       if (bound.isProper()) {
         set.add((ProperType) bound);
       }
@@ -522,7 +724,7 @@ public class VariableBounds {
    */
   public Set<ProperType> findProperUpperBounds() {
     LinkedHashSet<ProperType> set = new LinkedHashSet<>();
-    for (AbstractType bound : bounds.get(BoundKind.UPPER)) {
+    for (AbstractType bound : getBoundsOfKind(BoundKind.UPPER)) {
       if (bound.isProper()) {
         set.add((ProperType) bound);
       }
@@ -537,7 +739,7 @@ public class VariableBounds {
    * @return all upper bounds
    */
   public Set<AbstractType> upperBounds() {
-    return new LinkedHashSet<>(bounds.get(BoundKind.UPPER));
+    return new LinkedHashSet<>(getBoundsOfKind(BoundKind.UPPER));
   }
 
   /**
@@ -549,20 +751,38 @@ public class VariableBounds {
   public boolean applyInstantiationsToBounds() {
     boolean changed = false;
     for (Set<AbstractType> boundList : bounds.values()) {
-      LinkedHashSet<AbstractType> newBounds = new LinkedHashSet<>(boundList.size());
+      if (boundList.isEmpty()) {
+        // Most variables have no bound of most kinds, and iterating a LinkedHashSet allocates.
+        continue;
+      }
+      // Collect the new bounds in a list rather than a set: an ArrayList does not hash its
+      // elements, and hashing an AbstractType is expensive.  Most calls to this method replace
+      // no bound at all, and then the addAll() below -- the only place that hashes every bound
+      // -- is skipped.
+      List<AbstractType> newBounds = new ArrayList<>(boundList.size());
+      boolean boundListChanged = false;
       for (AbstractType bound : boundList) {
         AbstractType newBound = bound.applyInstantiations();
-        if (newBound != bound && !boundList.contains(newBound)) {
-          changed = true;
+        if (newBound != bound) {
+          boundListChanged = true;
+          if (!boundList.contains(newBound)) {
+            changed = true;
+          }
         }
         newBounds.add(newBound);
       }
-      boundList.clear();
-      boundList.addAll(newBounds);
+      if (boundListChanged) {
+        // `boundList` is a LinkedHashSet, so re-adding the bounds in order discards duplicates
+        // and keeps each remaining bound at the position of its first occurrence.
+        boundList.clear();
+        boundList.addAll(newBounds);
+      }
     }
     constraints.applyInstantiations();
 
-    if (changed && instantiation == null) {
+    // An instantiation from a bound whose annotations are ignored gives way to a bound that has
+    // just become proper and whose annotations are respected.
+    if (changed && (instantiation == null || instantiation.ignoreAnnotations)) {
       setInstantiationFromEqualBounds();
     }
     return changed;
@@ -625,12 +845,12 @@ public class VariableBounds {
    *     a type argument
    */
   public boolean hasWildcardParameterizedLowerOrEqualBound() {
-    for (AbstractType type : bounds.get(BoundKind.EQUAL)) {
+    for (AbstractType type : getBoundsOfKind(BoundKind.EQUAL)) {
       if (!type.isUseOfVariable() && type.isWildcardParameterizedType()) {
         return true;
       }
     }
-    for (AbstractType type : bounds.get(BoundKind.LOWER)) {
+    for (AbstractType type : getBoundsOfKind(BoundKind.LOWER)) {
       if (!type.isUseOfVariable() && type.isWildcardParameterizedType()) {
         return true;
       }
@@ -649,7 +869,7 @@ public class VariableBounds {
    */
   public boolean hasLowerBoundDifferentParam() {
     List<AbstractType> parameteredTypes = new ArrayList<>();
-    for (AbstractType type : bounds.get(BoundKind.LOWER)) {
+    for (AbstractType type : getBoundsOfKind(BoundKind.LOWER)) {
       if (type.isProper() && type.isParameterizedType()) {
         parameteredTypes.add(type);
       }
@@ -658,12 +878,12 @@ public class VariableBounds {
       AbstractType s1 = parameteredTypes.get(i);
       for (int j = i + 1; j < parameteredTypes.size(); j++) {
         AbstractType s2 = parameteredTypes.get(j);
-        IPair<AbstractType, AbstractType> supers =
-            context.inferenceTypeFactory.getParameterizedSupers(s1, s2);
+        ParameterizedSupers supers = context.inferenceTypeFactory.getParameterizedSupers(s1, s2);
         if (supers == null) {
           continue;
         }
-        if (!annotatedTypeArguments(supers.first).equals(annotatedTypeArguments(supers.second))) {
+        if (!annotatedTypeArguments(supers.aAsSuper())
+            .equals(annotatedTypeArguments(supers.bAsSuper()))) {
           return true;
         }
       }
@@ -703,7 +923,7 @@ public class VariableBounds {
    *     is a parameterization
    */
   public boolean hasRawTypeLowerOrEqualBound(AbstractType t) {
-    for (AbstractType type : bounds.get(BoundKind.LOWER)) {
+    for (AbstractType type : getBoundsOfKind(BoundKind.LOWER)) {
       if (type.isUseOfVariable()) {
         continue;
       }
@@ -713,7 +933,7 @@ public class VariableBounds {
       }
     }
 
-    for (AbstractType type : bounds.get(BoundKind.EQUAL)) {
+    for (AbstractType type : getBoundsOfKind(BoundKind.EQUAL)) {
       if (type.isUseOfVariable()) {
         continue;
       }
@@ -740,25 +960,27 @@ public class VariableBounds {
 
     // Only concerned with bounds against proper types or inference types.
     List<AbstractType> upperBoundsNonVar = new ArrayList<>();
-    for (AbstractType bound : bounds.get(VariableBounds.BoundKind.UPPER)) {
+    for (AbstractType bound : getBoundsOfKind(VariableBounds.BoundKind.UPPER)) {
       if (bound.isProper() || bound.isInferenceType()) {
         upperBoundsNonVar.add(bound);
       }
     }
     List<AbstractType> lowerBoundsNonVar = new ArrayList<>();
-    for (AbstractType bound : bounds.get(VariableBounds.BoundKind.LOWER)) {
+    for (AbstractType bound : getBoundsOfKind(VariableBounds.BoundKind.LOWER)) {
       if (bound.isProper() || bound.isInferenceType()) {
         lowerBoundsNonVar.add(bound);
       }
     }
 
-    for (AbstractType bound : bounds.get(VariableBounds.BoundKind.EQUAL)) {
+    for (AbstractType bound : getBoundsOfKind(VariableBounds.BoundKind.EQUAL)) {
       if (bound.isProper() || bound.isInferenceType()) {
-        if (TypesUtils.isCapturedTypeVariable(bound.getJavaType())) {
+        if (TypesUtils.isCapturedOrSyntheticTypeVariable(bound.getJavaType())) {
           // Unlike javac, the Checker Framework may infer an expression a second time, against a
           // target type that a previous inference produced; in that case, ignore this bound
           // (adding no constraints for it) so that this inference reuses the exact value that the
-          // previous inference computed.
+          // previous inference computed.  That value is a captured type variable, or, if the
+          // capture variable's bound mentions itself, a fresh type variable that javac creates in
+          // Infer#instantiateAsUninferredVars.
           continue;
         }
         // var = R implies the bound false
