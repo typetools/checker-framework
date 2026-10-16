@@ -477,6 +477,8 @@ public abstract class CFAbstractTransfer<
         PurityChecker.checkPurity(
             expressionOrStatement,
             aTypeFactory,
+            TreePathUtil.enclosingMethod(expressionOrStatement),
+            aTypeFactory.getProcessingEnv(),
             isAssumeSideEffectFreeEnabled,
             isAssumeDeterministicEnabled,
             aTypeFactory.getChecker().hasOption("assumePureGetters"));
