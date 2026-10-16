@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 import org.checkerframework.afu.annotator.Main;
 import org.checkerframework.afu.scenelib.el.TypePathEntry;
 import org.checkerframework.afu.scenelib.io.ASTPath;
@@ -13,9 +14,10 @@ import org.checkerframework.afu.scenelib.type.ArrayType;
 import org.checkerframework.afu.scenelib.type.BoundedType;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
+import org.checkerframework.checker.modifiability.qual.Growable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.objectweb.asm.TypePath;
-import org.plumelib.util.IPair;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Specifies something that needs to be inserted into a source file, including the "what" and the
@@ -45,7 +47,7 @@ public abstract class Insertion {
    * The package names for the annotations being inserted by this Insertion. This will be empty
    * unless {@link #getText(boolean)} is called with abbreviate=true.
    */
-  protected Set<String> packageNames;
+  protected @Growable Set<String> packageNames;
 
   /**
    * Set of annotation names that should always be inserted fully-qualified, even when {@link
@@ -240,7 +242,7 @@ public abstract class Insertion {
       return "["
           + System.lineSeparator()
           + "  "
-          + StringsPlume.join(System.lineSeparator() + "  ", list)
+          + StringsP.join(System.lineSeparator() + "  ", list)
           + System.lineSeparator()
           + "]";
     }
@@ -254,13 +256,20 @@ public abstract class Insertion {
   public abstract Kind getKind();
 
   /**
+   * An annotation, split into its package name and the rest of it.
+   *
+   * @param packageName the annotation's package name, or null if the package was not removed
+   * @param annotation the annotation without its package name
+   */
+  public record PackageAndAnnotation(@Nullable String packageName, String annotation) {}
+
+  /**
    * Removes and returns the leading package.
    *
    * @param s the string representation of an annotation
-   * @return given {@code @com.foo.bar(baz)} it returns a pair of {@code com.foo} and
-   *     {@code @bar(baz)}
+   * @return given {@code @com.foo.bar(baz)} it returns {@code com.foo} and {@code @bar(baz)}
    */
-  public static IPair<String, String> removePackage(String s) {
+  public static PackageAndAnnotation removePackage(String s) {
     int nameEnd = s.indexOf('(');
     if (nameEnd == -1) {
       nameEnd = s.length();
@@ -271,13 +280,13 @@ public abstract class Insertion {
       if (!alwaysQualify.contains(basename)) {
         String packageName = s.substring(0, nameEnd);
         if (packageName.startsWith("@")) {
-          return IPair.of(packageName.substring(1), "@" + basename);
+          return new PackageAndAnnotation(packageName.substring(1), "@" + basename);
         } else {
-          return IPair.of(packageName, basename);
+          return new PackageAndAnnotation(packageName, basename);
         }
       }
     }
-    return IPair.of((String) null, s);
+    return new PackageAndAnnotation(null, s);
   }
 
   /**
@@ -309,13 +318,11 @@ public abstract class Insertion {
         if (!declaredType.isWildcard()) {
           List<Type> typeArguments = declaredType.getTypeParameters();
           if (!typeArguments.isEmpty()) {
-            result.append('<');
-            result.append(typeToString(typeArguments.get(0), abbreviate));
-            for (int i = 1; i < typeArguments.size(); i++) {
-              result.append(", ");
-              result.append(typeToString(typeArguments.get(i), abbreviate));
+            StringJoiner sj = new StringJoiner(", ", "<", ">");
+            for (Type typeArgument : typeArguments) {
+              sj.add(typeToString(typeArgument, abbreviate));
             }
-            result.append('>');
+            result.append(sj);
           }
           Type innerType = declaredType.getInnerType();
           if (innerType != null) {
@@ -360,7 +367,7 @@ public abstract class Insertion {
     for (String annotation : type.getAnnotations()) {
       AnnotationInsertion ins = new AnnotationInsertion(annotation);
       result.append(ins.getText(abbreviate));
-      result.append(" ");
+      result.append(' ');
       if (abbreviate) {
         packageNames.addAll(ins.getPackageNames());
       }

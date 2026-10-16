@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * This annotation is used on a formal parameter to indicate that the parameter is not leaked
+ * This annotation is used on a formal parameter to indicate that the parameter is neither leaked
  * (stored in a location that could be accessed later) nor returned by the method body.
  *
  * <p>For example, the parameter of {@link String#String(String s)} is {@code @NonLeaked}, because

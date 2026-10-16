@@ -47,8 +47,11 @@ final class InMethodCriterion implements Criterion {
 
   @Override
   public boolean isSatisfiedBy(@Nullable TreePath path) {
-    Criteria.dbug.debug(
-        "InMethodCriterion.isSatisfiedBy(%s); this=%s%n", Main.leafString(path), this.toString());
+    if (Criteria.dbug.isEnabled()) {
+      Criteria.dbug.debug(
+          "InMethodCriterion.isSatisfiedBy(%s); this=%s%n",
+          path == null ? "null" : Main.leafString(path), this.toString());
+    }
 
     // true if the argument is within a variable declaration's initializer expression.
     boolean inDecl = false;
@@ -60,7 +63,9 @@ final class InMethodCriterion implements Criterion {
       Tree leaf = path.getLeaf();
       if (leaf instanceof MethodTree) {
         boolean b = sigMethodCriterion.isSatisfiedBy(path);
-        Criteria.dbug.debug("InMethodCriterion.isSatisfiedBy => %s%n", b);
+        if (Criteria.dbug.isEnabled()) {
+          Criteria.dbug.debug("InMethodCriterion.isSatisfiedBy => %s%n", b);
+        }
         return b;
       }
       if (leaf instanceof VariableTree varDecl) { // variable declaration
@@ -79,7 +84,9 @@ final class InMethodCriterion implements Criterion {
     // We didn't find the method.  Return true if in a variable declarator,
     // which is initialization code that will go in <init> or <clinit>.
     boolean result = inDecl && (staticDecl ? "<clinit>()V" : "<init>()V").equals(name);
-    Criteria.dbug.debug("InMethodCriterion.isSatisfiedBy => %s%n", result);
+    if (Criteria.dbug.isEnabled()) {
+      Criteria.dbug.debug("InMethodCriterion.isSatisfiedBy => %s%n", result);
+    }
     return result;
   }
 

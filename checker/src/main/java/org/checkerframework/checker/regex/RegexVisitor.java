@@ -21,10 +21,10 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <ol>
  *   <li value="1">Allows any String to be passed to Pattern.compile if the Pattern.LITERAL flag is
- *       passed.
+ *                 passed.
  *   <li value="2">Checks compound String concatenation to ensure correct usage of Regex Strings.
  *   <li value="3">Checks calls to {@code MatchResult.start}, {@code MatchResult.end} and {@code
- *       MatchResult.group} to ensure that a valid group number is passed.
+ *                 MatchResult.group} to ensure that a valid group number is passed.
  * </ol>
  *
  * @see RegexChecker

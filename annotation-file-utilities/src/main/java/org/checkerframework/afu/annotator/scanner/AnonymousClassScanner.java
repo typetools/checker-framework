@@ -11,7 +11,7 @@ import com.sun.source.util.TreePathScanner;
  * is the ith anonymous class in the file. Thus, if i = 2, it will have a name of the form
  * NamedClass$2.
  */
-public class AnonymousClassScanner extends TreePathScanner<Void, Integer> {
+public final class AnonymousClassScanner extends TreePathScanner<Void, Integer> {
 
   /**
    * Given an anonymous class, computes and returns its 1-based index in the given tree representing

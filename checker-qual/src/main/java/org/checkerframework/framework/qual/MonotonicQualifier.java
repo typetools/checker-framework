@@ -8,13 +8,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A meta-annotation that indicates that a qualifier indicates that an expression goes monotonically
+ * A meta-annotation that indicates that a qualifier signifies that an expression goes monotonically
  * from a type qualifier {@code T} to another qualifier {@code S}. The annotation {@code S} is
  * called the <em>target</em> of the monotonic qualifier, and has to be indicated by {@link
  * MonotonicQualifier#value()}.
  *
  * <p>This meta-annotation can be used on the declaration of the monotonic qualifier used for the
- * type-system at hand, and is often called {@code MonoT} if the target is {@code T}. The subtyping
+ * type system at hand, and is often called {@code MonoT} if the target is {@code T}. The subtyping
  * hierarchy has to be defined as follows:
  *
  * <pre>{@code
@@ -23,8 +23,8 @@ import java.lang.annotation.Target;
  *
  * where {@code <:} indicates the subtyping relation.
  *
- * <p>An expression of a monotonic type can only be assigned expressions of the target type {@code
- * T}. This means that an expression of the monotonic type {@code MonoT} cannot be assigned to a
+ * <p>A variable of a monotonic type can only be assigned expressions of the target type {@code T}.
+ * This means that an expression of the monotonic type {@code MonoT} cannot be assigned to a
  * variable of the same type.
  *
  * <p>Reading an expression of a monotonic type {@code MonoT} might always yield an expression of
@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
  * the monotonic property ensures that it will stay of type {@code T} for the rest of the program
  * execution. This is even true if arbitrary other code is executed.
  *
- * <p>Note that variables of a monotonic type can be re-assigned arbitrarily often, but only with
+ * <p>Note that variables of a monotonic type can be reassigned arbitrarily often, but only with
  * expressions of the target type.
  */
 @Documented

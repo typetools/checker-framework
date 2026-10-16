@@ -51,7 +51,7 @@ public class SynchronizedNode extends Node {
     StringBuilder sb = new StringBuilder();
     sb.append("synchronized (");
     sb.append(expression);
-    sb.append(")");
+    sb.append(')');
     return sb.toString();
   }
 

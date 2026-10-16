@@ -6,6 +6,7 @@ import com.sun.tools.javac.util.Context;
 import java.io.PrintStream;
 import java.lang.reflect.Constructor;
 import java.util.List;
+import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedOptions;
@@ -33,6 +34,7 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.UserError;
 import org.plumelib.reflection.Signatures;
+import org.plumelib.util.StringsP;
 
 /**
  * Outputs the method signatures of a class with fully annotated types.
@@ -49,11 +51,11 @@ import org.plumelib.reflection.Signatures;
  *
  * <ol>
  *   <li id="a">From source: the class is to be used as an annotation processor when reading
- *       annotations from source. It can be invoked via the command:
- *       <p>{@code javac -processor SignaturePrinter <java files> ...}
+ *              annotations from source. It can be invoked via the command:
+ *              <p>{@code javac -processor SignaturePrinter <java files> ...}
  *   <li id="b">From classfile: the class is to be used as an independent app when reading
- *       annotations from classfile. It can be invoked via the command:
- *       <p>{@code java SignaturePrinter <class name>}
+ *              annotations from classfile. It can be invoked via the command:
+ *              <p>{@code java SignaturePrinter <class name>}
  * </ol>
  *
  * By default, only the annotations explicitly written by the user are emitted. To view the default
@@ -155,15 +157,8 @@ public class SignaturePrinter extends AbstractTypeProcessor {
         return;
       }
 
-      out.print("<");
-      boolean isntFirst = false;
-      for (AnnotatedTypeMirror param : params) {
-        if (isntFirst) {
-          out.print(", ");
-        }
-        isntFirst = true;
-        out.print(param);
-      }
+      out.print('<');
+      out.print(StringsP.join(", ", params));
       out.print("> ");
     }
 
@@ -185,16 +180,11 @@ public class SignaturePrinter extends AbstractTypeProcessor {
         return;
       }
 
-      out.print(" throws ");
-
-      boolean isntFirst = false;
+      StringJoiner result = new StringJoiner(", ", " throws ", "");
       for (AnnotatedTypeMirror thrown : type.getThrownTypes()) {
-        if (isntFirst) {
-          out.print(", ");
-        }
-        isntFirst = true;
-        out.print(thrown);
+        result.add(thrown.toString());
       }
+      out.print(result.toString());
     }
 
     /**
@@ -248,6 +238,12 @@ public class SignaturePrinter extends AbstractTypeProcessor {
       throw new IllegalArgumentException("Cannot process packages");
     }
 
+    /**
+     * Returns the Java keyword that declares the given type element.
+     *
+     * @param e a type element
+     * @return the Java keyword that declares the given type element
+     */
     private String typeIdentifier(TypeElement e) {
       return switch (e.getKind()) {
         case INTERFACE -> "interface";
@@ -295,17 +291,11 @@ public class SignaturePrinter extends AbstractTypeProcessor {
         return;
       }
 
-      out.print("extends ");
-
-      boolean isntFirst = false;
+      StringJoiner result = new StringJoiner(", ", "extends ", " ");
       for (AnnotatedDeclaredType st : dt.directSupertypes()) {
-        if (isntFirst) {
-          out.print(", ");
-        }
-        isntFirst = true;
-        out.print(st);
+        result.add(st.toString());
       }
-      out.print(' ');
+      out.print(result.toString());
     }
 
     @Override

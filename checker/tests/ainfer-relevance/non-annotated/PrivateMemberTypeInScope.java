@@ -1,0 +1,21 @@
+// A class's private member type is a member of that class, even though no other class inherits it,
+// so a name in the class's body can refer to it.  Inference must resolve the name
+// "Private.Inherited" to `PrivateMemberTypeInScope.Base.Inherited`, which is irrelevant, and must
+// therefore omit the annotation that it infers for `field`; the goal file shows that it does.  The
+// name is not canonical, because `Private` inherits `Inherited` rather than declaring it, so
+// inference must search `Private`'s supertypes for `Inherited`.  If inference cannot resolve the
+// name, then it conservatively writes the annotation.
+public class PrivateMemberTypeInScope {
+
+  static class Base {
+    static class Inherited {}
+  }
+
+  private static class Private extends Base {}
+
+  static Private.Inherited field;
+
+  static void assignField() {
+    field = new Private.Inherited();
+  }
+}

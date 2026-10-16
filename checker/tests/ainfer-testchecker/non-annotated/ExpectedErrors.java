@@ -202,7 +202,7 @@ public class ExpectedErrors {
 
     // The types of both fields are not refined to @AinferBottom, as whole-program
     // inference never performs refinement in the presence of the null literal.
-    @SuppressWarnings("value")
+    @SuppressWarnings({"value", "unneeded.suppression"})
     void assignFieldsToBottom() {
       privateField = null;
       publicField = null;

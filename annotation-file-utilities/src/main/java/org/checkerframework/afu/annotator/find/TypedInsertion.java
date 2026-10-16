@@ -5,6 +5,7 @@ import org.checkerframework.afu.scenelib.type.ArrayType;
 import org.checkerframework.afu.scenelib.type.BoundedType;
 import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
+import org.checkerframework.checker.modifiability.qual.Growable;
 
 /**
  * An insertion that may result in code generation other than just annotations. {@code
@@ -28,14 +29,30 @@ public abstract class TypedInsertion extends Insertion {
   protected boolean annotationsOnly;
 
   /** The inner types to go on this insertion. See {@link ReceiverInsertion} for more details. */
-  protected List<Insertion> innerTypeInsertions;
+  protected @Growable List<Insertion> innerTypeInsertions;
 
-  public TypedInsertion(Type type, Criteria criteria, List<Insertion> innerTypeInsertions) {
+  /**
+   * Creates a new {@code TypedInsertion} whose text is not on its own line.
+   *
+   * @param type the type to insert
+   * @param criteria where to insert the text
+   * @param innerTypeInsertions the inner types to go on this insertion
+   */
+  public TypedInsertion(
+      Type type, Criteria criteria, @Growable List<Insertion> innerTypeInsertions) {
     this(type, criteria, false, innerTypeInsertions);
   }
 
+  /**
+   * Creates a new {@code TypedInsertion}.
+   *
+   * @param type the type to insert
+   * @param criteria where to insert the text
+   * @param b if true, insert the text on its own line
+   * @param innerTypeInsertions the inner types to go on this insertion
+   */
   public TypedInsertion(
-      Type type, Criteria criteria, boolean b, List<Insertion> innerTypeInsertions) {
+      Type type, Criteria criteria, boolean b, @Growable List<Insertion> innerTypeInsertions) {
     super(criteria, b);
     this.type = type;
     this.innerTypeInsertions = innerTypeInsertions;
@@ -68,7 +85,7 @@ public abstract class TypedInsertion extends Insertion {
    *
    * @return a copy of the inner types
    */
-  public List<Insertion> getInnerTypeInsertions() {
+  public @Growable List<Insertion> getInnerTypeInsertions() {
     return innerTypeInsertions;
   }
 

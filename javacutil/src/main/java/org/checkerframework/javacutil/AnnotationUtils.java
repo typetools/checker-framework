@@ -41,14 +41,14 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.AnnotationBuilder.CheckerFrameworkAnnotationMirror;
 import org.plumelib.util.ArrayMap;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * A utility class for working with annotations.
  *
  * <p>Note: {@code AnnotationMirror}s are immutable.
  */
-public class AnnotationUtils {
+public final class AnnotationUtils {
 
   // Class cannot be instantiated.
   private AnnotationUtils() {
@@ -145,7 +145,8 @@ public class AnnotationUtils {
    *
    * @param a1 the first AnnotationMirror to compare
    * @param a2 the second AnnotationMirror to compare
-   * @return true iff a1 and a2 have the same annotation name
+   * @return a negative integer, zero, or a positive integer as the name of a1 is less than, equal
+   *     to, or greater than that of a2 (lexicographically)
    * @see #areSame(AnnotationMirror, AnnotationMirror)
    */
   @EqualsMethod
@@ -175,8 +176,8 @@ public class AnnotationUtils {
 
   /**
    * Returns true iff a1 and a2 have the same annotation type. Does not check annotation
-   * element/field values. One reason to that clients may call this is that it is slightly faster
-   * than {@link #areSame} when the annotation is known to have no elements/fields. (TODO: Is that
+   * element/field values. One reason that clients may call this is that it is slightly faster than
+   * {@link #areSame} when the annotation is known to have no elements/fields. (TODO: Is that
    * considered to be good style?)
    *
    * @param a1 the first AnnotationMirror to compare
@@ -236,7 +237,13 @@ public class AnnotationUtils {
       return false;
     }
     if (c1.size() == 1) {
-      return areSame(c1.iterator().next(), c2.iterator().next());
+      // Calling first() rather than iterator().next() avoids allocating two iterators.  This
+      // matters because comparing two dataflow values comes down to this test.
+      AnnotationMirror a1 =
+          c1 instanceof AnnotationMirrorSet s1 ? s1.first() : c1.iterator().next();
+      AnnotationMirror a2 =
+          c2 instanceof AnnotationMirrorSet s2 ? s2.first() : c2.iterator().next();
+      return areSame(a1, a2);
     }
 
     // while loop depends on NavigableSet implementation.
@@ -281,7 +288,7 @@ public class AnnotationUtils {
   public static @Nullable AnnotationMirror getSame(
       Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
     for (AnnotationMirror an : c) {
-      if (AnnotationUtils.areSame(an, anno)) {
+      if (areSame(an, anno)) {
         return an;
       }
     }
@@ -318,7 +325,7 @@ public class AnnotationUtils {
   public static @Nullable AnnotationMirror getAnnotationByClass(
       Collection<? extends AnnotationMirror> c, Class<? extends Annotation> anno) {
     for (AnnotationMirror an : c) {
-      if (AnnotationUtils.areSameByClass(an, anno)) {
+      if (areSameByClass(an, anno)) {
         return an;
       }
     }
@@ -348,7 +355,7 @@ public class AnnotationUtils {
   public static @Nullable AnnotationMirror getAnnotationByName(
       Collection<? extends AnnotationMirror> c, String anno) {
     for (AnnotationMirror an : c) {
-      if (AnnotationUtils.areSameByName(an, anno)) {
+      if (areSameByName(an, anno)) {
         return an;
       }
     }
@@ -380,7 +387,7 @@ public class AnnotationUtils {
   public static @Nullable AnnotationMirror getSameByName(
       Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
     for (AnnotationMirror an : c) {
-      if (AnnotationUtils.areSameByName(an, anno)) {
+      if (areSameByName(an, anno)) {
         return an;
       }
     }
@@ -395,6 +402,7 @@ public class AnnotationUtils {
    * @param a2 the second annotation
    * @return an ordering over AnnotationMirrors based on their name and values
    */
+  @Pure
   public static int compareAnnotationMirrors(AnnotationMirror a1, AnnotationMirror a2) {
     int nameComparison = compareByName(a1, a2);
     if (nameComparison != 0) {
@@ -964,7 +972,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Returns the element with the name {@code name} of the annotation {@code anno}. The result is an
+   * Returns the value of element {@code element} of the annotation {@code anno}. The result is an
    * enum of type {@code T}.
    *
    * @param anno the annotation to disassemble
@@ -984,7 +992,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Returns the element with the name {@code name} of the annotation {@code anno}. The result is an
+   * Returns the value of element {@code element} of the annotation {@code anno}. The result is an
    * enum of type {@code T}.
    *
    * @param anno the annotation to disassemble
@@ -1006,7 +1014,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Returns the element with the name {@code name} of the annotation {@code anno}. The result is an
+   * Returns the value of element {@code element} of the annotation {@code anno}. The result is an
    * array of type {@code T}.
    *
    * @param anno the annotation to disassemble
@@ -1021,11 +1029,11 @@ public class AnnotationUtils {
     if (av == null) {
       throw new BugInCF("getElementValueEnumArray(%s, %s, ...)", anno, element);
     }
-    return AnnotationUtils.annotationValueListToEnumArray(av, expectedType);
+    return annotationValueListToEnumArray(av, expectedType);
   }
 
   /**
-   * Returns the element with the name {@code name} of the annotation {@code anno}. The result is an
+   * Returns the value of element {@code element} of the annotation {@code anno}. The result is an
    * array of type {@code T}.
    *
    * @param anno the annotation to disassemble
@@ -1041,7 +1049,7 @@ public class AnnotationUtils {
     if (av == null) {
       return defaultValue;
     } else {
-      return AnnotationUtils.annotationValueListToEnumArray(av, expectedType);
+      return annotationValueListToEnumArray(av, expectedType);
     }
   }
 
@@ -1060,7 +1068,7 @@ public class AnnotationUtils {
       AnnotationMirror anno, ExecutableElement element, Class<T> expectedType) {
     AnnotationValue av = anno.getElementValues().get(element);
     if (av == null) {
-      throw new BugInCF("getElementValueArray(%s, %s, ...)", anno, element);
+      throw new BugInCF("getElementValueArray(%s, %s, %s)", anno, element, expectedType);
     }
     return annotationValueToList(av, expectedType);
   }
@@ -1163,7 +1171,7 @@ public class AnnotationUtils {
   public static List<@CanonicalName Name> getElementValueClassNames(
       AnnotationMirror anno, ExecutableElement element) {
     List<Type.ClassType> la = getElementValueArray(anno, element, Type.ClassType.class);
-    return CollectionsPlume.<Type.ClassType, @CanonicalName Name>mapList(
+    return CollectionsP.<Type.ClassType, @CanonicalName Name>mapList(
         (Type.ClassType classType) -> classType.asElement().getQualifiedName(), la);
   }
 
@@ -1182,16 +1190,42 @@ public class AnnotationUtils {
   @EqualsMethod
   private static boolean sameElementValues(AnnotationMirror am1, AnnotationMirror am2) {
 
+    // This method might return true even if these maps differ, because of default values.
+    Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = am1.getElementValues();
+    Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = am2.getElementValues();
+
+    // Fast path for when the two annotations give values to exactly the same elements: the
+    // elements that neither map mentions get the same default value in both annotations, so they
+    // need not be examined.  This avoids computing the annotation interface's elements, which is
+    // relatively expensive.
+    if (vals1.size() == vals2.size()) {
+      boolean sameKeys = true;
+      for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
+          vals1.entrySet()) {
+        AnnotationValue aval1 = entry.getValue();
+        AnnotationValue aval2 = vals2.get(entry.getKey());
+        if (aval2 == null) {
+          // The key sets differ, so fall through to the general algorithm below.
+          sameKeys = false;
+          break;
+        }
+        @SuppressWarnings("interning:not.interned") // optimization via equality test
+        boolean identical = aval1 == aval2;
+        if (!identical && !sameAnnotationValue(aval1, aval2)) {
+          return false;
+        }
+      }
+      if (sameKeys) {
+        return true;
+      }
+    }
+
     // Same elts for both annotations, because am1.getAnnotationType() == am2.getAnnotationType().
     List<ExecutableElement> elts =
         ElementFilter.methodsIn(am1.getAnnotationType().asElement().getEnclosedElements());
     if (elts.isEmpty()) {
       return true;
     }
-
-    // This method might return true even if these maps differ, because of default values.
-    Map<? extends ExecutableElement, ? extends AnnotationValue> vals1 = am1.getElementValues();
-    Map<? extends ExecutableElement, ? extends AnnotationValue> vals2 = am2.getElementValues();
 
     for (ExecutableElement meth : elts) {
       AnnotationValue aval1 = vals1.get(meth);
@@ -1236,7 +1270,7 @@ public class AnnotationUtils {
    *
    * @param avList an AnnotationValue that is null or a list of Strings
    * @param s a string
-   * @return true if {@code av} contains {@code s}
+   * @return true if {@code avList} contains {@code s}
    */
   public static boolean annotationValueContains(@Nullable AnnotationValue avList, String s) {
     if (avList == null) {
@@ -1255,7 +1289,7 @@ public class AnnotationUtils {
    *
    * @param avList a list of Strings (as {@code AnnotationValue}s)
    * @param s a string
-   * @return true if {@code av} contains {@code s}
+   * @return true if {@code avList} contains {@code s}
    */
   public static boolean annotationValueContains(List<? extends AnnotationValue> avList, String s) {
     for (AnnotationValue av : avList) {
@@ -1275,7 +1309,7 @@ public class AnnotationUtils {
    *
    * @param avList an AnnotationValue that is null or a list
    * @param s a string
-   * @return true if {@code av} contains {@code s}
+   * @return true if {@code avList} contains {@code s}
    */
   public static boolean annotationValueContainsToString(
       @Nullable AnnotationValue avList, String s) {
@@ -1296,7 +1330,7 @@ public class AnnotationUtils {
    *
    * @param avList a list of Strings (as {@code AnnotationValue}s)
    * @param s a string
-   * @return true if {@code av} contains {@code s}
+   * @return true if {@code avList} contains {@code s}
    */
   public static boolean annotationValueContainsToString(
       List<? extends AnnotationValue> avList, String s) {
@@ -1389,7 +1423,7 @@ public class AnnotationUtils {
   }
 
   /**
-   * Returns the annotations explicitly written on a constructor result. Callers should check that
+   * Returns the annotations explicitly written on a constructor result. Callers must ensure that
    * {@code constructorDeclaration} is in fact a declaration of a constructor.
    *
    * @param constructorDeclaration declaration tree of constructor
@@ -1433,7 +1467,7 @@ public class AnnotationUtils {
    *
    * @param elements an array of {@link ElementType} values
    * @param cls the annotation class being tested; used for diagnostic messages only
-   * @return true iff the give array contains {@link ElementType#TYPE_USE}
+   * @return true iff the given array contains {@link ElementType#TYPE_USE}
    * @throws RuntimeException if the array contains both {@link ElementType#TYPE_USE} and something
    *     besides {@link ElementType#TYPE_PARAMETER}
    */
@@ -1486,7 +1520,7 @@ public class AnnotationUtils {
    */
   public static Class<?> annotationMirrorToClass(AnnotationMirror am) {
     try {
-      return Class.forName(AnnotationUtils.annotationBinaryName(am));
+      return Class.forName(annotationBinaryName(am));
     } catch (ClassNotFoundException e) {
       throw new BugInCF(e);
     }

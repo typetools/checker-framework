@@ -34,10 +34,15 @@ import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.IPair;
 
 /** Utility class for annotation files (stub files and ajava files). */
 public class AnnotationFileUtil {
+
+  /** Do not instantiate. */
+  private AnnotationFileUtil() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * The types of files that can contain annotations. Also indicates the file's source, such as from
    * the JDK, built in, or from the command line.
@@ -214,6 +219,12 @@ public class AnnotationFileUtil {
     return element.getSimpleName().toString();
   }
 
+  /**
+   * Returns a string representation of the given element, or null.
+   *
+   * @param element an Element
+   * @return a string representation of the given element, or null
+   */
   /*package-private*/ static @Nullable String toString(Element element) {
     if (element instanceof ExecutableElement ee) {
       return toString(ee);
@@ -225,19 +236,27 @@ public class AnnotationFileUtil {
   }
 
   /**
+   * A qualified name, split into the part before the last period and the part after it.
+   *
+   * @param typeName the part before the last period
+   * @param memberName the part after the last period; the name of a field or method of {@code
+   *     typeName}
+   */
+  public record QualifiedName(@FullyQualifiedName String typeName, String memberName) {}
+
+  /**
    * Split a name (which comes from an import statement) into the part before the last period and
    * the part after the last period.
    *
    * @param imported the name to split
-   * @return a pair of the type name and the field name
+   * @return the type name and the member name
    */
   @SuppressWarnings("signature") // string parsing
-  public static IPair<@FullyQualifiedName String, String> partitionQualifiedName(String imported) {
+  public static QualifiedName partitionQualifiedName(String imported) {
     int lastDot = imported.lastIndexOf('.');
     @FullyQualifiedName String typeName = imported.substring(0, lastDot);
-    String name = imported.substring(lastDot + 1);
-    IPair<String, String> typeParts = IPair.of(typeName, name);
-    return typeParts;
+    String memberName = imported.substring(lastDot + 1);
+    return new QualifiedName(typeName, memberName);
   }
 
   private static final class ElementPrinter extends SimpleVoidVisitor<Void> {
@@ -257,36 +276,36 @@ public class AnnotationFileUtil {
     public void visit(ConstructorDeclaration n, Void arg) {
       sb.append("<init>");
 
-      sb.append("(");
+      sb.append('(');
       if (n.getParameters() != null) {
         for (Iterator<Parameter> i = n.getParameters().iterator(); i.hasNext(); ) {
           Parameter p = i.next();
           p.accept(this, arg);
 
           if (i.hasNext()) {
-            sb.append(",");
+            sb.append(',');
           }
         }
       }
-      sb.append(")");
+      sb.append(')');
     }
 
     @Override
     public void visit(MethodDeclaration n, Void arg) {
       sb.append(n.getName());
 
-      sb.append("(");
+      sb.append('(');
       if (n.getParameters() != null) {
         for (Iterator<Parameter> i = n.getParameters().iterator(); i.hasNext(); ) {
           Parameter p = i.next();
           p.accept(this, arg);
 
           if (i.hasNext()) {
-            sb.append(",");
+            sb.append(',');
           }
         }
       }
-      sb.append(")");
+      sb.append(')');
     }
 
     @Override

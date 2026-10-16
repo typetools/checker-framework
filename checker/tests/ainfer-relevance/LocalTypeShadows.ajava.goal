@@ -1,0 +1,43 @@
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+
+// A local class declaration shadows a type of the same name that is declared elsewhere, such as a
+// member of an enclosing class.  Inference must resolve the name "Foo" to the local class, which
+// is relevant because it is a subtype of `CharSequence`, rather than to the member class
+// `LocalTypeShadows.Foo`, which is irrelevant.  If inference resolves the name incorrectly and
+// therefore discards the annotation, then the second (validation) pass of this test issues the
+// warning that is written below.
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
+public class LocalTypeShadows {
+
+    static class Foo {
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    static void declareLocalClass() {
+        abstract class Foo implements CharSequence {
+
+            @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 Foo field;
+
+            @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "this.field" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
+            @org.checkerframework.dataflow.qual.Impure
+            void assignField() {
+                field = getSibling1();
+            }
+
+            @org.checkerframework.dataflow.qual.Impure
+            void useField() {
+                // :: warning: [argument]
+                expectsSibling1(field);
+            }
+
+            @org.checkerframework.dataflow.qual.SideEffectFree
+            void expectsSibling1(@org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType Foo this, Foo f) {
+            }
+
+            @org.checkerframework.dataflow.qual.Pure
+            Foo getSibling1(@org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType Foo this) {
+                return null;
+            }
+        }
+    }
+}

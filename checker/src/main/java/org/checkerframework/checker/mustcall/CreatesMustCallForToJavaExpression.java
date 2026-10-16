@@ -22,7 +22,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * Utility methods to convert targets of {@code @CreatesMustCallFor} annotations to {@link
  * org.checkerframework.dataflow.expression.JavaExpression}s.
  */
-public class CreatesMustCallForToJavaExpression {
+public final class CreatesMustCallForToJavaExpression {
 
   /** static utility methods only; don't create instances */
   private CreatesMustCallForToJavaExpression() {}

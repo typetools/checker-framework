@@ -31,4 +31,3 @@ class GenericCellDoubled:
 
     field k:
         insert-annotation Variable.type: @Y
-

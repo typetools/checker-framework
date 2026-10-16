@@ -13,7 +13,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * <p>The Resource Leak Checker cannot verify that the property represented by this annotation is
  * enforced; that is, the Resource Leak Checker will always issue a warning when the value of an
- * expression with this type might be de-allocated.
+ * expression with this type might be deallocated.
  *
  * @checker_framework.manual #must-call-checker Must Call Checker
  */

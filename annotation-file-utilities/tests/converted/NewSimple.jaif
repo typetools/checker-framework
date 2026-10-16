@@ -7,4 +7,3 @@ class NewSimple:
     method foo()V:
         return:
         insert-annotation Method.body, Block.statement 0, Variable.initializer, NewClass.identifier: @java.lang.Tainted
-

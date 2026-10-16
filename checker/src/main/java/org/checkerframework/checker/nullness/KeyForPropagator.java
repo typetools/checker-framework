@@ -16,9 +16,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeReplacer;
 import org.checkerframework.framework.util.TypeArgumentMapper;
+import org.checkerframework.framework.util.TypeArgumentMapper.TypeParameterMapping;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.IPair;
 
 /**
  * KeyForPropagator is used to move nested KeyFor annotations in type arguments from one side of a
@@ -28,16 +28,19 @@ import org.plumelib.util.IPair;
  * @see org.checkerframework.checker.nullness.KeyForPropagationTreeAnnotator
  */
 public class KeyForPropagator {
-  public static enum PropagationDirection {
-    // transfer FROM the super type to the subtype
+  /** The direction of propagation. */
+  public enum PropagationDirection {
+    /** Transfer FROM the supertype to the subtype. */
     TO_SUBTYPE,
 
-    // transfer FROM the subtype to the supertype
+    /** Transfer FROM the subtype to the supertype. */
     TO_SUPERTYPE,
 
-    // first execute TO_SUBTYPE then TO_SUPERTYPE, if TO_SUBTYPE actually transfers
-    // an annotation for a particular type T then T will not be affected by the
-    // TO_SUPERTYPE transfer because it will already have a KeyFor annotation
+    /**
+     * first execute TO_SUBTYPE then TO_SUPERTYPE. If TO_SUBTYPE actually transfers an annotation
+     * for a particular type T then T will not be affected by the TO_SUPERTYPE transfer because it
+     * will already have a KeyFor annotation.
+     */
     BOTH
   }
 
@@ -114,15 +117,15 @@ public class KeyForPropagator {
       return;
     }
 
-    Set<IPair<Integer, Integer>> typeParamMappings =
+    Set<TypeParameterMapping> typeParamMappings =
         TypeArgumentMapper.mapTypeArgumentIndices(subtypeElement, supertypeElement, types);
 
     List<AnnotatedTypeMirror> subtypeArgs = subtype.getTypeArguments();
     List<AnnotatedTypeMirror> supertypeArgs = supertype.getTypeArguments();
 
-    for (IPair<Integer, Integer> path : typeParamMappings) {
-      AnnotatedTypeMirror subtypeArg = subtypeArgs.get(path.first);
-      AnnotatedTypeMirror supertypeArg = supertypeArgs.get(path.second);
+    for (TypeParameterMapping path : typeParamMappings) {
+      AnnotatedTypeMirror subtypeArg = subtypeArgs.get(path.subtypeIndex());
+      AnnotatedTypeMirror supertypeArg = supertypeArgs.get(path.supertypeIndex());
 
       if (subtypeArg.getKind() == TypeKind.WILDCARD
           || supertypeArg.getKind() == TypeKind.WILDCARD) {
@@ -186,7 +189,11 @@ public class KeyForPropagator {
    * types to the second type, if the second type is annotated with @UnknownKeyFor or has no
    * annotation in the KeyFor hierarchy.
    */
-  private class KeyForPropagationReplacer extends AnnotatedTypeReplacer {
+  private final class KeyForPropagationReplacer extends AnnotatedTypeReplacer {
+
+    /** Creates a new KeyForPropagationReplacer. */
+    KeyForPropagationReplacer() {}
+
     @Override
     protected void replaceAnnotations(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
       AnnotationMirror fromKeyFor = from.getPrimaryAnnotationInHierarchy(UNKNOWN_KEYFOR);

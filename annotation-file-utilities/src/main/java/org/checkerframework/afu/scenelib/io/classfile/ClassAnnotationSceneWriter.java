@@ -559,16 +559,6 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
     }
 
     @Override
-    public void visitCode() {
-      super.visitCode();
-    }
-
-    @Override
-    public void visitLabel(Label label) {
-      super.visitLabel(label);
-    }
-
-    @Override
     public void visitFieldInsn(int opcode, String owner, String name, String desc) {
       super.visitFieldInsn(opcode, owner, name, desc);
       track();
@@ -921,7 +911,6 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
         for (Map.Entry<List<TypePathEntry>, ATypeElement> e :
             aLocation.type.innerTypes.entrySet()) {
           TypePath localVariableLocation = TypePathEntry.listToTypePath(e.getKey());
-          ;
           ATypeElement aInnerType = e.getValue();
           for (Annotation tla : aInnerType.tlAnnotationsHere) {
             if (shouldSkip(tla)) {
@@ -1011,7 +1000,6 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
           for (Map.Entry<List<TypePathEntry>, ATypeElement> e1 :
               aParameter.type.innerTypes.entrySet()) {
             TypePath aParameterLocation = TypePathEntry.listToTypePath(e1.getKey());
-            ;
             ATypeElement aInnerType = e1.getValue();
             for (Annotation tla : aInnerType.tlAnnotationsHere) {
               if (shouldSkip(tla)) {

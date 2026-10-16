@@ -32,6 +32,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -85,8 +86,7 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
-import org.plumelib.util.IPair;
+import org.plumelib.util.CollectionsP;
 
 /**
  * An analyzer that checks consistency of {@link MustCall} and {@link CalledMethods} types, thereby
@@ -1504,6 +1504,24 @@ public class MustCallConsistencyAnalyzer {
           return;
         }
       }
+    } else if (TreeUtils.isConstructor(enclosingMethodTree)) {
+      // If this assignment is the first write to the private field in this constructor,
+      // then do not throw non-final owning field reassignment error.
+      // (If the field is not private, conservatively throw the owning file reassignment error.)
+      ExecutableElement elementFromDeclaration =
+          TreeUtils.elementFromDeclaration(enclosingMethodTree);
+      @SuppressWarnings("nullness:dereference.of.nullable") // a constructor has an enclosing class
+      Element enclosingClassElement = elementFromDeclaration.getEnclosingElement();
+      Element receiverTypeElement = TypesUtils.getTypeElement(receiver.getType());
+      if (Objects.equals(enclosingClassElement, receiverTypeElement)) {
+        VariableElement lhsElement = lhs.getElement();
+        if (lhsElement.getModifiers().contains(Modifier.PRIVATE)
+            && ConstructorFirstWriteAnalysis.isFirstWriteToFieldInConstructor(
+                node.getTree(), lhsElement, enclosingMethodTree, cmAtf)) {
+          // Safe; first assignment in constructor.
+          return;
+        }
+      }
     }
 
     // Check that there is a corresponding CreatesMustCallFor annotation, unless this is
@@ -1671,6 +1689,9 @@ public class MustCallConsistencyAnalyzer {
                     targetStrWithoutAdaptation, enclosingMethod, checker)
                 .toString();
       } catch (JavaExpressionParseException e) {
+        // Do not report the error here; that would duplicate the one that
+        // `CreatesMustCallForToJavaExpression` issues at the declaration of `enclosingMethod`,
+        // which is being compiled.  Compare the unadapted string instead.
         targetStr = targetStrWithoutAdaptation;
       }
       if (targetStr.equals(receiverString)) {
@@ -1841,18 +1862,17 @@ public class MustCallConsistencyAnalyzer {
    * messages.
    *
    * @param block input block
-   * @return set of pairs (b, t), where b is a successor block, and t is the type of exception for
-   *     the CFG edge from block to b, or {@code null} if b is a non-exceptional successor
+   * @return the successor blocks, each paired with the type of exception for the CFG edge from
+   *     block to it, or {@code null} if it is a non-exceptional successor
    */
-  private Set<IPair<Block, @Nullable TypeMirror>> getSuccessorsExceptIgnoredExceptions(
-      Block block) {
+  private Set<SuccessorAndExceptionType> getSuccessorsExceptIgnoredExceptions(Block block) {
     if (block.getType() == Block.BlockType.EXCEPTION_BLOCK) {
       ExceptionBlock excBlock = (ExceptionBlock) block;
-      Set<IPair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
+      Set<SuccessorAndExceptionType> result = new LinkedHashSet<>();
       // regular successor
       Block regularSucc = excBlock.getSuccessor();
       if (regularSucc != null) {
-        result.add(IPair.of(regularSucc, null));
+        result.add(new SuccessorAndExceptionType(regularSucc, null));
       }
       // non-ignored exception successors
       Map<TypeMirror, Set<Block>> exceptionalSuccessors = excBlock.getExceptionalSuccessors();
@@ -1860,19 +1880,28 @@ public class MustCallConsistencyAnalyzer {
         TypeMirror exceptionType = entry.getKey();
         if (!cmAtf.isIgnoredExceptionType(exceptionType)) {
           for (Block exSucc : entry.getValue()) {
-            result.add(IPair.of(exSucc, exceptionType));
+            result.add(new SuccessorAndExceptionType(exSucc, exceptionType));
           }
         }
       }
       return result;
     } else {
-      Set<IPair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
+      Set<SuccessorAndExceptionType> result = new LinkedHashSet<>();
       for (Block b : block.getSuccessors()) {
-        result.add(IPair.of(b, null));
+        result.add(new SuccessorAndExceptionType(b, null));
       }
       return result;
     }
   }
+
+  /**
+   * A successor block, and the type of exception that leads to it.
+   *
+   * @param successor a successor block
+   * @param exceptionType the type of exception for the CFG edge to {@code successor}, or null if
+   *     {@code successor} is a non-exceptional successor
+   */
+  private record SuccessorAndExceptionType(Block successor, @Nullable TypeMirror exceptionType) {}
 
   /**
    * Propagates a set of Obligations to successors, and performs consistency checks when variables
@@ -1916,7 +1945,7 @@ public class MustCallConsistencyAnalyzer {
     // computes the set of Obligations that should be propagated to it and then adds it to the
     // worklist if any of its resource aliases are still in scope in the successor block. If
     // none are, then the loop performs a consistency check for that Obligation.
-    for (IPair<Block, @Nullable TypeMirror> successorAndExceptionType :
+    for (SuccessorAndExceptionType successorAndExceptionType :
         getSuccessorsExceptIgnoredExceptions(currentBlock)) {
 
       // A *mutable* set that eventually holds the set of dataflow facts to be propagated to
@@ -1933,7 +1962,8 @@ public class MustCallConsistencyAnalyzer {
         } else if (node instanceof ReturnNode rn) {
           updateObligationsForOwningReturn(obligations, cfg, rn);
         } else if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
-          updateObligationsForInvocation(obligations, node, successorAndExceptionType.second);
+          updateObligationsForInvocation(
+              obligations, node, successorAndExceptionType.exceptionType());
         }
         // All other types of nodes are ignored. This is safe, because other kinds of
         // nodes cannot create or modify the resource-alias sets that the algorithm is
@@ -1943,8 +1973,8 @@ public class MustCallConsistencyAnalyzer {
       propagateObligationsToSuccessorBlock(
           obligations,
           currentBlock,
-          successorAndExceptionType.first,
-          successorAndExceptionType.second,
+          successorAndExceptionType.successor(),
+          successorAndExceptionType.exceptionType(),
           visited,
           worklist);
     }
@@ -2533,7 +2563,7 @@ public class MustCallConsistencyAnalyzer {
       for (BlockWithObligations bwo : bwos) {
         blocksWithDuplicates.add(bwo.block);
       }
-      Collection<Block> duplicateBlocks = CollectionsPlume.duplicates(blocksWithDuplicates);
+      Collection<Block> duplicateBlocks = CollectionsP.duplicates(blocksWithDuplicates);
       StringJoiner result = new StringJoiner(", ", "BWOs[", "]");
       for (BlockWithObligations bwo : bwos) {
         ImmutableSet<Obligation> obligations = bwo.obligations;

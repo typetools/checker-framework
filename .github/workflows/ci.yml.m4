@@ -5,7 +5,7 @@ include([../../.azure/defs-common.m4])dnl
 include([defs.m4])dnl
 name: CI
 
-on:  # yamllint disable-line rule:truthy
+"on":
   push:
     branches:
       - "**"
@@ -13,9 +13,12 @@ on:  # yamllint disable-line rule:truthy
     branches:
       - "**"
 
+# Auto-cancel any in-progress jobs from the same branch or PR.
+# A push to a branch that has a pull request triggers two runs, in different
+# groups; every job's "if:" skips the "pull_request" run (see defs.m4).
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -30,23 +33,82 @@ jobs:
   # The needs clauses are:
   #  * Everything depends on the canary jobs (the main jdk25 jobs), except those jobs themselves.
   #  * Any other *_jdkNN job depends on the corresponding *_jdk25 job.
+
   canary_jobs:
     needs:
-      - junit_part1_jdk[]canary_version
-      - junit_part2_jdk[]canary_version
-      - nonjunit_jdk[]canary_version
-      - inference_part1_jdk[]canary_version
-      - inference_part2_jdk[]canary_version
-      - typecheck_part1_jdk[]canary_version
-      - typecheck_part2_jdk[]canary_version
-      - misc_jdk[]canary_version
-      - misc_jdk[]latest_version
+      - junit_part1_jdk[]canary_jdk
+      - junit_part2_jdk[]canary_jdk
+      - nonjunit_jdk[]canary_jdk
+      - inference_part1_jdk[]canary_jdk
+      - inference_part2_jdk[]canary_jdk
+      - typecheck_part1_jdk[]canary_jdk
+      - typecheck_part2_jdk[]canary_jdk
+      - misc_jdk[]canary_jdk
+      - misc_jdk[]latest_jdk
+job_if()dnl
     runs-on: ubuntu-latest
     steps:
       - name: canary_jobs
         run: true
+  ci_info:
+job_if()dnl
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk[]canary_jdk-plus:latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          fetch-depth: 0
+          show-progress: false
+          persist-credentials: false
+ifelse([This job runs no Gradle task, so it needs neither a Gradle cache nor
+GRADLE_USER_HOME.])dnl
+clone_plume_scripts_step()dnl
+      - name: set_ci_org_and_branch
+        run: |
+          # PLUME_SCRIPTS is the documented way to tell these scripts where they live.
+          PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+          # shellcheck disable=SC2034  # used by the sourced script
+          CI_DEBUG=1
+          . "$PLUME_SCRIPTS"/set-ci-org-and-branch
+      - name: set_git_range
+        run: |
+          # The sourced script reads PLUME_SCRIPTS, to find set-ci-org-and-branch.
+          PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+          # shellcheck disable=SC2034  # used by the sourced script
+          CI_DEBUG=1
+          . "$PLUME_SCRIPTS"/set-git-range
 
 include([../../.azure/jobs.m4])dnl
+
+  all_green:
+    # "all_green" is a required check. This job runs in every CI run, so that
+    # GitHub evaluates its name.  In a run whose other jobs are skipped, it is
+    # named "all_green (skipped)", lest it satisfy the requirement before the
+    # other run's "all_green" finishes.  (GitHub does not evaluate the name of
+    # a job that "if:" skips.)
+    name: ${{ (run_condition) && 'all_green' || 'all_green (skipped)' }}
+    if: always()
+    needs:
+      - junit_jdk17
+      - junit_jdk21
+      - junit_jdk[]latest_jdk
+      - nonjunit_jdk21
+      - misc_jdk21
+      - daikon_part1_jdk[]canary_jdk
+      - daikon_part2_jdk[]canary_jdk
+      - daikon_part3_jdk[]canary_jdk
+      - guava_part1_jdk[]canary_jdk
+      - guava_part2_jdk[]canary_jdk
+      - beam_part1_jdk21
+      - beam_part2_jdk21
+      - plume_lib_jdk[]canary_jdk
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any dependency failed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
 
 ifelse([
 Local Variables:

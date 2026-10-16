@@ -77,7 +77,7 @@
           expression</a></li>
 
           <li><a href="#run1">Run the Regex Checker to see how it could
-          have prevented the runtime error</a></li>
+          have prevented the run-time error</a></li>
 
           <li><a href="#validate">Validate the user input</a></li>
 
@@ -141,7 +141,7 @@ Exception in thread "main" java.util.regex.PatternSyntaxException: Unclosed char
 </pre>
 
         <p>Good programming style dictates that the user should not see a
-        stack trace, even if the user supplies invalid output.</p>
+        stack trace, even if the user supplies invalid input.</p>
       </div>
 
       <div id="run1">
@@ -161,16 +161,16 @@ RegexExample.java:13: error: [argument] incompatible types in argument.
                                       ^
   found   : String
   required: @Regex String
-1 errors
+1 error
 </pre>
 
-        <p>The "incompatible types" warning indicates that variable
+        <p>The "incompatible types" error indicates that variable
         <code>regex</code> is not of type <code>@Regex String</code> which
         is required for strings passed to <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/regex/Pattern.html#compile(java.lang.String)"><code>Pattern.compile()</code></a>.</p>
       </div>
 
       <div id="validate">
-        <h4>4. Fix the Code</h4>
+        <h4>4. Fix the code</h4>
 
         <p>The right way to fix the problems is for the code to issue a
         user-friendly message at run time.  It should <b>verify the user
@@ -207,11 +207,11 @@ $ <strong>javacheck -processor org.checkerframework.checker.regex.RegexChecker R
 </pre>
 
         <p>There should be no warnings.  This shows that the code will not
-        throw a PatternSyntaxException at compile time.</p>
+        throw a <code>PatternSyntaxException</code> at run time.</p>
       </div>
 
       <div id="runex2">
-        <h4>6. Run the Example</h4>
+        <h4>6. Run the example</h4>
 
         <p>Run the program as before (but adding <code>checker-qual.jar</code> to the classpath)
         to verify that the program

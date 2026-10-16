@@ -10,8 +10,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.StringJoiner;
 import org.checkerframework.afu.scenelib.el.AnnotationDef;
 import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
+import org.checkerframework.checker.modifiability.qual.Growable;
+import org.checkerframework.checker.modifiability.qual.Replaceable;
+import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
@@ -59,24 +64,28 @@ public final class Annotation {
     for (String fieldname : fieldValues.keySet()) {
       AnnotationFieldType aft = def.fieldTypes.get(fieldname);
       Object value = fieldValues.get(fieldname);
-      String valueString;
-      String classString = value.getClass().toString();
+      StringBuilder valueString = new StringBuilder();
+      StringBuilder classString = new StringBuilder();
+      classString.append(value.getClass().toString());
       if (value instanceof Object[] arr) {
-        valueString = Arrays.toString(arr);
-        classString += " {";
+        valueString.append(Arrays.toString(arr));
+        classString.append(" {");
         for (Object elt : arr) {
-          classString += " " + elt.getClass();
+          classString.append(' ');
+          classString.append(elt.getClass());
         }
-        classString += "}";
+        classString.append('}');
       } else if (value instanceof Collection<?> coll) {
-        valueString = Arrays.toString(coll.toArray());
-        classString += " {";
+        valueString.append(Arrays.toString(coll.toArray()));
+        classString.append(" {");
         for (Object elt : coll) {
-          classString += " " + elt.getClass();
+          assert elt != null : "@AssumeAssertion(nullness): annotation fields are non-null";
+          classString.append(' ');
+          classString.append(elt.getClass());
         }
-        classString += " }";
+        classString.append(" }");
       } else {
-        valueString = value.toString();
+        valueString.append(value.toString());
         // No need to modify valueString.
       }
       assert aft.isValidValue(value)
@@ -107,7 +116,9 @@ public final class Annotation {
    * @param ja the java.lang.annotation.Annotation to make an Annotation for
    * @param adefs a cache from which to look up (or insert into) AnnotationDefs
    */
-  public Annotation(java.lang.annotation.Annotation ja, Map<String, AnnotationDef> adefs) {
+  // TODO: `adefs` need not be `@Replaceable`.  Use the Map Key checker to avoid a warning.
+  public Annotation(
+      java.lang.annotation.Annotation ja, @Growable @Replaceable Map<String, AnnotationDef> adefs) {
     Class<? extends java.lang.annotation.Annotation> jaType = ja.annotationType();
     String name = jaType.getName();
     if (adefs.containsKey(name)) {
@@ -222,7 +233,7 @@ public final class Annotation {
    */
   @Override
   public int hashCode() {
-    return def.hashCode() + fieldValues.hashCode();
+    return Objects.hash(def, fieldValues);
   }
 
   /**
@@ -248,7 +259,7 @@ public final class Annotation {
 
     // TODO: figure out how to consider abbreviated annotation names.
     // See org.checkerframework.afu.annotator.find.AnnotationInsertion.getText(boolean, boolean)
-    sb.append("@");
+    sb.append('@');
     sb.append(def.name);
     if (fieldValues.size() == 1 && fieldValues.containsKey("value")) {
       @SuppressWarnings("nullness:assignment") // just checked containsKey
@@ -259,20 +270,21 @@ public final class Annotation {
       fieldType.format(sb, fieldValue);
       sb.append(')');
     } else if (!fieldValues.isEmpty()) {
-      sb.append('(');
-      boolean notfirst = false;
+      StringJoiner sj = new StringJoiner(", ", "(", ")");
       for (Entry<String, Object> field : fieldValues.entrySet()) {
         // parameters of the annotation
-        if (notfirst) {
-          sb.append(", ");
-        } else {
-          notfirst = true;
-        }
-        sb.append(field.getKey() + "=");
-        AnnotationFieldType fieldType = def.fieldTypes.get(field.getKey());
-        fieldType.format(sb, field.getValue());
+        @SuppressWarnings("keyfor:assignment") // the two maps have the same keys
+        @KeyFor({"fieldValues", "def.fieldTypes"}) String key = field.getKey();
+        Object value = field.getValue();
+        AnnotationFieldType fieldType = def.fieldTypes.get(key);
+
+        StringBuilder fieldSb = new StringBuilder();
+        fieldSb.append(key);
+        fieldSb.append('=');
+        fieldType.format(fieldSb, value);
+        sj.add(fieldSb);
       }
-      sb.append(')');
+      sb.append(sj);
     }
   }
 }
@@ -337,7 +349,7 @@ public final class Annotation {
 //       StringBuilder sb = new StringBuilder();
 //       sb.append("tla: ");
 //       sb.append(tldef.retention);
-//       sb.append(":");
+//       sb.append(':');
 //       sb.append(ann.toString());
 //       return sb.toString();
 //     }

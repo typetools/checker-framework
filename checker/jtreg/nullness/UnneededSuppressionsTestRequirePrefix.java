@@ -2,10 +2,10 @@
  * @test
  * @summary Test -AwarnUnneededSuppressions
  *
- * @compile/ref=UnneededSuppressionsTestRequirePrefix.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AwarnUnneededSuppressions -ArequirePrefixInWarningSuppressions UnneededSuppressionsTestRequirePrefix.java
+ * @compile/ref=UnneededSuppressionsTestRequirePrefix.goal -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AwarnUnneededSuppressions -ArequirePrefixInWarningSuppressions UnneededSuppressionsTestRequirePrefix.java
  */
 
-class UnneededSuppressionsTest {
+class UnneededSuppressionsTestRequirePrefix {
 
   @SuppressWarnings({"nullness:return"})
   public String getClassAndUid1() {
@@ -29,6 +29,16 @@ class UnneededSuppressionsTest {
 
   @SuppressWarnings({"nullness:unneeded.suppression", "nullness:return"})
   public String getClassAndUid6() {
+    return "hello";
+  }
+
+  @SuppressWarnings({"nullness", "unneeded.suppression"})
+  public String getClassAndUid7() {
+    return "hello";
+  }
+
+  @SuppressWarnings({"nullness", "nullness:unneeded.suppression"})
+  public String getClassAndUid8() {
     return "hello";
   }
 }

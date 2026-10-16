@@ -11,7 +11,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * Represents a {@link FieldDescriptor field descriptor} for a primitive or for an array whose base
  * type is primitive or in the unnamed package.
  *
- * <p>Examples: I [[J MyClass MyClass$22 [LMyClass; [LMyClass$22
+ * <p>Examples: I [[J MyClass MyClass$22 [LMyClass; [LMyClass$22;
  *
  * <p>Field descriptor (JVM type format) is defined in the <a
  * href="https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-4.html#jvms-4.3.2">Java Virtual

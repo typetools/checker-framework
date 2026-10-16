@@ -39,6 +39,6 @@ public class BusyExpression {
         CFGVisualizeLauncher.generateMethodCFG(inputFile, method, clazz, backwardAnalysis);
     CFGVisualizeLauncher.writeStringOfCFG(cfg, outputFile, backwardAnalysis);
     // The .dot and .pdf files are not tested, only created for debugging convenience.
-    CFGVisualizeLauncher.generateDOTofCFG(cfg, ".", true, true, backwardAnalysis);
+    CFGVisualizeLauncher.generatePdfOfCfg(cfg, ".", true, true, backwardAnalysis);
   }
 }

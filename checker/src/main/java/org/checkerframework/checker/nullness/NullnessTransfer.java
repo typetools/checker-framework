@@ -169,8 +169,7 @@ public class NullnessTransfer
       @Nullable NullnessValue value, NullnessStore store) {
     value = super.finishValue(value, store);
     if (value != null) {
-      value.isPolyNullNonNull = store.isPolyNullNonNull();
-      value.isPolyNullNull = store.isPolyNullNull();
+      value = withPolyNull(value, store.isPolyNullNonNull(), store.isPolyNullNull());
     }
     return value;
   }
@@ -180,10 +179,39 @@ public class NullnessTransfer
       @Nullable NullnessValue value, NullnessStore thenStore, NullnessStore elseStore) {
     value = super.finishValue(value, thenStore, elseStore);
     if (value != null) {
-      value.isPolyNullNonNull = thenStore.isPolyNullNonNull() && elseStore.isPolyNullNonNull();
-      value.isPolyNullNull = thenStore.isPolyNullNull() && elseStore.isPolyNullNull();
+      value =
+          withPolyNull(
+              value,
+              thenStore.isPolyNullNonNull() && elseStore.isPolyNullNonNull(),
+              thenStore.isPolyNullNull() && elseStore.isPolyNullNull());
     }
     return value;
+  }
+
+  /**
+   * Returns a value like {@code value}, but whose poly-null fields have the given values. Returns
+   * {@code value} itself if its fields already have those values.
+   *
+   * <p>This method does not set the fields of {@code value} in place, because {@code value} might
+   * be aliased: it might be the value that a store holds for some expression, or the value of some
+   * other node.
+   *
+   * @param value a value
+   * @param isPolyNullNonNull whether {@link PolyNull} is known to be {@link NonNull}
+   * @param isPolyNullNull whether {@link PolyNull} is known to be {@link Nullable}
+   * @return a value like {@code value}, but whose poly-null fields have the given values
+   */
+  private NullnessValue withPolyNull(
+      NullnessValue value, boolean isPolyNullNonNull, boolean isPolyNullNull) {
+    if (value.isPolyNullNonNull == isPolyNullNonNull && value.isPolyNullNull == isPolyNullNull) {
+      return value;
+    }
+    NullnessValue result =
+        new NullnessValue(
+            analysis, new AnnotationMirrorSet(value.getAnnotations()), value.getUnderlyingType());
+    result.isPolyNullNonNull = isPolyNullNonNull;
+    result.isPolyNullNull = isPolyNullNull;
+    return result;
   }
 
   /**
@@ -377,6 +405,9 @@ public class NullnessTransfer
    * SideEffectFree or the receiver is unassignable. Only if either one of the two is true, is the
    * receiver made non-null. Similar logic is applied to the arguments of the invocation.
    *
+   * <p>The receiver of a static method invocation is never made non-null, because the invocation
+   * does not dereference it.
+   *
    * <p>Provided that m is of a type that implements interface java.util.Map:
    *
    * <ul>
@@ -395,9 +426,11 @@ public class NullnessTransfer
     boolean isMethodSideEffectFree =
         atypeFactory.isSideEffectFree(method) || PurityUtils.isSideEffectFree(atypeFactory, method);
     Node receiver = n.getTarget().getReceiver();
-    if (nonNullAssumptionAfterInvocation
-        || isMethodSideEffectFree
-        || !JavaExpression.fromNode(receiver).isAssignableByOtherCode()) {
+    // A static method invocation does not dereference its receiver.
+    if (!n.getTarget().isStatic()
+        && (nonNullAssumptionAfterInvocation
+            || isMethodSideEffectFree
+            || !JavaExpression.fromNode(receiver).isAssignableByOtherCode())) {
       // Make receiver non-null.
       makeNonNull(result, receiver);
     }

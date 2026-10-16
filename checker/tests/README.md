@@ -43,7 +43,11 @@ file to be checked is `AssertNonNullTest.java` in directory
 
 ```sh
   cd $CHECKERFRAMEWORK
-  ./gradlew assembleForJavac && checker/bin/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class checker/tests/nullness/AssertNonNullTest.java
+  ./gradlew assembleForJavac \
+  && checker/bin/javac \
+      -processor org.checkerframework.checker.nullness.NullnessChecker
+      -implicit:class \
+      checker/tests/nullness/AssertNonNullTest.java
 ```
 
 where the specific checker and command-line arguments are often clear from
@@ -178,7 +182,7 @@ a warning from the same line of code:
 ```
 
 As an alternative to writing expected errors in the source file using "// ::"
-syntax, expected errors can be specified in a separate file using the .out
+syntax, expected errors can be specified in a separate file using the .goal
 file extension.  These files contain lines of the following format:
 
 ```output

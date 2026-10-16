@@ -45,11 +45,10 @@ import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.stubifier.JavaStubifier;
-import org.checkerframework.framework.util.JavaParserUtil;
+import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.ArraysPlume;
-import org.plumelib.util.CollectionsPlume;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.ArraysP;
+import org.plumelib.util.CollectionsP;
 
 /**
  * Process Java source files to remove annotations that ought to be inferred.
@@ -79,7 +78,7 @@ import org.plumelib.util.StringsPlume;
  * -Alint:cast} (or {@code -Alint:all} which implies it) is passed to javac. You can suppress the
  * warning by passing {@code -Alint:-cast} to javac.
  */
-public class RemoveAnnotationsForInference {
+public final class RemoveAnnotationsForInference {
 
   /**
    * Do not instantiate. This is a standalone program whose entry point is {@link #main(String[])}.
@@ -135,7 +134,7 @@ public class RemoveAnnotationsForInference {
         }
       }
 
-      args = ArraysPlume.subarray(args, 2, args.length - 2);
+      args = ArraysP.subarray(args, 2, args.length - 2);
     }
     if (args.length < 1) {
       System.err.println("Usage: provide one or more directory names to process");
@@ -180,7 +179,7 @@ public class RemoveAnnotationsForInference {
     CollectionStrategy strategy = new ParserCollectionStrategy();
     // Required to include directories that contain a module-info.java, which don't parse by
     // default.
-    strategy.getParserConfiguration().setLanguageLevel(JavaParserUtil.DEFAULT_LANGUAGE_LEVEL);
+    strategy.getParserConfiguration().setLanguageLevel(StaticJavaParserUtil.DEFAULT_LANGUAGE_LEVEL);
     ProjectRoot projectRoot = strategy.collect(root);
 
     for (SourceRoot sourceRoot : projectRoot.getSourceRoots()) {
@@ -196,9 +195,12 @@ public class RemoveAnnotationsForInference {
    * Callback to process each Java file; see the {@link RemoveAnnotationsForInference class
    * documentation} for details.
    */
-  private static class RemoveAnnotationsCallback implements SourceRoot.Callback {
+  private static final class RemoveAnnotationsCallback implements SourceRoot.Callback {
     /** The visitor instance. */
     private final RemoveAnnotationsVisitor rav = new RemoveAnnotationsVisitor();
+
+    /** Creates a new RemoveAnnotationsCallback. */
+    RemoveAnnotationsCallback() {}
 
     @Override
     public Result process(Path localPath, Path absolutePath, ParseResult<CompilationUnit> result) {
@@ -290,7 +292,7 @@ public class RemoveAnnotationsForInference {
    * @param newLine the new line for index {@code lineno}
    */
   static void replaceLine(List<String> lines, int lineno, String newLine) {
-    if (StringsPlume.isBlank(newLine)) {
+    if (newLine.isBlank()) {
       lines.remove(lineno);
     } else {
       lines.set(lineno, newLine);
@@ -304,8 +306,11 @@ public class RemoveAnnotationsForInference {
    * <p>The annotations will be removed from the source code by the {@link #removeAnnotations}
    * method.
    */
-  private static class RemoveAnnotationsVisitor
+  private static final class RemoveAnnotationsVisitor
       extends GenericListVisitorAdapter<AnnotationExpr, Void> {
+
+    /** Creates a new RemoveAnnotationsVisitor. */
+    RemoveAnnotationsVisitor() {}
 
     /**
      * Returns annotations that should be removed from source code.
@@ -495,8 +500,7 @@ public class RemoveAnnotationsForInference {
       return false;
     }
     List<String> checkerNames =
-        CollectionsPlume.mapList(
-            RemoveAnnotationsForInference::checkerName, suppressWarningsStrings);
+        CollectionsP.mapList(RemoveAnnotationsForInference::checkerName, suppressWarningsStrings);
     // "allcheckers" suppresses all warnings.
     if (checkerNames.contains("allcheckers")) {
       return true;
@@ -604,7 +608,7 @@ public class RemoveAnnotationsForInference {
     if (colonPos == -1) {
       return s;
     } else {
-      return s.substring(colonPos + 1);
+      return s.substring(0, colonPos);
     }
   }
 }

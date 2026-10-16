@@ -12,7 +12,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** A collection of utility functions used by several Index Checker subcheckers. */
-public class IndexUtil {
+public final class IndexUtil {
 
   /** Do not instantiate IndexUtil. */
   private IndexUtil() {

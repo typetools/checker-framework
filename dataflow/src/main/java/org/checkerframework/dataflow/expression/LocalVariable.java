@@ -20,6 +20,13 @@ public class LocalVariable extends JavaExpression {
   protected final VariableElement element;
 
   /**
+   * The cached hash code, or 0 if it has not yet been computed. A LocalVariable is immutable, so
+   * the hash code is computed at most once. Caching it is worthwhile because every store operation
+   * hashes the expressions in the store.
+   */
+  private int hashCode = 0;
+
+  /**
    * Creates a new LocalVariable.
    *
    * @param localVar a CFG local variable
@@ -39,33 +46,6 @@ public class LocalVariable extends JavaExpression {
     this.element = element;
   }
 
-  @Override
-  public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof LocalVariable other)) {
-      return false;
-    }
-
-    return sameElement(element, other.element);
-  }
-
-  /**
-   * Returns true if the two elements are the same.
-   *
-   * @param element1 the first element to compare
-   * @param element2 the second element to compare
-   * @return true if the two elements are the same
-   */
-  protected static boolean sameElement(VariableElement element1, VariableElement element2) {
-    VarSymbol vs1 = (VarSymbol) element1;
-    VarSymbol vs2 = (VarSymbol) element2;
-    // If a LocalVariable is created via JavaExpressionParseUtil#parse, then `vs1.equals(vs2)`
-    // will not return true even if the elements represent the same local variable.
-    // The owner of a lambda parameter is the enclosing method, so a local variable and a lambda
-    // parameter might have the same name and the same owner. Use pos to differentiate this
-    // case.
-    return vs1.pos == vs2.pos && vs1.name == vs2.name && vs1.owner.equals(vs2.owner);
-  }
-
   /**
    * Returns the element for this variable.
    *
@@ -73,12 +53,6 @@ public class LocalVariable extends JavaExpression {
    */
   public VariableElement getElement() {
     return element;
-  }
-
-  @Override
-  public int hashCode() {
-    VarSymbol vs = (VarSymbol) element;
-    return Objects.hash(vs.pos, vs.name, vs.owner);
   }
 
   @Override
@@ -103,19 +77,6 @@ public class LocalVariable extends JavaExpression {
   }
 
   @Override
-  public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof LocalVariable other)) {
-      return false;
-    }
-    return this.equals(other);
-  }
-
-  @Override
-  public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
-    return syntacticEquals(other);
-  }
-
-  @Override
   public boolean isAssignableByOtherCode() {
     return false;
   }
@@ -128,5 +89,54 @@ public class LocalVariable extends JavaExpression {
   @Override
   public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
     return visitor.visitLocalVariable(this, p);
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (!(obj instanceof LocalVariable other)) {
+      return false;
+    }
+
+    return sameElement(element, other.element);
+  }
+
+  @Override
+  public int hashCode() {
+    if (hashCode == 0) {
+      VarSymbol vs = (VarSymbol) element;
+      hashCode = Objects.hash(vs.pos, vs.name, vs.owner);
+    }
+    return hashCode;
+  }
+
+  @Override
+  public boolean syntacticEquals(JavaExpression je) {
+    if (!(je instanceof LocalVariable other)) {
+      return false;
+    }
+    return this.equals(other);
+  }
+
+  @Override
+  public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
+    return syntacticEquals(other);
+  }
+
+  /**
+   * Returns true if the two elements are the same.
+   *
+   * @param element1 the first element to compare
+   * @param element2 the second element to compare
+   * @return true if the two elements are the same
+   */
+  protected static boolean sameElement(VariableElement element1, VariableElement element2) {
+    VarSymbol vs1 = (VarSymbol) element1;
+    VarSymbol vs2 = (VarSymbol) element2;
+    // If a LocalVariable is created via JavaExpressionParseUtil#parse, then `vs1.equals(vs2)`
+    // will not return true even if the elements represent the same local variable.
+    // The owner of a lambda parameter is the enclosing method, so a local variable and a lambda
+    // parameter might have the same name and the same owner. Use pos to differentiate this
+    // case.
+    return vs1.pos == vs2.pos && vs1.name == vs2.name && vs1.owner.equals(vs2.owner);
   }
 }

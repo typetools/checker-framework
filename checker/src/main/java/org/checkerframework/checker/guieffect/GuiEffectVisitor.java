@@ -363,7 +363,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
       }
     }
     if (debugSpew) {
-      System.err.println("Successfully finished main non-recursive checkinv of invocation " + tree);
+      System.err.println("Successfully finished main non-recursive checking of invocation " + tree);
     }
     return super.visitMethodInvocation(tree, p);
   }

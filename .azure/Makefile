@@ -1,4 +1,11 @@
-all default: azure-pipelines.yml azure-pipelines-daily.yml
+.PHONY: all test clean default
+default: all
+# `make all` currently does nothing in this directory.
+all:
+	${MAKE} -C ../.circleci/
+	${MAKE} -C ../.github/workflows/
+
+test: all
 
 PLUME_SCRIPTS=../checker/bin-devel/.plume-scripts
 
@@ -6,10 +13,11 @@ PLUME_SCRIPTS=../checker/bin-devel/.plume-scripts
 	@chmod -f +w $@ || true
 	m4 $< > $@
 	${PLUME_SCRIPTS}/squeeze-blank-lines $@
-	@chmod -w $@
+# Don't do this for now, because it breaks prek's end-of-file-fixer.
+#	@chmod -w $@
 
 ${PLUME_SCRIPTS}:
-	make -C .. get-plume-scripts
+	../checker/bin-devel/clone-plume-scripts.sh
 
 clean:
-	rm -f azure-pipelines.yml azure-pipelines-daily.yml
+	@rm -f azure-pipelines.yml azure-pipelines-daily.yml

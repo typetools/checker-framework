@@ -28,7 +28,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * represent the result of capture conversion applied to {@code G<A1, ..., An>} (where A1, ..., An
  * may be types or wildcards and may mention inference variables).
  */
-public class CaptureBound {
+public final class CaptureBound {
   /** {@code G<A1, ..., An>} sometimes called the right-hand side. */
   private final AbstractType capturedType;
 
@@ -57,8 +57,7 @@ public class CaptureBound {
    * Creates a captured bound.
    *
    * @param capturedType a capture type
-   * @param invocation invocation a method or constructor invocation; used to create fresh inference
-   *     variables
+   * @param invocation a method or constructor invocation; used to create fresh inference variables
    * @param context the context
    */
   private CaptureBound(
@@ -67,12 +66,23 @@ public class CaptureBound {
     this.invocation = invocation;
     DeclaredType underlying = (DeclaredType) capturedType.getJavaType();
     TypeElement ele = TypesUtils.getTypeElement(underlying);
+    assert ele != null : "@AssumeAssertion(nullness): underlying is a declared type";
     this.map = context.inferenceTypeFactory.createThetaForCapture(invocation, capturedType);
 
     lhs = (InferenceType) context.inferenceTypeFactory.getTypeOfElement(ele, map);
 
+    List<AbstractType> capturedTypeArgs = capturedType.getTypeArguments();
+    assert capturedTypeArgs != null : "@AssumeAssertion(nullness): capturedType is a declared type";
+    // Mark which capture variables capture a wildcard before calling initialBounds on any of them.
+    // initialBounds on one variable can add a bound that mentions another variable, and
+    // incorporating that bound checks whether the other variable captures a wildcard.
     Iterator<Variable> alphas = this.map.values().iterator();
-    Iterator<AbstractType> args = capturedType.getTypeArguments().iterator();
+    for (AbstractType Ai : capturedTypeArgs) {
+      ((CaptureVariable) alphas.next()).setCapturedWildcard(Ai.getTypeKind() == TypeKind.WILDCARD);
+    }
+
+    alphas = this.map.values().iterator();
+    Iterator<AbstractType> args = capturedTypeArgs.iterator();
     for (TypeParameterElement pEle : ele.getTypeParameters()) {
       AbstractType Bi = context.inferenceTypeFactory.getTypeOfBound(pEle, map);
       AbstractType Ai = args.next();
@@ -81,21 +91,20 @@ public class CaptureBound {
       captureVariables.add(alphai);
       alphai.initialBounds(map);
 
-      tuples.add(CaptureTuple.of(alphai, Ai, Bi));
+      tuples.add(new CaptureTuple(alphai, Ai, Bi));
     }
   }
 
   /**
-   * Given {@code r}, a parameterized type, {@code G<A1, ..., An>}}, and one of {@code A1, ..., An}
+   * Given {@code r}, a parameterized type, {@code G<A1, ..., An>}, and one of {@code A1, ..., An}
    * is a wildcard, then, for fresh inference variables {@code B1, ..., Bn}, the constraint formula
    * {@code <G<B1, ..., Bn> -> T>} is reduced and incorporated, along with the bound {@code G<B1,
-   * ..., Bn> = capture(G<A1, ..., An>)}, with B2.
+   * ..., Bn> = capture(G<A1, ..., An>)}.
    *
    * @param r a parameterized type, {@code G<A1, ..., An>}, and one of {@code A1, ..., An} is a
    *     wildcard
    * @param target target of the constraint
-   * @param invocation invocation a method or constructor invocation; used to create fresh inference
-   *     variables
+   * @param invocation a method or constructor invocation; used to create fresh inference variables
    * @param context the context
    * @return the result of incorporating the created capture constraint
    */
@@ -109,12 +118,12 @@ public class CaptureBound {
   }
 
   /**
-   * Incorporate this capture bound. See JLS 18.3.1.
+   * Incorporate this capture bound. See JLS 18.3.2.
    *
    * <p>Also, reduces and incorporates the constraint {@code G<a1,...,an> -> target}. See JLS
    * 18.5.2.1.
    *
-   * @param target the target type of
+   * @param target the target type
    * @param context the context
    * @return the result of incorporation
    */
@@ -131,7 +140,7 @@ public class CaptureBound {
     ConstraintSet set = new ConstraintSet(new Typing(source, lhs, target, Kind.TYPE_COMPATIBILITY));
     // Reduce and incorporate so that the capture variables bounds are set.
     BoundSet b1 = set.reduce(context);
-    b1.incorporateToFixedPoint(new BoundSet(context));
+    b1.reachFixedPoint();
 
     // Then create constraints implied by captured type args that are wildcards.
     boolean containsFalse = false;
@@ -142,6 +151,24 @@ public class CaptureBound {
           containsFalse = true;
         } else {
           set.addAll(newCon);
+        }
+        if (t.capturedTypeArg.isUpperBoundedWildcard()) {
+          // If Ai is `? extends T`, add the bound alphai <: T, so that the fresh type variable
+          // that resolution creates for alphai has upper bound glb(T, Bi theta), which is the
+          // upper bound that capture conversion (JLS 5.1.10) gives it.
+          //
+          // JLS 18.3.2 does not state this bound: it implies only alphai <: Bi theta, and the
+          // wildcard's own bound T appears solely in the conditional rules that
+          // getWildcardConstraints implements just above.  JLS 18.4 then builds the fresh type
+          // variable out of alphai's own bounds, so without this bound T is lost and the capture
+          // variable comes out with upper bound Object.  javac does not lose it, because it
+          // applies real capture conversion to the return type rather than encoding capture as a
+          // set of inference variables.  See tests/all-systems/CapturedWildcardBound.java.
+          //
+          // The symmetric bound for `? super T` is deliberately not added; see
+          // CapturedWildcardBound#twoLevelSuper.
+          AbstractType T = t.capturedTypeArg.getWildcardUpperBound();
+          t.alpha.getBounds().addBound(null, VariableBounds.BoundKind.UPPER, T);
         }
       }
     }
@@ -180,7 +207,7 @@ public class CaptureBound {
    * @param variables inference variables
    * @return true if this bound contains any {@code variables}
    */
-  public boolean isCaptureMentionsAny(Collection<Variable> variables) {
+  public boolean mentionsAny(Collection<Variable> variables) {
     for (Variable a : variables) {
       if (map.containsValue(a)) {
         return true;
@@ -194,7 +221,7 @@ public class CaptureBound {
    * groups ai, Ai, and the upper bound of the corresponding type variable.
    *
    * @param alpha fresh inference variable (in the left-hand side of the capture). (Also referred to
-   *     as beta in the some places in the JLS.) For example {@code a1} in {@code G<a1, ..., an> =
+   *     as beta in some places in the JLS.) For example {@code a1} in {@code G<a1, ..., an> =
    *     capture(G<A1, ..., An>)}.
    * @param capturedTypeArg type argument in the right-hand side for the capture. For example {@code
    *     A1} in {@code G<a1, ..., an> = capture(G<A1, ..., An>)}.
@@ -202,19 +229,5 @@ public class CaptureBound {
    *     fresh inference variables
    */
   private record CaptureTuple(
-      CaptureVariable alpha, AbstractType capturedTypeArg, AbstractType bound) {
-
-    /**
-     * Creates a tuple.
-     *
-     * @param alpha capture variable
-     * @param capturedTypeArg captured type argument
-     * @param bound the bound of the type parameter
-     * @return a tuple
-     */
-    public static CaptureTuple of(
-        CaptureVariable alpha, AbstractType capturedTypeArg, AbstractType bound) {
-      return new CaptureTuple(alpha, capturedTypeArg, bound);
-    }
-  }
+      CaptureVariable alpha, AbstractType capturedTypeArg, AbstractType bound) {}
 }

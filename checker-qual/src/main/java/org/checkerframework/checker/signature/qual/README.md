@@ -1,6 +1,6 @@
-# No `@QualifierForLiteral` annotations
+# No `@QualifierForLiterals` annotations
 
-These type qualifiers have no `@QualifierForLiteral` annotations.  Instead, they
+These type qualifiers have no `@QualifierForLiterals` annotations.  Instead, they
 use the regular expressions in
 [reflection-util](https://github.com/plume-lib/reflection-util/)'s
 [`SignatureRegexes`

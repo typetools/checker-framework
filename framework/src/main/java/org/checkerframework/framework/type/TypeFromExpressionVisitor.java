@@ -76,7 +76,7 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
-  /** Creates a new TypeFromTreeVisitor. */
+  /** Creates a new TypeFromExpressionVisitor. */
   TypeFromExpressionVisitor() {
     // nothing to do
   }
@@ -185,8 +185,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
   /**
    * Compute the type of the switch expression tree.
    *
-   * @param switchExpressionTree a SwitchExpressionTree; typed as Tree so method signature is
-   *     backward-compatible
+   * @param switchExpressionTree the switch expression tree
    * @param f an AnnotatedTypeFactory
    * @return the type of the switch expression
    */
@@ -345,12 +344,12 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     }
     // Add all dimension annotations.
     int idx = 0;
-    AnnotatedTypeMirror level = result;
-    while (level.getKind() == TypeKind.ARRAY) {
-      AnnotatedArrayType array = (AnnotatedArrayType) level;
+    AnnotatedTypeMirror componentType = result;
+    while (componentType.getKind() == TypeKind.ARRAY) {
+      AnnotatedArrayType array = (AnnotatedArrayType) componentType;
       List<? extends AnnotationMirror> annos = TreeUtils.annotationsFromArrayCreation(tree, idx++);
       array.addAnnotations(annos);
-      level = array.getComponentType();
+      componentType = array.getComponentType();
     }
 
     // Add top-level annotations.

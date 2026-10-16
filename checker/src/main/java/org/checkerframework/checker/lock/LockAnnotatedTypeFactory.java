@@ -33,6 +33,7 @@ import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.NewObject;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
@@ -65,7 +66,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * LockAnnotatedTypeFactory builds types with @LockHeld and @LockPossiblyHeld annotations. LockHeld
@@ -407,16 +408,34 @@ public class LockAnnotatedTypeFactory
     }
   }
 
-  // The side effect annotations processed by the Lock Checker.
+  /** The side effect annotations processed by the Lock Checker. */
   enum SideEffectAnnotation {
+    /** The method might release some locks. */
     MAYRELEASELOCKS("@MayReleaseLocks", MayReleaseLocks.class),
+    /** The method does not release any locks. */
     RELEASESNOLOCKS("@ReleasesNoLocks", ReleasesNoLocks.class),
+    /** The method does not acquire or release any locks. */
     LOCKINGFREE("@LockingFree", LockingFree.class),
+    // `@SideEffectsOnly` is intentionally absent from this enum.  It constrains which expressions
+    // a method modifies, but it promises nothing about acquiring or releasing locks, so a
+    // `@SideEffectsOnly` method gets the same locking guarantee as an unannotated one.
+    /** The method has no side effects. */
     SIDEEFFECTFREE("@SideEffectFree", SideEffectFree.class),
+    /** The method has no side effects and is deterministic. */
     PURE("@Pure", Pure.class);
+
+    /** The annotation as written in Java source code, starting with "@". */
     final String annotation;
+
+    /** The Java class of the annotation. */
     final Class<? extends Annotation> annotationClass;
 
+    /**
+     * Creates a new SideEffectAnnotation.
+     *
+     * @param annotation the annotation as written in Java source code, starting with "@"
+     * @param annotationClass the Java class of the annotation
+     */
     SideEffectAnnotation(String annotation, Class<? extends Annotation> annotationClass) {
       this.annotation = annotation;
       this.annotationClass = annotationClass;
@@ -437,38 +456,38 @@ public class LockAnnotatedTypeFactory
     boolean isWeakerThan(SideEffectAnnotation other) {
       boolean weaker = false;
 
-      switch (other) {
-        case MAYRELEASELOCKS -> {}
+      switch (this) {
+        case MAYRELEASELOCKS -> {
+          switch (other) {
+            case RELEASESNOLOCKS, LOCKINGFREE, SIDEEFFECTFREE, PURE -> weaker = true;
+            default -> {}
+          }
+        }
         case RELEASESNOLOCKS -> {
-          if (this == MAYRELEASELOCKS) {
-            weaker = true;
+          switch (other) {
+            case LOCKINGFREE, SIDEEFFECTFREE, PURE -> weaker = true;
+            default -> {}
           }
         }
         case LOCKINGFREE -> {
-          switch (this) {
-            case MAYRELEASELOCKS, RELEASESNOLOCKS -> weaker = true;
+          switch (other) {
+            case SIDEEFFECTFREE, PURE -> weaker = true;
             default -> {}
           }
         }
         case SIDEEFFECTFREE -> {
-          switch (this) {
-            case MAYRELEASELOCKS, RELEASESNOLOCKS, LOCKINGFREE -> weaker = true;
-            default -> {}
+          if (other == PURE) {
+            weaker = true;
           }
         }
-        case PURE -> {
-          switch (this) {
-            case MAYRELEASELOCKS, RELEASESNOLOCKS, LOCKINGFREE, SIDEEFFECTFREE -> weaker = true;
-            default -> {}
-          }
-        }
+        case PURE -> {}
       }
 
       return weaker;
     }
 
     /** The weakest side effect annotation. */
-    static SideEffectAnnotation weakest = null;
+    static @MonotonicNonNull SideEffectAnnotation weakest;
 
     /**
      * Returns the weakest side effect annotation.
@@ -491,14 +510,15 @@ public class LockAnnotatedTypeFactory
   }
 
   /**
-   * Indicates which side effect annotation is present on the given method. If more than one
-   * annotation is present, this method issues an error (if issueErrorIfMoreThanOnePresent is true)
-   * and returns the annotation providing the weakest guarantee. Only call with
-   * issueErrorIfMoreThanOnePresent == true when visiting a method definition. This prevents
-   * multiple errors being issued for the same method (as would occur if
-   * issueErrorIfMoreThanOnePresent were set to true when visiting method invocations). If no
-   * annotation is present, return RELEASESNOLOCKS as the default, and MAYRELEASELOCKS as the
-   * conservative default.
+   * Indicates which side effect annotation is present on the given method. Returns LOCKINGFREE
+   * rather than PURE or SIDEEFFECTFREE. If no annotation is present, returns RELEASESNOLOCKS as the
+   * default, and MAYRELEASELOCKS as the conservative default.
+   *
+   * <p>If more than one annotation is present, this method issues an error (if
+   * issueErrorIfMoreThanOnePresent is true) and returns the annotation providing the weakest
+   * guarantee. Only call with issueErrorIfMoreThanOnePresent == true when visiting a method
+   * definition. This prevents multiple errors being issued for the same method (as would occur if
+   * issueErrorIfMoreThanOnePresent were set to true when visiting method invocations).
    *
    * @param methodElement the method element
    * @param issueErrorIfMoreThanOnePresent if true, issue an error if more than one side effect
@@ -517,6 +537,9 @@ public class LockAnnotatedTypeFactory
         EnumSet.noneOf(SideEffectAnnotation.class);
     for (SideEffectAnnotation sea : SideEffectAnnotation.values()) {
       if (getDeclAnnotationNoAliases(methodElement, sea.getAnnotationClass()) != null) {
+        if (sea == SideEffectAnnotation.PURE || sea == SideEffectAnnotation.SIDEEFFECTFREE) {
+          sea = SideEffectAnnotation.LOCKINGFREE;
+        }
         sideEffectAnnotationPresent.add(sea);
       }
     }
@@ -529,7 +552,12 @@ public class LockAnnotatedTypeFactory
           : SideEffectAnnotation.RELEASESNOLOCKS;
     }
 
-    if (count > 1 && issueErrorIfMoreThanOnePresent) {
+    if (count == 1) {
+      return sideEffectAnnotationPresent.iterator().next();
+    }
+    // count > 1
+
+    if (issueErrorIfMoreThanOnePresent) {
       // TODO: Turn on after figuring out how this interacts with inherited annotations.
       // checker.reportError(methodElement, "multiple.sideeffect.annotations");
     }
@@ -618,6 +646,11 @@ public class LockAnnotatedTypeFactory
             invokedMethod.getReceiverType() /* the method definition receiver*/,
             returnGuardSatisfiedIndex,
             receiverType.getPrimaryAnnotationInHierarchy(GUARDEDBYUNKNOWN))) {
+      return mType;
+    }
+
+    if (!inferTypeArgs) {
+      // Computing an argument's type here could re-enter inference for that argument.
       return mType;
     }
 
@@ -738,7 +771,7 @@ public class LockAnnotatedTypeFactory
     if (value instanceof List) {
       @SuppressWarnings("unchecked")
       List<AnnotationValue> la = (List<AnnotationValue>) value;
-      lockExpressions = CollectionsPlume.mapList((AnnotationValue a) -> (String) a.getValue(), la);
+      lockExpressions = CollectionsP.mapList((AnnotationValue a) -> (String) a.getValue(), la);
     } else if (value instanceof String) {
       lockExpressions = Collections.singletonList((String) value);
     } else {

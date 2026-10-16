@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
-/** An method annotation for methods that create an {@link java.util.Optional} */
+/** A method annotation for methods that create an {@link java.util.Optional}. */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
