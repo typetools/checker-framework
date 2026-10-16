@@ -1631,6 +1631,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
+   * Formats purity kinds for a diagnostic message, as the annotations that a user writes rather
+   * than as the enum constant names that {@code EnumSet.toString} would produce.
+   *
+   * @param purityKinds a set of purity kinds
+   * @return the annotations corresponding to {@code purityKinds}, space-separated
+   */
+  protected static String purityKindsToString(EnumSet<PurityKind> purityKinds) {
+    if (purityKinds.isEmpty()) {
+      return "(no side effect annotation)";
+    }
+    StringJoiner result = new StringJoiner(" ");
+    for (PurityKind purityKind : purityKinds) {
+      switch (purityKind) {
+        case SIDE_EFFECT_FREE -> result.add("@SideEffectFree");
+        case DETERMINISTIC -> result.add("@Deterministic");
+      }
+    }
+    return result.toString();
+  }
+
+  /**
    * Reports errors found during purity checking.
    *
    * @param result the result of the purity analysis
@@ -4724,27 +4745,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             purityKindsToString(superPurity),
             overridden);
       }
-    }
-
-    /**
-     * Formats purity kinds for a diagnostic message, as the annotations that a user writes rather
-     * than as the enum constant names that {@code EnumSet.toString} would produce.
-     *
-     * @param purityKinds a set of purity kinds
-     * @return the annotations corresponding to {@code purityKinds}, space-separated
-     */
-    private String purityKindsToString(EnumSet<PurityKind> purityKinds) {
-      if (purityKinds.isEmpty()) {
-        return "(no side effect annotation)";
-      }
-      StringJoiner result = new StringJoiner(" ");
-      for (PurityKind purityKind : purityKinds) {
-        switch (purityKind) {
-          case SIDE_EFFECT_FREE -> result.add("@SideEffectFree");
-          case DETERMINISTIC -> result.add("@Deterministic");
-        }
-      }
-      return result.toString();
     }
 
     /**

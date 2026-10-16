@@ -26,7 +26,6 @@ import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -373,20 +372,18 @@ public final class PurityChecker {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void ignore) {
       ExecutableElement elt = TreeUtils.elementFromUse(tree);
-      EnumSet<PurityKind> eltPurityKinds = PurityUtils.getPurityKinds(annoProvider, elt);
+      EnumSet<PurityKind> callKinds = EnumSet.copyOf(PurityUtils.getPurityKinds(annoProvider, elt));
       boolean pureGetter = assumePureGetters && ElementUtils.isGetter(elt);
-      boolean seFree =
-          assumeSideEffectFree
-              || pureGetter
-              || eltPurityKinds.contains(PurityKind.SIDE_EFFECT_FREE);
-      boolean det =
-          assumeDeterministic
-              || pureGetter
-              || eltPurityKinds.contains(PurityKind.DETERMINISTIC)
-              // A side-effect-free method with no return value is deterministic:  two calls
-              // return the same (absent) value.  This includes a `this()` or `super()` call,
-              // whose element's return type is void.
-              || (seFree && elt.getReturnType().getKind() == TypeKind.VOID);
+      if (assumeSideEffectFree || pureGetter) {
+        callKinds.add(PurityKind.SIDE_EFFECT_FREE);
+      }
+      if (assumeDeterministic || pureGetter) {
+        callKinds.add(PurityKind.DETERMINISTIC);
+      }
+      // The element of a `this()` or `super()` call returns void, too.
+      PurityUtils.addDeterminismOfVoidCall(callKinds, elt.getReturnType());
+      boolean seFree = callKinds.contains(PurityKind.SIDE_EFFECT_FREE);
+      boolean det = callKinds.contains(PurityKind.DETERMINISTIC);
       if (!det && !seFree) {
         purityResult.addNotBothReason(tree, "call");
       } else if (!det) {
