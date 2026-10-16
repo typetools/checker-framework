@@ -1151,7 +1151,7 @@ public abstract class CFAbstractTransfer<
       JavaExpression expr = JavaExpression.fromNode(bindingVar);
       AnnotatedTypeMirror expType =
           analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
-      for (AnnotationMirror anno : expType.getPrimaryAnnotations()) {
+      for (AnnotationMirror anno : expType.getAnnotations()) {
         in.getRegularStore().insertOrRefine(expr, anno);
       }
     }
