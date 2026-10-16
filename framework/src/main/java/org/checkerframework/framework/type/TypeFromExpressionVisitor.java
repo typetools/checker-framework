@@ -33,6 +33,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -255,7 +256,10 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     if (tree.getIdentifier().contentEquals("this")) {
       // Tree is "MyClass.this", where "MyClass" may be the innermost enclosing type or any
       // outer type.
-      return f.getEnclosingType(TypesUtils.getTypeElement(TreeUtils.typeOf(tree)), tree);
+      @SuppressWarnings({"nullness:argument", "nullness:assignment"}) // MyClass.this encloses tree
+      @NonNull AnnotatedDeclaredType enclosingType =
+          f.getEnclosingType(TypesUtils.getTypeElement(TreeUtils.typeOf(tree)), tree);
+      return enclosingType;
     } else if (tree.getIdentifier().contentEquals("super")) {
       // Tree is "MyClass.super", where "MyClass" may be the innermost enclosing type or any
       // outer type.

@@ -203,7 +203,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
       lowerBound.replaceAnnotations(typeLowerBound);
       return lowerBound;
     }
-    if (areErasedJavaTypesEquivalent(type, lowerBound)) {
+    if (TypesUtils.isErasedSameType(
+        type.getUnderlyingType(), lowerBound.getUnderlyingType(), types)) {
       return visit(type, lowerBound, p);
     }
     // If type and lowerBound are not the same type, then lowerBound is a subtype of type,
@@ -226,22 +227,6 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     TypeMirror javaSubtype = types.erasure(subtype.getUnderlyingType());
     TypeMirror javaSupertype = types.erasure(supertype.getUnderlyingType());
     return types.isSubtype(javaSubtype, javaSupertype);
-  }
-
-  /**
-   * Returns true if the underlying, erased Java type of {@code typeA} and {@code typeB} are
-   * equivalent.
-   *
-   * @param typeA a type
-   * @param typeB a type
-   * @return true if the underlying, erased Java type of {@code typeA} and {@code typeB} are
-   *     equivalent
-   */
-  private boolean areErasedJavaTypesEquivalent(
-      AnnotatedTypeMirror typeA, AnnotatedTypeMirror typeB) {
-    TypeMirror underlyingTypeA = types.erasure(typeA.getUnderlyingType());
-    TypeMirror underlyingTypeB = types.erasure(typeB.getUnderlyingType());
-    return types.isSameType(underlyingTypeA, underlyingTypeB);
   }
 
   @Override
@@ -335,7 +320,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   @Override
   public AnnotatedTypeMirror visitDeclared_Declared(
       AnnotatedDeclaredType type, AnnotatedDeclaredType superType, Void p) {
-    if (areErasedJavaTypesEquivalent(type, superType)) {
+    if (TypesUtils.isErasedSameType(
+        type.getUnderlyingType(), superType.getUnderlyingType(), types)) {
       return type;
     }
 

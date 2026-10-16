@@ -2367,11 +2367,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param typeElement type of the enclosing type to return
    * @param tree location to use
    * @return the enclosing type at the location of {@code tree} that is the same type as {@code
-   *     typeElement}
+   *     typeElement}, or null if there is no such type
    */
-  public AnnotatedDeclaredType getEnclosingType(TypeElement typeElement, Tree tree) {
+  public @Nullable AnnotatedDeclaredType getEnclosingType(TypeElement typeElement, Tree tree) {
     AnnotatedDeclaredType thisType = getSelfType(tree);
-    while (!isSameType(thisType.getUnderlyingType(), typeElement.asType())) {
+    while (thisType != null
+        && !TypesUtils.isErasedSameType(
+            thisType.getUnderlyingType(), typeElement.asType(), types)) {
       thisType = thisType.getEnclosingType();
     }
     return thisType;
@@ -2403,19 +2405,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   private boolean isSubtype(TypeMirror type1, TypeMirror type2) {
     return types.isSubtype(types.erasure(type1), types.erasure(type2));
-  }
-
-  /**
-   * Returns true if the erasure of {@code type1} is the same Java type as the erasure of {@code
-   * type2}.
-   *
-   * @param type1 a type
-   * @param type2 a type
-   * @return true if the erasure of {@code type1} is the same Java type as the erasure of {@code
-   *     type2}
-   */
-  private boolean isSameType(TypeMirror type1, TypeMirror type2) {
-    return types.isSameType(types.erasure(type1), types.erasure(type2));
   }
 
   /**
