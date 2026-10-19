@@ -10,8 +10,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.mustcall.qual.Owning;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.constraint.Constraint.Kind;
 import org.checkerframework.framework.util.typeinference8.types.Dependencies;
@@ -126,7 +128,8 @@ public class ConstraintSet implements ReductionResult {
    *
    * @param c a constraint to add to this set, or null
    */
-  private void addIfAbsent(Constraint c) {
+  private void addIfAbsent(
+      @UnknownInitialization(ConstraintSet.class) ConstraintSet this, @Nullable Constraint c) {
     if (c != null && members.add(c)) {
       queue.addLast(c);
     }

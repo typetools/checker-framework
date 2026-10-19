@@ -132,7 +132,11 @@ public class InvocationTypeInference {
    * @param factory the annotated type factory to use
    * @param pathToExpression path to the expression for which inference is performed
    */
-  @SuppressWarnings("this-escape")
+  @SuppressWarnings({
+    "nullness:argument", // Java8InferenceContext doesn't use "this" during construction
+    "nullness:assignment", // Java8InferenceContext doesn't use "this" during construction
+    "this-escape"
+  })
   public InvocationTypeInference(AnnotatedTypeFactory factory, TreePath pathToExpression) {
     this.checker = factory.getChecker();
     this.context = new Java8InferenceContext(factory, pathToExpression, this);
@@ -319,6 +323,7 @@ public class InvocationTypeInference {
   public InferenceResult infer(MemberReferenceTree invocation) throws FalseBoundException {
 
     ProperType target = context.inferenceTypeFactory.getTargetType();
+    assert target != null : "@AssumeAssertion(nullness): a method reference has a target type";
     AbstractType target1 =
         InferenceType.create(
             target.getAnnotatedType(),
@@ -572,7 +577,9 @@ public class InvocationTypeInference {
       }
       if (compatibility) {
         BoundSet resolve = Resolution.resolve(alpha, b2, context);
-        ProperType u = (ProperType) alpha.getBounds().getInstantiation().capture(context);
+        ProperType alphaInstantiation = alpha.getInstantiation();
+        assert alphaInstantiation != null : "@AssumeAssertion(nullness): alpha was just resolved";
+        ProperType u = (ProperType) alphaInstantiation.capture(context);
         String source =
             "Constraint between method call type and target type for method call (compatibility"
                 + " constraint): "

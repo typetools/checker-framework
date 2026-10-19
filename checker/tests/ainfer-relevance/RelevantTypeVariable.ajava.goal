@@ -22,4 +22,19 @@ public class RelevantTypeVariable<T extends CharSequence> {
     @org.checkerframework.dataflow.qual.SideEffectFree
     static <U extends CharSequence> void expectsSibling1(U u) {
     }
+
+    // Likewise when a use of the type variable is the element type of an array type.
+    @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 T[] arrayField;
+
+    @org.checkerframework.dataflow.qual.Impure
+    void assignArrayField(T[] t) {
+        // :: warning: [assignment]
+        arrayField = t;
+    }
+
+    @org.checkerframework.dataflow.qual.Impure
+    void useArrayField() {
+        // :: warning: [argument]
+        expectsSibling1(arrayField[0]);
+    }
 }

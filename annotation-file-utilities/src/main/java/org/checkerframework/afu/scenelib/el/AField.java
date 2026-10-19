@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
 
 /** A field or method formal parameter. */
 public class AField extends ADeclaration {
@@ -165,7 +166,9 @@ public class AField extends ADeclaration {
    * @param <K> the type of the map keys
    * @return a new vivifying map from keys to {@link AField}s
    */
-  static <K extends Object> VivifyingMap<K, AField> newVivifyingLHMap_AF() {
+  @SuppressWarnings("modifiability:return") // The anonymous subclass's constructor result
+  // is the top qualifier, so it does not propagate the backing map's @Modifiable type.
+  static <K extends Object> @Modifiable VivifyingMap<K, AField> newVivifyingLHMap_AF() {
     return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public AField createValueFor(K k) {

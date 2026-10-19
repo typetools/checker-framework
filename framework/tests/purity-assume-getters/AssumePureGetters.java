@@ -45,32 +45,32 @@ public class AssumePureGetters {
 
   @Pure
   int callNonGetterByName() {
-    // :: error: [purity.not.deterministic.not.sideeffectfree.call]
+    // :: error: [purity.call]
     return readField();
   }
 
   @Pure
   int callNonGetterByCase() {
-    // :: error: [purity.not.deterministic.not.sideeffectfree.call]
+    // :: error: [purity.call]
     return getterForField();
   }
 
   @Pure
   int callNonGetterWithParameter() {
-    // :: error: [purity.not.deterministic.not.sideeffectfree.call]
+    // :: error: [purity.call]
     return getFieldPlus(1);
   }
 
   @Pure
   int callStaticGetter() {
-    // :: error: [purity.not.deterministic.not.sideeffectfree.call]
+    // :: error: [purity.call]
     return getStaticField();
   }
 
   /** The assumption is about the methods that a body calls, not about the body itself. */
   @Pure
   int bodyIsStillChecked() {
-    // :: error: [purity.not.deterministic.not.sideeffectfree.assign.field]
+    // :: error: [purity.assign.field]
     field++;
     return getField();
   }

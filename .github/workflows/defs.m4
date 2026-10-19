@@ -6,6 +6,23 @@ define([dependsOn], [needs])dnl
 dnl
 define([job_name], [$1:])dnl
 dnl
+ifelse([A push to a branch *of this repository* that has an open pull request
+triggers both a "push" run and a "pull_request" run. The two runs are in
+different concurrency groups, so neither cancels the other. Each job runs only
+in the "push" run and in a "pull_request" run for a pull request from a fork.
+Skipping the other "pull_request" runs is a trade-off, not a removal of
+duplicate work: a "push" run tests the branch head, but a "pull_request" run
+tests the merge of the branch into its base branch. So a pull request from a
+branch of this repository is not tested against changes to its base branch
+that it does not conflict with textually.
+A job's "if:" that calls no status function is implicitly "success() && ...",
+so this condition does not make a job run after a job that it needs has
+failed.])dnl
+define([run_condition], [github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository])dnl
+define([job_if], [dnl
+    if: run_condition
+])dnl
+dnl
 ifelse([The Gradle distribution is the same in every job, so all jobs share one
 cache entry, whose key mentions no job. The key covers only the file that pins
 the distribution's version. The distribution cache has no "restore-keys",
@@ -29,6 +46,10 @@ ifelse([ * "misc" is the only group that runs Spotless, the Javadoc linting
    tasks, and the manual's build.])dnl
 ifelse([ * "plume-lib" is the lone job that runs Gradle in another project's
    directory, once per plume-lib package.])dnl
+ifelse([Group "beam" is the Beam jobs, which run Gradle in Beam's directory.
+Beam's dependencies are several gigabytes, too large for the cache quota, so
+these jobs restore group "cf"'s entries, for this project's own build, and
+never save.])dnl
 ifelse([Group "cf" holds every other job. Those jobs build and test this
 project alone: Daikon builds with "make" and Guava with Maven, whose
 artifacts this cache does not cover.])dnl
@@ -45,13 +66,14 @@ other.])dnl
 ifelse([A "!" pattern removes files that an earlier pattern matched, so the
 include pattern must enumerate files, via "/**", rather than name the
 directory, which "actions/cache" would archive whole.])dnl
-ifelse([Takes 1 argument: the cache group.])dnl
+ifelse([Takes 1 or 2 arguments: the cache group, and optionally the action
+to use, which defaults to "actions/cache".])dnl
 define([gradle_cache], [dnl
-      - uses: actions/cache@v6
+      - uses: ifelse([$2],,[actions/cache],[$2])@v6
         with:
           path: ~/.gradle/wrapper
           key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-      - uses: actions/cache@v6
+      - uses: ifelse([$2],,[actions/cache],[$2])@v6
         with:
           path: |
             ~/.gradle/caches/modules-2/**
@@ -63,11 +85,17 @@ define([gradle_cache], [dnl
             gradle-modules-
 ])dnl
 dnl
+ifelse([Takes 1 argument: the cache group whose entries to restore. Like
+"gradle_cache", but never saves.])dnl
+define([gradle_cache_restore], [gradle_cache([$1], [actions/cache/restore])])dnl
+dnl
 ifelse([Takes 1 argument: the name of the test script that a job runs.
 Expands to the cache group that the job belongs to.])dnl
 define([cache_group], [dnl
 ifelse($1,test-cftests-nonjunit.sh,[nonjunit],
        $1,test-plume-lib.sh,[plume-lib],
+       $1,test-beam-part1.sh,[beam],
+       $1,test-beam-part2.sh,[beam],
        [cf])])dnl
 dnl
 ifelse([Gradle derives its user home from the JVM's "user.home" property, which
@@ -90,6 +118,7 @@ define([clone_plume_scripts_step], [dnl
 dnl
 ifelse([Takes 4 arguments: OS, JDK version number, name, command line.])dnl
 define([boilerplate], [dnl
+job_if()dnl
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-$1-jdk$2[]docker_testing:latest
@@ -111,7 +140,7 @@ gradle_user_home()dnl
           fetch-depth: 25
           show-progress: false
           persist-credentials: false
-gradle_cache(cache_group($3))dnl
+ifelse(cache_group($3),beam,[gradle_cache_restore(cf)],[gradle_cache(cache_group($3))])dnl
       - name: $3
         run: $4
         env:
@@ -175,6 +204,7 @@ ifelse($1,canary_jdk,,$1,latest_jdk,,[    dependsOn:
       - canary_jobs
       - misc_jdk[]canary_jdk
 ])dnl
+job_if()dnl
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk$1-plus[]docker_testing:latest
@@ -246,6 +276,17 @@ ifelse($1,canary_jdk,,[dnl
       - guava_part2_jdk[]canary_jdk
 ])dnl
 boilerplate(ubuntu, $1, test-guava-part2.sh, ./checker/bin-devel/test-guava-part2.sh)dnl
+])dnl
+dnl
+define([beam_job], [dnl
+  job_name(beam_part1_jdk$1)
+    dependsOn:
+      - canary_jobs
+boilerplate(ubuntu, $1, test-beam-part1.sh, ./checker/bin-devel/test-beam-part1.sh)dnl
+  job_name(beam_part2_jdk$1)
+    dependsOn:
+      - canary_jobs
+boilerplate(ubuntu, $1, test-beam-part2.sh, ./checker/bin-devel/test-beam-part2.sh)dnl
 ])dnl
 dnl
 define([plume_lib_job], [dnl

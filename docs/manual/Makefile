@@ -3,7 +3,7 @@
 -include Makefile.user
 
 .PHONY: all test clean
-all: manual.pdf manual.html ../api
+all: manual.pdf html ../api
 test: all
 
 .PHONY: figures-all
@@ -15,24 +15,40 @@ figures-all:
 manual.pdf: *.tex plume-bib figures-all check-labels
 	latexmk -silent -pdf -interaction=nonstopmode manual.tex || latexmk -gg -pdf -interaction=nonstopmode manual.tex
 
+# The HTML versions of the manual are produced by lwarp.
+# manual.html is a single page; manual-multipage.html is the first of many pages.
 .PHONY: html
-html: manual.html
-manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
-	hevea -fix svg.hva -exec xxdate.exe manual.tex
-# I'm not sure why this is necessary; "hevea -fix" should run it automatically.
-# Also, you need ImageMagick 6.8.0-2 Beta or later to avoid a bug.
-	imagen manual
-	./add-favicon-to-manual
-# The following three lines are only necessary when using Hevea before version 2.04.
-# With version 2.04 they have no effect but do no harm.
-	\mv -f manual.html manual.html-with-htoc
-	./hevea-retarget-crossrefs < manual.html-with-htoc > manual.html
-	\rm -f manual.html-with-htoc
-# Add CSS styling, since \newstyle doesn't work for me.
-	sed -i.bak -e "s%<style type=\"text/css\">%<style type=\"text/css\">\nimg { max-width: 100\%; max-height: 100\%; }%" manual.html
-# Add CSS styling for some links, since \ahrefloc doesn't permit styling
-	sed -i.bak -e 's%\(<a href="#[^"]*"\)\(><span style="font-size:small">&\#X1F517;</span></a>\)%\1 style="color:inherit; text-decoration:none"\2%g' manual.html
-	rm -f manual.html.bak
+html: manual.html manual-multipage.html
+
+# `lwarpmk limages` converts images in background processes and exits before
+# they finish.  Those processes inherit lwarpmk's standard error, so reading
+# it through a pipe until end-of-file waits for every conversion to finish.
+# The argument is the lwarpmk project.
+LWARPMK_LIMAGES = bash -o pipefail -c 'lwarpmk limages -p "$$0" 2>&1 | cat'
+
+# lwarpmk requires configuration files that are written when LaTeX processes
+# the source file in print mode.  Creating manual.pdf does so for manual.tex.
+# Each lwarpmk command must select its project with -p.  Otherwise, lwarpmk
+# uses lwarpmk.conf, which is for whichever project LaTeX processed last.
+manual.html: manual.pdf manual.css lwarp-postprocess sidetoc.js CFLogo.png favicon-checkerframework.png
+	lwarpmk html -p manual
+	${LWARPMK_LIMAGES} manual
+	./lwarp-postprocess manual.html
+
+# The HTML files of the multi-page version of the manual, other than lwarp's
+# intermediate files such as manual-multipage_html.html.
+MULTIPAGE_HTML_FILES = ls manual-*.html | grep -v '_html\.html$$'
+
+# The order-only prerequisite on manual.html prevents the two lwarpmk
+# invocations from running in parallel, because they write the same files.
+# The rule removes existing pages, so that no page remains from a
+# previous build in which a chapter had a different name.
+manual-multipage.html: manual.pdf manual-multipage.tex manual.css lwarp-postprocess sidetoc.js CFLogo.png favicon-checkerframework.png | manual.html
+	pdflatex -interaction=nonstopmode manual-multipage.tex
+	\rm -f manual-*.html
+	lwarpmk html -p manual-multipage
+	${LWARPMK_LIMAGES} manual-multipage
+	./lwarp-postprocess $$(${MULTIPAGE_HTML_FILES})
 
 ../../checker/bin-devel/.git-scripts:
 	../../checker/bin-devel/clone-or-update.sh https://github.com/plume-lib/git-scripts.git ../../checker/bin-devel/.git-scripts
@@ -66,31 +82,35 @@ plume-bib:
 	../../checker/bin-devel/clone-or-update.sh https://github.com/mernst/plume-bib.git plume-bib
 
 
-# Leaves manual.html, and .svg files that it references.
+# Leaves the HTML files and the files that they reference.
 .PHONY: clean
 clean:
-	@\rm -f *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc manual.image.tex TAGS
+	@\rm -f *.aux *.blg *.dvi *.fdb_latexmk *.fls *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc TAGS
+	@\rm -f *_html.* *.lwarpmkconf lwarpmk.conf *.cut *.sidetoc lwarp.ist lwarp.xdy
+	@\rm -f lwarp_mathjax.txt lwarp_one_limage.txt sample_project.css *-images.txt
 
 .PHONY: very-clean very_clean
 very-clean: very_clean
 very_clean: clean
-	@\rm -f manual.html manual.bbl CFLogo.png manual001.png favicon-checkerframework.png *.svg
+	@\rm -f manual.html manual-*.html manual.bbl CFLogo.png favicon-checkerframework.png
+	@\rm -f lwarp.css lwarp_formal.css lwarp_sagebrush.css
+	@\rm -rf manual-images manual-multipage-images
 
 .PHONY: checklink
 checklink:
 	checklink-via-http
 
 .PHONY: checklink-via-file
-checklink-via-file:
-	${CHECKLINK}/checklink -q -e $(grep -v '^#' ${CHECKLINK}/checklink-args.txt) manual.html
+checklink-via-file: html
+	${CHECKLINK}/checklink -q -e $$(grep -v '^#' ${CHECKLINK}/checklink-args.txt) manual.html $$(${MULTIPAGE_HTML_FILES})
 
 # Example invocation:
 #   CHECKLINK=$HOME/bin/src/checklink make checklink-via-http
 .PHONY: checklink-via-http
-checklink-via-http: manual.html
+checklink-via-http: html
 	rm -rf ${HOME}/public_html/tmp-cf-manual
 	(cd .. && cp -prf manual ${HOME}/public_html/tmp-cf-manual)
-	${CHECKLINK}/checklink -q -e `grep -v '^#' ${CHECKLINK}/checklink-args.txt` https://homes.cs.washington.edu/~mernst/tmp-cf-manual/manual.html
+	${CHECKLINK}/checklink -q -e `grep -v '^#' ${CHECKLINK}/checklink-args.txt` $$( (echo manual.html; ${MULTIPAGE_HTML_FILES}) | sed 's%^%https://homes.cs.washington.edu/~mernst/tmp-cf-manual/%')
 
 .PHONY: tags TAGS
 TAGS: tags

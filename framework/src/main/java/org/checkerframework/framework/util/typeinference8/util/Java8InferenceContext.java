@@ -157,9 +157,9 @@ public class Java8InferenceContext {
   public void addLambdaParamTargets(
       List<? extends VariableTree> parameters, AbstractType lambdaTargetType) {
     for (int i = 0; i < parameters.size(); i++) {
-      lambdaParamTargets.put(
-          TreeUtils.elementFromDeclaration(parameters.get(i)),
-          new LambdaParamTarget(lambdaTargetType, i));
+      VariableElement paramElt = TreeUtils.elementFromDeclaration(parameters.get(i));
+      assert paramElt != null : "@AssumeAssertion(nullness): javac attributed the lambda";
+      lambdaParamTargets.put(paramElt, new LambdaParamTarget(lambdaTargetType, i));
     }
   }
 
@@ -170,7 +170,12 @@ public class Java8InferenceContext {
    * @param pathToExpression path to the expression whose type arguments are inferred
    * @param inference inference object
    */
-  @SuppressWarnings("this-escape")
+  @SuppressWarnings({
+    "this-escape",
+    "nullness:argument", // Objects.hash uses only the identity hash code of `this`, and the
+    // InferenceFactory constructor reads only `typeFactory`, which is already set.
+    "nullness:assignment" // see the justification for "nullness:argument"
+  })
   public Java8InferenceContext(
       AnnotatedTypeFactory factory, TreePath pathToExpression, InvocationTypeInference inference) {
     this.typeFactory = factory;

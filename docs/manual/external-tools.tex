@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Integration with external tools}{external-tools}
 
 This chapter discusses how to run a checker from the command line, from a
@@ -87,7 +86,7 @@ android {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = "4.2.3"
+    ext.checkerFrameworkVersion = "4.3.1"
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
     // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
@@ -115,9 +114,7 @@ that your Ant file already contains a compilation target that uses the
 \item
 Set the \code{cfJavac} property:
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   <property environment="env"/>
   <property name="checkerframework" value="${env.CHECKERFRAMEWORK}" />
@@ -131,16 +128,12 @@ Set the \code{cfJavac} property:
     </javac>
   </presetdef>
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 \item \textbf{Duplicate} the compilation target, then \textbf{modify} it slightly as
 indicated in this example:
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   <target name="check-nullness"
           description="Check for null pointer dereferences"
@@ -156,9 +149,7 @@ indicated in this example:
     </cf.javac>
   </target>
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 Fill in each ellipsis (\ldots) from the original compilation target.
 However, do not copy any \<fork=> setting from the original \code{<javac>}
@@ -237,13 +228,13 @@ file showing how to enable the Checker Framework:
 \begin{Verbatim}
 prebuilt_jar(
     name = 'checker-framework',
-    binary_jar = 'checker-4.2.3.jar',
+    binary_jar = 'checker-4.3.1.jar',
     visibility = [ 'PUBLIC' ]
 )
 
 prebuilt_jar(
     name = 'checker-qual',
-    binary_jar = 'checker-qual-4.2.3.jar',
+    binary_jar = 'checker-qual-4.3.1.jar',
     visibility = [ 'PUBLIC' ]
 )
 
@@ -321,7 +312,7 @@ other than \<\${HOME}/checker-framework-\ReleaseVersion{}/>.
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profile| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-4.2.3
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-4.3.1
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
 
@@ -342,7 +333,7 @@ other than \<\${HOME}/checker-framework-\ReleaseVersion{}/>.
     file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-4.2.3
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-4.3.1
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -364,11 +355,11 @@ other than \<\${HOME}/checker-framework-\ReleaseVersion{}/>.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-4.2.3
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-4.3.1
   alias javacheck='java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar"'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-4.2.3\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-4.3.1\
   doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 
@@ -444,9 +435,9 @@ the environment variable \<CHECKERFRAMEWORK> to point to the unzipped directory.
 Alternately, you can get all of the jars mentioned in this section from Maven Central:
 
 \begin{itemize}
-\item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-qual/4.2.3/checker-qual-4.2.3.jar}
-\item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-util/4.2.3/checker-util-4.2.3.jar}
-\item \<checker.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/4.2.3/checker-4.2.3-all.jar}
+\item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-qual/4.3.1/checker-qual-4.3.1.jar}
+\item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-util/4.3.1/checker-util-4.3.1.jar}
+\item \<checker.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/4.3.1/checker-4.3.1-all.jar}
 \end{itemize}
 
 These instructions should work on JDK 17 or later, but we only test with supported
@@ -570,7 +561,7 @@ run the Ant target by executing the following steps
 
 \item
   Select \code{build.xml} in one of the navigation views and choose
-  {\bf Run As $>$ Ant Build...} from its context menu.
+  {\bf Run As \textgreater{} Ant Build...} from its context menu.
 
 \item
   A launch configuration dialog is opened on a launch configuration
@@ -599,8 +590,8 @@ this list.
 To eliminate the warnings:
 disable all ``Unhandled Token in @SuppressWarnings'' warnings in Eclipse.
 Look under the menu headings
-``Java $\rightarrow$ Compiler $\rightarrow$ Errors/Warnings $\rightarrow$
-Annotations $\rightarrow$ Unhandled Token in '@SuppressWarnings',''
+``Java \rightarrowsym{} Compiler \rightarrowsym{} Errors/Warnings \rightarrowsym{}
+Annotations \rightarrowsym{} Unhandled Token in '@SuppressWarnings',''
 and set it to ignore.
 
 
@@ -1047,9 +1038,7 @@ annotation processor output will appear in the editor.
 \item
 Set the \code{cfJavac} property:
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   <property environment="env"/>
   <property name="checkerframework" value="${env.CHECKERFRAMEWORK}" />
@@ -1063,18 +1052,14 @@ Set the \code{cfJavac} property:
     </javac>
   </presetdef>
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 \item
 Override the \code{-init-macrodef-javac-with-processors} target to
 use \code{cf.javac} instead of \code{javac} and to run the checker.
 In this example, a nullness checker is run:
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   <target depends="-init-ap-cmdline-properties" if="ap.supported.internal"
         name="-init-macrodef-javac-with-processors">
@@ -1131,9 +1116,7 @@ In this example, a nullness checker is run:
   <target name="-post-jar">
   </target>
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 When Build and Clean Project is used, the output of the checker will
 now appear in the build console. However, annotation processor output
