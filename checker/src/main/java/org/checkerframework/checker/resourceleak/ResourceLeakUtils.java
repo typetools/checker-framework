@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
@@ -63,7 +62,8 @@ public final class ResourceLeakUtils {
    *     part of the Resource Leak hierarchy
    * @return the {@link ResourceLeakChecker} in the checker hierarchy
    */
-  public static ResourceLeakChecker getResourceLeakChecker(SourceChecker referenceChecker) {
+  public static ResourceLeakChecker getResourceLeakChecker(
+      @Nullable SourceChecker referenceChecker) {
     if (referenceChecker instanceof ResourceLeakChecker rlc) {
       return rlc;
     } else if (referenceChecker instanceof RLCCalledMethodsChecker
@@ -85,25 +85,20 @@ public final class ResourceLeakUtils {
    * @return the {@link MustCallAnnotatedTypeFactory} in the checker hierarchy
    */
   public static MustCallAnnotatedTypeFactory getMustCallAnnotatedTypeFactory(
-      SourceChecker referenceChecker) {
-    if (referenceChecker == null) {
-      throw new IllegalArgumentException("Argument referenceChecker cannot be null");
-    }
-
-    String className = referenceChecker.getClass().getSimpleName();
-    if ("MustCallChecker".equals(className)
-        || "MustCallNoCreatesMustCallForChecker".equals(className)) {
-      return (MustCallAnnotatedTypeFactory) ((MustCallChecker) referenceChecker).getTypeFactory();
-    } else if ("CollectionOwnershipChecker".equals(className)) {
+      @Nullable SourceChecker referenceChecker) {
+    if (referenceChecker instanceof MustCallChecker mcc) {
+      return (MustCallAnnotatedTypeFactory) mcc.getTypeFactory();
+    } else if (referenceChecker instanceof CollectionOwnershipChecker) {
       return getMustCallAnnotatedTypeFactory(
           referenceChecker.getSubchecker(RLCCalledMethodsChecker.class));
-    } else if ("RLCCalledMethodsChecker".equals(className)) {
+    } else if (referenceChecker instanceof RLCCalledMethodsChecker) {
+      // getSubchecker matches exact classes; check MustCallNoCreatesMustCallForChecker separately.
       MustCallChecker mcc = referenceChecker.getSubchecker(MustCallChecker.class);
       return getMustCallAnnotatedTypeFactory(
           mcc != null
               ? mcc
               : referenceChecker.getSubchecker(MustCallNoCreatesMustCallForChecker.class));
-    } else if ("ResourceLeakChecker".equals(className)) {
+    } else if (referenceChecker instanceof ResourceLeakChecker) {
       return getMustCallAnnotatedTypeFactory(
           referenceChecker.getSubchecker(CollectionOwnershipChecker.class));
     } else {
@@ -111,7 +106,7 @@ public final class ResourceLeakUtils {
           "Argument referenceChecker to"
               + " ResourceLeakUtils#getMustCallAnnotatedTypeFactory(referenceChecker) expected to"
               + " be an RLC checker but is "
-              + className);
+              + (referenceChecker == null ? "null" : referenceChecker.getClass().getSimpleName()));
     }
   }
 
@@ -136,7 +131,8 @@ public final class ResourceLeakUtils {
    *     be part of the Resource Leak hierarchy
    * @return the {@link RLCCalledMethodsChecker} in the checker hierarchy
    */
-  public static RLCCalledMethodsChecker getRLCCalledMethodsChecker(SourceChecker referenceChecker) {
+  public static RLCCalledMethodsChecker getRLCCalledMethodsChecker(
+      @Nullable SourceChecker referenceChecker) {
     if (referenceChecker instanceof RLCCalledMethodsChecker rlccmc) {
       return rlccmc;
     } else if (referenceChecker instanceof ResourceLeakChecker) {
@@ -191,21 +187,13 @@ public final class ResourceLeakUtils {
    * @return the {@link CollectionOwnershipAnnotatedTypeFactory} in the checker hierarchy
    */
   public static CollectionOwnershipAnnotatedTypeFactory getCollectionOwnershipAnnotatedTypeFactory(
-      SourceChecker referenceChecker) {
-    if (referenceChecker == null) {
-      throw new IllegalArgumentException("Argument referenceChecker cannot be null");
-    }
-
-    String className = referenceChecker.getClass().getSimpleName();
-    if ("CollectionOwnershipChecker".equals(className)
-        || "MustCallNoCreatesMustCallForChecker".equals(className)) {
-      return (CollectionOwnershipAnnotatedTypeFactory)
-          ((CollectionOwnershipChecker) referenceChecker).getTypeFactory();
-    } else if ("RLCCalledMethodsChecker".equals(className)) {
+      @Nullable SourceChecker referenceChecker) {
+    if (referenceChecker instanceof CollectionOwnershipChecker coc) {
+      return (CollectionOwnershipAnnotatedTypeFactory) coc.getTypeFactory();
+    } else if (referenceChecker instanceof RLCCalledMethodsChecker
+        || referenceChecker instanceof MustCallChecker) {
       return getCollectionOwnershipAnnotatedTypeFactory(referenceChecker.getParentChecker());
-    } else if ("MustCallChecker".equals(className)) {
-      return getCollectionOwnershipAnnotatedTypeFactory(referenceChecker.getParentChecker());
-    } else if ("ResourceLeakChecker".equals(className)) {
+    } else if (referenceChecker instanceof ResourceLeakChecker) {
       return getCollectionOwnershipAnnotatedTypeFactory(
           referenceChecker.getSubchecker(CollectionOwnershipChecker.class));
     } else {
@@ -213,7 +201,7 @@ public final class ResourceLeakUtils {
           "Argument referenceChecker to"
               + " ResourceLeakUtils#getCollectionOwnershipAnnotatedTypeFactory(referenceChecker)"
               + " expected to be an RLC checker but is "
-              + className);
+              + (referenceChecker == null ? "null" : referenceChecker.getClass().getSimpleName()));
     }
   }
 
@@ -231,32 +219,12 @@ public final class ResourceLeakUtils {
   }
 
   /**
-   * Returns true if the given Element is a java.lang.Iterable or java.util.Iterator type by
-   * checking whether the raw type of the element is assignable from either. Returns false if
-   * element is null, or has no valid type.
-   *
-   * @param element the element
-   * @param atf an AnnotatedTypeFactory to get the annotated type of the element
-   * @return true if the given element is a Java.lang.Iterable or Java.util.Iterator type
-   */
-  public static boolean isCollection(Element element, AnnotatedTypeFactory atf) {
-    if (element == null) {
-      return false;
-    }
-    AnnotatedTypeMirror elementTypeMirror = atf.getAnnotatedType(element).getErased();
-    if (elementTypeMirror == null || elementTypeMirror.getUnderlyingType() == null) {
-      return false;
-    }
-    return isCollection(elementTypeMirror.getUnderlyingType());
-  }
-
-  /**
-   * Returns true if the given {@link TypeMirror} is a java.lang.Iterable or java.util.Iterator
-   * subclass. This is determined by getting the class of the TypeMirror and checking whether it is
-   * assignable from either.
+   * Returns true if the given {@link TypeMirror} is a java.lang.Iterable, java.util.Iterator, or
+   * java.util.Map subtype. This is determined by getting the class of the TypeMirror and checking
+   * whether it is assignable from any of these types.
    *
    * @param type the TypeMirror
-   * @return true if type is a java.lang.Iterable or java.util.Iterator
+   * @return true if type is subtype of a java.lang.Iterable, java.util.Iterator, or java.util.Map
    */
   public static boolean isCollection(TypeMirror type) {
     if (type == null) {
@@ -342,12 +310,12 @@ public final class ResourceLeakUtils {
 
     AnnotationMirror manualAnno =
         AnnotationUtils.getAnnotationByClass(type.getAnnotationMirrors(), MustCall.class);
-    AnnotationMirror manualMcUnkownAnno =
+    AnnotationMirror manualMcUnknownAnno =
         AnnotationUtils.getAnnotationByClass(type.getAnnotationMirrors(), MustCallUnknown.class);
     if (manualAnno != null) {
       return getValuesInAnno(manualAnno, mcAtf.getMustCallValueElement());
     }
-    if (manualMcUnkownAnno != null) {
+    if (manualMcUnknownAnno != null) {
       return Collections.singletonList(CollectionOwnershipAnnotatedTypeFactory.UNKNOWN_METHOD_NAME);
     }
 
@@ -374,7 +342,7 @@ public final class ResourceLeakUtils {
 
   /**
    * Returns the list of mustcall obligations for the given {@code AnnotatedTypeMirror} upper bound
-   * (either the type variable itself if it is concrete or the upper bound if its a wildcard or
+   * (either the type variable itself if it is concrete or the upper bound if it's a wildcard or
    * generic).
    *
    * @param type the {@code AnnotatedTypeMirror}

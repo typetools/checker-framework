@@ -3,6 +3,7 @@ package org.checkerframework.checker.collectionownership;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -160,7 +161,7 @@ final class EnhancedForDisposalLoopMatcher {
 
     // Walk backward from the iterator `hasNext()` node to recover the loop-condition node and the
     // loop-update/back-edge block for this desugared enhanced-for.
-    Block loopUpdateBlock = methodInvocationNode.getBlock();
+    Block loopUpdateBlock = blockContainingHasNext;
     nodeIterator = loopUpdateBlock.getNodes().iterator();
     Node loopConditionNode;
     boolean isLoopCondition;
@@ -185,6 +186,9 @@ final class EnhancedForDisposalLoopMatcher {
     } while (!isLoopCondition);
 
     Block blockContainingLoopCondition = loopConditionNode.getBlock();
+    if (blockContainingLoopCondition == null) {
+      return null;
+    }
     if (blockContainingLoopCondition.getSuccessors().size() != 1) {
       throw new BugInCF(
           "loop condition has: "
@@ -197,17 +201,20 @@ final class EnhancedForDisposalLoopMatcher {
           "loop condition successor is not ConditionalBlock, but: "
               + maybeConditionalBlock.getClass());
     }
-    if (loopVariableNode == null
-        || loopVariableNode.getTree() == null
-        || loopConditionNode.getTree() == null) {
+    if (loopVariableNode == null || loopBodyEntryBlock == null) {
+      return null;
+    }
+    Tree loopVariableTree = loopVariableNode.getTree();
+    Tree loopConditionTree = loopConditionNode.getTree();
+    if (loopVariableTree == null || loopConditionTree == null) {
       return null;
     }
 
     return new DisposalLoopInfo(
         tree.getExpression(),
-        loopVariableNode.getTree(),
+        loopVariableTree,
         loopVariableNode,
-        loopConditionNode.getTree(),
+        loopConditionTree,
         conditionalBlock,
         loopBodyEntryBlock,
         loopUpdateBlock);

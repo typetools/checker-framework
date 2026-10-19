@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
@@ -599,12 +600,14 @@ public class ConstraintSet implements ReductionResult {
     }
 
     @Override
-    public void addFirst(@Owning Constraint constraint) {
+    public void addFirst(
+        @NotOwningCollection UnmodifiableEmptyDeque this, @Owning Constraint constraint) {
       throw new BugInCF("Attempted to modify an immutable constraint set.");
     }
 
     @Override
-    public void addLast(@Owning Constraint constraint) {
+    public void addLast(
+        @NotOwningCollection UnmodifiableEmptyDeque this, @Owning Constraint constraint) {
       throw new BugInCF("Attempted to modify an immutable constraint set.");
     }
   }

@@ -10,7 +10,9 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
@@ -22,6 +24,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -125,8 +128,8 @@ public class CollectionOwnershipVisitor
    * @return the flow-sensitive collection-ownership qualifier for {@code expr}, or {@code null} if
    *     no such qualifier is available
    */
-  private CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType getCoTypeAtTree(
-      ExpressionTree expr, CollectionOwnershipStore storeBefore) {
+  private CollectionOwnershipAnnotatedTypeFactory.@Nullable CollectionOwnershipType getCoTypeAtTree(
+      ExpressionTree expr, @Nullable CollectionOwnershipStore storeBefore) {
     if (storeBefore != null) {
       JavaExpression je = JavaExpression.fromTree(expr);
       CFValue v = storeBefore.getValue(je);
@@ -153,11 +156,18 @@ public class CollectionOwnershipVisitor
   @Override
   protected void checkConstructorResult(
       AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
-    AnnotatedTypeMirror defaultType =
-        atypeFactory.getAnnotatedType(ElementUtils.enclosingTypeElement(constructorElement));
+    TypeElement enclosingType = ElementUtils.enclosingTypeElement(constructorElement);
+    if (enclosingType == null) {
+      throw new BugInCF(
+          "Every constructor has an enclosing type, but this one does not: " + constructorElement);
+    }
+    AnnotatedTypeMirror defaultType = atypeFactory.getAnnotatedType(enclosingType);
     AnnotationMirror defaultAnno = defaultType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
     AnnotatedTypeMirror resultType = constructorType.getReturnType();
     AnnotationMirror resultAnno = resultType.getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
+    if (defaultAnno == null || resultAnno == null) {
+      return;
+    }
     if (!qualHierarchy.isSubtypeShallow(
         defaultAnno, defaultType.getUnderlyingType(), resultAnno, resultType.getUnderlyingType())) {
       checker.reportError(
@@ -201,6 +211,9 @@ public class CollectionOwnershipVisitor
    */
   private void checkOwningCollectionField(VariableTree fieldTree) {
     VariableElement fieldElement = TreeUtils.elementFromDeclaration(fieldTree);
+    if (fieldElement == null) {
+      return;
+    }
     List<String> mustCallValues =
         atypeFactory.getMustCallValuesOfResourceCollectionComponent(fieldTree);
 

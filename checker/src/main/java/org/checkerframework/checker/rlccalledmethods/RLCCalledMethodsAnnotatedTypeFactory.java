@@ -56,6 +56,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory.ClassAndS
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory.LambdaAndStore;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -437,6 +438,9 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    *     returned
    */
   public AccumulationStore getStoreAfterConditionalBlock(ConditionalBlock block, boolean then) {
+    if (flowResult == null) {
+      throw new BugInCF("getStoreAfterConditionalBlock called before dataflow analysis ran");
+    }
     TransferInput<AccumulationValue, AccumulationStore> transferInput = flowResult.getInput(block);
     assert transferInput != null : "@AssumeAssertion(nullness): transferInput should be non-null";
     if (then) {

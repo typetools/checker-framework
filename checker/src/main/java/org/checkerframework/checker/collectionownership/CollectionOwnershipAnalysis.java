@@ -2,6 +2,7 @@ package org.checkerframework.checker.collectionownership;
 
 import com.google.common.collect.ImmutableSet;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.checker.resourceleak.SetOfTypes;
@@ -20,7 +21,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 public class CollectionOwnershipAnalysis
     extends CFAbstractAnalysis<CFValue, CollectionOwnershipStore, CollectionOwnershipTransfer> {
 
-  /** Ignored-exception policy used by collection-ownership flow. */
+  /** Ignored-exception policy used by collection-ownership dataflow. */
   private final SetOfTypes ignoredExceptions;
 
   /**
@@ -36,14 +37,14 @@ public class CollectionOwnershipAnalysis
   }
 
   /**
-   * Creates the ignored-exception policy used by collection-ownership flow.
+   * Creates the ignored-exception policy used by collection-ownership dataflow.
    *
    * <p>The policy follows the Resource Leak Checker configuration, but keeps exact {@link
    * Throwable} exceptional edges because broad catch/fallback paths affect collection-obligation
    * reasoning.
    *
    * @param checker the enclosing checker
-   * @return the ignored-exception policy for collection-ownership flow
+   * @return the ignored-exception policy for collection-ownership dataflow
    */
   private static SetOfTypes createIgnoredExceptionPolicy(BaseTypeChecker checker) {
     ResourceLeakChecker resourceLeakChecker = ResourceLeakUtils.getResourceLeakChecker(checker);
@@ -71,7 +72,8 @@ public class CollectionOwnershipAnalysis
   }
 
   @Override
-  public CFValue createAbstractValue(AnnotationMirrorSet annotations, TypeMirror underlyingType) {
+  public @Nullable CFValue createAbstractValue(
+      AnnotationMirrorSet annotations, TypeMirror underlyingType) {
     return getCfValue(this, annotations, underlyingType);
   }
 

@@ -280,8 +280,8 @@ final class WhileDisposalLoopMatcher {
     ExpressionTree left = TreeUtils.withoutParens(condition.getLeftOperand());
     ExpressionTree right = TreeUtils.withoutParens(condition.getRightOperand());
 
-    @Nullable MethodInvocationTree sizeCall = null;
-    @Nullable LiteralTree zeroLiteral = null;
+    MethodInvocationTree sizeCall = null;
+    LiteralTree zeroLiteral = null;
 
     if (kind == Tree.Kind.GREATER_THAN) {
       if (left instanceof MethodInvocationTree leftInvocation
@@ -628,7 +628,7 @@ final class WhileDisposalLoopMatcher {
     }
 
     @Override
-    public @Nullable Void scan(@Nullable Tree tree, Void p) {
+    public Void scan(@Nullable Tree tree, Void p) {
       // Short-circuit if the body has been rejected.
       if (illegal || tree == null) {
         return null;
@@ -637,7 +637,7 @@ final class WhileDisposalLoopMatcher {
     }
 
     @Override
-    public @Nullable Void scan(@Nullable Iterable<? extends Tree> trees, Void p) {
+    public Void scan(@Nullable Iterable<? extends Tree> trees, Void p) {
       if (illegal || trees == null) {
         return null;
       }

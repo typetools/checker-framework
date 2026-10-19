@@ -120,11 +120,13 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
         updateValueAndInsertIntoStore(result.getRegularStore(), collectionElement, valuesAsList);
       }
       Map<TypeMirror, AccumulationStore> exceptionalStores = result.getExceptionalStores();
-      exceptionalStores.forEach(
-          (tm, s) ->
-              s.replaceValue(
-                  collectionElement,
-                  analysis.createSingleAnnotationValue(newAnno, collectionElement.getType())));
+      if (exceptionalStores != null) {
+        exceptionalStores.forEach(
+            (tm, s) ->
+                s.replaceValue(
+                    collectionElement,
+                    analysis.createSingleAnnotationValue(newAnno, collectionElement.getType())));
+      }
     }
   }
 

@@ -961,7 +961,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * @return the {@link IteratedCollectionElement} associated with the given node or tree
    */
   @SuppressWarnings("interning:not.interned") // we want to check reference equality
-  public @Nullable IteratedCollectionElement getIteratedCollectionElement(Node node, Tree tree) {
+  public @Nullable IteratedCollectionElement getIteratedCollectionElement(
+      Node node, @Nullable Tree tree) {
     for (IteratedCollectionElement ice : iteratedCollectionElements.keySet()) {
       if (ice.tree == tree || ice.node == node || ice.tree.equals(tree) || ice.node.equals(node)) {
         return ice;
@@ -1589,9 +1590,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     for (LocalVariable lv : ToStringComparator.sorted(localVariableValues.keySet())) {
       res.add(viz.visualizeStoreLocalVar(lv, localVariableValues.get(lv)));
     }
-    for (IteratedCollectionElement ice :
-        ToStringComparator.sorted(iteratedCollectionElements.keySet())) {
-      res.add(viz.visualizeStoreIteratedCollectionElt(ice, iteratedCollectionElements.get(ice)));
+    List<Map.Entry<IteratedCollectionElement, V>> iceEntries =
+        new ArrayList<>(iteratedCollectionElements.entrySet());
+    iceEntries.sort(Map.Entry.comparingByKey(ToStringComparator.instance));
+    for (Map.Entry<IteratedCollectionElement, V> iceEntry : iceEntries) {
+      res.add(viz.visualizeStoreIteratedCollectionElt(iceEntry.getKey(), iceEntry.getValue()));
     }
     if (thisValue != null) {
       res.add(viz.visualizeStoreThisVal(thisValue));

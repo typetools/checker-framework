@@ -173,7 +173,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * @param adt the annotated declared type for which all Collection type variables with Top type
    *     are to be replaced with Bottom
    */
-  private void replaceCollectionTypeVarsWithBottomIfTop(Tree tree, AnnotatedDeclaredType adt) {
+  private void replaceCollectionTypeVarsWithBottomIfTop(
+      @Nullable Tree tree, AnnotatedDeclaredType adt) {
     if (ResourceLeakUtils.isCollection(adt.getUnderlyingType())) {
       for (AnnotatedTypeMirror typeArg : adt.getTypeArguments()) {
         if (typeArg == null) {

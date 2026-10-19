@@ -1,12 +1,9 @@
 package org.checkerframework.checker.collectionownership;
 
-import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -121,26 +118,6 @@ public final class CollectionOwnershipUtils {
   }
 
   /**
-   * Returns the {@code Name} of the identifier declared or referenced by the given statement, or
-   * {@code null} if the statement does not declare or reference an identifier.
-   *
-   * @param expr the {@code StatementTree}
-   * @return the name of the identifier declared or referenced by the statement, or {@code null} if
-   *     none
-   */
-  static Name getNameFromStatementTree(StatementTree expr) {
-    if (expr == null) {
-      return null;
-    }
-    return switch (expr.getKind()) {
-      case VARIABLE -> ((VariableTree) expr).getName();
-      case EXPRESSION_STATEMENT ->
-          getNameFromExpressionTree(((ExpressionStatementTree) expr).getExpression());
-      default -> null;
-    };
-  }
-
-  /**
    * Returns the expression that directly identifies the referenced value.
    *
    * <p>Identifiers and field accesses are returned unchanged. Method invocations are unwrapped to
@@ -149,7 +126,7 @@ public final class CollectionOwnershipUtils {
    * @param expr an expression
    * @return the expression that directly identifies the referenced value, or {@code null}
    */
-  static ExpressionTree referenceExpression(ExpressionTree expr) {
+  static @Nullable ExpressionTree referenceExpression(ExpressionTree expr) {
     switch (expr.getKind()) {
       case IDENTIFIER -> {
         return expr;
