@@ -4641,7 +4641,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param a an annotation that might be a wrapper
    * @return true if the argument is a wrapper for multiple repeated annotations
    */
-  private boolean isListForRepeatedAnnotation(AnnotationMirror a) {
+  public boolean isListForRepeatedAnnotation(AnnotationMirror a) {
     DeclaredType annotationType = a.getAnnotationType();
     Boolean resultObject = isListForRepeatedAnnotationCache.get(annotationType);
     if (resultObject != null) {

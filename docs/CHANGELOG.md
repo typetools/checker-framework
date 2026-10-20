@@ -7,6 +7,11 @@
 
 ### User-visible changes
 
+The Checker Framework warns, with message key `contracts.toptype`, when a pre-
+or post-condition annotation (such as `@RequiresQualifier`, `@EnsuresQualifier`,
+or a contract annotation defined via `@PreconditionAnnotation`) uses the top
+qualifier, which has no effect.
+
 ### Changes for type system implementers
 
 ### Closed issues

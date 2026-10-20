@@ -216,8 +216,7 @@ public class ContractsFromMethod {
    * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
    * contractAnno}. May return null.
    *
-   * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}.
-   *     Does not work for {@code PreconditionAnnotation} or {@code PostconditionAnnotation}.
+   * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
    * @return the type annotation specified in {@code contractAnno.qualifier}
    */
   public @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
@@ -229,11 +228,12 @@ public class ContractsFromMethod {
    * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
    * contractAnno}, with elements/arguments taken from {@code argumentAnno}. May return null.
    *
-   * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
-   * @param argumentAnno supplies the elements/fields in the return value
+   * @param contractAnno a contract meta-annotation, such as {@code @PreconditionAnnotation}
+   * @param argumentAnno a contract annotation that is meta-annotated by {@code contractAnno}; it
+   *     supplies the elements/fields in the return value
    * @return the type annotation specified in {@code contractAnno.qualifier}
    */
-  private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
+  public @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno, AnnotationMirror argumentAnno) {
 
     Map<String, String> argumentRenaming =
@@ -263,9 +263,6 @@ public class ContractsFromMethod {
       AnnotationMirror contractAnno,
       @Nullable AnnotationMirror argumentAnno,
       @Nullable Map<String, String> argumentRenaming) {
-
-    // This method returns null for user-defined contract annotations defined with
-    // @PreconditionAnnotation or @PostconditionAnnotation.  TODO: extend the method to handle that.
 
     @SuppressWarnings("deprecation") // permitted for use in the framework
     Name c = AnnotationUtils.getElementValueClassName(contractAnno, "qualifier", false);
