@@ -189,10 +189,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     // javac does not put the extra code in the constructor's AST until after the Checker Framework
     // has run, so check them here.
     MethodInvocationTree explicitCall = TreeUtils.getExplicitConstructorCall(methodTree);
-    List<TreePath> initializers =
-        explicitCall != null && TreeUtils.isThisConstructorCall(explicitCall)
-            ? Collections.emptyList()
-            : TreePathUtil.getInstanceInitializers(statement);
+    List<TreePath> initializers = TreePathUtil.getInstanceInitializersRunBy(methodTree, statement);
 
     List<Tree> checkedCodeTrees = new ArrayList<>(initializers.size() + 1);
     for (TreePath initializer : initializers) {

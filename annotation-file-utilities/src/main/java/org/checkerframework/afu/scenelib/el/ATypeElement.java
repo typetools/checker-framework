@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
 
 /**
  * An {@link AElement} that represents a type might have annotations on inner types ("generic/array"
@@ -22,7 +23,8 @@ import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
 public class ATypeElement extends AElement {
 
   /** The annotated inner types; map key is the inner type location. */
-  public final VivifyingMap<List<TypePathEntry>, ATypeElement> innerTypes = newVivifyingLHMap_ATE();
+  public final @Modifiable VivifyingMap<List<TypePathEntry>, ATypeElement> innerTypes =
+      newVivifyingLHMap_ATE();
 
   /**
    * Construct a new ATypeElement from its description.
@@ -118,7 +120,9 @@ public class ATypeElement extends AElement {
    * @param <K> the type of the map keys
    * @return a new vivifying map from keys to {@link ATypeElement}s
    */
-  static <K extends Object> VivifyingMap<K, ATypeElement> newVivifyingLHMap_ATE() {
+  @SuppressWarnings("modifiability:return") // The anonymous subclass's constructor result
+  // is the top qualifier, so it does not propagate the backing map's @Modifiable type.
+  static <K extends Object> @Modifiable VivifyingMap<K, ATypeElement> newVivifyingLHMap_ATE() {
     return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public ATypeElement createValueFor(K k) {

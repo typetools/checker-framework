@@ -9,6 +9,7 @@ import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParenthesizedTree;
@@ -128,6 +129,23 @@ public final class TreePathUtil {
       }
     }
     return result;
+  }
+
+  /**
+   * Returns the instance field initializers and instance initializer blocks that run as part of the
+   * given constructor: those of its class, unless it delegates to another constructor of the same
+   * class, in which case they run as part of that one.
+   *
+   * @param constructor a constructor declaration
+   * @param path a path to {@code constructor} or to code within it
+   * @return paths to the instance initializers that run as part of {@code constructor}
+   */
+  public static List<TreePath> getInstanceInitializersRunBy(MethodTree constructor, TreePath path) {
+    MethodInvocationTree explicitCall = TreeUtils.getExplicitConstructorCall(constructor);
+    if (explicitCall != null && TreeUtils.isThisConstructorCall(explicitCall)) {
+      return Collections.emptyList();
+    }
+    return getInstanceInitializers(path);
   }
 
   //

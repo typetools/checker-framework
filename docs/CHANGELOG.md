@@ -3,22 +3,9 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 4.3.0 (2026-10-01)
+## Version 4.3.2 (2026-11-01)
 
 ### User-visible changes
-
-The new `wpi2.sh` script does whole-program inference, but requires buildfile edits.
-
-Purity Checker:
-
-* Renamed message keys `purity.not.deterministic.X`,
-  `purity.not.sideeffectfree.X`, and
-  `purity.not.deterministic.not.sideeffectfree.X` to `purity.X`.
-* `-AcheckPurityAnnotations` issues warnings that it missed previously.
-
-The Checker Framework runs under JDK 27 -- that is, it runs on a version 27 JVM.
-
-The Checker Framework runs noticeably faster, due to performance tuning.
 
 A `@DefaultQualifier` annotation on a nested element now takes precedence over
 one on an enclosing element, as the manual specifies.  For example, a
@@ -34,12 +21,49 @@ A default that a type system registers through
 scopes, rather than suppressing them.  Where both a registered default and a
 `@DefaultQualifier` annotation apply, the registered default wins.
 
+Removed `DefaultSet.EMPTY`.
+
 `QualifierDefaults.DefaultApplierElement.DefaultApplierElementImpl` now extends
 `AnnotatedTypeScanner<Void, Void>` rather than
 `AnnotatedTypeScanner<Void, AnnotationMirror>`, because one traversal of a type
 may now apply more than one default; its `scan()`, `visitTypeVariable()`,
 `visitWildcard()`, and `visitBounds()` methods take a `Void` parameter
 accordingly.
+
+### Closed issues
+
+## Version 4.3.1 (2026-10-08)
+
+### Closed issues
+
+\#8325.
+
+## Version 4.3.0 (2026-10-01)
+
+### User-visible changes
+
+The new Modifiability Checker warns when a program might throw
+`UnsupportedOperationException` at run time because it calls a mutating method on
+a collection that does not support the method.
+
+The new `wpi2.sh` script does whole-program inference, but requires buildfile edits.
+
+Purity Checker:
+
+* Renamed message keys `purity.not.deterministic.X`,
+  `purity.not.sideeffectfree.X`, and
+  `purity.not.deterministic.not.sideeffectfree.X` to `purity.X`.
+* `-AcheckPurityAnnotations` issues warnings that it missed previously.
+
+The Checker Framework runs under JDK 27 -- that is, it runs on a version 27 JVM.
+
+The Checker Framework runs noticeably faster, due to performance tuning.
+
+The HTML version of the manual has a new look.  In addition to the
+single-page version, there is a
+[multi-page version](https://checkerframework.org/manual/manual-multipage.html).
+
+### Changes for type system implementers
 
 `JavaParserUtil`: moved `DEFAULT_LANGUAGE_LEVEL`, `parseCompilationUnit()`,
 `parseStubUnit()`, and `parseExpression()` into new class `StaticJavaParserUtil`.
@@ -53,6 +77,12 @@ Methods that used to return (or accept) an `IPair` now use a record with
 meaningful component names.
 
 ### Closed issues
+
+\#294, #1170, #1184, #1256, #1440, #1444, #1669, #2090, #2172, #2429, #2448,
+\#2561, #2637, #2704, #2722, #2770, #2896, #2995, #3015, #3025, #3027, #3146,
+\#3281, #3624, #4690, #4708, #4754, #5064, #5201, #6038, #6716, #6741, #6748,
+\#6756, #6768, #6832, #6881, #7023, #7049, #7064, #7311, #7683, #8053, #8054,
+\#8055, #8167, #8168, #8169, #8238, #8261, #8284.
 
 ## Version 4.2.3 (2026-09-01)
 

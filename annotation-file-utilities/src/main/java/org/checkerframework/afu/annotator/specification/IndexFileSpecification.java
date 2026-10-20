@@ -46,6 +46,9 @@ import org.checkerframework.afu.scenelib.type.DeclaredType;
 import org.checkerframework.afu.scenelib.type.Type;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
+import org.checkerframework.checker.modifiability.qual.Growable;
+import org.checkerframework.checker.modifiability.qual.IteratorPolyMod;
+import org.checkerframework.checker.modifiability.qual.Shrinkable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.objectweb.asm.ClassReader;
@@ -61,7 +64,8 @@ public class IndexFileSpecification {
       LinkedHashMultimap.<Insertion, Annotation>create();
 
   /** The state of this object. */
-  private final List<Insertion> insertions = new ArrayList<>();
+  private final @Growable @Shrinkable @IteratorPolyMod List<Insertion> insertions =
+      new ArrayList<>();
 
   /** An insertion for the default constructor, or null. Is a member of insertions if non-null. */
   private ConstructorInsertion constructorInsertion = null;
