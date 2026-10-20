@@ -7,6 +7,12 @@
 
 ### User-visible changes
 
+When type argument inference for a method or constructor invocation fails only
+because of the invocation's target type, the Checker Framework no longer issues
+a `type.arguments.not.inferred` error.  The `assignment`, `return`, or
+`argument` error at the invocation's context reports the problem, and the
+invocation's other checks are performed.
+
 ### Changes for type system implementers
 
 ### Closed issues
