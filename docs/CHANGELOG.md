@@ -11,8 +11,6 @@
 
 ### Closed issues
 
-\#8320.
-
 ## Version 4.3.0 (2026-10-01)
 
 ### User-visible changes
