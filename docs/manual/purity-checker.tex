@@ -4,7 +4,7 @@ A \emph{side-effect-free} method is one that has no externally-visible side
 effects:  it changes no object that exists when it is called, except in ways
 that no caller can observe, such as updating a private cache.
 A \emph{deterministic} method returns the same value each time it is called
-on the same arguments.
+on the same arguments; equality is with respect to \<==>, not \<.equals()>.
 A \emph{pure} method is both side-effect-free and deterministic.
 The Purity Checker can check and infer all three types of methods,
 and ``purity'' refers to all concepts.
@@ -15,6 +15,8 @@ trusted, not checked.
 
 To check purity annotations, pass \<-AcheckPurityAnnotations> to any
 checker.
+The Purity Checker is conservative, so you are likely to need to suppress
+some warnings.
 To run \emph{only} the Purity Checker (this is uncommon),
 supply the following command-line option to javac:
 \code{-processor org.checkerframework.framework.util.PurityChecker}.
@@ -86,6 +88,14 @@ reported only when purity annotations are checked, such as with
   PureSupplier s1 = () -> "hello";                  // OK
   PureSupplier s2 = () -> { count++; return ""; };  // error: the body has a side effect
 \end{Verbatim}
+
+\noindent
+The functional interface method's purity annotations include those that it
+inherits from methods that it overrides
+(Section \ref{purity-override}).  If the functional interface method has no
+purity annotation --- for example, because it is declared in an unannotated
+library and no stub file annotates it --- then the lambda's body is not
+checked.
 
 
 \subsectionAndLabel{Functional-interface parameters of methods with purity annotations}{purity-functional-interface-parameters}
@@ -231,7 +241,9 @@ side-effect-free does:
 \sectionAndLabel{Purity annotations are trusted}{purity-trusted}
 
 By default, purity annotations are trusted by every checker built with the
-Checker Framework, and the Purity Checker is not run.  However, you can make a
+Checker Framework.  Purity annotations on called methods affect
+type-checking of client code, so an incorrect purity annotation can make
+type-checking unsound.  You can make a
 mistake
 %
 by writing \refqualclass{dataflow/qual}{SideEffectFree} on the
@@ -246,14 +258,10 @@ or
 by writing \refqualclass{dataflow/qual}{Deterministic} on the
 declaration of a method that is not deterministic.
 
-When you run the Purity Checker directly, it checks the annotations.
-To enable checking of the annotations when running any other checker,
-supply the command-line option \<-AcheckPurityAnnotations>.
-For checkers other than the Purity Checker, it is not enabled by default
-because of a high false
-positive rate.  In the future, after a new purity-checking analysis is
-implemented, the Checker Framework will default to checking purity
-annotations.
+Checking of purity annotations (\<-AcheckPurityAnnotations>) is not
+enabled by default because of a high false positive rate.  In the future,
+after a new purity-checking analysis is implemented, the Checker Framework
+will default to checking purity annotations.
 
 
 \sectionAndLabel{Overriding methods inherit specifications from overridden methods}{purity-override}
@@ -327,4 +335,4 @@ of the following is true:
 
 %%  LocalWords:  AsuggestPureMethods AcheckPurityAnnotations Ainfer
 %%  LocalWords:  AsuppressWarnings AassumeSideEffectFree SideEffectsOnly
-% LocalWords:  TODO AassumeDeterministic AassumePure AassumePureGetters
+%%  LocalWords:  TODO AassumeDeterministic AassumePure AassumePureGetters

@@ -769,19 +769,20 @@ public final class PurityChecker {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void ignore) {
       ExecutableElement elt = TreeUtils.elementFromUse(tree);
-      EnumSet<PurityKind> callKinds = EnumSet.copyOf(PurityUtils.getPurityKinds(annoProvider, elt));
-      callKinds.addAll(functionalParameterCallPurity(tree, elt));
+      EnumSet<PurityKind> callPurityKinds =
+          EnumSet.copyOf(PurityUtils.getPurityKinds(annoProvider, elt));
+      callPurityKinds.addAll(functionalParameterCallPurity(tree, elt));
       boolean pureGetter = assumePureGetters && ElementUtils.isGetter(elt);
       if (assumeSideEffectFree || pureGetter) {
-        callKinds.add(PurityKind.SIDE_EFFECT_FREE);
+        callPurityKinds.add(PurityKind.SIDE_EFFECT_FREE);
       }
       if (assumeDeterministic || pureGetter) {
-        callKinds.add(PurityKind.DETERMINISTIC);
+        callPurityKinds.add(PurityKind.DETERMINISTIC);
       }
       // The element of a `this()` or `super()` call returns void, too.
-      PurityUtils.addDeterminismOfVoidCall(callKinds, elt.getReturnType());
-      boolean seFree = callKinds.contains(PurityKind.SIDE_EFFECT_FREE);
-      boolean det = callKinds.contains(PurityKind.DETERMINISTIC);
+      PurityUtils.addDeterminismOfVoidCall(callPurityKinds, elt.getReturnType());
+      boolean seFree = callPurityKinds.contains(PurityKind.SIDE_EFFECT_FREE);
+      boolean det = callPurityKinds.contains(PurityKind.DETERMINISTIC);
       if (!det && !seFree) {
         purityResult.addNotBothReason(tree, "call");
       } else if (!det) {
