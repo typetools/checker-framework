@@ -38,9 +38,17 @@ import javax.tools.Diagnostic;
  */
 public class SarifReportGenerator {
 
+  /** The processing environment, used to obtain source positions of trees. */
   private final ProcessingEnvironment processingEnv;
+
+  /** The SARIF results collected so far, one per reported diagnostic. */
   private final List<Result> results = new ArrayList<>();
 
+  /**
+   * Creates a new SarifReportGenerator.
+   *
+   * @param processingEnv the processing environment
+   */
   public SarifReportGenerator(ProcessingEnvironment processingEnv) {
     this.processingEnv = processingEnv;
   }
@@ -160,6 +168,7 @@ public class SarifReportGenerator {
    * Write the SARIF report to file.
    *
    * @param outputPath the output file path
+   * @throws IOException if the file cannot be written
    */
   public void writeReport(String outputPath) throws IOException {
 

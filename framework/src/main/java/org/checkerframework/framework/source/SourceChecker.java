@@ -1724,6 +1724,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param message the message text
    * @param source the source code position of the diagnostic message
    * @param root the compilation unit
+   * @param messageKey the message key
    */
   protected void printOrStoreMessage(
       Diagnostic.Kind kind,
@@ -1759,6 +1760,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * @param root the compilation unit
    * @param trace the stack trace where the checker encountered an error. It is printed when the
    *     dumpOnErrors option is enabled.
+   * @param messageKey the message key
    */
   protected void printOrStoreMessage(
       Diagnostic.Kind kind,
