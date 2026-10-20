@@ -1734,6 +1734,27 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns the elements of {@code params} that correspond to the arguments of {@code tree}.
+   *
+   * <p>For {@code outer.new Inner(...) {...}}, javac gives the anonymous constructor an extra first
+   * parameter for the enclosing instance {@code outer}, which is not among the arguments of {@code
+   * tree}. This method omits that parameter. Otherwise, this method returns {@code params}.
+   *
+   * @param <T> the type of the elements of {@code params}
+   * @param con the constructor invoked by {@code tree}
+   * @param tree a constructor invocation
+   * @param params the parameters of {@code con}, or their types, in order
+   * @return the elements of {@code params} that correspond to the arguments of {@code tree}
+   */
+  public static <T> List<T> parametersForArguments(
+      ExecutableElement con, NewClassTree tree, List<T> params) {
+    if (isAnonymousConstructorWithExplicitEnclosingExpression(con, tree)) {
+      return params.subList(1, params.size());
+    }
+    return params;
+  }
+
+  /**
    * Returns true if the given {@link MethodTree} is a compact canonical constructor (the
    * constructor for a record where the parameters are implicitly declared and implicitly assigned
    * to the record's fields). This may be an explicitly declared compact canonical constructor or an
