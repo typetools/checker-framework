@@ -7,7 +7,19 @@
 
 ### User-visible changes
 
+A `@DefaultQualifier` annotation on a nested element now takes precedence over
+one on an enclosing element, as the manual specifies.  For example, a
+`@DefaultQualifier` for `ALL` on a method takes precedence over one for
+`RETURN` on the enclosing class.  A default for `OTHERWISE` still applies only
+where no default for a more concrete location applies.
+
 ### Changes for type system implementers
+
+A default that a type system registers through
+`QualifierDefaults.addElementDefault()` now composes with the
+`@DefaultQualifier` annotations on the element and on the element's enclosing
+scopes, rather than suppressing them.  Where both a registered default and a
+`@DefaultQualifier` annotation apply, the registered default wins.
 
 ### Closed issues
 
