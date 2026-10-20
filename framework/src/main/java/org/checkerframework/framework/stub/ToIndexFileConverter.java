@@ -4,6 +4,7 @@ import com.github.javaparser.ParseException;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
@@ -18,6 +19,7 @@ import com.github.javaparser.ast.body.InitializerDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
+import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
@@ -289,8 +291,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   @Override
   public Void visit(ClassOrInterfaceDeclaration decl, AElement elem) {
-    visitDecl(decl, (ADeclaration) elem);
-    return super.visit(decl, elem);
+    // A nested class's members belong to the nested class, not to the class that encloses it.
+    AClass clazz = classElement(decl);
+    visitDecl(decl, clazz);
+    return super.visit(decl, clazz);
   }
 
   @Override
@@ -330,13 +334,23 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   public Void visit(EnumConstantDeclaration decl, AElement elem) {
     AField field = ((AClass) elem).fields.getVivify(decl.getNameAsString());
     visitDecl(decl, field);
-    return super.visit(decl, field);
+    // Do not visit the arguments or the class body.  A class body declares an anonymous class,
+    // whose members do not belong to the field.
+    return null;
   }
 
   @Override
   public Void visit(EnumDeclaration decl, AElement elem) {
-    visitDecl(decl, (ADeclaration) elem);
-    return super.visit(decl, elem);
+    AClass clazz = classElement(decl);
+    visitDecl(decl, clazz);
+    return super.visit(decl, clazz);
+  }
+
+  @Override
+  public Void visit(RecordDeclaration decl, AElement elem) {
+    AClass clazz = classElement(decl);
+    visitDecl(decl, clazz);
+    return super.visit(decl, clazz);
   }
 
   @Override
@@ -452,6 +466,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       }
     }
     return null;
+  }
+
+  /**
+   * Returns the scene's element for the class that {@code decl} declares, creating the element if
+   * the scene does not yet contain it.
+   *
+   * @param decl a type declaration in the stub file
+   * @return the scene's element for {@code decl}
+   */
+  private AClass classElement(TypeDeclaration<?> decl) {
+    return scene.classes.getVivify(qualifiedStubBinaryName(decl));
   }
 
   /**
@@ -719,6 +744,38 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
           }
         },
         null);
+  }
+
+  /**
+   * Returns the binary name, qualified by the stub file's package, of a type that the stub file
+   * declares. For example, if the stub file's package is {@code p} and the stub file declares a
+   * top-level class {@code B} containing a nested class {@code C}, then this method maps the
+   * declaration of {@code C} to {@code "p.B$C"}.
+   *
+   * @param declaration a type declaration in the stub file
+   * @return the binary name of {@code declaration}
+   */
+  private String qualifiedStubBinaryName(TypeDeclaration<?> declaration) {
+    String binaryName = stubBinaryName(declaration);
+    return pkgName == null ? binaryName : pkgName + "." + binaryName;
+  }
+
+  /**
+   * Returns the binary name, without its package, of a type that the stub file declares.
+   *
+   * @param declaration a type declaration in a stub file
+   * @return the binary name of {@code declaration}, without its package
+   */
+  private static String stubBinaryName(TypeDeclaration<?> declaration) {
+    StringBuilder binaryName = new StringBuilder(declaration.getNameAsString());
+    for (Node n = declaration.getParentNode().orElse(null);
+        n != null;
+        n = n.getParentNode().orElse(null)) {
+      if (n instanceof TypeDeclaration<?>) {
+        binaryName.insert(0, ((TypeDeclaration<?>) n).getNameAsString() + "$");
+      }
+    }
+    return binaryName.toString();
   }
 
   /**
