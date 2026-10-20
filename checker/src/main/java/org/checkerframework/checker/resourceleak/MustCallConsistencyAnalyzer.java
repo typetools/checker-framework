@@ -935,16 +935,25 @@ public class MustCallConsistencyAnalyzer {
    *
    * @param obligations the set of tracked obligations
    * @param node the method invocation node
+   * @param exceptionType a description of the outgoing CFG edge from the node: {@code null} to
+   *     indicate normal return, or a {@link TypeMirror} to indicate a subclass of the given
+   *     throwable class was thrown
    */
   private void addObligationsForCreatesCollectionObligationAnno(
-      Set<Obligation> obligations, MethodInvocationNode node) {
+      Set<Obligation> obligations, MethodInvocationNode node, @Nullable TypeMirror exceptionType) {
+    if (exceptionType != null) {
+      // Do not transfer ownership if the called method throws an exception.
+      return;
+    }
     ExecutableElement methodElement = node.getTarget().getMethod();
     if (coAtf.isCreatesCollectionObligationMethod(methodElement)) {
       Node receiverNode = node.getTarget().getReceiver();
       receiverNode = removeCastsAndGetTmpVarIfPresent(receiverNode);
       Tree receiverTree = receiverNode.getTree();
-      // TODO: CollectionObligation insertion is currently not implemented for an implicit `this`
-      // receiver.
+      // An implicit `this` receiver has no tree. It occurs only inside a collection class declared
+      // in user code, which isResourceCollection does not recognize anyway (see
+      // ResourceLeakUtils.isCollection).
+      // TODO: Recognize collection classes declared in user code.
       if (receiverTree == null || !coAtf.isResourceCollection(receiverTree)) {
         return;
       }
@@ -1097,7 +1106,8 @@ public class MustCallConsistencyAnalyzer {
     addObligationsForOwningCollectionReturn(obligations, node);
 
     if (node instanceof MethodInvocationNode methodInvocationNode) {
-      addObligationsForCreatesCollectionObligationAnno(obligations, methodInvocationNode);
+      addObligationsForCreatesCollectionObligationAnno(
+          obligations, methodInvocationNode, exceptionType);
     }
 
     if (!shouldTrackInvocationResult(obligations, node, false)) {
