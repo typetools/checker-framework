@@ -2098,8 +2098,8 @@ public class MustCallConsistencyAnalyzer {
         //    1b. if there is not any information about any alias in the resource alias
         //        set in the successor store, use the current block's MC store,
         //        which contain whatever information is true before this (empty) block.
-        // 2. if the current block has one or more nodes, always use the CM store after
-        //    the last node.
+        // 2. if the current block has one or more nodes, always use the CM store and the
+        //    MC store after the last node.
         CFStore mcStore;
         AccumulationStore cmStore;
         if (currentBlockNodes.isEmpty() /* currentBlock is special or conditional */) {
@@ -2131,7 +2131,7 @@ public class MustCallConsistencyAnalyzer {
           if (mcStoreAfter.containsKey(last)) {
             mcStore = mcStoreAfter.get(last);
           } else {
-            mcStore = mcAtf.getStoreAfter(last); // 2b. (MC)
+            mcStore = mcAtf.getStoreAfter(last); // 2. (MC)
             mcStoreAfter.put(last, mcStore);
           }
         }
