@@ -20,7 +20,7 @@ interface BiFunctionNull<T, U, R> {
 
 public class LambdaNullness {
 
-  // Annotations in lamba expressions, in static, instance of fields initializers are stored on
+  // Annotations in lambda expressions, in static, instance of fields initializers are stored on
   // the last declared constructor.
   //
   // For example, the annotation for @Nullable Integer x on f7's initializer

@@ -10,6 +10,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from release_utils import (
     check_repo,
@@ -164,7 +165,8 @@ def get_current_date() -> str:
     Returns:
         today's date.
     """
-    return datetime.datetime.now().date().isoformat()  # noqa: DTZ005
+    # This is a hack based on where the developers currently work.
+    return datetime.datetime.now(tz=ZoneInfo("America/Los_Angeles")).date().isoformat()
 
 
 def build_and_locally_deploy_maven() -> None:
@@ -210,7 +212,7 @@ def build_checker_framework_release(
 
     # clean no longer necessary files left over from building the checker framework tutorial
     checker_tutorial_dir = Path(CHECKER_FRAMEWORK) / "docs" / "tutorial"
-    execute("make clean", checker_tutorial_dir)
+    execute("make --quiet clean", checker_tutorial_dir)
 
     build_and_locally_deploy_maven()
 

@@ -26,4 +26,3 @@ class BoundClassMultiple:
     inner-type 3, 0: @java.lang.F
 
     method <init>()V:
-

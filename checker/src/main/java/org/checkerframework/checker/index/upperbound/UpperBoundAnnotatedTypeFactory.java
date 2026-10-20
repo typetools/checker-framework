@@ -69,6 +69,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory.JavaExpressionAndOffset;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -78,9 +79,9 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.plumelib.util.IPair;
 
 /**
  * Implements the introduction rules for the Upper Bound Checker.
@@ -288,8 +289,13 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    * Performs pre-processing on annotations written by users, replacing illegal annotations by legal
    * ones.
    */
-  private class UpperBoundTypeAnnotator extends TypeAnnotator {
+  private final class UpperBoundTypeAnnotator extends TypeAnnotator {
 
+    /**
+     * Creates an UpperBoundTypeAnnotator.
+     *
+     * @param atypeFactory the annotated type factory
+     */
     private UpperBoundTypeAnnotator(AnnotatedTypeFactory atypeFactory) {
       super(atypeFactory);
     }
@@ -947,29 +953,38 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       Tree tree, TreePath treePath, List<String> lessThanExpressions) {
     UBQualifier ubQualifier = null;
     for (String expression : lessThanExpressions) {
-      IPair<JavaExpression, String> exprAndOffset;
+      JavaExpressionAndOffset exprAndOffset;
       try {
         exprAndOffset = getExpressionAndOffsetFromJavaExpressionString(expression, treePath);
       } catch (JavaExpressionParseException e) {
+        // Do not report the error here; that would duplicate the one that DependentTypesHelper
+        // issues for the `@LessThan` annotation that supplied the expression.  Skipping the
+        // expression only loses precision.
         exprAndOffset = null;
       }
       if (exprAndOffset == null) {
         continue;
       }
-      JavaExpression je = exprAndOffset.first;
-      String offset = exprAndOffset.second;
+      JavaExpression je = exprAndOffset.expression();
+      String offset = exprAndOffset.offset();
 
       if (!CFAbstractStore.canInsertJavaExpression(je)) {
         continue;
       }
       CFStore store = getStoreBefore(tree);
+      if (store == null) {
+        throw new BugInCF(
+            "cannot find store before tree: " + TreeUtils.toStringTruncated(tree, 60));
+      }
       CFValue value = store.getValue(je);
       if (value != null && value.getAnnotations().size() == 1) {
+        AnnotationMirror anno =
+            qualHierarchy.findAnnotationInHierarchy(value.getAnnotations(), UNKNOWN);
+        if (anno == null) {
+          throw new BugInCF("cannot find annotation in hierarchy: " + value.getAnnotations());
+        }
         UBQualifier newUBQ =
-            UBQualifier.createUBQualifier(
-                qualHierarchy.findAnnotationInHierarchy(value.getAnnotations(), UNKNOWN),
-                AnnotatedTypeFactory.negateConstant(offset),
-                (IndexChecker) checker);
+            UBQualifier.createUBQualifier(anno, negateConstant(offset), (IndexChecker) checker);
         if (ubQualifier == null) {
           ubQualifier = newUBQ;
         } else {

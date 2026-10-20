@@ -40,7 +40,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * Converts type trees into AnnotatedTypeMirrors.
@@ -125,7 +125,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     updateWildcardBounds(tree.getTypeArguments(), baseType.getTypeParameters());
 
     List<AnnotatedTypeMirror> args =
-        CollectionsPlume.mapList((Tree t) -> visit(t, f), tree.getTypeArguments());
+        CollectionsP.mapList((Tree t) -> visit(t, f), tree.getTypeArguments());
 
     AnnotatedTypeMirror result = f.type(tree); // use creator?
     AnnotatedTypeMirror atype = visit(tree.getType(), f);
@@ -159,7 +159,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
    * capture-converted bound in the wildcard type with a non-capture-converted bound given by the
    * type parameter declaration.
    *
-   * @param typeArgs the type of the arguments at (e.g., at the call side)
+   * @param typeArgs the type of the arguments (e.g., at the call site)
    * @param typeParams the type of the formal parameters (e.g., at the method declaration)
    */
   @SuppressWarnings("interning:not.interned") // workaround for javac bug
@@ -250,7 +250,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
   }
 
   /**
-   * If a tree is can be found for the declaration of the type variable {@code type}, then a {@link
+   * If a tree can be found for the declaration of the type variable {@code type}, then a {@link
    * AnnotatedTypeVariable} is returned with explicit annotations from the type variables declared
    * bounds. If a tree cannot be found, then {@code type}, converted to a use, is returned.
    *
@@ -276,7 +276,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
         return type.asUse();
       }
 
-      // `forTypeVariable` is called for Identifier, MemberSelect and UnionType trees,
+      // This method is called for Identifier, MemberSelect and UnionType trees,
       // none of which are declarations.  But `cls.getTypeParameters()` returns a list
       // of type parameter declarations (`TypeParameterTree`), so this call
       // will return a declaration ATV.  So change it to a use.
@@ -302,7 +302,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
       // not an element at all, namely Symtab.noSymbol.
       return type.asUse();
     } else {
-      throw new BugInCF("TypeFromTree.forTypeVariable: not a supported element: " + elt);
+      throw new BugInCF("getTypeVariableFromDeclaration: not a supported element: " + elt);
     }
   }
 
@@ -372,7 +372,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     // for a type variable bound that is an intersection.  See #visitTypeParameter.
     AnnotatedIntersectionType type = (AnnotatedIntersectionType) f.type(tree);
     List<AnnotatedTypeMirror> bounds =
-        CollectionsPlume.mapList((Tree boundTree) -> visit(boundTree, f), tree.getBounds());
+        CollectionsP.mapList((Tree boundTree) -> visit(boundTree, f), tree.getBounds());
     type.setBounds(bounds);
     type.copyIntersectionBoundAnnotations();
     return type;

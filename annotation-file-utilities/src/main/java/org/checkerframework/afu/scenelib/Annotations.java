@@ -20,8 +20,11 @@ import org.checkerframework.checker.signature.qual.BinaryName;
  * This noninstantiable class provides useful static methods related to annotations, following the
  * convention of {@link java.util.Collections}.
  */
-public abstract class Annotations {
-  private Annotations() {}
+public final class Annotations {
+  /** Do not instantiate. */
+  private Annotations() {
+    throw new Error("Do not instantiate");
+  }
 
   public static Set<Annotation> noAnnotations;
   public static Map<String, ? extends AnnotationFieldType> noFieldTypes;
@@ -54,7 +57,12 @@ public abstract class Annotations {
    */
   public static Set<AnnotationDef> standardDefs;
 
-  // the field types for an annotation with only one field, named "value".
+  /**
+   * Returns the field types for an annotation with only one field, named "value".
+   *
+   * @param aft the type of the "value" field
+   * @return the field types for an annotation with only one field, named "value"
+   */
   static Map<String, ? extends AnnotationFieldType> valueFieldTypeOnly(AnnotationFieldType aft) {
     return Collections.singletonMap("value", aft);
   }
@@ -116,8 +124,8 @@ public abstract class Annotations {
     adRetention =
         new AnnotationDef(
             "java.lang.annotation.Retention",
+            valueFieldTypeOnly(aftRetentionPolicy),
             "'Retention' in org/checkerframework/afu/scenelib/annotations/Annotations");
-    adRetention.setFieldTypes(valueFieldTypeOnly(aftRetentionPolicy));
     aRetentionRuntime = createValueAnnotation(adRetention, "RUNTIME");
     adRetention.tlAnnotationsHere.add(aRetentionRuntime);
     aRetentionClass = createValueAnnotation(adRetention, "CLASS");
@@ -130,8 +138,8 @@ public abstract class Annotations {
     adDocumented =
         new AnnotationDef(
             "java.lang.annotation.Documented",
+            noFieldTypes,
             "'Documented' in org/checkerframework/afu/scenelib/annotations/Annotations");
-    adDocumented.setFieldTypes(noFieldTypes);
     aDocumented = new Annotation(adDocumented, noFieldValues);
     adDocumented.tlAnnotationsHere.add(aDocumented);
 
@@ -200,10 +208,10 @@ public abstract class Annotations {
    * @return a clone of the given annotation
    */
   public static final Annotation rebuild(Annotation a) {
-    AnnotationBuilder ab =
-        AnnotationFactory.saf.beginAnnotation(a.def(), "rebuild " + a.def.source);
+    AnnotationBuilder ab = AnnotationFactory.saf.beginAnnotation(a.def(), "rebuild " + a.def.name);
     if (ab != null) {
-      for (Map.Entry<String, AnnotationFieldType> fieldDef : a.def().fieldTypes.entrySet()) {
+      for (Map.Entry<String, ? extends AnnotationFieldType> fieldDef :
+          a.def().fieldTypes.entrySet()) {
 
         String fieldName = fieldDef.getKey();
         AnnotationFieldType fieldType = fieldDef.getValue();

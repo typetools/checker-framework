@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * Class declaration annotation to make methods default to {@code @AlwaysSafe}. While the normal
- * default is already {@code @AlwaysSafe} methods, this is useful for a type inside a package marked
+ * default is already {@code @AlwaysSafe}, this is useful for a type inside a package marked
  * {@code @UIPackage}.
  *
  * @checker_framework.manual #guieffect-checker GUI Effect Checker

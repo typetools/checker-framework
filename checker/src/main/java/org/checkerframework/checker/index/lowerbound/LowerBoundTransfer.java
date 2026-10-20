@@ -407,7 +407,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
    *      lit 0 + * &rarr; *
    *      lit 1 + * &rarr; call promote
    *      9. lit &ge; 2 + {gte-1, nn, or pos} &rarr; pos
-   *      let all other lits, including sets, fall through:
+   *      let all other literals, including sets, fall through:
    *      10. pos + pos &rarr; pos
    *      11. nn + * &rarr; *
    *      12. pos + gte-1 &rarr; nn

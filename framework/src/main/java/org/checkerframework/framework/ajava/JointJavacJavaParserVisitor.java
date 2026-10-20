@@ -1181,6 +1181,14 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
         visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
       }
 
+      // For a qualified superclass constructor invocation such as "outer.super()", javac
+      // combines the receiver and the "super" keyword into a MemberSelectTree, whereas
+      // JavaParser stores the receiver as the expression of the invocation itself.
+      if (javacTree.getMethodSelect() instanceof MemberSelectTree selection) {
+        assert node.getExpression().isPresent();
+        selection.getExpression().accept(this, node.getExpression().get());
+      }
+
       visitLists(javacTree.getArguments(), node.getArguments());
     } else {
       throwUnexpectedNodeType(javacTree, javaParserNode);
@@ -1507,7 +1515,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       assert javacTree.getInitializer() == null;
     } else if (javaParserNode instanceof EnumConstantDeclaration node) {
       // In javac, an enum constant is expanded as a variable declaration initialized to a
-      // constuctor call.
+      // constructor call.
       processVariable(javacTree, node);
       if (javacTree.getNameExpression() != null) {
         javacTree.getNameExpression().accept(this, node.getName());
@@ -2134,7 +2142,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       RequiresTree javacTree, ModuleRequiresDirective javaParserNode);
 
   /**
-   * Process a {@code RetrunTree}.
+   * Process a {@code ReturnTree}.
    *
    * @param javacTree tree to process
    * @param javaParserNode corresponding JavaParser node
@@ -2357,7 +2365,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
    * @param javaParserNode a node that was visited at the same time as {@code javacTree}, but which
    *     was not of the correct type for that tree
    * @throws BugInCF that indicates the javac trees and JavaParser nodes were desynced during the
-   *     visitng process at {@code javacTree} and {@code javaParserNode}
+   *     visiting process at {@code javacTree} and {@code javaParserNode}
    */
   private void throwUnexpectedNodeType(Tree javacTree, Node javaParserNode) {
     throw new BugInCF(
@@ -2381,7 +2389,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
    * @param expectedType the type {@code javaParserNode} was expected to be based on {@code
    *     javacTree}
    * @throws BugInCF that indicates the javac trees and JavaParser nodes were desynced during the
-   *     visitng process at {@code javacTree} and {@code javaParserNode}
+   *     visiting process at {@code javacTree} and {@code javaParserNode}
    */
   private void throwUnexpectedNodeType(Tree javacTree, Node javaParserNode, Class<?> expectedType) {
     throw new BugInCF(

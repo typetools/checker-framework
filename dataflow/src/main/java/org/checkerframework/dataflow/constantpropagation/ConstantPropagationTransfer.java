@@ -20,6 +20,9 @@ public class ConstantPropagationTransfer
         TransferInput<Constant, ConstantPropagationStore>>
     implements ForwardTransferFunction<Constant, ConstantPropagationStore> {
 
+  /** Creates a ConstantPropagationTransfer. */
+  public ConstantPropagationTransfer() {}
+
   @Override
   public ConstantPropagationStore initialStore(
       UnderlyingAST underlyingAST, List<LocalVariableNode> parameters) {

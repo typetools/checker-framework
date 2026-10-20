@@ -40,7 +40,7 @@ import javax.lang.model.util.Types;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * The TreeBuilder permits the creation of new AST Trees using the non-public Java compiler API
@@ -635,7 +635,7 @@ public class TreeBuilder {
    */
   public NewArrayTree buildNewArray(TypeMirror componentType, List<ExpressionTree> elems) {
     @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
-    List<JCExpression> exprs = CollectionsPlume.mapList(JCExpression.class::cast, elems);
+    List<JCExpression> exprs = CollectionsP.mapList(JCExpression.class::cast, elems);
 
     JCTree.JCNewArray newArray =
         maker.NewArray(

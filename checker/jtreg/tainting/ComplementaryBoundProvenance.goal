@@ -1,0 +1,10 @@
+ComplementaryBoundProvenance.java:23:6: compiler.err.proc.messager: [type.arguments.not.inferred] Could not infer type arguments for ComplementaryBoundProvenance.m
+unsatisfiable constraint: @Tainted String <: @Untainted String
+From complementary bound: @Untainted String = use of X from m(untainted, tainted)
+@Untainted String <= use of X from m(untainted, tainted)
+@Tainted ArrayList<@Untainted String> <: inference type: java.lang.Iterable<X>
+From complementary bound: @Tainted ArrayList<@Untainted String> <: use of T from m(untainted, tainted)
+@Tainted ArrayList<@Untainted String> -> use of T from m(untainted, tainted)
+untainted -> use of T from m(untainted, tainted)
+From: Argument constraint
+1 error

@@ -33,7 +33,7 @@ public class Precondition {
   }
 
   @RequiresQualifier(expression = "---", qualifier = Odd.class)
-  // :: error: [flowexpr.parse.error]
+  // :: error: [flowexpr.parse.error.contract]
   void error() {
     // :: error: [assignment]
     @ValueTypeAnno String l1 = f1;
@@ -143,7 +143,7 @@ public class Precondition {
   }
 
   @RequiresQualifier.List({@RequiresQualifier(expression = "---", qualifier = ValueTypeAnno.class)})
-  // :: error: [flowexpr.parse.error]
+  // :: error: [flowexpr.parse.error.contract]
   void error2() {}
 
   void t5(@Odd String p1, String p2, @ValueTypeAnno String p3) {

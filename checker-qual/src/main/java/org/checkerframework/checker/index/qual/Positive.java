@@ -18,8 +18,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * }
  * }</pre>
  *
- * Without the knowing that {@code arr.length} is positive, the Index Checker cannot verify that
- * accessing the last element of the array is safe - there might not be a last element!
+ * Without knowing that {@code arr.length} is positive, the Index Checker cannot verify that
+ * accessing the last element of the array is safe -- there might not be a last element!
  *
  * @checker_framework.manual #index-checker Index Checker
  */

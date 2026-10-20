@@ -10,7 +10,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
 import org.checkerframework.framework.test.diagnostics.TestDiagnosticUtils;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Represents the test results from typechecking one or more Java files using the given
@@ -122,9 +122,9 @@ public class TypecheckResult {
   public List<String> getErrorHeaders() {
     List<String> errorHeaders = new ArrayList<>();
 
-    // none of these should be true if the test didn't fail
     if (didTestFail()) {
       if (compilationResult.compiledWithoutError() && !expectedDiagnostics.isEmpty()) {
+        // TODO: This prints if all errors are as expected, but the test issued unexpected warnings.
         errorHeaders.add("The test run was expected to issue errors/warnings, but it did not.");
 
       } else if (!compilationResult.compiledWithoutError() && expectedDiagnostics.isEmpty()) {
@@ -137,7 +137,7 @@ public class TypecheckResult {
         errorHeaders.add(
             numFound
                 + " out of "
-                + StringsPlume.nvPlural(numExpected, "expected diagnostic", "was")
+                + StringsP.nvPlural(numExpected, "expected diagnostic", "was")
                 + " found.");
       }
     }
@@ -155,28 +155,29 @@ public class TypecheckResult {
       return "";
     }
     StringJoiner summaryBuilder = new StringJoiner(System.lineSeparator());
-    summaryBuilder.add(StringsPlume.joinLines(getErrorHeaders()));
+    summaryBuilder.add(StringsP.joinLines(getErrorHeaders()));
 
-    if (!unexpectedDiagnostics.isEmpty()) {
-      int numUnexpected = unexpectedDiagnostics.size();
-      if (numUnexpected == 1) {
-        summaryBuilder.add("1 unexpected diagnostic was found:");
-      } else {
-        summaryBuilder.add(numUnexpected + " unexpected diagnostics were found:");
-      }
+    int numUnexpected = unexpectedDiagnostics.size();
+    int numMissing = missingDiagnostics.size();
 
+    if (numUnexpected != 0) {
+      summaryBuilder.add(
+          StringsP.nvPlural(numUnexpected, "unexpected diagnostic", "was") + " found:");
       for (TestDiagnostic unexpected : unexpectedDiagnostics) {
         summaryBuilder.add("  " + unexpected.toString());
       }
     }
 
-    if (!missingDiagnostics.isEmpty()) {
-      int numMissing = missingDiagnostics.size();
-      summaryBuilder.add(
-          StringsPlume.nvPlural(numMissing, "expected diagnostic", "was") + " not found:");
-
-      for (TestDiagnostic missing : missingDiagnostics) {
-        summaryBuilder.add("  " + missing.toString());
+    if (numMissing != 0) {
+      String msg = StringsP.nvPlural(numMissing, "expected diagnostic", "was") + " not found";
+      if (numUnexpected != 0 && numMissing == expectedDiagnostics.size()) {
+        // There were unexpected diagnostics and every expected diagnostic is missing.
+        summaryBuilder.add("All " + msg + ".");
+      } else {
+        summaryBuilder.add(msg + ":");
+        for (TestDiagnostic missing : missingDiagnostics) {
+          summaryBuilder.add("  " + missing.toString());
+        }
       }
     }
     return summaryBuilder.toString();

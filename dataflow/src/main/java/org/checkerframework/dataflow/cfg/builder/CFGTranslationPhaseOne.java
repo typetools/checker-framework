@@ -183,8 +183,7 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
-import org.plumelib.util.CollectionsPlume;
-import org.plumelib.util.IPair;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.IdentityArraySet;
 
 /**
@@ -599,7 +598,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
     Set<Node> existing = treeToCfgNodes.get(tree);
     if (existing == null) {
-      Set<Node> newSet = new IdentityArraySet<Node>(1);
+      Set<Node> newSet = new IdentityArraySet<>(1);
       newSet.add(node);
       treeToCfgNodes.put(tree, newSet);
     } else {
@@ -771,8 +770,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   @SuppressWarnings("ModifyCollectionInEnhancedForLoop")
   protected void insertExtendedNodeAfter(ExtendedNode n, @FindDistinct Node pred) {
+    // Search backward from the end because `pred` is almost always the node most recently
+    // appended or inserted (e.g. the chained conversions in box()/unbox()/widen()/narrow()), so
+    // it is at or near the tail of `nodeList`.
     int index = -1;
-    for (int i = 0; i < nodeList.size(); i++) {
+    for (int i = nodeList.size() - 1; i >= 0; i--) {
       ExtendedNode inList = nodeList.get(i);
       if (inList instanceof NodeHolder || inList instanceof NodeWithExceptionsHolder) {
         if (inList.getNode() == pred) {
@@ -1863,7 +1865,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // Declare and initialize the loop index variable
       TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
 
-      LiteralTree zero = treeBuilder.buildLiteral(Integer.valueOf(0));
+      LiteralTree zero = treeBuilder.buildLiteral(0);
       handleArtificialTree(zero);
 
       VariableTree indexVariable =
@@ -1957,7 +1959,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       indexNode3.setInSource(false);
       extendWithNode(indexNode3);
 
-      LiteralTree oneTree = treeBuilder.buildLiteral(Integer.valueOf(1));
+      LiteralTree oneTree = treeBuilder.buildLiteral(1);
       handleArtificialTree(oneTree);
       Node one = new IntegerLiteralNode(oneTree);
       one.setInSource(false);
@@ -2048,7 +2050,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Helper class for handling switch statements and switch expressions, including all their
    * substatements such as case labels.
    */
-  private class SwitchBuilder {
+  private final class SwitchBuilder {
 
     /**
      * The tree for the switch statement or switch expression. Its type may be {@link SwitchTree}
@@ -2133,7 +2135,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       }
 
       // JLS 14.11.2
-      // https://docs.oracle.com/javase/specs/jls/se21/html/jls-14.html#jls-14.11.2
+      // https://docs.oracle.com/javase/specs/jls/se25/html/jls-14.html#jls-14.11.2
       // states "For compatibility reasons, switch statements that are not enhanced switch
       // statements are not required to be exhaustive".
       // Switch expressions and enhanced switch statements are exhaustive.
@@ -2412,6 +2414,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param second a reference
    * @return the first argument that is non-null
    */
+  @SuppressWarnings("PMD.AvoidThrowingNullPointerException")
   private static <A> A firstNonNull(A first, A second) {
     if (first != null) {
       return first;
@@ -2431,9 +2434,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         new MarkerNode(
             tree, "start of try statement #" + TreeUtils.treeUids.get(tree), env.getTypeUtils()));
 
-    List<IPair<TypeMirror, Label>> catchLabels =
-        CollectionsPlume.mapList(
-            (CatchTree c) -> IPair.of(TreeUtils.typeOf(c.getParameter().getType()), new Label()),
+    List<TryCatchFrame.CatchLabel> catchLabels =
+        CollectionsP.mapList(
+            (CatchTree c) ->
+                new TryCatchFrame.CatchLabel(
+                    TreeUtils.typeOf(c.getParameter().getType()), new Label()),
             catches);
 
     // Store return/break/continue labels, just in case we need them for a finally block.
@@ -2482,7 +2487,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     int catchIndex = 0;
     for (CatchTree c : catches) {
-      addLabelForNextNode(catchLabels.get(catchIndex).second);
+      addLabelForNextNode(catchLabels.get(catchIndex).label());
       TypeMirror catchType = TreeUtils.typeOf(c.getParameter().getType());
       extendWithNode(new CatchMarkerNode(tree, "start", catchType, env.getTypeUtils()));
       scan(c, p);
@@ -2921,10 +2926,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     extendWithExtendedNode(new UnconditionalJump(merge));
 
     addLabelForNextNode(merge);
-    IPair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode = buildVarUseNode(condExprVarTree);
+    VarUseNode treeAndLocalVarNode = buildVarUseNode(condExprVarTree);
     Node node =
         new TernaryExpressionNode(
-            tree, condition, trueExprNode, falseExprNode, treeAndLocalVarNode.second);
+            tree, condition, trueExprNode, falseExprNode, treeAndLocalVarNode.node());
     extendWithNode(node);
 
     return node;
@@ -2941,33 +2946,42 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private void extendWithAssignmentForConditionalExpr(
       VariableTree condExprVarTree, ExpressionTree caseExprTree, Node caseExprNode) {
-    IPair<IdentifierTree, LocalVariableNode> treeAndLocalVarNode = buildVarUseNode(condExprVarTree);
+    VarUseNode treeAndLocalVarNode = buildVarUseNode(condExprVarTree);
 
-    AssignmentTree assign = treeBuilder.buildAssignment(treeAndLocalVarNode.first, caseExprTree);
+    AssignmentTree assign = treeBuilder.buildAssignment(treeAndLocalVarNode.tree(), caseExprTree);
     handleArtificialTree(assign);
 
     // Build a "synthetic" assignment node, allowing special handling in transfer functions
     AssignmentNode assignmentNode =
-        new AssignmentNode(assign, treeAndLocalVarNode.second, caseExprNode, true);
+        new AssignmentNode(assign, treeAndLocalVarNode.node(), caseExprNode, true);
     assignmentNode.setInSource(false);
     extendWithNode(assignmentNode);
   }
 
   /**
-   * Build a pair of {@link IdentifierTree} and {@link LocalVariableNode} to represent a use of some
+   * A use of a variable: a synthetic {@link IdentifierTree} and the {@link LocalVariableNode} for
+   * it.
+   *
+   * @param tree the synthetic {@link IdentifierTree} for the use
+   * @param node the {@link LocalVariableNode} representing the use
+   */
+  private record VarUseNode(IdentifierTree tree, LocalVariableNode node) {}
+
+  /**
+   * Build an {@link IdentifierTree} and a {@link LocalVariableNode} to represent a use of some
    * variable. Does not add the node to the CFG.
    *
    * @param varTree tree for the variable
-   * @return a pair whose first element is the synthetic {@link IdentifierTree} for the use, and
-   *     whose second element is the {@link LocalVariableNode} representing the use
+   * @return the synthetic {@link IdentifierTree} for the use, and the {@link LocalVariableNode}
+   *     representing the use
    */
-  private IPair<IdentifierTree, LocalVariableNode> buildVarUseNode(VariableTree varTree) {
+  private VarUseNode buildVarUseNode(VariableTree varTree) {
     IdentifierTree condExprVarUseTree = treeBuilder.buildVariableUse(varTree);
     handleArtificialTree(condExprVarUseTree);
     LocalVariableNode condExprVarUseNode = new LocalVariableNode(condExprVarUseTree);
     condExprVarUseNode.setInSource(false);
     // Do not actually add the node to the CFG.
-    return IPair.of(condExprVarUseTree, condExprVarUseNode);
+    return new VarUseNode(condExprVarUseTree, condExprVarUseNode);
   }
 
   @Override
@@ -3345,14 +3359,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     assert dimensions != null;
 
     List<Node> dimensionNodes =
-        CollectionsPlume.mapList(dim -> unaryNumericPromotion(scan(dim, p)), dimensions);
+        CollectionsP.mapList(dim -> unaryNumericPromotion(scan(dim, p)), dimensions);
 
     List<Node> initializerNodes;
     if (initializers == null) {
       initializerNodes = Collections.emptyList();
     } else {
       initializerNodes =
-          CollectionsPlume.mapList(init -> assignConvert(scan(init, p), elemType), initializers);
+          CollectionsP.mapList(init -> assignConvert(scan(init, p), elemType), initializers);
     }
 
     Node node = new ArrayCreationNode(tree, type, dimensionNodes, initializerNodes);
@@ -3462,7 +3476,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // `tree` has an explicit receiver.
       return scan(mtree.getExpression(), null);
     } else {
-      // `tree` lacks an explicit reciever.
+      // `tree` lacks an explicit receiver.
       Element ele = TreeUtils.elementFromUse(tree);
       TypeElement declaringClass = ElementUtils.enclosingTypeElement(ele);
       TypeMirror typeOfDeclaringClass = ElementUtils.getType(declaringClass);
@@ -4007,7 +4021,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         } else if (leftInfo.isBoolean()
             && rightInfo.isBoolean()
             && !(leftInfo.isBoxed() && rightInfo.isBoxed())) {
-          // JSL 15.21.2 boolean equality
+          // JLS 15.21.2 boolean equality
           left = unboxAsNeeded(left, leftInfo.isBoxed());
           right = unboxAsNeeded(right, rightInfo.isBoxed());
         }

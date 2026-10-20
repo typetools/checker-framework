@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  *
  * <pre>
  * &#64;EnsuresCalledMethodsVarargs("m")
- * public void callMOnAll(S s, T t...) { ... }
+ * public void callMOnAll(S s, T... t) { ... }
  * </pre>
  *
  * <p>This method guarantees that {@code m()} is always called on every {@code T} object passed in

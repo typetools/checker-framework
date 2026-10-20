@@ -21,9 +21,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *  }
  * </pre>
  *
- * the field descriptors for the two types are
- * Lorg/checkerframework/checker/signature/SignatureChecker; and
- * Lorg/checkerframework/checker/signature/SignatureChecker$Inner; .
+ * the field descriptors for the two types are {@code
+ * Lorg/checkerframework/checker/signature/SignatureChecker;} and {@code
+ * Lorg/checkerframework/checker/signature/SignatureChecker$Inner;}.
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */

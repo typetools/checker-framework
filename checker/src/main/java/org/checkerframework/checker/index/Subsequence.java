@@ -18,7 +18,7 @@ import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Holds information from {@link HasSubsequence} annotations. */
-public class Subsequence {
+public final class Subsequence {
 
   /** Name of the Subsequence. */
   public final String array;
@@ -145,21 +145,21 @@ public class Subsequence {
    */
   public static String negateString(String s) {
     String original = s;
-    String result = "";
+    StringBuilder result = new StringBuilder(original.length() + 1);
     if (!original.startsWith("-")) {
-      result += '-';
+      result.append('-');
     }
     for (int i = 0; i < original.length(); i++) {
       char c = original.charAt(i);
       if (c == '-') {
-        result += '+';
+        result.append('+');
       } else if (c == '+') {
-        result += '-';
+        result.append('-');
       } else {
-        result += c;
+        result.append(c);
       }
     }
-    return result;
+    return result.toString();
   }
 
   @Override

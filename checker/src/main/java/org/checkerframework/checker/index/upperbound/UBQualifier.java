@@ -23,7 +23,6 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.plumelib.util.IPair;
 import org.plumelib.util.MapsP;
 
 /**
@@ -402,7 +401,7 @@ public abstract class UBQualifier {
   }
 
   /** The less-than-length-of qualifier (@LTLengthOf). */
-  public static class LessThanLengthOf extends UBQualifier {
+  public static final class LessThanLengthOf extends UBQualifier {
 
     // There are two representations for sequences and offsets.
     // In source code, they are represented by two parallel arrays, as in
@@ -442,10 +441,10 @@ public abstract class UBQualifier {
     /*package-private*/ boolean literalIsSubtype(int i) {
       for (Map.Entry<String, Set<OffsetEquation>> entry : map.entrySet()) {
         for (OffsetEquation equation : entry.getValue()) {
-          if (!equation.isInt()) {
+          if (!equation.isOnlyInt()) {
             return false;
           }
-          int offset = equation.getInt();
+          int offset = equation.getIntPart();
           if (i + offset > -1) {
             return false;
           }
@@ -629,7 +628,7 @@ public abstract class UBQualifier {
         return true;
       }
       for (OffsetEquation offset : offsets) {
-        if (offset.isNonNegative()) {
+        if (offset.isNonNegativeInt()) {
           return true;
         }
       }
@@ -864,39 +863,40 @@ public abstract class UBQualifier {
     }
 
     /**
+     * Widens {@code lubMap}, the map of the {@code LessThanLengthOf} that is the least upper bound
+     * of {@code this} and {@code other}, so that dataflow analysis of a loop terminates. If {@code
+     * this} and {@code other} contain all the same sequences with all the same non-constant
+     * offsets, but some constant offset differs between them, then that sequence-offset pair is
+     * removed from {@code lubMap}. Otherwise, {@code lubMap} is left unchanged. This widened lub
+     * should only be used in order to break dataflow analysis loops.
      *
+     * <p>For example, the lub of {@code LTLengthOf(value={"a", "b"}, offset={"0", "0"})} and {@code
+     * LTLengthOf(value={"a", "b"}, offset={"-20", "0"})} is widened to {@code LTLengthOf("b")}.
+     *
+     * <p>Without this widening, dataflow never stops analyzing the following loop, because the type
+     * of {@code i} changes after each analysis of the loop:
      *
      * <pre>@LTLengthOf("a") int i = ...;
      * while (expr) {
      *   i++;
      * }</pre>
      *
-     * <p>Dataflow never stops analyzing the above loop, because the type of i always changes after
-     * each analysis of the loop:
+     * <p>The successive types of {@code i} are {@code LTLengthOf(value="a", offset="-1")}, then
+     * {@code LTLengthOf(value="a", offset="-2")}, then {@code LTLengthOf(value="a", offset="-3")},
+     * and so on.
      *
-     * <p>1. @LTLengthOf(value="a', offset="-1")
-     *
-     * <p>2. @LTLengthOf(value="a', offset="-2")
-     *
-     * <p>3. @LTLengthOf(value="a', offset="-3")
-     *
-     * <p>In order to prevent this, if both types passed to lub include all the same sequences with
-     * the same non-constant value offsets and if the constant value offsets are different then
-     * remove that sequence-offset pair from lub.
-     *
-     * <p>For example:
-     *
-     * <p>LUB @LTLengthOf(value={"a", "b"}, offset={"0", "0") and @LTLengthOf(value={"a", "b"},
-     * offset={"-20", "0") is @LTLengthOf("b")
-     *
-     * <p>This widened lub should only be used in order to break dataflow analysis loops.
+     * @param other the qualifier whose lub with {@code this} is represented by {@code lubMap}
+     * @param lubMap the {@code map} field of {@code this.lub(other)}, which the caller has checked
+     *     is a {@code LessThanLengthOf}; is side-effected by this method. Because {@code lubMap} is
+     *     not a copy, this method also mutates that qualifier; that is harmless only because the
+     *     caller discards it.
      */
     private void widenLub(LessThanLengthOf other, Map<String, Set<OffsetEquation>> lubMap) {
       if (!containsSame(this.map.keySet(), lubMap.keySet())
           || !containsSame(other.map.keySet(), lubMap.keySet())) {
         return;
       }
-      List<IPair<String, OffsetEquation>> remove = new ArrayList<>();
+      List<SequenceAndOffset> remove = new ArrayList<>();
       for (Map.Entry<String, Set<OffsetEquation>> entry : lubMap.entrySet()) {
         String sequence = entry.getKey();
         Set<OffsetEquation> lubOffsets = entry.getValue();
@@ -905,12 +905,14 @@ public abstract class UBQualifier {
         if (lubOffsets.size() != thisOffsets.size() || lubOffsets.size() != otherOffsets.size()) {
           return;
         }
+        OffsetEquation thisIntEq = OffsetEquation.getOnlyIntOffsetEquation(thisOffsets);
+        OffsetEquation otherIntEq = OffsetEquation.getOnlyIntOffsetEquation(otherOffsets);
         for (OffsetEquation lubEq : lubOffsets) {
-          if (lubEq.isInt()) {
-            int thisInt = OffsetEquation.getIntOffsetEquation(thisOffsets).getInt();
-            int otherInt = OffsetEquation.getIntOffsetEquation(otherOffsets).getInt();
-            if (thisInt != otherInt) {
-              remove.add(IPair.of(sequence, lubEq));
+          if (lubEq.isOnlyInt()) {
+            assert thisIntEq != null : "@AssumeAssertion(nullness)";
+            assert otherIntEq != null : "@AssumeAssertion(nullness)";
+            if (thisIntEq.getIntPart() != otherIntEq.getIntPart()) {
+              remove.add(new SequenceAndOffset(sequence, lubEq));
             }
           } else if (thisOffsets.contains(lubEq) && otherOffsets.contains(lubEq)) {
             //  continue;
@@ -919,15 +921,24 @@ public abstract class UBQualifier {
           }
         }
       }
-      for (IPair<String, OffsetEquation> pair : remove) {
-        String sequence = pair.first;
+      for (SequenceAndOffset pair : remove) {
+        String sequence = pair.sequence();
         Set<OffsetEquation> offsets = lubMap.get(sequence);
-        offsets.remove(pair.second);
+        assert offsets != null : "@AssumeAssertion(nullness): key is deleted only by its last pair";
+        offsets.remove(pair.offset());
         if (offsets.isEmpty()) {
           lubMap.remove(sequence);
         }
       }
     }
+
+    /**
+     * A sequence and one of its offsets.
+     *
+     * @param sequence a sequence
+     * @param offset an offset for {@code sequence}
+     */
+    private record SequenceAndOffset(String sequence, OffsetEquation offset) {}
 
     @Override
     public UBQualifier glb(UBQualifier other) {
@@ -970,7 +981,7 @@ public abstract class UBQualifier {
       Set<OffsetEquation> newOff = new HashSet<>(offsets.size());
       OffsetEquation literal = null;
       for (OffsetEquation eq : offsets) {
-        if (eq.isInt()) {
+        if (eq.isOnlyInt()) {
           if (literal == null) {
             literal = eq;
           } else {
@@ -1127,7 +1138,7 @@ public abstract class UBQualifier {
             if (newEq == null) {
               return null;
             }
-            if (newEq.getInt() == -1) {
+            if (newEq.getIntPart() == -1) {
               return newEq.copyAdd('+', OffsetEquation.ONE);
             }
             return newEq;
@@ -1161,7 +1172,7 @@ public abstract class UBQualifier {
       if (divisor == 1) {
         return this;
       } else if (divisor > 1) {
-        OffsetEquationFunction divideFunc = eq -> (eq.isNegativeOrZero() ? eq : null);
+        OffsetEquationFunction divideFunc = eq -> (eq.isNonPositiveInt() ? eq : null);
         return computeNewOffsets(divideFunc);
       }
       return UpperBoundUnknownQualifier.UNKNOWN;
@@ -1173,9 +1184,9 @@ public abstract class UBQualifier {
         return false;
       }
       for (OffsetEquation offset : offsets) {
-        if (offset.isInt()) {
+        if (offset.isOnlyInt()) {
           // This expression must not overflow
-          return (long) minlen - offset.getInt() > value;
+          return (long) minlen - offset.getIntPart() > value;
         }
       }
       return false;
@@ -1208,12 +1219,12 @@ public abstract class UBQualifier {
     }
 
     /**
-     * Generates a new UBQualifer without the given (sequence, offset) pair. Other occurrences of
+     * Generates a new UBQualifier without the given (sequence, offset) pair. Other occurrences of
      * the sequence and the offset may remain in the result, but not together.
      *
      * @param sequence a Java expression representing a string
      * @param offset an integral offset
-     * @return a new UBQualifer without the given sequence and offset
+     * @return a new UBQualifier without the given sequence and offset
      */
     public UBQualifier removeOffset(String sequence, int offset) {
       OffsetEquation offsetEq = OffsetEquation.createOffsetForInt(offset);
@@ -1279,7 +1290,7 @@ public abstract class UBQualifier {
   }
 
   /** Represents an integer value that is known at compile time. */
-  public static class UpperBoundLiteralQualifier extends UBQualifier {
+  public static final class UpperBoundLiteralQualifier extends UBQualifier {
 
     /** Represents the value -1. */
     public static final UpperBoundLiteralQualifier NEGATIVEONE = new UpperBoundLiteralQualifier(-1);
@@ -1373,7 +1384,7 @@ public abstract class UBQualifier {
   }
 
   /** The top type qualifier. */
-  public static class UpperBoundUnknownQualifier extends UBQualifier {
+  public static final class UpperBoundUnknownQualifier extends UBQualifier {
     /** The canonical representative. */
     public static final UBQualifier UNKNOWN = new UpperBoundUnknownQualifier();
 
@@ -1407,7 +1418,7 @@ public abstract class UBQualifier {
   }
 
   /** The bottom qualifier for the upperbound type system. */
-  private static class UpperBoundBottomQualifier extends UBQualifier {
+  private static final class UpperBoundBottomQualifier extends UBQualifier {
     /** The canonical bottom qualifier for the upperbound type system. */
     public static final UBQualifier BOTTOM = new UpperBoundBottomQualifier();
 
@@ -1441,7 +1452,7 @@ public abstract class UBQualifier {
   }
 
   /** The polymorphic qualifier. */
-  private static class PolyQualifier extends UBQualifier {
+  private static final class PolyQualifier extends UBQualifier {
     /** The canonical representative. */
     public static final UBQualifier POLY = new PolyQualifier();
 

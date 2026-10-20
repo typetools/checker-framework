@@ -18,8 +18,9 @@ import org.checkerframework.dataflow.qual.Pure;
  * This class contains utility methods for reflectively accessing Tree classes and methods that were
  * added after Java 11.
  */
+@SuppressWarnings("PMD.MissingStaticMethodInNonInstantiatableClass")
 @Deprecated(forRemoval = true, since = "4.0.0")
-public class TreeUtilsAfterJava11 {
+public final class TreeUtilsAfterJava11 {
 
   /** Don't use. */
   private TreeUtilsAfterJava11() {
@@ -28,7 +29,7 @@ public class TreeUtilsAfterJava11 {
 
   /** Utility methods for accessing {@code BindingPatternTree} methods. */
   @Deprecated(forRemoval = true, since = "4.0.0")
-  public static class BindingPatternUtils {
+  public static final class BindingPatternUtils {
 
     /** Don't use. */
     private BindingPatternUtils() {
@@ -50,7 +51,7 @@ public class TreeUtilsAfterJava11 {
 
   /** Utility methods for accessing {@code CaseTree} methods. */
   @Deprecated(forRemoval = true, since = "4.0.0")
-  public static class CaseUtils {
+  public static final class CaseUtils {
 
     /** Don't use. */
     private CaseUtils() {
@@ -153,7 +154,7 @@ public class TreeUtilsAfterJava11 {
 
   /** Utility methods for accessing {@code ConstantCaseLabelTree} methods. */
   @Deprecated(forRemoval = true, since = "4.0.0")
-  public static class ConstantCaseLabelUtils {
+  public static final class ConstantCaseLabelUtils {
     /** Don't use. */
     private ConstantCaseLabelUtils() {
       throw new AssertionError("Cannot be instantiated.");
@@ -189,7 +190,7 @@ public class TreeUtilsAfterJava11 {
 
   /** Utility methods for accessing {@code DeconstructionPatternTree} methods. */
   @Deprecated(forRemoval = true, since = "4.0.0")
-  public static class DeconstructionPatternUtils {
+  public static final class DeconstructionPatternUtils {
 
     /** Don't use. */
     private DeconstructionPatternUtils() {
@@ -224,7 +225,7 @@ public class TreeUtilsAfterJava11 {
 
   /** Utility methods for accessing {@code PatternCaseLabelTree} methods. */
   @Deprecated(forRemoval = true, since = "4.0.0")
-  public static class PatternCaseLabelUtils {
+  public static final class PatternCaseLabelUtils {
 
     /** Don't use. */
     private PatternCaseLabelUtils() {
@@ -259,7 +260,7 @@ public class TreeUtilsAfterJava11 {
 
   /** Utility methods for accessing {@code SwitchExpressionTree} methods. */
   @Deprecated(forRemoval = true, since = "4.0.0")
-  public static class SwitchExpressionUtils {
+  public static final class SwitchExpressionUtils {
 
     /** Don't use. */
     private SwitchExpressionUtils() {
@@ -303,7 +304,7 @@ public class TreeUtilsAfterJava11 {
 
   /** Utility methods for accessing {@code YieldTree} methods. */
   @Deprecated(forRemoval = true, since = "4.0.0")
-  public static class YieldUtils {
+  public static final class YieldUtils {
 
     /** Don't use. */
     private YieldUtils() {
@@ -325,7 +326,7 @@ public class TreeUtilsAfterJava11 {
 
   /** Utility methods for accessing {@code JCVariableDecl} methods. */
   @Deprecated(forRemoval = true, since = "4.0.0")
-  public static class JCVariableDeclUtils {
+  public static final class JCVariableDeclUtils {
 
     /** Don't use. */
     private JCVariableDeclUtils() {
@@ -352,7 +353,7 @@ public class TreeUtilsAfterJava11 {
 
   /** Utility methods for accessing {@code InstanceOfTree} methods. */
   @Deprecated(forRemoval = true, since = "4.0.0")
-  public static class InstanceOfUtils {
+  public static final class InstanceOfUtils {
 
     /** Don't use. */
     private InstanceOfUtils() {

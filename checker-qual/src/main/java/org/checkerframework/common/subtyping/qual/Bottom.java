@@ -12,16 +12,16 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * It should not be used! Instead, each type system should define its own dedicated bottom type.
  *
  * <p>This qualifier is used automatically if the existing qualifiers do not have a bottom type.
- * This only works the user never runs two type systems together. Furthermore, because it has no
- * {@code @RetentionPolicy} meta-annotation, this qualifier will not be stored in bytecode. So, only
- * use this qualifier during prototyping of very simple type systems. For realistic systems,
- * introduce a top and bottom qualifier that gets stored in bytecode.
+ * This only works if the user never runs two type systems together. Furthermore, because it has no
+ * {@code @Retention} meta-annotation, this qualifier will not be stored in bytecode. So, only use
+ * this qualifier during prototyping of very simple type systems. For realistic systems, introduce a
+ * top and bottom qualifier that gets stored in bytecode.
  *
  * <p>To use this qualifier, the type system designer needs to use methods like {@code
  * ImplicitsTreeAnnotator.addTreeKind()} to add default annotations and needs to manually add the
  * bottom qualifier to the qualifier hierarchy.
  *
- * <p>See {@code QualifierHierarchy.getBottomAnnotations()}
+ * <p>See {@code QualifierHierarchy.getBottomAnnotations()}.
  *
  * @checker_framework.manual #subtyping-checker Subtyping Checker
  */

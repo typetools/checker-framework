@@ -6,7 +6,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 class EnumExplicit {
 
-  public static enum EnumWithMethod {
+  public enum EnumWithMethod {
     VALUE {
       @Override
       public void call(@Nullable String string) {

@@ -25,8 +25,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.CollectionsPlume;
-import org.plumelib.util.IPair;
+import org.plumelib.util.CollectionsP;
 
 /**
  * An implementation of a forward analysis to solve a org.checkerframework.dataflow problem given a
@@ -212,9 +211,10 @@ public class ForwardAnalysisImpl<
   @Override
   @SuppressWarnings("nullness:contracts.precondition.override") // implementation field
   @RequiresNonNull("cfg")
-  public List<IPair<ReturnNode, @Nullable TransferResult<V, S>>> getReturnStatementStores() {
-    return CollectionsPlume.<ReturnNode, IPair<ReturnNode, @Nullable TransferResult<V, S>>>mapList(
-        returnNode -> IPair.of(returnNode, storesAtReturnStatements.get(returnNode)),
+  public List<ReturnStatementStore<V, S>> getReturnStatementStores() {
+    return CollectionsP.<ReturnNode, ReturnStatementStore<V, S>>mapList(
+        returnNode ->
+            new ReturnStatementStore<>(returnNode, storesAtReturnStatements.get(returnNode)),
         cfg.getReturnNodes());
   }
 
@@ -356,12 +356,12 @@ public class ForwardAnalysisImpl<
       case METHOD -> {
         MethodTree tree = ((CFGMethod) underlyingAST).getMethod();
         // TODO: document that LocalVariableNode has no block that it belongs to
-        yield CollectionsPlume.mapList(LocalVariableNode::new, tree.getParameters());
+        yield CollectionsP.mapList(LocalVariableNode::new, tree.getParameters());
       }
       case LAMBDA -> {
         LambdaExpressionTree lambda = ((CFGLambda) underlyingAST).getLambdaTree();
         // TODO: document that LocalVariableNode has no block that it belongs to
-        yield CollectionsPlume.mapList(LocalVariableNode::new, lambda.getParameters());
+        yield CollectionsP.mapList(LocalVariableNode::new, lambda.getParameters());
       }
       default -> Collections.emptyList();
     };

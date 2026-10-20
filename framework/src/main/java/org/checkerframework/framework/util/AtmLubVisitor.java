@@ -141,7 +141,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
       lubSet =
           qualHierarchy.leastUpperBoundsShallow(
               type1.getPrimaryAnnotations(),
-              type2.getUnderlyingType(),
+              type1.getUnderlyingType(),
               type2.getPrimaryAnnotations(),
               type2.getUnderlyingType());
     }
@@ -409,7 +409,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     for (AnnotatedTypeMirror atmVisit : visited) {
       // Use reference equality rather than equals because the visitor may visit two types
       // that are structurally equal, but not actually the same.  For example, the
-      // wildcards in IPair<?,?> may be equal, but they both should be visited.
+      // wildcards in Map<?,?> may be equal, but they both should be visited.
       if (atmVisit == atm) {
         return true;
       }

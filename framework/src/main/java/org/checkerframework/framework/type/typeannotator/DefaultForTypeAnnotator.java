@@ -252,9 +252,13 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
    * A list where each element associates an annotation with name regexes and name exception
    * regexes.
    */
-  private static class ListOfNameRegexes extends ArrayList<NameRegexes> {
+  private static final class ListOfNameRegexes extends ArrayList<NameRegexes> {
 
+    /** The serial version UID. */
     static final long serialVersionUID = 20200218L;
+
+    /** Creates a new ListOfNameRegexes. */
+    ListOfNameRegexes() {}
 
     /**
      * Update this list from the {@code names} and {@code namesExceptions} fields of a @DefaultFor

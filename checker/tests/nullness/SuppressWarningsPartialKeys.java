@@ -1,5 +1,6 @@
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+@SuppressWarnings("unneeded.suppression")
 public class SuppressWarningsPartialKeys {
 
   @SuppressWarnings("return")

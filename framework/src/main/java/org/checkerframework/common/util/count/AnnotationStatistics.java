@@ -40,7 +40,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
  * </pre>
  *
  * <p>By default, this utility displays annotation locations only, but not the annotations
- * themselves. Further, the ouput includes all annotations (including {@code @Override}, etc.),
+ * themselves. Further, the output includes all annotations (including {@code @Override}, etc.),
  * which is not very useful.
  *
  * <p>The following options may be used to adjust the output:

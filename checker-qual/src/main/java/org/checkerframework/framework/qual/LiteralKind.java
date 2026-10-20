@@ -8,8 +8,8 @@ import java.util.List;
  * Specifies kinds of literal trees.
  *
  * <p>These correspond to the *_LITERAL constants in {@link com.sun.source.tree.Tree.Kind}. However,
- * that enum is in the tools.jar which is not on the user's classpath by default. This enum is used
- * by meta-annotations, such as {@link QualifierForLiterals}, instead.
+ * that enum is in tools.jar, which is not on the user's classpath by default. This enum is used by
+ * meta-annotations, such as {@link QualifierForLiterals}, instead.
  */
 // https://docs.oracle.com/javase/8/docs/technotes/tools/findingclasses.html#bootclass
 public enum LiteralKind {

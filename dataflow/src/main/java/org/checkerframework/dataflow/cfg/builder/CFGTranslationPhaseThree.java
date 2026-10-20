@@ -34,7 +34,7 @@ import org.checkerframework.javacutil.BugInCF;
  * Eliminating the second type of degenerate cases might introduce cases of the third problem. These
  * are also removed.
  */
-public class CFGTranslationPhaseThree {
+public final class CFGTranslationPhaseThree {
 
   /** Do not instantiate. */
   private CFGTranslationPhaseThree() {
@@ -61,11 +61,10 @@ public class CFGTranslationPhaseThree {
   /**
    * Perform phase three on the control flow graph {@code cfg}.
    *
-   * @param cfg the control flow graph. Ownership is transfered to this method and the caller is not
-   *     allowed to read or modify {@code cfg} after the call to {@code process} any more.
+   * @param cfg the control flow graph. Ownership is transferred to this method and the caller is
+   *     not allowed to read or modify {@code cfg} after the call to {@code process} any more.
    * @return the resulting control flow graph
    */
-  @SuppressWarnings("nullness") // TODO: successors
   public static ControlFlowGraph process(ControlFlowGraph cfg) {
     Set<Block> blocks = cfg.getAllBlocks();
     Set<Block> removedBlocks = new HashSet<>();
@@ -154,7 +153,7 @@ public class CFGTranslationPhaseThree {
     "interning:not.interned", // CFG node comparisons
     "nullness" // TODO: successors
   })
-  protected static void mergeConsecutiveBlocks(Set<Block> blocks) {
+  /*package-protected*/ static void mergeConsecutiveBlocks(Set<Block> blocks) {
 
     // This transformation removes blocks from the CFG.
     // We might process a block AFTER it has been removed and its nodes have been moved
@@ -217,7 +216,7 @@ public class CFGTranslationPhaseThree {
     "interning:not.interned", // CFG node comparisons
     "nullness" // successors
   })
-  protected static BlockImpl computeNeighborhoodOfEmptyBlock(
+  /*package-protected*/ static BlockImpl computeNeighborhoodOfEmptyBlock(
       RegularBlockImpl start,
       Set<RegularBlockImpl> emptyBlocks,
       Set<PredecessorHolder> predecessors) {
@@ -254,7 +253,7 @@ public class CFGTranslationPhaseThree {
    *     (including {@code start})
    * @param predecessors a set to be filled by this method with all predecessors
    */
-  protected static void computeNeighborhoodOfEmptyBlockBackwards(
+  /*package-protected*/ static void computeNeighborhoodOfEmptyBlockBackwards(
       RegularBlockImpl start,
       Set<RegularBlockImpl> emptyBlocks,
       Set<PredecessorHolder> predecessors) {
@@ -293,7 +292,8 @@ public class CFGTranslationPhaseThree {
    * @return a predecessor holder to set the successor of {@code pred}
    */
   @SuppressWarnings("interning:not.interned") // AST node comparisons
-  protected static PredecessorHolder getPredecessorHolder(BlockImpl pred, BlockImpl cur) {
+  /*package-protected*/ static PredecessorHolder getPredecessorHolder(
+      BlockImpl pred, BlockImpl cur) {
     switch (pred.getType()) {
       case SPECIAL_BLOCK -> {
         SingleSuccessorBlockImpl s = (SingleSuccessorBlockImpl) pred;
@@ -370,10 +370,12 @@ public class CFGTranslationPhaseThree {
    * Returns a {@link PredecessorHolder} that sets the successor of a single successor block {@code
    * s}.
    *
+   * @param s a block whose single successor to set
+   * @param old the previous successor, which is being replaced
    * @return a {@link PredecessorHolder} that sets the successor of a single successor block {@code
    *     s}
    */
-  protected static PredecessorHolder singleSuccessorHolder(
+  /*package-protected*/ static PredecessorHolder singleSuccessorHolder(
       SingleSuccessorBlockImpl s, BlockImpl old) {
     return new PredecessorHolder() {
       @Override

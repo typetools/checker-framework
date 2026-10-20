@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 class Other {
   public static final class StaticIterator<T> implements Iterator<T> {
@@ -17,10 +18,12 @@ class Other {
       return e.hasMoreElements();
     }
 
+    @SideEffectsOnly("this")
     public T next() {
       return e.nextElement();
     }
 
+    @SideEffectsOnly("this")
     public void remove() {
       throw new UnsupportedOperationException();
     }
@@ -37,10 +40,12 @@ class Other {
       return e.hasMoreElements();
     }
 
+    @SideEffectsOnly("this")
     public T next() {
       return e.nextElement();
     }
 
+    @SideEffectsOnly("this")
     public void remove() {
       throw new UnsupportedOperationException();
     }
@@ -48,6 +53,7 @@ class Other {
 }
 
 class Entry<K, V> implements Map.Entry<K, V> {
+  @SideEffectsOnly("this")
   public V setValue(V newValue) {
     throw new RuntimeException();
   }
@@ -81,6 +87,7 @@ enum IdentityFunction implements Function<Object, @Nullable Object> {
 }
 
 abstract class FilteredCollection<E> implements Collection<E> {
+  @SideEffectsOnly("this")
   public boolean addAll(Collection<? extends E> collection) {
     for (E element : collection) {}
     return true;

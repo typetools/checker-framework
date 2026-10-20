@@ -5,20 +5,22 @@
 If we know, by some means of alias tracking, that a reference to a collection is
 unique and used only in one place,
 then it may be safely converted both ways between `@GrowOnly` and `@CanShrink`.
-This allows to "freeze" and "unfreeze" the collection for a while.
+This allows one to "freeze" and "unfreeze" the collection for a while.
 That may be quite a common thing, so it could enable checking more code.
 On the other hand, satisfying the necessary uniqueness conditions might be difficult.
 
 ## 2. Qualifier hierarchy for shrink-only
 
-The above conversion could make useful a qualifier hierarchy that works in the opposite direction:
+The above conversion could make it useful to have a qualifier hierarchy that
+works in the opposite direction:
 
 ```text
 Bottom <: ShrinkOnly <: CannotAddTo
 Bottom <: Growable <: CannotAddTo
 ```
 
-Maybe not very useful in isolation, but common pairs of qualifiers from the two hierarchies can be:
+This may not be very useful in isolation, but common pairs of qualifiers from
+the two hierarchies can be:
 
 ```text
 MutableLength = Growable + CanShrink
@@ -26,13 +28,13 @@ ImmutableLength = GrowOnly + ShrinkOnly
 ConstLength = CannotAddTo + CannotRemoveFrom
 ```
 
-That could enable reasoning about collections that need to maintain fixed length.
+That could enable reasoning about collections that need to maintain a fixed length.
 
 ## 3. Same-length collections
 
 A common coding pattern is that one index variable is used for multiple
 collections of the same length.
-The reason why this emerges is that if there is only one collection, using an
+The reason is that if there is only one collection, using an
 index variable is not necessary, because the enhanced for loop can be used.
 So this might be one of the next steps to consider.
 
@@ -46,14 +48,14 @@ listB: `@AtLeastSameLen(listA)` + `@GrowOnly`
 ```
 
 To support collections that are created by adding elements to all of them in a
-loop, the SameLen qualifier would need an offset that would be flow-sensitive
+loop, the `@SameLen` qualifier would need an offset that would be flow-sensitive
 and inferred.
 
 ## 4. Unified effect annotation
 
-If it comes to defining method effect annotations, considering the above point
+When it comes to defining method effect annotations, considering the above point
 "Having more elements is fine":
-The methods add, remove, and non-mutating methods, can all use one annotation
+The `add` and `remove` methods, and non-mutating methods, can all use one annotation
 `@EnsuresRelativeMinLen(list, n)`, with the meaning "sizeOfListOnReturn >=
 sizeOfListOnEntry + n".
 Then we could have:
@@ -70,7 +72,7 @@ An unrestricted method would -- implementation details aside -- be
 Checking method effects in general is hard, but a simple
 implementation might be able to cover a good number of cases:
 
-* For code executed in sequence, sum together the n in the EnsuresRelativeMinLen
+* For code executed in sequence, sum together the `n` in the `@EnsuresRelativeMinLen`
   of all called methods that can mutate the collection.
 * For code executed conditionally, change `@EnsuresRelativeMinLen(list, n)` to
   `@EnsuresRelativeMinLen(list, 0)` if n > 0.
