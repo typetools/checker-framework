@@ -25,11 +25,13 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.common.aliasing.AliasingAnnotatedTypeFactory;
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.ForwardTransferFunction;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -1070,15 +1072,10 @@ public abstract class CFAbstractTransfer<
     if (shouldPerformWholeProgramInference(n.getTree())) {
       // Can't infer annotations on an anonymous constructor, so use the super constructor.
       ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
-      if (newClassTree.getClassBody() == null || !TreeUtils.hasSyntheticArgument(newClassTree)) {
-        // TODO: WPI could be changed to handle the synthetic argument, but for now just
-        // don't infer annotations for those new class trees.
-        analysis
-            .atypeFactory
-            .getWholeProgramInference()
-            .updateFromObjectCreation(
-                "<unknown from visitObjectCreation>", n, constructorElt, p.getRegularStore());
-      }
+      @SuppressWarnings("nullness:assignment") // WPI is non-null when -Ainfer is passed
+      @NonNull WholeProgramInference wpi = analysis.atypeFactory.getWholeProgramInference();
+      wpi.updateFromObjectCreation(
+          "<unknown from visitObjectCreation>", n, constructorElt, p.getRegularStore());
     }
     ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
     S store = p.getRegularStore();
