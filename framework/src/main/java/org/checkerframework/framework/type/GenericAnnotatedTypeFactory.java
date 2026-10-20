@@ -2008,16 +2008,6 @@ public abstract class GenericAnnotatedTypeFactory<
         log(
             "%s GATF.addComputedTypeAnnotations#8(%s, %s), inferred=%s%n",
             thisClass, treeString, type, inferred);
-
-        // Filter out dependent type annotations that reference out-of-scope local variables
-        if (dependentTypesHelper.hasDependentAnnotations()) {
-          Store store = getStoreBefore(tree);
-          if (store != null) {
-            Set<LocalVariable> inScopeVars = store.getLocalVariables();
-            dependentTypesHelper.filterAnnotationsForOutOfScopeVars(
-                type, inScopeVars, getPath(tree));
-          }
-        }
       }
     }
     log(

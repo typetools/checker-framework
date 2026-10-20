@@ -2,18 +2,22 @@ package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -268,6 +272,10 @@ public abstract class CFAbstractTransfer<
         store = analysis.createEmptyStore(sequentialSemantics);
       }
 
+      // A parameter may have the same name as a local variable of an enclosing method.
+      for (LocalVariableNode p : parameters) {
+        store.removeDependentTypeReferences(p.getName());
+      }
       for (LocalVariableNode p : parameters) {
         AnnotatedTypeMirror anno = atypeFactory.getAnnotatedType(p.getElement());
         store.initializeMethodParameter(p, analysis.createAbstractValue(anno));
@@ -287,7 +295,7 @@ public abstract class CFAbstractTransfer<
 
       addInitialFieldValues(store, method.getClassTree(), methodDeclTree);
 
-      addFinalLocalValues(store, methodElem);
+      addFinalLocalValues(store, methodElem, methodDeclTree);
 
       if (shouldPerformWholeProgramInference(methodDeclTree, methodElem)) {
         Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
@@ -332,6 +340,11 @@ public abstract class CFAbstractTransfer<
         store = analysis.createEmptyStore(sequentialSemantics);
       }
 
+      // The initial store contains facts from the enclosing code. A lambda parameter may have the
+      // same name as a local variable that those facts mention and that is no longer in scope.
+      for (LocalVariableNode p : parameters) {
+        store.removeDependentTypeReferences(p.getName());
+      }
       for (LocalVariableNode p : parameters) {
         try {
           AnnotatedTypeMirror anno = atypeFactory.getAnnotatedType(p.getElement());
@@ -379,7 +392,7 @@ public abstract class CFAbstractTransfer<
         }
       }
       if (enclosingElement != null) {
-        addFinalLocalValues(store, enclosingElement);
+        addFinalLocalValues(store, enclosingElement, lambda.getLambdaTree());
       }
 
       // We want the initialization stuff, but need to throw out any refinements.
@@ -538,10 +551,19 @@ public abstract class CFAbstractTransfer<
   /**
    * Adds information about effectively final variables (from outer scopes)
    *
+   * <p>The value of an effectively final variable is its value just after its assignment. A
+   * dependent type annotation in that value may mention a local variable by a name that, in {@code
+   * code}, denotes a different variable. Therefore, this method removes each dependent type
+   * annotation expression that mentions a name that is declared more than once in the outermost
+   * class member that encloses {@code code}.
+   *
    * @param store the store to add to
    * @param enclosingElement the enclosing element of the code we are analyzing
+   * @param code the method or lambda that is being analyzed
    */
-  private void addFinalLocalValues(S store, Element enclosingElement) {
+  private void addFinalLocalValues(S store, Element enclosingElement, Tree code) {
+    // Computed lazily, because it requires scanning a tree.
+    Set<String> ambiguousNames = null;
     // add information about effectively final variables (from outer scopes)
     for (Map.Entry<VariableElement, V> e : analysis.atypeFactory.getFinalLocalValues().entrySet()) {
 
@@ -574,8 +596,14 @@ public abstract class CFAbstractTransfer<
 
         while (enclosingMethodOfCurrentMethod != null) {
           if (enclosingMethodOfVariableDeclaration.equals(enclosingMethodOfCurrentMethod)) {
-            LocalVariable l = new LocalVariable(elem);
-            store.insertValue(l, e.getValue());
+            if (ambiguousNames == null) {
+              ambiguousNames = namesDeclaredMoreThanOnce(code);
+            }
+            V value = store.removeDependentTypeReferences(e.getValue(), ambiguousNames::contains);
+            if (value != null) {
+              LocalVariable l = new LocalVariable(elem);
+              store.insertValue(l, value);
+            }
             break;
           }
 
@@ -583,6 +611,44 @@ public abstract class CFAbstractTransfer<
         }
       }
     }
+  }
+
+  /**
+   * Returns the names of the variables that are declared more than once in the outermost class
+   * member that encloses {@code tree}.
+   *
+   * @param tree a tree within a class member
+   * @return the names of the variables that are declared more than once in the outermost class
+   *     member that encloses {@code tree}
+   */
+  private Set<String> namesDeclaredMoreThanOnce(Tree tree) {
+    TreePath path = analysis.getTypeFactory().getPath(tree);
+    if (path == null) {
+      return Collections.emptySet();
+    }
+    // Find the member of a top-level class that encloses `tree`.
+    Tree outermostMember = tree;
+    for (TreePath p = path; p.getParentPath() != null; p = p.getParentPath()) {
+      TreePath parent = p.getParentPath();
+      if (parent.getParentPath() != null
+          && parent.getParentPath().getLeaf() instanceof CompilationUnitTree) {
+        outermostMember = p.getLeaf();
+        break;
+      }
+    }
+    Set<String> seen = new HashSet<>();
+    Set<String> result = new HashSet<>();
+    new TreeScanner<Void, Void>() {
+      @Override
+      public Void visitVariable(VariableTree variableTree, Void p) {
+        String name = variableTree.getName().toString();
+        if (!seen.add(name)) {
+          result.add(name);
+        }
+        return super.visitVariable(variableTree, p);
+      }
+    }.scan(outermostMember, null);
+    return result;
   }
 
   /**
@@ -1417,6 +1483,8 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitVariableDeclaration(
       VariableDeclarationNode n, TransferInput<V, S> p) {
     S store = p.getRegularStore();
+    // A new variable may have the same name as a variable that is no longer in scope.
+    store.removeDependentTypeReferences(n.getName());
     return new RegularTransferResult<>(finishValue(null, store), store);
   }
 

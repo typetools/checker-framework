@@ -16,6 +16,7 @@ import com.sun.tools.javac.tree.JCTree;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -39,6 +41,7 @@ import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.dataflow.expression.JavaExpressionParseUtil;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
@@ -739,66 +742,108 @@ public class DependentTypesHelper {
   }
 
   /**
-   * Filters dependent type annotations in {@code type}, removing those that reference local
-   * variables not currently in scope.
-   *
-   * <p>When a local variable goes out of scope, any dependent type annotation that references that
-   * variable becomes invalid and should be dropped. This method checks each expression in dependent
-   * type annotations and drops expressions that reference local variables not in {@code
-   * inScopeLocalVars}.
-   *
-   * @param type the type whose annotations may be filtered; is side-effected by this method
-   * @param inScopeLocalVars the set of local variables currently in scope
-   * @param path the tree path for expression parsing context; may be null
+   * Memoizes {@link JavaExpressionParseUtil#possibleLocalVariableNames(String)}. A value is null if
+   * the expression cannot be parsed.
    */
-  public void filterAnnotationsForOutOfScopeVars(
-      AnnotatedTypeMirror type, Set<LocalVariable> inScopeLocalVars, @Nullable TreePath path) {
-    if (!hasDependentType(type)) {
-      return;
+  private final Map<String, @Nullable Set<String>> possibleLocalVariableNamesCache =
+      new HashMap<>();
+
+  /**
+   * Returns true if {@code expression} might mention a local variable whose name satisfies {@code
+   * isAffectedName}. Returns false for an expression error, and true for any other expression that
+   * cannot be parsed.
+   *
+   * @param expression an expression string in a dependent type annotation
+   * @param isAffectedName a predicate on local variable names
+   * @return true if {@code expression} might mention a local variable whose name satisfies {@code
+   *     isAffectedName}
+   */
+  private boolean mightMentionLocalVariable(String expression, Predicate<String> isAffectedName) {
+    if (DependentTypesError.isExpressionError(expression)) {
+      return false;
+    }
+    Set<String> names;
+    if (possibleLocalVariableNamesCache.containsKey(expression)) {
+      names = possibleLocalVariableNamesCache.get(expression);
+    } else {
+      names = JavaExpressionParseUtil.possibleLocalVariableNames(expression);
+      possibleLocalVariableNamesCache.put(expression, names);
+    }
+    if (names == null) {
+      return true;
+    }
+    for (String name : names) {
+      if (isAffectedName.test(name)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns an annotation like {@code anno}, but without the expressions that might mention a local
+   * variable whose name satisfies {@code isAffectedName}. The dataflow analysis calls this when a
+   * local variable gets a new value or a new local variable comes into scope, because then a name
+   * in a previously-computed expression may denote a different value or a different variable.
+   *
+   * <p>If the expression elements of {@code anno} are parallel arrays (such as the {@code value}
+   * and {@code offset} elements of {@code @LTLengthOf}), then each removal removes the expression
+   * at the same index from every element; an element whose value is an empty array is left
+   * unchanged. If the expression elements are not parallel, or if no expression remains, then the
+   * result is the top annotation in the hierarchy of {@code anno}.
+   *
+   * @param anno an annotation
+   * @param isAffectedName a predicate on local variable names
+   * @return an annotation without expressions that might mention a local variable whose name
+   *     satisfies {@code isAffectedName}, or null if {@code anno} contains no such expression
+   */
+  public @Nullable AnnotationMirror removeLocalVariableReferences(
+      AnnotationMirror anno, Predicate<String> isAffectedName) {
+    if (!isExpressionAnno(anno)) {
+      return null;
+    }
+    List<ExecutableElement> elements = getListOfExpressionElements(anno);
+    Map<ExecutableElement, List<String>> expressionStrings = new HashMap<>(elements.size());
+    int length = 0;
+    for (ExecutableElement element : elements) {
+      List<String> strings =
+          AnnotationUtils.getElementValueArray(
+              anno, element, String.class, Collections.emptyList());
+      expressionStrings.put(element, strings);
+      length = Math.max(length, strings.size());
     }
 
-    if (path == null) {
-      return;
+    boolean isParallel = true;
+    BitSet removedIndices = new BitSet(length);
+    for (List<String> strings : expressionStrings.values()) {
+      if (!strings.isEmpty() && strings.size() != length) {
+        isParallel = false;
+      }
+      for (int i = 0; i < strings.size(); i++) {
+        if (mightMentionLocalVariable(strings.get(i), isAffectedName)) {
+          removedIndices.set(i);
+        }
+      }
+    }
+    if (removedIndices.isEmpty()) {
+      return null;
+    }
+    if (!isParallel || removedIndices.cardinality() == length) {
+      return factory.getQualifierHierarchy().getTopAnnotation(anno);
     }
 
-    StringToJavaExpression stringToJavaExpr =
-        expression -> {
-          JavaExpression javaExpr;
-          try {
-            javaExpr = StringToJavaExpression.atPath(expression, path, factory.getChecker());
-          } catch (JavaExpressionParseException ex) {
-            // If the expression can't be parsed, keep it unchanged. The expression might reference
-            // a variable being declared (e.g., @KeyFor("a") where a is the variable itself),
-            // or might use syntax we don't need to filter. Only drop expressions when we confirm
-            // they reference out-of-scope local variables via FoundLocalVarException below.
-            return new PassThroughExpression(objectTM, expression);
-          }
-
-          // Check if the expression references any local variable not in scope
-          JavaExpressionConverter jec =
-              new JavaExpressionConverter() {
-                @Override
-                protected JavaExpression visitLocalVariable(LocalVariable localVarExpr, Void p) {
-                  // Check if this local variable is a method parameter
-                  if (localVarExpr.getElement().getKind() == ElementKind.PARAMETER) {
-                    return localVarExpr; // Parameters are always in scope
-                  }
-                  // Check if the local variable is in scope
-                  if (!inScopeLocalVars.contains(localVarExpr)) {
-                    throw new FoundLocalVarException();
-                  }
-                  return localVarExpr;
-                }
-              };
-
-          try {
-            return jec.convert(javaExpr);
-          } catch (FoundLocalVarException ex) {
-            return null; // Drop this expression - variable is out of scope
-          }
-        };
-
-    convertAnnotatedTypeMirror(stringToJavaExpr, type);
+    Map<ExecutableElement, List<JavaExpression>> newElements = new HashMap<>(elements.size());
+    for (Map.Entry<ExecutableElement, List<String>> entry : expressionStrings.entrySet()) {
+      List<String> strings = entry.getValue();
+      List<JavaExpression> javaExprs = new ArrayList<>(strings.size());
+      for (int i = 0; i < strings.size(); i++) {
+        if (!removedIndices.get(i)) {
+          javaExprs.add(new PassThroughExpression(objectTM, strings.get(i)));
+        }
+      }
+      newElements.put(entry.getKey(), javaExprs);
+    }
+    return buildAnnotation(anno, newElements);
   }
 
   /**

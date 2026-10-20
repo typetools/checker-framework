@@ -2,16 +2,15 @@ package org.checkerframework.framework.flow;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BinaryOperator;
+import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
@@ -42,7 +41,9 @@ import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.AnnotationWithMetaAnnotation;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -1096,9 +1097,97 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   protected void updateForLocalVariableAssignment(LocalVariable receiver, @Nullable V val) {
     removeConflicting(receiver);
+    String name = receiver.getElement().getSimpleName().toString();
+    removeDependentTypeReferences(name);
+    if (val != null) {
+      // `val` was computed before the assignment, so an occurrence of `name` within it refers to
+      // the previous value.
+      val = removeDependentTypeReferences(val, name::equals);
+    }
     if (val != null) {
       localVariableValues.put(receiver, val);
     }
+  }
+
+  /**
+   * Removes, from every abstract value in this store, each dependent type annotation expression
+   * (such as the {@code "x"} in {@code @KeyFor("x")} or {@code @LessThan("x")}) that might mention
+   * a local variable named {@code varName}. Call this when a local variable named {@code varName}
+   * gets a new value or comes into scope. Afterward, {@code varName} denotes a different value or a
+   * different variable than it did when the abstract values were computed. Dependent type
+   * annotations contain strings rather than elements, so this method cannot distinguish two
+   * different variables with the same name.
+   *
+   * @param varName the name of a local variable
+   */
+  public void removeDependentTypeReferences(String varName) {
+    if (!analysis.getTypeFactory().getDependentTypesHelper().hasDependentAnnotations()) {
+      return;
+    }
+    Predicate<String> isAffectedName = varName::equals;
+    removeDependentTypeReferences(localVariableValues, isAffectedName);
+    removeDependentTypeReferences(fieldValues, isAffectedName);
+    removeDependentTypeReferences(arrayValues, isAffectedName);
+    removeDependentTypeReferences(methodCallExpressions, isAffectedName);
+    removeDependentTypeReferences(classValues, isAffectedName);
+    if (thisValue != null) {
+      thisValue = removeDependentTypeReferences(thisValue, isAffectedName);
+    }
+  }
+
+  /**
+   * Applies {@link #removeDependentTypeReferences(CFAbstractValue, Predicate)} to each value in
+   * {@code map}. Removes each entry whose new value is null.
+   *
+   * @param <K> the type of keys in {@code map}
+   * @param map a map from expressions to abstract values; is side-effected by this method
+   * @param isAffectedName a predicate on local variable names
+   */
+  private <K> void removeDependentTypeReferences(Map<K, V> map, Predicate<String> isAffectedName) {
+    Iterator<Map.Entry<K, V>> iterator = map.entrySet().iterator();
+    while (iterator.hasNext()) {
+      Map.Entry<K, V> entry = iterator.next();
+      V oldValue = entry.getValue();
+      V newValue = removeDependentTypeReferences(oldValue, isAffectedName);
+      if (newValue == null) {
+        iterator.remove();
+      } else if (newValue != oldValue) {
+        entry.setValue(newValue);
+      }
+    }
+  }
+
+  /**
+   * Returns an abstract value like {@code value}, but without the dependent type annotation
+   * expressions that might mention a local variable whose name satisfies {@code isAffectedName}.
+   *
+   * @param value an abstract value
+   * @param isAffectedName a predicate on local variable names
+   * @return {@code value} itself if it contains no such expression; otherwise, a new abstract value
+   *     or null if the new abstract value would be missing annotations
+   */
+  protected @Nullable V removeDependentTypeReferences(V value, Predicate<String> isAffectedName) {
+    DependentTypesHelper dependentTypesHelper = analysis.getTypeFactory().getDependentTypesHelper();
+    if (!dependentTypesHelper.hasDependentAnnotations()) {
+      return value;
+    }
+    AnnotationMirrorSet oldAnnos = value.getAnnotations();
+    AnnotationMirrorSet newAnnos = null;
+    for (AnnotationMirror anno : oldAnnos) {
+      AnnotationMirror newAnno =
+          dependentTypesHelper.removeLocalVariableReferences(anno, isAffectedName);
+      if (newAnno != null) {
+        if (newAnnos == null) {
+          newAnnos = new AnnotationMirrorSet(oldAnnos);
+        }
+        newAnnos.remove(anno);
+        newAnnos.add(newAnno);
+      }
+    }
+    if (newAnnos == null) {
+      return value;
+    }
+    return analysis.createAbstractValue(newAnnos, value.getUnderlyingType());
   }
 
   /**
@@ -1289,17 +1378,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   public @Nullable V getValue(LocalVariableNode n) {
     VariableElement el = n.getElement();
     return localVariableValues.get(new LocalVariable(el));
-  }
-
-  /**
-   * Returns the set of local variables currently tracked in this store.
-   *
-   * <p>Clients should not side-effect the returned value, which is aliased to internal state.
-   *
-   * @return the set of local variables currently in scope
-   */
-  public Set<LocalVariable> getLocalVariables() {
-    return Collections.unmodifiableSet(localVariableValues.keySet());
   }
 
   /* --------------------------------------------------------- */

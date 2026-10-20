@@ -4,15 +4,16 @@ import org.checkerframework.checker.index.qual.NonNegative;
 /**
  * Test case for scope cleanup of dependent type annotations.
  *
- * <p>When a local variable goes out of scope, any dependent type annotation that references that
- * variable should be invalidated. This test verifies that annotations like @LessThan("b") on
- * variable 'a' are properly dropped when 'b' goes out of scope.
+ * <p>After a local variable goes out of scope, a dependent type annotation that references that
+ * variable must not be interpreted as referring to a different variable with the same name. This
+ * test verifies that an annotation like @LessThan("b") on variable 'a' is dropped when a different
+ * variable named 'b' comes into scope.
  */
 public class ScopeCleanup {
 
   /**
-   * Test that @LessThan annotation is properly cleaned up when the referenced variable goes out of
-   * scope.
+   * Test that a @LessThan annotation does not refer to a different variable with the same name as
+   * the variable that went out of scope.
    */
   void testScopeCleanup() {
     int a = 5;
@@ -27,17 +28,13 @@ public class ScopeCleanup {
     }
 
     // After exiting scope, 'b' is no longer in scope.
-    // The @LessThan("b") annotation on 'a' should be dropped.
-    // However, non-dependent annotations should survive.
+    // Non-dependent annotations on 'a' survive.
     @NonNegative int ok = a; // This should still work - a is still non-negative (a=9)
 
     {
       int b = 3; // Different variable 'b' with a smaller value!
-      // Without the fix, the old @LessThan("b") annotation would incorrectly refer to THIS 'b'.
-      // But a = 9 and this b = 3, so a > b, not a < b.
-
-      // This should be an error - we can no longer prove a < b
-      // The assignment below should fail type-checking because we can't prove a < b
+      // The old @LessThan("b") annotation on 'a' must not be interpreted as referring to this 'b'.
+      // a = 9 and this b = 3, so a > b, not a < b.
       // :: error: (assignment)
       @LessThan("b") int shouldFail = a;
     }
