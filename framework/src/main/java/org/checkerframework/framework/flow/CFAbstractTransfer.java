@@ -1149,7 +1149,7 @@ public abstract class CFAbstractTransfer<
       JavaExpression expr = JavaExpression.fromNode(bindingVar);
       AnnotatedTypeMirror expType =
           analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
-      for (AnnotationMirror anno : expType.getPrimaryAnnotations()) {
+      for (AnnotationMirror anno : expType.getAnnotations()) {
         in.getRegularStore().insertOrRefine(expr, anno);
       }
     }
@@ -1181,8 +1181,12 @@ public abstract class CFAbstractTransfer<
    * @return true if to perform whole-program inference on the tree
    */
   protected boolean shouldPerformWholeProgramInference(Tree tree) {
+    // Test `infer` first: computing the path is expensive, and it is needed only if WPI is on.
+    if (!infer || tree == null) {
+      return infer;
+    }
     TreePath path = this.analysis.atypeFactory.getPath(tree);
-    return infer && (tree == null || !analysis.checker.shouldSuppressWarnings(path, ""));
+    return !analysis.checker.shouldSuppressWarnings(path, "");
   }
 
   /**

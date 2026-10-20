@@ -65,21 +65,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   /** An EqualityAtmComparer. */
   protected static final EqualityAtmComparer EQUALITY_COMPARER = new EqualityAtmComparer();
 
-  /** A HashcodeAtmVisitor. */
-  protected static final HashcodeAtmVisitor HASHCODE_VISITOR = new HashcodeAtmVisitor();
-
   /** The factory to use for lazily creating annotated types. */
   protected final AnnotatedTypeFactory atypeFactory;
 
   /** The actual type wrapped by this AnnotatedTypeMirror. */
   protected final TypeMirror underlyingType;
-
-  /**
-   * Saves the result of {@code underlyingType.toString().hashCode()} to use when computing the hash
-   * code of this. (Because AnnotatedTypeMirrors are mutable, the hash code for this cannot be
-   * saved.) Call {@link #getUnderlyingTypeHashCode()} rather than using the field directly.
-   */
-  private int underlyingTypeHashCode = -1;
 
   /** The annotations on this type. */
   // AnnotationMirror doesn't override Object.hashCode, .equals, so we use
@@ -127,11 +117,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     AnnotatedTypeMirror result;
     switch (type.getKind()) {
       case ARRAY -> result = new AnnotatedArrayType((ArrayType) type, atypeFactory);
-      case DECLARED ->
+      // An ERROR type is a class whose class file is not on the classpath.  javac reported no
+      // error, because it completes such a symbol lazily and never needs it, so treat the type
+      // like any other declared type.  See issue 8055.
+      case DECLARED, ERROR ->
           result = new AnnotatedDeclaredType((DeclaredType) type, atypeFactory, isDeclaration);
-      case ERROR ->
-          throw new BugInCF(
-              "AnnotatedTypeMirror.createType: input is not compilable. Found error type: " + type);
       case EXECUTABLE -> result = new AnnotatedExecutableType((ExecutableType) type, atypeFactory);
       case VOID, PACKAGE, NONE -> result = new AnnotatedNoType((NoType) type, atypeFactory);
       case NULL -> result = new AnnotatedNullType((NullType) type, atypeFactory);
@@ -173,10 +163,36 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     return EQUALITY_COMPARER.visit(this, atm, null);
   }
 
+  /**
+   * Returns a hash code for this type.
+   *
+   * <p>This hashes only the top-level type: its underlying type and its primary annotations. It
+   * does not descend into component types, even though {@link #equals} does. That is permitted --
+   * unequal types may share a hash code -- and it makes this method constant-time for every
+   * underlying type, except time for {@code ArrayType} is proportional to the array's nesting
+   * depth.
+   *
+   * <p>Every part of this hash must be derived from something that {@code equals} compares. In
+   * particular, it must not be derived from the underlying type's printed representation: {@code
+   * equals} compares underlying types with {@code Type.equals}, which is reference equality for
+   * every javac type but {@code ArrayType}, so types that print alike but wrap distinct {@code
+   * Type} objects would hash alike and compare unequal, making hash table operations long scans of
+   * colliding, never-equal entries.
+   *
+   * @return a hash code for this type
+   */
   @Pure
   @Override
   public final int hashCode() {
-    return HASHCODE_VISITOR.visit(this);
+    int result = 31 + underlyingType.hashCode();
+    for (AnnotationMirror anno : primaryAnnotations) {
+      // Hash the annotation's name, because AnnotationUtils.areSame() compares names.  (Hashing
+      // the annotation type's element would depend on javac interning one Symbol per name per
+      // Context.)  Addition is commutative, so that sets with the same elements in different
+      // order hash the same, also consistent with AnnotationUtils.areSame().
+      result += AnnotationUtils.annotationName(anno).hashCode();
+    }
+    return result;
   }
 
   /**
@@ -348,7 +364,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     if (primaryAnnotations.size() != 1) {
       throw new BugInCF("Bad annotation size for getPrimaryAnnotation(): " + this);
     }
-    return primaryAnnotations.iterator().next();
+    return primaryAnnotations.first();
   }
 
   /**
@@ -388,7 +404,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     if (effectiveAnnotations.size() != 1) {
       throw new BugInCF("Bad annotation size for getAnnotation(): " + this);
     }
-    return effectiveAnnotations.iterator().next();
+    return effectiveAnnotations.first();
   }
 
   /**
@@ -887,19 +903,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     return recordType;
   }
 
-  /**
-   * Returns the result of calling {@code underlyingType.toString().hashcode()}. This method saves
-   * the result in a field so that it isn't recomputed each time.
-   *
-   * @return the result of calling {@code underlyingType.toString().hashcode()}
-   */
-  public int getUnderlyingTypeHashCode() {
-    if (underlyingTypeHashCode == -1) {
-      underlyingTypeHashCode = underlyingType.toString().hashCode();
-    }
-    return underlyingTypeHashCode;
-  }
-
   /** Represents a declared type (whether class or interface). */
   public static class AnnotatedDeclaredType extends AnnotatedTypeMirror {
 
@@ -1070,9 +1073,13 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
         }
       } else if (isDeclaration()) {
         for (TypeMirror javaTypeArg : t.getTypeArguments()) {
-          AnnotatedTypeVariable tv =
-              (AnnotatedTypeVariable) createType(javaTypeArg, atypeFactory, true);
-          typeArgs.add(tv);
+          AnnotatedTypeMirror typeArg = createType(javaTypeArg, atypeFactory, true);
+          if (!(typeArg instanceof AnnotatedTypeVariable)) {
+            throw new BugInCF(
+                "Type argument %s of declaration %s has kind %s, not TYPEVAR.",
+                javaTypeArg, t, javaTypeArg.getKind());
+          }
+          typeArgs.add(typeArg);
         }
       } else {
         for (TypeMirror javaTypeArg : t.getTypeArguments()) {
@@ -1142,7 +1149,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       erased.addAnnotations(this.getPrimaryAnnotations());
       AnnotatedDeclaredType erasedEnclosing = erased.getEnclosingType();
       AnnotatedDeclaredType thisEnclosing = this.getEnclosingType();
-      while (erasedEnclosing != null) {
+      while (erasedEnclosing != null && thisEnclosing != null) {
         erasedEnclosing.addAnnotations(thisEnclosing.getPrimaryAnnotations());
         erasedEnclosing = erasedEnclosing.getEnclosingType();
         thisEnclosing = thisEnclosing.getEnclosingType();

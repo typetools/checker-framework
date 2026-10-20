@@ -10,7 +10,6 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Names;
 import java.util.StringTokenizer;
 import javax.annotation.processing.ProcessingEnvironment;
-import org.plumelib.util.IPair;
 
 /**
  * A utility class for parsing Java expression snippets, and converting them to proper Javac AST
@@ -63,7 +62,7 @@ public class TreeParser {
     String token = tokenizer.nextToken();
 
     try {
-      return parseExpression(tokenizer, token).first;
+      return parseExpression(tokenizer, token).expression();
     } catch (Exception e) {
       throw new ParseError(e);
     }
@@ -101,13 +100,21 @@ public class TreeParser {
   }
 
   /**
+   * A parsed expression and the token that follows it.
+   *
+   * @param expression the parsed expression
+   * @param nextToken the token that follows the expression
+   */
+  private record ExpressionAndNextToken(JCExpression expression, String nextToken) {}
+
+  /**
    * Parse an expression.
    *
    * @param tokenizer the tokenizer
    * @param token the first token
-   * @return a pair of a parsed expression and the next token
+   * @return a parsed expression and the next token
    */
-  private IPair<JCExpression, String> parseExpression(StringTokenizer tokenizer, String token) {
+  private ExpressionAndNextToken parseExpression(StringTokenizer tokenizer, String token) {
     JCExpression tree = fromToken(token);
 
     while (tokenizer.hasMoreTokens()) {
@@ -120,9 +127,9 @@ public class TreeParser {
         token = nextToken(tokenizer);
         ListBuffer<JCExpression> args = new ListBuffer<>();
         while (!")".equals(token)) {
-          IPair<JCExpression, String> p = parseExpression(tokenizer, token);
-          JCExpression arg = p.first;
-          token = p.second;
+          ExpressionAndNextToken p = parseExpression(tokenizer, token);
+          JCExpression arg = p.expression();
+          token = p.nextToken();
           args.append(arg);
           if (",".equals(token)) {
             token = nextToken(tokenizer);
@@ -133,18 +140,18 @@ public class TreeParser {
         tree = maker.Apply(List.nil(), tree, args.toList());
       } else if ("[".equals(token)) {
         token = nextToken(tokenizer);
-        IPair<JCExpression, String> p = parseExpression(tokenizer, token);
-        JCExpression index = p.first;
-        token = p.second;
+        ExpressionAndNextToken p = parseExpression(tokenizer, token);
+        JCExpression index = p.expression();
+        token = p.nextToken();
         assert "]".equals(token) : "Unexpected token: " + token;
         tree = maker.Indexed(tree, index);
       } else {
-        return IPair.of(tree, token);
+        return new ExpressionAndNextToken(tree, token);
       }
       assert tokenizer != null : "@AssumeAssertion(nullness): side effects";
     }
 
-    return IPair.of(tree, token);
+    return new ExpressionAndNextToken(tree, token);
   }
 
   /** An internal error. */

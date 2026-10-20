@@ -25,8 +25,13 @@ import org.checkerframework.framework.qual.JavaExpression;
  * before the call. A constructor's annotation does not yet affect type refinement at {@code new}
  * expressions.
  *
- * @checker_framework.manual #side-effects-only-checking Checking {@code @SideEffectsOnly}
+ * @checker_framework.manual #purity-trusted Checking {@code @SideEffectsOnly}
  */
+// TODO: The manual does not yet document @SideEffectsOnly:  its text is inside \iffalse in
+// purity-checker.tex and advanced-features.tex, so there is no #side-effects-only-checking
+// anchor and the link below is broken.  Restore this tag in place of the #purity-trusted one
+// above when the feature ships and the manual documents it:
+// @checker_framework.manual #side-effects-only-checking Checking {@code @SideEffectsOnly}
 // @InheritedAnnotation cannot be written here, because "dataflow" project cannot depend on
 // "framework" project.
 @Documented
@@ -42,6 +47,9 @@ public @interface SideEffectsOnly {
    * the same arguments, so a call to one qualifies so long as its receiver and its arguments do. An
    * expression such as {@code "#1.getList()"}, where {@code getList} is not {@code @Pure}, may
    * denote a different value each time it is evaluated, so no method body could satisfy it.
+   *
+   * <p>The annotation {@code @SideEffectsOnly({})} (with an empty list of expressions) is illegal;
+   * write {@code @}{@link SideEffectFree} instead.
    *
    * @return the Java expressions that the annotated method might side-effect
    * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions

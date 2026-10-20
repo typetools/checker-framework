@@ -54,8 +54,10 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.stub.AnnotationFileParser;
 import org.checkerframework.framework.util.JavaParserUtil;
+import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.plumelib.util.FilesP;
 import org.plumelib.util.MapsP;
 
@@ -487,8 +489,8 @@ public class InsertAjavaAnnotations {
    */
   public String insertAnnotations(
       InputStream annotationFile, String javaFileContents, @Regex String lineSeparator) {
-    CompilationUnit annotationCu = JavaParserUtil.parseCompilationUnit(annotationFile);
-    CompilationUnit javaCu = JavaParserUtil.parseCompilationUnit(javaFileContents);
+    CompilationUnit annotationCu = StaticJavaParserUtil.parseCompilationUnit(annotationFile);
+    CompilationUnit javaCu = StaticJavaParserUtil.parseCompilationUnit(javaFileContents);
     BuildInsertionsVisitor insertionVisitor =
         new BuildInsertionsVisitor(javaFileContents, lineSeparator);
     annotationCu.accept(insertionVisitor, javaCu);
@@ -519,6 +521,7 @@ public class InsertAjavaAnnotations {
    * @return a negative integer, zero, or a positive integer if {@code insertion1} belongs before,
    *     at the same position, or after {@code insertion2} respectively in the above ordering
    */
+  @Pure
   private static int compareInsertions(Insertion insertion1, Insertion insertion2) {
     int cmp = Integer.compare(insertion1.position, insertion2.position);
     if (cmp == 0 && (insertion1.ownLine != insertion2.ownLine)) {
@@ -595,7 +598,7 @@ public class InsertAjavaAnnotations {
 
             CompilationUnit root = null;
             try {
-              root = JavaParserUtil.parseCompilationUnit(path.toFile());
+              root = StaticJavaParserUtil.parseCompilationUnit(path.toFile());
             } catch (IOException e) {
               System.err.println("Failed to read file: " + path);
               System.exit(1);

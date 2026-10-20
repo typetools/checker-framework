@@ -1,28 +1,41 @@
 # Configuration file for `prek`, a git hook framework written in Rust.
 # See https://prek.j178.dev for more information.
 #:schema https://www.schemastore.org/prek.json
+#
+# This file is shared across multiple repositories.  Not all settings are
+# necessarily relevant to the repository where you are reading this comment.
+
+# In prek's glob matcher:
+# * A pattern matches the file's path relative to the repository root.
+# * `*` matches `/`, so `dir/*` matches files anywhere beneath `dir`.  This file
+#   uses more conventional (but semantically equivalent) forms: `**` for
+#   directories, `**/*` for files.
+# * A leading `**/` also matches at the root, so `**/foo` matches both `foo` and
+#   `dots/foo`.  (A leading `*/` does not match at the root: `*/foo` matches
+#   `dots/foo` but not `foo`.)
+# * `?` matches a single character.  Extglob syntax such as `?(x)` is not
+#   supported and is interpreted literally.
+# * Brace alternation such as `{a,b}` works, but an empty alternative such as
+#   `{,-*}` does not; spell out every alternative, as in `{ps,ps-*}`.
 
 exclude = { glob = [
-  "**/*.diff",
-  "**/*.diff3",
-  "**/*.goal",
-  "**/*.goal.*",
+  "**/*.{diff,diff3}",
+  "**/*.{goal,goal.*}",
   "**/*.graffle",
   "**/*.ics",
   "**/*.key",
   "**/*.patch",
-  "**/*.pdf",
-  "**/*.pdf-*",
-  "**/*.ppt",
-  "**/*.pptx",
-  "**/*.ps",
-  "**/*.ps-*",
+  "**/*.{pdf,pdf-*}",
+  "**/*.{ppt,pptx}",
+  "**/*.{ps,ps-*}",
   "**/*.svg",
   "**/*expected*",
   "**/COPYING",
-  "src/main/resources/specifications/jdk/*",
+  "gradlew",
+  "gradlew.bat",
+  "src/main/resources/specifications/jdk/**/*",
   "src/test/resources/end-to-end/**/*",
-  "tests/kvasir-tests/povray/*",
+  "tests/kvasir-tests/povray/**/*",
 ] }
 
 [[repos]]
@@ -31,71 +44,66 @@ hooks = [
   { id = "check-added-large-files" },
   { id = "check-case-conflict" },
   { id = "check-executables-have-shebangs", exclude = { glob = [
-    "scripts/*.pl",
+    "scripts/**/*.pl",
     "scripts/trace-untruncate",
     "search",
-    "tests/kvasir-tests/**",
+    "tests/kvasir-tests/**/*",
   ] } },
   { id = "check-json" },
   { id = "check-merge-conflict" },
   { id = "check-shebang-scripts-are-executable" },
   { id = "check-symlinks", exclude = { glob = [
-    ".subversion/auth",
-    "dots/.subversion/auth",
+    "**/.subversion/auth",
   ] } },
   { id = "check-toml" },
   { id = "check-vcs-permalinks" },
   { id = "check-xml", exclude = { glob = [
-    "posts/rss.xml",
     "blog/feed.xml",
+    "posts/rss.xml",
   ] } },
   { id = "check-yaml" },
   { id = "destroyed-symlinks" },
   { id = "detect-private-key" },
   { id = "end-of-file-fixer", exclude = { glob = [
     "**/.vscode/settings.json",
-    "**/native-image/**",
+    "**/native-image/**/*",
     "**/non-conflicted-file-without-terminator.txt",
-    "**/tests/squeeze-blank-lines-test/**",
-    "bugs/jikes-patches/*",
-    "java/jtb/**",
-    "tests/kvasir-tests/**",
+    "**/tests/squeeze-blank-lines-test/**/*",
+    "bugs/jikes-patches/**/*",
+    "java/jtb/**/*",
+    "tests/kvasir-tests/**/*",
   ] } },
   { id = "file-contents-sorter", files = { glob = [
-    "src/systemTest/resources/test-covgoals/**",
+    "src/systemTest/resources/test-covgoals/**/*",
   ] } },
   { id = "fix-byte-order-marker" },
   { id = "forbid-new-submodules" },
   { id = "mixed-line-ending" },
   { id = "trailing-whitespace", exclude = { glob = [
-    "**/tests/squeeze-blank-lines-test/**",
-    ".aspell.en.prepl",
-    ".aspell.en.pws",
+    "**/.aspell.en.{prepl,pws}",
+    "**/en_US_apostrophe.aff",
+    "**/enscript.st",
+    "**/tests/squeeze-blank-lines-test/**/*",
     "bugs/BUGS.to-do",
     "bugs/bug-mew",
-    "bugs/jikes-patches/*",
-    "dots/.aspell.en.prepl",
-    "dots/.aspell.en.pws",
-    "dots/en_US_apostrophe.aff",
-    "dots/enscript.st",
+    "bugs/jikes-patches/**/*",
     "emacs/bug/crypted.UUE",
-    "en_US_apostrophe.aff",
-    "enscript.st",
-    "java/jtb/**",
-    "tests/kvasir-tests/**",
+    "java/jtb/**/*",
+    "tests/kvasir-tests/**/*",
   ] } },
 ]
 
 ## CircleCI
 
-# This doesn't install the tool!  It fails with "Circleci CLI could not be
-# found." unless you have installed the CircleCI CLI.  Using `snap` to install
-# leads to permission problems due to snap confinement.  To install:
-# - run: curl -fLSs https://raw.githubusercontent.com/CircleCI-Public/circleci-cli/main/install.sh | sudo bash
-[[repos]]
-repo = "https://github.com/zahorniak/pre-commit-circleci"
-rev = "v1.3.0"
-hooks = [{ id = "circleci_validate" }]
+# # This doesn't install the tool!  It fails with "Circleci CLI could not be
+# # found." unless you have installed the CircleCI CLI.  Using `snap` to install
+# # leads to permission problems due to snap confinement.  To install:
+# # - run: curl -fLSs https://raw.githubusercontent.com/CircleCI-Public/circleci-cli/main/install.sh | sudo bash
+# # But, as of 2026-08-31, it requires an --org=... argument, so disable it.
+# [[repos]]
+# repo = "https://github.com/zahorniak/pre-commit-circleci"
+# rev = "v1.3.0"
+# hooks = [{ id = "circleci_validate", args = ["--org=gh/mernst"] }]
 
 ## GitHub Actions
 
@@ -111,11 +119,9 @@ repo = "https://github.com/Lucas-C/pre-commit-hooks-java"
 rev = "1.3.10"
 hooks = [
   { id = "validate-html", exclude = { glob = [
-    "**/bytopic-headfoot.html",
-    "**/pubs-bytopic-headfoot.html",
-    "**/pubs-bytopic-underreview-headfoot.html",
+    "**/*bytopic*headfoot.html",
     "google04aaa4eb05fd668b.html",
-    "pubs/*-abstract.html",
+    "pubs/**/*-abstract.html",
     "pubs/index.html",
     "tests/sources/six170/huffman.html",
     "tools/hierarchical/clustering.html",
@@ -146,7 +152,6 @@ hooks = [
     "--format={{.FileName}}:{{.LineNumber}}:0: {{.Rule}}: {{.Violation}}\n",
   ], exclude = { glob = [
     "code-style.Makefile",
-    "tests/kvasir-tests/povray/*",
   ] } },
 ]
 
@@ -168,7 +173,7 @@ hooks = [{ id = "sync-pre-commit-deps" }]
 
 [[repos]]
 repo = "https://github.com/astral-sh/ruff-pre-commit"
-rev = "v0.15.22"
+rev = "v0.16.6"
 hooks = [
   # Run the linter.
   { id = "ruff-check", args = ["--fix"], types_or = ["python", "pyi"] },
@@ -217,24 +222,16 @@ hooks = [
     "-P",
     "SCRIPTDIR",
   ], exclude = { glob = [
-    "share/csail-athena-tickets.bash",
-    "share/addrfilter",
-    "share/print-mail",
-    "share/javapp",
-    "share/myxapps",
-    "scripts/eps2png-mono-alpha.zsh",
-    "scripts/browser_emacs",
-    "scripts/find-dtrace",
-    "tests/kvasir-tests/tcas/tests.sh",
-    "tests/kvasir-tests/flex-pristine/mkskel.sh",
-    "tests/kvasir-tests/tot_info/tests.sh",
     "cronic-orig",
-    "classfile_check_version",
+    "scripts/eps2png-mono-alpha.zsh",
+    "share/csail-athena-tickets.bash",
+    "tests/kvasir-tests/**/*",
   ] } },
 ]
 
 [[repos]]
 repo = "https://github.com/scop/pre-commit-shfmt"
+# This "version number" is a tag at https://github.com/scop/pre-commit-shfmt/tags .
 rev = "v3.13.1-1"
 hooks = [
   { id = "shfmt", args = [
@@ -244,27 +241,12 @@ hooks = [
     "-bn",
     "-sr",
   ], exclude = { glob = [
-    "gradlew",
-    "share/addrfilter",
-    "dots/conda-initialize.sh",
-    "conda-initialize.sh",
+    "**/conda-initialize.sh",
   ] } },
 ]
 
-# TODO: checkbashisms (I need to write my own).
-# [[repos]]
-# repo = "TODO"
-# hooks = [
-#   { id = "checkbashisms", types = [
-#     "shell",
-#   ], exclude = { glob = [
-#     "share/addrfilter",
-#     "share/print-mail",
-#     "share/myxapps",
-#     "share/javapp",
-#     "gradlew",
-#   ] } },
-# ]
+# For checkbashisms, use
+# https://github.com/mernst/mdedots/blob/main/.github/workflows/checkbashisms.yaml
 
 # Problems:
 # * False positives for E011.
@@ -294,7 +276,7 @@ hooks = [
 # repo = "https://github.com/crate-ci/typos"
 # rev = "v1.48.0"
 # hooks = [
-#     { id = "typos", exclude = { glob = [".abbrev_defs", "share/mail-review-spam", "bugs/jikes-patches/*", "share/checkbashisms", "dots/.aspell.en.prepl", ".aspell.en.prepl", "dots/en_US_apostrophe.dic", "dots/.aspell.en.pws", ".aspell.en.pws", "dots/en_US_apostrophe.aff", "en_US_apostrophe.aff" ] } }
+#     { id = "typos", exclude = { glob = ["**/.abbrev_defs", "share/mail-review-spam.py", "bugs/jikes-patches/**/*", "share/checkbashisms", "**/.aspell.en.prepl", "**/.aspell.en.pws", "**/en_US_apostrophe.aff", "**/en_US_apostrophe.dic" ] } }
 # ]
 
 # Very noisy.  Perhaps re-enable later.
@@ -302,10 +284,10 @@ hooks = [
 # repo = "https://github.com/codespell-project/codespell"
 # rev = "v2.4.1"
 # hooks = [
-#     { id = "codespell", exclude = { glob = [ "en_US_apostrophe.dic", ".ssh/known_hosts", "enscript.st" ] } },
+#     { id = "codespell", exclude = { glob = [ "**/en_US_apostrophe.dic", "**/enscript.st", "**/.ssh/known_hosts" ] } },
 # ]
 
-# proselint does not understand fenced code blocks in markdown files.
+# proselint does not understand fenced code blocks in Markdown files.
 # [[repos]]
 # repo = "https://github.com/amperser/proselint"
 # rev = "v0.16.0"
@@ -321,7 +303,8 @@ hooks = [
 #   { id = "oxlint", verbose = true }
 # ]
 
-# Taplo does not work on ARM and is not actively maintained.
+# Taplo does not work on ARM Linux and is not actively maintained.
+# [[repos]]
 # repo = "https://github.com/ComPWA/taplo-pre-commit"
 # rev = "v0.9.3"
 # hooks = [

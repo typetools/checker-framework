@@ -1,0 +1,10 @@
+// Tests that a record nested within another type is found in the stub file.
+
+package disbaruse.records;
+
+import org.checkerframework.checker.testchecker.disbaruse.qual.DisbarUse;
+
+class DisbarredNestedRecordByStubs {
+  record Nested(@DisbarUse String barred, String fine) {
+  }
+}

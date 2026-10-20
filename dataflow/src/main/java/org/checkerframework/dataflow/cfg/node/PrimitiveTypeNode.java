@@ -3,7 +3,6 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.PrimitiveTypeTree;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -52,7 +51,7 @@ public class PrimitiveTypeNode extends Node {
 
   @Override
   public int hashCode() {
-    return Objects.hash(getType());
+    return getType().hashCode();
   }
 
   @Override

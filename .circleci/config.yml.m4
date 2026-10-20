@@ -9,7 +9,7 @@ jobs:
   # Only proceed to other jobs if canary_jobs passes.
   canary_jobs:
     docker:
-      - image: 'cimg/base:2026.08'
+      - image: 'cimg/base:2026.09'
     resource_class: small
     environment:
       TERM: dumb
@@ -19,12 +19,47 @@ jobs:
   # Passes only if all other jobs passed.
   all_green:
     docker:
-      - image: 'cimg/base:2026.08'
+      - image: 'cimg/base:2026.09'
     resource_class: small
     environment:
       TERM: dumb
     steps:
       - run: /bin/true
+
+  ci_info:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk[]canary_jdk-plus'
+    resource_class: small
+    environment:
+      TERM: dumb
+    steps:
+      - restore_cache:
+          keys:
+            - &sourcefull-cache source-v1full-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1full-{{ .Branch }}-'
+            - source-v1full-
+      - checkout:
+          method: full
+      - save_cache:
+          key: *sourcefull-cache
+          paths:
+            - .git
+ifelse([This job runs no Gradle task, so it needs no Gradle cache.])dnl
+clone_plume_scripts_step()
+      - run:
+          name: set-ci-org-and-branch
+          command: |
+            # PLUME_SCRIPTS is the documented way to tell these scripts where they live.
+            PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+            CI_DEBUG=1
+            . "$PLUME_SCRIPTS"/set-ci-org-and-branch
+      - run:
+          name: set-git-range
+          command: |
+            # The sourced script reads PLUME_SCRIPTS, to find set-ci-org-and-branch.
+            PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+            CI_DEBUG=1
+            . "$PLUME_SCRIPTS"/set-git-range
 
 include([../.azure/jobs.m4])dnl
 
@@ -45,6 +80,8 @@ workflows:
             - misc_jdk[]canary_jdk
             - misc_jdk[]latest_jdk
 
+      - ci_info
+
 job_dependences(canary_jdk, junit_part1)
 job_dependences(canary_jdk, junit_part2)
 job_dependences(canary_jdk, nonjunit)
@@ -63,12 +100,13 @@ job_dependences(21, junit)
 job_dependences(latest_jdk, junit)
 
 ifelse([The following jobs have no corresponding job in the canary jobs.])dnl
-      # TEMPORARILY commented until Daikon release 5.8.24.
-      # job_dependences_not_in_canary(canary_jdk, daikon_part1)
-      # job_dependences_not_in_canary(canary_jdk, daikon_part2)
-      # job_dependences_not_in_canary(canary_jdk, daikon_part3)
+job_dependences_not_in_canary(canary_jdk, daikon_part1)
+job_dependences_not_in_canary(canary_jdk, daikon_part2)
+job_dependences_not_in_canary(canary_jdk, daikon_part3)
 job_dependences_not_in_canary(canary_jdk, guava_part1)
 job_dependences_not_in_canary(canary_jdk, guava_part2)
+job_dependences_not_in_canary(21, beam_part1)
+job_dependences_not_in_canary(21, beam_part2)
 job_dependences_not_in_canary(canary_jdk, plume_lib)
 
       - all_green:
@@ -77,10 +115,15 @@ job_dependences_not_in_canary(canary_jdk, plume_lib)
             - nonjunit_jdk21
             - junit_jdk17
             - junit_jdk21
-            - junit_jdk26
-            - guava_part1_jdk25
-            - guava_part2_jdk25
-            - plume_lib_jdk25
+            - junit_jdk[]latest_jdk
+            - daikon_part1_jdk[]canary_jdk
+            - daikon_part2_jdk[]canary_jdk
+            - daikon_part3_jdk[]canary_jdk
+            - guava_part1_jdk[]canary_jdk
+            - guava_part2_jdk[]canary_jdk
+            - beam_part1_jdk21
+            - beam_part2_jdk21
+            - plume_lib_jdk[]canary_jdk
 
 ifelse([
 Local Variables:

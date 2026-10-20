@@ -54,6 +54,7 @@ public class AbstractInvocationType extends AbstractExecutableType {
 
     if (TreeUtils.isDiamondTree(invocation)) {
       Element e = ElementUtils.enclosingTypeElement(TreeUtils.elementFromUse(invocation));
+      assert e != null : "@AssumeAssertion(nullness): a constructor is in a class";
       annotatedReturnType = typeFactory.getAnnotatedType(e);
     } else if (invocation instanceof MethodInvocationTree) {
       annotatedReturnType = annotatedExecutableType.getReturnType();

@@ -12,6 +12,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
@@ -29,6 +30,7 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /** Implementation of type argument inference. */
 public class DefaultTypeArgumentInference implements TypeArgumentInference {
@@ -46,12 +48,15 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       ExpressionTree expressionTree,
       AnnotatedExecutableType executableType) {
     TreePath pathToExpression = typeFactory.getPath(expressionTree);
+    assert pathToExpression != null : "@AssumeAssertion(nullness): the tree is being type-checked";
 
     // In order to find the type arguments for expressionTree, type arguments for outer method
     // calls may need be inferred, too.
     // So, first find the outermost tree that is required to infer the type arguments for
     // expressionTree
-    ExpressionTree outerTree = outerInference(expressionTree, pathToExpression.getParentPath());
+    ExpressionTree outerTree =
+        outerInference(
+            expressionTree, pathToExpression.getParentPath(), typeFactory.getProcessingEnv());
 
     for (InvocationTypeInference i : java8InferenceStack) {
       if (i.getInferenceExpression() == outerTree) {
@@ -76,6 +81,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         return new InferenceResult(instantiated, false, false, "");
       }
     }
+    // Null if outerTree is a member reference.
     AnnotatedExecutableType outerMethodType;
     if (outerTree != expressionTree) {
       if (outerTree instanceof MethodInvocationTree mit) {
@@ -96,6 +102,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       outerMethodType = executableType;
     }
 
+    assert pathToExpression != null : "@AssumeAssertion(nullness): the tree is being type-checked";
     boolean pushedToInferenceStack = false;
     try {
       InvocationTypeInference java8Inference =
@@ -105,6 +112,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       if (outerTree instanceof MemberReferenceTree outerMemberRef) {
         return java8Inference.infer(outerMemberRef);
       } else {
+        assert outerMethodType != null
+            : "@AssumeAssertion(nullness): outerTree is not a member reference";
         InferenceResult result = java8Inference.infer(outerTree, outerMethodType);
         if (!result.getResults().containsKey(expressionTree)
             && expressionTree instanceof MemberReferenceTree mrt) {
@@ -127,7 +136,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           //  2. The target type's function type has result void, in which case JLS 18.2.1 says
           //     that <MethodReference -> T> reduces to true.
 
-          java8Inference.context.setPathToExpression(typeFactory.getPath(expressionTree));
+          TreePath pathToMemberRef = typeFactory.getPath(expressionTree);
+          assert pathToMemberRef != null
+              : "@AssumeAssertion(nullness): the tree is being type-checked";
+          java8Inference.context.setPathToExpression(pathToMemberRef);
           return java8Inference.infer(mrt);
         }
         return result.swapTypeVariables(executableType, expressionTree);
@@ -171,10 +183,12 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    *
    * @param tree tree that may need an outer tree to find the type
    * @param parentPath path to the parent of {@code tree} or null if no such parent exists
+   * @param env the processing environment
    * @return the outermost tree required to find the type of {@code tree}
    */
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
-  public static ExpressionTree outerInference(ExpressionTree tree, @Nullable TreePath parentPath) {
+  public static ExpressionTree outerInference(
+      ExpressionTree tree, @Nullable TreePath parentPath, ProcessingEnvironment env) {
     if (parentPath == null) {
       return tree;
     }
@@ -187,7 +201,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       case PARENTHESIZED:
       case CONDITIONAL_EXPRESSION:
         ExpressionTree outer =
-            outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
+            outerInference((ExpressionTree) parentTree, parentPath.getParentPath(), env);
         if (outer == parentTree) {
           return tree;
         }
@@ -201,9 +215,14 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         if (methodElement.getTypeParameters().isEmpty()) {
           return tree;
         }
+
+        if (TreeUtils.isRawCall(methodInvocationTree, parentPath, env)) {
+          return tree;
+        }
+
         if (argumentNeedsInference(
             methodElement, methodInvocationTree.getArguments(), tree, null)) {
-          return outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
+          return outerInference((ExpressionTree) parentTree, parentPath.getParentPath(), env);
         }
         return tree;
       case NEW_CLASS:
@@ -212,15 +231,26 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           return tree;
         }
         ExecutableElement constructor = TreeUtils.elementFromUse(newClassTree);
+        // A diamond is never a raw call.  JLS 4.8 says "It is a compile-time error to pass type
+        // arguments to a non-static member class or interface of a raw type", and javac rejects a
+        // diamond on such a class too, so a diamond invocation that compiles never has an erased
+        // constructor type.  The only way `typeOf(newClassTree)` is raw for a diamond is JLS
+        // 18.5.2's erasure of the *return* type when unchecked conversion was necessary.  That
+        // erasure leaves the constructor's parameter types parameterized, so the type arguments
+        // still need to be inferred.
+        if (!TreeUtils.isDiamondTree(newClassTree)
+            && TypesUtils.isRawCall(TreeUtils.typeOf(newClassTree), constructor, env)) {
+          return tree;
+        }
         if (argumentNeedsInference(constructor, newClassTree.getArguments(), tree, newClassTree)) {
-          return outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
+          return outerInference((ExpressionTree) parentTree, parentPath.getParentPath(), env);
         }
         return tree;
       case RETURN:
         TreePath parentParentPath = parentPath.getParentPath();
         if (parentParentPath.getLeaf() instanceof LambdaExpressionTree) {
           return outerInference(
-              (ExpressionTree) parentParentPath.getLeaf(), parentParentPath.getParentPath());
+              (ExpressionTree) parentParentPath.getLeaf(), parentParentPath.getParentPath(), env);
         }
         return tree;
       case CASE:
@@ -237,7 +267,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       // parentTree is a switch expression, so fall through
       case SWITCH_EXPRESSION:
         ExpressionTree outerTree =
-            outerInference((ExpressionTree) parentTree, parentPath.getParentPath());
+            outerInference((ExpressionTree) parentTree, parentPath.getParentPath(), env);
         if (outerTree == parentTree) {
           return tree;
         }
