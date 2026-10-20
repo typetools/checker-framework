@@ -225,6 +225,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
       return false;
     }
 
+    // Capture the types because the wildcards are only not equal if they are provably distinct.
+    // Provably distinct is computed using the captured and erased upper bounds of wildcards.
+    // See JLS 4.5.1. Type Arguments of Parameterized Types.
     AnnotatedTypeFactory atypeFactory = type1.atypeFactory;
     AnnotatedDeclaredType capturedType1 =
         (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(type1);
