@@ -24,7 +24,6 @@ public class PurityClassTypeVariableArgument {
    * Sub inherits Base.apply as its implementation of I<Supplier<Integer>>.apply, but a call through
    * I<Supplier<Integer>> checks nothing about its argument.
    */
-  // :: error: [purity.inherited.functional.parameter]
   static class Sub extends Base implements I<Supplier<Integer>> {}
 
   static class DirectOverride implements I<Supplier<Integer>> {

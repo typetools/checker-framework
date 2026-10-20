@@ -56,7 +56,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -667,8 +666,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     warnInvalidPolymorphicQualifier(classTree);
 
     checkExtendsAndImplements(classTree);
-
-    checkInheritedImplementationFunctionalParameters(classTree);
 
     checkQualifierParameter(classTree);
 
@@ -1949,120 +1946,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           ElementUtils.getSimpleDescription(callee),
           purityKindsToString(argKinds),
           purityKindsToString(required));
-    }
-  }
-
-  /**
-   * Checks that a call through {@code functionalMethod} guarantees, of the code that it passes to
-   * each functional-interface parameter of {@code implementation}, the purity that {@code
-   * implementation}'s body assumes of it; see {@link
-   * PurityChecker#functionalParameterPurity(org.checkerframework.javacutil.AnnotationProvider,
-   * ExecutableElement, int, ProcessingEnvironment)}.
-   *
-   * <p>That method accounts for each declaration that {@code implementation} overrides. This one is
-   * for the other ways that a call through {@code functionalMethod} can run {@code implementation}:
-   * as a method reference, or as a method that a class inherits and that implements {@code
-   * functionalMethod} only in that class.
-   *
-   * @param reportTree the tree at which to report an error
-   * @param implementation the method that a call through {@code functionalMethod} runs
-   * @param functionalMethod the method that {@code implementation} implements
-   * @param offset the index of {@code functionalMethod}'s parameter that corresponds to {@code
-   *     implementation}'s first parameter: 1 for an unbound method reference such as {@code C::m},
-   *     whose functional method's first parameter is the receiver, and 0 otherwise
-   * @param messageKey the key of the error message to report
-   */
-  private void checkImplementationFunctionalParameters(
-      Tree reportTree,
-      ExecutableElement implementation,
-      ExecutableElement functionalMethod,
-      int offset,
-      @CompilerMessageKey String messageKey) {
-    ProcessingEnvironment env = atypeFactory.getProcessingEnv();
-    List<? extends VariableElement> implementationParams = implementation.getParameters();
-    for (int i = 0; i < implementationParams.size(); i++) {
-      EnumSet<PurityKind> assumed =
-          PurityChecker.functionalParameterPurity(atypeFactory, implementation, i, env);
-      if (assumed.isEmpty()) {
-        continue;
-      }
-      ExecutableElement parameterFunction =
-          PurityChecker.parameterFunctionalMethod(implementation, i, env);
-      assert parameterFunction != null
-          : "@AssumeAssertion(nullness): functionalParameterPurity is empty for a parameter whose"
-              + " type is not a functional interface";
-      int j = i + offset;
-      EnumSet<PurityKind> provided =
-          j < functionalMethod.getParameters().size()
-              ? PurityChecker.guaranteedFunctionalArgumentPurity(
-                  atypeFactory, functionalMethod, j, parameterFunction, env)
-              : EnumSet.noneOf(PurityKind.class);
-      if (!provided.containsAll(assumed)) {
-        reportErrorOnce(
-            reportTree,
-            messageKey,
-            implementationParams.get(i).getSimpleName(),
-            implementation,
-            purityKindsToString(assumed),
-            functionalMethod,
-            purityKindsToString(provided));
-      }
-    }
-  }
-
-  /**
-   * Checks each method that {@code classTree} inherits from a superclass and that implements an
-   * interface method only in {@code classTree}, as in {@code class Sub extends Base implements I
-   * {}}: a call through the interface method must guarantee what the inherited method's body
-   * assumes of its functional-interface arguments. The inherited method does not override the
-   * interface method, so {@link PurityChecker#functionalParameterPurity} does not account for it.
-   *
-   * <p>Only an interface that {@code classTree} adds to those of its direct superclass is
-   * considered, because the superclass's own declaration was checked for the others.
-   *
-   * @param classTree a class declaration
-   */
-  protected void checkInheritedImplementationFunctionalParameters(ClassTree classTree) {
-    if (!checkPurityAnnotations || infer) {
-      return;
-    }
-    TypeElement classElt = TreeUtils.elementFromDeclaration(classTree);
-    if (classElt == null
-        || classElt.getKind().isInterface()
-        || !(classElt.getSuperclass() instanceof DeclaredType superclassType)) {
-      return;
-    }
-    ProcessingEnvironment env = atypeFactory.getProcessingEnv();
-    List<TypeElement> addedInterfaces = new ArrayList<>();
-    Set<TypeElement> superclassSupertypes =
-        new HashSet<>(ElementUtils.getAllSupertypes((TypeElement) superclassType.asElement(), env));
-    for (TypeElement supertype : ElementUtils.getAllSupertypes(classElt, env)) {
-      if (supertype.getKind().isInterface() && !superclassSupertypes.contains(supertype)) {
-        addedInterfaces.add(supertype);
-      }
-    }
-    if (addedInterfaces.isEmpty()) {
-      return;
-    }
-    Elements elements = env.getElementUtils();
-    for (ExecutableElement inherited : ElementFilter.methodsIn(elements.getAllMembers(classElt))) {
-      Element declaringType = inherited.getEnclosingElement();
-      if (declaringType.equals(classElt)
-          || declaringType.getKind().isInterface()
-          || inherited.getModifiers().contains(Modifier.STATIC)
-          || inherited.getModifiers().contains(Modifier.ABSTRACT)
-          || PurityChecker.functionalParameterKinds(atypeFactory, inherited, env).isEmpty()) {
-        continue;
-      }
-      for (TypeElement addedInterface : addedInterfaces) {
-        for (ExecutableElement interfaceMethod :
-            ElementFilter.methodsIn(addedInterface.getEnclosedElements())) {
-          if (elements.overrides(inherited, interfaceMethod, classElt)) {
-            checkImplementationFunctionalParameters(
-                classTree, inherited, interfaceMethod, 0, "purity.inherited.functional.parameter");
-          }
-        }
-      }
     }
   }
 
@@ -5313,27 +5196,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             purityKindsToString(superPurity),
             overridden);
       }
-      if (!infer) {
-        checkMethodReferenceFunctionalParameters();
-      }
-    }
-
-    /**
-     * Check that a call through the functional method guarantees, of the code that it passes to
-     * each functional-interface parameter of the referenced method, the purity that the referenced
-     * method's body assumes of it.
-     */
-    private void checkMethodReferenceFunctionalParameters() {
-      ExecutableElement functionalMethod = overridden.getElement();
-      checkImplementationFunctionalParameters(
-          overriderTree,
-          overrider.getElement(),
-          functionalMethod,
-          MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) overriderTree)
-                  .isUnbound()
-              ? 1
-              : 0,
-          "purity.methodref.functional.parameter");
     }
 
     /**

@@ -257,10 +257,6 @@ public final class PurityChecker {
    * declaration with no purity annotation guarantees nothing, nor does one whose parameter at
    * {@code index} is not a functional interface, such as a type variable.
    *
-   * <p>A class can also implement an interface method with a method that it inherits, and a method
-   * reference implements a functional method; neither is an override. {@code BaseTypeVisitor}
-   * checks each of them against the result of this method.
-   *
    * @param annoProvider the annotation provider
    * @param method a method or constructor
    * @param index the index of one of {@code method}'s formal parameters
@@ -309,7 +305,7 @@ public final class PurityChecker {
    * @param env the processing environment
    * @return the purity that a call through {@code declaration} guarantees of the argument
    */
-  public static EnumSet<PurityKind> guaranteedFunctionalArgumentPurity(
+  private static EnumSet<PurityKind> guaranteedFunctionalArgumentPurity(
       AnnotationProvider annoProvider,
       ExecutableElement declaration,
       int index,
