@@ -460,7 +460,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     }
 
     if (AnnotationUtils.areSameByName(anno, ValueAnnotatedTypeFactory.INTRANGE_NAME)) {
-      if (TypesUtils.isIntegralPrimitiveOrBoxed(type.getUnderlyingType())) {
+      if (TypesUtils.isIntegralPrimitive(
+          TypesUtils.unboxedTypeOrSelf(type.getUnderlyingType(), types))) {
         long from = atypeFactory.getFromValueFromIntRange(type);
         long to = atypeFactory.getToValueFromIntRange(type);
         if (from > to) {

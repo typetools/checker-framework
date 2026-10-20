@@ -309,8 +309,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    */
   public @Nullable List<String> getLessThanExpressions(ExpressionTree expression) {
     AnnotatedTypeMirror annotatedTypeMirror = getAnnotatedType(expression);
-    return getLessThanExpressions(
-        annotatedTypeMirror.getPrimaryAnnotationInHierarchy(LESS_THAN_UNKNOWN));
+    return getLessThanExpressions(annotatedTypeMirror.getAnnotationInHierarchy(LESS_THAN_UNKNOWN));
   }
 
   /**

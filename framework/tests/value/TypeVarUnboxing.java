@@ -1,5 +1,6 @@
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.DoubleVal;
+import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 
 /** Regression test for evaluating unboxing of a type variable with a known value. */
@@ -56,5 +57,11 @@ public class TypeVarUnboxing {
 
   <T extends Byte & java.io.Serializable> void intersectionBound(@IntVal(1) T t) {
     @IntVal(1) byte result = t;
+  }
+
+  <T extends Integer> void intRange(@IntRange(from = 0, to = 10) T t) {
+    @IntRange(from = 0, to = 10) int result = t;
+    // :: error: [assignment]
+    @IntRange(from = 0, to = 5) int wrong = t;
   }
 }
