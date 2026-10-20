@@ -10,6 +10,13 @@
 Added support for IntelliJ IDEA annotation files (`annotations.xml`) via the
 `-AintellijAnnotations` command-line option.
 
+The `-Astubs` and `-Aajava` command-line options accept `.zip` archives, in
+addition to `.jar` archives and directories.
+
+A stub or ajava file that is named explicitly on the command line is used
+regardless of its file name extension.  Within a directory or archive, only
+files whose names end with `.astub` or `.ajava` are used, as before.
+
 ### Changes for type system implementers
 
 ### Closed issues

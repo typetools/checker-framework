@@ -362,10 +362,10 @@ public class AnnotationFileUtil {
    * Returns annotation files found at a given file system location (does not look on classpath).
    *
    * @param location an annotation file (a stub file, ajava file, or IntelliJ IDEA annotation file),
-   *     a jarfile, or a directory. Look for it as an absolute file and relative to the current
-   *     directory. Because it is named explicitly, a file is used no matter what its name is;
-   *     within a jarfile or directory, only files whose name indicates that they are of type {@code
-   *     fileType} are used.
+   *     a jar or zip archive, or a directory. Look for it as an absolute file and relative to the
+   *     current directory. Because it is named explicitly, a file is used no matter what its name
+   *     is; within an archive or directory, only files whose name indicates that they are of type
+   *     {@code fileType} are used.
    * @param fileType file type of files to collect
    * @return annotation files with the given file type found in the file system (does not look on
    *     classpath). Returns null if the file system location does not exist; the caller may wish to
@@ -435,9 +435,9 @@ public class AnnotationFileUtil {
    * Side-effects {@code resources} by adding annotation files of the given file type to it.
    *
    * @param location an annotation file (a stub file, ajava file, or IntelliJ IDEA annotation file),
-   *     a jarfile, or a directory. If an annotation file, add it to the {@code resources} list. If
-   *     a jarfile, use all annotation files (of type {@code fileType}) contained in it. If a
-   *     directory, recurse on all files contained in it.
+   *     a jar or zip archive, or a directory. If an annotation file, add it to the {@code
+   *     resources} list. If an archive, use all annotation files (of type {@code fileType})
+   *     contained in it. If a directory, recurse on all files contained in it.
    * @param resources the list to add the found files to
    * @param fileType type of annotation files to add
    * @param isUserSupplied true if {@code location} was named by the user (say, on the command line)

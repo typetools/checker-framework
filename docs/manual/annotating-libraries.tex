@@ -478,10 +478,11 @@ original library classes.  For example:
 \end{Verbatim}
 \end{myxsmall}
 
-Each stub path entry is a stub file (ending with \<.astub>), directory, or
-\<.jar> file; specifying a directory or \<.jar> file is
-equivalent to specifying every file in it whose name ends with
-\code{.astub}.  The stub path entries are delimited by
+Each stub path entry is a stub file (conventionally ending with
+\<.astub>), a directory, or a \<.jar> or \<.zip> archive.  A stub file
+that is named explicitly is used regardless of its name.  Specifying a
+directory or archive is equivalent to specifying every file in it whose name
+ends with \code{.astub}.  The stub path entries are delimited by
 \<File.pathSeparator> (``\<:>'' for Linux and Mac, ``\<;>'' for Windows).
 
 A checker automatically reads some of its own stub files, even without a
