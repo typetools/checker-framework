@@ -2515,6 +2515,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * The implementation of {@link #methodFromUse(MethodInvocationTree)} and {@link
    * #methodFromUseWithoutTypeArgInference(MethodInvocationTree)}.
    *
+   * <p>Type argument inference calls this method with {@code inferTypeArgs} false, possibly while
+   * it is inferring the type of an argument of {@code tree}. An override must not compute the type
+   * of an argument (for example, by calling {@link #getAnnotatedType(Tree)}) when {@code
+   * inferTypeArgs} is false: if the argument is a poly expression, doing so re-enters inference and
+   * recurses infinitely.
+   *
    * @param tree a method invocation tree
    * @param inferTypeArgs true if type arguments should be inferred
    * @return the type of the invoked method, any explicit type arguments, and if {@code
@@ -2601,6 +2607,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * The implementation of {@link #methodFromUse(ExpressionTree, ExecutableElement,
    * AnnotatedTypeMirror)} and {@link #methodFromUseWithoutTypeArgInference(ExpressionTree,
    * ExecutableElement, AnnotatedTypeMirror)}.
+   *
+   * <p>Type argument inference calls this method with {@code inferTypeArgs} false, possibly while
+   * it is inferring the type of an argument of {@code tree}. An override must not compute the type
+   * of an argument (for example, by calling {@link #getAnnotatedType(Tree)}) when {@code
+   * inferTypeArgs} is false: if the argument is a poly expression, doing so re-enters inference and
+   * recurses infinitely.
    *
    * @param tree either a MethodInvocationTree or a MemberReferenceTree
    * @param methodElt the element of the referenced method

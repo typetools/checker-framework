@@ -7,6 +7,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 public class Issue579<T> implements Comparator<T> {
   private final Comparator<T> real;
 
+  @SideEffectFree
   @SuppressWarnings("unchecked")
   @SideEffectFree
   Issue579(Comparator<? super T> real) {

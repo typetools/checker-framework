@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BinaryOperator;
+import java.util.function.BiFunction;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -103,7 +103,7 @@ public abstract class AbstractQualifier {
    * @param context a context
    * @return the least upper bounds of {@code quals}
    */
-  public static Set<AnnotationMirror> lub(
+  public static AnnotationMirrorSet lub(
       Set<AbstractQualifier> quals, Java8InferenceContext context) {
     return combine(
         quals, context.typeFactory.getQualifierHierarchy()::leastUpperBoundQualifiersOnly);
@@ -117,7 +117,7 @@ public abstract class AbstractQualifier {
    * @param context a context
    * @return the greatest lower bounds of {@code quals}
    */
-  public static Set<AnnotationMirror> glb(
+  public static AnnotationMirrorSet glb(
       Set<AbstractQualifier> quals, Java8InferenceContext context) {
     return combine(
         quals, context.typeFactory.getQualifierHierarchy()::greatestLowerBoundQualifiersOnly);
@@ -128,12 +128,13 @@ public abstract class AbstractQualifier {
    *
    * @param quals a set of qualifiers; can contain multiple qualifiers for multiple hierarchies and
    *     multiple qualifiers for a hierarchy
-   * @param combine a functions that combines two {@code AnnotationMirror}s and returns a single
-   *     {@code AnnotationMirror}
+   * @param combine a functions that combines two {@code AnnotationMirror}s in the same hierarchy
+   *     and returns a single {@code AnnotationMirror}
    * @return the result of applying the {@code combine} function on {@code quals}
    */
-  private static Set<AnnotationMirror> combine(
-      Set<AbstractQualifier> quals, BinaryOperator<AnnotationMirror> combine) {
+  private static AnnotationMirrorSet combine(
+      Set<AbstractQualifier> quals,
+      BiFunction<AnnotationMirror, AnnotationMirror, @Nullable AnnotationMirror> combine) {
     Map<String, AnnotationMirror> m = new HashMap<>();
 
     for (AbstractQualifier qual : quals) {
@@ -144,6 +145,8 @@ public abstract class AbstractQualifier {
           m.put(qual.hierarchyName, qualAnno);
         } else {
           AnnotationMirror combined = combine.apply(soFar, qualAnno);
+          assert combined != null
+              : "@AssumeAssertion(nullness): soFar and qualAnno are in the same hierarchy";
           m.put(qual.hierarchyName, combined);
         }
       }
@@ -163,7 +166,7 @@ public abstract class AbstractQualifier {
    * @return a set containing an {@code AbstractQualifier} for each annotation in {@code annos}
    */
   public static Set<AbstractQualifier> create(
-      Set<AnnotationMirror> annos,
+      Set<? extends AnnotationMirror> annos,
       AnnotationMirrorMap<QualifierVar> qualifierVars,
       Java8InferenceContext context) {
     if (qualifierVars.isEmpty()) {
@@ -189,7 +192,7 @@ public abstract class AbstractQualifier {
    * @return a set containing a new {@code Qualifier} for each annotation in {@code annos}
    */
   private static Set<AbstractQualifier> create(
-      Set<AnnotationMirror> annos, Java8InferenceContext context) {
+      Set<? extends AnnotationMirror> annos, Java8InferenceContext context) {
     Set<AbstractQualifier> quals = new HashSet<>();
     for (AnnotationMirror anno : annos) {
       quals.add(new Qualifier(anno, context));

@@ -13,6 +13,8 @@ import org.checkerframework.afu.scenelib.el.TypeIndexLocation;
 import org.checkerframework.afu.scenelib.io.ASTPath;
 import org.checkerframework.afu.scenelib.io.DebugWriter;
 import org.checkerframework.checker.interning.qual.FindDistinct;
+import org.checkerframework.checker.modifiability.qual.Growable;
+import org.checkerframework.checker.modifiability.qual.Replaceable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.objectweb.asm.TypePath;
@@ -28,7 +30,7 @@ public final class Criteria {
 
   // NOTE: This does not permit multiple criteria of a given kind.
   /** The set of criterion objects, indexed by kind. */
-  private final Map<Criterion.Kind, Criterion> criteria;
+  private final @Growable @Replaceable Map<Criterion.Kind, Criterion> criteria;
 
   /** Creates a new {@code Criteria} without any {@code Criterion}. */
   public Criteria() {

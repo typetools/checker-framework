@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
 
 /**
  * A generic method whose return type contains a wildcard, invoked as the body of a lambda passed to
@@ -41,7 +42,7 @@ public class Issue8053 {
     return types.stream().map(t -> wild(t)).collect(Collectors.toList());
   }
 
-  static final Map<String, List<Getter<?, ?>>> CACHE = new HashMap<>();
+  static final @Modifiable Map<String, List<Getter<?, ?>>> CACHE = new HashMap<>();
 
   static native <P> Getter<P, ?> createGetter(Class<P> clazz, String name);
 

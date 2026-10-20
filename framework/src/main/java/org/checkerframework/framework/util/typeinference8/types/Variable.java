@@ -82,6 +82,8 @@ import org.checkerframework.javacutil.TypesUtils;
    */
   @SuppressWarnings({
     "interning:argument", // "this" is interned
+    "nullness:argument", // VariableBounds stores "this" but doesn't use it during construction
+    "nullness:assignment", // VariableBounds stores "this" but doesn't use it during construction
     "this-escape"
   })
   protected Variable(
@@ -158,7 +160,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }
