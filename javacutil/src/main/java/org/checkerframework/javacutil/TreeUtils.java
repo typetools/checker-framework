@@ -1719,11 +1719,13 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns true if the passed constructor is anonymous and has an explicit enclosing expression.
+   * Returns true if {@code con} is an anonymous constructor and {@code tree} has an explicit
+   * enclosing expression, as in {@code outer.new Inner(...) {...}}.
    *
-   * @param con an ExecutableElement of a constructor declaration
-   * @param tree the NewClassTree of a constructor declaration
-   * @return true if there is an extra enclosing expression
+   * @param con the constructor invoked by {@code tree}
+   * @param tree a constructor invocation
+   * @return true if {@code con} is an anonymous constructor and {@code tree} has an explicit
+   *     enclosing expression
    */
   public static boolean isAnonymousConstructorWithExplicitEnclosingExpression(
       ExecutableElement con, NewClassTree tree) {

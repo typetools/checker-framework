@@ -132,7 +132,17 @@ public abstract class AbstractExecutableType {
    * @return the formal parameter types of this executable
    */
   public List<AbstractType> getParameterTypes(@Nullable Theta map) {
-    return getParameterTypes(map, annotatedExecutableType.getParameterTypes().size());
+    return getParameterTypes(map, getDeclaredParameterTypes().size());
+  }
+
+  /**
+   * Returns the annotated types of the formal parameters of this executable, without expanding the
+   * vararg parameter.
+   *
+   * @return the annotated types of the formal parameters of this executable
+   */
+  protected List<AnnotatedTypeMirror> getDeclaredParameterTypes() {
+    return annotatedExecutableType.getParameterTypes();
   }
 
   /**
@@ -156,15 +166,15 @@ public abstract class AbstractExecutableType {
       int size,
       @Nullable AnnotatedTypeMirror firstParam,
       boolean isVarargsCall) {
+    List<AnnotatedTypeMirror> declaredParams = getDeclaredParameterTypes();
     List<AnnotatedTypeMirror> params =
-        new ArrayList<>(
-            annotatedExecutableType.getParameterTypes().size() + (firstParam == null ? 0 : 1));
+        new ArrayList<>(declaredParams.size() + (firstParam == null ? 0 : 1));
 
     if (firstParam != null) {
       params.add(firstParam);
     }
 
-    params.addAll(annotatedExecutableType.getParameterTypes());
+    params.addAll(declaredParams);
 
     if (isVarargsCall) {
       AnnotatedTypeMirror eltATM =
