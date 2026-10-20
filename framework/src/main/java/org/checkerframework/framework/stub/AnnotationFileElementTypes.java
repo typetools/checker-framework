@@ -291,6 +291,23 @@ public class AnnotationFileElementTypes {
   }
 
   /**
+   * Returns the path to use for an annotation file that was named on the command line. This is a
+   * special case when running in jtreg, which runs the compiler in a different directory than the
+   * one that contains the test's annotation files.
+   *
+   * @param path a relative or absolute path, from a command-line argument
+   * @return {@code path}, resolved against the {@code test.src} system property if that property is
+   *     set and {@code path} is relative
+   */
+  private static String resolveAgainstTestSrc(String path) {
+    String base = System.getProperty("test.src");
+    if (base == null || Paths.get(path).isAbsolute()) {
+      return path;
+    }
+    return base + "/" + path;
+  }
+
+  /**
    * Parses the files in {@code annotationFiles} of the given file type. This includes files listed
    * directly in {@code annotationFiles} and for each listed directory, also includes all files
    * located in that directory (recursively).
@@ -317,9 +334,7 @@ public class AnnotationFileElementTypes {
           processingEnv, "AFET.parseAnnotationFiles(%s, %s)", annotationFiles, fileType);
     }
     for (String path : annotationFiles) {
-      // Special case when running in jtreg.
-      String base = System.getProperty("test.src");
-      String fullPath = (base == null) ? path : base + "/" + path;
+      String fullPath = resolveAgainstTestSrc(path);
 
       List<AnnotationFileResource> allFiles =
           AnnotationFileUtil.allAnnotationFiles(fullPath, fileType);
