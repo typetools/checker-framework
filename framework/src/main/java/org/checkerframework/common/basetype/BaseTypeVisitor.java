@@ -2620,7 +2620,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         params,
         passedArguments,
         constructorName,
-        TreeUtils.parametersForArguments(constructor, tree, constructor.getParameters()));
+        TreeUtils.getSuperConstructor(tree).getParameters());
     checkVarargs(constructorType, tree);
 
     List<AnnotatedTypeParameterBounds> paramBounds =
