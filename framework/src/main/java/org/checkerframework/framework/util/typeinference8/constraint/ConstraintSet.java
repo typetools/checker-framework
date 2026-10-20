@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util.typeinference8.constraint;
 
+import com.sun.source.tree.ExpressionTree;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -385,6 +386,20 @@ public class ConstraintSet implements ReductionResult {
     return vars;
   }
 
+  /**
+   * Sets the {@link TypeConstraint#invocation} of each constraint in this set that has no parent
+   * and no invocation yet.
+   *
+   * @param invocation the invocation whose argument constraints this set contains
+   */
+  public void setInvocation(ExpressionTree invocation) {
+    for (Constraint constraint : queue) {
+      if (constraint instanceof TypeConstraint tc && tc.parent == null && tc.invocation == null) {
+        tc.invocation = invocation;
+      }
+    }
+  }
+
   /** Applies the instantiations to all the constraints in this set. */
   public void applyInstantiations() {
     for (Constraint constraint : queue) {
@@ -485,6 +500,12 @@ public class ConstraintSet implements ReductionResult {
       boundSet.setUncheckedConversion(true);
     } else {
       throw new RuntimeException("Not found " + result);
+    }
+    if (constraint instanceof TypeConstraint tc) {
+      ExpressionTree invocation = tc.getInvocation();
+      if (invocation != null) {
+        boundSet.attributeUncheckedConversionTo(invocation);
+      }
     }
     if (this.annotationFailure) {
       boundSet.annoInferenceFailed = true;

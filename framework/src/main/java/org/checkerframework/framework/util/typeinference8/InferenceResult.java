@@ -15,6 +15,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** The result of type argument inference. */
@@ -47,10 +48,11 @@ public class InferenceResult {
 
   /**
    * The method invocations, class instance creations, and method references in this inference
-   * problem for which unchecked conversion was necessary for their own method or compile-time
-   * declaration to be applicable.
+   * problem for which unchecked conversion was necessary to check their own arguments.
+   *
+   * @see Java8InferenceContext#uncheckedExpressions
    */
-  private final Set<? extends Tree> uncheckedExpressions;
+  private final Set<? extends ExpressionTree> uncheckedExpressions;
 
   /** True if inference crashed. */
   private final boolean inferenceCrashed;
@@ -62,14 +64,14 @@ public class InferenceResult {
    * Creates an inference result.
    *
    * @param variables instantiated variables
-   * @param uncheckedExpressions the expressions for which unchecked conversion was necessary for
-   *     their own method or compile-time declaration to be applicable
+   * @param uncheckedExpressions the expressions for which unchecked conversion was necessary to
+   *     check their own arguments
    * @param annoInferenceFailed true if inference failed because of annotations
    * @param errorMsg message to report to users if inference failed
    */
   public InferenceResult(
       Collection<Variable> variables,
-      Set<? extends Tree> uncheckedExpressions,
+      Set<? extends ExpressionTree> uncheckedExpressions,
       boolean annoInferenceFailed,
       String errorMsg) {
     this(variables, uncheckedExpressions, annoInferenceFailed, false, errorMsg);
@@ -79,15 +81,15 @@ public class InferenceResult {
    * Creates an inference result.
    *
    * @param variables instantiated variables
-   * @param uncheckedExpressions the expressions for which unchecked conversion was necessary for
-   *     their own method or compile-time declaration to be applicable
+   * @param uncheckedExpressions the expressions for which unchecked conversion was necessary to
+   *     check their own arguments
    * @param annoInferenceFailed true if inference failed because of annotations
    * @param inferenceCrashed the type argument inference code crashed
    * @param errorMsg message to report to users if inference failed
    */
   public InferenceResult(
       Collection<Variable> variables,
-      Set<? extends Tree> uncheckedExpressions,
+      Set<? extends ExpressionTree> uncheckedExpressions,
       boolean annoInferenceFailed,
       boolean inferenceCrashed,
       String errorMsg) {
@@ -110,14 +112,14 @@ public class InferenceResult {
   }
 
   /**
-   * Returns true if unchecked conversion was necessary for the method or compile-time declaration
-   * of {@code expressionTree} to be applicable. If so, the return type of {@code expressionTree}'s
-   * invocation type is erased (JLS 15.12.2.6).
+   * Returns true if unchecked conversion was necessary to check the arguments of {@code
+   * expressionTree}. If so, the return type of {@code expressionTree}'s invocation type is erased
+   * (JLS 15.12.2.6).
    *
    * @param expressionTree a method invocation, class instance creation, or method reference in this
    *     inference problem
-   * @return true if unchecked conversion was necessary for the method or compile-time declaration
-   *     of {@code expressionTree} to be applicable
+   * @return true if unchecked conversion was necessary to check the arguments of {@code
+   *     expressionTree}
    */
   public boolean isUncheckedConversion(ExpressionTree expressionTree) {
     return uncheckedExpressions.contains(expressionTree);

@@ -11,6 +11,7 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ElementKind;
@@ -78,7 +79,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         if (instantiated.isEmpty()) {
           return InferenceResult.emptyResult();
         }
-        return new InferenceResult(instantiated, Collections.emptySet(), false, "");
+        return new InferenceResult(
+            instantiated, new LinkedHashSet<>(i.context.uncheckedExpressions), false, "");
       }
     }
     // Null if outerTree is a member reference.

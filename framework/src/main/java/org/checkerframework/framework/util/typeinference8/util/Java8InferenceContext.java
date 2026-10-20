@@ -7,9 +7,11 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
@@ -147,6 +149,16 @@ public class Java8InferenceContext {
    * @see InvocationTypeInference#getLambdaParameterType(VariableElement)
    */
   public final Map<VariableElement, LambdaParamTarget> lambdaParamTargets = new HashMap<>();
+
+  /**
+   * The method invocations, class instance creations, and method references in this inference
+   * problem for which unchecked conversion was necessary to check their own arguments, whether or
+   * not those arguments are pertinent to applicability. The invocation type of each of these has an
+   * erased return type (JLS 15.12.2.6). Unchecked conversion that is necessary to check an argument
+   * of a nested invocation is attributed to the nested invocation, not to the enclosing one; this
+   * matches javac.
+   */
+  public final Set<ExpressionTree> uncheckedExpressions = new LinkedHashSet<>();
 
   /**
    * Records where each parameter of an implicitly typed lambda gets its type from.

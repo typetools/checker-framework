@@ -270,20 +270,21 @@ public class InvocationTypeInference {
         context.inferenceTypeFactory.createThetaForInvocation(
             invocation, inferenceExecutableType, context);
     BoundSet b2 = createB2(inferenceExecutableType, args, map);
+    b2.attributeUncheckedConversionTo(invocation);
     BoundSet b3;
     if (target != null && TreeUtils.isPolyExpression(invocation)) {
       b3 = createB3(b2, invocation, inferenceExecutableType, target, map);
     } else {
       b3 = b2;
     }
-    ConstraintSet c = createC(inferenceExecutableType, args, map);
+    ConstraintSet c = createC(invocation, inferenceExecutableType, args, map);
 
     BoundSet b4 = getB4(b3, c);
     b4.resolve();
     recordLambdaParameterTypes();
     return new InferenceResult(
         b4.getInstantiatedVariables(),
-        b4.getUncheckedExpressions(invocation),
+        context.uncheckedExpressions,
         b4.annoInferenceFailed,
         b4.errorMsg);
   }
@@ -348,6 +349,7 @@ public class InvocationTypeInference {
         context.inferenceTypeFactory.createThetaForMethodReference(
             invocation, compileTimeDecl, p1, context);
     BoundSet b2 = createB2MethodRef(compileTimeDecl, functionTypeParams, map);
+    b2.attributeUncheckedConversionTo(invocation);
     AbstractType r = target.getFunctionTypeReturnType();
     BoundSet b3;
     if (r == null) {
@@ -359,7 +361,7 @@ public class InvocationTypeInference {
     List<Variable> thetaPrime = b3.resolve();
 
     return new InferenceResult(
-        thetaPrime, b3.getUncheckedExpressions(invocation), b3.annoInferenceFailed, b3.errorMsg);
+        thetaPrime, context.uncheckedExpressions, b3.annoInferenceFailed, b3.errorMsg);
   }
 
   /**
@@ -524,7 +526,7 @@ public class InvocationTypeInference {
       AbstractType target,
       Theta map) {
     AbstractType r = executableType.getReturnType(map);
-    if (b2.isUncheckedConversion(invocation)) {
+    if (context.uncheckedExpressions.contains(invocation)) {
       // If unchecked conversion was necessary for the method to be applicable during
       // constraint set reduction in 18.5.1, the constraint formula <|R| -> T> is reduced and
       // incorporated with B2.
@@ -623,6 +625,8 @@ public class InvocationTypeInference {
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS
    * 18.5.2.2</a>.)
    *
+   * @param invocation the method invocation or class instance creation whose arguments are {@code
+   *     args}
    * @param executableType type of method invoked
    * @param args argument expression trees
    * @param map map from type variable to inference variable
@@ -630,7 +634,10 @@ public class InvocationTypeInference {
    *     applicability
    */
   public ConstraintSet createC(
-      AbstractExecutableType executableType, List<? extends ExpressionTree> args, Theta map) {
+      ExpressionTree invocation,
+      AbstractExecutableType executableType,
+      List<? extends ExpressionTree> args,
+      Theta map) {
     ConstraintSet c = new ConstraintSet();
     List<AbstractType> formals = executableType.getParameterTypes(map, args.size());
 
@@ -642,13 +649,17 @@ public class InvocationTypeInference {
       }
       c.addAll(createAdditionalArgConstraints(ei, fi, map));
     }
+    // Unchecked conversion that is necessary to reduce one of these constraints is attributed to
+    // `invocation`.  The constraints of nested invocations already have their own invocation.
+    c.setInvocation(invocation);
 
     return c;
   }
 
   /**
    * Adds argument constraints for the argument {@code ei} and its subexpressions. These are in
-   * addition to the constraints added in {@link #createC(AbstractExecutableType, List, Theta)}.
+   * addition to the constraints added in {@link #createC(ExpressionTree, AbstractExecutableType,
+   * List, Theta)}.
    *
    * <p>It does this by traversing {@code ei} if it is a method reference, lambda, method
    * invocation, new class tree, conditional expression, switch expression, or parenthesized
@@ -746,7 +757,7 @@ public class InvocationTypeInference {
         context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(invocation);
     Theta newMap =
         context.inferenceTypeFactory.createThetaForInvocation(invocation, executableType, context);
-    ConstraintSet set = context.inference.createC(executableType, args, newMap);
+    ConstraintSet set = context.inference.createC(invocation, executableType, args, newMap);
     set.applyInstantiations();
     return set;
   }

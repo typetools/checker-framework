@@ -48,6 +48,12 @@ public abstract class TypeConstraint implements Constraint {
   public @Nullable String derivation;
 
   /**
+   * For a constraint that has no {@code parent} and that is in the set C of argument constraints of
+   * an invocation (JLS 18.5.2.2), that invocation. Null otherwise. See {@link #getInvocation}.
+   */
+  public @Nullable ExpressionTree invocation;
+
+  /**
    * Creates a type constraint.
    *
    * @param source a string describing where this constraint came from
@@ -98,6 +104,25 @@ public abstract class TypeConstraint implements Constraint {
       constraintStack.add("From: " + child.source);
     }
     return constraintStack.toString();
+  }
+
+  /**
+   * Returns the invocation whose argument constraint gave rise to this constraint: the {@link
+   * #invocation} of the nearest of this constraint and its ancestors that has one. Unchecked
+   * conversion that is necessary to reduce this constraint is attributed to that invocation.
+   *
+   * @return the invocation whose argument constraint gave rise to this constraint, or null if none
+   *     did
+   */
+  public @Nullable ExpressionTree getInvocation() {
+    TypeConstraint constraint = this;
+    while (constraint.invocation == null) {
+      if (!(constraint.parent instanceof TypeConstraint tc)) {
+        return null;
+      }
+      constraint = tc;
+    }
+    return constraint.invocation;
   }
 
   /**
