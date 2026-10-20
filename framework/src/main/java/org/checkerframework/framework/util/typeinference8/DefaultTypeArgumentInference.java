@@ -12,6 +12,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -20,6 +21,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -103,18 +105,136 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
 
     assert pathToExpression != null : "@AssumeAssertion(nullness): the tree is being type-checked";
-    boolean pushedToInferenceStack = false;
+    InvocationTypeInference java8Inference =
+        new InvocationTypeInference(typeFactory, pathToExpression, true);
+    InferenceResult result =
+        infer(
+            java8Inference,
+            typeFactory,
+            expressionTree,
+            executableType,
+            outerTree,
+            outerMethodType);
+    if (result.inferenceFailed()
+        && !result.inferenceCrashed()
+        && java8Inference.isContextTargetTypeConstrained()) {
+      // Inference failed, possibly only because of the constraint against the target type of
+      // outerTree.  Retry without that constraint, as if outerTree were not a poly expression.
+      // Use the retry's result if it succeeds and the type it infers for outerTree has the Java
+      // type that the target type requires but qualifiers that the target type does not permit.
+      // Then the check of the assignment, return, argument, etc. that gives outerTree its target
+      // type reports that incompatibility, so reporting "type.arguments.not.inferred" as well
+      // would duplicate that error.  Furthermore, the visitor skips the other checks of an
+      // invocation whose type arguments are not inferred, such as the checks of its arguments.
+      // The instantiation that the retry finds satisfies every other constraint, so it is a
+      // legitimate typing of outerTree and of every invocation nested within it.
+      //
+      // The retry is used only under these conditions, so that the use-site check is certain to
+      // report the problem:
+      //  * The target type comes from the context of outerTree.  A target type from
+      //    AnnotatedTypeFactory#getDummyAssignedTo is not checked at the use site.
+      //  * The type that the retry infers for outerTree is not a subtype of the target type
+      //    (using the same TypeHierarchy#isSubtype as the use-site check).  Otherwise, the type
+      //    hierarchy accepts the retry's type, so using it might hide the problem entirely.
+      //  * The retry infers the same Java types as the first attempt, which are the Java types
+      //    that javac infers.  Otherwise, the target type is needed to infer the Java types (for
+      //    example, when it is the only source of the type of a lambda parameter or of a lambda's
+      //    return expression), and the retry does not type the invocation as javac does.
+      //
+      // Only the target type of outerTree is dropped.  The constraints between a nested
+      // invocation (or lambda or method reference) and the formal parameter that it is an
+      // argument to remain: the inference variables of outerTree are inferred from them, and
+      // dropping them would change the inference of outerTree, not just of the nested
+      // expression.  If they are unsatisfiable, then inference fails regardless of the target
+      // type of outerTree, and "type.arguments.not.inferred" is reported.
+      InvocationTypeInference retry =
+          new InvocationTypeInference(typeFactory, pathToExpression, false);
+      InferenceResult retryResult =
+          infer(retry, typeFactory, expressionTree, executableType, outerTree, outerMethodType);
+      if (!retryResult.inferenceFailed()
+          && retry.isQualifiersIncompatibleWithTarget()
+          && haveSameJavaTypes(
+              result, retryResult, typeFactory.getProcessingEnv().getTypeUtils())) {
+        retry.recordLambdaParameterTypes();
+        return retryResult;
+      }
+      java8Inference.recordLambdaParameterTypes();
+    }
+    return result;
+  }
+
+  /**
+   * Returns true if the two inference results infer type arguments for the same trees and type
+   * variables, and the Java types of corresponding type arguments are the same.
+   *
+   * @param result1 an inference result
+   * @param result2 an inference result
+   * @param types the type utilities
+   * @return true if the two results have the same Java types
+   */
+  private static boolean haveSameJavaTypes(
+      InferenceResult result1, InferenceResult result2, Types types) {
+    Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> results1 = result1.getResults();
+    Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> results2 = result2.getResults();
+    if (!results1.keySet().equals(results2.keySet())) {
+      return false;
+    }
+    for (Map.Entry<Tree, Map<TypeVariable, AnnotatedTypeMirror>> entry : results1.entrySet()) {
+      Map<TypeVariable, AnnotatedTypeMirror> typeArgs1 = entry.getValue();
+      Map<TypeVariable, AnnotatedTypeMirror> typeArgs2 = results2.get(entry.getKey());
+      if (typeArgs2 == null || !typeArgs1.keySet().equals(typeArgs2.keySet())) {
+        return false;
+      }
+      for (Map.Entry<TypeVariable, AnnotatedTypeMirror> typeArg1 : typeArgs1.entrySet()) {
+        AnnotatedTypeMirror typeArg2 = typeArgs2.get(typeArg1.getKey());
+        if (typeArg2 == null
+            || !types.isSameType(
+                typeArg1.getValue().getUnderlyingType(), typeArg2.getUnderlyingType())) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Performs the inference problem {@code java8Inference}, whose expression is {@code outerTree},
+   * and returns the type arguments of {@code expressionTree}.
+   *
+   * <p>If {@code java8Inference} uses the target type and either succeeds or cannot be retried
+   * without its target type, then this records the types of implicitly typed lambda parameters.
+   * Otherwise, the caller is responsible for recording them if it uses the result.
+   *
+   * @param java8Inference the inference problem to solve
+   * @param typeFactory the type factory
+   * @param expressionTree the expression whose type arguments are requested
+   * @param executableType the type of {@code expressionTree}'s method before type argument
+   *     substitution
+   * @param outerTree the outermost tree required to infer the type arguments of {@code
+   *     expressionTree}; see {@link #outerInference}
+   * @param outerMethodType the type of {@code outerTree}'s method before type argument
+   *     substitution, or null if {@code outerTree} is a member reference
+   * @return the result of inference
+   */
+  private InferenceResult infer(
+      InvocationTypeInference java8Inference,
+      AnnotatedTypeFactory typeFactory,
+      ExpressionTree expressionTree,
+      AnnotatedExecutableType executableType,
+      ExpressionTree outerTree,
+      @Nullable AnnotatedExecutableType outerMethodType) {
+    java8InferenceStack.push(java8Inference);
     try {
-      InvocationTypeInference java8Inference =
-          new InvocationTypeInference(typeFactory, pathToExpression);
-      java8InferenceStack.push(java8Inference);
-      pushedToInferenceStack = true;
       if (outerTree instanceof MemberReferenceTree outerMemberRef) {
         return java8Inference.infer(outerMemberRef);
       } else {
         assert outerMethodType != null
             : "@AssumeAssertion(nullness): outerTree is not a member reference";
         InferenceResult result = java8Inference.infer(outerTree, outerMethodType);
+        if (java8Inference.useTargetType
+            && (!result.inferenceFailed() || !java8Inference.isContextTargetTypeConstrained())) {
+          java8Inference.recordLambdaParameterTypes();
+        }
         if (!result.getResults().containsKey(expressionTree)
             && expressionTree instanceof MemberReferenceTree mrt) {
           // The inference of the outer tree did not create any inference variables for the
@@ -160,9 +280,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       }
       throw BugInCF.addLocation(outerTree, ex);
     } finally {
-      if (pushedToInferenceStack) {
-        java8InferenceStack.pop();
-      }
+      java8InferenceStack.pop();
     }
   }
 

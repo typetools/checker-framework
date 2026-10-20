@@ -52,6 +52,7 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SwitchExpressionScanner;
 import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchExpressionScanner;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -127,20 +128,80 @@ public class InvocationTypeInference {
   protected final Tree inferenceExpression;
 
   /**
+   * If false, the target type of {@link #inferenceExpression} is not used: inference is performed
+   * as if the invocation were not a poly expression. See {@link
+   * DefaultTypeArgumentInference#inferTypeArgs}.
+   */
+  protected final boolean useTargetType;
+
+  /**
+   * Creates an inference problem that uses the target type of the expression.
+   *
+   * @param factory the annotated type factory to use
+   * @param pathToExpression path to the expression for which inference is performed
+   */
+  public InvocationTypeInference(AnnotatedTypeFactory factory, TreePath pathToExpression) {
+    this(factory, pathToExpression, true);
+  }
+
+  /**
    * Creates an inference problem.
    *
    * @param factory the annotated type factory to use
    * @param pathToExpression path to the expression for which inference is performed
+   * @param useTargetType if false, ignore the target type of the expression for which inference is
+   *     performed
    */
   @SuppressWarnings({
     "nullness:argument", // Java8InferenceContext doesn't use "this" during construction
     "nullness:assignment", // Java8InferenceContext doesn't use "this" during construction
     "this-escape"
   })
-  public InvocationTypeInference(AnnotatedTypeFactory factory, TreePath pathToExpression) {
+  public InvocationTypeInference(
+      AnnotatedTypeFactory factory, TreePath pathToExpression, boolean useTargetType) {
     this.checker = factory.getChecker();
     this.context = new Java8InferenceContext(factory, pathToExpression, this);
     this.inferenceExpression = pathToExpression.getLeaf();
+    this.useTargetType = useTargetType;
+  }
+
+  /**
+   * True if {@link #infer(ExpressionTree, AnnotatedExecutableType)} has created constraints against
+   * the target type of {@link #inferenceExpression}, and that target type comes from the context of
+   * {@link #inferenceExpression} rather than from {@link AnnotatedTypeFactory#getDummyAssignedTo}.
+   */
+  private boolean contextTargetTypeConstrained = false;
+
+  /**
+   * True if {@link #useTargetType} is false, {@link #inferenceExpression} has a target type from
+   * its context, inference succeeded, and the inferred type of {@link #inferenceExpression} is
+   * assignable to that target type according to its Java type but not according to its qualifiers.
+   * A primitive target type is boxed before the comparison.
+   */
+  private boolean qualifiersIncompatibleWithTarget = false;
+
+  /**
+   * Returns true if {@link #infer(ExpressionTree, AnnotatedExecutableType)} has created constraints
+   * against the target type of the expression for which inference is performed, and that target
+   * type comes from the expression's context rather than from {@link
+   * AnnotatedTypeFactory#getDummyAssignedTo}.
+   *
+   * @return true if inference created constraints against a target type from the context
+   */
+  public boolean isContextTargetTypeConstrained() {
+    return contextTargetTypeConstrained;
+  }
+
+  /**
+   * Returns true if this inference problem ignored the target type, succeeded, and inferred a type
+   * for the expression whose Java type is compatible with the target type but whose qualifiers are
+   * not.
+   *
+   * @return true if inference without the target type inferred a type whose qualifiers are
+   *     incompatible with the target type
+   */
+  public boolean isQualifiersIncompatibleWithTarget() {
+    return qualifiersIncompatibleWithTarget;
   }
 
   /**
@@ -248,6 +309,9 @@ public class InvocationTypeInference {
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2">JLS
    * 18.5.2</a>.
    *
+   * <p>This method does not record the types of implicitly typed lambda parameters; the caller
+   * calls {@link #recordLambdaParameterTypes()} if it uses the result.
+   *
    * @param invocation invocation which needs inference
    * @param executableType type of the method invocation
    * @return the result of inference
@@ -259,6 +323,9 @@ public class InvocationTypeInference {
     AbstractExecutableType inferenceExecutableType =
         new AbstractInvocationType(executableType, e, invocation, context);
     ProperType target = context.inferenceTypeFactory.getTargetType();
+    boolean isPolyWithTarget = target != null && TreeUtils.isPolyExpression(invocation);
+    boolean targetFromContext =
+        TreePathUtil.getContextForPolyExpression(context.getPathToExpression()) != null;
     List<? extends ExpressionTree> args;
     if (invocation instanceof MethodInvocationTree mit) {
       args = mit.getArguments();
@@ -271,7 +338,9 @@ public class InvocationTypeInference {
             invocation, inferenceExecutableType, context);
     BoundSet b2 = createB2(inferenceExecutableType, args, map);
     BoundSet b3;
-    if (target != null && TreeUtils.isPolyExpression(invocation)) {
+    if (isPolyWithTarget && useTargetType) {
+      assert target != null : "@AssumeAssertion(nullness): isPolyWithTarget implies target != null";
+      contextTargetTypeConstrained = targetFromContext;
       b3 = createB3(b2, invocation, inferenceExecutableType, target, map);
     } else {
       b3 = b2;
@@ -280,7 +349,14 @@ public class InvocationTypeInference {
 
     BoundSet b4 = getB4(b3, c);
     b4.resolve();
-    recordLambdaParameterTypes();
+    if (isPolyWithTarget && !useTargetType && targetFromContext && !b4.annoInferenceFailed) {
+      assert target != null : "@AssumeAssertion(nullness): isPolyWithTarget implies target != null";
+      AbstractType returnType = inferenceExecutableType.getReturnType(map).applyInstantiations();
+      qualifiersIncompatibleWithTarget =
+          returnType.isProper()
+              && ((ProperType) returnType).isAssignable(target.boxType())
+                  == ConstraintSet.TRUE_ANNO_FAIL;
+    }
     return new InferenceResult(
         b4.getInstantiatedVariables(),
         b4.isUncheckedConversion(),
@@ -292,9 +368,10 @@ public class InvocationTypeInference {
    * Records, on the type factory, the type of every implicitly typed lambda parameter that this
    * inference problem determined.
    *
-   * <p>Call this only after resolution, so that the recorded types are final.
+   * <p>Call this only after {@link #infer(ExpressionTree, AnnotatedExecutableType)}, so that the
+   * recorded types are final, and only if the result of this inference problem is used.
    */
-  private void recordLambdaParameterTypes() {
+  public void recordLambdaParameterTypes() {
     for (VariableElement param : context.lambdaParamTargets.keySet()) {
       AnnotatedTypeMirror type = getLambdaParameterType(param);
       if (type == null) {

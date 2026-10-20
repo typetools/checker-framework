@@ -33,7 +33,7 @@ public class RawMemberReferenceTypeArgs {
   static void parameterizedSupertype(Stream<? extends List<@Nullable String>> lists) {
     Stream<? extends Iterator<@Nullable String>> nullable = lists.map(List::iterator);
     // The type argument came from P1, so it is @Nullable String and not @NonNull String.
-    // :: error: (assignment) :: error: (type.arguments.not.inferred)
+    // :: error: (assignment)
     Stream<? extends Iterator<@NonNull String>> nonNull = lists.map(List::iterator);
   }
 

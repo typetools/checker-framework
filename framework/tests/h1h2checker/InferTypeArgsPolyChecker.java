@@ -86,7 +86,6 @@ public class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
 
     // :: error: [type.arguments.not.inferred]
     String str = methodD2(os2, os1, "");
-    // :: error: [type.arguments.not.inferred]
     OUTER_SCOPE_TV osNaked3 = methodD2(os1, os1, os2);
   }
 
