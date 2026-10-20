@@ -4,9 +4,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BinaryOperator;
+import java.util.function.BiFunction;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
@@ -50,11 +51,49 @@ public abstract class AbstractQualifier {
   }
 
   /**
-   * Returns the instantiation of this.
+   * Returns the instantiation of this, or null if this is a qualifier variable with no
+   * instantiation.
    *
-   * @return the instantiation of this
+   * @return the instantiation of this, or null
    */
-  abstract AnnotationMirror getInstantiation();
+  abstract @Nullable AnnotationMirror getInstantiation();
+
+  /**
+   * Returns true if this is a polymorphic annotation that inference does not solve for.
+   *
+   * <p>A polymorphic annotation becomes a {@link QualifierVar} only when it appears in the
+   * signature of the invocation whose type arguments are being inferred. One that reaches inference
+   * some other way -- from the parameter type of an enclosing invocation, for instance -- is
+   * wrapped in a {@link Qualifier}, where it is indistinguishable from a concrete qualifier.
+   * Requiring such a qualifier to equal a concrete one always fails, even though the polymorphic
+   * qualifier could be instantiated to it.
+   *
+   * @return true if this is a polymorphic annotation that inference does not solve for
+   */
+  public boolean isUnsolvedPolymorphic() {
+    return false;
+  }
+
+  /**
+   * Returns the qualifiers in {@code quals} other than those for which {@link
+   * #isUnsolvedPolymorphic} holds, or {@code quals} itself if it contains no such qualifier.
+   *
+   * @param quals a set of qualifiers
+   * @return the qualifiers in {@code quals} that inference can compare against another qualifier
+   */
+  public static Set<? extends AbstractQualifier> removeUnsolvedPolymorphic(
+      Set<? extends AbstractQualifier> quals) {
+    Set<AbstractQualifier> result = null;
+    for (AbstractQualifier qual : quals) {
+      if (qual.isUnsolvedPolymorphic()) {
+        if (result == null) {
+          result = new HashSet<>(quals);
+        }
+        result.remove(qual);
+      }
+    }
+    return result == null ? quals : result;
+  }
 
   /**
    * Returns the least upper bounds of {@code quals}.
@@ -64,7 +103,7 @@ public abstract class AbstractQualifier {
    * @param context a context
    * @return the least upper bounds of {@code quals}
    */
-  public static Set<AnnotationMirror> lub(
+  public static AnnotationMirrorSet lub(
       Set<AbstractQualifier> quals, Java8InferenceContext context) {
     return combine(
         quals, context.typeFactory.getQualifierHierarchy()::leastUpperBoundQualifiersOnly);
@@ -76,9 +115,9 @@ public abstract class AbstractQualifier {
    * @param quals a set of qualifiers; can contain multiple qualifiers for multiple hierarchies and
    *     multiple qualifiers for a hierarchy
    * @param context a context
-   * @return the greatest lowest bounds of {@code quals}
+   * @return the greatest lower bounds of {@code quals}
    */
-  public static Set<AnnotationMirror> glb(
+  public static AnnotationMirrorSet glb(
       Set<AbstractQualifier> quals, Java8InferenceContext context) {
     return combine(
         quals, context.typeFactory.getQualifierHierarchy()::greatestLowerBoundQualifiersOnly);
@@ -89,22 +128,28 @@ public abstract class AbstractQualifier {
    *
    * @param quals a set of qualifiers; can contain multiple qualifiers for multiple hierarchies and
    *     multiple qualifiers for a hierarchy
-   * @param combine a functions that combines two {@code AnnotationMirror}s and returns a single
-   *     {@code AnnotationMirror}
+   * @param combine a functions that combines two {@code AnnotationMirror}s in the same hierarchy
+   *     and returns a single {@code AnnotationMirror}
    * @return the result of applying the {@code combine} function on {@code quals}
    */
-  private static Set<AnnotationMirror> combine(
-      Set<AbstractQualifier> quals, BinaryOperator<AnnotationMirror> combine) {
+  private static AnnotationMirrorSet combine(
+      Set<AbstractQualifier> quals,
+      BiFunction<AnnotationMirror, AnnotationMirror, @Nullable AnnotationMirror> combine) {
     Map<String, AnnotationMirror> m = new HashMap<>();
 
     for (AbstractQualifier qual : quals) {
-      AnnotationMirror lub = m.get(qual.hierarchyName);
-      if (lub != null) {
-        lub = combine.apply(lub, qual.getInstantiation());
-      } else {
-        lub = qual.getInstantiation();
+      AnnotationMirror qualAnno = qual.getInstantiation();
+      if (qualAnno != null) {
+        AnnotationMirror soFar = m.get(qual.hierarchyName);
+        if (soFar == null) {
+          m.put(qual.hierarchyName, qualAnno);
+        } else {
+          AnnotationMirror combined = combine.apply(soFar, qualAnno);
+          assert combined != null
+              : "@AssumeAssertion(nullness): soFar and qualAnno are in the same hierarchy";
+          m.put(qual.hierarchyName, combined);
+        }
       }
-      m.put(qual.hierarchyName, lub);
     }
     return new AnnotationMirrorSet(m.values());
   }
@@ -118,11 +163,10 @@ public abstract class AbstractQualifier {
    * @param annos a set of annotation mirrors
    * @param qualifierVars a map from polymorphic qualifiers to {@link QualifierVar}
    * @param context a context
-   * @return a set containing an {@code AbstractQualifier} for each annotation in {@code
-   *     qualifierVars}
+   * @return a set containing an {@code AbstractQualifier} for each annotation in {@code annos}
    */
   public static Set<AbstractQualifier> create(
-      Set<AnnotationMirror> annos,
+      Set<? extends AnnotationMirror> annos,
       AnnotationMirrorMap<QualifierVar> qualifierVars,
       Java8InferenceContext context) {
     if (qualifierVars.isEmpty()) {
@@ -141,14 +185,14 @@ public abstract class AbstractQualifier {
   }
 
   /**
-   * Creates new {@code Qualifier} is added for each annotation in {@code annos}.
+   * Creates a new {@code Qualifier} for each annotation in {@code annos}.
    *
    * @param annos a set of annotation mirrors
    * @param context a context
-   * @return new {@code Qualifier} is added for each annotation in {@code annos}
+   * @return a set containing a new {@code Qualifier} for each annotation in {@code annos}
    */
   private static Set<AbstractQualifier> create(
-      Set<AnnotationMirror> annos, Java8InferenceContext context) {
+      Set<? extends AnnotationMirror> annos, Java8InferenceContext context) {
     Set<AbstractQualifier> quals = new HashSet<>();
     for (AnnotationMirror anno : annos) {
       quals.add(new Qualifier(anno, context));

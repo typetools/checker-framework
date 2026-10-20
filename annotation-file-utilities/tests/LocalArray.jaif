@@ -13,4 +13,3 @@ class LocalArray:
         local 1 #2+8:
             type: @java.lang.Tainted
                 inner-type 0, 0: @java.lang.UnderInitialization
-

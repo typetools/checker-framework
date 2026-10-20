@@ -10,6 +10,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** An AnnotationProvider that is independent of any type hierarchy. */
 public class BasicAnnotationProvider implements AnnotationProvider {
+  /** Creates a BasicAnnotationProvider. */
+  public BasicAnnotationProvider() {}
 
   /**
    * Returns the AnnotationMirror, of the given class, used to annotate the element. Returns null if

@@ -7,4 +7,3 @@ package org.checkerframework.afu.annotator.tests:
 class FieldMultiple:
 
     field d: @java.lang.Tainted
-

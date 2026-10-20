@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
 // TODO: In a fix for https://tinyurl.com/cfissue/1917, add the text:  Every prefix expression is
-// also non-null; for example, {@code @EnsuresNonNullIf(expression="a.b.c", results=true)} implies
+// also non-null; for example, {@code @EnsuresNonNullIf(expression="a.b.c", result=true)} implies
 // that both {@code a.b} and {@code a.b.c} are non-null if the method returns {@code true}.
 /**
  * Indicates that the given expressions are non-null, if the method returns the given result (either
@@ -90,7 +90,7 @@ public @interface EnsuresNonNullIf {
   String[] expression();
 
   /**
-   * * A wrapper annotation that makes the {@link EnsuresNonNullIf} annotation repeatable.
+   * A wrapper annotation that makes the {@link EnsuresNonNullIf} annotation repeatable.
    *
    * <p>Programmers generally do not need to write this. It is created by Java when a programmer
    * writes more than one {@link EnsuresNonNullIf} annotation at the same location.

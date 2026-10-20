@@ -48,8 +48,11 @@ public class ReturnTypeCriterion implements Criterion {
       return false;
     }
 
-    Criteria.dbug.debug(
-        "ReturnTypeCriterion.isSatisfiedBy(%s); this=%s%n", Main.leafString(path), this.toString());
+    if (Criteria.dbug.isEnabled()) {
+      Criteria.dbug.debug(
+          "ReturnTypeCriterion.isSatisfiedBy(%s); this=%s%n",
+          Main.leafString(path), this.toString());
+    }
 
     do {
       if (path.getLeaf() instanceof MethodTree) {
@@ -61,7 +64,9 @@ public class ReturnTypeCriterion implements Criterion {
               if (!inClassCriterion.isSatisfiedBy(path)) {
                 break;
               }
-              Criteria.dbug.debug("ReturnTypeCriterion.isSatisfiedBy => true%n");
+              if (Criteria.dbug.isEnabled()) {
+                Criteria.dbug.debug("ReturnTypeCriterion.isSatisfiedBy => true%n");
+              }
               return true;
             }
             path = path.getParentPath();
@@ -72,7 +77,9 @@ public class ReturnTypeCriterion implements Criterion {
       path = path.getParentPath();
     } while (path != null && path.getLeaf() != null);
 
-    Criteria.dbug.debug("ReturnTypeCriterion.isSatisfiedBy => false%n");
+    if (Criteria.dbug.isEnabled()) {
+      Criteria.dbug.debug("ReturnTypeCriterion.isSatisfiedBy => false%n");
+    }
     return false;
   }
 

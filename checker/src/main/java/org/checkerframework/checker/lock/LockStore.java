@@ -15,7 +15,6 @@ import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -161,9 +160,8 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
   }
 
   @Override
-  public void updateForMethodCall(
-      MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, CFValue val) {
-    super.updateForMethodCall(n, atypeFactory, val);
+  public void updateForMethodCall(MethodInvocationNode n, CFValue val) {
+    super.updateForMethodCall(n, val);
     ExecutableElement method = n.getTarget().getMethod();
     // The following behavior is similar to setting the sideEffectsUnrefineAliases field of
     // LockAnnotatedTypeFactory, but it affects only the LockPossiblyHeld type hierarchy (not

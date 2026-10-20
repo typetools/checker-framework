@@ -27,7 +27,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  */
 @AnnotatedFor("nullness")
-public class I18nFormatUtil {
+public final class I18nFormatUtil {
 
   /** Do not instantiate. */
   private I18nFormatUtil() {
@@ -38,10 +38,11 @@ public class I18nFormatUtil {
    * Throws an exception if the format is not syntactically valid.
    *
    * @param format the format string to parse
+   * @throws IllegalFormatException if the format is not syntactically valid
    */
   @SuppressWarnings("nullness:argument") // It's not documented, but passing null as the
   // argument array is supported.
-  public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
+  public static void tryFormatSatisfiability(String format) {
     MessageFormat.format(format, (Object[]) null);
   }
 
@@ -49,10 +50,10 @@ public class I18nFormatUtil {
    * Returns a {@link I18nConversionCategory} for every conversion found in the format string.
    *
    * @param format the format string to parse
+   * @return a {@link I18nConversionCategory} for every conversion found in the format string
    * @throws IllegalFormatException if the format is not syntactically valid
    */
-  public static I18nConversionCategory[] formatParameterCategories(String format)
-      throws IllegalFormatException {
+  public static I18nConversionCategory[] formatParameterCategories(String format) {
     tryFormatSatisfiability(format);
     I18nConversion[] cs = MessageFormatParser.parse(format);
 
@@ -136,8 +137,10 @@ public class I18nFormatUtil {
     }
   }
 
-  private static class MessageFormatParser {
+  /** Parser for I18n message format strings. */
+  private static final class MessageFormatParser {
 
+    /** The maximum offset into the format arguments observed so far. */
     public static int maxOffset;
 
     /** The locale to use for formatting numbers and dates. Is set in {@link #parse}. */
@@ -184,15 +187,26 @@ public class I18nFormatUtil {
       "", "short", "medium", "long", "full"
     };
 
+    /** Do not instantiate. */
+    private MessageFormatParser() {
+      throw new Error("Do not instantiate");
+    }
+
+    /**
+     * Given a format string, returns the conversion categories in it.
+     *
+     * @param pattern a format string
+     * @return the conversion categories in the format string
+     */
     @EnsuresNonNull({"categories", "argumentIndices", "locale"})
     public static I18nConversion[] parse(String pattern) {
-      MessageFormatParser.categories = new ArrayList<>();
-      MessageFormatParser.argumentIndices = new ArrayList<>();
-      MessageFormatParser.locale = Locale.getDefault(Locale.Category.FORMAT);
+      categories = new ArrayList<>();
+      argumentIndices = new ArrayList<>();
+      locale = Locale.getDefault(Locale.Category.FORMAT);
       applyPattern(pattern);
 
-      I18nConversion[] ret = new I18nConversion[MessageFormatParser.numFormat];
-      for (int i = 0; i < MessageFormatParser.numFormat; i++) {
+      I18nConversion[] ret = new I18nConversion[numFormat];
+      for (int i = 0; i < numFormat; i++) {
         ret[i] = new I18nConversion(argumentIndices.get(i), categories.get(i));
       }
       return ret;
@@ -207,7 +221,7 @@ public class I18nFormatUtil {
       segments[SEG_RAW] = new StringBuilder();
 
       int part = SEG_RAW;
-      MessageFormatParser.numFormat = 0;
+      numFormat = 0;
       boolean inQuote = false;
       int braceStack = 0;
       maxOffset = -1;

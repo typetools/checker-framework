@@ -8,20 +8,25 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
+import org.checkerframework.checker.modifiability.qual.Growable;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
+import org.checkerframework.checker.modifiability.qual.Replaceable;
+import org.checkerframework.checker.modifiability.qual.Shrinkable;
 import org.plumelib.util.MapsP;
 
 /** An annotated class. */
 public class AClass extends ADeclaration {
   /** The class's annotated type parameter bounds. */
-  public final VivifyingMap<BoundLocation, ATypeElement> bounds =
+  public final @Growable @Replaceable @Shrinkable VivifyingMap<BoundLocation, ATypeElement> bounds =
       ATypeElement.<BoundLocation>newVivifyingLHMap_ATE();
 
-  // -1 maps to superclass, non-negative integers map to implemented interfaces
-  public final VivifyingMap<TypeIndexLocation, ATypeElement> extendsImplements =
+  /** -1 maps to superclass, non-negative integers map to implemented or extended interfaces. */
+  public final @Shrinkable VivifyingMap<TypeIndexLocation, ATypeElement> extendsImplements =
       ATypeElement.<TypeIndexLocation>newVivifyingLHMap_ATE();
 
   /**
@@ -30,16 +35,22 @@ public class AClass extends ADeclaration {
    * The annotation scene library does not validate the keys, nor does it check that annotated
    * subelements of the {@link AMethod}s exist in the signature.
    */
-  public final VivifyingMap<String, AMethod> methods = createMethodMap();
+  public final @Growable @Shrinkable VivifyingMap<String, AMethod> methods = createMethodMap();
 
-  public final VivifyingMap<Integer, ABlock> staticInits = createInitBlockMap();
+  /** The class's annotated static initializer blocks; map key is the index of the block. */
+  public final @Growable @Shrinkable VivifyingMap<Integer, ABlock> staticInits =
+      createInitBlockMap();
 
-  public final VivifyingMap<Integer, ABlock> instanceInits = createInitBlockMap();
+  /** The class's annotated instance initializer blocks; map key is the index of the block. */
+  public final @Growable @Shrinkable VivifyingMap<Integer, ABlock> instanceInits =
+      createInitBlockMap();
 
   /** The class's annotated fields; map key is field name. */
-  public final VivifyingMap<String, AField> fields = AField.<String>newVivifyingLHMap_AF();
+  public final @Growable @Shrinkable VivifyingMap<String, AField> fields =
+      AField.<String>newVivifyingLHMap_AF();
 
-  public final VivifyingMap<String, AExpression> fieldInits = createFieldInitMap();
+  /** The class's annotated field initializers; map key is field name. */
+  public final @Growable VivifyingMap<String, AExpression> fieldInits = createFieldInitMap();
 
   /**
    * The type element representing the class. Clients must call {@link #setTypeElement(TypeElement)}
@@ -51,7 +62,7 @@ public class AClass extends ADeclaration {
   public final String className;
 
   /** The simple class names any of this class's outer classes (or this class) that are enums. */
-  private final HashSet<String> enums = new HashSet<>();
+  private final @Growable HashSet<String> enums = new HashSet<>();
 
   /** The enum constants of this class, or null if this class is not an enum. */
   private /*@MonotonicNonNull*/ List<VariableElement> enumConstants = null;
@@ -59,15 +70,15 @@ public class AClass extends ADeclaration {
   /**
    * The simple class names any of this class's outer classes (or this class) that are annotations.
    */
-  private final HashSet<String> annotationTypes = new HashSet<>();
+  private final @Growable HashSet<String> annotationTypes = new HashSet<>();
 
   /**
    * The simple class names any of this class's outer classes (or this class) that are interfaces.
    */
-  private final HashSet<String> interfaces = new HashSet<>();
+  private final @Growable HashSet<String> interfaces = new HashSet<>();
 
   /** The simple class names any of this class's outer classes (or this class) that are records. */
-  private final HashSet<String> records = new HashSet<>();
+  private final @Growable HashSet<String> records = new HashSet<>();
 
   // debug fields to keep track of all classes created
   // private static List<AClass> debugAllClasses = new ArrayList<>();
@@ -100,6 +111,17 @@ public class AClass extends ADeclaration {
     copyMapContents(clazz.instanceInits, instanceInits);
     copyMapContents(clazz.methods, methods);
     copyMapContents(clazz.staticInits, staticInits);
+    // The following fields are not annotations, but information about the class declaration.
+    // A copy needs them too, because clients such as the Checker Framework's stub file writer
+    // consult them when printing a copy of a scene.
+    typeElement = clazz.typeElement;
+    enums.addAll(clazz.enums);
+    if (clazz.enumConstants != null) {
+      enumConstants = new ArrayList<>(clazz.enumConstants);
+    }
+    annotationTypes.addAll(clazz.annotationTypes);
+    interfaces.addAll(clazz.interfaces);
+    records.addAll(clazz.records);
   }
 
   @Override
@@ -123,13 +145,7 @@ public class AClass extends ADeclaration {
 
   @Override
   public int hashCode() {
-    return super.hashCode()
-        + bounds.hashCode()
-        + methods.hashCode()
-        + fields.hashCode()
-        + staticInits.hashCode()
-        + instanceInits.hashCode()
-        + extendsImplements.hashCode();
+    return Objects.hash(super.hashCode(), className, bounds, methods, fields, extendsImplements);
   }
 
   @Override
@@ -163,43 +179,62 @@ public class AClass extends ADeclaration {
     return unparse("");
   }
 
+  /**
+   * Format this class, indenting each line with {@code linePrefix}.
+   *
+   * @param linePrefix the indentation to use on each line
+   * @return a formatted version of this class
+   */
   public String unparse(String linePrefix) {
+    // Cannot use StringJoiner because MapsP.mapToStringMultiLine side-effects a StringBuffer.
     StringBuilder sb = new StringBuilder();
     sb.append(linePrefix);
     sb.append(toString());
     sb.append(System.lineSeparator());
     sb.append(linePrefix);
-    sb.append("Annotations:" + System.lineSeparator());
+    sb.append("Annotations:");
+    sb.append(System.lineSeparator());
     for (Annotation a : tlAnnotationsHere) {
       sb.append(linePrefix);
-      sb.append("  " + a + System.lineSeparator());
+      sb.append("  ");
+      sb.append(a);
+      sb.append(System.lineSeparator());
     }
     sb.append(linePrefix);
-    sb.append("Bounds:" + System.lineSeparator());
+    sb.append("Bounds:");
+    sb.append(System.lineSeparator());
     MapsP.mapToStringMultiLine(sb, bounds, linePrefix + "  ");
     sb.append(linePrefix);
-    sb.append("Extends/implements:" + System.lineSeparator());
+    sb.append("Extends/implements:");
+    sb.append(System.lineSeparator());
     MapsP.mapToStringMultiLine(sb, extendsImplements, linePrefix + "  ");
     sb.append(linePrefix);
-    sb.append("Fields:" + System.lineSeparator());
+    sb.append("Fields:");
+    sb.append(System.lineSeparator());
     MapsP.mapToStringMultiLine(sb, fields, linePrefix + "  ");
     sb.append(linePrefix);
-    sb.append("Field Initializers:" + System.lineSeparator());
+    sb.append("Field Initializers:");
+    sb.append(System.lineSeparator());
     MapsP.mapToStringMultiLine(sb, fieldInits, linePrefix + "  ");
     sb.append(linePrefix);
-    sb.append("Static Initializers:" + System.lineSeparator());
+    sb.append("Static Initializers:");
+    sb.append(System.lineSeparator());
     MapsP.mapToStringMultiLine(sb, staticInits, linePrefix + "  ");
     sb.append(linePrefix);
-    sb.append("Instance Initializers:" + System.lineSeparator());
+    sb.append("Instance Initializers:");
+    sb.append(System.lineSeparator());
     MapsP.mapToStringMultiLine(sb, instanceInits, linePrefix + "  ");
     sb.append(linePrefix);
-    sb.append("AST Typecasts:" + System.lineSeparator());
+    sb.append("AST Typecasts:");
+    sb.append(System.lineSeparator());
     MapsP.mapToStringMultiLine(sb, insertTypecasts, linePrefix + "  ");
     sb.append(linePrefix);
-    sb.append("AST Annotations:" + System.lineSeparator());
+    sb.append("AST Annotations:");
+    sb.append(System.lineSeparator());
     MapsP.mapToStringMultiLine(sb, insertAnnotations, linePrefix + "  ");
     sb.append(linePrefix);
-    sb.append("Methods:" + System.lineSeparator());
+    sb.append("Methods:");
+    sb.append(System.lineSeparator());
     MapsP.mapToStringMultiLine(sb, methods, linePrefix + "  ");
     return sb.toString();
   }
@@ -211,8 +246,15 @@ public class AClass extends ADeclaration {
 
   // Static methods
 
-  private static VivifyingMap<String, AMethod> createMethodMap() {
-    return new VivifyingMap<String, AMethod>(new LinkedHashMap<>()) {
+  /**
+   * Returns a new map from method signature to {@link AMethod}, which vivifies missing values.
+   *
+   * @return a new vivifying map from method signature to {@link AMethod}
+   */
+  @SuppressWarnings("modifiability:return") // The anonymous subclass's constructor result
+  // is the top qualifier, so it does not propagate the backing map's @Modifiable type.
+  private static @Modifiable VivifyingMap<String, AMethod> createMethodMap() {
+    return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public AMethod createValueFor(String k) {
         return new AMethod(k);
@@ -225,8 +267,16 @@ public class AClass extends ADeclaration {
     };
   }
 
-  private static VivifyingMap<Integer, ABlock> createInitBlockMap() {
-    return new VivifyingMap<Integer, ABlock>(new LinkedHashMap<>()) {
+  /**
+   * Returns a new map from initializer block index to {@link ABlock}, which vivifies missing
+   * values.
+   *
+   * @return a new vivifying map from initializer block index to {@link ABlock}
+   */
+  @SuppressWarnings("modifiability:return") // The anonymous subclass's constructor result
+  // is the top qualifier, so it does not propagate the backing map's @Modifiable type.
+  private static @Modifiable VivifyingMap<Integer, ABlock> createInitBlockMap() {
+    return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public ABlock createValueFor(Integer k) {
         return new ABlock(String.valueOf(k));
@@ -239,8 +289,16 @@ public class AClass extends ADeclaration {
     };
   }
 
-  private static VivifyingMap<String, AExpression> createFieldInitMap() {
-    return new VivifyingMap<String, AExpression>(new LinkedHashMap<>()) {
+  /**
+   * Returns a new map from field name to the {@link AExpression} for its initializer, which
+   * vivifies missing values.
+   *
+   * @return a new vivifying map from field name to field initializer
+   */
+  @SuppressWarnings("modifiability:return") // The anonymous subclass's constructor result
+  // is the top qualifier, so it does not propagate the backing map's @Modifiable type.
+  private static @Modifiable VivifyingMap<String, AExpression> createFieldInitMap() {
+    return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public AExpression createValueFor(String k) {
         return new AExpression(k);

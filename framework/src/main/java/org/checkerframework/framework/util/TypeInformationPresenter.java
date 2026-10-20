@@ -221,7 +221,9 @@ public class TypeInformationPresenter {
      * @return a message range corresponds to the tree
      */
     private @Nullable MessageRange computeMessageRange(Tree tree) {
+      @SuppressWarnings("removal") // getStartPosition(Tree) requires JDK 27
       long startPos = sourcePositions.getStartPosition(currentRoot, tree);
+      @SuppressWarnings("removal") // getEndPosition(Tree) requires JDK 27
       long endPos = sourcePositions.getEndPosition(currentRoot, tree);
       if (startPos == Diagnostic.NOPOS || endPos == Diagnostic.NOPOS) {
         // The tree doesn't exist in the source file.
@@ -441,7 +443,7 @@ public class TypeInformationPresenter {
       // the declared type of the functional interface
       reportTreeType(tree, factory.getAnnotatedType(tree), MessageKind.DECLARED_TYPE);
       // the use type of the functional interface
-      reportTreeType(tree, factory.getFnInterfaceFromTree(tree).first);
+      reportTreeType(tree, factory.getFnInterfaceFromTree(tree).functionalInterfaceType());
       return super.visitMemberReference(tree, unused);
     }
 

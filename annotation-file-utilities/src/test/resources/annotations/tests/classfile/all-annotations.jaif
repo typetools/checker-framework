@@ -4,13 +4,13 @@ annotation @A: @Retention(RUNTIME)
 package annotations.tests.classfile.foo:
 annotation @B: @Retention(RUNTIME)
 	String value
-	
+
 
 package annotations.tests.classfile.foo:
 annotation @C: @Retention(RUNTIME)
 	int fieldA
 	String fieldB
-	
+
 package annotations.tests.classfile.foo:
 annotation @D: @Retention(RUNTIME)
 	int fieldA
@@ -34,4 +34,3 @@ annotation @G: @Retention(RUNTIME)
 	boolean[] fieldC
 	int fieldD
 	int fieldE
-	

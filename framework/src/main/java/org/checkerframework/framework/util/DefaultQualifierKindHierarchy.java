@@ -27,7 +27,8 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.MapsP;
+import org.plumelib.util.StringsP;
 
 /**
  * This is the default implementation of {@link QualifierKindHierarchy}.
@@ -217,11 +218,11 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
               "PolymorphicQualifier, %s, has to specify a type hierarchy in its"
                   + " @PolymorphicQualifier meta-annotation, if more than one exists;"
                   + " top types: [%s].",
-              qualifierKind, StringsPlume.join(", ", tops));
+              qualifierKind, StringsP.join(", ", tops));
         } else if (!tops.contains(qualifierKind.top)) {
           throw new TypeSystemError(
               "Polymorphic qualifier %s has invalid top %s. Top qualifiers: %s",
-              qualifierKind, qualifierKind.top, StringsPlume.join(", ", tops));
+              qualifierKind, qualifierKind.top, StringsP.join(", ", tops));
         }
       }
     }
@@ -229,7 +230,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
     if (bottoms.size() != tops.size()) {
       throw new TypeSystemError(
           "Number of tops not equal to number of bottoms: Tops: [%s] Bottoms: [%s]",
-          StringsPlume.join(", ", tops), StringsPlume.join(", ", bottoms));
+          StringsP.join(", ", tops), StringsP.join(", ", bottoms));
     }
   }
 
@@ -244,8 +245,9 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
   protected Map<@Interned @CanonicalName String, DefaultQualifierKind> createQualifierKinds(
       @UnderInitialization DefaultQualifierKindHierarchy this,
       Collection<Class<? extends Annotation>> qualifierClasses) {
-    TreeMap<@Interned @CanonicalName String, DefaultQualifierKind> nameToQualifierKind =
-        new TreeMap<>();
+    // This is a HashMap, not a TreeMap, because the keys are long names with a long shared prefix.
+    HashMap<@Interned @CanonicalName String, DefaultQualifierKind> nameToQualifierKind =
+        new HashMap<>(MapsP.mapCapacity(qualifierClasses.size()));
     for (Class<? extends Annotation> clazz : qualifierClasses) {
       @SuppressWarnings("interning") // uniqueness is tested immediately below
       @Interned DefaultQualifierKind qualifierKind = new DefaultQualifierKind(clazz);
@@ -291,7 +293,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
           throw new TypeSystemError(
               "In %s, @SubtypeOf(%s) argument isn't in the hierarchy."
                   + " Have you mis-defined createSupportedTypeQualifiers()? Qualifiers: [%s]",
-              qualifierKind, superName, StringsPlume.join(", ", qualifierKinds));
+              qualifierKind, superName, StringsP.join(", ", qualifierKinds));
         }
         directSupers.add(superQualifier);
       }
@@ -407,7 +409,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         } else {
           throw new TypeSystemError(
               "Polymorphic qualifier %s did not specify a top annotation class. Tops: [%s]",
-              qualifierKind, StringsPlume.join(", ", tops));
+              qualifierKind, StringsP.join(", ", tops));
         }
       } else {
         throw new TypeSystemError(
@@ -462,7 +464,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
         }
         if (qualifierKind.bottom == null) {
           qualifierKind.bottom = bot;
-        } else if (qualifierKind.top != bot) {
+        } else if (qualifierKind.bottom != bot) {
           throw new TypeSystemError(
               "Multiple bottoms found for qualifier %s. Bottoms: %s and %s.",
               qualifierKind, bot, qualifierKind.bottom);
@@ -568,7 +570,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
     Set<? extends QualifierKind> lubs = findLowestQualifiers(allSuperTypes);
     if (lubs.size() != 1) {
       throw new TypeSystemError(
-          "lub(%s, %s) should have size 1: [%s]", qual1, qual2, StringsPlume.join(", ", lubs));
+          "lub(%s, %s) should have size 1: [%s]", qual1, qual2, StringsP.join(", ", lubs));
     }
     QualifierKind lub = lubs.iterator().next();
     if (lub.isPoly() && !qual1.isPoly() && !qual2.isPoly()) {
@@ -642,7 +644,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
     Set<QualifierKind> glbs = findHighestQualifiers(allSubTypes);
     if (glbs.size() != 1) {
       throw new TypeSystemError(
-          "glb(%s, %s) should have size 1: [%s]", qual1, qual2, StringsPlume.join(", ", glbs));
+          "glb(%s, %s) should have size 1: [%s]", qual1, qual2, StringsP.join(", ", glbs));
     }
     QualifierKind glb = glbs.iterator().next();
     if (glb.isPoly() && !qual1.isPoly() && !qual2.isPoly()) {

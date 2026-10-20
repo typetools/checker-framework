@@ -7,4 +7,3 @@ class ClassAnnotationParameter:
 
     method foo()V: @java.lang.TestAnnotation(value=java.lang.Object.class)
         return:
-

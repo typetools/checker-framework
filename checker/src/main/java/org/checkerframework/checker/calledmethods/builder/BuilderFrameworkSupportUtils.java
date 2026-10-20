@@ -4,7 +4,7 @@ import java.util.Locale;
 import javax.lang.model.type.TypeMirror;
 
 /** A utility class of static methods used in supporting builder-generation frameworks. */
-public class BuilderFrameworkSupportUtils {
+public final class BuilderFrameworkSupportUtils {
   /** This class is non-instantiable. */
   private BuilderFrameworkSupportUtils() {
     throw new Error("Do not instantiate");

@@ -10,6 +10,19 @@ import java.nio.charset.StandardCharsets;
 /** Utilities for executing external processes. */
 public class ExecUtil {
 
+  /** Do not instantiate. */
+  private ExecUtil() {
+    throw new Error("Do not instantiate");
+  }
+
+  /**
+   * Runs the given command in a new process
+   *
+   * @param cmd the command
+   * @param std a stream to capture the standard output of the process
+   * @param err a stream to capture the standard error of the process
+   * @return the exit status of the process
+   */
   public static int execute(String[] cmd, OutputStream std, OutputStream err) {
 
     Redirection outRedirect = new Redirection(std, BLOCK_SIZE);

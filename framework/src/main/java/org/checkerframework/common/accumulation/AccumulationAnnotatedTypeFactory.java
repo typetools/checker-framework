@@ -38,7 +38,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * An annotated type factory for an accumulation checker.
@@ -203,7 +203,7 @@ public abstract class AccumulationAnnotatedTypeFactory
    */
   public AnnotationMirror createAccumulatorAnnotation(List<String> values) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, accumulator);
-    builder.setValue("value", CollectionsPlume.withoutDuplicatesSorted(values));
+    builder.setValue("value", CollectionsP.withoutDuplicatesSorted(values));
     return builder.build();
   }
 

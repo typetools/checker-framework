@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.StringJoiner;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Implementation of a {@link TransferResult} with two non-exceptional stores. The 'then' store
@@ -139,9 +139,9 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
   public String toString() {
     StringJoiner result = new StringJoiner(System.lineSeparator());
     result.add("RegularTransferResult(");
-    result.add("  resultValue = " + StringsPlume.indentLinesExceptFirst(2, resultValue) + ",");
-    result.add("  thenStore = " + StringsPlume.indentLinesExceptFirst(2, thenStore) + ",");
-    result.add("  elseStore = " + StringsPlume.indentLinesExceptFirst(2, elseStore));
+    result.add("  resultValue = " + StringsP.indentLinesExceptFirst(2, resultValue) + ",");
+    result.add("  thenStore = " + StringsP.indentLinesExceptFirst(2, thenStore) + ",");
+    result.add("  elseStore = " + StringsP.indentLinesExceptFirst(2, elseStore));
     result.add(")");
     return result.toString();
   }

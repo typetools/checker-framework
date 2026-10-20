@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * meta-annotation causes the declaration annotation to be inherited even if it is used to annotate
  * something other than a class.
  *
- * <p>If an annotation type is meta-annotation with {@link java.lang.annotation.Inherited}, that
+ * <p>If an annotation type is meta-annotated with {@link java.lang.annotation.Inherited}, that
  * annotation will only be inherited when written on a class.
  */
 @Documented

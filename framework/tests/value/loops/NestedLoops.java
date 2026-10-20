@@ -1,9 +1,5 @@
 import org.checkerframework.common.value.qual.IntRange;
 
-// Because the analysis of loops isn't precise enough, the Value Checker issues
-// warnings on this test case. So, suppress those warnings, but run the tests
-// to make sure that dataflow reaches a fixed point.
-@SuppressWarnings("value")
 public class NestedLoops {
   void test1() {
     int doWhileIndex = 0;

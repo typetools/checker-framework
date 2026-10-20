@@ -3,8 +3,10 @@ package org.checkerframework.afu.scenelib.el;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
 
 /**
  * An {@link AElement} that represents a type might have annotations on inner types ("generic/array"
@@ -21,7 +23,8 @@ import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
 public class ATypeElement extends AElement {
 
   /** The annotated inner types; map key is the inner type location. */
-  public final VivifyingMap<List<TypePathEntry>, ATypeElement> innerTypes = newVivifyingLHMap_ATE();
+  public final @Modifiable VivifyingMap<List<TypePathEntry>, ATypeElement> innerTypes =
+      newVivifyingLHMap_ATE();
 
   /**
    * Construct a new ATypeElement from its description.
@@ -66,7 +69,7 @@ public class ATypeElement extends AElement {
   @Override
   public int hashCode() {
     checkRep();
-    return tlAnnotationsHere.hashCode() + innerTypes.hashCode();
+    return Objects.hash(tlAnnotationsHere, innerTypes);
   }
 
   @Override
@@ -91,18 +94,17 @@ public class ATypeElement extends AElement {
     sb.append(" : ");
     for (Annotation a : tlAnnotationsHere) {
       sb.append(a.toString());
-      sb.append(" ");
+      sb.append(' ');
     }
-    sb.append("{");
-    String linePrefix = "  ";
+    sb.append('{');
     for (Map.Entry<List<TypePathEntry>, ATypeElement> entry : innerTypes.entrySet()) {
-      sb.append(linePrefix);
+      sb.append("  ");
       sb.append(entry.getKey().toString());
       sb.append(" => ");
       sb.append(entry.getValue().toString());
       sb.append(lineSep);
     }
-    sb.append("}");
+    sb.append('}');
     return sb.toString();
   }
 
@@ -111,8 +113,17 @@ public class ATypeElement extends AElement {
     return v.visitTypeElement(this, t);
   }
 
-  static <K extends Object> VivifyingMap<K, ATypeElement> newVivifyingLHMap_ATE() {
-    return new VivifyingMap<K, ATypeElement>(new LinkedHashMap<>()) {
+  /**
+   * Returns a new {@link LinkedHashMap}-backed map from keys to {@link ATypeElement}s, which
+   * vivifies missing values.
+   *
+   * @param <K> the type of the map keys
+   * @return a new vivifying map from keys to {@link ATypeElement}s
+   */
+  @SuppressWarnings("modifiability:return") // The anonymous subclass's constructor result
+  // is the top qualifier, so it does not propagate the backing map's @Modifiable type.
+  static <K extends Object> @Modifiable VivifyingMap<K, ATypeElement> newVivifyingLHMap_ATE() {
+    return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public ATypeElement createValueFor(K k) {
         return new ATypeElement(k.toString());

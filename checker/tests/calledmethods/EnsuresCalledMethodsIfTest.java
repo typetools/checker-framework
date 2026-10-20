@@ -49,8 +49,6 @@ class EnsuresCalledMethodsIfTest {
 
   void close() throws IOException {}
 
-  @SuppressWarnings(
-      "calledmethods") // like the JDK's isOpen methods; makes this test case self-contained
   @EnsuresCalledMethodsIf(
       expression = "this",
       result = false,

@@ -9,7 +9,7 @@ import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * A node for new array creation.
@@ -74,16 +74,17 @@ public class ArrayCreationNode extends Node {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("new " + type);
+    sb.append("new ");
+    sb.append(type);
     if (!dimensions.isEmpty()) {
       sb.append(" (");
-      sb.append(StringsPlume.join(", ", dimensions));
-      sb.append(")");
+      sb.append(StringsP.join(", ", dimensions));
+      sb.append(')');
     }
     if (!initializers.isEmpty() || dimensions.isEmpty()) {
       sb.append(" {");
-      sb.append(StringsPlume.join(", ", initializers));
-      sb.append("}");
+      sb.append(StringsP.join(", ", initializers));
+      sb.append('}');
     }
     return sb.toString();
   }

@@ -3,9 +3,10 @@ package org.checkerframework.checker.i18nformatter;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
@@ -108,12 +109,13 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
           } else {
             // If the classloader didn't manage to load the file, try whether a
             // FileInputStream works. For absolute paths this might help.
-            try (InputStream fis = new FileInputStream(propfile)) {
+            try (InputStream fis = Files.newInputStream(Paths.get(propfile))) {
               prop.load(fis);
             } catch (FileNotFoundException e) {
+              // The Property Key Checker's `propertykeychecker.filenotfound` message key
+              // describes this problem, but it cannot be used here: issuing a diagnostic
+              // requires an AST node, and this problem is not associated with one.
               System.err.println("Couldn't find the properties file: " + propfile);
-              // report(null, "propertykeychecker.filenotfound", propfile);
-              // return Collections.emptySet();
               continue;
             }
           }

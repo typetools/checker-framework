@@ -30,12 +30,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 import org.junit.Assert;
-import org.plumelib.util.CollectionsPlume;
-import org.plumelib.util.StringsPlume;
-import org.plumelib.util.SystemPlume;
+import org.plumelib.util.CollectionsP;
+import org.plumelib.util.StringsP;
+import org.plumelib.util.SystemP;
 
 /** Utilities for testing. */
-public class TestUtilities {
+public final class TestUtilities {
 
   /** Do not instantiate. */
   private TestUtilities() {
@@ -203,7 +203,7 @@ public class TestUtilities {
    * @return the file names, each with {@code parent} prepended
    */
   public static List<Object[]> findFilesInParent(File parent, String... fileNames) {
-    return CollectionsPlume.mapList(
+    return CollectionsP.mapList(
         (String fileName) -> new Object[] {new File(parent, fileName)}, fileNames);
   }
 
@@ -352,9 +352,16 @@ public class TestUtilities {
     return new File("tests", fileRelativeToTestsDir);
   }
 
+  /**
+   * Returns the file that contains the expected output for the given test file: a file in the same
+   * directory, with the ".java" extension replaced by ".goal". The result might not exist.
+   *
+   * @param testFile a Java file that is a test input
+   * @return the file that contains the expected output for {@code testFile}
+   */
   public static File findComparisonFile(File testFile) {
     File comparisonFile =
-        new File(testFile.getParent(), testFile.getName().replace(".java", ".out"));
+        new File(testFile.getParent(), testFile.getName().replace(".java", ".goal"));
     return comparisonFile;
   }
 
@@ -429,19 +436,19 @@ public class TestUtilities {
       pw.println("#Missing: " + missing.size() + "      #Unexpected: " + unexpected.size());
 
       pw.println("Expected:");
-      pw.println(StringsPlume.joinLines(expected));
+      pw.println(StringsP.joinLines(expected));
       pw.println();
 
       pw.println("Actual:");
-      pw.println(StringsPlume.joinLines(actual));
+      pw.println(StringsP.joinLines(actual));
       pw.println();
 
       pw.println("Missing:");
-      pw.println(StringsPlume.joinLines(missing));
+      pw.println(StringsP.joinLines(missing));
       pw.println();
 
       pw.println("Unexpected:");
-      pw.println(StringsPlume.joinLines(unexpected));
+      pw.println(StringsP.joinLines(unexpected));
       pw.println();
 
       pw.println();
@@ -521,9 +528,9 @@ public class TestUtilities {
   public static void assertTestDidNotFail(TypecheckResult testResult) {
     if (testResult.didTestFail()) {
       if (getShouldEmitDebugInfo()) {
-        System.out.println("---------------- start of javac ouput ----------------");
+        System.out.println("---------------- start of javac output ----------------");
         System.out.println(testResult.getCompilationResult().getJavacOutput());
-        System.out.println("---------------- end of javac ouput ----------------");
+        System.out.println("---------------- end of javac output ----------------");
       } else {
         System.out.println("To see the javac command line and output, run with: -Pemit.test.debug");
       }
@@ -551,7 +558,8 @@ public class TestUtilities {
    *
    * @return the value of system property "emit.test.debug"
    */
+  @SuppressWarnings("PMD.BooleanGetMethodName")
   public static boolean getShouldEmitDebugInfo() {
-    return SystemPlume.getBooleanSystemProperty("emit.test.debug");
+    return SystemP.getBooleanSystemProperty("emit.test.debug");
   }
 }

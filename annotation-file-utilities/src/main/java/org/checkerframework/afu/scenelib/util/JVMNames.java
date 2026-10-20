@@ -20,7 +20,7 @@ import org.plumelib.reflection.Signatures;
 // TODO: Move much of this class to reflection-util, if no special classpath manipulation is
 // required to get the com.sun and javax.lang classes on the classpath.
 /** Class to generate class formatted names from Trees. */
-public class JVMNames {
+public final class JVMNames {
 
   /** Do not instantiate. */
   private JVMNames() {
@@ -39,7 +39,7 @@ public class JVMNames {
     StringBuilder builder = new StringBuilder();
     String returnTypeStr;
     builder.append(methodTree.getName());
-    builder.append("(");
+    builder.append('(');
 
     if (methodElement == null) {
       // use source AST in lieu of symbol table
@@ -63,7 +63,7 @@ public class JVMNames {
         builder.append(typeToJvmlString(vt));
       }
     }
-    builder.append(")");
+    builder.append(')');
     builder.append(returnTypeStr);
     return builder.toString();
   }
@@ -79,7 +79,7 @@ public class JVMNames {
     StringBuilder builder = new StringBuilder();
     String returnTypeStr;
     builder.append(methodElement.getSimpleName());
-    builder.append("(");
+    builder.append('(');
     TypeMirror returnType = methodElement.getReturnType();
     returnTypeStr = typeToJvmlString((Type) returnType);
     for (VariableElement ve : methodElement.getParameters()) {
@@ -89,7 +89,7 @@ public class JVMNames {
       }
       builder.append(typeToJvmlString(vt));
     }
-    builder.append(")");
+    builder.append(')');
     builder.append(returnTypeStr);
     return builder.toString();
   }
@@ -108,7 +108,7 @@ public class JVMNames {
       // replace w/erasure (== erasure of 1st conjunct)
       return typeToJvmlString(type.tsym.erasure_field);
     } else if (type.getKind() == TypeKind.VOID) {
-      return "V"; // special case since UtilPlume doesn't handle void
+      return "V"; // special case since UtilP doesn't handle void
     } else {
       return Signatures.binaryNameToFieldDescriptor(type.tsym.flatName().toString());
     }

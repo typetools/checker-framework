@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Units of areas.
+ * Units of area.
  *
  * @checker_framework.manual #units-checker Units Checker
  */

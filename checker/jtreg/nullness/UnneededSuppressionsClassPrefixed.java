@@ -2,11 +2,11 @@
  * @test
  * @summary Test -AwarnUnneededSuppressions
  *
- * @compile/ref=UnneededSuppressionsClassPrefixed.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AwarnUnneededSuppressions UnneededSuppressionsClassPrefixed.java
+ * @compile/ref=UnneededSuppressionsClassPrefixed.goal -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -AwarnUnneededSuppressions UnneededSuppressionsClassPrefixed.java
  */
 
 @SuppressWarnings("nullness:unneeded.suppression")
-class UnneededSuppressionsClassAnnotated {
+class UnneededSuppressionsClassPrefixed {
 
   @SuppressWarnings("nullness:return")
   public String getClassAndUid0() {

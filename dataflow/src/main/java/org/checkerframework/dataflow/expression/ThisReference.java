@@ -19,16 +19,6 @@ public class ThisReference extends JavaExpression {
   }
 
   @Override
-  public boolean equals(@Nullable Object obj) {
-    return obj instanceof ThisReference;
-  }
-
-  @Override
-  public int hashCode() {
-    return 0;
-  }
-
-  @Override
   public String toString() {
     if (Node.disambiguateOwner) {
       return "this{" + type + "}";
@@ -59,6 +49,16 @@ public class ThisReference extends JavaExpression {
   }
 
   @Override
+  public boolean equals(@Nullable Object obj) {
+    return obj instanceof ThisReference;
+  }
+
+  @Override
+  public int hashCode() {
+    return 0;
+  }
+
+  @Override
   public boolean syntacticEquals(JavaExpression je) {
     return je instanceof ThisReference;
   }
@@ -67,6 +67,9 @@ public class ThisReference extends JavaExpression {
   public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
     return this.syntacticEquals(other);
   }
+
+  // containsAsReceiver is not overridden: `this` has no receiver, so the inherited
+  // implementation (a syntactic equality test) is already correct.
 
   @Override
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {

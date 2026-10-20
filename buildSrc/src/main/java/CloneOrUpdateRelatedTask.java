@@ -69,7 +69,7 @@ public abstract class CloneOrUpdateRelatedTask extends GitTask {
     } else {
       OrgBranch fbCf = getOrgBranch(new File(cfDir, ".git"));
       if (fbCf == null
-          || !orgExists(fbCf.org, relatedRepoName)
+          || !repoExists(fbCf.org, relatedRepoName)
           || !remoteBranchExists(fbCf.org, relatedRepoName, fbCf.branch)) {
         fbCf = new OrgBranch(DEFAULT_ORG, DEFAULT_BRANCH);
       }
@@ -100,7 +100,7 @@ public abstract class CloneOrUpdateRelatedTask extends GitTask {
     }
     String cfOrg = orgBranchCF.org;
     String cfBranch = orgBranchCF.branch;
-    if (!orgExists(cfOrg, relatedRepoName)) {
+    if (!repoExists(cfOrg, relatedRepoName)) {
       // There is no related repo that is in the same org as the CF clone.
       return;
     }
@@ -233,7 +233,7 @@ public abstract class CloneOrUpdateRelatedTask extends GitTask {
    * @param repoName a repository name
    * @return true if "https://github.com/{@code org}/{@code repoName}" exists
    */
-  private boolean orgExists(final String org, final String repoName) {
+  private boolean repoExists(final String org, final String repoName) {
     return urlExists(getGitHubHttpsUrl(org, repoName));
   }
 
