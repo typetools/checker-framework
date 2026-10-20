@@ -1,5 +1,5 @@
 # Tests that are currently passing
-PASSING_TESTS = Bug109 compat issue265 issue594 issue607 multiple-errors package-anno shorthand issue3597  issue502 issue5174
+PASSING_TESTS = Bug109 compat issue265 issue594 issue607 multiple-errors package-anno shorthand issue3597  issue502
 
 # Tests that are currently not passing
 # issue559 is failing because of https://github.com/typetools/checker-framework/issues/2759.
@@ -56,9 +56,6 @@ issue607:
 
 issue3597:
 	$(MAKE) -C issue3597
-
-issue5174:
-	$(MAKE) -C issue5174
 
 # All tests: passing and failing
 .PHONY: all skipped ${PASSING_TESTS}

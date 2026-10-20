@@ -164,8 +164,6 @@ checker/tests/nullness-extra/issue3597/testpkg/Issue3597A.class
 checker/tests/nullness-extra/issue3597/testpkg/Issue3597B.class
 checker/tests/nullness-extra/issue502/Issue502.class
 checker/tests/nullness-extra/issue502/Out.txt
-checker/tests/nullness-extra/issue5174/*.class
-checker/tests/nullness-extra/issue5174/Out.txt
 checker/tests/nullness-extra/issue594/Out.txt
 checker/tests/nullness-extra/issue607/Issue607.class
 checker/tests/nullness-extra/issue607/Issue607Interface.class
@@ -190,6 +188,7 @@ dataflow/tests/busyexpr/methods.txt
 dataflow/tests/cfgconstruction/*.class
 dataflow/tests/constant-propagation/Out.txt
 dataflow/tests/constant-propagation/*.class
+dataflow/tests/implicit-this/*.class
 dataflow/tests/issue3447/Out.txt
 dataflow/tests/issue3447/*.class
 dataflow/tests/live-variable/Out.txt
