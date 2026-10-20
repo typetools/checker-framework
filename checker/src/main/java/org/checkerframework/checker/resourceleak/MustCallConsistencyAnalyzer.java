@@ -1747,7 +1747,13 @@ public class MustCallConsistencyAnalyzer {
     Preconditions.checkArgument(
         callNode instanceof MethodInvocationNode || callNode instanceof ObjectCreationNode);
     List<Node> result = new ArrayList<>();
-    if (!cmAtf.hasMustCallAlias(callNode.getTree())) {
+    // For an anonymous class, the anonymous constructor has no declaration annotations, so use the
+    // super constructor.
+    ExecutableElement callee =
+        callNode instanceof ObjectCreationNode ocn
+            ? TreeUtils.getSuperConstructor(ocn.getTree())
+            : TreeUtils.elementFromUse(((MethodInvocationNode) callNode).getTree());
+    if (!cmAtf.hasMustCallAlias(callee)) {
       return result;
     }
 

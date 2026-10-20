@@ -14,6 +14,22 @@ public class AnonymousEnclosingExpressionPostcondition {
     }
   }
 
+  static class Box {
+    @Nullable Object f;
+  }
+
+  class FieldInner {
+    @EnsuresNonNull("#1.f")
+    FieldInner(Box b) {
+      b.f = new Object();
+    }
+  }
+
+  void field(AnonymousEnclosingExpressionPostcondition outer, Box b) {
+    outer.new FieldInner(b) {};
+    b.f.toString();
+  }
+
   void noVarargs(AnonymousEnclosingExpressionPostcondition outer, @Nullable Object c) {
     outer.new Inner(c) {};
     c.toString();

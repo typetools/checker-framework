@@ -1,13 +1,15 @@
-// Ownership transfer to the constructor of an anonymous class with an explicit enclosing
-// expression, as in `outer.new Inner(...) {}`.
+// Ownership transfer to the constructor of an anonymous class, including one with an explicit
+// enclosing expression, as in `outer.new Inner(...) {}`.
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.Owning;
 
-public class AnonymousEnclosingExpressionOwning {
+public class AnonymousClassOwnership {
 
   @InheritableMustCall("close")
   class Inner implements AutoCloseable {
@@ -24,8 +26,7 @@ public class AnonymousEnclosingExpressionOwning {
     }
   }
 
-  void explicitEnclosing(AnonymousEnclosingExpressionOwning outer, @Owning Socket s)
-      throws IOException {
+  void explicitEnclosing(AnonymousClassOwnership outer, @Owning Socket s) throws IOException {
     Inner i = outer.new Inner(s) {};
     i.close();
   }
@@ -35,13 +36,24 @@ public class AnonymousEnclosingExpressionOwning {
     i.close();
   }
 
-  void notAnonymous(AnonymousEnclosingExpressionOwning outer, @Owning Socket s) throws IOException {
+  void notAnonymous(AnonymousClassOwnership outer, @Owning Socket s) throws IOException {
     Inner i = outer.new Inner(s);
     i.close();
   }
 
-  void leak(AnonymousEnclosingExpressionOwning outer, @Owning Socket s) {
+  void leak(AnonymousClassOwnership outer, @Owning Socket s) {
     // :: error: (required.method.not.called)
     Inner i = outer.new Inner(s) {};
+  }
+
+  // BufferedInputStream's constructor has a @MustCallAlias parameter.
+  void mustCallAlias(@Owning InputStream in) throws IOException {
+    InputStream w = new BufferedInputStream(in) {};
+    w.close();
+  }
+
+  // :: error: (required.method.not.called)
+  void mustCallAliasLeak(@Owning InputStream in) {
+    InputStream w = new BufferedInputStream(in) {};
   }
 }

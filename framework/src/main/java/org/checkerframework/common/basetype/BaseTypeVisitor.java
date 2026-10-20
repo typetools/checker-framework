@@ -2614,13 +2614,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypes.adaptParameters(atypeFactory, constructorType, passedArguments, tree);
 
     ExecutableElement constructor = constructorType.getElement();
-    CharSequence constructorName = ElementUtils.getSimpleDescription(constructor);
+    // For an anonymous class, the super constructor is the one that the programmer wrote, and its
+    // parameters correspond to the arguments.
+    ExecutableElement superConstructor = TreeUtils.getSuperConstructor(tree);
+    CharSequence constructorName = ElementUtils.getSimpleDescription(superConstructor);
 
-    checkArguments(
-        params,
-        passedArguments,
-        constructorName,
-        TreeUtils.getSuperConstructor(tree).getParameters());
+    checkArguments(params, passedArguments, constructorName, superConstructor.getParameters());
     checkVarargs(constructorType, tree);
 
     List<AnnotatedTypeParameterBounds> paramBounds =

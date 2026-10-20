@@ -9,9 +9,9 @@ public class AnonymousDiamondEnclosingExpression {
     In(T t) {}
   }
 
-  class InVarargs<T> {
+  class WithVarargsConstructor<T> {
     @SafeVarargs
-    InVarargs(T... ts) {}
+    WithVarargsConstructor(T... ts) {}
   }
 
   class Two<T> {
@@ -22,8 +22,8 @@ public class AnonymousDiamondEnclosingExpression {
     In<String> a = this.new In<>(u) {};
     In<String> b = outer.new In<>(u) {};
     In<String> c = new In<>(u) {};
-    InVarargs<String> d = outer.new InVarargs<>() {};
-    InVarargs<String> e = outer.new InVarargs<>(u, u) {};
+    WithVarargsConstructor<String> d = outer.new WithVarargsConstructor<>() {};
+    WithVarargsConstructor<String> e = outer.new WithVarargsConstructor<>(u, u) {};
     Two<String> f = outer.new Two<>(u, u) {};
   }
 

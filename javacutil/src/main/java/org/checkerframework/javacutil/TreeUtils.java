@@ -98,6 +98,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.interning.qual.PolyInterned;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
@@ -781,53 +782,6 @@ public final class TreeUtils {
       }
       default -> false;
     };
-  }
-
-  /**
-   * Returns true if {@code tree} has a synthetic argument.
-   *
-   * <p>For some anonymous classes with an explicit enclosing expression, javac creates a synthetic
-   * argument to the constructor that is the enclosing expression of the NewClassTree. Suppose a
-   * programmer writes:
-   *
-   * <pre>{@code class Outer {
-   *   class Inner { }
-   *     void method() {
-   *       this.new Inner() {};
-   *     }
-   * }}</pre>
-   *
-   * Java 9 javac creates the following synthetic tree for {@code this.new Inner() {}}:
-   *
-   * <pre>{@code new Inner(this) {
-   *   (.Outer x0) {
-   *     x0.super();
-   *   }
-   * }}</pre>
-   *
-   * Java 11 javac creates a different tree without the synthetic argument for {@code this.new
-   * Inner() {}}; the first line in the below code differs:
-   *
-   * <pre>{@code this.new Inner() {
-   *   (.Outer x0) {
-   *     x0.super();
-   *   }
-   * }}</pre>
-   *
-   * @param tree a new class tree
-   * @return true if {@code tree} has a synthetic argument
-   */
-  public static boolean hasSyntheticArgument(NewClassTree tree) {
-    if (tree.getClassBody() == null || tree.getEnclosingExpression() != null) {
-      return false;
-    }
-    for (Tree member : tree.getClassBody().getMembers()) {
-      if (member instanceof MethodTree methodTree && isConstructor(methodTree)) {
-        StatementTree f = methodTree.getBody().getStatements().get(0);
-        return getReceiverTree(((ExpressionStatementTree) f).getExpression()) != null;
-      }
-    }
-    return false;
   }
 
   /**
@@ -1752,7 +1706,7 @@ public final class TreeUtils {
    * @param params the parameters of {@code executable}, or their types, in order
    * @return the elements of {@code params} that correspond to the arguments of {@code tree}
    */
-  public static <T> List<T> parametersForArguments(
+  public static <@KeyForBottom T> List<T> parametersForArguments(
       ExecutableElement executable, Tree tree, List<T> params) {
     if (tree instanceof NewClassTree newClassTree
         && isAnonymousConstructorWithExplicitEnclosingExpression(executable, newClassTree)) {
