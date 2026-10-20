@@ -21,6 +21,8 @@ A default that a type system registers through
 scopes, rather than suppressing them.  Where both a registered default and a
 `@DefaultQualifier` annotation apply, the registered default wins.
 
+Removed `DefaultSet.EMPTY`.
+
 ### Closed issues
 
 ## Version 4.3.1 (2026-10-08)
