@@ -64,4 +64,25 @@ public class TypeVarUnboxing {
     // :: error: [assignment]
     @IntRange(from = 0, to = 5) int wrong = t;
   }
+
+  void enhancedForWidening(@IntVal(3) Integer[] array, java.util.List<@IntVal(3) Integer> list) {
+    for (long x : array) {
+      @IntVal(3) long y = x;
+    }
+    for (long x : list) {
+      @IntVal(3) long y = x;
+    }
+  }
+
+  <T extends @IntVal(3) Integer> void enhancedForWideningTypeVar(
+      T[] array, java.util.List<T> list) {
+    for (long x : array) {
+      @IntVal(3) long y = x;
+    }
+    for (long x : list) {
+      @IntVal(3) long y = x;
+      // :: error: [assignment]
+      @IntVal(4) long z = x;
+    }
+  }
 }

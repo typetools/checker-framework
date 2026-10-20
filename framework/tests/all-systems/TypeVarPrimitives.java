@@ -100,6 +100,25 @@ public class TypeVarPrimitives {
     return sum;
   }
 
+  long enhancedForWidening(java.util.List<Integer> integers) {
+    long sum = 0;
+    for (long x : integers) {
+      sum += x;
+    }
+    return sum;
+  }
+
+  <T extends Integer> long enhancedForWideningTypeVar(java.util.List<T> ts, T[] tArray) {
+    long sum = 0;
+    for (long x : ts) {
+      sum += x;
+    }
+    for (long x : tArray) {
+      sum += x;
+    }
+    return sum;
+  }
+
   long captured(java.util.List<? extends Integer> l) {
     return l.get(0) * 2L;
   }

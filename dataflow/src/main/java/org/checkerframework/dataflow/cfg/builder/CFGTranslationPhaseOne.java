@@ -1828,7 +1828,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // translateAssignment() scans variable and creates new nodes, so set the expression
       // there, too.
       MethodInvocationNode nextCallNode2 =
-          (MethodInvocationNode) withoutUnboxing(assignNode.getExpression());
+          (MethodInvocationNode) withoutUnboxingOrWidening(assignNode.getExpression());
       nextCallNode2.setIterableExpression(expression);
       nextCallNode2.setEnhancedForLoop(tree);
 
@@ -1928,7 +1928,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
       // translateAssignment() scans variable and creates new nodes, so set the expression
       // there, too.
-      Node arrayAccessAssignNodeExpr = withoutUnboxing(arrayAccessAssignNode.getExpression());
+      Node arrayAccessAssignNodeExpr =
+          withoutUnboxingOrWidening(arrayAccessAssignNode.getExpression());
       if (arrayAccessAssignNodeExpr instanceof ArrayAccessNode aan) {
         aan.setArrayExpression(expression);
         aan.setEnhancedForLoop(tree);
@@ -1982,17 +1983,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * If {@code node} is an unboxing conversion, returns the expression that it unboxes. Otherwise,
-   * returns {@code node}.
+   * If {@code node} is an unboxing conversion, a widening primitive conversion, or an unboxing
+   * conversion followed by a widening primitive conversion, returns the expression that it
+   * converts. Otherwise, returns {@code node}.
    *
-   * <p>An unboxing conversion has a primitive type, so the element type of an enhanced for loop's
-   * iterable expression must not be used as the unboxing conversion's type. It may be used as the
-   * type of the expression that is unboxed.
+   * <p>The element type of an enhanced for loop's iterable expression must not be used as the type
+   * of such a conversion. It may be used as the type of the expression that is converted.
    *
-   * @param node a node that might be an unboxing conversion
-   * @return the expression that {@code node} unboxes, or {@code node} itself
+   * @param node a node that might be a conversion
+   * @return the expression that {@code node} converts, or {@code node} itself
    */
-  private Node withoutUnboxing(Node node) {
+  private Node withoutUnboxingOrWidening(Node node) {
+    if (node instanceof WideningConversionNode widening) {
+      node = widening.getOperand();
+    }
     if (node instanceof MethodInvocationNode min
         && !min.getInSource()
         && TypesUtils.isPrimitive(min.getType())) {
