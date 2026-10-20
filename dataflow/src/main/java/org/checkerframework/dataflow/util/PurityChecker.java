@@ -372,8 +372,7 @@ public final class PurityChecker {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void ignore) {
       ExecutableElement elt = TreeUtils.elementFromUse(tree);
-      EnumSet<PurityKind> callPurityKinds =
-          EnumSet.copyOf(PurityUtils.getPurityKinds(annoProvider, elt));
+      EnumSet<PurityKind> callPurityKinds = PurityUtils.getPurityKinds(annoProvider, elt);
       boolean pureGetter = assumePureGetters && ElementUtils.isGetter(elt);
       if (assumeSideEffectFree || pureGetter) {
         callPurityKinds.add(PurityKind.SIDE_EFFECT_FREE);
