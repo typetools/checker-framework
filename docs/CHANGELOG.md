@@ -3,7 +3,7 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 4.3.1 (2026-11-01)
+## Version 4.3.2 (2026-11-01)
 
 ### User-visible changes
 
@@ -19,6 +19,12 @@ or `CFValue` should override it to return true if `equals()` accounts for all
 the state that the subclass's `upperBound()` combines.
 
 ### Closed issues
+
+## Version 4.3.1 (2026-10-08)
+
+### Closed issues
+
+\#8325.
 
 ## Version 4.3.0 (2026-10-01)
 
