@@ -313,6 +313,51 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myMethod(Lutil/Map;)V");
   }
 
+  /** A method's JVML descriptor uses the erasure of each type variable. */
+  @Test
+  public void testTypeVariableErasure() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import java.util.List;",
+            "class MyClass<S extends CharSequence> {",
+            "  <T extends Number, U> void myMethod(T t, U u, S s, Object o) {}",
+            "  <V extends List<?>> void myOtherMethod(V v) {}",
+            "}");
+    assertMethod(
+        jaif,
+        "MyClass",
+        "myMethod(Ljava/lang/Number;Ljava/lang/Object;Ljava/lang/CharSequence;Ljava/lang/Object;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Ljava/util/List;)V");
+  }
+
+  /** A type variable whose bound is a fully qualified name erases to that name. */
+  @Test
+  public void testFullyQualifiedTypeVariableBound() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass {",
+            "  <T extends java.util.List<?>, U extends java.util.Map.Entry<?, ?>>",
+            "  void myMethod(T t, U u) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/List;Ljava/util/Map$Entry;)V");
+  }
+
+  /** A varargs parameter whose element type is a type variable has the erasure's array type. */
+  @Test
+  public void testTypeVariableVarargs() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass<S extends CharSequence> {",
+            "  <T extends Number> void myMethod(T... ts) {}",
+            "  void myOtherMethod(S[]... ss) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod([Ljava/lang/Number;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod([[Ljava/lang/CharSequence;)V");
+  }
+
   /** A varargs parameter's JVML descriptor is an array type. */
   @Test
   public void testVarargsDescriptor() throws Exception {

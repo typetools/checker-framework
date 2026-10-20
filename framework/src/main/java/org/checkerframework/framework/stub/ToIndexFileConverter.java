@@ -26,6 +26,7 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -703,6 +704,21 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             // `java.util.List` or `Map.Entry` is not truncated to its last identifier.
             @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameWithScope
             @FullyQualifiedName String typeName = type.getNameWithScope();
+            String[] identifiers = typeName.split("\\.", -1);
+            // Search each enclosing scope, innermost first.
+            Node declaration = null;
+            for (Node n = type; n != null; n = n.getParentNode().orElse(null)) {
+              declaration = firstDeclarationAt(n, identifiers);
+              if (declaration != null) {
+                break;
+              }
+            }
+            if (declaration instanceof TypeParameter typeParam) {
+              // The JVML descriptor uses the erasure, which is the first bound, or Object if
+              // the type parameter has no bound.
+              NodeList<ClassOrInterfaceType> bounds = typeParam.getTypeBound();
+              return bounds.isEmpty() ? "Ljava/lang/Object;" : bounds.get(0).accept(this, null);
+            }
             String name = resolve(typeName);
             if (name == null) {
               name = typeName;
@@ -766,6 +782,27 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private String qualifiedStubBinaryName(TypeDeclaration<?> declaration) {
     String binaryName = stubBinaryName(declaration);
     return pkgName == null ? binaryName : pkgName + "." + binaryName;
+  }
+
+  /**
+   * Returns the declaration, in the stub file, that the first element of {@code identifiers} names
+   * among the types that {@code n} itself puts in scope, which are its type parameters. A type
+   * parameter is considered only if {@code identifiers} has one element, because a type parameter
+   * has no member types.
+   *
+   * @param n a node in the stub file's AST
+   * @param identifiers a type name that has been split at its {@code .} separators
+   * @return the declaration of the first element of {@code identifiers}, or null
+   */
+  private static @Nullable Node firstDeclarationAt(Node n, String[] identifiers) {
+    if (identifiers.length == 1 && n instanceof NodeWithTypeParameters) {
+      for (TypeParameter typeParam : ((NodeWithTypeParameters<?>) n).getTypeParameters()) {
+        if (typeParam.getNameAsString().equals(identifiers[0])) {
+          return typeParam;
+        }
+      }
+    }
+    return null;
   }
 
   /**
