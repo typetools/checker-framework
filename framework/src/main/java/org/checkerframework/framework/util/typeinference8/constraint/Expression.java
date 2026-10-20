@@ -301,7 +301,7 @@ public class Expression extends TypeConstraint {
     // JLS 15.12.2.6: if unchecked conversion was necessary for the compile-time declaration to be
     // applicable, the return type of its invocation type is the erasure of its return type.
     AbstractType invocationReturn =
-        context.uncheckedExpressions.contains(memRef)
+        context.uncheckedConversionAttributedTo.contains(memRef)
             ? compileTimeReturn.getErased()
             : compileTimeReturn;
     return ReductionResultPair.of(

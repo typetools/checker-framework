@@ -284,7 +284,7 @@ public class InvocationTypeInference {
     recordLambdaParameterTypes();
     return new InferenceResult(
         b4.getInstantiatedVariables(),
-        context.uncheckedExpressions,
+        context.uncheckedConversionAttributedTo,
         b4.annoInferenceFailed,
         b4.errorMsg);
   }
@@ -361,7 +361,7 @@ public class InvocationTypeInference {
     List<Variable> thetaPrime = b3.resolve();
 
     return new InferenceResult(
-        thetaPrime, context.uncheckedExpressions, b3.annoInferenceFailed, b3.errorMsg);
+        thetaPrime, context.uncheckedConversionAttributedTo, b3.annoInferenceFailed, b3.errorMsg);
   }
 
   /**
@@ -526,7 +526,7 @@ public class InvocationTypeInference {
       AbstractType target,
       Theta map) {
     AbstractType r = executableType.getReturnType(map);
-    if (context.uncheckedExpressions.contains(invocation)) {
+    if (context.uncheckedConversionAttributedTo.contains(invocation)) {
       // If unchecked conversion was necessary for the method to be applicable during
       // constraint set reduction in 18.5.1, the constraint formula <|R| -> T> is reduced and
       // incorporated with B2.

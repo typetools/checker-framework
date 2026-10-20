@@ -80,7 +80,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           return InferenceResult.emptyResult();
         }
         return new InferenceResult(
-            instantiated, new LinkedHashSet<>(i.context.uncheckedExpressions), false, "");
+            instantiated,
+            new LinkedHashSet<>(i.context.uncheckedConversionAttributedTo),
+            false,
+            "");
       }
     }
     // Null if outerTree is a member reference.

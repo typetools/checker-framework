@@ -170,16 +170,15 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * If {@link #isUncheckedConversion()} is true, records in the context that unchecked conversion
-   * was necessary to check the arguments of {@code expression}, and sets {@link
-   * #isUncheckedConversion()} to false.
+   * If {@link #isUncheckedConversion()} is true, attributes unchecked conversion to {@code
+   * expression} and sets {@link #isUncheckedConversion()} to false.
    *
    * @param expression a method invocation, class instance creation, or method reference
-   * @see Java8InferenceContext#uncheckedExpressions
+   * @see Java8InferenceContext#uncheckedConversionAttributedTo
    */
   public void attributeUncheckedConversionTo(ExpressionTree expression) {
     if (uncheckedConversion) {
-      context.uncheckedExpressions.add(expression);
+      context.uncheckedConversionAttributedTo.add(expression);
       uncheckedConversion = false;
     }
   }
