@@ -729,18 +729,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *     or null if resolution fails
    */
   private @Nullable @BinaryName String resolve(@BinaryName String className) {
-    // Follow the precedence of JLS 6.4.1: a single-type import shadows a class of the same name in
-    // the current package, which in turn shadows a class imported on demand.  `java.lang` is
-    // imported on demand implicitly.
-
-    for (String declName : imports) {
-      if (!declName.endsWith("*")) {
-        String qualifiedName = mergeImport(declName, className);
-        if (qualifiedName != null && loadClass(qualifiedName) != null) {
-          return qualifiedName;
-        }
-      }
-    }
 
     if (pkgName != null) {
       String qualifiedName = Signatures.addPackage(pkgName, className);
@@ -750,6 +738,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
 
     {
+      // Every Java program implicitly does "import java.lang.*",
+      // so see whether this class is in that package.
       String qualifiedName = Signatures.addPackage("java.lang", className);
       if (loadClass(qualifiedName) != null) {
         return qualifiedName;
@@ -757,11 +747,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
 
     for (String declName : imports) {
-      if (declName.endsWith("*")) {
-        String qualifiedName = mergeImport(declName, className);
-        if (qualifiedName != null && loadClass(qualifiedName) != null) {
-          return qualifiedName;
-        }
+      String qualifiedName = mergeImport(declName, className);
+      if (loadClass(qualifiedName) != null) {
+        return qualifiedName;
       }
     }
 
