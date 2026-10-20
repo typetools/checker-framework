@@ -53,8 +53,6 @@ dependencies {
   implementation(libs.plume.util)
   implementation(libs.reflection.util)
   implementation(libs.classgraph)
-  implementation(libs.jackson.databind)
-  implementation(libs.java.sarif)
 
   testImplementation(libs.junit)
   testImplementation(project(":framework-test"))
