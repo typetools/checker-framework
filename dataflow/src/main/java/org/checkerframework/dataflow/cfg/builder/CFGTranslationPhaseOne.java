@@ -926,8 +926,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private TreeInfo getTreeInfo(Tree tree) {
     TypeMirror type = TreeUtils.typeOf(tree);
-    TypeMirror unboxedType = TypesUtils.unboxedTypeOrSelf(type, types);
-    boolean unboxable = unboxedType.getKind().isPrimitive() && !type.getKind().isPrimitive();
+    TypeMirror boxedType = TypesUtils.boxedPrimitiveForUnboxing(type, types);
+    boolean unboxable = boxedType != null;
+    TypeMirror unboxedType = unboxable ? types.unboxedType(boxedType) : type;
 
     boolean bool = TypesUtils.isBooleanType(unboxedType);
     boolean numeric = TypesUtils.isNumeric(unboxedType);
@@ -1392,8 +1393,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // If the operand is byte or Byte and the whole expression is
     // short, then convert to short.
-    boolean isNodeUnboxable = TypesUtils.isUnboxable(nodeType, types);
-    TypeMirror unboxedNodeType = TypesUtils.unboxedTypeOrSelf(nodeType, types);
+    TypeMirror boxedNodeType = TypesUtils.boxedPrimitiveForUnboxing(nodeType, types);
+    boolean isNodeUnboxable = boxedNodeType != null;
+    TypeMirror unboxedNodeType = isNodeUnboxable ? types.unboxedType(boxedNodeType) : nodeType;
     TypeMirror unboxedDestType = TypesUtils.unboxedTypeOrSelf(destType, types);
     if (TypesUtils.isNumeric(unboxedNodeType) && TypesUtils.isNumeric(unboxedDestType)) {
       if (unboxedNodeType.getKind() == TypeKind.BYTE && destType.getKind() == TypeKind.SHORT) {
@@ -2241,9 +2243,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(selectorVarUseNode);
 
       Node selectorExprNode = scan(selectorExprTree, null);
-      // A switch whose selector has a type-variable type, such as `T extends Integer`, cannot have
-      // constant labels, so it is a pattern switch and its selector is not unboxed.
-      if (TypesUtils.isBoxedPrimitive(selectorExprType)) {
+      // Unboxing models the NullPointerException that a switch without a null label throws when
+      // its selector is null.
+      if (TypesUtils.isUnboxable(selectorExprType, types)
+          && !TreeUtils.hasNullCaseLabel(caseTrees)) {
         selectorExprNode = unbox(selectorExprNode);
       }
 
