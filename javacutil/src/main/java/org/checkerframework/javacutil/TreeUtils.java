@@ -747,6 +747,19 @@ public final class TreeUtils {
     if (newClassTree.getClassBody() == null) {
       return elementFromUse(newClassTree);
     }
+    return elementFromUse(getSuperConstructorInvocation(newClassTree));
+  }
+
+  /**
+   * Returns the super constructor invocation in the synthetic constructor for an anonymous class.
+   *
+   * @param newClassTree an anonymous-class constructor invocation
+   * @return the super constructor invocation
+   */
+  public static MethodInvocationTree getSuperConstructorInvocation(NewClassTree newClassTree) {
+    if (newClassTree.getClassBody() == null) {
+      throw new BugInCF("getSuperConstructorInvocation: not an anonymous class: " + newClassTree);
+    }
     JCNewClass jcNewClass = (JCNewClass) newClassTree;
     // Anonymous constructor bodies, which are always synthetic, contain exactly one statement
     // in the form:
@@ -763,7 +776,7 @@ public final class TreeUtils {
     assert anonConstructor.body.stats.size() == 1;
     JCExpressionStatement stmt = (JCExpressionStatement) anonConstructor.body.stats.head;
     JCMethodInvocation superInvok = (JCMethodInvocation) stmt.expr;
-    return (ExecutableElement) TreeInfo.symbol(superInvok.meth);
+    return superInvok;
   }
 
   /**
