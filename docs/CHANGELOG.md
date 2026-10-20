@@ -9,8 +9,6 @@
 
 ### Changes for type system implementers
 
-Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
-
 ### Closed issues
 
 ## Version 4.3.1 (2026-10-08)

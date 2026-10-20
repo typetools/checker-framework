@@ -112,8 +112,8 @@ public abstract class AbstractExecutableType {
    *
    * <p>If this invocation uses varargs, then the vararg parameter is replaced by individual
    * parameters and the result has length {@code size}. Otherwise, {@code size} is ignored and the
-   * result contains one element per declared formal parameter (as returned by {@link
-   * #getDeclaredParameterTypes}), plus one for the receiver if this is an unbound method reference.
+   * result contains one element per declared formal parameter, plus one for the receiver if this is
+   * an unbound method reference.
    *
    * @param map a mapping from type variable to inference variable, or null to treat no type
    *     variable as an inference variable
@@ -132,18 +132,7 @@ public abstract class AbstractExecutableType {
    * @return the formal parameter types of this executable
    */
   public List<AbstractType> getParameterTypes(@Nullable Theta map) {
-    return getParameterTypes(map, getDeclaredParameterTypes().size());
-  }
-
-  /**
-   * Returns the annotated types of the formal parameters of this executable, without expanding the
-   * vararg parameter. For an invocation, this omits any parameter that does not correspond to an
-   * argument; see {@link org.checkerframework.javacutil.TreeUtils#parametersForArguments}.
-   *
-   * @return the annotated types of the formal parameters of this executable
-   */
-  protected List<AnnotatedTypeMirror> getDeclaredParameterTypes() {
-    return annotatedExecutableType.getParameterTypes();
+    return getParameterTypes(map, annotatedExecutableType.getParameterTypes().size());
   }
 
   /**
@@ -167,15 +156,15 @@ public abstract class AbstractExecutableType {
       int size,
       @Nullable AnnotatedTypeMirror firstParam,
       boolean isVarargsCall) {
-    List<AnnotatedTypeMirror> declaredParams = getDeclaredParameterTypes();
     List<AnnotatedTypeMirror> params =
-        new ArrayList<>(declaredParams.size() + (firstParam == null ? 0 : 1));
+        new ArrayList<>(
+            annotatedExecutableType.getParameterTypes().size() + (firstParam == null ? 0 : 1));
 
     if (firstParam != null) {
       params.add(firstParam);
     }
 
-    params.addAll(declaredParams);
+    params.addAll(annotatedExecutableType.getParameterTypes());
 
     if (isVarargsCall) {
       AnnotatedTypeMirror eltATM =

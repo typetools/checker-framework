@@ -1747,13 +1747,7 @@ public class MustCallConsistencyAnalyzer {
     Preconditions.checkArgument(
         callNode instanceof MethodInvocationNode || callNode instanceof ObjectCreationNode);
     List<Node> result = new ArrayList<>();
-    // For an anonymous class, the anonymous constructor has no declaration annotations, so use the
-    // super constructor.
-    ExecutableElement callee =
-        callNode instanceof ObjectCreationNode ocn
-            ? TreeUtils.getSuperConstructor(ocn.getTree())
-            : TreeUtils.elementFromUse(((MethodInvocationNode) callNode).getTree());
-    if (!cmAtf.hasMustCallAlias(callee)) {
+    if (!cmAtf.hasMustCallAlias(callNode.getTree())) {
       return result;
     }
 
@@ -1806,23 +1800,23 @@ public class MustCallConsistencyAnalyzer {
 
   /**
    * Returns the elements representing the formal parameters of a method or constructor, from an
-   * invocation of that method or constructor. The result corresponds to {@link
-   * #getArgumentsOfInvocation}. For the creation of an anonymous class, the result is the
-   * parameters of the super constructor, which carry declaration annotations such as
-   * {@code @Owning}.
+   * invocation of that method or constructor.
    *
    * @param node a method invocation or object creation node
    * @return a list of the declarations of the formal parameters of the method or constructor being
    *     invoked
    */
   /*package-private*/ List<? extends VariableElement> getParametersOfInvocation(Node node) {
+    ExecutableElement executableElement;
     if (node instanceof MethodInvocationNode invocationNode) {
-      return TreeUtils.elementFromUse(invocationNode.getTree()).getParameters();
+      executableElement = TreeUtils.elementFromUse(invocationNode.getTree());
     } else if (node instanceof ObjectCreationNode ocn2) {
-      return TreeUtils.getSuperConstructor(ocn2.getTree()).getParameters();
+      executableElement = TreeUtils.elementFromUse(ocn2.getTree());
     } else {
       throw new TypeSystemError("unexpected node type " + node.getClass());
     }
+
+    return executableElement.getParameters();
   }
 
   /**

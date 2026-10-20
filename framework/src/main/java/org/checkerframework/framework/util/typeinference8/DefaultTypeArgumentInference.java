@@ -310,15 +310,11 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
 
     ExecutableType executableType = (ExecutableType) executableElement.asType();
-    List<? extends TypeMirror> paramTypes = executableType.getParameterTypes();
-    if (newClassTree != null) {
-      paramTypes = TreeUtils.parametersForArguments(executableElement, newClassTree, paramTypes);
-    }
     // There are fewer parameters than arguments if this is a varargs method.
-    if (paramTypes.size() <= index) {
-      index = paramTypes.size() - 1;
+    if (executableType.getParameterTypes().size() <= index) {
+      index = executableType.getParameterTypes().size() - 1;
     }
-    TypeMirror param = paramTypes.get(index);
+    TypeMirror param = executableType.getParameterTypes().get(index);
 
     if (executableElement.getKind() == ElementKind.CONSTRUCTOR) {
       List<TypeVariable> list = new ArrayList<>(executableType.getTypeVariables());
