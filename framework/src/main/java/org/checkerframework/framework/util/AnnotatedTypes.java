@@ -888,8 +888,9 @@ public final class AnnotatedTypes {
    *   <li>If the underlying type of {@code type1} is a supertype of the underlying type of {@code
    *       type2}, then return a copy of {@code type2} whose primary annotations are the greatest
    *       lower bound of the primary annotations on {@code type1} and {@code type2}.
-   *   <li>If javac's glb of the underlying types is computed by replacing a captured type variable
-   *       by its lower bound, then return the annotated glb of that lower bound and the other type.
+   *   <li>If javac's glb of the underlying types is computed by replacing each captured type
+   *       variable by its lower bound, then return the annotated glb of the types with those
+   *       replacements.
    *   <li>If the underlying type of {@code type1} and {@code type2} are not in a subtyping
    *       relationship, then return an annotated intersection type whose bounds are {@code type1}
    *       and {@code type2}.
@@ -934,11 +935,12 @@ public final class AnnotatedTypes {
       // When javac's glb would contain more than one class type, javac retries with each captured
       // type variable replaced by its lower bound.  See
       // com.sun.tools.javac.code.Types#glbFlattened.
-      if (hasCapturedLowerBound(type1)) {
-        return annotatedGLB(atypeFactory, ((AnnotatedTypeVariable) type1).getLowerBound(), type2);
-      }
-      if (hasCapturedLowerBound(type2)) {
-        return annotatedGLB(atypeFactory, type1, ((AnnotatedTypeVariable) type2).getLowerBound());
+      AnnotatedTypeMirror replacement1 =
+          hasCapturedLowerBound(type1) ? ((AnnotatedTypeVariable) type1).getLowerBound() : type1;
+      AnnotatedTypeMirror replacement2 =
+          hasCapturedLowerBound(type2) ? ((AnnotatedTypeVariable) type2).getLowerBound() : type2;
+      if (replacement1 != type1 || replacement2 != type2) {
+        return annotatedGLB(atypeFactory, replacement1, replacement2);
       }
       // If one type isn't a subtype of the other, then GLB must be an intersection.
       throw new BugInCF(

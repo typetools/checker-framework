@@ -450,6 +450,10 @@ public final class Resolution {
         AbstractType wildcardLowerBound = captureVariable.getWildcardLowerBound();
         if (wildcardLowerBound != null) {
           wildcardLowerBound = wildcardLowerBound.applyInstantiations();
+          // `ai` depends on every variable in the capture bound, including those in
+          // `wildcardLowerBound` (see BoundSet#getDependencies), so any variable still in it is
+          // being resolved in this same set.  Like any other lower bound that is not proper, it
+          // is not used (JLS 18.4).
           if (wildcardLowerBound.isProper()) {
             lowerBounds.add((ProperType) wildcardLowerBound);
           }
