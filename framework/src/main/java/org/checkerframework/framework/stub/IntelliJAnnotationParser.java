@@ -974,6 +974,19 @@ public final class IntelliJAnnotationParser {
       return;
     }
 
+    // A type annotation that this checker does not support, or a declaration annotation, does not
+    // change the element's type.  If the item has no supported type qualifier, then do not install
+    // an annotated type for the element and do not mark the element as being from an annotation
+    // file.  Either of those would make the element's type be the one derived from bytecode, which
+    // takes precedence over the annotated JDK (parsed later) and over conservative defaults for
+    // unchecked bytecode.
+    List<AnnotationMirror> qualifiers = new ArrayList<>(annotations.size());
+    for (AnnotationMirror am : annotations) {
+      if (atypeFactory.isSupportedQualifier(am)) {
+        qualifiers.add(am);
+      }
+    }
+
     if (parsed.isMethodOrConstructor) {
       ExecutableElement execElem =
           findMatchingExecutable(
@@ -993,16 +1006,7 @@ public final class IntelliJAnnotationParser {
         return;
       }
 
-      // Do not create the AnnotatedExecutableType via `annos.atypes.computeIfAbsent`, and do not
-      // mark the method as being from an annotation file, until the item is known to be
-      // well-formed.  Otherwise a rejected item would still install a bytecode-derived type that
-      // takes precedence over the annotated JDK, which is parsed later.
-      AnnotatedExecutableType methodType = (AnnotatedExecutableType) annos.atypes.get(execElem);
-      if (methodType == null) {
-        methodType = atypeFactory.fromElement(execElem);
-      }
-
-      if (parsed.paramIndex >= methodType.getParameterTypes().size()) {
+      if (parsed.paramIndex >= execElem.getParameters().size()) {
         warnNotFound(
             checker,
             "Parameter index "
@@ -1014,28 +1018,31 @@ public final class IntelliJAnnotationParser {
         return;
       }
 
-      markAsFromStubFile(execElem, processingEnv, annos);
-      if (parsed.paramIndex >= 0) {
-        AnnotatedTypeMirror paramType = methodType.getParameterTypes().get(parsed.paramIndex);
-        VariableElement paramElem = execElem.getParameters().get(parsed.paramIndex);
-        markAsFromStubFile(paramElem, processingEnv, annos);
-        for (AnnotationMirror am : annotations) {
-          if (atypeFactory.isSupportedQualifier(am)) {
-            paramType.replaceAnnotation(am);
-          }
-          recordDeclAnnotationIfApplicable(paramElem, am, annos);
-        }
-        annos.atypes.put(paramElem, paramType);
-      } else {
-        AnnotatedTypeMirror returnType = methodType.getReturnType();
-        for (AnnotationMirror am : annotations) {
-          if (atypeFactory.isSupportedQualifier(am)) {
-            returnType.replaceAnnotation(am);
-          }
-          recordDeclAnnotationIfApplicable(execElem, am, annos);
-        }
+      VariableElement paramElem =
+          parsed.paramIndex >= 0 ? execElem.getParameters().get(parsed.paramIndex) : null;
+      Element target = paramElem != null ? paramElem : execElem;
+      for (AnnotationMirror am : annotations) {
+        recordDeclAnnotationIfApplicable(target, am, annos);
       }
-      annos.atypes.put(execElem, methodType);
+      if (qualifiers.isEmpty()) {
+        return;
+      }
+
+      AnnotatedExecutableType methodType =
+          (AnnotatedExecutableType)
+              annos.atypes.computeIfAbsent(execElem, e -> atypeFactory.fromElement(execElem));
+      markAsFromStubFile(execElem, processingEnv, annos);
+      AnnotatedTypeMirror targetType;
+      if (paramElem != null) {
+        markAsFromStubFile(paramElem, processingEnv, annos);
+        targetType = methodType.getParameterTypes().get(parsed.paramIndex);
+        annos.atypes.put(paramElem, targetType);
+      } else {
+        targetType = methodType.getReturnType();
+      }
+      for (AnnotationMirror am : qualifiers) {
+        targetType.replaceAnnotation(am);
+      }
     } else if (parsed.isField && parsed.memberName != null) {
       VariableElement fieldElem = null;
       for (VariableElement f : ElementFilter.fieldsIn(classElem.getEnclosedElements())) {
@@ -1048,32 +1055,42 @@ public final class IntelliJAnnotationParser {
         warnNotFound(checker, "Field not found: " + parsed.memberName + " in " + parsed.className);
         return;
       }
-
-      final VariableElement finalFieldElem = fieldElem;
-      markAsFromStubFile(finalFieldElem, processingEnv, annos);
-      AnnotatedTypeMirror fieldType =
-          annos.atypes.computeIfAbsent(
-              finalFieldElem, e -> atypeFactory.fromElement(finalFieldElem));
-      for (AnnotationMirror am : annotations) {
-        if (atypeFactory.isSupportedQualifier(am)) {
-          fieldType.replaceAnnotation(am);
-        }
-        recordDeclAnnotationIfApplicable(finalFieldElem, am, annos);
-      }
-      annos.atypes.put(finalFieldElem, fieldType);
+      applyAnnotationsToDeclaration(
+          fieldElem, annotations, qualifiers, atypeFactory, processingEnv, annos);
     } else if (parsed.isClass) {
-      TypeElement finalClassElem = classElem;
-      markAsFromStubFile(finalClassElem, processingEnv, annos);
-      AnnotatedTypeMirror classType =
-          annos.atypes.computeIfAbsent(
-              finalClassElem, e -> atypeFactory.fromElement(finalClassElem));
-      for (AnnotationMirror am : annotations) {
-        if (atypeFactory.isSupportedQualifier(am)) {
-          classType.replaceAnnotation(am);
-        }
-        recordDeclAnnotationIfApplicable(finalClassElem, am, annos);
-      }
-      annos.atypes.put(finalClassElem, classType);
+      applyAnnotationsToDeclaration(
+          classElem, annotations, qualifiers, atypeFactory, processingEnv, annos);
+    }
+  }
+
+  /**
+   * Applies parsed annotations to a field or class.
+   *
+   * @param elt the field or class
+   * @param annotations the parsed annotations
+   * @param qualifiers the elements of {@code annotations} that are supported type qualifiers
+   * @param atypeFactory the type factory
+   * @param processingEnv the processing environment
+   * @param annos the annotation container to populate
+   */
+  private static void applyAnnotationsToDeclaration(
+      Element elt,
+      List<AnnotationMirror> annotations,
+      List<AnnotationMirror> qualifiers,
+      AnnotatedTypeFactory atypeFactory,
+      ProcessingEnvironment processingEnv,
+      AnnotationFileAnnotations annos) {
+    for (AnnotationMirror am : annotations) {
+      recordDeclAnnotationIfApplicable(elt, am, annos);
+    }
+    if (qualifiers.isEmpty()) {
+      return;
+    }
+    markAsFromStubFile(elt, processingEnv, annos);
+    AnnotatedTypeMirror type =
+        annos.atypes.computeIfAbsent(elt, e -> atypeFactory.fromElement(elt));
+    for (AnnotationMirror am : qualifiers) {
+      type.replaceAnnotation(am);
     }
   }
 
