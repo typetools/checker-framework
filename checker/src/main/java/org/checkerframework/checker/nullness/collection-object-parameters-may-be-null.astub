@@ -45,7 +45,6 @@
 // that Objects.equals(o, e)".  The annotated JDK interprets this to say that null is a permitted
 // value.
 //
-//   ArrayBlockingQueue
 //   ArrayDeque
 //   BlockingDeque
 //   BlockingQueue
@@ -54,10 +53,7 @@
 //   ConcurrentSkipListSet
 //   CopyOnWriteArrayList
 //   CopyOnWriteArraySet
-//   LinkedBlockingDeque
-//   LinkedBlockingQueue
 //   LinkedTransferQueue
-//   PriorityBlockingQueue
 //   PriorityQueue
 //     contains
 //     remove
@@ -208,19 +204,6 @@ public class ConcurrentSkipListSet<E>
     public boolean removeAll(Collection<?> c);
 }
 
-public class CopyOnWriteArrayList<E>
-    implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
-    public boolean removeAll(Collection<?> c);
-    public boolean retainAll(Collection<?> c);
-}
-
-public class CopyOnWriteArraySet<E>
-    extends AbstractSet<E>
-    implements java.io.Serializable {
-    public boolean removeAll(Collection<?> c);
-    public boolean retainAll(Collection<?> c);
-}
-
 public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
     implements BlockingQueue<E> {
     public boolean remove(@Nullable Object o);
@@ -229,7 +212,6 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
 class LinkedBlockingDeque<E> {
     public boolean removeFirstOccurrence(@Nullable Object o);
     public boolean removeLastOccurrence(@Nullable Object o);
-    public boolean remove(@Nullable Object o);
     public boolean contains(@Nullable Object o);
 }
 
