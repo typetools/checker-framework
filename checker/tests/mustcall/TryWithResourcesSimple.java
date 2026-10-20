@@ -22,7 +22,7 @@ public class TryWithResourcesSimple {
     // This is illegal, because getFancySock()'s return type has another MC method beyond
     // "close", which is the only MC method for Socket itself.
     try (Socket socket = getFancySocket()) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @MustCall({"close"}) Object s = socket;
     } catch (Exception e) {
 

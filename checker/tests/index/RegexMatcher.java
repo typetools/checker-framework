@@ -16,9 +16,9 @@ public class RegexMatcher {
     @NonNegative int i;
     i = matcher.start();
     i = matcher.end();
-    // :: error: (assignment)
+    // :: error: [assignment]
     i = matcher.start(1);
-    // :: error: (assignment)
+    // :: error: [assignment]
     i = matcher.end(1);
   }
 }

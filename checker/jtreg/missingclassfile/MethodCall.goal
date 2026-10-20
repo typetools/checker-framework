@@ -1,0 +1,2 @@
+- compiler.warn.proc.messager: [class.not.completed] Cannot read a class file that is needed by lib.SuperTypeArg: class file for lib.Missing not found. Make sure your classpath is set correctly.
+1 warning

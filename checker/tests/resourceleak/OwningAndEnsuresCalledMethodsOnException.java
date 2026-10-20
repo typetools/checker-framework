@@ -33,13 +33,13 @@ class OwningAndEnsuresCalledMethodsOnException implements Closeable {
     // OK: the good delegate constructor will either take ownership or close the argument
     // This will issue a false positive warning due to
     // https://github.com/typetools/checker-framework/issues/6270
-    // ::error: (required.method.not.called)
+    // ::error: [required.method.not.called]
     this(new Resource());
   }
 
   public OwningAndEnsuresCalledMethodsOnException(int x) throws IOException {
     // WRONG: the bad delegate constructor does not close the argument on exception
-    // ::error: (required.method.not.called)
+    // ::error: [required.method.not.called]
     this(new Resource(), x);
   }
 
@@ -47,13 +47,13 @@ class OwningAndEnsuresCalledMethodsOnException implements Closeable {
     // OK: the constructor will either take ownership or close the argument
     // This will issue a false positive warning due to
     // https://github.com/typetools/checker-framework/issues/6270
-    // ::error: (required.method.not.called)
+    // ::error: [required.method.not.called]
     new OwningAndEnsuresCalledMethodsOnException(new Resource());
   }
 
   static void exampleUseInNormalMethod2() throws IOException {
     // WRONG: the bad constructor does not close the argument on exception
-    // ::error: (required.method.not.called)
+    // ::error: [required.method.not.called]
     new OwningAndEnsuresCalledMethodsOnException(new Resource(), 0);
   }
 

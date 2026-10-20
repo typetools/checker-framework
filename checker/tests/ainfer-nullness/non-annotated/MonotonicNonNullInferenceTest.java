@@ -2,27 +2,27 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 
 public class MonotonicNonNullInferenceTest {
 
-  // :: warning: (initialization.static.field.uninitialized)
+  // :: warning: [initialization.static.field.uninitialized]
   static String staticString1;
 
-  // :: warning: (assignment)
+  // :: warning: [assignment]
   static String staticString2 = null;
 
   static String staticString3;
 
   String instanceString1;
 
-  // :: warning: (assignment)
+  // :: warning: [assignment]
   String instanceString2 = null;
 
   String instanceString3;
 
   static {
-    // :: warning: (assignment)
+    // :: warning: [assignment]
     staticString3 = null;
   }
 
-  // :: warning: (initialization.fields.uninitialized)
+  // :: warning: [initialization.fields.uninitialized]
   MonotonicNonNullInferenceTest() {
     String instanceString3 = "hello";
   }

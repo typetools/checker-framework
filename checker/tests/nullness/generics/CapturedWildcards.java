@@ -11,7 +11,7 @@ public class CapturedWildcards {
   }
 
   public boolean fail(List<? extends @Nullable MyClass> list, MyClass other) {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     return list.stream().anyMatch(je -> je.contains(other));
   }
 }

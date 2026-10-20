@@ -13,7 +13,6 @@ public interface InterfaceTest {
   default void requireAinferSibling1(@AinferSibling1 String x) {}
 
   default void testX() {
-    // :: warning: (argument)
     requireAinferSibling1(toaster);
   }
 }

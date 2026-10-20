@@ -12,14 +12,13 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -49,27 +48,25 @@ class ValueTreeAnnotator extends TreeAnnotator {
 
   /** The domain of the Constant Value Checker: the types for which it estimates possible values. */
   protected static final Set<String> COVERED_CLASS_STRINGS =
-      Collections.unmodifiableSet(
-          new HashSet<>(
-              Arrays.asList(
-                  "int",
-                  "java.lang.Integer",
-                  "double",
-                  "java.lang.Double",
-                  "byte",
-                  "java.lang.Byte",
-                  "java.lang.String",
-                  "char",
-                  "java.lang.Character",
-                  "float",
-                  "java.lang.Float",
-                  "boolean",
-                  "java.lang.Boolean",
-                  "long",
-                  "java.lang.Long",
-                  "short",
-                  "java.lang.Short",
-                  "char[]")));
+      Set.of(
+          "int",
+          "java.lang.Integer",
+          "double",
+          "java.lang.Double",
+          "byte",
+          "java.lang.Byte",
+          "java.lang.String",
+          "char",
+          "java.lang.Character",
+          "float",
+          "java.lang.Float",
+          "boolean",
+          "java.lang.Boolean",
+          "long",
+          "java.lang.Long",
+          "short",
+          "java.lang.Short",
+          "char[]");
 
   /**
    * Create a ValueTreeAnnotator.
@@ -135,7 +132,10 @@ class ValueTreeAnnotator extends TreeAnnotator {
     AnnotationMirror dimType =
         atypeFactory
             .getAnnotatedType(dimensions.get(0))
-            .getPrimaryAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
+            .getAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
+    if (dimType == null) {
+      return;
+    }
 
     if (AnnotationUtils.areSameByName(dimType, atypeFactory.BOTTOMVAL)) {
       type.replaceAnnotation(atypeFactory.BOTTOMVAL);
@@ -275,14 +275,12 @@ class ValueTreeAnnotator extends TreeAnnotator {
 
       TypeMirror newType = atm.getUnderlyingType();
       AnnotationMirror newAnno;
-      Range range;
 
       if (TypesUtils.isString(newType) || newType.getKind() == TypeKind.ARRAY) {
         // Strings and arrays do not allow conversions
         newAnno = oldAnno;
       } else if (atypeFactory.isIntRange(oldAnno)
-          && (range = atypeFactory.getRange(oldAnno))
-              .isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
+          && atypeFactory.getRange(oldAnno).isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
         Class<?> newClass = TypesUtils.getClassFromType(newType);
         if (newClass == String.class) {
           newAnno = atypeFactory.UNKNOWNVAL;
@@ -290,7 +288,9 @@ class ValueTreeAnnotator extends TreeAnnotator {
           throw new UnsupportedOperationException(
               "ValueAnnotatedTypeFactory: can't convert int to boolean");
         } else {
-          newAnno = atypeFactory.createIntRangeAnnotation(NumberUtils.castRange(newType, range));
+          newAnno =
+              atypeFactory.createIntRangeAnnotation(
+                  NumberUtils.castRange(newType, atypeFactory.getRange(oldAnno)));
         }
       } else {
         List<?> values =
@@ -307,7 +307,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
   }
 
   /**
-   * Get the "value" element/field of the annotation on {@code type}, casted to the given type.
+   * Returns the "value" element/field of the annotation on {@code type}, casted to the given type.
    * Empty list means no value is possible (dead code). Null means no information is known -- any
    * value is possible.
    *
@@ -320,7 +320,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
   }
 
   /**
-   * Get the "value" element/field of the annotation on {@code type}, casted to the given type.
+   * Returns the "value" element/field of the annotation on {@code type}, casted to the given type.
    * Empty list means no value is possible (dead code). Null means no information is known -- any
    * value is possible.
    *
@@ -349,33 +349,33 @@ class ValueTreeAnnotator extends TreeAnnotator {
     }
     Object value = tree.getValue();
     switch (tree.getKind()) {
-      case BOOLEAN_LITERAL:
+      case BOOLEAN_LITERAL -> {
         AnnotationMirror boolAnno =
             atypeFactory.createBooleanAnnotation(Collections.singletonList((Boolean) value));
         type.replaceAnnotation(boolAnno);
         return null;
-
-      case CHAR_LITERAL:
+      }
+      case CHAR_LITERAL -> {
         AnnotationMirror charAnno =
             atypeFactory.createCharAnnotation(Collections.singletonList((Character) value));
         type.replaceAnnotation(charAnno);
         return null;
-
-      case DOUBLE_LITERAL:
-      case FLOAT_LITERAL:
-      case INT_LITERAL:
-      case LONG_LITERAL:
+      }
+      case DOUBLE_LITERAL, FLOAT_LITERAL, INT_LITERAL, LONG_LITERAL -> {
         AnnotationMirror numberAnno =
             atypeFactory.createNumberAnnotationMirror(Collections.singletonList((Number) value));
         type.replaceAnnotation(numberAnno);
         return null;
-      case STRING_LITERAL:
+      }
+      case STRING_LITERAL -> {
         AnnotationMirror stringAnno =
             atypeFactory.createStringAnnotation(Collections.singletonList((String) value));
         type.replaceAnnotation(stringAnno);
         return null;
-      default:
+      }
+      default -> {
         return null;
+      }
     }
   }
 
@@ -442,8 +442,8 @@ class ValueTreeAnnotator extends TreeAnnotator {
       }
     }
 
-    if (!methodIsStaticallyExecutable(TreeUtils.elementFromUse(tree))
-        || !handledByValueChecker(type)) {
+    ExecutableElement method = TreeUtils.elementFromUse(tree);
+    if (!methodIsStaticallyExecutable(method) || !handledByValueChecker(type)) {
       return null;
     }
 
@@ -477,9 +477,17 @@ class ValueTreeAnnotator extends TreeAnnotator {
       argValues = null;
     } else {
       argValues = new ArrayList<>(arguments.size());
-      for (ExpressionTree argument : arguments) {
+      List<? extends VariableElement> parameters = method.getParameters();
+      for (int i = 0; i < arguments.size(); i++) {
+        ExpressionTree argument = arguments.get(i);
         AnnotatedTypeMirror argType = atypeFactory.getAnnotatedType(argument);
-        List<?> values = getValues(argType, argType.getUnderlyingType());
+        TypeMirror argumentType = argType.getUnderlyingType();
+        if (i < parameters.size() && parameters.get(i).asType().getKind().isPrimitive()) {
+          // Synthetic boxing calls can use a tree from before a narrowing conversion, such as
+          // Byte.valueOf(t + 1). Convert its values to the primitive parameter type for reflection.
+          argumentType = parameters.get(i).asType();
+        }
+        List<?> values = getValues(argType, argumentType);
         if (values == null || values.isEmpty()) {
           // Values aren't known, so don't try to evaluate the method.
           return null;
@@ -656,17 +664,14 @@ class ValueTreeAnnotator extends TreeAnnotator {
       return;
     }
 
-    Name id;
-    switch (tree.getKind()) {
-      case MEMBER_SELECT:
-        id = ((MemberSelectTree) tree).getIdentifier();
-        break;
-      case IDENTIFIER:
-        id = ((IdentifierTree) tree).getName();
-        break;
-      default:
-        throw new TypeSystemError("unexpected kind of enum constant use tree: " + tree.getKind());
-    }
+    Name id =
+        switch (tree.getKind()) {
+          case MEMBER_SELECT -> ((MemberSelectTree) tree).getIdentifier();
+          case IDENTIFIER -> ((IdentifierTree) tree).getName();
+          default ->
+              throw new TypeSystemError(
+                  "unexpected kind of enum constant use tree: " + tree.getKind());
+        };
     AnnotationMirror stringVal =
         atypeFactory.createStringAnnotation(Collections.singletonList(id.toString()));
     type.replaceAnnotation(stringVal);

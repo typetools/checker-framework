@@ -7,6 +7,7 @@ import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
@@ -47,6 +48,7 @@ import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.ProvidesTree;
 import com.sun.source.tree.RequiresTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
@@ -60,8 +62,8 @@ import com.sun.source.tree.UsesTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
+import com.sun.source.tree.YieldTree;
 import com.sun.source.util.TreeScanner;
-import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * A visitor that performs some default action on a tree and then all of its children. To use this
@@ -77,279 +79,9 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
   public abstract void defaultAction(Tree tree);
 
   @Override
-  public Void scan(Tree tree, Void unused) {
-    if (tree != null && SystemUtil.jreVersion >= 14) {
-      switch (tree.getKind().name()) {
-        case "SWITCH_EXPRESSION":
-          visitSwitchExpression17(tree, unused);
-          return null;
-        case "YIELD":
-          visitYield17(tree, unused);
-          return null;
-        case "BINDING_PATTERN":
-          visitBindingPattern17(tree, unused);
-          return null;
-      }
-    }
-    return super.scan(tree, unused);
-  }
-
-  @Override
-  public Void visitAnnotatedType(AnnotatedTypeTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitAnnotatedType(tree, p);
-  }
-
-  @Override
-  public Void visitAnnotation(AnnotationTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitAnnotation(tree, p);
-  }
-
-  @Override
-  public Void visitArrayAccess(ArrayAccessTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitArrayAccess(tree, p);
-  }
-
-  @Override
-  public Void visitArrayType(ArrayTypeTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitArrayType(tree, p);
-  }
-
-  @Override
-  public Void visitAssert(AssertTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitAssert(tree, p);
-  }
-
-  @Override
-  public Void visitAssignment(AssignmentTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitAssignment(tree, p);
-  }
-
-  @Override
-  public Void visitBinary(BinaryTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitBinary(tree, p);
-  }
-
-  /**
-   * Visit a binding pattern tree.
-   *
-   * @param tree a binding pattern tree
-   * @param p null
-   * @return null
-   */
-  public Void visitBindingPattern17(Tree tree, Void p) {
-    defaultAction(tree);
-    return super.scan(tree, p);
-  }
-
-  @Override
-  public Void visitBlock(BlockTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitBlock(tree, p);
-  }
-
-  @Override
-  public Void visitBreak(BreakTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitBreak(tree, p);
-  }
-
-  @Override
-  public Void visitCase(CaseTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitCase(tree, p);
-  }
-
-  @Override
-  public Void visitCatch(CatchTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitCatch(tree, p);
-  }
-
-  @Override
-  public Void visitClass(ClassTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitClass(tree, p);
-  }
-
-  @Override
   public Void visitCompilationUnit(CompilationUnitTree tree, Void p) {
     defaultAction(tree);
     return super.visitCompilationUnit(tree, p);
-  }
-
-  @Override
-  public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitCompoundAssignment(tree, p);
-  }
-
-  @Override
-  public Void visitConditionalExpression(ConditionalExpressionTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitConditionalExpression(tree, p);
-  }
-
-  @Override
-  public Void visitContinue(ContinueTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitContinue(tree, p);
-  }
-
-  @Override
-  public Void visitDoWhileLoop(DoWhileLoopTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitDoWhileLoop(tree, p);
-  }
-
-  @Override
-  public Void visitEmptyStatement(EmptyStatementTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitEmptyStatement(tree, p);
-  }
-
-  @Override
-  public Void visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitEnhancedForLoop(tree, p);
-  }
-
-  @Override
-  public Void visitErroneous(ErroneousTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitErroneous(tree, p);
-  }
-
-  @Override
-  public Void visitExports(ExportsTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitExports(tree, p);
-  }
-
-  @Override
-  public Void visitExpressionStatement(ExpressionStatementTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitExpressionStatement(tree, p);
-  }
-
-  @Override
-  public Void visitForLoop(ForLoopTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitForLoop(tree, p);
-  }
-
-  @Override
-  public Void visitIdentifier(IdentifierTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitIdentifier(tree, p);
-  }
-
-  @Override
-  public Void visitIf(IfTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitIf(tree, p);
-  }
-
-  @Override
-  public Void visitImport(ImportTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitImport(tree, p);
-  }
-
-  @Override
-  public Void visitInstanceOf(InstanceOfTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitInstanceOf(tree, p);
-  }
-
-  @Override
-  public Void visitIntersectionType(IntersectionTypeTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitIntersectionType(tree, p);
-  }
-
-  @Override
-  public Void visitLabeledStatement(LabeledStatementTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitLabeledStatement(tree, p);
-  }
-
-  @Override
-  public Void visitLambdaExpression(LambdaExpressionTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitLambdaExpression(tree, p);
-  }
-
-  @Override
-  public Void visitLiteral(LiteralTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitLiteral(tree, p);
-  }
-
-  @Override
-  public Void visitMemberReference(MemberReferenceTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitMemberReference(tree, p);
-  }
-
-  @Override
-  public Void visitMemberSelect(MemberSelectTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitMemberSelect(tree, p);
-  }
-
-  @Override
-  public Void visitMethod(MethodTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitMethod(tree, p);
-  }
-
-  @Override
-  public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitMethodInvocation(tree, p);
-  }
-
-  @Override
-  public Void visitModifiers(ModifiersTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitModifiers(tree, p);
-  }
-
-  @Override
-  public Void visitModule(ModuleTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitModule(tree, p);
-  }
-
-  @Override
-  public Void visitNewArray(NewArrayTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitNewArray(tree, p);
-  }
-
-  @Override
-  public Void visitNewClass(NewClassTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitNewClass(tree, p);
-  }
-
-  @Override
-  public Void visitOpens(OpensTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitOpens(tree, p);
-  }
-
-  @Override
-  public Void visitOther(Tree tree, Void p) {
-    defaultAction(tree);
-    return super.visitOther(tree, p);
   }
 
   @Override
@@ -359,39 +91,69 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
   }
 
   @Override
-  public Void visitParameterizedType(ParameterizedTypeTree tree, Void p) {
+  public Void visitImport(ImportTree tree, Void p) {
     defaultAction(tree);
-    return super.visitParameterizedType(tree, p);
+    return super.visitImport(tree, p);
   }
 
   @Override
-  public Void visitParenthesized(ParenthesizedTree tree, Void p) {
+  public Void visitClass(ClassTree tree, Void p) {
     defaultAction(tree);
-    return super.visitParenthesized(tree, p);
+    return super.visitClass(tree, p);
   }
 
   @Override
-  public Void visitPrimitiveType(PrimitiveTypeTree tree, Void p) {
+  public Void visitMethod(MethodTree tree, Void p) {
     defaultAction(tree);
-    return super.visitPrimitiveType(tree, p);
+    return super.visitMethod(tree, p);
   }
 
   @Override
-  public Void visitProvides(ProvidesTree tree, Void p) {
+  public Void visitVariable(VariableTree tree, Void p) {
     defaultAction(tree);
-    return super.visitProvides(tree, p);
+    return super.visitVariable(tree, p);
   }
 
   @Override
-  public Void visitRequires(RequiresTree tree, Void p) {
+  public Void visitEmptyStatement(EmptyStatementTree tree, Void p) {
     defaultAction(tree);
-    return super.visitRequires(tree, p);
+    return super.visitEmptyStatement(tree, p);
   }
 
   @Override
-  public Void visitReturn(ReturnTree tree, Void p) {
+  public Void visitBlock(BlockTree tree, Void p) {
     defaultAction(tree);
-    return super.visitReturn(tree, p);
+    return super.visitBlock(tree, p);
+  }
+
+  @Override
+  public Void visitDoWhileLoop(DoWhileLoopTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitDoWhileLoop(tree, p);
+  }
+
+  @Override
+  public Void visitWhileLoop(WhileLoopTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitWhileLoop(tree, p);
+  }
+
+  @Override
+  public Void visitForLoop(ForLoopTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitForLoop(tree, p);
+  }
+
+  @Override
+  public Void visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitEnhancedForLoop(tree, p);
+  }
+
+  @Override
+  public Void visitLabeledStatement(LabeledStatementTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitLabeledStatement(tree, p);
   }
 
   @Override
@@ -407,9 +169,16 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
    * @param p null
    * @return null
    */
-  public Void visitSwitchExpression17(Tree tree, Void p) {
+  @Override
+  public Void visitSwitchExpression(SwitchExpressionTree tree, Void p) {
     defaultAction(tree);
-    return super.scan(tree, p);
+    return super.visitSwitchExpression(tree, p);
+  }
+
+  @Override
+  public Void visitCase(CaseTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitCase(tree, p);
   }
 
   @Override
@@ -419,27 +188,105 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
   }
 
   @Override
-  public Void visitThrow(ThrowTree tree, Void p) {
-    defaultAction(tree);
-    return super.visitThrow(tree, p);
-  }
-
-  @Override
   public Void visitTry(TryTree tree, Void p) {
     defaultAction(tree);
     return super.visitTry(tree, p);
   }
 
   @Override
-  public Void visitTypeCast(TypeCastTree tree, Void p) {
+  public Void visitCatch(CatchTree tree, Void p) {
     defaultAction(tree);
-    return super.visitTypeCast(tree, p);
+    return super.visitCatch(tree, p);
   }
 
   @Override
-  public Void visitTypeParameter(TypeParameterTree tree, Void p) {
+  public Void visitConditionalExpression(ConditionalExpressionTree tree, Void p) {
     defaultAction(tree);
-    return super.visitTypeParameter(tree, p);
+    return super.visitConditionalExpression(tree, p);
+  }
+
+  @Override
+  public Void visitIf(IfTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitIf(tree, p);
+  }
+
+  @Override
+  public Void visitExpressionStatement(ExpressionStatementTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitExpressionStatement(tree, p);
+  }
+
+  @Override
+  public Void visitBreak(BreakTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitBreak(tree, p);
+  }
+
+  @Override
+  public Void visitContinue(ContinueTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitContinue(tree, p);
+  }
+
+  @Override
+  public Void visitReturn(ReturnTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitReturn(tree, p);
+  }
+
+  @Override
+  public Void visitThrow(ThrowTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitThrow(tree, p);
+  }
+
+  @Override
+  public Void visitAssert(AssertTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitAssert(tree, p);
+  }
+
+  @Override
+  public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitMethodInvocation(tree, p);
+  }
+
+  @Override
+  public Void visitNewClass(NewClassTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitNewClass(tree, p);
+  }
+
+  @Override
+  public Void visitNewArray(NewArrayTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitNewArray(tree, p);
+  }
+
+  @Override
+  public Void visitLambdaExpression(LambdaExpressionTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitLambdaExpression(tree, p);
+  }
+
+  @Override
+  public Void visitParenthesized(ParenthesizedTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitParenthesized(tree, p);
+  }
+
+  @Override
+  public Void visitAssignment(AssignmentTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitAssignment(tree, p);
+  }
+
+  @Override
+  public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitCompoundAssignment(tree, p);
   }
 
   @Override
@@ -449,9 +296,147 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
   }
 
   @Override
+  public Void visitBinary(BinaryTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitBinary(tree, p);
+  }
+
+  @Override
+  public Void visitTypeCast(TypeCastTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitTypeCast(tree, p);
+  }
+
+  @Override
+  public Void visitInstanceOf(InstanceOfTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitInstanceOf(tree, p);
+  }
+
+  @Override
+  public Void visitBindingPattern(BindingPatternTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitBindingPattern(tree, p);
+  }
+
+  @Override
+  public Void visitArrayAccess(ArrayAccessTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitArrayAccess(tree, p);
+  }
+
+  @Override
+  public Void visitMemberSelect(MemberSelectTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitMemberSelect(tree, p);
+  }
+
+  @Override
+  public Void visitMemberReference(MemberReferenceTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitMemberReference(tree, p);
+  }
+
+  @Override
+  public Void visitIdentifier(IdentifierTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitIdentifier(tree, p);
+  }
+
+  @Override
+  public Void visitLiteral(LiteralTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitLiteral(tree, p);
+  }
+
+  @Override
+  public Void visitPrimitiveType(PrimitiveTypeTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitPrimitiveType(tree, p);
+  }
+
+  @Override
+  public Void visitArrayType(ArrayTypeTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitArrayType(tree, p);
+  }
+
+  @Override
+  public Void visitParameterizedType(ParameterizedTypeTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitParameterizedType(tree, p);
+  }
+
+  @Override
   public Void visitUnionType(UnionTypeTree tree, Void p) {
     defaultAction(tree);
     return super.visitUnionType(tree, p);
+  }
+
+  @Override
+  public Void visitIntersectionType(IntersectionTypeTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitIntersectionType(tree, p);
+  }
+
+  @Override
+  public Void visitTypeParameter(TypeParameterTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitTypeParameter(tree, p);
+  }
+
+  @Override
+  public Void visitWildcard(WildcardTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitWildcard(tree, p);
+  }
+
+  @Override
+  public Void visitModifiers(ModifiersTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitModifiers(tree, p);
+  }
+
+  @Override
+  public Void visitAnnotation(AnnotationTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitAnnotation(tree, p);
+  }
+
+  @Override
+  public Void visitAnnotatedType(AnnotatedTypeTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitAnnotatedType(tree, p);
+  }
+
+  @Override
+  public Void visitModule(ModuleTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitModule(tree, p);
+  }
+
+  @Override
+  public Void visitExports(ExportsTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitExports(tree, p);
+  }
+
+  @Override
+  public Void visitOpens(OpensTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitOpens(tree, p);
+  }
+
+  @Override
+  public Void visitProvides(ProvidesTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitProvides(tree, p);
+  }
+
+  @Override
+  public Void visitRequires(RequiresTree tree, Void p) {
+    defaultAction(tree);
+    return super.visitRequires(tree, p);
   }
 
   @Override
@@ -461,32 +446,20 @@ public abstract class TreeScannerWithDefaults extends TreeScanner<Void, Void> {
   }
 
   @Override
-  public Void visitVariable(VariableTree tree, Void p) {
+  public Void visitOther(Tree tree, Void p) {
     defaultAction(tree);
-    return super.visitVariable(tree, p);
+    return super.visitOther(tree, p);
   }
 
   @Override
-  public Void visitWhileLoop(WhileLoopTree tree, Void p) {
+  public Void visitErroneous(ErroneousTree tree, Void p) {
     defaultAction(tree);
-    return super.visitWhileLoop(tree, p);
+    return super.visitErroneous(tree, p);
   }
 
   @Override
-  public Void visitWildcard(WildcardTree tree, Void p) {
+  public Void visitYield(YieldTree tree, Void p) {
     defaultAction(tree);
-    return super.visitWildcard(tree, p);
-  }
-
-  /**
-   * Visit a yield tree.
-   *
-   * @param tree a yield tree
-   * @param p null
-   * @return null
-   */
-  public Void visitYield17(Tree tree, Void p) {
-    defaultAction(tree);
-    return super.scan(tree, p);
+    return super.visitYield(tree, p);
   }
 }

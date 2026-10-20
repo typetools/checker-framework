@@ -14,12 +14,12 @@ import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.BinaryArgTypes;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.IPair;
 
 /**
  * The SignednessVisitor enforces the Signedness Checker rules. These rules are described in the
@@ -72,10 +72,9 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     ExpressionTree leftOp = tree.getLeftOperand();
     ExpressionTree rightOp = tree.getRightOperand();
 
-    IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes =
-        atypeFactory.binaryTreeArgTypes(tree);
-    AnnotatedTypeMirror leftOpType = argTypes.first;
-    AnnotatedTypeMirror rightOpType = argTypes.second;
+    BinaryArgTypes argTypes = atypeFactory.binaryTreeArgTypes(tree);
+    AnnotatedTypeMirror leftOpType = argTypes.left();
+    AnnotatedTypeMirror rightOpType = argTypes.right();
 
     Tree.Kind kind = tree.getKind();
 
@@ -142,8 +141,8 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
           }
           break;
         }
-        // Other plus binary trees should be handled in the default case.
-        // fall through
+      // Other plus binary trees should be handled in the default case.
+      // fall through
       default:
         if (leftOpType.hasPrimaryAnnotation(Unsigned.class)
             && rightOpType.hasPrimaryAnnotation(Signed.class)) {
@@ -160,7 +159,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
   // Ensure that method annotations are not written on methods they don't apply to.
   // Copied from InterningVisitor
   @Override
-  public void processMethodTree(MethodTree tree) {
+  public void processMethodTree(String className, MethodTree tree) {
     ExecutableElement methElt = TreeUtils.elementFromDeclaration(tree);
     boolean hasEqualsMethodAnno =
         atypeFactory.getDeclAnnotation(methElt, EqualsMethod.class) != null;
@@ -170,7 +169,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
           tree, "invalid.method.annotation", "@EqualsMethod", "1 or 2", methElt, params);
     }
 
-    super.processMethodTree(tree);
+    super.processMethodTree(className, tree);
   }
 
   @Override
@@ -246,10 +245,9 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     ExpressionTree var = tree.getVariable();
     ExpressionTree expr = tree.getExpression();
 
-    IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes =
-        atypeFactory.compoundAssignmentTreeArgTypes(tree);
-    AnnotatedTypeMirror varType = argTypes.first;
-    AnnotatedTypeMirror exprType = argTypes.second;
+    BinaryArgTypes argTypes = atypeFactory.compoundAssignmentTreeArgTypes(tree);
+    AnnotatedTypeMirror varType = argTypes.left();
+    AnnotatedTypeMirror exprType = argTypes.right();
 
     Tree.Kind kind = tree.getKind();
 
@@ -305,8 +303,8 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
           }
           break;
         }
-        // Other plus binary trees should be handled in the default case.
-        // fall through
+      // Other plus binary trees should be handled in the default case.
+      // fall through
       default:
         if (varType.hasPrimaryAnnotation(Unsigned.class)
             && exprType.hasPrimaryAnnotation(Signed.class)) {

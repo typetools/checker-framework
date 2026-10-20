@@ -14,6 +14,9 @@ tags
 *.orig
 .DS_Store
 dot_files
+*_Generated.class
+*_temp.class
+*~
 
 # Eclipse files
 .metadata
@@ -27,6 +30,7 @@ dot_files
 .idea
 .vscode
 
+# User customizations
 Makefile.user
 local.properties
 
@@ -37,6 +41,8 @@ local.properties
 api
 build
 dist
+buildSrc/.gradle
+gradle/verification-metadata.dryrun.xml
 docs/tmpapi/
 stubparser/docs/api
 # Don't want to ignore .jar files in checker/lib/ nor in gradle/wrapper
@@ -51,7 +57,7 @@ checker/bin-devel/.git-scripts
 checker/bin-devel/.html-tools
 checker/bin-devel/.plume-scripts
 checker/bin-devel/.run-google-java-format
-checker/bin-devel/dockerdir
+checker/bin-devel/dockerdir*
 checker/src/main/resources/git.properties
 # These tests are generated from those in checker/tests/calledmethods-lombok during the build.
 # They must be in the tests/ directory rather than the build/ directory so that
@@ -66,26 +72,27 @@ manual.blg
 manual.dvi
 manual.fdb_latexmk
 manual.fls
-manual.haux
 manual.html
-manual.htoc
-manual.image.log
-manual.image.out
-manual.image.tex
-manual.image.tex.new
 manual.log
 manual.out
 manual.pdf
 manual.ps
 manual.toc
-manual001.gif
-manual001.png
-manual002.gif
-manual002.png
-manual003.gif
-manual003.png
-manual004.gif
-manual004.png
+docs/annotation-file-utilities/annotation-file-format.html
+docs/annotation-file-utilities/manual.css
+docs/annotation-file-utilities/figures/chainlink.svg
+docs/annotation-file-utilities/favicon-checkerframework.png
+docs/annotation-file-utilities/annotation-file-format.log
+docs/annotation-file-utilities/annotation-file-format.pdf
+docs/annotation-file-utilities/annotation-file-format.toc
+docs/annotation-file-utilities/corresp.png
+docs/annotation-file-utilities/dataflow.png
+docs/annotation-file-utilities/figures/corresp.png
+docs/annotation-file-utilities/figures/dataflow.png
+docs/annotation-file-utilities/figures/nocast.png
+docs/annotation-file-utilities/figures/typecast.png
+docs/annotation-file-utilities/nocast.png
+docs/annotation-file-utilities/typecast.png
 docs/examples/**/*.class
 docs/examples/MavenExample/Out.txt
 docs/examples/errorprone/.gradle/
@@ -94,21 +101,41 @@ docs/examples/lombok/.gradle/
 docs/examples/lombok/Out.txt
 docs/examples/lombok/lombok.config
 docs/manual/*.png
-docs/manual/*.svg
 docs/manual/contributors.txt
 docs/manual/figures/*.eps
 docs/manual/figures/*.pdf
 docs/manual/figures/*.png
 docs/manual/figures/signature-types-with-canonicalname.dia
-docs/manual/manual.html-e
+
+# lwarp (which produces the HTML versions of the manuals)
+*_html.*
+*.lwarpmkconf
+lwarpmk.conf
+comment_*.cut
+lwarp.css
+lwarp.ist
+lwarp.xdy
+lwarp_formal.css
+lwarp_mathjax.txt
+lwarp_one_limage.txt
+lwarp_sagebrush.css
+sample_project.css
+*-images.txt
+docs/manual/manual-*.html
+docs/manual/manual-images/
+docs/manual/manual-multipage-images/
+docs/annotation-file-utilities/annotation-file-format-images/
+docs/manual/manual-multipage.*
+!docs/manual/manual-multipage.tex
 docs/tmpapi/
+*.fls
 
 # dataflow manual
-dataflow/manual/dataflow.aux
-dataflow/manual/dataflow.dvi
-dataflow/manual/dataflow.log
-dataflow/manual/dataflow.out
-dataflow/manual/dataflow.pdf
+dataflow/manual/checker-framework-dataflow-manual.aux
+dataflow/manual/checker-framework-dataflow-manual.dvi
+dataflow/manual/checker-framework-dataflow-manual.log
+dataflow/manual/checker-framework-dataflow-manual.out
+dataflow/manual/checker-framework-dataflow-manual.pdf
 
 docs/tutorial/src/personalblog-demo/bin/net/eyde/personalblog/service/PersonalBlogService.class
 docs/tutorial/src/personalblog-demo/bin/net/eyde/personalblog/struts/action/ReadAction.class
@@ -128,6 +155,7 @@ target/
 
 checker/tests/command-line/issue618/TwoCheckers.class
 checker/tests/command-line/issue618/out.txt
+checker/tests/command-line/override-message/OverrideMessage.actual
 checker/tests/nullness-extra/*.class
 checker/tests/nullness-extra/compat/Out.txt
 checker/tests/nullness-extra/compat/javax/annotation/Nullable.class
@@ -154,6 +182,9 @@ dataflow/tests/busy-expression/Out.txt
 dataflow/tests/busy-expression/*.class
 dataflow/tests/busyexpr/Out.txt
 dataflow/tests/busyexpr/*.class
+dataflow/tests/busyexpr/Test-test-int.dot
+dataflow/tests/busyexpr/Test-test-int.dot.pdf
+dataflow/tests/busyexpr/methods.txt
 dataflow/tests/cfgconstruction/*.class
 dataflow/tests/constant-propagation/Out.txt
 dataflow/tests/constant-propagation/*.class
@@ -163,6 +194,8 @@ dataflow/tests/live-variable/Out.txt
 dataflow/tests/live-variable/*.class
 dataflow/tests/reachingdef/Out.txt
 dataflow/tests/reachingdef/*.class
+dataflow/tests/java22/unnamed-pattern/Out.txt
+dataflow/tests/java22/unnamed-pattern/*.class
 
 
 checker/jtreg/multipleexecutions/Main.class
@@ -173,6 +206,8 @@ checker-qual-android/src
 # Some tests produce output into the tests/ directory instead of the build/ directory.
 checker/tests/ainfer-index/annotated/
 checker/tests/ainfer-index/inference-output/
+checker/tests/ainfer-relevance/annotated/
+checker/tests/ainfer-relevance/inference-output/
 checker/tests/ainfer-nullness/annotated/
 checker/tests/ainfer-nullness/inference-output/
 checker/tests/ainfer-testchecker/annotated/
@@ -180,3 +215,91 @@ checker/tests/ainfer-testchecker/inference-output/
 checker/tests/ainfer-resourceleak/annotated/
 checker/tests/ainfer-resourceleak/inference-output/
 framework/tests/returnsreceiverdelomboked/
+
+# Annotation tools
+
+annotation-file-utilities/annotation-file-format.aux
+annotation-file-utilities/annotation-file-format.blg
+annotation-file-utilities/annotation-file-format.dvi
+annotation-file-utilities/annotation-file-format.html
+annotation-file-utilities/annotation-file-format.log
+annotation-file-utilities/annotation-file-format.out
+annotation-file-utilities/annotation-file-format.pdf
+annotation-file-utilities/annotation-file-format.ps
+annotation-file-utilities/annotation-file-format.toc
+annotation-file-utilities/dist/annotation-file-utilities.jar
+annotation-file-utilities/dist/annotation-file-utilities-all.jar
+annotation-file-utilities/annotation-file-utilities-all-but-javac.jar
+annotation-file-utilities/annotation-tools.zip
+annotation-file-utilities/plume-bib
+annotation-file-utilities/design.aux
+annotation-file-utilities/design.log
+annotation-file-utilities/design.pdf
+
+annotation-file-utilities/build
+annotation-file-utilities/.gradle
+annotation-file-utilities/gradle/verification-metadata.dryrun.xml
+
+annotation-file-utilities/javadoc
+
+annotation-file-utilities/tests/*.diff
+annotation-file-utilities/tests/*.log
+annotation-file-utilities/tests/*.output
+annotation-file-utilities/tests/**/*.class
+annotation-file-utilities/tests/Makefile.user
+annotation-file-utilities/tests/abbreviated/*.diff
+annotation-file-utilities/tests/abbreviated/*.log
+annotation-file-utilities/tests/abbreviated/*.output
+annotation-file-utilities/tests/ad-hoc/bridge/A.class
+annotation-file-utilities/tests/ad-hoc/bridge/C.class
+annotation-file-utilities/tests/ad-hoc/bridge/C.jaif
+annotation-file-utilities/tests/converted/*.diff
+annotation-file-utilities/tests/converted/*.log
+annotation-file-utilities/tests/converted/*.output
+# ignore link to parent
+annotation-file-utilities/tests/converted/*.java
+# ignore link to parent
+annotation-file-utilities/tests/converted/*.goal
+annotation-file-utilities/tests/enum-imports/*.diff
+annotation-file-utilities/tests/enum-imports/*.log
+annotation-file-utilities/tests/enum-imports/*.output
+annotation-file-utilities/tests/issue155/Issue155.diff
+annotation-file-utilities/tests/issue155/Issue155.log
+annotation-file-utilities/tests/issue155/Issue155.output
+annotation-file-utilities/tests/source-extension/*.diff
+annotation-file-utilities/tests/source-extension/*.log
+annotation-file-utilities/tests/source-extension/*.output
+annotation-file-utilities/tests/system-test/out1
+annotation-file-utilities/tests/system-test/out2.diff
+annotation-file-utilities/tests/system-test/out2.jaif
+annotation-file-utilities/tests/system-test/out3
+annotation-file-utilities/tests/system-test/out4.class
+annotation-file-utilities/tests/system-test/out5.diff
+annotation-file-utilities/tests/system-test/out5.jaif
+
+scene-lib/javadoc
+scene-lib/reports
+scene-lib/test/annotations/tests/executable/example-output.jaif
+scene-lib/test/annotations/tests/executable/example-stdout.jaif
+
+*.class-via-classfile-scene.txt
+*.class-correct-scene.txt
+*.class-from-indexfile.txt
+*.class-generated-scene.txt
+
+.metadata
+
+annotation-file-utilities/figures/*.eps
+annotation-file-utilities/figures/*.pdf
+annotation-file-utilities/figures/*.png
+annotation-file-utilities/*.png
+
+# Obtained via Git
+.plume-scripts
+
+# Created by Claude
+annotation-file-utilities/bin/test/
+checker-qual/bin/
+checker/bin/main/
+checker/bin/test/
+framework/bin/

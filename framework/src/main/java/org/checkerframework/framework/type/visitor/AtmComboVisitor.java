@@ -40,7 +40,7 @@ public interface AtmComboVisitor<RETURN_TYPE, PARAM> {
     // Message is on one line, without line breaks, because in a stack trace only the first line
     // of the message may be shown.
     return String.format(
-        "%s: unexpected combination:  type: [%s %s] %s  supertype: [%s %s] %s",
+        "%s: unexpected combination:  type1: [%s %s] %s  type2: [%s %s] %s",
         this.getClass().getSimpleName(),
         type1.getKind(),
         type1.getClass(),

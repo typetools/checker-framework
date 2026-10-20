@@ -20,22 +20,22 @@ public class GenericArgs {
 
   static class X<@NonNull T extends @NonNull Object> {
     T value() {
-      // :: error: (return)
+      // :: error: [return]
       return null;
     }
   }
 
   public static void test2() {
-    // :: error: (type.argument)
+    // :: error: [type.argument]
     Object o = new X<Object>().value();
   }
 
   static <@NonNull Z extends @NonNull Object> void test3(Z z) {}
 
   void test4() {
-    // :: error: (type.argument)
+    // :: error: [type.argument]
     GenericArgs.<@Nullable Object>test3(null);
-    // :: error: (argument)
+    // :: error: [argument]
     GenericArgs.<@NonNull Object>test3(null);
   }
 
@@ -44,7 +44,7 @@ public class GenericArgs {
   }
 
   void test5() {
-    // :: error: (argument)
+    // :: error: [argument]
     new <@NonNull String>GenericConstructor(null);
   }
 

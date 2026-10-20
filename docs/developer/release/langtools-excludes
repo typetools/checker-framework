@@ -1,7 +1,0 @@
-old-src/**
-build/**
-dist/bin/**
-.git/**
-.gitignore
-.jcheck
-**/*.orig

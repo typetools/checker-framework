@@ -48,10 +48,9 @@ public class ThrowNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ThrowNode)) {
+    if (!(obj instanceof ThrowNode other)) {
       return false;
     }
-    ThrowNode other = (ThrowNode) obj;
     return getExpression().equals(other.getExpression());
   }
 

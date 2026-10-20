@@ -3,7 +3,6 @@ package org.checkerframework.common.aliasing;
 import com.sun.source.tree.NewArrayTree;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
@@ -27,7 +26,6 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 /** Annotated type factory for the Aliasing Checker. */
 public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-  /** Aliasing annotations. */
   /** The @{@link MaybeAliased} annotation. */
   protected final AnnotationMirror MAYBE_ALIASED =
       AnnotationBuilder.fromClass(elements, MaybeAliased.class);
@@ -44,19 +42,12 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       AnnotationBuilder.fromClass(elements, MaybeLeaked.class);
 
   /** Create the type factory. */
+  @SuppressWarnings("this-escape")
   public AliasingAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     if (this.getClass() == AliasingAnnotatedTypeFactory.class) {
       this.postInit();
     }
-  }
-
-  // @NonLeaked and @LeakedToResult are type qualifiers because of a checker framework limitation
-  // (Issue 383). Once the stub parser gets updated to read non-type-qualifiers annotations on
-  // stub files, this annotation won't be a type qualifier anymore.
-  @Override
-  protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    return getBundledTypeQualifiers(MaybeLeaked.class);
   }
 
   @Override

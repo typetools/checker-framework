@@ -69,7 +69,7 @@ public class DeconstructorPatternNode extends Node {
   protected @MonotonicNonNull List<LocalVariableNode> bindingVariables = null;
 
   /**
-   * Return all the binding variables in this pattern.
+   * Returns all the binding variables in this pattern.
    *
    * @return all the binding variables in this pattern
    */
@@ -80,8 +80,10 @@ public class DeconstructorPatternNode extends Node {
       } else {
         bindingVariables = new ArrayList<>(nestedPatterns.size());
         for (Node patternNode : nestedPatterns) {
-          if (patternNode instanceof LocalVariableNode) {
-            bindingVariables.add((LocalVariableNode) patternNode);
+          if (patternNode instanceof LocalVariableNode localVariableNode) {
+            bindingVariables.add(localVariableNode);
+          } else if (patternNode instanceof AnyPatternNode) {
+            // Do nothing, as AnyPatternNode does not have binding variables.
           } else {
             bindingVariables.addAll(((DeconstructorPatternNode) patternNode).getBindingVariables());
           }
@@ -90,5 +92,10 @@ public class DeconstructorPatternNode extends Node {
       }
     }
     return bindingVariables;
+  }
+
+  @Override
+  public String toString() {
+    return deconstructorPattern.toString();
   }
 }

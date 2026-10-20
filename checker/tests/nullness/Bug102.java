@@ -5,7 +5,7 @@ public final class Bug102 {
   void bug1() {
     C<String> c = new C<>();
     m(c);
-    m(c); // note: the bug disapear if calling m only once
+    m(c); // note: the bug disappear if calling m only once
   }
 
   void bug2() {
@@ -13,7 +13,7 @@ public final class Bug102 {
     m(c);
   }
 
-  // :: error: (invalid.polymorphic.qualifier)
+  // :: error: [invalid.polymorphic.qualifier]
   <@org.checkerframework.checker.nullness.qual.PolyNull S> void m(
       final C<@org.checkerframework.checker.nullness.qual.PolyNull String> a) {}
 }

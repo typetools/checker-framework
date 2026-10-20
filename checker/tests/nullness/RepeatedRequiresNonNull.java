@@ -16,20 +16,20 @@ class RepeatedRequiresNonNull {
   }
 
   void use1() {
-    // :: error: (contracts.precondition)
+    // :: error: [contracts.precondition]
     test();
   }
 
   void use2() {
     if (this.f1 != null) {
-      // :: error: (contracts.precondition)
+      // :: error: [contracts.precondition]
       test();
     }
   }
 
   void use3() {
     if (this.f2 != null) {
-      // :: error: (contracts.precondition)
+      // :: error: [contracts.precondition]
       test();
     }
   }
@@ -52,20 +52,20 @@ class RepeatedRequiresNonNull {
   }
 
   void use21() {
-    // :: error: (contracts.precondition)
+    // :: error: [contracts.precondition]
     test2();
   }
 
   void use22() {
     if (this.f1 != null) {
-      // :: error: (contracts.precondition)
+      // :: error: [contracts.precondition]
       test2();
     }
   }
 
   void use23() {
     if (this.f2 != null) {
-      // :: error: (contracts.precondition)
+      // :: error: [contracts.precondition]
       test2();
     }
   }

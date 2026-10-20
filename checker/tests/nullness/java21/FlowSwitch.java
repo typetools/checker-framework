@@ -27,7 +27,8 @@ public class FlowSwitch {
       case -1, 1:
         msg = "-1 or 1";
         break;
-      case Integer j when j > 0:
+      case Integer j
+      when j > 0:
         msg = "pos";
         break;
       case Integer j:

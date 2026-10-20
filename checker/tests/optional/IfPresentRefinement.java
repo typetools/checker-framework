@@ -12,7 +12,7 @@ public class IfPresentRefinement {
   }
 
   void m3(Optional<String> o) {
-    // :: error: (method.invocation)
+    // :: error: [method.invocation]
     o.ifPresentOrElse(s -> o.get(), () -> o.get());
   }
 }

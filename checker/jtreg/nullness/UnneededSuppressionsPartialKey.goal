@@ -1,0 +1,5 @@
+UnneededSuppressionsPartialKey.java:28:3: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "nullness:return" is not used by NullnessChecker
+UnneededSuppressionsPartialKey.java:33:3: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "nullness:return" is not used by NullnessChecker
+UnneededSuppressionsPartialKey.java:38:3: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "nullness:return" is not used by NullnessChecker
+UnneededSuppressionsPartialKey.java:38:3: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "nullness:suppression" is not used by NullnessChecker
+4 warnings

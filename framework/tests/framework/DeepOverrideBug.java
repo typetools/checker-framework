@@ -18,12 +18,12 @@ public class DeepOverrideBug {
   public abstract static class B extends A implements I {}
 
   public static class C extends B {
-    // :: error: (override.return)
+    // :: error: [override.return]
     public String interfaceMethod() { // should emit error
       return null;
     }
 
-    // :: error: (override.return)
+    // :: error: [override.return]
     public String abstractMethod() { // should emit error
       return null;
     }

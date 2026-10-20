@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Aliasing Checker}{aliasing-checker}
 
 The Aliasing Checker identifies expressions that definitely have no
@@ -7,8 +6,8 @@ aliases.
 Two expressions are aliased when they have the same non-primitive value;
 that is, they are references to the identical Java object
 in the heap. Another way of saying this is that two expressions,
-$\mathit{exprA}$ and $\mathit{exprB}$, are aliases of each other when
-$\mathit{exprA} \<==> \mathit{exprB}$ at the same program point.
+\textit{exprA} and \textit{exprB}, are aliases of each other when
+\textit{exprA} \<==> \textit{exprB} at the same program point.
 
 Assigning to a variable or field typically creates an alias.  For example,
 after the statement \<a = b;>, the variables \<a> and \<b> are aliased.
@@ -24,7 +23,7 @@ This type system is mainly intended to be used together with other type systems.
 For example, the SPARTA information flow type-checker
 (Section~\ref{sparta-checker}) uses the Aliasing Checker to improve its
 type refinement --- if an expression has no aliases, a more refined type
-can often be inferred, otherwise the type-checker makes conservative
+can often be inferred; otherwise, the type-checker makes conservative
 assumptions.
 
 \sectionAndLabel{Aliasing annotations}{aliasing-annotations}
@@ -51,7 +50,7 @@ is the type of an expression that has no aliases.
 The \code{@Unique} annotation is only allowed at local variables, method
 parameters, constructor results, and method returns.
 A constructor's result should be annotated with \code{@Unique} only if the
-constructor's body does not creates an alias to the constructed object.
+constructor's body does not create an alias to the constructed object.
 
 \end{description}
 
@@ -62,10 +61,10 @@ the receiver parameter, \<this>):
 \begin{description}
 
 \item[\refqualclass{common/aliasing/qual}{NonLeaked}]
-identifies a formal parameter that is not leaked nor
+identifies a formal parameter that is neither leaked nor
 returned by the method body.
 For example, the formal parameter of the String copy constructor,
-\code{String(String s)}, is \code{@NonLeaked} because the body of the method
+\code{String(String s)}, is \code{@NonLeaked} because the body of the constructor
 only makes a copy of the parameter.
 
 \item[\refqualclass{common/aliasing/qual}{LeakedToResult}]
@@ -118,8 +117,8 @@ However, the body of the method might create an alias or leak the
 reference.  Thus, the Aliasing Checker always treats a method call as
 creating aliases for each argument unless the corresponding formal
 parameter is marked as
-@\refqualclass{common/aliasing/qual}{NonLeaked} or
-@\refqualclass{common/aliasing/qual}{LeakedToResult}.
+\refqualclass{common/aliasing/qual}{NonLeaked} or
+\refqualclass{common/aliasing/qual}{LeakedToResult}.
 
 Here is an example for a return statement:
 
@@ -178,7 +177,7 @@ void aliasInCatchBlock() {
 \item[Array initializers]
 
 Array initializers assign the elements in the initializers to corresponding
-indexes in the array, therefore expressions in an array initializer are leaked.
+indexes in the array; therefore, expressions in an array initializer are leaked.
 
 \begin{Verbatim}
 void aliasInArrayInitializer() {
@@ -233,7 +232,7 @@ code by rejecting the type \code{List<@Unique Object>}.
 
 \sectionAndLabel{Aliasing type refinement}{aliasing-refinement}
 
-Type refinement enables a type checker to treat an expression as a subtype
+Type refinement enables a type-checker to treat an expression as a subtype
 of its declared type.  For example, even if you declare a local variable as
 \<@MaybeAliased> (or don't write anything, since \<@MaybeAliased> is the
 default), sometimes the Aliasing Checker can determine that it is actually
@@ -243,8 +242,8 @@ For more details, see Section~\ref{type-refinement}.
 
 The Aliasing Checker treats type refinement in the usual way,
 except that at (pseudo-)assignments
-the right-hand-side (RHS) may lose its type refinement, before the
-left-hand-side (LHS) is type-refined.
+the right-hand side (RHS) may lose its type refinement before the
+left-hand side (LHS) is type-refined.
 The RHS always loses its type refinement (it is widened to
 \code{@MaybeAliased}, and its declared type must have been
 \code{@MaybeAliased}) except in the following cases:
@@ -252,9 +251,9 @@ The RHS always loses its type refinement (it is widened to
 \begin{itemize}
 \item
 The RHS is a fresh expression --- an expression that returns a different value
-each time it is evaluated. In practice, this is only method/constructor calls
-with \code{@Unique} return type. A variable/field is not fresh because it can
-return the same value when evaluated twice.
+each time it is evaluated. In practice, these are only method/constructor calls
+with a \code{@Unique} return type. A variable/field is not fresh because it can
+produce the same value when evaluated twice.
 \item
 The LHS is a \code{@NonLeaked} formal parameter and the RHS is an argument in a
 method call or constructor invocation.
@@ -277,9 +276,7 @@ Figure~\ref{fig-aliasing-refinement-example} gives an example of the Aliasing Ch
 type refinement rules.
 
 \begin{figure}
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
 // Annotations on the StringBuffer class, used in the examples below.
 // class StringBuffer {
@@ -291,7 +288,7 @@ void foo() {
     StringBuffer sb = new StringBuffer();    // sb is refined to @Unique.
 
     StringBuffer sb2 = sb;                   // sb loses its refinement.
-    // Both sb and sb2 have aliases and because of that have type @MaybeAliased.
+    // Both sb and sb2 have aliases and therefore have type @MaybeAliased.
 }
 
 void bar() {
@@ -303,13 +300,11 @@ void bar() {
     StringBuffer sb2 = sb.append("someString");
     // sb is leaked and becomes @MaybeAliased.
 
-    // Both sb and sb2 have aliases and because of that have type @MaybeAliased.
+    // Both sb and sb2 have aliases and therefore have type @MaybeAliased.
 }
 
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 \caption{Example of the Aliasing Checker's type refinement rules.}
 \label{fig-aliasing-refinement-example}
 \end{figure}

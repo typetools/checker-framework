@@ -13,7 +13,7 @@ class OwningParams {
     }
 
     void passOwnershipTest() {
-      // :: warning: (required.method.not.called)
+      // :: warning: [required.method.not.called]
       Foo f = new Foo();
       passOwnership(f);
     }
@@ -44,15 +44,15 @@ class OwningParams {
     }
 
     void checkAliasTest() {
-      // :: warning: (required.method.not.called)
+      // :: warning: [required.method.not.called]
       Foo f = new Foo();
       checkAlias(f);
     }
 
     void passOwnershipTest() {
-      // :: warning: (required.method.not.called)
+      // :: warning: [required.method.not.called]
       Foo f1 = new Foo();
-      // :: warning: (required.method.not.called)
+      // :: warning: [required.method.not.called]
       Foo f2 = new Foo();
       passOwnership(f1, f2);
     }

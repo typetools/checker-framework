@@ -4,6 +4,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.UnionClassType;
@@ -41,7 +42,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /** A type factory for the @ClassVal and @ClassBound annotations. */
 public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -62,6 +63,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the type-checker associated with this factory
    */
+  @SuppressWarnings("this-escape")
   public ClassValAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
@@ -154,7 +156,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
         List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
         // There are usually few arguments/elements of @ClassBound and @ClassVal.
-        List<String> lubClassNames = CollectionsPlume.listUnion(a1ClassNames, a2ClassNames);
+        List<String> lubClassNames = CollectionsP.listUnion(a1ClassNames, a2ClassNames);
 
         // If either annotation is a ClassBound, the lub must also be a class bound.
         if (areSameByClass(a1, ClassBound.class) || areSameByClass(a2, ClassBound.class)) {
@@ -177,7 +179,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else {
         List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
         List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
-        List<String> glbClassNames = CollectionsPlume.listIntersection(a1ClassNames, a2ClassNames);
+        List<String> glbClassNames = CollectionsP.listIntersection(a1ClassNames, a2ClassNames);
 
         // If either annotation is a ClassVal, the glb must also be a ClassVal.
         // For example:
@@ -271,10 +273,15 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (isGetClassMethodInvocation(tree)) {
         // exp.getClass(): @ClassBound(fully qualified class name of exp)
         Type clType;
-        if (TreeUtils.getReceiverTree(tree) != null) {
-          clType = (Type) TreeUtils.typeOf(TreeUtils.getReceiverTree(tree));
+        ExpressionTree receiver = TreeUtils.getReceiverTree(tree);
+        if (receiver != null) {
+          clType = (Type) TreeUtils.typeOf(receiver);
         } else { // receiver is null, so it is implicitly "this"
-          ClassTree classTree = TreePathUtil.enclosingClass(getPath(tree));
+          TreePath path = getPath(tree);
+          ClassTree classTree = path == null ? null : TreePathUtil.enclosingClass(path);
+          if (classTree == null) {
+            return null;
+          }
           clType = (Type) TreeUtils.typeOf(classTree);
         }
         String className = getClassNameFromType(clType);
@@ -285,7 +292,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Return true if this is an invocation of a method annotated with @ForName. An example of such
+     * Returns true if this is an invocation of a method annotated with @ForName. An example of such
      * a method is {@link Class#forName}.
      *
      * @param tree a method invocation
@@ -296,8 +303,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Return true if this is an invocation of a method annotated with @GetClass. An example of such
-     * a method is {@link Object#getClass}.
+     * Returns true if this is an invocation of a method annotated with @GetClass. An example of
+     * such a method is {@link Object#getClass}.
      *
      * @param tree a method invocation
      * @return true if this is an invocation of a method annotated with @GetClass
@@ -319,19 +326,17 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // TODO: This looks like it returns a @BinaryName. Verify that fact and add a type
     // qualifier.
     /**
-     * Return String representation of class name. This will not return the correct name for
+     * Returns String representation of class name. This will not return the correct name for
      * anonymous classes.
      */
     private String getClassNameFromType(Type classType) {
       switch (classType.getKind()) {
-        case ARRAY:
-          String array = "";
-          while (classType.getKind() == TypeKind.ARRAY) {
-            classType = ((ArrayType) classType).getComponentType();
-            array += "[]";
-          }
-          return getClassNameFromType(classType) + array;
-        case DECLARED:
+        case ARRAY -> {
+          int depth = TypesUtils.getArrayDepth(classType);
+          Type componentType = (Type) TypesUtils.getInnermostComponentType((ArrayType) classType);
+          return getClassNameFromType(componentType) + "[]".repeat(depth);
+        }
+        case DECLARED -> {
           StringBuilder className =
               new StringBuilder(TypesUtils.getQualifiedName((DeclaredType) classType));
           if (classType.getEnclosingType() != null) {
@@ -344,39 +349,51 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
           }
           return className.toString();
-        case INTERSECTION:
-          // This could be more precise
+        }
+        case INTERSECTION -> {
           return "java.lang.Object";
-        case NULL:
+        } // This could be more precise
+        case NULL -> {
           return "java.lang.Object";
-        case UNION:
+        }
+        case UNION -> {
           classType = ((UnionClassType) classType).getLub();
           return getClassNameFromType(classType);
-        case TYPEVAR:
-        case WILDCARD:
+        }
+        case TYPEVAR, WILDCARD -> {
           classType = classType.getUpperBound();
           return getClassNameFromType(classType);
-        case INT:
+        }
+        case INT -> {
           return int.class.getCanonicalName();
-        case LONG:
+        }
+        case LONG -> {
           return long.class.getCanonicalName();
-        case SHORT:
+        }
+        case SHORT -> {
           return short.class.getCanonicalName();
-        case BYTE:
+        }
+        case BYTE -> {
           return byte.class.getCanonicalName();
-        case CHAR:
+        }
+        case CHAR -> {
           return char.class.getCanonicalName();
-        case DOUBLE:
+        }
+        case DOUBLE -> {
           return double.class.getCanonicalName();
-        case FLOAT:
+        }
+        case FLOAT -> {
           return float.class.getCanonicalName();
-        case BOOLEAN:
+        }
+        case BOOLEAN -> {
           return boolean.class.getCanonicalName();
-        case VOID:
+        }
+        case VOID -> {
           return "void";
-        default:
-          throw new BugInCF(
-              "ClassValAnnotatedTypeFactory.getClassname: did not expect " + classType.getKind());
+        }
+        default ->
+            throw new BugInCF(
+                "ClassValAnnotatedTypeFactory.getClassname: did not expect " + classType.getKind());
       }
     }
   }

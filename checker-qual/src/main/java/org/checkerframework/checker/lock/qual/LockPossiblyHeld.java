@@ -1,6 +1,7 @@
 package org.checkerframework.checker.lock.qual;
 
 import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -15,7 +16,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 /**
  * Indicates that an expression is not known to be {@link LockHeld}.
  *
- * <p>This annotation may not be written in source code; it is an implementation detail of the
+ * <p>This annotation should not be written in source code; it is an implementation detail of the
  * checker.
  *
  * @see LockHeld
@@ -23,7 +24,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @InvisibleQualifier
 @SubtypeOf({})
 @DefaultQualifierInHierarchy

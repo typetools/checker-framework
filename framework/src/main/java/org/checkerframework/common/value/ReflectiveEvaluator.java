@@ -22,8 +22,8 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.CollectionsP;
+import org.plumelib.util.StringsP;
 
 // The use of reflection in ReflectiveEvaluator is troubling.
 // A static analysis such as the Checker Framework should always use compiler APIs, never
@@ -44,7 +44,7 @@ public class ReflectiveEvaluator {
   private final BaseTypeChecker checker;
 
   /**
-   * Whether to report warnings about problems with evaluation. Controlled by the -AreportEvalWarns
+   * If true, report warnings about problems with evaluation. Controlled by the -AreportEvalWarns
    * command-line option.
    */
   private final boolean reportWarnings;
@@ -101,7 +101,7 @@ public class ReflectiveEvaluator {
     if (method.isVarArgs()) {
       int numberOfParameters = method.getParameterTypes().length;
       listOfArguments =
-          CollectionsPlume.mapList(
+          CollectionsP.mapList(
               (Object[] args) -> normalizeVararg(args, numberOfParameters), listOfArguments);
     }
 
@@ -126,7 +126,7 @@ public class ReflectiveEvaluator {
           return null;
         } catch (IllegalArgumentException e) {
           if (reportWarnings) {
-            String args = StringsPlume.join(", ", arguments);
+            String args = StringsP.join(", ", arguments);
             checker.reportWarning(
                 tree, "method.evaluation.exception", method, e.getLocalizedMessage() + ": " + args);
           }
@@ -163,11 +163,11 @@ public class ReflectiveEvaluator {
     }
     Object[] newArgs = new Object[numberOfParameters];
     Object[] varArgsArray;
-    int numOfVarArgs = arguments.length - numberOfParameters + 1;
-    if (numOfVarArgs > 0) {
+    int numOfVarargs = arguments.length - numberOfParameters + 1;
+    if (numOfVarargs > 0) {
       System.arraycopy(arguments, 0, newArgs, 0, numberOfParameters - 1);
-      varArgsArray = new Object[numOfVarArgs];
-      System.arraycopy(arguments, numberOfParameters - 1, varArgsArray, 0, numOfVarArgs);
+      varArgsArray = new Object[numOfVarargs];
+      System.arraycopy(arguments, numberOfParameters - 1, varArgsArray, 0, numOfVarargs);
     } else {
       System.arraycopy(arguments, 0, newArgs, 0, numberOfParameters - 1);
       varArgsArray = emptyObjectArray;
@@ -202,7 +202,7 @@ public class ReflectiveEvaluator {
       return method;
     } catch (ClassNotFoundException | UnsupportedClassVersionError | NoClassDefFoundError e) {
       if (reportWarnings) {
-        checker.reportWarning(tree, "class.find.failed", ele.getEnclosingElement());
+        checker.reportWarning(tree, "class.find.failed", ele.getEnclosingElement(), e.getMessage());
       }
       return null;
 
@@ -232,7 +232,7 @@ public class ReflectiveEvaluator {
    * @throws ClassNotFoundException if the class cannot be found
    */
   private List<Class<?>> getParameterClasses(ExecutableElement ele) throws ClassNotFoundException {
-    return CollectionsPlume.mapList(
+    return CollectionsP.mapList(
         (Element e) -> TypesUtils.getClassFromType(ElementUtils.getType(e)), ele.getParameters());
   }
 
@@ -272,12 +272,11 @@ public class ReflectiveEvaluator {
    * @return a depth-2 copy of the given list
    */
   private List<Object[]> copy(List<Object[]> lastTuples) {
-    return CollectionsPlume.mapList(
-        (Object[] list) -> Arrays.copyOf(list, list.length), lastTuples);
+    return CollectionsP.mapList((Object[] list) -> Arrays.copyOf(list, list.length), lastTuples);
   }
 
   /**
-   * Return the value of a static field access. Return null if accessing the field reflectively
+   * Returns the value of a static field access. Return null if accessing the field reflectively
    * fails.
    *
    * @param classname the class containing the field
@@ -346,10 +345,7 @@ public class ReflectiveEvaluator {
       } catch (Throwable e) {
         if (reportWarnings) {
           checker.reportWarning(
-              tree,
-              "constructor.evaluation.failed",
-              typeToCreate,
-              StringsPlume.join(", ", arguments));
+              tree, "constructor.evaluation.failed", typeToCreate, StringsP.join(", ", arguments));
         }
         return null;
       }

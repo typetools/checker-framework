@@ -5,10 +5,11 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -26,7 +27,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.plumelib.reflection.Signatures;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.MapsP;
 
 /**
  * This AnnotatedTypeFactory adds PropertyKey annotations to String literals that contain values
@@ -36,6 +37,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   private final Set<String> lookupKeys;
 
+  @SuppressWarnings("this-escape")
   public PropertyKeyAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.lookupKeys = Collections.unmodifiableSet(buildLookupKeys());
@@ -154,7 +156,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return Collections.emptySet();
     }
 
-    Set<String> result = new HashSet<>(CollectionsPlume.mapCapacity(propfiles));
+    Set<String> result = new HashSet<>(MapsP.mapCapacity(propfiles));
 
     for (String propfile : propfiles) {
       try {
@@ -172,13 +174,14 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           } else {
             // If the classloader didn't manage to load the file, try whether a
             // FileInputStream works. For absolute paths this might help.
-            try (InputStream fis = new FileInputStream(propfile)) {
+            try (InputStream fis = Files.newInputStream(Paths.get(propfile))) {
               prop.load(fis);
             } catch (FileNotFoundException e) {
+              // The `propertykeychecker.filenotfound` message key describes this problem, but
+              // it cannot be used here: issuing a diagnostic requires an AST node, and this
+              // problem is not associated with one.
               checker.message(
                   Diagnostic.Kind.WARNING, "Couldn't find the properties file: " + propfile);
-              // report(null, "propertykeychecker.filenotfound", propfile);
-              // return Collections.emptySet();
               continue;
             }
           }
@@ -211,7 +214,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return Collections.emptySet();
     }
 
-    Set<String> result = new HashSet<>(CollectionsPlume.mapCapacity(bundleNames));
+    Set<String> result = new HashSet<>(MapsP.mapCapacity(bundleNames));
 
     for (String bundleName : bundleNames) {
       if (!Signatures.isBinaryName(bundleName)) {

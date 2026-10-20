@@ -17,7 +17,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.MapsP;
 
 /**
  * Implements support for {@link DefaultQualifierForUse} and {@link NoDefaultQualifierForUse}. Adds
@@ -61,8 +61,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
    * Cache of elements to the set of annotations that should be applied to unannotated uses of the
    * element.
    */
-  protected final Map<Element, AnnotationMirrorSet> elementToDefaults =
-      CollectionsPlume.createLruCache(100);
+  protected final Map<Element, AnnotationMirrorSet> elementToDefaults = MapsP.createLruCache(100);
 
   /** Clears all caches. */
   public void clearCache() {
@@ -70,7 +69,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
   }
 
   /**
-   * Returns the set of qualifiers that should be applied to unannotated uses of the given element
+   * Returns the set of qualifiers that should be applied to unannotated uses of the given element.
    *
    * @param element the element for which to determine default qualifiers
    * @return the set of qualifiers that should be applied to unannotated uses of {@code element}
@@ -79,7 +78,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
     if (atypeFactory.shouldCache && elementToDefaults.containsKey(element)) {
       return elementToDefaults.get(element);
     }
-    AnnotationMirrorSet explictAnnos = getExplicitAnnos(element);
+    AnnotationMirrorSet explicitAnnos = getExplicitAnnos(element);
     AnnotationMirrorSet defaultAnnos = getDefaultQualifierForUses(element);
     AnnotationMirrorSet noDefaultAnnos = getHierarchiesNoDefault(element);
     AnnotationMirrorSet annosToApply = new AnnotationMirrorSet();
@@ -93,24 +92,22 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
       if (defaultAnno != null) {
         annosToApply.add(defaultAnno);
       } else {
-        AnnotationMirror explict =
-            atypeFactory.getQualifierHierarchy().findAnnotationInHierarchy(explictAnnos, top);
-        if (explict != null) {
-          annosToApply.add(explict);
+        AnnotationMirror explicit =
+            atypeFactory.getQualifierHierarchy().findAnnotationInHierarchy(explicitAnnos, top);
+        if (explicit != null) {
+          annosToApply.add(explicit);
         }
       }
     }
-    // If parsing stub files, then the annosToApply is incomplete, so don't cache them.
-    if (atypeFactory.shouldCache
-        && !atypeFactory.stubTypes.isParsing()
-        && !atypeFactory.ajavaTypes.isParsing()) {
+    // If parsing annotation files, then annosToApply is incomplete, so do not cache it.
+    if (atypeFactory.shouldCache && !atypeFactory.isParsingAnnotationFiles()) {
       elementToDefaults.put(element, annosToApply);
     }
     return annosToApply;
   }
 
   /**
-   * Return the annotations explicitly written on the element.
+   * Returns the annotations explicitly written on the element.
    *
    * @param element an element
    * @return the annotations explicitly written on the element
@@ -121,7 +118,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
   }
 
   /**
-   * Return the default qualifiers for uses of {@code element} as specified by a {@link
+   * Returns the default qualifiers for uses of {@code element} as specified by a {@link
    * DefaultQualifierForUse} annotation.
    *
    * <p>Subclasses may override to use an annotation other than {@link DefaultQualifierForUse}.

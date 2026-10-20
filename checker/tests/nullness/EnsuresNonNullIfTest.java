@@ -21,9 +21,9 @@ public class EnsuresNonNullIfTest {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////
-/// Classes copied from the annotated JDK
-///
+// ///////////////////////////////////////////////////////////////////////////
+// Classes copied from the annotated JDK
+//
 
 // NOTE:  These annotations are actually incorrect (& not in the JDK).
 // But, the test remains valid in how it exercises nullness checking.

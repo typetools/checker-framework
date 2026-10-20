@@ -33,7 +33,7 @@ class EnhancedFor {
     // a method return type). Both this error and the type.argument error
     // above can be suppressed by writing @MustCall on the Socket type, as in
     // test4 below (but note that this will make call sites difficult to verify).
-    // :: error: (required.method.not.called)
+    // :: error: [required.method.not.called]
     for (Socket s : list) {}
   }
 

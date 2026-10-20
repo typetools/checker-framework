@@ -8,13 +8,13 @@ public class MinLenVarargs {
   }
 
   public static void main(String[] args) {
-    // :: error: (argument)
+    // :: error: [argument]
     check(new String[] {"goodbye"});
-    // :: error: (argument)
+    // :: error: [argument]
     check("goodbye");
-    // :: error: (argument)
+    // :: error: [argument]
     check();
-    // :: error: (argument)
+    // :: error: [argument]
     check("hello", "goodbye");
   }
 }

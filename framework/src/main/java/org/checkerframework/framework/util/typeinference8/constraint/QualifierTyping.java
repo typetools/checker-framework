@@ -1,6 +1,9 @@
 package org.checkerframework.framework.util.typeinference8.constraint;
 
+import java.util.Objects;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.typeinference8.types.AbstractQualifier;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.Qualifier;
@@ -21,10 +24,10 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class QualifierTyping implements Constraint {
 
-  /** The qualifier on the left hand side of the constraint. */
+  /** The qualifier on the left-hand side of the constraint. */
   private final AbstractQualifier Q;
 
-  /** The qualifier on the right hand side of the constraint. */
+  /** The qualifier on the right-hand side of the constraint. */
   private final AbstractQualifier R;
 
   /**
@@ -35,22 +38,44 @@ public class QualifierTyping implements Constraint {
   /**
    * Creates a qualifier typing constraint.
    *
-   * @param Q the qualifiers on the left hand side of the constraint
-   * @param R the qualifiers on the right hand side of the constraint
+   * @param Q the qualifier on the left-hand side of the constraint
+   * @param R the qualifier on the right-hand side of the constraint
    * @param kind the kind of qualifier constraint
    */
   public QualifierTyping(AbstractQualifier Q, AbstractQualifier R, Kind kind) {
     assert Q != null && R != null;
     switch (kind) {
-      case QUALIFIER_SUBTYPE:
-      case QUALIFIER_EQUALITY:
-        break;
-      default:
-        throw new BugInCF("Unexpected kind: " + kind);
+      case QUALIFIER_SUBTYPE, QUALIFIER_EQUALITY -> {}
+      default -> throw new BugInCF("Unexpected kind: " + kind);
     }
     this.R = R;
     this.Q = Q;
     this.kind = kind;
+  }
+
+  /**
+   * For each qualifier in {@code lhs} and each qualifier in {@code rhs} that are in the same
+   * hierarchy, adds to {@code constraintSet} a {@link QualifierTyping} constraint of kind {@code
+   * kind} between them. Two equal qualifiers are skipped, because a constraint between them reduces
+   * to true.
+   *
+   * @param constraintSet the constraint set to add the constraints to
+   * @param lhs the qualifiers on the left-hand side of the new constraints
+   * @param rhs the qualifiers on the right-hand side of the new constraints
+   * @param kind the kind of the new constraints
+   */
+  public static void addQualifierConstraints(
+      ConstraintSet constraintSet,
+      Set<? extends AbstractQualifier> lhs,
+      Set<? extends AbstractQualifier> rhs,
+      Kind kind) {
+    for (AbstractQualifier q : lhs) {
+      for (AbstractQualifier r : rhs) {
+        if (!q.equals(r) && q.sameHierarchy(r)) {
+          constraintSet.add(new QualifierTyping(q, r, kind));
+        }
+      }
+    }
   }
 
   @Override
@@ -60,26 +85,23 @@ public class QualifierTyping implements Constraint {
 
   @Override
   public ReductionResult reduce(Java8InferenceContext context) {
-    switch (getKind()) {
-      case QUALIFIER_EQUALITY:
-        return reduceEquality(context);
-      case QUALIFIER_SUBTYPE:
-        return reduceSubtyping(context);
-      default:
-        throw new BugInCF("Unexpected kind: " + getKind());
-    }
+    return switch (getKind()) {
+      case QUALIFIER_EQUALITY -> reduceEquality(context);
+      case QUALIFIER_SUBTYPE -> reduceSubtyping(context);
+      default -> throw new BugInCF("Unexpected kind: " + getKind());
+    };
   }
 
   /**
-   * Reduce this constraint
+   * Reduce this constraint.
    *
    * @param context the context
    * @return the result of reducing this constraint
    */
   private ReductionResult reduceSubtyping(Java8InferenceContext context) {
-    if (Q instanceof Qualifier && R instanceof Qualifier) {
-      AnnotationMirror qAnno = ((Qualifier) Q).getAnnotation();
-      AnnotationMirror rAnno = ((Qualifier) R).getAnnotation();
+    if (Q instanceof Qualifier qQual && R instanceof Qualifier rQual) {
+      AnnotationMirror qAnno = qQual.getAnnotation();
+      AnnotationMirror rAnno = rQual.getAnnotation();
       if (context.typeFactory.getQualifierHierarchy().isSubtypeQualifiersOnly(qAnno, rAnno)) {
         return ConstraintSet.TRUE;
       }
@@ -87,29 +109,27 @@ public class QualifierTyping implements Constraint {
     }
 
     ConstraintSet constraintSet = new ConstraintSet();
-    if (Q instanceof QualifierVar) {
+    if (Q instanceof QualifierVar var) {
       // Q <: R
-      QualifierVar var = (QualifierVar) Q;
       constraintSet.addAll(var.addBound(BoundKind.UPPER, R));
     }
-    if (R instanceof QualifierVar) {
+    if (R instanceof QualifierVar var) {
       // Q <: R
-      QualifierVar var = (QualifierVar) R;
       constraintSet.addAll(var.addBound(BoundKind.LOWER, Q));
     }
     return constraintSet;
   }
 
   /**
-   * Reduce this constraint
+   * Reduce this constraint.
    *
    * @param context the context
    * @return the result of reducing this constraint
    */
   private ReductionResult reduceEquality(Java8InferenceContext context) {
-    if (Q instanceof Qualifier && R instanceof Qualifier) {
-      AnnotationMirror qAnno = ((Qualifier) Q).getAnnotation();
-      AnnotationMirror rAnno = ((Qualifier) R).getAnnotation();
+    if (Q instanceof Qualifier qQual && R instanceof Qualifier rQual) {
+      AnnotationMirror qAnno = qQual.getAnnotation();
+      AnnotationMirror rAnno = rQual.getAnnotation();
       if (context.typeFactory.getQualifierHierarchy().isSubtypeQualifiersOnly(qAnno, rAnno)
           && context.typeFactory.getQualifierHierarchy().isSubtypeQualifiersOnly(rAnno, qAnno)) {
         return ConstraintSet.TRUE;
@@ -117,14 +137,12 @@ public class QualifierTyping implements Constraint {
       return ConstraintSet.TRUE_ANNO_FAIL;
     }
     ConstraintSet constraintSet = new ConstraintSet();
-    if (Q instanceof QualifierVar) {
+    if (Q instanceof QualifierVar var) {
       // Q == R
-      QualifierVar var = (QualifierVar) Q;
       constraintSet.addAll(var.addBound(BoundKind.EQUAL, R));
     }
-    if (R instanceof QualifierVar) {
+    if (R instanceof QualifierVar var) {
       // Q == R
-      QualifierVar var = (QualifierVar) R;
       constraintSet.addAll(var.addBound(BoundKind.EQUAL, Q));
     }
     return constraintSet;
@@ -132,15 +150,32 @@ public class QualifierTyping implements Constraint {
 
   @Override
   public String toString() {
-    switch (kind) {
-      case QUALIFIER_SUBTYPE:
-        return Q + " <: " + R;
-
-      case QUALIFIER_EQUALITY:
-        return Q + " = " + R;
-      default:
+    return switch (kind) {
+      case QUALIFIER_SUBTYPE -> Q + " <: " + R;
+      case QUALIFIER_EQUALITY -> Q + " = " + R;
+      default -> {
         assert false;
-        return super.toString();
+        yield super.toString();
+      }
+    };
+  }
+
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
     }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    QualifierTyping that = (QualifierTyping) o;
+
+    return kind == that.kind && Q.equals(that.Q) && R.equals(that.R);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(kind, Q, R);
   }
 }

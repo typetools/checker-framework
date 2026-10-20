@@ -1,9 +1,6 @@
 package org.checkerframework.dataflow.analysis;
 
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.dataflow.cfg.node.ReturnNode;
-import org.plumelib.util.IPair;
 
 /**
  * This interface defines a forward analysis, given a control flow graph and a forward transfer
@@ -18,11 +15,11 @@ public interface ForwardAnalysis<
     extends Analysis<V, S, T> {
 
   /**
-   * Get stores at return statements. These stores are transfer results at return node. Thus for a
-   * forward analysis, these stores contain the analyzed flow information from entry nodes to return
-   * nodes.
+   * Returns stores at return statements. These stores are transfer results at return node. Thus for
+   * a forward analysis, these stores contain the analyzed flow information from entry nodes to
+   * return nodes.
    *
    * @return the transfer results for each return node in the CFG
    */
-  List<IPair<ReturnNode, @Nullable TransferResult<V, S>>> getReturnStatementStores();
+  List<ReturnStatementStore<V, S>> getReturnStatementStores();
 }

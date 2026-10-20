@@ -1,0 +1,9 @@
+import java.util.List;
+import java.util.Map;
+
+public class Wildcards {
+  @GUT.quals.Rep List<? extends @GUT.quals.Rep Object> l1;
+  @GUT.quals.Rep List<? extends @GUT.quals.Rep Object> l2;
+  Map<? extends @GUT.quals.Peer Object, ? extends @GUT.quals.Rep Object> l3;
+  Map<@GUT.quals.Rep ? extends @GUT.quals.Peer Map<@GUT.quals.Rep ? extends @GUT.quals.Peer Object, @GUT.quals.Rep String>, @GUT.quals.Peer Object> l4;
+}

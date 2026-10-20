@@ -35,6 +35,7 @@ public class QualifierUpperBounds {
    * Creates a {@link QualifierUpperBounds} from the given checker, using that checker to determine
    * the annotations that are in the type hierarchy.
    */
+  @SuppressWarnings("this-escape")
   public QualifierUpperBounds(AnnotatedTypeFactory typeFactory) {
     this.atypeFactory = typeFactory;
     this.typeKinds = new EnumMap<>(TypeKind.class);
@@ -80,7 +81,7 @@ public class QualifierUpperBounds {
     boolean res = qualHierarchy.updateMappingToMutableSet(typeKinds, typeKind, theQual);
     if (!res) {
       throw new BugInCF(
-          "QualifierUpperBounds: invalid update of typeKinds $s at %s with %s.",
+          "QualifierUpperBounds: invalid update of typeKinds %s at %s with %s.",
           typeKinds, typeKind, theQual);
     }
   }
@@ -91,7 +92,7 @@ public class QualifierUpperBounds {
     boolean res = qualHierarchy.updateMappingToMutableSet(types, typeNameString, theQual);
     if (!res) {
       throw new BugInCF(
-          "QualifierUpperBounds: invalid update of types $s at %s with %s.", types, type, theQual);
+          "QualifierUpperBounds: invalid update of types %s at %s with %s.", types, type, theQual);
     }
   }
 

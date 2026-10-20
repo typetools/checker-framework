@@ -1,6 +1,6 @@
 class Test {
   int test(boolean b) {
-  int x = b ? this.hashCode() : 5;
-  return x;
+    int x = b ? this.hashCode() : 5;
+    return x;
   }
 }

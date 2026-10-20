@@ -20,6 +20,9 @@ public class ConstantPropagationTransfer
         TransferInput<Constant, ConstantPropagationStore>>
     implements ForwardTransferFunction<Constant, ConstantPropagationStore> {
 
+  /** Creates a ConstantPropagationTransfer. */
+  public ConstantPropagationTransfer() {}
+
   @Override
   public ConstantPropagationStore initialStore(
       UnderlyingAST underlyingAST, List<LocalVariableNode> parameters) {
@@ -47,8 +50,7 @@ public class ConstantPropagationTransfer
     ConstantPropagationStore p = pi.getRegularStore();
     Node target = n.getTarget();
     Constant info = null;
-    if (target instanceof LocalVariableNode) {
-      LocalVariableNode lvn = (LocalVariableNode) target;
+    if (target instanceof LocalVariableNode lvn) {
       info = p.getInformation(n.getExpression());
       p.setInformation(lvn, info);
     }

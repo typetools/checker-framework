@@ -3,24 +3,24 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 // @below-java17-jdk-skip-test
 record RecordPurityGeneric<A, B>(A a, B b) {
   public String checkNullnessOfFields() {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     return a.toString() + " " + b.toString();
   }
 
   public String checkNullnessOfAccessors() {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     return a().toString() + " " + b().toString();
   }
 
   public static String checkNullnessOfFields(
       RecordPurityGeneric<@Nullable String, @Nullable String> r) {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     return r.a.toString() + " " + r.b.toString();
   }
 
   public static String checkNullnessOfAccessors(
       RecordPurityGeneric<@Nullable String, @Nullable String> r) {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     return r.a().toString() + " " + r.b().toString();
   }
 

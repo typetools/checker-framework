@@ -36,7 +36,7 @@ a   [ LocalVariable ]
 0   [ IntegerLiteral ]
 (a > 0)   [ GreaterThan ]
 ~~~~~~~~~
-TransferInput#52
+TransferInput#51
 After:   live variables = a, b, c
 
 4:
@@ -57,7 +57,7 @@ c   [ LocalVariable ]
 (a + c)   [ NumericalAddition ]
 d = (a + c)   [ Assignment ]
 ~~~~~~~~~
-TransferInput#36
+TransferInput#35
 After:   live variables = a
 
 10:
@@ -71,7 +71,7 @@ b   [ LocalVariable ]
 (a + b)   [ NumericalAddition ]
 e = (a + b)   [ Assignment ]
 ~~~~~~~~~
-TransferInput#35
+TransferInput#34
 After:   live variables = a
 
 11:
@@ -90,17 +90,17 @@ f   [ LocalVariable ]
 1   [ IntegerLiteral ]
 a   [ LocalVariable ]
 ~~~~~~~~~
-TransferInput#23
+TransferInput#22
 After:   live variables = a, b
 
 12:
 Process order: 7
 AnalysisResult#0
-Before:   live variables = a
+Before:   live variables = a, b
 ~~~~~~~~~
 (1 / a)   [ IntegerDivision ]
 ~~~~~~~~~
-TransferInput#21
+TransferInput#20
 After:   live variables = a
 
 13:
@@ -108,7 +108,6 @@ Process order: 8
 AnalysisResult#0
 Before:   live variables = a
 ~~~~~~~~~
-(1 / a)   [ IntegerDivision ]
 f = (1 / a)   [ Assignment ]
 expression statement f = 1 / a   [ ExpressionStatement ]
 marker (end of try block #0)   [ Marker ]

@@ -94,10 +94,10 @@ fi
 rm -rf "${checkername}-${repolistbase}-results"
 
 bash wpi-many.sh -o "${workingdir}/${checkername}-${repolistbase}" \
-     -i "${PARENTDIR}/${repolist}" \
-     -t ${timeout} \
-     -- \
-     --checker "${checker}" \
-     ${quals_arg:+--quals "${qual_classpath}"} \
-     ${lib_arg:+--lib "${checker_classpath}"} \
-     ${stubs_arg:+--stubs "${custom_stubs}"}
+  -i "${PARENTDIR}/${repolist}" \
+  -t ${timeout} \
+  -- \
+  --checker "${checker}" \
+  ${quals_arg:+--quals "${qual_classpath}"} \
+  ${lib_arg:+--lib "${checker_classpath}"} \
+  ${stubs_arg:+--stubs "${custom_stubs}"}

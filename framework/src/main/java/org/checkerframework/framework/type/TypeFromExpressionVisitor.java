@@ -21,10 +21,12 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.WildcardTree;
+import com.sun.source.util.TreePath;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -39,10 +41,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SwitchExpressionScanner;
 import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchExpressionScanner;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -76,7 +76,7 @@ import org.checkerframework.javacutil.TypesUtils;
  */
 class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
-  /** Creates a new TypeFromTreeVisitor. */
+  /** Creates a new TypeFromExpressionVisitor. */
   TypeFromExpressionVisitor() {
     // nothing to do
   }
@@ -182,24 +182,17 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     return AnnotatedTypes.leastUpperBound(f, trueType, falseType, alub);
   }
 
-  @Override
-  public AnnotatedTypeMirror defaultAction(Tree tree, AnnotatedTypeFactory f) {
-    if (SystemUtil.jreVersion >= 14 && tree.getKind().name().equals("SWITCH_EXPRESSION")) {
-      return visitSwitchExpressionTree17(tree, f);
-    }
-    return super.defaultAction(tree, f);
-  }
-
   /**
    * Compute the type of the switch expression tree.
    *
-   * @param switchExpressionTree a SwitchExpressionTree; typed as Tree so method signature is
-   *     backward-compatible
+   * @param switchExpressionTree the switch expression tree
    * @param f an AnnotatedTypeFactory
    * @return the type of the switch expression
    */
-  public AnnotatedTypeMirror visitSwitchExpressionTree17(
-      Tree switchExpressionTree, AnnotatedTypeFactory f) {
+  @Override
+  public AnnotatedTypeMirror visitSwitchExpression(
+      SwitchExpressionTree switchExpressionTree, AnnotatedTypeFactory f) {
+
     TypeMirror switchTypeMirror = TreeUtils.typeOf(switchExpressionTree);
     SwitchExpressionScanner<AnnotatedTypeMirror, Void> luber =
         new FunctionalSwitchExpressionScanner<>(
@@ -245,17 +238,18 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
       // the type of a class literal is the type of the "class" element.
       return f.getAnnotatedType(elt);
     }
-    switch (ElementUtils.getKindRecordAsClass(elt)) {
-      case METHOD:
-      case CONSTRUCTOR: // x0.super() in anoymous classes
-      case PACKAGE: // "java.lang" in new java.lang.Short("2")
-      case CLASS: // o instanceof MyClass.InnerClass
-      case ENUM:
-      case INTERFACE: // o instanceof MyClass.InnerInterface
-      case ANNOTATION_TYPE:
+    switch (elt.getKind()) {
+      case METHOD,
+          CONSTRUCTOR, // x0.super() in anonymous classes
+          PACKAGE, // "java.lang" in new java.lang.Short("2")
+          CLASS, // o instanceof MyClass.InnerClass
+          RECORD,
+          ENUM,
+          INTERFACE, // o instanceof MyClass.InnerInterface
+          ANNOTATION_TYPE -> {
         return f.fromElement(elt);
-      default:
-        // Fall-through.
+      }
+      default -> {} // Fall-through.
     }
 
     if (tree.getIdentifier().contentEquals("this")) {
@@ -271,11 +265,23 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
       return AnnotatedTypes.asSuper(
           f, thisType, AnnotatedTypeMirror.createType(superTypeMirror, f, false));
     } else {
-      // tree must be a field access, so get the type of the expression, and then call
-      // asMemberOf.
-      AnnotatedTypeMirror t = f.getAnnotatedType(tree.getExpression());
-      t = f.applyCaptureConversion(t);
-      return AnnotatedTypes.asMemberOf(f.types, f, t, elt).asUse();
+      // tree must be a field access or an enum constant, so get the type of the (receiver)
+      // expression, and then call asMemberOf.
+      AnnotatedTypeMirror typeOfReceiver = f.getAnnotatedType(tree.getExpression());
+      typeOfReceiver = f.applyCaptureConversion(typeOfReceiver);
+      AnnotatedTypeMirror typeOfFieldAccess =
+          AnnotatedTypes.asMemberOf(f.types, f, typeOfReceiver, elt);
+      TreePath path = f.getPath(tree);
+
+      // Only capture the type if this is not the left-hand side of an assignment.
+      if (path != null && path.getParentPath().getLeaf() instanceof AssignmentTree assignmentTree) {
+        @SuppressWarnings("interning:not.interned") // Looking for exact object.
+        boolean leftHandSide = assignmentTree.getExpression() != tree;
+        if (leftHandSide) {
+          return typeOfFieldAccess;
+        }
+      }
+      return f.applyCaptureConversion(typeOfFieldAccess);
     }
   }
 
@@ -338,12 +344,12 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     }
     // Add all dimension annotations.
     int idx = 0;
-    AnnotatedTypeMirror level = result;
-    while (level.getKind() == TypeKind.ARRAY) {
-      AnnotatedArrayType array = (AnnotatedArrayType) level;
+    AnnotatedTypeMirror componentType = result;
+    while (componentType.getKind() == TypeKind.ARRAY) {
+      AnnotatedArrayType array = (AnnotatedArrayType) componentType;
       List<? extends AnnotationMirror> annos = TreeUtils.annotationsFromArrayCreation(tree, idx++);
       array.addAnnotations(annos);
-      level = array.getComponentType();
+      componentType = array.getComponentType();
     }
 
     // Add top-level annotations.
@@ -369,7 +375,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
   public AnnotatedTypeMirror visitNewClass(NewClassTree tree, AnnotatedTypeFactory f) {
     // Add annotations that are on the constructor declaration.
     AnnotatedDeclaredType returnType =
-        (AnnotatedDeclaredType) f.constructorFromUse(tree).executableType.getReturnType();
+        (AnnotatedDeclaredType) f.constructorFromUse(tree).executableType().getReturnType();
     // Clear the annotations on the return type, so that the explicit annotations can be added
     // first, then the annotations from the return type are added as needed.
     AnnotationMirrorSet fromReturn = new AnnotationMirrorSet(returnType.getPrimaryAnnotations());
@@ -382,7 +388,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
   @Override
   public AnnotatedTypeMirror visitMethodInvocation(
       MethodInvocationTree tree, AnnotatedTypeFactory f) {
-    AnnotatedExecutableType ex = f.methodFromUse(tree).executableType;
+    AnnotatedExecutableType ex = f.methodFromUse(tree).executableType();
     AnnotatedTypeMirror returnT = ex.getReturnType().asUse();
     if (TypesUtils.isCapturedTypeVariable(returnT.getUnderlyingType())
         && !TypesUtils.isCapturedTypeVariable(TreeUtils.typeOf(tree))) {

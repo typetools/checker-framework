@@ -25,6 +25,11 @@ class TypeFromTree {
   private static final TypeFromExpressionVisitor expressionVisitor =
       new TypeFromExpressionVisitor();
 
+  /** Do not instantiate. */
+  private TypeFromTree() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * Returns an AnnotatedTypeMirror representing the input expression tree.
    *
@@ -128,7 +133,7 @@ class TypeFromTree {
   }
 
   /**
-   * Return a string with the two arguments, for diagnostics.
+   * Returns a string with the two arguments, for diagnostics.
    *
    * @param typeFactory a type factory
    * @param tree a tree

@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 /**
  * A meta-annotation that indicates what qualifier should be given to literals.
  * {@code @QualifierForLiterals} (without any annotation elements) is equivalent to
- * {@code @QualifierForLiterals(LiteralKind.ALL)}
+ * {@code @QualifierForLiterals(LiteralKind.ALL)}.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

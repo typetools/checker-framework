@@ -27,7 +27,7 @@ import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 import org.plumelib.util.UniqueId;
 
 /**
@@ -58,6 +58,9 @@ public abstract class AbstractCFGVisualizer<
   /** The indentation for elements of the store. */
   protected static final String storeEntryIndent = "  ";
 
+  /** Creates an AbstractCFGVisualizer. */
+  public AbstractCFGVisualizer() {}
+
   @Override
   public void init(Map<String, Object> args) {
     this.verbose = toBoolean(args.get("verbose"));
@@ -74,8 +77,8 @@ public abstract class AbstractCFGVisualizer<
     if (o == null) {
       return false;
     }
-    if (o instanceof String) {
-      return Boolean.parseBoolean((String) o);
+    if (o instanceof String string) {
+      return Boolean.parseBoolean(string);
     }
     return (boolean) o;
   }
@@ -108,11 +111,11 @@ public abstract class AbstractCFGVisualizer<
     Set<Block> visited = new LinkedHashSet<>();
     StringBuilder sbGraph = new StringBuilder();
     Queue<Block> workList = new ArrayDeque<>();
-    Block cur = entry;
+    workList.add(entry);
     visited.add(entry);
-    while (cur != null) {
+    while (!workList.isEmpty()) {
+      Block cur = workList.remove();
       handleSuccessorsHelper(cur, visited, workList, sbGraph);
-      cur = workList.poll();
     }
     sbGraph.append(lineSeparator);
     sbGraph.append(visualizeNodes(visited, cfg, analysis));
@@ -171,8 +174,7 @@ public abstract class AbstractCFGVisualizer<
   }
 
   /**
-   * Checks whether a block exists in the visited blocks list, and, if not, adds it to the visited
-   * blocks list and the work list.
+   * Adds the block to the visited blocks list and the work list, if necessary.
    *
    * @param b the block to check
    * @param visited the set of blocks that have already been visited or are in the work list
@@ -224,7 +226,8 @@ public abstract class AbstractCFGVisualizer<
           if (!sbBlock.toString().endsWith(separator)) {
             sbBlock.append(separator);
           }
-          sbBlock.append(visualizeBlockTransferInputAfter(bb, analysis) + separator);
+          sbBlock.append(visualizeBlockTransferInputAfter(bb, analysis));
+          sbBlock.append(separator);
         }
       }
     }
@@ -294,7 +297,7 @@ public abstract class AbstractCFGVisualizer<
     return sbBlockNode.toString();
   }
 
-  /** Whether to visualize before or after a block. */
+  /** Where to visualize: before or after a block. */
   protected enum VisualizeWhere {
     /** Visualize before the block. */
     BEFORE,
@@ -359,14 +362,16 @@ public abstract class AbstractCFGVisualizer<
       }
     }
 
-    StringBuilder sbStore = new StringBuilder();
+    StringBuilder sbStore = new StringBuilder(64);
     if (verbose) {
-      sbStore.append((storesFromId == null ? "null" : storesFromId.getClassAndUid()) + separator);
+      sbStore.append((storesFromId == null ? "null" : storesFromId.getClassAndUid()));
+      sbStore.append(separator);
     }
     sbStore.append(where == VisualizeWhere.BEFORE ? "Before: " : "After: ");
 
     if (verbose && resultValue != null) {
-      sbStore.append("resultValue=" + resultValue);
+      sbStore.append("resultValue=");
+      sbStore.append(resultValue);
       sbStore.append(separator);
     }
 
@@ -379,13 +384,14 @@ public abstract class AbstractCFGVisualizer<
       assert elseStore != null : "@AssumeAssertion(nullness): invariant";
       sbStore.append("then=");
       sbStore.append(visualizeStore(thenStore));
-      sbStore.append(",");
+      sbStore.append(',');
       sbStore.append(separator);
       sbStore.append("else=");
       sbStore.append(visualizeStore(elseStore));
     }
     if (where == VisualizeWhere.BEFORE) {
-      sbStore.append(separator + "~~~~~~~~~");
+      sbStore.append(separator);
+      sbStore.append("~~~~~~~~~");
     } else {
       sbStore.insert(0, "~~~~~~~~~" + separator);
     }
@@ -399,16 +405,12 @@ public abstract class AbstractCFGVisualizer<
    * @return the String representation of the special block
    */
   protected String visualizeSpecialBlockHelper(SpecialBlock sbb) {
-    switch (sbb.getSpecialType()) {
-      case ENTRY:
-        return "<entry>";
-      case EXIT:
-        return "<exit>";
-      case EXCEPTIONAL_EXIT:
-        return "<exceptional-exit>";
-      default:
-        throw new BugInCF("Unrecognized special block type: " + sbb.getType());
-    }
+    return switch (sbb.getSpecialType()) {
+      case ENTRY -> "<entry>";
+      case EXIT -> "<exit>";
+      case EXCEPTIONAL_EXIT -> "<exceptional-exit>";
+      default -> throw new BugInCF("Unrecognized special block type: " + sbb.getType());
+    };
   }
 
   /**
@@ -458,14 +460,14 @@ public abstract class AbstractCFGVisualizer<
   protected abstract String visualizeEdge(Object sId, Object eId, String flowRule);
 
   /**
-   * Return the header of the generated graph.
+   * Returns the header of the generated graph.
    *
    * @return the String representation of the header of the control flow graph
    */
   protected abstract String visualizeGraphHeader();
 
   /**
-   * Return the footer of the generated graph.
+   * Returns the footer of the generated graph.
    *
    * @return the String representation of the footer of the control flow graph
    */
@@ -480,11 +482,11 @@ public abstract class AbstractCFGVisualizer<
    * @return a String representation of the given process orders
    */
   protected String getProcessOrderSimpleString(List<Integer> order) {
-    return "Process order: " + StringsPlume.join(",", order);
+    return "Process order: " + StringsP.join(",", order);
   }
 
   /**
-   * Get the simple name of a node.
+   * Returns the simple name of a node.
    *
    * @param n a node
    * @return the node's simple name, without "Node"

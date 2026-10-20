@@ -34,10 +34,9 @@ public class ReachingDefinitionNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ReachingDefinitionNode)) {
+    if (!(obj instanceof ReachingDefinitionNode other)) {
       return false;
     }
-    ReachingDefinitionNode other = (ReachingDefinitionNode) obj;
     // We use `.equals` instead of `==` here to compare value equality.
     return this.def.equals(other.def);
   }

@@ -17,7 +17,7 @@ public class DeepOverrideAbstract {
       return null;
     }
 
-    // :: error: (override.return)
+    // :: error: [override.return]
     public String abstractMethod() {
       return "";
     }

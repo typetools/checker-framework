@@ -20,7 +20,7 @@ record RecordPurityOverride(@Nullable String pure, @Nullable String impure) {
   public String checkPurityOfAccessor1() {
     if (pure() == null || impure() == null) return "";
     else
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       return pure().toString() + " " + impure().toString();
   }
 
@@ -32,7 +32,7 @@ record RecordPurityOverride(@Nullable String pure, @Nullable String impure) {
   public String checkPurityOfAccessor3() {
     if (impure() == null) return "";
     else
-      // :: error: (dereference.of.nullable)
+      // :: error: [dereference.of.nullable]
       return impure().toString();
   }
 }

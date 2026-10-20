@@ -15,7 +15,7 @@ class Main {
 
   void test2(OptContainer container, List<String> strs) {
     if (container.getOpt().isPresent()) {
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       strs.forEach(s -> container.getOptImpure().get());
     }
   }
@@ -34,7 +34,7 @@ class Main {
       strs.forEach(
           s -> {
             container.sideEffect();
-            // :: error: (method.invocation)
+            // :: error: [method.invocation]
             container.getOpt().get(); // Not ok
           });
     }
@@ -53,7 +53,7 @@ class Main {
 
   void test6(OptContainer container) {
     if (container.getOpt().isPresent()) {
-      // :: error: (method.invocation)
+      // :: error: [method.invocation]
       container.forEach(s -> container.getOpt().get());
     }
   }

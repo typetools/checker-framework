@@ -13,9 +13,9 @@ class DisbarredClass {
   DisbarredClass(@DisbarUse Integer param) {}
 
   DisbarredClass(@DisbarUse Long param) {
-    // :: error: (disbar.use)
+    // :: error: [disbar.use]
     param = 7L;
-    // :: error: (disbar.use)
+    // :: error: [disbar.use]
     param.toString();
   }
 
@@ -23,13 +23,13 @@ class DisbarredClass {
   void disbarredMethod() {}
 
   void invalid() {
-    // :: error: (disbar.use)
+    // :: error: [disbar.use]
     disbarredMethod();
-    // :: error: (disbar.use)
+    // :: error: [disbar.use]
     new DisbarredClass("");
-    // :: error: (disbar.use)
+    // :: error: [disbar.use]
     barred = "";
-    // :: error: (disbar.use)
+    // :: error: [disbar.use]
     int x = barred.length();
   }
 

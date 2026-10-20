@@ -18,9 +18,9 @@ public class ThisSuper {
     void method() {
       // super.superField : @FlowExp("super.field")
       // this.subField : @FlowExp("this.field")
-      // :: error: (assignment)
+      // :: error: [assignment]
       this.subField = super.superField;
-      // :: error: (assignment)
+      // :: error: [assignment]
       super.superField = this.subField;
 
       @FlowExp("super.field") Object o1 = super.superField;

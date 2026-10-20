@@ -15,12 +15,12 @@ public class CallOverrides {
   void test() {
     C c = new C();
 
-    // :: error: (methodcall)
+    // :: error: [methodcall]
     c.m();
 
     B b = c;
 
-    // :: error: (methodcall)
+    // :: error: [methodcall]
     b.m();
 
     A a = c;

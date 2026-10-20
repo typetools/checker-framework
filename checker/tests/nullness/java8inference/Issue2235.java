@@ -18,7 +18,7 @@ public class Issue2235 {
 
   public static void main(String[] args) throws Exception {
     // Null is hidden via nested calls, but assigned to a non-null type:
-    // :: error: (type.arguments.not.inferred)
+    // :: error: [type.arguments.not.inferred]
     Holder<Holder<String>> h = Holder.make(Holder.make(null));
     // NullPointerException will fire here:
     h.t.t.toString();

@@ -49,13 +49,13 @@ public interface AnnotatedTypeVisitor<R, P> {
    */
   public R visit(AnnotatedTypeMirror type, P p);
 
-  /**
-   * Visits a declared type.
-   *
-   * @param type the type to visit
-   * @param p a visitor-specified parameter
-   * @return a visitor-specified result
-   */
+  // /**
+  //  * Visits a declared type.
+  //  *
+  //  * @param type the type to visit
+  //  * @param p a visitor-specified parameter
+  //  * @return a visitor-specified result
+  //  */
   //    public R visitType(AnnotatedTypeMirror type, P p);
 
   /**

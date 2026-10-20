@@ -12,7 +12,7 @@ public class Issue5006 {
 
   interface Y extends X {
     @Override
-    // :: error: (super.wildcard)
+    // :: error: [super.wildcard]
     C<? super Object> get();
   }
 }

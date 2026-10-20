@@ -22,10 +22,10 @@ public class CastedShifts {
     // Shifting right by 25, now the MSB matters.
     byteRes = (@Unsigned byte) (unsigned >>> 25);
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     byteRes = (@Unsigned byte) (unsigned >> 25);
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     byteRes = (@Signed byte) (signed >>> 25);
     byteRes = (@Signed byte) (signed >> 25);
 
@@ -53,10 +53,10 @@ public class CastedShifts {
     // Shifting right by 17, now the MSB matters.
     shortRes = (@Unsigned short) (unsigned >>> 17);
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     shortRes = (@Unsigned short) (unsigned >> 17);
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     shortRes = (@Signed short) (signed >>> 17);
     shortRes = (@Signed short) (signed >> 17);
 
@@ -72,10 +72,10 @@ public class CastedShifts {
     // Now shift signedness matters again
     intRes = (@Unsigned int) (unsigned >>> 1);
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     intRes = (@Unsigned int) (unsigned >> 1);
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     intRes = (@Signed int) (signed >>> 1);
     intRes = (@Signed int) (signed >> 1);
 
@@ -91,10 +91,10 @@ public class CastedShifts {
     // Now shift signedness matters again
     longRes = (@Unsigned long) (unsigned >>> 1);
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     longRes = (@Unsigned long) (unsigned >> 1);
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     longRes = (@Signed long) (signed >>> 1);
     longRes = (@Signed long) (signed >> 1);
 
@@ -122,10 +122,10 @@ public class CastedShifts {
     // Shifting right by 25, now the MSB matters.
     byteRes = (@Unsigned byte) ((unsigned >>> 25));
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     byteRes = (@Unsigned byte) ((unsigned >> 25));
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     byteRes = (@Signed byte) ((signed >>> 25));
     byteRes = (@Signed byte) ((signed >> 25));
 
@@ -139,10 +139,10 @@ public class CastedShifts {
     // Now shift signedness matters again
     intRes = (@Unsigned int) ((unsigned >>> 1));
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     intRes = (@Unsigned int) ((unsigned >> 1));
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     intRes = (@Signed int) ((signed >>> 1));
     intRes = (@Signed int) ((signed >> 1));
 
@@ -157,10 +157,10 @@ public class CastedShifts {
     // Now shift signedness matters again
     intRes = (@Unsigned int) ((unsigned >>> 33));
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     intRes = (@Unsigned int) ((unsigned >> 33));
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     intRes = (@Signed int) ((signed >>> 33));
     intRes = (@Signed int) ((signed >> 33));
 
@@ -190,10 +190,10 @@ public class CastedShifts {
     // Shifting right by 57, now the MSB matters.
     byteRes = (@Unsigned byte) (unsigned >>> 57);
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     byteRes = (@Unsigned byte) (unsigned >> 57);
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     byteRes = (@Signed byte) (signed >>> 57);
     byteRes = (@Signed byte) (signed >> 57);
 
@@ -217,7 +217,7 @@ public class CastedShifts {
     // Shifting right by 57, now the MSB matters.
     charRes = (char) (unsigned >>> 57);
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     charRes = (char) (unsigned >> 57);
 
     // Shifting right by zero should behave as assignment
@@ -242,10 +242,10 @@ public class CastedShifts {
     // Shifting right by 49, now the MSB matters.
     shortRes = (@Unsigned short) (unsigned >>> 49);
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     shortRes = (@Unsigned short) (unsigned >> 49);
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     shortRes = (@Signed short) (signed >>> 49);
     shortRes = (@Signed short) (signed >> 49);
 
@@ -273,10 +273,10 @@ public class CastedShifts {
     // Shifting right by 33, now the MSB matters.
     intRes = (@Unsigned int) (unsigned >>> 33);
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     intRes = (@Unsigned int) (unsigned >> 33);
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     intRes = (@Signed int) (signed >>> 33);
     intRes = (@Signed int) (signed >> 33);
 
@@ -292,10 +292,10 @@ public class CastedShifts {
     // Now shift signedness matters again
     longRes = (@Unsigned long) (unsigned >>> 1);
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     longRes = (@Unsigned long) (unsigned >> 1);
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     longRes = (@Signed long) (signed >>> 1);
     longRes = (@Signed long) (signed >> 1);
 
@@ -323,10 +323,10 @@ public class CastedShifts {
     // Shifting right by 9, now the MSB matters.
     byteRes = (@Unsigned byte) ((unsigned >>> 57));
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     byteRes = (@Unsigned byte) ((unsigned >> 57));
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     byteRes = (@Signed byte) ((signed >>> 57));
     byteRes = (@Signed byte) ((signed >> 57));
 
@@ -340,10 +340,10 @@ public class CastedShifts {
     // Now shift signedness matters again
     longRes = (@Unsigned long) ((unsigned >>> 1));
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     longRes = (@Unsigned long) ((unsigned >> 1));
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     longRes = (@Signed long) ((signed >>> 1));
     longRes = (@Signed long) ((signed >> 1));
 
@@ -358,10 +358,10 @@ public class CastedShifts {
     // Now shift signedness matters again
     longRes = (@Unsigned long) ((unsigned >>> 65));
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     longRes = (@Unsigned long) ((unsigned >> 65));
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     longRes = (@Signed long) ((signed >>> 65));
     longRes = (@Signed long) ((signed >> 65));
 

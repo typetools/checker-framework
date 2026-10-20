@@ -30,6 +30,7 @@ public class H1H2AnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the checker
    */
+  @SuppressWarnings("this-escape")
   public H1H2AnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.postInit();

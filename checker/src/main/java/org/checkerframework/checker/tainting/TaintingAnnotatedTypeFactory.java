@@ -22,6 +22,7 @@ public class TaintingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the tainting checker
    */
+  @SuppressWarnings("this-escape")
   public TaintingAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.UNTAINTED = AnnotationBuilder.fromClass(getElementUtils(), Untainted.class);

@@ -20,7 +20,7 @@ class Issue6393 {
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
-    // :: warning: (cast.unsafe)
+    // :: warning: [cast.unsafe]
     return (T) z;
   }
 }

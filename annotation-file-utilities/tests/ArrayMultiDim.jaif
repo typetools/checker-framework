@@ -1,0 +1,34 @@
+package java.lang:
+annotation @A: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @B: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @C: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @D: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @E: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @F: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @G: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @H: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class ArrayMultiDim:
+
+    field field:
+        type: @D
+            inner-type 0, 0: @E
+            inner-type 0, 0, 0, 0: @F
+            inner-type 0, 0, 0, 0, 0, 0: @C
+
+    field field2:
+        new *0: @D
+            inner-type 0, 0: @E
+            inner-type 0, 0, 0, 0: @F
+            inner-type 0, 0, 0, 0, 0, 0: @C
+
+    field field3:
+        type: @D
+            inner-type 0, 0: @E
+            inner-type 0, 0, 0, 0: @F
+            inner-type 0, 0, 0, 0, 0, 0: @C
+        new *0: @D
+            inner-type 0, 0: @E
+            inner-type 0, 0, 0, 0: @F
+            inner-type 0, 0, 0, 0, 0, 0: @C

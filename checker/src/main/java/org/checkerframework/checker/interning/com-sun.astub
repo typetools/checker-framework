@@ -33,9 +33,9 @@ public class Repository {
 }
 
 
-///////////////////////////////////////////////////////////////////////////
-/// public static final @Interned String (initialized to constant)
-///
+// ///////////////////////////////////////////////////////////////////////////
+// public static final @Interned String (initialized to constant)
+//
 
 package com.sun.imageio.plugins.gif;
 public class GIFStreamMetadata {

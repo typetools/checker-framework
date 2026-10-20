@@ -13,12 +13,13 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersec
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * A visitor used to compare two type mirrors for "structural" equality. Structural equality implies
@@ -100,7 +101,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   }
 
   /**
-   * Return true if type1 and type2 have the same set of annotations.
+   * Returns true if type1 and type2 have the same set of annotations.
    *
    * @param type1 a type
    * @param type2 a type
@@ -122,7 +123,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
   /**
    * Compare each type in types1 and types2 pairwise and return true if they are all equal. This
-   * method throws an exceptions if types1.size() != types2.size()
+   * method throws an exception if types1.size() != types2.size()
    *
    * @return true if for each pair (t1 = types1.get(i); t2 = types2.get(i)), areEqual(t1,t2)
    */
@@ -132,10 +133,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     if (types1.size() != types2.size()) {
       throw new BugInCF(
           "Mismatching collection sizes:%n    types 1: %s (%d)%n    types 2: %s (%d)",
-          StringsPlume.join("; ", types1),
-          types1.size(),
-          StringsPlume.join("; ", types2),
-          types2.size());
+          StringsP.join("; ", types1), types1.size(), StringsP.join("; ", types2), types2.size());
     }
 
     Iterator<? extends AnnotatedTypeMirror> types1Iter = types1.iterator();
@@ -157,7 +155,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
    *
    * @param type1 the first type
    * @param type2 the second type
-   * @return whether the two types are equal
+   * @return true if the two types are equal
    */
   protected boolean checkOrAreEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
     Boolean pastResult = visitHistory.get(type1, type2, currentTop);
@@ -322,6 +320,17 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     return result;
   }
 
+  @Override
+  public Boolean visitUnion_Union(AnnotatedUnionType type1, AnnotatedUnionType type2, Void unused) {
+    if (!arePrimaryAnnosEqual(type1, type2)) {
+      return false;
+    }
+
+    boolean result = areAllEqual(type1.getAlternatives(), type2.getAlternatives());
+    visitHistory.put(type1, type2, currentTop, result);
+    return result;
+  }
+
   /**
    * Two wildcards are equal if:
    *
@@ -371,5 +380,33 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     }
 
     return arePrimaryAnnosEqual(type1, type2);
+  }
+
+  @Override
+  public Boolean visitTypevar_Declared(
+      AnnotatedTypeVariable type1, AnnotatedDeclaredType type2, Void unused) {
+    // This case should not happen, but sometimes type argument inference incorrectly infers a
+    // captured type, when javac does not. See Issue6755.java.
+    if (TypesUtils.isCapturedTypeVariable(type1.underlyingType)) {
+      if (type1.getLowerBound().getKind() != TypeKind.NULL) {
+        return visit(type1.getLowerBound(), type2, unused);
+      }
+      return visit(type1.getUpperBound(), type2, unused);
+    }
+    return super.visitTypevar_Declared(type1, type2, unused);
+  }
+
+  @Override
+  public Boolean visitDeclared_Typevar(
+      AnnotatedDeclaredType type1, AnnotatedTypeVariable type2, Void unused) {
+    // This case should not happen, but sometimes type argument inference incorrectly infers a
+    // captured type, when javac does not. See Issue6755.java.
+    if (TypesUtils.isCapturedTypeVariable(type2.underlyingType)) {
+      if (type2.getLowerBound().getKind() != TypeKind.NULL) {
+        return visit(type1, type2.getLowerBound(), unused);
+      }
+      return visit(type1, type2.getUpperBound(), unused);
+    }
+    return super.visitDeclared_Typevar(type1, type2, unused);
   }
 }

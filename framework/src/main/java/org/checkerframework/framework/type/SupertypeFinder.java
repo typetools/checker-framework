@@ -2,6 +2,7 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * Finds the direct supertypes of an input AnnotatedTypeMirror. See <a
- * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.10.2">JLS section
+ * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.10.2">JLS section
  * 4.10.2</a>.
  *
  * @see Types#directSupertypes(TypeMirror)
@@ -325,7 +326,7 @@ final class SupertypeFinder {
                 atypeFactory.getAnnotatedTypeFromTypeTree(classTree.getExtendsClause());
         supertypes.add(adt);
       } else if (!ElementUtils.isObject(TreeUtils.elementFromDeclaration(classTree))) {
-        if (classTree.getKind().name().contentEquals("RECORD")) {
+        if (classTree.getKind() == Kind.RECORD) {
           supertypes.add(AnnotatedTypeMirror.createTypeOfRecord(atypeFactory));
         } else {
           supertypes.add(AnnotatedTypeMirror.createTypeOfObject(atypeFactory));
@@ -354,7 +355,7 @@ final class SupertypeFinder {
      * All enums implicitly extend {@code Enum<MyEnum>}, where {@code MyEnum} is the type of the
      * enum. This method creates the AnnotatedTypeMirror for {@code Enum<MyEnum>} where the
      * annotation on {@code MyEnum} is copied from the annotation on the upper bound of the type
-     * argument to Enum. For example, {@code class Enum<E extend @HERE Enum<E>>}.
+     * argument to Enum. For example, {@code class Enum<E extends @HERE Enum<E>>}.
      *
      * @param type annotated type of an enum
      * @param elem element corresponding to {@code type}
@@ -375,12 +376,10 @@ final class SupertypeFinder {
     }
 
     /**
-     *
-     *
      * <pre>{@code
      * For type = A[ ] ==>
      *  Object >: A[ ]
-     *  Clonable >: A[ ]
+     *  Cloneable >: A[ ]
      *  java.io.Serializable >: A[ ]
      *
      * if A is reference type, then also

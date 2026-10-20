@@ -14,7 +14,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.plumelib.util.IPair;
 
 /**
  * This file contains code to special-case shifts whose result does not depend on the MSB of the
@@ -22,7 +21,7 @@ import org.plumelib.util.IPair;
  *
  * @checker_framework.manual #signedness-checker Signedness Checker
  */
-public class SignednessShifts {
+public final class SignednessShifts {
 
   /** Do not instantiate SignednessShifts. */
   private SignednessShifts() {
@@ -49,25 +48,24 @@ public class SignednessShifts {
    * @return type of a primitive cast, or null if not a cast to a primitive
    */
   private static @Nullable PrimitiveTypeTree primitiveTypeCast(Tree tree) {
-    if (tree.getKind() != Tree.Kind.TYPE_CAST) {
+    if (!(tree instanceof TypeCastTree cast)) {
       return null;
     }
 
-    TypeCastTree cast = (TypeCastTree) tree;
     Tree castType = cast.getType();
 
     Tree underlyingType;
-    if (castType.getKind() == Tree.Kind.ANNOTATED_TYPE) {
-      underlyingType = ((AnnotatedTypeTree) castType).getUnderlyingType();
+    if (castType instanceof AnnotatedTypeTree att) {
+      underlyingType = att.getUnderlyingType();
     } else {
       underlyingType = castType;
     }
 
-    if (underlyingType.getKind() != Tree.Kind.PRIMITIVE_TYPE) {
+    if (!(underlyingType instanceof PrimitiveTypeTree ptt)) {
       return null;
     }
 
-    return (PrimitiveTypeTree) underlyingType;
+    return ptt;
   }
 
   /**
@@ -81,7 +79,7 @@ public class SignednessShifts {
   }
 
   /**
-   * Returns the long value of an Integer or a Long
+   * Returns the long value of an Integer or a Long.
    *
    * @param obj either an Integer or a Long
    * @return the long value of obj
@@ -169,41 +167,29 @@ public class SignednessShifts {
     long shiftBits;
     long shiftAmount;
     switch (shiftTypeKind) {
-      case INT:
+      case INT -> {
         shiftBits = 32;
         // When the LHS of the shift is an int, the 5 lower order bits of the RHS are used.
         shiftAmount = 0x1F & getLong(shiftAmountLit.getValue());
-        break;
-      case LONG:
+      }
+      case LONG -> {
         shiftBits = 64;
         // When the LHS of the shift is a long, the 6 lower order bits of the RHS are used.
         shiftAmount = 0x3F & getLong(shiftAmountLit.getValue());
-        break;
-      default:
-        throw new TypeSystemError("Invalid shift type");
+      }
+      default -> throw new TypeSystemError("Invalid shift type");
     }
 
     // Determine number of bits in the cast type
-    long castBits;
-    switch (castTypeKind) {
-      case BYTE:
-        castBits = 8;
-        break;
-      case CHAR:
-        castBits = 8;
-        break;
-      case SHORT:
-        castBits = 16;
-        break;
-      case INT:
-        castBits = 32;
-        break;
-      case LONG:
-        castBits = 64;
-        break;
-      default:
-        throw new TypeSystemError("Invalid cast target");
-    }
+    long castBits =
+        switch (castTypeKind) {
+          case BYTE -> 8;
+          case CHAR -> 8;
+          case SHORT -> 16;
+          case INT -> 32;
+          case LONG -> 64;
+          default -> throw new TypeSystemError("Invalid cast target");
+        };
 
     long bitsDiscarded = shiftBits - castBits;
 
@@ -228,12 +214,12 @@ public class SignednessShifts {
    */
   /*package-private*/ static boolean isMaskedShiftEitherSignedness(
       BinaryTree shiftExpr, TreePath path) {
-    IPair<Tree, Tree> enclosingPair = TreePathUtil.enclosingNonParen(path);
+    TreePathUtil.EnclosingNonParen enclosingPair = TreePathUtil.enclosingNonParen(path);
     // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
-    Tree enclosing = enclosingPair.first;
+    Tree enclosing = enclosingPair.enclosing();
     // enclosingChild is a child of enclosing:  shiftExpr or a parenthesized version of it.
     @SuppressWarnings("interning:assignment") // comparing AST nodes
-    @InternedDistinct Tree enclosingChild = enclosingPair.second;
+    @InternedDistinct Tree enclosingChild = enclosingPair.enclosingChild();
 
     if (!isMask(enclosing)) {
       return false;
@@ -278,7 +264,7 @@ public class SignednessShifts {
   /*package-private*/ static boolean isCastedShiftEitherSignedness(
       BinaryTree shiftExpr, TreePath path) {
     // enclosing immediately contains shiftExpr or a parenthesized version of shiftExpr
-    Tree enclosing = TreePathUtil.enclosingNonParen(path).first;
+    Tree enclosing = TreePathUtil.enclosingNonParen(path).enclosing();
 
     PrimitiveTypeTree castPrimitiveType = primitiveTypeCast(enclosing);
     if (castPrimitiveType == null) {

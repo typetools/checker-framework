@@ -1,0 +1,34 @@
+package java.lang:
+annotation @Tainted: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package:
+  annotation @ADecl:
+
+package:
+  annotation @AType: @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+
+class ConstructorReturn:
+  method ConstructorReturn()V:
+    return: @Tainted
+
+class ConstructorReturn_2_1:
+  method <init>()V: @ADecl
+  method foo()Ljava/lang/Object;: @ADecl
+
+class ConstructorReturn_2_2:
+  method <init>()V: @ADecl
+  method foo()Ljava/lang/Object;: @ADecl
+
+class ConstructorReturn_3_1:
+  method <init>()V:
+    insert-annotation Method.type: @AType
+  method foo()Ljava/lang/Object;:
+    insert-annotation Method.type: @AType
+
+class ConstructorReturn_3_2:
+  method <init>()V:
+    return: @AType
+  method foo()Ljava/lang/Object;:
+    return: @AType

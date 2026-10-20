@@ -12,7 +12,7 @@ public class OptionalMapMethodReference {
     Optional<String> o = getString();
     @Present Optional<Integer> oInt;
     if (o.isPresent()) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       oInt = o.map(this::convertNull);
       oInt = o.map(this::convertPoly);
       return o.map(this::convert);

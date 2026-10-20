@@ -14,12 +14,15 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 
-/** A busy expression transfer function */
+/** A busy expression transfer function. */
 public class BusyExprTransfer
     extends AbstractNodeVisitor<
         TransferResult<UnusedAbstractValue, BusyExprStore>,
         TransferInput<UnusedAbstractValue, BusyExprStore>>
     implements BackwardTransferFunction<UnusedAbstractValue, BusyExprStore> {
+
+  /** Creates a BusyExprTransfer. */
+  public BusyExprTransfer() {}
 
   @Override
   public BusyExprStore initialNormalExitStore(

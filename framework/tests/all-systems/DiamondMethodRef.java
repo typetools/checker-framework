@@ -16,8 +16,15 @@ public class DiamondMethodRef {
                     .boxed()
                     .collect(
                         Collectors.toMap(
-                            Function.identity(), hitDie -> 1, Integer::sum, LinkedHashMap::new)))
+                            Function.identity(),
+                            hitDie -> 1,
+                            DiamondMethodRef::sum,
+                            LinkedHashMap::new)))
         .mapToInt(hdMap -> hdMap.entrySet().stream().mapToInt(Map.Entry::getValue).sum());
+  }
+
+  static Integer sum(Integer a, Integer b) {
+    throw new RuntimeException();
   }
 
   public static class CharacterDisplay {
@@ -26,7 +33,7 @@ public class DiamondMethodRef {
     }
 
     public final int getLevel(PCClass pcc) {
-      return 0;
+      throw new RuntimeException();
     }
 
     public HitDie getLevelHitDie(PCClass pcClass, final int classLevel) {
@@ -38,7 +45,7 @@ public class DiamondMethodRef {
 
   static class HitDie {
     int getDie() {
-      return 0;
+      throw new RuntimeException();
     }
   }
 }

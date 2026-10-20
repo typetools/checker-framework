@@ -48,7 +48,7 @@ public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
    * otherwise, all annotations are replaced.
    *
    * @param top if top != null, then only annotations in the hierarchy of top are replaced;
-   *     otherwise, all annotations are replaced.
+   *     otherwise, all annotations are replaced
    */
   public void setTop(@Nullable AnnotationMirror top) {
     this.top = top;
@@ -94,9 +94,9 @@ public class AnnotatedTypeReplacer extends DoubleAnnotatedTypeScanner<Void> {
   }
 
   /**
-   * For type variables and wildcards, the absence of a primary annotations has an implied meaning
-   * on substitution. Therefore, in these cases we remove the primary annotation and rely on the
-   * fact that the bounds are also merged into the type to.
+   * For type variables and wildcards, the absence of a primary annotation has an implied meaning on
+   * substitution. Therefore, in these cases we remove the primary annotation and rely on the fact
+   * that the bounds are also merged into the type.
    *
    * @param from a type variable or wildcard
    * @param to the destination annotated type mirror

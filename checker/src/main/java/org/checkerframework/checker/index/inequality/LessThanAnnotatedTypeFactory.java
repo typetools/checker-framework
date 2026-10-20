@@ -30,15 +30,15 @@ import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /** The type factory for the Less Than Checker. */
 public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForIndexChecker {
@@ -59,6 +59,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    *
    * @param checker the type-checker associated with this type factory
    */
+  @SuppressWarnings("this-escape")
   public LessThanAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     postInit();
@@ -142,7 +143,10 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
 
       List<String> a1List = getLessThanExpressions(a1);
       List<String> a2List = getLessThanExpressions(a2);
-      CollectionsPlume.adjoinAll(a1List, a2List); // union
+      if (a1List == null || a2List == null) {
+        return LESS_THAN_BOTTOM;
+      }
+      CollectionsP.adjoinAll(a1List, a2List); // union
       return createLessThanQualifier(a1List);
     }
   }
@@ -190,15 +194,15 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
     }
 
     OffsetEquation offsetEquation = OffsetEquation.createOffsetFromJavaExpression(bigger);
-    if (offsetEquation.isInt()) {
+    if (offsetEquation.isOnlyInt()) {
       // bigger is an int literal
-      return smallerValue < offsetEquation.getInt();
+      return smallerValue < offsetEquation.getIntPart();
     }
     // If bigger is "expression + literal", then smaller < expression + literal
     // can be reduced to smaller - literal < expression + literal - literal
-    smallerValue = smallerValue - offsetEquation.getInt();
+    smallerValue = smallerValue - offsetEquation.getIntPart();
     offsetEquation =
-        offsetEquation.copyAdd('-', OffsetEquation.createOffsetForInt(offsetEquation.getInt()));
+        offsetEquation.copyAdd('-', OffsetEquation.createOffsetForInt(offsetEquation.getIntPart()));
 
     long minValueOfBigger = getMinValueFromString(offsetEquation.toString(), smaller, path);
     return smallerValue < minValueOfBigger;
@@ -218,6 +222,9 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
     try {
       expressionJe = valueAtypeFactory.parseJavaExpressionString(expression, path);
     } catch (JavaExpressionParseException e) {
+      // Do not report the error.  The argument is an offset equation such as "n + 1", which the
+      // parser does not handle, so failing to parse it is not necessarily a user error.
+      // Returning the least informative bound is conservative.
       return Long.MIN_VALUE;
     }
 
@@ -233,8 +240,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
       return Collections.min(possibleValues);
     }
 
-    if (expressionJe instanceof FieldAccess) {
-      FieldAccess fieldAccess = ((FieldAccess) expressionJe);
+    if (expressionJe instanceof FieldAccess fieldAccess) {
       if (fieldAccess.getReceiver().getType().getKind() == TypeKind.ARRAY) {
         // array.length might not be in the store, so check for the length of the array.
         AnnotationMirror arrayRange =

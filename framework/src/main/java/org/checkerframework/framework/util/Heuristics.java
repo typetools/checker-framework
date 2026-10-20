@@ -21,6 +21,11 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class Heuristics {
 
+  /** Do not instantiate. */
+  private Heuristics() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * Returns true if a tree has a particular set of direct parents, ignoring blocks and parentheses.
    *
@@ -51,7 +56,7 @@ public class Heuristics {
         break;
       }
 
-      if (tree.getKind() == Tree.Kind.BLOCK || tree.getKind() == Tree.Kind.PARENTHESIZED) {
+      if (tree instanceof BlockTree || tree instanceof ParenthesizedTree) {
         parentPath = parentPath.getParentPath();
         continue;
       }
@@ -108,8 +113,7 @@ public class Heuristics {
       assert p.getLeaf() == stmt;
 
       while (p != null && p.getLeaf() instanceof StatementTree) {
-        if (p.getParentPath().getLeaf() instanceof BlockTree) {
-          BlockTree block = (BlockTree) p.getParentPath().getLeaf();
+        if (p.getParentPath().getLeaf() instanceof BlockTree block) {
           for (StatementTree st : block.getStatements()) {
             if (st == p.getLeaf()) {
               break;
@@ -181,8 +185,7 @@ public class Heuristics {
     public boolean match(TreePath path) {
       TreePath prev = path, p = path.getParentPath();
       while (p != null) {
-        if (p.getLeaf().getKind() == Tree.Kind.IF) {
-          IfTree ifTree = (IfTree) p.getLeaf();
+        if (p.getLeaf() instanceof IfTree ifTree) {
           ExpressionTree cond = TreeUtils.withoutParens(ifTree.getCondition());
           if (ifTree.getThenStatement() == prev.getLeaf() && matcher.match(new TreePath(p, cond))) {
             return true;

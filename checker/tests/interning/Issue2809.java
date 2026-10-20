@@ -19,7 +19,7 @@ public class Issue2809 {
   }
 
   void newFail(MyType<int @Interned []> t, int @UnknownInterned [] non) {
-    // :: error: (type.arguments.not.inferred)
+    // :: error: [type.arguments.not.inferred]
     t.self(new MyType<>(non));
   }
 

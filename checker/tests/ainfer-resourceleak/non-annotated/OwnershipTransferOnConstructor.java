@@ -19,7 +19,7 @@ class OwnershipTransferOnConstructor {
       Foo f = new Foo(s);
     }
 
-    // :: warning: (required.method.not.called)
+    // :: warning: [required.method.not.called]
     void testOwningOnBaz(@Owning Socket s) {
       Socket s2 = s;
       baz(s2);

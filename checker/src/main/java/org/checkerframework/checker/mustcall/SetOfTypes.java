@@ -24,7 +24,7 @@ import org.checkerframework.dataflow.qual.Pure;
 public interface SetOfTypes {
 
   /**
-   * Test whether this set contains the given type.
+   * Returns true if this set contains the given type.
    *
    * @param typeUtils a {@code Types} object for computing the relationships between types
    * @param type the type in question
@@ -67,7 +67,7 @@ public interface SetOfTypes {
   @Pure
   static SetOfTypes anyOfTheseNames(ImmutableSet<@CanonicalName String> names) {
     return (typeUtils, u) ->
-        u instanceof Type && names.contains(((Type) u).tsym.getQualifiedName().toString());
+        u instanceof Type t && names.contains(t.tsym.getQualifiedName().toString());
   }
 
   /**
@@ -78,20 +78,18 @@ public interface SetOfTypes {
    */
   @Pure
   static SetOfTypes union(SetOfTypes... typeSets) {
-    switch (typeSets.length) {
-      case 0:
-        return EMPTY;
-      case 1:
-        return typeSets[0];
-      default:
-        return (typeUtils, type) -> {
-          for (SetOfTypes set : typeSets) {
-            if (set.contains(typeUtils, type)) {
-              return true;
+    return switch (typeSets.length) {
+      case 0 -> EMPTY;
+      case 1 -> typeSets[0];
+      default ->
+          (typeUtils, type) -> {
+            for (SetOfTypes set : typeSets) {
+              if (set.contains(typeUtils, type)) {
+                return true;
+              }
             }
-          }
-          return false;
-        };
-    }
+            return false;
+          };
+    };
   }
 }

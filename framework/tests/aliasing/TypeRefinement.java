@@ -29,9 +29,9 @@ public class TypeRefinement {
 
     String notUnique = unique; // unique loses its refinement.
 
-    // :: error: (argument)
+    // :: error: [argument]
     isUnique(unique);
-    // :: error: (argument)
+    // :: error: [argument]
     isUnique(notUnique);
   }
 
@@ -43,7 +43,7 @@ public class TypeRefinement {
     isUnique(unique);
 
     leaked(unique);
-    // :: error: (argument)
+    // :: error: [argument]
     isUnique(unique);
   }
 
@@ -54,7 +54,7 @@ public class TypeRefinement {
     isUnique(unique);
 
     String notUnique = leakedToResult(unique);
-    // :: error: (argument)
+    // :: error: [argument]
     isUnique(unique);
   }
 

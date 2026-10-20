@@ -3,7 +3,6 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.VariableTree;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
@@ -52,16 +51,15 @@ public class VariableDeclarationNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof VariableDeclarationNode)) {
+    if (!(obj instanceof VariableDeclarationNode other)) {
       return false;
     }
-    VariableDeclarationNode other = (VariableDeclarationNode) obj;
     return getName().equals(other.getName());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getName());
+    return getName().hashCode();
   }
 
   @Override

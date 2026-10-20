@@ -37,7 +37,8 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
+import org.plumelib.util.MapsP;
 
 /** AnnotatedTypeFactory for the MethodVal Checker. */
 public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -83,6 +84,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the type-checker associated with this factory
    */
+  @SuppressWarnings("this-escape")
   public MethodValAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     if (this.getClass() == MethodValAnnotatedTypeFactory.class) {
@@ -151,7 +153,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Returns a list of class names for the given tree using the Class Val Checker.
    *
    * @param tree an ExpressionTree whose class names are requested
-   * @param mustBeExact whether @ClassBound may be read to produce the result; if false,
+   * @param mustBeExact true if @ClassBound may be read to produce the result; if false,
    *     only @ClassVal may be read
    * @return list of class names or the empty list if no class names were found
    */
@@ -229,7 +231,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (AnnotationUtils.areSameByName(a1, a2)) {
         List<MethodSignature> a1Sigs = getListOfMethodSignatures(a1);
         List<MethodSignature> a2Sigs = getListOfMethodSignatures(a2);
-        List<MethodSignature> lubSigs = CollectionsPlume.listUnion(a1Sigs, a2Sigs);
+        List<MethodSignature> lubSigs = CollectionsP.listUnion(a1Sigs, a2Sigs);
         AnnotationMirror result = createMethodVal(lubSigs);
         return result;
       }
@@ -248,7 +250,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (AnnotationUtils.areSameByName(a1, a2)) {
         List<MethodSignature> a1Sigs = getListOfMethodSignatures(a1);
         List<MethodSignature> a2Sigs = getListOfMethodSignatures(a2);
-        List<MethodSignature> lubSigs = CollectionsPlume.listIntersection(a1Sigs, a2Sigs);
+        List<MethodSignature> lubSigs = CollectionsP.listIntersection(a1Sigs, a2Sigs);
         AnnotationMirror result = createMethodVal(lubSigs);
         return result;
       }
@@ -324,8 +326,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       }
 
       Set<MethodSignature> methodSigs =
-          new HashSet<>(
-              CollectionsPlume.mapCapacity(methodNames.size() * classNames.size() * params.size()));
+          new HashSet<>(MapsP.mapCapacity(methodNames.size() * classNames.size() * params.size()));
       // The possible method signatures are the Cartesian product of all
       // found class, method, and parameter lengths.
       for (String methodName : methodNames) {
@@ -417,7 +418,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private List<Integer> getNumberOfParameterOneArg(ExpressionTree argument) {
       AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(argument);
       switch (atm.getKind()) {
-        case ARRAY:
+        case ARRAY -> {
           ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
           AnnotatedTypeMirror valueType = valueATF.getAnnotatedType(argument);
           AnnotationMirror arrayLenAnno = valueType.getPrimaryAnnotation(ArrayLen.class);
@@ -430,20 +431,22 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           }
           // the argument is an array with unknown array length
           return UNKNOWN_PARAM_LENGTH_LIST;
-        case NULL:
-          // null is treated as the empty list of parameters, so size is 0.
+        }
+        case NULL -> {
           return ZERO_LIST;
-        default:
-          // The argument is not an array or null, so it must be a class.
+        } // null is treated as the empty list of parameters, so size is 0.
+        default -> {
           return ONE_LIST;
+        } // The argument is not an array or null, so it must be a class.
       }
     }
   }
 }
 
 /**
- * An object that represents a the tuple that identifies a method signature: (fully qualified class
- * name, method name, number of parameters).
+ * An object that represents a method signature: fully qualified class name, method name, and number
+ * of parameters. It does not distinguish among overloads that have the same number of arguments,
+ * but arguments of different types.
  */
 class MethodSignature {
   String className;

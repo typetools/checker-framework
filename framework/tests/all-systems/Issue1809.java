@@ -30,7 +30,7 @@ abstract class Issue1809 {
 
   // The Checker Framework  does not refine the type of Stream#filter based on post conditions of
   // the passed function.
-  @SuppressWarnings({"nullness", "optional"})
+  // TODO: use more specific suppressions. @SuppressWarnings({"nullness", "optional"})
   private Stream<A> xrefsFor(B b) {
     return concat(b.g().stream().flatMap(a -> a.h().stream().map(c -> f())))
         .filter(Optional::isPresent)

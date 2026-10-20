@@ -36,7 +36,7 @@ public class NullnessSwitchStatementRules {
       case 1:
         field = null;
       case 2:
-        // :: error: (dereference.of.nullable)
+        // :: error: [dereference.of.nullable]
         field.toString();
     }
   }

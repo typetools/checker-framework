@@ -51,8 +51,8 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
   /**
    * @param printVerboseGenerics for type parameters, their uses, and wildcards, print more
    *     information
-   * @param defaultPrintInvisibleAnnos whether or not this AnnotatedTypeFormatter should print
-   *     invisible annotations
+   * @param defaultPrintInvisibleAnnos true if this AnnotatedTypeFormatter should print invisible
+   *     annotations
    */
   public DefaultAnnotatedTypeFormatter(
       boolean printVerboseGenerics, boolean defaultPrintInvisibleAnnos) {
@@ -63,8 +63,8 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
    * @param formatter an object that converts annotation mirrors to strings
    * @param printVerboseGenerics for type parameters, their uses, and wildcards, print more
    *     information
-   * @param defaultPrintInvisibleAnnos whether or not this AnnotatedTypeFormatter should print
-   *     invisible annotations
+   * @param defaultPrintInvisibleAnnos true if this AnnotatedTypeFormatter should print invisible
+   *     annotations
    */
   public DefaultAnnotatedTypeFormatter(
       AnnotationFormatter formatter,
@@ -131,15 +131,15 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     protected final AnnotationFormatter annoFormatter;
 
     /**
-     * Represents whether or not invisible annotations should be printed if the client of this class
-     * does not use the printInvisibleAnnos parameter.
+     * True if invisible annotations should be printed if the client of this class does not use the
+     * printInvisibleAnnos parameter.
      */
     protected final boolean defaultInvisiblesSetting;
 
     /**
      * For a given call to format, this setting specifies whether or not to printInvisibles. If a
      * user did not specify a printInvisible parameter in the call to format then this value will
-     * equal DefaultAnnotatedTypeFormatter.defaultInvisibleSettings for this object
+     * equal DefaultAnnotatedTypeFormatter.defaultInvisiblesSetting for this object
      */
     protected boolean currentPrintInvisibleSetting;
 
@@ -148,19 +148,19 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
 
     /**
      * Prints type variables in a less ambiguous manner using [] to delimit them. Always prints both
-     * bounds even if they lower bound is an AnnotatedNull type.
+     * bounds even if the lower bound is an AnnotatedNull type.
      */
     protected boolean currentPrintVerboseGenerics;
 
-    /** Whether the visitor is currently printing a raw type. */
+    /** True if the visitor is currently printing a raw type. */
     protected boolean currentlyPrintingRaw;
 
     /**
      * Creates the visitor.
      *
      * @param annoFormatter formatter used for {@code AnnotationMirror}s
-     * @param printVerboseGenerics whether to verbosely print type variables and wildcards
-     * @param defaultInvisiblesSetting whether to print invisible qualifiers
+     * @param printVerboseGenerics if true, verbosely print type variables and wildcards
+     * @param defaultInvisiblesSetting if true, print invisible qualifiers
      */
     public FormattingVisitor(
         AnnotationFormatter annoFormatter,
@@ -188,7 +188,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
 
     /**
      * Print, to sb, {@code keyWord} followed by {@code field}. NULL types are substituted with
-     * their annotations followed by " Void"
+     * their annotations followed by " Void".
      */
     @SideEffectFree
     protected void printBound(
@@ -200,9 +200,9 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         return;
       }
 
-      sb.append(" ");
+      sb.append(' ');
       sb.append(keyWord);
-      sb.append(" ");
+      sb.append(' ');
 
       if (field == null) {
         sb.append("<null>");
@@ -268,8 +268,14 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
           }
           sb.append(sj);
         }
+      } else if (type.isUnderlyingTypeRaw() && !currentPrintVerboseGenerics) {
+        // A raw type's declaration has type parameters, and every one of its type arguments
+        // would print as "/*RAW*/", so there is no need to initialize them just to print them.
+        sb.append("</*RAW*/>");
       } else {
-        sb.append("<" + "/*Type args not initialized*/" + ">");
+        sb.append('<');
+        sb.append("/*Type args not initialized*/");
+        sb.append('>');
       }
       currentlyPrintingRaw = oldPrintingRaw;
       return sb.toString();
@@ -348,17 +354,18 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
       if (type.paramTypes == null) {
         sb.append("/*Parameters not initialized*/");
       } else if (!type.paramTypes.isEmpty()) {
+        // If a receiver was printed, a leading separator is needed before the first parameter.
+        if (rcv != null) {
+          sb.append(", ");
+        }
+        StringJoiner sj = new StringJoiner(", ");
         int p = 0;
         for (AnnotatedTypeMirror atm : type.paramTypes) {
-          if (rcv != null || p > 0) {
-            sb.append(", ");
-          }
-          sb.append(visit(atm, visiting));
           // Output some parameter names to make it look more like a method.
           // TODO: go to the element and look up real parameter names, maybe.
-          sb.append(" p");
-          sb.append(p++);
+          sj.add(visit(atm, visiting) + " p" + p++);
         }
+        sb.append(sj);
       }
       sb.append(')');
       if (type.thrownTypes == null) {
@@ -390,8 +397,9 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         if (!(component instanceof AnnotatedArrayType)) {
           if (component == null) {
             sb.insert(0, "/*Not Initialized*/");
+          } else {
+            sb.insert(0, visit(component, visiting));
           }
-          sb.insert(0, visit(component, visiting));
           break;
         }
         array = (AnnotatedArrayType) component;
@@ -428,12 +436,12 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         try {
           visiting.add(type);
           if (currentPrintVerboseGenerics) {
-            sb.append("[");
+            sb.append('[');
           }
           printBound("extends", type.getUpperBoundField(), visiting, sb);
           printBound("super", type.getLowerBoundField(), visiting, sb);
           if (currentPrintVerboseGenerics) {
-            sb.append("]");
+            sb.append(']');
           }
 
         } finally {
@@ -478,19 +486,19 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
           annoFormatter.formatAnnotationString(
               type.getPrimaryAnnotationsField(), currentPrintInvisibleSetting));
 
-      sb.append("?");
+      sb.append('?');
       if (!visiting.contains(type)) {
 
         try {
           visiting.add(type);
 
           if (currentPrintVerboseGenerics) {
-            sb.append("[");
+            sb.append('[');
           }
           printBound("extends", type.getExtendsBoundField(), visiting, sb);
           printBound("super", type.getSuperBoundField(), visiting, sb);
           if (currentPrintVerboseGenerics) {
-            sb.append("]");
+            sb.append(']');
           }
 
         } finally {

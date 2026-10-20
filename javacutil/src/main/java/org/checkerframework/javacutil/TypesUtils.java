@@ -1,12 +1,15 @@
 package org.checkerframework.javacutil;
 
 import com.sun.tools.javac.code.BoundKind;
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.code.Type.ClassType;
+import com.sun.tools.javac.code.Type.IntersectionClassType;
 import com.sun.tools.javac.code.TypeTag;
+import com.sun.tools.javac.code.Types.FunctionDescriptorLookupError;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
@@ -17,6 +20,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -44,9 +48,9 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.ImmutableTypes;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * A utility class that helps with {@link TypeMirror}s. It complements {@link Types}, providing
@@ -59,7 +63,7 @@ public final class TypesUtils {
     throw new AssertionError("Class TypesUtils cannot be instantiated.");
   }
 
-  /// Creating types
+  // Creating types
 
   /**
    * Returns the {@link TypeMirror} for a given {@link Class}.
@@ -102,7 +106,7 @@ public final class TypesUtils {
     return t.getArrayType(componentType);
   }
 
-  /// Creating a Class<?>
+  // Creating a Class<?>
 
   /**
    * Returns the {@link Class} for a given {@link TypeMirror}. Returns {@code Object.class} if it
@@ -111,6 +115,8 @@ public final class TypesUtils {
    * @param typeMirror a TypeMirror
    * @return the class for {@code typeMirror}
    */
+  @SuppressWarnings(
+      "StatementSwitchToExpressionSwitch") // Task :javacutil:javadoc fails under JDK 17
   public static Class<?> getClassFromType(TypeMirror typeMirror) {
 
     switch (typeMirror.getKind()) {
@@ -133,19 +139,16 @@ public final class TypesUtils {
 
       case ARRAY:
         Class<?> componentClass = getClassFromType(((ArrayType) typeMirror).getComponentType());
-        // In Java 12, use this instead:
-        // return fooClass.arrayType();
-        return java.lang.reflect.Array.newInstance(componentClass, 0).getClass();
+        return componentClass.arrayType();
 
       case DECLARED:
         // BUG: need to compute a @ClassGetName, but this code computes a
         // @CanonicalNameOrEmpty.  They are different for inner classes.
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Names.toString
-        @DotSeparatedIdentifiers String typeString = TypesUtils.getQualifiedName((DeclaredType) typeMirror).toString();
+        @DotSeparatedIdentifiers String typeString = getQualifiedName((DeclaredType) typeMirror);
         if (typeString.equals("<nulltype>")) {
           return void.class;
         }
-
         try {
           return Class.forName(typeString);
         } catch (ClassNotFoundException | NoClassDefFoundError | UnsupportedClassVersionError e) {
@@ -157,7 +160,7 @@ public final class TypesUtils {
     }
   }
 
-  /// Getters
+  // Getters
 
   /**
    * Gets the fully qualified name for a provided type. It returns an empty name if type is an
@@ -180,46 +183,44 @@ public final class TypesUtils {
    * @return the simple type name
    */
   public static String simpleTypeName(TypeMirror type) {
-    switch (type.getKind()) {
-      case ARRAY:
-        return simpleTypeName(((ArrayType) type).getComponentType()) + "[]";
-      case TYPEVAR:
-        return ((TypeVariable) type).asElement().getSimpleName().toString();
-      case DECLARED:
-        return ((DeclaredType) type).asElement().getSimpleName().toString();
-      case INTERSECTION:
+    return switch (type.getKind()) {
+      case ARRAY -> simpleTypeName(((ArrayType) type).getComponentType()) + "[]";
+      case TYPEVAR -> ((TypeVariable) type).asElement().getSimpleName().toString();
+      case DECLARED -> ((DeclaredType) type).asElement().getSimpleName().toString();
+      case INTERSECTION -> {
         StringJoiner sjI = new StringJoiner(" & ");
         for (TypeMirror bound : ((IntersectionType) type).getBounds()) {
           sjI.add(simpleTypeName(bound));
         }
-        return sjI.toString();
-      case NULL:
-        return "<nulltype>";
-      case VOID:
-        return "void";
-      case WILDCARD:
+        yield sjI.toString();
+      }
+      case NULL -> "<nulltype>";
+      case VOID -> "void";
+      case WILDCARD -> {
         WildcardType wildcard = (WildcardType) type;
         TypeMirror extendsBound = wildcard.getExtendsBound();
         TypeMirror superBound = wildcard.getSuperBound();
-        return "?"
+        yield "?"
             + (extendsBound != null ? " extends " + simpleTypeName(extendsBound) : "")
             + (superBound != null ? " super " + simpleTypeName(superBound) : "");
-      case UNION:
+      }
+      case UNION -> {
         StringJoiner sj = new StringJoiner(" | ");
         for (TypeMirror alternative : ((UnionType) type).getAlternatives()) {
           sj.add(simpleTypeName(alternative));
         }
-        return sj.toString();
-      case PACKAGE:
-        return "PACKAGE:" + type;
-      default:
+        yield sj.toString();
+      }
+      case PACKAGE -> "PACKAGE:" + type;
+      default -> {
         if (type.getKind().isPrimitive()) {
-          return TypeAnnotationUtils.unannotatedType(type).toString();
+          yield TypeAnnotationUtils.unannotatedType(type).toString();
         } else {
           throw new BugInCF(
               "simpleTypeName: unhandled type kind: %s, type: %s", type.getKind(), type);
         }
-    }
+      }
+    };
   }
 
   /**
@@ -255,20 +256,36 @@ public final class TypesUtils {
   }
 
   /**
-   * Given an array type, returns the type with all array levels stripped off.
+   * Returns the depth of an array type.
    *
-   * @param at an array type
-   * @return the type with all array levels stripped off
+   * @param arrayType an array type
+   * @return the depth of {@code arrayType}
    */
-  public static TypeMirror getInnermostComponentType(ArrayType at) {
-    TypeMirror result = at;
-    while (result.getKind() == TypeKind.ARRAY) {
-      result = ((ArrayType) result).getComponentType();
+  public static int getArrayDepth(TypeMirror arrayType) {
+    int counter = 0;
+    TypeMirror componentType = arrayType;
+    while (componentType.getKind() == TypeKind.ARRAY) {
+      counter++;
+      componentType = ((ArrayType) componentType).getComponentType();
     }
-    return result;
+    return counter;
   }
 
-  /// Equality
+  /**
+   * Given an array type, returns the type with all array levels stripped off.
+   *
+   * @param arrayType an array type
+   * @return the type with all array levels stripped off
+   */
+  public static TypeMirror getInnermostComponentType(ArrayType arrayType) {
+    TypeMirror componentType = arrayType;
+    while (componentType.getKind() == TypeKind.ARRAY) {
+      componentType = ((ArrayType) componentType).getComponentType();
+    }
+    return componentType;
+  }
+
+  // Equality
 
   /**
    * Returns true iff the arguments are both the same declared types.
@@ -277,7 +294,7 @@ public final class TypesUtils {
    *
    * @param t1 the first type to test
    * @param t2 the second type to test
-   * @return whether the arguments are the same declared types
+   * @return true if the arguments are the same declared types
    */
   public static boolean areSameDeclaredTypes(Type.ClassType t1, Type.ClassType t2) {
     // Do a cheaper test first
@@ -292,7 +309,7 @@ public final class TypesUtils {
    *
    * @param left a type
    * @param right a type
-   * @return whether the arguments are the same primitive type
+   * @return true if the arguments are the same primitive type
    */
   public static boolean areSamePrimitiveTypes(TypeMirror left, TypeMirror right) {
     if (!isPrimitive(left) || !isPrimitive(right)) {
@@ -302,7 +319,7 @@ public final class TypesUtils {
     return (left.getKind() == right.getKind());
   }
 
-  /// Predicates
+  // Predicates
 
   /**
    * Checks if the type represents a java.lang.Object declared type.
@@ -352,8 +369,7 @@ public final class TypesUtils {
    * @return true if the type is {@code char} or {@code Character}
    */
   public static boolean isCharOrCharacter(TypeMirror type) {
-    return type.getKind() == TypeKind.CHAR
-        || TypesUtils.isDeclaredOfName(type, "java.lang.Character");
+    return type.getKind() == TypeKind.CHAR || isDeclaredOfName(type, "java.lang.Character");
   }
 
   /**
@@ -374,7 +390,7 @@ public final class TypesUtils {
    *
    * @param type the type
    * @param qualifiedNames fully-qualified type names to check for
-   * @return type iff type represents a declared type whose fully-qualified name is one of the given
+   * @return true iff type represents a declared type whose fully-qualified name is one of the given
    *     names
    */
   public static boolean isDeclaredOfName(TypeMirror type, Collection<String> qualifiedNames) {
@@ -406,7 +422,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Return true if this is an immutable type in the JDK.
+   * Returns true if this is an immutable type in the JDK.
    *
    * <p>This does not use immutability annotations and always returns false for user-defined
    * classes.
@@ -414,7 +430,7 @@ public final class TypesUtils {
   public static boolean isImmutableTypeInJdk(TypeMirror type) {
     return isPrimitive(type)
         || (type.getKind() == TypeKind.DECLARED
-            && ImmutableTypes.isImmutable(getQualifiedName((DeclaredType) type).toString()));
+            && ImmutableTypes.isImmutable(getQualifiedName((DeclaredType) type)));
   }
 
   /**
@@ -438,34 +454,24 @@ public final class TypesUtils {
   /**
    * Returns true iff the argument is an anonymous type.
    *
-   * @return whether the argument is an anonymous type
+   * @return true if the argument is an anonymous type
    */
   public static boolean isAnonymous(TypeMirror type) {
-    return (type instanceof DeclaredType)
-        && ((TypeElement) ((DeclaredType) type).asElement()).getNestingKind()
-            == NestingKind.ANONYMOUS;
+    return (type instanceof DeclaredType dt)
+        && ((TypeElement) dt.asElement()).getNestingKind() == NestingKind.ANONYMOUS;
   }
 
   /**
    * Returns true iff the argument is a primitive type.
    *
    * @param type a type
-   * @return whether the argument is a primitive type
+   * @return true if the argument is a primitive type
    */
   public static boolean isPrimitive(TypeMirror type) {
-    switch (type.getKind()) {
-      case BOOLEAN:
-      case BYTE:
-      case CHAR:
-      case DOUBLE:
-      case FLOAT:
-      case INT:
-      case LONG:
-      case SHORT:
-        return true;
-      default:
-        return false;
-    }
+    return switch (type.getKind()) {
+      case BOOLEAN, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SHORT -> true;
+      default -> false;
+    };
   }
 
   /**
@@ -475,20 +481,11 @@ public final class TypesUtils {
    * @return true if the argument is a primitive type or a boxed primitive type
    */
   public static boolean isPrimitiveOrBoxed(TypeMirror type) {
-    switch (type.getKind()) {
-      case BOOLEAN:
-      case BYTE:
-      case CHAR:
-      case DOUBLE:
-      case FLOAT:
-      case INT:
-      case LONG:
-      case SHORT:
-        return true;
-
-      case DECLARED:
-        String qualifiedName = getQualifiedName((DeclaredType) type).toString();
-        return (qualifiedName.equals("java.lang.Boolean")
+    return switch (type.getKind()) {
+      case BOOLEAN, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SHORT -> true;
+      case DECLARED -> {
+        String qualifiedName = getQualifiedName((DeclaredType) type);
+        yield (qualifiedName.equals("java.lang.Boolean")
             || qualifiedName.equals("java.lang.Byte")
             || qualifiedName.equals("java.lang.Character")
             || qualifiedName.equals("java.lang.Short")
@@ -496,10 +493,9 @@ public final class TypesUtils {
             || qualifiedName.equals("java.lang.Long")
             || qualifiedName.equals("java.lang.Double")
             || qualifiedName.equals("java.lang.Float"));
-
-      default:
-        return false;
-    }
+      }
+      default -> false;
+    };
   }
 
   /**
@@ -532,40 +528,21 @@ public final class TypesUtils {
    */
   public static boolean isNumericBoxed(TypeMirror type) {
     return type.getKind() == TypeKind.DECLARED
-        && numericBoxedTypes.contains(getQualifiedName((DeclaredType) type).toString());
+        && numericBoxedTypes.contains(getQualifiedName((DeclaredType) type));
   }
 
   /**
    * Returns true iff the argument is an integral primitive type.
    *
    * @param type a type
-   * @return whether the argument is an integral primitive type
+   * @return true if the argument is an integral primitive type
    */
   public static boolean isIntegralPrimitive(TypeMirror type) {
-    return isIntegralPrimitive(type.getKind());
+    return TypeKindUtils.isIntegral(type.getKind());
   }
 
   /**
-   * Returns true iff the argument is an integral primitive type.
-   *
-   * @param typeKind a type kind
-   * @return whether the argument is an integral primitive type
-   */
-  public static boolean isIntegralPrimitive(TypeKind typeKind) {
-    switch (typeKind) {
-      case BYTE:
-      case CHAR:
-      case INT:
-      case LONG:
-      case SHORT:
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  /**
-   * Return true if the argument TypeMirror is a (possibly boxed) integral type.
+   * Returns true if the argument TypeMirror is a (possibly boxed) integral type.
    *
    * @param type the type to inspect
    * @return true if type is an integral type
@@ -573,6 +550,28 @@ public final class TypesUtils {
   public static boolean isIntegralPrimitiveOrBoxed(TypeMirror type) {
     TypeKind kind = TypeKindUtils.primitiveOrBoxedToTypeKind(type);
     return kind != null && TypeKindUtils.isIntegral(kind);
+  }
+
+  /**
+   * Returns true iff the argument is an integral primitive type.
+   *
+   * @param type a type
+   * @return true if the argument is an integral primitive type
+   */
+  public static boolean isIntegralNumericPrimitive(TypeMirror type) {
+    return TypeKindUtils.isIntegralNumeric(type.getKind());
+  }
+
+  /**
+   * Returns true if the argument TypeMirror is a (possibly boxed) integral type, excluding char and
+   * Character which do not print as numbers.
+   *
+   * @param type the type to inspect
+   * @return true if type is an integral numeric type
+   */
+  public static boolean isIntegralNumericOrBoxed(TypeMirror type) {
+    TypeKind kind = TypeKindUtils.primitiveOrBoxedToTypeKind(type);
+    return kind != null && TypeKindUtils.isIntegralNumeric(kind);
   }
 
   /**
@@ -588,42 +587,32 @@ public final class TypesUtils {
       return false;
     }
 
-    String qualifiedName = getQualifiedName((DeclaredType) declaredType).toString();
-    switch (primitiveType.getKind()) {
-      case BOOLEAN:
-        return qualifiedName.equals("java.lang.Boolean");
-      case BYTE:
-        return qualifiedName.equals("java.lang.Byte");
-      case CHAR:
-        return qualifiedName.equals("java.lang.Character");
-      case DOUBLE:
-        return qualifiedName.equals("java.lang.Double");
-      case FLOAT:
-        return qualifiedName.equals("java.lang.Float");
-      case INT:
-        return qualifiedName.equals("java.lang.Integer");
-      case LONG:
-        return qualifiedName.equals("java.lang.Long");
-      case SHORT:
-        return qualifiedName.equals("java.lang.Short");
-
-      default:
-        return false;
-    }
+    String qualifiedName = getQualifiedName((DeclaredType) declaredType);
+    return switch (primitiveType.getKind()) {
+      case BOOLEAN -> qualifiedName.equals("java.lang.Boolean");
+      case BYTE -> qualifiedName.equals("java.lang.Byte");
+      case CHAR -> qualifiedName.equals("java.lang.Character");
+      case DOUBLE -> qualifiedName.equals("java.lang.Double");
+      case FLOAT -> qualifiedName.equals("java.lang.Float");
+      case INT -> qualifiedName.equals("java.lang.Integer");
+      case LONG -> qualifiedName.equals("java.lang.Long");
+      case SHORT -> qualifiedName.equals("java.lang.Short");
+      default -> false;
+    };
   }
 
   /**
    * Returns true iff the argument is a boxed floating point type.
    *
    * @param type type to test
-   * @return whether the argument is a boxed floating point type
+   * @return true if the argument is a boxed floating point type
    */
   public static boolean isBoxedFloating(TypeMirror type) {
     if (type.getKind() != TypeKind.DECLARED) {
       return false;
     }
 
-    String qualifiedName = getQualifiedName((DeclaredType) type).toString();
+    String qualifiedName = getQualifiedName((DeclaredType) type);
     return qualifiedName.equals("java.lang.Double") || qualifiedName.equals("java.lang.Float");
   }
 
@@ -631,20 +620,17 @@ public final class TypesUtils {
    * Returns true iff the argument is a primitive floating point type.
    *
    * @param type type mirror
-   * @return whether the argument is a primitive floating point type
+   * @return true if the argument is a primitive floating point type
    */
   public static boolean isFloatingPrimitive(TypeMirror type) {
-    switch (type.getKind()) {
-      case DOUBLE:
-      case FLOAT:
-        return true;
-      default:
-        return false;
-    }
+    return switch (type.getKind()) {
+      case DOUBLE, FLOAT -> true;
+      default -> false;
+    };
   }
 
   /**
-   * Return true if the argument TypeMirror is a (possibly boxed) floating point type.
+   * Returns true if the argument TypeMirror is a (possibly boxed) floating point type.
    *
    * @param type the type to inspect
    * @return true if type is a floating point type
@@ -655,7 +641,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns whether a TypeMirror represents a class type.
+   * Returns true if a TypeMirror represents a class type.
    *
    * @param type a type that might be a class type
    * @return true if {@code} is a class type
@@ -665,16 +651,57 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns whether or not {@code type} is a functional interface type (as defined in JLS 9.8).
+   * Returns true if {@code type} is a functional interface type (as defined in JLS 9.9). This
+   * includes an intersection type that induces a notional functional interface, such as {@code
+   * Runnable & java.io.Serializable}.
    *
    * @param type possible functional interface type
    * @param env the processing environment
-   * @return whether or not {@code type} is a functional interface type (as defined in JLS 9.8)
+   * @return true if {@code type} is a functional interface type (as defined in JLS 9.9)
    */
   public static boolean isFunctionalInterface(TypeMirror type, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
-    return javacTypes.isFunctionalInterface((Type) type);
+    Type javaType = (Type) type;
+    if (javaType.isIntersection()) {
+      javaType = notionalInterface((IntersectionClassType) javaType, javacTypes);
+    }
+    return javacTypes.isFunctionalInterface(javaType);
+  }
+
+  /**
+   * Returns the notional interface induced by the intersection type {@code type} (<a
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.9">JLS 4.9</a>). Per
+   * <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9">JLS 9.9</a>,
+   * the function type of an intersection type that induces a notional functional interface is the
+   * function type of that notional interface. If {@code type} has a component that is a class, then
+   * it induces a notional class rather than a notional interface, and {@code type} is returned
+   * unchanged.
+   *
+   * <p>javac does not represent the notional interface directly: the symbol of an intersection type
+   * is a synthetic compound class symbol that is never marked as an interface, so javac's function
+   * descriptor lookup rejects it. This method builds the notional interface the same way that
+   * {@code Attr.getTargetInfo} does when attributing a lambda expression or a method reference
+   * whose target type is an intersection type: it creates a fresh intersection of the non-wildcard
+   * parameterizations (JLS 9.9) of the components and marks its symbol as an interface. {@code
+   * type} itself is not modified.
+   *
+   * @param type an intersection type
+   * @param javacTypes the javac Types instance
+   * @return the notional interface induced by {@code type}, or {@code type} if it does not induce a
+   *     notional interface
+   */
+  private static Type notionalInterface(
+      IntersectionClassType type, com.sun.tools.javac.code.Types javacTypes) {
+    if (!type.allInterfaces) {
+      // The intersection induces a notional class, which is not a functional interface.
+      return type;
+    }
+    com.sun.tools.javac.util.List<Type> components =
+        type.getExplicitComponents().map(javacTypes::removeWildcards);
+    IntersectionClassType notionalInterface = javacTypes.makeIntersectionType(components);
+    notionalInterface.tsym.flags_field |= Flags.INTERFACE;
+    return notionalInterface;
   }
 
   /**
@@ -684,22 +711,14 @@ public final class TypesUtils {
    * @return true if the given type is a compound type
    */
   public static boolean isCompoundType(TypeMirror type) {
-    switch (type.getKind()) {
-      case ARRAY:
-      case EXECUTABLE:
-      case INTERSECTION:
-      case UNION:
-      case TYPEVAR:
-      case WILDCARD:
-        return true;
-
-      case DECLARED:
+    return switch (type.getKind()) {
+      case ARRAY, EXECUTABLE, INTERSECTION, UNION, TYPEVAR, WILDCARD -> true;
+      case DECLARED -> {
         DeclaredType declaredType = (DeclaredType) type;
-        return !declaredType.getTypeArguments().isEmpty();
-
-      default:
-        return false;
-    }
+        yield !declaredType.getTypeArguments().isEmpty();
+      }
+      default -> false;
+    };
   }
 
   /**
@@ -713,7 +732,7 @@ public final class TypesUtils {
     return e.getKind() != TypeKind.NONE;
   }
 
-  /// Type variables and wildcards
+  // Type variables and wildcards
 
   /**
    * If the argument is a bounded TypeVariable or WildcardType, return its non-variable,
@@ -724,16 +743,14 @@ public final class TypesUtils {
    *     has no bounds
    */
   public static TypeMirror upperBound(TypeMirror type) {
-    do {
-      if (type instanceof TypeVariable) {
-        TypeVariable tvar = (TypeVariable) type;
+    while (true) {
+      if (type instanceof TypeVariable tvar) {
         if (tvar.getUpperBound() != null) {
           type = tvar.getUpperBound();
         } else {
           break;
         }
-      } else if (type instanceof WildcardType) {
-        WildcardType wc = (WildcardType) type;
+      } else if (type instanceof WildcardType wc) {
         if (wc.getExtendsBound() != null) {
           type = wc.getExtendsBound();
         } else {
@@ -742,13 +759,13 @@ public final class TypesUtils {
       } else {
         break;
       }
-    } while (true);
+    }
     return type;
   }
 
   /**
-   * Get the type parameter for this wildcard from the underlying type's bound field. This field is
-   * sometimes null, in that case this method will return null.
+   * Returns the type parameter for this wildcard from the underlying type's bound field. This field
+   * is sometimes null, in that case this method will return null.
    *
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
@@ -758,8 +775,8 @@ public final class TypesUtils {
   }
 
   /**
-   * Get the type parameter for this wildcard from the underlying type's bound field. This field is
-   * sometimes null, in that case this method will return null.
+   * Returns the type parameter for this wildcard from the underlying type's bound field. This field
+   * is sometimes null, in that case this method will return null.
    *
    * @param wildcard wildcard type
    * @return the TypeParameterElement the wildcard is an argument to, {@code null} otherwise
@@ -860,19 +877,16 @@ public final class TypesUtils {
     outerLoop:
     while (true) {
       switch (effectiveUpper.getKind()) {
-        case WILDCARD:
-          effectiveUpper = ((javax.lang.model.type.WildcardType) effectiveUpper).getExtendsBound();
+        case WILDCARD -> {
+          effectiveUpper = ((WildcardType) effectiveUpper).getExtendsBound();
           if (effectiveUpper == null) {
             return null;
           }
-          break;
-
-        case TYPEVAR:
-          effectiveUpper = ((TypeVariable) effectiveUpper).getUpperBound();
-          break;
-
-        default:
+        }
+        case TYPEVAR -> effectiveUpper = ((TypeVariable) effectiveUpper).getUpperBound();
+        default -> {
           break outerLoop;
+        }
       }
     }
     return effectiveUpper;
@@ -963,6 +977,24 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns true if {@code type} is a type variable that the compiler created rather than one that
+   * is declared in source code: either a captured type variable, or a fresh type variable that
+   * javac's type inference creates for an inference variable whose bounds mention itself.
+   *
+   * @param type a type mirror
+   * @return true if {@code type} is a captured or synthetic type variable
+   */
+  public static boolean isCapturedOrSyntheticTypeVariable(TypeMirror type) {
+    if (isCapturedTypeVariable(type)) {
+      return true;
+    }
+    return type.getKind() == TypeKind.TYPEVAR
+        && (((Type.TypeVar) TypeAnnotationUtils.unannotatedType(type)).tsym.flags()
+                & Flags.SYNTHETIC)
+            != 0;
+  }
+
+  /**
    * If {@code typeVar} is a captured type variable, then returns its underlying wildcard; otherwise
    * returns {@code null}.
    *
@@ -977,7 +1009,7 @@ public final class TypesUtils {
     return null;
   }
 
-  /// Least upper bound and greatest lower bound
+  // Least upper bound and greatest lower bound
 
   /**
    * Returns the least upper bound of two {@link TypeMirror}s, ignoring any annotations on the
@@ -1142,11 +1174,11 @@ public final class TypesUtils {
   private static com.sun.tools.javac.util.List<Type> typeMirrorListToTypeList(
       List<TypeMirror> typeMirrors) {
     @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
-    List<Type> typeList = CollectionsPlume.mapList(Type.class::cast, typeMirrors);
+    List<Type> typeList = CollectionsP.mapList(Type.class::cast, typeMirrors);
     return com.sun.tools.javac.util.List.from(typeList);
   }
 
-  /// Substitutions
+  // Substitutions
 
   /**
    * Returns the return type of a method, given the receiver of the method call.
@@ -1192,10 +1224,9 @@ public final class TypesUtils {
     List<? extends TypeMirror> superTypes = types.directSupertypes(type);
     for (TypeMirror t : superTypes) {
       // ignore interface types
-      if (!(t instanceof ClassType)) {
+      if (!(t instanceof ClassType tt)) {
         continue;
       }
-      ClassType tt = (ClassType) t;
       if (!tt.isInterface()) {
         return t;
       }
@@ -1256,9 +1287,9 @@ public final class TypesUtils {
       List<? extends TypeMirror> typeArgs,
       ProcessingEnvironment env) {
     @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
-    List<Type> newP = CollectionsPlume.mapList(Type.class::cast, typeVariables);
+    List<Type> newP = CollectionsP.mapList(Type.class::cast, typeVariables);
     @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
-    List<Type> newT = CollectionsPlume.mapList(Type.class::cast, typeArgs);
+    List<Type> newT = CollectionsP.mapList(Type.class::cast, typeArgs);
 
     JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
     com.sun.tools.javac.code.Types types =
@@ -1267,22 +1298,6 @@ public final class TypesUtils {
         (Type) type,
         com.sun.tools.javac.util.List.from(newP),
         com.sun.tools.javac.util.List.from(newT));
-  }
-
-  /**
-   * Returns the depth of an array type.
-   *
-   * @param arrayType an array type
-   * @return the depth of {@code arrayType}
-   */
-  public static int getArrayDepth(TypeMirror arrayType) {
-    int counter = 0;
-    TypeMirror type = arrayType;
-    while (type.getKind() == TypeKind.ARRAY) {
-      counter++;
-      type = ((ArrayType) type).getComponentType();
-    }
-    return counter;
   }
 
   /**
@@ -1316,7 +1331,7 @@ public final class TypesUtils {
     Names names = Names.instance(javacEnv.getContext());
     Symtab syms = Symtab.instance(javacEnv.getContext());
     com.sun.tools.javac.util.Name capturedName = names.fromString("<captured wildcard>");
-    WildcardType wildcardType = null;
+    WildcardType wildcardType;
     if (lower != null
         && (lower.getKind() == TypeKind.ARRAY
             || lower.getKind() == TypeKind.DECLARED
@@ -1367,9 +1382,12 @@ public final class TypesUtils {
    * @param collection a collection of type variables
    * @param types types
    * @return the first TypeVariable in {@code collection} that does not contain any other type in
-   *     the collection, but maybe itsself
+   *     the collection, but maybe itself
    */
-  @SuppressWarnings("interning:not.interned") // must be the same object from collection
+  @SuppressWarnings({
+    "interning:not.interned",
+    "TypeEquals"
+  }) // must be the same object from collection
   private static TypeVariable doesNotContainOthers(
       Collection<? extends TypeVariable> collection, Types types) {
     for (TypeVariable candidate : collection) {
@@ -1384,23 +1402,38 @@ public final class TypesUtils {
         return candidate;
       }
     }
-    throw new BugInCF("Not found: %s", StringsPlume.join(",", collection));
+    throw new BugInCF("Not found: %s", StringsP.join(",", collection));
   }
 
   /**
    * This method returns the single abstract method declared by {@code functionalInterfaceType}.
-   * (The type of this method is referred to as the function type.)
+   * (The type of this method is referred to as the function type.) If {@code
+   * functionalInterfaceType} is an intersection type that induces a notional functional interface,
+   * then the single abstract method of that notional interface is returned (JLS 9.9).
    *
    * @param functionalInterfaceType a functional interface type
    * @param env the processing environment
    * @return the single abstract method declared by the type
+   * @throws BugInCF if {@code functionalInterfaceType} is not a functional interface type.
    */
   public static ExecutableElement findFunction(
       TypeMirror functionalInterfaceType, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
-    return (ExecutableElement)
-        javacTypes.findDescriptorSymbol(((Type) functionalInterfaceType).asElement());
+    Type javaType = (Type) functionalInterfaceType;
+    if (javaType.isIntersection()) {
+      javaType = notionalInterface((IntersectionClassType) javaType, javacTypes);
+    }
+    try {
+      return (ExecutableElement) javacTypes.findDescriptorSymbol(javaType.asElement());
+    } catch (FunctionDescriptorLookupError ex) {
+      // FunctionDescriptorLookupError does not have a stack trace, so catch it here and throw a
+      // BugInCF.
+      throw new BugInCF(
+          "%s is not a functional interface."
+              + " Call TypesUtils.isFunctionalInterface() before calling TypesUtils.findFunction.",
+          functionalInterfaceType);
+    }
   }
 
   /**
@@ -1417,10 +1450,10 @@ public final class TypesUtils {
   }
 
   /**
-   * Return whether or not {@code type} is raw.
+   * Returns true if {@code type} is raw.
    *
    * @param type the type to check
-   * @return whether or not {@code type} is raw
+   * @return true if {@code type} is raw
    */
   public static boolean isRaw(TypeMirror type) {
     if (type.getKind() != TypeKind.DECLARED) {
@@ -1430,6 +1463,150 @@ public final class TypesUtils {
     DeclaredType declType = (DeclaredType) typeelem.asType();
     return !declType.getTypeArguments().isEmpty()
         && ((DeclaredType) type).getTypeArguments().isEmpty();
+  }
+
+  /**
+   * Returns true if some type parameter is in scope in the declaration of {@code typeElement}; that
+   * is, {@code typeElement} is generic or is a non-static member of a type declaration for which
+   * this method returns true.
+   *
+   * <p>Only such a type declaration has a raw type, so only the members of such a type declaration
+   * are erased by rawness (JLS 4.8).
+   *
+   * @param typeElement a type declaration
+   * @return true if some type parameter is in scope in the declaration of {@code typeElement}
+   */
+  public static boolean isGenericOrEnclosedByGeneric(TypeElement typeElement) {
+    for (Element enclosing = typeElement;
+        enclosing != null;
+        enclosing = enclosing.getEnclosingElement()) {
+      if (enclosing instanceof TypeElement enclosingType
+          && !enclosingType.getTypeParameters().isEmpty()) {
+        return true;
+      }
+      if (ElementUtils.isStatic(enclosing)) {
+        // The type parameters of an enclosing type declaration are not in scope in a static
+        // declaration.
+        return false;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if accessing {@code member} through a receiver of type {@code receiverType} is an
+   * access on a raw type.
+   *
+   * <p>If {@code receiverType} is a type variable, a wildcard, or an intersection type, then its
+   * bounds are tested, because the member is a member of a bound.
+   *
+   * @param receiverType the receiver of the access; for a constructor invocation, the class being
+   *     instantiated. Null stands for an unknown receiver, for which this method returns false. Do
+   *     not pass null for an implicit receiver, because a member inherited from a raw supertype is
+   *     erased even when it is accessed without a receiver; use {@link TreeUtils#isRawCall} for a
+   *     call whose receiver is implicit.
+   * @param member the method, constructor, or field being accessed
+   * @param env the processing environment
+   * @return true if accessing {@code member} through a receiver of type {@code receiverType} is an
+   *     access on a raw type
+   */
+  public static boolean isRawCall(
+      @Nullable TypeMirror receiverType, Element member, ProcessingEnvironment env) {
+    if (receiverType == null || ElementUtils.isStatic(member)) {
+      return false;
+    }
+    TypeElement declaringClass = ElementUtils.enclosingTypeElement(member);
+    if (declaringClass == null || !isGenericOrEnclosedByGeneric(declaringClass)) {
+      // Only a type declaration in which some type parameter is in scope has a raw type, so only
+      // such a declaration supplies a member whose type is erased.  Testing this first avoids
+      // walking the supertypes of `receiverType` for a member of a non-generic declaration, such
+      // as any member of Object.
+      return false;
+    }
+    switch (receiverType.getKind()) {
+      case DECLARED -> {
+        // Handled below.
+      }
+      case TYPEVAR -> {
+        // A member accessed through a type variable is a member of the type variable's upper
+        // bound, so the access is raw exactly when an access through that bound is raw.  This
+        // also covers a capture variable, whose upper bound is the captured wildcard's bound.
+        return isRawCall(((TypeVariable) receiverType).getUpperBound(), member, env);
+      }
+      case WILDCARD -> {
+        // getExtendsBound() returns null for `?` and for `? super X`, and isRawCall returns
+        // false for a null type; neither has a raw upper bound.
+        return isRawCall(((WildcardType) receiverType).getExtendsBound(), member, env);
+      }
+      case INTERSECTION -> {
+        // The member comes from whichever bound declares it, so the access is raw if any bound
+        // makes it raw.
+        for (TypeMirror bound : ((IntersectionType) receiverType).getBounds()) {
+          if (isRawCall(bound, member, env)) {
+            return true;
+          }
+        }
+        return false;
+      }
+      default -> {
+        return false;
+      }
+    }
+    // Section 4.8, "Raw Types".
+    // (https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.8)
+    //
+    // The type of a constructor (§8.8), instance method (8.4, 9.4), or non-static field
+    // (8.3) of a raw type C that is not inherited from its superclasses or superinterfaces
+    // is the raw type that corresponds to the erasure of its type in the generic declaration
+    // corresponding to C.  A member that *is* inherited is erased too, because the supertypes
+    // of a raw type are the erasures of the supertypes of any of its parameterizations, so the
+    // member is a member of a raw supertype.
+    //
+    // Therefore, the member's type is erased exactly when the class that declares it, viewed as
+    // a supertype of receiverType, is raw.  Javac's supertype() erases the supertypes of a raw
+    // type, so asSuper() returns a raw type in that case.
+    com.sun.tools.javac.code.Types javacTypes =
+        com.sun.tools.javac.code.Types.instance(InternalUtils.getJavacContext(env));
+    Type site = javacTypes.asSuper((Type) receiverType, (Symbol) declaringClass);
+    if (site == null) {
+      if (!hasEnclosingInstanceOfType(declaringClass, ((DeclaredType) receiverType).asElement())) {
+        return false;
+      }
+      // `receiverType` is not a subtype of the class that declares the member, but it encloses
+      // it, so `receiverType` is an enclosing instance rather than a receiver.  This happens for
+      // a qualified superclass constructor invocation `outer.super(...)` and for a qualified
+      // class instance creation expression `outer.new Inner(...)`.  The member is erased when
+      // the type of the enclosing instance is raw.
+      site = (Type) receiverType;
+    }
+    // Type.isRaw() is also true for a type nested in a raw type; the members of `Outer.Inner` are
+    // erased when `Outer` is raw, even though `Inner` declares no type parameters.
+    return site.isRaw();
+  }
+
+  /**
+   * Returns true if an instance of {@code inner} has an enclosing instance of type {@code outer};
+   * that is, {@code inner} is {@code outer}, or {@code inner} is nested within {@code outer} and no
+   * declaration between the two is static.
+   *
+   * @param inner a type declaration
+   * @param outer a type declaration
+   * @return true if an instance of {@code inner} has an enclosing instance of type {@code outer}
+   */
+  private static boolean hasEnclosingInstanceOfType(TypeElement inner, Element outer) {
+    for (Element enclosing = inner;
+        enclosing != null;
+        enclosing = enclosing.getEnclosingElement()) {
+      if (outer.equals(enclosing)) {
+        return true;
+      }
+      if (ElementUtils.isStatic(enclosing)) {
+        // A static declaration has no enclosing instance, so neither does anything declared
+        // within it.
+        return false;
+      }
+    }
+    return false;
   }
 
   /**
@@ -1468,7 +1645,7 @@ public final class TypesUtils {
   }
 
   /**
-   * Return true if {@code typeMirror} is a declared type that has at least one wildcard as a type
+   * Returns true if {@code typeMirror} is a declared type that has at least one wildcard as a type
    * argument.
    *
    * @param typeMirror type to check
@@ -1491,15 +1668,15 @@ public final class TypesUtils {
    * upperBound} must be {@code null} or {@code Object}. If {@code upperBound} is non-null and not
    * {@code Object}, then {@code lowerBound} must be {@code null};
    *
-   * @param lowerBound the lower bound for the wildcard
-   * @param upperBound the upper bound for the wildcard
+   * @param lowerBound the lower bound for the wildcard, or null if it has none
+   * @param upperBound the upper bound for the wildcard, or null if it has none
    * @param types TypesUtils
    * @return a wildcard with the given bounds
    */
   public static TypeMirror createWildcard(
-      TypeMirror lowerBound, TypeMirror upperBound, Types types) {
+      @Nullable TypeMirror lowerBound, @Nullable TypeMirror upperBound, Types types) {
     TypeMirror nonObjectUpperBound = upperBound;
-    if (isObject(upperBound)) {
+    if (upperBound != null && isObject(upperBound)) {
       nonObjectUpperBound = null;
     }
 
@@ -1538,6 +1715,7 @@ public final class TypesUtils {
    * @param typeVariable2 a type variable
    * @return if the two type variables are the same type variable
    */
+  @SuppressWarnings("TypeEquals") // early exit from comparison method
   @EqualsMethod
   public static boolean areSame(TypeVariable typeVariable1, TypeVariable typeVariable2) {
     if (typeVariable1 == typeVariable2) {
@@ -1548,5 +1726,25 @@ public final class TypesUtils {
 
     return typeVariable1.asElement().getSimpleName().contentEquals(otherName)
         && otherEnclosingElement.equals(typeVariable1.asElement().getEnclosingElement());
+  }
+
+  /**
+   * Returns a hash code that is consistent with {@link #areSame(TypeVariable, TypeVariable)}: if
+   * {@code areSame} returns true for two type variables, then this method returns the same value
+   * for both of them.
+   *
+   * <p>Use this method wherever type variables are compared using {@code areSame} but are also
+   * hashed, such as in a hash table or in a {@code hashCode} method whose {@code equals} method
+   * uses {@code areSame}.
+   *
+   * @param typeVariable a type variable
+   * @return a hash code consistent with {@code areSame}
+   */
+  public static int hashCodeForAreSame(TypeVariable typeVariable) {
+    // areSame compares asElement()'s getSimpleName() and getEnclosingElement().  The name is
+    // converted to a String because areSame compares names with Name.contentEquals, and Name does
+    // not specify that its hashCode is consistent with contentEquals.
+    Element element = typeVariable.asElement();
+    return Objects.hash(element.getSimpleName().toString(), element.getEnclosingElement());
   }
 }

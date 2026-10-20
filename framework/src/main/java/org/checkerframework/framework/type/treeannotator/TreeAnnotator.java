@@ -7,7 +7,7 @@ import com.sun.source.util.SimpleTreeVisitor;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.plumelib.util.SystemPlume;
+import org.plumelib.util.SystemP;
 
 /**
  * {@link TreeAnnotator} is an abstract SimpleTreeVisitor to be used with {@link ListTreeAnnotator}.
@@ -30,7 +30,7 @@ import org.plumelib.util.SystemPlume;
 public abstract class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTypeMirror> {
 
   /**
-   * Whether to output verbose, low-level debugging messages. Also see {@code
+   * If true, output verbose, low-level debugging messages. Also see {@code
    * GenericAnnotatedTypeFactory.debug}.
    */
   private static final boolean debug = false;
@@ -56,7 +56,7 @@ public abstract class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTyp
   @FormatMethod
   protected void log(String format, Object... args) {
     if (debug) {
-      SystemPlume.sleep(1); // logging can interleave with typechecker output
+      SystemP.sleep(1); // logging can interleave with typechecker output
       System.out.printf(format, args);
     }
   }
@@ -76,14 +76,22 @@ public abstract class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTyp
 
   /**
    * When overriding this method, getAnnotatedType on the left and right operands should only be
-   * called when absolutely necessary. Otherwise, the checker will be very slow on heavily nested
-   * binary trees. (For example, a + b + c + d + e + f + g + h.)
+   * called when <b>absolutely necessary</b>. Otherwise, the checker will be very slow on heavily
+   * nested binary trees. (For example, a + b + c + d + e + f + g + h.)
    *
-   * <p>If a checker's performance is still too slow, the types of binary trees could be computed in
-   * a subclass of {@link org.checkerframework.framework.flow.CFTransfer}. When computing the types
-   * in a transfer, look up the value in the store rather than the AnnotatedTypeFactory. Then this
-   * method should annotate binary trees with top so that the type applied in the transfer is always
-   * a subtype of the type the AnnotatedTypeFactory computes.
+   * <p>One approach is to perform work in this method only if {@code
+   * type.hasPrimaryAnnotationInHierarchy(...)} returns false.
+   *
+   * <p>If a checker's performance is still too slow:
+   *
+   * <ul>
+   *   <li>Compute the types of binary trees in a subclass of {@link
+   *       org.checkerframework.framework.flow.CFTransfer}; look up the value in the store rather
+   *       than the AnnotatedTypeFactory.
+   *   <li>This method ({@code TreeAnnotator.visitBinary}) should annotate binary trees with top so
+   *       that the type applied in the transfer is always a subtype of the type the
+   *       AnnotatedTypeFactory computes.
+   * </ul>
    */
   @Override
   public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror mirror) {

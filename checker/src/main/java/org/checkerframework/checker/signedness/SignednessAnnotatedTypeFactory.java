@@ -6,6 +6,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.Serializable;
 import java.util.List;
@@ -106,6 +107,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the type-checker associated with this type factory
    */
+  @SuppressWarnings("this-escape")
   public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
 
@@ -139,7 +141,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * True when the AnnotatedTypeMirror currently being computed is the left hand side of an
+   * True when the AnnotatedTypeMirror currently being computed is the left-hand side of an
    * assignment or pseudo-assignment.
    *
    * @see #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)
@@ -158,18 +160,19 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * Refines an integer expression to @SignedPositive if its value is within the signed positive
-   * range (i.e. its MSB is zero). Does not refine the type of cast expressions.
+   * range (i.e. its MSB is zero). Does not refine the type of cast expressions, nor a type whose
+   * signedness qualifier is not a supertype of @SignedPositive, such as @PolySigned.
    *
    * @param tree an AST node, whose type may be refined
    * @param type the type of the tree
    */
   private void addSignedPositiveAnnotation(Tree tree, AnnotatedTypeMirror type) {
-    if (tree.getKind() == Tree.Kind.TYPE_CAST) {
+    if (tree instanceof TypeCastTree) {
       return;
     }
     TypeMirror javaType = type.getUnderlyingType();
     TypeKind javaTypeKind = javaType.getKind();
-    if (tree.getKind() == Tree.Kind.VARIABLE) {
+    if (tree instanceof VariableTree) {
       return;
     }
     if (!(javaTypeKind == TypeKind.BYTE
@@ -179,42 +182,50 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         || javaTypeKind == TypeKind.LONG)) {
       return;
     }
+    // Refining a @PolySigned type to @SignedPositive would lose the polymorphism, because
+    // @SignedPositive is not a subtype of @PolySigned.
+    AnnotationMirror signednessAnno = type.getPrimaryAnnotationInHierarchy(SIGNED);
+    if (signednessAnno != null
+        && !qualHierarchy.isSubtypeQualifiersOnly(SIGNED_POSITIVE, signednessAnno)) {
+      return;
+    }
     ValueAnnotatedTypeFactory valueFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
     AnnotatedTypeMirror valueATM = valueFactory.getAnnotatedType(tree);
     // These annotations are trusted rather than checked.  Maybe have an option to
-    // disable using them?
-    if ((valueATM.hasPrimaryAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
-            || valueATM.hasPrimaryAnnotation(INT_RANGE_FROM_POSITIVE))
-        && type.hasPrimaryAnnotation(SIGNED)) {
+    // disable using them?  A value that satisfies them has its most significant bit clear, whether
+    // its type is @Signed or @Unsigned.  The Value Checker's dataflow analysis converts them to
+    // @IntRange, so this test matters only for trees that have no dataflow value.  A char is
+    // always non-negative, so for a char these annotations do not imply that bit 7 is clear.
+    if (javaTypeKind != TypeKind.CHAR
+        && (valueATM.hasPrimaryAnnotation(INT_RANGE_FROM_NON_NEGATIVE)
+            || valueATM.hasPrimaryAnnotation(INT_RANGE_FROM_POSITIVE))) {
       type.replaceAnnotation(SIGNED_POSITIVE);
     } else {
       Range treeRange = ValueCheckerUtils.getPossibleValues(valueATM, valueFactory);
 
       if (treeRange != null) {
         switch (javaType.getKind()) {
-          case BYTE:
-          case CHAR:
+          case BYTE, CHAR -> {
             if (treeRange.isWithin(0, Byte.MAX_VALUE)) {
               type.replaceAnnotation(SIGNED_POSITIVE);
             }
-            break;
-          case SHORT:
+          }
+          case SHORT -> {
             if (treeRange.isWithin(0, Short.MAX_VALUE)) {
               type.replaceAnnotation(SIGNED_POSITIVE);
             }
-            break;
-          case INT:
+          }
+          case INT -> {
             if (treeRange.isWithin(0, Integer.MAX_VALUE)) {
               type.replaceAnnotation(SIGNED_POSITIVE);
             }
-            break;
-          case LONG:
+          }
+          case LONG -> {
             if (treeRange.isWithin(0, Long.MAX_VALUE)) {
               type.replaceAnnotation(SIGNED_POSITIVE);
             }
-            break;
-          default:
-            // Nothing
+          }
+          default -> {} // Nothing
         }
       }
     }
@@ -291,9 +302,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
       switch (tree.getKind()) {
-        case LEFT_SHIFT:
-        case RIGHT_SHIFT:
-        case UNSIGNED_RIGHT_SHIFT:
+        case LEFT_SHIFT, RIGHT_SHIFT, UNSIGNED_RIGHT_SHIFT -> {
           TreePath path = getPath(tree);
           if (path != null
               && (SignednessShifts.isMaskedShiftEitherSignedness(tree, path)
@@ -303,9 +312,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotatedTypeMirror lht = getAnnotatedType(tree.getLeftOperand());
             type.replaceAnnotations(lht.getPrimaryAnnotations());
           }
-          break;
-        default:
-          // Do nothing
+        }
+        default -> {} // Do nothing
       }
       return null;
     }
@@ -328,7 +336,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       } else if (type.getPrimaryAnnotations().isEmpty() && !maybeIntegral(type)) {
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(tree.getExpression());
         if ((type.getKind() != TypeKind.TYPEVAR || exprType.getKind() != TypeKind.TYPEVAR)
-            && !AnnotationUtils.containsSame(exprType.getEffectiveAnnotations(), UNSIGNED)) {
+            && !AnnotationUtils.containsSame(exprType.getAnnotations(), UNSIGNED)) {
           type.addAnnotation(SIGNED);
         }
       }
@@ -349,32 +357,20 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     TypeKind kind = type.getKind();
 
-    switch (kind) {
-      case BOOLEAN:
-        return false;
-      case BYTE:
-      case SHORT:
-      case INT:
-      case LONG:
-      case CHAR:
-        return true;
-      case FLOAT:
-      case DOUBLE:
-        return false;
-
-      case DECLARED:
-      case TYPEVAR:
-      case WILDCARD:
+    return switch (kind) {
+      case BOOLEAN -> false;
+      case BYTE, SHORT, INT, LONG, CHAR -> true;
+      case FLOAT, DOUBLE -> false;
+      case DECLARED, TYPEVAR, WILDCARD -> {
         TypeMirror erasedType = types.erasure(type.getUnderlyingType());
-        return (TypesUtils.isBoxedPrimitive(erasedType)
+        yield (TypesUtils.isBoxedPrimitive(erasedType)
             || TypesUtils.isObject(erasedType)
             || TypesUtils.isErasedSubtype(numberTM, erasedType, types)
             || TypesUtils.isErasedSubtype(serializableTM, erasedType, types)
             || TypesUtils.isErasedSubtype(comparableTM, erasedType, types));
-
-      default:
-        return false;
-    }
+      }
+      default -> false;
+    };
   }
 
   @Override

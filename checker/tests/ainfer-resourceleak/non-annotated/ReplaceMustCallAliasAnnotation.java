@@ -1,4 +1,4 @@
-// This test corrects the wrong @MustCallAlias annotation written on the constrcutor when there are
+// This test corrects the wrong @MustCallAlias annotation written on the constructor when there are
 // more than one owning field.
 
 import org.checkerframework.checker.calledmethods.qual.*;
@@ -34,7 +34,7 @@ class ReplaceMustCallAliasAnnotation {
 
   void testOwningAnnotations() {
     Foo f1 = new Foo();
-    // :: warning: (required.method.not.called)
+    // :: warning: [required.method.not.called]
     Foo f2 = new Foo();
     TwoOwningFields t = new TwoOwningFields(f1, f2);
     t.a();

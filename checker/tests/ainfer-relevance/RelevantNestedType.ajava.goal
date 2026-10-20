@@ -1,0 +1,65 @@
+import java.util.AbstractMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+
+// `Map.Entry` is a nested type and it has type parameters.  A program may refer to `Map.Entry` by
+// the nested name "Map.Entry", by the simple name "Entry", or by the fully-qualified name
+// "java.util.Map.Entry".  Inference must retain an annotation on a relevant type no matter how the
+// program spells the type's name, and no matter whether the program writes type arguments.
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
+public class RelevantNestedType {
+
+    static Map.@org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 Entry<String, String> nestedName;
+
+    static @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 Entry<String, String> simpleName;
+
+    static java.util.Map.@org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 Entry<String, String> qualifiedName;
+
+    static Map.@org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 Entry rawName;
+
+    // AbstractMap.SimpleEntry is relevant because it is a subtype of Map.Entry, even though the name
+    // "AbstractMap.SimpleEntry" does not appear in the checker's `@RelevantJavaTypes`.
+    static AbstractMap.@org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 SimpleEntry<String, String> subtype;
+
+    @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "RelevantNestedType.class.subtype" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
+    @org.checkerframework.dataflow.qual.Impure
+    static void assignFields() {
+        nestedName = getSibling1();
+        simpleName = getSibling1();
+        qualifiedName = getSibling1();
+        rawName = getSibling1();
+        subtype = getSibling1Subtype();
+    }
+
+    @org.checkerframework.dataflow.qual.Impure
+    static void useFields() {
+        // :: warning: [argument]
+        expectsSibling1(nestedName);
+        // :: warning: [argument]
+        expectsSibling1(simpleName);
+        // :: warning: [argument]
+        expectsSibling1(qualifiedName);
+        // :: warning: [argument]
+        expectsSibling1Subtype(subtype);
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    static void expectsSibling1(Map.Entry<String, String> e) {
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    static void expectsSibling1Subtype(AbstractMap.SimpleEntry<String, String> e) {
+    }
+
+    @org.checkerframework.dataflow.qual.Pure
+    static Map.Entry<String, String> getSibling1() {
+        return null;
+    }
+
+    @org.checkerframework.framework.qual.RequiresQualifier(expression = { "RelevantNestedType.class.rawName" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
+    @org.checkerframework.dataflow.qual.Pure
+    static AbstractMap.SimpleEntry<String, String> getSibling1Subtype() {
+        return null;
+    }
+}

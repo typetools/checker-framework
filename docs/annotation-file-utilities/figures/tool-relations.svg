@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="8cm" height="8cm" viewBox="-1 -81 307 284" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <polygon style="fill: #ffffff" points="0,-80 52.2,-80 64.2,-68 64.2,2 0,2 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="0,-80 52.2,-80 64.2,-68 64.2,2 0,2 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="52.2,-80 52.2,-68 64.2,-68 "/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="7" y="-55.1">
+      <tspan x="7" y="-55.1"></tspan>
+      <tspan x="7" y="-39.1">.java </tspan>
+      <tspan x="7" y="-23.1"></tspan>
+      <tspan x="7" y="-7.1"></tspan>
+    </text>
+  </g>
+  <g>
+    <polygon style="fill: #ffffff" points="240,-80 292.2,-80 304.2,-68 304.2,2 240,2 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="240,-80 292.2,-80 304.2,-68 304.2,2 240,2 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="292.2,-80 292.2,-68 304.2,-68 "/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="247" y="-55.1">
+      <tspan x="247" y="-55.1"></tspan>
+      <tspan x="247" y="-39.1">.class</tspan>
+      <tspan x="247" y="-23.1"></tspan>
+      <tspan x="247" y="-7.1"></tspan>
+    </text>
+  </g>
+  <g>
+    <polygon style="fill: #ffffff" points="120,120 172.2,120 184.2,132 184.2,202 120,202 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="120,120 172.2,120 184.2,132 184.2,202 120,202 "/>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 1; stroke: #000000" points="172.2,120 172.2,132 184.2,132 "/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="127" y="144.9">
+      <tspan x="127" y="144.9"></tspan>
+      <tspan x="127" y="160.9">.jaif </tspan>
+      <tspan x="127" y="176.9"></tspan>
+      <tspan x="127" y="192.9"></tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="64.2" y1="-39" x2="230.264" y2="-39"/>
+    <polygon style="fill: #000000" points="237.764,-39 227.764,-34 230.264,-39 227.764,-44 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="237.764,-39 227.764,-34 230.264,-39 227.764,-44 "/>
+  </g>
+  <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="120" y1="161" x2="78.8465" y2="92.0049"/>
+  <text font-size="12.8" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="132.177" y="-44.609">
+    <tspan x="132.177" y="-44.609">javac</tspan>
+  </text>
+  <g>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2.35099e-37; stroke: #ffffff" x="0" y="60" width="138.6" height="32"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:monospace;font-style:normal;font-weight:normal" x="69.3" y="71.9">
+      <tspan x="69.3" y="71.9">insert-annotations</tspan>
+      <tspan x="69.3" y="87.9">-to-source</tspan>
+    </text>
+  </g>
+  <g>
+    <line style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x1="61.2624" y1="60.0112" x2="36.4729" y2="10.6988"/>
+    <polygon style="fill: #000000" points="33.1043,3.99784 42.0631,10.6867 36.4729,10.6988 33.1285,15.1781 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="33.1043,3.99784 42.0631,10.6867 36.4729,10.6988 33.1285,15.1781 "/>
+  </g>
+  <g>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2.35099e-37; stroke: #ffffff" x="215.572" y="74.687" width="84.7" height="48"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:monospace;font-style:normal;font-weight:normal" x="257.922" y="94.587">
+      <tspan x="257.922" y="94.587">insert-</tspan>
+      <tspan x="257.922" y="110.587">annotations</tspan>
+    </text>
+  </g>
+  <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 184.2,161 A 133.344,133.344 0 0 0 241.696,122.113"/>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 266.31,74.6929 A 192.351,192.351 0 0 0 272.935,11.6908"/>
+    <polygon style="fill: #000000" points="272.348,4.22225 278.427,13.6054 273.181,11.6759 268.489,14.7155 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="272.348,4.22225 278.427,13.6054 273.181,11.6759 268.489,14.7155 "/>
+  </g>
+  <g>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2.35099e-37; stroke: #ffffff" x="140" y="20" width="84.7" height="32"/>
+    <text font-size="12.8" style="fill: #000000;text-anchor:middle;font-family:monospace;font-style:normal;font-weight:normal" x="182.35" y="31.9">
+      <tspan x="182.35" y="31.9">extract-</tspan>
+      <tspan x="182.35" y="47.9">annotations</tspan>
+    </text>
+  </g>
+  <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 272.1,2 A 185.385,185.385 0 0 0 209.031,20.008"/>
+  <g>
+    <path style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" d="M 173.747,51.9912 A 242.139,242.139 0 0 0 153.845,110.428"/>
+    <polygon style="fill: #000000" points="152.457,117.793 149.116,107.123 153.653,110.389 158.988,108.718 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="152.457,117.793 149.116,107.123 153.653,110.389 158.988,108.718 "/>
+  </g>
+</svg>

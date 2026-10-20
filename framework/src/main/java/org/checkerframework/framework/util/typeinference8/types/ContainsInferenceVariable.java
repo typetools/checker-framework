@@ -20,7 +20,7 @@ import javax.lang.model.type.WildcardType;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** Helper class for determining if a type contains an inference variable. */
-public class ContainsInferenceVariable {
+public final class ContainsInferenceVariable {
 
   /** Don't use. */
   private ContainsInferenceVariable() {}
@@ -116,18 +116,25 @@ public class ContainsInferenceVariable {
 
     @Override
     public Boolean visitDeclared(DeclaredType t, Void aVoid) {
+      // Do not short-circuit, so that every type variable of interest is added to
+      // foundVariables.
       boolean found = false;
       for (TypeMirror typeArg : t.getTypeArguments()) {
         if (visit(typeArg)) {
           found = true;
         }
       }
+      // An inner class type may mention a type variable only in its enclosing type, as in
+      // Outer<T>.Inner.
+      if (visit(t.getEnclosingType())) {
+        found = true;
+      }
       return found;
     }
 
     @Override
     public Boolean visitError(ErrorType t, Void aVoid) {
-      return null;
+      return false;
     }
 
     @Override

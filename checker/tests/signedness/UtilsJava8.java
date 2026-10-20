@@ -16,92 +16,92 @@ public class UtilsJava8 {
     int resInt;
     long resLong;
 
-    // :: error: (argument)
+    // :: error: [argument]
     resString = Long.toUnsignedString(slong, 10);
 
     resString = Long.toUnsignedString(ulong, 10);
 
-    // :: error: (argument)
+    // :: error: [argument]
     resString = Long.toUnsignedString(slong);
 
     resString = Long.toUnsignedString(ulong);
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     slong = Long.parseUnsignedLong(s, 10);
 
     ulong = Long.parseUnsignedLong(s, 10);
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     slong = Long.parseUnsignedLong(s);
 
     ulong = Long.parseUnsignedLong(s);
 
-    // :: error: (argument)
+    // :: error: [argument]
     resInt = Long.compareUnsigned(slong, slong);
 
-    // :: error: (argument)
+    // :: error: [argument]
     resInt = Long.compareUnsigned(slong, ulong);
 
-    // :: error: (argument)
+    // :: error: [argument]
     resInt = Long.compareUnsigned(ulong, slong);
 
     resInt = Long.compareUnsigned(ulong, ulong);
 
-    // :: error: (argument)
+    // :: error: [argument]
     ulong = Long.divideUnsigned(slong, slong);
 
-    // :: error: (argument)
+    // :: error: [argument]
     ulong = Long.divideUnsigned(slong, ulong);
 
-    // :: error: (argument)
+    // :: error: [argument]
     ulong = Long.divideUnsigned(ulong, slong);
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     slong = Long.divideUnsigned(ulong, ulong);
 
     ulong = Long.divideUnsigned(ulong, ulong);
 
-    // :: error: (argument)
+    // :: error: [argument]
     ulong = Long.remainderUnsigned(slong, slong);
 
-    // :: error: (argument)
+    // :: error: [argument]
     ulong = Long.remainderUnsigned(slong, ulong);
 
-    // :: error: (argument)
+    // :: error: [argument]
     ulong = Long.remainderUnsigned(ulong, slong);
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     slong = Long.remainderUnsigned(ulong, ulong);
 
     ulong = Long.remainderUnsigned(ulong, ulong);
 
-    // :: error: (argument)
+    // :: error: [argument]
     resString = Integer.toUnsignedString(sint, 10);
 
     resString = Integer.toUnsignedString(uint, 10);
 
-    // :: error: (argument)
+    // :: error: [argument]
     resString = Integer.toUnsignedString(sint);
 
     resString = Integer.toUnsignedString(uint);
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     sint = Integer.parseUnsignedInt(s, 10);
 
     uint = Integer.parseUnsignedInt(s, 10);
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     sint = Integer.parseUnsignedInt(s);
 
     uint = Integer.parseUnsignedInt(s);
 
-    // :: error: (argument)
+    // :: error: [argument]
     resInt = Integer.compareUnsigned(sint, sint);
 
-    // :: error: (argument)
+    // :: error: [argument]
     resInt = Integer.compareUnsigned(sint, uint);
 
-    // :: error: (argument)
+    // :: error: [argument]
     resInt = Integer.compareUnsigned(uint, sint);
 
     resInt = Integer.compareUnsigned(uint, uint);
@@ -110,30 +110,30 @@ public class UtilsJava8 {
 
     ulong = Integer.toUnsignedLong(uint);
 
-    // :: error: (argument)
+    // :: error: [argument]
     uint = Integer.divideUnsigned(sint, sint);
 
-    // :: error: (argument)
+    // :: error: [argument]
     uint = Integer.divideUnsigned(sint, uint);
 
-    // :: error: (argument)
+    // :: error: [argument]
     uint = Integer.divideUnsigned(uint, sint);
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     sint = Integer.divideUnsigned(uint, uint);
 
     uint = Integer.divideUnsigned(uint, uint);
 
-    // :: error: (argument)
+    // :: error: [argument]
     uint = Integer.remainderUnsigned(sint, sint);
 
-    // :: error: (argument)
+    // :: error: [argument]
     uint = Integer.remainderUnsigned(sint, uint);
 
-    // :: error: (argument)
+    // :: error: [argument]
     uint = Integer.remainderUnsigned(uint, sint);
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     sint = Integer.remainderUnsigned(uint, uint);
 
     uint = Integer.remainderUnsigned(uint, uint);

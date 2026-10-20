@@ -1,10 +1,10 @@
 enum EnumFieldUninit {
   DUMMY;
 
-  // :: error: (assignment)
+  // :: error: [assignment]
   public static String s = null;
 
-  // :: error: (initialization.static.field.uninitialized)
+  // :: error: [initialization.static.field.uninitialized]
   public static String u;
 
   static String[] arrayInit = new String[] {};
@@ -15,9 +15,9 @@ enum EnumFieldUninit {
     arrayInitInBlock = new String[] {};
   }
 
-  // :: error: (assignment)
+  // :: error: [assignment]
   static String[] arrayInitToNull = null;
 
-  // :: error: (initialization.static.field.uninitialized)
+  // :: error: [initialization.static.field.uninitialized]
   static String[] arrayUninit;
 }

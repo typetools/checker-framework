@@ -11,7 +11,7 @@ public class RequiresCalledMethodsRepeatable {
   }
 
   public void requires2Wrong(Closeable r1, Closeable r2) {
-    // ::error: (contracts.precondition)
+    // ::error: [contracts.precondition]
     requires2(r1, r2);
   }
 

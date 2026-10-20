@@ -36,7 +36,7 @@ import org.checkerframework.javacutil.TypeSystemError;
 @AnnotatedFor("nullness")
 public abstract class ElementQualifierHierarchy extends QualifierHierarchy {
 
-  /** {@link org.checkerframework.javacutil.ElementUtils}. */
+  /** The {@link javax.lang.model.util.Elements} instance. */
   private final Elements elements;
 
   /** {@link QualifierKindHierarchy}. */
@@ -70,6 +70,7 @@ public abstract class ElementQualifierHierarchy extends QualifierHierarchy {
    * @param elements element utils
    * @param atypeFactory the associated type factory
    */
+  @SuppressWarnings("this-escape")
   protected ElementQualifierHierarchy(
       Collection<Class<? extends Annotation>> qualifierClasses,
       Elements elements,

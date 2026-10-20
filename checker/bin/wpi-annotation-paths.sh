@@ -20,8 +20,7 @@ WPI_LOG_FILE_COUNT=$(find "${TARGETDIR}"/*-wpi-stdout.log 2> /dev/null | wc -l)
 if [ "$WPI_LOG_FILE_COUNT" -ne 0 ]; then
   # WPI log files exist, find the latest annotation files corresponding to
   # each of them.
-  for wpi_log_file in "$TARGETDIR"/*-wpi-stdout.log;
-  do
+  for wpi_log_file in "$TARGETDIR"/*-wpi-stdout.log; do
     echo "Log file: $wpi_log_file"
 
     # The latest match from grep should be reported, as the latest match
@@ -32,7 +31,7 @@ if [ "$WPI_LOG_FILE_COUNT" -ne 0 ]; then
     if [ -z "$FULL_AJAVA_MATCH" ]; then
       AJAVA_PATH="No .ajava files generated"
     else
-      AJAVA_PATH=$(echo "$FULL_AJAVA_MATCH" | cut -d "=" -f 2 | tr -d "'" )
+      AJAVA_PATH=$(echo "$FULL_AJAVA_MATCH" | cut -d "=" -f 2 | tr -d "'")
     fi
 
     echo "Annotated file(s): $AJAVA_PATH"

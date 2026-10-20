@@ -19,7 +19,7 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 // TODO: large parts of this file are the same as PerDirectorySuite.java.
 // Reduce duplication by moving common parts to an abstract class.
@@ -36,7 +36,7 @@ import org.plumelib.util.CollectionsPlume;
  */
 public class PerFileSuite extends RootedSuite {
 
-  /** Name */
+  /** Name. */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)
   public @interface Name {}
@@ -53,7 +53,10 @@ public class PerFileSuite extends RootedSuite {
    *
    * @param klass the class whose tests to run
    */
-  @SuppressWarnings("nullness") // JUnit needs to be annotated
+  @SuppressWarnings({
+    "nullness", // JUnit needs to be annotated
+    "this-escape"
+  })
   public PerFileSuite(Class<?> klass) throws Throwable {
     super(klass, Collections.emptyList());
     TestClass testClass = getTestClass();
@@ -87,7 +90,7 @@ public class PerFileSuite extends RootedSuite {
     }
 
     List<Object[]> argumentLists =
-        CollectionsPlume.mapList((File javaFile) -> new Object[] {javaFile}, javaFiles);
+        CollectionsP.mapList((File javaFile) -> new Object[] {javaFile}, javaFiles);
 
     return argumentLists;
   }
@@ -117,7 +120,7 @@ public class PerFileSuite extends RootedSuite {
     Class<?> returnType = method.getReturnType();
     String methodName = method.getName();
     switch (methodName) {
-      case "getTestDirs":
+      case "getTestDirs" -> {
         if (returnType.isArray()) {
           if (returnType.getComponentType() != String.class) {
             throw new RuntimeException(
@@ -125,18 +128,17 @@ public class PerFileSuite extends RootedSuite {
                     + returnType.getComponentType().getCanonicalName());
           }
         }
-        break;
+      }
 
-      case "getTestFiles":
+      case "getTestFiles" -> {
         // We'll force people to return a List for now but enforcing exactly List<File> or a
         // subtype thereof is not easy.
         if (!List.class.getCanonicalName().equals(returnType.getCanonicalName())) {
           throw new RuntimeException("getTestFiles must return a List<File>, found " + returnType);
         }
-        break;
+      }
 
-      default:
-        throw new BugInCF(requiredFormsMessage, testClass.getName(), method);
+      default -> throw new BugInCF(requiredFormsMessage, testClass.getName(), method);
     }
 
     int modifiers = method.getMethod().getModifiers();

@@ -7,6 +7,6 @@ public class TestParsing {
 
   void test2(@FlowExp("a.clone()") Object a, @FlowExp("this.a.clone()") Object b) {}
 
-  // :: error: (expression.unparsable)
+  // :: error: [expression.unparsable]
   void test3(@FlowExp("a.leng") Object a) {}
 }

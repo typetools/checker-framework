@@ -10,7 +10,7 @@ public class Issue3267 {
     } else {
     }
     if (true) {
-      // :: error: (argument)
+      // :: error: [argument]
       Pattern.compile(s);
     }
   }

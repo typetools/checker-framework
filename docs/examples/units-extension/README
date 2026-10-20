@@ -1,13 +1,13 @@
 This directory shows how to create:
  * a new kind, @Frequency
  * a new unit, Hertz (@Hz)
- * a unit Kilohertz (@kHz) which is an alias annotation of @Hz(Prefix.kilo):
+ * a unit Kilohertz (@kHz) that is an alias annotation of @Hz(Prefix.kilo):
     using @kHz has the same effect as using @Hz(Prefix.kilo) in source code
  * relations that enforce that Hertz is computed as scalar / second,
     and that Kilohertz is computed as scalar / millisecond
 
-The make file shows how to invoke the Units Checker to utilize these kinds and units.
+The Makefile shows how to invoke the Units Checker to use these kinds and units.
 
-You can model your own new units and unit checkers after it.
+You can model your own new units and unit checkers after this example.
 
 To see the demo, run: make demo

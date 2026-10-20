@@ -16,7 +16,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Behaves just like {@link CFValue}, but additionally tracks whether at this point {@link PolyNull}
- * is known to be {@link NonNull} or {@link Nullable} (or not known to be either)
+ * is known to be {@link NonNull} or {@link Nullable} (or not known to be either).
  */
 public class NullnessValue extends CFAbstractValue<NullnessValue> {
 
@@ -65,9 +65,9 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
   }
 
   /**
-   * Returns true if this value contans {@code @NonNull} or {@code @PolyNull}.
+   * Returns true if this value contains {@code @NonNull} or {@code @PolyNull}.
    *
-   * @return true if this value contans {@code @NonNull} or {@code @PolyNull}
+   * @return true if this value contains {@code @NonNull} or {@code @PolyNull}
    */
   @Pure
   private boolean containsNonNullOrPolyNull() {
@@ -76,9 +76,9 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
   }
 
   /**
-   * Returns true if this value contans {@code @Nullable} or {@code @PolyNull}.
+   * Returns true if this value contains {@code @Nullable} or {@code @PolyNull}.
    *
-   * @return true if this value contans {@code @Nullable} or {@code @PolyNull}
+   * @return true if this value contains {@code @Nullable} or {@code @PolyNull}
    */
   @Pure
   private boolean containsNullableOrPolyNull() {

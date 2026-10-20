@@ -2,6 +2,7 @@ package org.checkerframework.checker.guieffect;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -49,7 +50,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
   /** The receiver type of the enclosing method tree. */
   private @Nullable AnnotatedDeclaredType receiverType = null;
 
-  /** Whether or not to display debugging information. */
+  /** If true, display debugging information. */
   protected final boolean debugSpew;
 
   // effStack and currentMethods should always be the same size.
@@ -239,7 +240,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
       // Backtrack path to the lambda expression itself
       TreePath path = getCurrentPath();
       while (path.getLeaf() != tree) {
-        assert path.getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT;
+        assert !(path.getLeaf() instanceof CompilationUnitTree);
         path = path.getParentPath();
       }
       scanUp(path);
@@ -291,8 +292,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     Effect targetEffect = atypeFactory.getComputedEffectAtCallsite(tree, receiverType, methodElt);
 
     Effect callerEffect = null;
-    if (callerTree.getKind() == Tree.Kind.METHOD) {
-      ExecutableElement callerElt = TreeUtils.elementFromDeclaration((MethodTree) callerTree);
+    if (callerTree instanceof MethodTree ctMt) {
+      ExecutableElement callerElt = TreeUtils.elementFromDeclaration(ctMt);
       if (debugSpew) {
         System.err.println("callerElt found");
       }
@@ -344,9 +345,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
       // Field initializers inside anonymous inner classes show up with a null current-method
       // --- the traversal goes straight from the class to the initializer.
       assert (currentMethods.peek() == null || callerEffect.equals(effStack.peek()));
-    } else if (callerTree.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
-      callerEffect =
-          atypeFactory.getInferedEffectForLambdaExpression((LambdaExpressionTree) callerTree);
+    } else if (callerTree instanceof LambdaExpressionTree ctLet) {
+      callerEffect = atypeFactory.getInferedEffectForLambdaExpression(ctLet);
       // Perform lambda polymorphic effect inference: @PolyUI lambda, calling @UIEffect => @UI
       // lambda
       if (targetEffect.isUI() && callerEffect.isPoly()) {
@@ -363,13 +363,13 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
       }
     }
     if (debugSpew) {
-      System.err.println("Successfully finished main non-recursive checkinv of invocation " + tree);
+      System.err.println("Successfully finished main non-recursive checking of invocation " + tree);
     }
     return super.visitMethodInvocation(tree, p);
   }
 
   @Override
-  public void processMethodTree(MethodTree tree) {
+  public void processMethodTree(String className, MethodTree tree) {
     AnnotatedExecutableType methodType = atypeFactory.getAnnotatedType(tree).deepCopy();
     AnnotatedDeclaredType previousReceiverType = receiverType;
     receiverType = methodType.getReceiverType();
@@ -384,7 +384,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     // subclasses a Safe instantiation, all is well.  If it subclasses a UI instantiation, then
     // the receivers should probably be @UI in both new and override methods, so calls to
     // polymorphic methods of the parent class will work correctly.  In which case for proving
-    // anything, the qualifier on sublasses of UI instantiations would always have to be @UI...
+    // anything, the qualifier on subclasses of UI instantiations would always have to be @UI...
     // Need to write down |- t for this system!  And the judgments for method overrides and
     // inheritance!  Those are actually the hardest part of the system.
 
@@ -446,7 +446,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
       System.err.println("Pushing " + effStack.peek() + " onto the stack when checking " + methElt);
     }
 
-    super.processMethodTree(tree);
+    super.processMethodTree(className, tree);
     currentMethods.removeFirst();
     effStack.removeFirst();
     receiverType = previousReceiverType;
@@ -462,7 +462,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
       // Backtrack path to the new class expression itself
       TreePath path = getCurrentPath();
       while (path.getLeaf() != tree) {
-        assert path.getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT;
+        assert !(path.getLeaf() instanceof CompilationUnitTree);
         path = path.getParentPath();
       }
       scanUp(getCurrentPath().getParentPath());
@@ -483,27 +483,27 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
   private void scanUp(TreePath path) {
     Tree tree = path.getLeaf();
     switch (tree.getKind()) {
-      case ASSIGNMENT:
+      case ASSIGNMENT -> {
         AssignmentTree assignmentTree = (AssignmentTree) tree;
         commonAssignmentCheck(
             atypeFactory.getAnnotatedType(assignmentTree.getVariable()),
             atypeFactory.getAnnotatedType(assignmentTree.getExpression()),
             assignmentTree.getExpression(),
             "assignment");
-        break;
-      case VARIABLE:
+      }
+      case VARIABLE -> {
         VariableTree variableTree = (VariableTree) tree;
         commonAssignmentCheck(
             atypeFactory.getAnnotatedType(variableTree),
             atypeFactory.getAnnotatedType(variableTree.getInitializer()),
             variableTree.getInitializer(),
             "assignment");
-        break;
-      case METHOD_INVOCATION:
+      }
+      case METHOD_INVOCATION -> {
         MethodInvocationTree invocationTree = (MethodInvocationTree) tree;
         List<? extends ExpressionTree> args = invocationTree.getArguments();
         ParameterizedExecutableType mType = atypeFactory.methodFromUse(invocationTree);
-        AnnotatedExecutableType invokedMethod = mType.executableType;
+        AnnotatedExecutableType invokedMethod = mType.executableType();
         ExecutableElement method = invokedMethod.getElement();
         CharSequence methodName = ElementUtils.getSimpleDescription(method);
         List<? extends VariableElement> methodParams = method.getParameters();
@@ -511,8 +511,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             AnnotatedTypes.adaptParameters(
                 atypeFactory, invokedMethod, invocationTree.getArguments(), invocationTree);
         for (int i = 0; i < args.size(); ++i) {
-          if (args.get(i).getKind() == Tree.Kind.NEW_CLASS
-              || args.get(i).getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+          if (args.get(i) instanceof NewClassTree || args.get(i) instanceof LambdaExpressionTree) {
             commonAssignmentCheck(
                 paramTypes.get(i),
                 atypeFactory.getAnnotatedType(args.get(i)),
@@ -522,15 +521,14 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 methodName);
           }
         }
-        break;
-      case RETURN:
+      }
+      case RETURN -> {
         ReturnTree returnTree = (ReturnTree) tree;
-        if (returnTree.getExpression().getKind() == Tree.Kind.NEW_CLASS
-            || returnTree.getExpression().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+        if (returnTree.getExpression() instanceof NewClassTree
+            || returnTree.getExpression() instanceof LambdaExpressionTree) {
           Tree enclosing = TreePathUtil.enclosingMethodOrLambda(path);
           AnnotatedTypeMirror ret = null;
-          if (enclosing.getKind() == Tree.Kind.METHOD) {
-            MethodTree enclosingMethod = (MethodTree) enclosing;
+          if (enclosing instanceof MethodTree enclosingMethod) {
             boolean valid = validateTypeOf(enclosing);
             if (valid) {
               ret = atypeFactory.getMethodReturnType(enclosingMethod, returnTree);
@@ -550,18 +548,20 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 "return");
           }
         }
-        break;
-      case METHOD:
-        // Stop scanning at method boundaries, since the expression can't escape the method
-        // without either being assigned to a field or returned.
+      }
+      case METHOD ->
+      // Stop scanning at method boundaries, since the expression can't escape the method
+      // without either being assigned to a field or returned.
+      {
         return;
-      case CLASS:
+      }
+      case CLASS -> {
         // Can't ever happen, because we stop scanning at either method or field initializer
         // boundaries
         assert false;
         return;
-      default:
-        scanUp(path.getParentPath());
+      }
+      default -> scanUp(path.getParentPath());
     }
   }
 

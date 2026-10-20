@@ -14,7 +14,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Represents multiple type qualifier hierarchies. {@link #getWidth} gives the number of hierarchies
@@ -45,7 +45,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Determine whether this QualifierHierarchy is valid.
+   * Returns true if this QualifierHierarchy is valid.
    *
    * @return true if this QualifierHierarchy is valid
    */
@@ -75,18 +75,18 @@ public abstract class QualifierHierarchy {
   public abstract AnnotationMirrorSet getTopAnnotations();
 
   /**
-   * Returns true if the given qualifer is one of the top annotations for this qualifer hierarchy.
+   * Returns true if the given qualifier is one of the top annotations for this qualifier hierarchy.
    *
    * @param qualifier any qualifier from one of the qualifier hierarchies represented by this
-   * @return true if the given qualifer is one of the top annotations for this qualifer hierarchy
+   * @return true if the given qualifier is one of the top annotations for this qualifier hierarchy
    */
   public boolean isTop(AnnotationMirror qualifier) {
     return AnnotationUtils.containsSame(getTopAnnotations(), qualifier);
   }
 
   /**
-   * Return the top qualifier for the given qualifier, that is, the qualifier that is a supertype of
-   * {@code qualifier} but no further supertypes exist.
+   * Returns the top qualifier for the given qualifier, that is, the qualifier that is a supertype
+   * of {@code qualifier} but no further supertypes exist.
    *
    * @param qualifier any qualifier from one of the qualifier hierarchies represented by this
    * @return the top qualifier of {@code qualifier}'s hierarchy
@@ -102,7 +102,7 @@ public abstract class QualifierHierarchy {
   public abstract AnnotationMirrorSet getBottomAnnotations();
 
   /**
-   * Return the bottom for the given qualifier, that is, the qualifier that is a subtype of {@code
+   * Returns the bottom for the given qualifier, that is, the qualifier that is a subtype of {@code
    * qualifier} but no further subtypes exist.
    *
    * @param qualifier any qualifier from one of the qualifier hierarchies represented by this
@@ -135,7 +135,7 @@ public abstract class QualifierHierarchy {
   // **********************************************************************
 
   /**
-   * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
+   * Returns true if {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
    * according to the type qualifier hierarchy, ignoring Java basetypes.
    *
    * <p>Clients should generally call {@link #isSubtypeShallow}. However, subtypes should generally
@@ -155,7 +155,7 @@ public abstract class QualifierHierarchy {
       AnnotationMirror subQualifier, AnnotationMirror superQualifier);
 
   /**
-   * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
+   * Returns true if {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
    * according to the type qualifier hierarchy, ignoring Java basetypes.
    *
    * <p>This method is for clients outside the framework, and should not be used by framework code.
@@ -170,7 +170,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
+   * Returns true if {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
    * according to the type qualifier hierarchy. The types {@code subType} and {@code superType} are
    * not necessarily in a Java subtyping relationship with one another and are only used by this
    * method for special cases when qualifier subtyping depends on the Java basetype.
@@ -201,7 +201,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Tests whether {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
+   * Returns true if {@code subQualifier} is equal to or a sub-qualifier of {@code superQualifier},
    * according to the type qualifier hierarchy. The type {@code typeMirror} is only used by this
    * method for special cases when qualifier subtyping depends on the Java basetype.
    *
@@ -225,7 +225,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+   * Returns true if all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
    * qualifier in the same hierarchy in {@code superQualifiers}. The types {@code subType} and
    * {@code superType} are not necessarily in a Java subtyping relationship with one another and are
    * only used by this method for special cases when qualifier subtyping depends on the Java
@@ -253,7 +253,7 @@ public abstract class QualifierHierarchy {
       if (superQual == null) {
         throw new BugInCF(
             "QualifierHierarchy: missing annotation in hierarchy %s. found: %s",
-            subQual, StringsPlume.join(",", superQualifiers));
+            subQual, StringsP.join(",", superQualifiers));
       }
       if (!isSubtypeShallow(subQual, subType, superQual, superType)) {
         return false;
@@ -263,7 +263,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+   * Returns true if all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
    * qualifier in the same hierarchy in {@code superQualifiers}. The types {@code subType} and
    * {@code superType} are not necessarily in a Java subtyping relationship with one another and are
    * only used by this method for special cases when qualifier subtyping depends on the Java
@@ -287,7 +287,7 @@ public abstract class QualifierHierarchy {
       if (superQual == null) {
         throw new BugInCF(
             "QualifierHierarchy: missing annotation in hierarchy %s. found: %s",
-            subQual, StringsPlume.join(",", superQualifiers));
+            subQual, StringsP.join(",", superQualifiers));
       }
       if (!isSubtypeQualifiersOnly(subQual, superQual)) {
         return false;
@@ -297,7 +297,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Tests whether all qualifiers in {@code subQualifiers} are a subqualifier of or equal to the
+   * Returns true if all qualifiers in {@code subQualifiers} are a subqualifier of or equal to the
    * qualifier in the same hierarchy in {@code superQualifiers}. The type {@code typeMirror} is only
    * used by this method for special cases when qualifier subtyping depends on the Java basetype.
    *
@@ -512,7 +512,7 @@ public abstract class QualifierHierarchy {
    * @param newQualifier new qualifier dataflow computed for some expression; must be in the same
    *     hierarchy as {@code previousQualifier}
    * @param previousQualifier the previous qualifier dataflow computed on the last iteration; must
-   *     be in the same hierarchy as {@code previousQualifier}
+   *     be in the same hierarchy as {@code newQualifier}
    * @return an upper bound that is higher than the least upper bound of newQualifier and
    *     previousQualifier (or the lub if the qualifier hierarchy does not require this)
    */
@@ -537,7 +537,7 @@ public abstract class QualifierHierarchy {
    */
   // The fact that null is returned if the qualifiers are not in the same hierarchy is used by the
   // collection version of LUB below.
-  protected abstract @Nullable AnnotationMirror greatestLowerBoundQualifiers(
+  public abstract @Nullable AnnotationMirror greatestLowerBoundQualifiers(
       AnnotationMirror qualifier1, AnnotationMirror qualifier2);
 
   /**
@@ -582,7 +582,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Returns the greatest lower bound of the two sets of qualifiers. The result is the lub of the
+   * Returns the greatest lower bound of the two sets of qualifiers. The result is the glb of the
    * qualifier for the same hierarchy in each set.
    *
    * @param qualifiers1 a set of qualifiers; exactly one per hierarchy
@@ -613,7 +613,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Returns the greatest lower bound of the two sets of qualifiers. The result is the lub of the
+   * Returns the greatest lower bound of the two sets of qualifiers. The result is the glb of the
    * qualifier for the same hierarchy in each set.
    *
    * @param qualifiers1 a set of qualifiers; exactly one per hierarchy
@@ -648,8 +648,8 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Returns the greatest lower bound the all the collections of qualifiers. The result is the glb
-   * of the qualifier for the same hierarchy in each set.
+   * Returns the greatest lower bound of all the collections of qualifiers. The result is the glb of
+   * the qualifier for the same hierarchy in each set.
    *
    * @param qualifiers a collection of collections of qualifiers. Each inner collection has exactly
    *     one qualifier per hierarchy.
@@ -768,7 +768,7 @@ public abstract class QualifierHierarchy {
     if (c1.size() != c2.size()) {
       throw new BugInCF(
           "inconsistent sizes (%d, %d):%n  [%s]%n  [%s]",
-          c1.size(), c2.size(), StringsPlume.join(",", c1), StringsPlume.join(",", c2));
+          c1.size(), c2.size(), StringsP.join(",", c1), StringsP.join(",", c2));
     }
   }
 
@@ -789,9 +789,9 @@ public abstract class QualifierHierarchy {
           c1.size(),
           c2.size(),
           result.size(),
-          StringsPlume.join(",", c1),
-          StringsPlume.join(",", c2),
-          StringsPlume.join(",", result));
+          StringsP.join(",", c1),
+          StringsP.join(",", c2),
+          StringsP.join(",", result));
     }
   }
 }

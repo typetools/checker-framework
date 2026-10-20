@@ -24,7 +24,7 @@ public class TestFieldPolymorphism {
   }
 
   void testSetter3(@PolyTainted TestFieldPolymorphism this, @Tainted String s) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     this.field = s;
   }
 
@@ -33,7 +33,7 @@ public class TestFieldPolymorphism {
   }
 
   @Untainted String testGetter2(@PolyTainted TestFieldPolymorphism this) {
-    // :: error: (return)
+    // :: error: [return]
     return this.field;
   }
 
@@ -43,12 +43,12 @@ public class TestFieldPolymorphism {
 
   static void testInstantiateUntaintedSetter(
       @Untainted TestFieldPolymorphism c, @Tainted String s) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     c.field = s;
   }
 
   static @Untainted String testInstantiateTaintedGetter(@Tainted TestFieldPolymorphism c) {
-    // :: error: (return)
+    // :: error: [return]
     return c.field;
   }
 

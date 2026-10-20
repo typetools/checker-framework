@@ -155,17 +155,14 @@ public abstract class Contract {
           "Mismatch: Contract.create(%s, %s, %s, %s, %s)",
           kind, expressionString, annotation, contractAnnotation, ensuresQualifierIf);
     }
-    switch (kind) {
-      case PRECONDITION:
-        return new Precondition(expressionString, annotation, contractAnnotation);
-      case POSTCONDITION:
-        return new Postcondition(expressionString, annotation, contractAnnotation);
-      case CONDITIONALPOSTCONDITION:
-        return new ConditionalPostcondition(
-            expressionString, annotation, contractAnnotation, ensuresQualifierIf);
-      default:
-        throw new BugInCF("Unrecognized kind: " + kind);
-    }
+    return switch (kind) {
+      case PRECONDITION -> new Precondition(expressionString, annotation, contractAnnotation);
+      case POSTCONDITION -> new Postcondition(expressionString, annotation, contractAnnotation);
+      case CONDITIONALPOSTCONDITION ->
+          new ConditionalPostcondition(
+              expressionString, annotation, contractAnnotation, ensuresQualifierIf);
+      default -> throw new BugInCF("Unrecognized kind: " + kind);
+    };
   }
 
   // Note that equality requires exact match of the run-time class and that it ignores the
@@ -290,7 +287,7 @@ public abstract class Contract {
      * @param annotation the type qualifier that {@code expressionString} should have
      * @param contractAnnotation the postcondition annotation that the programmer wrote; used for
      *     diagnostic messages
-     * @param resultValue whether the condition is the method returning true or false
+     * @param resultValue true if the condition is the method returning true or false
      */
     public ConditionalPostcondition(
         String expressionString,

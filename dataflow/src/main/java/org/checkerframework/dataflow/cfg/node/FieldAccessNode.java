@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Symbol;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -46,12 +47,10 @@ public class FieldAccessNode extends Node {
     this.receiver = receiver;
     this.field = TreeUtils.getFieldName(tree);
 
-    if (tree instanceof MemberSelectTree) {
-      MemberSelectTree mstree = (MemberSelectTree) tree;
+    if (tree instanceof MemberSelectTree mstree) {
       assert TreeUtils.isUseOfElement(mstree) : "@AssumeAssertion(nullness): tree kind";
       this.element = TreeUtils.variableElementFromUse(mstree);
-    } else if (tree instanceof IdentifierTree) {
-      IdentifierTree itree = (IdentifierTree) tree;
+    } else if (tree instanceof IdentifierTree itree) {
       assert TreeUtils.isUseOfElement(itree) : "@AssumeAssertion(nullness): tree kind";
       this.element = TreeUtils.variableElementFromUse(itree);
     } else {
@@ -91,13 +90,17 @@ public class FieldAccessNode extends Node {
 
   @Override
   public String toString() {
-    return getReceiver() + "." + field;
+    if (disambiguateOwner) {
+      return getReceiver() + "." + field + "{owner=" + ((Symbol) element).owner + "}";
+    } else {
+      return getReceiver() + "." + field;
+    }
   }
 
   /**
-   * Determine whether the field is static or not.
+   * Returns true if the field is static.
    *
-   * @return whether the field is static or not
+   * @return true if the field is static
    */
   public boolean isStatic() {
     return ElementUtils.isStatic(getElement());
@@ -105,10 +108,9 @@ public class FieldAccessNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof FieldAccessNode)) {
+    if (!(obj instanceof FieldAccessNode other)) {
       return false;
     }
-    FieldAccessNode other = (FieldAccessNode) obj;
     return getReceiver().equals(other.getReceiver()) && getFieldName().equals(other.getFieldName());
   }
 

@@ -118,6 +118,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    *
    * @param checker the type-checker
    */
+  @SuppressWarnings("this-escape")
   public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     // Any annotations that are aliased to @NonNegative, @Positive, or @GTENegativeOne must also
@@ -310,22 +311,15 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror typeDst) {
       AnnotatedTypeMirror typeSrc = getAnnotatedType(tree.getExpression());
       switch (tree.getKind()) {
-        case PREFIX_INCREMENT:
-          promoteType(typeSrc, typeDst);
-          break;
-        case PREFIX_DECREMENT:
-          demoteType(typeSrc, typeDst);
-          break;
-        case POSTFIX_INCREMENT:
-        case POSTFIX_DECREMENT:
-          // Do nothing. The CF should take care of these itself.
-          break;
-        case BITWISE_COMPLEMENT:
-          handleBitWiseComplement(
-              getSearchIndexAnnotatedTypeFactory().getAnnotatedType(tree.getExpression()), typeDst);
-          break;
-        default:
-          break;
+        case PREFIX_INCREMENT -> promoteType(typeSrc, typeDst);
+        case PREFIX_DECREMENT -> demoteType(typeSrc, typeDst);
+        case POSTFIX_INCREMENT,
+            POSTFIX_DECREMENT -> {} // Do nothing. The CF should take care of these itself.
+        case BITWISE_COMPLEMENT ->
+            handleBitWiseComplement(
+                getSearchIndexAnnotatedTypeFactory().getAnnotatedType(tree.getExpression()),
+                typeDst);
+        default -> {}
       }
       return super.visitUnary(tree, typeDst);
     }
@@ -436,13 +430,17 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   }
 
   /**
-   * Return a non-null value if randTree is a call to Math.random() or Random.nextDouble(), and
+   * Returns a non-null value if randTree is a call to Math.random() or Random.nextDouble(), and
    * arrLenTree is someArray.length.
+   *
+   * @param randTree a tree that might be a call to a {@code random} method
+   * @param arrLenTree a tree that might be an array length access
+   * @return a non-null value if randTree is a call to Math.random() or Random.nextDouble(), and
+   *     arrLenTree is someArray.length
    */
   private @Nullable AnnotationMirror checkForMathRandomSpecialCase(Tree randTree, Tree arrLenTree) {
-    if (randTree.getKind() == Tree.Kind.METHOD_INVOCATION
+    if (randTree instanceof MethodInvocationTree miTree
         && TreeUtils.isArrayLengthAccess(arrLenTree)) {
-      MethodInvocationTree miTree = (MethodInvocationTree) randTree;
 
       if (imf.isMathRandom(miTree, processingEnv)) {
         // This is Math.random() * array.length, which must be NonNegative

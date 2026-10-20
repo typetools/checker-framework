@@ -150,9 +150,9 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
     try (DirectoryStream<Path> dirStream =
         Files.newDirectoryStream(
             Paths.get(inferenceBaseDir), "*" + fileBaseName + "{-,$}*" + extension)) {
-      dirStream.forEach(f -> sb.append(f).append(":"));
+      dirStream.forEach(f -> sb.append(f).append(':'));
     } catch (IOException ignored) {
-
+      System.err.println("Ignored: " + ignored.getMessage());
     }
     // remove the last ":"
     if (sb.length() > 0) {
@@ -161,6 +161,7 @@ public class AinferValidatePerDirectoryTest extends CheckerFrameworkWPIPerDirect
     return sb.toString();
   }
 
+  @SuppressWarnings("JUnitMethodInvoked")
   @Override
   public void run() {
     // Only run if annotated files have been created.

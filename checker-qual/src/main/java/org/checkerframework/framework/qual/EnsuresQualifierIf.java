@@ -18,10 +18,10 @@ import java.lang.annotation.Target;
  * <p>Here is an example use:
  *
  * <pre><code>
- *   {@literal @}EnsuresQualifierIf(result = true, expression = "#1", qualifier = Odd.class)
- *    boolean isOdd(int p1, int p2) {
- *        return p1 % 2 == 1;
- *    }
+ *  {@literal @}EnsuresQualifierIf(result = true, expression = "#1", qualifier = Odd.class)
+ *   boolean isOdd(int p1, int p2) {
+ *     return p1 % 2 == 1;
+ *   }
  * </code></pre>
  *
  * <p>This annotation is only applicable to methods with a boolean return type.
@@ -77,7 +77,7 @@ public @interface EnsuresQualifierIf {
   @InheritedAnnotation
   public static @interface List {
     /**
-     * Return the repeatable annotations.
+     * Returns the repeatable annotations.
      *
      * @return the repeatable annotations
      */

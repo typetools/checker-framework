@@ -22,7 +22,7 @@ import org.plumelib.util.ArraySet;
 /** A live variable store contains a set of live variables represented by nodes. */
 public class LiveVarStore implements Store<LiveVarStore> {
 
-  /** The set of live variables in this store */
+  /** The set of live variables in this store. */
   private final Set<LiveVarNode> liveVarNodeSet;
 
   /** Create a new LiveVarStore. */
@@ -68,22 +68,17 @@ public class LiveVarStore implements Store<LiveVarStore> {
     if (expression instanceof LocalVariableNode || expression instanceof FieldAccessNode) {
       LiveVarNode liveVarValue = new LiveVarNode(expression);
       putLiveVar(liveVarValue);
-    } else if (expression instanceof UnaryOperationNode) {
-      UnaryOperationNode unaryNode = (UnaryOperationNode) expression;
+    } else if (expression instanceof UnaryOperationNode unaryNode) {
       addUseInExpression(unaryNode.getOperand());
-    } else if (expression instanceof TernaryExpressionNode) {
-      TernaryExpressionNode ternaryNode = (TernaryExpressionNode) expression;
+    } else if (expression instanceof TernaryExpressionNode ternaryNode) {
       addUseInExpression(ternaryNode.getConditionOperand());
       addUseInExpression(ternaryNode.getThenOperand());
       addUseInExpression(ternaryNode.getElseOperand());
-    } else if (expression instanceof TypeCastNode) {
-      TypeCastNode typeCastNode = (TypeCastNode) expression;
+    } else if (expression instanceof TypeCastNode typeCastNode) {
       addUseInExpression(typeCastNode.getOperand());
-    } else if (expression instanceof InstanceOfNode) {
-      InstanceOfNode instanceOfNode = (InstanceOfNode) expression;
+    } else if (expression instanceof InstanceOfNode instanceOfNode) {
       addUseInExpression(instanceOfNode.getOperand());
-    } else if (expression instanceof BinaryOperationNode) {
-      BinaryOperationNode binaryNode = (BinaryOperationNode) expression;
+    } else if (expression instanceof BinaryOperationNode binaryNode) {
       addUseInExpression(binaryNode.getLeftOperand());
       addUseInExpression(binaryNode.getRightOperand());
     }
@@ -91,10 +86,9 @@ public class LiveVarStore implements Store<LiveVarStore> {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof LiveVarStore)) {
+    if (!(obj instanceof LiveVarStore other)) {
       return false;
     }
-    LiveVarStore other = (LiveVarStore) obj;
     return other.liveVarNodeSet.equals(this.liveVarNodeSet);
   }
 

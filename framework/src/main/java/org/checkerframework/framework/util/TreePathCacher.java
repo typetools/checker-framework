@@ -47,7 +47,7 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
   }
 
   /**
-   * Return the TreePath for a Tree.
+   * Returns the TreePath for a Tree.
    *
    * @param root the compilation unit to search in
    * @param target the target tree to look for

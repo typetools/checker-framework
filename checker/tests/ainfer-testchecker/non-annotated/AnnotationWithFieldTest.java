@@ -8,13 +8,13 @@ public class AnnotationWithFieldTest {
 
   void testAnnotationWithFields() {
     fields = getAinferSiblingWithFields();
-    // :: warning: (argument)
+    // :: warning: [argument]
     expectsAinferSiblingWithFields(fields);
   }
 
   void testAnnotationWithEmptyFields() {
     emptyFields = getAinferSiblingWithFieldsEmpty();
-    // :: warning: (argument)
+    // :: warning: [argument]
     expectsAinferSiblingWithEmptyFields(emptyFields);
   }
 

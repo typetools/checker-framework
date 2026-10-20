@@ -98,7 +98,7 @@ public class TypeVariableSubstitutor {
      */
     private final List<TypeMirror> typeMirrors;
 
-    /** Whether or not a copy of type argument should be substituted. */
+    /** True if a copy of type argument should be substituted. */
     private final boolean copyArgument;
 
     /**
@@ -106,7 +106,7 @@ public class TypeVariableSubstitutor {
      *
      * @param typeParamToArg mapping from TypeVariable to the AnnotatedTypeMirror that will replace
      *     it
-     * @param copyArgument whether or not a copy of type argument should be substituted
+     * @param copyArgument true if a copy of type argument should be substituted
      */
     public Visitor(Map<TypeVariable, AnnotatedTypeMirror> typeParamToArg, boolean copyArgument) {
       int size = typeParamToArg.size();

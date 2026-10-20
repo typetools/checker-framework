@@ -42,7 +42,7 @@ public class CollectionToArrayHeuristics {
   /** The type factory. */
   private final NullnessAnnotatedTypeFactory atypeFactory;
 
-  /** Whether to trust {@code @ArrayLen(0)} annotations. */
+  /** If true, trust {@code @ArrayLen(0)} annotations. */
   private final boolean trustArrayLenZero;
 
   /** The Collection type. */
@@ -105,7 +105,7 @@ public class CollectionToArrayHeuristics {
       }
 
       if (receiverIsNonNull && !argIsHandled) {
-        if (argument.getKind() != Tree.Kind.NEW_ARRAY) {
+        if (!(argument instanceof NewArrayTree)) {
           checker.reportWarning(tree, "toarray.nullable.elements.not.newarray");
         } else {
           checker.reportWarning(tree, "toarray.nullable.elements.mismatched.size");
@@ -135,10 +135,9 @@ public class CollectionToArrayHeuristics {
    * @return true if the argument is handled and assume to return nonnull elements
    */
   private boolean isHandledArrayCreation(Tree argument, String receiver) {
-    if (argument.getKind() != Tree.Kind.NEW_ARRAY) {
+    if (!(argument instanceof NewArrayTree newArr)) {
       return false;
     }
-    NewArrayTree newArr = (NewArrayTree) argument;
 
     // empty array initializer
     if (newArr.getInitializers() != null) {
@@ -205,7 +204,7 @@ public class CollectionToArrayHeuristics {
         AnnotatedTypes.asSuper(atypeFactory, receiver, collectionType);
 
     if (collection.getTypeArguments().isEmpty() // raw type
-        || !collection.getTypeArguments().get(0).hasEffectiveAnnotation(atypeFactory.NONNULL)) {
+        || !collection.getTypeArguments().get(0).hasAnnotation(atypeFactory.NONNULL)) {
       return false;
     }
     return true;
@@ -215,11 +214,12 @@ public class CollectionToArrayHeuristics {
    * The name of the receiver object of the tree.
    *
    * @param tree either an identifier tree or a member select tree
+   * @return the name of the receiver object of the tree
    */
   // This method is quite sloppy, but works most of the time
   private String receiverName(Tree tree) {
-    if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
-      return ((MemberSelectTree) tree).getExpression().toString();
+    if (tree instanceof MemberSelectTree mst) {
+      return mst.getExpression().toString();
     } else {
       return "this";
     }

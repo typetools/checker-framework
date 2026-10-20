@@ -1,4 +1,4 @@
-// Test case for issue #2494: http://tinyurl.com/cfissue/2494
+// Test case for issue #2494: https://tinyurl.com/cfissue/2494
 
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.LTLengthOf;

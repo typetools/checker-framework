@@ -13,12 +13,12 @@ public class TaintingBindingVariable {
   }
 
   void bar2(Object o) {
-    // :: warning: (instanceof.pattern.unsafe)
+    // :: warning: [instanceof.pattern.unsafe]
     if (o instanceof @Untainted String s) {
       @Untainted String f = s;
     }
     if (o instanceof String s) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @Untainted String f2 = s;
     }
   }

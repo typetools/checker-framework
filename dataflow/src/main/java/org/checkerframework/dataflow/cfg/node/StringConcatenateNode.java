@@ -38,10 +38,9 @@ public class StringConcatenateNode extends BinaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof StringConcatenateNode)) {
+    if (!(obj instanceof StringConcatenateNode other)) {
       return false;
     }
-    StringConcatenateNode other = (StringConcatenateNode) obj;
     return getLeftOperand().equals(other.getLeftOperand())
         && getRightOperand().equals(other.getRightOperand());
   }

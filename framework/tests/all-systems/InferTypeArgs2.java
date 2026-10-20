@@ -18,7 +18,7 @@ class InferTypeArgsAnalysis<
     V extends InferTypeArgs2<V>,
     S extends CFAbstractStore<V, S>,
     T extends CFAbstractTransfer<V, S, T>> {
-  public CFValue defaultCreateAbstractValue(InferTypeArgsAnalysis<CFValue, ?, ?> analysis) {
+  public CFValue getCfValue(InferTypeArgsAnalysis<CFValue, ?, ?> analysis) {
     return new CFValue(analysis);
   }
 }

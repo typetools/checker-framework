@@ -5,7 +5,7 @@ class NestedAnonymous {
   Object o1 = new @Tainted Object() {};
   Object o2 = new Outer.@Tainted Inner() {};
 
-  // :: error: (assignment)
+  // :: error: [assignment]
   Outer.@Untainted Inner unt = new Outer.@Tainted Inner() {};
 
   static class Outer {

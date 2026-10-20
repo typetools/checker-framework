@@ -79,10 +79,9 @@ public class MethodAccessNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof MethodAccessNode)) {
+    if (!(obj instanceof MethodAccessNode other)) {
       return false;
     }
-    MethodAccessNode other = (MethodAccessNode) obj;
     return getReceiver().equals(other.getReceiver()) && getMethod().equals(other.getMethod());
   }
 
@@ -98,9 +97,9 @@ public class MethodAccessNode extends Node {
   }
 
   /**
-   * Determine whether the method is static or not.
+   * Returns true if the method is static.
    *
-   * @return whether the method is static or not
+   * @return true if the method is static
    */
   public boolean isStatic() {
     return ElementUtils.isStatic(getMethod());

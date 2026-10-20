@@ -15,7 +15,7 @@ class SimpleSocketField {
 
   void test() {
     @MustCall("close") Socket s = mySock;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @MustCall({}) Socket s1 = mySock;
   }
 }

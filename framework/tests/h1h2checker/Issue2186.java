@@ -7,10 +7,10 @@ import org.checkerframework.framework.testchecker.h1h2checker.quals.H1S1;
 
 @SuppressWarnings("anno.on.irrelevant")
 @H1S1 class Issue2186 {
-  // :: error: (super.invocation) :: warning: (inconsistent.constructor.type)
+  // :: error: [super.invocation] :: warning: [inconsistent.constructor.type]
   Issue2186() {}
 
-  // :: error: (super.invocation) :: warning: (inconsistent.constructor.type)
+  // :: error: [super.invocation] :: warning: [inconsistent.constructor.type]
   @H1Bot Issue2186(int x) {}
 
   void test() {
@@ -20,7 +20,7 @@ import org.checkerframework.framework.testchecker.h1h2checker.quals.H1S1;
 
   void testDiamond() {
     @H1Bot ArrayList<@H1Bot String> list =
-        // :: warning: (cast.unsafe.constructor.invocation)
+        // :: warning: [cast.unsafe.constructor.invocation]
         new @H1Bot ArrayList<@H1Bot String>();
   }
 }

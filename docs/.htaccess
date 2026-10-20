@@ -1,0 +1,51 @@
+# This file is copied to
+#  /cse/www2/types/checker-framework/.htaccess
+# on each release.
+# DO NOT EDIT the latter or your edits will be overwritten!
+
+# Some redirects are temporary and can be eventually removed.
+
+Options +FollowSymlinks
+
+# Redirect /specification/java-annotation-design.html /jsr308/specification/java-annotation-design.html
+# Redirect /dev/specification/java-annotation-design.html /dev/jsr308/specification/java-annotation-design.html
+# Don't remove this redirect.  The old URL
+#   http://types.cs.washington.edu/checker-framework/current/checkers-manual.html
+# is referenced from
+#   https://blogs.oracle.com/java-platform-group/entry/java_8_s_new_type
+# and perhaps from elsewhere.
+Redirect /checker-framework/current/checkers-manual.html /checker-framework/manual/
+
+# These results show up high in this Google search:
+# https://www.google.com/search?q=site%3Acheckerframework.org+releases+%22checkers-manual%22
+# Eventually, maybe redirect everything.
+Redirect /releases/0.5.1/checkers-manual.html /manual/
+Redirect /releases/0.6.1/checkers-manual.pdf /manual/
+Redirect /releases/0.6.3/checkers-manual.html /manual/
+Redirect /releases/0.6/checkers-manual.html /manual/
+Redirect /releases/0.7.6/checkers-manual.pdf /manual/
+Redirect /releases/0.7.8/checkers-manual.html /manual/
+Redirect /releases/0.7/checkers-manual.html /manual/
+Redirect /releases/0.8.1/checkers-manual.pdf /manual/
+Redirect /releases/0.8.2/checkers-manual.html /manual/
+Redirect /releases/0.8.4/checkers-manual.html /manual/
+Redirect /releases/0.8.4/checkers-manual.pdf /manual/
+Redirect /releases/0.8.8/checkers-manual.html /manual/
+Redirect /releases/0.8/checkers-manual.html /manual/
+Redirect /releases/0.9.3/checkers-manual.html /manual/
+Redirect /releases/0.9.3/checkers-manual.pdf /manual/
+Redirect /releases/0.9.6/checkers-manual.pdf /manual/
+Redirect /releases/0.9.9/checkers-manual.html /manual/
+Redirect /releases/1.0.0/checkers-manual.html /manual/
+Redirect /releases/1.0.9/checkers-manual.html /manual/
+Redirect /releases/1.1.1/checkers-manual.html /manual/
+Redirect /releases/1.1.2/checkers-manual.html /manual/
+Redirect /releases/1.4.0-b1/current/checkers-manual.html /manual/
+Redirect /releases/1.4.0-b1/current/checkers-manual.pdf /manual/
+Redirect /releases/dev-20080314/checkers-manual.html /manual/
+
+
+# We could add a similar rule for every other type system.
+# Redirect /checker-framework/current/api/checkers/nullness/quals/ /checker-framework/current/api/org/checkerframework/checker/nullness/qual/
+
+Redirect /javari/java-annotation-design.pdf /jsr308/specification/java-annotation-design.pdf

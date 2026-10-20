@@ -3,6 +3,7 @@
 // guarantee that your program will not throw a NullPointerException.
 
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import java.util.function.Supplier;
 
@@ -14,6 +15,12 @@ public class Objects {
     public static <T> T requireNonNull(@Nullable T obj);
     @EnsuresNonNull("#1")
     public static <T> T requireNonNull(@Nullable T obj, String message);
+    @EnsuresNonNull("#1")
+    public static <T> T requireNonNull(@Nullable T obj, Supplier<String> messageSupplier);
+    @EnsuresNonNullIf(expression="#1", result=true)
+    public static boolean nonNull(@Nullable Object obj);
+    @EnsuresNonNullIf(expression="#1", result=false)
+    public static boolean isNull(@Nullable Object obj);
 }
 
 

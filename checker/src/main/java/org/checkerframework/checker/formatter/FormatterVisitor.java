@@ -42,15 +42,15 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
   }
 
   @Override
-  public void processMethodTree(MethodTree tree) {
+  public void processMethodTree(String className, MethodTree tree) {
     ExecutableElement methodElement = TreeUtils.elementFromDeclaration(tree);
     if (atypeFactory.getDeclAnnotation(methodElement, FormatMethod.class) != null) {
-      int formatStringIndex = FormatterVisitor.formatStringIndex(methodElement);
+      int formatStringIndex = formatStringIndex(methodElement);
       if (formatStringIndex == -1) {
         checker.reportError(tree, "format.method", methodElement.getSimpleName());
       }
     }
-    super.processMethodTree(tree);
+    super.processMethodTree(className, tree);
   }
 
   @Override
@@ -127,10 +127,10 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             if (!isWrappedFormatCall(fc, enclosingMethod)) {
               ftu.warning(invc, "format.indirect.arguments");
             }
-            // TODO:  If it is explict array construction, such as "new Object[] {
-            // ... }", then we could treat it like the VARARGS case, analyzing each
-            // argument.  "new array" is probably rare, in the varargs position.
-            // fall through
+          // TODO:  If it is explicit array construction, such as "new Object[] {
+          // ... }", then we could treat it like the VARARGS case, analyzing each
+          // argument.  "new array" is probably rare, in the varargs position.
+          // fall through
           case NULLARRAY:
             for (ConversionCategory cat : formatCats) {
               if (cat == ConversionCategory.NULL) {
@@ -223,11 +223,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     }
     while (paramIndex < params.size()) {
       ExpressionTree argTree = args.get(callIndex);
-      if (argTree.getKind() != Tree.Kind.IDENTIFIER) {
+      if (!(argTree instanceof IdentifierTree argIt)) {
         return false;
       }
       VariableTree param = params.get(paramIndex);
-      if (param.getName() != ((IdentifierTree) argTree).getName()) {
+      if (param.getName() != argIt.getName()) {
         return false;
       }
       paramIndex++;
@@ -243,8 +243,15 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
    * Returns the index of the format string of a method: the first formal parameter with declared
    * type String.
    *
+   * <p>This is the Formatter Checker's definition of "format string parameter". Whole-program
+   * inference needs the same notion for representations of a method other than an {@code
+   * ExecutableElement}; the private methods {@code
+   * FormatterAnnotatedTypeFactory.formatStringParameter} (for an annotation file) and {@code
+   * FormatterAnnotatedTypeFactory.formatStringParameterType} (for a JavaParser declaration) must be
+   * kept in sync with this method.
+   *
    * @param m a method
-   * @return the index of the last String formal parameter, or -1 if none
+   * @return the index of the first String formal parameter, or -1 if none
    */
   public static int formatStringIndex(ExecutableElement m) {
     List<? extends VariableElement> params = m.getParameters();
@@ -260,11 +267,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
   protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
-      Tree valueTree,
+      Tree errorLocation,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
     boolean result =
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+        super.commonAssignmentCheck(varType, valueType, errorLocation, errorKey, extraArgs);
 
     AnnotationMirror rhs = valueType.getPrimaryAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
     AnnotationMirror lhs = varType.getPrimaryAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
@@ -282,7 +289,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
 
       if (rhsArgTypes.length < lhsArgTypes.length) {
         checker.reportWarning(
-            valueTree, "format.missing.arguments", varType.toString(), valueType.toString());
+            errorLocation, "format.missing.arguments", varType.toString(), valueType.toString());
         result = false;
       }
     }

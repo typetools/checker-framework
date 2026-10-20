@@ -15,8 +15,9 @@ public interface BackwardAnalysis<
     extends Analysis<V, S, T> {
 
   /**
-   * Get the output store at the entry block of a given control flow graph. For a backward analysis,
-   * the output store contains the analyzed flow information from the exit block to the entry block.
+   * Returns the output store at the entry block of a given control flow graph. For a backward
+   * analysis, the output store contains the analyzed flow information from the exit block to the
+   * entry block.
    *
    * @return the output store at the entry block of a given control flow graph
    */

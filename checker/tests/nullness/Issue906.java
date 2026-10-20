@@ -6,7 +6,7 @@
 public class Issue906 {
   @SuppressWarnings("unchecked")
   public <B, A extends B> void start(A a, Class<B> cb) {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     Class<? extends A> c = (Class<? extends A>) a.getClass();
     x(a, c);
   }

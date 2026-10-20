@@ -35,9 +35,6 @@ import org.checkerframework.framework.source.SupportedOptions;
 })
 public class MustCallChecker extends BaseTypeChecker {
 
-  /** Creates a MustCallChecker. */
-  public MustCallChecker() {}
-
   /**
    * Disables @CreatesMustCallFor support. Not of interest to most users. Not documented in the
    * manual.
@@ -61,7 +58,7 @@ public class MustCallChecker extends BaseTypeChecker {
    * errors that the JVM can issue on any statement, and errors that can be prevented by running
    * some other CF checker.
    */
-  public static final SetOfTypes DEFAULT_IGNORED_EXCEPTIONS =
+  private static final SetOfTypes DEFAULT_IGNORED_EXCEPTIONS =
       SetOfTypes.anyOfTheseNames(
           ImmutableSet.of(
               // Any method call has a CFG edge for Throwable/RuntimeException/Error
@@ -102,13 +99,13 @@ public class MustCallChecker extends BaseTypeChecker {
    * A pattern that matches one or more consecutive commas, optionally preceded and followed by
    * whitespace.
    */
-  public static final Pattern COMMAS = Pattern.compile("\\s*(?:" + Pattern.quote(",") + "\\s*)+");
+  private static final Pattern COMMAS = Pattern.compile("\\s*(?:" + Pattern.quote(",") + "\\s*)+");
 
   /**
    * A pattern that matches an exception specifier for the {@link #IGNORED_EXCEPTIONS} option: an
    * optional "=" followed by a qualified name. The whole thing can be padded with whitespace.
    */
-  public static final Pattern EXCEPTION_SPECIFIER =
+  private static final Pattern EXCEPTION_SPECIFIER =
       Pattern.compile(
           "^\\s*" + "(" + Pattern.quote("=") + "\\s*" + ")?" + "(\\w+(?:\\.\\w+)*)" + "\\s*$");
 
@@ -121,7 +118,7 @@ public class MustCallChecker extends BaseTypeChecker {
   private @MonotonicNonNull SetOfTypes ignoredExceptions = null;
 
   /**
-   * Get the set of exceptions that should be ignored. This set comes from the {@link
+   * Returns the set of exceptions that should be ignored. This set comes from the {@link
    * #IGNORED_EXCEPTIONS} option if it was provided, or {@link #DEFAULT_IGNORED_EXCEPTIONS} if not.
    *
    * @return the set of exceptions to ignore

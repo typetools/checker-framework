@@ -245,7 +245,6 @@ public class RequireJavadoc {
       for (Path javaFile : javaFiles) {
         @SuppressWarnings("nullness:assignment") // the file is not "/", so getParent() is non-null
         @NonNull Path javaFileParent = javaFile.getParent();
-        // Java 11 has Path.of() instead of creating a new File.
         Path packageInfo = javaFileParent.resolve(new File("package-info.java").toPath());
         if (!javaFiles.contains(packageInfo)) {
           missingPackageInfoFiles.add(packageInfo);

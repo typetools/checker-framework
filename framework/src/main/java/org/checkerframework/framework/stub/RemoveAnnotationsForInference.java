@@ -44,11 +44,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.util.JavaParserUtil;
+import org.checkerframework.framework.stubifier.JavaStubifier;
+import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.ArraysPlume;
-import org.plumelib.util.CollectionsPlume;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.ArraysP;
+import org.plumelib.util.CollectionsP;
 
 /**
  * Process Java source files to remove annotations that ought to be inferred.
@@ -78,7 +78,7 @@ import org.plumelib.util.StringsPlume;
  * -Alint:cast} (or {@code -Alint:all} which implies it) is passed to javac. You can suppress the
  * warning by passing {@code -Alint:-cast} to javac.
  */
-public class RemoveAnnotationsForInference {
+public final class RemoveAnnotationsForInference {
 
   /**
    * Do not instantiate. This is a standalone program whose entry point is {@link #main(String[])}.
@@ -102,9 +102,9 @@ public class RemoveAnnotationsForInference {
    * @param args command-line arguments: directories to process
    */
   public static void main(String[] args) {
-    // TODO: using plume-lib's "Options" project here would be better, but would add a dependency to
-    // the whole Checker Framework, which is undesirable. Move this program elsewhere (e.g., to a
-    // plume-lib project)?
+    // TODO: using plume-lib's "Options" project here would be better, but would add a
+    // dependency to the whole Checker Framework, which is undesirable. Move this program
+    // elsewhere (e.g., to a plume-lib project)?
     if (args[0].contentEquals("-keepFile")) {
       if (args.length < 2) {
         System.err.println(
@@ -134,7 +134,7 @@ public class RemoveAnnotationsForInference {
         }
       }
 
-      args = ArraysPlume.subarray(args, 2, args.length - 2);
+      args = ArraysP.subarray(args, 2, args.length - 2);
     }
     if (args.length < 1) {
       System.err.println("Usage: provide one or more directory names to process");
@@ -179,7 +179,7 @@ public class RemoveAnnotationsForInference {
     CollectionStrategy strategy = new ParserCollectionStrategy();
     // Required to include directories that contain a module-info.java, which don't parse by
     // default.
-    strategy.getParserConfiguration().setLanguageLevel(JavaParserUtil.DEFAULT_LANGUAGE_LEVEL);
+    strategy.getParserConfiguration().setLanguageLevel(StaticJavaParserUtil.DEFAULT_LANGUAGE_LEVEL);
     ProjectRoot projectRoot = strategy.collect(root);
 
     for (SourceRoot sourceRoot : projectRoot.getSourceRoots()) {
@@ -195,9 +195,12 @@ public class RemoveAnnotationsForInference {
    * Callback to process each Java file; see the {@link RemoveAnnotationsForInference class
    * documentation} for details.
    */
-  private static class RemoveAnnotationsCallback implements SourceRoot.Callback {
+  private static final class RemoveAnnotationsCallback implements SourceRoot.Callback {
     /** The visitor instance. */
     private final RemoveAnnotationsVisitor rav = new RemoveAnnotationsVisitor();
+
+    /** Creates a new RemoveAnnotationsCallback. */
+    RemoveAnnotationsCallback() {}
 
     @Override
     public Result process(Path localPath, Path absolutePath, ParseResult<CompilationUnit> result) {
@@ -289,7 +292,7 @@ public class RemoveAnnotationsForInference {
    * @param newLine the new line for index {@code lineno}
    */
   static void replaceLine(List<String> lines, int lineno, String newLine) {
-    if (StringsPlume.isBlank(newLine)) {
+    if (newLine.isBlank()) {
       lines.remove(lineno);
     } else {
       lines.set(lineno, newLine);
@@ -303,8 +306,11 @@ public class RemoveAnnotationsForInference {
    * <p>The annotations will be removed from the source code by the {@link #removeAnnotations}
    * method.
    */
-  private static class RemoveAnnotationsVisitor
+  private static final class RemoveAnnotationsVisitor
       extends GenericListVisitorAdapter<AnnotationExpr, Void> {
+
+    /** Creates a new RemoveAnnotationsVisitor. */
+    RemoveAnnotationsVisitor() {}
 
     /**
      * Returns annotations that should be removed from source code.
@@ -494,8 +500,7 @@ public class RemoveAnnotationsForInference {
       return false;
     }
     List<String> checkerNames =
-        CollectionsPlume.mapList(
-            RemoveAnnotationsForInference::checkerName, suppressWarningsStrings);
+        CollectionsP.mapList(RemoveAnnotationsForInference::checkerName, suppressWarningsStrings);
     // "allcheckers" suppresses all warnings.
     if (checkerNames.contains("allcheckers")) {
       return true;
@@ -527,14 +532,14 @@ public class RemoveAnnotationsForInference {
     if (name.equals("SuppressWarnings") || name.equals("java.lang.SuppressWarnings")) {
       if (n instanceof MarkerAnnotationExpr) {
         return Collections.emptyList();
-      } else if (n instanceof NormalAnnotationExpr) {
-        NodeList<MemberValuePair> pairs = ((NormalAnnotationExpr) n).getPairs();
+      } else if (n instanceof NormalAnnotationExpr nae) {
+        NodeList<MemberValuePair> pairs = nae.getPairs();
         assert pairs.size() == 1;
         MemberValuePair pair = pairs.get(0);
         assert pair.getName().asString().equals("value");
         return annotationElementStrings(pair.getValue());
-      } else if (n instanceof SingleMemberAnnotationExpr) {
-        return annotationElementStrings(((SingleMemberAnnotationExpr) n).getMemberValue());
+      } else if (n instanceof SingleMemberAnnotationExpr smae) {
+        return annotationElementStrings(smae.getMemberValue());
       } else {
         throw new BugInCF("Unexpected AnnotationExpr of type %s: %s", n.getClass(), n);
       }
@@ -562,14 +567,14 @@ public class RemoveAnnotationsForInference {
    * @return the strings expressed by {@code e}
    */
   private static @Nullable List<String> annotationElementStrings(Expression e) {
-    if (e instanceof StringLiteralExpr) {
-      return Collections.singletonList(((StringLiteralExpr) e).asString());
-    } else if (e instanceof ArrayInitializerExpr) {
-      NodeList<Expression> values = ((ArrayInitializerExpr) e).getValues();
+    if (e instanceof StringLiteralExpr sle) {
+      return Collections.singletonList(sle.asString());
+    } else if (e instanceof ArrayInitializerExpr aie) {
+      NodeList<Expression> values = aie.getValues();
       List<String> result = new ArrayList<>(values.size());
       for (Expression v : values) {
-        if (v instanceof StringLiteralExpr) {
-          result.add(((StringLiteralExpr) v).asString());
+        if (v instanceof StringLiteralExpr vsle) {
+          result.add(vsle.asString());
         } else if (v instanceof NameExpr) {
           // TODO: is it better to return null here, thus causing nothing under this
           // warning to be treated as "suppressed", or to return any keys that are string
@@ -599,11 +604,11 @@ public class RemoveAnnotationsForInference {
    * @return the part of s before the colon, or the whole thing if it contains no colon
    */
   private static String checkerName(String s) {
-    int colonPos = s.indexOf(":");
+    int colonPos = s.indexOf(':');
     if (colonPos == -1) {
       return s;
     } else {
-      return s.substring(colonPos + 1);
+      return s.substring(0, colonPos);
     }
   }
 }

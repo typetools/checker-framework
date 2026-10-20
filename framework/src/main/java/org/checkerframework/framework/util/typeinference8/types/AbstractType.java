@@ -13,14 +13,12 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -31,27 +29,27 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.IPair;
 
 /**
- * As explained in <a
- * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-18.html#jls-18.1">section 18.1</a>,
- * the JLS Chapter on type inference use the term "type" to "include type-like syntax that contains
- * inference variables". This class represents this types. Three subclasses of this class are:
+ * This class represents "types" that "include type-like syntax that contains inference variables"
+ * (see <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.1.1">JLS
+ * section 18.1.1</a>). Three subclasses of this class are:
  *
  * <ul>
  *   <li>{@link ProperType}: types that do not contain inference variables
  *   <li>{@link Variable}: inference variables
- *   <li>{@link InferenceType}: type-like syntax that contain at least one inference variable
+ *   <li>{@link InferenceType}: type-like syntax that contains at least one inference variable
  * </ul>
  */
 public abstract class AbstractType {
 
   /** The kind of {@link AbstractType}. */
   public enum Kind {
-    /** {@link ProperType},a type that contains no inference variables* */
+    /** {@link ProperType}, a type that contains no inference variables. */
     PROPER,
     /** {@link UseOfVariable}, a use of an inference variable. */
     USE_OF_VARIABLE,
@@ -69,13 +67,24 @@ public abstract class AbstractType {
   protected final AnnotatedTypeFactory typeFactory;
 
   /**
+   * True if the annotations on this type should be ignored.
+   *
+   * <p>This field applies to every qualifier hierarchy at once, even when it was set because of a
+   * primary annotation that appears in only some of the hierarchies. TODO: Make this per-hierarchy,
+   * so that the hierarchies without such a primary annotation are still compared.
+   */
+  public final boolean ignoreAnnotations;
+
+  /**
    * Creates an {@link AbstractType}.
    *
    * @param context the context object
+   * @param ignoreAnnotations true if the annotations on this type should be ignored
    */
-  protected AbstractType(Java8InferenceContext context) {
+  protected AbstractType(Java8InferenceContext context, boolean ignoreAnnotations) {
     this.context = context;
     this.typeFactory = context.typeFactory;
+    this.ignoreAnnotations = ignoreAnnotations;
   }
 
   /**
@@ -86,7 +95,7 @@ public abstract class AbstractType {
   public abstract Kind getKind();
 
   /**
-   * Return true if this type is a proper type.
+   * Returns true if this type is a proper type.
    *
    * @return true if this type is a proper type
    */
@@ -95,7 +104,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return true if this type is a use of an inference variable.
+   * Returns true if this type is a use of an inference variable.
    *
    * @return true if this type is a use of an inference variable
    */
@@ -104,7 +113,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return true if this type contains inference variables, but is not an inference variable.
+   * Returns true if this type contains inference variables, but is not an inference variable.
    *
    * @return true if this type contains inference variables, but is not an inference variable
    */
@@ -125,34 +134,50 @@ public abstract class AbstractType {
    * Creates a type using the given types.
    *
    * @param atm annotated type mirror
-   * @param type type mirror
+   * @param ignoreAnnotations true if the annotations on this type should be ignored
    * @return the new type
    */
-  public abstract AbstractType create(AnnotatedTypeMirror atm, TypeMirror type);
+  public abstract AbstractType create(AnnotatedTypeMirror atm, boolean ignoreAnnotations);
 
   /**
-   * Return the underlying Java type without inference variables.
+   * Creates types using the given types.
+   *
+   * @param atms annotated type mirrors
+   * @param ignoreAnnotations true if the annotations on this type should be ignored
+   * @return the new types
+   */
+  public final List<AbstractType> create(
+      Collection<? extends AnnotatedTypeMirror> atms, boolean ignoreAnnotations) {
+    List<AbstractType> list = new ArrayList<>(atms.size());
+    for (AnnotatedTypeMirror atm : atms) {
+      list.add(create(atm, ignoreAnnotations));
+    }
+    return list;
+  }
+
+  /**
+   * Returns the underlying Java type without inference variables.
    *
    * @return the underlying Java type without inference variables
    */
   public abstract TypeMirror getJavaType();
 
   /**
-   * Return the underlying Java type without inference variables.
+   * Returns the underlying annotated type.
    *
-   * @return the underlying Java type without inference variables
+   * @return the underlying annotated type
    */
   public abstract AnnotatedTypeMirror getAnnotatedType();
 
   /**
-   * Return a collection of all inference variables referenced by this type.
+   * Returns a collection of all inference variables referenced by this type.
    *
    * @return a collection of all inference variables referenced by this type
    */
   public abstract Collection<Variable> getInferenceVariables();
 
   /**
-   * Return a new type that is the same as this one except the variables in {@code instantiations}
+   * Returns a new type that is the same as this one except the variables in {@code instantiations}
    * have been replaced by their instantiation.
    *
    * @return a new type that is the same as this one except the variables in {@code instantiations}
@@ -161,7 +186,7 @@ public abstract class AbstractType {
   public abstract AbstractType applyInstantiations();
 
   /**
-   * Return true if this type is java.lang.Object.
+   * Returns true if this type is java.lang.Object.
    *
    * @return true if this type is java.lang.Object
    */
@@ -172,24 +197,24 @@ public abstract class AbstractType {
    * parameters. (A type parameter of a declared type, can't refer to any type being inferred, so
    * they are proper types.)
    *
-   * @return the upper bounds of the type parameter of this type
+   * <p>This implementation always returns a list. The return type is {@code @Nullable} only because
+   * {@link UseOfVariable#getTypeParameterBounds()} returns null.
+   *
+   * @return the upper bounds of the type parameters of this type
    */
-  public List<ProperType> getTypeParameterBounds() {
+  public @Nullable List<ProperType> getTypeParameterBounds() {
     TypeElement typeelem = (TypeElement) ((DeclaredType) getJavaType()).asElement();
     List<ProperType> bounds = new ArrayList<>();
     List<AnnotatedTypeParameterBounds> typeVars =
         typeFactory.typeVariablesFromUse((AnnotatedDeclaredType) getAnnotatedType(), typeelem);
-    Iterator<? extends TypeParameterElement> javaEle = typeelem.getTypeParameters().iterator();
-
     for (AnnotatedTypeParameterBounds bound : typeVars) {
-      TypeVariable typeVariable = (TypeVariable) javaEle.next().asType();
-      bounds.add(new ProperType(bound.getUpperBound(), typeVariable.getUpperBound(), context));
+      bounds.add(new ProperType(bound.getUpperBound(), context, ignoreAnnotations));
     }
     return bounds;
   }
 
   /**
-   * Return a new type that is the capture of this type.
+   * Returns a new type that is the capture of this type.
    *
    * @param context the context object
    * @return a new type that is the capture of this type
@@ -197,7 +222,7 @@ public abstract class AbstractType {
   public AbstractType capture(Java8InferenceContext context) {
     AnnotatedTypeMirror capturedType =
         context.typeFactory.applyCaptureConversion(getAnnotatedType());
-    return create(capturedType, capturedType.getUnderlyingType());
+    return create(capturedType, ignoreAnnotations);
   }
 
   /**
@@ -208,7 +233,7 @@ public abstract class AbstractType {
    * @return super type of this type that is the same class as {@code superType} or null if one
    *     doesn't exist
    */
-  public AbstractType asSuper(TypeMirror superType) {
+  public @Nullable AbstractType asSuper(TypeMirror superType) {
     TypeMirror typeJava = getJavaType();
     if (typeJava.getKind() == TypeKind.WILDCARD) {
       typeJava = ((WildcardType) typeJava).getExtendsBound();
@@ -228,7 +253,7 @@ public abstract class AbstractType {
         AnnotatedTypeMirror.createType(superType, typeFactory, type.isDeclaration());
     typeFactory.initializeAtm(superAnnotatedType);
     AnnotatedTypeMirror asSuper = AnnotatedTypes.asSuper(typeFactory, type, superAnnotatedType);
-    return create(asSuper, asSuper.getUnderlyingType());
+    return create(asSuper, ignoreAnnotations);
   }
 
   /**
@@ -236,7 +261,16 @@ public abstract class AbstractType {
    * function type. Otherwise, {@code functionType} is null. Initialized by {@link
    * #getFunctionType()}.
    */
-  private IPair<AnnotatedExecutableType, ExecutableType> functionType = null;
+  protected @Nullable AnnotatedExecutableType functionType = null;
+
+  /**
+   * Returns true if this {@link AbstractType} is a functional interface type.
+   *
+   * @return true if this {@link AbstractType} is a functional interface type
+   */
+  public boolean isFunctionalInterface() {
+    return TypesUtils.isFunctionalInterface(getJavaType(), context.env);
+  }
 
   /**
    * If this {@link AbstractType} is a functional interface type, then its function type is
@@ -245,39 +279,79 @@ public abstract class AbstractType {
    * @return this {@link AbstractType} is a functional interface type, then its function type is
    *     returned; otherwise, returns null
    */
-  IPair<AnnotatedExecutableType, ExecutableType> getFunctionType() {
-    if (functionType == null) {
+  @Nullable AnnotatedExecutableType getFunctionType() {
+    if (functionType == null && TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
       ExecutableElement element = TypesUtils.findFunction(getJavaType(), context.env);
-      AnnotatedDeclaredType groundType =
-          makeGround((AnnotatedDeclaredType) getAnnotatedType(), typeFactory);
-      AnnotatedExecutableType aet =
+      AnnotatedTypeMirror groundType = makeGroundTargetType(getAnnotatedType(), typeFactory);
+      functionType =
           AnnotatedTypes.asMemberOf(context.modelTypes, typeFactory, groundType, element);
-      functionType = IPair.of(aet, aet.getUnderlyingType());
     }
     return functionType;
   }
 
   /**
-   * If this type is a functional interface, then this method returns the return type of the
-   * function type of that functional interface. Otherwise, returns null.
+   * Returns the ground target type of {@code type}, which is a functional interface type. For a raw
+   * {@link AnnotatedDeclaredType}, this is its erasure, so that its function type is erased too.
+   * For any other {@link AnnotatedDeclaredType}, this is {@link #makeGround(AnnotatedDeclaredType,
+   * AnnotatedTypeFactory)}. For an intersection type that induces a notional functional interface
+   * (<a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9">JLS section
+   * 9.9</a>), each bound is made ground; this is the annotated-type analog of the notional
+   * interface that {@code TypesUtils.findFunction} creates for such a type. {@code
+   * AnnotatedTypes.asMemberOf} then finds the bound that declares the function, just as javac
+   * computes the function type as a member of the intersection type.
    *
-   * @return the return type of the function type of this type or null if one doesn't exist
+   * @param type a functional interface type
+   * @param typeFactory the type factory
+   * @return the ground target type of {@code type}
    */
-  public AbstractType getFunctionTypeReturnType() {
-    if (TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
-      IPair<AnnotatedExecutableType, ExecutableType> pair = getFunctionType();
-      ExecutableType elementType = pair.second;
-      TypeMirror returnTypeJava = elementType.getReturnType();
-      if (returnTypeJava.getKind() == TypeKind.VOID) {
-        return null;
+  private static AnnotatedTypeMirror makeGroundTargetType(
+      AnnotatedTypeMirror type, AnnotatedTypeFactory typeFactory) {
+    switch (type.getKind()) {
+      case DECLARED -> {
+        AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
+        if (declaredType.isUnderlyingTypeRaw()) {
+          // JLS 9.9: "The function type of the raw type of a generic functional interface
+          // I<...> is the erasure of the function type of the generic functional interface
+          // I<...>."  Returning the erasure is enough to erase the function type, because
+          // AnnotatedTypes.asMemberOf erases a member that is accessed through a raw receiver.
+          return declaredType.getErased();
+        }
+        return makeGround(declaredType, typeFactory);
       }
+      case INTERSECTION -> {
+        AnnotatedIntersectionType intersection = ((AnnotatedIntersectionType) type).shallowCopy();
+        List<AnnotatedTypeMirror> groundBounds = new ArrayList<>(intersection.getBounds().size());
+        for (AnnotatedTypeMirror bound : intersection.getBounds()) {
+          groundBounds.add(makeGroundTargetType(bound, typeFactory));
+        }
+        intersection.setBounds(groundBounds);
+        return intersection;
+      }
+      default -> {
+        return type;
+      }
+    }
+  }
 
-      AnnotatedExecutableType aet = pair.first;
+  /**
+   * If this type is a functional interface whose function type has a non-void return type, then
+   * this method returns that return type. Otherwise, returns null.
+   *
+   * <p>Note that a null result does not distinguish between the two reasons for it: this type is
+   * not a functional interface, or the return type of its function type is void.
+   *
+   * @return the return type of the function type of this type, or null if this type is not a
+   *     functional interface or its function type returns void
+   */
+  public @Nullable AbstractType getFunctionTypeReturnType() {
+    if (isFunctionalInterface()) {
+      AnnotatedExecutableType aet = getFunctionType();
+      assert aet != null : "@AssumeAssertion(nullness): this is a functional interface";
       AnnotatedTypeMirror returnType = aet.getReturnType();
-      if (returnType.getKind() == TypeKind.VOID) {
+      if (returnType.getKind() == TypeKind.VOID || returnType.getKind() == TypeKind.NONE) {
         return null;
       }
-      return create(returnType, returnTypeJava);
+      return create(returnType, ignoreAnnotations);
     } else {
       return null;
     }
@@ -287,17 +361,18 @@ public abstract class AbstractType {
    * If this type is a functional interface, then this method returns the parameter types of the
    * function type of that functional interface. Otherwise, it returns null.
    *
+   * <p>Each call returns a new list, which the caller may modify.
+   *
    * @return the parameter types of the function type of this type or null if no function type
    *     exists
    */
-  public List<AbstractType> getFunctionTypeParameterTypes() {
-    if (TypesUtils.isFunctionalInterface(getJavaType(), context.env)) {
-      IPair<AnnotatedExecutableType, ExecutableType> pair = getFunctionType();
-      List<? extends TypeMirror> paramsTypeMirror = pair.second.getParameterTypes();
+  public @Nullable List<AbstractType> getFunctionTypeParameterTypes() {
+    if (isFunctionalInterface()) {
+      AnnotatedExecutableType functionType = getFunctionType();
+      assert functionType != null : "@AssumeAssertion(nullness): this is a functional interface";
       List<AbstractType> params = new ArrayList<>();
-      Iterator<? extends TypeMirror> iter = paramsTypeMirror.iterator();
-      for (AnnotatedTypeMirror param : pair.first.getParameterTypes()) {
-        params.add(create(param, iter.next()));
+      for (AnnotatedTypeMirror param : functionType.getParameterTypes()) {
+        params.add(create(param, ignoreAnnotations));
       }
       return params;
     } else {
@@ -307,24 +382,25 @@ public abstract class AbstractType {
 
   /**
    * Make {@code type} ground, which is basically changing any wildcards to their bounds. <a
-   * href="https://docs.oracle.com/javase/specs/jls/se11/html/jls-15.html#jls-15.27.3">JLS section
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html#jls-15.27.3">JLS section
    * 15.27.3</a>
+   *
+   * <p>This method implements the non-wildcard parameterization of <a
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9">JLS section
+   * 9.9</a>, for an {@link AnnotatedDeclaredType}. The method {@code
+   * Expression.nonWildcardParameterization} implements the same rule for an {@link AbstractType}.
    *
    * @param type a type to ground
    * @param typeFactory type factory
    * @return the ground type
    */
-  // TODO: This method is named make ground, but is actually implements non-wildcard
-  // parameterization as defined in
-  // https://docs.oracle.com/javase/specs/jls/se11/html/jls-9.html#jls-9.9
-  // https://docs.oracle.com/javase/specs/jls/se19/html/jls-15.html#jls-15.13.2
+  // TODO: Unify this method with Expression.nonWildcardParameterization.
   static AnnotatedDeclaredType makeGround(
       AnnotatedDeclaredType type, AnnotatedTypeFactory typeFactory) {
     Element e = type.getUnderlyingType().asElement();
     AnnotatedDeclaredType decl = typeFactory.getAnnotatedType((TypeElement) e);
     Iterator<AnnotatedTypeMirror> bounds = decl.getTypeArguments().iterator();
 
-    //    typeFactory.getTypeVarSubstitutor().substitute()
     Map<TypeVariable, AnnotatedTypeMirror> typeVarToTypeArg = new HashMap<>();
     for (AnnotatedTypeMirror pn : type.getTypeArguments()) {
       AnnotatedTypeVariable typeVariable = (AnnotatedTypeVariable) bounds.next();
@@ -348,7 +424,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return true if the type is a raw type.
+   * Returns true if the type is a raw type.
    *
    * @return true if the type is a raw type
    */
@@ -360,7 +436,8 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return a new type that is the same type as this one, but whose type arguments are {@code args}.
+   * Returns a new type that is the same type as this one, but whose type arguments are {@code
+   * args}.
    *
    * @param args a list of type arguments
    * @return a new type that is the same type as this one, but whose type arguments are {@code args}
@@ -385,51 +462,52 @@ public abstract class AbstractType {
     }
     newType.setTypeArguments(argTypes);
     newType.replaceAnnotations(getAnnotatedType().getPrimaryAnnotations());
-    return create(newType, newTypeJava);
+    return create(newType, ignoreAnnotations);
   }
 
   /**
-   * Whether the proper type is a parameterized class or interface type, or an inner class type of a
-   * parameterized class or interface type (directly or indirectly)
+   * Returns true if this type is a parameterized class or interface type, an inner class type of a
+   * parameterized class or interface type (directly or indirectly), or a raw type.
    *
-   * @return whether T is a parameterized type
+   * @return true if this type is a parameterized type or a raw type
    */
+  // A raw type is not a parameterized type as JLS 4.5 defines the term, so this method is more
+  // permissive than the "parameterized type" of JLS 18.2.3 and 18.5.2.1.
+  // TODO: Determine whether those two rules should treat raw types as parameterized types, and if
+  // not, use a different predicate there.
   public boolean isParameterizedType() {
-    // TODO this isn't matching the JavaDoc.
     return ((Type) getJavaType()).isParameterized() || ((Type) getJavaType()).isRaw();
   }
 
   /**
-   * Return the most specific array type that is a super type of this type or null if one doesn't
+   * Returns the most specific array type that is a super type of this type or null if one doesn't
    * exist.
    *
    * @return the most specific array type that is a super type of this type or null if one doesn't
    *     exist
    */
-  public AbstractType getMostSpecificArrayType() {
+  public @Nullable AbstractType getMostSpecificArrayType() {
     if (getTypeKind() == TypeKind.ARRAY) {
       return this;
     } else if (TypesUtils.isObject(getJavaType())) {
       return null;
     } else {
       AnnotatedTypeMirror msat = mostSpecificArrayType(getAnnotatedType());
-      TypeMirror typeMirror =
-          TypesUtils.getMostSpecificArrayType(getJavaType(), context.modelTypes);
       if (msat != null) {
-        return create(msat, typeMirror);
+        return create(msat, ignoreAnnotations);
       }
       return null;
     }
   }
 
   /**
-   * Return the most specific array type, that is the first super type of {@code type} that is not
-   * an array.
+   * Returns the most specific array type, that is the first super type of {@code type} that is an
+   * array.
    *
    * @param type annotated type mirror
    * @return the first supertype of {@code type} that is an array
    */
-  private static AnnotatedTypeMirror mostSpecificArrayType(AnnotatedTypeMirror type) {
+  private static @Nullable AnnotatedTypeMirror mostSpecificArrayType(AnnotatedTypeMirror type) {
     if (type.getKind() == TypeKind.ARRAY) {
       return type;
     } else if (TypesUtils.isObject(type.getUnderlyingType())) {
@@ -446,7 +524,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return true if this type is a primitive array.
+   * Returns true if this type is a primitive array.
    *
    * @return true if this type is a primitive array
    */
@@ -456,45 +534,37 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return assuming type is an intersection type, this method returns the bounds in this type.
+   * Returns assuming type is an intersection type, this method returns the bounds in this type.
    *
    * @return assuming type is an intersection type, this method returns the bounds in this type
    */
   public List<AbstractType> getIntersectionBounds() {
-    List<? extends TypeMirror> boundsJava = ((IntersectionType) getJavaType()).getBounds();
-    Iterator<? extends TypeMirror> iter = boundsJava.iterator();
-    List<AbstractType> bounds = new ArrayList<>();
-    for (AnnotatedTypeMirror bound :
-        ((AnnotatedIntersectionType) getAnnotatedType()).directSupertypes()) {
-      bounds.add(create(bound, iter.next()));
-    }
-    return bounds;
+    return create(getAnnotatedType().directSupertypes(), ignoreAnnotations);
   }
 
   /**
-   * Return assuming this type is a type variable, this method returns the upper bound of this type.
+   * Returns assuming this type is a type variable, this method returns the upper bound of this
+   * type.
    *
    * @return assuming this type is a type variable, this method returns the upper bound of this type
    */
   public AbstractType getTypeVarUpperBound() {
-    TypeMirror javaUpperBound = ((TypeVariable) getJavaType()).getUpperBound();
-    return create(((AnnotatedTypeVariable) getAnnotatedType()).getUpperBound(), javaUpperBound);
+    return create(((AnnotatedTypeVariable) getAnnotatedType()).getUpperBound(), ignoreAnnotations);
   }
 
   /**
-   * Return assuming this type is a type variable that has a lower bound, this method returns the
+   * Returns assuming this type is a type variable that has a lower bound, this method returns the
    * lower bound of this type.
    *
    * @return assuming this type is a type variable that has a lower bound, this method returns the
    *     lower bound of this type
    */
   public AbstractType getTypeVarLowerBound() {
-    TypeMirror lowerBound = ((TypeVariable) getJavaType()).getLowerBound();
-    return create(((AnnotatedTypeVariable) getAnnotatedType()).getLowerBound(), lowerBound);
+    return create(((AnnotatedTypeVariable) getAnnotatedType()).getLowerBound(), ignoreAnnotations);
   }
 
   /**
-   * Return true if this type is a type variable with a lower bound.
+   * Returns true if this type is a type variable with a lower bound.
    *
    * @return true if this type is a type variable with a lower bound
    */
@@ -503,10 +573,10 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return true if this type is a parameterized type whose has at least one wildcard as a type
+   * Returns true if this type is a parameterized type that has at least one wildcard as a type
    * argument.
    *
-   * @return true if this type is a parameterized type whose has at least one wildcard as a type
+   * @return true if this type is a parameterized type that has at least one wildcard as a type
    *     argument
    */
   public boolean isWildcardParameterizedType() {
@@ -514,29 +584,47 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return this type's type arguments or null if this type isn't a declared type.
+   * Returns this type's type arguments or null if this type isn't a declared type. For an inner
+   * class type such as {@code Outer<String>.Inner}, the result does not include the type arguments
+   * of the enclosing type; use {@link #getEnclosingType} to reach those.
    *
-   * @return this type's type arguments or null this type isn't a declared type
+   * @return this type's type arguments or null if this type isn't a declared type
    */
-  public List<AbstractType> getTypeArguments() {
-    if (getJavaType().getKind() != TypeKind.DECLARED) {
+  public @Nullable List<AbstractType> getTypeArguments() {
+    AnnotatedTypeMirror atm = getAnnotatedType();
+    if (atm instanceof AnnotatedDeclaredType annotatedDeclaredType) {
+      if (annotatedDeclaredType.isUnderlyingTypeRaw()) {
+        return Collections.emptyList();
+      }
+      return create(annotatedDeclaredType.getTypeArguments(), ignoreAnnotations);
+    } else {
       return null;
     }
-    if (((AnnotatedDeclaredType) getAnnotatedType()).isUnderlyingTypeRaw()) {
-      return Collections.emptyList();
-    }
-    List<? extends TypeMirror> javaTypeArgs = ((DeclaredType) getJavaType()).getTypeArguments();
-    Iterator<? extends TypeMirror> iter = javaTypeArgs.iterator();
-    List<AbstractType> list = new ArrayList<>();
-    for (AnnotatedTypeMirror typeArg :
-        ((AnnotatedDeclaredType) getAnnotatedType()).getTypeArguments()) {
-      list.add(create(typeArg, iter.next()));
-    }
-    return list;
   }
 
   /**
-   * Return true if the type is an unbound wildcard.
+   * Returns this type's enclosing type, or null if this type is not an inner class type. (A static
+   * nested class type has no enclosing type, in the sense of JLS 4.5.)
+   *
+   * <p>The type arguments of an inner class type do not include those of its enclosing type, so a
+   * client that reasons about all the type arguments that a type mentions -- as JLS 18.2.3 and
+   * 18.2.4 do -- must recurse through this method as well as through {@link #getTypeArguments}.
+   *
+   * @return this type's enclosing type, or null if this type is not an inner class type
+   */
+  public @Nullable AbstractType getEnclosingType() {
+    AnnotatedTypeMirror atm = getAnnotatedType();
+    if (atm instanceof AnnotatedDeclaredType annotatedDeclaredType) {
+      AnnotatedDeclaredType enclosing = annotatedDeclaredType.getEnclosingType();
+      if (enclosing != null) {
+        return create(enclosing, ignoreAnnotations);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns true if the type is an unbound wildcard.
    *
    * @return true if the type is an unbound wildcard
    */
@@ -545,7 +633,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return true if the type is a wildcard with an upper bound.
+   * Returns true if the type is a wildcard with an upper bound.
    *
    * @return true if the type is a wildcard with an upper bound
    */
@@ -554,7 +642,7 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return true if the type is a wildcard with a lower bound.
+   * Returns true if the type is a wildcard with a lower bound.
    *
    * @return true if the type is a wildcard with a lower bound
    */
@@ -563,55 +651,52 @@ public abstract class AbstractType {
   }
 
   /**
-   * Return if this type is a wildcard return its lower bound; otherwise, return null.
+   * Returns the lower bound of this wildcard. Must only be called on a wildcard.
    *
-   * @return if this type is a wildcard return its lower bound; otherwise, return null
+   * @return the lower bound of this wildcard type
+   * @throws BugInCF if this type is not a wildcard
    */
   public AbstractType getWildcardLowerBound() {
-    if (getJavaType().getKind() == TypeKind.WILDCARD) {
-      WildcardType wild = (WildcardType) getJavaType();
-      return create(
-          ((AnnotatedWildcardType) getAnnotatedType()).getSuperBound(), wild.getSuperBound());
+    if (getJavaType().getKind() != TypeKind.WILDCARD) {
+      throw new BugInCF("getWildcardLowerBound called on non-wildcard " + this);
     }
-    return null;
+    return create(((AnnotatedWildcardType) getAnnotatedType()).getSuperBound(), ignoreAnnotations);
   }
 
   /**
-   * Return if this type is a wildcard return its upper bound; otherwise, return null.
+   * Returns the upper bound of this wildcard. Must only be called on a wildcard. If the wildcard
+   * has no explicit upper bound, the returned type is the upper bound of the type variable to which
+   * the wildcard is bound; see {@link AnnotatedWildcardType#getExtendsBound()}.
    *
-   * @return if this type is a wildcard return its upper bound; otherwise, return null
+   * @return the upper bound of this wildcard type
+   * @throws BugInCF if this type is not a wildcard
    */
   public AbstractType getWildcardUpperBound() {
-    if (getJavaType().getKind() == TypeKind.WILDCARD) {
-      TypeMirror upperBoundJava = ((WildcardType) getJavaType()).getExtendsBound();
-      if (upperBoundJava == null) {
-        upperBoundJava = context.object.getJavaType();
-      }
-      return create(((AnnotatedWildcardType) getAnnotatedType()).getExtendsBound(), upperBoundJava);
-    } else {
-      return null;
+    if (getJavaType().getKind() != TypeKind.WILDCARD) {
+      throw new BugInCF("getWildcardUpperBound called on non-wildcard " + this);
     }
+    return create(
+        ((AnnotatedWildcardType) getAnnotatedType()).getExtendsBound(), ignoreAnnotations);
   }
 
   /**
-   * Return new type whose Java type is the erasure of this type.
+   * Returns new type whose Java type is the erasure of this type.
    *
    * @return a new type whose Java type is the erasure of this type
    */
   public AbstractType getErased() {
-    TypeMirror typeMirror = context.env.getTypeUtils().erasure(getJavaType());
-    return create(getAnnotatedType().getErased(), typeMirror);
+    return create(getAnnotatedType().getErased(), ignoreAnnotations);
   }
 
   /**
-   * Return the array component type fo this type or null if on does not exist.
+   * Returns the array component type of this type or null if one does not exist.
    *
    * @return the array component type of this type or null if one does not exist
    */
-  public final AbstractType getComponentType() {
+  public final @Nullable AbstractType getComponentType() {
     if (getJavaType().getKind() == TypeKind.ARRAY) {
-      TypeMirror javaType = ((ArrayType) getJavaType()).getComponentType();
-      return create(((AnnotatedArrayType) getAnnotatedType()).getComponentType(), javaType);
+      return create(
+          ((AnnotatedArrayType) getAnnotatedType()).getComponentType(), ignoreAnnotations);
     } else {
       return null;
     }
@@ -624,27 +709,60 @@ public abstract class AbstractType {
    */
   public abstract Set<AbstractQualifier> getQualifiers();
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+  /**
+   * Checks whether the annotations of {@code this} are a subtype of those of {@code superType},
+   * assuming that their underlying Java types have already been found to be in the required
+   * relationship. If either type is marked as having annotations that should be ignored, then the
+   * annotations are not compared.
+   *
+   * @param superType the potential supertype
+   * @return {@link ConstraintSet#TRUE} if the annotations are ignored or if the annotations of
+   *     {@code this} are a subtype of those of {@code superType}; otherwise {@link
+   *     ConstraintSet#TRUE_ANNO_FAIL}
+   */
+  protected final ConstraintSet checkAnnotationSubtype(ProperType superType) {
+    if (ignoreAnnotations || superType.ignoreAnnotations) {
+      return ConstraintSet.TRUE;
     }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
+    AnnotatedTypeMirror subATM = getAnnotatedType();
+    AnnotatedTypeMirror superATM = superType.getAnnotatedType();
+    if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
+      return ConstraintSet.TRUE;
+    } else {
+      return ConstraintSet.TRUE_ANNO_FAIL;
     }
-
-    AbstractType that = (AbstractType) o;
-
-    if (!context.equals(that.context)) {
-      return false;
-    }
-    return typeFactory.equals(that.typeFactory);
   }
 
+  // equals and hashCode are abstract so that a subclass must implement them.  A subclass that needs
+  // to compare the fields of this class can use sameInferenceProblem and inferenceProblemHashCode.
   @Override
-  public int hashCode() {
-    int result = context.hashCode();
-    result = 31 * result + typeFactory.hashCode();
-    return result;
+  public abstract boolean equals(@Nullable Object o);
+
+  @Override
+  public abstract int hashCode();
+
+  /**
+   * Returns true if {@code that} belongs to the same inference problem as this type and treats
+   * annotations the same way as this type does. This is a helper method for {@link #equals}; it
+   * says nothing about the types themselves.
+   *
+   * @param that another abstract type
+   * @return true if {@code that} belongs to the same inference problem as this type and treats
+   *     annotations the same way as this type does
+   */
+  protected final boolean sameInferenceProblem(AbstractType that) {
+    return ignoreAnnotations == that.ignoreAnnotations
+        && context.equals(that.context)
+        && typeFactory.equals(that.typeFactory);
+  }
+
+  /**
+   * Returns a hash code for the fields that {@link #sameInferenceProblem} compares. This is a
+   * helper method for {@link #hashCode}.
+   *
+   * @return a hash code for the fields that {@link #sameInferenceProblem} compares
+   */
+  protected final int inferenceProblemHashCode() {
+    return context.inferenceProblemHashCode(ignoreAnnotations);
   }
 }

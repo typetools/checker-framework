@@ -1,14 +1,19 @@
 package org.checkerframework.framework.util.typeinference8.constraint;
 
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.UseOfVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * &lt;LambdaExpression &rarr;throws T&gt;: The checked exceptions thrown by the body of the
@@ -34,26 +39,63 @@ public class CheckedExceptionConstraint extends TypeConstraint {
    * @param expression {@link com.sun.source.tree.LambdaExpressionTree} or {@link
    *     com.sun.source.tree.MemberReferenceTree} for this constraint
    * @param t a function type
-   * @param map The mapping from type variable to inference variable to use with this constraint
+   * @param map the mapping from type variable to inference variable to use with this constraint
    */
   public CheckedExceptionConstraint(ExpressionTree expression, AbstractType t, Theta map) {
-    super(t);
-    assert expression.getKind() == Tree.Kind.LAMBDA_EXPRESSION
-        || expression.getKind() == Tree.Kind.MEMBER_REFERENCE;
+    super("Checked exception for " + expression, t);
+    assert expression instanceof LambdaExpressionTree || expression instanceof MemberReferenceTree;
     this.expression = expression;
     this.map = map;
   }
 
   @Override
   public Kind getKind() {
-    return expression.getKind() == Tree.Kind.LAMBDA_EXPRESSION
+    return expression instanceof LambdaExpressionTree
         ? Kind.LAMBDA_EXCEPTION
         : Kind.METHOD_REF_EXCEPTION;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>The input variables of a checked exception constraint are those of the corresponding
+   * expression constraint, plus the inference variables mentioned by the function type's return
+   * type.
+   */
   @Override
   public List<Variable> getInputVariables() {
-    return getInputVariablesForExpression(expression, getT());
+    if (T.isUseOfVariable()) {
+      return Collections.singletonList(((UseOfVariable) T).getVariable());
+    }
+
+    List<Variable> inputs = new ArrayList<>();
+    if (getKind() == Kind.LAMBDA_EXCEPTION) {
+      if (TreeUtils.isImplicitlyTypedLambda((LambdaExpressionTree) expression)) {
+        List<Variable> paramVariables = functionTypeParameterVariables();
+        if (paramVariables == null) {
+          // T is not a function type.
+          return Collections.emptyList();
+        }
+        inputs.addAll(paramVariables);
+      }
+    } else { // getKind() == Kind.METHOD_REF_EXCEPTION
+      if (TreeUtils.isExactMethodReference((MemberReferenceTree) expression)) {
+        return Collections.emptyList();
+      }
+      List<Variable> paramVariables = functionTypeParameterVariables();
+      if (paramVariables == null) {
+        // T is not a function type.
+        return Collections.emptyList();
+      }
+      inputs.addAll(paramVariables);
+    }
+
+    AbstractType R = this.T.getFunctionTypeReturnType();
+    if (R != null) {
+      // R is null if the function type's return type is void.
+      inputs.addAll(R.getInferenceVariables());
+    }
+    return inputs;
   }
 
   @Override
@@ -71,7 +113,7 @@ public class CheckedExceptionConstraint extends TypeConstraint {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }
@@ -89,8 +131,6 @@ public class CheckedExceptionConstraint extends TypeConstraint {
 
   @Override
   public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + (expression != null ? expression.hashCode() : 0);
-    return result;
+    return Objects.hash(super.hashCode(), expression);
   }
 }

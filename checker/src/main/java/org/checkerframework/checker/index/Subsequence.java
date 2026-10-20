@@ -1,6 +1,9 @@
 package org.checkerframework.checker.index;
 
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
@@ -8,14 +11,14 @@ import org.checkerframework.checker.index.qual.HasSubsequence;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.dataflow.expression.JavaExpressionParseUtil;
 import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Holds information from {@link HasSubsequence} annotations. */
-public class Subsequence {
+public final class Subsequence {
 
   /** Name of the Subsequence. */
   public final String array;
@@ -46,9 +49,9 @@ public class Subsequence {
   public static @Nullable Subsequence getSubsequenceFromTree(
       Tree varTree, BaseAnnotatedTypeFactoryForIndexChecker factory) {
 
-    if (!(varTree.getKind() == Tree.Kind.IDENTIFIER
-        || varTree.getKind() == Tree.Kind.MEMBER_SELECT
-        || varTree.getKind() == Tree.Kind.VARIABLE)) {
+    if (!(varTree instanceof IdentifierTree
+        || varTree instanceof MemberSelectTree
+        || varTree instanceof VariableTree)) {
       return null;
     }
 
@@ -86,11 +89,10 @@ public class Subsequence {
    */
   public static @Nullable Subsequence getSubsequenceFromReceiver(
       JavaExpression expr, BaseAnnotatedTypeFactoryForIndexChecker factory) {
-    if (!(expr instanceof FieldAccess)) {
+    if (!(expr instanceof FieldAccess fa)) {
       return null;
     }
 
-    FieldAccess fa = (FieldAccess) expr;
     VariableElement element = fa.getField();
     AnnotationMirror hasSub = factory.getDeclAnnotation(element, HasSubsequence.class);
     if (hasSub == null) {
@@ -143,21 +145,21 @@ public class Subsequence {
    */
   public static String negateString(String s) {
     String original = s;
-    String result = "";
+    StringBuilder result = new StringBuilder(original.length() + 1);
     if (!original.startsWith("-")) {
-      result += '-';
+      result.append('-');
     }
     for (int i = 0; i < original.length(); i++) {
       char c = original.charAt(i);
       if (c == '-') {
-        result += '+';
+        result.append('+');
       } else if (c == '+') {
-        result += '-';
+        result.append('-');
       } else {
-        result += c;
+        result.append(c);
       }
     }
-    return result;
+    return result.toString();
   }
 
   @Override

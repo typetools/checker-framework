@@ -33,6 +33,7 @@ import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Blo
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.MethodExitKind;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.Obligation;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer.ResourceAlias;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.common.wholeprograminference.WholeProgramInference;
@@ -58,7 +59,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * This class implements the annotation inference algorithm for the Resource Leak Checker. It infers
@@ -69,9 +70,9 @@ import org.plumelib.util.CollectionsPlume;
  *
  * <p>Each instance of this class corresponds to a single control flow graph (CFG), typically
  * representing a method. The entry method of this class is {@link
- * #runMustCallInference(ResourceLeakAnnotatedTypeFactory, ControlFlowGraph,
+ * #runMustCallInference(RLCCalledMethodsAnnotatedTypeFactory, ControlFlowGraph,
  * MustCallConsistencyAnalyzer)}, invoked from the {@link
- * ResourceLeakAnnotatedTypeFactory#postAnalyze} method when Whole Program Inference is enabled.
+ * RLCCalledMethodsAnnotatedTypeFactory#postAnalyze} method when Whole Program Inference is enabled.
  *
  * <p>The algorithm determines if the @MustCall obligation of a field is satisfied along some path
  * leading to the regular exit point of the method. If the obligation is satisfied, the algorithm
@@ -85,10 +86,6 @@ import org.plumelib.util.CollectionsPlume;
  *
  * <p>See {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC} for an explanation of the meaning of the
  * flags {@code -Ainfer} and {@code -AenableWpiForRlc}.
- *
- * @see <a
- *     href="https://checkerframework.org/manual/#resource-leak-checker-inference-algo">Automatic
- *     Inference of Resource Leak Specifications</a>
  */
 public class MustCallInference {
 
@@ -120,7 +117,7 @@ public class MustCallInference {
   /**
    * The type factory for the Resource Leak Checker, which is used to access the Must Call Checker.
    */
-  private final ResourceLeakAnnotatedTypeFactory resourceLeakAtf;
+  private final RLCCalledMethodsAnnotatedTypeFactory resourceLeakAtf;
 
   /** The MustCallConsistencyAnalyzer. */
   private final MustCallConsistencyAnalyzer mcca;
@@ -172,7 +169,7 @@ public class MustCallInference {
    * @param mcca the MustCallConsistencyAnalyzer
    */
   /*package-private*/ MustCallInference(
-      ResourceLeakAnnotatedTypeFactory resourceLeakAtf,
+      RLCCalledMethodsAnnotatedTypeFactory resourceLeakAtf,
       ControlFlowGraph cfg,
       MustCallConsistencyAnalyzer mcca) {
     this.resourceLeakAtf = resourceLeakAtf;
@@ -198,15 +195,15 @@ public class MustCallInference {
 
   /**
    * Creates a MustCallInference instance and runs the inference algorithm. This method is called by
-   * the {@link ResourceLeakAnnotatedTypeFactory#postAnalyze} method if Whole Program Inference is
-   * enabled.
+   * the {@link RLCCalledMethodsAnnotatedTypeFactory#postAnalyze} method if Whole Program Inference
+   * is enabled.
    *
    * @param resourceLeakAtf the type factory
    * @param cfg the control flow graph of the method to check
    * @param mcca the MustCallConsistencyAnalyzer
    */
-  /*package-private*/ static void runMustCallInference(
-      ResourceLeakAnnotatedTypeFactory resourceLeakAtf,
+  public static void runMustCallInference(
+      RLCCalledMethodsAnnotatedTypeFactory resourceLeakAtf,
       ControlFlowGraph cfg,
       MustCallConsistencyAnalyzer mcca) {
     MustCallInference mustCallInferenceLogic = new MustCallInference(resourceLeakAtf, cfg, mcca);
@@ -248,17 +245,17 @@ public class MustCallInference {
         // before the checking phase. However, calling
         // updateObligationsWithInvocationResult() will not have any side effects on the
         // outcome of the Resource Leak Checker. This is because the inference occurs within
-        // the postAnalyze method of the ResourceLeakAnnotatedTypeFactory, once the
+        // the postAnalyze method of the RLCCalledMethodsAnnotatedTypeFactory, once the
         // consistency analyzer has completed its process.
         if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
           if (mcca.shouldTrackInvocationResult(obligations, node, true)) {
             mcca.updateObligationsWithInvocationResult(obligations, node);
           }
           inferOwningFromInvocation(obligations, node);
-        } else if (node instanceof AssignmentNode) {
-          analyzeAssignmentNode(obligations, (AssignmentNode) node);
-        } else if (node instanceof ReturnNode) {
-          analyzeReturnNode(obligations, (ReturnNode) node);
+        } else if (node instanceof AssignmentNode an) {
+          analyzeAssignmentNode(obligations, an);
+        } else if (node instanceof ReturnNode rn) {
+          analyzeReturnNode(obligations, rn);
         }
       }
 
@@ -393,7 +390,7 @@ public class MustCallInference {
    * @return true if the field is an owning candidate, false otherwise
    */
   private boolean isFieldOwningCandidate(
-      ResourceLeakAnnotatedTypeFactory resourceLeakAtf, Element field) {
+      RLCCalledMethodsAnnotatedTypeFactory resourceLeakAtf, Element field) {
     AnnotationMirror mustCallAnnotation = resourceLeakAtf.getMustCallAnnotation(field);
     if (mustCallAnnotation == null) {
       // Indicates @MustCallUnknown. We want to  conservatively avoid inferring an @Owning
@@ -459,11 +456,10 @@ public class MustCallInference {
     // Use the temporary variable for the rhs if it exists.
     Node rhs = mcca.removeCastsAndGetTmpVarIfPresent(assignmentNode.getExpression());
 
-    if (!(rhs instanceof LocalVariableNode)) {
+    if (!(rhs instanceof LocalVariableNode rhsLvn)) {
       return;
     }
-    Obligation rhsObligation =
-        MustCallConsistencyAnalyzer.getObligationForVar(obligations, (LocalVariableNode) rhs);
+    Obligation rhsObligation = MustCallConsistencyAnalyzer.getObligationForVar(obligations, rhsLvn);
     if (rhsObligation == null) {
       return;
     }
@@ -494,32 +490,32 @@ public class MustCallInference {
       if (TreeUtils.isConstructor(methodTree) && getOwningFields().size() == 1) {
         // case 1 is satisfied.
         addMustCallAliasToFormalParameter(paramIndex);
-        mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
+        mcca.removeObligationsContainingVar(obligations, rhsLvn);
       } else {
         // case 2 is satisfied.
         addOwningToParam(paramIndex);
-        mcca.removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
+        mcca.removeObligationsContainingVar(obligations, rhsLvn);
       }
 
-    } else if (lhs instanceof LocalVariableNode) {
+    } else if (lhs instanceof LocalVariableNode lhsVar) {
       // Updates the set of tracked obligations. (case 4)
-      LocalVariableNode lhsVar = (LocalVariableNode) lhs;
       mcca.updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
     }
   }
 
   /**
-   * Return the (1-based) index of the method parameter that exist in the set of aliases of the
+   * Returns the (1-based) index of the method parameter that exist in the set of aliases of the
    * given {@code obligation}, if one exists; otherwise, return -1.
    *
    * @param obligation the obligation
    * @return the index of the current method parameter that exist in the set of aliases of the given
-   *     obligation, if one exists; otherwise, return -1.
+   *     obligation, if one exists; otherwise, return -1
    */
   private int getIndexOfParam(Obligation obligation) {
     Set<ResourceAlias> resourceAliases = obligation.resourceAliases;
-    List<VariableElement> paramElts =
-        CollectionsPlume.mapList(TreeUtils::elementFromDeclaration, methodTree.getParameters());
+    // `elementFromDeclaration` returns `@Nullable`; if any are actually null, that is a bug.
+    List<@Nullable VariableElement> paramElts =
+        CollectionsP.mapList(TreeUtils::elementFromDeclaration, methodTree.getParameters());
     for (ResourceAlias resourceAlias : resourceAliases) {
       int paramIndex = paramElts.indexOf(resourceAlias.element);
       if (paramIndex != -1) {
@@ -576,7 +572,7 @@ public class MustCallInference {
    * Possibly adds an InheritableMustCall annotation on the enclosing class.
    *
    * <p>Let the enclosing class be C. If C already has a non-empty MustCall type (that is written or
-   * inherited from one of its superclasses), this method preserves the exising must-call type to
+   * inherited from one of its superclasses), this method preserves the existing must-call type to
    * avoid infinite iteration. Otherwise, if the current method is not private and satisfies the
    * must-call obligations of all the owning fields in C, it adds an InheritableMustCall annotation
    * to C.
@@ -669,7 +665,7 @@ public class MustCallInference {
   }
 
   /**
-   * Checks whether the given element is a resource alias of the given node in the provided set of
+   * Returns true if the given element is a resource alias of the given node in the provided set of
    * obligations.
    *
    * @param obligations the current set of tracked Obligations
@@ -697,7 +693,7 @@ public class MustCallInference {
    * @param obligations the current set of tracked Obligations
    * @param invocation a method invocation node to check
    */
-  private void inferOwningForRecieverOrFormalParamPassedToCall(
+  private void inferOwningForReceiverOrFormalParamPassedToCall(
       Set<Obligation> obligations, MethodInvocationNode invocation) {
     Node receiver = invocation.getTarget().getReceiver();
     receiver = NodeUtils.removeCasts(receiver);
@@ -710,8 +706,7 @@ public class MustCallInference {
       // In the CFG, explicit passing of multiple arguments in the varargs position is
       // represented via an ArrayCreationNode. In this case, it checks the called methods
       // set of each argument passed in this position.
-      if (arg instanceof ArrayCreationNode) {
-        ArrayCreationNode varArgsNode = (ArrayCreationNode) arg;
+      if (arg instanceof ArrayCreationNode varArgsNode) {
         for (Node varArgNode : varArgsNode.getInitializers()) {
           inferOwningForParamOrField(obligations, invocation, varArgNode);
         }
@@ -777,12 +772,12 @@ public class MustCallInference {
    */
   private Set<ResourceAlias> getResourceAliasOfNode(Set<Obligation> obligations, Node node) {
     Node tempVar = mcca.getTempVarOrNode(node);
-    if (!(tempVar instanceof LocalVariableNode)) {
+    if (!(tempVar instanceof LocalVariableNode tempVarLvn)) {
       return Collections.emptySet();
     }
 
     Obligation argumentObligation =
-        MustCallConsistencyAnalyzer.getObligationForVar(obligations, (LocalVariableNode) tempVar);
+        MustCallConsistencyAnalyzer.getObligationForVar(obligations, tempVarLvn);
     if (argumentObligation == null) {
       return Collections.emptySet();
     }
@@ -796,7 +791,7 @@ public class MustCallInference {
    * <ul>
    *   <li>If a formal parameter is passed as an owning parameter, add an @Owning annotation to that
    *       formal parameter (see {@link #inferOwningParamsViaOwnershipTransfer}).
-   *   <li>It calls {@link #inferOwningForRecieverOrFormalParamPassedToCall} to infer @Owning
+   *   <li>It calls {@link #inferOwningForReceiverOrFormalParamPassedToCall} to infer @Owning
    *       annotations for the receiver or arguments of a call by analyzing the called-methods set
    *       after the call.
    *   <li>It calls {@link #inferMustCallAliasFromThisOrSuperCall} to infer @MustCallAlias
@@ -813,11 +808,10 @@ public class MustCallInference {
       // do not handle @EnsuresCalledMethods annotations on constructors as we have not
       // observed them in practice.
       inferOwningParamsViaOwnershipTransfer(obligations, invocation);
-    } else if (invocation instanceof MethodInvocationNode) {
-      inferMustCallAliasFromThisOrSuperCall(obligations, (MethodInvocationNode) invocation);
+    } else if (invocation instanceof MethodInvocationNode invMin) {
+      inferMustCallAliasFromThisOrSuperCall(obligations, invMin);
       inferOwningParamsViaOwnershipTransfer(obligations, invocation);
-      inferOwningForRecieverOrFormalParamPassedToCall(
-          obligations, (MethodInvocationNode) invocation);
+      inferOwningForReceiverOrFormalParamPassedToCall(obligations, invMin);
     }
   }
 
@@ -842,10 +836,13 @@ public class MustCallInference {
       }
 
       Node arg = mcca.removeCastsAndGetTmpVarIfPresent(arguments.get(i));
+      if (!(arg instanceof LocalVariableNode argLvn)) {
+        continue;
+      }
       Obligation argObligation =
-          MustCallConsistencyAnalyzer.getObligationForVar(obligations, (LocalVariableNode) arg);
+          MustCallConsistencyAnalyzer.getObligationForVar(obligations, argLvn);
       if (argObligation == null) {
-        return;
+        continue;
       }
       int index = getIndexOfParam(argObligation);
       if (index != -1) {
@@ -927,11 +924,11 @@ public class MustCallInference {
       ConditionalBlock ccur = (ConditionalBlock) cur;
       return Arrays.asList(ccur.getThenSuccessor(), ccur.getElseSuccessor());
     }
-    if (!(cur instanceof SingleSuccessorBlock)) {
+    if (!(cur instanceof SingleSuccessorBlock ssb)) {
       throw new BugInCF("Not a conditional block nor a SingleSuccessorBlock: " + cur);
     }
 
-    Block successor = ((SingleSuccessorBlock) cur).getSuccessor();
+    Block successor = ssb.getSuccessor();
     if (successor != null) {
       return Collections.singletonList(successor);
     }

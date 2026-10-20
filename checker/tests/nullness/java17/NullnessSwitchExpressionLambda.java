@@ -13,7 +13,7 @@ public class NullnessSwitchExpressionLambda {
               default -> null;
             };
     Object o = f.apply(new NullnessSwitchExpressionLambda());
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     o.toString();
   }
 }

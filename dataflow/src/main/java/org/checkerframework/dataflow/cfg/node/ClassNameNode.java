@@ -31,9 +31,13 @@ public class ClassNameNode extends Node {
   /** The parent name, if any. */
   protected final @Nullable Node parent;
 
+  /**
+   * Creates a new ClassNameNode.
+   *
+   * @param tree the tree for the new node
+   */
   public ClassNameNode(IdentifierTree tree) {
     super(TreeUtils.typeOf(tree));
-    assert tree.getKind() == Tree.Kind.IDENTIFIER;
     this.tree = tree;
     assert TreeUtils.isUseOfElement(tree) : "@AssumeAssertion(nullness): tree kind";
     Element element = TreeUtils.elementFromUse(tree);
@@ -103,10 +107,9 @@ public class ClassNameNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ClassNameNode)) {
+    if (!(obj instanceof ClassNameNode other)) {
       return false;
     }
-    ClassNameNode other = (ClassNameNode) obj;
     return Objects.equals(getParent(), other.getParent())
         && getElement().equals(other.getElement());
   }

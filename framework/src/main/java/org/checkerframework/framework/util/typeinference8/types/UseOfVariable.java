@@ -3,13 +3,16 @@ package org.checkerframework.framework.util.typeinference8.types;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.typeinference8.constraint.Constraint;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.AnnotationMirrorMap;
@@ -24,14 +27,14 @@ public class UseOfVariable extends AbstractType {
   /** The variable that this is a use of. */
   private final Variable variable;
 
-  /** Whether this use has a primary annotation. */
+  /** True if this use has a primary annotation. */
   private final boolean hasPrimaryAnno;
 
   /** The bottom annotations for each hierarchy that has a primary annotation on this use. */
-  private final Set<AnnotationMirror> bots;
+  private final AnnotationMirrorSet bots;
 
   /** The top annotations for each hierarchy that has a primary annotation on this use. */
-  private final Set<AnnotationMirror> tops;
+  private final AnnotationMirrorSet tops;
 
   /** The annotated type variable for this use. */
   private final AnnotatedTypeVariable type;
@@ -46,13 +49,15 @@ public class UseOfVariable extends AbstractType {
    * @param variable variable that this is a use of
    * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
    * @param context the context
+   * @param ignoreAnnotations true if the annotations on this type should be ignored
    */
   public UseOfVariable(
       AnnotatedTypeVariable type,
       Variable variable,
       AnnotationMirrorMap<QualifierVar> qualifierVars,
-      Java8InferenceContext context) {
-    super(context);
+      Java8InferenceContext context,
+      boolean ignoreAnnotations) {
+    super(context, ignoreAnnotations);
     QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
     this.qualifierVars = qualifierVars;
     this.variable = variable;
@@ -69,8 +74,8 @@ public class UseOfVariable extends AbstractType {
   }
 
   @Override
-  public AbstractType create(AnnotatedTypeMirror atm, TypeMirror type) {
-    return InferenceType.create(atm, type, variable.map, qualifierVars, context);
+  public AbstractType create(AnnotatedTypeMirror atm, boolean ignoreAnnotations) {
+    return InferenceType.create(atm, variable.map, qualifierVars, context, ignoreAnnotations);
   }
 
   @Override
@@ -78,8 +83,16 @@ public class UseOfVariable extends AbstractType {
     return false;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>An inference variable is not a declared type, so it has no type parameters; this
+   * implementation returns null.
+   *
+   * @return null, because this type is a use of an inference variable
+   */
   @Override
-  public List<ProperType> getTypeParameterBounds() {
+  public @Nullable List<ProperType> getTypeParameterBounds() {
     return null;
   }
 
@@ -95,7 +108,7 @@ public class UseOfVariable extends AbstractType {
 
   @Override
   public TypeVariable getJavaType() {
-    return variable.typeVariableJava;
+    return variable.typeVariable.getUnderlyingType();
   }
 
   @Override
@@ -115,8 +128,9 @@ public class UseOfVariable extends AbstractType {
 
   @Override
   public AbstractType applyInstantiations() {
-    if (this.variable.getInstantiation() != null) {
-      return this.variable.getInstantiation();
+    ProperType instantiation = this.variable.getInstantiation();
+    if (instantiation != null) {
+      return instantiation;
     }
 
     return this;
@@ -134,52 +148,60 @@ public class UseOfVariable extends AbstractType {
   /**
    * Set whether this use has a throws bound.
    *
-   * @param hasThrowsBound whether this use has a throws bound
+   * @param hasThrowsBound true if this use has a throws bound
    */
   public void setHasThrowsBound(boolean hasThrowsBound) {
     variable.getBounds().setHasThrowsBound(hasThrowsBound);
   }
 
   /**
-   * Adds a qualifier bound for this variable, is this use does not have a primary annotation.
+   * Adds a qualifier bound for this variable, if this use does not have a primary annotation.
    *
    * @param kind the kind of bound
    * @param annotations the qualifiers to add
    */
-  public void addQualifierBound(BoundKind kind, Set<AbstractQualifier> annotations) {
+  public void addQualifierBound(BoundKind kind, Set<? extends AbstractQualifier> annotations) {
     if (!hasPrimaryAnno) {
       variable.getBounds().addQualifierBound(kind, annotations);
     }
   }
 
   /**
-   * Adds a bound for this variable, is this use does not have a primary annotation.
+   * Adds a bound for this variable, if this use does not have a primary annotation.
    *
+   * @param parent the constraint whose reduction created this bound
    * @param kind the kind of bound
    * @param bound the type of the bound
    */
-  public void addBound(BoundKind kind, AbstractType bound) {
+  public void addBound(Constraint parent, BoundKind kind, AbstractType bound) {
     if (!hasPrimaryAnno) {
-      variable.getBounds().addBound(kind, bound);
+      variable.getBounds().addBound(parent, kind, bound);
     } else {
-      // If the use has a primary annotation, then add the bound but with that annotations
-      // set to bottom or top.  This makes it so that the java type is still a bound, but
-      // the qualifiers do not change the results of inference.
-      if (kind == BoundKind.LOWER) {
-        bound.getAnnotatedType().replaceAnnotations(bots);
-        variable.getBounds().addBound(kind, bound);
+      // If the use has a primary annotation, then mark the bound so that the annotations will be
+      // ignored. Also, set to bottom or top, unless the bound is a type variable. This way if all
+      // the bounds of a variable have annotations to be ignored, the instantiation of that variable
+      // is as flexible as possible.
+      AbstractType boundCopy = bound.create(bound.getAnnotatedType().deepCopy(), true);
+      // `create` may copy its argument rather than storing it (`UseOfVariable`'s constructor
+      // deep-copies, and `InferenceType`'s calls `asUse()`), so mutate the annotated type that
+      // `boundCopy` actually holds.  It is already a fresh copy, so mutating it is safe.
+      AnnotatedTypeMirror boundCopyATM = boundCopy.getAnnotatedType();
+      if (boundCopyATM.getKind() == TypeKind.TYPEVAR && kind == BoundKind.EQUAL) {
+        variable.getBounds().addBound(parent, kind, boundCopy);
+      } else if (kind == BoundKind.LOWER) {
+        boundCopyATM.replaceAnnotations(bots);
+        variable.getBounds().addBound(parent, kind, boundCopy);
       } else if (kind == BoundKind.UPPER) {
-        bound.getAnnotatedType().replaceAnnotations(tops);
-        variable.getBounds().addBound(kind, bound);
+        boundCopyATM.replaceAnnotations(tops);
+        variable.getBounds().addBound(parent, kind, boundCopy);
       } else {
-        AnnotatedTypeMirror copyATM = bound.getAnnotatedType().deepCopy();
-        AbstractType boundCopy = bound.create(copyATM, bound.getJavaType());
+        boundCopyATM.replaceAnnotations(tops);
+        variable.getBounds().addBound(parent, BoundKind.UPPER, boundCopy);
 
-        bound.getAnnotatedType().replaceAnnotations(tops);
-        variable.getBounds().addBound(BoundKind.UPPER, bound);
-
-        boundCopy.getAnnotatedType().replaceAnnotations(bots);
-        variable.getBounds().addBound(BoundKind.LOWER, boundCopy);
+        AbstractType boundCopy2 = bound.create(bound.getAnnotatedType().deepCopy(), true);
+        AnnotatedTypeMirror boundCopyATM2 = boundCopy2.getAnnotatedType();
+        boundCopyATM2.replaceAnnotations(bots);
+        variable.getBounds().addBound(parent, BoundKind.LOWER, boundCopy2);
       }
     }
   }
@@ -200,19 +222,19 @@ public class UseOfVariable extends AbstractType {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    if (!super.equals(o)) {
-      return false;
-    }
 
     UseOfVariable that = (UseOfVariable) o;
 
+    if (!sameInferenceProblem(that)) {
+      return false;
+    }
     if (hasPrimaryAnno != that.hasPrimaryAnno) {
       return false;
     }
@@ -225,18 +247,24 @@ public class UseOfVariable extends AbstractType {
     if (!tops.equals(that.tops)) {
       return false;
     }
+    // Two types with different qualifierVars have different qualifiers, as getQualifiers() shows.
+    if (!qualifierVars.equals(that.qualifierVars)) {
+      return false;
+    }
 
     return type.equals(that.type);
   }
 
   @Override
   public int hashCode() {
-    int result = super.hashCode();
-    result = 31 * result + variable.hashCode();
-    result = 31 * result + (hasPrimaryAnno ? 1 : 0);
-    result = 31 * result + bots.hashCode();
-    result = 31 * result + tops.hashCode();
-    result = 31 * result + type.hashCode();
-    return result;
+    // This is Objects.hash() expanded, to avoid allocating an array and boxing.  This method is
+    // hot: inference puts these types in hash sets and rebuilds those sets repeatedly.
+    int result = 31 + inferenceProblemHashCode();
+    result = 31 * result + Objects.hashCode(variable);
+    result = 31 * result + Boolean.hashCode(hasPrimaryAnno);
+    result = 31 * result + Objects.hashCode(bots);
+    result = 31 * result + Objects.hashCode(tops);
+    result = 31 * result + Objects.hashCode(qualifierVars);
+    return 31 * result + Objects.hashCode(type);
   }
 }

@@ -11,7 +11,7 @@ public class ValueSwitchStatementRules {
         field = 42;
         @IntVal(42) int copyField = field;
       case 2:
-        // :: error: (assignment)
+        // :: error: [assignment]
         @IntVal(300) int copyField2 = field;
     }
 

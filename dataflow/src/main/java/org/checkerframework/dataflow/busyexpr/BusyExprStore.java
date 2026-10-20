@@ -3,6 +3,8 @@ package org.checkerframework.dataflow.busyexpr;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.StringJoiner;
+import org.checkerframework.checker.modifiability.qual.Growable;
+import org.checkerframework.checker.modifiability.qual.Shrinkable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
@@ -15,7 +17,7 @@ import org.checkerframework.javacutil.BugInCF;
 public class BusyExprStore implements Store<BusyExprStore> {
 
   /** A set of busy expression abstract values. */
-  private final Set<BusyExprValue> busyExprValueSet;
+  private final @Growable @Shrinkable Set<BusyExprValue> busyExprValueSet;
 
   /**
    * Create a new BusyExprStore.
@@ -23,7 +25,7 @@ public class BusyExprStore implements Store<BusyExprStore> {
    * @param busyExprValueSet a set of busy expression abstract values. The parameter is captured and
    *     the caller should not retain an alias.
    */
-  public BusyExprStore(Set<BusyExprValue> busyExprValueSet) {
+  public BusyExprStore(@Growable @Shrinkable Set<BusyExprValue> busyExprValueSet) {
     this.busyExprValueSet = busyExprValueSet;
   }
 
@@ -43,7 +45,7 @@ public class BusyExprStore implements Store<BusyExprStore> {
   }
 
   /**
-   * Return true if the expression contains variable var. Note that {@code .equals} is used in the
+   * Returns true if the expression contains variable var. Note that {@code .equals} is used in the
    * return statement to verify value equality, as the statement decides whether the two nodes have
    * the same value, not represent the same CFG node.
    *
@@ -52,8 +54,7 @@ public class BusyExprStore implements Store<BusyExprStore> {
    * @return true if the expression contains the variable
    */
   public boolean exprContainsVariable(Node expr, Node var) {
-    if (expr instanceof BinaryOperationNode) {
-      BinaryOperationNode binaryNode = (BinaryOperationNode) expr;
+    if (expr instanceof BinaryOperationNode binaryNode) {
       return exprContainsVariable(binaryNode.getLeftOperand(), var)
           || exprContainsVariable(binaryNode.getRightOperand(), var);
     }
@@ -71,13 +72,12 @@ public class BusyExprStore implements Store<BusyExprStore> {
   }
 
   /**
-   * Add expressions to the store, add sub-expressions to the store recursively
+   * Add expressions to the store, add sub-expressions to the store recursively.
    *
    * @param e the expression to be added
    */
   public void addUseInExpression(Node e) {
-    if (e instanceof BinaryOperationNode) {
-      BinaryOperationNode binaryNode = (BinaryOperationNode) e;
+    if (e instanceof BinaryOperationNode binaryNode) {
       putBusyExpr(new BusyExprValue(binaryNode));
       // recursively add expressions
       addUseInExpression(binaryNode.getLeftOperand());
@@ -128,10 +128,9 @@ public class BusyExprStore implements Store<BusyExprStore> {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof BusyExprStore)) {
+    if (!(obj instanceof BusyExprStore other)) {
       return false;
     }
-    BusyExprStore other = (BusyExprStore) obj;
     return other.busyExprValueSet.equals(this.busyExprValueSet);
   }
 

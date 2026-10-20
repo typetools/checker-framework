@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class SwitchTest {
   public static void main(String[] args) {
-    // :: error: (switching.nullable)
+    // :: error: [switching.nullable]
     switch (getNbl()) {
       case X:
         System.out.println("X");
@@ -30,7 +30,7 @@ public class SwitchTest {
     return A.X;
   }
 
-  public static enum A {
+  public enum A {
     X
   }
 }

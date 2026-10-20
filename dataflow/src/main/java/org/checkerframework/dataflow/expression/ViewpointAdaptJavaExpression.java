@@ -7,7 +7,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * This class has methods to viewpoint-adapt {@link JavaExpression} by replacing {@link
  * ThisReference} and {@link FormalParameter} expressions with the given {@link JavaExpression}s.
  */
-public class ViewpointAdaptJavaExpression extends JavaExpressionConverter {
+public final class ViewpointAdaptJavaExpression extends JavaExpressionConverter {
 
   // Public static methods
 
@@ -62,7 +62,7 @@ public class ViewpointAdaptJavaExpression extends JavaExpressionConverter {
   /** List of arguments used to replace occurrences {@link FormalParameter}s. */
   private final @Nullable List<JavaExpression> args;
 
-  /** The expression to replace occurrences of {@link ThisReference}s. */
+  /** The expression to replace occurrences of {@link ThisReference}. */
   private final @Nullable JavaExpression thisReference;
 
   // Instance methods
