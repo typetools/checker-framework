@@ -12,7 +12,7 @@ import org.junit.runners.Parameterized.Parameters;
  * that with the ajava files in place, the errors that those annotations remove are no longer
  * issued.
  */
-@Category(AinferNullnessAjavaTest.class)
+@Category(AinferNullnessAjavaGenerationTest.class)
 public class AinferNullnessAjavaValidationTest extends AinferValidatePerDirectoryTest {
 
   /**
@@ -24,7 +24,7 @@ public class AinferNullnessAjavaValidationTest extends AinferValidatePerDirector
         NullnessChecker.class,
         "nullness",
         "ainfer-nullness/annotated",
-        AinferNullnessAjavaTest.class,
+        AinferNullnessAjavaGenerationTest.class,
         ajavaArgFromFiles(testFiles, "nullness"),
         "-Awarns");
   }

@@ -4,6 +4,9 @@ package org.checkerframework.dataflow.cfg.builder;
  * A label is used to refer to other extended nodes using a mapping from labels to extended nodes.
  * Labels get their names either from labeled statements in the source code or from internally
  * generated unique names.
+ *
+ * <p>Note that this class is deliberately public, to enable users of the dataflow library to
+ * customize CFG construction.
  */
 public class Label {
 
@@ -26,7 +29,7 @@ public class Label {
   }
 
   /**
-   * Return a new unique label name that cannot be confused with a Java source code label.
+   * Returns a new unique label name that cannot be confused with a Java source code label.
    *
    * @return a new unique label name
    */

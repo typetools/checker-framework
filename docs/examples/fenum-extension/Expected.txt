@@ -43,12 +43,12 @@ FenumDemo.java:29: error: [assignment] incompatible types in assignment.
                        ^
   found   : @Fenum("B") int
   required: @Fenum("A") int
-FenumDemo.java:32: error: [argument] incompatible argument for parameter p of fenumArg.
+FenumDemo.java:32: error: [argument] incompatible argument for parameter p of FenumDemo.fenumArg.
     fenumArg(5); // Direct use of value forbidden!
              ^
   found   : @FenumUnqualified int
   required: @Fenum("A") int
-FenumDemo.java:33: error: [argument] incompatible argument for parameter p of fenumArg.
+FenumDemo.java:33: error: [argument] incompatible argument for parameter p of FenumDemo.fenumArg.
     fenumArg(TestStatic.BCONST1); // Incompatible fenums forbidden!
                        ^
   found   : @Fenum("B") int
@@ -63,12 +63,12 @@ FenumDemo.java:37: error: [assignment] incompatible types in assignment.
                        ^
   found   : @Fenum("A") int
   required: @MyFenum int
-FenumDemo.java:40: error: [argument] incompatible argument for parameter p of myFenumArg.
+FenumDemo.java:40: error: [argument] incompatible argument for parameter p of FenumDemo.myFenumArg.
     myFenumArg(8); // Direct use of value forbidden!
                ^
   found   : @FenumUnqualified int
   required: @MyFenum int
-FenumDemo.java:41: error: [argument] incompatible argument for parameter p of myFenumArg.
+FenumDemo.java:41: error: [argument] incompatible argument for parameter p of FenumDemo.myFenumArg.
     myFenumArg(TestStatic.BCONST2); // Incompatible fenums forbidden!
                          ^
   found   : @Fenum("B") int

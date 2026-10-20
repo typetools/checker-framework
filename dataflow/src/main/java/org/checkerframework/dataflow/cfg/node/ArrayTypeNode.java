@@ -4,14 +4,13 @@ import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A node representing a array type used in an expression such as a field access.
+ * A node representing an array type used in an expression such as a field access.
  *
  * <p><em>type</em> .class
  */
@@ -45,16 +44,15 @@ public class ArrayTypeNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ArrayTypeNode)) {
+    if (!(obj instanceof ArrayTypeNode other)) {
       return false;
     }
-    ArrayTypeNode other = (ArrayTypeNode) obj;
     return types.isSameType(getType(), other.getType());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getType());
+    return getType().hashCode();
   }
 
   @Override

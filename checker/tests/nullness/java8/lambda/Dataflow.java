@@ -6,7 +6,7 @@ public class Dataflow {
   void context() {
     FunctionDF<@Nullable Object, Object> o =
         a -> {
-          // :: error: (dereference.of.nullable)
+          // :: error: [dereference.of.nullable]
           a.toString();
           a = "";
           a.toString();

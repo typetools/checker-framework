@@ -2,8 +2,8 @@
  * @test
  * @summary Test case for Issue 1929: test -Alint=trustArrayLenZero
  *
- * @compile/fail/ref=Issue1929-notrust.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker Issue1929.java
- * @compile/fail/ref=Issue1929-trust.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Alint=trustArrayLenZero Issue1929.java
+ * @compile/fail/ref=Issue1929-notrust.goal -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker Issue1929.java
+ * @compile/fail/ref=Issue1929-trust.goal -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Alint=trustArrayLenZero Issue1929.java
  */
 
 import java.util.Collection;
@@ -25,7 +25,7 @@ public class Issue1929 {
 
   String[] fails3(Collection<String> c) {
     // We don't determine field types from initialization expressions.
-    // :: error: (return)
+    // :: error: [return]
     return c.toArray(EMPTY_STRING_ARRAY_3);
   }
 }

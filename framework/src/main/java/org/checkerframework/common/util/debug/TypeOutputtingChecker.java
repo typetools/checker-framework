@@ -74,13 +74,12 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
     }
 
     @Override
-    public Void visitMethod(MethodTree tree, Void p) {
+    public void processMethodTree(String className, MethodTree tree) {
       ExecutableElement elem = TreeUtils.elementFromDeclaration(tree);
 
       AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
       System.out.println(currentClass + "." + elem + "\t\t" + type);
       // Don't dig deeper
-      return null;
     }
 
     @Override
@@ -136,8 +135,8 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
     // output fields and methods
     for (Element enclosedElt : typeElt.getEnclosedElements()) {
-      if (enclosedElt instanceof TypeElement) {
-        printClassType((TypeElement) enclosedElt, atypeFactory);
+      if (enclosedElt instanceof TypeElement te) {
+        printClassType(te, atypeFactory);
       }
       if (!enclosedElt.getKind().isField() && !(enclosedElt instanceof ExecutableElement)) {
         continue;
@@ -154,6 +153,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
    */
   public static class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
+    @SuppressWarnings("this-escape")
     public GeneralAnnotatedTypeFactory(BaseTypeChecker checker) {
       super(checker);
       postInit();
@@ -176,14 +176,23 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-      return new GeneralQualifierHierarchy();
+      return new GeneralQualifierHierarchy(null);
     }
 
     /**
      * A very limited QualifierHierarchy that is used for access to qualifiers from different type
      * systems.
      */
-    static class GeneralQualifierHierarchy implements QualifierHierarchy {
+    static class GeneralQualifierHierarchy extends QualifierHierarchy {
+
+      /**
+       * Creates a new GeneralQualifierHierarchy.
+       *
+       * @param atypeFactory the associated type factory
+       */
+      public GeneralQualifierHierarchy(GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
+        super(atypeFactory);
+      }
 
       // Always return true
       @Override
@@ -228,26 +237,20 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
       // Not needed - raises error.
       @Override
-      public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+      public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
         throw new BugInCF("GeneralQualifierHierarchy.isSubtype() shouldn't be called.");
       }
 
       // Not needed - raises error.
       @Override
-      public boolean isSubtype(
-          Collection<? extends AnnotationMirror> rhs, Collection<? extends AnnotationMirror> lhs) {
-        throw new BugInCF("GeneralQualifierHierarchy.isSubtype() shouldn't be called.");
-      }
-
-      // Not needed - raises error.
-      @Override
-      public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+      public AnnotationMirror leastUpperBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
         throw new BugInCF("GeneralQualifierHierarchy.leastUpperBound() shouldn't be called.");
       }
 
       // Not needed - raises error.
       @Override
-      public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+      public AnnotationMirror greatestLowerBoundQualifiers(
+          AnnotationMirror a1, AnnotationMirror a2) {
         throw new BugInCF("GeneralQualifierHierarchy.greatestLowerBound() shouldn't be called.");
       }
 

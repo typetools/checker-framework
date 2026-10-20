@@ -36,11 +36,19 @@ public abstract class InitializationChecker extends BaseTypeChecker {
   public static List<VariableTree> getAllFields(ClassTree clazz) {
     List<VariableTree> fields = new ArrayList<>();
     for (Tree t : clazz.getMembers()) {
-      if (t.getKind() == Tree.Kind.VARIABLE) {
-        VariableTree vt = (VariableTree) t;
+      if (t instanceof VariableTree vt) {
         fields.add(vt);
       }
     }
     return fields;
+  }
+
+  @Override
+  protected boolean messageKeyMatches(
+      String messageKey, String messageKeyInSuppressWarningsString) {
+    // Also support the shorter keys used by typetools
+    return super.messageKeyMatches(messageKey, messageKeyInSuppressWarningsString)
+        || super.messageKeyMatches(
+            messageKey.replace(".invalid", ""), messageKeyInSuppressWarningsString);
   }
 }

@@ -17,11 +17,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
- * Adds annotations from element to the return type, formal parameter types, type parameters, and
- * throws clauses of the AnnotatedExecutableType type.
+ * Adds annotations from an element to the return type, formal parameter types, type parameters, and
+ * throws clauses of an AnnotatedExecutableType type.
  */
 public class MethodApplier extends TargetedElementAnnotationApplier {
 
@@ -32,7 +32,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     new MethodApplier(type, element, typeFactory).extractAndApply();
   }
 
-  public static boolean accepts(final AnnotatedTypeMirror typeMirror, final Element element) {
+  public static boolean accepts(AnnotatedTypeMirror typeMirror, Element element) {
     return element instanceof Symbol.MethodSymbol && typeMirror instanceof AnnotatedExecutableType;
   }
 
@@ -90,7 +90,9 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         // TODO: Test case from Issue 3277 produces invalid position.
         // Ignore until this javac bug is fixed:
         // https://bugs.openjdk.org/browse/JDK-8233945
-        TargetType.UNKNOWN
+        TargetType.UNKNOWN,
+        // Annotations on parameters to record constructors are marked as fields.
+        TargetType.FIELD
       };
 
   /**
@@ -115,25 +117,25 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
 
   @Override
   protected boolean isAccepted() {
-    return MethodApplier.accepts(type, element);
+    return accepts(type, element);
   }
 
   /**
-   * Sets the method's element, annotates its return type, parameters, type parameters, and throws
-   * annotations.
+   * Sets the method's element, and annotates its return type, parameters, type parameters, and
+   * throws clauses.
    */
   @Override
   public void extractAndApply() throws UnexpectedAnnotationLocationException {
     methodType.setElement(methodSymbol); // Preserves previous behavior
 
-    // Add declaration annotations to the return type if
+    // Add declaration annotations to the return type.
     if (methodType.getReturnType() instanceof AnnotatedTypeVariable) {
       applyTypeVarUseOnReturnType();
     }
     ElementAnnotationUtil.addDeclarationAnnotationsFromElement(
         methodType.getReturnType(), methodSymbol.getAnnotationMirrors());
 
-    final List<AnnotatedTypeMirror> params = methodType.getParameterTypes();
+    List<AnnotatedTypeMirror> params = methodType.getParameterTypes();
     for (int i = 0; i < params.size(); ++i) {
       // Add declaration annotations to the parameter type
       ElementAnnotationUtil.addDeclarationAnnotationsFromElement(
@@ -150,12 +152,12 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         methodType.getTypeVariables(), methodSymbol.getTypeParameters(), typeFactory);
   }
 
-  // NOTE that these are the only locations not handled elsewhere, otherwise we call apply
+  // NOTE that these are the only locations not handled elsewhere, otherwise we call apply.
   @Override
-  protected void handleTargeted(final List<TypeCompound> targeted)
+  protected void handleTargeted(List<TypeCompound> targeted)
       throws UnexpectedAnnotationLocationException {
-    final List<TypeCompound> unmatched = new ArrayList<>();
-    final Map<TargetType, List<TypeCompound>> targetTypeToAnno =
+    List<TypeCompound> unmatched = new ArrayList<>();
+    Map<TargetType, List<TypeCompound>> targetTypeToAnno =
         ElementAnnotationUtil.partitionByTargetType(
             targeted,
             unmatched,
@@ -172,7 +174,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     if (!unmatched.isEmpty()) {
       throw new BugInCF(
           "Unexpected annotations ( "
-              + StringsPlume.join(",", unmatched)
+              + StringsP.join(",", unmatched)
               + " ) for"
               + "type ( "
               + type
@@ -183,22 +185,22 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
   }
 
   /** For each thrown type, collect all the annotations for that type and apply them. */
-  private void applyThrowsAnnotations(final List<Attribute.TypeCompound> annos)
+  private void applyThrowsAnnotations(List<Attribute.TypeCompound> annos)
       throws UnexpectedAnnotationLocationException {
-    final List<AnnotatedTypeMirror> thrown = methodType.getThrownTypes();
+    List<AnnotatedTypeMirror> thrown = methodType.getThrownTypes();
     if (thrown.isEmpty()) {
       return;
     }
 
     Map<AnnotatedTypeMirror, List<TypeCompound>> typeToAnnos = new LinkedHashMap<>();
-    for (final AnnotatedTypeMirror thrownType : thrown) {
+    for (AnnotatedTypeMirror thrownType : thrown) {
       typeToAnnos.put(thrownType, new ArrayList<>());
     }
 
     for (TypeCompound anno : annos) {
-      final TypeAnnotationPosition annoPos = anno.position;
+      TypeAnnotationPosition annoPos = anno.position;
       if (annoPos.type_index >= 0 && annoPos.type_index < thrown.size()) {
-        final AnnotatedTypeMirror thrownType = thrown.get(annoPos.type_index);
+        AnnotatedTypeMirror thrownType = thrown.get(annoPos.type_index);
         typeToAnnos.get(thrownType).add(anno);
 
       } else {
@@ -213,15 +215,16 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
       }
     }
 
-    for (final Map.Entry<AnnotatedTypeMirror, List<TypeCompound>> typeToAnno :
-        typeToAnnos.entrySet()) {
+    for (Map.Entry<AnnotatedTypeMirror, List<TypeCompound>> typeToAnno : typeToAnnos.entrySet()) {
       ElementAnnotationUtil.annotateViaTypeAnnoPosition(typeToAnno.getKey(), typeToAnno.getValue());
     }
   }
 
   /**
-   * If the return type is a use of a type variable first apply the bound annotations from the type
-   * variables declaration.
+   * If the return type is a use of a type variable, first apply the bound annotations from the type
+   * variable's declaration.
+   *
+   * @throws UnexpectedAnnotationLocationException if a location is invalid
    */
   private void applyTypeVarUseOnReturnType() throws UnexpectedAnnotationLocationException {
     new TypeVarUseApplier(methodType.getReturnType(), methodSymbol, typeFactory).extractAndApply();

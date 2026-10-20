@@ -3,7 +3,6 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.IdentifierTree;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TreeUtils;
@@ -14,6 +13,9 @@ import org.checkerframework.javacutil.TreeUtils;
  * <pre>
  *   <em>super</em>
  * </pre>
+ *
+ * Its {@link #type} field is the type of the class in which "super" appears, <em>not</em> the type
+ * to which the "super" identifier resolves.
  */
 public class SuperNode extends Node {
 
@@ -37,7 +39,11 @@ public class SuperNode extends Node {
 
   @Override
   public String toString() {
-    return "super";
+    if (disambiguateOwner) {
+      return "super{owner=" + type + "}";
+    } else {
+      return "super";
+    }
   }
 
   @Override
@@ -47,7 +53,7 @@ public class SuperNode extends Node {
 
   @Override
   public int hashCode() {
-    return Objects.hash("super");
+    return 109801370; // Objects.hash("super");
   }
 
   @Override

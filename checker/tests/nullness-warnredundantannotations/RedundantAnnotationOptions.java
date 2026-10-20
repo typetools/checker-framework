@@ -8,7 +8,6 @@ class RedundantAnnotationOptions {
       Field f, Class<T> annotationClass) {
     @Nullable T annotation;
     try {
-      // @SuppressWarnings("nullness:initialization.cast")
       @Nullable T cast = f.getAnnotation((Class<@NonNull T>) annotationClass);
       annotation = cast;
     } catch (Exception e) {

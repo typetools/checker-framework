@@ -16,11 +16,13 @@ public class ConditionalJump extends ExtendedNode {
 
   /** The true successor label. */
   protected final Label trueSucc;
+
   /** The false successor label. */
   protected final Label falseSucc;
 
   /** The true branch flow rule. */
   protected FlowRule trueFlowRule;
+
   /** The false branch flow rule. */
   protected FlowRule falseFlowRule;
 

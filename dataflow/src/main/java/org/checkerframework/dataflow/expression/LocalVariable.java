@@ -20,6 +20,13 @@ public class LocalVariable extends JavaExpression {
   protected final VariableElement element;
 
   /**
+   * The cached hash code, or 0 if it has not yet been computed. A LocalVariable is immutable, so
+   * the hash code is computed at most once. Caching it is worthwhile because every store operation
+   * hashes the expressions in the store.
+   */
+  private int hashCode = 0;
+
+  /**
    * Creates a new LocalVariable.
    *
    * @param localVar a CFG local variable
@@ -39,14 +46,80 @@ public class LocalVariable extends JavaExpression {
     this.element = element;
   }
 
+  /**
+   * Returns the element for this variable.
+   *
+   * @return the element for this variable
+   */
+  public VariableElement getElement() {
+    return element;
+  }
+
+  @Override
+  public String toString() {
+    return element.toString();
+  }
+
+  @Override
+  public String toStringDebug() {
+    return super.toStringDebug() + " [owner=" + ((VarSymbol) element).owner + "]";
+  }
+
+  @SuppressWarnings("unchecked") // generic cast
+  @Override
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
+    return getClass() == clazz ? (T) this : null;
+  }
+
+  @Override
+  public boolean isDeterministic(AnnotationProvider provider) {
+    return true;
+  }
+
+  @Override
+  public boolean isAssignableByOtherCode() {
+    return false;
+  }
+
+  @Override
+  public boolean isModifiableByOtherCode() {
+    return !TypesUtils.isImmutableTypeInJdk(((VarSymbol) element).type);
+  }
+
+  @Override
+  public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
+    return visitor.visitLocalVariable(this, p);
+  }
+
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof LocalVariable)) {
+    if (!(obj instanceof LocalVariable other)) {
       return false;
     }
-    LocalVariable other = (LocalVariable) obj;
 
     return sameElement(element, other.element);
+  }
+
+  @Override
+  public int hashCode() {
+    if (hashCode == 0) {
+      VarSymbol vs = (VarSymbol) element;
+      hashCode = Objects.hash(vs.pos, vs.name, vs.owner);
+    }
+    return hashCode;
+  }
+
+  @Override
+  public boolean syntacticEquals(JavaExpression je) {
+    if (!(je instanceof LocalVariable other)) {
+      return false;
+    }
+    return this.equals(other);
+  }
+
+  @Override
+  public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
+    return syntacticEquals(other);
   }
 
   /**
@@ -65,69 +138,5 @@ public class LocalVariable extends JavaExpression {
     // parameter might have the same name and the same owner. Use pos to differentiate this
     // case.
     return vs1.pos == vs2.pos && vs1.name == vs2.name && vs1.owner.equals(vs2.owner);
-  }
-
-  /**
-   * Returns the element for this variable.
-   *
-   * @return the element for this variable
-   */
-  public VariableElement getElement() {
-    return element;
-  }
-
-  @Override
-  public int hashCode() {
-    VarSymbol vs = (VarSymbol) element;
-    return Objects.hash(vs.pos, vs.name, vs.owner);
-  }
-
-  @Override
-  public String toString() {
-    return element.toString();
-  }
-
-  @Override
-  public String toStringDebug() {
-    return super.toStringDebug() + " [owner=" + ((VarSymbol) element).owner + "]";
-  }
-
-  @Override
-  public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
-    return getClass() == clazz;
-  }
-
-  @Override
-  public boolean isDeterministic(AnnotationProvider provider) {
-    return true;
-  }
-
-  @Override
-  public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof LocalVariable)) {
-      return false;
-    }
-    LocalVariable other = (LocalVariable) je;
-    return this.equals(other);
-  }
-
-  @Override
-  public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
-    return syntacticEquals(other);
-  }
-
-  @Override
-  public boolean isUnassignableByOtherCode() {
-    return true;
-  }
-
-  @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return TypesUtils.isImmutableTypeInJdk(((VarSymbol) element).type);
-  }
-
-  @Override
-  public <R, P> R accept(JavaExpressionVisitor<R, P> visitor, P p) {
-    return visitor.visitLocalVariable(this, p);
   }
 }

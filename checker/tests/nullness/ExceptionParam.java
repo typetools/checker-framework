@@ -14,7 +14,7 @@ public class ExceptionParam {
 
   void exc2() {
     try {
-      // :: warning: (nullness.on.exception.parameter)
+      // :: warning: [nullness.on.exception.parameter]
     } catch (@NonNull AssertionError e) {
       @NonNull Object o = e;
     }
@@ -22,7 +22,7 @@ public class ExceptionParam {
 
   void exc3() {
     try {
-      // :: warning: (nullness.on.exception.parameter)
+      // :: warning: [nullness.on.exception.parameter]
     } catch (@Nullable AssertionError e) {
       @NonNull Object o = e;
     }

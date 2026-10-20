@@ -7,6 +7,7 @@ import com.sun.tools.javac.code.Symbol;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -39,8 +40,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * <p>More precisely, the following refinements are performed:
  *
  * <ol>
- *   <li>After the call to a constructor ("this()" call), all non-null fields of the current class
- *       can safely be considered initialized.
+ *   <li>After the call to a constructor ({@code this()} call), all non-null fields of the current
+ *       class can safely be considered initialized.
  *   <li>After a method call with a postcondition that ensures a field to be non-null, that field
  *       can safely be considered initialized (this is done in {@link
  *       InitializationStore#insertValue(JavaExpression, CFAbstractValue)}).
@@ -51,7 +52,9 @@ import org.checkerframework.javacutil.TreeUtils;
  * </ol>
  *
  * @see InitializationStore
+ * @param <V> the type of the abstract value
  * @param <T> the type of the transfer function
+ * @param <S> the type of the store
  */
 public class InitializationTransfer<
         V extends CFAbstractValue<V>,
@@ -71,7 +74,7 @@ public class InitializationTransfer<
     if (super.isNotFullyInitializedReceiver(methodTree)) {
       return true;
     }
-    final AnnotatedDeclaredType receiverType =
+    AnnotatedDeclaredType receiverType =
         analysis.getTypeFactory().getAnnotatedType(methodTree).getReceiverType();
     if (receiverType != null) {
       return atypeFactory.isUnknownInitialization(receiverType)
@@ -92,8 +95,11 @@ public class InitializationTransfer<
   protected List<VariableElement> initializedFieldsAfterCall(MethodInvocationNode node) {
     List<VariableElement> result = new ArrayList<>();
     MethodInvocationTree tree = node.getTree();
+    if (tree == null) {
+      return result;
+    }
     ExecutableElement method = TreeUtils.elementFromUse(tree);
-    boolean isConstructor = method.getSimpleName().contentEquals("<init>");
+    boolean isConstructor = method.getKind() == ElementKind.CONSTRUCTOR;
     Node receiver = node.getTarget().getReceiver();
     String methodString = tree.getMethodSelect().toString();
 
@@ -147,12 +153,10 @@ public class InitializationTransfer<
   @Override
   public TransferResult<V, S> visitAssignment(AssignmentNode n, TransferInput<V, S> in) {
     TransferResult<V, S> result = super.visitAssignment(n, in);
-    assert result instanceof RegularTransferResult;
     JavaExpression lhs = JavaExpression.fromNode(n.getTarget());
 
     // If this is an assignment to a field of 'this', then mark the field as initialized.
-    if (!lhs.containsUnknown() && lhs instanceof FieldAccess) {
-      FieldAccess fa = (FieldAccess) lhs;
+    if (!lhs.containsUnknown() && lhs instanceof FieldAccess fa) {
       // Only a ternary expression may cause a conditional transfer result, e.g.
       //      condExpr#num0 = (obj instanceof List)
       // In such cases, the LHS is never a FieldAccess, so we can assert that result
@@ -165,7 +169,7 @@ public class InitializationTransfer<
   }
 
   /**
-   * If an invariant field is initialized and has the invariant annotation, than it has at least the
+   * If an invariant field is initialized and has the invariant annotation, then it has at least the
    * invariant annotation. Note that only fields of the 'this' receiver are tracked for
    * initialization.
    */
@@ -178,13 +182,13 @@ public class InitializationTransfer<
       AnnotatedTypeMirror fieldAnno = analysis.getTypeFactory().getAnnotatedType(n.getElement());
       // Only if the field has the type system's invariant annotation,
       // such as @NonNull.
-      if (fieldAnno.hasAnnotation(atypeFactory.getFieldInvariantAnnotation())) {
+      if (fieldAnno.hasPrimaryAnnotation(atypeFactory.getFieldInvariantAnnotation())) {
         AnnotationMirror inv = atypeFactory.getFieldInvariantAnnotation();
         V oldResultValue = result.getResultValue();
         V refinedResultValue =
             analysis.createSingleAnnotationValue(inv, oldResultValue.getUnderlyingType());
         V newResultValue = refinedResultValue.mostSpecific(oldResultValue, null);
-        result.setResultValue(newResultValue);
+        return recreateTransferResult(newResultValue, result);
       }
     }
     return result;

@@ -11,13 +11,16 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
+import org.checkerframework.common.accumulation.AccumulationAnalysis;
 import org.checkerframework.common.accumulation.AccumulationAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.initializedfields.qual.EnsuresInitializedFields;
 import org.checkerframework.common.initializedfields.qual.InitializedFields;
 import org.checkerframework.common.initializedfields.qual.InitializedFieldsBottom;
+import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -41,10 +44,11 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
    *
    * @param checker the checker
    */
+  @SuppressWarnings("this-escape")
   public InitializedFieldsAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, InitializedFields.class, InitializedFieldsBottom.class);
 
-    String[] checkerNames = getCheckerNames();
+    List<String> checkerNames = getCheckerNames();
 
     // There are usually few subcheckers.
     defaultValueAtypeFactories = new ArrayList<>(2);
@@ -56,8 +60,10 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
       GenericAnnotatedTypeFactory<?, ?, ?, ?> atf = createTypeFactoryForProcessor(checkerName);
       if (atf != null) {
         // Add all the subcheckers so that default values are checked for the subcheckers.
-        for (BaseTypeChecker subchecker : atf.getChecker().getSubcheckers()) {
-          defaultValueAtypeFactories.add(subchecker.getTypeFactory());
+        for (SourceChecker subchecker : atf.getChecker().getSubcheckers()) {
+          if (subchecker instanceof BaseTypeChecker btc) {
+            defaultValueAtypeFactories.add(btc.getTypeFactory());
+          }
         }
         defaultValueAtypeFactories.add(atf);
       }
@@ -73,7 +79,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
    * @param processorName the fully-qualified class name of an annotation processor
    * @return the type factory for the given annotation processor, or null if it's not a checker
    */
-  private GenericAnnotatedTypeFactory<?, ?, ?, ?> createTypeFactoryForProcessor(
+  private @Nullable GenericAnnotatedTypeFactory<?, ?, ?, ?> createTypeFactoryForProcessor(
       @BinaryName String processorName) {
     try {
       Class<?> checkerClass = Class.forName(processorName);
@@ -112,7 +118,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
    * A subclass of ContractsFromMethod that adds a postcondition contract to each constructor,
    * requiring that it initializes all fields.
    */
-  private class InitializedFieldsContractsFromMethod extends ContractsFromMethod {
+  public class InitializedFieldsContractsFromMethod extends ContractsFromMethod {
     /**
      * Creates an InitializedFieldsContractsFromMethod for the given factory.
      *
@@ -182,7 +188,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
    */
   // It is a bit wasteful that this is recomputed for each constructor.
   private String[] fieldsToInitialize(TypeElement type) {
-    List<String> result = new ArrayList<String>();
+    List<String> result = new ArrayList<>();
 
     for (Element member : type.getEnclosedElements()) {
 
@@ -205,11 +211,11 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
       }
     }
 
-    return result.toArray(new String[result.size()]);
+    return result.toArray(new String[0]);
   }
 
   /**
-   * Returns true if the default field value (0, false, or null) is consistent with the field's
+   * Returns true if the default field value (0, 0.0, false, or null) is consistent with the field's
    * declared type.
    *
    * @param field a field
@@ -224,7 +230,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
         defaultValueAtypeFactories) {
       defaultValueAtypeFactory.setRoot(root);
       // Set the root on all the subcheckers, too.
-      for (BaseTypeChecker subchecker : defaultValueAtypeFactory.getChecker().getSubcheckers()) {
+      for (SourceChecker subchecker : defaultValueAtypeFactory.getChecker().getSubcheckers()) {
         AnnotatedTypeFactory subATF =
             defaultValueAtypeFactory.getTypeFactoryOfSubchecker(subchecker.getClass());
         subATF.setRoot(root);
@@ -238,5 +244,11 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
     }
 
     return true;
+  }
+
+  // Overridden because there is no InitializedFieldsAnalysis.
+  @Override
+  protected AccumulationAnalysis createFlowAnalysis() {
+    return new AccumulationAnalysis(this.getChecker(), this);
   }
 }

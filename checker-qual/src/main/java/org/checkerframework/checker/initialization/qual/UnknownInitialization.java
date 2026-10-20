@@ -34,7 +34,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  *
  * <pre>@NonNull Object f;</pre>
  *
- * In a partially-initialized object, field {@code f} might be {@code null} despite its
+ * In a partially initialized object, field {@code f} might be {@code null} despite its
  * {@literal @}{@link NonNull} type annotation.
  *
  * <p>What type qualifiers on the field are considered depends on the checker; for instance, the

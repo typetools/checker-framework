@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
 
 public class Issue3036 {
 
@@ -30,6 +31,8 @@ public class Issue3036 {
                 "keyTag", dsData1.getKeyTag(),
                 "digest", dsData1.getDigest());
 
+    // Any checker where string literals are not top will error here.
+    @SuppressWarnings("type.arguments.not.inferred")
     List<Map<String, ?>> dsData =
         getDsData().stream()
             .map(
@@ -40,7 +43,7 @@ public class Issue3036 {
             .collect(Collectors.toList());
   }
 
-  public static class ImmutableMap<K, V> extends HashMap<K, V> {
+  public static @Modifiable class ImmutableMap<K, V> extends HashMap<K, V> {
     public static <K, V> ImmutableMap<K, V> of(K k1, V v1, K k2, V v2) {
       throw new RuntimeException();
     }

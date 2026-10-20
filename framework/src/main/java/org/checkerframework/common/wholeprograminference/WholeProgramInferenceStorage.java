@@ -7,12 +7,14 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 
 /**
  * Stores annotations from whole-program inference. For a given location such as a field or method,
@@ -30,10 +32,15 @@ public interface WholeProgramInferenceStorage<T> {
    * Returns the file corresponding to the given element. This may side-effect the storage to load
    * the file if it hasn't been read yet.
    *
-   * @param elt an element
+   * <p>The element must be declared in source code that is being compiled; that is, {@link
+   * org.checkerframework.javacutil.ElementUtils#isElementFromSourceCode} must return true for it. A
+   * caller must test that precondition before calling this method, because an implementation is
+   * permitted to throw an exception when the precondition is violated.
+   *
+   * @param elt an element that is declared in source code that is being compiled
    * @return the path to the file where inference results for the element will be written
    */
-  public String getFileForElement(Element elt);
+  String getFileForElement(Element elt);
 
   /**
    * Given an ExecutableElement in a compilation unit that has already been read into storage,
@@ -46,49 +53,49 @@ public interface WholeProgramInferenceStorage<T> {
    * @param methodElt a method or constructor Element
    * @return true if the storage has a method corresponding to {@code elt}
    */
-  public boolean hasStorageLocationForMethod(ExecutableElement methodElt);
+  boolean hasStorageLocationForMethod(ExecutableElement methodElt);
 
   /**
-   * Get the annotations for a formal parameter type.
+   * Returns the annotations for a formal parameter type.
    *
    * @param methodElt the method or constructor Element
-   * @param i the parameter index (0-based)
+   * @param index_1based the parameter index (1-based)
    * @param paramATM the parameter type
    * @param ve the parameter variable
    * @param atypeFactory the type factory
    * @return the annotations for a formal parameter type
    */
-  public T getParameterAnnotations(
+  T getParameterAnnotations(
       ExecutableElement methodElt,
-      int i,
+      @Positive int index_1based,
       AnnotatedTypeMirror paramATM,
       VariableElement ve,
       AnnotatedTypeFactory atypeFactory);
 
   /**
-   * Get the annotations for the receiver type.
+   * Returns the annotations for the receiver type.
    *
    * @param methodElt the method or constructor Element
    * @param paramATM the receiver type
    * @param atypeFactory the type factory
    * @return the annotations for the receiver type
    */
-  public T getReceiverAnnotations(
+  T getReceiverAnnotations(
       ExecutableElement methodElt, AnnotatedTypeMirror paramATM, AnnotatedTypeFactory atypeFactory);
 
   /**
-   * Get the annotations for the return type.
+   * Returns the annotations for the return type.
    *
    * @param methodElt the method or constructor Element
    * @param atm the return type
    * @param atypeFactory the type factory
    * @return the annotations for the return type
    */
-  public T getReturnAnnotations(
+  T getReturnAnnotations(
       ExecutableElement methodElt, AnnotatedTypeMirror atm, AnnotatedTypeFactory atypeFactory);
 
   /**
-   * Get the annotations for a field type.
+   * Returns the annotations for a field type.
    *
    * @param element the element for the field
    * @param fieldName the simple field name
@@ -96,7 +103,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @param atypeFactory the annotated type factory
    * @return the annotations for a field type
    */
-  public T getFieldAnnotations(
+  T getFieldAnnotations(
       Element element,
       String fieldName,
       AnnotatedTypeMirror lhsATM,
@@ -113,7 +120,9 @@ public interface WholeProgramInferenceStorage<T> {
    * postconditions), "this" (postconditions only), and method parameters (e.g. "#1", "#2",
    * postconditions only).
    *
-   * @param preOrPost whether to get the precondition or postcondition
+   * @param className the class that contains the method, for diagnostics only
+   * @param preOrPost what to get: the precondition ({@code BEFORE}) or the postcondition ({@code
+   *     AFTER})
    * @param methodElement the method
    * @param expression the expression
    * @param declaredType the declared type of the expression
@@ -121,7 +130,8 @@ public interface WholeProgramInferenceStorage<T> {
    * @return the pre- or postcondition annotations for an expression, or null if the given
    *     expression is not a supported expression type
    */
-  public @Nullable T getPreOrPostconditions(
+  @Nullable T getPreOrPostconditions(
+      String className,
       Analysis.BeforeOrAfter preOrPost,
       ExecutableElement methodElement,
       String expression,
@@ -136,7 +146,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @return true if {@code anno} is a new declaration annotation for {@code methodElt}, false
    *     otherwise
    */
-  public boolean addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno);
+  boolean addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno);
 
   /**
    * Updates a field to add a declaration annotation.
@@ -146,19 +156,19 @@ public interface WholeProgramInferenceStorage<T> {
    * @return true if {@code anno} is a new declaration annotation for {@code fieldElt}, false
    *     otherwise
    */
-  public boolean addFieldDeclarationAnnotation(VariableElement fieldElt, AnnotationMirror anno);
+  boolean addFieldDeclarationAnnotation(VariableElement fieldElt, AnnotationMirror anno);
 
   /**
    * Adds a declaration annotation to a formal parameter.
    *
    * @param methodElt the method whose formal parameter will be annotated
-   * @param index the index of the parameter (0-indexed)
+   * @param index_1based the index of the parameter (1-indexed)
    * @param anno the annotation to add
    * @return true if {@code anno} is a new declaration annotation for {@code methodElt}, false
    *     otherwise
    */
-  public boolean addDeclarationAnnotationToFormalParameter(
-      ExecutableElement methodElt, int index, AnnotationMirror anno);
+  boolean addDeclarationAnnotationToFormalParameter(
+      ExecutableElement methodElt, @Positive int index_1based, AnnotationMirror anno);
 
   /**
    * Adds an annotation to a class declaration.
@@ -168,7 +178,28 @@ public interface WholeProgramInferenceStorage<T> {
    * @return true if {@code anno} is a new declaration annotation for {@code classElt}, false
    *     otherwise
    */
-  public boolean addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno);
+  boolean addClassDeclarationAnnotation(TypeElement classElt, AnnotationMirror anno);
+
+  /**
+   * Returns the list of declaration annotations inferred on the given method so far in this round
+   * of WPI.
+   *
+   * @param elt a method
+   * @return the declaration annotations inferred on elt so far (may be empty)
+   */
+  AnnotationMirrorSet getMethodDeclarationAnnotations(ExecutableElement elt);
+
+  /**
+   * Removes the given annotation from the given method element's inferred declaration annotation.
+   * If the given annotation was not in the list of inferred declaration annotations on the given
+   * method, calling this method is a no-op.
+   *
+   * @param methodElt a method element
+   * @param anno a declaration annotation to remove
+   * @return true if the annotation was successfully removed, false if not (e.g., if it wasn't
+   *     present)
+   */
+  boolean removeMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno);
 
   /**
    * Obtain the type from a storage location.
@@ -178,7 +209,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @return an annotated type mirror with underlying type {@code typeMirror} and annotations from
    *     {@code storageLocation}
    */
-  public AnnotatedTypeMirror atmFromStorageLocation(TypeMirror typeMirror, T storageLocation);
+  AnnotatedTypeMirror atmFromStorageLocation(TypeMirror typeMirror, T storageLocation);
 
   /**
    * Updates a storage location to have the annotations of the given {@code AnnotatedTypeMirror}.
@@ -202,7 +233,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @param ignoreIfAnnotated if true, don't update any type that is explicitly annotated in the
    *     source code
    */
-  public void updateStorageLocationFromAtm(
+  void updateStorageLocationFromAtm(
       AnnotatedTypeMirror newATM,
       AnnotatedTypeMirror curATM,
       T storageLocationToUpdate,
@@ -217,8 +248,7 @@ public interface WholeProgramInferenceStorage<T> {
    * @param outputFormat the file format in which to write the results
    * @param checker the checker from which this method is called, for naming annotation files
    */
-  public void writeResultsToFile(
-      WholeProgramInference.OutputFormat outputFormat, BaseTypeChecker checker);
+  void writeResultsToFile(WholeProgramInference.OutputFormat outputFormat, BaseTypeChecker checker);
 
   /**
    * Indicates that inferred annotations for the file at {@code path} have changed since last
@@ -227,7 +257,7 @@ public interface WholeProgramInferenceStorage<T> {
    *
    * @param path path to the file with annotations that have been modified
    */
-  public void setFileModified(String path);
+  void setFileModified(String path);
 
   /**
    * Performs any preparation required for inference on the elements of a class. Should be called on

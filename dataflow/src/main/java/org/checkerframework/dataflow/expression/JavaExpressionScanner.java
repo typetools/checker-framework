@@ -9,6 +9,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * @param <P> the parameter passed to the scan methods
  */
 public abstract class JavaExpressionScanner<P> extends JavaExpressionVisitor<Void, P> {
+  /** Creates a JavaExpressionScanner. */
+  public JavaExpressionScanner() {}
 
   /**
    * Scans the JavaExpression.
@@ -85,6 +87,11 @@ public abstract class JavaExpressionScanner<P> extends JavaExpressionVisitor<Voi
 
   @Override
   protected Void visitThisReference(ThisReference thisExpr, P p) {
+    return null;
+  }
+
+  @Override
+  protected Void visitSuperReference(SuperReference superExpr, P p) {
     return null;
   }
 

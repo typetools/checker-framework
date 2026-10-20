@@ -13,21 +13,21 @@ public class ParametersInBodyGenerics {
   }
 
   void test() {
-    // :: error: (lambda.param)
+    // :: error: [lambda.param]
     NullableConsumer fn0 = (List<String> i) -> i.get(0).toString();
     NullableConsumer fn2 =
         (List<@Nullable String> i) -> {
-          // :: error: (dereference.of.nullable)
+          // :: error: [dereference.of.nullable]
           i.get(0).toString();
         };
     NullableConsumer fn3 =
-        // :: error: (lambda.param)
+        // :: error: [lambda.param]
         (List<String> i) -> {
           i.get(0).toString();
         };
     NullableConsumer fn3b =
         (i) -> {
-          // :: error: (dereference.of.nullable)
+          // :: error: [dereference.of.nullable]
           i.get(0).toString();
         };
 

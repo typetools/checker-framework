@@ -8,7 +8,7 @@ public class ArrayLengthEquality {
     }
     if (a.length != b.length) {
       // Do nothing.
-      int x = 0;
+      int dead_variable = 0;
     } else {
       int @SameLen({"a", "b"}) [] e = a;
       int @SameLen({"a", "b"}) [] f = b;

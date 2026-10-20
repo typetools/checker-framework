@@ -52,7 +52,7 @@ public class ClassDeclarationNode extends Node {
 
   @Override
   public int hashCode() {
-    return Objects.hash(tree);
+    return tree.hashCode();
   }
 
   @Override

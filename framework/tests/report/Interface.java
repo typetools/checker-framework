@@ -2,7 +2,7 @@
 // https://github.com/typetools/checker-framework/issues/658
 // @skip-test
 
-import org.checkerframework.common.util.report.qual.*;
+import org.checkerframework.common.util.count.report.qual.*;
 
 public class Interface {
   interface A {
@@ -20,11 +20,11 @@ public class Interface {
   interface C extends A {}
 
   void foo(A a, B b, C c, Object o) {
-    // :: error: (methodcall)
+    // :: error: [methodcall]
     if (a.equals(o)) {}
-    // :: error: (methodcall)
+    // :: error: [methodcall]
     if (b.equals(o)) {}
-    // :: error: (methodcall)
+    // :: error: [methodcall]
     if (c.equals(o)) {}
 
     // Don't report this call.
@@ -32,11 +32,11 @@ public class Interface {
   }
 
   void bar(A a, B b, C c, Object o) {
-    // :: error: (methodcall)
+    // :: error: [methodcall]
     a.mine();
-    // :: error: (methodcall)
+    // :: error: [methodcall]
     b.mine();
-    // :: error: (methodcall)
+    // :: error: [methodcall]
     c.mine();
   }
 }

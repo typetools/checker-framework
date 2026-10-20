@@ -10,8 +10,8 @@ import java.lang.annotation.Target;
  * or method's call sites, for the purposes of Must Call checking. For a full description of the
  * semantics, see the documentation of {@link Owning}.
  *
- * <p>Parameters and fields are treated as if they have this annotation by default unless they have
- * {@link Owning}.
+ * <p>Formal parameters and fields are {@link NotOwning} by default. Method return types are
+ * {@code @Owning} by default. Constructor results are always {@code @Owning}.
  *
  * <p>When the {@code -AnoLightweightOwnership} command-line argument is passed to the checker, this
  * annotation and {@link Owning} are ignored.

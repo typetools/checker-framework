@@ -21,7 +21,7 @@ import org.checkerframework.javacutil.TypesUtils;
 public class SignatureTransfer extends CFTransfer {
 
   /** The annotated type factory for this transfer function. */
-  private final SignatureAnnotatedTypeFactory aTypeFactory;
+  private final SignatureAnnotatedTypeFactory atypeFactory;
 
   /**
    * Create a new SignatureTransfer.
@@ -30,7 +30,7 @@ public class SignatureTransfer extends CFTransfer {
    */
   public SignatureTransfer(CFAnalysis analysis) {
     super(analysis);
-    aTypeFactory = (SignatureAnnotatedTypeFactory) analysis.getTypeFactory();
+    atypeFactory = (SignatureAnnotatedTypeFactory) analysis.getTypeFactory();
   }
 
   @Override
@@ -43,8 +43,8 @@ public class SignatureTransfer extends CFTransfer {
     Node receiver = target.getReceiver();
     if (TypesUtils.isString(receiver.getType()) && ElementUtils.matchesElement(method, "isEmpty")) {
 
-      AnnotatedTypeMirror receiverAtm = aTypeFactory.getAnnotatedType(receiver.getTree());
-      if (receiverAtm.hasAnnotation(CanonicalNameOrEmpty.class)) {
+      AnnotatedTypeMirror receiverAtm = atypeFactory.getAnnotatedType(receiver.getTree());
+      if (receiverAtm.hasPrimaryAnnotation(CanonicalNameOrEmpty.class)) {
 
         CFStore thenStore = superResult.getRegularStore();
         CFStore elseStore = thenStore.copy();
@@ -53,7 +53,7 @@ public class SignatureTransfer extends CFTransfer {
         // The refined expression is the receiver of the method call.
         JavaExpression refinedExpr = JavaExpression.fromNode(receiver);
 
-        elseStore.insertValue(refinedExpr, aTypeFactory.CANONICAL_NAME);
+        elseStore.insertValue(refinedExpr, atypeFactory.CANONICAL_NAME);
         return result;
       }
     }

@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class Bug {
   /** Actions that MultiVersionControl can perform. */
-  static enum Action {
+  enum Action {
     /** Clone a repository. */
     CLONE,
     /** Show the working tree status. */
@@ -21,6 +21,7 @@ public class Bug {
     this.action = Action.LIST;
     expandTilde("");
   }
+
   /**
    * Replace "~" by the expansion of "$HOME".
    *

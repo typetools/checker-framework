@@ -9,9 +9,13 @@ import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.KeyFor;
+import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.common.returnsreceiver.qual.This;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
+import org.plumelib.util.DeepCopyable;
 
 /**
  * The Set interface defines many methods with respect to the equals method. This implementation of
@@ -28,7 +32,8 @@ import org.checkerframework.common.returnsreceiver.qual.This;
  * method; therefore, the existing implementations of Set cannot be used.
  */
 // TODO: Could extend AbstractSet to eliminate the need to implement a few methods.
-public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") AnnotationMirror> {
+public class AnnotationMirrorSet
+    implements NavigableSet<@KeyFor("this") AnnotationMirror>, DeepCopyable<AnnotationMirrorSet> {
 
   /** Backing set. */
   // Not final because makeUnmodifiable() can reassign it.
@@ -38,7 +43,7 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
   /** The canonical unmodifiable empty set. */
   private static AnnotationMirrorSet emptySet = unmodifiableSet(Collections.emptySet());
 
-  /// Constructors
+  // Constructors and factory methods
 
   /** Default constructor. */
   public AnnotationMirrorSet() {}
@@ -49,7 +54,7 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
    *
    * @param value the AnnotationMirror to put in the set
    */
-  @Deprecated // Is this called?
+  @SuppressWarnings("this-escape") // `add()` is safe to call
   public AnnotationMirrorSet(AnnotationMirror value) {
     this.add(value);
   }
@@ -59,8 +64,17 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
    *
    * @param annos the AnnotationMirrors to put in the set
    */
+  @SuppressWarnings("this-escape") // `addAll()` is safe to call
   public AnnotationMirrorSet(Collection<? extends AnnotationMirror> annos) {
     this.addAll(annos);
+  }
+
+  @SuppressWarnings("keyfor:argument") // transferring keys from one map to another
+  @Override
+  public AnnotationMirrorSet deepCopy() {
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
+    result.shadowSet.addAll(shadowSet);
+    return result;
   }
 
   /**
@@ -80,7 +94,8 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
    * @return a new unmodifiable {@link AnnotationMirrorSet} that contains only {@code value}
    */
   public static AnnotationMirrorSet singleton(AnnotationMirror value) {
-    // The implementation could be more efficient if Collections.singleton returned a NavigableSet.
+    // The implementation could be more efficient if Collections.singleton returned a
+    // NavigableSet.
     AnnotationMirrorSet result = new AnnotationMirrorSet();
     result.add(value);
     result.makeUnmodifiable();
@@ -90,7 +105,7 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
   /**
    * Returns an unmodifiable AnnotationMirrorSet with the given elements.
    *
-   * @param annos the annotation mirrors that will constitute the new unmodifable set
+   * @param annos the annotation mirrors that will constitute the new unmodifiable set
    * @return an unmodifiable AnnotationMirrorSet with the given elements
    */
   public static AnnotationMirrorSet unmodifiableSet(Collection<? extends AnnotationMirror> annos) {
@@ -108,7 +123,7 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
     return emptySet;
   }
 
-  /// Set methods
+  // Set methods
 
   @Override
   public int size() {
@@ -124,8 +139,7 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
   public boolean contains(
       @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,
       @Nullable Object o) {
-    return o instanceof AnnotationMirror
-        && AnnotationUtils.containsSame(shadowSet, (AnnotationMirror) o);
+    return o instanceof AnnotationMirror am && AnnotationUtils.containsSame(shadowSet, am);
   }
 
   @Override
@@ -140,12 +154,13 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
 
   @SuppressWarnings("nullness:toarray.nullable.elements.not.newarray") // delegation
   @Override
-  public <T> @Nullable T[] toArray(@PolyNull T[] a) {
+  public <@KeyForBottom T> @Nullable T[] toArray(@PolyNull T[] a) {
     return shadowSet.toArray(a);
   }
 
   @SuppressWarnings("keyfor:argument") // delegation
   @Override
+  @SideEffectsOnly("this")
   public boolean add(
       @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,
       AnnotationMirror annotationMirror) {
@@ -157,9 +172,10 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
   }
 
   @Override
+  @SideEffectsOnly("this")
   public boolean remove(@Nullable Object o) {
-    if (o instanceof AnnotationMirror) {
-      AnnotationMirror found = AnnotationUtils.getSame(shadowSet, (AnnotationMirror) o);
+    if (o instanceof AnnotationMirror am) {
+      AnnotationMirror found = AnnotationUtils.getSame(shadowSet, am);
       return found != null && shadowSet.remove(found);
     }
     return false;
@@ -176,6 +192,7 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
   }
 
   @Override
+  @SideEffectsOnly("this")
   public boolean addAll(
       @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,
       Collection<? extends AnnotationMirror> c) {
@@ -189,6 +206,7 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
   }
 
   @Override
+  @SideEffectsOnly("this")
   public boolean retainAll(Collection<?> c) {
     AnnotationMirrorSet newSet = new AnnotationMirrorSet();
     for (Object o : c) {
@@ -207,6 +225,7 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
   }
 
   @Override
+  @SideEffectsOnly("this")
   public boolean removeAll(Collection<?> c) {
     boolean result = true;
     for (Object a : c) {
@@ -218,6 +237,7 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
   }
 
   @Override
+  @SideEffectsOnly("this")
   public void clear() {
     shadowSet.clear();
   }
@@ -232,10 +252,9 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
     if (o == this) {
       return true;
     }
-    if (!(o instanceof AnnotationMirrorSet)) {
+    if (!(o instanceof AnnotationMirrorSet s)) {
       return false;
     }
-    AnnotationMirrorSet s = (AnnotationMirrorSet) o;
     if (this.size() != s.size()) {
       return false;
     }
@@ -255,7 +274,7 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
     return result;
   }
 
-  /// NavigableSet methods
+  // NavigableSet methods
 
   @SuppressWarnings({
     "interning:override.return", // looks like a bug (in interning checker)
@@ -303,16 +322,19 @@ public class AnnotationMirrorSet implements NavigableSet<@KeyFor("this") Annotat
   }
 
   @Override
+  @SideEffectsOnly("this")
   public @Nullable @KeyFor("this") AnnotationMirror pollFirst() {
     return shadowSet.pollFirst();
   }
 
   @Override
+  @SideEffectsOnly("this")
   public @Nullable @KeyFor("this") AnnotationMirror pollLast() {
     return shadowSet.pollLast();
   }
 
   @Override
+  @Pure
   public AnnotationMirrorSet descendingSet() {
     throw new Error("Not yet implemented.");
   }

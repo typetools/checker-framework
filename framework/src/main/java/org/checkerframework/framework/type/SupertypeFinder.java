@@ -2,6 +2,7 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -28,12 +29,10 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
 
 /**
  * Finds the direct supertypes of an input AnnotatedTypeMirror. See <a
- * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.10.2">JLS section
+ * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.10.2">JLS section
  * 4.10.2</a>.
  *
  * @see Types#directSupertypes(TypeMirror)
@@ -85,6 +84,7 @@ final class SupertypeFinder {
 
     /** Types util class. */
     private final Types types;
+
     /** Annotated type factory. */
     private final AnnotatedTypeFactory atypeFactory;
 
@@ -124,7 +124,7 @@ final class SupertypeFinder {
     @Override
     public List<AnnotatedTypeMirror> visitPrimitive(AnnotatedPrimitiveType type, Void p) {
       List<AnnotatedTypeMirror> superTypes = new ArrayList<>(1);
-      AnnotationMirrorSet annotations = type.getAnnotations();
+      AnnotationMirrorSet annotations = type.getPrimaryAnnotations();
 
       // Find Boxed type
       TypeElement boxed = types.boxedClass(type.getUnderlyingType());
@@ -167,7 +167,7 @@ final class SupertypeFinder {
 
     @Override
     public List<AnnotatedDeclaredType> visitDeclared(AnnotatedDeclaredType type, Void p) {
-      // AnnotationMirrorSet annotations = type.getAnnotations();
+      // AnnotationMirrorSet annotations = type.getPrimaryAnnotations();
 
       TypeElement typeElement = (TypeElement) type.getUnderlyingType().asElement();
 
@@ -186,14 +186,14 @@ final class SupertypeFinder {
         supertypes.addAll(supertypesFromTree(type, classTree));
       } else {
         supertypes.addAll(supertypesFromElement(type, typeElement));
-        // final Element elem = type.getElement() == null ? typeElement : type.getElement();
+        // Element elem = type.getElement() == null ? typeElement : type.getElement();
       }
 
       if (typeElement.getKind() == ElementKind.ANNOTATION_TYPE) {
         TypeElement jlaElement =
             atypeFactory.elements.getTypeElement(Annotation.class.getCanonicalName());
         AnnotatedDeclaredType jlaAnnotation = atypeFactory.fromElement(jlaElement);
-        jlaAnnotation.addAnnotations(type.getAnnotations());
+        jlaAnnotation.addAnnotations(type.getPrimaryAnnotations());
         supertypes.add(jlaAnnotation);
       }
 
@@ -275,7 +275,8 @@ final class SupertypeFinder {
       // Find the super types: Start with enums and superclass
       if (typeElement.getKind() == ElementKind.ENUM) {
         supertypes.add(createEnumSuperType(type, typeElement));
-      } else if (typeElement.getSuperclass().getKind() != TypeKind.NONE) {
+      } else if (typeElement.getSuperclass().getKind() != TypeKind.NONE
+          && typeElement.getSuperclass().getKind() != TypeKind.ERROR) {
         DeclaredType superClass = (DeclaredType) typeElement.getSuperclass();
         AnnotatedDeclaredType dt =
             (AnnotatedDeclaredType) atypeFactory.toAnnotatedType(superClass, false);
@@ -286,6 +287,10 @@ final class SupertypeFinder {
       }
 
       for (TypeMirror st : typeElement.getInterfaces()) {
+        if (st.getKind() == TypeKind.ERROR) {
+          // This can happen while parsing the JDK.
+          continue;
+        }
         if (type.isUnderlyingTypeRaw()) {
           st = types.erasure(st);
         }
@@ -293,8 +298,8 @@ final class SupertypeFinder {
         supertypes.add(ast);
         if (type.isUnderlyingTypeRaw()) {
           if (st.getKind() == TypeKind.DECLARED) {
-            final List<? extends TypeMirror> typeArgs = ((DeclaredType) st).getTypeArguments();
-            final List<AnnotatedTypeMirror> annotatedTypeArgs = ast.getTypeArguments();
+            List<? extends TypeMirror> typeArgs = ((DeclaredType) st).getTypeArguments();
+            List<AnnotatedTypeMirror> annotatedTypeArgs = ast.getTypeArguments();
             for (int i = 0; i < typeArgs.size(); i++) {
               atypeFactory.addComputedTypeAnnotations(
                   types.asElement(typeArgs.get(i)), annotatedTypeArgs.get(i));
@@ -321,27 +326,16 @@ final class SupertypeFinder {
                 atypeFactory.getAnnotatedTypeFromTypeTree(classTree.getExtendsClause());
         supertypes.add(adt);
       } else if (!ElementUtils.isObject(TreeUtils.elementFromDeclaration(classTree))) {
-        supertypes.add(AnnotatedTypeMirror.createTypeOfObject(atypeFactory));
+        if (classTree.getKind() == Kind.RECORD) {
+          supertypes.add(AnnotatedTypeMirror.createTypeOfRecord(atypeFactory));
+        } else {
+          supertypes.add(AnnotatedTypeMirror.createTypeOfObject(atypeFactory));
+        }
       }
 
       for (Tree implemented : classTree.getImplementsClause()) {
         AnnotatedDeclaredType adt =
             (AnnotatedDeclaredType) atypeFactory.getAnnotatedTypeFromTypeTree(implemented);
-        if (adt.getTypeArguments().size() != adt.getUnderlyingType().getTypeArguments().size()
-            && classTree.getSimpleName().contentEquals("")) {
-          // classTree is an anonymous class with a diamond.
-          List<AnnotatedTypeMirror> args =
-              CollectionsPlume.mapList(
-                  (TypeParameterElement element) -> {
-                    AnnotatedTypeMirror arg =
-                        AnnotatedTypeMirror.createType(element.asType(), atypeFactory, false);
-                    // TODO: After #979 is fixed, calculate the correct type
-                    // using inference.
-                    return atypeFactory.getUninferredWildcardType((AnnotatedTypeVariable) arg);
-                  },
-                  TypesUtils.getTypeElement(adt.getUnderlyingType()).getTypeParameters());
-          adt.setTypeArguments(args);
-        }
         supertypes.add(adt);
       }
 
@@ -361,7 +355,7 @@ final class SupertypeFinder {
      * All enums implicitly extend {@code Enum<MyEnum>}, where {@code MyEnum} is the type of the
      * enum. This method creates the AnnotatedTypeMirror for {@code Enum<MyEnum>} where the
      * annotation on {@code MyEnum} is copied from the annotation on the upper bound of the type
-     * argument to Enum. For example, {@code class Enum<E extend @HERE Enum<E>>}.
+     * argument to Enum. For example, {@code class Enum<E extends @HERE Enum<E>>}.
      *
      * @param type annotated type of an enum
      * @param elem element corresponding to {@code type}
@@ -374,25 +368,18 @@ final class SupertypeFinder {
       for (AnnotatedTypeMirror t : adt.getTypeArguments()) {
         // If the type argument of super is the same as the input type
         if (atypeFactory.types.isSameType(t.getUnderlyingType(), type.getUnderlyingType())) {
-          AnnotationMirrorSet bounds =
-              ((AnnotatedDeclaredType) atypeFactory.getAnnotatedType(dt.asElement()))
-                  .typeArgs
-                  .get(0)
-                  .getEffectiveAnnotations();
-          t.addAnnotations(bounds);
+          t.addAnnotations(type.primaryAnnotations);
         }
       }
-      adt.addAnnotations(type.getAnnotations());
+      adt.addAnnotations(type.getPrimaryAnnotations());
       return adt;
     }
 
     /**
-     *
-     *
      * <pre>{@code
      * For type = A[ ] ==>
      *  Object >: A[ ]
-     *  Clonable >: A[ ]
+     *  Cloneable >: A[ ]
      *  java.io.Serializable >: A[ ]
      *
      * if A is reference type, then also
@@ -402,17 +389,16 @@ final class SupertypeFinder {
     @Override
     public List<AnnotatedTypeMirror> visitArray(AnnotatedArrayType type, Void p) {
       List<AnnotatedTypeMirror> superTypes = new ArrayList<>();
-      AnnotationMirrorSet annotations = type.getAnnotations();
-      final AnnotatedTypeMirror objectType = atypeFactory.getAnnotatedType(Object.class);
+      AnnotationMirrorSet annotations = type.getPrimaryAnnotations();
+      AnnotatedTypeMirror objectType = atypeFactory.getAnnotatedType(Object.class);
       objectType.addAnnotations(annotations);
       superTypes.add(objectType);
 
-      final AnnotatedTypeMirror cloneableType = atypeFactory.getAnnotatedType(Cloneable.class);
+      AnnotatedTypeMirror cloneableType = atypeFactory.getAnnotatedType(Cloneable.class);
       cloneableType.addAnnotations(annotations);
       superTypes.add(cloneableType);
 
-      final AnnotatedTypeMirror serializableType =
-          atypeFactory.getAnnotatedType(Serializable.class);
+      AnnotatedTypeMirror serializableType = atypeFactory.getAnnotatedType(Serializable.class);
       serializableType.addAnnotations(annotations);
       superTypes.add(serializableType);
 

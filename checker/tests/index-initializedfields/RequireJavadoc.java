@@ -245,7 +245,6 @@ public class RequireJavadoc {
       for (Path javaFile : javaFiles) {
         @SuppressWarnings("nullness:assignment") // the file is not "/", so getParent() is non-null
         @NonNull Path javaFileParent = javaFile.getParent();
-        // Java 11 has Path.of() instead of creating a new File.
         Path packageInfo = javaFileParent.resolve(new File("package-info.java").toPath());
         if (!javaFiles.contains(packageInfo)) {
           missingPackageInfoFiles.add(packageInfo);
@@ -409,7 +408,7 @@ public class RequireJavadoc {
      * Return the PropertyKind for the given method, or null if it isn't a property accessor method.
      *
      * @param md the method to check
-     * @return the PropertyKind for the given method, or null
+     * @return the PropertyKind for the given method
      */
     static PropertyKind fromMethodDeclaration(MethodDeclaration md) {
       String methodName = md.getNameAsString();

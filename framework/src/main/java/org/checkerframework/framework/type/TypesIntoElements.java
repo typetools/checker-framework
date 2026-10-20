@@ -84,10 +84,10 @@ public final class TypesIntoElements {
     */
 
     for (Tree mem : tree.getMembers()) {
-      if (mem.getKind() == Tree.Kind.METHOD) {
-        storeMethod(processingEnv, types, atypeFactory, (MethodTree) mem);
-      } else if (mem.getKind() == Tree.Kind.VARIABLE) {
-        storeVariable(processingEnv, types, atypeFactory, (VariableTree) mem);
+      if (mem instanceof MethodTree mt) {
+        storeMethod(processingEnv, types, atypeFactory, mt);
+      } else if (mem instanceof VariableTree vt) {
+        storeVariable(processingEnv, types, atypeFactory, vt);
       } else {
         // System.out.println("Unhandled member tree: " + mem);
       }
@@ -224,7 +224,7 @@ public final class TypesIntoElements {
       { // This block is essentially direct annotations, perhaps we should refactor that
         // method out
         List<Attribute.TypeCompound> res = List.nil();
-        for (AnnotationMirror am : typeVar.getLowerBound().getAnnotations()) {
+        for (AnnotationMirror am : typeVar.getLowerBound().getPrimaryAnnotations()) {
           Attribute.TypeCompound tc =
               TypeAnnotationUtils.createTypeCompoundFromAnnotationMirror(am, tapos, processingEnv);
           res = res.prepend(tc);
@@ -292,13 +292,13 @@ public final class TypesIntoElements {
   private static class TCConvert
       extends AnnotatedTypeScanner<List<Attribute.TypeCompound>, TypeAnnotationPosition> {
 
-    /** ProcessingEnvironment. */
+    /** The processing environment. */
     private final ProcessingEnvironment processingEnv;
 
     /**
      * Creates a {@link TCConvert}.
      *
-     * @param processingEnv ProcessEnvironment
+     * @param processingEnv the processing environment
      */
     TCConvert(ProcessingEnvironment processingEnv) {
       super(List.nil());
@@ -329,7 +329,7 @@ public final class TypesIntoElements {
         AnnotatedTypeMirror type, TypeAnnotationPosition tapos) {
       List<Attribute.TypeCompound> res = List.nil();
 
-      for (AnnotationMirror am : type.getAnnotations()) {
+      for (AnnotationMirror am : type.getPrimaryAnnotations()) {
         // TODO: I BELIEVE THIS ISN'T TRUE BECAUSE PARAMETERS MAY HAVE ANNOTATIONS THAT CAME
         // FROM THE ELEMENT OF THE CLASS WHICH PREVIOUSLY WAS WRITTEN OUT BY
         // TYPESINTOELEMENT.
@@ -387,8 +387,13 @@ public final class TypesIntoElements {
       return res;
     }
 
-    /* Modeled after
-     * {@link com.sun.tools.javac.code.TypeAnnotations.TypeAnnotationPositions#locateNestedTypes(Type, TypeAnnotationPosition)}
+    /**
+     * Modeled after {@code
+     * com.sun.tools.javac.code.TypeAnnotations.TypeAnnotationPositions#locateNestedTypes(Type,
+     * TypeAnnotationPosition)}.
+     *
+     * @param type a type
+     * @param p the type's position
      */
     private void locateNestedTypes(AnnotatedDeclaredType type, TypeAnnotationPosition p) {
       // The number of "steps" to get from the full type to the

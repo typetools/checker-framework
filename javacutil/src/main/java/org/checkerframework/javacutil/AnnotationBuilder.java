@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -32,9 +33,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.plumelib.reflection.ReflectionPlume;
+import org.plumelib.reflection.ReflectionP;
 import org.plumelib.util.ArrayMap;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Builds an annotation mirror that may have some values.
@@ -48,10 +49,10 @@ import org.plumelib.util.StringsPlume;
  * </ol>
  *
  * Once an annotation is built, no further modification or calls to build can be made. Otherwise, a
- * {@link IllegalStateException} is thrown.
+ * {@link BugInCF} is thrown.
  *
- * <p>All setter methods throw {@link IllegalArgumentException} if the specified element is not
- * found, or if the given value is not a subtype of the expected type.
+ * <p>All setter methods throw {@link BugInCF} if the specified element is not found, or if the
+ * given value is not a subtype of the expected type.
  *
  * <p>TODO: Doesn't type-check arrays yet
  */
@@ -59,13 +60,16 @@ public class AnnotationBuilder {
 
   /** The element utilities to use. */
   private final Elements elements;
+
   /** The type utilities to use. */
   private final Types types;
 
   /** The type element of the annotation. */
   private final TypeElement annotationElt;
+
   /** The type of the annotation. */
   private final DeclaredType annotationType;
+
   /** A mapping from element to AnnotationValue. */
   private final Map<ExecutableElement, AnnotationValue> elementValues;
 
@@ -129,7 +133,7 @@ public class AnnotationBuilder {
    *
    * @param elementName the name of an element/field to initialize
    * @param elementValue the initial value for the element/field
-   * @return a mappnig from the element name to the element value
+   * @return a mapping from the element name to the element value
    */
   public static Map<String, AnnotationValue> elementNamesValues(
       String elementName, Object elementValue) {
@@ -181,7 +185,7 @@ public class AnnotationBuilder {
               ? "Is the class in checker-qual.jar?"
               : "Is the class on the compilation classpath, which is:"
                   + System.lineSeparator()
-                  + ReflectionPlume.classpathToString();
+                  + ReflectionP.classpathToString();
       throw new UserError("AnnotationBuilder: fromClass can't load class %s%n" + extra, name);
     }
     return res;
@@ -196,7 +200,7 @@ public class AnnotationBuilder {
    *
    * @param elements the element utilities to use
    * @param name the name of the annotation to create
-   * @return an {@link AnnotationMirror} of type {@code} name or null if the annotation couldn't be
+   * @return an {@link AnnotationMirror} of type {@code name} or null if the annotation couldn't be
    *     loaded
    */
   public static @Nullable AnnotationMirror fromName(
@@ -215,14 +219,14 @@ public class AnnotationBuilder {
    * @param elements the element utilities to use
    * @param name the name of the annotation to create
    * @param elementNamesValues the values for the annotation's elements/fields
-   * @return an {@link AnnotationMirror} of type {@code} name or null if the annotation couldn't be
+   * @return an {@link AnnotationMirror} of type {@code name} or null if the annotation couldn't be
    *     loaded
    */
   public static @Nullable AnnotationMirror fromName(
       Elements elements,
       @FullyQualifiedName CharSequence name,
       Map<String, AnnotationValue> elementNamesValues) {
-    final TypeElement annoElt = elements.getTypeElement(name);
+    TypeElement annoElt = elements.getTypeElement(name);
     if (annoElt == null) {
       return null;
     }
@@ -230,7 +234,7 @@ public class AnnotationBuilder {
       throw new BugInCF(annoElt + " is not an annotation");
     }
 
-    final DeclaredType annoType = (DeclaredType) annoElt.asType();
+    DeclaredType annoType = (DeclaredType) annoElt.asType();
     if (annoType == null) {
       return null;
     }
@@ -255,7 +259,7 @@ public class AnnotationBuilder {
     return result;
   }
 
-  /** Whether or not {@link #build()} has been called. */
+  /** True if {@link #build()} has been called. */
   private boolean wasBuilt = false;
 
   private void assertNotBuilt() {
@@ -264,6 +268,11 @@ public class AnnotationBuilder {
     }
   }
 
+  /**
+   * Returns the newly-built AnnotationMirror.
+   *
+   * @return the newly-built AnnotationMirror
+   */
   public AnnotationMirror build() {
     assertNotBuilt();
     wasBuilt = true;
@@ -335,7 +344,13 @@ public class AnnotationBuilder {
     }
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, AnnotationMirror value) {
     setValue(elementName, (Object) value);
     return this;
@@ -380,47 +395,112 @@ public class AnnotationBuilder {
     return this;
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param values the new values for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Object[] values) {
     return setValue(elementName, Arrays.asList(values));
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Boolean value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
+  public AnnotationBuilder setValue(CharSequence elementName, Byte value) {
+    return setValue(elementName, (Object) value);
+  }
+
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Character value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Double value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Float value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Integer value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Long value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Short value) {
     return setValue(elementName, (Object) value);
   }
 
-  /** Set the element/field with the given name, to the given value. */
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, String value) {
     return setValue(elementName, (Object) value);
   }
@@ -442,6 +522,13 @@ public class AnnotationBuilder {
         : types.erasure(type);
   }
 
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, TypeMirror value) {
     assertNotBuilt();
     value = getErasedOrBoxedType(value);
@@ -466,17 +553,38 @@ public class AnnotationBuilder {
     return TypesUtils.typeFromClass(clazz, types, elements);
   }
 
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Class<?> value) {
     TypeMirror type = typeFromClass(value);
     return setValue(elementName, getErasedOrBoxedType(type));
   }
 
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, Enum<?> value) {
     assertNotBuilt();
     VariableElement enumElt = findEnumElement(value);
     return setValue(elementName, enumElt);
   }
 
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   public AnnotationBuilder setValue(CharSequence elementName, VariableElement value) {
     ExecutableElement var = findElement(elementName);
     if (var.getReturnType().getKind() != TypeKind.DECLARED) {
@@ -489,6 +597,13 @@ public class AnnotationBuilder {
     return this;
   }
 
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param values the new values for the element/field
+   * @return this
+   */
   // Keep this version synchronized with the VariableElement[] version below
   public AnnotationBuilder setValue(CharSequence elementName, Enum<?>[] values) {
     assertNotBuilt();
@@ -525,6 +640,13 @@ public class AnnotationBuilder {
     return this;
   }
 
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param elementName the element/field name
+   * @param values the new values for the element/field
+   * @return this
+   */
   // Keep this version synchronized with the Enum<?>[] version above.
   // Which one is more useful/general? Unifying adds overhead of creating
   // another array.
@@ -580,6 +702,13 @@ public class AnnotationBuilder {
     throw new BugInCF("cannot be here");
   }
 
+  /**
+   * Set the element/field with the given name, to the given value.
+   *
+   * @param key the element/field name
+   * @param value the new value for the element/field
+   * @return this
+   */
   private AnnotationBuilder setValue(CharSequence key, Object value) {
     assertNotBuilt();
     AnnotationValue val = createValue(value);
@@ -619,15 +748,15 @@ public class AnnotationBuilder {
 
     if (expected.getKind() == TypeKind.DECLARED
         && ((DeclaredType) expected).asElement().getKind() == ElementKind.ANNOTATION_TYPE
-        && givenValue instanceof AnnotationMirror) {
-      found = ((AnnotationMirror) givenValue).getAnnotationType();
+        && givenValue instanceof AnnotationMirror am) {
+      found = am.getAnnotationType();
       isSubtype = ((DeclaredType) expected).asElement().equals(((DeclaredType) found).asElement());
-    } else if (givenValue instanceof AnnotationMirror) {
-      found = ((AnnotationMirror) givenValue).getAnnotationType();
+    } else if (givenValue instanceof AnnotationMirror am) {
+      found = am.getAnnotationType();
       // TODO: why is this always failing???
       isSubtype = false;
-    } else if (givenValue instanceof VariableElement) {
-      found = ((VariableElement) givenValue).asType();
+    } else if (givenValue instanceof VariableElement ve) {
+      found = ve.asType();
       if (expected.getKind() == TypeKind.DECLARED) {
         isSubtype = types.isSubtype(types.erasure(found), types.erasure(expected));
       } else {
@@ -657,7 +786,7 @@ public class AnnotationBuilder {
    * @param obj the value to be stored in an annotation element/field
    * @return an AnnotationValue for the given Java value
    */
-  private static AnnotationValue createValue(final Object obj) {
+  private static AnnotationValue createValue(Object obj) {
     return new CheckerFrameworkAnnotationValue(obj);
   }
 
@@ -666,10 +795,13 @@ public class AnnotationBuilder {
   static class CheckerFrameworkAnnotationMirror implements AnnotationMirror {
     /** The interned toString value. */
     private @Nullable @Interned String toStringVal;
+
     /** The annotation type. */
     private final DeclaredType annotationType;
+
     /** The element values. */
     private final Map<ExecutableElement, AnnotationValue> elementValues;
+
     /** The annotation name. */
     // default visibility to allow access from within package.
     final @Interned @CanonicalName String annotationName;
@@ -684,7 +816,7 @@ public class AnnotationBuilder {
     CheckerFrameworkAnnotationMirror(
         DeclaredType annotationType, Map<ExecutableElement, AnnotationValue> elementValues) {
       this.annotationType = annotationType;
-      final TypeElement elm = (TypeElement) annotationType.asElement();
+      TypeElement elm = (TypeElement) annotationType.asElement();
       this.annotationName = elm.getQualifiedName().toString().intern();
       this.elementValues = elementValues;
     }
@@ -706,26 +838,22 @@ public class AnnotationBuilder {
         return toStringVal;
       }
       StringBuilder buf = new StringBuilder();
-      buf.append("@");
+      buf.append('@');
       buf.append(annotationName);
       int len = elementValues.size();
       if (len > 0) {
-        buf.append('(');
-        boolean first = true;
+        StringJoiner sj = new StringJoiner(", ", "(", ")");
         for (Map.Entry<ExecutableElement, AnnotationValue> pair : elementValues.entrySet()) {
-          if (!first) {
-            buf.append(", ");
-          }
-          first = false;
-
+          StringBuilder element = new StringBuilder();
           String name = pair.getKey().getSimpleName().toString();
           if (len > 1 || !name.equals("value")) {
-            buf.append(name);
-            buf.append('=');
+            element.append(name);
+            element.append('=');
           }
-          buf.append(pair.getValue());
+          element.append(pair.getValue());
+          sj.add(element);
         }
-        buf.append(')');
+        buf.append(sj);
       }
       toStringVal = buf.toString().intern();
       return toStringVal;
@@ -738,6 +866,7 @@ public class AnnotationBuilder {
   private static class CheckerFrameworkAnnotationValue implements AnnotationValue {
     /** The value. */
     private final Object value;
+
     /** The interned value of toString. */
     private @Nullable @Interned String toStringVal;
 
@@ -762,18 +891,16 @@ public class AnnotationBuilder {
         toStringVal = "\"" + value + "\"";
       } else if (value instanceof Character) {
         toStringVal = "\'" + value + "\'";
-      } else if (value instanceof List<?>) {
-        List<?> list = (List<?>) value;
-        toStringVal = "{" + StringsPlume.join(", ", list) + "}";
-      } else if (value instanceof VariableElement) {
+      } else if (value instanceof List<?> list) {
+        toStringVal = "{" + StringsP.join(", ", list) + "}";
+      } else if (value instanceof VariableElement var) {
         // for Enums
-        VariableElement var = (VariableElement) value;
         String encl = var.getEnclosingElement().toString();
         if (!encl.isEmpty()) {
           encl = encl + '.';
         }
         toStringVal = encl + var;
-      } else if (value instanceof TypeMirror && TypesUtils.isClassType((TypeMirror) value)) {
+      } else if (value instanceof TypeMirror tm && TypesUtils.isClassType(tm)) {
         toStringVal = value.toString() + ".class";
       } else {
         toStringVal = value.toString();
@@ -785,30 +912,32 @@ public class AnnotationBuilder {
     @SuppressWarnings("unchecked")
     @Override
     public <R, P> R accept(AnnotationValueVisitor<R, P> v, P p) {
-      if (value instanceof AnnotationMirror) {
-        return v.visitAnnotation((AnnotationMirror) value, p);
-      } else if (value instanceof List) {
-        return v.visitArray((List<? extends AnnotationValue>) value, p);
-      } else if (value instanceof Boolean) {
-        return v.visitBoolean((Boolean) value, p);
-      } else if (value instanceof Character) {
-        return v.visitChar((Character) value, p);
-      } else if (value instanceof Double) {
-        return v.visitDouble((Double) value, p);
-      } else if (value instanceof VariableElement) {
-        return v.visitEnumConstant((VariableElement) value, p);
-      } else if (value instanceof Float) {
-        return v.visitFloat((Float) value, p);
-      } else if (value instanceof Integer) {
-        return v.visitInt((Integer) value, p);
-      } else if (value instanceof Long) {
-        return v.visitLong((Long) value, p);
-      } else if (value instanceof Short) {
-        return v.visitShort((Short) value, p);
-      } else if (value instanceof String) {
-        return v.visitString((String) value, p);
-      } else if (value instanceof TypeMirror) {
-        return v.visitType((TypeMirror) value, p);
+      if (value instanceof AnnotationMirror am) {
+        return v.visitAnnotation(am, p);
+      } else if (value instanceof List<?> list) {
+        return v.visitArray((List<? extends AnnotationValue>) list, p);
+      } else if (value instanceof Boolean b) {
+        return v.visitBoolean(b, p);
+      } else if (value instanceof Byte b) {
+        return v.visitByte(b, p);
+      } else if (value instanceof Character c) {
+        return v.visitChar(c, p);
+      } else if (value instanceof Double d) {
+        return v.visitDouble(d, p);
+      } else if (value instanceof VariableElement ve) {
+        return v.visitEnumConstant(ve, p);
+      } else if (value instanceof Float f) {
+        return v.visitFloat(f, p);
+      } else if (value instanceof Integer i) {
+        return v.visitInt(i, p);
+      } else if (value instanceof Long l) {
+        return v.visitLong(l, p);
+      } else if (value instanceof Short s) {
+        return v.visitShort(s, p);
+      } else if (value instanceof String str) {
+        return v.visitString(str, p);
+      } else if (value instanceof TypeMirror tm) {
+        return v.visitType(tm, p);
       } else {
         assert false : " unknown type : " + v.getClass();
         return v.visitUnknown(this, p);
@@ -818,10 +947,9 @@ public class AnnotationBuilder {
     @Override
     public boolean equals(@Nullable Object obj) {
       // System.out.printf("Calling CFAV.equals()%n");
-      if (!(obj instanceof AnnotationValue)) {
+      if (!(obj instanceof AnnotationValue other)) {
         return false;
       }
-      AnnotationValue other = (AnnotationValue) obj;
       return Objects.equals(this.getValue(), other.getValue());
     }
 

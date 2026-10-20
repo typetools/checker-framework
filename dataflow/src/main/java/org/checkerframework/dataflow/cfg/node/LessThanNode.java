@@ -40,10 +40,9 @@ public class LessThanNode extends BinaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof LessThanNode)) {
+    if (!(obj instanceof LessThanNode other)) {
       return false;
     }
-    LessThanNode other = (LessThanNode) obj;
     return getLeftOperand().equals(other.getLeftOperand())
         && getRightOperand().equals(other.getRightOperand());
   }

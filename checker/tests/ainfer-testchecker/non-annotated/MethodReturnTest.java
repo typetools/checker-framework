@@ -9,7 +9,7 @@ public class MethodReturnTest {
   }
 
   static @AinferSibling1 int getAinferSibling1() {
-    // :: warning: (return)
+    // :: warning: [return]
     return getAinferSibling1NotAnnotated();
   }
 
@@ -25,7 +25,7 @@ public class MethodReturnTest {
 
   public static @AinferParent int getParent() {
     int x = lubTest();
-    // :: warning: (return)
+    // :: warning: [return]
     return x;
   }
 
@@ -38,7 +38,7 @@ public class MethodReturnTest {
     }
 
     void receivesAinferSibling1(int i) {
-      // :: warning: (argument)
+      // :: warning: [argument]
       expectsAinferSibling1(i);
     }
 

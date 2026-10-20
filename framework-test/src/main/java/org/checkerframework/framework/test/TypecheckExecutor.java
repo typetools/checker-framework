@@ -12,7 +12,7 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import org.checkerframework.framework.test.diagnostics.JavaDiagnosticReader;
 import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /** Used by the Checker Framework test suite to run the framework and generate a test result. */
 public class TypecheckExecutor {
@@ -54,7 +54,7 @@ public class TypecheckExecutor {
     }
     TestUtilities.ensureDirectoryExists(dOption);
 
-    final StringWriter javacOutput = new StringWriter();
+    StringWriter javacOutput = new StringWriter();
     DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -67,7 +67,7 @@ public class TypecheckExecutor {
       //   error: Class names, 'org.checkerframework.checker.interning.InterningChecker', are
       //   only accepted if annotation processing is explicitly requested
       // Therefore, we now add them to the beginning of the options list.
-      final List<String> options = new ArrayList<>();
+      List<String> options = new ArrayList<>();
       options.add("-processor");
       options.add(String.join(",", configuration.getProcessors()));
 
@@ -86,11 +86,7 @@ public class TypecheckExecutor {
       nonJvmOptions.add("-ApermitMissingJdk");
       nonJvmOptions.add("-Anocheckjdk"); // temporary, for backward compatibility
 
-      // -Anomsgtext is needed to ensure expected errors can be matched.
-      // Note: Since "-Anomsgtext" is always added to the non-JVM options,
-      //  we are passing `true` as the `noMsgText` argument to all invocations
-      //  of `TestDiagnosticUtils.fromJavaxDiagnosticList`.
-      nonJvmOptions.add("-Anomsgtext");
+      nonJvmOptions.add("-Aonelinemsg");
 
       options.addAll(nonJvmOptions);
 
@@ -100,12 +96,12 @@ public class TypecheckExecutor {
             "javac "
                 + String.join(" ", options)
                 + " "
-                + StringsPlume.join(" ", configuration.getTestSourceFiles()));
+                + StringsP.join(" ", configuration.getTestSourceFiles()));
       }
 
       JavaCompiler.CompilationTask task =
           compiler.getTask(
-              javacOutput, fileManager, diagnostics, options, new ArrayList<String>(), javaFiles);
+              javacOutput, fileManager, diagnostics, options, new ArrayList<>(), javaFiles);
 
       /*
        * In Eclipse, std out and std err for multiple tests appear as one
@@ -113,7 +109,7 @@ public class TypecheckExecutor {
        * expected/unexpected messages, but not the std out/err messages from
        * that particular test. Can we improve this somehow?
        */
-      final Boolean compiledWithoutError = task.call();
+      Boolean compiledWithoutError = task.call();
       javacOutput.flush();
       return new CompilationResult(
           compiledWithoutError, javacOutput.toString(), javaFiles, diagnostics.getDiagnostics());

@@ -37,7 +37,7 @@ class MethodNameValidator extends BaseTypeValidator {
 
   @Override
   public Void visitDeclared(AnnotatedDeclaredType type, Tree tree) {
-    AnnotationMirror methodVal = type.getAnnotation(MethodVal.class);
+    AnnotationMirror methodVal = type.getPrimaryAnnotation(MethodVal.class);
     if (methodVal != null) {
       AnnotatedTypeFactory atypeFactory = checker.getTypeFactory();
       List<String> classNames =

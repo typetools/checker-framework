@@ -1,8 +1,5 @@
 package constantpropagation;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Map;
 import org.checkerframework.dataflow.analysis.ForwardAnalysis;
 import org.checkerframework.dataflow.analysis.ForwardAnalysisImpl;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeLauncher;
@@ -11,6 +8,11 @@ import org.checkerframework.dataflow.constantpropagation.ConstantPropagationStor
 import org.checkerframework.dataflow.constantpropagation.ConstantPropagationTransfer;
 
 public class ConstantPropagation {
+
+  /** Do not instantiate. */
+  private ConstantPropagation() {
+    throw new Error("Do not instantiate");
+  }
 
   /**
    * The main method expects to be run in dataflow/tests/constant-propagation directory.
@@ -21,20 +23,12 @@ public class ConstantPropagation {
 
     String inputFile = "Test.java";
     String method = "test";
-    String clazz = "Test";
+    String clas = "Test";
     String outputFile = "Out.txt";
 
     ConstantPropagationTransfer transfer = new ConstantPropagationTransfer();
     ForwardAnalysis<Constant, ConstantPropagationStore, ConstantPropagationTransfer>
         forwardAnalysis = new ForwardAnalysisImpl<>(transfer);
-    CFGVisualizeLauncher cfgVisualizeLauncher = new CFGVisualizeLauncher();
-    Map<String, Object> res =
-        cfgVisualizeLauncher.generateStringOfCFG(inputFile, method, clazz, true, forwardAnalysis);
-    try (FileWriter out = new FileWriter(outputFile)) {
-      out.write(res.get("stringGraph").toString());
-      out.write("\n");
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    CFGVisualizeLauncher.writeStringOfCFG(inputFile, method, clas, outputFile, forwardAnalysis);
   }
 }

@@ -19,7 +19,7 @@ class DaikonEnhancedForNoThis {
   void process(@KeyFor("this.cmap") Object super_c) {
     @SuppressWarnings("keyfor") // the loop below makes all these keys to cmap
     @KeyFor("cmap") Object[] clazzes = getObjects();
-    // go through all of the classes and intialize the map
+    // go through all of the classes and initialize the map
     for (Object cd : clazzes) {
       cmap.put(cd, new TreeSet<@KeyFor("cmap") Object>());
     }

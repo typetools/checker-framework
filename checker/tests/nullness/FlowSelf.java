@@ -7,7 +7,7 @@ public class FlowSelf {
     if (s == null) {
       return;
     }
-    // :: warning: (nulltest.redundant)
+    // :: warning: [nulltest.redundant]
     assert s != null;
 
     s = s.substring(1);

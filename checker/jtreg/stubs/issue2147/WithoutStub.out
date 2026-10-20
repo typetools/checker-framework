@@ -1,7 +1,0 @@
-EnumStubTest.java:15:27: compiler.err.proc.messager: [argument] incompatible argument for parameter sEnum of requireEnum.
-found   : @Tainted SampleEnum
-required: @Untainted SampleEnum
-EnumStubTest.java:16:27: compiler.err.proc.messager: [argument] incompatible argument for parameter sEnum of requireEnum.
-found   : @Tainted SampleEnum
-required: @Untainted SampleEnum
-2 errors

@@ -10,7 +10,7 @@ public class RawSuper {
     A() {
       super();
       mRA(this);
-      // :: error: (type.incompatible)
+      // :: error: [type.incompatible]
       mA(this);
       afield = new Object();
       mRA(this);
@@ -34,7 +34,7 @@ public class RawSuper {
       mRA(this);
       mA(this);
       mRB(this);
-      // :: error: (type.incompatible)
+      // :: error: [type.incompatible]
       mB(this);
       bfield = new Object();
       mRA(this);
@@ -44,10 +44,11 @@ public class RawSuper {
     }
 
     void raw(B this) {
-      // :: error: (type.incompatible)
+      // :: error: [type.incompatible]
       super.nonRaw();
     }
   }
+
   // This test may be extraneous
   class C extends B {
     @NonNull Object cfield;
@@ -58,7 +59,7 @@ public class RawSuper {
       mRB(this);
       mB(this);
       mRC(this);
-      // :: error: (type.incompatible)
+      // :: error: [type.incompatible]
       mC(this);
       cfield = new Object();
       mRA(this);

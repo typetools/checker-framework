@@ -24,7 +24,7 @@ public interface ReflectionResolver {
   public static final List<String> INIT_LIST = Collections.singletonList(INIT);
 
   /**
-   * Determines whether the given tree represents a reflective method or constructor call.
+   * Returns true if the given tree represents a reflective method or constructor call.
    *
    * @return {@code true} iff tree is a reflective method invocation, {@code false} otherwise
    */

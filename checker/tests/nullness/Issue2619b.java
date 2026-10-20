@@ -10,7 +10,7 @@ public class Issue2619b {
     if (aux1.hasValue(Aux.MINIMUM_VALUE) && aux2.hasValue(Aux.MINIMUM_VALUE)) {
       // hasValue is not side-effect-free, so the @KeyFor("aux1.map") is cleared rather than
       // glb'ed.
-      // :: error: (assignment)
+      // :: error: [assignment]
       @KeyFor({"aux1.map", "aux2.map"}) String s1 = Aux.MINIMUM_VALUE;
     }
   }
@@ -31,7 +31,7 @@ public class Issue2619b {
 
   void m04(Aux aux1, Aux aux2) {
     if (map.containsKey(Aux.MINIMUM_VALUE) && aux1.hasValue(Aux.MINIMUM_VALUE)) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @KeyFor({"aux1.map", "map"}) String s1 = Aux.MINIMUM_VALUE;
       @KeyFor("aux1.map") String s2 = Aux.MINIMUM_VALUE;
     }

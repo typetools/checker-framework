@@ -13,7 +13,7 @@ public class ReportModifiersTest extends CheckerFrameworkPerDirectoryTest {
   public ReportModifiersTest(List<File> testFiles) {
     super(
         testFiles,
-        org.checkerframework.common.util.report.ReportChecker.class,
+        org.checkerframework.common.util.count.report.ReportChecker.class,
         "report",
         "-AreportModifiers=native");
   }

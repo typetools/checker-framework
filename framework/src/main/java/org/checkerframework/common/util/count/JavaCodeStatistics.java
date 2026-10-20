@@ -24,7 +24,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * An annotation processor for counting the size of Java code:
+ * An annotation processor for counting a few specific aspects about the size of Java code:
  *
  * <ul>
  *   <li>The number of type parameter declarations and uses.
@@ -39,20 +39,24 @@ import org.checkerframework.javacutil.TreeUtils;
  * </pre>
  *
  * @see AnnotationStatistics
+ * @see org.checkerframework.common.util.count.report.ReportChecker
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class JavaCodeStatistics extends SourceChecker {
 
   /** The number of type parameter declarations and uses. */
   int generics = 0;
+
   /** The number of array accesses and dimensions in array creations. */
   int arrayAccesses = 0;
+
   /** The number of type casts. */
   int typecasts = 0;
 
   String[] warningKeys = {
     "index", "lowerbound", "samelen", "searchindex", "substringindex", "upperbound"
   };
+
   /**
    * The number of warning suppressions with at least one key that matches one of the Index Checker
    * subcheckers.

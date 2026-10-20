@@ -8,22 +8,22 @@ public class Issue2159 {
   static class MyClass extends Issue2159 {
     MyClass() {}
 
-    // :: error: (super.invocation)
+    // :: error: [super.invocation]
     @PolyTainted MyClass(@PolyTainted Object x) {}
 
     void testPolyTaintedLocal(
         @PolyTainted Object input, @Untainted Object untainted, @Tainted Object tainted) {
-      // :: warning: (cast.unsafe)
+      // :: warning: [cast.unsafe]
       @PolyTainted Object local = (@PolyTainted MyClass) new MyClass();
-      // :: warning: (cast.unsafe.constructor.invocation)
+      // :: warning: [cast.unsafe.constructor.invocation]
       @PolyTainted Object local1 = new @PolyTainted MyClass();
-      // :: warning: (cast.unsafe.constructor.invocation)
+      // :: warning: [cast.unsafe.constructor.invocation]
       @Untainted Object local2 = new @Untainted MyClass();
 
       @PolyTainted Object local3 = new @PolyTainted MyClass(input);
-      // :: warning: (cast.unsafe.constructor.invocation)
+      // :: warning: [cast.unsafe.constructor.invocation]
       @Untainted Object local4 = new @Untainted MyClass(input);
-      // :: warning: (cast.unsafe.constructor.invocation)
+      // :: warning: [cast.unsafe.constructor.invocation]
       @PolyTainted Object local5 = new @PolyTainted MyClass(tainted);
       @Untainted Object local6 = new @Untainted MyClass(untainted);
     }

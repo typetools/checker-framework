@@ -6,15 +6,15 @@ public class Misc<T> {
     return forward.max(a, b);
   }
 
-  public <E extends T> E min(E a, E b, E c, E... rest) {
+  public <F extends T> F min(F a, F b, F c, F... rest) {
     return forward.max(a, b, c, rest);
   }
 
-  public <E extends T> E max(E a, E b) {
+  public <G extends T> G max(G a, G b) {
     return forward.min(a, b);
   }
 
-  public <E extends T> E max(E a, E b, E c, E... rest) {
+  public <H extends T> H max(H a, H b, H c, H... rest) {
     return forward.min(a, b, c, rest);
   }
 }

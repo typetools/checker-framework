@@ -10,7 +10,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.plumelib.util.ArrayMap;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.MapsP;
 
 /** A store that records information about constant values. */
 public class ConstantPropagationStore implements Store<ConstantPropagationStore> {
@@ -92,15 +92,15 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
     return leastUpperBound(previous);
   }
 
+  @SuppressWarnings("RedundantControlFlow")
   @Override
   public boolean equals(@Nullable Object o) {
     if (o == null) {
       return false;
     }
-    if (!(o instanceof ConstantPropagationStore)) {
+    if (!(o instanceof ConstantPropagationStore other)) {
       return false;
     }
-    ConstantPropagationStore other = (ConstantPropagationStore) o;
     // go through all of the information of the other object
     for (Map.Entry<Node, Constant> e : other.contents.entrySet()) {
       Node n = e.getKey();
@@ -147,8 +147,7 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
   public String toString() {
     // Only output local variable information.
     // This output is very terse, so a CFG containing it fits well in the manual.
-    Map<Node, Constant> contentsLocalVars =
-        new LinkedHashMap<>(CollectionsPlume.mapCapacity(contents));
+    Map<Node, Constant> contentsLocalVars = new LinkedHashMap<>(MapsP.mapCapacity(contents));
     for (Map.Entry<Node, Constant> e : contents.entrySet()) {
       if (e.getKey() instanceof LocalVariableNode) {
         contentsLocalVars.put(e.getKey(), e.getValue());
@@ -162,12 +161,6 @@ public class ConstantPropagationStore implements Store<ConstantPropagationStore>
     return true;
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * <p>{@code value} is {@code null} because {@link ConstantPropagationStore} doesn't support
-   * visualization.
-   */
   @Override
   public String visualize(CFGVisualizer<?, ConstantPropagationStore, ?> viz) {
     return viz.visualizeStoreKeyVal("constant propagation", toString());

@@ -41,8 +41,8 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
 public class TreePrinter extends AbstractTypeProcessor {
   @Override
   public void typeProcess(TypeElement element, TreePath tree) {
-    final StringWriter out = new StringWriter();
-    final Pretty pretty = new Pretty(out, true);
+    StringWriter out = new StringWriter();
+    Pretty pretty = new Pretty(out, true);
 
     try {
       pretty.printUnit((JCCompilationUnit) tree.getCompilationUnit(), null);

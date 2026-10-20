@@ -1,9 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ReturnTree;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -44,43 +41,10 @@ public class ReturnNode extends Node {
   }
 
   /**
-   * Creates a node for the given return statement.
+   * The result of the return node, {@code null} otherwise.
    *
-   * @param returnTree return tree
-   * @param result the returned expression
-   * @param types types util
-   * @param methodTree method tree
-   * @deprecated Use {@code #ReturnNode(ReturnTree, Node, Types, LambdaExpressionTree,
-   *     MethodSymbol)} instead.
+   * @return the result of the return node, {@code null} otherwise
    */
-  @Deprecated
-  public ReturnNode(
-      ReturnTree returnTree, @Nullable Node result, Types types, MethodTree methodTree) {
-    this(returnTree, result, types);
-  }
-
-  /**
-   * Creates a node for the given return statement.
-   *
-   * @param returnTree return tree
-   * @param result the returned expression
-   * @param types types util
-   * @param lambda lambda
-   * @param methodSymbol methodSymbol
-   * @deprecated Use {@code #ReturnNode(ReturnTree, Node, Types, LambdaExpressionTree,
-   *     MethodSymbol)} instead.
-   */
-  @Deprecated
-  public ReturnNode(
-      ReturnTree returnTree,
-      @Nullable Node result,
-      Types types,
-      LambdaExpressionTree lambda,
-      MethodSymbol methodSymbol) {
-    this(returnTree, result, types);
-  }
-
-  /** The result of the return node, {@code null} otherwise. */
   public @Nullable Node getResult() {
     return result;
   }
@@ -105,10 +69,9 @@ public class ReturnNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ReturnNode)) {
+    if (!(obj instanceof ReturnNode other)) {
       return false;
     }
-    ReturnNode other = (ReturnNode) obj;
     return Objects.equals(result, other.result);
   }
 

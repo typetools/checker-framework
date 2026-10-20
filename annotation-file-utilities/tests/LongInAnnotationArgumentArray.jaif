@@ -1,0 +1,9 @@
+package org.checkerframework.common.value.qual:
+  annotation @IntVal:
+    long[] value
+
+package :
+class LongInAnnotationArgumentArray:
+
+field s0:
+insert-annotation Variable.type: @org.checkerframework.common.value.qual.IntVal({2147483648L})

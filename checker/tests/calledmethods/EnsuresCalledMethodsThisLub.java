@@ -26,7 +26,7 @@ class EnsuresCalledMethodsThisLub {
       call2(this);
     }
     @CalledMethods("toString") Object obj1 = this;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @CalledMethods({"toString", "equals"}) Object obj2 = this;
   }
 
@@ -37,7 +37,7 @@ class EnsuresCalledMethodsThisLub {
       call2(arg);
     }
     @CalledMethods("toString") Object obj1 = arg;
-    // :: error: (assignment)
+    // :: error: [assignment]
     @CalledMethods({"toString", "equals"}) Object obj2 = arg;
   }
 }

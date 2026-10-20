@@ -1,0 +1,37 @@
+// Methods of the JDK's skeletal collection classes whose implementation always throws
+// UnsupportedOperationException.  A subclass that inherits one of them, without overriding it, does
+// not support the operation.
+//
+// Do not list a method that throws UnsupportedOperationException only because some other method
+// does.  For example, `AbstractList.add(E)` has the body `add(size(), e)`, and
+// `AbstractCollection.addAll()` calls `add()` on each element; a subclass that overrides
+// `AbstractList.add(int, E)` makes both of them work.
+//
+// A stub file overrides the annotated JDK for every method it mentions, so each method below
+// repeats the modifiability qualifiers that the annotated JDK writes on it.  Keep them in sync.
+
+import org.checkerframework.checker.modifiability.qual.Growable;
+import org.checkerframework.checker.modifiability.qual.IteratorPolyMod;
+import org.checkerframework.checker.modifiability.qual.Replaceable;
+import org.checkerframework.checker.modifiability.qual.Shrinkable;
+import org.checkerframework.checker.modifiability.qual.ThrowsUnsupportedOperation;
+
+package java.util;
+
+class AbstractCollection<E> {
+  @ThrowsUnsupportedOperation boolean add(@IteratorPolyMod @Growable AbstractCollection<E> this, E e);
+}
+
+class AbstractList<E> {
+  @ThrowsUnsupportedOperation void add(@IteratorPolyMod @Growable AbstractList<E> this, int index, E element);
+  @ThrowsUnsupportedOperation E set(@IteratorPolyMod @Replaceable AbstractList<E> this, int index, E element);
+  @ThrowsUnsupportedOperation E remove(@IteratorPolyMod @Shrinkable AbstractList<E> this, int index);
+}
+
+class AbstractMap<K, V> {
+  @ThrowsUnsupportedOperation V put(@Growable @Replaceable AbstractMap<K, V> this, K key, V value);
+}
+
+interface Iterator<E> {
+  @ThrowsUnsupportedOperation void remove(@Shrinkable Iterator<E> this);
+}

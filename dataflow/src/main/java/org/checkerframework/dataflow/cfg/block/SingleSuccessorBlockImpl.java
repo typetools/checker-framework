@@ -1,7 +1,7 @@
 package org.checkerframework.dataflow.cfg.block;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store.FlowRule;
 
@@ -39,11 +39,11 @@ public abstract class SingleSuccessorBlockImpl extends BlockImpl implements Sing
   }
 
   @Override
-  public List<Block> getSuccessors() {
+  public Set<Block> getSuccessors() {
     if (successor == null) {
-      return Collections.emptyList();
+      return Collections.emptySet();
     } else {
-      return Collections.singletonList(successor);
+      return Collections.singleton(successor);
     }
   }
 

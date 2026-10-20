@@ -14,6 +14,7 @@ import org.plumelib.util.ArraySet;
 /*package-private*/ class TryStack {
   /** The exit label. */
   protected final Label exitLabel;
+
   /** The try frames. */
   protected final ArrayDeque<TryFrame> frames;
 

@@ -20,7 +20,7 @@ class B extends A {
   Object f = new Object();
 
   void foo(@UnderInitialization(A.class) B this) {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     System.out.println("foo B " + this.f.toString());
   }
 }

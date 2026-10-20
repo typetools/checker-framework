@@ -85,10 +85,9 @@ public class PackageNameNode extends Node {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof PackageNameNode)) {
+    if (!(obj instanceof PackageNameNode other)) {
       return false;
     }
-    PackageNameNode other = (PackageNameNode) obj;
     return Objects.equals(getParent(), other.getParent())
         && getElement().equals(other.getElement());
   }

@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -22,7 +24,9 @@ import org.checkerframework.framework.type.typeannotator.DefaultForTypeAnnotator
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.StringsPlume;
+import org.checkerframework.javacutil.TypeSystemError;
+import org.plumelib.util.RegexUtil;
+import org.plumelib.util.StringsP;
 
 /**
  * Adds annotations to a type based on the contents of a tree. This class applies annotations
@@ -45,8 +49,10 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
    */
   /** Maps AST kind to the set of AnnotationMirrors that should be defaulted. */
   private final Map<Tree.Kind, AnnotationMirrorSet> treeKinds;
+
   /** Maps AST class to the set of AnnotationMirrors that should be defaulted. */
   private final Map<Class<?>, AnnotationMirrorSet> treeClasses;
+
   /** Maps String literal pattern to the set of AnnotationMirrors that should be defaulted. */
   private final IdentityHashMap<Pattern, AnnotationMirrorSet> stringPatterns;
 
@@ -77,6 +83,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
    *
    * @param atypeFactory the type factory to make an annotator for
    */
+  @SuppressWarnings("this-escape")
   public LiteralTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
     super(atypeFactory);
     this.treeKinds = new EnumMap<>(Tree.Kind.class);
@@ -101,8 +108,12 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
         addLiteralKind(literalKind, theQual);
       }
 
-      for (String pattern : forLiterals.stringPatterns()) {
-        addStringPattern(pattern, theQual);
+      for (String regex : forLiterals.stringPatterns()) {
+        if (!RegexUtil.isRegex(regex)) {
+          throw new TypeSystemError(
+              "In @QualifierForLiterals(...), \"" + regex + "\" is not a regular expression");
+        }
+        addStringPattern(regex, theQual);
       }
 
       if (forLiterals.value().length == 0 && forLiterals.stringPatterns().length == 0) {
@@ -126,7 +137,7 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
       }
       return this;
     }
-    Set<? extends AnnotationMirror> tops = qualHierarchy.getTopAnnotations();
+    AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
     AnnotationMirrorSet defaultForNull = treeKinds.get(Tree.Kind.NULL_LITERAL);
     if (tops.size() == defaultForNull.size()) {
       return this;
@@ -181,12 +192,33 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
   /**
    * Added a rule for all String literals that match the given pattern.
    *
+   * @param regex regex to match Strings against
+   * @param theQual {@code AnnotationMirror} to apply to Strings that match the regex
+   * @see #addStringPattern(Pattern,AnnotationMirror)
+   */
+  public void addStringPattern(@Regex String regex, AnnotationMirror theQual) {
+    boolean res =
+        qualHierarchy.updateMappingToMutableSet(stringPatterns, Pattern.compile(regex), theQual);
+    if (!res) {
+      throw new BugInCF(
+          "LiteralTreeAnnotator: invalid update of stringPatterns "
+              + stringPatterns
+              + " at "
+              + regex
+              + " with "
+              + theQual);
+    }
+  }
+
+  /**
+   * Added a rule for all String literals that match the given pattern.
+   *
    * @param pattern pattern to match Strings against
    * @param theQual {@code AnnotationMirror} to apply to Strings that match the pattern
+   * @see #addStringPattern(String,AnnotationMirror)
    */
-  public void addStringPattern(String pattern, AnnotationMirror theQual) {
-    boolean res =
-        qualHierarchy.updateMappingToMutableSet(stringPatterns, Pattern.compile(pattern), theQual);
+  public void addStringPattern(Pattern pattern, AnnotationMirror theQual) {
+    boolean res = qualHierarchy.updateMappingToMutableSet(stringPatterns, pattern, theQual);
     if (!res) {
       throw new BugInCF(
           "LiteralTreeAnnotator: invalid update of stringPatterns "
@@ -246,24 +278,23 @@ public class LiteralTreeAnnotator extends TreeAnnotator {
         }
       }
       if (!matches.isEmpty()) {
+        TypeMirror tm = type.getUnderlyingType();
         Set<? extends AnnotationMirror> res = matches.get(0);
         for (Set<? extends AnnotationMirror> sam : matches) {
-          res = qualHierarchy.greatestLowerBounds(res, sam);
+          res = qualHierarchy.greatestLowerBoundsShallow(res, tm, sam, tm);
         }
         // Verify that res is not a subtype of any type in nonMatches
         for (Set<? extends AnnotationMirror> sam : nonMatches) {
-          if (qualHierarchy.isSubtype(res, sam)) {
-            String matchesOnePerLine = "";
-            for (Set<? extends AnnotationMirror> match : matches) {
-              matchesOnePerLine += System.lineSeparator() + "     " + match;
-            }
+          if (qualHierarchy.isSubtypeShallow(res, sam, tm)) {
+            String matchesOnePerLine = StringsP.join(System.lineSeparator() + "     ", matches);
             throw new BugInCF(
-                StringsPlume.joinLines(
+                StringsP.joinLines(
                     "Bug in @QualifierForLiterals(stringpatterns=...) in type"
                         + " hierarchy definition:",
                     " the glb of `matches` for \"" + string + "\" is " + res,
                     " which is a subtype of " + sam,
                     " whose pattern does not match \"" + string + "\".",
+                    "  patterns = " + stringPatterns,
                     "  matches = " + matchesOnePerLine,
                     "  nonMatches = " + nonMatches));
           }

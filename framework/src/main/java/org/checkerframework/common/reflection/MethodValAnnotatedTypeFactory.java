@@ -37,7 +37,8 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
+import org.plumelib.util.MapsP;
 
 /** AnnotatedTypeFactory for the MethodVal Checker. */
 public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -46,7 +47,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private final AnnotationMirror UNKNOWN_METHOD =
       AnnotationBuilder.fromClass(elements, UnknownMethod.class);
 
-  /** An arary length that represents that the length is unknown. */
+  /** An array length that represents that the length is unknown. */
   private static final int UNKNOWN_PARAM_LENGTH = -1;
 
   /** A list containing just {@link #UNKNOWN_PARAM_LENGTH}. */
@@ -65,12 +66,15 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The ArrayLen.value argument/element. */
   public final ExecutableElement arrayLenValueElement =
       TreeUtils.getMethod(ArrayLen.class, "value", 0, processingEnv);
+
   /** The ClassBound.value argument/element. */
   public final ExecutableElement classBoundValueElement =
       TreeUtils.getMethod(ClassBound.class, "value", 0, processingEnv);
+
   /** The ClassVal.value argument/element. */
   public final ExecutableElement classValValueElement =
       TreeUtils.getMethod(ClassVal.class, "value", 0, processingEnv);
+
   /** The StringVal.value argument/element. */
   public final ExecutableElement stringValValueElement =
       TreeUtils.getMethod(StringVal.class, "value", 0, processingEnv);
@@ -80,6 +84,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param checker the type-checker associated with this factory
    */
+  @SuppressWarnings("this-escape")
   public MethodValAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     if (this.getClass() == MethodValAnnotatedTypeFactory.class) {
@@ -147,8 +152,8 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Returns a list of class names for the given tree using the Class Val Checker.
    *
-   * @param tree ExpressionTree whose class names are requested
-   * @param mustBeExact whether @ClassBound may be read to produce the result; if false,
+   * @param tree an ExpressionTree whose class names are requested
+   * @param mustBeExact true if @ClassBound may be read to produce the result; if false,
    *     only @ClassVal may be read
    * @return list of class names or the empty list if no class names were found
    */
@@ -156,14 +161,14 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     ClassValAnnotatedTypeFactory classValATF = getTypeFactoryOfSubchecker(ClassValChecker.class);
     AnnotatedTypeMirror classAnno = classValATF.getAnnotatedType(tree);
 
-    AnnotationMirror classValAnno = classAnno.getAnnotation(ClassVal.class);
+    AnnotationMirror classValAnno = classAnno.getPrimaryAnnotation(ClassVal.class);
     if (classValAnno != null) {
       return AnnotationUtils.getElementValueArray(classValAnno, classValValueElement, String.class);
     } else if (mustBeExact) {
       return Collections.emptyList();
     }
 
-    AnnotationMirror classBoundAnno = classAnno.getAnnotation(ClassBound.class);
+    AnnotationMirror classBoundAnno = classAnno.getPrimaryAnnotation(ClassBound.class);
     if (classBoundAnno != null) {
       return AnnotationUtils.getElementValueArray(
           classBoundAnno, classBoundValueElement, String.class);
@@ -171,17 +176,18 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return Collections.emptyList();
     }
   }
+
   /**
    * Returns the string values for the argument passed. The String Values are estimated using the
    * Value Checker.
    *
-   * @param arg ExpressionTree whose string values are sought
+   * @param arg an ExpressionTree whose string values are sought
    * @return string values of arg or the empty list if no values were found
    */
   private List<String> getMethodNamesFromStringArg(ExpressionTree arg) {
     ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
     AnnotatedTypeMirror valueAnno = valueATF.getAnnotatedType(arg);
-    AnnotationMirror annotation = valueAnno.getAnnotation(StringVal.class);
+    AnnotationMirror annotation = valueAnno.getPrimaryAnnotation(StringVal.class);
     if (annotation != null) {
       return AnnotationUtils.getElementValueArray(annotation, stringValValueElement, String.class);
     } else {
@@ -205,7 +211,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     protected MethodValQualifierHierarchy(
         Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-      super(qualifierClasses, elements);
+      super(qualifierClasses, elements, MethodValAnnotatedTypeFactory.this);
     }
 
     /*
@@ -214,17 +220,18 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * concatenating all value lists of a1 and a2.
      */
     @Override
-    public @Nullable AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public @Nullable AnnotationMirror leastUpperBoundQualifiers(
+        AnnotationMirror a1, AnnotationMirror a2) {
       if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
         return null;
-      } else if (isSubtype(a1, a2)) {
+      } else if (isSubtypeQualifiers(a1, a2)) {
         return a2;
-      } else if (isSubtype(a2, a1)) {
+      } else if (isSubtypeQualifiers(a2, a1)) {
         return a1;
       } else if (AnnotationUtils.areSameByName(a1, a2)) {
         List<MethodSignature> a1Sigs = getListOfMethodSignatures(a1);
         List<MethodSignature> a2Sigs = getListOfMethodSignatures(a2);
-        List<MethodSignature> lubSigs = CollectionsPlume.listUnion(a1Sigs, a2Sigs);
+        List<MethodSignature> lubSigs = CollectionsP.listUnion(a1Sigs, a2Sigs);
         AnnotationMirror result = createMethodVal(lubSigs);
         return result;
       }
@@ -232,17 +239,18 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public @Nullable AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public @Nullable AnnotationMirror greatestLowerBoundQualifiers(
+        AnnotationMirror a1, AnnotationMirror a2) {
       if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
         return null;
-      } else if (isSubtype(a1, a2)) {
+      } else if (isSubtypeQualifiers(a1, a2)) {
         return a1;
-      } else if (isSubtype(a2, a1)) {
+      } else if (isSubtypeQualifiers(a2, a1)) {
         return a2;
       } else if (AnnotationUtils.areSameByName(a1, a2)) {
         List<MethodSignature> a1Sigs = getListOfMethodSignatures(a1);
         List<MethodSignature> a2Sigs = getListOfMethodSignatures(a2);
-        List<MethodSignature> lubSigs = CollectionsPlume.listIntersection(a1Sigs, a2Sigs);
+        List<MethodSignature> lubSigs = CollectionsP.listIntersection(a1Sigs, a2Sigs);
         AnnotationMirror result = createMethodVal(lubSigs);
         return result;
       }
@@ -250,7 +258,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+    public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
       if (AnnotationUtils.areSame(subAnno, superAnno)
           || areSameByClass(superAnno, UnknownMethod.class)
           || areSameByClass(subAnno, MethodValBottom.class)) {
@@ -318,8 +326,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       }
 
       Set<MethodSignature> methodSigs =
-          new HashSet<>(
-              CollectionsPlume.mapCapacity(methodNames.size() * classNames.size() * params.size()));
+          new HashSet<>(MapsP.mapCapacity(methodNames.size() * classNames.size() * params.size()));
       // The possible method signatures are the Cartesian product of all
       // found class, method, and parameter lengths.
       for (String methodName : methodNames) {
@@ -392,7 +399,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * if getMethod(Object receiver, Object... params) or getConstrutor(Object... params) have one
+     * If getMethod(Object receiver, Object... params) or getConstructor(Object... params) have one
      * argument for params, then the number of parameters in the underlying method or constructor
      * must be:
      *
@@ -404,40 +411,42 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *   <li>1: otherwise
      * </ul>
      *
-     * @param argument the single argument in a call to {@code getMethod} or {@code getConstrutor}
+     * @param argument the single argument in a call to {@code getMethod} or {@code getConstructor}
      * @return a list, each of whose elementts is a possible the number of parameters; it is often,
      *     but not always, a singleton list
      */
     private List<Integer> getNumberOfParameterOneArg(ExpressionTree argument) {
       AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(argument);
       switch (atm.getKind()) {
-        case ARRAY:
+        case ARRAY -> {
           ValueAnnotatedTypeFactory valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
           AnnotatedTypeMirror valueType = valueATF.getAnnotatedType(argument);
-          AnnotationMirror arrayLenAnno = valueType.getAnnotation(ArrayLen.class);
+          AnnotationMirror arrayLenAnno = valueType.getPrimaryAnnotation(ArrayLen.class);
           if (arrayLenAnno != null) {
             return AnnotationUtils.getElementValueArray(
                 arrayLenAnno, arrayLenValueElement, Integer.class);
-          } else if (valueType.getAnnotation(BottomVal.class) != null) {
+          } else if (valueType.getPrimaryAnnotation(BottomVal.class) != null) {
             // happens in this case: (Class[]) null
             return ZERO_LIST;
           }
           // the argument is an array with unknown array length
           return UNKNOWN_PARAM_LENGTH_LIST;
-        case NULL:
-          // null is treated as the empty list of parameters, so size is 0.
+        }
+        case NULL -> {
           return ZERO_LIST;
-        default:
-          // The argument is not an array or null, so it must be a class.
+        } // null is treated as the empty list of parameters, so size is 0.
+        default -> {
           return ONE_LIST;
+        } // The argument is not an array or null, so it must be a class.
       }
     }
   }
 }
 
 /**
- * An object that represents a the tuple that identifies a method signature: (fully qualified class
- * name, method name, number of parameters).
+ * An object that represents a method signature: fully qualified class name, method name, and number
+ * of parameters. It does not distinguish among overloads that have the same number of arguments,
+ * but arguments of different types.
  */
 class MethodSignature {
   String className;

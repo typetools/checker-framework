@@ -3,53 +3,46 @@ package org.checkerframework.framework.type;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.framework.type.visitor.EquivalentAtmComboScanner;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.plumelib.util.StringsPlume;
 
 /**
  * Compares two annotated type mirrors for structural equality using only the primary annotations
  * and underlying types of the two input types and their component types. Note, this leaves out
  * other fields specific to some AnnotatedTypeMirrors (like directSupertypes, isUnderlyingTypeRaw,
- * isUninferredTypeArgument etc...). Ideally, both EqualityAtmComparer and HashcodeAtmVisitor would
- * visit relevant fields.
+ * isTypeArgOfRawType etc...).
  *
- * <p>This class is used by AnnotatedTypeMirror#equals
+ * <p>This class is used by AnnotatedTypeMirror#equals.
  *
- * <p>This class should be kept synchronized with HashcodeAtmVisitor.
- *
- * @see org.checkerframework.framework.type.HashcodeAtmVisitor
- *     <p>Unlike HashcodeAtmVisitor this class is intended to be overridden.
+ * <p>{@link AnnotatedTypeMirror#hashCode} hashes only the top-level type, not the component types
+ * that this class compares. That is consistent -- unequal types may share a hash code -- and is
+ * explained there.
  */
 public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void> {
 
+  /** Creates an {@code EqualityAtmComparer}. */
+  public EqualityAtmComparer() {
+    super();
+  }
+
   /**
-   * Called when a visit method is called on two types that do not have the same class, i.e. when
-   * !type1.getClass().equals(type2.getClass())
+   * Returns true if {@code type1} and {@code type2} have equivalent sets of annotations.
+   *
+   * @param type1 a type
+   * @param type2 a type
+   * @return true if {@code type1} and {@code type2} have equivalent sets of annotations
    */
-  @Override
-  protected String defaultErrorMessage(
-      AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void v) {
-    throw new UnsupportedOperationException(
-        StringsPlume.joinLines(
-            "Comparing two different subclasses of AnnotatedTypeMirror.",
-            "type1=" + type1,
-            "type2=" + type2));
-  }
-
-  /** Return true if type1 and type2 have equivalent sets of annotations. */
-  protected boolean arePrimeAnnosEqual(
-      final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
-    return AnnotationUtils.areSame(type1.getAnnotations(), type2.getAnnotations());
+  protected boolean arePrimaryAnnosEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+    return AnnotationUtils.areSame(type1.getPrimaryAnnotations(), type2.getPrimaryAnnotations());
   }
 
   /**
-   * Return true if the twe types are the same.
+   * Returns true if the two types are the same.
    *
    * @param type1 the first type to compare
    * @param type2 the second type to compare
-   * @return true if the twe types are the same
+   * @return true if the two types are the same
    */
   @EqualsMethod // to make Interning Checker permit the == comparison
-  protected boolean compare(final AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+  protected boolean compare(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
     if (type1 == type2) {
       return true;
     }
@@ -60,7 +53,7 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
 
     @SuppressWarnings("TypeEquals") // TODO
     boolean sameUnderlyingType = type1.getUnderlyingType().equals(type2.getUnderlyingType());
-    return sameUnderlyingType && arePrimeAnnosEqual(type1, type2);
+    return sameUnderlyingType && arePrimaryAnnosEqual(type1, type2);
   }
 
   @SuppressWarnings("interning:not.interned")

@@ -206,43 +206,43 @@ public class Addition {
 
     // Dimensions
     // Acceleration
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Acceleration int sAcceleration = aAcceleration + bMass;
 
     // Area
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Luminance int sLuminance = aArea + bArea;
 
     // Current
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Current int sCurrent = aMass + bCurrent;
 
     // Length
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Length int sLength = aLength + bSubstance;
 
     // Luminance
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Temperature int sTemperature = aLuminance + bLuminance;
 
     // Mass
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Mass int sMass = aTemperature + bMass;
 
     // Substance
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Substance int sSubstance = aSubstance + bCurrent;
 
     // Temperature
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Area int sArea = aTemperature + bTemperature;
 
     // Time
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Time int sTime = aArea + bTime;
 
     // Force
-    // :: error: (assignment)
+    // :: error: [assignment]
     sMass = aForce + bForce;
 
     // Units
@@ -336,91 +336,91 @@ public class Addition {
 
     // Units
     // Amperes
-    // :: error: (assignment)
+    // :: error: [assignment]
     @g int sGram = aAmpere + bAmpere;
 
     // Candela
-    // :: error: (assignment)
+    // :: error: [assignment]
     @cd int sCandela = aTemperature + bCandela;
 
     // Celsius
-    // :: error: (assignment)
+    // :: error: [assignment]
     @C int sCelsius = aCelsius + bMillimeter;
 
     // Gram
-    // :: error: (assignment)
+    // :: error: [assignment]
     @kg int sKilogram = aGram + bGram;
 
     // Hour
-    // :: error: (assignment)
+    // :: error: [assignment]
     @h int sHour = aSquareMeter + bHour;
 
     // Kelvin
-    // :: error: (assignment)
+    // :: error: [assignment]
     @K int sKelvin = aKelvin + bSecond;
 
     // Kilogram
-    // :: error: (assignment)
+    // :: error: [assignment]
     @kmPERh int sKilometerPerHour = aKilogram + bKilogram;
 
     // Kilometer
-    // :: error: (assignment)
+    // :: error: [assignment]
     @km int sKilometer = aCandela + bKilometer;
 
     // Square kilometer
-    // :: error: (assignment)
+    // :: error: [assignment]
     @km2 int sSquareKilometer = aSquareKilometer + bAmpere;
 
     // Kilometer per hour
-    // :: error: (assignment)
+    // :: error: [assignment]
     @mPERs int sMeterPerSecond = aKilometerPerHour + bKilometerPerHour;
 
     // Meter
-    // :: error: (assignment)
+    // :: error: [assignment]
     @m int sMeter = aHour + bMeter;
 
     // Square meter
-    // :: error: (assignment)
+    // :: error: [assignment]
     @m2 int sSquareMeter = aSquareMeter + bGram;
 
     // Meter per second
-    // :: error: (assignment)
+    // :: error: [assignment]
     @mm2 int sSquareMillimeter = aMeterPerSecond + bMeterPerSecond;
 
     // Meter per second square
-    // :: error: (assignment)
+    // :: error: [assignment]
     @mPERs2 int sMeterPerSecondSquare = aMeterPerSecondSquare + bMeter;
 
     // Minute
-    // :: error: (assignment)
+    // :: error: [assignment]
     @min int sMinute = aMole + bMinute;
 
     // Millimeter
-    // :: error: (assignment)
+    // :: error: [assignment]
     @mm int sMillimeter = aMillimeter + bHour;
 
     // Square millimeter
-    // :: error: (assignment)
+    // :: error: [assignment]
     @A int sAmpere = aSquareMillimeter + bSquareMillimeter;
 
     // Mole
-    // :: error: (assignment)
+    // :: error: [assignment]
     @mol int sMole = aCandela + bMole;
 
     // Second
-    // :: error: (assignment)
+    // :: error: [assignment]
     @s int sSecond = aSecond + bSquareKilometer;
 
     // Newton
-    // :: error: (assignment)
+    // :: error: [assignment]
     sKilogram = aNewton + bNewton;
 
     // Kilonewton
-    // :: error: (assignment)
+    // :: error: [assignment]
     @kN int sKilonewton = aKilonewton + bNewton;
 
     // Metric Ton
-    // :: error: (assignment)
+    // :: error: [assignment]
     @N int sNewton = aNewton + bMetricTon;
   }
 }

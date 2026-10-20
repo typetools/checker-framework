@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Represents all of the information needed to execute the Javac compiler for a given set of test
@@ -23,21 +23,22 @@ public class ImmutableTestConfiguration implements TestConfiguration {
    * <pre>{@code
    * Map(
    *   "-AprintAllQualifiers" => null
-   *    "-classpath" => "myDir1:myDir2"
+   *   "-classpath" => "myDir1:myDir2"
    * )
    * }</pre>
    */
   private final Map<String, @Nullable String> options;
+
   /**
    * These files contain diagnostics that should be returned by Javac. If this list is empty, the
-   * diagnostics are instead read from comments in the Java file itself
+   * diagnostics are instead read from comments in the Java file itself.
    */
   private final List<File> diagnosticFiles;
 
   /**
    * The source files to compile. If the file is expected to emit errors on compilation, the file
    * should contain expected error diagnostics OR should have a companion file with the same
-   * path/name but with the extension .out instead of .java if they
+   * path/name but with the extension .goal instead of .java if they
    */
   private final List<File> testSourceFiles;
 
@@ -63,10 +64,9 @@ public class ImmutableTestConfiguration implements TestConfiguration {
       Map<String, @Nullable String> options,
       boolean shouldEmitDebugInfo) {
     this.diagnosticFiles = Collections.unmodifiableList(diagnosticFiles);
-    this.testSourceFiles = Collections.unmodifiableList(new ArrayList<>(testSourceFiles));
+    this.testSourceFiles = List.copyOf(testSourceFiles);
     this.processors = new ArrayList<>(processors);
-    this.options =
-        Collections.unmodifiableMap(new LinkedHashMap<String, @Nullable String>(options));
+    this.options = Collections.unmodifiableMap(new LinkedHashMap<>(options));
     this.shouldEmitDebugInfo = shouldEmitDebugInfo;
   }
 
@@ -102,9 +102,9 @@ public class ImmutableTestConfiguration implements TestConfiguration {
 
   @Override
   public String toString() {
-    return StringsPlume.joinLines(
+    return StringsP.joinLines(
         "TestConfigurationBuilder:",
-        "testSourceFiles=" + StringsPlume.join(" ", testSourceFiles),
+        "testSourceFiles=" + StringsP.join(" ", testSourceFiles),
         "processors=" + String.join(", ", processors),
         "options=" + String.join(", ", getFlatOptions()),
         "shouldEmitDebugInfo=" + shouldEmitDebugInfo);

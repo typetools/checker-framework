@@ -23,22 +23,40 @@ import org.checkerframework.javacutil.TreeUtils;
  * subtracted terms, and a single integer constant. The Java expression strings have been
  * standardized and viewpoint-adapted.
  *
+ * <p>For example, the offset equation for {@code "end - start - 1"} has {@code "end"} as its only
+ * added term, {@code "start"} as its only subtracted term, and -1 as its integer constant. Integer
+ * literals are folded into the integer constant rather than being kept as terms, so an offset
+ * equation with no added terms and no subtracted terms is just an integer constant, as {@link
+ * #ZERO} is.
+ *
+ * <p>An offset equation represents the {@code offset} element of an Index Checker annotation such
+ * as {@code @LTLengthOf}. For example, {@code @LTLengthOf(value = "a", offset = "end - start - 1")}
+ * means that the annotated expression plus {@code end - start - 1} is less than {@code a.length}.
+ * The Upper Bound Checker adds, subtracts, and compares offset equations in order to compute types;
+ * for instance, if {@code i} has that type, then {@code i + 1} has type {@code @LTLengthOf(value =
+ * "a", offset = "end - start - 2")}.
+ *
  * <p>An OffsetEquation is mutable.
  */
 public class OffsetEquation {
   /** The equation for 0 (zero). */
   public static final OffsetEquation ZERO = createOffsetForInt(0);
+
   /** The equation for -1. */
   public static final OffsetEquation NEG_1 = createOffsetForInt(-1);
+
   /** The equation for 1. */
   public static final OffsetEquation ONE = createOffsetForInt(1);
 
   /** Mutable list of terms that have been added to this. */
   private final List<String> addedTerms;
+
   /** Mutable list of terms that have been subtracted from this. */
   private final List<String> subtractedTerms;
+
   /** The integer offset. */
   private int intValue;
+
   /** Non-null if an error has occurred. */
   private @Nullable String error;
 
@@ -66,7 +84,7 @@ public class OffsetEquation {
     return error != null;
   }
 
-  public String getError() {
+  public @Nullable String getError() {
     return error;
   }
 
@@ -141,7 +159,7 @@ public class OffsetEquation {
    * @return a copy of this equation with array.length and string.length() removed or null if no
    *     array.lengths or string.length() could be removed
    */
-  public OffsetEquation removeSequenceLengths(List<String> sequences) {
+  public @Nullable OffsetEquation removeSequenceLengths(List<String> sequences) {
     OffsetEquation copy = new OffsetEquation(this);
     boolean simplified = false;
     for (String sequence : sequences) {
@@ -158,6 +176,7 @@ public class OffsetEquation {
     }
     return simplified ? copy : null;
   }
+
   /**
    * Adds or subtracts the other equation to a copy of this one.
    *
@@ -178,8 +197,13 @@ public class OffsetEquation {
     return copy;
   }
 
+  /**
+   * Adds the given equation to this equation, side-effecting this equation.
+   *
+   * @param eq the equation to add to this equation
+   */
   private void plus(OffsetEquation eq) {
-    addInt(eq.intValue);
+    addInt(eq.getIntPart());
     for (String term : eq.addedTerms) {
       addTerm('+', term);
     }
@@ -188,8 +212,13 @@ public class OffsetEquation {
     }
   }
 
+  /**
+   * Subtracts the given equation from this equation, side-effecting this equation.
+   *
+   * @param eq the equation to subtract from this equation
+   */
   private void minus(OffsetEquation eq) {
-    addInt(-1 * eq.intValue);
+    addInt(-1 * eq.getIntPart());
     for (String term : eq.addedTerms) {
       addTerm('-', term);
     }
@@ -199,13 +228,14 @@ public class OffsetEquation {
   }
 
   /**
-   * Returns whether or not this equation is known to be less than or equal to the other equation.
+   * Returns true if this equation is known to be less than or equal to the other equation.
    *
    * @param other equation
-   * @return whether or not this equation is known to be less than or equal to the other equation
+   * @return true if this equation is known to be less than or equal to the other equation
    */
   public boolean lessThanOrEqual(OffsetEquation other) {
-    return (isInt() && other.isInt() && intValue <= other.getInt()) || this.equals(other);
+    return (isOnlyInt() && other.isOnlyInt() && getIntPart() <= other.getIntPart())
+        || this.equals(other);
   }
 
   /**
@@ -213,19 +243,19 @@ public class OffsetEquation {
    *
    * @return true if this equation is a single int value
    */
-  public boolean isInt() {
+  public boolean isOnlyInt() {
     return addedTerms.isEmpty() && subtractedTerms.isEmpty();
   }
 
   /**
-   * Returns the int value associated with this equation.
+   * Returns the int part of this equation.
    *
-   * <p>The equation may or may not have other terms. Use {@link #isInt()} to determine if the
+   * <p>The equation may or may not have other terms. Use {@link #isOnlyInt()} to determine if the
    * equation is only this int value.
    *
-   * @return the int value associated with this equation
+   * @return the int part of this equation
    */
-  public int getInt() {
+  public int getIntPart() {
     return intValue;
   }
 
@@ -235,25 +265,25 @@ public class OffsetEquation {
    * @return true if this equation is exactly -1
    */
   public boolean isNegOne() {
-    return isInt() && getInt() == -1;
+    return isOnlyInt() && getIntPart() == -1;
   }
 
   /**
-   * Returns true if this equation non-negative.
+   * Returns true if this equation is only an int value that is non-negative.
    *
-   * @return true if this equation non-negative
+   * @return true if this equation is only an int value that is non-negative
    */
-  public boolean isNonNegative() {
-    return isInt() && getInt() >= 0;
+  public boolean isNonNegativeInt() {
+    return isOnlyInt() && getIntPart() >= 0;
   }
 
   /**
-   * Returns true if this equation is negative or zero.
+   * Returns true if this equation is only an int value that is non-positive.
    *
-   * @return true if this equation is negative or zero
+   * @return true if this equation is only an int value that is non-positive
    */
-  public boolean isNegativeOrZero() {
-    return isInt() && getInt() <= 0;
+  public boolean isNonPositiveInt() {
+    return isOnlyInt() && getIntPart() <= 0;
   }
 
   /**
@@ -270,8 +300,8 @@ public class OffsetEquation {
       addInt(-2147483648);
       return;
     }
-    if (isInt(term)) {
-      int literal = parseInt(term);
+    if (isIntLiteral(term)) {
+      int literal = Integer.parseInt(term);
       addInt(operator == '-' ? -1 * literal : literal);
       return;
     }
@@ -297,19 +327,21 @@ public class OffsetEquation {
   }
 
   /**
-   * Returns the offset equation that is an int value or null if there isn't one.
+   * Returns an offset equation in the given set that is only an int value, or null if there isn't
+   * one.
    *
    * @param equationSet a set of offset equations
-   * @return the offset equation that is an int value or null if there isn't one
+   * @return an offset equation that is only an int value, or null if there isn't one
    */
-  public static OffsetEquation getIntOffsetEquation(Set<OffsetEquation> equationSet) {
+  public static @Nullable OffsetEquation getOnlyIntOffsetEquation(Set<OffsetEquation> equationSet) {
     for (OffsetEquation eq : equationSet) {
-      if (eq.isInt()) {
+      if (eq.isOnlyInt()) {
         return eq;
       }
     }
     return null;
   }
+
   /**
    * Creates an offset equation that is only the int value specified.
    *
@@ -343,7 +375,7 @@ public class OffsetEquation {
       equation.error = expressionEquation;
       return equation;
     }
-    if (indexOf(expressionEquation, '-', '+', 0) == -1) {
+    if (indexOfEither(expressionEquation, '-', '+', 0) == -1) {
       equation.addTerm('+', expressionEquation);
       return equation;
     }
@@ -357,7 +389,7 @@ public class OffsetEquation {
         operator = '+';
       }
 
-      int endIndex = indexOf(expressionEquation, '-', '+', index);
+      int endIndex = indexOfEither(expressionEquation, '-', '+', index);
       String subexpression;
       if (endIndex == -1) {
         endIndex = expressionEquation.length();
@@ -376,24 +408,26 @@ public class OffsetEquation {
   private static Pattern intPattern = Pattern.compile("[-+]?[0-9]+");
 
   /**
-   * Returns true if the given string is an integer literal
+   * Returns true if the given string is an integer literal.
    *
    * @param string a string
    * @return true if the given string is an integer literal
    */
-  private static boolean isInt(String string) {
+  private static boolean isIntLiteral(String string) {
     return intPattern.matcher(string).matches();
   }
 
-  private static int parseInt(String intLiteral) {
-    if (intLiteral.isEmpty()) {
-      return 0;
-    }
-    return Integer.valueOf(intLiteral);
-  }
-
-  /** Returns the first index of a or b in string, or -1 if neither char is in string. */
-  private static int indexOf(String string, char a, char b, int index) {
+  /**
+   * Returns the first index of a or b in string, at or after index, or -1 if neither char occurs in
+   * string at or after index.
+   *
+   * @param string the string to search in
+   * @param a a character to search for
+   * @param b another character to search for
+   * @param index the index at which to start the search
+   * @return the first index of a or b in string at or after index, or -1 if neither char occurs
+   */
+  private static int indexOfEither(String string, char a, char b, int index) {
     int aIndex = string.indexOf(a, index);
     int bIndex = string.indexOf(b, index);
     if (aIndex == -1) {
@@ -416,7 +450,7 @@ public class OffsetEquation {
    * @param op '+' or '-'
    * @return an offset equation from value of known or null if the value isn't known
    */
-  public static OffsetEquation createOffsetFromNodesValue(
+  public static @Nullable OffsetEquation createOffsetFromNodesValue(
       Node node, ValueAnnotatedTypeFactory factory, char op) {
     assert op == '+' || op == '-';
     if (node.getTree() != null && TreeUtils.isExpressionTree(node.getTree())) {
@@ -437,7 +471,7 @@ public class OffsetEquation {
    * Creates an offset equation from the Node.
    *
    * <p>If node is an addition or subtracted node, then this method is called recursively on the
-   * left and right hand nodes and the two equations are added/subtracted to each other depending on
+   * left and right-hand nodes and the two equations are added/subtracted to each other depending on
    * the value of op.
    *
    * <p>Otherwise the return equation is created by converting the node to a {@link
@@ -469,14 +503,13 @@ public class OffsetEquation {
       Node node, AnnotationProvider factory, OffsetEquation eq, char op) {
     JavaExpression je = JavaExpression.fromNode(node);
     if (je instanceof Unknown || je == null) {
-      if (node instanceof NumericalAdditionNode) {
-        createOffsetFromNode(((NumericalAdditionNode) node).getLeftOperand(), factory, eq, op);
-        createOffsetFromNode(((NumericalAdditionNode) node).getRightOperand(), factory, eq, op);
-      } else if (node instanceof NumericalSubtractionNode) {
-        createOffsetFromNode(((NumericalSubtractionNode) node).getLeftOperand(), factory, eq, op);
+      if (node instanceof NumericalAdditionNode nan) {
+        createOffsetFromNode(nan.getLeftOperand(), factory, eq, op);
+        createOffsetFromNode(nan.getRightOperand(), factory, eq, op);
+      } else if (node instanceof NumericalSubtractionNode nsn) {
+        createOffsetFromNode(nsn.getLeftOperand(), factory, eq, op);
         char other = op == '+' ? '-' : '+';
-        createOffsetFromNode(
-            ((NumericalSubtractionNode) node).getRightOperand(), factory, eq, other);
+        createOffsetFromNode(nsn.getRightOperand(), factory, eq, other);
       } else {
         eq.error = node.toString();
       }

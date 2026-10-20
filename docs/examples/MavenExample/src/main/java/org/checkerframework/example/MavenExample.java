@@ -21,7 +21,7 @@ public class MavenExample {
   public static @Nullable Object nullable = null;
   public Map<Object, Object> map = new HashMap<>();
 
-  public static void main(final String[] args) {
+  public static void main(String[] args) {
     System.out.println("Hello World!");
 
     StrBuilder stb = new StrBuilder();

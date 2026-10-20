@@ -47,10 +47,7 @@ public class ClassValInferenceTest {
     @ClassBound("java.lang.String[][][][]") Class<?> c4 = arrayMulti.getClass();
     @ClassBound("java.lang.String") Class<?> c5 = array[0].getClass();
     List<String> list = null;
-    // TODO: reinstate this line.
-    // The checker issues an error under JDK 18, probably due to issue #979
-    // found   : Class<capture#685 extends List</*INFERENCE FAILED for:*/ ? extends Object>>
-    // @ClassBound("java.util.List") Class<?> c6 = list.getClass();
+    @ClassBound("java.util.List") Class<?> c6 = list.getClass();
     @ClassBound("java.lang.Number") Class<?> c7 = typeVar.getClass();
     @ClassBound("java.util.ArrayList") Class<?> c8 = new ArrayList<String>().getClass();
     List<? super Number> wildCardListLB = null;

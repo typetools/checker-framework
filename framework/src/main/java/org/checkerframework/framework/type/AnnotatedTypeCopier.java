@@ -15,7 +15,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * AnnotatedTypeCopier is a visitor that deep copies an AnnotatedTypeMirror exactly, including any
@@ -75,7 +75,7 @@ public class AnnotatedTypeCopier
    * This is useful for cases in which the user may want to copy the structure of a type exactly but
    * NOT its annotations.
    */
-  public AnnotatedTypeCopier(final boolean copyAnnotations) {
+  public AnnotatedTypeCopier(boolean copyAnnotations) {
     this.copyAnnotations = copyAnnotations;
   }
 
@@ -109,7 +109,7 @@ public class AnnotatedTypeCopier
       return originalToCopy.get(original);
     }
 
-    final AnnotatedDeclaredType copy = makeOrReturnCopy(original, originalToCopy);
+    AnnotatedDeclaredType copy = makeOrReturnCopy(original, originalToCopy);
 
     if (original.isUnderlyingTypeRaw()) {
       copy.setIsUnderlyingTypeRaw();
@@ -120,8 +120,8 @@ public class AnnotatedTypeCopier
     }
 
     if (original.typeArgs != null) {
-      final List<AnnotatedTypeMirror> copyTypeArgs =
-          CollectionsPlume.mapList(
+      List<AnnotatedTypeMirror> copyTypeArgs =
+          CollectionsP.mapList(
               (AnnotatedTypeMirror typeArg) -> visit(typeArg, originalToCopy),
               original.getTypeArguments());
       copy.setTypeArguments(copyTypeArgs);
@@ -138,11 +138,11 @@ public class AnnotatedTypeCopier
       return originalToCopy.get(original);
     }
 
-    final AnnotatedIntersectionType copy = makeOrReturnCopy(original, originalToCopy);
+    AnnotatedIntersectionType copy = makeOrReturnCopy(original, originalToCopy);
 
     if (original.bounds != null) {
       List<AnnotatedTypeMirror> copySupertypes =
-          CollectionsPlume.mapList(
+          CollectionsP.mapList(
               (AnnotatedTypeMirror bound) -> visit(bound, originalToCopy), original.bounds);
       copy.bounds = Collections.unmodifiableList(copySupertypes);
     }
@@ -158,11 +158,11 @@ public class AnnotatedTypeCopier
       return originalToCopy.get(original);
     }
 
-    final AnnotatedUnionType copy = makeOrReturnCopy(original, originalToCopy);
+    AnnotatedUnionType copy = makeOrReturnCopy(original, originalToCopy);
 
     if (original.alternatives != null) {
-      final List<AnnotatedDeclaredType> copyAlternatives =
-          CollectionsPlume.mapList(
+      List<AnnotatedDeclaredType> copyAlternatives =
+          CollectionsP.mapList(
               (AnnotatedDeclaredType supertype) ->
                   (AnnotatedDeclaredType) visit(supertype, originalToCopy),
               original.alternatives);
@@ -180,7 +180,7 @@ public class AnnotatedTypeCopier
       return originalToCopy.get(original);
     }
 
-    final AnnotatedExecutableType copy = makeOrReturnCopy(original, originalToCopy);
+    AnnotatedExecutableType copy = makeOrReturnCopy(original, originalToCopy);
 
     copy.setElement(original.getElement());
 
@@ -191,14 +191,14 @@ public class AnnotatedTypeCopier
 
     List<? extends AnnotatedTypeMirror> originalParameterTypes = original.getParameterTypes();
     List<AnnotatedTypeMirror> copyParamTypes = new ArrayList<>(originalParameterTypes.size());
-    for (final AnnotatedTypeMirror param : originalParameterTypes) {
+    for (AnnotatedTypeMirror param : originalParameterTypes) {
       copyParamTypes.add(visit(param, originalToCopy));
     }
     copy.setParameterTypes(copyParamTypes);
 
     List<? extends AnnotatedTypeMirror> originalThrownTypes = original.getThrownTypes();
     List<AnnotatedTypeMirror> copyThrownTypes = new ArrayList<>(originalThrownTypes.size());
-    for (final AnnotatedTypeMirror thrown : original.getThrownTypes()) {
+    for (AnnotatedTypeMirror thrown : original.getThrownTypes()) {
       copyThrownTypes.add(visit(thrown, originalToCopy));
     }
     copy.setThrownTypes(copyThrownTypes);
@@ -207,7 +207,7 @@ public class AnnotatedTypeCopier
 
     List<AnnotatedTypeVariable> originalTypeVariables = original.getTypeVariables();
     List<AnnotatedTypeVariable> copyTypeVarTypes = new ArrayList<>(originalTypeVariables.size());
-    for (final AnnotatedTypeVariable typeVariable : originalTypeVariables) {
+    for (AnnotatedTypeVariable typeVariable : originalTypeVariables) {
       // This field is needed to identify exactly when the declaration of an executable's
       // type parameter is visited.  When subtypes of this class visit the type
       // parameter's component types, they will likely set visitingExecutableTypeParam to
@@ -231,7 +231,7 @@ public class AnnotatedTypeCopier
       return originalToCopy.get(original);
     }
 
-    final AnnotatedArrayType copy = makeOrReturnCopy(original, originalToCopy);
+    AnnotatedArrayType copy = makeOrReturnCopy(original, originalToCopy);
 
     copy.setComponentType(visit(original.getComponentType(), originalToCopy));
 
@@ -246,7 +246,7 @@ public class AnnotatedTypeCopier
       return originalToCopy.get(original);
     }
 
-    final AnnotatedTypeVariable copy = makeOrReturnCopy(original, originalToCopy);
+    AnnotatedTypeVariable copy = makeOrReturnCopy(original, originalToCopy);
 
     if (original.getUpperBoundField() != null) {
       copy.setUpperBound(visit(original.getUpperBoundField(), originalToCopy));
@@ -288,10 +288,10 @@ public class AnnotatedTypeCopier
       return originalToCopy.get(original);
     }
 
-    final AnnotatedWildcardType copy = makeOrReturnCopy(original, originalToCopy);
+    AnnotatedWildcardType copy = makeOrReturnCopy(original, originalToCopy);
 
-    if (original.isUninferredTypeArgument()) {
-      copy.setUninferredTypeArgument();
+    if (original.isTypeArgOfRawType()) {
+      copy.setTypeArgOfRawType();
     }
 
     if (original.getExtendsBoundField() != null) {
@@ -330,16 +330,23 @@ public class AnnotatedTypeCopier
       return (T) originalToCopy.get(original);
     }
 
-    final T copy = makeCopy(original);
+    T copy = makeCopy(original);
     originalToCopy.put(original, copy);
 
     return copy;
   }
 
+  /**
+   * Returns a copy of the given type.
+   *
+   * @param <T> the type of the AnnotatedTypeMirror to copy
+   * @param original an AnnotatedTypeMirror (more specifically, a {@code T})
+   * @return a copy of the given AnnotatedTypeMirror
+   */
   @SuppressWarnings("unchecked")
   protected <T extends AnnotatedTypeMirror> T makeCopy(T original) {
 
-    final T copy =
+    T copy =
         (T)
             AnnotatedTypeMirror.createType(
                 original.getUnderlyingType(), original.atypeFactory, original.isDeclaration());
@@ -356,10 +363,9 @@ public class AnnotatedTypeCopier
    * @param source the type whose primary annotations are being copied
    * @param dest a copy of source that should receive its primary annotations
    */
-  protected void maybeCopyPrimaryAnnotations(
-      final AnnotatedTypeMirror source, final AnnotatedTypeMirror dest) {
+  protected void maybeCopyPrimaryAnnotations(AnnotatedTypeMirror source, AnnotatedTypeMirror dest) {
     if (copyAnnotations) {
-      dest.addAnnotations(source.getAnnotationsField());
+      dest.addAnnotations(source.getPrimaryAnnotationsField());
     }
   }
 }

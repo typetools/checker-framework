@@ -1,6 +1,8 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.List;
 import java.util.Set;
@@ -14,8 +16,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeReplacer;
 import org.checkerframework.framework.util.TypeArgumentMapper;
-import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
-import org.checkerframework.javacutil.Pair;
+import org.checkerframework.framework.util.TypeArgumentMapper.TypeParameterMapping;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -26,16 +28,19 @@ import org.checkerframework.javacutil.TreeUtils;
  * @see org.checkerframework.checker.nullness.KeyForPropagationTreeAnnotator
  */
 public class KeyForPropagator {
-  public static enum PropagationDirection {
-    // transfer FROM the super type to the subtype
+  /** The direction of propagation. */
+  public enum PropagationDirection {
+    /** Transfer FROM the supertype to the subtype. */
     TO_SUBTYPE,
 
-    // transfer FROM the subtype to the supertype
+    /** Transfer FROM the subtype to the supertype. */
     TO_SUPERTYPE,
 
-    // first execute TO_SUBTYPE then TO_SUPERTYPE, if TO_SUBTYPE actually transfers
-    // an annotation for a particular type T then T will not be affected by the
-    // TO_SUPERTYPE transfer because it will already have a KeyFor annotation
+    /**
+     * first execute TO_SUBTYPE then TO_SUPERTYPE. If TO_SUBTYPE actually transfers an annotation
+     * for a particular type T then T will not be affected by the TO_SUPERTYPE transfer because it
+     * will already have a KeyFor annotation.
+     */
     BOTH
   }
 
@@ -52,7 +57,7 @@ public class KeyForPropagator {
   private final KeyForPropagationReplacer replacer = new KeyForPropagationReplacer();
 
   /**
-   * Creates a KeyForPropagator
+   * Creates a KeyForPropagator.
    *
    * @param unknownKeyfor an {@link UnknownKeyFor} annotation
    */
@@ -91,15 +96,15 @@ public class KeyForPropagator {
    * List<@KeyFor("c") String>>}
    */
   public void propagate(
-      final AnnotatedDeclaredType subtype,
-      final AnnotatedDeclaredType supertype,
+      AnnotatedDeclaredType subtype,
+      AnnotatedDeclaredType supertype,
       PropagationDirection direction,
-      final AnnotatedTypeFactory typeFactory) {
-    final TypeElement subtypeElement = (TypeElement) subtype.getUnderlyingType().asElement();
-    final TypeElement supertypeElement = (TypeElement) supertype.getUnderlyingType().asElement();
-    final Types types = typeFactory.getProcessingEnv().getTypeUtils();
+      AnnotatedTypeFactory typeFactory) {
+    TypeElement subtypeElement = (TypeElement) subtype.getUnderlyingType().asElement();
+    TypeElement supertypeElement = (TypeElement) supertype.getUnderlyingType().asElement();
+    Types types = typeFactory.getProcessingEnv().getTypeUtils();
 
-    // Note: The right hand side of this or expression will cover raw types
+    // Note: The right-hand side of this or expression will cover raw types
     if (subtype.getTypeArguments().isEmpty()) {
       return;
     } // else
@@ -112,15 +117,15 @@ public class KeyForPropagator {
       return;
     }
 
-    Set<Pair<Integer, Integer>> typeParamMappings =
+    Set<TypeParameterMapping> typeParamMappings =
         TypeArgumentMapper.mapTypeArgumentIndices(subtypeElement, supertypeElement, types);
 
-    final List<AnnotatedTypeMirror> subtypeArgs = subtype.getTypeArguments();
-    final List<AnnotatedTypeMirror> supertypeArgs = supertype.getTypeArguments();
+    List<AnnotatedTypeMirror> subtypeArgs = subtype.getTypeArguments();
+    List<AnnotatedTypeMirror> supertypeArgs = supertype.getTypeArguments();
 
-    for (final Pair<Integer, Integer> path : typeParamMappings) {
-      final AnnotatedTypeMirror subtypeArg = subtypeArgs.get(path.first);
-      final AnnotatedTypeMirror supertypeArg = supertypeArgs.get(path.second);
+    for (TypeParameterMapping path : typeParamMappings) {
+      AnnotatedTypeMirror subtypeArg = subtypeArgs.get(path.subtypeIndex());
+      AnnotatedTypeMirror supertypeArg = supertypeArgs.get(path.supertypeIndex());
 
       if (subtypeArg.getKind() == TypeKind.WILDCARD
           || supertypeArg.getKind() == TypeKind.WILDCARD) {
@@ -128,19 +133,13 @@ public class KeyForPropagator {
       }
 
       switch (direction) {
-        case TO_SUBTYPE:
-          replacer.visit(supertypeArg, subtypeArg);
-          break;
-
-        case TO_SUPERTYPE:
-          replacer.visit(subtypeArg, supertypeArg);
-          break;
-
-        case BOTH:
+        case TO_SUBTYPE -> replacer.visit(supertypeArg, subtypeArg);
+        case TO_SUPERTYPE -> replacer.visit(subtypeArg, supertypeArg);
+        case BOTH -> {
           // note if they both have an annotation nothing will happen
           replacer.visit(subtypeArg, supertypeArg);
           replacer.visit(supertypeArg, subtypeArg);
-          break;
+        }
       }
     }
   }
@@ -164,10 +163,17 @@ public class KeyForPropagator {
     if (path == null) {
       return;
     }
-    AnnotatedTypeMirror assignedTo = TypeArgInferenceUtil.assignedTo(atypeFactory, path);
-    if (assignedTo == null) {
+    Tree assignmentContext = TreePathUtil.getContextForPolyExpression(path);
+    AnnotatedTypeMirror assignedTo;
+    if (assignmentContext instanceof VariableTree vt) {
+      if (TreeUtils.isVariableTreeDeclaredUsingVar(vt)) {
+        return;
+      }
+      assignedTo = atypeFactory.getAnnotatedTypeLhs(assignmentContext);
+    } else {
       return;
     }
+
     // array types and boxed primitives etc don't require propagation
     if (assignedTo.getKind() == TypeKind.DECLARED) {
       propagate(
@@ -183,13 +189,17 @@ public class KeyForPropagator {
    * types to the second type, if the second type is annotated with @UnknownKeyFor or has no
    * annotation in the KeyFor hierarchy.
    */
-  private class KeyForPropagationReplacer extends AnnotatedTypeReplacer {
+  private final class KeyForPropagationReplacer extends AnnotatedTypeReplacer {
+
+    /** Creates a new KeyForPropagationReplacer. */
+    KeyForPropagationReplacer() {}
+
     @Override
     protected void replaceAnnotations(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
-      AnnotationMirror fromKeyFor = from.getAnnotationInHierarchy(UNKNOWN_KEYFOR);
+      AnnotationMirror fromKeyFor = from.getPrimaryAnnotationInHierarchy(UNKNOWN_KEYFOR);
       if (fromKeyFor != null) {
-        if (to.hasAnnotation(UNKNOWN_KEYFOR)
-            || to.getAnnotationInHierarchy(UNKNOWN_KEYFOR) == null) {
+        if (to.hasPrimaryAnnotation(UNKNOWN_KEYFOR)
+            || to.getPrimaryAnnotationInHierarchy(UNKNOWN_KEYFOR) == null) {
           to.replaceAnnotation(fromKeyFor);
         }
       }

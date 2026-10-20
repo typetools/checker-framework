@@ -24,7 +24,7 @@ public class HeuristicsTest implements Comparable<HeuristicsTest> {
       return true;
     }
     // Not the first statement in the method.
-    // :: error: (not.interned)
+    // :: error: [not.interned]
     if (o == this) {
       return true;
     }
@@ -40,7 +40,7 @@ public class HeuristicsTest implements Comparable<HeuristicsTest> {
       return true;
     }
     // Not the first statement in the method.
-    // :: error: (not.interned)
+    // :: error: [not.interned]
     if (o == this) {
       return true;
     }
@@ -50,12 +50,12 @@ public class HeuristicsTest implements Comparable<HeuristicsTest> {
   @org.checkerframework.dataflow.qual.Pure
   public boolean equals3(Object o) {
     // Not equals() or annotated as @EqualsMethod.
-    // :: error: (not.interned)
+    // :: error: [not.interned]
     if (this == o) {
       return true;
     }
     // Not the first statement in the method.
-    // :: error: (not.interned)
+    // :: error: [not.interned]
     if (o == this) {
       return true;
     }
@@ -71,7 +71,7 @@ public class HeuristicsTest implements Comparable<HeuristicsTest> {
       return true;
     }
     // Not the first statement in the method.
-    // :: error: (not.interned)
+    // :: error: [not.interned]
     if (o == thisOne) {
       return true;
     }
@@ -81,12 +81,12 @@ public class HeuristicsTest implements Comparable<HeuristicsTest> {
   @org.checkerframework.dataflow.qual.Pure
   public static boolean equals5(Object thisOne, Object o) {
     // Not equals() or annotated as @EqualsMethod.
-    // :: error: (not.interned)
+    // :: error: [not.interned]
     if (thisOne == o) {
       return true;
     }
     // Not the first statement in the method.
-    // :: error: (not.interned)
+    // :: error: [not.interned]
     if (o == thisOne) {
       return true;
     }
@@ -94,13 +94,13 @@ public class HeuristicsTest implements Comparable<HeuristicsTest> {
   }
 
   @EqualsMethod
-  // :: error: (invalid.method.annotation)
+  // :: error: [invalid.method.annotation]
   public boolean equals6() {
     return true;
   }
 
   @EqualsMethod
-  // :: error: (invalid.method.annotation)
+  // :: error: [invalid.method.annotation]
   public boolean equals7(int a, int b, int c) {
     return true;
   }
@@ -115,7 +115,7 @@ public class HeuristicsTest implements Comparable<HeuristicsTest> {
       return 0;
     }
     // Not the first statement in the method.
-    // :: error: (not.interned)
+    // :: error: [not.interned]
     if (this == o) {
       return 0;
     }
@@ -132,7 +132,7 @@ public class HeuristicsTest implements Comparable<HeuristicsTest> {
       return 0;
     }
     // Not the first statement in the method.
-    // :: error: (not.interned)
+    // :: error: [not.interned]
     if (this == o) {
       return 0;
     }
@@ -142,12 +142,12 @@ public class HeuristicsTest implements Comparable<HeuristicsTest> {
   @org.checkerframework.dataflow.qual.Pure
   public int compareTo3(HeuristicsTest o) {
     // Not compareTo or annotated as @CompareToMethod
-    // :: error: (not.interned)
+    // :: error: [not.interned]
     if (o == this) {
       return 0;
     }
     // Not the first statement in the method.
-    // :: error: (not.interned)
+    // :: error: [not.interned]
     if (this == o) {
       return 0;
     }
@@ -164,7 +164,7 @@ public class HeuristicsTest implements Comparable<HeuristicsTest> {
       return 0;
     }
     // Not the first statement in the method.
-    // :: error: (not.interned)
+    // :: error: [not.interned]
     if (thisOne == o) {
       return 0;
     }
@@ -174,12 +174,12 @@ public class HeuristicsTest implements Comparable<HeuristicsTest> {
   @org.checkerframework.dataflow.qual.Pure
   public static int compareTo5(HeuristicsTest thisOne, HeuristicsTest o) {
     // Not compareTo or annotated as @CompareToMethod
-    // :: error: (not.interned)
+    // :: error: [not.interned]
     if (o == thisOne) {
       return 0;
     }
     // Not the first statement in the method.
-    // :: error: (not.interned)
+    // :: error: [not.interned]
     if (thisOne == o) {
       return 0;
     }
@@ -187,13 +187,13 @@ public class HeuristicsTest implements Comparable<HeuristicsTest> {
   }
 
   @EqualsMethod
-  // :: error: (invalid.method.annotation)
+  // :: error: [invalid.method.annotation]
   public boolean compareTo6() {
     return true;
   }
 
   @EqualsMethod
-  // :: error: (invalid.method.annotation)
+  // :: error: [invalid.method.annotation]
   public boolean compareTo7(int a, int b, int c) {
     return true;
   }

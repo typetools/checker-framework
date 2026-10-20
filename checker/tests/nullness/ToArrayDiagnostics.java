@@ -15,15 +15,15 @@ public class ToArrayDiagnostics {
   }
 
   String[] warn1(ArrayList<String> list) {
-    // :: error: (new.array)
+    // :: error: [new.array]
     String[] resultArray = new String[list.size()];
-    // :: error: (return) :: warning: (toarray.nullable.elements.not.newarray)
+    // :: error: [return] :: warning: [toarray.nullable.elements.not.newarray]
     return list.toArray(resultArray);
   }
 
   String[] warn2(ArrayList<String> list) {
     int size = list.size();
-    // :: error: (new.array) :: error: (return) :: warning:
+    // :: error: [new.array] :: error: [return] :: warning:
     // (toarray.nullable.elements.mismatched.size)
     return list.toArray(new String[size]);
   }

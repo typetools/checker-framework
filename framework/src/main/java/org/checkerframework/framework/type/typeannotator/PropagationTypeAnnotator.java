@@ -14,21 +14,23 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
- * {@link PropagationTypeAnnotator} adds qualifiers to types where the qualifier to add should be
+ * {@link PropagationTypeAnnotator} adds qualifiers to types, where the qualifier to add should be
  * transferred from one or more other types.
  *
  * <p>At the moment, the only function PropagationTypeAnnotator provides, is the propagation of
  * generic type parameter annotations to unannotated wildcards with missing bounds annotations.
  *
+ * <p>PropagationTypeAnnotator traverses trees deeply by default.
+ *
  * @see
  *     #visitWildcard(org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType,
  *     Object)
- *     <p>PropagationTypeAnnotator traverses trees deeply by default.
  */
 public class PropagationTypeAnnotator extends TypeAnnotator {
 
@@ -37,6 +39,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
    * TypeAnnotatorUtil.eraseBoundsThenAnnotate. This flag prevents infinite recursion.
    */
   private boolean pause = false;
+
   /** The parents. */
   private final ArrayDeque<AnnotatedDeclaredType> parents = new ArrayDeque<>();
 
@@ -87,20 +90,19 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
       // Copy annotations from the declaration to the wildcards.
       AnnotatedDeclaredType declaration =
           (AnnotatedDeclaredType)
-              typeFactory.fromElement(declaredType.getUnderlyingType().asElement());
+              atypeFactory.fromElement(declaredType.getUnderlyingType().asElement());
       List<AnnotatedTypeMirror> typeArgs = declaredType.getTypeArguments();
       for (int i = 0; i < typeArgs.size(); i++) {
-        if (typeArgs.get(i).getKind() != TypeKind.WILDCARD
-            || !((AnnotatedWildcardType) typeArgs.get(i)).isUninferredTypeArgument()) {
+        if (!AnnotatedTypes.isTypeArgOfRawType(typeArgs.get(i))) {
           // Sometimes the framework infers a more precise type argument, so just use it.
           continue;
         }
         AnnotatedTypeVariable typeParam =
             (AnnotatedTypeVariable) declaration.getTypeArguments().get(i);
         AnnotatedWildcardType wct = (AnnotatedWildcardType) typeArgs.get(i);
-        wct.getExtendsBound().replaceAnnotations(typeParam.getUpperBound().getAnnotations());
-        wct.getSuperBound().replaceAnnotations(typeParam.getLowerBound().getAnnotations());
-        wct.replaceAnnotations(typeParam.getAnnotations());
+        wct.getExtendsBound().replaceAnnotations(typeParam.getUpperBound().getPrimaryAnnotations());
+        wct.getSuperBound().replaceAnnotations(typeParam.getLowerBound().getPrimaryAnnotations());
+        wct.replaceAnnotations(typeParam.getPrimaryAnnotations());
       }
     }
 
@@ -131,11 +133,10 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
     if (typeParamElement != null) {
       pause = true;
       AnnotatedTypeVariable typeParam =
-          (AnnotatedTypeVariable) typeFactory.getAnnotatedType(typeParamElement);
+          (AnnotatedTypeVariable) atypeFactory.getAnnotatedType(typeParamElement);
       pause = false;
 
-      final Set<? extends AnnotationMirror> tops =
-          typeFactory.getQualifierHierarchy().getTopAnnotations();
+      AnnotationMirrorSet tops = atypeFactory.getQualifierHierarchy().getTopAnnotations();
 
       if (AnnotatedTypes.hasNoExplicitBound(wildcard)) {
         propagateExtendsBound(wildcard, typeParam, tops);
@@ -146,8 +147,8 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
         propagateExtendsBound(wildcard, typeParam, tops);
       } else {
         // If this is thrown, then it means that there's a bug in one of the
-        // AnnotatedTypes.hasNoExplicit*Bound methods.  Probably something changed in the javac
-        // implementation.
+        // AnnotatedTypes.hasNoExplicit*Bound methods.  Probably something changed in the
+        // javac implementation.
         throw new BugInCF("Wildcard is neither unbound nor does it have an explicit bound.");
       }
     }
@@ -160,14 +161,22 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
       AnnotatedWildcardType wildcard,
       AnnotatedTypeVariable typeParam,
       Set<? extends AnnotationMirror> tops) {
-    applyAnnosFromBound(wildcard.getSuperBound(), typeParam.getLowerBound(), tops);
+    AnnotatedTypeMirror typeParamBound = typeParam.getLowerBound();
+    while (typeParamBound.getKind() == TypeKind.TYPEVAR) {
+      typeParamBound = ((AnnotatedTypeVariable) typeParamBound).getLowerBound();
+    }
+    applyAnnosFromBound(wildcard.getSuperBound(), typeParamBound, tops);
   }
 
   private void propagateExtendsBound(
       AnnotatedWildcardType wildcard,
       AnnotatedTypeVariable typeParam,
       Set<? extends AnnotationMirror> tops) {
-    applyAnnosFromBound(wildcard.getExtendsBound(), typeParam.getUpperBound(), tops);
+    AnnotatedTypeMirror typeParamBound = typeParam.getUpperBound();
+    while (typeParamBound.getKind() == TypeKind.TYPEVAR) {
+      typeParamBound = ((AnnotatedTypeVariable) typeParamBound).getUpperBound();
+    }
+    applyAnnosFromBound(wildcard.getExtendsBound(), typeParamBound, tops);
   }
 
   /**
@@ -175,23 +184,22 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
    * wildcard bound.
    */
   private void applyAnnosFromBound(
-      final AnnotatedTypeMirror wildcardBound,
-      final AnnotatedTypeMirror typeParamBound,
-      final Set<? extends AnnotationMirror> tops) {
+      AnnotatedTypeMirror wildcardBound,
+      AnnotatedTypeMirror typeParamBound,
+      Set<? extends AnnotationMirror> tops) {
     // Type variables do not need primary annotations.
     // The type variable will have annotations placed on its
     // bounds via its declaration or defaulting rules
-    if (wildcardBound.getKind() == TypeKind.TYPEVAR
-        || typeParamBound.getKind() == TypeKind.TYPEVAR) {
+    if (wildcardBound.getKind() == TypeKind.TYPEVAR) {
       return;
     }
 
-    for (final AnnotationMirror top : tops) {
-      if (wildcardBound.getAnnotationInHierarchy(top) == null) {
-        final AnnotationMirror typeParamAnno = typeParamBound.getAnnotationInHierarchy(top);
+    for (AnnotationMirror top : tops) {
+      if (wildcardBound.getPrimaryAnnotationInHierarchy(top) == null) {
+        AnnotationMirror typeParamAnno = typeParamBound.getPrimaryAnnotationInHierarchy(top);
         if (typeParamAnno == null) {
           throw new BugInCF(
-              StringsPlume.joinLines(
+              StringsP.joinLines(
                   "Missing annotation on type parameter",
                   "top=" + top,
                   "wildcardBound=" + wildcardBound,
@@ -211,7 +219,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
    * @return the type parameter in {@code declaredType} that corresponds to {@code typeArg}
    */
   private Element getTypeParameterElement(
-      final @FindDistinct AnnotatedTypeMirror typeArg, final AnnotatedDeclaredType declaredType) {
+      @FindDistinct AnnotatedTypeMirror typeArg, AnnotatedDeclaredType declaredType) {
     for (int i = 0; i < declaredType.getTypeArguments().size(); i++) {
       if (declaredType.getTypeArguments().get(i) == typeArg) {
         TypeElement typeElement = TypesUtils.getTypeElement(declaredType.getUnderlyingType());

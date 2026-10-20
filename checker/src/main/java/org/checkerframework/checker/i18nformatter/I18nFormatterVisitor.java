@@ -48,27 +48,25 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
     Result<FormatType> type = fc.getFormatType();
 
     switch (type.value()) {
-      case I18NINVALID:
-        tu.failure(type, "i18nformat.string", fc.getInvalidError());
-        break;
-      case I18NFORMATFOR:
+      case I18NINVALID -> tu.failure(type, "i18nformat.string", fc.getInvalidError());
+      case I18NFORMATFOR -> {
         if (!fc.isValidFormatForInvocation()) {
           Result<FormatType> failureType = fc.getInvalidInvocationType();
           tu.failure(failureType, "i18nformat.formatfor");
         }
-        break;
-      case I18NFORMAT:
+      }
+      case I18NFORMAT -> {
         Result<InvocationType> invc = fc.getInvocationType();
         I18nConversionCategory[] formatCats = fc.getFormatCategories();
         switch (invc.value()) {
-          case VARARG:
+          case VARARG -> {
             Result<TypeMirror>[] paramTypes = fc.getParamTypes();
             int paraml = paramTypes.length;
             int formatl = formatCats.length;
 
-            // For assignments, i18nformat.missing.arguments and
-            // i18nformat.excess.arguments are
-            // issued from commonAssignmentCheck.
+            // For assignments, "i18nformat.missing.arguments" and
+            // "i18nformat.excess.arguments" are
+            // issued from commonAssignmentCheck().
             if (paraml < formatl) {
               tu.warning(invc, "i18nformat.missing.arguments", formatl, paraml);
             }
@@ -80,15 +78,12 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
               Result<TypeMirror> param = paramTypes[i];
               TypeMirror paramType = param.value();
               switch (formatCat) {
-                case UNUSED:
-                  tu.warning(param, "i18nformat.argument.unused", " " + (1 + i));
-                  break;
-                case GENERAL:
-                  break;
-                default:
+                case UNUSED -> tu.warning(param, "i18nformat.argument.unused", " " + (1 + i));
+                case GENERAL -> {}
+                default -> {
                   if (!fc.isValidParameter(formatCat, paramType)) {
                     ExecutableElement method = TreeUtils.elementFromUse(fc.getTree());
-                    CharSequence methodName = ElementUtils.getSimpleNameOrDescription(method);
+                    CharSequence methodName = ElementUtils.getSimpleDescription(method);
                     tu.failure(
                         param,
                         "argument",
@@ -97,41 +92,41 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
                         paramType,
                         formatCat);
                   }
+                }
               }
             }
-            break;
-          case NULLARRAY:
-            // fall-through
-          case ARRAY:
+          }
+          case NULLARRAY, ARRAY -> {
             for (I18nConversionCategory cat : formatCats) {
               if (cat == I18nConversionCategory.UNUSED) {
                 tu.warning(invc, "i18nformat.argument.unused", "");
               }
             }
             tu.warning(invc, "i18nformat.indirect.arguments");
-            break;
-          default:
-            break;
+          }
+          default -> {}
         }
-        break;
-      default:
-        break;
+      }
+      default -> {}
     }
   }
 
   @Override
-  protected void commonAssignmentCheck(
+  protected boolean commonAssignmentCheck(
       AnnotatedTypeMirror varType,
       AnnotatedTypeMirror valueType,
-      Tree valueTree,
+      Tree errorLocation,
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
-    AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.I18NUNKNOWNFORMAT);
-    AnnotationMirror lhs = varType.getAnnotationInHierarchy(atypeFactory.I18NUNKNOWNFORMAT);
+    boolean result = true;
 
-    // i18nformat.missing.arguments and i18nformat.excess.arguments are issued here for
+    AnnotationMirror rhs =
+        valueType.getPrimaryAnnotationInHierarchy(atypeFactory.I18NUNKNOWNFORMAT);
+    AnnotationMirror lhs = varType.getPrimaryAnnotationInHierarchy(atypeFactory.I18NUNKNOWNFORMAT);
+
+    // "i18nformat.missing.arguments" and "i18nformat.excess.arguments" are issued here for
     // assignments.
-    // For method calls, they are issued in checkInvocationFormatFor.
+    // For method calls, they are issued in checkInvocationFormatFor().
     if (rhs != null
         && lhs != null
         && AnnotationUtils.areSameByName(rhs, I18nFormatterAnnotatedTypeFactory.I18NFORMAT_NAME)
@@ -146,18 +141,28 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
         // It is legal to use a format string with fewer format specifiers
         // than required, but a warning is issued.
         checker.reportWarning(
-            valueTree, "i18nformat.missing.arguments", varType.toString(), valueType.toString());
+            errorLocation,
+            "i18nformat.missing.arguments",
+            varType.toString(),
+            valueType.toString());
       } else if (rhsArgTypes.length > lhsArgTypes.length) {
         // Since it is known that too many conversion categories were provided, issue a more
         // specific error message to that effect than "assignment".
         checker.reportError(
-            valueTree, "i18nformat.excess.arguments", varType.toString(), valueType.toString());
+            errorLocation, "i18nformat.excess.arguments", varType.toString(), valueType.toString());
+        result = false;
       }
     }
 
-    // By calling super.commonAssignmentCheck last, any "i18nformat.excess.arguments"
+    // TODO: What does "take precedence over" mean?  Both are issued, but the
+    // "i18nformat.excess.arguments" appears first in the output.  Is this meant to not call
+    // super.commonAssignmentCheck() if `result` is already false?
+    // By calling super.commonAssignmentCheck() last, any "i18nformat.excess.arguments"
     // message issued for a given line of code will take precedence over the "assignment"
-    // issued by super.commonAssignmentCheck.
-    super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, extraArgs);
+    // issued by super.commonAssignmentCheck().
+    result =
+        super.commonAssignmentCheck(varType, valueType, errorLocation, errorKey, extraArgs)
+            && result;
+    return result;
   }
 }

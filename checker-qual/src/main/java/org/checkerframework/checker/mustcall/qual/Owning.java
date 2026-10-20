@@ -18,14 +18,13 @@ import java.lang.annotation.Target;
  * logically belong to any type hierarchy. Logically, it is a directive to the Resource Leak Checker
  * that informs it whether it is necessary to check that a value's must-call obligations have been
  * satisfied. In that way, it can be viewed as an annotation expressing an aliasing relationship:
- * passing a object with a non-empty must-call obligation to a method with an owning parameter
+ * passing an object with a non-empty must-call obligation to a method with an owning parameter
  * resolves that object's must-call obligation, because the ownership annotation expresses that the
  * object at the call site and the parameter in the method's body are aliases, and so checking only
  * one of the two is required.
  *
- * <p>Methods are treated as if they have this annotation by default unless their method is
- * annotated as {@link NotOwning}. Parameters and fields are treated as {@link NotOwning} by
- * default.
+ * <p>Constructor results are always {@code @Owning}. Method return types are {@code @Owning} by
+ * default. Formal parameters and fields are {@link NotOwning} by default.
  *
  * <p>When the {@code -AnoLightweightOwnership} command-line argument is passed to the checker, this
  * annotation and {@link NotOwning} are ignored.

@@ -8,15 +8,12 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -42,30 +39,17 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.plumelib.util.ArraySet;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * Utility methods for analyzing {@code Element}s. This complements {@link Elements}, providing
  * functionality that it does not.
  */
-public class ElementUtils {
+public final class ElementUtils {
 
   // Class cannot be instantiated.
   private ElementUtils() {
     throw new AssertionError("Class ElementUtils cannot be instantiated.");
-  }
-
-  /**
-   * Returns the innermost type element enclosing the given element. Returns the element itself if
-   * it is a type element.
-   *
-   * @param elem the enclosed element of a class
-   * @return the innermost type element, or null if no type element encloses {@code elem}
-   * @deprecated use {@link #enclosingTypeElement}
-   */
-  @Deprecated // 2021-01-16
-  public static @Nullable TypeElement enclosingClass(final Element elem) {
-    return enclosingTypeElement(elem);
   }
 
   /**
@@ -85,7 +69,7 @@ public class ElementUtils {
    * @return the innermost type element (possibly the argument itself), or null if {@code elem} is
    *     not, and is not enclosed by, a type element
    */
-  public static @Nullable TypeElement enclosingTypeElement(final Element elem) {
+  public static @Nullable TypeElement enclosingTypeElement(Element elem) {
     Element result = elem;
     while (result != null && !isTypeElement(result)) {
       result = result.getEnclosingElement();
@@ -101,7 +85,7 @@ public class ElementUtils {
    * @param elem the enclosed element of a class
    * @return the innermost type element, or null if no type element encloses {@code elem}
    */
-  public static @Nullable TypeElement strictEnclosingTypeElement(final Element elem) {
+  public static @Nullable TypeElement strictEnclosingTypeElement(Element elem) {
     Element enclosingElement = elem.getEnclosingElement();
     if (enclosingElement == null) {
       return null;
@@ -113,7 +97,7 @@ public class ElementUtils {
   /**
    * Returns the top-level type element that contains {@code element}.
    *
-   * @param element the element whose enclosing tye element to find
+   * @param element the element whose enclosing type element to find
    * @return a type element containing {@code element} that isn't contained in another class
    */
   public static TypeElement toplevelEnclosingTypeElement(Element element) {
@@ -166,7 +150,7 @@ public class ElementUtils {
   public static PackageElement enclosingPackage(Element elem) {
     Element result = elem;
     while (result != null && result.getKind() != ElementKind.PACKAGE) {
-      @Nullable Element encl = result.getEnclosingElement();
+      Element encl = result.getEnclosingElement();
       result = encl;
     }
     return (PackageElement) result;
@@ -210,7 +194,7 @@ public class ElementUtils {
   }
 
   /**
-   * Returns true if the element is a final element: a final field, final method, or final class.
+   * Returns true if the element is a final element: a final field, method, or final class.
    *
    * @return true if the element is final
    */
@@ -245,7 +229,7 @@ public class ElementUtils {
     if (element.getKind() == ElementKind.METHOD) {
       return ((ExecutableElement) element).getReturnType();
     } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
-      return enclosingClass(element).asType();
+      return enclosingTypeElement(element).asType();
     } else {
       return element.asType();
     }
@@ -263,7 +247,7 @@ public class ElementUtils {
       return elem.getQualifiedName();
     }
 
-    TypeElement elem = enclosingClass(element);
+    TypeElement elem = enclosingTypeElement(element);
     if (elem == null) {
       return null;
     }
@@ -302,7 +286,7 @@ public class ElementUtils {
     if (enclosing == null) { // is this possible?
       return simpleName;
     }
-    if (ElementUtils.isTypeElement(enclosing)) {
+    if (isTypeElement(enclosing)) {
       return getBinaryName((TypeElement) enclosing) + "$" + simpleName;
     } else if (enclosing.getKind() == ElementKind.PACKAGE) {
       PackageElement pe = (PackageElement) enclosing;
@@ -328,30 +312,48 @@ public class ElementUtils {
   public static String getSimpleSignature(ExecutableElement element) {
     // note: constructor simple name is <init>
     StringJoiner sj = new StringJoiner(",", element.getSimpleName() + "(", ")");
-    for (Iterator<? extends VariableElement> i = element.getParameters().iterator();
-        i.hasNext(); ) {
-      sj.add(TypesUtils.simpleTypeName(i.next().asType()));
+    for (VariableElement paramElt : element.getParameters()) {
+      sj.add(TypesUtils.simpleTypeName(paramElt.asType()));
     }
     return sj.toString();
   }
 
   /**
-   * Returns a user-friendly name for the given method. Does not return {@code "<init>"} or {@code
-   * "<clinit>"} as ExecutableElement.getSimpleName() does.
+   * Returns a user-friendly name for the given method, which includes the name of the enclosing
+   * type. Does not return {@code "<init>"} or {@code "<clinit>"} as {@link
+   * ExecutableElement#getSimpleName()} does.
    *
    * @param element a method declaration
    * @return a user-friendly name for the method
    */
-  public static CharSequence getSimpleNameOrDescription(ExecutableElement element) {
-    Name result = element.getSimpleName();
-    switch (result.toString()) {
-      case "<init>":
-        return element.getEnclosingElement().getSimpleName();
-      case "<clinit>":
-        return "class initializer";
-      default:
-        return result;
+  public static CharSequence getSimpleDescription(ExecutableElement element) {
+    CharSequence enclosingTypeName =
+        getSimpleDescription((TypeElement) element.getEnclosingElement());
+    Name methodName = element.getSimpleName();
+    return switch (methodName.toString()) {
+      case "<init>" -> enclosingTypeName + " constructor";
+      case "<clinit>" -> "class initializer for " + enclosingTypeName;
+      default -> enclosingTypeName + "." + methodName;
+    };
+  }
+
+  /**
+   * Returns a user-friendly name for the given type. Does not return the empty string as {@link
+   * TypeElement#getSimpleName()} does for an anonymous class.
+   *
+   * @param element a type declaration
+   * @return a user-friendly name for the type
+   */
+  public static CharSequence getSimpleDescription(TypeElement element) {
+    Name simpleName = element.getSimpleName();
+    if (!simpleName.isEmpty()) {
+      return simpleName;
     }
+    // An anonymous class has an empty simple name, so name it by its supertype: the interface it
+    // implements if there is one, and otherwise the class it extends.
+    List<? extends TypeMirror> interfaces = element.getInterfaces();
+    TypeMirror supertype = interfaces.isEmpty() ? element.getSuperclass() : interfaces.get(0);
+    return "anonymous " + TypesUtils.simpleTypeName(supertype);
   }
 
   /**
@@ -387,7 +389,7 @@ public class ElementUtils {
   }
 
   /**
-   * Checks whether a given element came from a source file.
+   * Returns true if a given element came from a source file.
    *
    * <p>By contrast, {@link ElementUtils#isElementFromByteCode(Element)} returns true if there is a
    * classfile for the given element, even if there is also a source file.
@@ -399,7 +401,7 @@ public class ElementUtils {
     if (element == null) {
       return false;
     }
-    TypeElement enclosingClass = enclosingClass(element);
+    TypeElement enclosingClass = enclosingTypeElement(element);
     if (enclosingClass == null) {
       throw new BugInCF("enclosingClass(%s) is null", element);
     }
@@ -407,7 +409,7 @@ public class ElementUtils {
   }
 
   /**
-   * Checks whether a given ClassSymbol came from a source file.
+   * Returns true if a given ClassSymbol came from a source file.
    *
    * <p>By contrast, {@link ElementUtils#isElementFromByteCode(Element)} returns true if there is a
    * classfile for the given element, even if there is also a source file.
@@ -435,8 +437,7 @@ public class ElementUtils {
       return false;
     }
 
-    if (elt instanceof Symbol.ClassSymbol) {
-      Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
+    if (elt instanceof Symbol.ClassSymbol clss) {
       if (null != clss.classfile) {
         // The class file could be a .java file
         return clss.classfile.getKind() == JavaFileObject.Kind.CLASS;
@@ -460,7 +461,7 @@ public class ElementUtils {
   /**
    * Returns the field of the class or {@code null} if not found.
    *
-   * @param type TypeElement to search
+   * @param type the TypeElement to search
    * @param name name of a field
    * @return the VariableElement for the field if it was found, null otherwise
    */
@@ -508,7 +509,7 @@ public class ElementUtils {
    * @param names simple names of fields that might be declared in {@code type} or a supertype.
    *     Names that are found are removed from this list.
    * @return the {@code VariableElement}s for non-private fields that are declared in {@code type}
-   *     whose simple names were in {@code names} when the method was called.
+   *     whose simple names were in {@code names} when the method was called
    */
   public static Set<VariableElement> findFieldsInTypeOrSuperType(
       TypeMirror type, Collection<String> names) {
@@ -568,7 +569,7 @@ public class ElementUtils {
    * does not require a receiver.
    *
    * @param element the element to test
-   * @return whether the element requires a receiver for accesses
+   * @return true if the element requires a receiver for accesses
    */
   public static boolean hasReceiver(Element element) {
     if (element.getKind() == ElementKind.CONSTRUCTOR) {
@@ -577,7 +578,7 @@ public class ElementUtils {
       TypeMirror t = element.getEnclosingElement().asType();
       return TypesUtils.hasEnclosingType(t);
     } else if (element.getKind() == ElementKind.FIELD) {
-      if (ElementUtils.isStatic(element)
+      if (isStatic(element)
           // Artificial fields in interfaces are not marked as static, so check that
           // the field is not declared in an interface.
           || element.getEnclosingElement().getKind().isInterface()) {
@@ -588,7 +589,7 @@ public class ElementUtils {
         return !element.getSimpleName().contentEquals("this");
       }
     }
-    return element.getKind() == ElementKind.METHOD && !ElementUtils.isStatic(element);
+    return element.getKind() == ElementKind.METHOD && !isStatic(element);
   }
 
   /**
@@ -644,7 +645,7 @@ public class ElementUtils {
       // For each direct supertype of the current type element, if it
       // hasn't already been visited, push it onto the stack and
       // add it to our superElems set.
-      TypeElement supercls = ElementUtils.getSuperClass(current);
+      TypeElement supercls = getSuperClass(current);
       if (supercls != null) {
         if (!superElems.contains(supercls)) {
           stack.push(supercls);
@@ -679,9 +680,9 @@ public class ElementUtils {
    * @return direct supertypes of {@code type}
    */
   public static List<TypeElement> getDirectSuperTypeElements(TypeElement type, Elements elements) {
-    final TypeMirror superclass = type.getSuperclass();
-    final List<? extends TypeMirror> interfaces = type.getInterfaces();
-    List<TypeElement> result = new ArrayList<TypeElement>(interfaces.size() + 1);
+    TypeMirror superclass = type.getSuperclass();
+    List<? extends TypeMirror> interfaces = type.getInterfaces();
+    List<TypeElement> result = new ArrayList<>(interfaces.size() + 1);
     if (superclass.getKind() != TypeKind.NONE) {
       @SuppressWarnings("nullness:assignment") // Not null because the TypeKind is not NONE.
       @NonNull TypeElement superclassElement = TypesUtils.getTypeElement(superclass);
@@ -696,7 +697,7 @@ public class ElementUtils {
   }
 
   /**
-   * Return all fields declared in the given type or any superclass/interface.
+   * Returns all fields declared in the given type or any superclass/interface.
    *
    * <p>TODO: should this use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of
    * our own getSuperTypes?
@@ -733,7 +734,7 @@ public class ElementUtils {
   }
 
   /**
-   * Return all methods declared in the given type or any superclass/interface. Note that no
+   * Returns all methods declared in the given type or any superclass/interface. Note that no
    * constructors will be returned.
    *
    * <p>TODO: should this use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of
@@ -755,7 +756,22 @@ public class ElementUtils {
   }
 
   /**
-   * Return all nested/inner classes/interfaces declared in the given type.
+   * Returns the no-argument constructor of the given type, or null if it has none.
+   *
+   * @param type a type
+   * @return the type's no-argument constructor, or null if it has none
+   */
+  public static @Nullable ExecutableElement getNoArgumentConstructor(TypeElement type) {
+    for (ExecutableElement constructor : ElementFilter.constructorsIn(type.getEnclosedElements())) {
+      if (constructor.getParameters().isEmpty()) {
+        return constructor;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns all nested/inner classes/interfaces declared in the given type.
    *
    * @param type a type
    * @return all nested/inner classes/interfaces declared in {@code type}
@@ -777,35 +793,12 @@ public class ElementUtils {
   }
 
   /**
-   * Return the set of kinds that represent classes.
-   *
-   * @return the set of kinds that represent classes
-   * @deprecated use {@link #typeElementKinds()}
-   */
-  @Deprecated // 2020-12-11
-  public static Set<ElementKind> classElementKinds() {
-    return typeElementKinds();
-  }
-
-  /**
-   * Return the set of kinds that represent classes.
+   * Returns the set of kinds that represent classes.
    *
    * @return the set of kinds that represent classes
    */
   public static Set<ElementKind> typeElementKinds() {
     return typeElementKinds;
-  }
-
-  /**
-   * Is the given element kind a type, i.e., a class, enum, interface, or annotation type.
-   *
-   * @param element the element to test
-   * @return true, iff the given kind is a class kind
-   * @deprecated use {@link #isTypeElement}
-   */
-  @Deprecated // 2020-12-11
-  public static boolean isClassElement(Element element) {
-    return isTypeElement(element);
   }
 
   /**
@@ -819,13 +812,13 @@ public class ElementUtils {
   }
 
   /**
-   * Return true if the element is a type declaration.
+   * Returns true if the element is a type declaration.
    *
    * @param elt the element to test
    * @return true if the argument is a type declaration
    */
   public static boolean isTypeDeclaration(Element elt) {
-    return isClassElement(elt) || elt.getKind() == ElementKind.TYPE_PARAMETER;
+    return isTypeElement(elt) || elt.getKind() == ElementKind.TYPE_PARAMETER;
   }
 
   /** The set of kinds that represent local variables. */
@@ -836,7 +829,7 @@ public class ElementUtils {
           ElementKind.EXCEPTION_PARAMETER);
 
   /**
-   * Return true if the element is a local variable.
+   * Returns true if the element is a local variable.
    *
    * @param elt the element to test
    * @return true if the argument is a local variable
@@ -846,16 +839,18 @@ public class ElementUtils {
   }
 
   /**
-   * Return true if the element is a binding variable.
+   * Returns true if the element is a binding variable.
    *
    * <p>This implementation compiles and runs under JDK 8 and 11 as well as versions that contain
    * {@code ElementKind.BINDING_VARIABLE}.
    *
    * @param element the element to test
    * @return true if the element is a binding variable
+   * @deprecated Use {@link ElementKind#BINDING_VARIABLE}
    */
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static boolean isBindingVariable(Element element) {
-    return SystemUtil.jreVersion >= 16 && "BINDING_VARIABLE".equals(element.getKind().name());
+    return element.getKind() == ElementKind.BINDING_VARIABLE;
   }
 
   /**
@@ -871,11 +866,11 @@ public class ElementUtils {
     }
 
     TypeElement enclosing = (TypeElement) methodElement.getEnclosingElement();
-    if (enclosing.getKind().toString().equals("RECORD")) {
+    if (enclosing.getKind() == ElementKind.RECORD) {
       String methodName = methodElement.getSimpleName().toString();
       List<? extends Element> encloseds = enclosing.getEnclosedElements();
       for (Element enclosed : encloseds) {
-        if (enclosed.getKind().toString().equals("RECORD_COMPONENT")
+        if (enclosed.getKind() == ElementKind.RECORD_COMPONENT
             && enclosed.getSimpleName().toString().equals(methodName)) {
           return true;
         }
@@ -889,17 +884,19 @@ public class ElementUtils {
    * generated by the compiler. This can be a field that is derived from the record's header field
    * list, or an automatically generated canonical constructor.
    *
+   * <p>This method returns false for every member of a record that was read from bytecode, because
+   * it relies on javac flags that are not stored in class files.
+   *
    * @param e the {@link Element} for a member of a record
    * @return true if the given element is generated by the compiler
    */
   public static boolean isAutoGeneratedRecordMember(Element e) {
-    if (!(e instanceof Symbol)) {
+    if (!(e instanceof Symbol sym)) {
       return false;
     }
-
     // Generated constructors seem to get GENERATEDCONSTR even though the documentation
     // seems to imply they would get GENERATED_MEMBER like the fields do.
-    return (((Symbol) e).flags() & (TreeUtils.Flags_GENERATED_MEMBER | Flags.GENERATEDCONSTR)) != 0;
+    return (sym.flags() & (Flags.GENERATED_MEMBER | Flags.GENERATEDCONSTR)) != 0;
   }
 
   /**
@@ -934,12 +931,22 @@ public class ElementUtils {
     return true;
   }
 
-  /** Returns true if the given element is, or overrides, method. */
+  /**
+   * Returns true if the given element is, or overrides, {@code method}.
+   *
+   * @param questioned an element that might override {@code method}
+   * @param method a method that might be overridden
+   * @param env the processing environment
+   * @return true if {@code questioned} is, or overrides, {@code method}
+   */
   public static boolean isMethod(
-      ExecutableElement questioned, ExecutableElement method, ProcessingEnvironment env) {
-    TypeElement enclosing = (TypeElement) questioned.getEnclosingElement();
+      ExecutableElement questioned, @Nullable ExecutableElement method, ProcessingEnvironment env) {
+    if (method == null) {
+      return false;
+    }
     return questioned.equals(method)
-        || env.getElementUtils().overrides(questioned, method, enclosing);
+        || env.getElementUtils()
+            .overrides(questioned, method, (TypeElement) questioned.getEnclosingElement());
   }
 
   /**
@@ -980,7 +987,7 @@ public class ElementUtils {
   }
 
   /**
-   * Get all the supertypes of a given type, including the type itself. The result includes both
+   * Returns all the supertypes of a given type, including the type itself. The result includes both
    * superclasses and implemented interfaces.
    *
    * @param type a type
@@ -991,7 +998,7 @@ public class ElementUtils {
   public static List<TypeElement> getAllSupertypes(TypeElement type, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
-    return CollectionsPlume.<Type, TypeElement>mapList(
+    return CollectionsP.<Type, TypeElement>mapList(
         t -> (TypeElement) t.tsym, javacTypes.closure(((Symbol) type).type));
   }
 
@@ -1027,28 +1034,15 @@ public class ElementUtils {
    *
    * @param elt the element to get the kind for
    * @return the kind of the element, but CLASS if the kind was RECORD
+   * @deprecated Use {@link ElementKind#RECORD}
    */
+  @Deprecated(forRemoval = true, since = "4.0.0")
   public static ElementKind getKindRecordAsClass(Element elt) {
     ElementKind kind = elt.getKind();
-    if (kind.name().equals("RECORD")) {
+    if (kind == ElementKind.RECORD) {
       kind = ElementKind.CLASS;
     }
     return kind;
-  }
-
-  /** The {@code TypeElement.getRecordComponents()} method. */
-  private static final @Nullable Method getRecordComponentsMethod;
-
-  static {
-    if (SystemUtil.jreVersion >= 16) {
-      try {
-        getRecordComponentsMethod = TypeElement.class.getMethod("getRecordComponents");
-      } catch (NoSuchMethodException e) {
-        throw new Error("Cannot find TypeElement.getRecordComponents()", e);
-      }
-    } else {
-      getRecordComponentsMethod = null;
-    }
   }
 
   /**
@@ -1059,14 +1053,12 @@ public class ElementUtils {
    * @param element the type element to call getRecordComponents on
    * @return the return value of calling getRecordComponents, or empty list if the method is not
    *     available
+   * @deprecated use {@link TypeElement#getRecordComponents}
    */
-  @SuppressWarnings({"unchecked", "nullness"}) // because of cast from reflection
+  @Deprecated(forRemoval = true, since = "4.0.0")
+  @SuppressWarnings("unchecked")
   public static List<? extends Element> getRecordComponents(TypeElement element) {
-    try {
-      return (@NonNull List<? extends Element>) getRecordComponentsMethod.invoke(element);
-    } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-      throw new Error("Cannot call TypeElement.getRecordComponents()", e);
-    }
+    return element.getRecordComponents();
   }
 
   /**
@@ -1076,11 +1068,68 @@ public class ElementUtils {
    * @return true if the element is a compact canonical constructor of a record
    */
   public static boolean isCompactCanonicalRecordConstructor(Element elt) {
-    if (!(elt instanceof Symbol)) {
+    return elt.getKind() == ElementKind.CONSTRUCTOR
+        && (((Symbol) elt).flags() & Flags.COMPACT_RECORD_CONSTRUCTOR) != 0;
+  }
+
+  /**
+   * Returns true iff the given element is a resource variable.
+   *
+   * @param elt an element; may be null, in which case this method always returns false
+   * @return true iff the given element represents a resource variable
+   */
+  public static boolean isResourceVariable(@Nullable Element elt) {
+    return elt != null && elt.getKind() == ElementKind.RESOURCE_VARIABLE;
+  }
+
+  /**
+   * Returns true if the given element is a getter method. A getter method is an instance method
+   * with no formal parameters, whose name starts with "get", "is", "not", or "has" followed by an
+   * upper-case letter.
+   *
+   * @param methodElt a method
+   * @return true if the given element is a getter method
+   */
+  public static boolean isGetter(@Nullable ExecutableElement methodElt) {
+    if (methodElt == null) {
+      return false;
+    }
+    if (isStatic(methodElt)) {
+      return false;
+    }
+    if (!methodElt.getParameters().isEmpty()) {
       return false;
     }
 
-    return elt.getKind() == ElementKind.CONSTRUCTOR
-        && (((Symbol) elt).flags() & TreeUtils.Flags_COMPACT_RECORD_CONSTRUCTOR) != 0;
+    // I could check that the method has a non-void return type,
+    // and that methods with prefix "is", "has", and "not" return boolean.
+
+    // Constructors and initializers don't have a name starting with a character.
+    String name = methodElt.getSimpleName().toString();
+    // I expect this code is more efficient than use of a regular expression.
+    boolean nameOk =
+        nameStartsWith(name, "get")
+            || nameStartsWith(name, "is")
+            || nameStartsWith(name, "not")
+            || nameStartsWith(name, "has");
+
+    if (!nameOk) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Returns true if the name starts with the given prefix, followed by an upper-case letter.
+   *
+   * @param name a name
+   * @param prefix a prefix
+   * @return true if the name starts with the given prefix, followed by an upper-case letter
+   */
+  private static boolean nameStartsWith(String name, String prefix) {
+    return name.startsWith(prefix)
+        && name.length() > prefix.length()
+        && Character.isUpperCase(name.charAt(prefix.length()));
   }
 }

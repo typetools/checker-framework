@@ -1,0 +1,107 @@
+2 -> 3 EACH_TO_EACH
+3 -> 4 EACH_TO_EACH
+4 -> 8 THEN_TO_BOTH
+4 -> 10 ELSE_TO_BOTH
+8 -> 11 EACH_TO_EACH
+10 -> 11 EACH_TO_EACH
+11 -> 0 EACH_TO_EACH
+
+2:
+Process order: 1
+TransferInput#0
+Before:   reaching definitions = none
+~~~~~~~~~
+<entry>
+
+3:
+Process order: 2
+TransferInput#1
+Before:   reaching definitions = none
+~~~~~~~~~
+a   [ VariableDeclaration ]
+1   [ IntegerLiteral ]
+a = 1   [ Assignment ]
+b   [ VariableDeclaration ]
+2   [ IntegerLiteral ]
+b = 2   [ Assignment ]
+c   [ VariableDeclaration ]
+3   [ IntegerLiteral ]
+c = 3   [ Assignment ]
+x   [ VariableDeclaration ]
+"a"   [ StringLiteral ]
+x = "a"   [ Assignment ]
+y   [ VariableDeclaration ]
+"b"   [ StringLiteral ]
+y = "b"   [ Assignment ]
+a   [ LocalVariable ]
+0   [ IntegerLiteral ]
+(a > 0)   [ GreaterThan ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { a = 1, b = 2, c = 3, x = "a", y = "b" }
+
+4:
+Process order: 3
+TransferInput#21
+Before:   reaching definitions = { a = 1, b = 2, c = 3, x = "a", y = "b" }
+~~~~~~~~~
+ConditionalBlock: then: 8, else: 10
+
+8:
+Process order: 4
+TransferInput#23
+Before:   reaching definitions = { a = 1, b = 2, c = 3, x = "a", y = "b" }
+~~~~~~~~~
+d   [ VariableDeclaration ]
+a   [ LocalVariable ]
+c   [ LocalVariable ]
+(a + c)   [ NumericalAddition ]
+d = (a + c)   [ Assignment ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { a = 1, b = 2, c = 3, x = "a", y = "b", d = (a + c) }
+
+10:
+Process order: 5
+TransferInput#24
+Before:   reaching definitions = { a = 1, b = 2, c = 3, x = "a", y = "b" }
+~~~~~~~~~
+e   [ VariableDeclaration ]
+a   [ LocalVariable ]
+b   [ LocalVariable ]
+(a + b)   [ NumericalAddition ]
+e = (a + b)   [ Assignment ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { a = 1, b = 2, c = 3, x = "a", y = "b", e = (a + b) }
+
+11:
+Process order: 6
+TransferInput#38
+Before:   reaching definitions = { a = 1, b = 2, c = 3, x = "a", y = "b", e = (a + b), d = (a + c) }
+~~~~~~~~~
+b   [ LocalVariable ]
+0   [ IntegerLiteral ]
+b = 0   [ Assignment ]
+expression statement b = 0   [ ExpressionStatement ]
+a   [ LocalVariable ]
+b   [ LocalVariable ]
+a = b   [ Assignment ]
+expression statement a = b   [ ExpressionStatement ]
+x   [ LocalVariable ]
+y   [ LocalVariable ]
+(x + y)   [ StringConcatenate ]
+x = (x + y)   [ Assignment ]
+expression statement x += y   [ ExpressionStatement ]
+a   [ LocalVariable ]
+return a   [ Return ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { c = 3, y = "b", e = (a + b), d = (a + c), b = 0, a = b, x = (x + y) }
+
+0:
+Process order: 7
+TransferInput#55
+Before:   reaching definitions = { c = 3, y = "b", e = (a + b), d = (a + c), b = 0, a = b, x = (x + y) }
+~~~~~~~~~
+<exit>

@@ -1,6 +1,7 @@
 package org.checkerframework.common.subtyping;
 
 import java.lang.annotation.Annotation;
+import java.util.Locale;
 import java.util.NavigableSet;
 import java.util.Set;
 import java.util.TreeSet;
@@ -50,7 +51,7 @@ public final class SubtypingChecker extends BaseTypeChecker {
       Set<Class<? extends Annotation>> annos =
           ((BaseTypeVisitor<?>) visitor).getTypeFactory().getSupportedTypeQualifiers();
       for (Class<? extends Annotation> anno : annos) {
-        result.add(anno.getSimpleName().toLowerCase());
+        result.add(anno.getSimpleName().toLowerCase(Locale.getDefault()));
       }
     }
 

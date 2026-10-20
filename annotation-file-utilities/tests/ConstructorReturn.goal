@@ -1,0 +1,46 @@
+package org.checkerframework.afu.annotator.tests;
+
+@java.lang.annotation.Target(value = {java.lang.annotation.ElementType.TYPE_USE})
+@interface AType {}
+
+@interface ADecl {}
+
+public class ConstructorReturn {
+  public @java.lang.Tainted ConstructorReturn() {}
+}
+
+class ConstructorReturn_2_1 {
+  @ADecl
+  ConstructorReturn_2_1() {}
+
+  @ADecl
+  Object foo() {
+    return null;
+  }
+}
+
+class ConstructorReturn_2_2 {
+  @ADecl
+  ConstructorReturn_2_2() {}
+
+  @ADecl
+  Object foo() {
+    return null;
+  }
+}
+
+class ConstructorReturn_3_1 {
+  @AType ConstructorReturn_3_1() {}
+
+  @AType Object foo() {
+    return null;
+  }
+}
+
+class ConstructorReturn_3_2 {
+  @AType ConstructorReturn_3_2() {}
+
+  @AType Object foo() {
+    return null;
+  }
+}

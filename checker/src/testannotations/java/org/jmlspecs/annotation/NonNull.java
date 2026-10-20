@@ -1,5 +1,5 @@
 // Upstream version (this is a clean-room reimplementation of its interface):
-// http://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/NonNull.java
+// https://svn.code.sf.net/p/jmlspecs/code/JMLAnnotations/trunk/src/org/jmlspecs/annotation/NonNull.java
 
 package org.jmlspecs.annotation;
 

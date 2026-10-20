@@ -2,7 +2,7 @@
  * @test
  * @summary Test case for issue #4948: https://github.com/typetools/checker-framework/issues/4948
  *
- * @compile/timeout=30 -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -Alint Issue4948.java
+ * @compile/timeout=30 -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -Alint Issue4948.java
  */
 import java.util.stream.Stream;
 import org.checkerframework.checker.nullness.qual.Nullable;

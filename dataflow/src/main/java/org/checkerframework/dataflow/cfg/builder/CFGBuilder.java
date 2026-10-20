@@ -46,7 +46,7 @@ import org.checkerframework.javacutil.trees.TreeBuilder;
  */
 public abstract class CFGBuilder {
 
-  /** This class should never be instantiated. Protected to still allow subclasses. */
+  /** Creates a CFGBuilder. */
   protected CFGBuilder() {}
 
   /**
@@ -111,7 +111,7 @@ public abstract class CFGBuilder {
   }
 
   /**
-   * Return a printed representation of a collection of extended nodes.
+   * Returns a printed representation of a collection of extended nodes.
    *
    * @param nodes a collection of extended nodes to format
    * @return a printed representation of the given collection
@@ -123,16 +123,6 @@ public abstract class CFGBuilder {
       result.add(n.toStringDebug());
     }
     return result.toString();
-  }
-
-  static <A> A firstNonNull(A first, A second) {
-    if (first != null) {
-      return first;
-    } else if (second != null) {
-      return second;
-    } else {
-      throw new NullPointerException();
-    }
   }
 
   /* --------------------------------------------------------- */
@@ -149,35 +139,28 @@ public abstract class CFGBuilder {
     for (Block b : blocks) {
       System.out.print(b.getUid() + ": " + b);
       switch (b.getType()) {
-        case REGULAR_BLOCK:
-        case SPECIAL_BLOCK:
-          {
-            Block succ = ((SingleSuccessorBlockImpl) b).getSuccessor();
-            System.out.println(" -> " + (succ != null ? succ.getUid() : "||"));
-            break;
+        case REGULAR_BLOCK, SPECIAL_BLOCK -> {
+          Block succ = ((SingleSuccessorBlockImpl) b).getSuccessor();
+          System.out.println(" -> " + (succ != null ? succ.getUid() : "||"));
+        }
+        case EXCEPTION_BLOCK -> {
+          Block succ = ((SingleSuccessorBlockImpl) b).getSuccessor();
+          System.out.print(" -> " + (succ != null ? succ.getUid() : "||") + " {");
+          for (Map.Entry<TypeMirror, Set<Block>> entry :
+              ((ExceptionBlockImpl) b).getExceptionalSuccessors().entrySet()) {
+            System.out.print(entry.getKey() + " : " + entry.getValue() + ", ");
           }
-        case EXCEPTION_BLOCK:
-          {
-            Block succ = ((SingleSuccessorBlockImpl) b).getSuccessor();
-            System.out.print(" -> " + (succ != null ? succ.getUid() : "||") + " {");
-            for (Map.Entry<TypeMirror, Set<Block>> entry :
-                ((ExceptionBlockImpl) b).getExceptionalSuccessors().entrySet()) {
-              System.out.print(entry.getKey() + " : " + entry.getValue() + ", ");
-            }
-            System.out.println("}");
-            break;
-          }
-        case CONDITIONAL_BLOCK:
-          {
-            Block tSucc = ((ConditionalBlockImpl) b).getThenSuccessor();
-            Block eSucc = ((ConditionalBlockImpl) b).getElseSuccessor();
-            System.out.println(
-                " -> T "
-                    + (tSucc != null ? tSucc.getUid() : "||")
-                    + " F "
-                    + (eSucc != null ? eSucc.getUid() : "||"));
-            break;
-          }
+          System.out.println("}");
+        }
+        case CONDITIONAL_BLOCK -> {
+          Block tSucc = ((ConditionalBlockImpl) b).getThenSuccessor();
+          Block eSucc = ((ConditionalBlockImpl) b).getElseSuccessor();
+          System.out.println(
+              " -> T "
+                  + (tSucc != null ? tSucc.getUid() : "||")
+                  + " F "
+                  + (eSucc != null ? eSucc.getUid() : "||"));
+        }
       }
     }
   }

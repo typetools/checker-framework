@@ -25,7 +25,7 @@ public final class Effect {
   }
 
   /**
-   * Return true iff {@code left} is less than or equal to {@code right}.
+   * Returns true iff {@code left} is less than or equal to {@code right}.
    *
    * @param left the first effect to compare
    * @param right the first effect to compare
@@ -47,9 +47,10 @@ public final class Effect {
   }
 
   public static final class EffectRange {
-    public final Effect min, max;
+    public final Effect min;
+    public final Effect max;
 
-    public EffectRange(Effect min, Effect max) {
+    public EffectRange(@Nullable Effect min, @Nullable Effect max) {
       assert (min != null || max != null);
       // If one is null, fill in with the other
       this.min = (min != null ? min : max);
@@ -58,7 +59,7 @@ public final class Effect {
   }
 
   /**
-   * Return true if this is SafeEffect.
+   * Returns true if this is SafeEffect.
    *
    * @return true if this is SafeEffect
    */
@@ -67,7 +68,7 @@ public final class Effect {
   }
 
   /**
-   * Return true if this is UIEffect.
+   * Returns true if this is UIEffect.
    *
    * @return true if this is UIEffect
    */
@@ -76,7 +77,7 @@ public final class Effect {
   }
 
   /**
-   * Return true if this is PolyUIEffect.
+   * Returns true if this is PolyUIEffect.
    *
    * @return true if this is PolyUIEffect
    */
@@ -96,7 +97,7 @@ public final class Effect {
   }
 
   /**
-   * Return true if this equals the given effect.
+   * Returns true if this equals the given effect.
    *
    * @param e the effect to compare this to
    * @return true if this equals the given effect
@@ -107,9 +108,10 @@ public final class Effect {
   }
 
   @Override
+  @SuppressWarnings("SuperEqualsIsObjectEquals") // better style to use the equals() abstraction
   public boolean equals(@Nullable Object o) {
-    if (o instanceof Effect) {
-      return this.equals((Effect) o);
+    if (o instanceof Effect e) {
+      return this.equals(e);
     } else {
       return super.equals(o);
     }

@@ -5,7 +5,7 @@ UnitsExtensionDemo.java:14: error: [assignment] incompatible types in assignment
   required: @Hz int
 UnitsExtensionDemo.java:67: error: [assignment] incompatible types in assignment.
     @Hz int badTernaryAssign = seconds > 10 ? hertz : kilohertz;
-                                            ^
-  found   : @Frequency int
+                                                      ^
+  found   : @Hz(Prefix.kilo) int
   required: @Hz int
 2 errors

@@ -5,23 +5,37 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 
 /** Utilities for executing external processes. */
 public class ExecUtil {
 
-  public static int execute(final String[] cmd, final OutputStream std, final OutputStream err) {
+  /** Do not instantiate. */
+  private ExecUtil() {
+    throw new Error("Do not instantiate");
+  }
 
-    final Redirection outRedirect = new Redirection(std, BLOCK_SIZE);
-    final Redirection errRedirect = new Redirection(err, BLOCK_SIZE);
+  /**
+   * Runs the given command in a new process
+   *
+   * @param cmd the command
+   * @param std a stream to capture the standard output of the process
+   * @param err a stream to capture the standard error of the process
+   * @return the exit status of the process
+   */
+  public static int execute(String[] cmd, OutputStream std, OutputStream err) {
+
+    Redirection outRedirect = new Redirection(std, BLOCK_SIZE);
+    Redirection errRedirect = new Redirection(err, BLOCK_SIZE);
 
     try {
-      final Process proc = Runtime.getRuntime().exec(cmd);
+      Process proc = Runtime.getRuntime().exec(cmd);
       outRedirect.redirect(proc.getInputStream());
       errRedirect.redirect(proc.getErrorStream());
 
-      final IOException stdExc = outRedirect.join();
-      final IOException errExc = errRedirect.join();
-      final int exitStatus = proc.waitFor();
+      IOException stdExc = outRedirect.join();
+      IOException errExc = errRedirect.join();
+      int exitStatus = proc.waitFor();
 
       if (stdExc != null) {
         throw stdExc;
@@ -49,19 +63,20 @@ public class ExecUtil {
     private Thread thread;
     private IOException exception;
 
-    public Redirection(final OutputStream out, final int bufferSize) {
+    public Redirection(OutputStream out, int bufferSize) {
       this.buffer = new char[bufferSize];
-      this.out = new OutputStreamWriter(out);
+      this.out = new OutputStreamWriter(out, StandardCharsets.UTF_8);
     }
 
-    public void redirect(final InputStream inStream) {
+    public void redirect(InputStream inStream) {
 
       exception = null;
 
       this.thread =
           new Thread(
               () -> {
-                try (InputStreamReader in = new InputStreamReader(inStream)) {
+                try (InputStreamReader in =
+                    new InputStreamReader(inStream, StandardCharsets.UTF_8)) {
                   int read = 0;
                   while (read > -1) {
                     read = in.read(buffer);

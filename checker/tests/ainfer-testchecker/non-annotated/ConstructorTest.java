@@ -6,7 +6,7 @@ public class ConstructorTest {
 
   void test() {
     @AinferTop int top = (@AinferTop int) 0;
-    // :: warning: (argument)
+    // :: warning: [argument]
     new ConstructorTest(top);
   }
 }

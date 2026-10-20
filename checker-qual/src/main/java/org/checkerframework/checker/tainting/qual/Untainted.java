@@ -12,7 +12,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * Denotes a reference that is untainted, i.e. can be trusted.
+ * Denotes a reference that is untainted, i.e., can be trusted.
  *
  * @checker_framework.manual #tainting-checker Tainting Checker
  */

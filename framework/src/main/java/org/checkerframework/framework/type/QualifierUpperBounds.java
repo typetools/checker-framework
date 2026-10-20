@@ -22,6 +22,7 @@ public class QualifierUpperBounds {
 
   /** Map from {@link TypeKind} to annotations. */
   private final Map<TypeKind, AnnotationMirrorSet> typeKinds;
+
   /** Map from canonical class name strings to annotations. */
   private final Map<@CanonicalName String, AnnotationMirrorSet> types;
 
@@ -34,6 +35,7 @@ public class QualifierUpperBounds {
    * Creates a {@link QualifierUpperBounds} from the given checker, using that checker to determine
    * the annotations that are in the type hierarchy.
    */
+  @SuppressWarnings("this-escape")
   public QualifierUpperBounds(AnnotatedTypeFactory typeFactory) {
     this.atypeFactory = typeFactory;
     this.typeKinds = new EnumMap<>(TypeKind.class);
@@ -79,7 +81,7 @@ public class QualifierUpperBounds {
     boolean res = qualHierarchy.updateMappingToMutableSet(typeKinds, typeKind, theQual);
     if (!res) {
       throw new BugInCF(
-          "QualifierUpperBounds: invalid update of typeKinds $s at %s with %s.",
+          "QualifierUpperBounds: invalid update of typeKinds %s at %s with %s.",
           typeKinds, typeKind, theQual);
     }
   }
@@ -90,7 +92,7 @@ public class QualifierUpperBounds {
     boolean res = qualHierarchy.updateMappingToMutableSet(types, typeNameString, theQual);
     if (!res) {
       throw new BugInCF(
-          "QualifierUpperBounds: invalid update of types $s at %s with %s.", types, type, theQual);
+          "QualifierUpperBounds: invalid update of types %s at %s with %s.", types, type, theQual);
     }
   }
 
@@ -137,7 +139,7 @@ public class QualifierUpperBounds {
    * @return the explicit annotations on the element
    */
   protected AnnotationMirrorSet getAnnotationFromElement(Element element) {
-    return atypeFactory.fromElement(element).getAnnotations();
+    return atypeFactory.fromElement(element).getPrimaryAnnotations();
   }
 
   /**

@@ -25,6 +25,7 @@ import org.checkerframework.javacutil.BugInCF;
 public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected final AnnotationMirror VALUE, BOTTOM, TOP;
 
+  @SuppressWarnings("this-escape")
   public FlowTestAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, true);
     VALUE = AnnotationBuilder.fromClass(elements, ValueTypeAnno.class);
@@ -64,7 +65,7 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     public FlowQualifierHierarchy(
         Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-      super(qualifierClasses, elements);
+      super(qualifierClasses, elements, FlowTestAnnotatedTypeFactory.this);
       this.VALUE_KIND = getQualifierKind(VALUE);
     }
 

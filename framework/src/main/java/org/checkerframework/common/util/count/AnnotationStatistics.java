@@ -2,6 +2,7 @@ package org.checkerframework.common.util.count;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayTypeTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -24,39 +25,48 @@ import java.util.TreeSet;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Name;
-import javax.tools.Diagnostic.Kind;
+import javax.tools.Diagnostic;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SourceVisitor;
 import org.checkerframework.framework.source.SupportedOptions;
 import org.checkerframework.javacutil.AnnotationProvider;
 
 /**
- * An annotation processor for listing the potential locations of annotations. To invoke it, use
+ * An annotation processor for counting the annotations in a program and for listing the potential
+ * locations of annotations. To invoke it, use
  *
  * <pre>
  * javac -proc:only -processor org.checkerframework.common.util.count.AnnotationStatistics <em>MyFile.java ...</em>
  * </pre>
  *
- * <p>You probably want to pipe the output through another program:
+ * <p>By default, this utility displays annotation locations only, but not the annotations
+ * themselves. Further, the output includes all annotations (including {@code @Override}, etc.),
+ * which is not very useful.
+ *
+ * <p>The following options may be used to adjust the output:
  *
  * <ul>
- *   <li>Total annotation count: {@code ... | wc}.
- *   <li>Breakdown by location type: {@code ... | sort | uniq -c}
- *   <li>Count for only certain location types: use {@code grep}
- * </ul>
- *
- * <p>By default, this utility displays annotation locations only. The following two options may be
- * used to adjust the output:
- *
- * <ul>
- *   <li>{@code -Aannotations}: prints information about the annotations
+ *   <li>{@code -Aannotations}: prints the annotation name, the file that contains it, and whether
+ *       it is in a signature or in a body
  *   <li>{@code -Anolocations}: suppresses location output; only makes sense in conjunction with
  *       {@code -Aannotations}
- *   <li>{@code -Aannotationsummaryonly}: with both of the obove, only outputs a summary
+ *   <li>{@code -Aannotationsummaryonly}: with both of the above, only outputs a summary
  *   <li>{@code -Aannotationserror}: histogram is issued as a warning, not just printed
  * </ul>
  *
+ * <p>These use cases are not very useful, because they include all annotations including
+ * {@code @Override}, etc.
+ *
+ * <ul>
+ *   <li>Output the locations of annotations, but not the annotations themselves: normal invocation,
+ *       as above
+ *   <li>Histogram of the locations of annotations, by location type: {@code ... | sort | uniq -c}
+ *   <li>Total annotation count: {@code ... | wc}.
+ *   <li>Count for only certain location types: use {@code grep}
+ * </ul>
+ *
  * @see JavaCodeStatistics
+ * @see org.checkerframework.common.util.count.report.ReportChecker
  */
 /*
  * TODO: add an option to only list declaration or type annotations.
@@ -98,9 +108,9 @@ public class AnnotationStatistics extends SourceChecker {
       output = sj.toString();
     }
     if (hasOption("annotationserror")) {
-      // Issue annotation details a compiler warning rather than printed. This may be useful, for
-      // example, when Maven swallows non-warning output from the annotation processor.
-      getProcessingEnvironment().getMessager().printMessage(Kind.WARNING, output);
+      // Issue annotation details a compiler warning rather than printed. This may be useful,
+      // for example, when Maven swallows non-warning output from the annotation processor.
+      getProcessingEnvironment().getMessager().printMessage(Diagnostic.Kind.WARNING, output);
     } else {
       System.out.println(output);
     }
@@ -124,13 +134,13 @@ public class AnnotationStatistics extends SourceChecker {
 
   class Visitor extends SourceVisitor<Void, Void> {
 
-    /** Whether annotation locations should be printed. */
+    /** True if annotation locations should be printed. */
     private final boolean locations;
 
-    /** Whether annotation details should be printed. */
+    /** True if annotation details should be printed. */
     private final boolean annotations;
 
-    /** Whether only a summary should be printed. */
+    /** True if only a summary should be printed. */
     private final boolean annotationsummaryonly;
 
     /**
@@ -162,9 +172,7 @@ public class AnnotationStatistics extends SourceChecker {
         TreePath path = getCurrentPath();
         Tree prev = null;
         for (Tree t : path) {
-          if (prev != null
-              && prev.getKind() == Tree.Kind.BLOCK
-              && t.getKind() == Tree.Kind.METHOD) {
+          if (prev != null && prev instanceof BlockTree && t instanceof MethodTree) {
             isBodyAnnotation = true;
             break;
           }

@@ -8,6 +8,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
@@ -18,13 +19,12 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /** Utility methods for the Value Checker. */
-public class ValueCheckerUtils {
+public final class ValueCheckerUtils {
 
   /** Do not instantiate. */
   private ValueCheckerUtils() {
@@ -32,10 +32,10 @@ public class ValueCheckerUtils {
   }
 
   /**
-   * Get a list of the values of an annotation, and then cast the values to a given type.
+   * Returns a list of the values of an annotation, and then cast the values to a given type.
    *
    * @param anno the annotation that contains values
-   * @param castTo the type that is casted to
+   * @param castTo the type that is cast to
    * @param atypeFactory the type factory
    * @return a list of values after the casting
    */
@@ -45,7 +45,7 @@ public class ValueCheckerUtils {
   }
 
   /**
-   * Get a list of the values of an annotation, and then cast the values to a given type.
+   * Returns a list of the values of an annotation, and then cast the values to a given type.
    *
    * @param anno the annotation that contains values
    * @param castTo the unannotated type that is casted to
@@ -61,36 +61,30 @@ public class ValueCheckerUtils {
     Class<?> castType = TypesUtils.getClassFromType(castTo);
     List<?> values;
     switch (AnnotationUtils.annotationName(anno)) {
-      case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME:
-        values = convertDoubleVal(anno, castType, castTo, atypeFactory);
-        break;
-      case ValueAnnotatedTypeFactory.INTVAL_NAME:
+      case ValueAnnotatedTypeFactory.DOUBLEVAL_NAME ->
+          values = convertDoubleVal(anno, castType, castTo, atypeFactory);
+      case ValueAnnotatedTypeFactory.INTVAL_NAME -> {
         List<Long> longs = atypeFactory.getIntValues(anno);
         values = convertIntVal(longs, castType, castTo, isUnsigned);
-        break;
-      case ValueAnnotatedTypeFactory.INTRANGE_NAME:
+      }
+      case ValueAnnotatedTypeFactory.INTRANGE_NAME -> {
         Range range = atypeFactory.getRange(anno);
         List<Long> rangeValues = getValuesFromRange(range, Long.class);
         values = convertIntVal(rangeValues, castType, castTo, isUnsigned);
-        break;
-      case ValueAnnotatedTypeFactory.STRINGVAL_NAME:
-        values = convertStringVal(anno, castType, atypeFactory);
-        break;
-      case ValueAnnotatedTypeFactory.BOOLVAL_NAME:
-        values = convertBoolVal(anno, castType, atypeFactory);
-        break;
-      case ValueAnnotatedTypeFactory.BOTTOMVAL_NAME:
-      case ValueAnnotatedTypeFactory.ARRAYLEN_NAME:
-        values = Collections.emptyList();
-        break;
-      default:
-        values = null;
+      }
+      case ValueAnnotatedTypeFactory.STRINGVAL_NAME ->
+          values = convertStringVal(anno, castType, atypeFactory);
+      case ValueAnnotatedTypeFactory.BOOLVAL_NAME ->
+          values = convertBoolVal(anno, castType, atypeFactory);
+      case ValueAnnotatedTypeFactory.BOTTOMVAL_NAME, ValueAnnotatedTypeFactory.ARRAYLEN_NAME ->
+          values = Collections.emptyList();
+      default -> values = null;
     }
     return values;
   }
 
   /** Get the minimum and maximum of a list and return a range bounded by them. */
-  public static Range getRangeFromValues(List<? extends Number> values) {
+  public static @Nullable Range getRangeFromValues(List<? extends Number> values) {
     if (values == null) {
       return null;
     } else if (values.isEmpty()) {
@@ -130,8 +124,9 @@ public class ValueCheckerUtils {
   }
 
   /**
-   * Get all possible values from the given type and cast them into a boxed primitive type. Returns
-   * null if the list would have length greater than {@link ValueAnnotatedTypeFactory#MAX_VALUES}.
+   * Returns all possible values from the given type and cast them into a boxed primitive type.
+   * Returns null if the list would have length greater than {@link
+   * ValueAnnotatedTypeFactory#MAX_VALUES}.
    *
    * <p>{@code expectedType} must be a boxed type, not a primitive type, because primitive types
    * cannot be stored in a list.
@@ -142,7 +137,8 @@ public class ValueCheckerUtils {
    * @return a list of all the values in the range, or null if there would be more than {@link
    *     ValueAnnotatedTypeFactory#MAX_VALUES}
    */
-  public static <T> List<T> getValuesFromRange(Range range, Class<T> expectedType) {
+  public static <T> @Nullable List<T> getValuesFromRange(
+      @Nullable Range range, Class<T> expectedType) {
     if (range == null || range.isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
       return null;
     }
@@ -172,12 +168,12 @@ public class ValueCheckerUtils {
    * @param origValues the objects to format
    * @return a list of the formatted objects
    */
-  @SuppressWarnings("mustcall:methodref.receiver") // generics; #979 ?
-  private static List<?> convertToStringVal(List<? extends @MustCallUnknown Object> origValues) {
+  private static @Nullable List<?> convertToStringVal(
+      List<? extends @MustCallUnknown Object> origValues) {
     if (origValues == null) {
       return null;
     }
-    return CollectionsPlume.mapList(Object::toString, origValues);
+    return CollectionsP.mapList(Object::toString, origValues);
   }
 
   /**
@@ -213,13 +209,13 @@ public class ValueCheckerUtils {
       AnnotationMirror anno, Class<?> newClass, ValueAnnotatedTypeFactory atypeFactory) {
     List<String> strings = atypeFactory.getStringValues(anno);
     if (newClass == char[].class) {
-      return CollectionsPlume.mapList(String::toCharArray, strings);
+      return CollectionsP.mapList(String::toCharArray, strings);
     }
     return strings;
   }
 
   /**
-   * Convert a list of longs to a given type
+   * Convert a list of longs to a given type.
    *
    * @param longs the integral values to convert
    * @param newClass determines the type of the result
@@ -228,7 +224,7 @@ public class ValueCheckerUtils {
    * @return the {@code value} of a {@code @IntVal} annotation, as a {@code List<Integer>} or a
    *     {@code List<char[]>}
    */
-  private static List<?> convertIntVal(
+  private static @Nullable List<?> convertIntVal(
       List<Long> longs, Class<?> newClass, TypeMirror newType, boolean isUnsigned) {
     if (longs == null) {
       return null;
@@ -236,7 +232,7 @@ public class ValueCheckerUtils {
     if (newClass == String.class) {
       return convertToStringVal(longs);
     } else if (newClass == Character.class || newClass == char.class) {
-      return CollectionsPlume.mapList((Long l) -> (char) l.longValue(), longs);
+      return CollectionsP.mapList((Long l) -> (char) l.longValue(), longs);
     } else if (newClass == Boolean.class) {
       throw new UnsupportedOperationException(
           "ValueAnnotatedTypeFactory: can't convert integral type to boolean");
@@ -253,7 +249,7 @@ public class ValueCheckerUtils {
    * @param atypeFactory the type factory, used for obtaining fields/elements from annotations
    * @return the {@code value} of a {@code @DoubleVal} annotation
    */
-  private static List<?> convertDoubleVal(
+  private static @Nullable List<?> convertDoubleVal(
       AnnotationMirror anno,
       Class<?> newClass,
       TypeMirror newType,
@@ -265,7 +261,7 @@ public class ValueCheckerUtils {
     if (newClass == String.class) {
       return convertToStringVal(doubles);
     } else if (newClass == Character.class || newClass == char.class) {
-      return CollectionsPlume.mapList((Double l) -> (char) l.doubleValue(), doubles);
+      return CollectionsP.mapList((Double l) -> (char) l.doubleValue(), doubles);
     } else if (newClass == Boolean.class) {
       throw new UnsupportedOperationException(
           "ValueAnnotatedTypeFactory: can't convert double to boolean");
@@ -280,8 +276,8 @@ public class ValueCheckerUtils {
    * @return list of unique lengths of strings in {@code values}
    */
   public static List<Integer> getLengthsForStringValues(List<String> values) {
-    List<Integer> lengths = CollectionsPlume.mapList(String::length, values);
-    return SystemUtil.withoutDuplicatesSorted(lengths);
+    List<Integer> lengths = CollectionsP.mapList(String::length, values);
+    return CollectionsP.withoutDuplicatesSorted(lengths);
   }
 
   /**
@@ -289,13 +285,13 @@ public class ValueCheckerUtils {
    * AnnotatedTypeMirror}. If the passed {@code AnnotatedTypeMirror} does not contain an {@code
    * IntRange} annotation or an {@code IntVal} annotation, returns null.
    */
-  public static Range getPossibleValues(
+  public static @Nullable Range getPossibleValues(
       AnnotatedTypeMirror valueType, ValueAnnotatedTypeFactory valueAnnotatedTypeFactory) {
-    if (valueAnnotatedTypeFactory.isIntRange(valueType.getAnnotations())) {
-      return valueAnnotatedTypeFactory.getRange(valueType.getAnnotation(IntRange.class));
+    if (valueAnnotatedTypeFactory.isIntRange(valueType.getPrimaryAnnotations())) {
+      return valueAnnotatedTypeFactory.getRange(valueType.getPrimaryAnnotation(IntRange.class));
     } else {
       List<Long> values =
-          valueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
+          valueAnnotatedTypeFactory.getIntValues(valueType.getPrimaryAnnotation(IntVal.class));
       if (values != null) {
         return Range.create(values);
       } else {
@@ -310,7 +306,7 @@ public class ValueCheckerUtils {
    * exactly one value -- such as the LBC's binary operator rules -- and not by those that need to
    * know whether a valueType belongs to a particular qualifier.
    */
-  public static Long getExactValue(Tree tree, ValueAnnotatedTypeFactory factory) {
+  public static @Nullable Long getExactValue(Tree tree, ValueAnnotatedTypeFactory factory) {
     AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
     Range possibleValues = getPossibleValues(valueType, factory);
     if (possibleValues != null && possibleValues.from == possibleValues.to) {
@@ -325,10 +321,10 @@ public class ValueCheckerUtils {
    * null if the exact value is not known.
    *
    * @param element the element to get the exact value from
-   * @param factory ValueAnnotatedTypeFactory used for annotation accessing
+   * @param factory a ValueAnnotatedTypeFactory used for annotation accessing
    * @return the exact value of the element if it is constant, or null otherwise
    */
-  public static Long getExactValue(Element element, ValueAnnotatedTypeFactory factory) {
+  public static @Nullable Long getExactValue(Element element, ValueAnnotatedTypeFactory factory) {
     AnnotatedTypeMirror valueType = factory.getAnnotatedType(element);
     Range possibleValues = getPossibleValues(valueType, factory);
     if (possibleValues != null && possibleValues.from == possibleValues.to) {
@@ -344,10 +340,10 @@ public class ValueCheckerUtils {
    * who need exactly one value and not by those that need to know whether a valueType belongs to a
    * particular qualifier.
    */
-  public static String getExactStringValue(Tree tree, ValueAnnotatedTypeFactory factory) {
+  public static @Nullable String getExactStringValue(Tree tree, ValueAnnotatedTypeFactory factory) {
     AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
-    if (valueType.hasAnnotation(StringVal.class)) {
-      AnnotationMirror valueAnno = valueType.getAnnotation(StringVal.class);
+    if (valueType.hasPrimaryAnnotation(StringVal.class)) {
+      AnnotationMirror valueAnno = valueType.getPrimaryAnnotation(StringVal.class);
       List<String> possibleValues =
           AnnotationUtils.getElementValueArray(
               valueAnno, factory.stringValValueElement, String.class);
@@ -363,7 +359,7 @@ public class ValueCheckerUtils {
    * list of possible values is empty or null), returns null. Otherwise, returns the smallest value
    * in the list of possible values.
    */
-  public static Long getMinValue(Tree tree, ValueAnnotatedTypeFactory factory) {
+  public static @Nullable Long getMinValue(Tree tree, ValueAnnotatedTypeFactory factory) {
     AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
     Range possibleValues = getPossibleValues(valueType, factory);
     if (possibleValues != null) {
@@ -375,10 +371,10 @@ public class ValueCheckerUtils {
 
   /**
    * Finds the maximum value in a Value Checker type. If there is no information (such as when the
-   * list of possible values is empty or null), returns null. Otherwise, returns the smallest value
+   * list of possible values is empty or null), returns null. Otherwise, returns the largest value
    * in the list of possible values.
    */
-  public static Long getMaxValue(Tree tree, ValueAnnotatedTypeFactory factory) {
+  public static @Nullable Long getMaxValue(Tree tree, ValueAnnotatedTypeFactory factory) {
     AnnotatedTypeMirror valueType = factory.getAnnotatedType(tree);
     Range possibleValues = getPossibleValues(valueType, factory);
     if (possibleValues != null) {
@@ -391,7 +387,7 @@ public class ValueCheckerUtils {
   /**
    * Looks up the minlen of a member select tree. The tree must be an access to a sequence length.
    */
-  public static Integer getMinLenFromTree(Tree tree, ValueAnnotatedTypeFactory valueATF) {
+  public static @Nullable Integer getMinLenFromTree(Tree tree, ValueAnnotatedTypeFactory valueATF) {
     AnnotatedTypeMirror minLenType = valueATF.getAnnotatedType(tree);
     Long min = valueATF.getMinimumIntegralValue(minLenType);
     if (min == null) {
@@ -422,7 +418,7 @@ public class ValueCheckerUtils {
   public static JavaExpression optimize(JavaExpression je, AnnotatedTypeFactory factory) {
     ValueAnnotatedTypeFactory vatf =
         ((GenericAnnotatedTypeFactory<?, ?, ?, ?>) factory)
-            .getTypeFactoryOfSubchecker(ValueChecker.class);
+            .getTypeFactoryOfSubcheckerOrNull(ValueChecker.class);
     return new JavaExpressionOptimizer(vatf == null ? factory : vatf).convert(je);
   }
 }

@@ -5,7 +5,7 @@ public class Issue3033 {
 
   void main() {
     @Tainted String a = getTainted();
-    // :: warning: (instanceof.unsafe)
+    // :: warning: [instanceof.unsafe]
     if (a instanceof @Untainted String) {
       // `a` is now refined to @Untainted String
       isUntainted(a);

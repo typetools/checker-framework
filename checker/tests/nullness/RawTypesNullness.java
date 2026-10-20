@@ -1,5 +1,3 @@
-// @above-java17-jdk-skip-test TODO: reinstate, false negatives may be due to issue #979
-
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 class Generic<G extends @Nullable Object> {}

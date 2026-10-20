@@ -27,34 +27,34 @@ public class MaskedShifts {
     // Now the right-most introduced bit matters
     testRes = (unsigned >>> 8) & 0x1FFFFFF;
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     testRes = (unsigned >> 8) & 0x1FFFFFF;
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     testRes = (signed >>> 8) & 0x1FFFFFF;
     testRes = (signed >> 8) & 0x1FFFFFF;
 
-    // Use mask that doesn't render the MSB irrelevent, but does render the next 7 MSB_s
+    // Use mask that doesn't render the MSB irrelevant, but does render the next 7 MSB_s
     // irrelevant.
 
     // Now the left-most introduced bit matters
     testRes = (unsigned >>> 8) & 0x90FFFFFF;
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     testRes = (unsigned >> 8) & 0x90FFFFFF;
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     testRes = (signed >>> 8) & 0x90FFFFFF;
     testRes = (signed >> 8) & 0x90FFFFFF;
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = (unsigned >>> 8) & 0xFFFFFFFF;
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     testRes = (unsigned >> 8) & 0xFFFFFFFF;
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     testRes = (signed >>> 8) & 0xFFFFFFFF;
     testRes = (signed >> 8) & 0xFFFFFFFF;
 
@@ -68,14 +68,14 @@ public class MaskedShifts {
     testRes = signed >>> 8 & 0xFFFFFF;
     testRes = signed >> 8 & 0xFFFFFF;
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = unsigned >>> 8 & 0xFFFFFFFF;
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     testRes = unsigned >> 8 & 0xFFFFFFFF;
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     testRes = signed >>> 8 & 0xFFFFFFFF;
     testRes = signed >> 8 & 0xFFFFFFFF;
 
@@ -89,14 +89,14 @@ public class MaskedShifts {
     testRes = ((signed >>> 8)) & 0xFFFFFF;
     testRes = ((signed >> 8)) & 0xFFFFFF;
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = ((unsigned >>> 8)) & 0xFFFFFFFF;
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     testRes = ((unsigned >> 8)) & 0xFFFFFFFF;
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     testRes = ((signed >>> 8)) & 0xFFFFFFFF;
     testRes = ((signed >> 8)) & 0xFFFFFFFF;
 
@@ -110,14 +110,14 @@ public class MaskedShifts {
     testRes = 0xFFFFFF & (signed >>> 8);
     testRes = 0xFFFFFF & (signed >> 8);
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = 0xFFFFFFFF & (unsigned >>> 8);
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     testRes = 0xFFFFFFFF & (unsigned >> 8);
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     testRes = 0xFFFFFFFF & (signed >>> 8);
     testRes = 0xFFFFFFFF & (signed >> 8);
 
@@ -131,14 +131,14 @@ public class MaskedShifts {
     testRes = 0xFFFFFF & signed >>> 8;
     testRes = 0xFFFFFF & signed >> 8;
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = 0xFFFFFFFF & unsigned >>> 8;
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     testRes = 0xFFFFFFFF & unsigned >> 8;
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     testRes = 0xFFFFFFFF & signed >>> 8;
     testRes = 0xFFFFFFFF & signed >> 8;
 
@@ -152,14 +152,14 @@ public class MaskedShifts {
     testRes = signed >>> 8 & (0xFFFFFF);
     testRes = signed >> 8 & (0xFFFFFF);
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = unsigned >>> 8 & (0xFFFFFFFF);
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     testRes = unsigned >> 8 & (0xFFFFFFFF);
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     testRes = signed >>> 8 & (0xFFFFFFFF);
     testRes = signed >> 8 & (0xFFFFFFFF);
 
@@ -173,14 +173,14 @@ public class MaskedShifts {
     testRes = signed >>> 8 & ((0xFFFFFF));
     testRes = signed >> 8 & ((0xFFFFFF));
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = unsigned >>> 8 & ((0xFFFFFFFF));
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     testRes = unsigned >> 8 & ((0xFFFFFFFF));
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     testRes = signed >>> 8 & ((0xFFFFFFFF));
     testRes = signed >> 8 & ((0xFFFFFFFF));
   }
@@ -197,7 +197,7 @@ public class MaskedShifts {
     testRes = (signed >>> 8) | 0xFF800000;
     testRes = (signed >> 8) | 0xFF800000;
 
-    // Use mask that render ths 8 MSB_s irrelevant.
+    // Use mask that render the 8 MSB_s irrelevant.
 
     // Shifting right by 8, the introduced bits are still masked away.
     testRes = (unsigned >>> 8) | 0xFF000000;
@@ -210,34 +210,34 @@ public class MaskedShifts {
     // The right-most introduced bit now matters.
     testRes = (unsigned >>> 8) | 0xFE000000;
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     testRes = (unsigned >> 8) | 0xFE000000;
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     testRes = (signed >>> 8) | 0xFE000000;
     testRes = (signed >> 8) | 0xFE000000;
 
-    // Use mask that doesn't render the MSB irrelevent, but does render the next 7 MSB_s
+    // Use mask that doesn't render the MSB irrelevant, but does render the next 7 MSB_s
     // irrelevant.
 
     // Now the left-most introduced bit matters
     testRes = (unsigned >>> 8) | 0x8F000000;
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     testRes = (unsigned >> 8) | 0x8F000000;
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     testRes = (signed >>> 8) | 0x8F000000;
     testRes = (signed >> 8) | 0x8F000000;
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = (unsigned >>> 8) | 0x0;
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     testRes = (unsigned >> 8) | 0x0;
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     testRes = (signed >>> 8) | 0x0;
     testRes = (signed >> 8) | 0x0;
 
@@ -251,14 +251,14 @@ public class MaskedShifts {
     testRes = signed >>> 8 | 0xFF000000;
     testRes = signed >> 8 | 0xFF000000;
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = unsigned >>> 8 | 0x0;
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     testRes = unsigned >> 8 | 0x0;
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     testRes = signed >>> 8 | 0x0;
     testRes = signed >> 8 | 0x0;
 
@@ -272,14 +272,14 @@ public class MaskedShifts {
     testRes = ((signed >>> 8)) | 0xFF000000;
     testRes = ((signed >> 8)) | 0xFF000000;
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = ((unsigned >>> 8)) | 0x0;
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     testRes = ((unsigned >> 8)) | 0x0;
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     testRes = ((signed >>> 8)) | 0x0;
     testRes = ((signed >> 8)) | 0x0;
 
@@ -293,14 +293,14 @@ public class MaskedShifts {
     testRes = 0xFF000000 | (signed >>> 8);
     testRes = 0xFF000000 | (signed >> 8);
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = 0x0 | (unsigned >>> 8);
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     testRes = 0x0 | (unsigned >> 8);
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     testRes = 0x0 | (signed >>> 8);
     testRes = 0x0 | (signed >> 8);
 
@@ -314,14 +314,14 @@ public class MaskedShifts {
     testRes = signed >>> 8 | (0xFF000000);
     testRes = signed >> 8 | (0xFF000000);
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = unsigned >>> 8 | (0x0);
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     testRes = unsigned >> 8 | (0x0);
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     testRes = signed >>> 8 | (0x0);
     testRes = signed >> 8 | (0x0);
 
@@ -335,14 +335,14 @@ public class MaskedShifts {
     testRes = signed >>> 8 | ((0xFF000000));
     testRes = signed >> 8 | ((0xFF000000));
 
-    // Use mask that doesn't render any bits irrelevent
+    // Use mask that doesn't render any bits irrelevant
 
     testRes = unsigned >>> 8 | ((0x0));
 
-    // :: error: (shift.signed)
+    // :: error: [shift.signed]
     testRes = unsigned >> 8 | ((0x0));
 
-    // :: error: (shift.unsigned)
+    // :: error: [shift.unsigned]
     testRes = signed >>> 8 | ((0x0));
     testRes = signed >> 8 | ((0x0));
   }

@@ -7,6 +7,8 @@ package org.checkerframework.dataflow.expression;
  * @param <P> the parameter passed to the visit methods
  */
 public abstract class JavaExpressionVisitor<R, P> {
+  /** Creates a JavaExpressionVisitor. */
+  public JavaExpressionVisitor() {}
 
   /**
    * Visits the given {@code javaExpr}.
@@ -27,6 +29,7 @@ public abstract class JavaExpressionVisitor<R, P> {
    * @return the result of visiting the {@code arrayAccessExpr}
    */
   protected abstract R visitArrayAccess(ArrayAccess arrayAccessExpr, P p);
+
   /**
    * Visit an {@link ArrayCreation}.
    *
@@ -98,6 +101,15 @@ public abstract class JavaExpressionVisitor<R, P> {
    * @return the result of visiting the {@code thisExpr}
    */
   protected abstract R visitThisReference(ThisReference thisExpr, P p);
+
+  /**
+   * Visit a {@link SuperReference}.
+   *
+   * @param superExpr the JavaExpression to visit
+   * @param p the parameter to pass to the visit method
+   * @return the result of visiting the {@code superExpr}
+   */
+  protected abstract R visitSuperReference(SuperReference superExpr, P p);
 
   /**
    * Visit an {@link UnaryOperation}.
