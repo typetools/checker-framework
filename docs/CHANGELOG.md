@@ -9,6 +9,11 @@
 
 ### Changes for type system implementers
 
+Class `SetOfTypes` moved from package `org.checkerframework.checker.resourceleak`
+to package `org.checkerframework.checker.mustcall`.  Constant `IGNORED_EXCEPTIONS`
+and method `getIgnoredExceptions()` moved from `ResourceLeakChecker` to
+`MustCallChecker`.
+
 ### Closed issues
 
 ## Version 4.3.1 (2026-10-08)
