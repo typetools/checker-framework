@@ -52,6 +52,54 @@ public class TypeVarPrimitives {
     return x;
   }
 
+  <T extends Integer> int unaryMinus(T t) {
+    return -t;
+  }
+
+  <T extends Integer> int compoundAddition(T t) {
+    int x = 1;
+    x += t;
+    return x;
+  }
+
+  <T extends Integer> int shift(T t) {
+    return t >> 1;
+  }
+
+  <T extends Boolean> int ifCondition(T b) {
+    if (b) {
+      return 1;
+    }
+    return 0;
+  }
+
+  <T extends Integer> T prefixIncrementDecrement(T t) {
+    ++t;
+    --t;
+    return t;
+  }
+
+  <T extends Short> T prefixIncrementShort(T t) {
+    ++t;
+    return t;
+  }
+
+  <T extends Integer> int enhancedForArray(T[] ts) {
+    int sum = 0;
+    for (int x : ts) {
+      sum += x;
+    }
+    return sum;
+  }
+
+  <T extends Integer> int enhancedForIterable(java.util.List<T> ts) {
+    int sum = 0;
+    for (int x : ts) {
+      sum += x;
+    }
+    return sum;
+  }
+
   long captured(java.util.List<? extends Integer> l) {
     return l.get(0) * 2L;
   }

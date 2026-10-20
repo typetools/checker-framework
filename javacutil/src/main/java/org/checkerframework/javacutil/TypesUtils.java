@@ -432,6 +432,11 @@ public final class TypesUtils {
    * Integer}, which the API can unbox to {@code int}. Erasure handles both ordinary and captured
    * type variables.
    *
+   * <p>This agrees with javac's own rule ({@code com.sun.tools.javac.code.Types.unboxedType}),
+   * which unboxes any type that has a boxed primitive as a supertype. Every boxed primitive is a
+   * final class, and a class bound of a type variable or intersection type precedes its interface
+   * bounds, so the erasure is the boxed primitive whenever any bound is.
+   *
    * @param type a type
    * @param types the type utilities
    * @return the boxed primitive type that unboxing conversion unboxes, or null

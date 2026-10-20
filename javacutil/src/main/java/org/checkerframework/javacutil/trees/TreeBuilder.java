@@ -119,7 +119,10 @@ public class TreeBuilder {
 
     Type.MethodType methodType = (Type.MethodType) iteratorMethod.asType();
     Symbol.TypeSymbol methodClass = methodType.asElement();
-    DeclaredType iteratorType = (DeclaredType) methodType.getReturnType();
+    // The return type of iterator() as a member of the iterable type, such as Iterator<T> for
+    // List<T>.
+    DeclaredType iteratorType =
+        (DeclaredType) javacTypes.memberType((Type) exprType, iteratorMethod).getReturnType();
     iteratorType =
         (DeclaredType) javacTypes.asSuper((Type) iteratorType, symtab.iteratorType.asElement());
 
@@ -493,7 +496,8 @@ public class TreeBuilder {
    * Builds an AST Tree to access the *Value() method of a boxed type such as Short or Float, where
    * * is the corresponding primitive type (i.e. shortValue or floatValue).
    *
-   * @param expr an expression whose type is a boxed type or a type variable bounded by a boxed type
+   * @param expr an expression whose type is a boxed type, or a type variable or intersection type
+   *     whose erasure is a boxed type
    * @return a MemberSelectTree that accesses the *Value() method of the expression
    */
   public MemberSelectTree buildPrimValueMethodAccess(Tree expr) {

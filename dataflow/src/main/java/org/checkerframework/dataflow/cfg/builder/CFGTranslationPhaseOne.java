@@ -881,8 +881,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * If the input node is a boxed type or a type variable bounded by a boxed type, unbox it;
-   * otherwise leave it alone.
+   * If the input node's type is a boxed type, or a type variable or intersection type whose erasure
+   * is a boxed type, unbox it; otherwise leave it alone.
    *
    * @param node in input node
    * @return a Node representing the unboxed version of the input, which may simply be the input
@@ -926,8 +926,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private TreeInfo getTreeInfo(Tree tree) {
     TypeMirror type = TreeUtils.typeOf(tree);
-    boolean unboxable = TypesUtils.isUnboxable(type, types);
     TypeMirror unboxedType = TypesUtils.unboxedTypeOrSelf(type, types);
+    boolean unboxable = unboxedType.getKind().isPrimitive() && !type.getKind().isPrimitive();
 
     boolean bool = TypesUtils.isBooleanType(unboxedType);
     boolean numeric = TypesUtils.isNumeric(unboxedType);
@@ -1827,8 +1827,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           translateAssignment(variable, new LocalVariableNode(variable), nextCall);
       // translateAssignment() scans variable and creates new nodes, so set the expression
       // there, too.
-      ((MethodInvocationNode) assignNode.getExpression()).setIterableExpression(expression);
-      ((MethodInvocationNode) assignNode.getExpression()).setEnhancedForLoop(tree);
+      MethodInvocationNode nextCallNode2 =
+          (MethodInvocationNode) withoutUnboxing(assignNode.getExpression());
+      nextCallNode2.setIterableExpression(expression);
+      nextCallNode2.setEnhancedForLoop(tree);
 
       assert statement != null;
       scan(statement, p);
@@ -1926,13 +1928,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
       // translateAssignment() scans variable and creates new nodes, so set the expression
       // there, too.
-      Node arrayAccessAssignNodeExpr = arrayAccessAssignNode.getExpression();
+      Node arrayAccessAssignNodeExpr = withoutUnboxing(arrayAccessAssignNode.getExpression());
       if (arrayAccessAssignNodeExpr instanceof ArrayAccessNode aan) {
         aan.setArrayExpression(expression);
         aan.setEnhancedForLoop(tree);
       } else if (arrayAccessAssignNodeExpr instanceof MethodInvocationNode boxingNode) {
-        // If the array component type is a primitive, there may be a boxing or unboxing
-        // conversion. Treat that as an iterator.
+        // If the array component type is a primitive, there may be a boxing conversion. Treat
+        // that as an iterator.
         boxingNode.setIterableExpression(expression);
         boxingNode.setEnhancedForLoop(tree);
       }
@@ -1977,6 +1979,26 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     continueTargetLC = oldContinueTargetLC;
 
     return null;
+  }
+
+  /**
+   * If {@code node} is an unboxing conversion, returns the expression that it unboxes. Otherwise,
+   * returns {@code node}.
+   *
+   * <p>An unboxing conversion has a primitive type, so the element type of an enhanced for loop's
+   * iterable expression must not be used as the unboxing conversion's type. It may be used as the
+   * type of the expression that is unboxed.
+   *
+   * @param node a node that might be an unboxing conversion
+   * @return the expression that {@code node} unboxes, or {@code node} itself
+   */
+  private Node withoutUnboxing(Node node) {
+    if (node instanceof MethodInvocationNode min
+        && !min.getInSource()
+        && TypesUtils.isPrimitive(min.getType())) {
+      return min.getTarget().getReceiver();
+    }
+    return node;
   }
 
   protected VariableTree createEnhancedForLoopIteratorVariable(
@@ -3681,15 +3703,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         Node value = scan(tree.getExpression(), p);
 
         TypeMirror leftType = TreeUtils.typeOf(tree.getVariable());
-        TypeMirror rightType = TreeUtils.typeOf(tree.getExpression());
+        TypeMirror unboxedLeftType = TypesUtils.unboxedTypeOrSelf(leftType, types);
+        TypeMirror unboxedRightType =
+            TypesUtils.unboxedTypeOrSelf(TreeUtils.typeOf(tree.getExpression()), types);
 
         Node targetRHS;
-        if (isNumericOrBoxed(leftType) && isNumericOrBoxed(rightType)) {
-          TypeMirror promotedType = binaryPromotedType(leftType, rightType);
+        if (TypesUtils.isNumeric(unboxedLeftType) && TypesUtils.isNumeric(unboxedRightType)) {
+          TypeMirror promotedType = binaryPromotedType(unboxedLeftType, unboxedRightType);
           targetRHS = binaryNumericPromotion(targetLHS, promotedType);
           value = binaryNumericPromotion(value, promotedType);
-        } else if (TypesUtils.isBooleanType(TypesUtils.unboxedTypeOrSelf(leftType, types))
-            && TypesUtils.isBooleanType(TypesUtils.unboxedTypeOrSelf(rightType, types))) {
+        } else if (TypesUtils.isBooleanType(unboxedLeftType)
+            && TypesUtils.isBooleanType(unboxedRightType)) {
           targetRHS = unbox(targetLHS);
           value = unbox(value);
         } else {
@@ -4023,11 +4047,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       case AND, OR, XOR -> {
         // see JLS 15.22
-        TypeMirror leftType = TreeUtils.typeOf(leftTree);
-        TypeMirror rightType = TreeUtils.typeOf(rightTree);
+        TypeMirror unboxedLeftType =
+            TypesUtils.unboxedTypeOrSelf(TreeUtils.typeOf(leftTree), types);
+        TypeMirror unboxedRightType =
+            TypesUtils.unboxedTypeOrSelf(TreeUtils.typeOf(rightTree), types);
         boolean isBooleanOp =
-            TypesUtils.isBooleanType(TypesUtils.unboxedTypeOrSelf(leftType, types))
-                && TypesUtils.isBooleanType(TypesUtils.unboxedTypeOrSelf(rightType, types));
+            TypesUtils.isBooleanType(unboxedLeftType) && TypesUtils.isBooleanType(unboxedRightType);
 
         Node left;
         Node right;
@@ -4035,8 +4060,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         if (isBooleanOp) {
           left = unbox(scan(leftTree, p));
           right = unbox(scan(rightTree, p));
-        } else if (isNumericOrBoxed(leftType) && isNumericOrBoxed(rightType)) {
-          TypeMirror promotedType = binaryPromotedType(leftType, rightType);
+        } else if (TypesUtils.isNumeric(unboxedLeftType)
+            && TypesUtils.isNumeric(unboxedRightType)) {
+          TypeMirror promotedType = binaryPromotedType(unboxedLeftType, unboxedRightType);
           left = binaryNumericPromotion(scan(leftTree, p), promotedType);
           right = binaryNumericPromotion(scan(rightTree, p), promotedType);
         } else {
