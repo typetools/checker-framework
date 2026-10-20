@@ -52,6 +52,11 @@ public class IteratedCollectionElement extends JavaExpression {
   }
 
   @Override
+  public String toString() {
+    return "IteratedCollectionElement(" + tree + ")";
+  }
+
+  @Override
   public boolean isDeterministic(AnnotationProvider provider) {
     return true;
   }

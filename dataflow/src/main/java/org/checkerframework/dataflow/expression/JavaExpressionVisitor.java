@@ -85,11 +85,11 @@ public abstract class JavaExpressionVisitor<R, P> {
   protected abstract R visitLocalVariable(LocalVariable localVarExpr, P p);
 
   /**
-   * Visit a {@link IteratedCollectionElement}.
+   * Visit an {@link IteratedCollectionElement}.
    *
    * @param iteratedCollectionElt the JavaExpression to visit
    * @param p the parameter to pass to the visit method
-   * @return the result of visiting the {@code localVarExpr}
+   * @return the result of visiting the {@code iteratedCollectionElt}
    */
   protected abstract R visitIteratedCollectionElement(
       IteratedCollectionElement iteratedCollectionElt, P p);
