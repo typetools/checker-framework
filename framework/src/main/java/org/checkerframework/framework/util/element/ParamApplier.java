@@ -16,9 +16,9 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
+import org.checkerframework.framework.type.ElementAnnotationApplier.LambdaParam;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.util.IPair;
 
 /** Adds annotations to one formal parameter of a method or lambda within a method. */
 public class ParamApplier extends IndexedElementAnnotationApplier {
@@ -61,12 +61,12 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
       lambdaParamIndex = null;
 
     } else {
-      IPair<VariableTree, LambdaExpressionTree> paramToEnclosingLambda =
+      LambdaParam paramToEnclosingLambda =
           ElementAnnotationApplier.getParamAndLambdaTree(element, typeFactory);
 
       if (paramToEnclosingLambda != null) {
-        VariableTree paramDecl = paramToEnclosingLambda.first;
-        lambdaTree = paramToEnclosingLambda.second;
+        VariableTree paramDecl = paramToEnclosingLambda.param();
+        lambdaTree = paramToEnclosingLambda.lambda();
         isLambdaParam = true;
         lambdaParamIndex = lambdaTree.getParameters().indexOf(paramDecl);
 

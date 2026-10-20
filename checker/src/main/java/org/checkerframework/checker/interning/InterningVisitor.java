@@ -59,10 +59,10 @@ import org.checkerframework.javacutil.TypesUtils;
  *
  * <ol>
  *   <li value="1">either argument to a "==" or "!=" comparison is not Interned (error
- *       "not.interned"). As a special case, the comparison is permitted if either argument is
- *       InternedDistinct.
+ *                 "not.interned"). As a special case, the comparison is permitted if either
+ *                 argument is InternedDistinct.
  *   <li value="2">the receiver and argument for a call to an equals method are both Interned
- *       (optional warning "unnecessary.equals")
+ *                 (optional warning "unnecessary.equals")
  * </ol>
  *
  * @see BaseTypeVisitor
@@ -239,7 +239,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     } else if (hasEqualsMethodAnno && !(params == 1 || params == 2)) {
       checker.reportError(
           tree, "invalid.method.annotation", "@EqualsMethod", "1 or 2", methElt, params);
-    } else if (hasInternMethodAnno && !(params == 0)) {
+    } else if (hasInternMethodAnno && params != 0) {
       checker.reportError(tree, "invalid.method.annotation", "@InternMethod", "0", methElt, params);
     }
 
@@ -335,7 +335,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
   protected void checkConstructorResult(
       AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
     if (constructorElement.getEnclosingElement().getKind() == ElementKind.ENUM) {
-      // Enums constructor are only called once per enum constant.
+      // Enum constructors are only called once per enum constant.
       return;
     }
     super.checkConstructorResult(constructorType, constructorElement);

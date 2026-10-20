@@ -19,8 +19,6 @@ class PolyTests {
     @MustCall({}) Object o2 = id(o);
   }
 
-  // These sort of constructors will always appear in stub files and are unverifiable for now.
-  @SuppressWarnings("mustcall:annotations.on.use")
   @PolyMustCall PolyTests(@PolyMustCall Object obj) {}
 
   static void test3(@Owning @MustCall({"close"}) Object o) {

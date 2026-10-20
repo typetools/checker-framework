@@ -7,7 +7,7 @@ public class SameTypeBounds {
   static class MyGen<T> {}
 
   void test1(MyGen<Object> p) {
-    // The upper and lower bound must have the same annotation because the bounds are collasped
+    // The upper and lower bound must have the same annotation because the bounds are collapsed
     // during capture conversion.
     // :: error: [super.wildcard]
     MyGen<? super Object> o = p;

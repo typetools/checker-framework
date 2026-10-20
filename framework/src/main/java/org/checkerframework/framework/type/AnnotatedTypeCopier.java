@@ -15,7 +15,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * AnnotatedTypeCopier is a visitor that deep copies an AnnotatedTypeMirror exactly, including any
@@ -121,7 +121,7 @@ public class AnnotatedTypeCopier
 
     if (original.typeArgs != null) {
       List<AnnotatedTypeMirror> copyTypeArgs =
-          CollectionsPlume.mapList(
+          CollectionsP.mapList(
               (AnnotatedTypeMirror typeArg) -> visit(typeArg, originalToCopy),
               original.getTypeArguments());
       copy.setTypeArguments(copyTypeArgs);
@@ -142,7 +142,7 @@ public class AnnotatedTypeCopier
 
     if (original.bounds != null) {
       List<AnnotatedTypeMirror> copySupertypes =
-          CollectionsPlume.mapList(
+          CollectionsP.mapList(
               (AnnotatedTypeMirror bound) -> visit(bound, originalToCopy), original.bounds);
       copy.bounds = Collections.unmodifiableList(copySupertypes);
     }
@@ -162,7 +162,7 @@ public class AnnotatedTypeCopier
 
     if (original.alternatives != null) {
       List<AnnotatedDeclaredType> copyAlternatives =
-          CollectionsPlume.mapList(
+          CollectionsP.mapList(
               (AnnotatedDeclaredType supertype) ->
                   (AnnotatedDeclaredType) visit(supertype, originalToCopy),
               original.alternatives);

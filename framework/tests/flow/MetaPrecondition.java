@@ -25,7 +25,7 @@ public class MetaPrecondition {
   }
 
   @RequiresOdd("---")
-  // :: error: [flowexpr.parse.error]
+  // :: error: [flowexpr.parse.error.contract]
   void error() {
     // :: error: [assignment]
     @ValueTypeAnno String l1 = f1;

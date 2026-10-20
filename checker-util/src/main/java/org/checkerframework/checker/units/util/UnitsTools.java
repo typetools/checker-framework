@@ -34,7 +34,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 /** Utility methods to generate annotated types and to convert between them. */
 @SuppressWarnings({"units", "checkstyle:constantname"})
 @AnnotatedFor("nullness")
-public class UnitsTools {
+public final class UnitsTools {
 
   /** Do not instantiate. */
   private UnitsTools() {

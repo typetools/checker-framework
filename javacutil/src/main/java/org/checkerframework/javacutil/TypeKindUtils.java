@@ -85,7 +85,7 @@ public final class TypeKindUtils {
       return null;
     }
 
-    String typeString = TypesUtils.getQualifiedName(dt).toString();
+    String typeString = TypesUtils.getQualifiedName(dt);
 
     return switch (typeString) {
       case "java.lang.Byte" -> TypeKind.BYTE;

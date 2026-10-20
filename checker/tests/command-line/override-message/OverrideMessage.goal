@@ -1,0 +1,10 @@
+OverrideMessage.java:14: error: [override.param] Incompatible parameter type for p.
+    <S extends @Nullable Object> void f(@NonNull S p) {}
+                                                   ^
+  found   : @org.checkerframework.checker.nullness.qual.NonNull S extends @Initialized @NonNull Object
+  required: T extends @Initialized @Nullable Object
+  Consequence: method in @Initialized @NonNull Sub
+    <S extends @Initialized @Nullable Object> @NonNull void f(@Initialized @NonNull Sub this, @org.checkerframework.checker.nullness.qual.NonNull S extends @Initialized @NonNull Object p0)
+  cannot override method in @Initialized @NonNull Super
+    <T extends @Initialized @Nullable Object> @NonNull void f(@Initialized @NonNull Super this, T extends @Initialized @Nullable Object p0)
+1 error

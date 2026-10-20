@@ -5,8 +5,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   autoconf \
   devscripts \
   dia \
-  graphviz \
-  hevea \
   imagemagick \
   junit \
   latexmk \
@@ -14,22 +12,16 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   libasound2-dev libcups2-dev libfontconfig1-dev \
   libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
   pdf2svg \
+  poppler-utils \
   rsync \
   shellcheck \
   shfmt \
+  texlive-extra-utils \
   texlive-font-utils \
   texlive-fonts-recommended \
   texlive-latex-base \
   texlive-latex-extra \
-  texlive-latex-recommended \
-  yamllint
-
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& apt -qqy update \
-&& apt -qqy install \
-  npm
-RUN export DEBIAN_FRONTEND=noninteractive \
-&& npm install markdownlint-cli2 --global
+  texlive-latex-recommended
 
 # Install uv (manages Python dependencies).
 RUN export DEBIAN_FRONTEND=noninteractive \
@@ -39,3 +31,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 && find /root/.local -type d -exec chmod +x {} \; \
 && find /root/.local/bin -type f -exec chmod +x {} \;
 ENV PATH="/root/.local/bin:$PATH"
+
+# Install prek (pre-commit hook); not strictly necessary under CI.
+RUN export DEBIAN_FRONTEND=noninteractive \
+&& uv tool install prek

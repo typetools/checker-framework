@@ -22,8 +22,8 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.CollectionsP;
+import org.plumelib.util.StringsP;
 
 // The use of reflection in ReflectiveEvaluator is troubling.
 // A static analysis such as the Checker Framework should always use compiler APIs, never
@@ -101,7 +101,7 @@ public class ReflectiveEvaluator {
     if (method.isVarArgs()) {
       int numberOfParameters = method.getParameterTypes().length;
       listOfArguments =
-          CollectionsPlume.mapList(
+          CollectionsP.mapList(
               (Object[] args) -> normalizeVararg(args, numberOfParameters), listOfArguments);
     }
 
@@ -126,7 +126,7 @@ public class ReflectiveEvaluator {
           return null;
         } catch (IllegalArgumentException e) {
           if (reportWarnings) {
-            String args = StringsPlume.join(", ", arguments);
+            String args = StringsP.join(", ", arguments);
             checker.reportWarning(
                 tree, "method.evaluation.exception", method, e.getLocalizedMessage() + ": " + args);
           }
@@ -232,7 +232,7 @@ public class ReflectiveEvaluator {
    * @throws ClassNotFoundException if the class cannot be found
    */
   private List<Class<?>> getParameterClasses(ExecutableElement ele) throws ClassNotFoundException {
-    return CollectionsPlume.mapList(
+    return CollectionsP.mapList(
         (Element e) -> TypesUtils.getClassFromType(ElementUtils.getType(e)), ele.getParameters());
   }
 
@@ -272,8 +272,7 @@ public class ReflectiveEvaluator {
    * @return a depth-2 copy of the given list
    */
   private List<Object[]> copy(List<Object[]> lastTuples) {
-    return CollectionsPlume.mapList(
-        (Object[] list) -> Arrays.copyOf(list, list.length), lastTuples);
+    return CollectionsP.mapList((Object[] list) -> Arrays.copyOf(list, list.length), lastTuples);
   }
 
   /**
@@ -346,10 +345,7 @@ public class ReflectiveEvaluator {
       } catch (Throwable e) {
         if (reportWarnings) {
           checker.reportWarning(
-              tree,
-              "constructor.evaluation.failed",
-              typeToCreate,
-              StringsPlume.join(", ", arguments));
+              tree, "constructor.evaluation.failed", typeToCreate, StringsP.join(", ", arguments));
         }
         return null;
       }

@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Map Key Checker}{map-key-checker}
 
 The Map Key Checker tracks which values are keys for which maps.  If variable
@@ -30,7 +29,7 @@ declaration would not work, however, because the Map Key Checker has
 special-case logic for \<Map.get>.  This is different than suppressing
 warnings, because it changes a method's return type.  This is not the same
 as assuming that the return value is \<@NonNull>, because the map's value
-type might be \<@Nullable>, as in \code{Map<String, @Nullable Integer>}.
+type might be \<@Nullable>, as in \code{Map<String, @Nullable Integer>}.)
 
 
 \sectionAndLabel{Map key annotations}{map-key-annotations}
@@ -63,7 +62,7 @@ that ensures that a certain expression is a key for a map:
   When the method with this annotation returns, the expression (or all the
   expressions) given in the \code{value} element is a key for the given
   maps. More precisely, the expression has the \code{@KeyFor} qualifier
-  with the \code{value} arguments taken from the \code{targetValue} element
+  with the \code{value} arguments taken from the \code{map} element
   of this annotation.
 \item[\refqualclasswithparams{checker/nullness/qual}{EnsuresKeyForIf}{String[] expression, boolean result, String[] map}]
   If the method with this annotation returns the given boolean value,
@@ -98,9 +97,7 @@ and wildcards.
 
 Here is a comparison of two choices for lower bounds:
 
-%BEGIN LATEX
-\medskip
-%END LATEX
+\warpprintonly{\medskip}
 
 \noindent
 \begin{tabular}{ll}
@@ -123,25 +120,22 @@ Here is a comparison of two choices for lower bounds:
 \code{class MySet2<T> implements Set<T> \{ \}} &
                 \code{class MySet2<@KeyForBottom T> implements Set<T> \{ \}} \\
 \code{MySet2<@KeyFor("m") String> s2; // OK}
-%HEVEA~~~
  &
                 \code{MySet2<@KeyFor("m") String> s2; // OK} \\
 
 % List<@KeyFor("m")> // ERROR unless List's type argument has lower bound of @KeyForBottom.
 \end{tabular}
 
-%BEGIN LATEX
-\medskip
-%END LATEX
+\warpprintonly{\medskip}
 
 
 If lower bounds are defaulted to \code{@KeyForBottom} (which is not
 currently the case), then whenever \<null> is assigned to a variable whose
 type is a type variable, programmers must write an \<@UnknownKeyFor>
-annotation on either the type variable declaration or on variable
+annotation on either the type variable declaration or the variable
 declarations, as shown in \<MyClass1> and
 \<MyClass2>.
-A disadvantage of this default is that the Map Key checker may issue
+A disadvantage of this default is that the Map Key Checker may issue
 warnings in code that has nothing to do with map keys, and in which no map
 key annotations are used.
 
@@ -198,7 +192,7 @@ Map<String,Date> m, n;
 @KeyFor("m") String km;
 @KeyFor("n") String kn;
 @KeyFor({"m", "n"}) String kmn;
-km = kmn;   // OK - a key for maps m and n is also a key for map m
+km = kmn;   // OK: a key for maps m and n is also a key for map m
 km = kn;    // error: a key for map n is not necessarily a key for map m
 \end{verbatim}
 
@@ -244,7 +238,7 @@ For more details about type refinement, see Section~\ref{type-refinement}.
 Suppose we have these declarations:
 
 \begin{verbatim}
-Map<String,Date> m = new Map<>();
+Map<String,Date> m = new HashMap<>();
 String k = "key";
 @KeyFor("m") String km;
 \end{verbatim}

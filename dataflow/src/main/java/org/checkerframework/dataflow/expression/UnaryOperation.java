@@ -84,6 +84,19 @@ public class UnaryOperation extends JavaExpression {
   }
 
   @Override
+  public boolean equals(@Nullable Object other) {
+    if (!(other instanceof UnaryOperation unOp)) {
+      return false;
+    }
+    return operationKind == unOp.getOperationKind() && operand.equals(unOp.operand);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(operationKind, operand);
+  }
+
+  @Override
   public boolean syntacticEquals(JavaExpression je) {
     if (!(je instanceof UnaryOperation other)) {
       return false;
@@ -99,19 +112,6 @@ public class UnaryOperation extends JavaExpression {
   @Override
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
     return operand.containsModifiableAliasOf(store, other);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(operationKind, operand);
-  }
-
-  @Override
-  public boolean equals(@Nullable Object other) {
-    if (!(other instanceof UnaryOperation unOp)) {
-      return false;
-    }
-    return operationKind == unOp.getOperationKind() && operand.equals(unOp.operand);
   }
 
   @Override

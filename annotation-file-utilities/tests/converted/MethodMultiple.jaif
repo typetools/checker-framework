@@ -7,4 +7,3 @@ class MethodMultiple:
     method foo(Ljava/lang/String;)Ljava/lang/String;:
         return:
         insert-annotation Method.type: @java.lang.UnderInitialization
-

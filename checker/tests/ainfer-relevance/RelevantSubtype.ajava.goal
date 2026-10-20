@@ -1,0 +1,49 @@
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+
+// This class is relevant because it is a subtype of CharSequence, which the checker lists in its
+// `@RelevantJavaTypes`.  Relevance is a question about subtyping, not about names:  the name
+// "RelevantSubtype" does not appear in `@RelevantJavaTypes`.
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
+public class RelevantSubtype implements CharSequence {
+
+    @org.checkerframework.dataflow.qual.Pure
+    public  @org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom int length(@org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType RelevantSubtype this) {
+        return 0;
+    }
+
+    // `char` is irrelevant to this checker:  it is not listed in `@RelevantJavaTypes`, and it is not
+    // related to a listed type by subtyping.  The goal file shows that inference omits the
+    // `@AinferTop` that it infers for this return type.
+    @org.checkerframework.dataflow.qual.Pure
+    public char charAt(@org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType RelevantSubtype this,  @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType int index) {
+        return 'a';
+    }
+
+    @org.checkerframework.dataflow.qual.Pure
+    public @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType CharSequence subSequence(@org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType RelevantSubtype this,  @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType int start,  @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType int end) {
+        return this;
+    }
+
+    static @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 RelevantSubtype field;
+
+    @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "RelevantSubtype.class.field" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
+    @org.checkerframework.dataflow.qual.Impure
+    static void assignField() {
+        field = getSibling1();
+    }
+
+    @org.checkerframework.dataflow.qual.Impure
+    static void useField() {
+        // :: warning: [argument]
+        expectsSibling1(field);
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    static void expectsSibling1(RelevantSubtype r) {
+    }
+
+    @org.checkerframework.dataflow.qual.Impure
+    static RelevantSubtype getSibling1() {
+        return (RelevantSubtype) new RelevantSubtype();
+    }
+}

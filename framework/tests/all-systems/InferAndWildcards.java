@@ -1,4 +1,3 @@
-@SuppressWarnings("interning")
 public class InferAndWildcards {
   <UUU> Class<? extends UUU> b(Class<UUU> clazz) {
     return clazz;

@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MemberReferenceScanner extends CommonScanner {
+public final class MemberReferenceScanner extends CommonScanner {
 
   /**
    * Computes the index of the given method invocation amongst all method invocation trees inside

@@ -10,6 +10,7 @@ import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.LessThan;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.common.value.qual.MinLen;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 /**
  * A simplified version of the Guava primitives classes (such as Bytes, Longs, Shorts, etc.) with
@@ -107,6 +108,7 @@ public class GuavaPrimitives extends AbstractList<Short> {
     return -1;
   }
 
+  @SideEffectsOnly("this")
   public Short set(@IndexFor("this") int index, Short element) {
     short oldValue = array[start + index];
     // checkNotNull for GWT (do not optimize)

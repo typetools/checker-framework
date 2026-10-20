@@ -18,6 +18,7 @@ import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 /**
  * This class reads expected javac diagnostics from a single file. Its implementation is as an
@@ -25,7 +26,7 @@ import org.checkerframework.dataflow.qual.Pure;
  * #readJavaSourceFiles} reads diagnostics from multiple Java source files, and {@link
  * #readDiagnosticFiles} reads diagnostics from multiple "diagnostic files".
  */
-public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Closeable {
+public final class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Closeable {
 
   //
   // This class begins with the public static methods that clients use to read diagnostics.
@@ -158,7 +159,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
   private final String filename;
 
   /** The reader for the file. */
-  private final @Owning LineNumberReader reader;
+  @Owning private final LineNumberReader reader;
 
   /** The next line to be read, or null. */
   private @Nullable String nextLine = null;
@@ -226,12 +227,14 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
   }
 
   @Override
+  @SideEffectsOnly("this")
   public void remove() {
     throw new UnsupportedOperationException(
         "Cannot remove elements using JavaDiagnosticFileReader.");
   }
 
   @Override
+  @SideEffectsOnly("this")
   public TestDiagnosticLine next() {
     if (nextLine == null) {
       throw new NoSuchElementException();
@@ -259,8 +262,14 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>, Close
     return codec.createTestDiagnosticLine(filename, currentLine, currentLineNumber);
   }
 
+  /**
+   * Read the next line.
+   *
+   * @throws IOException if there is trouble while reading
+   */
   @RequiresNonNull("reader")
-  protected void advance(@UnknownInitialization JavaDiagnosticReader this) throws IOException {
+  /*package-private*/ void advance(@UnknownInitialization JavaDiagnosticReader this)
+      throws IOException {
     nextLine = reader.readLine();
     nextLineNumber = reader.getLineNumber();
     if (nextLine == null) {

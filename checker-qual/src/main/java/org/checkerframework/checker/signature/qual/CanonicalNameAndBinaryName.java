@@ -13,7 +13,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * org.checkerframework.checker.signature.qual.BinaryName binary name}. It represents a non-array,
  * non-inner, non-primitive class.
  *
- * <p>Examples: int, MyClass, java.lang, java.lang.Integer
+ * <p>Examples: MyClass, java.lang, java.lang.Integer
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */

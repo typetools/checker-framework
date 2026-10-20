@@ -1,3 +1,4 @@
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.testchecker.util.*;
 
 public class AnnotatedGenerics {
@@ -71,7 +72,7 @@ public class AnnotatedGenerics {
   }
 
   // Tests the type of the constructor is appropriately inferred for anonymous classes
-  // N.B. This does not / cannot assert that the RHS is infact a subtype of the LHS.
+  // N.B. This does not / cannot assert that the RHS is in fact a subtype of the LHS.
   public void testAnonymousConstructors() {
     // :: warning: [cast.unsafe.constructor.invocation]
     @Odd MyClass<@Odd String> innerClass1 = new @Odd MyClass<@Odd String>() {};
@@ -126,10 +127,12 @@ public class AnnotatedGenerics {
       return true;
     }
 
+    @SideEffectsOnly("this")
     public @Odd T next() {
       return null;
     }
 
+    @SideEffectsOnly("this")
     public void remove() {}
   }
 }

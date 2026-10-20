@@ -7,7 +7,7 @@ import com.sun.source.util.SimpleTreeVisitor;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.plumelib.util.SystemPlume;
+import org.plumelib.util.SystemP;
 
 /**
  * {@link TreeAnnotator} is an abstract SimpleTreeVisitor to be used with {@link ListTreeAnnotator}.
@@ -56,7 +56,7 @@ public abstract class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTyp
   @FormatMethod
   protected void log(String format, Object... args) {
     if (debug) {
-      SystemPlume.sleep(1); // logging can interleave with typechecker output
+      SystemP.sleep(1); // logging can interleave with typechecker output
       System.out.printf(format, args);
     }
   }
