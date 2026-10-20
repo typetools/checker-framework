@@ -19,6 +19,31 @@ public class Issue8300 {
     String s = takeSuper(superBox(b));
   }
 
+  static <T> Box<? super T> superBoxNoArg() {
+    throw new RuntimeException();
+  }
+
+  static <T> Box<? super T> superBoxOf(T t) {
+    throw new RuntimeException();
+  }
+
+  static void unconstrained() {
+    String s = takeSuper(superBoxNoArg());
+  }
+
+  static void nullArgument() {
+    String s = takeSuper(superBoxOf(null));
+  }
+
+  static void sameType(Integer i) {
+    Integer s = takeSuper(superBoxOf(i));
+  }
+
+  // The glb of the capture of `? super Integer` and Number is Integer.
+  static void supertypeTarget(Integer i) {
+    Number s = takeSuper(superBoxOf(i));
+  }
+
   static class BoundedBox<T extends CharSequence> {}
 
   static <T extends CharSequence> BoundedBox<? super T> superBoundedBox(BoundedBox<T> b) {
