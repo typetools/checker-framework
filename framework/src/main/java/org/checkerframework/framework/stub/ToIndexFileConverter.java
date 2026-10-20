@@ -26,7 +26,6 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
-import com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -77,10 +76,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
-import org.checkerframework.checker.signature.qual.Identifier;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.reflection.Signatures;
 
 /**
  * Convert a JAIF file plus a stub file into index files (JAIFs). Note that the resulting index
@@ -562,7 +560,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private @Nullable List<ElementType> getTargets(AnnotationExpr expr) {
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
-    @BinaryName String name = expr.getNameAsString();
+    @FullyQualifiedName String name = expr.getNameAsString();
     String qualifiedName = resolve(name);
     Class<?> annoClass = qualifiedName == null ? null : loadClass(qualifiedName);
     Target target = annoClass == null ? null : annoClass.getAnnotation(Target.class);
@@ -701,28 +699,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         new GenericVisitorAdapter<String, Void>() {
           @Override
           public String visit(ClassOrInterfaceType type, Void v) {
-            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
-            @Identifier String typeName = type.getNameAsString();
-            if (!type.getScope().isPresent()) {
-              TypeParameter typeParam = typeParameterInScope(type, typeName);
-              if (typeParam != null) {
-                // The JVML descriptor uses the erasure, which is the first bound, or Object if
-                // the type parameter has no bound.
-                NodeList<ClassOrInterfaceType> bounds = typeParam.getTypeBound();
-                return bounds.isEmpty() ? "Ljava/lang/Object;" : bounds.get(0).accept(this, null);
-              }
-              String stubName = stubDeclaredTypeInScope(type, typeName);
-              if (stubName != null) {
-                return "L" + stubName.replace('.', '/') + ";";
-              }
-            }
+            // Use the name together with its scope, so that a qualified name such as
+            // `java.util.List` or `Map.Entry` is not truncated to its last identifier.
             @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameWithScope
-            @BinaryName String qualifiedTypeName = type.getNameWithScope();
-            String name = resolve(qualifiedTypeName);
+            @FullyQualifiedName String typeName = type.getNameWithScope();
+            String name = resolve(typeName);
             if (name == null) {
-              return "L" + qualifiedTypeName.replace('.', '/') + ";";
+              name = typeName;
             }
-            return "L" + String.join("/", name.split("\\.")) + ";";
+            return "L" + name.replace('.', '/') + ";";
           }
 
           @Override
@@ -770,59 +755,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Returns the type parameter named {@code name} that is in scope at {@code node}, or null if no
-   * such type parameter is in scope.
-   *
-   * @param node a node in the stub file's AST
-   * @param name a type name, without type arguments
-   * @return the type parameter that {@code name} refers to at {@code node}, or null
-   */
-  private static @Nullable TypeParameter typeParameterInScope(Node node, String name) {
-    for (Node n = node; n != null; n = n.getParentNode().orElse(null)) {
-      if (n instanceof NodeWithTypeParameters) {
-        for (TypeParameter typeParam : ((NodeWithTypeParameters<?>) n).getTypeParameters()) {
-          if (typeParam.getNameAsString().equals(name)) {
-            return typeParam;
-          }
-        }
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Returns the binary name of the type named {@code name} that the stub file declares and that is
-   * in scope at {@code node}, or null if there is no such type. Such a type is a member of a type
-   * that encloses {@code node}, or a top-level type in {@code node}'s compilation unit. A
-   * single-type import may not import a type with the same simple name as a top-level type in the
-   * same compilation unit (JLS 7.5.1), so such a type shadows every import.
-   *
-   * @param node a node in the stub file's AST
-   * @param name a simple type name
-   * @return the binary name of the stub-declared type that {@code name} refers to at {@code node},
-   *     or null
-   */
-  private @Nullable String stubDeclaredTypeInScope(Node node, String name) {
-    for (Node n = node; n != null; n = n.getParentNode().orElse(null)) {
-      List<? extends Node> members;
-      if (n instanceof TypeDeclaration<?>) {
-        members = ((TypeDeclaration<?>) n).getMembers();
-      } else if (n instanceof CompilationUnit) {
-        members = ((CompilationUnit) n).getTypes();
-      } else {
-        continue;
-      }
-      for (Node member : members) {
-        if (member instanceof TypeDeclaration<?>
-            && ((TypeDeclaration<?>) member).getNameAsString().equals(name)) {
-          return qualifiedStubBinaryName((TypeDeclaration<?>) member);
-        }
-      }
-    }
-    return null;
-  }
-
-  /**
    * Returns the binary name, qualified by the stub file's package, of a type that the stub file
    * declares. For example, if the stub file's package is {@code p} and the stub file declares a
    * top-level class {@code B} containing a nested class {@code C}, then this method maps the
@@ -855,88 +787,96 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Finds the fully qualified name of the class with the given name.
+   * Finds the binary name of the class with the given name.
    *
-   * @param className possibly unqualified name of class
-   * @return fully qualified name of class that {@code className} identifies in the current context,
-   *     or null if resolution fails
+   * @param className possibly unqualified name of class, in which a {@code .} (not a {@code $})
+   *     separates a nested class from its enclosing class
+   * @return binary name of class that {@code className} identifies in the current context, or null
+   *     if resolution fails
    */
-  private @Nullable @BinaryName String resolve(@BinaryName String className) {
+  private @Nullable @BinaryName String resolve(@FullyQualifiedName String className) {
+
     // The order of the lookups below is the order in which Java resolves a type name: a
     // single-type import shadows a type in the current package, which shadows a type that an
     // import-on-demand declaration makes available.
 
     for (String declName : singleTypeImports) {
       String qualifiedName = mergeImport(declName, className);
-      String binaryName = qualifiedName == null ? null : loadableBinaryName(qualifiedName);
-      if (binaryName != null) {
-        return binaryName;
+      if (qualifiedName != null) {
+        String binaryName = loadClassBinaryName(qualifiedName);
+        if (binaryName != null) {
+          return binaryName;
+        }
       }
     }
 
     if (pkgName != null) {
-      String qualifiedName = Signatures.addPackage(pkgName, className);
-      String binaryName = loadableBinaryName(qualifiedName);
-      if (binaryName != null) {
+      // The first identifier of `className` names a type in the current package, not a
+      // subpackage, so every later identifier names a member type.
+      @SuppressWarnings("signature") // a type in a package, followed by its member types
+      @BinaryName String binaryName = pkgName + "." + className.replace('.', '$');
+      if (loadClass(binaryName) != null) {
         return binaryName;
       }
     }
 
     for (String declName : onDemandImports) {
       String qualifiedName = mergeImport(declName, className);
-      String binaryName = qualifiedName == null ? null : loadableBinaryName(qualifiedName);
-      if (binaryName != null) {
-        return binaryName;
+      if (qualifiedName != null) {
+        String binaryName = loadClassBinaryName(qualifiedName);
+        if (binaryName != null) {
+          return binaryName;
+        }
       }
     }
 
     {
       // Every Java program implicitly does "import java.lang.*",
       // so see whether this class is in that package.
-      String qualifiedName = Signatures.addPackage("java.lang", className);
-      String binaryName = loadableBinaryName(qualifiedName);
+      String binaryName = loadClassBinaryName("java.lang." + className);
       if (binaryName != null) {
         return binaryName;
       }
     }
 
-    return loadableBinaryName(className);
+    return loadClassBinaryName(className);
   }
 
   /**
-   * Returns the binary name of the loadable class that {@code name} refers to, or null if there is
-   * none. A nested class's name uses {@code .} where its binary name uses {@code $}, as in {@code
-   * java.util.Map.Entry} and {@code java.util.Map$Entry}. Therefore, this method tries replacing
-   * each {@code .} by {@code $}, starting from the end of {@code name}.
+   * Returns the binary name of the class that a fully qualified name refers to, or null if no such
+   * class can be loaded. A fully qualified name does not indicate which of its dot-separated
+   * components are packages and which are enclosing classes, so this method tries each possibility,
+   * starting with the one that has the fewest enclosing classes.
    *
-   * @param name a fully qualified name or a binary name
-   * @return the binary name of the class that {@code name} refers to, or null
+   * @param fqName a fully qualified class name
+   * @return the binary name of the class that {@code fqName} refers to, or null
    */
   @SuppressWarnings("signature") // string manipulation of signature strings
-  private static @Nullable @BinaryName String loadableBinaryName(String name) {
-    String candidate = name;
+  private static @Nullable @BinaryName String loadClassBinaryName(String fqName) {
+    StringBuilder candidate = new StringBuilder(fqName);
+    int dot = candidate.length();
     while (true) {
-      if (loadClass(candidate) != null) {
-        return candidate;
+      if (loadClass(candidate.toString()) != null) {
+        return candidate.toString();
       }
-      int lastDot = candidate.lastIndexOf('.');
-      if (lastDot == -1) {
+      dot = candidate.lastIndexOf(".", dot - 1);
+      if (dot < 0) {
         return null;
       }
-      candidate = candidate.substring(0, lastDot) + "$" + candidate.substring(lastDot + 1);
+      candidate.setCharAt(dot, '$');
     }
   }
 
   /**
-   * Combines an import with a partial binary name, yielding a binary name.
+   * Combines an import with a partially qualified name, yielding a fully qualified name.
    *
    * @param importName package name or (for an inner class) the outer class name
    * @param className the class name
    * @return fully qualified class name if resolution succeeds, null otherwise
    */
   @SuppressWarnings("signature") // string manipulation of signature strings
-  private static @Nullable @BinaryName String mergeImport(
-      String importName, @BinaryName String className) {
+  private static @Nullable @FullyQualifiedName String mergeImport(
+      String importName, @FullyQualifiedName String className) {
     if (importName.isEmpty() || importName.equals(className)) {
       return className;
     }
