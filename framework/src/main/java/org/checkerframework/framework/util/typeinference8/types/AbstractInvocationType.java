@@ -71,12 +71,8 @@ public class AbstractInvocationType extends AbstractExecutableType {
 
   @Override
   protected List<AnnotatedTypeMirror> getDeclaredParameterTypes() {
-    List<AnnotatedTypeMirror> params = super.getDeclaredParameterTypes();
-    if (invocation instanceof NewClassTree newClassTree) {
-      return TreeUtils.parametersForArguments(
-          annotatedExecutableType.getElement(), newClassTree, params);
-    }
-    return params;
+    return TreeUtils.parametersForArguments(
+        annotatedExecutableType.getElement(), invocation, super.getDeclaredParameterTypes());
   }
 
   @Override

@@ -112,8 +112,8 @@ public abstract class AbstractExecutableType {
    *
    * <p>If this invocation uses varargs, then the vararg parameter is replaced by individual
    * parameters and the result has length {@code size}. Otherwise, {@code size} is ignored and the
-   * result contains one element per declared formal parameter, plus one for the receiver if this is
-   * an unbound method reference.
+   * result contains one element per declared formal parameter (as returned by {@link
+   * #getDeclaredParameterTypes}), plus one for the receiver if this is an unbound method reference.
    *
    * @param map a mapping from type variable to inference variable, or null to treat no type
    *     variable as an inference variable
@@ -137,7 +137,8 @@ public abstract class AbstractExecutableType {
 
   /**
    * Returns the annotated types of the formal parameters of this executable, without expanding the
-   * vararg parameter.
+   * vararg parameter. For an invocation, this omits any parameter that does not correspond to an
+   * argument; see {@link org.checkerframework.javacutil.TreeUtils#parametersForArguments}.
    *
    * @return the annotated types of the formal parameters of this executable
    */

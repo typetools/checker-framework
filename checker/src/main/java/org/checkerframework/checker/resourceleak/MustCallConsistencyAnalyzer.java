@@ -1800,23 +1800,24 @@ public class MustCallConsistencyAnalyzer {
 
   /**
    * Returns the elements representing the formal parameters of a method or constructor, from an
-   * invocation of that method or constructor.
+   * invocation of that method or constructor. The result corresponds to {@link
+   * #getArgumentsOfInvocation}; see {@link TreeUtils#parametersForArguments}.
    *
    * @param node a method invocation or object creation node
    * @return a list of the declarations of the formal parameters of the method or constructor being
    *     invoked
    */
   /*package-private*/ List<? extends VariableElement> getParametersOfInvocation(Node node) {
-    ExecutableElement executableElement;
     if (node instanceof MethodInvocationNode invocationNode) {
-      executableElement = TreeUtils.elementFromUse(invocationNode.getTree());
+      return TreeUtils.elementFromUse(invocationNode.getTree()).getParameters();
     } else if (node instanceof ObjectCreationNode ocn2) {
-      executableElement = TreeUtils.elementFromUse(ocn2.getTree());
+      NewClassTree newClassTree = ocn2.getTree();
+      ExecutableElement constructor = TreeUtils.elementFromUse(newClassTree);
+      return TreeUtils.parametersForArguments(
+          constructor, newClassTree, constructor.getParameters());
     } else {
       throw new TypeSystemError("unexpected node type " + node.getClass());
     }
-
-    return executableElement.getParameters();
   }
 
   /**

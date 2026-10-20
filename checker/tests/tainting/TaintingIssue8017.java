@@ -3,21 +3,21 @@
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 
-public class Issue8017 {
+public class TaintingIssue8017 {
   class Inner {
-    Inner(@Untainted Issue8017 o) {}
+    Inner(@Untainted TaintingIssue8017 o) {}
 
-    Inner(Issue8017 o, @Untainted String s) {}
+    Inner(TaintingIssue8017 o, @Untainted String s) {}
   }
 
   class InnerVarargs {
-    InnerVarargs(Issue8017 o, @Untainted String... s) {}
+    InnerVarargs(TaintingIssue8017 o, @Untainted String... s) {}
   }
 
   void test(
-      Issue8017 outer,
-      @Untainted Issue8017 untaintedOuter,
-      @Tainted Issue8017 taintedOuter,
+      TaintingIssue8017 outer,
+      @Untainted TaintingIssue8017 untaintedOuter,
+      @Tainted TaintingIssue8017 taintedOuter,
       @Untainted String untainted,
       @Tainted String tainted) {
     outer.new Inner(untaintedOuter) {};

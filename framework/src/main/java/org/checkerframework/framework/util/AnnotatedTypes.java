@@ -1064,11 +1064,8 @@ public final class AnnotatedTypes {
       List<? extends ExpressionTree> args,
       Tree invok) {
 
-    List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
-
-    if (invok instanceof NewClassTree newClassTree) {
-      parameters = TreeUtils.parametersForArguments(method.getElement(), newClassTree, parameters);
-    }
+    List<AnnotatedTypeMirror> parameters =
+        TreeUtils.parametersForArguments(method.getElement(), invok, method.getParameterTypes());
 
     // Handle vararg methods.
     if (!TreeUtils.isVarargsCall(invok)) {

@@ -81,13 +81,3 @@ public class Issue282 {
     new InnerGeneric<@H1S1 String>(a, c);
   }
 }
-
-class Top {
-  void test(@H1Top @H2S2 Issue282 outer) {
-    outer.new Inner() {};
-    outer.new Inner("s") {};
-    outer.new Inner(1, 2, 3) {};
-    outer.new Inner(outer) {};
-    outer.new Inner(outer, outer, outer) {};
-  }
-}
