@@ -14,13 +14,21 @@ public class Issue6872 {
       Comparator<List<@NonNull T>> c1,
       Comparator<@Nullable Object> c2,
       Collection<List<@NonNull T>> nonNullLists,
-      Collection<List<@Nullable T>> nullableLists) {
+      Collection<List<@Nullable T>> nullableLists,
+      Collection<@Nullable List<@NonNull T>> listsOrNull) {
     Collections.min(
         nonNullLists,
         switch (i) {
           case 1 -> c1;
           default -> c2;
         });
+    Collections.min(
+        nonNullLists,
+        switch (i) {
+          case 1 -> c2;
+          default -> c1;
+        });
+
     // The lub of the switch arms is Comparator<? super List<@NonNull T>>.
     // :: error: (type.arguments.not.inferred)
     Collections.min(
@@ -28,6 +36,29 @@ public class Issue6872 {
         switch (i) {
           case 1 -> c1;
           default -> c2;
+        });
+    // :: error: (type.arguments.not.inferred)
+    Collections.min(
+        nullableLists,
+        switch (i) {
+          case 1 -> c2;
+          default -> c1;
+        });
+
+    // c1 cannot compare null lists.
+    // :: error: (type.arguments.not.inferred)
+    Collections.min(
+        listsOrNull,
+        switch (i) {
+          case 1 -> c1;
+          default -> c2;
+        });
+    // :: error: (type.arguments.not.inferred)
+    Collections.min(
+        listsOrNull,
+        switch (i) {
+          case 1 -> c2;
+          default -> c1;
         });
   }
 }
