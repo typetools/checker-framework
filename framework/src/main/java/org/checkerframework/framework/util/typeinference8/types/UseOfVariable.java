@@ -31,10 +31,10 @@ public class UseOfVariable extends AbstractType {
   private final boolean hasPrimaryAnno;
 
   /** The bottom annotations for each hierarchy that has a primary annotation on this use. */
-  private final Set<AnnotationMirror> bots;
+  private final AnnotationMirrorSet bots;
 
   /** The top annotations for each hierarchy that has a primary annotation on this use. */
-  private final Set<AnnotationMirror> tops;
+  private final AnnotationMirrorSet tops;
 
   /** The annotated type variable for this use. */
   private final AnnotatedTypeVariable type;
@@ -128,8 +128,9 @@ public class UseOfVariable extends AbstractType {
 
   @Override
   public AbstractType applyInstantiations() {
-    if (this.variable.getInstantiation() != null) {
-      return this.variable.getInstantiation();
+    ProperType instantiation = this.variable.getInstantiation();
+    if (instantiation != null) {
+      return instantiation;
     }
 
     return this;
@@ -159,7 +160,7 @@ public class UseOfVariable extends AbstractType {
    * @param kind the kind of bound
    * @param annotations the qualifiers to add
    */
-  public void addQualifierBound(BoundKind kind, Set<AbstractQualifier> annotations) {
+  public void addQualifierBound(BoundKind kind, Set<? extends AbstractQualifier> annotations) {
     if (!hasPrimaryAnno) {
       variable.getBounds().addQualifierBound(kind, annotations);
     }
@@ -180,8 +181,11 @@ public class UseOfVariable extends AbstractType {
       // ignored. Also, set to bottom or top, unless the bound is a type variable. This way if all
       // the bounds of a variable have annotations to be ignored, the instantiation of that variable
       // is as flexible as possible.
-      AnnotatedTypeMirror boundCopyATM = bound.getAnnotatedType().deepCopy();
-      AbstractType boundCopy = bound.create(boundCopyATM, true);
+      AbstractType boundCopy = bound.create(bound.getAnnotatedType().deepCopy(), true);
+      // `create` may copy its argument rather than storing it (`UseOfVariable`'s constructor
+      // deep-copies, and `InferenceType`'s calls `asUse()`), so mutate the annotated type that
+      // `boundCopy` actually holds.  It is already a fresh copy, so mutating it is safe.
+      AnnotatedTypeMirror boundCopyATM = boundCopy.getAnnotatedType();
       if (boundCopyATM.getKind() == TypeKind.TYPEVAR && kind == BoundKind.EQUAL) {
         variable.getBounds().addBound(parent, kind, boundCopy);
       } else if (kind == BoundKind.LOWER) {
@@ -194,8 +198,8 @@ public class UseOfVariable extends AbstractType {
         boundCopyATM.replaceAnnotations(tops);
         variable.getBounds().addBound(parent, BoundKind.UPPER, boundCopy);
 
-        AnnotatedTypeMirror boundCopyATM2 = bound.getAnnotatedType().deepCopy();
-        AbstractType boundCopy2 = bound.create(boundCopyATM2, true);
+        AbstractType boundCopy2 = bound.create(bound.getAnnotatedType().deepCopy(), true);
+        AnnotatedTypeMirror boundCopyATM2 = boundCopy2.getAnnotatedType();
         boundCopyATM2.replaceAnnotations(bots);
         variable.getBounds().addBound(parent, BoundKind.LOWER, boundCopy2);
       }
@@ -218,7 +222,7 @@ public class UseOfVariable extends AbstractType {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }
@@ -253,7 +257,14 @@ public class UseOfVariable extends AbstractType {
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        inferenceProblemHashCode(), variable, hasPrimaryAnno, bots, tops, qualifierVars, type);
+    // This is Objects.hash() expanded, to avoid allocating an array and boxing.  This method is
+    // hot: inference puts these types in hash sets and rebuilds those sets repeatedly.
+    int result = 31 + inferenceProblemHashCode();
+    result = 31 * result + Objects.hashCode(variable);
+    result = 31 * result + Boolean.hashCode(hasPrimaryAnno);
+    result = 31 * result + Objects.hashCode(bots);
+    result = 31 * result + Objects.hashCode(tops);
+    result = 31 * result + Objects.hashCode(qualifierVars);
+    return 31 * result + Objects.hashCode(type);
   }
 }

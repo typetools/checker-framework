@@ -1,4 +1,5 @@
 UnneededSuppressionsTestRequirePrefix.java:10:3: compiler.warn.proc.messager: [nullness:unneeded.suppression] warning suppression "nullness:return" is not used by NullnessChecker
 UnneededSuppressionsTestRequirePrefix.java:15:3: compiler.warn.proc.messager: [nullness:unneeded.suppression] warning suppression "nullness:return" is not used by NullnessChecker
 UnneededSuppressionsTestRequirePrefix.java:25:3: compiler.warn.proc.messager: [nullness:unneeded.suppression] warning suppression "nullness:return" is not used by NullnessChecker
-3 warnings
+UnneededSuppressionsTestRequirePrefix.java:35:3: compiler.warn.proc.messager: [nullness:unneeded.suppression] warning suppression "nullness" is not used by NullnessChecker
+4 warnings

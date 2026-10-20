@@ -1,4 +1,4 @@
-// This class should not issues any errors, since these annotations are identical to the ones
+// This class should not issue any errors, since these annotations are identical to the ones
 // on java.io.PrintWriter in the Index JDK.
 
 import java.io.File;

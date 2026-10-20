@@ -1,0 +1,4 @@
+UnneededSuppressionsIndexTest.java:22:3: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "lowerbound" is not used by IndexChecker
+UnneededSuppressionsIndexTest.java:24:5: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "upperbound:assignment" is not used by IndexChecker
+UnneededSuppressionsIndexTest.java:39:3: compiler.warn.proc.messager: [unneeded.suppression] warning suppression "index:foo.bar.baz" is not used by IndexChecker
+3 warnings

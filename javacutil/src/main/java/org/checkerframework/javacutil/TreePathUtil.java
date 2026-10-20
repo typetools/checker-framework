@@ -9,6 +9,7 @@ import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParenthesizedTree;
@@ -27,7 +28,6 @@ import java.util.StringJoiner;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.plumelib.util.IPair;
 
 /**
  * Utility methods for obtaining or analyzing a javac {@code TreePath}.
@@ -129,6 +129,23 @@ public final class TreePathUtil {
       }
     }
     return result;
+  }
+
+  /**
+   * Returns the instance field initializers and instance initializer blocks that run as part of the
+   * given constructor: those of its class, unless it delegates to another constructor of the same
+   * class, in which case they run as part of that one.
+   *
+   * @param constructor a constructor declaration
+   * @param path a path to {@code constructor} or to code within it
+   * @return paths to the instance initializers that run as part of {@code constructor}
+   */
+  public static List<TreePath> getInstanceInitializersRunBy(MethodTree constructor, TreePath path) {
+    MethodInvocationTree explicitCall = TreeUtils.getExplicitConstructorCall(constructor);
+    if (explicitCall != null && TreeUtils.isThisConstructorCall(explicitCall)) {
+      return Collections.emptyList();
+    }
+    return getInstanceInitializers(path);
   }
 
   //
@@ -268,14 +285,24 @@ public final class TreePathUtil {
   }
 
   /**
+   * The result of {@link #enclosingNonParen}: a non-parenthesis tree and the child of it that led
+   * to the queried tree.
+   *
+   * @param enclosing a tree that is not a {@code ParenthesizedTree}
+   * @param enclosingChild the child of {@code enclosing} that is the queried tree or is a
+   *     parenthesized version of it
+   */
+  public record EnclosingNonParen(Tree enclosing, Tree enclosingChild) {}
+
+  /**
    * Gets the first (innermost) enclosing tree in path, that is not a parenthesis. Never returns the
    * leaf of {@code path} itself.
    *
    * @param path the path defining the tree node
-   * @return a pair of a non-parenthesis tree that contains the argument, and its child that is the
-   *     argument or is a parenthesized version of it
+   * @return a non-parenthesis tree that contains the argument, and its child that is the argument
+   *     or is a parenthesized version of it
    */
-  public static IPair<Tree, Tree> enclosingNonParen(TreePath path) {
+  public static EnclosingNonParen enclosingNonParen(TreePath path) {
     TreePath parentPath = path.getParentPath();
     Tree enclosing = parentPath.getLeaf();
     Tree enclosingChild = path.getLeaf();
@@ -284,7 +311,7 @@ public final class TreePathUtil {
       enclosingChild = enclosing;
       enclosing = parentPath.getLeaf();
     }
-    return IPair.of(enclosing, enclosingChild);
+    return new EnclosingNonParen(enclosing, enclosingChild);
   }
 
   /**

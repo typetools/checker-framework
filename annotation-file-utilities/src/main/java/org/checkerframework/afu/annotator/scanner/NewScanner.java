@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.checkerframework.checker.formatter.qual.FormatMethod;
-import org.plumelib.util.IPair;
 
 /**
  * NewScanner scans the source tree and determines the index of a given new, where the i^th index
@@ -19,7 +18,16 @@ public final class NewScanner extends CommonScanner {
   /** If true, output diagnostic messages. */
   private static boolean debug = false;
 
-  static Map<IPair<TreePath, Tree>, Integer> cache = new HashMap<>();
+  /**
+   * A key for {@link #cache}: the arguments to {@link #indexOfNewTree}.
+   *
+   * @param path the path ending in {@code tree}
+   * @param tree a new tree
+   */
+  private record PathAndTree(TreePath path, Tree tree) {}
+
+  /** A cache of the results of {@link #indexOfNewTree}. */
+  private static final Map<PathAndTree, Integer> cache = new HashMap<>();
 
   /**
    * Computes the index of the given new tree amongst all new trees inside its method, using 0-based
@@ -35,7 +43,7 @@ public final class NewScanner extends CommonScanner {
       debug("indexOfNewTree: %s%n", origpath.getLeaf());
     }
 
-    IPair<TreePath, Tree> args = IPair.of(origpath, tree);
+    PathAndTree args = new PathAndTree(origpath, tree);
     if (cache.containsKey(args)) {
       return cache.get(args);
     }

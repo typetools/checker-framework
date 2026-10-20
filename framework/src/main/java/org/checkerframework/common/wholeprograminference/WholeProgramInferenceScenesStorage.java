@@ -289,8 +289,13 @@ public class WholeProgramInferenceScenesStorage
   public boolean removeMethodDeclarationAnnotation(
       ExecutableElement methodElt, AnnotationMirror anno) {
     AMethod methodAnnos = getMethodAnnos(methodElt);
-    return methodAnnos.tlAnnotationsHere.remove(
-        AnnotationConverter.annotationMirrorToAnnotation(anno));
+    boolean wasRemoved =
+        methodAnnos.tlAnnotationsHere.remove(
+            AnnotationConverter.annotationMirrorToAnnotation(anno));
+    if (wasRemoved) {
+      setFileModified(getFileForElement(methodElt));
+    }
+    return wasRemoved;
   }
 
   @Override

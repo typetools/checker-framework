@@ -608,7 +608,7 @@ public final class RemoveAnnotationsForInference {
     if (colonPos == -1) {
       return s;
     } else {
-      return s.substring(colonPos + 1);
+      return s.substring(0, colonPos);
     }
   }
 }

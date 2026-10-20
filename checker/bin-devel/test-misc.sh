@@ -46,9 +46,10 @@ gradle_retry buildSrc:javadoc --warning-mode=all || failures+=("gradlew buildSrc
 if [ -f SKIP-REQUIRE-JAVADOC ]; then
   echo "Skipping requireJavadoc because file SKIP-REQUIRE-JAVADOC exists."
 else
-  (./gradlew requireJavadoc --warning-mode=all > /tmp/warnings-requireJavadoc.txt 2>&1) || true
+  # `--continue` ensures determinism: don't stop after the first parallel task failure.
+  (./gradlew requireJavadoc --continue --warning-mode=all > /tmp/warnings-requireJavadoc.txt 2>&1) || true
   "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-requireJavadoc.txt || failures+=("ci-lint-diff /tmp/warnings-requireJavadoc.txt")
-  (./gradlew javadocDoclintAll --warning-mode=all > /tmp/warnings-javadocDoclintAll.txt 2>&1) || true
+  (./gradlew javadocDoclintAll --continue --warning-mode=all > /tmp/warnings-javadocDoclintAll.txt 2>&1) || true
   "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-javadocDoclintAll.txt || failures+=("ci-lint-diff /tmp/warnings-javadocDoclintAll.txt")
 fi
 if [ ${#failures[@]} -gt 0 ]; then

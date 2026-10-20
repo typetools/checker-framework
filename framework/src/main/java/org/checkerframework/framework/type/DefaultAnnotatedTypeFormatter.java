@@ -268,6 +268,10 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
           }
           sb.append(sj);
         }
+      } else if (type.isUnderlyingTypeRaw() && !currentPrintVerboseGenerics) {
+        // A raw type's declaration has type parameters, and every one of its type arguments
+        // would print as "/*RAW*/", so there is no need to initialize them just to print them.
+        sb.append("</*RAW*/>");
       } else {
         sb.append('<');
         sb.append("/*Type args not initialized*/");

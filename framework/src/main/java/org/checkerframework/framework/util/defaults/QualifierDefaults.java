@@ -608,9 +608,7 @@ public class QualifierDefaults {
       }
     }
 
-    if (atypeFactory.shouldCache
-        && !atypeFactory.stubTypes.isParsing()
-        && !atypeFactory.ajavaTypes.isParsing()) {
+    if (atypeFactory.shouldCache && !atypeFactory.isParsingAnnotationFiles()) {
       elementAnnotatedFors.put(elt, elementAnnotatedForThisChecker);
     }
 
@@ -766,6 +764,17 @@ public class QualifierDefaults {
     }
   }
 
+  /**
+   * Returns a new {@link DefaultApplierElement}. A subclass can override this method to use a
+   * subclass of {@link DefaultApplierElement}.
+   *
+   * @param atypeFactory the type factory
+   * @param annotationScope the element whose defaults are being applied
+   * @param type the type to which to apply defaults
+   * @param applyToTypeVar true if the default should be applied to the primary annotation of a
+   *     local variable whose type is a type variable
+   * @return a new {@link DefaultApplierElement}
+   */
   protected DefaultApplierElement createDefaultApplierElement(
       AnnotatedTypeFactory atypeFactory,
       Element annotationScope,
@@ -860,7 +869,14 @@ public class QualifierDefaults {
       }
     }
 
+    /**
+     * Applies {@link DefaultApplierElement#location}'s default at every node of a type where the
+     * default applies.
+     */
     protected class DefaultApplierElementImpl extends AnnotatedTypeScanner<Void, AnnotationMirror> {
+
+      /** Creates a {@code DefaultApplierElementImpl}. */
+      protected DefaultApplierElementImpl() {}
 
       @Override
       public Void scan(@FindDistinct AnnotatedTypeMirror t, AnnotationMirror qual) {

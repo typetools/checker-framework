@@ -2,6 +2,8 @@ package org.checkerframework.afu.scenelib.type;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.checkerframework.checker.modifiability.qual.IteratorPolyMod;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
 
 /**
  * A representation of a Java type. Handles type parameters, bounded types, arrays and inner types.
@@ -17,7 +19,7 @@ public abstract class Type {
   }
 
   /** The annotations on the outer type. Empty if there are none. */
-  private List<String> annotations;
+  private @Modifiable @IteratorPolyMod List<String> annotations;
 
   /** Constructs a new type with no outer annotations. */
   public Type() {
@@ -38,7 +40,7 @@ public abstract class Type {
    *
    * @param annotations the new annotations to be placed on this type
    */
-  public void setAnnotations(List<String> annotations) {
+  public void setAnnotations(@Modifiable @IteratorPolyMod List<String> annotations) {
     this.annotations = annotations;
   }
 

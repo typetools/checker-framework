@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.NavigableSet;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -51,6 +52,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
@@ -225,9 +227,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** Helper class that holds references to special methods. */
   private final ValueMethodIdentifier methods;
 
+  /**
+   * Creates a ValueAnnotatedTypeFactory.
+   *
+   * @param checker the type-checker associated with this type factory
+   */
   @SuppressWarnings({
     "StaticAssignmentInConstructor", // static Range.ignoreOverflow is gross
-    "this-escape"
+    "this-escape",
+    "nullness:method.invocation" // addAliasedTypeAnnotation() is called from a constructor
   })
   public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
@@ -339,6 +347,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             IntRangeFromNonNegative.class,
             IntRangeFromGTENegativeOne.class,
             PolyValue.class));
+  }
+
+  @Override
+  protected CFAnalysis createFlowAnalysis() {
+    return new ValueAnalysis(checker, this);
   }
 
   @Override
@@ -695,18 +708,39 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   private AnnotationMirror convertSpecialIntRangeToStandardIntRange(
       AnnotationMirror anm, long max) {
-    if (AnnotationUtils.areSameByName(anm, INTRANGE_FROMPOS_NAME)) {
-      return createIntRangeAnnotation(1, max);
-    }
+    // A switch computes the annotation's name once, rather than once per comparison.
+    return switch (AnnotationUtils.annotationName(anm)) {
+      case INTRANGE_FROMPOS_NAME -> createIntRangeAnnotation(1, max);
+      case INTRANGE_FROMNONNEG_NAME -> createIntRangeAnnotation(0, max);
+      case INTRANGE_FROMGTENEGONE_NAME -> createIntRangeAnnotation(-1, max);
+      default -> anm;
+    };
+  }
 
-    if (AnnotationUtils.areSameByName(anm, INTRANGE_FROMNONNEG_NAME)) {
-      return createIntRangeAnnotation(0, max);
+  /**
+   * Converts each {@link IntRangeFromPositive}, {@link IntRangeFromNonNegative}, and {@link
+   * IntRangeFromGTENegativeOne} in {@code annos} to {@link IntRange}. Returns {@code annos} itself
+   * if it contains no such annotation.
+   *
+   * @param annos a set of annotation mirrors
+   * @param typeMirror the Java type on which {@code annos} are written
+   * @return {@code annos}, with every special int range replaced by the equivalent int range
+   */
+  @SuppressWarnings("interning:not.interned") // the method returns its argument if unchanged
+  /*package-private*/ AnnotationMirrorSet convertSpecialIntRangeToStandardIntRange(
+      AnnotationMirrorSet annos, TypeMirror typeMirror) {
+    AnnotationMirrorSet result = null;
+    for (AnnotationMirror anno : annos) {
+      AnnotationMirror converted = convertSpecialIntRangeToStandardIntRange(anno, typeMirror);
+      if (converted != anno) {
+        if (result == null) {
+          result = new AnnotationMirrorSet(annos);
+        }
+        result.remove(anno);
+        result.add(converted);
+      }
     }
-
-    if (AnnotationUtils.areSameByName(anm, INTRANGE_FROMGTENEGONE_NAME)) {
-      return createIntRangeAnnotation(-1, max);
-    }
-    return anm;
+    return result == null ? annos : result;
   }
 
   /**
@@ -1419,9 +1453,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     List<Boolean> boolValues =
         AnnotationUtils.getElementValueArray(boolAnno, boolValValueElement, Boolean.class);
-    Set<Boolean> boolSet = new TreeSet<>(boolValues);
+    NavigableSet<Boolean> boolSet = new TreeSet<>(boolValues);
     if (boolSet.size() == 1) {
-      return boolSet.iterator().next();
+      return boolSet.first();
     }
     return null;
   }
@@ -1574,6 +1608,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * <p>Note that this routine handles actual {@link MinLen} annotations, because it is called by
    * {@link ValueAnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)}, which transforms
    * {@link MinLen} annotations into {@link ArrayLenRange} annotations.
+   *
+   * @param annotation an annotation
+   * @return the minimum length of an array specified by the provided annotation, or null
    */
   private @Nullable Integer getSpecifiedMinLenValue(@Nullable AnnotationMirror annotation) {
     if (annotation == null) {
@@ -1596,6 +1633,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * <p>Note that this routine handles actual {@link MinLen} annotations, because it is called by
    * {@link ValueAnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)}, which transforms
    * {@link MinLen} annotations into {@link ArrayLenRange} annotations.
+   *
+   * @param annotation an annotation
+   * @return the minimum length of an array specified by the provided annotation, or zero
    */
   public int getMinLenValue(@Nullable AnnotationMirror annotation) {
     Integer minLen = getSpecifiedMinLenValue(annotation);

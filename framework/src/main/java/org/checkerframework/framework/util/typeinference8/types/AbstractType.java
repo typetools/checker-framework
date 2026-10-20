@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -32,6 +31,7 @@ import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -261,7 +261,7 @@ public abstract class AbstractType {
    * function type. Otherwise, {@code functionType} is null. Initialized by {@link
    * #getFunctionType()}.
    */
-  protected AnnotatedExecutableType functionType = null;
+  protected @Nullable AnnotatedExecutableType functionType = null;
 
   /**
    * Returns true if this {@link AbstractType} is a functional interface type.
@@ -290,8 +290,9 @@ public abstract class AbstractType {
   }
 
   /**
-   * Returns the ground target type of {@code type}, which is a functional interface type. For an
-   * {@link AnnotatedDeclaredType}, this is {@link #makeGround(AnnotatedDeclaredType,
+   * Returns the ground target type of {@code type}, which is a functional interface type. For a raw
+   * {@link AnnotatedDeclaredType}, this is its erasure, so that its function type is erased too.
+   * For any other {@link AnnotatedDeclaredType}, this is {@link #makeGround(AnnotatedDeclaredType,
    * AnnotatedTypeFactory)}. For an intersection type that induces a notional functional interface
    * (<a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9">JLS section
    * 9.9</a>), each bound is made ground; this is the annotated-type analog of the notional
@@ -307,7 +308,15 @@ public abstract class AbstractType {
       AnnotatedTypeMirror type, AnnotatedTypeFactory typeFactory) {
     switch (type.getKind()) {
       case DECLARED -> {
-        return makeGround((AnnotatedDeclaredType) type, typeFactory);
+        AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
+        if (declaredType.isUnderlyingTypeRaw()) {
+          // JLS 9.9: "The function type of the raw type of a generic functional interface
+          // I<...> is the erasure of the function type of the generic functional interface
+          // I<...>."  Returning the erasure is enough to erase the function type, because
+          // AnnotatedTypes.asMemberOf erases a member that is accessed through a raw receiver.
+          return declaredType.getErased();
+        }
+        return makeGround(declaredType, typeFactory);
       }
       case INTERSECTION -> {
         AnnotatedIntersectionType intersection = ((AnnotatedIntersectionType) type).shallowCopy();
@@ -642,32 +651,32 @@ public abstract class AbstractType {
   }
 
   /**
-   * If this type is a wildcard, returns its lower bound; otherwise, returns null.
+   * Returns the lower bound of this wildcard. Must only be called on a wildcard.
    *
-   * @return the lower bound of this wildcard type, or null if this type is not a wildcard
+   * @return the lower bound of this wildcard type
+   * @throws BugInCF if this type is not a wildcard
    */
-  public @Nullable AbstractType getWildcardLowerBound() {
-    if (getJavaType().getKind() == TypeKind.WILDCARD) {
-      return create(
-          ((AnnotatedWildcardType) getAnnotatedType()).getSuperBound(), ignoreAnnotations);
+  public AbstractType getWildcardLowerBound() {
+    if (getJavaType().getKind() != TypeKind.WILDCARD) {
+      throw new BugInCF("getWildcardLowerBound called on non-wildcard " + this);
     }
-    return null;
+    return create(((AnnotatedWildcardType) getAnnotatedType()).getSuperBound(), ignoreAnnotations);
   }
 
   /**
-   * If this type is a wildcard, returns its upper bound; otherwise, returns null. If the wildcard
+   * Returns the upper bound of this wildcard. Must only be called on a wildcard. If the wildcard
    * has no explicit upper bound, the returned type is the upper bound of the type variable to which
    * the wildcard is bound; see {@link AnnotatedWildcardType#getExtendsBound()}.
    *
-   * @return the upper bound of this wildcard type, or null if this type is not a wildcard
+   * @return the upper bound of this wildcard type
+   * @throws BugInCF if this type is not a wildcard
    */
-  public @Nullable AbstractType getWildcardUpperBound() {
-    if (getJavaType().getKind() == TypeKind.WILDCARD) {
-      return create(
-          ((AnnotatedWildcardType) getAnnotatedType()).getExtendsBound(), ignoreAnnotations);
-    } else {
-      return null;
+  public AbstractType getWildcardUpperBound() {
+    if (getJavaType().getKind() != TypeKind.WILDCARD) {
+      throw new BugInCF("getWildcardUpperBound called on non-wildcard " + this);
     }
+    return create(
+        ((AnnotatedWildcardType) getAnnotatedType()).getExtendsBound(), ignoreAnnotations);
   }
 
   /**
@@ -727,7 +736,7 @@ public abstract class AbstractType {
   // equals and hashCode are abstract so that a subclass must implement them.  A subclass that needs
   // to compare the fields of this class can use sameInferenceProblem and inferenceProblemHashCode.
   @Override
-  public abstract boolean equals(Object o);
+  public abstract boolean equals(@Nullable Object o);
 
   @Override
   public abstract int hashCode();
@@ -754,6 +763,6 @@ public abstract class AbstractType {
    * @return a hash code for the fields that {@link #sameInferenceProblem} compares
    */
   protected final int inferenceProblemHashCode() {
-    return Objects.hash(ignoreAnnotations, context, typeFactory);
+    return context.inferenceProblemHashCode(ignoreAnnotations);
   }
 }

@@ -9,7 +9,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
-import org.plumelib.util.IPair;
 
 /**
  * Given two javac ASTs representing the same Java file that may differ in annotations, {@link
@@ -49,17 +48,25 @@ public class JavacAnnotationEqualityVisitor extends DoubleJavacVisitor {
    * @throws UserError if the two ASTs differ other than in annotations; for example, if one
    *     declares a member that the other does not
    */
-  public static @Nullable IPair<Tree, Tree> findMismatch(Tree tree1, Tree tree2) {
+  public static @Nullable Mismatch findMismatch(Tree tree1, Tree tree2) {
     JavacAnnotationEqualityVisitor visitor = new JavacAnnotationEqualityVisitor();
     visitor.scan(tree1, tree2);
     Tree node1 = visitor.mismatchedNode1;
     Tree node2 = visitor.mismatchedNode2;
     assert (node1 == null) == (node2 == null);
     if (node1 != null && node2 != null) {
-      return IPair.of(node1, node2);
+      return new Mismatch(node1, node2);
     }
     return null;
   }
+
+  /**
+   * Corresponding nodes of two ASTs whose annotations differ.
+   *
+   * @param node1 a node of the first AST
+   * @param node2 the corresponding node of the second AST
+   */
+  public record Mismatch(Tree node1, Tree node2) {}
 
   @Override
   protected Void defaultAction(Tree tree1, Tree tree2) {

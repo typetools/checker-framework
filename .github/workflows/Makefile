@@ -14,7 +14,7 @@ PLUME_SCRIPTS=../../checker/bin-devel/.plume-scripts
 #	@chmod -w $@
 
 ${PLUME_SCRIPTS}:
-	cd ../.. && ./gradlew -q getPlumeScripts
+	../../checker/bin-devel/clone-plume-scripts.sh
 
 clean:
 	@rm -f ci.yml
