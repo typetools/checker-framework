@@ -328,7 +328,7 @@ public final class Resolution {
       for (Variable ai : varsToResolve) {
         Set<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
         if (!lowerBounds.isEmpty()) {
-          resolveWithLowerBounds(ai, lowerBounds);
+          resolveWithLowerBounds(ai, lowerBounds, context);
           changed = true;
         }
       }
@@ -386,8 +386,25 @@ public final class Resolution {
    *
    * @param ai a variable to resolve
    * @param lowerBounds {@code ai}'s nonempty set of proper lower bounds
+   * @param context the context
    */
-  private void resolveWithLowerBounds(Variable ai, Set<ProperType> lowerBounds) {
+  private static void resolveWithLowerBounds(
+      Variable ai, Set<ProperType> lowerBounds, Java8InferenceContext context) {
+    ai.getBounds().addBound(null, BoundKind.EQUAL, lubOfLowerBounds(ai, lowerBounds, context));
+  }
+
+  /**
+   * Returns the least upper bound of {@code lowerBounds}, with the qualifier lower bounds of {@code
+   * ai} applied.
+   *
+   * @param ai a variable
+   * @param lowerBounds a nonempty set of proper types, each of which is a lower bound of {@code ai}
+   * @param context the context
+   * @return the least upper bound of {@code lowerBounds}, with the qualifier lower bounds of {@code
+   *     ai} applied
+   */
+  private static ProperType lubOfLowerBounds(
+      Variable ai, Set<ProperType> lowerBounds, Java8InferenceContext context) {
     ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
     assert lubProperType != null : "@AssumeAssertion(nullness): lowerBounds is nonempty";
     Set<AbstractQualifier> qualifierLowerBounds =
@@ -416,7 +433,7 @@ public final class Resolution {
         lubTV.getLowerBound().replaceAnnotations(newLubAnnos);
       }
     }
-    ai.getBounds().addBound(null, BoundKind.EQUAL, lubProperType);
+    return lubProperType;
   }
 
   /**
