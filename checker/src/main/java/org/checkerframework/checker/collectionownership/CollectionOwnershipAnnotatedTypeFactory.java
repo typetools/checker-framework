@@ -458,23 +458,21 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return true if the element is a resource collection field that is {@code @OwningCollection} by
    *     declaration
    */
-  public boolean isOwningCollectionField(Element elt) {
-    if (elt == null) {
+  public boolean isOwningCollectionField(@Nullable Element elt) {
+    if (elt == null || !elt.getKind().isField()) {
       return false;
     }
-    if (elt.getKind().isField()) {
-      if (isResourceCollection(elt.asType())) {
-        AnnotatedTypeMirror atm = getAnnotatedType(elt);
-        CollectionOwnershipType fieldType =
-            getCoType(Collections.singletonList(atm.getPrimaryAnnotationInHierarchy(TOP)));
-        if (fieldType == null) {
-          return false;
-        }
-        return switch (fieldType) {
-          case OwningCollection, OwningCollectionWithoutObligation -> true;
-          default -> false;
-        };
+    if (isResourceCollection(elt.asType())) {
+      AnnotatedTypeMirror atm = getAnnotatedType(elt);
+      CollectionOwnershipType fieldType =
+          getCoType(Collections.singletonList(atm.getPrimaryAnnotationInHierarchy(TOP)));
+      if (fieldType == null) {
+        return false;
       }
+      return switch (fieldType) {
+        case OwningCollection, OwningCollectionWithoutObligation -> true;
+        default -> false;
+      };
     }
     return false;
   }
@@ -597,7 +595,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @param insertedArgumentTree the inserted argument
    * @return the inserted argument's ownership classification
    */
-  public CollectionMutatorArgumentKind getCollectionMutatorArgumentKind(Tree insertedArgumentTree) {
+  public CollectionMutatorArgumentKind getCollectionMutatorArgumentKind(
+      @Nullable Tree insertedArgumentTree) {
     if (insertedArgumentTree == null) {
       return CollectionMutatorArgumentKind.MAY_BE_OWNING;
     }
@@ -657,7 +656,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return if the given type is a collection, returns the MustCall values of its elements or null
    *     if there are none or if the given type is not a collection
    */
-  public List<String> getMustCallValuesOfResourceCollectionComponent(AnnotatedTypeMirror atm) {
+  public @Nullable List<String> getMustCallValuesOfResourceCollectionComponent(
+      AnnotatedTypeMirror atm) {
     if (atm == null) {
       return null;
     }
@@ -673,8 +673,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
     }
 
     if (componentType != null) {
-      List<String> list = ResourceLeakUtils.getMcValues(componentType, mcAtf);
-      return list;
+      return ResourceLeakUtils.getMcValues(componentType, mcAtf);
     } else {
       return null;
     }
@@ -691,7 +690,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return if the given tree represents a collection, returns the MustCall values of its elements
    *     or null if there are none or if the given type is not a collection
    */
-  public List<String> getMustCallValuesOfResourceCollectionComponent(Tree tree) {
+  public @Nullable List<String> getMustCallValuesOfResourceCollectionComponent(Tree tree) {
     return getMustCallValuesOfResourceCollectionComponent(mcAtf.getAnnotatedType(tree));
   }
 
@@ -706,7 +705,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @return if the given type is a collection, returns the MustCall values of its elements or null
    *     if there are none or if the given type is not a collection
    */
-  public List<String> getMustCallValuesOfResourceCollectionComponent(TypeMirror t) {
+  public @Nullable List<String> getMustCallValuesOfResourceCollectionComponent(TypeMirror t) {
     boolean isCollectionType = ResourceLeakUtils.isCollection(t);
 
     TypeMirror componentType = null;

@@ -323,7 +323,7 @@ public class MustCallConsistencyAnalyzer {
      * Creates and returns an obligation derived from the given expression.
      *
      * @param tree the tree from which the Obligation is to be created. Must be {@code
-     *     ExpressionTree} or {@code VariableTree}.
+     *     ExpressionTree} or {@code VariableTree} that has an element.
      * @return an obligation derived from the given tree
      */
     public static Obligation fromTree(Tree tree) {
@@ -338,6 +338,10 @@ public class MustCallConsistencyAnalyzer {
       } else {
         throw new IllegalArgumentException(
             "Tree must be ExpressionTree or VariableTree but is " + tree.getClass());
+      }
+      if (elem == null) {
+        // Callers pass a variable, field, or method invocation. So they should have an element.
+        throw new BugInCF("Tree " + tree + " should have an element but does not");
       }
       return new Obligation(
           ImmutableSet.of(new ResourceAlias(jx, elem, tree)),
@@ -897,15 +901,17 @@ public class MustCallConsistencyAnalyzer {
    * @param node the node of a return expression
    */
   private void addObligationsForOwningCollectionReturn(Set<Obligation> obligations, Node node) {
+    Tree tree = node.getTree();
+    if (tree == null) {
+      return;
+    }
     LocalVariableNode tmpVar = cmAtf.getTempVarForNode(node);
     if (tmpVar != null) {
       CollectionOwnershipStore coStore = coAtf.getStoreAfter(node);
-      CollectionOwnershipType cotype = coAtf.getCoType(tmpVar, coStore);
-      if (cotype == CollectionOwnershipType.OwningCollection) {
-        ResourceAlias tmpVarAsResourceAlias =
-            new ResourceAlias(new LocalVariable(tmpVar), node.getTree());
-        List<String> mustCallValues =
-            coAtf.getMustCallValuesOfResourceCollectionComponent(node.getTree());
+      CollectionOwnershipType coType = coAtf.getCoType(tmpVar, coStore);
+      if (coType == CollectionOwnershipType.OwningCollection) {
+        ResourceAlias tmpVarAsResourceAlias = new ResourceAlias(new LocalVariable(tmpVar), tree);
+        List<String> mustCallValues = coAtf.getMustCallValuesOfResourceCollectionComponent(tree);
         if (mustCallValues == null) {
           throw new BugInCF(
               "List of MustCall values of component type is null for OwningCollection return value:"
@@ -932,39 +938,46 @@ public class MustCallConsistencyAnalyzer {
    */
   private void addObligationsForCreatesCollectionObligationAnno(
       Set<Obligation> obligations, MethodInvocationNode node) {
-    ExecutableElement methodElement = TreeUtils.elementFromUse(node.getTree());
+    ExecutableElement methodElement = node.getTarget().getMethod();
     if (coAtf.isCreatesCollectionObligationMethod(methodElement)) {
       Node receiverNode = node.getTarget().getReceiver();
       receiverNode = removeCastsAndGetTmpVarIfPresent(receiverNode);
-      boolean receiverIsResourceCollection = coAtf.isResourceCollection(receiverNode.getTree());
-      if (!receiverIsResourceCollection) {
+      Tree receiverTree = receiverNode.getTree();
+      // TODO: CollectionObligation insertion is currently not implemented for an implicit `this`
+      // receiver.
+      if (receiverTree == null || !coAtf.isResourceCollection(receiverTree)) {
         return;
       }
       boolean receiverIsOwningField =
-          coAtf.isOwningCollectionField(TreeUtils.elementFromTree(receiverNode.getTree()));
+          coAtf.isOwningCollectionField(TreeUtils.elementFromTree(receiverTree));
 
       CollectionOwnershipStore coStore = coAtf.getStoreBefore(node);
       CollectionOwnershipType receiverType = coAtf.getCoType(receiverNode, coStore);
       if (receiverType == null) {
-        throw new BugInCF("Method receiver not in collection ownership store: " + receiverNode);
+        // Skip if the receiver is not in the store. This is sound as the ownership transfer
+        // happens later in this method.
+        return;
       }
       switch (receiverType) {
         case OwningCollectionWithoutObligation, OwningCollection -> {
           if (!receiverIsOwningField) {
             List<String> mustCallValues =
-                coAtf.getMustCallValuesOfResourceCollectionComponent(receiverNode.getTree());
+                coAtf.getMustCallValuesOfResourceCollectionComponent(receiverTree);
+            assert mustCallValues != null
+                : "@AssumeAssertion(nullness): isResourceCollection(receiverTree) returned true";
             for (String mustCallMethod : mustCallValues) {
-              obligations.add(
-                  CollectionObligation.fromTree(receiverNode.getTree(), mustCallMethod));
+              obligations.add(CollectionObligation.fromTree(receiverTree, mustCallMethod));
             }
             if (!mustCallValues.isEmpty()) {
               reportNeverEnforcedCollectionObligationIfNeeded(
-                  node, mustCallValues.get(0), receiverNode.getTree());
+                  node, mustCallValues.get(0), receiverTree);
             }
           }
           if (receiverIsOwningField) {
-            TreePath currentPath = cmAtf.getPath(node.getTree());
-            MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(currentPath);
+            MethodInvocationTree invocationTree = node.getTree();
+            TreePath currentPath = invocationTree == null ? null : cmAtf.getPath(invocationTree);
+            MethodTree enclosingMethodTree =
+                currentPath == null ? null : TreePathUtil.enclosingMethod(currentPath);
             if (enclosingMethodTree != null) {
               checkEnclosingMethodIsCreatesMustCallFor(receiverNode, enclosingMethodTree);
             }
@@ -990,12 +1003,13 @@ public class MustCallConsistencyAnalyzer {
    */
   private void reportNeverEnforcedCollectionObligationIfNeeded(
       MethodInvocationNode node, String mustCallMethod, Tree receiverTree) {
-    if (!canReachRegularExit(node.getBlock()) && reportedNeverEnforcedSites.add(node.getTree())) {
+    Tree tree = node.getTree();
+    if (tree != null
+        && node.getBlock() != null
+        && !canReachRegularExit(node.getBlock())
+        && reportedNeverEnforcedSites.add(tree)) {
       checker.reportError(
-          node.getTree(),
-          "collection.obligation.never.enforced",
-          mustCallMethod,
-          receiverTree.toString());
+          tree, "collection.obligation.never.enforced", mustCallMethod, receiverTree.toString());
     }
   }
 
@@ -1571,22 +1585,26 @@ public class MustCallConsistencyAnalyzer {
       //  not be transferred.
       MethodTree method = cfgMethod.getMethod();
       ExecutableElement executableElement = TreeUtils.elementFromDeclaration(method);
-      boolean returnTypeHasManualNocAnno =
-          coAtf.getCoType(executableElement.getReturnType().getAnnotationMirrors())
+      assert executableElement != null
+          : "@AssumeAssertion(nullness): a method has an element as the CFG is already built";
+      boolean returnTypeHasNocAnno =
+          coAtf.getCoType(
+                  coAtf.getAnnotatedType(executableElement).getReturnType().getAnnotations())
               == CollectionOwnershipType.NotOwningCollection;
-      if (returnTypeHasManualNocAnno) {
+      if (returnTypeHasNocAnno) {
         // return is @NotOwningCollection. No ownership transfer to call-site.
         return false;
       } else {
         // return is @OwningCollection. Report error if @OwningCollection field.
-        if (node.getResult() != null
-            && coAtf.isOwningCollectionField(
-                TreeUtils.elementFromTree(node.getResult().getTree()))) {
+        Node returnResult = node.getResult();
+        if (returnResult != null
+            && returnResult.getTree() != null
+            && coAtf.isOwningCollectionField(TreeUtils.elementFromTree(returnResult.getTree()))) {
           checker.reportError(
               node.getTree(),
               "transfer.owningcollection.field.ownership",
               node.getTree().toString(),
-              node.getResult().getTree().toString());
+              (returnResult.getTree() != null ? returnResult.getTree().toString() : "null"));
         }
       }
       return !cmAtf.hasNotOwning(executableElement);
