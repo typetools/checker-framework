@@ -64,4 +64,16 @@ public class TypeVarPrimitivesNullness {
     long result = t & 1L;
     t.toString();
   }
+
+  <T extends @Nullable Integer> void prefixIncrement(T t) {
+    // :: error: [unboxing.of.nullable]
+    ++t;
+    t.toString();
+  }
+
+  <T extends Short> T prefixIncrementDecrement(T t) {
+    ++t;
+    --t;
+    return t;
+  }
 }

@@ -600,13 +600,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       if (tree.getKind() == Tree.Kind.BITWISE_COMPLEMENT) {
         addAnnotationForBitwiseComplement(
             getSearchIndexAnnotatedTypeFactory().getAnnotatedType(tree.getExpression()), type);
-      } else if (!(type instanceof AnnotatedTypeVariable)) {
+      } else if (type instanceof AnnotatedTypeVariable
+          && tree.getKind() != Tree.Kind.PREFIX_INCREMENT) {
+        // If the type is a type variable, the tree is an increment or decrement. The value of a
+        // postfix increment or decrement is the operand's value, and a decrement cannot make a
+        // value violate an upper-bound qualifier, so the result has the operand's type.
+        atypeFactory.replaceAnnotations(atypeFactory.getAnnotatedType(tree.getExpression()), type);
+      } else {
         type.addAnnotation(UNKNOWN);
-      } else if (tree.getKind() == Tree.Kind.PREFIX_INCREMENT) {
-        // Of the operations whose result has a type-variable type, only a prefix increment can
-        // violate the type variable's upper bound. Refine only then, because a refined type
-        // variable is not a subtype of the original one.
-        IndexUtil.typeToRefine(type).replaceAnnotation(UNKNOWN);
       }
       return super.visitUnary(tree, type);
     }

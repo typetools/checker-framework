@@ -15,7 +15,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.checker.index.BaseAnnotatedTypeFactoryForIndexChecker;
 import org.checkerframework.checker.index.IndexMethodIdentifier;
-import org.checkerframework.checker.index.IndexUtil;
 import org.checkerframework.checker.index.inequality.LessThanAnnotatedTypeFactory;
 import org.checkerframework.checker.index.inequality.LessThanChecker;
 import org.checkerframework.checker.index.qual.GTENegativeOne;
@@ -314,13 +313,15 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       AnnotatedTypeMirror typeSrc = getAnnotatedType(tree.getExpression());
       switch (tree.getKind()) {
         case PREFIX_INCREMENT -> {
-          // Incrementing a value of type-variable type cannot violate the type variable's lower
-          // bound, and a refined type variable is not a subtype of the original one.
-          if (!(typeDst instanceof AnnotatedTypeVariable)) {
+          if (typeDst instanceof AnnotatedTypeVariable) {
+            // An increment cannot make a value violate a lower-bound qualifier, so incrementing a
+            // value whose type is a type variable produces a value of the operand's type.
+            replaceAnnotations(typeSrc, typeDst);
+          } else {
             promoteType(typeSrc, typeDst);
           }
         }
-        case PREFIX_DECREMENT -> demoteType(typeSrc, IndexUtil.typeToRefine(typeDst));
+        case PREFIX_DECREMENT -> demoteType(typeSrc, typeDst);
         case POSTFIX_INCREMENT,
             POSTFIX_DECREMENT -> {} // Do nothing. The CF should take care of these itself.
         case BITWISE_COMPLEMENT ->

@@ -73,17 +73,6 @@ public class TypeVarPrimitives {
     return 0;
   }
 
-  <T extends Integer> T prefixIncrementDecrement(T t) {
-    ++t;
-    --t;
-    return t;
-  }
-
-  <T extends Short> T prefixIncrementShort(T t) {
-    ++t;
-    return t;
-  }
-
   <T extends Integer> int enhancedForArray(T[] ts) {
     int sum = 0;
     for (int x : ts) {
