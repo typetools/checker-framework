@@ -256,17 +256,33 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns the depth of an array type.
+   *
+   * @param arrayType an array type
+   * @return the depth of {@code arrayType}
+   */
+  public static int getArrayDepth(TypeMirror arrayType) {
+    int counter = 0;
+    TypeMirror componentType = arrayType;
+    while (componentType.getKind() == TypeKind.ARRAY) {
+      counter++;
+      componentType = ((ArrayType) componentType).getComponentType();
+    }
+    return counter;
+  }
+
+  /**
    * Given an array type, returns the type with all array levels stripped off.
    *
-   * @param at an array type
+   * @param arrayType an array type
    * @return the type with all array levels stripped off
    */
-  public static TypeMirror getInnermostComponentType(ArrayType at) {
-    TypeMirror result = at;
-    while (result.getKind() == TypeKind.ARRAY) {
-      result = ((ArrayType) result).getComponentType();
+  public static TypeMirror getInnermostComponentType(ArrayType arrayType) {
+    TypeMirror componentType = arrayType;
+    while (componentType.getKind() == TypeKind.ARRAY) {
+      componentType = ((ArrayType) componentType).getComponentType();
     }
-    return result;
+    return componentType;
   }
 
   // Equality
@@ -961,6 +977,24 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns true if {@code type} is a type variable that the compiler created rather than one that
+   * is declared in source code: either a captured type variable, or a fresh type variable that
+   * javac's type inference creates for an inference variable whose bounds mention itself.
+   *
+   * @param type a type mirror
+   * @return true if {@code type} is a captured or synthetic type variable
+   */
+  public static boolean isCapturedOrSyntheticTypeVariable(TypeMirror type) {
+    if (isCapturedTypeVariable(type)) {
+      return true;
+    }
+    return type.getKind() == TypeKind.TYPEVAR
+        && (((Type.TypeVar) TypeAnnotationUtils.unannotatedType(type)).tsym.flags()
+                & Flags.SYNTHETIC)
+            != 0;
+  }
+
+  /**
    * If {@code typeVar} is a captured type variable, then returns its underlying wildcard; otherwise
    * returns {@code null}.
    *
@@ -1267,22 +1301,6 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns the depth of an array type.
-   *
-   * @param arrayType an array type
-   * @return the depth of {@code arrayType}
-   */
-  public static int getArrayDepth(TypeMirror arrayType) {
-    int counter = 0;
-    TypeMirror type = arrayType;
-    while (type.getKind() == TypeKind.ARRAY) {
-      counter++;
-      type = ((ArrayType) type).getComponentType();
-    }
-    return counter;
-  }
-
-  /**
    * If {@code typeMirror} is a wildcard, returns a fresh type variable that will be used as a
    * captured type variable for it. If {@code typeMirror} is not a wildcard, returns {@code
    * typeMirror}.
@@ -1412,7 +1430,8 @@ public final class TypesUtils {
       // FunctionDescriptorLookupError does not have a stack trace, so catch it here and throw a
       // BugInCF.
       throw new BugInCF(
-          "%s is not a functional interface. Call TypesUtils.isFunctionalInterface() before calling TypesUtils.findFunction.",
+          "%s is not a functional interface."
+              + " Call TypesUtils.isFunctionalInterface() before calling TypesUtils.findFunction.",
           functionalInterfaceType);
     }
   }
@@ -1649,15 +1668,15 @@ public final class TypesUtils {
    * upperBound} must be {@code null} or {@code Object}. If {@code upperBound} is non-null and not
    * {@code Object}, then {@code lowerBound} must be {@code null};
    *
-   * @param lowerBound the lower bound for the wildcard
-   * @param upperBound the upper bound for the wildcard
+   * @param lowerBound the lower bound for the wildcard, or null if it has none
+   * @param upperBound the upper bound for the wildcard, or null if it has none
    * @param types TypesUtils
    * @return a wildcard with the given bounds
    */
   public static TypeMirror createWildcard(
-      TypeMirror lowerBound, TypeMirror upperBound, Types types) {
+      @Nullable TypeMirror lowerBound, @Nullable TypeMirror upperBound, Types types) {
     TypeMirror nonObjectUpperBound = upperBound;
-    if (isObject(upperBound)) {
+    if (upperBound != null && isObject(upperBound)) {
       nonObjectUpperBound = null;
     }
 

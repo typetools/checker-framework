@@ -5,7 +5,7 @@ jobs:
   # Only proceed to other jobs if canary_jobs passes.
   canary_jobs:
     docker:
-      - image: 'cimg/base:2026.09'
+      - image: 'cimg/base:2026.10'
     resource_class: small
     environment:
       TERM: dumb
@@ -15,7 +15,7 @@ jobs:
   # Passes only if all other jobs passed.
   all_green:
     docker:
-      - image: 'cimg/base:2026.09'
+      - image: 'cimg/base:2026.10'
     resource_class: small
     environment:
       TERM: dumb
@@ -41,14 +41,22 @@ jobs:
           paths:
             - .git
       - run:
-          name: getPlumeScripts
-          command: ./gradlew -q getPlumeScripts
+          name: clone_plume_scripts
+          command: ./checker/bin-devel/clone-plume-scripts.sh
       - run:
-          name: ci-org-and-branch
-          command: ./checker/bin-devel/.plume-scripts/ci-org-and-branch --debug
+          name: set-ci-org-and-branch
+          command: |
+            # PLUME_SCRIPTS is the documented way to tell these scripts where they live.
+            PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+            CI_DEBUG=1
+            . "$PLUME_SCRIPTS"/set-ci-org-and-branch
       - run:
-          name: git-changes
-          command: ./checker/bin-devel/.plume-scripts/git-changes --debug
+          name: set-git-range
+          command: |
+            # The sourced script reads PLUME_SCRIPTS, to find set-ci-org-and-branch.
+            PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+            CI_DEBUG=1
+            . "$PLUME_SCRIPTS"/set-git-range
 
   junit_jdk17:
     docker:
@@ -57,6 +65,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -68,11 +93,32 @@ jobs:
           paths:
             - .git
       - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
           name: test-cftests-junit.sh
           command: ./checker/bin-devel/test-cftests-junit.sh
           no_output_timeout: "30m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 17
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   junit_jdk21:
     docker:
@@ -81,6 +127,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -92,11 +155,32 @@ jobs:
           paths:
             - .git
       - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
           name: test-cftests-junit.sh
           command: ./checker/bin-devel/test-cftests-junit.sh
           no_output_timeout: "30m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 21
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   junit_part1_jdk25:
     docker:
@@ -105,6 +189,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -116,11 +217,32 @@ jobs:
           paths:
             - .git
       - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
           name: test-cftests-junit.sh part1
           command: ./checker/bin-devel/test-cftests-junit.sh part1
           no_output_timeout: "30m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
   junit_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -128,6 +250,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -138,20 +277,58 @@ jobs:
           key: *source-cache
           paths:
             - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
       - run:
           name: test-cftests-junit.sh part2
           command: ./checker/bin-devel/test-cftests-junit.sh part2
           no_output_timeout: "30m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
-  junit_jdk26:
+  junit_jdk27:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk26'
+      - image: 'mdernst/cf-ubuntu-jdk27'
     resource_class: large
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -163,11 +340,32 @@ jobs:
           paths:
             - .git
       - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
           name: test-cftests-junit.sh
           command: ./checker/bin-devel/test-cftests-junit.sh
           no_output_timeout: "30m"
           environment:
-            ORG_GRADLE_PROJECT_jdkTestVersion: 26
+            ORG_GRADLE_PROJECT_jdkTestVersion: 27
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   nonjunit_jdk21:
     docker:
@@ -176,6 +374,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -187,10 +402,31 @@ jobs:
           paths:
             - .git
       - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
           name: test-cftests-nonjunit.sh
           command: ./checker/bin-devel/test-cftests-nonjunit.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 21
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   nonjunit_jdk25:
     docker:
@@ -199,6 +435,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -210,15 +463,32 @@ jobs:
           paths:
             - .git
       - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
           name: test-cftests-nonjunit.sh
           command: ./checker/bin-devel/test-cftests-nonjunit.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
-  # Sometimes one of the invocations of wpi-many in `./gradlew wpiManyTest`
-  # takes much longer to complete than normal, and this Azure job times out.
-  # When there is a timeout, one cannot examine wpi or wpi-many logs.
-  # So use a timeout of 90 minutes, and hope that is enough.
   # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
   inference_part1_jdk25:
     docker:
@@ -227,6 +497,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -238,10 +525,31 @@ jobs:
           paths:
             - .git
       - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
           name: test-cftests-inference-part1.sh
           command: ./checker/bin-devel/test-cftests-inference-part1.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
   inference_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -249,6 +557,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -260,10 +585,31 @@ jobs:
           paths:
             - .git
       - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
           name: test-cftests-inference-part2.sh
           command: ./checker/bin-devel/test-cftests-inference-part2.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   misc_jdk21:
     docker:
@@ -272,6 +618,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &sourcefull-cache source-v1full-{{ .Branch }}-{{ .Revision }}
@@ -284,13 +647,34 @@ jobs:
           paths:
             - .git
       - run:
-          name: getPlumeScripts
-          command: ./gradlew -q getPlumeScripts
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
+          name: clone_plume_scripts
+          command: ./checker/bin-devel/clone-plume-scripts.sh
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 21
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   misc_jdk25:
     docker:
@@ -299,6 +683,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &sourcefull-cache source-v1full-{{ .Branch }}-{{ .Revision }}
@@ -311,21 +712,59 @@ jobs:
           paths:
             - .git
       - run:
-          name: getPlumeScripts
-          command: ./gradlew -q getPlumeScripts
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
+          name: clone_plume_scripts
+          command: ./checker/bin-devel/clone-plume-scripts.sh
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
-  misc_jdk26:
+  misc_jdk27:
     docker:
-      - image: 'mdernst/cf-ubuntu-jdk26-plus'
+      - image: 'mdernst/cf-ubuntu-jdk27-plus'
     resource_class: large
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &sourcefull-cache source-v1full-{{ .Branch }}-{{ .Revision }}
@@ -338,13 +777,34 @@ jobs:
           paths:
             - .git
       - run:
-          name: getPlumeScripts
-          command: ./gradlew -q getPlumeScripts
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
+          name: clone_plume_scripts
+          command: ./checker/bin-devel/clone-plume-scripts.sh
       - run:
           name: test-misc.sh
           command: ./checker/bin-devel/test-misc.sh
           environment:
-            ORG_GRADLE_PROJECT_jdkTestVersion: 26
+            ORG_GRADLE_PROJECT_jdkTestVersion: 27
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   typecheck_part1_jdk25:
     docker:
@@ -353,6 +813,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -364,10 +841,31 @@ jobs:
           paths:
             - .git
       - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
           name: test-typecheck-part1.sh
           command: ./checker/bin-devel/test-typecheck-part1.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
   typecheck_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -375,6 +873,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -386,13 +901,215 @@ jobs:
           paths:
             - .git
       - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
           name: test-typecheck-part2.sh
           command: ./checker/bin-devel/test-typecheck-part2.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
-  # TEMPORARILY commented until Daikon release 5.8.24.
-  # daikon_job(canary_jdk)
+  daikon_part1_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25'
+    resource_class: large
+    environment:
+      TERM: dumb
+    steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
+          name: test-daikon-part1.sh
+          command: ./checker/bin-devel/test-daikon-part1.sh
+          no_output_timeout: "30m"
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
+  daikon_part2_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25'
+    resource_class: large
+    environment:
+      TERM: dumb
+    steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
+          name: test-daikon-part2.sh
+          command: ./checker/bin-devel/test-daikon-part2.sh
+          no_output_timeout: "30m"
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
+  daikon_part3_jdk25:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk25'
+    resource_class: large
+    environment:
+      TERM: dumb
+    steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
+          name: test-daikon-part3.sh
+          command: ./checker/bin-devel/test-daikon-part3.sh
+          no_output_timeout: "30m"
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
   guava_part1_jdk25:
     docker:
@@ -401,6 +1118,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -412,11 +1146,32 @@ jobs:
           paths:
             - .git
       - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
           name: test-guava-part1.sh
           command: ./checker/bin-devel/test-guava-part1.sh
           no_output_timeout: "50m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
   guava_part2_jdk25:
     docker:
       - image: 'mdernst/cf-ubuntu-jdk25'
@@ -424,6 +1179,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -435,11 +1207,135 @@ jobs:
           paths:
             - .git
       - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
           name: test-guava-part2.sh
           command: ./checker/bin-devel/test-guava-part2.sh
           no_output_timeout: "50m"
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
+
+  beam_part1_jdk21:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk21'
+    resource_class: large
+    environment:
+      TERM: dumb
+    steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
+          name: test-beam-part1.sh
+          command: ./checker/bin-devel/test-beam-part1.sh
+          no_output_timeout: "50m"
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 21
+  beam_part2_jdk21:
+    docker:
+      - image: 'mdernst/cf-ubuntu-jdk21'
+    resource_class: large
+    environment:
+      TERM: dumb
+    steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - 'source-v1-{{ .Branch }}-'
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - .git
+      - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
+          name: test-beam-part2.sh
+          command: ./checker/bin-devel/test-beam-part2.sh
+          no_output_timeout: "50m"
+          environment:
+            ORG_GRADLE_PROJECT_jdkTestVersion: 21
 
   plume_lib_jdk25:
     docker:
@@ -448,6 +1344,23 @@ jobs:
     environment:
       TERM: dumb
     steps:
+      - run:
+          name: halt-if-superseded
+          command: |
+            if test -n "${CIRCLE_BRANCH:-}"; then
+              tip=$(git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 ls-remote "https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git" "refs/heads/${CIRCLE_BRANCH}" | cut -f1) || true
+              if test -n "$tip" && test "$tip" != "$CIRCLE_SHA1"; then
+                echo "Superseded: ${CIRCLE_BRANCH} is now at ${tip}, not ${CIRCLE_SHA1}."
+                if test -n "${CIRCLE_TOKEN:-}" \
+                    && wget -q -O /dev/null --post-data= --header="Circle-Token: ${CIRCLE_TOKEN}" \
+                      "https://circleci.com/api/v2/workflow/${CIRCLE_WORKFLOW_ID}/cancel"; then
+                  echo "Canceled workflow ${CIRCLE_WORKFLOW_ID}; waiting for the cancellation to stop this job."
+                  sleep 120
+                fi
+                echo "Halting without testing ${CIRCLE_SHA1}; its green status does not mean it passed."
+                circleci-agent step halt
+              fi
+            fi
       - restore_cache:
           keys:
             - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
@@ -459,10 +1372,31 @@ jobs:
           paths:
             - .git
       - run:
+          name: Compute Gradle cache key
+          command: >-
+            cat gradle/wrapper/gradle-wrapper.properties gradle/libs.versions.toml
+            buildSrc/build.gradle docs/examples/errorprone/build.gradle
+            docs/examples/lombok/build.gradle > /tmp/gradle-cache-key
+      - restore_cache:
+          keys:
+            - &gradle-cache 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "/tmp/gradle-cache-key" }}'
+            - 'gradle-v1-{{ .Environment.CIRCLE_JOB }}-'
+            - gradle-v1-
+      - run:
           name: test-plume-lib.sh
           command: ./checker/bin-devel/test-plume-lib.sh
           environment:
             ORG_GRADLE_PROJECT_jdkTestVersion: 25
+      - run:
+          name: Prune Gradle cache
+          command: |
+            find ~/.gradle/caches -name '*.lock' -delete || true
+            rm -f ~/.gradle/caches/modules-2/gc.properties
+      - save_cache:
+          key: *gradle-cache
+          paths:
+            - ~/.gradle/caches/modules-2
+            - ~/.gradle/wrapper
 
 # The "workflows" section determines which jobs run and what other jobs they depend on.
 # For an explanation of the dependence logic, see ../.azure/azure-pipelines.yml .
@@ -479,7 +1413,7 @@ workflows:
             - typecheck_part1_jdk25
             - typecheck_part2_jdk25
             - misc_jdk25
-            - misc_jdk26
+            - misc_jdk27
 
       - ci_info
 
@@ -487,7 +1421,7 @@ workflows:
       - junit_part2_jdk25
       - nonjunit_jdk25
       - misc_jdk25
-      - misc_jdk26
+      - misc_jdk27
       - inference_part1_jdk25
       - inference_part2_jdk25
       - typecheck_part1_jdk25
@@ -515,21 +1449,37 @@ workflows:
             - junit_part1_jdk25
             - junit_part2_jdk25
 
-      - junit_jdk26:
+      - junit_jdk27:
           requires:
             - canary_jobs
             - junit_part1_jdk25
             - junit_part2_jdk25
 
-      # TEMPORARILY commented until Daikon release 5.8.24.
-      # job_dependences_not_in_canary(canary_jdk, daikon_part1)
-      # job_dependences_not_in_canary(canary_jdk, daikon_part2)
-      # job_dependences_not_in_canary(canary_jdk, daikon_part3)
+      - daikon_part1_jdk25:
+          requires:
+            - canary_jobs
+
+      - daikon_part2_jdk25:
+          requires:
+            - canary_jobs
+
+      - daikon_part3_jdk25:
+          requires:
+            - canary_jobs
+
       - guava_part1_jdk25:
           requires:
             - canary_jobs
 
       - guava_part2_jdk25:
+          requires:
+            - canary_jobs
+
+      - beam_part1_jdk21:
+          requires:
+            - canary_jobs
+
+      - beam_part2_jdk21:
           requires:
             - canary_jobs
 
@@ -543,7 +1493,12 @@ workflows:
             - nonjunit_jdk21
             - junit_jdk17
             - junit_jdk21
-            - junit_jdk26
+            - junit_jdk27
+            - daikon_part1_jdk25
+            - daikon_part2_jdk25
+            - daikon_part3_jdk25
             - guava_part1_jdk25
             - guava_part2_jdk25
+            - beam_part1_jdk21
+            - beam_part2_jdk21
             - plume_lib_jdk25

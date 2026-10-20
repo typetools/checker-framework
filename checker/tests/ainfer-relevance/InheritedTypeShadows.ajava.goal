@@ -1,0 +1,90 @@
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+
+// A local class and an anonymous class inherit their supertype's member types, which shadow types
+// of the same name that are declared elsewhere.  Inference must resolve the name "Foo" to
+// `Base.Foo`, which is relevant because it is a subtype of `CharSequence`, rather than to the
+// member class `InheritedTypeShadows.Foo`, which is irrelevant.  Neither a local class nor an
+// anonymous class has a name that inference can look up, so inference must resolve the name by
+// searching the supertype.  If inference resolves the name incorrectly and therefore discards the
+// annotation, then the second (validation) pass of this test issues the warnings that are written
+// below.
+//
+// The search of the supertype is precise rather than merely conservative:  the goal file shows
+// that inference discards an annotation on `Irrelevant`, which is the inherited member type
+// `Base.Irrelevant` and is irrelevant.
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
+public class InheritedTypeShadows {
+
+    static class Foo {
+    }
+
+    static class Base {
+
+        abstract static class Foo implements CharSequence {
+        }
+
+        static class Irrelevant {
+        }
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    static void declareLocalClass() {
+        class Local extends Base {
+
+            @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 Foo field;
+
+            Irrelevant irrelevantField;
+
+            @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "this.field" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
+            @org.checkerframework.dataflow.qual.Impure
+            void assignField() {
+                field = getSibling1();
+                irrelevantField = new Irrelevant();
+            }
+
+            @org.checkerframework.dataflow.qual.Impure
+            void useField() {
+                // :: warning: [argument]
+                expectsSibling1(field);
+            }
+
+            @org.checkerframework.dataflow.qual.SideEffectFree
+            void expectsSibling1(@org.checkerframework.checker.testchecker.ainfer.qual.AinferTop Local this, Foo f) {
+            }
+
+            @org.checkerframework.dataflow.qual.Pure
+            Foo getSibling1(@org.checkerframework.checker.testchecker.ainfer.qual.AinferTop Local this) {
+                return null;
+            }
+        }
+    }
+
+    static @org.checkerframework.checker.testchecker.ainfer.qual.AinferTop Object anonymous = new Base() {
+
+        @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 Foo field;
+
+        Irrelevant irrelevantField;
+
+        @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "this.field" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
+        @org.checkerframework.dataflow.qual.Impure
+        void assignField() {
+            field = getSibling1();
+            irrelevantField = new Irrelevant();
+        }
+
+        @org.checkerframework.dataflow.qual.Impure
+        void useField() {
+            // :: warning: [argument]
+            expectsSibling1(field);
+        }
+
+        @org.checkerframework.dataflow.qual.SideEffectFree
+        void expectsSibling1(Foo f) {
+        }
+
+        @org.checkerframework.dataflow.qual.Pure
+        Foo getSibling1() {
+            return null;
+        }
+    };
+}

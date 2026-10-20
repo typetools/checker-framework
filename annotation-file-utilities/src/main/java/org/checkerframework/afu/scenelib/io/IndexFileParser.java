@@ -63,7 +63,6 @@ import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.objectweb.asm.TypePath;
 import org.plumelib.util.ArraysP;
 import org.plumelib.util.FileIOException;
-import org.plumelib.util.IPair;
 
 /**
  * IndexFileParser provides static methods {@link #parse(LineNumberReader, String, AScene)}, {@link
@@ -635,7 +634,27 @@ public final class IndexFileParser {
     return ann;
   }
 
+  /**
+   * Parses annotations and adds them to {@code e}.
+   *
+   * @param e where to put the parsed annotations
+   * @throws IOException if there is trouble reading the input
+   * @throws ParseException if the input is malformed
+   */
   private void parseAnnotations(AElement e) throws IOException, ParseException {
+    parseAnnotations(e.tlAnnotationsHere, e.description);
+  }
+
+  /**
+   * Parses annotations and adds them to {@code tlAnnotationsHere}.
+   *
+   * @param tlAnnotationsHere where to put the parsed annotations
+   * @param description a description of the element being annotated, for diagnostics
+   * @throws IOException if there is trouble reading the input
+   * @throws ParseException if the input is malformed
+   */
+  private void parseAnnotations(Set<Annotation> tlAnnotationsHere, Object description)
+      throws IOException, ParseException {
     while (checkChar('@')) {
       AnnotationDef d = parseAnnotationHead();
       AnnotationBuilder ab = AnnotationFactory.saf.beginAnnotation(d, source);
@@ -646,7 +665,7 @@ public final class IndexFileParser {
         Object trash = parseAnnotationBody(d, AnnotationFactory.saf.beginAnnotation(d, source));
       } else {
         Annotation a = parseAnnotationBody(d, ab);
-        for (Annotation other : e.tlAnnotationsHere) {
+        for (Annotation other : tlAnnotationsHere) {
           if (a.def.name.equals(other.def.name)) {
             // Don't output this warning, because the annotation might be repeatable.
             // TODO: IndexFileWriter should output the @Repeatable(EnsuresQualifier.List.class)
@@ -654,7 +673,7 @@ public final class IndexFileParser {
             // then this code can output the warning (or even crash) if it is not present.
             if (false) {
               System.err.printf(
-                  "WARNING: duplicate annotation of type %s on %s%n", a.def().name, e.description);
+                  "WARNING: duplicate annotation of type %s on %s%n", a.def().name, description);
             }
           }
         }
@@ -662,7 +681,7 @@ public final class IndexFileParser {
         if (!tla.def.equals(d)) {
           throw new ParseException("Bad def");
         }
-        e.tlAnnotationsHere.add(tla);
+        tlAnnotationsHere.add(tla);
       }
     }
   }
@@ -747,9 +766,9 @@ public final class IndexFileParser {
     @SuppressWarnings("signature") // string concatenation
     @BinaryName String fullName = curPkgPrefix + basename;
 
-    AnnotationDef ad = new AnnotationDef(fullName, source);
     expectChar(':');
-    parseAnnotations(ad);
+    Set<Annotation> metaAnnotations = new LinkedHashSet<>();
+    parseAnnotations(metaAnnotations, "annotation: " + fullName);
 
     Map<String, AnnotationFieldType> fields = new LinkedHashMap<>();
 
@@ -766,9 +785,9 @@ public final class IndexFileParser {
       fields.put(name, type);
     }
 
-    ad.setFieldTypes(fields);
+    AnnotationDef ad = new AnnotationDef(fullName, metaAnnotations, fields, source);
 
-    // Now add the definition to the map of all definitions.
+    // Add the definition to the map of all definitions.
     addDef(ad, basename);
   }
 
@@ -1267,16 +1286,12 @@ public final class IndexFileParser {
         // parseAnnotations(i);
         // parseInnerTypes(i);
         int offset = 0;
-        IPair<ASTPath, TypePath> pair = splitNewArrayType(astPath); // handle special case
-        ATypeElement i;
-        if (pair == null) {
-          i = decl.insertAnnotations.getVivify(astPath);
-        } else {
-          i = decl.insertAnnotations.getVivify(pair.first);
-          if (pair.second != null) {
-            i = i.innerTypes.getVivify(TypePathEntry.typePathToList(pair.second));
-            offset = pair.second.getLength();
-          }
+        NewArrayPath newArrayPath = splitNewArrayType(astPath); // handle special case
+        ATypeElement i = decl.insertAnnotations.getVivify(newArrayPath.outerPath());
+        TypePath innerTypePath = newArrayPath.innerTypePath();
+        if (innerTypePath != null) {
+          i = i.innerTypes.getVivify(TypePathEntry.typePathToList(innerTypePath));
+          offset = innerTypePath.getLength();
         }
         parseAnnotations(i);
         parseInnerTypes(i, offset);
@@ -1302,9 +1317,9 @@ public final class IndexFileParser {
    * invariant by separating out the inner type information.
    *
    * @param astPath the ASTPath to process
-   * @return IPair of modified ASTPath and extracted TypePath
+   * @return the modified ASTPath and the extracted TypePath
    */
-  private IPair<ASTPath, TypePath> splitNewArrayType(ASTPath astPath) {
+  private NewArrayPath splitNewArrayType(ASTPath astPath) {
     ASTPath outerPath = astPath;
     TypePath loc = null;
     int last = astPath.size() - 1;
@@ -1320,8 +1335,16 @@ public final class IndexFileParser {
         }
       }
     }
-    return IPair.of(outerPath, loc);
+    return new NewArrayPath(outerPath, loc);
   }
+
+  /**
+   * An ASTPath for a new array expression, with the inner type information separated out.
+   *
+   * @param outerPath the ASTPath without the inner type information
+   * @param innerTypePath the extracted inner type information, or null if there is none
+   */
+  private record NewArrayPath(ASTPath outerPath, @Nullable TypePath innerTypePath) {}
 
   /**
    * Parses an AST path.

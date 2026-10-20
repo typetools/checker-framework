@@ -1,0 +1,9 @@
+// Tests that a nested record whose declaration is written at the top level of the stub file, with
+// "$" separating the names of its outer classes, is found.  StubGenerator writes such a stub file.
+
+package disbaruse.records;
+
+import org.checkerframework.checker.testchecker.disbaruse.qual.DisbarUse;
+
+record DisbarredDollarRecordByStubs$Nested(@DisbarUse String barred, String fine) {
+}

@@ -3,6 +3,7 @@ package org.checkerframework.afu.scenelib;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -10,6 +11,8 @@ import org.checkerframework.afu.scenelib.el.AnnotationDef;
 import org.checkerframework.afu.scenelib.field.AnnotationFieldType;
 import org.checkerframework.afu.scenelib.field.ArrayAFT;
 import org.checkerframework.afu.scenelib.field.ScalarAFT;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.BinaryName;
 
 /**
@@ -26,13 +29,13 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 public class AnnotationBuilder {
 
   /**
-   * Sometimes, we build the AnnotationDef at the very end, and sometimes we have it before
-   * starting.
+   * Sometimes we build the AnnotationDef at the very end, and sometimes the client provides it at
+   * the very start.
    */
-  AnnotationDef def;
+  @MonotonicNonNull AnnotationDef def;
 
-  /** The name of the annotation being built. */
-  private @BinaryName String typeName;
+  /** The name of the annotation being built. Exactly one of this and {@link #def} is non-null. */
+  private @Nullable @BinaryName String typeName;
 
   /**
    * The top-level meta-annotations that appear directly on the annotation being built. "tl" stands
@@ -43,14 +46,64 @@ public class AnnotationBuilder {
   /** Where the annotation came from, such as a filename. */
   String source;
 
+  /** True if an array is being supplied. */
   boolean arrayInProgress = false;
 
+  /** True if {@link #finish} has not yet been called. */
   boolean active = true;
 
-  // Generally, don't use this.  Use method fieldTypes() instead.
+  /**
+   * The types of the annotation fields/elements. Generally, don't use this. Use method {@link
+   * #fieldTypes()} instead.
+   */
   private Map<String, AnnotationFieldType> fieldTypes = new LinkedHashMap<>();
 
+  /** The values of the annotation fields/elements. */
   Map<String, Object> fieldValues = new LinkedHashMap<>();
+
+  /**
+   * Create a new AnnotationBuilder.
+   *
+   * @param def the definition of the annotation being built
+   * @param source where the annotation came from, such as a filename
+   */
+  AnnotationBuilder(AnnotationDef def, String source) {
+    assert def != null;
+    assert source != null;
+    this.def = def;
+    this.tlAnnotationsHere = new LinkedHashSet<>(2);
+    this.source = source;
+  }
+
+  /**
+   * Create a new AnnotationBuilder.
+   *
+   * @param typeName the name of the annotation being built
+   * @param source where the annotation came from, such as a filename
+   */
+  AnnotationBuilder(@BinaryName String typeName, String source) {
+    assert typeName != null;
+    assert source != null;
+    this.typeName = typeName;
+    this.tlAnnotationsHere = new LinkedHashSet<>(2);
+    this.source = source;
+  }
+
+  /**
+   * Create a new AnnotationBuilder.
+   *
+   * @param typeName the name of the annotation being built
+   * @param tlAnnotationsHere the top-level meta-annotations that appear directly on the annotation
+   *     being built. "tl" stands for "top-level".
+   * @param source where the annotation came from, such as a filename
+   */
+  AnnotationBuilder(@BinaryName String typeName, Set<Annotation> tlAnnotationsHere, String source) {
+    assert typeName != null;
+    assert source != null;
+    this.typeName = typeName;
+    this.tlAnnotationsHere = tlAnnotationsHere;
+    this.source = source;
+  }
 
   /**
    * Returns the name of the annotation.
@@ -65,7 +118,7 @@ public class AnnotationBuilder {
     }
   }
 
-  public Map<String, AnnotationFieldType> fieldTypes() {
+  public Map<String, ? extends AnnotationFieldType> fieldTypes() {
     if (def != null) {
       return def.fieldTypes;
     } else {
@@ -214,49 +267,13 @@ public class AnnotationBuilder {
     }
     active = false;
     if (def == null) {
+      assert typeName != null : "@AssumeAssertion(nullness): one of def and typeName is non-null";
       assert fieldTypes != null;
       def = new AnnotationDef(typeName, tlAnnotationsHere, fieldTypes, source);
     } else {
-      assert typeName == null;
       assert fieldTypes.isEmpty();
     }
     return new Annotation(def, fieldValues);
-  }
-
-  AnnotationBuilder(AnnotationDef def, String source) {
-    assert def != null;
-    assert source != null;
-    this.def = def;
-    this.source = source;
-  }
-
-  /**
-   * Create a new AnnotationBuilder.
-   *
-   * @param typeName the name of the annotation being built
-   * @param source where the annotation came from, such as a filename
-   */
-  AnnotationBuilder(@BinaryName String typeName, String source) {
-    assert typeName != null;
-    assert source != null;
-    this.typeName = typeName;
-    this.source = source;
-  }
-
-  /**
-   * Create a new AnnotationBuilder.
-   *
-   * @param typeName the name of the annotation being built
-   * @param tlAnnotationsHere the top-level meta-annotations that appear directly on the annotation
-   *     being built. "tl" stands for "top-level".
-   * @param source where the annotation came from, such as a filename
-   */
-  AnnotationBuilder(@BinaryName String typeName, Set<Annotation> tlAnnotationsHere, String source) {
-    assert typeName != null;
-    assert source != null;
-    this.typeName = typeName;
-    this.tlAnnotationsHere = tlAnnotationsHere;
-    this.source = source;
   }
 
   @Override

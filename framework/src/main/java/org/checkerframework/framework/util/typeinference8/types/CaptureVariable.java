@@ -90,7 +90,7 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
    * value for two capture variables that are not equal, which is permitted.
    */
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     return this == o;
   }
 

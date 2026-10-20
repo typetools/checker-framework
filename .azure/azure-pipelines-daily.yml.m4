@@ -66,16 +66,18 @@ typecheck_job(21)
 typecheck_job(canary_jdk)
 typecheck_job(latest_jdk)
 
-  # TEMPORARILY commented until Daikon release 5.8.24.
-  # daikon_job(17)
-  # daikon_job(21)
-  # daikon_job(canary_jdk)
-  # daikon_job(latest_jdk)
+daikon_job(17)
+daikon_job(21)
+daikon_job(canary_jdk)
+daikon_job(latest_jdk)
 
 guava_job(17)
 guava_job(21)
 guava_job(canary_jdk)
 guava_job(latest_jdk)
+
+ifelse([Beam's Gradle build only runs on JDK 21.])dnl
+beam_job(21)
 
 plume_lib_job(17)
 plume_lib_job(21)
