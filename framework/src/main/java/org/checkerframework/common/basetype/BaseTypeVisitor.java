@@ -1724,8 +1724,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       args = new Object[] {violation.purityAdjective};
     }
     // The same tree can be checked more than once:  an initializer is checked as part of every
-    // constructor that runs it, and every checker of a compound checker checks purity
-    // independently.  Report each message at each tree only once.
+    // constructor that runs it.
+    reportErrorOnce(tree, msgKey, args);
+  }
+
+  /**
+   * Reports an error at {@code tree}, unless this checker or another checker of the same compound
+   * checker has already reported it there. Every checker of a compound checker checks purity
+   * independently, so a purity error would otherwise be reported once per checker.
+   *
+   * @param tree the tree at which to report the error
+   * @param msgKey the message key
+   * @param args the arguments of the message
+   */
+  private void reportErrorOnce(Tree tree, @CompilerMessageKey String msgKey, Object... args) {
     TreePath path = atypeFactory.getPath(tree);
     if (path == null) {
       checker.reportError(tree, msgKey, args);
