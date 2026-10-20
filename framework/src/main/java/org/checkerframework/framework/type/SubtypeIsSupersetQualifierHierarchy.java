@@ -32,11 +32,13 @@ public class SubtypeIsSupersetQualifierHierarchy extends MostlyNoElementQualifie
    *
    * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
    * @param processingEnv processing environment
+   * @param atypeFactory the associated type factory
    */
   public SubtypeIsSupersetQualifierHierarchy(
       Collection<Class<? extends Annotation>> qualifierClasses,
-      ProcessingEnvironment processingEnv) {
-    super(qualifierClasses, processingEnv.getElementUtils());
+      ProcessingEnvironment processingEnv,
+      GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
+    super(qualifierClasses, processingEnv.getElementUtils(), atypeFactory);
     this.processingEnv = processingEnv;
   }
 
@@ -99,11 +101,11 @@ public class SubtypeIsSupersetQualifierHierarchy extends MostlyNoElementQualifie
   }
 
   /**
-   * Returns a mutable list containing the {@code values} element of the given annotation. The
-   * {@code values} element must be an array of strings.
+   * Returns a mutable list containing the {@code value} element of the given annotation. The {@code
+   * value} element must be an array of strings.
    *
    * @param anno an annotation
-   * @return a mutable list containing the {@code values} element; may be the empty list
+   * @return a mutable list containing the {@code value} element; may be the empty list
    */
   private List<String> valuesStringList(AnnotationMirror anno) {
     @SuppressWarnings("deprecation") // concrete annotation class is not known
@@ -115,9 +117,10 @@ public class SubtypeIsSupersetQualifierHierarchy extends MostlyNoElementQualifie
    * Returns an AnnotationMirror corresponding to the given kind and values.
    *
    * @param kind the qualifier kind
-   * @param values the annotation's {@code values} element/argument
+   * @param values the annotation's {@code value} element/argument
    * @return an annotation of the given kind and values
    */
+  @SuppressWarnings("InvalidParam") // similar name, but not a typo
   private AnnotationMirror createAnnotationMirrorWithValue(QualifierKind kind, Set<String> values) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, kind.getAnnotationClass());
     builder.setValue("value", values.toArray());

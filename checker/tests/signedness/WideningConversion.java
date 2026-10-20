@@ -36,28 +36,28 @@ public class WideningConversion {
     si = si1 + si2;
 
     si = c1 + c2;
-    // :: error: (assignment)
+    // :: error: [assignment]
     si = c1 + ui2;
-    // :: error: (assignment)
+    // :: error: [assignment]
     si = ui1 + c2;
-    // :: error: (assignment)
+    // :: error: [assignment]
     si = ui1 + ui2;
 
     @Unsigned int ui;
     ui = c1 + c2;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ui = c1 + i2;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ui = i1 + c2;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ui = i1 + i2;
 
     ui = c1 + c2;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ui = c1 + si2;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ui = si1 + c2;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ui = si1 + si2;
 
     ui = c1 + c2;
@@ -74,19 +74,13 @@ public class WideningConversion {
 
     char c;
     c = (char) (c1 + c2);
-    // :: warning: (cast.unsafe)
     c = (char) (c1 + i2);
-    // :: warning: (cast.unsafe)
     c = (char) (i1 + c2);
-    // :: warning: (cast.unsafe)
     c = (char) (i1 + i2);
 
     c = (char) (c1 + c2);
-    // :: warning: (cast.unsafe)
     c = (char) (c1 + si2);
-    // :: warning: (cast.unsafe)
     c = (char) (si1 + c2);
-    // :: warning: (cast.unsafe)
     c = (char) (si1 + si2);
 
     c = (char) (c1 + c2);
@@ -96,11 +90,11 @@ public class WideningConversion {
   }
 
   void to_string() {
-    // :: error: (unsigned.concat)
+    // :: error: [unsigned.concat]
     String s1 = "" + us1;
-    // :: error: (argument)
+    // :: error: [argument]
     String s2 = String.valueOf(us2);
-    // :: error: (argument)
+    // :: error: [argument]
     String s3 = Short.toString(us1);
   }
 }

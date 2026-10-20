@@ -1,7 +1,7 @@
 // Test case for Issue 1424.
 // https://github.com/typetools/checker-framework/issues/1424
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "all"}) // Just check for crashes.
 abstract class Issue1424 {
   class Box<T> {}
 

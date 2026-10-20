@@ -45,6 +45,12 @@ import org.checkerframework.javacutil.TypesUtils;
  * namely {@code annotationMirrorToAnnotationExpr}.
  */
 public class AnnotationMirrorToAnnotationExprConversion {
+
+  /** Do not instantiate. */
+  private AnnotationMirrorToAnnotationExprConversion() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * Converts an AnnotationMirror into a JavaParser {@code AnnotationExpr}.
    *
@@ -130,8 +136,12 @@ public class AnnotationMirrorToAnnotationExprConversion {
    * A visitor that converts an annotation value from an {@code AnnotationMirror} to a JavaParser
    * node that can appear in an {@code AnnotationExpr}.
    */
-  private static class AnnotationValueConverterVisitor
+  private static final class AnnotationValueConverterVisitor
       implements AnnotationValueVisitor<Expression, Void> {
+
+    /** Creates a new AnnotationValueConverterVisitor. */
+    AnnotationValueConverterVisitor() {}
+
     @Override
     public Expression visit(AnnotationValue value, Void p) {
       // This is called only if the value couldn't be dispatched to any known type, which
@@ -141,7 +151,7 @@ public class AnnotationMirrorToAnnotationExprConversion {
 
     @Override
     public Expression visitAnnotation(AnnotationMirror value, Void p) {
-      return AnnotationMirrorToAnnotationExprConversion.annotationMirrorToAnnotationExpr(value);
+      return annotationMirrorToAnnotationExpr(value);
     }
 
     @Override
@@ -185,7 +195,6 @@ public class AnnotationMirrorToAnnotationExprConversion {
       for (int i = 1; i < components.length; i++) {
         enumName = new FieldAccessExpr(enumName, components[i]);
       }
-
       return new FieldAccessExpr(enumName, value.getSimpleName().toString());
     }
 
@@ -226,7 +235,6 @@ public class AnnotationMirrorToAnnotationExprConversion {
       if (value.getKind() != TypeKind.DECLARED) {
         throw new BugInCF("Unexpected type for class expression: " + value);
       }
-
       DeclaredType type = (DeclaredType) value;
       ClassOrInterfaceType parsedType;
       try {
@@ -257,7 +265,6 @@ public class AnnotationMirrorToAnnotationExprConversion {
         return new UnaryExpr(
             new IntegerLiteralExpr(Integer.toString(-value)), UnaryExpr.Operator.MINUS);
       }
-
       return new IntegerLiteralExpr(Integer.toString(value));
     }
   }

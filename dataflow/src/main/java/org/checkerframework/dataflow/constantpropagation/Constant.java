@@ -33,27 +33,27 @@ public class Constant implements AbstractValue<Constant> {
   }
 
   /**
-   * Returns whether or not the constant is TOP.
+   * Returns true if the constant is TOP.
    *
-   * @return whether or not the constant is TOP
+   * @return true if the constant is TOP
    */
   public boolean isTop() {
     return type == Type.TOP;
   }
 
   /**
-   * Returns whether or not the constant is BOTTOM.
+   * Returns true if the constant is BOTTOM.
    *
-   * @return whether or not the constant is BOTTOM
+   * @return true if the constant is BOTTOM
    */
   public boolean isBottom() {
     return type == Type.BOTTOM;
   }
 
   /**
-   * Returns whether or not the constant is CONSTANT.
+   * Returns true if the constant is CONSTANT.
    *
-   * @return whether or not the constant is CONSTANT
+   * @return true if the constant is CONSTANT
    */
   @EnsuresNonNullIf(result = true, expression = "value")
   public boolean isConstant() {
@@ -96,10 +96,9 @@ public class Constant implements AbstractValue<Constant> {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof Constant)) {
+    if (!(obj instanceof Constant other)) {
       return false;
     }
-    Constant other = (Constant) obj;
     return type == other.type && Objects.equals(value, other.value);
   }
 
@@ -110,16 +109,14 @@ public class Constant implements AbstractValue<Constant> {
 
   @Override
   public String toString() {
-    switch (type) {
-      case TOP:
-        return "T";
-      case BOTTOM:
-        return "-";
-      case CONSTANT:
+    return switch (type) {
+      case TOP -> "T";
+      case BOTTOM -> "-";
+      case CONSTANT -> {
         assert isConstant() : "@AssumeAssertion(nullness)";
-        return value.toString();
-      default:
-        throw new BugInCF("Unexpected type: " + type);
-    }
+        yield value.toString();
+      }
+      default -> throw new BugInCF("Unexpected type: " + type);
+    };
   }
 }

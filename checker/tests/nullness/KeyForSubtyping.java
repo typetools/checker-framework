@@ -15,17 +15,17 @@ public class KeyForSubtyping {
     // variables such that a line of code can have an effect on a subsequent line of code. We
     // want each of these tests to be independent.
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     ab = a;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ab = b;
-    // :: error: (assignment)
+    // :: error: [assignment]
     a = b;
-    // :: error: (assignment)
+    // :: error: [assignment]
     a = not_a_key;
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = not_a_key;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ab = not_a_key;
 
     // Now try the success cases
@@ -42,15 +42,15 @@ public class KeyForSubtyping {
       @KeyFor("this.mapB") String b,
       @KeyFor({"this.mapA", "this.mapB"}) String ab) {
     // Test that when a valid assignment is made, dataflow transfers the
-    // KeyFor type qualifier from the right hand side to the left hand side.
+    // KeyFor type qualifier from the right-hand side to the left-hand side.
 
-    // :: error: (argument)
+    // :: error: [argument]
     method1(not_yet_a_key);
     not_yet_a_key = a;
     method1(not_yet_a_key);
 
     method1(a);
-    // :: error: (argument)
+    // :: error: [argument]
     method1(b);
     method1(ab);
 
@@ -66,7 +66,7 @@ public class KeyForSubtyping {
 
     // Try the error case first - see the note in method testSubtypeAssignments
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     abc = ac;
 
     ac = abc;
@@ -97,11 +97,11 @@ public class KeyForSubtyping {
       @Nullable @KeyFor({"this.mapA", "this.mapB"}) String ab) {
     // These fail only because a @Nullable RHS cannot be assigned to a @NonNull LHS.
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     a = ab;
-    // :: error: (assignment)
+    // :: error: [assignment]
     b = ab;
-    // :: error: (assignment)
+    // :: error: [assignment]
     not_a_key = ab;
 
     not_a_key = a; // Succeeds because both sides are @NonNull
@@ -123,7 +123,7 @@ public class KeyForSubtyping {
     void method1(@KeyFor("this.map1") String s) {}
 
     @Override
-    // :: error: (override.param)
+    // :: error: [override.param]
     void method2(@KeyFor({"this.map1", "this.map2"}) String s) {}
   }
 }

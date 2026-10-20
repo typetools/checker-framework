@@ -92,13 +92,13 @@ public class Arrays {
 
   void test3() {
     @Odd Object o1 = new @Odd Object @Odd [] @Odd [] {};
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Odd Object o2 = new @Odd Object[] @Odd [] {}; // ERROR
 
     @Odd Object @Odd [] o3 = (new @Odd Object[] @Odd [] {})[0];
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Odd Object @Odd [] o4 = (new Object @Odd [][] {})[0]; // ERROR
-    // :: error: (assignment)
+    // :: error: [assignment]
     @Odd Object @Odd [] o5 = (new @Odd Object[][] {})[0]; // ERROR
 
     Object @Odd [] o6 = (new Object[] @Odd [] {})[0];
@@ -118,9 +118,9 @@ public class Arrays {
     //      @Odd String [] ara1 = { null, null };
     @Odd String[] ara2 = new @Odd String[] {null, null};
 
-    //         // xx:: error: (assignment)
+    //         // xx:: error: [assignment]
     //        @Odd String [] arb1 = { null, "m" };
-    // :: error: (array.initializer)
+    // :: error: [array.initializer]
     @Odd String[] arb2 = new @Odd String[] {null, "m"};
   }
 }

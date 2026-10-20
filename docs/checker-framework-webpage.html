@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
-<head><link rel="icon" type="image/png" href="favicon-checkerframework.png" />
+<html lang="en">
+<head><link rel="icon" type="image/png" href="favicon-checkerframework.png">
   <title>The Checker Framework</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta charset="utf-8">
 </head>
 <body>
 
@@ -30,8 +30,8 @@ to write your own compiler plug-ins.
     <a href="manual/#installation"><b>Installation instructions and tutorial</b></a>.
   </li>
   <li>
-    Download: <a href="checker-framework-3.35.0.zip"><!-- checker-framework-zip-version -->checker-framework-3.35.0.zip<!-- /checker-framework-zip-version --></a>
-    (<!-- checker-framework-date -->1 Jun 2023<!-- /checker-framework-date -->);
+    Download: <a href="checker-framework-4.3.1.zip"><!-- checker-framework-zip-version -->checker-framework-4.3.1.zip<!-- /checker-framework-zip-version --></a>
+    (<!-- checker-framework-date -->2026-10-08<!-- /checker-framework-date -->);
     includes source, platform-independent binary, tests, and documentation.<br/>
     Then, see the <a
     href="manual/#installation"><b>installation
@@ -43,7 +43,9 @@ to write your own compiler plug-ins.
     <!-- Keep this in sync with the list below. -->
     <ul>
       <li>
-        <a href="manual/">Checker Framework Manual (HTML)</a>
+        Checker Framework Manual (HTML):
+        <a href="manual/">one webpage</a>,
+        <a href="manual/manual-multipage.html">multiple webpages</a>
       </li>
       <li>
         <a href="manual/checker-framework-manual.pdf">Checker Framework Manual (PDF)</a>
@@ -51,11 +53,11 @@ to write your own compiler plug-ins.
       <li>
         <a href="manual/#installation">Installation instructions</a><br/>
         or, try it without installation at the
-        <a href="http://eisop.uwaterloo.ca/live/">Checker Framework Live Demo</a>
+        <a href="https://eisop.uwaterloo.ca/live/">Checker Framework Live Demo</a>
         webpage
       </li>
       <li>
-        <a href="tutorial/">Tutorial</a> with Nullness Checker, Regex Checker, and Tainting checker<br/>
+        <a href="tutorial/">Tutorial</a> with Nullness Checker, Regex Checker, and Tainting Checker<br/>
         (There is also an older external <a href="https://github.com/glts/safer-spring-petclinic/wiki">Nullness Checker tutorial</a> whose setup information is out of date.)
       </li>
       <li>
@@ -73,7 +75,7 @@ to write your own compiler plug-ins.
   <li>
     Source code repository (at GitHub):  <a href="https://github.com/typetools/checker-framework/">https://github.com/typetools/checker-framework/</a><br/>
     The Checker Framework Manual contains <a href="manual/#build-source">instructions on building from source</a>.<br/>
-    Also see the <a href="https://rawgit.com/typetools/checker-framework/master/docs/developer/developer-manual.html">Developer manual</a>.
+    Also see the <a href="https://checkerframework.org/manual/developer-manual.html">Developer manual</a>.
   </li>
 
   <!-- This paragraph appears identically at jsr308-langtools/doc/openjdk-webpage.html -->
@@ -88,19 +90,23 @@ href="manual/#type-inference-tools">a list of inference tools</a>.
       <li>The <a href="annotation-file-utilities/"><b>Annotation File Utilities</b></a>
           extract annotations from, and write annotations to,
           <code>.java</code> and <code>.class</code> files.
-          It also provides a representation (called
+          They also provide a representation (called
           an &ldquo;annotation file&rdquo;) for annotations that is outside the source code or
           the <code>.class</code> file.  The tools support both Java 5
           declaration annotations and Java 8 type annotations.
         <ul>
-          <li><a href="annotation-file-utilities/annotation-tools-3.35.0.zip"><!-- annotation-tools-zip-version -->annotation-tools-3.35.0.zip<!-- /annotation-tools-zip-version --></a> (<!-- afu-date -->01 Jun 2023<!-- /afu-date -->)
-          </li>
-          <li><a href="https://github.com/typetools/annotation-tools/">source code repository</a>
+          <li> They are distributed with the Checker Framework.
           </li>
           <li><a href="annotation-file-utilities/">Documentation</a>
               is included in the zip archive and in the repository.
           </li>
         </ul>
+      </li>
+      <li>The <a href="https://checkerframework.org/manual/checker-framework-dataflow-manual.pdf"><b>Dataflow
+        Framework</b></a> is an industrial-strength dataflow framework for
+        Java.  The Dataflow Framework is used in the Checker Framework, Google's
+        Error Prone, Uber's NullAway, Meta's Nullsafe, and in other contexts.
+        It is distributed with the Checker Framework.
       </li>
     </ul>
   </li>
@@ -135,17 +141,17 @@ If none of those documents answers your question, then use one of the
     <!-- Keep this in sync with the list above. -->
     <ul>
       <li>
-        Checker Framework Manual (<a href="manual/checker-framework-manual.pdf">PDF</a>, <a href="manual/">HTML</a>)
+        Checker Framework Manual (<a href="manual/checker-framework-manual.pdf">PDF</a>, HTML: <a href="manual/">one page</a>, <a href="manual/manual-multipage.html">multiple pages</a>)
       </li>
       <li>
         <a href="manual/#installation">Installation instructions</a>
       <br/>
         or, try it without installation at the
-        <a href="http://eisop.uwaterloo.ca/live/">Checker Framework Live Demo</a>
+        <a href="https://eisop.uwaterloo.ca/live/">Checker Framework Live Demo</a>
         webpage
       </li>
       <li>
-        <a href="tutorial/">Tutorial</a>
+        <a href="tutorial/">Tutorial</a><br/>
         Other tutorials:<ul>
           <li>
             <a href="https://github.com/glts/safer-spring-petclinic/wiki">Nullness Checker tutorial</a>
@@ -223,7 +229,7 @@ successes to the mailing lists.
 <hr />
 
 <p>
-Last updated: <!-- checker-framework-date -->1 Jun 2023<!-- /checker-framework-date -->
+Last updated: <!-- checker-framework-date -->2026-10-08<!-- /checker-framework-date -->
 </p>
 
 </body>
@@ -253,5 +259,5 @@ End:
  -->
 <!--  LocalWords:  isNonNull instanceof myNonEmptyStringSet MyObject langtools
  -->
-<!--  LocalWords:  rc desugar txt dev Nullable codename hg
+<!--  LocalWords:  rc desugar txt dev Nullable codename
  -->

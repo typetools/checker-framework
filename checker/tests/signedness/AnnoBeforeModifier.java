@@ -3,12 +3,12 @@ import org.checkerframework.checker.signedness.qual.Unsigned;
 
 public class AnnoBeforeModifier {
 
-  // :: warning: (type.anno.before.modifier)
+  // :: warning: [type.anno.before.modifier]
   @Unsigned public int i = 0;
 
   public @Unsigned int j = 0;
 
-  // :: warning: (type.anno.before.modifier)
+  // :: warning: [type.anno.before.modifier]
   public @Unsigned final int k = 0;
 
   @SuppressWarnings("foobar")
@@ -19,10 +19,10 @@ public class AnnoBeforeModifier {
   @SuppressWarnings("foobar")
   @Unsigned public int n = 0;
 
-  // TODO: :: warning: (type.anno.before.modifier)
+  // TODO: :: warning: [type.anno.before.modifier]
   public @SuppressWarnings("foobar") @Unsigned final int o = 0;
 
-  // :: warning: (type.anno.before.decl.anno) :: warning: (type.anno.before.modifier)
+  // :: warning: [type.anno.before.decl.anno] :: warning: [type.anno.before.modifier]
   public @Unsigned @SuppressWarnings("foobar") final int p = 0;
 
   public @SuppressWarnings("foobar") final @Unsigned int q = 0;
@@ -34,7 +34,7 @@ public class AnnoBeforeModifier {
 
   public @SuppressWarnings("foobar") final int t = 0;
 
-  // :: warning: (type.anno.before.modifier)
+  // :: warning: [type.anno.before.modifier]
   @Unsigned public int iMethod() {
     return 0;
   }
@@ -43,7 +43,7 @@ public class AnnoBeforeModifier {
     return 0;
   }
 
-  // :: warning: (type.anno.before.modifier)
+  // :: warning: [type.anno.before.modifier]
   public @Unsigned final int kMethod() {
     return 0;
   }
@@ -62,12 +62,12 @@ public class AnnoBeforeModifier {
     return 0;
   }
 
-  // TODO: :: warning: (type.anno.before.modifier)
+  // TODO: :: warning: [type.anno.before.modifier]
   public @SuppressWarnings("foobar") @Unsigned final int oMethod() {
     return 0;
   }
 
-  // :: warning: (type.anno.before.decl.anno) :: warning: (type.anno.before.modifier)
+  // :: warning: [type.anno.before.decl.anno] :: warning: [type.anno.before.modifier]
   public @Unsigned @SuppressWarnings("foobar") final int pMethod() {
     return 0;
   }

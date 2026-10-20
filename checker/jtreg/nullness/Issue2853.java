@@ -2,7 +2,7 @@
  * @test
  * @summary Test case for issue #2853: https://github.com/typetools/checker-framework/issues/2853
  *
- * @compile/timeout=30 -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker Issue2853.java
+ * @compile/timeout=30 -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker Issue2853.java
  */
 public class Issue2853 {
 

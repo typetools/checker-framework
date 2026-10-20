@@ -11,7 +11,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * org.checkerframework.dataflow.cfg.node.Node} is not explicitly stored in {@code TransferResult}.
  *
  * <p>A {@code TransferResult} consists of a result value, plus one or more stores. It contains one
- * or two stores (for 'then' and 'else'), and zero or more stores with a cause ({@link TypeMirror}).
+ * or two stores (for 'then' and 'else'), plus zero or more stores with a cause ({@link
+ * TypeMirror}).
  *
  * @param <V> type of the abstract value that is tracked
  * @param <S> the store type used in the analysis
@@ -140,4 +141,14 @@ public abstract class TransferResult<V extends AbstractValue<V>, S extends Store
    *     changed the regularStore, elseStore, or thenStore
    */
   public abstract boolean storeChanged();
+
+  /**
+   * Construct a shallow copy of this {@code TransferResult}, but with the given {@code
+   * exceptionalStores}.
+   *
+   * @param exceptionalStores the new exceptional stores to use
+   * @return a copy of this object modified to use the given exceptional stores
+   * @see #getExceptionalStores()
+   */
+  public abstract TransferResult<V, S> withExceptionalStores(Map<TypeMirror, S> exceptionalStores);
 }

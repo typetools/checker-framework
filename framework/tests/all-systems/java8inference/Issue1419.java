@@ -8,7 +8,7 @@ abstract class Issue1419 {
 
   abstract <E extends Enum<E>> Map<E> foo(Map<E> map);
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "all"}) // Just check for crashes.
   <G> Map<G> bar(Map<? extends G> map) {
     return foo((EnumMap) map);
   }

@@ -10,14 +10,16 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Type;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -25,11 +27,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -42,9 +45,11 @@ import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
-import org.checkerframework.common.accumulation.AccumulationAnalysis;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnalysis;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsVisitor;
 import org.checkerframework.common.accumulation.AccumulationStore;
 import org.checkerframework.common.accumulation.AccumulationValue;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -52,8 +57,8 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.Block.BlockType;
+import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
-import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
@@ -65,25 +70,23 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.SuperNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
-import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.JavaExpressionParseUtil.JavaExpressionParseException;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.IPair;
+import org.plumelib.util.CollectionsP;
 
 /**
  * An analyzer that checks consistency of {@link MustCall} and {@link CalledMethods} types, thereby
@@ -138,10 +141,9 @@ import org.plumelib.util.IPair;
  * variables, the checker wouldn't be able to verify code such as {@code new Socket(host,
  * port).close()}, which would cause false positives. Temporaries are created for {@code new}
  * expressions, method calls (for the return value), and ternary expressions. Other types of
- * expressions may also be supported in the future.
+ * expressions may be supported in the future.
  */
-/*package-private*/
-class MustCallConsistencyAnalyzer {
+public class MustCallConsistencyAnalyzer {
 
   /** True if errors related to static owning fields should be suppressed. */
   private final boolean permitStaticOwning;
@@ -159,25 +161,22 @@ class MustCallConsistencyAnalyzer {
    * The type factory for the Resource Leak Checker, which is used to get called methods types and
    * to access the Must Call Checker.
    */
-  private final ResourceLeakAnnotatedTypeFactory typeFactory;
+  private final RLCCalledMethodsAnnotatedTypeFactory cmAtf;
 
   /**
-   * A cache for the result of calling {@code ResourceLeakAnnotatedTypeFactory.getStoreAfter()} on a
-   * node. The cache prevents repeatedly computing least upper bounds on stores
+   * A cache for the result of calling {@code RLCCalledMethodsAnnotatedTypeFactory.getStoreAfter()}
+   * on a node. The cache prevents repeatedly computing least upper bounds on stores.
    */
   private final IdentityHashMap<Node, AccumulationStore> cmStoreAfter = new IdentityHashMap<>();
 
   /**
    * A cache for the result of calling {@code MustCallAnnotatedTypeFactory.getStoreAfter()} on a
-   * node. The cache prevents repeatedly computing least upper bounds on stores
+   * node. The cache prevents repeatedly computing least upper bounds on stores.
    */
   private final IdentityHashMap<Node, CFStore> mcStoreAfter = new IdentityHashMap<>();
 
   /** The Resource Leak Checker, used to issue errors. */
   private final ResourceLeakChecker checker;
-
-  /** The analysis from the Resource Leak Checker, used to get input stores based on CFG blocks. */
-  private final AccumulationAnalysis analysis;
 
   /** True if -AnoLightweightOwnership was passed on the command line. */
   private final boolean noLightweightOwnership;
@@ -185,13 +184,38 @@ class MustCallConsistencyAnalyzer {
   /** True if -AcountMustCall was passed on the command line. */
   private final boolean countMustCall;
 
+  /** A description for how a method might exit. */
+  public enum MethodExitKind {
+
+    /** The method exits normally by returning. */
+    NORMAL_RETURN,
+
+    /** The method exits by throwing an exception. */
+    EXCEPTIONAL_EXIT;
+
+    /** An immutable set containing only {@link #NORMAL_RETURN}. */
+    public static final Set<MethodExitKind> ONLY_NORMAL_RETURN =
+        Collections.singleton(NORMAL_RETURN);
+
+    /** An immutable set containing all possible ways for a method to exit. */
+    public static final Set<MethodExitKind> ALL =
+        ImmutableSet.copyOf(EnumSet.allOf(MethodExitKind.class));
+  }
+
   /**
-   * An Obligation is a dataflow fact: a set of resource aliases. Abstractly, each Obligation
-   * represents a resource that the analyzed program which might have a must-call obligation. Each
-   * Obligation is a pair of a set of resource aliases and their must-call obligation. Must-call
-   * obligations are tracked by the {@link MustCallChecker} and are accessed by looking up the
-   * type(s) in its type system of the resource aliases contained in each {@code Obligation} using
-   * {@link #getMustCallMethods(ResourceLeakAnnotatedTypeFactory, CFStore)}.
+   * An Obligation is a dataflow fact: a set of resource aliases and when those resources need to be
+   * cleaned up. Abstractly, each Obligation represents a resource for which the analyzed program
+   * might have a must-call obligation. Each Obligation is a pair of a set of resource aliases and
+   * their must-call obligation. Must-call obligations are tracked by the {@link MustCallChecker}
+   * and are accessed by looking up the type(s) in its type system of the resource aliases contained
+   * in each {@code Obligation} using {@link
+   * #getMustCallMethods(RLCCalledMethodsAnnotatedTypeFactory, CFStore)}.
+   *
+   * <p>An Obligation might not matter on all paths out of a method. For instance, after a
+   * constructor assigns a resource to an {@link Owning} field, the resource only needs to be closed
+   * if the constructor throws an exception. If the constructor exits normally then the obligation
+   * is satisfied because the field is now responsible for its must-call obligations. See {@link
+   * #whenToEnforce}, which defines when the Obligation needs to be enforced.
    *
    * <p>There is no guarantee that a given Obligation represents a resource with a real must-call
    * obligation. When the analysis can conclude that a given Obligation certainly does not represent
@@ -213,12 +237,24 @@ class MustCallConsistencyAnalyzer {
     public final ImmutableSet<ResourceAlias> resourceAliases;
 
     /**
+     * The ways a method can exit along which this Obligation has to be enforced. For example, this
+     * will usually be {@link MethodExitKind#ALL}, indicating that this Obligation has to be
+     * enforced no matter how the method exits. It may also be a smaller set indicating that the
+     * Obligation only has to be enforced on certain exit conditions.
+     *
+     * <p>If this set is empty then the Obligation can be dropped as it never needs to be enforced.
+     */
+    public final ImmutableSet<MethodExitKind> whenToEnforce;
+
+    /**
      * Create an Obligation from a set of resource aliases.
      *
      * @param resourceAliases a set of resource aliases
+     * @param whenToEnforce when this Obligation should be enforced
      */
-    public Obligation(Set<ResourceAlias> resourceAliases) {
+    public Obligation(Set<ResourceAlias> resourceAliases, Set<MethodExitKind> whenToEnforce) {
       this.resourceAliases = ImmutableSet.copyOf(resourceAliases);
+      this.whenToEnforce = ImmutableSet.copyOf(whenToEnforce);
     }
 
     /**
@@ -232,7 +268,7 @@ class MustCallConsistencyAnalyzer {
     private @Nullable ResourceAlias getResourceAlias(LocalVariableNode localVariableNode) {
       Element element = localVariableNode.getElement();
       for (ResourceAlias alias : resourceAliases) {
-        if (alias.reference.getElement().equals(element)) {
+        if (alias.reference instanceof LocalVariable && alias.element.equals(element)) {
           return alias;
         }
       }
@@ -286,34 +322,34 @@ class MustCallConsistencyAnalyzer {
 
     /**
      * Gets the must-call methods (i.e. the list of methods that must be called to satisfy the
-     * must-call obligation) of the resource represented by this Obligation.
+     * must-call obligation) of each resource alias represented by this Obligation.
      *
      * @param rlAtf a Resource Leak Annotated Type Factory
      * @param mcStore a CFStore produced by the MustCall checker's dataflow analysis. If this is
      *     null, then the default MustCall type of each variable's class will be used.
-     * @return the list of must-call method names, or null if the resource's must-call obligations
-     *     are unsatisfiable (i.e. its value in the Must Call store is MustCallUnknown)
+     * @return a map from each resource alias of this to a list of its must-call method names, or
+     *     null if the must-call obligations are unsatisfiable (i.e. the value of some tracked
+     *     resource alias of this in the Must Call store is MustCallUnknown)
      */
-    public @Nullable List<String> getMustCallMethods(
-        ResourceLeakAnnotatedTypeFactory rlAtf, @Nullable CFStore mcStore) {
+    public @Nullable Map<ResourceAlias, List<String>> getMustCallMethods(
+        RLCCalledMethodsAnnotatedTypeFactory rlAtf, @Nullable CFStore mcStore) {
+      Map<ResourceAlias, List<String>> result = new HashMap<>(this.resourceAliases.size());
       MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
           rlAtf.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
-      // Need to get the LUB (ie, union) of the MC values, because if a CreatesMustCallFor
-      // method was called on just one of the aliases then they all need to be treated as if
-      // they need to call the relevant methods.
-      QualifierHierarchy qualHierarchy = mustCallAnnotatedTypeFactory.getQualifierHierarchy();
-      AnnotationMirror mcLub = mustCallAnnotatedTypeFactory.BOTTOM;
       for (ResourceAlias alias : this.resourceAliases) {
         AnnotationMirror mcAnno = getMustCallValue(alias, mcStore, mustCallAnnotatedTypeFactory);
-        mcLub = qualHierarchy.leastUpperBound(mcLub, mcAnno);
+        if (!AnnotationUtils.areSameByName(mcAnno, MustCall.class.getCanonicalName())) {
+          // MustCallUnknown; cannot be satisfied
+          return null;
+        }
+        List<String> annoVals = rlAtf.getMustCallValues(mcAnno);
+        // Really, annoVals should never be empty here; we should not have created the
+        // obligation in the first place.
+        // TODO: add an assertion that annoVals is non-empty and address any failures
+        result.put(alias, annoVals);
       }
-      if (AnnotationUtils.areSameByName(
-          mcLub, "org.checkerframework.checker.mustcall.qual.MustCall")) {
-        return rlAtf.getMustCallValues(mcLub);
-      } else {
-        return null;
-      }
+      return result;
     }
 
     /**
@@ -327,7 +363,7 @@ class MustCallConsistencyAnalyzer {
      */
     private static AnnotationMirror getMustCallValue(
         ResourceAlias alias, @Nullable CFStore mcStore, MustCallAnnotatedTypeFactory mcAtf) {
-      LocalVariable reference = alias.reference;
+      JavaExpression reference = alias.reference;
       CFValue value = mcStore == null ? null : mcStore.getValue(reference);
       if (value != null) {
         AnnotationMirror result =
@@ -336,8 +372,14 @@ class MustCallConsistencyAnalyzer {
           return result;
         }
       }
-      // There wasn't an @MustCall annotation for it in the store, so fall back to the default
-      // must-call type for the class.
+
+      AnnotationMirror result =
+          mcAtf.getAnnotatedType(alias.element).getAnnotationInHierarchy(mcAtf.TOP);
+      if (result != null && !AnnotationUtils.areSame(result, mcAtf.TOP)) {
+        return result;
+      }
+      // There wasn't an @MustCall annotation for it in the store and the type factory has no
+      // information, so fall back to the default must-call type for the class.
       // TODO: we currently end up in this case when checking a call to the return type
       // of a returns-receiver method on something with a MustCall type; for example,
       // see tests/socket/ZookeeperReport6.java. We should instead use a poly type if we can.
@@ -353,12 +395,16 @@ class MustCallConsistencyAnalyzer {
         // Void types can't have methods called on them, so returning bottom is safe.
         return mcAtf.BOTTOM;
       }
+
       return mcAtf.getAnnotatedType(typeElt).getPrimaryAnnotationInHierarchy(mcAtf.TOP);
     }
 
     @Override
     public String toString() {
-      return "Obligation: resourceAliases=" + Iterables.toString(resourceAliases);
+      return "Obligation: resourceAliases="
+          + Iterables.toString(resourceAliases)
+          + ", whenToEnforce="
+          + whenToEnforce;
     }
 
     @Override
@@ -370,12 +416,13 @@ class MustCallConsistencyAnalyzer {
         return false;
       }
       Obligation that = (Obligation) obj;
-      return this.resourceAliases.equals(that.resourceAliases);
+      return this.resourceAliases.equals(that.resourceAliases)
+          && this.whenToEnforce.equals(that.whenToEnforce);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(resourceAliases);
+      return Objects.hash(resourceAliases, whenToEnforce);
     }
   }
 
@@ -391,14 +438,17 @@ class MustCallConsistencyAnalyzer {
    *
    * <p>A resource alias is always owning; non-owning aliases are, by definition, not tracked.
    *
-   * <p>Internally, a resource alias is represented by a pair of a local or temporary variable (the
+   * <p>Internally, a resource alias is represented by a pair of a {@link JavaExpression} (the
    * "reference" through which the must-call obligations for the alias set to which it belongs can
    * be satisfied) and a tree that "assigns" the reference.
    */
   /*package-private*/ static class ResourceAlias {
 
-    /** A local variable defined in the source code or a temporary variable for an expression. */
-    public final LocalVariable reference;
+    /** An expression from the source code or a temporary variable for an expression. */
+    public final JavaExpression reference;
+
+    /** The element for {@link #reference}. */
+    public final Element element;
 
     /** The tree at which {@code reference} was assigned, for the purpose of error reporting. */
     public final Tree tree;
@@ -410,8 +460,8 @@ class MustCallConsistencyAnalyzer {
      *
      * <ul>
      *   <li>it is passed to another method or constructor in an @MustCallAlias position, and then
-     *       the containing method returns that method’s result, or the call is a super()
-     *       constructor call annotated with {@link MustCallAlias}, or
+     *       the enclosing method returns that method's result, or the call is a super() constructor
+     *       call annotated with {@link MustCallAlias}, or
      *   <li>it is stored in an owning field of the class under analysis
      * </ul>
      */
@@ -425,20 +475,37 @@ class MustCallConsistencyAnalyzer {
      * @param tree the tree
      */
     public ResourceAlias(LocalVariable reference, Tree tree) {
-      this(reference, tree, false);
+      this(reference, reference.getElement(), tree);
+    }
+
+    /**
+     * Create a new resource alias. This constructor should only be used if the resource alias was
+     * not derived from a method parameter annotated as {@link MustCallAlias}.
+     *
+     * @param reference the reference
+     * @param element the element for the given reference
+     * @param tree the tree
+     */
+    public ResourceAlias(JavaExpression reference, Element element, Tree tree) {
+      this(reference, element, tree, false);
     }
 
     /**
      * Create a new resource alias.
      *
      * @param reference the local variable
+     * @param element the element for the reference
      * @param tree the tree
      * @param derivedFromMustCallAliasParam true iff this resource alias was created because of an
      *     {@link MustCallAlias} parameter
      */
     public ResourceAlias(
-        LocalVariable reference, Tree tree, boolean derivedFromMustCallAliasParam) {
+        JavaExpression reference,
+        Element element,
+        Tree tree,
+        boolean derivedFromMustCallAliasParam) {
       this.reference = reference;
+      this.element = element;
       this.tree = tree;
       this.derivedFromMustCallAliasParam = derivedFromMustCallAliasParam;
     }
@@ -464,6 +531,23 @@ class MustCallConsistencyAnalyzer {
     public int hashCode() {
       return Objects.hash(reference, tree);
     }
+
+    /**
+     * Returns an appropriate String for representing this in an error message. In particular, if
+     * {@link #reference} is a temporary variable, we return the String representation of {@link
+     * #tree}, to avoid exposing the temporary name (which has no meaning for the user) in the error
+     * message
+     *
+     * @return an appropriate String for representing this in an error message
+     */
+    public String stringForErrorMessage() {
+      String referenceStr = reference.toString();
+      // We assume that any temporary variable name will not be a syntactically-valid
+      // identifier or keyword.
+      return !SourceVersion.isIdentifier(referenceStr)
+          ? TreeUtils.toStringTruncated(tree, 50)
+          : referenceStr;
+    }
   }
 
   /**
@@ -471,15 +555,13 @@ class MustCallConsistencyAnalyzer {
    * instantiate a new consistency analyzer using this constructor and then call {@link
    * #analyze(ControlFlowGraph)}.
    *
-   * @param typeFactory the type factory
-   * @param analysis the analysis from the type factory. Usually this would have protected access,
-   *     so this constructor cannot get it directly.
+   * @param rlc the resource leak checker
    */
-  /*package-private*/ MustCallConsistencyAnalyzer(
-      ResourceLeakAnnotatedTypeFactory typeFactory, AccumulationAnalysis analysis) {
-    this.typeFactory = typeFactory;
-    this.checker = (ResourceLeakChecker) typeFactory.getChecker();
-    this.analysis = analysis;
+  public MustCallConsistencyAnalyzer(ResourceLeakChecker rlc) {
+    this.cmAtf =
+        (RLCCalledMethodsAnnotatedTypeFactory)
+            ResourceLeakUtils.getRLCCalledMethodsChecker(rlc).getTypeFactory();
+    this.checker = rlc;
     this.permitStaticOwning = checker.hasOption("permitStaticOwning");
     this.permitInitializationLeak = checker.hasOption("permitInitializationLeak");
     this.noLightweightOwnership = checker.hasOption(MustCallChecker.NO_LIGHTWEIGHT_OWNERSHIP);
@@ -504,7 +586,7 @@ class MustCallConsistencyAnalyzer {
    */
   // TODO: This analysis is currently implemented directly using a worklist; in the future, it
   // should be rewritten to use the dataflow framework of the Checker Framework.
-  /*package-private*/ void analyze(ControlFlowGraph cfg) {
+  public void analyze(ControlFlowGraph cfg) {
     // The `visited` set contains everything that has been added to the worklist, even if it has
     // not yet been removed and analyzed.
     Set<BlockWithObligations> visited = new HashSet<>();
@@ -518,25 +600,8 @@ class MustCallConsistencyAnalyzer {
 
     while (!worklist.isEmpty()) {
       BlockWithObligations current = worklist.remove();
-      // A *mutable* set that eventually holds the set of dataflow facts to be propagated to
-      // successor blocks. The set is initialized to the current dataflow facts and updated by
-      // the methods invoked in the for loop below.
-      Set<Obligation> obligations = new LinkedHashSet<>(current.obligations);
-
-      for (Node node : current.block.getNodes()) {
-        if (node instanceof AssignmentNode) {
-          updateObligationsForAssignment(obligations, (AssignmentNode) node);
-        } else if (node instanceof ReturnNode) {
-          updateObligationsForOwningReturn(obligations, cfg, (ReturnNode) node);
-        } else if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
-          updateObligationsForInvocation(obligations, node);
-        }
-        // All other types of nodes are ignored. This is safe, because other kinds of
-        // nodes cannot create or modify the resource-alias sets that the algorithm is
-        // tracking.
-      }
-
-      propagateObligationsToSuccessorBlocks(obligations, current.block, visited, worklist);
+      propagateObligationsToSuccessorBlocks(
+          cfg, current.obligations, current.block, visited, worklist);
     }
   }
 
@@ -545,24 +610,28 @@ class MustCallConsistencyAnalyzer {
    *
    * @param obligations the Obligations to update
    * @param node the method or constructor invocation
+   * @param exceptionType a description of the outgoing CFG edge from the node: {@code null} to
+   *     indicate normal return, or a {@link TypeMirror} to indicate a subclass of the given
+   *     throwable class was thrown
    */
-  private void updateObligationsForInvocation(Set<Obligation> obligations, Node node) {
-    removeObligationsAtOwnershipTransferToParameters(obligations, node);
-    if (node instanceof MethodInvocationNode
-        && typeFactory.canCreateObligations()
-        && typeFactory.hasCreatesMustCallFor((MethodInvocationNode) node)) {
-      checkCreatesMustCallForInvocation(obligations, (MethodInvocationNode) node);
+  private void updateObligationsForInvocation(
+      Set<Obligation> obligations, Node node, @Nullable TypeMirror exceptionType) {
+    removeObligationsAtOwnershipTransferToParameters(obligations, node, exceptionType);
+    if (node instanceof MethodInvocationNode min
+        && cmAtf.canCreateObligations()
+        && cmAtf.hasCreatesMustCallFor(min)) {
+      checkCreatesMustCallForInvocation(obligations, min);
       // Count calls to @CreatesMustCallFor methods as creating new resources. Doing so could
       // result in slightly over-counting, because @CreatesMustCallFor doesn't guarantee that
       // a new resource is created: it just means that a new resource might have been created.
       incrementNumMustCall(node);
     }
 
-    if (!shouldTrackInvocationResult(obligations, node)) {
+    if (!shouldTrackInvocationResult(obligations, node, false)) {
       return;
     }
 
-    if (typeFactory.declaredTypeHasMustCall(node.getTree())) {
+    if (cmAtf.declaredTypeHasMustCall(node.getTree())) {
       // The incrementNumMustCall call above increments the count for the target of the
       // @CreatesMustCallFor annotation.  By contrast, this call increments the count for the
       // return value of the method (which can't be the target of the annotation, because our
@@ -597,10 +666,10 @@ class MustCallConsistencyAnalyzer {
   private void checkCreatesMustCallForInvocation(
       Set<Obligation> obligations, MethodInvocationNode node) {
 
-    TreePath currentPath = typeFactory.getPath(node.getTree());
+    TreePath currentPath = cmAtf.getPath(node.getTree());
     List<JavaExpression> cmcfExpressions =
         CreatesMustCallForToJavaExpression.getCreatesMustCallForExpressionsAtInvocation(
-            node, typeFactory, typeFactory);
+            node, cmAtf, cmAtf);
     List<JavaExpression> missing = new ArrayList<>(0);
     for (JavaExpression expression : cmcfExpressions) {
       if (!isValidCreatesMustCallForExpression(obligations, expression, currentPath)) {
@@ -645,8 +714,7 @@ class MustCallConsistencyAnalyzer {
    *   <li>2) the expression already has a tracked Obligation (i.e. there is already a resource
    *       alias in some Obligation's resource alias set that refers to the expression), or
    *   <li>3) the method in which the invocation occurs also has an @CreatesMustCallFor annotation,
-   *       with the same expression, or
-   *   <li>4) the expression is a resource variable.
+   *       with the same expression.
    * </ul>
    *
    * @param obligations the currently-tracked Obligations; this value is side-effected if there is
@@ -658,24 +726,20 @@ class MustCallConsistencyAnalyzer {
    */
   private boolean isValidCreatesMustCallForExpression(
       Set<Obligation> obligations, JavaExpression expression, TreePath invocationPath) {
-    if (expression instanceof FieldAccess) {
-      Element elt = ((FieldAccess) expression).getField();
-      if (!noLightweightOwnership && typeFactory.hasOwning(elt)) {
+    if (expression instanceof FieldAccess fa) {
+      Element elt = fa.getField();
+      if (!noLightweightOwnership && cmAtf.hasOwning(elt)) {
         // The expression is an Owning field.  This satisfies case 1.
         return true;
       }
-    } else if (expression instanceof LocalVariable) {
-      Element elt = ((LocalVariable) expression).getElement();
-      if (!noLightweightOwnership && typeFactory.hasOwning(elt)) {
+    } else if (expression instanceof LocalVariable lv) {
+      Element elt = lv.getElement();
+      if (!noLightweightOwnership && cmAtf.hasOwning(elt)) {
         // The expression is an Owning formal parameter. Note that this cannot actually
         // be a local variable (despite expressions's type being LocalVariable) because
         // the @Owning annotation can only be written on methods, parameters, and fields;
         // formal parameters are also represented by LocalVariable in the bodies of methods.
         // This satisfies case 1.
-        return true;
-      } else if (ElementUtils.isResourceVariable(elt)) {
-        // The expression is a resource variable, and therefore will be closed, so we can
-        // treat it as owning (case 4).
         return true;
       } else {
         Obligation toRemove = null;
@@ -689,7 +753,7 @@ class MustCallConsistencyAnalyzer {
                   "tried to remove multiple sets containing a reset expression at once");
             }
             toRemove = obligation;
-            toAdd = new Obligation(ImmutableSet.of(alias));
+            toAdd = new Obligation(ImmutableSet.of(alias), obligation.whenToEnforce);
           }
         }
 
@@ -709,10 +773,9 @@ class MustCallConsistencyAnalyzer {
       return false;
     }
     ExecutableElement callerMethodElt = TreeUtils.elementFromDeclaration(callerMethodTree);
-    MustCallAnnotatedTypeFactory mcAtf =
-        typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+    MustCallAnnotatedTypeFactory mcAtf = cmAtf.getTypeFactoryOfSubchecker(MustCallChecker.class);
     List<String> callerCmcfValues =
-        ResourceLeakVisitor.getCreatesMustCallForValues(callerMethodElt, mcAtf, typeFactory);
+        RLCCalledMethodsVisitor.getCreatesMustCallForValues(callerMethodElt, mcAtf, cmAtf);
     if (callerCmcfValues.isEmpty()) {
       return false;
     }
@@ -737,7 +800,7 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Checks whether the two JavaExpressions are the same. This is identical to calling equals() on
+   * Returns true if the two JavaExpressions are the same. This is identical to calling equals() on
    * one of them, with two exceptions: the second expression can be null, and {@code this}
    * references are compared using their underlying type. (ThisReference#equals always returns true,
    * which is probably a bug and isn't accurate in the case of nested classes.)
@@ -769,12 +832,13 @@ class MustCallConsistencyAnalyzer {
    * @param node the invocation node whose result is to be tracked; must be {@link
    *     MethodInvocationNode} or {@link ObjectCreationNode}
    */
-  private void updateObligationsWithInvocationResult(Set<Obligation> obligations, Node node) {
+  /*package-private*/ void updateObligationsWithInvocationResult(
+      Set<Obligation> obligations, Node node) {
     Tree tree = node.getTree();
     // Only track the result of the call if there is a temporary variable for the call node
     // (because if there is no temporary, then the invocation must produce an untrackable value,
     // such as a primitive type).
-    LocalVariableNode tmpVar = typeFactory.getTempVarForNode(node);
+    LocalVariableNode tmpVar = cmAtf.getTempVarForNode(node);
     if (tmpVar == null) {
       return;
     }
@@ -783,17 +847,15 @@ class MustCallConsistencyAnalyzer {
     // position.
     List<Node> mustCallAliases = getMustCallAliasArgumentNodes(node);
     // If call returns @This, add the receiver to mustCallAliases.
-    if (node instanceof MethodInvocationNode
-        && typeFactory.returnsThis((MethodInvocationTree) tree)) {
-      mustCallAliases.add(
-          removeCastsAndGetTmpVarIfPresent(
-              ((MethodInvocationNode) node).getTarget().getReceiver()));
+    if (node instanceof MethodInvocationNode min2
+        && cmAtf.returnsThis((MethodInvocationTree) tree)) {
+      mustCallAliases.add(removeCastsAndGetTmpVarIfPresent(min2.getTarget().getReceiver()));
     }
 
     if (mustCallAliases.isEmpty()) {
       // If mustCallAliases is an empty List, add tmpVarAsResourceAlias to a new set.
       ResourceAlias tmpVarAsResourceAlias = new ResourceAlias(new LocalVariable(tmpVar), tree);
-      obligations.add(new Obligation(ImmutableSet.of(tmpVarAsResourceAlias)));
+      obligations.add(new Obligation(ImmutableSet.of(tmpVarAsResourceAlias), MethodExitKind.ALL));
     } else {
       for (Node mustCallAlias : mustCallAliases) {
         if (mustCallAlias instanceof FieldAccessNode) {
@@ -801,15 +863,15 @@ class MustCallConsistencyAnalyzer {
           // Handling of @Owning fields is a completely separate check, and there is never
           // a need to track an alias of a non-@Owning field, as by definition such a
           // field does not have must-call obligations!
-        } else if (mustCallAlias instanceof LocalVariableNode) {
+        } else if (mustCallAlias instanceof LocalVariableNode mca) {
           // If mustCallAlias is a local variable already being tracked, add
           // tmpVarAsResourceAlias to the set containing mustCallAlias.
-          Obligation obligationContainingMustCallAlias =
-              getObligationForVar(obligations, (LocalVariableNode) mustCallAlias);
+          Obligation obligationContainingMustCallAlias = getObligationForVar(obligations, mca);
           if (obligationContainingMustCallAlias != null) {
             ResourceAlias tmpVarAsResourceAlias =
                 new ResourceAlias(
                     new LocalVariable(tmpVar),
+                    tmpVar.getElement(),
                     tree,
                     obligationContainingMustCallAlias.derivedFromMustCallAlias());
             Set<ResourceAlias> newResourceAliasSet =
@@ -817,7 +879,9 @@ class MustCallConsistencyAnalyzer {
                     .append(tmpVarAsResourceAlias)
                     .toSet();
             obligations.remove(obligationContainingMustCallAlias);
-            obligations.add(new Obligation(newResourceAliasSet));
+            obligations.add(
+                new Obligation(
+                    newResourceAliasSet, obligationContainingMustCallAlias.whenToEnforce));
             // It is not an error if there is no Obligation containing the must-call
             // alias. In that case, what has usually happened is that no Obligation was
             // created in the first place.
@@ -833,7 +897,7 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Determines if the result of the given method or constructor invocation node should be tracked
+   * Returns true if the result of the given method or constructor invocation node should be tracked
    * in {@code obligations}. In some cases, there is no need to track the result because the
    * must-call obligations are already satisfied in some other way or there cannot possibly be
    * must-call obligations because of the structure of the code.
@@ -855,34 +919,39 @@ class MustCallConsistencyAnalyzer {
    * @param obligations the current set of Obligations, which may be side-effected
    * @param node the invocation node to check; must be {@link MethodInvocationNode} or {@link
    *     ObjectCreationNode}
+   * @param isMustCallInference true if this method is invoked as part of a MustCall inference
    * @return true iff the result of {@code node} should be tracked in {@code obligations}
    */
-  private boolean shouldTrackInvocationResult(Set<Obligation> obligations, Node node) {
+  public boolean shouldTrackInvocationResult(
+      Set<Obligation> obligations, Node node, boolean isMustCallInference) {
     Tree callTree = node.getTree();
-    if (callTree.getKind() == Tree.Kind.NEW_CLASS) {
+    if (callTree instanceof NewClassTree newClassTree) {
       // Constructor results from new expressions are tracked as long as the declared type has
       // a non-empty @MustCall annotation.
-      NewClassTree newClassTree = (NewClassTree) callTree;
       ExecutableElement executableElement = TreeUtils.elementFromUse(newClassTree);
       TypeElement typeElt = TypesUtils.getTypeElement(ElementUtils.getType(executableElement));
       return typeElt == null
-          || !typeFactory.getMustCallValue(typeElt).isEmpty()
-          || !typeFactory.getMustCallValue(newClassTree).isEmpty();
+          || !cmAtf.hasEmptyMustCallValue(typeElt)
+          || !cmAtf.hasEmptyMustCallValue(newClassTree);
     }
 
     // Now callTree.getKind() == Tree.Kind.METHOD_INVOCATION.
     MethodInvocationTree methodInvokeTree = (MethodInvocationTree) callTree;
 
-    if (TreeUtils.isSuperConstructorCall(methodInvokeTree)
-        || TreeUtils.isThisConstructorCall(methodInvokeTree)) {
+    // For must call inference, we do not want to bail out on tracking the obligations for
+    // 'this()' or 'super()' calls because this tracking is necessary to correctly infer the
+    // @MustCallAlias annotation for the constructor and its aliasing parameter.
+    if (!isMustCallInference
+        && (TreeUtils.isSuperConstructorCall(methodInvokeTree)
+            || TreeUtils.isThisConstructorCall(methodInvokeTree))) {
       List<Node> mustCallAliasArguments = getMustCallAliasArgumentNodes(node);
       // If there is a MustCallAlias argument that is also in the set of Obligations, then
       // remove it; its must-call obligation has been fulfilled by being passed on to the
       // MustCallAlias constructor (because a this/super constructor call can only occur in
       // the body of another constructor).
       for (Node mustCallAliasArgument : mustCallAliasArguments) {
-        if (mustCallAliasArgument instanceof LocalVariableNode) {
-          removeObligationsContainingVar(obligations, (LocalVariableNode) mustCallAliasArgument);
+        if (mustCallAliasArgument instanceof LocalVariableNode lvn) {
+          removeObligationsContainingVar(obligations, lvn);
         }
       }
       return false;
@@ -915,45 +984,23 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Checks if {@code node} is either directly enclosed by a {@link TypeCastNode}, by looking at the
-   * successor block in the CFG. In this case the enclosing operator is a "no-op" that evaluates to
-   * the same value as {@code node}. This method is only used within {@link
-   * #propagateObligationsToSuccessorBlocks(Set, Block, Set, Deque)} to ensure Obligations are
-   * propagated to cast nodes properly. It relies on the assumption that a {@link TypeCastNode} will
-   * only appear in a CFG as the first node in a block.
-   *
-   * @param node the CFG node
-   * @return {@code true} if {@code node} is in a {@link SingleSuccessorBlock} {@code b}, the first
-   *     {@link Node} in {@code b}'s successor block is a {@link TypeCastNode}, and {@code node} is
-   *     an operand of the successor node; {@code false} otherwise
-   */
-  private boolean inCast(Node node) {
-    if (!(node.getBlock() instanceof SingleSuccessorBlock)) {
-      return false;
-    }
-    Block successorBlock = ((SingleSuccessorBlock) node.getBlock()).getSuccessor();
-    if (successorBlock != null) {
-      List<Node> succNodes = successorBlock.getNodes();
-      if (succNodes.size() > 0) {
-        Node succNode = succNodes.get(0);
-        if (succNode instanceof TypeCastNode) {
-          return ((TypeCastNode) succNode).getOperand().equals(node);
-        }
-      }
-    }
-    return false;
-  }
-
-  /**
    * Transfer ownership of any locals passed as arguments to {@code @Owning} parameters at a method
    * or constructor call by removing the Obligations corresponding to those locals.
    *
    * @param obligations the current set of Obligations, which is side-effected to remove Obligations
    *     for locals that are passed as owning parameters to the method or constructor
    * @param node a method or constructor invocation node
+   * @param exceptionType a description of the outgoing CFG edge from the node: {@code null} to
+   *     indicate normal return, or a {@link TypeMirror} to indicate a subclass of the given
+   *     throwable class was thrown
    */
   private void removeObligationsAtOwnershipTransferToParameters(
-      Set<Obligation> obligations, Node node) {
+      Set<Obligation> obligations, Node node, @Nullable TypeMirror exceptionType) {
+
+    if (exceptionType != null) {
+      // Do not transfer ownership if the called method throws an exception.
+      return;
+    }
 
     if (noLightweightOwnership) {
       // Never transfer ownership to parameters, matching the default in the analysis built
@@ -976,17 +1023,16 @@ class MustCallConsistencyAnalyzer {
     }
     for (int i = 0; i < arguments.size(); i++) {
       Node n = removeCastsAndGetTmpVarIfPresent(arguments.get(i));
-      if (n instanceof LocalVariableNode) {
-        LocalVariableNode local = (LocalVariableNode) n;
+      if (n instanceof LocalVariableNode local) {
         if (varTrackedInObligations(obligations, local)) {
 
           // check if parameter has an @Owning annotation
           VariableElement parameter = parameters.get(i);
-          if (typeFactory.hasOwning(parameter)) {
+          if (cmAtf.hasOwning(parameter)) {
             Obligation localObligation = getObligationForVar(obligations, local);
             // Passing to an owning parameter is not sufficient to resolve the
             // obligation created from a MustCallAlias parameter, because the
-            // containing method must actually return the value.
+            // enclosing method must actually return the value.
             if (!localObligation.derivedFromMustCallAlias()) {
               // Transfer ownership!
               obligations.remove(localObligation);
@@ -1005,15 +1051,20 @@ class MustCallConsistencyAnalyzer {
    * @param obligations the current set of tracked Obligations. If ownership is transferred, it is
    *     side-effected to remove any Obligations that are resource-aliased to the return node.
    * @param cfg the CFG of the enclosing method
-   * @param node a return node
+   * @param node a return node, which must have an expression
    */
   private void updateObligationsForOwningReturn(
       Set<Obligation> obligations, ControlFlowGraph cfg, ReturnNode node) {
     if (isTransferOwnershipAtReturn(cfg)) {
-      Node returnExpr = node.getResult();
+      @SuppressWarnings("nullness:assignment") // the return node has an expression
+      @NonNull Node returnExpr = node.getResult();
       returnExpr = getTempVarOrNode(returnExpr);
-      if (returnExpr instanceof LocalVariableNode) {
-        removeObligationsContainingVar(obligations, (LocalVariableNode) returnExpr);
+      if (returnExpr instanceof LocalVariableNode lvn) {
+        removeObligationsContainingVar(
+            obligations,
+            lvn,
+            MustCallAliasHandling.NO_SPECIAL_HANDLING,
+            MethodExitKind.ONLY_NORMAL_RETURN);
       }
     }
   }
@@ -1025,8 +1076,8 @@ class MustCallConsistencyAnalyzer {
    * @param node a node
    * @return the temporary for node, or node if no temporary exists
    */
-  private Node getTempVarOrNode(Node node) {
-    Node temp = typeFactory.getTempVarForNode(node);
+  /*package-private*/ Node getTempVarOrNode(Node node) {
+    Node temp = cmAtf.getTempVarForNode(node);
     if (temp != null) {
       return temp;
     }
@@ -1048,12 +1099,12 @@ class MustCallConsistencyAnalyzer {
     }
 
     UnderlyingAST underlyingAST = cfg.getUnderlyingAST();
-    if (underlyingAST instanceof UnderlyingAST.CFGMethod) {
+    if (underlyingAST instanceof UnderlyingAST.CFGMethod cfgMethod) {
       // TODO: lambdas? In that case false is returned below, which means that ownership will
       //  not be transferred.
-      MethodTree method = ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
+      MethodTree method = cfgMethod.getMethod();
       ExecutableElement executableElement = TreeUtils.elementFromDeclaration(method);
-      return !typeFactory.hasNotOwning(executableElement);
+      return !cmAtf.hasNotOwning(executableElement);
     }
     return false;
   }
@@ -1065,34 +1116,54 @@ class MustCallConsistencyAnalyzer {
    * set), etc.
    *
    * @param obligations the set of Obligations to update
+   * @param cfg the control flow graph that contains {@code assignmentNode}
    * @param assignmentNode the assignment
    */
   private void updateObligationsForAssignment(
-      Set<Obligation> obligations, AssignmentNode assignmentNode) {
+      Set<Obligation> obligations, ControlFlowGraph cfg, AssignmentNode assignmentNode) {
     Node lhs = assignmentNode.getTarget();
     Element lhsElement = TreeUtils.elementFromTree(lhs.getTree());
     if (lhsElement == null) {
       return;
     }
     // Use the temporary variable for the rhs if it exists.
-    Node rhs = NodeUtils.removeCasts(assignmentNode.getExpression());
-    rhs = getTempVarOrNode(rhs);
+    Node rhsExpr = NodeUtils.removeCasts(assignmentNode.getExpression());
+    Node rhs = getTempVarOrNode(rhsExpr);
 
     // Ownership transfer to @Owning field.
     if (lhsElement.getKind() == ElementKind.FIELD) {
-      boolean isOwningField = !noLightweightOwnership && typeFactory.hasOwning(lhsElement);
+      boolean isOwningField = !noLightweightOwnership && cmAtf.hasOwning(lhsElement);
       // Check that the must-call obligations of the lhs have been satisfied, if the field is
       // non-final and owning.
-      if (isOwningField
-          && typeFactory.canCreateObligations()
-          && !ElementUtils.isFinal(lhsElement)) {
-        checkReassignmentToField(obligations, assignmentNode);
+      if (isOwningField && cmAtf.canCreateObligations() && !ElementUtils.isFinal(lhsElement)) {
+        checkReassignmentToOwningField(obligations, assignmentNode);
       }
+
       // Remove Obligations from local variables, now that the owning field is responsible.
       // (When obligation creation is turned off, non-final fields cannot take ownership.)
       if (isOwningField
-          && rhs instanceof LocalVariableNode
-          && (typeFactory.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
+          && rhs instanceof LocalVariableNode rhsVar
+          && (cmAtf.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
+
+        MethodTree enclosingMethod = cfg.getEnclosingMethod(assignmentNode.getTree());
+        boolean inConstructor = enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
+
+        // Determine which obligations this field assignment can clear.  In a constructor,
+        // assignments to `this.field` only clears obligations on normal return, since
+        // on exception `this` becomes inaccessible.
+        Set<MethodExitKind> toClear;
+        if (inConstructor
+            && lhs instanceof FieldAccessNode lhsFan
+            && lhsFan.getReceiver() instanceof ThisNode) {
+          toClear = Collections.singleton(MethodExitKind.NORMAL_RETURN);
+        } else {
+          toClear = MethodExitKind.ALL;
+        }
+
+        @Nullable Element enclosingElem = lhsElement.getEnclosingElement();
+        @Nullable TypeElement enclosingType =
+            enclosingElem != null ? ElementUtils.enclosingTypeElement(enclosingElem) : null;
+
         // Assigning to an owning field is sufficient to clear a must-call alias obligation
         // in a constructor, if the enclosing class has at most one @Owning field. If the
         // class had multiple owning fields, then a soundness bug would occur: the must call
@@ -1100,25 +1171,29 @@ class MustCallConsistencyAnalyzer {
         // closing only one of the parameters passed to the constructor (but the other
         // owning fields might not actually have had their obligations fulfilled). See test
         // case checker/tests/resourceleak/TwoOwningMCATest.java for an example.
-        Element enclosingCtr = lhsElement.getEnclosingElement();
-        if (enclosingCtr != null
-            && enclosingCtr.getKind() != ElementKind.CONSTRUCTOR
-            && hasAtMostOneOwningField(ElementUtils.enclosingTypeElement(enclosingCtr))) {
-          removeObligationsContainingVar(obligations, (LocalVariableNode) rhs);
+        if (hasAtMostOneOwningField(enclosingType)) {
+          removeObligationsContainingVar(
+              obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
         } else {
-          removeObligationsContainingVarIfNotDerivedFromMustCallAlias(
-              obligations, (LocalVariableNode) rhs);
+          removeObligationsContainingVar(
+              obligations,
+              rhsVar,
+              MustCallAliasHandling.RETAIN_OBLIGATIONS_DERIVED_FROM_A_MUST_CALL_ALIAS_PARAMETER,
+              toClear);
+        }
+
+        // Finally, if any obligations containing this var remain, then closing the field
+        // will satisfy them.  Here we are overly cautious and only track final fields.  In
+        // the future we could perhaps relax this guard with careful handling for field
+        // reassignments.
+        if (ElementUtils.isFinal(lhsElement)) {
+          addAliasToObligationsContainingVar(
+              obligations,
+              rhsVar,
+              new ResourceAlias(JavaExpression.fromNode(lhs), lhsElement, lhs.getTree()));
         }
       }
-    } else if (lhsElement.getKind() == ElementKind.RESOURCE_VARIABLE && isMustCallClose(rhs)) {
-      if (rhs instanceof FieldAccessNode) {
-        // Handling of @Owning fields is a completely separate check.
-      } else if (rhs instanceof LocalVariableNode) {
-        removeObligationsContainingVarIfNotDerivedFromMustCallAlias(
-            obligations, (LocalVariableNode) rhs);
-      }
-    } else if (lhs instanceof LocalVariableNode) {
-      LocalVariableNode lhsVar = (LocalVariableNode) lhs;
+    } else if (lhs instanceof LocalVariableNode lhsVar) {
       updateObligationsForPseudoAssignment(obligations, assignmentNode, lhsVar, rhs);
     }
   }
@@ -1130,12 +1205,11 @@ class MustCallConsistencyAnalyzer {
    * @return true iff element has no more than 1 owning field
    */
   private boolean hasAtMostOneOwningField(TypeElement element) {
-    List<VariableElement> fields =
-        ElementUtils.getAllFieldsIn(element, typeFactory.getElementUtils());
+    List<VariableElement> fields = ElementUtils.getAllFieldsIn(element, cmAtf.getElementUtils());
     // Has an owning field already been encountered?
     boolean hasOwningField = false;
     for (VariableElement field : fields) {
-      if (typeFactory.hasOwning(field)) {
+      if (cmAtf.hasOwning(field)) {
         if (hasOwningField) {
           return false;
         } else {
@@ -1148,49 +1222,104 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Returns true if must-call type of node only contains close. This is a helper method for
-   * handling try-with-resources statements.
+   * Add a new alias to all Obligations that have {@code var} in their resource-alias set. This
+   * method should be used when {@code var} and {@code newAlias} definitively point to the same
+   * object in memory.
    *
-   * @param node the node
-   * @return true if must-call type of node only contains close
+   * @param obligations the set of Obligations to modify
+   * @param var a variable
+   * @param newAlias a new {@link ResourceAlias} to add
    */
-  private boolean isMustCallClose(Node node) {
-    MustCallAnnotatedTypeFactory mcAtf =
-        typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
-    AnnotatedTypeMirror mustCallAnnotatedType = mcAtf.getAnnotatedType(node.getTree());
-    AnnotationMirror mustCallAnnotation =
-        mustCallAnnotatedType.getPrimaryAnnotation(MustCall.class);
-    return typeFactory.getMustCallValues(mcAtf.withoutClose(mustCallAnnotation)).isEmpty();
+  private void addAliasToObligationsContainingVar(
+      Set<Obligation> obligations, LocalVariableNode var, ResourceAlias newAlias) {
+    Iterator<Obligation> it = obligations.iterator();
+    List<Obligation> newObligations = new ArrayList<>();
+
+    while (it.hasNext()) {
+      Obligation obligation = it.next();
+      if (obligation.canBeSatisfiedThrough(var)) {
+        it.remove();
+
+        Set<ResourceAlias> newAliases = new LinkedHashSet<>(obligation.resourceAliases);
+        newAliases.add(newAlias);
+
+        newObligations.add(new Obligation(newAliases, obligation.whenToEnforce));
+      }
+    }
+
+    obligations.addAll(newObligations);
   }
 
   /**
    * Remove any Obligations that contain {@code var} in their resource-alias set.
    *
-   * @param obligations the set of Obligations
+   * @param obligations the set of Obligations to modify
    * @param var a variable
    */
-  private void removeObligationsContainingVar(Set<Obligation> obligations, LocalVariableNode var) {
-    Obligation obligationForVar = getObligationForVar(obligations, var);
-    while (obligationForVar != null) {
-      obligations.remove(obligationForVar);
-      obligationForVar = getObligationForVar(obligations, var);
-    }
+  /*package-private*/ void removeObligationsContainingVar(
+      Set<Obligation> obligations, LocalVariableNode var) {
+    removeObligationsContainingVar(
+        obligations, var, MustCallAliasHandling.NO_SPECIAL_HANDLING, MethodExitKind.ALL);
   }
 
   /**
-   * Remove any Obligations that contain {@code var} in their resource-alias set, if those resources
-   * were not derived from an {@link MustCallAlias} parameter.
-   *
-   * @param obligations the set of Obligations
-   * @param var a variable
+   * Helper type for {@link #removeObligationsContainingVar(Set, LocalVariableNode,
+   * MustCallAliasHandling, Set)}
    */
-  private void removeObligationsContainingVarIfNotDerivedFromMustCallAlias(
-      Set<Obligation> obligations, LocalVariableNode var) {
-    Obligation obligationForVar = getObligationForVar(obligations, var);
-    while (obligationForVar != null && !obligationForVar.derivedFromMustCallAlias()) {
-      obligations.remove(obligationForVar);
-      obligationForVar = getObligationForVar(obligations, var);
+  private enum MustCallAliasHandling {
+    /**
+     * Obligations derived from {@link MustCallAlias} parameters do not require special handling,
+     * and they should be removed like any other obligation.
+     */
+    NO_SPECIAL_HANDLING,
+
+    /**
+     * Obligations derived from {@link MustCallAlias} parameters are not satisfied and should be
+     * retained.
+     */
+    RETAIN_OBLIGATIONS_DERIVED_FROM_A_MUST_CALL_ALIAS_PARAMETER,
+  }
+
+  /**
+   * Remove Obligations that contain {@code var} in their resource-alias set.
+   *
+   * <p>Some operations do not satisfy all Obligations. For instance, assigning to a field in a
+   * constructor only satisfies Obligations when the constructor exits normally (i.e. without
+   * throwing an exception). The last two arguments to this method can be used to retain some
+   * Obligations in special circumstances.
+   *
+   * @param obligations the set of Obligations to modify
+   * @param var a variable
+   * @param mustCallAliasHandling how to treat Obligations derived from {@link MustCallAlias}
+   *     parameters
+   * @param whatToClear the kind of Obligations to remove
+   */
+  private void removeObligationsContainingVar(
+      Set<Obligation> obligations,
+      LocalVariableNode var,
+      MustCallAliasHandling mustCallAliasHandling,
+      Set<MethodExitKind> whatToClear) {
+    List<Obligation> newObligations = new ArrayList<>();
+
+    Iterator<Obligation> it = obligations.iterator();
+    while (it.hasNext()) {
+      Obligation obligation = it.next();
+
+      if (obligation.canBeSatisfiedThrough(var)
+          && (mustCallAliasHandling == MustCallAliasHandling.NO_SPECIAL_HANDLING
+              || !obligation.derivedFromMustCallAlias())) {
+        it.remove();
+
+        Set<MethodExitKind> whenToEnforce = new HashSet<>(obligation.whenToEnforce);
+        whenToEnforce.removeAll(whatToClear);
+
+        if (!whenToEnforce.isEmpty()) {
+          newObligations.add(new Obligation(obligation.resourceAliases, whenToEnforce));
+        }
+      }
     }
+
+    obligations.addAll(newObligations);
   }
 
   /**
@@ -1212,14 +1341,14 @@ class MustCallConsistencyAnalyzer {
    * @param lhsVar the left-hand side variable for the pseudo-assignment
    * @param rhs the right-hand side for the pseudo-assignment, which must have been converted to a
    *     temporary variable (via a call to {@link
-   *     ResourceLeakAnnotatedTypeFactory#getTempVarForNode})
+   *     RLCCalledMethodsAnnotatedTypeFactory#getTempVarForNode})
    */
-  private void updateObligationsForPseudoAssignment(
+  /*package-private*/ void updateObligationsForPseudoAssignment(
       Set<Obligation> obligations, Node node, LocalVariableNode lhsVar, Node rhs) {
     // Replacements to eventually perform in Obligations.  This map is kept to avoid a
     // ConcurrentModificationException in the loop below.
     Map<Obligation, Obligation> replacements = new LinkedHashMap<>();
-    // Cache to re-use on subsequent iterations.
+    // Cache to reuse on subsequent iterations.
     ResourceAlias aliasForAssignment = null;
     for (Obligation obligation : obligations) {
       // This is a non-null value iff the resource alias set for obligation needs to
@@ -1236,9 +1365,7 @@ class MustCallConsistencyAnalyzer {
       }
       // If rhs is a variable tracked in the Obligation's resource alias set, gen the lhs
       // by adding it to the resource alias set.
-      if (rhs instanceof LocalVariableNode
-          && obligation.canBeSatisfiedThrough((LocalVariableNode) rhs)) {
-        LocalVariableNode rhsVar = (LocalVariableNode) rhs;
+      if (rhs instanceof LocalVariableNode rhsVar && obligation.canBeSatisfiedThrough(rhsVar)) {
         if (newResourceAliasesForObligation == null) {
           newResourceAliasesForObligation = new LinkedHashSet<>(obligation.resourceAliases);
         }
@@ -1248,14 +1375,12 @@ class MustCallConsistencyAnalyzer {
           // cases, use the tree associated with the temp var for the resource alias,
           // as that is the tree where errors should be reported.
           Tree treeForAlias =
-              typeFactory.isTempVar(lhsVar)
-                  ? typeFactory.getTreeForTempVar(lhsVar)
-                  : node.getTree();
+              cmAtf.isTempVar(lhsVar) ? cmAtf.getTreeForTempVar(lhsVar) : node.getTree();
           aliasForAssignment = new ResourceAlias(new LocalVariable(lhsVar), treeForAlias);
         }
         newResourceAliasesForObligation.add(aliasForAssignment);
         // Remove temp vars from tracking once they are assigned to another location.
-        if (typeFactory.isTempVar(rhsVar)) {
+        if (cmAtf.isTempVar(rhsVar)) {
           ResourceAlias aliasForRhs = obligation.getResourceAlias(rhsVar);
           if (aliasForRhs != null) {
             newResourceAliasesForObligation.remove(aliasForRhs);
@@ -1273,15 +1398,16 @@ class MustCallConsistencyAnalyzer {
         // Because the last reference to the resource has been overwritten, check the
         // must-call obligation.
         MustCallAnnotatedTypeFactory mcAtf =
-            typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+            cmAtf.getTypeFactoryOfSubchecker(MustCallChecker.class);
         checkMustCall(
             obligation,
-            typeFactory.getStoreBefore(node),
+            cmAtf.getStoreBefore(node),
             mcAtf.getStoreBefore(node),
             "variable overwritten by assignment " + node.getTree());
         replacements.put(obligation, null);
       } else {
-        replacements.put(obligation, new Obligation(newResourceAliasesForObligation));
+        replacements.put(
+            obligation, new Obligation(newResourceAliasesForObligation, obligation.whenToEnforce));
       }
     }
 
@@ -1305,16 +1431,18 @@ class MustCallConsistencyAnalyzer {
    * @param obligations current tracked Obligations
    * @param node an assignment to a non-final, owning field
    */
-  private void checkReassignmentToField(Set<Obligation> obligations, AssignmentNode node) {
+  private void checkReassignmentToOwningField(Set<Obligation> obligations, AssignmentNode node) {
 
     Node lhsNode = node.getTarget();
 
-    if (!(lhsNode instanceof FieldAccessNode)) {
+    if (!(lhsNode instanceof FieldAccessNode lhs)) {
       throw new TypeSystemError(
-          "checkReassignmentToField: non-field node " + node + " of class " + node.getClass());
+          "checkReassignmentToOwningField: non-field node "
+              + node
+              + " of class "
+              + node.getClass());
     }
 
-    FieldAccessNode lhs = (FieldAccessNode) lhsNode;
     Node receiver = lhs.getReceiver();
 
     if (permitStaticOwning && receiver instanceof ClassNameNode) {
@@ -1323,17 +1451,17 @@ class MustCallConsistencyAnalyzer {
 
     // TODO: it would be better to defer getting the path until after checking
     // for a CreatesMustCallFor annotation, because getting the path can be expensive.
-    // It might be possible to exploit the CFG structure to find the containing
+    // It might be possible to exploit the CFG structure to find the enclosing
     // method (rather than using the path, as below), because if a method is being
     // analyzed then it should be the root of the CFG (I think).
-    TreePath currentPath = typeFactory.getPath(node.getTree());
+    TreePath currentPath = cmAtf.getPath(node.getTree());
     MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(currentPath);
 
     if (enclosingMethodTree == null) {
       // The assignment is taking place outside of a method:  in a variable declaration's
       // initializer or in an initializer block.
       // The Resource Leak Checker issues no error if the assignment is a field initializer.
-      if (node.getTree().getKind() == Tree.Kind.VARIABLE) {
+      if (node.getTree() instanceof VariableTree) {
         // An assignment to a field that is also a declaration must be a field initializer
         // (VARIABLE Trees are only used for declarations).  Assignment in a field
         // initializer is always permitted.
@@ -1347,7 +1475,7 @@ class MustCallConsistencyAnalyzer {
       } else {
         // Issue an error if the field has a non-empty must-call type.
         MustCallAnnotatedTypeFactory mcTypeFactory =
-            typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+            cmAtf.getTypeFactoryOfSubchecker(MustCallChecker.class);
         AnnotationMirror mcAnno =
             mcTypeFactory.getAnnotatedType(lhs.getElement()).getPrimaryAnnotation(MustCall.class);
         List<String> mcValues =
@@ -1367,11 +1495,30 @@ class MustCallConsistencyAnalyzer {
         return;
       }
     } else if (permitInitializationLeak && TreeUtils.isConstructor(enclosingMethodTree)) {
+      @SuppressWarnings("nullness:dereference.of.nullable") // a constructor has an enclosing class
       Element enclosingClassElement =
           TreeUtils.elementFromDeclaration(enclosingMethodTree).getEnclosingElement();
       if (ElementUtils.isTypeElement(enclosingClassElement)) {
-        Element receiverElement = TypesUtils.getTypeElement(receiver.getType());
-        if (Objects.equals(enclosingClassElement, receiverElement)) {
+        Element receiverTypeElement = TypesUtils.getTypeElement(receiver.getType());
+        if (Objects.equals(enclosingClassElement, receiverTypeElement)) {
+          return;
+        }
+      }
+    } else if (TreeUtils.isConstructor(enclosingMethodTree)) {
+      // If this assignment is the first write to the private field in this constructor,
+      // then do not throw non-final owning field reassignment error.
+      // (If the field is not private, conservatively throw the owning file reassignment error.)
+      ExecutableElement elementFromDeclaration =
+          TreeUtils.elementFromDeclaration(enclosingMethodTree);
+      @SuppressWarnings("nullness:dereference.of.nullable") // a constructor has an enclosing class
+      Element enclosingClassElement = elementFromDeclaration.getEnclosingElement();
+      Element receiverTypeElement = TypesUtils.getTypeElement(receiver.getType());
+      if (Objects.equals(enclosingClassElement, receiverTypeElement)) {
+        VariableElement lhsElement = lhs.getElement();
+        if (lhsElement.getModifiers().contains(Modifier.PRIVATE)
+            && ConstructorFirstWriteAnalysis.isFirstWriteToFieldInConstructor(
+                node.getTree(), lhsElement, enclosingMethodTree, cmAtf)) {
+          // Safe; first assignment in constructor.
           return;
         }
       }
@@ -1382,22 +1529,22 @@ class MustCallConsistencyAnalyzer {
     // extend beyond the method's body (and which therefore could not be targeted by an
     // annotation on the method declaration), or 2) the rhs is a null literal (so there's
     // nothing to reset).
-    if (!(receiver instanceof LocalVariableNode
-            && varTrackedInObligations(obligations, (LocalVariableNode) receiver))
+    if (!(receiver instanceof LocalVariableNode receiverLvn
+            && varTrackedInObligations(obligations, receiverLvn))
         && !(node.getExpression() instanceof NullLiteralNode)) {
       checkEnclosingMethodIsCreatesMustCallFor(node, enclosingMethodTree);
     }
 
-    // The following code handles a special case where the field being assigned is itself getting
-    // passed in an owning position to another method on the RHS of the assignment.
+    // The following code handles a special case where the field being assigned is itself
+    // getting passed in an owning position to another method on the RHS of the assignment.
     // For example, if the field's type is a class whose constructor takes another instance
-    // of itself (such as a node in a linked list) in an owning position, re-assigning the field
-    // to a new instance that takes the field's value as an owning parameter is safe (the new value
-    // has taken responsibility for closing the old value). In such a case, it is not required
-    // that the must-call obligation of the field be satisfied via method calls before the
-    // assignment, since the invoked method will take ownership of the object previously
-    // referenced by the field and handle the obligation. This fixes the false positive in
-    // https://github.com/typetools/checker-framework/issues/5971.
+    // of itself (such as a node in a linked list) in an owning position, re-assigning the
+    // field to a new instance that takes the field's value as an owning parameter is safe
+    // (the new value has taken responsibility for closing the old value). In such a case,
+    // it is not required that the must-call obligation of the field be satisfied via method
+    // calls before the assignment, since the invoked method will take ownership of the
+    // object previously referenced by the field and handle the obligation. This fixes the
+    // false positive in https://github.com/typetools/checker-framework/issues/5971.
     Node rhs = node.getExpression();
     if (!noLightweightOwnership
         && (rhs instanceof ObjectCreationNode || rhs instanceof MethodInvocationNode)) {
@@ -1408,7 +1555,7 @@ class MustCallConsistencyAnalyzer {
       if (arguments.size() == parameters.size()) {
         for (int i = 0; i < arguments.size(); i++) {
           VariableElement param = parameters.get(i);
-          if (typeFactory.hasOwning(param)) {
+          if (cmAtf.hasOwning(param)) {
             Node argument = arguments.get(i);
             if (argument.equals(lhs)) {
               return;
@@ -1422,12 +1569,13 @@ class MustCallConsistencyAnalyzer {
         // and later varargs arguments will continue to be tracked at the call-site.
         // For now, just skip this case - the worst that will happen is a false positive in
         // cases like the varargs one described above.
-        // TODO allow for ownership transfer here if needed in future, but for now do nothing
+        // TODO allow for ownership transfer here if needed in future, but for now do
+        // nothing
       }
     }
 
     MustCallAnnotatedTypeFactory mcTypeFactory =
-        typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+        cmAtf.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
     // Get the Must Call type for the field. If there's info about this field in the store, use
     // that. Otherwise, use the declared type of the field
@@ -1460,20 +1608,24 @@ class MustCallConsistencyAnalyzer {
     // Get the store before the RHS rather than the assignment node, because the CFG always has
     // the RHS first. If the RHS has side-effects, then the assignment node's store will have
     // had its inferred types erased.
-    AccumulationStore cmStoreBefore = typeFactory.getStoreBefore(rhs);
+    AccumulationStore cmStoreBefore = cmAtf.getStoreBefore(rhs);
     AccumulationValue cmValue = cmStoreBefore == null ? null : cmStoreBefore.getValue(lhs);
     AnnotationMirror cmAnno = null;
-    if (cmValue != null) {
-      for (AnnotationMirror anno : cmValue.getAnnotations()) {
-        if (AnnotationUtils.areSameByName(
-            anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
-          cmAnno = anno;
-          break;
+    if (cmValue != null) { // When store contains the lhs
+      Set<String> accumulatedValues = cmValue.getAccumulatedValues();
+      if (accumulatedValues != null) { // type variable or wildcard type
+        cmAnno = cmAtf.createCalledMethods(accumulatedValues.toArray(new String[0]));
+      } else {
+        for (AnnotationMirror anno : cmValue.getAnnotations()) {
+          if (AnnotationUtils.areSameByName(
+              anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
+            cmAnno = anno;
+          }
         }
       }
     }
     if (cmAnno == null) {
-      cmAnno = typeFactory.top;
+      cmAnno = cmAtf.top;
     }
     if (!calledMethodsSatisfyMustCall(mcValues, cmAnno)) {
       VariableElement lhsElement = TreeUtils.variableElementFromTree(lhs.getTree());
@@ -1499,25 +1651,24 @@ class MustCallConsistencyAnalyzer {
   private void checkEnclosingMethodIsCreatesMustCallFor(
       AssignmentNode node, MethodTree enclosingMethod) {
     Node lhs = node.getTarget();
-    if (!(lhs instanceof FieldAccessNode)) {
+    if (!(lhs instanceof FieldAccessNode lhsFan)) {
       return;
     }
-    if (permitStaticOwning && ((FieldAccessNode) lhs).getReceiver() instanceof ClassNameNode) {
+    if (permitStaticOwning && lhsFan.getReceiver() instanceof ClassNameNode) {
       return;
     }
 
-    String receiverString = receiverAsString((FieldAccessNode) lhs);
+    String receiverString = receiverAsString(lhsFan);
     if ("this".equals(receiverString) && TreeUtils.isConstructor(enclosingMethod)) {
       // Constructors always create must-call obligations, so there is no need for them to
       // be annotated.
       return;
     }
     ExecutableElement enclosingMethodElt = TreeUtils.elementFromDeclaration(enclosingMethod);
-    MustCallAnnotatedTypeFactory mcAtf =
-        typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
+    MustCallAnnotatedTypeFactory mcAtf = cmAtf.getTypeFactoryOfSubchecker(MustCallChecker.class);
 
     List<String> cmcfValues =
-        ResourceLeakVisitor.getCreatesMustCallForValues(enclosingMethodElt, mcAtf, typeFactory);
+        RLCCalledMethodsVisitor.getCreatesMustCallForValues(enclosingMethodElt, mcAtf, cmAtf);
 
     if (cmcfValues.isEmpty()) {
       checker.reportError(
@@ -1538,6 +1689,9 @@ class MustCallConsistencyAnalyzer {
                     targetStrWithoutAdaptation, enclosingMethod, checker)
                 .toString();
       } catch (JavaExpressionParseException e) {
+        // Do not report the error here; that would duplicate the one that
+        // `CreatesMustCallForToJavaExpression` issues at the declaration of `enclosingMethod`,
+        // which is being compiled.  Compare the unadapted string instead.
         targetStr = targetStrWithoutAdaptation;
       }
       if (targetStr.equals(receiverString)) {
@@ -1566,11 +1720,11 @@ class MustCallConsistencyAnalyzer {
     if (receiver instanceof ThisNode) {
       return "this";
     }
-    if (receiver instanceof LocalVariableNode) {
-      return ((LocalVariableNode) receiver).getName();
+    if (receiver instanceof LocalVariableNode lvn) {
+      return lvn.getName();
     }
-    if (receiver instanceof ClassNameNode) {
-      return ((ClassNameNode) receiver).getElement().toString();
+    if (receiver instanceof ClassNameNode cnn) {
+      return cnn.getElement().toString();
     }
     if (receiver instanceof SuperNode) {
       return "super";
@@ -1593,23 +1747,21 @@ class MustCallConsistencyAnalyzer {
     Preconditions.checkArgument(
         callNode instanceof MethodInvocationNode || callNode instanceof ObjectCreationNode);
     List<Node> result = new ArrayList<>();
-    if (!typeFactory.hasMustCallAlias(callNode.getTree())) {
+    if (!cmAtf.hasMustCallAlias(callNode.getTree())) {
       return result;
     }
 
     List<Node> args = getArgumentsOfInvocation(callNode);
     List<? extends VariableElement> parameters = getParametersOfInvocation(callNode);
     for (int i = 0; i < args.size(); i++) {
-      if (typeFactory.hasMustCallAlias(parameters.get(i))) {
+      if (cmAtf.hasMustCallAlias(parameters.get(i))) {
         result.add(removeCastsAndGetTmpVarIfPresent(args.get(i)));
       }
     }
 
     // If none of the parameters were @MustCallAlias, it must be the receiver
-    if (result.isEmpty() && callNode instanceof MethodInvocationNode) {
-      result.add(
-          removeCastsAndGetTmpVarIfPresent(
-              ((MethodInvocationNode) callNode).getTarget().getReceiver()));
+    if (result.isEmpty() && callNode instanceof MethodInvocationNode callMin) {
+      result.add(removeCastsAndGetTmpVarIfPresent(callMin.getTarget().getReceiver()));
     }
 
     return result;
@@ -1622,7 +1774,7 @@ class MustCallConsistencyAnalyzer {
    * @param node a node
    * @return either a tempvar for node's content sans typecasts, or node
    */
-  private Node removeCastsAndGetTmpVarIfPresent(Node node) {
+  /*package-private*/ Node removeCastsAndGetTmpVarIfPresent(Node node) {
     // TODO: Create temp vars for TypeCastNodes as well, so there is no need to explicitly
     // remove casts here.
     node = NodeUtils.removeCasts(node);
@@ -1630,38 +1782,36 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Get the nodes representing the arguments of a method or constructor invocation from the
+   * Returns the nodes representing the arguments of a method or constructor invocation from the
    * invocation node.
    *
    * @param node a MethodInvocation or ObjectCreation node
    * @return the arguments, in order
    */
-  private List<Node> getArgumentsOfInvocation(Node node) {
-    if (node instanceof MethodInvocationNode) {
-      MethodInvocationNode invocationNode = (MethodInvocationNode) node;
+  /*package-private*/ List<Node> getArgumentsOfInvocation(Node node) {
+    if (node instanceof MethodInvocationNode invocationNode) {
       return invocationNode.getArguments();
-    } else if (node instanceof ObjectCreationNode) {
-      return ((ObjectCreationNode) node).getArguments();
+    } else if (node instanceof ObjectCreationNode ocn) {
+      return ocn.getArguments();
     } else {
       throw new TypeSystemError("unexpected node type " + node.getClass());
     }
   }
 
   /**
-   * Get the elements representing the formal parameters of a method or constructor, from an
+   * Returns the elements representing the formal parameters of a method or constructor, from an
    * invocation of that method or constructor.
    *
    * @param node a method invocation or object creation node
    * @return a list of the declarations of the formal parameters of the method or constructor being
    *     invoked
    */
-  private List<? extends VariableElement> getParametersOfInvocation(Node node) {
+  /*package-private*/ List<? extends VariableElement> getParametersOfInvocation(Node node) {
     ExecutableElement executableElement;
-    if (node instanceof MethodInvocationNode) {
-      MethodInvocationNode invocationNode = (MethodInvocationNode) node;
+    if (node instanceof MethodInvocationNode invocationNode) {
       executableElement = TreeUtils.elementFromUse(invocationNode.getTree());
-    } else if (node instanceof ObjectCreationNode) {
-      executableElement = TreeUtils.elementFromUse(((ObjectCreationNode) node).getTree());
+    } else if (node instanceof ObjectCreationNode ocn2) {
+      executableElement = TreeUtils.elementFromUse(ocn2.getTree());
     } else {
       throw new TypeSystemError("unexpected node type " + node.getClass());
     }
@@ -1685,7 +1835,7 @@ class MustCallConsistencyAnalyzer {
     }
     MethodInvocationTree methodInvocationTree = node.getTree();
     ExecutableElement executableElement = TreeUtils.elementFromUse(methodInvocationTree);
-    if (typeFactory.hasMustCallAlias(executableElement)) {
+    if (cmAtf.hasMustCallAlias(executableElement)) {
       // assume tracking is required
       return true;
     }
@@ -1697,59 +1847,80 @@ class MustCallConsistencyAnalyzer {
     TypeElement typeElt = TypesUtils.getTypeElement(type);
     // no need to track if type has no possible @MustCall obligation
     if (typeElt != null
-        && typeFactory.getMustCallValue(typeElt).isEmpty()
-        && typeFactory.getMustCallValue(methodInvocationTree).isEmpty()) {
+        && cmAtf.hasEmptyMustCallValue(typeElt)
+        && cmAtf.hasEmptyMustCallValue(methodInvocationTree)) {
       return false;
     }
     // check for absence of @NotOwning annotation
-    return !typeFactory.hasNotOwning(executableElement);
+    return !cmAtf.hasNotOwning(executableElement);
   }
 
   /**
-   * Get all successor blocks for some block, except for those corresponding to ignored exception
-   * types. See {@link #ignoredExceptionTypes}. Each exceptional successor is paired with the type
-   * of exception that leads to it, for use in error messages.
+   * Returns all successor blocks for some block, except for those corresponding to ignored
+   * exception types. See {@link RLCCalledMethodsAnalysis#isIgnoredExceptionType(TypeMirror)}. Each
+   * exceptional successor is paired with the type of exception that leads to it, for use in error
+   * messages.
    *
    * @param block input block
-   * @return set of pairs (b, t), where b is a successor block, and t is the type of exception for
-   *     the CFG edge from block to b, or {@code null} if b is a non-exceptional successor
+   * @return the successor blocks, each paired with the type of exception for the CFG edge from
+   *     block to it, or {@code null} if it is a non-exceptional successor
    */
-  private Set<IPair<Block, @Nullable TypeMirror>> getSuccessorsExceptIgnoredExceptions(
-      Block block) {
+  private Set<SuccessorAndExceptionType> getSuccessorsExceptIgnoredExceptions(Block block) {
     if (block.getType() == Block.BlockType.EXCEPTION_BLOCK) {
       ExceptionBlock excBlock = (ExceptionBlock) block;
-      Set<IPair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
+      Set<SuccessorAndExceptionType> result = new LinkedHashSet<>();
       // regular successor
       Block regularSucc = excBlock.getSuccessor();
       if (regularSucc != null) {
-        result.add(IPair.of(regularSucc, null));
+        result.add(new SuccessorAndExceptionType(regularSucc, null));
       }
       // non-ignored exception successors
       Map<TypeMirror, Set<Block>> exceptionalSuccessors = excBlock.getExceptionalSuccessors();
       for (Map.Entry<TypeMirror, Set<Block>> entry : exceptionalSuccessors.entrySet()) {
         TypeMirror exceptionType = entry.getKey();
-        if (!isIgnoredExceptionType(((Type) exceptionType).tsym.getQualifiedName())) {
+        if (!cmAtf.isIgnoredExceptionType(exceptionType)) {
           for (Block exSucc : entry.getValue()) {
-            result.add(IPair.of(exSucc, exceptionType));
+            result.add(new SuccessorAndExceptionType(exSucc, exceptionType));
           }
         }
       }
       return result;
     } else {
-      Set<IPair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
+      Set<SuccessorAndExceptionType> result = new LinkedHashSet<>();
       for (Block b : block.getSuccessors()) {
-        result.add(IPair.of(b, null));
+        result.add(new SuccessorAndExceptionType(b, null));
       }
       return result;
     }
   }
+
+  /**
+   * A successor block, and the type of exception that leads to it.
+   *
+   * @param successor a successor block
+   * @param exceptionType the type of exception for the CFG edge to {@code successor}, or null if
+   *     {@code successor} is a non-exceptional successor
+   */
+  private record SuccessorAndExceptionType(Block successor, @Nullable TypeMirror exceptionType) {}
 
   /**
    * Propagates a set of Obligations to successors, and performs consistency checks when variables
    * are going out of scope.
    *
    * <p>The basic algorithm loops over the successor blocks of the current block. For each
-   * successor, it checks every Obligation in obligations. If the successor is an exit block or all
+   * successor, two things happen:
+   *
+   * <p>First, it constructs an updated set of Obligations using {@code incomingObligations}, the
+   * nodes in {@code currentBlock}, and the nature of the edge from {@code currentBlock} to the
+   * successor. The edge can either be normal control flow or an exception. See
+   *
+   * <ul>
+   *   <li>{@link #updateObligationsForAssignment(Set, ControlFlowGraph, AssignmentNode)}
+   *   <li>{@link #updateObligationsForOwningReturn(Set, ControlFlowGraph, ReturnNode)}
+   *   <li>{@link #updateObligationsForInvocation(Set, Node, TypeMirror)}
+   * </ul>
+   *
+   * <p>Second, it checks every Obligation in obligations. If the successor is an exit block or all
    * of an Obligation's resource aliases might be going out of scope, then a consistency check
    * occurs (with two exceptions, both related to temporary variables that don't actually get
    * assigned; see code comments for details) and an error is issued if it fails. If the successor
@@ -1758,196 +1929,274 @@ class MustCallConsistencyAnalyzer {
    * then the Obligation is passed forward to the successor ("propagated") with any definitely
    * out-of-scope aliases removed from its resource alias set.
    *
-   * @param obligations the Obligations for the current block
+   * @param cfg the control flow graph
+   * @param incomingObligations the Obligations for the current block
    * @param currentBlock the current block
    * @param visited block-Obligations pairs already analyzed or already on the worklist
    * @param worklist current worklist
    */
   private void propagateObligationsToSuccessorBlocks(
-      Set<Obligation> obligations,
+      ControlFlowGraph cfg,
+      Set<Obligation> incomingObligations,
       Block currentBlock,
       Set<BlockWithObligations> visited,
       Deque<BlockWithObligations> worklist) {
-    List<Node> currentBlockNodes = currentBlock.getNodes();
     // For each successor block that isn't caused by an ignored exception type, this loop
     // computes the set of Obligations that should be propagated to it and then adds it to the
     // worklist if any of its resource aliases are still in scope in the successor block. If
     // none are, then the loop performs a consistency check for that Obligation.
-    for (IPair<Block, @Nullable TypeMirror> successorAndExceptionType :
+    for (SuccessorAndExceptionType successorAndExceptionType :
         getSuccessorsExceptIgnoredExceptions(currentBlock)) {
-      Block successor = successorAndExceptionType.first;
-      // If nonnull, currentBlock is an ExceptionBlock.
-      TypeMirror exceptionType = successorAndExceptionType.second;
-      // successorObligations eventually contains the Obligations to propagate to successor.
-      // The loop below mutates it.
-      Set<Obligation> successorObligations = new LinkedHashSet<>();
-      // A detailed reason to give in the case that the last resource alias of an Obligation
-      // goes out of scope without a called-methods type that satisfies the corresponding
-      // must-call obligation along the current control-flow edge. Computed here for
-      // efficiency; used in the loop over the Obligations, below.
-      String exitReasonForErrorMessage =
-          exceptionType == null
-              ?
-              // Technically the variable may be going out of scope before the method
-              // exit, but that doesn't seem to provide additional helpful
-              // information.
-              "regular method exit"
-              : "possible exceptional exit due to "
-                  + ((ExceptionBlock) currentBlock).getNode().getTree()
-                  + " with exception type "
-                  + exceptionType;
-      // Computed outside the Obligation loop for efficiency.
-      AccumulationStore regularStoreOfSuccessor = analysis.getInput(successor).getRegularStore();
-      for (Obligation obligation : obligations) {
-        // This boolean is true if there is no evidence that the Obligation does not go out
-        // of scope - that is, if there is definitely a resource alias that is in scope in
-        // the successor.
-        boolean obligationGoesOutOfScopeBeforeSuccessor = true;
-        for (ResourceAlias resourceAlias : obligation.resourceAliases) {
-          if (aliasInScopeInSuccessor(regularStoreOfSuccessor, resourceAlias)) {
-            obligationGoesOutOfScopeBeforeSuccessor = false;
-            break;
-          }
+
+      // A *mutable* set that eventually holds the set of dataflow facts to be propagated to
+      // successor blocks. The set is initialized to the current dataflow facts and updated by
+      // the methods invoked in the for loop below.
+      Set<Obligation> obligations = new LinkedHashSet<>(incomingObligations);
+
+      // PERFORMANCE NOTE: The computed changes to `obligations` are mostly the same for each
+      // successor block, but can vary slightly depending on the exception type.  There might
+      // be some opportunities for optimization in this mostly-redundant work.
+      for (Node node : currentBlock.getNodes()) {
+        if (node instanceof AssignmentNode an) {
+          updateObligationsForAssignment(obligations, cfg, an);
+        } else if (node instanceof ReturnNode rn) {
+          updateObligationsForOwningReturn(obligations, cfg, rn);
+        } else if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
+          updateObligationsForInvocation(
+              obligations, node, successorAndExceptionType.exceptionType());
         }
-        // This check is to determine if this Obligation's resource aliases are definitely
-        // going out of scope: if this is an exit block or there is no information about any
-        // of them in the successor store, all aliases must be going out of scope and a
-        // consistency check should occur.
-        if (successor.getType() == BlockType.SPECIAL_BLOCK /* special blocks are exit blocks */
-            || obligationGoesOutOfScopeBeforeSuccessor) {
-          MustCallAnnotatedTypeFactory mcAtf =
-              typeFactory.getTypeFactoryOfSubchecker(MustCallChecker.class);
-
-          // If successor is an exceptional successor, and Obligation represents the
-          // temporary variable for currentBlock's node, do not propagate or do a
-          // consistency check, as in the exceptional case the "assignment" to the
-          // temporary variable does not succeed.
-          //
-          // Note that this test cannot be "successor.getType() ==
-          // BlockType.EXCEPTIONAL_BLOCK", because not every exceptional successor is an
-          // exceptional block. For example, the successor might be a regular block
-          // (containing a catch clause, for example), or a special block indicating an
-          // exceptional exit. Nor can this test be "currentBlock.getType() ==
-          // BlockType.EXCEPTIONAL_BLOCK", because some exception types are ignored.
-          // Whether exceptionType is null captures the logic of both of these cases.
-          if (exceptionType != null) {
-            Node exceptionalNode = NodeUtils.removeCasts(((ExceptionBlock) currentBlock).getNode());
-            LocalVariableNode tmpVarForExcNode = typeFactory.getTempVarForNode(exceptionalNode);
-            if (tmpVarForExcNode != null
-                && obligation.resourceAliases.size() == 1
-                && obligation.canBeSatisfiedThrough(tmpVarForExcNode)) {
-              continue;
-            }
-          }
-
-          // Always propagate the Obligation to the successor if current block represents
-          // code nested in a cast.  Without this logic, the analysis may report a false
-          // positive when the Obligation represents a temporary variable for a nested
-          // expression, as the temporary may not appear in the successor store and hence
-          // seems to be going out of scope.  The temporary will be handled with special
-          // logic; casts are unwrapped at various points in the analysis.
-          if (currentBlockNodes.size() == 1 && inCast(currentBlockNodes.get(0))) {
-            successorObligations.add(obligation);
-            continue;
-          }
-
-          // At this point, a consistency check will definitely occur, unless the
-          // obligation was derived from a MustCallAlias parameter. If it was, an error is
-          // immediately issued, because such a parameter should not go out of scope
-          // without its obligation being resolved some other way.
-          if (obligation.derivedFromMustCallAlias()) {
-            // MustCallAlias annotations only have meaning if the method returns
-            // normally, so issue an error if and only if this exit is happening on a
-            // normal exit path.
-            if (exceptionType == null) {
-              checker.reportError(
-                  obligation.resourceAliases.asList().get(0).tree,
-                  "mustcallalias.out.of.scope",
-                  exitReasonForErrorMessage);
-            }
-            // Whether or not an error is issued, the check is now complete - there is
-            // no further checking to do on a must-call-alias-derived obligation along
-            // an exceptional path.
-            continue;
-          }
-
-          // Which stores from the called-methods and must-call checkers are used in
-          // the consistency check varies depending on the context. The rules are:
-          // 1. if the current block has no nodes (and therefore the store must come from
-          // a block
-          //    rather than a node):
-          //    1a. if there is information about any alias in the resource alias set
-          //        in the successor store, use the successor's CM and MC stores, which
-          //        contain whatever information is true after this block finishes.
-          //    1b. if there is not any information about any alias in the resource alias
-          //        set in the successor store, use the current blocks' CM and MC stores,
-          //        which contain whatever information is true before this (empty) block.
-          // 2. if the current block has one or more nodes, always use the CM store after
-          //    the last node. To decide which MC store to use:
-          //    2a. if the last node in the block is the invocation of an
-          //        @CreatesMustCallFor method that might throw an exception, and the
-          //        consistency check is for an exceptional path, use the MC store
-          //        immediately before the method invocation, because the method threw an
-          //        exception rather than finishing and therefore did not actually create
-          //        any must-call obligation, so the MC store after might contain
-          //        must-call obligations that do not need to be fulfilled along this
-          //        path.
-          //    2b. in all other cases, use the MC store from after the last node in
-          //        the block.
-          CFStore mcStore;
-          AccumulationStore cmStore;
-          if (currentBlockNodes.size() == 0 /* currentBlock is special or conditional */) {
-            cmStore =
-                obligationGoesOutOfScopeBeforeSuccessor
-                    ? analysis.getInput(currentBlock).getRegularStore() // 1a. (CM)
-                    : regularStoreOfSuccessor; // 1b. (CM)
-            mcStore =
-                mcAtf.getStoreForBlock(
-                    obligationGoesOutOfScopeBeforeSuccessor,
-                    currentBlock, // 1a. (MC)
-                    successor); // 1b. (MC)
-          } else {
-            // In this case, current block has at least one node.
-            // Use the called-methods store immediately after the last node in
-            // currentBlock.
-            Node last = currentBlockNodes.get(currentBlockNodes.size() - 1); // 2. (CM)
-
-            if (cmStoreAfter.containsKey(last)) {
-              cmStore = cmStoreAfter.get(last);
-            } else {
-              cmStore = typeFactory.getStoreAfter(last);
-              cmStoreAfter.put(last, cmStore);
-            }
-            // If this is an exceptional block, check the MC store beforehand to avoid
-            // issuing an error about a call to a CreatesMustCallFor method that might
-            // throw an exception. Otherwise, use the store after.
-            if (exceptionType != null && isInvocationOfCreatesMustCallForMethod(last)) {
-              mcStore = mcAtf.getStoreBefore(last); // 2a. (MC)
-            } else {
-              if (mcStoreAfter.containsKey(last)) {
-                mcStore = mcStoreAfter.get(last);
-              } else {
-                mcStore = mcAtf.getStoreAfter(last); // 2b. (MC)
-                mcStoreAfter.put(last, mcStore);
-              }
-            }
-          }
-          checkMustCall(obligation, cmStore, mcStore, exitReasonForErrorMessage);
-
-        } else {
-          // In this case, there is info in the successor store about some alias in the
-          // Obligation.
-          // Handles the possibility that some resource in the Obligation may go out of
-          // scope.
-          Set<ResourceAlias> copyOfResourceAliases =
-              new LinkedHashSet<>(obligation.resourceAliases);
-          copyOfResourceAliases.removeIf(
-              alias -> !aliasInScopeInSuccessor(regularStoreOfSuccessor, alias));
-          successorObligations.add(new Obligation(copyOfResourceAliases));
-        }
+        // All other types of nodes are ignored. This is safe, because other kinds of
+        // nodes cannot create or modify the resource-alias sets that the algorithm is
+        // tracking.
       }
 
-      propagate(new BlockWithObligations(successor, successorObligations), visited, worklist);
+      propagateObligationsToSuccessorBlock(
+          obligations,
+          currentBlock,
+          successorAndExceptionType.successor(),
+          successorAndExceptionType.exceptionType(),
+          visited,
+          worklist);
+    }
+  }
+
+  /**
+   * Helper for {@link #propagateObligationsToSuccessorBlocks(ControlFlowGraph, Set, Block, Set,
+   * Deque)} that propagates obligations along a single edge.
+   *
+   * @param obligations the Obligations for the current block
+   * @param currentBlock the current block
+   * @param successor a successor of the current block
+   * @param exceptionType the type of edge from {@code currentBlock} to {@code successor}: {@code
+   *     null} for normal control flow, or a throwable type for exceptional control flow
+   * @param visited block-Obligations pairs already analyzed or already on the worklist
+   * @param worklist current worklist
+   */
+  private void propagateObligationsToSuccessorBlock(
+      Set<Obligation> obligations,
+      Block currentBlock,
+      Block successor,
+      @Nullable TypeMirror exceptionType,
+      Set<BlockWithObligations> visited,
+      Deque<BlockWithObligations> worklist) {
+    List<Node> currentBlockNodes = currentBlock.getNodes();
+    // successorObligations eventually contains the Obligations to propagate to successor.
+    // The loop below mutates it.
+    Set<Obligation> successorObligations = new LinkedHashSet<>();
+    // A detailed reason to give in the case that the last resource alias of an Obligation
+    // goes out of scope without a called-methods type that satisfies the corresponding
+    // must-call obligation along the current control-flow edge. Computed here for
+    // efficiency; used in the loop over the Obligations, below.
+    String exitReasonForErrorMessage =
+        exceptionType == null
+            ?
+            // Technically the variable may be going out of scope before the method
+            // exit, but that doesn't seem to provide additional helpful
+            // information.
+            "regular method exit"
+            : "possible exceptional exit due to "
+                + ((ExceptionBlock) currentBlock).getNode().getTree()
+                + " with exception type "
+                + exceptionType;
+    // Computed outside the Obligation loop for efficiency.
+    AccumulationStore regularStoreOfSuccessor = cmAtf.getInput(successor).getRegularStore();
+    for (Obligation obligation : obligations) {
+      // This boolean is true if there is no evidence that the Obligation does not go out
+      // of scope - that is, if there is definitely a resource alias that is in scope in
+      // the successor.
+      boolean obligationGoesOutOfScopeBeforeSuccessor = true;
+      for (ResourceAlias resourceAlias : obligation.resourceAliases) {
+        if (aliasInScopeInSuccessor(regularStoreOfSuccessor, resourceAlias)) {
+          obligationGoesOutOfScopeBeforeSuccessor = false;
+          break;
+        }
+      }
+      // This check is to determine if this Obligation's resource aliases are definitely
+      // going out of scope: if this is an exit block or there is no information about any
+      // of them in the successor store, all aliases must be going out of scope and a
+      // consistency check should occur.
+      if (successor.getType() == BlockType.SPECIAL_BLOCK /* special blocks are exit blocks */
+          || obligationGoesOutOfScopeBeforeSuccessor) {
+        MustCallAnnotatedTypeFactory mcAtf =
+            cmAtf.getTypeFactoryOfSubchecker(MustCallChecker.class);
+
+        // If successor is an exceptional successor, and Obligation represents the
+        // temporary variable for currentBlock's node, do not propagate or do a
+        // consistency check, as in the exceptional case the "assignment" to the
+        // temporary variable does not succeed.
+        //
+        // Note that this test cannot be "successor.getType() ==
+        // BlockType.EXCEPTIONAL_BLOCK", because not every exceptional successor is an
+        // exceptional block. For example, the successor might be a regular block
+        // (containing a catch clause, for example), or a special block indicating an
+        // exceptional exit. Nor can this test be "currentBlock.getType() ==
+        // BlockType.EXCEPTIONAL_BLOCK", because some exception types are ignored.
+        // Whether exceptionType is null captures the logic of both of these cases.
+        if (exceptionType != null) {
+          Node exceptionalNode = NodeUtils.removeCasts(((ExceptionBlock) currentBlock).getNode());
+          LocalVariableNode tmpVarForExcNode = cmAtf.getTempVarForNode(exceptionalNode);
+          if (tmpVarForExcNode != null
+              && obligation.resourceAliases.size() == 1
+              && obligation.canBeSatisfiedThrough(tmpVarForExcNode)) {
+            continue;
+          }
+        }
+
+        // At this point, a consistency check will definitely occur, unless the
+        // obligation was derived from a MustCallAlias parameter. If it was, an error is
+        // immediately issued, because such a parameter should not go out of scope
+        // without its obligation being resolved some other way.
+        if (obligation.derivedFromMustCallAlias()) {
+          // MustCallAlias annotations only have meaning if the method returns
+          // normally, so issue an error if and only if this exit is happening on a
+          // normal exit path.
+          if (exceptionType == null
+              && obligation.whenToEnforce.contains(MethodExitKind.NORMAL_RETURN)) {
+            checker.reportError(
+                obligation.resourceAliases.asList().get(0).tree,
+                "mustcallalias.out.of.scope",
+                exitReasonForErrorMessage);
+          }
+          // Whether or not an error is issued, the check is now complete - there is
+          // no further checking to do on a must-call-alias-derived obligation along
+          // an exceptional path.
+          continue;
+        }
+
+        // Which stores from the called-methods and must-call checkers are used in the
+        // consistency check varies depending on the context.  Generally speaking, we would
+        // like to use the store propagated along the CFG edge from currentBlock to
+        // successor.  But, there are special cases to consider.  The rules are:
+        // 1. if the current block has no nodes, it is either a ConditionalBlock or a
+        //    SpecialBlock.
+        //    For the called-methods store, we obtain the exact CFG edge store that we need
+        //    (see getStoreForEdgeFromEmptyBlock()).  For the must-call store, due to API
+        //    limitations, we use the following heuristics:
+        //    1a. if there is information about any alias in the resource alias set
+        //        in the successor store, use the successor's MC store, which
+        //        contains whatever information is true after this block finishes.
+        //    1b. if there is not any information about any alias in the resource alias
+        //        set in the successor store, use the current block's MC store,
+        //        which contain whatever information is true before this (empty) block.
+        // 2. if the current block has one or more nodes, always use the CM store after
+        //    the last node. To decide which MC store to use:
+        //    2a. if the last node in the block is the invocation of an
+        //        @CreatesMustCallFor method that might throw an exception, and the
+        //        consistency check is for an exceptional path, use the MC store
+        //        immediately before the method invocation, because the method threw an
+        //        exception rather than finishing and therefore did not actually create
+        //        any must-call obligation, so the MC store after might contain
+        //        must-call obligations that do not need to be fulfilled along this
+        //        path.
+        //    2b. in all other cases, use the MC store from after the last node in
+        //        the block.
+        CFStore mcStore;
+        AccumulationStore cmStore;
+        if (currentBlockNodes.isEmpty() /* currentBlock is special or conditional */) {
+          cmStore = getStoreForEdgeFromEmptyBlock(currentBlock, successor); // 1. (CM)
+          // For the Must Call Checker, we currently apply a less precise handling and do
+          // not get the store for the specific CFG edge from currentBlock to successor.
+          // We do not believe this will impact precision except in convoluted and
+          // uncommon cases.  If we find that we need more precision, we can revisit this,
+          // but it will require additional API support in the AnalysisResult type to get
+          // the information that we need.
+          mcStore =
+              mcAtf.getStoreForBlock(
+                  obligationGoesOutOfScopeBeforeSuccessor,
+                  currentBlock, // 1a. (MC)
+                  successor); // 1b. (MC)
+        } else {
+          // In this case, current block has at least one node.
+          // Use the called-methods store immediately after the last node in
+          // currentBlock.
+          Node last = currentBlockNodes.get(currentBlockNodes.size() - 1); // 2. (CM)
+
+          if (cmStoreAfter.containsKey(last)) {
+            cmStore = cmStoreAfter.get(last);
+          } else {
+            cmStore = cmAtf.getStoreAfter(last);
+            cmStoreAfter.put(last, cmStore);
+          }
+          // If this is an exceptional block, check the MC store beforehand to avoid
+          // issuing an error about a call to a CreatesMustCallFor method that might
+          // throw an exception. Otherwise, use the store after.
+          if (exceptionType != null && isInvocationOfCreatesMustCallForMethod(last)) {
+            mcStore = mcAtf.getStoreBefore(last); // 2a. (MC)
+          } else {
+            if (mcStoreAfter.containsKey(last)) {
+              mcStore = mcStoreAfter.get(last);
+            } else {
+              mcStore = mcAtf.getStoreAfter(last); // 2b. (MC)
+              mcStoreAfter.put(last, mcStore);
+            }
+          }
+        }
+
+        MethodExitKind exitKind =
+            exceptionType == null ? MethodExitKind.NORMAL_RETURN : MethodExitKind.EXCEPTIONAL_EXIT;
+        if (obligation.whenToEnforce.contains(exitKind)) {
+          checkMustCall(obligation, cmStore, mcStore, exitReasonForErrorMessage);
+        }
+      } else {
+        // In this case, there is info in the successor store about some alias in the
+        // Obligation.
+        // Handles the possibility that some resource in the Obligation may go out of
+        // scope.
+        Set<ResourceAlias> copyOfResourceAliases = new LinkedHashSet<>(obligation.resourceAliases);
+        copyOfResourceAliases.removeIf(
+            alias -> !aliasInScopeInSuccessor(regularStoreOfSuccessor, alias));
+        successorObligations.add(new Obligation(copyOfResourceAliases, obligation.whenToEnforce));
+      }
+    }
+
+    propagate(new BlockWithObligations(successor, successorObligations), visited, worklist);
+  }
+
+  /**
+   * Gets the store propagated by the {@link RLCCalledMethodsAnalysis} (containing called methods
+   * information) along a particular CFG edge during local type inference. The source {@link Block}
+   * of the edge must contain no {@link Node}s.
+   *
+   * @param currentBlock source block of the CFG edge. Must contain no {@link Node}s.
+   * @param successor target block of the CFG edge
+   * @return store propagated by the {@link RLCCalledMethodsAnalysis} along the CFG edge
+   */
+  private AccumulationStore getStoreForEdgeFromEmptyBlock(Block currentBlock, Block successor) {
+    switch (currentBlock.getType()) {
+      case CONDITIONAL_BLOCK -> {
+        ConditionalBlock condBlock = (ConditionalBlock) currentBlock;
+        if (condBlock.getThenSuccessor().equals(successor)) {
+          return cmAtf.getInput(currentBlock).getThenStore();
+        } else if (condBlock.getElseSuccessor().equals(successor)) {
+          return cmAtf.getInput(currentBlock).getElseStore();
+        } else {
+          throw new BugInCF("successor not found");
+        }
+      }
+      case SPECIAL_BLOCK -> {
+        return cmAtf.getInput(successor).getRegularStore();
+      }
+      default -> throw new BugInCF("unexpected block type " + currentBlock.getType());
     }
   }
 
@@ -1955,7 +2204,7 @@ class MustCallConsistencyAnalyzer {
    * Returns true if {@code alias.reference} is definitely in-scope in the successor store: that is,
    * there is a value for it in {@code successorStore}.
    *
-   * @param successorStore the regular store of the successor block
+   * @param successorStore the regular CalledMethods store of the successor block
    * @param alias the resource alias to check
    * @return true if the variable is definitely in scope for the purposes of the consistency
    *     checking algorithm in the successor block from which the store came
@@ -1972,11 +2221,10 @@ class MustCallConsistencyAnalyzer {
    * @return true if node is a MethodInvocationNode of a method with a CreatesMustCallFor annotation
    */
   private boolean isInvocationOfCreatesMustCallForMethod(Node node) {
-    if (!(node instanceof MethodInvocationNode)) {
+    if (!(node instanceof MethodInvocationNode miNode)) {
       return false;
     }
-    MethodInvocationNode miNode = (MethodInvocationNode) node;
-    return typeFactory.hasCreatesMustCallFor(miNode);
+    return cmAtf.hasCreatesMustCallFor(miNode);
   }
 
   /**
@@ -1993,16 +2241,17 @@ class MustCallConsistencyAnalyzer {
       Set<Obligation> result = new LinkedHashSet<>(1);
       for (VariableTree param : method.getParameters()) {
         VariableElement paramElement = TreeUtils.elementFromDeclaration(param);
-        boolean hasMustCallAlias = typeFactory.hasMustCallAlias(paramElement);
+        boolean hasMustCallAlias = cmAtf.hasMustCallAlias(paramElement);
         if (hasMustCallAlias
-            || (typeFactory.declaredTypeHasMustCall(param)
+            || (cmAtf.declaredTypeHasMustCall(param)
                 && !noLightweightOwnership
                 && paramElement.getAnnotation(Owning.class) != null)) {
           result.add(
               new Obligation(
                   ImmutableSet.of(
                       new ResourceAlias(
-                          new LocalVariable(paramElement), param, hasMustCallAlias))));
+                          new LocalVariable(paramElement), paramElement, param, hasMustCallAlias)),
+                  Collections.singleton(MethodExitKind.NORMAL_RETURN)));
           // Increment numMustCall for each @Owning parameter tracked by the enclosing
           // method.
           incrementNumMustCall(paramElement);
@@ -2014,7 +2263,7 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Checks whether there is some resource alias set <em>R</em> in {@code obligations} such that
+   * Returns true if there is some resource alias set <em>R</em> in {@code obligations} such that
    * <em>R</em> contains a {@link ResourceAlias} whose local variable is {@code node}.
    *
    * @param obligations the set of Obligations to search
@@ -2032,15 +2281,15 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Gets the Obligation whose resource aliase set contains the given local variable, if one exists
+   * Gets the Obligation whose resource alias set contains the given local variable, if one exists
    * in {@code obligations}.
    *
-   * @param obligations set of Obligations
+   * @param obligations a set of Obligations
    * @param node variable of interest
    * @return the Obligation in {@code obligations} whose resource alias set contains {@code node},
    *     or {@code null} if there is no such Obligation
    */
-  private static @Nullable Obligation getObligationForVar(
+  /*package-private*/ static @Nullable Obligation getObligationForVar(
       Set<Obligation> obligations, LocalVariableNode node) {
     for (Obligation obligation : obligations) {
       if (obligation.canBeSatisfiedThrough(node)) {
@@ -2064,14 +2313,41 @@ class MustCallConsistencyAnalyzer {
   private void checkMustCall(
       Obligation obligation, AccumulationStore cmStore, CFStore mcStore, String outOfScopeReason) {
 
-    List<String> mustCallValue = obligation.getMustCallMethods(typeFactory, mcStore);
-    // optimization: if there are no must-call methods, do not need to perform the check
-    if (mustCallValue == null || mustCallValue.isEmpty()) {
+    Map<ResourceAlias, List<String>> mustCallValues = obligation.getMustCallMethods(cmAtf, mcStore);
+
+    // Optimization: if mustCallValues is null, always issue a warning (there is no way to
+    // satisfy the check). A null mustCallValue occurs when the type is top
+    // (@MustCallUnknown).
+    if (mustCallValues == null) {
+      // Report the error at the first alias' definition. This choice is arbitrary but
+      // consistent.
+      ResourceAlias firstAlias = obligation.resourceAliases.iterator().next();
+      if (!reportedErrorAliases.contains(firstAlias)) {
+        if (!checker.shouldSkipUses(TreeUtils.elementFromTree(firstAlias.tree))) {
+          reportedErrorAliases.add(firstAlias);
+          checker.reportError(
+              firstAlias.tree,
+              "required.method.not.known",
+              firstAlias.stringForErrorMessage(),
+              firstAlias.reference.getType().toString(),
+              outOfScopeReason);
+        }
+      }
       return;
+    }
+    if (mustCallValues.isEmpty()) {
+      throw new TypeSystemError("unexpected empty must-call values for obligation " + obligation);
     }
 
     boolean mustCallSatisfied = false;
     for (ResourceAlias alias : obligation.resourceAliases) {
+
+      List<String> mustCallValuesForAlias = mustCallValues.get(alias);
+      // optimization when there are no methods to call
+      if (mustCallValuesForAlias.isEmpty()) {
+        mustCallSatisfied = true;
+        break;
+      }
 
       // sometimes the store is null!  this looks like a bug in checker dataflow.
       // TODO track down and report the root-cause bug
@@ -2081,24 +2357,23 @@ class MustCallConsistencyAnalyzer {
       if (cmValue != null) { // When store contains the lhs
         Set<String> accumulatedValues = cmValue.getAccumulatedValues();
         if (accumulatedValues != null) { // type variable or wildcard type
-          cmAnno = typeFactory.createCalledMethods(accumulatedValues.toArray(new String[0]));
+          cmAnno = cmAtf.createCalledMethods(accumulatedValues.toArray(new String[0]));
         } else {
           for (AnnotationMirror anno : cmValue.getAnnotations()) {
             if (AnnotationUtils.areSameByName(
-                anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
+                    anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")
+                || AnnotationUtils.areSameByName(
+                    anno, "org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom")) {
               cmAnno = anno;
             }
           }
         }
       }
       if (cmAnno == null) {
-        cmAnno =
-            typeFactory
-                .getAnnotatedType(alias.reference.getElement())
-                .getEffectiveAnnotationInHierarchy(typeFactory.top);
+        cmAnno = cmAtf.getAnnotatedType(alias.element).getAnnotationInHierarchy(cmAtf.top);
       }
 
-      if (calledMethodsSatisfyMustCall(mustCallValue, cmAnno)) {
+      if (calledMethodsSatisfyMustCall(mustCallValuesForAlias, cmAnno)) {
         mustCallSatisfied = true;
         break;
       }
@@ -2114,8 +2389,8 @@ class MustCallConsistencyAnalyzer {
           checker.reportError(
               firstAlias.tree,
               "required.method.not.called",
-              formatMissingMustCallMethods(mustCallValue),
-              firstAlias.reference.toString(),
+              formatMissingMustCallMethods(mustCallValues.get(firstAlias)),
+              firstAlias.stringForErrorMessage(),
               firstAlias.reference.getType().toString(),
               outOfScopeReason);
         }
@@ -2124,7 +2399,7 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Increment the -AcountMustCall counter.
+   * Increments the -AcountMustCall counter.
    *
    * @param node the node being counted, to extract the type
    */
@@ -2136,7 +2411,7 @@ class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Increment the -AcountMustCall counter.
+   * Increments the -AcountMustCall counter.
    *
    * @param elt the elt being counted, to extract the type
    */
@@ -2181,65 +2456,13 @@ class MustCallConsistencyAnalyzer {
    * @return true iff cmAnno is a subtype of a called-methods annotation with the same values as
    *     mustCallValues
    */
-  private boolean calledMethodsSatisfyMustCall(
+  /*package-private*/ boolean calledMethodsSatisfyMustCall(
       List<String> mustCallValues, AnnotationMirror cmAnno) {
     // Create this annotation and use a subtype test because there's no guarantee that
     // cmAnno is actually an instance of CalledMethods: it could be CMBottom or CMPredicate.
     AnnotationMirror cmAnnoForMustCallMethods =
-        typeFactory.createCalledMethods(mustCallValues.toArray(new String[mustCallValues.size()]));
-    return typeFactory.getQualifierHierarchy().isSubtype(cmAnno, cmAnnoForMustCallMethods);
-  }
-
-  /**
-   * The exception types in this set are ignored in the CFG when determining if a resource leaks
-   * along an exceptional path. These kinds of errors fall into a few categories: runtime errors,
-   * errors that the JVM can issue on any statement, and errors that can be prevented by running
-   * some other CF checker.
-   *
-   * <p>Package-private to permit access from {@link ResourceLeakAnalysis}.
-   */
-  /*package-private*/ static final Set<String> ignoredExceptionTypes =
-      new HashSet<>(
-          ImmutableSet.of(
-              // Any method call has a CFG edge for Throwable/RuntimeException/Error
-              // to represent run-time misbehavior. Ignore it.
-              Throwable.class.getCanonicalName(),
-              Error.class.getCanonicalName(),
-              RuntimeException.class.getCanonicalName(),
-              // Use the Nullness Checker to prove this won't happen.
-              NullPointerException.class.getCanonicalName(),
-              // These errors can't be predicted statically, so ignore them and assume
-              // they won't happen.
-              ClassCircularityError.class.getCanonicalName(),
-              ClassFormatError.class.getCanonicalName(),
-              NoClassDefFoundError.class.getCanonicalName(),
-              OutOfMemoryError.class.getCanonicalName(),
-              // It's not our problem if the Java type system is wrong.
-              ClassCastException.class.getCanonicalName(),
-              // It's not our problem if the code is going to divide by zero.
-              ArithmeticException.class.getCanonicalName(),
-              // Use the Index Checker to prevent these errors.
-              ArrayIndexOutOfBoundsException.class.getCanonicalName(),
-              NegativeArraySizeException.class.getCanonicalName(),
-              // Most of the time, this exception is infeasible, as the charset used
-              // is guaranteed to be present by the Java spec (e.g., "UTF-8").
-              // Eventually, this exclusion could be refined by looking at the charset
-              // being requested.
-              UnsupportedEncodingException.class.getCanonicalName()));
-
-  /**
-   * Is {@code exceptionClassName} an exception type the checker ignores, to avoid excessive false
-   * positives? For now the checker ignores most runtime exceptions (especially the runtime
-   * exceptions that can occur at any point during the program due to something going wrong in the
-   * JVM, like OutOfMemoryError and ClassCircularityError) and exceptions that can be proved to
-   * never occur by another Checker Framework built-in checker, such as null-pointer dereferences
-   * (the Nullness Checker) and out-of-bounds array indexing (the Index Checker).
-   *
-   * @param exceptionClassName the fully-qualified name of the exception
-   * @return true if the given exception class should be ignored
-   */
-  private static boolean isIgnoredExceptionType(@FullyQualifiedName Name exceptionClassName) {
-    return ignoredExceptionTypes.contains(exceptionClassName.toString());
+        cmAtf.createCalledMethods(mustCallValues.toArray(new String[0]));
+    return cmAtf.getQualifierHierarchy().isSubtypeQualifiersOnly(cmAnno, cmAnnoForMustCallMethods);
   }
 
   /**
@@ -2266,7 +2489,7 @@ class MustCallConsistencyAnalyzer {
    * @param mustCallVal the list of must-call strings
    * @return a formatted string
    */
-  /*package-private*/ static String formatMissingMustCallMethods(List<String> mustCallVal) {
+  public static String formatMissingMustCallMethods(List<String> mustCallVal) {
     int size = mustCallVal.size();
     if (size == 0) {
       throw new TypeSystemError("empty mustCallVal " + mustCallVal);
@@ -2283,7 +2506,7 @@ class MustCallConsistencyAnalyzer {
    * consists of BlockWithObligations objects, each representing the need to handle the set of
    * dataflow facts reaching the block during analysis.
    */
-  private static class BlockWithObligations {
+  /*package-private*/ static class BlockWithObligations {
 
     /** The block. */
     public final Block block;
@@ -2318,6 +2541,45 @@ class MustCallConsistencyAnalyzer {
     @Override
     public int hashCode() {
       return Objects.hash(block, obligations);
+    }
+
+    @Override
+    public String toString() {
+      return String.format(
+          "BWO{%s %d, %d obligations %d}",
+          block.getType(), block.getUid(), obligations.size(), obligations.hashCode());
+    }
+
+    /**
+     * Returns a printed representation of a collection of BlockWithObligations. If a
+     * BlockWithObligations appears multiple times in the collection, it is printed more succinctly
+     * after the first time.
+     *
+     * @param bwos a collection of BlockWithObligations, to format
+     * @return a printed representation of a collection of BlockWithObligations
+     */
+    public static String collectionToString(Collection<BlockWithObligations> bwos) {
+      List<Block> blocksWithDuplicates = new ArrayList<>();
+      for (BlockWithObligations bwo : bwos) {
+        blocksWithDuplicates.add(bwo.block);
+      }
+      Collection<Block> duplicateBlocks = CollectionsP.duplicates(blocksWithDuplicates);
+      StringJoiner result = new StringJoiner(", ", "BWOs[", "]");
+      for (BlockWithObligations bwo : bwos) {
+        ImmutableSet<Obligation> obligations = bwo.obligations;
+        if (duplicateBlocks.contains(bwo.block)) {
+          result.add(
+              String.format(
+                  "BWO{%s %d, %d obligations %s}",
+                  bwo.block.getType(), bwo.block.getUid(), obligations.size(), obligations));
+        } else {
+          result.add(
+              String.format(
+                  "BWO{%s %d, %d obligations}",
+                  bwo.block.getType(), bwo.block.getUid(), obligations.size()));
+        }
+      }
+      return result.toString();
     }
   }
 }

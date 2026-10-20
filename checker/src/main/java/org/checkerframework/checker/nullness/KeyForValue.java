@@ -13,7 +13,7 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.MapsP;
 
 /**
  * KeyForValue holds additional information about which maps this value is a key for. This extra
@@ -84,19 +84,21 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
   }
 
   @Override
-  public KeyForValue leastUpperBound(@Nullable KeyForValue other) {
-    KeyForValue lub = super.leastUpperBound(other);
+  protected KeyForValue upperBound(
+      @Nullable KeyForValue other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {
+    KeyForValue upperBound = super.upperBound(other, upperBoundTypeMirror, shouldWiden);
+
     if (other == null || other.keyForMaps == null || this.keyForMaps == null) {
-      return lub;
+      return upperBound;
     }
     // Lub the keyForMaps by intersecting the sets.
-    lub.keyForMaps = new LinkedHashSet<>(this.keyForMaps.size());
-    lub.keyForMaps.addAll(this.keyForMaps);
-    lub.keyForMaps.retainAll(other.keyForMaps);
-    if (lub.keyForMaps.isEmpty()) {
-      lub.keyForMaps = null;
+    upperBound.keyForMaps = new LinkedHashSet<>(this.keyForMaps.size());
+    upperBound.keyForMaps.addAll(this.keyForMaps);
+    upperBound.keyForMaps.retainAll(other.keyForMaps);
+    if (upperBound.keyForMaps.isEmpty()) {
+      upperBound.keyForMaps = null;
     }
-    return lub;
+    return upperBound;
   }
 
   @Override
@@ -133,7 +135,7 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
       return;
     }
     if (keyForMaps == null) {
-      keyForMaps = new LinkedHashSet<>(CollectionsPlume.mapCapacity(newKeyForMaps.size()));
+      keyForMaps = new LinkedHashSet<>(MapsP.mapCapacity(newKeyForMaps.size()));
     }
     keyForMaps.addAll(newKeyForMaps);
   }

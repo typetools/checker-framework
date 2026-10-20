@@ -1,2 +1,2 @@
-warning: (annotation.not.completed)
+warning: [annotation.not.completed]
 1 warning

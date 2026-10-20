@@ -5,7 +5,7 @@ import org.checkerframework.common.value.qual.IntRange;
 
 public class Issue1984 {
   public int m(int[] a, @IntRange(from = 0, to = 12) int i) {
-    // :: error: (array.access.unsafe.high.range)
+    // :: error: [array.access.unsafe.high.range]
     return a[i];
   }
 }

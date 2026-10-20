@@ -1,21 +1,17 @@
-\htmlhr
 \chapterAndLabel{Frequently Asked Questions (FAQs)}{faq}
 
 These are some common questions about the Checker Framework and about
 pluggable type-checking in general.  Feel free to suggest improvements to
 the answers, or other questions to include here.
 
-% Not supported by Hevea, so don't bother; instead do by hand:
+% Not supported by lwarp, so don't bother; instead do by hand:
 % \minitoc
 
-%BEGIN LATEX
-~
-%END LATEX
+\warpprintonly{~}
 
-%BEGIN LATEX
-\newcommand{\faqtocpara}[1]{\paragraph{#1} ~}
-%END LATEX
-%HEVEA \newcommand{\faqtocpara}[1]{\textbf{#1}}
+\ifbool{warpingHTML}
+  {\newcommand{\faqtocpara}[1]{\textbf{#1}}}
+  {\newcommand{\faqtocpara}[1]{\paragraph{#1} ~}}
 
 
 \noindent
@@ -35,9 +31,9 @@ the answers, or other questions to include here.
 \\ \ref{faq-code-clutter}: Will my code become cluttered with type annotations?
 \\ \ref{faq-slowdown}: Will using the Checker Framework slow down my program?  Will it slow down the compiler?
 \\ \ref{faq-shorten-command-line}: How do I shorten the command line when invoking a checker?
-\\ \ref{faq-pre-conditions}: Method pre-condition contracts, including formal parameter annotations, make no sense for public methods.
+\\ \ref{faq-pre-conditions}: Method pre-condition contracts, including formal parameter annotations, make no sense for public methods
 
-\faqtocpara{\ref{faq-warnings-section}: How to handle warnings}
+\faqtocpara{\ref{faq-warnings-section}: How to handle warnings and errors}
 \\ \ref{faq-handling-warnings}: What should I do if a checker issues a warning about my code?
 \\ \ref{faq-warning-after-check}: Why does a checker issue a warning even though the code checks a property?
 \\ \ref{faq-interpreting-warnings}: What does a certain Checker Framework warning message mean?
@@ -54,6 +50,7 @@ the answers, or other questions to include here.
 \\ \ref{faq-false-positive}: What is a ``false positive'' warning?
 \\ \ref{faq-false-positive-extend-checker-framework}: How can I improve the Checker Framework to eliminate a false positive warning?
 \\ \ref{faq-infer-fields}: Why doesn't the Checker Framework infer types for fields and method return types?
+\\ \ref{faq-field-initializers}: Why are some operations legal in constructors but not in methods?
 \\ \ref{faq-relationships-between-variables}: Why doesn't the Checker Framework track relationships between variables?
 \\ \ref{faq-path-sensitive}: Why isn't the Checker Framework path-sensitive?
 
@@ -67,9 +64,10 @@ the answers, or other questions to include here.
 \\ \ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations?
 \\ \ref{faq-annotate-fully-qualified-name}: How do I annotate a
 fully-qualified type name?
-\\ \ref{faq-declaration-annotations-moved}: How does the Checker Framework handle obsolete declaration annotations?
 \\ \ref{faq-type-vs-declaration-annotations}: What is the difference between type annotations and declaration annotations?
 \\ \ref{faq-type-annotation-formatting}: How should type annotations be formatted in source code?  Where should I write type annotations?
+\\ \ref{faq-declaration-annotations-moved}: How does the Checker Framework handle obsolete declaration annotations?
+\\ \ref{faq-declaration-annotations-convert}: How do I convert from other tools' declaration annotations to type annotations?
 
 \faqtocpara{\ref{faq-semantics-section}: Semantics of type annotations}
 \\ \ref{faq-typestate}: How can I handle typestate, or phases of my program with different data properties?
@@ -92,8 +90,10 @@ fully-qualified type name?
 
 \faqtocpara{\ref{faq-other-tools-section}: Relationship to other tools}
 \\ \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like SpotBugs or Error Prone)?
-\\ \ref{faq-eclipse}: How does the Checker Framework compare with Eclipse's Null Analysis?
+\\ \ref{faq-eclipse}: How does the Checker Framework compare with Eclipse's null analysis?
 \\ \ref{faq-nullaway}: How does the Checker Framework compare with NullAway?
+\\ \ref{faq-jspecify}: How does the Checker Framework compare with JSpecify?
+\\ \ref{faq-eisop}: How does the Checker Framework compare with the EISOP Checker Framework?
 \\ \ref{faq-optional}: How does the Checker Framework compare with the JDK's \<Optional> type?
 \\ \ref{faq-jml}: How does pluggable type-checking compare with JML?
 \\ \ref{faq-checker-framework-part-of-java}: Is the Checker Framework an official part of Java?
@@ -105,7 +105,7 @@ fully-qualified type name?
 
 \subsectionAndLabel{I don't make type errors, so would pluggable type-checking help me?}{faq-never-make-type-errors}
 
-Occasionally, a developer says that he makes no errors that type-checking
+Occasionally, a developer claims to make no errors that type-checking
 could catch, or that any such errors are unimportant because they have low
 impact and are easy to fix.  When I investigate the claim, I invariably
 find that the developer is mistaken.
@@ -181,7 +181,7 @@ change; for example, you
 can write library annotations (see Chapter~\ref{annotating-libraries}).
 
 \item[Composability]
-A Java object has just one class at run time.  You care about multiple
+A Java object has just one class at run time.  If you care about multiple
 correctness properties, then using the Java type system requires a
 combinatorial number of classes (all possible combinations).  By contrast,
 arbitrary type qualifiers can be used at the same time.
@@ -224,7 +224,7 @@ Java type-checker would reject.  Here are a few examples.
 \item[Efficiency]
   Type qualifiers have no run-time representation.  Therefore, there is no
   space overhead for separate classes or for wrapper classes for
-  primitives.  There is no run-time overhead for due to extra dereferences
+  primitives.  There is no run-time overhead due to extra dereferences
   or dynamic dispatch for methods that could otherwise be statically
   dispatched.
 
@@ -239,8 +239,6 @@ Java type-checker would reject.  Here are a few examples.
 \end{description}
 
 
-For more details, see Section~\ref{faq-typequals-vs-subtypes}.
-
 
 
 \sectionAndLabel{Getting started}{faq-getting-started-section}
@@ -254,7 +252,7 @@ See Section~\ref{get-started-with-legacy-code}.
 
 You should start with a property that matters to you.  Think about what
 aspects of your code cause the most errors, or cost the most time during
-maintenance, or are the most common to be incorrectly-documented.  Focusing
+maintenance, or are most often incorrectly documented.  Focusing
 on what you care about will give you the best benefits.
 
 When you first start out with the Checker Framework, it's usually best to
@@ -262,7 +260,7 @@ get experience with an existing type-checker before you write your own new
 checker.
 
 Many users are tempted to start with the
-\ahrefloc{nullness-checker}{Nullness Checker} (see
+\hyperref[nullness-checker]{Nullness Checker} (see
 \chapterpageref{nullness-checker}), since null pointer errors are common
 and familiar.  The Nullness Checker works very well, but be warned of three
 facts that make the absence of null pointer exceptions challenging to
@@ -291,8 +289,7 @@ The reason is that each one has a cost --- not just at compile time, but
 also in terms of code clutter and human time to maintain the annotations.
 If the property is important to you, is difficult for people to reason
 about, or has caused problems in the past, then you should run that
-checker.  For other properties, the benefits may not repay the effort to
-use it.  You will be the best judge of this for your own code, of course.
+checker.  For other properties, the benefits may not repay the effort.  You will be the best judge of this for your own code, of course.
 
 %You might want to avoid some type-checkers when you are first starting out.
 Some of the third-party checkers (see
@@ -313,12 +310,13 @@ accepted.
 Anyone is welcome to send mail to the
 \code{checker-framework-dev@googlegroups.com} mailing list --- for
 implementation details it is generally a better place for discussions than
-the general \code{checker-framework-discuss@googlegroups.com} mailing list,
-which is for user-focused discussions.
+the general \code{checker-framework-discuss@googlegroups.com} mailing list.
 
 Anyone is welcome to
 \href{https://groups.google.com/forum/#!forum/checker-framework-discuss}{join
   \code{checker-framework-discuss@googlegroups.com}} and send mail to it.
+This list is for user-focused discussions.  It is not for submitting bug reports,
+which should use the issue tracker (Section~\ref{reporting-bugs}).
 
 
 \sectionAndLabel{Usability of pluggable type-checking}{faq-usability-section}
@@ -368,8 +366,8 @@ and they reduce the overall volume of documentation that a codebase needs.
 As with any language feature, it is possible to write ugly code that
 over-uses annotations.  However, in normal use, very few annotations need
 to be written.  Figure 1 of the paper
-\href{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008-abstract.html}{Practical
-  pluggable types for Java}~\cite{PapiACPE2008} reports data for over
+\href{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008-abstract.html}{``Practical
+  pluggable types for Java''}~\cite{PapiACPE2008} reports data for over
 350,000 lines of type-annotated code:
 
 \begin{itemize}
@@ -398,8 +396,8 @@ and less ambiguous.
 \subsectionAndLabel{Will using the Checker Framework slow down my program?  Will it slow down the compiler?}{faq-slowdown}
 
 Using the Checker Framework has no impact on the execution of your program:
-the compiler emits the identical bytecodes as the javac
-compiler and so there is no run-time effect.  Because there is no run-time
+the javac compiler emits identical bytecodes whether or not the Checker
+Framework is used, so there is no run-time effect.  Because there is no run-time
 representation of type qualifiers, there is no way to use reflection to
 query the qualifier on a given object, though you can use reflection to
 examine a class/method/field declaration.
@@ -425,27 +423,23 @@ option (see Section~\ref{checker-auto-discovery}).
 \subsectionAndLabel{Method pre-condition contracts, including formal parameter annotations, make no sense for public methods}{faq-pre-conditions}
 
 Some people go further and say that pre-condition contracts make no sense
-for any method.  This objection is sometimes stated as, "A method parameter
+for any method.  This objection is sometimes stated as, ``A method parameter
 should never be annotated as \<@NonNull>.  A client could pass any value at
 all, so the method implementation cannot depend on the value being
 non-null.  Furthermore, if a client passes an illegal value, it is the
 method's responsibility to immediately tell the client about the illegal
-value."
+value.''
 
 Here is an example that invalidates this general argument.  Consider a
 binary search routine.  Its specification requires that clients pass in a
 sorted array.
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
-  /** Return index of the search key, if it is contained it the sorted array a; otherwise ... */
+  /** Return index of the search key, if it is contained in the sorted array a; otherwise ... */
   int binarySearch(Object @Sorted [] a, Object key)
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 The \<binarySearch> routine is fast --- it runs in O(log n) time where n is
 the length of the array.  If the routine had to validate that its input
@@ -461,11 +455,11 @@ particular exception quickly), but it is \emph{not} required.  In such a
 situation, the callee has the flexibility to do anything that is
 convenient.
 
-In some cases a routine has a \emph{complete} specification:  the contract
+In some cases, a routine has a \emph{complete} specification:  the contract
 permits the caller to pass any value, and the callee is required to throw
 particular exceptions for particular inputs.  This approach is common for
 public methods, but it is not required and is not always the right thing.
-As explained in section~\ref{annotate-normal-behavior}, even when a method
+As explained in Section~\ref{annotate-normal-behavior}, even when a method
 has a complete specification, the annotations should indicate normal
 behavior:  behavior that will avoid exceptions.
 
@@ -486,7 +480,7 @@ eliminate a warning is to perform a run-time test
 null)> before a dereference of \<x> to avoid a warning about a potential
 null pointer dereference.  However, sometimes the checker issues a warning
 even though the code contains a run-time test.  Two common reasons are
-non-determinism in the expression being tested and or side effects to the
+non-determinism in the expression being tested and side effects to the
 expression after the run-time test.  For details and examples, see
 Section~\ref{type-refinement-side-effects}.
 
@@ -499,9 +493,8 @@ Search through this manual for the text of the warning message or for words
 that appear in it.
 
 If nothing else explains it, then
-open an issue (Section~\ref{reporting-bugs}) or ask on the
-\href{https://groups.google.com/forum/#!forum/checker-framework-discuss}{mailing
-  list}.  Be sure to say what you think it means or what specific part does
+open an issue (Section~\ref{reporting-bugs}).
+Be sure to say what you think it means or what specific part does
 not make sense to you, and what you have already done to try to understand it.
 
 
@@ -541,7 +534,7 @@ Section~\ref{checker-guarantees} states other limitations to a checker's
 guarantee, such as regarding concurrency.  Java's type system is also
 unsound in certain situations, such as for arrays and casts (however, the
 Checker Framework is sound for arrays and casts).  Java uses dynamic checks
-is some places it is unsound, so that errors are thrown at run time.  The
+in some places where it is unsound, so that errors are thrown at run time.  The
 pluggable type-checkers do not currently have built-in dynamic checkers to
 check for the places they are unsound.
 Writing dynamic checkers would be an interesting and valuable project.
@@ -723,7 +716,7 @@ does not report any possible errors, then your code is correct.
 
 Every sound tool suffers false positive errors.
 Wherever the Checker Framework issues an error, you can think of it as
-saying, ``I can't prove this code is safe,'' but the code might be safe for
+saying, ``I can't prove this code is safe'', but the code might be safe for
 some complex, tricky reason that is beyond the capabilities of its
 analysis.
 
@@ -772,7 +765,7 @@ situation.
 
 When reporting bugs, please focus on realistic scenarios.  We are sure that
 you can make up artificial code that stymies the type-checker!  Those bugs
-aren't a good use of your time to report nor the maintainers' time to
+are not a good use of your time to report, nor of the maintainers' time to
 evaluate and fix.  When reporting a bug, it's very helpful to minimize it
 to give a tiny example that is easy to evaluate and fix, but please also
 indicate how it arises in real-world, well-written code.
@@ -793,7 +786,7 @@ class MyClass {
     return "%d";
   }
 
-  void method m() {
+  void m() {
     String local = "%d";
     String.format(local, 5);    // Format String Checker verifies the call is safe
     String.format(field, 5);    // Format String Checker warns the call might not be safe
@@ -837,8 +830,8 @@ There are several reasons for this design choice.
   type-checker.
 
   A related issue is that determining which values can be returned by a
-  method $m$ requires analyzing $m$'s body, which requires analyzing
-  all the methods called by $m$, and so forth.  This quickly devolves to
+  method \textit{m} requires analyzing \textit{m}'s body, which requires analyzing
+  all the methods called by \textit{m}, and so forth.  This quickly devolves to
   analyzing the whole program.
   Determining all possible values assigned to a field is equally hard.
 
@@ -861,7 +854,7 @@ There are several reasons for this design choice.
 \item[Consistent behavior with or without pluggable type-checking]
   The \<.class> files produced with or without pluggable type-checking
   should specify the same types for all public fields and methods.  If
-  pluggable type-checking changed the those types, then users would be
+  pluggable type-checking changed those types, then users would be
   confused.  Depending on how a library was compiled, pluggable
   type-checking of a client program would give different results.
 
@@ -871,11 +864,49 @@ There are several reasons for this design choice.
 % programmers see inconsistent results, they should write types explicitly.
 
 
+\subsectionAndLabel{Why are some operations legal in constructors but not in methods?}{faq-field-initializers}
+
+Java permits you to initialize an instance field either in the constructor
+or in a field initializer.  The Checker Framework behaves as if the field
+initializer assignments are performed at the beginning of the constructor
+(after superclass construction), because that is how Java executes the
+program.
+
+Here is an example:
+
+\begin{Verbatim}
+class MyClass1 {
+  @Nullable Object field;
+  MyClass1() {
+    field = new Object();
+    field.toString(); // no possible NullPointerException
+  }
+}
+
+class MyClass2 {
+  @Nullable Object field = new Object(); // Same initialization as for MyClass1
+  MyClass2() {
+    field.toString(); // no possible NullPointerException
+  }
+}
+
+class MyClass3 {
+  @Nullable Object field;
+  void myMethod() {
+    field.toString(); // Nullness Checker warns: possible NullPointerException
+  }
+}
+\end{Verbatim}
+
+For consistency, the Checker Framework treats the \<MyClass1> and
+\<MyClass2> constructors the same.
+
+
 \subsectionAndLabel{Why doesn't the Checker Framework track relationships between variables?}{faq-relationships-between-variables}
 
 The Checker Framework estimates the possible run-time value of each
 variable, as expressed in a type system.  In general, the Checker Framework
-does estimate relationships between two variables, except for specific
+does not estimate relationships between two variables, except for specific
 relationships listed in Section~\ref{java-expressions-as-arguments}.
 
 For example, the Checker Framework does not track which variables are equal
@@ -883,7 +914,7 @@ to one another.  The Nullness Checker issues a warning, ``dereference of
 possibly-null reference y'', for expression \<y.toString()>:
 
 \begin{Verbatim}
-void nullnessExample1(@Nullable Object x) {
+  void nullnessExample1(@Nullable Object x) {
     Object y = x;
     if (x != null) {
       System.out.println(y.toString());
@@ -900,7 +931,7 @@ of the program, thanks to type refinement
 (Section~\ref{type-refinement}):
 
 \begin{Verbatim}
-  void nullnessExample12(@Nullable Object x) {
+  void nullnessExample2(@Nullable Object x) {
     if (x != null) {
       Object y = x;
       System.out.println(y.toString());
@@ -1000,7 +1031,7 @@ paths are feasible:  namely, [true, true] and [false, false].
 
 The Checker Framework is not path-sensitive, so it issues a warning.
 
-The lack of path-sensitivity can be viewed as special case of the fact that
+The lack of path-sensitivity can be viewed as a special case of the fact that
 the Checker Framework maintains a single estimate for each variable value,
 rather than tracking relationships between multiple variables
 (Section~\ref{faq-relationships-between-variables}).
@@ -1031,7 +1062,7 @@ syntax and by the Checker Framework.
 
 A type annotation on the receiver is treated exactly like a type annotation
 on any other formal parameter.  At each call site, the type of the argument
-must be a consistent with (a subtype of or equal to) the declaration of the
+must be consistent with (a subtype of or equal to) the declaration of the
 corresponding formal parameter.  If not, the type-checker issues a warning.
 
 Here is an example.  Suppose that \<@A Object> is a supertype of \<@B
@@ -1101,7 +1132,7 @@ Some older tools have inconsistent semantics for annotations on array and
 varargs elements.  Their semantics is unfortunate and confusing; developers
 should convert their code to use type annotations instead.
 Section~\ref{declaration-annotations-moved} explains how the Checker
-Framework handles declaration annotations in the meanwhile.
+Framework handles declaration annotations in the meantime.
 
 
 \subsectionAndLabel{What is the meaning of varargs annotations such as \<@English String @NonEmpty~...>?}{faq-varargs-syntax-meaning}
@@ -1132,7 +1163,7 @@ Either of these annotations
   void method(@English String ... x) {}
 \end{Verbatim}
 
-\noindent.
+\noindent
 applies to the element type. The annotation documents that the method takes an array of English strings.
 
 
@@ -1196,8 +1227,8 @@ expressiveness, the Lock Checker (see Chapter~\ref{lock-checker}) uses the
 \<@GuardedBy> with two distinct meanings.
 
 
-A final example of a type-and-declaration annotation is some \<@Nullable>
-or \<@NonNull> annotations that are intended to work both with modern tools
+A final example is \<@Nullable> and \<@NonNull> annotations
+that are intended to work both with modern tools
 that process type annotations and with old tools that were written before
 Java had type annotations.  Such type-and-declaration annotations were a
 temporary measure, intended to be used until the tool supported Java 8
@@ -1227,49 +1258,6 @@ error: scoping construct cannot be annotated with type-use annotation
 \end{Verbatim}
 
 
-\label{declaration-annotations-moved} % 2021-04-16 temporary, for backward compatibility
-\subsectionAndLabel{How does the Checker Framework handle obsolete declaration annotations?}{faq-declaration-annotations-moved}
-
-When a declaration annotation is an alias for a type annotation, the
-Checker Framework may move the annotation before replacing it by the
-canonical version. (If the declaration annotation is in an \<org.checkerframework>
-package, it is not moved.)
-
-For example,
-
-\begin{Verbatim}
-  import android.support.annotation.NonNull;
-  ...
-  @NonNull Object [] returnsArray();
-\end{Verbatim}
-
-\noindent
-is treated as if the programmer had written
-
-\begin{Verbatim}
-  import org.checkerframework.checker.nullness.qual.NonNull;
-  ...
-  Object @NonNull [] returnsArray();
-\end{Verbatim}
-
-\noindent
-because Android's \<@NonNull> annotation is a declaration annotation, which
-is understood to apply to the top-level return type of the annotated method.
-
-When possible, you should use type annotations rather than declaration
-annotations.
-
-Users who are using old Java 5--7 declaration annotations (for instance,
-from the FindBugs tool, which has not been maintained since 2015, and from
-its successor SpotBugs, which has not yet adopted type annotations, even
-though type annotations were added to Java in 2014) can use annotations in
-package \<org.checkerframework.checker.nullness.compatqual> to avoid name
-conflicts.  These are available in package
-\href{https://search.maven.org/search?q=a:checker-compat-qual}{\<checker-compat-qual>}
-on Maven Central.  Once the users are ready to upgrade to Java 8+ type
-annotations, those compatibility annotations are no longer necessary.
-
-
 \subsectionAndLabel{What is the difference between type annotations and declaration annotations?}{faq-type-vs-declaration-annotations}
 
 Java has two distinct varieties of annotation:  type annotations and
@@ -1292,7 +1280,7 @@ A \textbf{declaration annotation} can be written on any \textbf{declaration} (a 
     @Override      // this method overrides a method in a supertype
     void myMethod() { ... }
 
-    @SuppressWarnings(...) // compiler should not warn about the initialization expr
+    @SuppressWarnings(...) // compiler should not warn about the initialization expression
     int myField = INITIALIZATION-EXPRESSION;
 \end{Verbatim}
 
@@ -1314,7 +1302,7 @@ As a matter of style, declaration annotations are written on their own line, and
 \subsectionAndLabel{How should type annotations be formatted in source code?  Where should I write type annotations?}{faq-type-annotation-formatting}
 
 The
-\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-9.html#jls-9.7.4}{Java
+\href{https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.7.4}{Java
   Language Specification, section 9.7.4} says:  ``It is customary, though
 not required, to write declaration annotations before all other modifiers,
 and type annotations immediately before the type to which they apply.''
@@ -1322,14 +1310,14 @@ and type annotations immediately before the type to which they apply.''
 A type annotation should be written immediately before the type it
 qualifies, on the same line.  There should not be any modifiers (such as
 \<public>) between them.  This emphasizes that the type qualifier plus the
-Java basetype is a logical unit, which aids people reading the code.
+Java base type is a logical unit, which aids people reading the code.
 
 \begin{Verbatim}
   // Wrong formatting
   @Positive
   public int numItems;
 
-  // Right
+  // Correct formatting
   public @Positive int numItems;
 
   // Wrong formatting
@@ -1338,7 +1326,7 @@ Java basetype is a logical unit, which aids people reading the code.
     ...
   }
 
-  // Right
+  // Correct formatting
   public @Nullable Object getThing() {
     ...
   }
@@ -1352,7 +1340,7 @@ By contrast, declaration annotations are conventionally written on their own lin
     ...
   }
 
-  // Right
+  // Correct formatting
   @Deprecated
   URL toURL() {
     ...
@@ -1392,21 +1380,21 @@ Here is an example of a declaration annotation and a type annotation on a class 
 The popular
 \href{https://github.com/google/google-java-format}{google-java-format}
 tool formats type annotations incorrectly, with type annotations on their
-own line instead of on the same line with the type they modify.  (Actually,
-you can see from method \ahref{https://github.com/google/google-java-format/blob/master/core/src/main/java/com/google/googlejavaformat/java/JavaInputAstVisitor.java}{\<JavaInputAstVisitor>}\<.typeAnnotations()> that
-it handles two \<@Nullable> annotations correctly, but all other type
-annotations incorrectly!  This would be fixed by merging
-\ahref{https://github.com/google/google-java-format/pull/802}{pull request
+own line instead of on the same line as the type they modify.  (Actually,
+you can see from method \href{https://github.com/google/google-java-format/blob/master/core/src/main/java/com/google/googlejavaformat/java/JavaInputAstVisitor.java}{\<JavaInputAstVisitor>}\<.typeAnnotations()> that
+it handles two of the many type annotations --- \<@Nullable> and \<@NonNull> --- correctly,
+but all other type annotations incorrectly!  This would be fixed by merging
+\href{https://github.com/google/google-java-format/pull/802}{pull request
   \#802}.)
 Until this bug in google-java-format is fixed, you have these options:
 \begin{itemize}
 \item
   Run google-java-format via
-  \ahref{https://github.com/diffplug/spotless}{Spotless} and use the
-  \ahref{https://github.com/diffplug/spotless/tree/main/plugin-gradle#formatannotations}{\<formatAnnotations>}
+  \href{https://github.com/diffplug/spotless}{Spotless} and use the
+  \href{https://github.com/diffplug/spotless/tree/main/plugin-gradle#formatannotations}{\<formatAnnotations>}
   step to correct the formatting of type annotations.
 \item
-  Run google-java-format via \ahref{https://github.com/plume-lib/run-google-java-format}{run-google-java-format}
+  Run google-java-format via \href{https://github.com/plume-lib/run-google-java-format}{run-google-java-format}.
 %% Uncomment when the successor to https://github.com/palantir/palantir-java-format/pull/805 is merged.
 % \item
 %   Use
@@ -1414,6 +1402,101 @@ Until this bug in google-java-format is fixed, you have these options:
 %   which is a variant of google-java-format that fixes the bug (among other
 %   differences from google-java-format).
 \end{itemize}
+
+If you define a new type qualifier --- for example, because you are using the
+Subtyping Checker (Chapter~\ref{subtyping-checker}) or Fake Enum Checker
+(Chapter~\ref{fenum-checker}), or because you have created a new checker
+(Chapter~\ref{creating-a-checker}) --- then the above tools will format
+your new type qualifiers incorrectly, like declaration annotations.  Here is
+how to fix the formatting.
+
+\begin{itemize}
+\item
+  For \href{https://github.com/diffplug/spotless}{Spotless}, change your
+  configuration to indicate the new type qualifiers.  If you use the
+  \href{https://github.com/diffplug/spotless/tree/main/plugin-gradle}{Spotless
+  plugin for Gradle}, edit your \<build.gradle> file to change
+  \<formatAnnotations()> to (for example)
+  \<formatAnnotations().addTypeAnnotation("Growable").addTypeAnnotation("Modifiable")...>.
+\item
+  For
+  \href{https://github.com/plume-lib/run-google-java-format}{run-google-java-format},
+  make a pull request to change variable \<type\_annotations> in file
+  \href{https://github.com/plume-lib/run-google-java-format/blob/master/fixup-google-java-format.py}{fixup-google-java-format.py}.
+%% Write text about palantir-java-format when it is uncommented in the list above.
+\end{itemize}
+
+
+\label{declaration-annotations-moved} % 2021-04-16 temporary, for backward compatibility
+\subsectionAndLabel{How does the Checker Framework handle obsolete declaration annotations?}{faq-declaration-annotations-moved}
+
+When a declaration annotation is an alias for a type annotation, the
+Checker Framework may move the annotation before replacing it by the
+canonical version. (If the declaration annotation is in an \<org.checkerframework>
+package, it is not moved.)
+
+For example,
+
+\begin{Verbatim}
+  import android.support.annotation.NonNull;
+  ...
+  @NonNull Object [] returnsArray();
+\end{Verbatim}
+
+\noindent
+is treated as if the programmer had written
+
+\begin{Verbatim}
+  import org.checkerframework.checker.nullness.qual.NonNull;
+  ...
+  Object @NonNull [] returnsArray();
+\end{Verbatim}
+
+\noindent
+because Android's \<@NonNull> annotation is a declaration annotation, which
+is understood to apply to the top-level return type of the annotated method.
+
+When possible, you should use type annotations rather than declaration
+annotations, and write them in the correct location
+(Section~\ref{faq-type-annotation-formatting}).
+
+Users who are using old Java 5--7 declaration annotations (for instance,
+from the FindBugs tool, which has not been maintained since 2015, and from
+its successor SpotBugs, which has not yet adopted type annotations, even
+though type annotations were added to Java in 2014) can use annotations in
+package \<org.checkerframework.checker.nullness.compatqual> to avoid name
+conflicts.  These are available in package
+\href{https://central.sonatype.com/search?q=a:checker-compat-qual}{\<checker-compat-qual>}
+on Maven Central.  Once users are ready to upgrade to Java 8+ type
+annotations, those compatibility annotations are no longer necessary.
+
+
+\subsectionAndLabel{How do I convert from other tools' declaration annotations to type annotations?}{faq-declaration-annotations-convert}
+
+In order to convert from another tool's declaration annotations to the Checker Framework's type annotations,
+you need to change imports, rename annotations, move annotations written on arrays (see Section~\ref{faq-declaration-annotations-moved}), and move annotations to simple type names.
+
+For example, if a user writes
+
+\begin{Verbatim}
+import android.support.annotation.Nullable;
+...
+@Nullable
+public Map.Entry<Object, Object> intersects() { ... }
+\end{Verbatim}
+
+\noindent
+and then changes the import to
+\<org.checkerframework.checker.nullness.qual.Nullable>, the code will not
+compile.  (See Section~\ref{common-problems-non-typechecking} for more details.)
+The user needs to also move the \<@Nullable> annotation to a location where
+Java permits type annotations:
+
+\begin{Verbatim}
+import org.checkerframework.checker.nullness.qual.Nullable;
+...
+public Map.@Nullable Entry<Object, Object> intersects() { ... }
+\end{Verbatim}
 
 
 \sectionAndLabel{Semantics of type annotations}{faq-semantics-section}
@@ -1442,8 +1525,8 @@ method.
 \end{enumerate}
 
 You can also use a typestate checker (see
-\chapterpageref{typestate-checker}), but they have not been as extensively
-tested.
+\sectionpageref{typestate-checker}), but typestate checkers have not been as
+extensively tested.
 
 
 \subsectionAndLabel{Why are explicit and implicit bounds defaulted differently?}{faq-implicit-bounds}
@@ -1515,8 +1598,8 @@ Here are some style guidelines:
 
 \subsectionAndLabel{How should I annotate code that uses generics?}{faq-writing-generics}
 
-Suppose unannotated code contains a type parameter \code{<T>}.  How should
-you annotate that?
+Suppose unannotated code contains a declaration of a type parameter
+\code{<T>}.  How should you annotate that declaration?
 
 This is really a question about Java's generic types, so if you understand
 Java generics, this question is moot.  However, Java generics can be hard
@@ -1543,7 +1626,7 @@ using nullness annotations for concreteness.
   \code{T}.  Therefore, \code{<T extends Object>} is equivalent to
   \code{<T extends @NonNull Object>}.  It permits any type argument that is
   a subtype of \code{@NonNull Object}, which is any type argument whose
-  qualifier is \code{@NonNull} since \code{@NonNull} is the bottom type
+  qualifier is \code{@NonNull}, since \code{@NonNull} is the bottom type
   qualifier in the type qualifier hierarchy.
 
 \item[\code{<T extends @NonNull Object>}]
@@ -1649,7 +1732,7 @@ provenance.
 Types are a poor choice for expressing properties about timing, such as
 that action B will happen within 10 milliseconds of action A.  Types are
 not good for verifying the results of calculations; for example, they could
-ensure that code always call an \<encrypt> routine in the appropriate
+ensure that code always calls an \<encrypt> routine in the appropriate
 places, but not that the \<encrypt> routine is correctly implemented.
 Types are not a good solution for preventing infinite loops, except perhaps
 in special cases.
@@ -1711,8 +1794,8 @@ the declared type of the left-hand side.
   The return type of \<Sub.m> must be equal to or a subtype of the return
   type of \<Super.m> (this is called ``covariance'').
   %
-  The type of formal parameter $i$ of \<Sub.m> must be equal to or a
-  \emph{super}type of the type of formal parameter $i$ in \<Super.m> (this
+  The type of formal parameter \textit{i} of \<Sub.m> must be equal to or a
+  \emph{super}type of the type of formal parameter \textit{i} in \<Super.m> (this
   is called ``contravariance'').
 
 \end{itemize}
@@ -1784,11 +1867,11 @@ To improve performance:
   limit is so small that the Checker Framework might spend most of its time
   in garbage collection.  (If this is the case, the Checker Framework will
   issue a warning ``Garbage collection consumed over 25\% of CPU during the
-  past minute.")  For example, you might pass an argument like
-  \<-Xmx3g>, or set an environment variable like \<export
-  \_JAVA\_OPTIONS=-Xmx3g>, to permit the Checker Framework to use up to 3GB
-  of memory.  If you use Java 8, consider upgrading to Java 11 or Java 17, which have
-  better memory management.
+  past minute.'')  To permit the Checker Framework to use up to 4 GB of
+  memory, pass an argument like \<-Xmx4g> or set an environment variable
+  like \<export \_JAVA\_OPTIONS=-Xmx4g>.  Also consider upgrading to a more
+  recent release of Java, because older versions of Java
+  have worse memory management.
 \item
   Set your build system to perform \emph{incremental compilation}.  When
   compiling just a few source files (the size of a typical edit or commit),
@@ -1800,6 +1883,13 @@ To improve performance:
   uses Maven, consider switching to a more capable build system such as Gradle.)
   % (Note that some build systems have a bug, in that they unnecessarily always
   % re-run compilation that uses annotation processors.)
+\item
+  Write generic type arguments.  Often, generic type inference is the
+  slowest part of type-checking.  You can significantly speed up
+  type-checking by explicitly writing a few generic type arguments.  To
+  determine where to write them, temporarily set
+  \<-AslowTypecheckingSeconds> to a small value, such as 1.  Write type
+  arguments where \<slow.typechecking> warnings are issued.
 \end{itemize}
 
 If the Checker Framework is still too slow for you to run on every compilation,
@@ -1818,7 +1908,7 @@ Here are some reasons that the Checker Framework is slow.
   Its analysis is general; it interprets user-defined type systems whereas
   \<javac> hard-codes one type system and integrates it with other processing.
 \item
-  Its analysis are much richer.  \<javac> can take certain shortcuts that
+  Its analysis is much richer.  \<javac> can take certain shortcuts that
   are not correct for all possible type systems.
 \item
   It builds a control flow graph and performs a fixpoint analysis on it,
@@ -1851,16 +1941,16 @@ escape hatch, ``Semantic Versioning is all about conveying meaning by how
 the version number changes.''  It has not been updated in over a decade
 (since January 2013), has only ever been updated once (from
 1.0.0 to 2.0.0), and has
-% 87 as of 2023-04-07.
+% 87 as of 2023-04-07, 97 as of 2026-03-28.
 about 100 open issues.
-It is a proposal, not a standard nor an official definition.
+It is a proposal, not a standard or an official definition.
 Projects that claim to follow it often do so loosely.
 
 % The API also includes the Annotation File Utilities.
 If the Checker Framework strictly used semver.org's definition, every
 release would be a new major version, and the current version string would
 be
-% 213 releases as of: Version 3.33.0 (April 3, 2023)
+% 247 releases as of: Version 3.54.1 (2026-04-01)
 past version 200.0.0.
 Always incrementing the major version number would not convey meaning to
 its users --- for example, it would not indicate major new functionality or
@@ -1891,7 +1981,8 @@ An alternate approach is to use a bug detector such as
 or the
 tools built into Eclipse (see Section~\ref{faq-eclipse}) and IntelliJ\@.
 The \href{https://github.com/uber/NullAway}{NullAway} and
-\href{https://fbinfer.com/docs/next/checker-eradicate/}{Eradicate} tools are more
+% The eradicate checker has been removed from fbinfer.
+\href{https://fbinfer.com/docs/1.1.0/checker-eradicate/}{Eradicate} tools are more
 like sound type-checking than bug detection, but all of those tools accept
 unsoundness --- that is, false negatives or missed warnings --- in exchange
 for analysis speed.
@@ -1930,7 +2021,7 @@ differs from a bug detector in several ways:
   A type-checker uses a more sophisticated and precise analysis.  For
   example, it can take advantage of method annotations and annotations on
   generic type parameters, such as \code{List<@NonNull String>}.  An
-  example specific to the Nullness Checker (Section~\ref{nullness-checker},
+  example specific to the Nullness Checker (Chapter~\ref{nullness-checker}):
   no other tool correctly handles map keys or initialization.
 
   A bug detector does a more lightweight analysis.  This means that a bug
@@ -1941,7 +2032,7 @@ differs from a bug detector in several ways:
   errors.
 
 \item
-  Neither type checking nor bug detection subsumes the other.  A
+  Neither type-checking nor bug detection subsumes the other.  A
   type-checker finds problems that a bug detector cannot.  A bug detector
   finds problems that a type-checker does not:  there is no need for the
   type-checker to address style rules, when a bug detector is adequate.
@@ -1959,7 +2050,7 @@ The case study was on a well-tested program in daily use.  The Checker
 Framework tool found 8 nullness errors (that is, null pointer
 dereferences).  None of the other tools found any errors.  A follow-up 10
 years later found that Eclipse's nullness analysis found 0 of the errors,
-and  IntelliJ's nullness analyses found 3 of the errors, that the Nullness
+and IntelliJ's nullness analyses found 3 of the errors that the Nullness
 Checker found.
 
 The
@@ -1981,7 +2072,7 @@ Eclipse's nullness analysis is missing many features that the Checker
 Framework supports, such as handling of map keys, partially-initialized
 objects, method pre- and post-conditions, polymorphism, and a powerful
 dataflow analysis.  These are essential for practical verification of
-real-world code without poor precision.
+real-world code with good precision.
 Furthermore, Eclipse by default ignores unannotated code (even unannotated
 parameters within a method that contains other annotations).
 As a result, Eclipse is more useful for bug-finding than for verification,
@@ -2026,10 +2117,86 @@ NullAway is faster than the Nullness Checker and requires fewer annotations.
 
 NullAway is unsound:  even if NullAway issues no warnings, your code might
 crash with a null pointer exception.  Two differences are that NullAway
-makes unchecked assumptions about getter methods and NullAway assumes all
-objects are always fully initialized.  NullAway forces all generic
+makes unchecked assumptions about getter methods, and that NullAway assumes
+all objects are always fully initialized.  NullAway forces all generic
 arguments to be non-null, which is not an unsoundness but is less flexible
 than the Nullness Checker.
+
+
+\subsectionAndLabel{How does the Checker Framework compare with JSpecify?}{faq-jspecify}
+
+JSpecify defines the two annotations \<@NonNull> and \<@Nullable>.  This is
+one more possibility in addition to the other definitions of those
+annotations listed in Section~\ref{nullness-related-work}.  JSpecify is not
+an official standard.
+
+You can use the JSpecify annotations or the Checker Framework ones,
+whichever you prefer.  All nullness checkers we know of (e.g., Eclipse,
+EISOP, IntelliJ, NullAway, the Nullness Checker, SpotBugs) recognize the
+JSpecify and Nullness Checker versions of those two type annotations, so
+there is no tooling reason to prefer one over the other.  JSpecify has only
+nullness annotations, and none for the dozens of other type-checkers that
+the Checker Framework supports.
+
+The JSpecify specification language is weaker than what the Nullness
+Checker supports.  For example, JSpecify lacks a polymorphic qualifier such
+as \refqualclass{checker/nullness/qual}{PolyNull}, and it lacks method
+specifications (Section~\ref{nullness-method-annotations}).  It lacks
+annotations for initialization (Section~\ref{initialization-checker}), but
+you could consider that a benefit, if you always suppress all
+initialization warnings, opting for convenience and simplicity over sound
+checking.  Even if your code does not use all the specification power of
+the Nullness Checker, you will benefit from expressive specifications on
+libraries that your code uses.
+
+If you want precise, sound type-checking, you will need to use some
+Nullness Checker annotations.  You can mix two sets of annotations (those
+of JSpecify and of the Nullness Checker), or you can use just those of the
+Nullness Checker.  Both approaches work.
+
+JSpecify contains a notion of ``unspecified nullness''.  It is typically
+used for warning suppression in unannotated code, but doing so has two
+problems.  First, it makes your specification tool-dependent, because a
+JSpecify-compliant tool may have \emph{any} behavior (including issuing
+warnings or not issuing warnings) for code that uses ``unspecified
+nullness'' or uses a library that uses ``unspecified nullness''.  Second, it
+mixes notions of nullness specification and warning suppression, which are
+separate concepts.  The Checker Framework has well-defined behavior for all
+specifications, and it has rich facilities for warning suppression
+(Chapter~\ref{suppressing-warnings}).  For example, the \<-AskipUses>
+command-line option (Section~\ref{askipuses}) suppresses warnings relating
+to uses of unannotated libraries.
+
+The Checker Framework does not need JSpecify's \<@NullMarked>, which makes
+a checker treat unannotated references as \<@NonNull>.  The Nullness
+Checker by default treats unannotated references as \<@NonNull>.  The
+Checker Framework does not need JSpecify's \<@NullUnmarked>, which sets the
+default to ``unspecified nullness''.  The Nullness Checker supports
+explicit warning suppressions instead.
+
+
+\subsectionAndLabel{How does the Checker Framework compare with the EISOP Checker Framework?}{faq-eisop}
+
+The \href{https://github.com/eisop/checker-framework}{EISOP Checker
+Framework} (also called the \href{https://eisop.github.io/}{EISOP
+Framework}) is a fork of the Checker Framework.  The main difference is
+that the EISOP Nullness Checker supports one interpretation of the full
+JSpecify ``standard'' (see Section~\ref{faq-jspecify}), whereas the Checker
+Framework's Nullness Checker only supports the non-ambiguous parts of
+JSpecify.
+
+The EISOP Checker Framework is an ``unfriendly fork'' in that it
+incorporates improvements from the Checker Framework, but its developers do
+not contribute back to the Checker Framework:  they only incorporate their
+improvements and bug fixes in their own version.  The EISOP Checker
+Framework has introduced some bugs that do not exist in the Checker
+Framework, and it has fixed some bugs that exist in the Checker Framework,
+so neither one is strictly more correct than the other.  If you use the
+EISOP Checker Framework, please encourage its developers to be good
+open-source citizens and contribute back to the Checker Framework.  We wish
+the EISOP project well, because any project that gets more people to verify
+their code (by writing nullness specifications and running a checker) is a
+net positive for the programming community.
 
 
 \subsectionAndLabel{How does the Checker Framework compare with the JDK's \<Optional> type?}{faq-optional}
@@ -2045,7 +2212,7 @@ nullness and \<Optional> and the benefits of each.
 
 \subsectionAndLabel{How does pluggable type-checking compare with JML?}{faq-jml}
 
-\href{http://www.eecs.ucf.edu/~leavens/JML/index.shtml}{JML}, the Java Modeling
+\href{https://www.eecs.ucf.edu/~leavens/JML/index.shtml}{JML}, the Java Modeling
 Language~\cite{LeavensBR2006:JML}, is a language for writing formal
 specifications.
 
@@ -2071,7 +2238,7 @@ The Checker Framework is not an official part of Java.
 The Checker Framework relies on type annotations, which became part of Java
 with Java 8 (released in March 2014).  For more about type annotations, see the
 \href{https://checkerframework.org/jsr308/jsr308-faq.html#pluggable-type-checking-in-java}{Type
-  Annotations (JSR 308) FAQ} for more details.
+  Annotations (JSR 308) FAQ}.
 
 
 \subsectionAndLabel{What is the relationship between the Checker Framework and JSR 305?}{faq-jsr-305}
@@ -2139,6 +2306,8 @@ third-party tools.  The Checker Framework is one such tool.
 % LocalWords:  intExample1 intExample2 requiresPositive RUNTIME NullAway
 % LocalWords:  IllegalFormatException typequals typedef runtime nullaway
 % LocalWords:  covariance InheritedAnnotation someMethod jml jsr Java''
-% LocalWords:  checkers'' covariance'' contravariance'' Xmx3g lookups
+% LocalWords:  checkers'' covariance'' contravariance'' Xmx4g lookups
 % LocalWords:  checkerframework basetype strictfp JavaInputAstVisitor
-% LocalWords:  typeAnnotations formatannotations semver org's
+% LocalWords:  typeAnnotations formatannotations semver org's jspecify
+% LocalWords:  EISOP PolyNull eisop JSpecify Askipuses NullMarked
+% LocalWords:  NullUnmarked

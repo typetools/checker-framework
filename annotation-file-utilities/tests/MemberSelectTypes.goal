@@ -1,0 +1,38 @@
+import java.util.Map;
+
+public class MemberSelectTypes<T extends java.lang.@Anno(0) Object & java.lang.@Anno(1) Comparable>
+    extends java.lang.@Anno(2) Object implements java.io.@Anno(3) Serializable {
+
+  class Inner {
+    void m(@A MemberSelectTypes<T>.Inner this) {}
+  }
+
+  static class StaticInner {
+    void m(MemberSelectTypes.@B StaticInner this) {}
+  }
+
+  java.lang.@C Object o;
+  java.util.Map.@D Entry<java.lang.@E String, java.util.Map.@F Entry<Object, Object>> m1;
+  Map.@G Entry<java.lang.@H String, Map.@I Entry<Object, Object>> m2;
+  Map<@H MemberSelectTypes.Inner, MemberSelectTypes.@I StaticInner> m3;
+  Map.@G Entry<Map.@H Entry<Map.@I Entry<Map.@K Entry<Object, Object>, Object>, Object>, Object> m4;
+  @J MemberSelectTypes.Inner i;
+  MemberSelectTypes.@K StaticInner s;
+
+  java.lang.@L Object m(
+      java.lang.@M Object o, @M MemberSelectTypes.Inner i, MemberSelectTypes.@M StaticInner s) {
+    java.lang.@N Object o2 = (java.lang.@O Object) o;
+    @N MemberSelectTypes.Inner i2 = (@O MemberSelectTypes.Inner) i;
+    MemberSelectTypes.@N StaticInner s2 = (MemberSelectTypes.@O StaticInner) s;
+    o2 = new java.lang.@P Object();
+    i2 = new @P MemberSelectTypes.Inner();
+    s2 = new MemberSelectTypes.@P StaticInner();
+    java.lang.@Q Object[] os = new java.lang.@R Object[1];
+    @Q MemberSelectTypes.Inner[] is = new @R MemberSelectTypes.Inner[1];
+    MemberSelectTypes.@Q StaticInner[] ss = new MemberSelectTypes.@R StaticInner[1];
+    boolean b = o instanceof java.lang.@S Object;
+    b = o instanceof @S MemberSelectTypes.Inner;
+    b = o instanceof MemberSelectTypes.@S StaticInner;
+    return o2;
+  }
+}

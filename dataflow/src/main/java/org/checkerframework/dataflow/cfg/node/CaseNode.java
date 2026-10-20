@@ -9,7 +9,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * A node for a case in a switch statement. Although a case has no abstract value, it can imply
@@ -35,6 +35,9 @@ public class CaseNode extends Node {
    */
   protected final List<Node> caseExprs;
 
+  /** The guard (the expression in the {@code when} clause) for this case. */
+  protected final @Nullable Node guard;
+
   /**
    * Create a new CaseNode.
    *
@@ -42,14 +45,20 @@ public class CaseNode extends Node {
    * @param selectorExprAssignment the Node for the assignment of the switch selector expression to
    *     a synthetic local variable
    * @param caseExprs the case expression(s) to match the switch expression against
+   * @param guard the guard expression or null
    * @param types a factory of utility methods for operating on types
    */
   public CaseNode(
-      CaseTree tree, AssignmentNode selectorExprAssignment, List<Node> caseExprs, Types types) {
+      CaseTree tree,
+      AssignmentNode selectorExprAssignment,
+      List<Node> caseExprs,
+      @Nullable Node guard,
+      Types types) {
     super(types.getNoType(TypeKind.NONE));
     this.tree = tree;
     this.selectorExprAssignment = selectorExprAssignment;
     this.caseExprs = caseExprs;
+    this.guard = guard;
   }
 
   /**
@@ -72,6 +81,15 @@ public class CaseNode extends Node {
     return caseExprs;
   }
 
+  /**
+   * Gets the node for the guard (the expression in the {@code when} clause).
+   *
+   * @return the node for the guard
+   */
+  public @Nullable Node getGuard() {
+    return guard;
+  }
+
   @Override
   public CaseTree getTree() {
     return tree;
@@ -84,15 +102,14 @@ public class CaseNode extends Node {
 
   @Override
   public String toString() {
-    return "case " + StringsPlume.join(", ", getCaseOperands()) + ":";
+    return "case " + StringsP.join(", ", getCaseOperands()) + ":";
   }
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof CaseNode)) {
+    if (!(obj instanceof CaseNode other)) {
       return false;
     }
-    CaseNode other = (CaseNode) obj;
     return getSwitchOperand().equals(other.getSwitchOperand())
         && getCaseOperands().equals(other.getCaseOperands());
   }

@@ -12,12 +12,16 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AnalysisResult;
@@ -26,6 +30,7 @@ import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.block.RegularBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
+import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlockImpl;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.block.SpecialBlockImpl;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -95,7 +100,7 @@ public class ControlFlowGraph implements UniqueId {
 
   /**
    * All return nodes (if any) encountered. Only includes return statements that actually return
-   * something
+   * something.
    */
   protected final List<ReturnNode> returnNodes;
 
@@ -133,6 +138,54 @@ public class ControlFlowGraph implements UniqueId {
     this.returnNodes = returnNodes;
     this.declaredClasses = declaredClasses;
     this.declaredLambdas = declaredLambdas;
+  }
+
+  /**
+   * Verify that this is a complete and well-formed CFG, i.e. that all internal invariants hold.
+   *
+   * @throws IllegalStateException if some internal invariant is violated
+   */
+  public void checkInvariants() {
+    // TODO: this is a big data structure with many more invariants...
+    for (Block b : getAllBlocks()) {
+
+      // Each node in the block should have this block as its parent.
+      for (Node n : b.getNodes()) {
+        if (!Objects.equals(n.getBlock(), b)) {
+          throw new IllegalStateException(
+              "Node "
+                  + n
+                  + " in block "
+                  + b
+                  + " incorrectly believes it belongs to "
+                  + n.getBlock());
+        }
+      }
+
+      // Each successor should have this block in its predecessors.
+      for (Block succ : b.getSuccessors()) {
+        if (!succ.getPredecessors().contains(b)) {
+          throw new IllegalStateException(
+              "Block "
+                  + b
+                  + " has successor "
+                  + succ
+                  + " but does not appear in that successor's predecessors");
+        }
+      }
+
+      // Each predecessor should have this block in its successors.
+      for (Block pred : b.getPredecessors()) {
+        if (!pred.getSuccessors().contains(b)) {
+          throw new IllegalStateException(
+              "Block "
+                  + b
+                  + " has predecessor "
+                  + pred
+                  + " but does not appear in that predecessor's successors");
+        }
+      }
+    }
   }
 
   /**
@@ -188,25 +241,20 @@ public class ControlFlowGraph implements UniqueId {
    */
   public Set<Block> getAllBlocks(
       @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this) {
-    Set<Block> visited = new HashSet<>();
+    Set<Block> visited = new LinkedHashSet<>();
     // worklist is always a subset of visited; any block in worklist is also in visited.
     Queue<Block> worklist = new ArrayDeque<>();
-    Block cur = entryBlock;
+    worklist.add(entryBlock);
     visited.add(entryBlock);
 
     // traverse the whole control flow graph
-    while (true) {
-      if (cur == null) {
-        break;
-      }
-
+    while (!worklist.isEmpty()) {
+      Block cur = worklist.remove();
       for (Block b : cur.getSuccessors()) {
         if (visited.add(b)) {
           worklist.add(b);
         }
       }
-
-      cur = worklist.poll();
     }
 
     return visited;
@@ -223,6 +271,74 @@ public class ControlFlowGraph implements UniqueId {
     for (Block b : getAllBlocks()) {
       result.addAll(b.getNodes());
     }
+    return result;
+  }
+
+  /**
+   * Returns the set of all basic blocks in this control flow graph, <b>except</b> those that are
+   * only reachable via an exception whose type is ignored by parameter {@code
+   * shouldIgnoreException}.
+   *
+   * @param shouldIgnoreException returns true if it is passed a {@code TypeMirror} that should be
+   *     ignored
+   * @return the set of all basic blocks in this control flow graph, <b>except</b> those that are
+   *     only reachable via an exception whose type is ignored by {@code shouldIgnoreException}
+   */
+  public Set<Block> getAllBlocks(
+      @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this,
+      Function<TypeMirror, Boolean> shouldIgnoreException) {
+    // This is the return value of the method.
+    Set<Block> visited = new LinkedHashSet<>();
+    // `worklist` is always a subset of `visited`; any block in `worklist` is also in `visited`.
+    Queue<Block> worklist = new ArrayDeque<>();
+    worklist.add(entryBlock);
+    visited.add(entryBlock);
+
+    // Traverse the whole control flow graph.
+    while (!worklist.isEmpty()) {
+      Block cur = worklist.remove();
+      if (cur instanceof ExceptionBlock exceptionBlock) {
+        for (Map.Entry<TypeMirror, Set<Block>> entry :
+            exceptionBlock.getExceptionalSuccessors().entrySet()) {
+          if (!shouldIgnoreException.apply(entry.getKey())) {
+            for (Block b : entry.getValue()) {
+              if (visited.add(b)) {
+                worklist.add(b);
+              }
+            }
+          }
+        }
+        Block b = ((SingleSuccessorBlockImpl) cur).getSuccessor();
+        if (b != null && visited.add(b)) {
+          worklist.add(b);
+        }
+
+      } else {
+        for (Block b : cur.getSuccessors()) {
+          if (visited.add(b)) {
+            worklist.add(b);
+          }
+        }
+      }
+    }
+
+    return visited;
+  }
+
+  /**
+   * Returns the list of all nodes in this control flow graph, <b>except</b> those that are only
+   * reachable via an exception whose type is ignored by parameter {@code shouldIgnoreException}.
+   *
+   * @param shouldIgnoreException returns true if it is passed a {@code TypeMirror} that should be
+   *     ignored
+   * @return the list of all nodes in this control flow graph, <b>except</b> those that are only
+   *     reachable via an exception whose type is ignored by {@code shouldIgnoreException}
+   */
+  public List<Node> getAllNodes(
+      @UnknownInitialization(ControlFlowGraph.class) ControlFlowGraph this,
+      Function<TypeMirror, Boolean> shouldIgnoreException) {
+    List<Node> result = new ArrayList<>();
+    getAllBlocks(shouldIgnoreException).forEach(b -> result.addAll(b.getNodes()));
     return result;
   }
 
@@ -279,13 +395,13 @@ public class ControlFlowGraph implements UniqueId {
   }
 
   /**
-   * Get the {@link MethodTree} of the CFG if the argument {@link Tree} maps to a {@link Node} in
-   * the CFG, or null otherwise.
+   * Returns the {@link MethodTree} of the CFG if the argument {@link Tree} maps to a {@link Node}
+   * in the CFG, or null otherwise.
    *
    * @param t a tree that might correspond to a node in the CFG
    * @return the method that contains {@code t}'s Node, or null
    */
-  public @Nullable MethodTree getContainingMethod(Tree t) {
+  public @Nullable MethodTree getEnclosingMethod(Tree t) {
     if (treeLookup.containsKey(t) && underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
       UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
       return cfgMethod.getMethod();
@@ -294,13 +410,13 @@ public class ControlFlowGraph implements UniqueId {
   }
 
   /**
-   * Get the {@link ClassTree} of the CFG if the argument {@link Tree} maps to a {@link Node} in the
-   * CFG, or null otherwise.
+   * Returns the {@link ClassTree} of the CFG if the argument {@link Tree} maps to a {@link Node} in
+   * the CFG, or null otherwise.
    *
    * @param t a tree that might be within a class
    * @return the class that contains the given tree, or null
    */
-  public @Nullable ClassTree getContainingClass(Tree t) {
+  public @Nullable ClassTree getEnclosingClass(Tree t) {
     if (treeLookup.containsKey(t) && underlyingAST.getKind() == UnderlyingAST.Kind.METHOD) {
       UnderlyingAST.CFGMethod cfgMethod = (UnderlyingAST.CFGMethod) underlyingAST;
       return cfgMethod.getClassTree();
@@ -349,7 +465,7 @@ public class ControlFlowGraph implements UniqueId {
     if (astString.length() > 65) {
       astString = "\"" + astString.substring(0, 60) + "\"";
     }
-    result.add("underlyingAST=" + underlyingAST);
+    result.add("underlyingAST=" + astString);
     result.add("treeLookup=" + AnalysisResult.treeLookupToString(treeLookup));
     result.add("convertedTreeLookup=" + AnalysisResult.treeLookupToString(convertedTreeLookup));
     result.add("postfixLookup=" + postfixNodeLookup);

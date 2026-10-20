@@ -1,0 +1,139 @@
+package org.checkerframework.afu.scenelib.util.coll;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import org.checkerframework.checker.modifiability.qual.Growable;
+import org.checkerframework.checker.modifiability.qual.IteratorPolyMod;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
+import org.checkerframework.checker.modifiability.qual.PolyModifiable;
+import org.checkerframework.checker.modifiability.qual.PolyShrinkable;
+import org.checkerframework.checker.modifiability.qual.Replaceable;
+import org.checkerframework.checker.modifiability.qual.Shrinkable;
+import org.checkerframework.checker.modifiability.qual.Ungrowable;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
+
+/**
+ * A {@link WrapperMap} is a map all of whose methods delegate by default to those of a supplied
+ * {@linkplain #back backing map}. Subclasses can add or override methods. Compare to {@link
+ * java.io.FilterInputStream}.
+ *
+ * @param <K> the type of keys for the map
+ * @param <V> the type of values for the map
+ */
+public class WrapperMap<K, V> implements Map<K, V> {
+  /** The backing map. */
+  protected final @Modifiable Map<K, V> back;
+
+  /**
+   * Constructs a new {@link WrapperMap} with the given backing map.
+   *
+   * @param back the backing map
+   */
+  protected WrapperMap(@Modifiable Map<K, V> back) {
+    this.back = back;
+  }
+
+  @Override
+  @SideEffectsOnly("this")
+  public void clear(@Shrinkable WrapperMap<K, V> this) {
+    back.clear();
+  }
+
+  @Override
+  public boolean containsKey(Object key) {
+    return back.containsKey(key);
+  }
+
+  @Override
+  public boolean containsValue(Object value) {
+    return back.containsValue(value);
+  }
+
+  @SuppressWarnings({
+    "keyfor", // use of delegate object
+    "modifiability:return" // see comment in body
+  })
+  @Override
+  public @IteratorPolyMod @PolyShrinkable @Ungrowable Set<Map.@PolyModifiable Entry<K, V>> entrySet(
+      @PolyModifiable WrapperMap<K, V> this) {
+    // `back` is @Modifiable, so each of its views is at least as capable as the polymorphic
+    // qualifier requires, whatever this WrapperMap's qualifier is.
+    return back.entrySet();
+  }
+
+  @Override
+  public V get(Object key) {
+    return back.get(key);
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return back.isEmpty();
+  }
+
+  @SuppressWarnings({
+    "keyfor", // use of delegate object
+    "modifiability:return" // see comment in body
+  })
+  @Override
+  public @IteratorPolyMod @PolyShrinkable @Ungrowable Set<K> keySet(
+      @PolyShrinkable WrapperMap<K, V> this) {
+    // `back` is @Modifiable, so each of its views is at least as capable as the polymorphic
+    // qualifier requires, whatever this WrapperMap's qualifier is.
+    return back.keySet();
+  }
+
+  @Override
+  @SuppressWarnings({
+    "keyfor:contracts.postcondition", // backing map
+    "nullness:return" // generics lower bound problem
+  })
+  @SideEffectsOnly("this")
+  public V put(@Growable @Replaceable WrapperMap<K, V> this, K key, V value) {
+    return back.put(key, value);
+  }
+
+  @Override
+  @SideEffectsOnly("this")
+  public void putAll(
+      @Growable @Replaceable WrapperMap<K, V> this, Map<? extends K, ? extends V> m) {
+    back.putAll(m);
+  }
+
+  @Override
+  @SuppressWarnings("nullness:return") // generics lower bound problem
+  @SideEffectsOnly("this")
+  public V remove(@Shrinkable WrapperMap<K, V> this, Object key) {
+    return back.remove(key);
+  }
+
+  @Override
+  public int size() {
+    return back.size();
+  }
+
+  @SuppressWarnings("modifiability:return") // see comment in body
+  @Override
+  public @IteratorPolyMod @PolyShrinkable @Ungrowable Collection<V> values(
+      @PolyShrinkable WrapperMap<K, V> this) {
+    // `back` is @Modifiable, so each of its views is at least as capable as the polymorphic
+    // qualifier requires, whatever this WrapperMap's qualifier is.
+    return back.values();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    return back.equals(o);
+  }
+
+  @Override
+  public int hashCode() {
+    return back.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return back.toString();
+  }
+}

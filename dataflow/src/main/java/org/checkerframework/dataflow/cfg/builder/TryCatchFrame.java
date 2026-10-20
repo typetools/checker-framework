@@ -9,18 +9,26 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.UnionType;
 import javax.lang.model.util.Types;
-import org.plumelib.util.IPair;
 
 /**
  * A TryCatchFrame contains an ordered list of catch labels that apply to exceptions with specific
  * types.
  */
 /*package-private*/ class TryCatchFrame implements TryFrame {
+
+  /**
+   * The type caught by a catch block, and the label of that catch block.
+   *
+   * @param caughtType the type caught by the catch block
+   * @param label the label of the catch block
+   */
+  /*package-private*/ record CatchLabel(TypeMirror caughtType, Label label) {}
+
   /** The Types utilities. */
   protected final Types types;
 
-  /** An ordered list of pairs because catch blocks are ordered. */
-  protected final List<IPair<TypeMirror, Label>> catchLabels;
+  /** An ordered list of catch labels, because catch blocks are ordered. */
+  protected final List<CatchLabel> catchLabels;
 
   /**
    * Construct a TryCatchFrame.
@@ -28,7 +36,7 @@ import org.plumelib.util.IPair;
    * @param types the Types utilities
    * @param catchLabels the catch labels
    */
-  public TryCatchFrame(Types types, List<IPair<TypeMirror, Label>> catchLabels) {
+  public TryCatchFrame(Types types, List<CatchLabel> catchLabels) {
     this.types = types;
     this.catchLabels = catchLabels;
   }
@@ -39,8 +47,8 @@ import org.plumelib.util.IPair;
       return "TryCatchFrame: no catch labels.";
     } else {
       StringJoiner sb = new StringJoiner(System.lineSeparator(), "TryCatchFrame: ", "");
-      for (IPair<TypeMirror, Label> ptml : this.catchLabels) {
-        sb.add(ptml.first.toString() + " -> " + ptml.second.toString());
+      for (CatchLabel catchLabel : this.catchLabels) {
+        sb.add(catchLabel.caughtType() + " -> " + catchLabel.label());
       }
       return sb.toString();
     }
@@ -70,22 +78,21 @@ import org.plumelib.util.IPair;
     // Otherwise, the thrown type and the caught type are unrelated declared types, so they do
     // not overlap on any non-null value.
 
-    while (!(thrown instanceof DeclaredType)) {
+    while (!(thrown instanceof DeclaredType declaredThrown)) {
       assert thrown instanceof TypeVariable : "thrown type must be a variable or a declared type";
       thrown = ((TypeVariable) thrown).getUpperBound();
     }
-    DeclaredType declaredThrown = (DeclaredType) thrown;
     assert thrown != null : "thrown type must be bounded by a declared type";
 
-    for (IPair<TypeMirror, Label> pair : catchLabels) {
-      TypeMirror caught = pair.first;
+    for (CatchLabel catchLabel : catchLabels) {
+      TypeMirror caught = catchLabel.caughtType();
       boolean canApply = false;
 
       if (caught.getKind() == TypeKind.DECLARED) {
         DeclaredType declaredCaught = (DeclaredType) caught;
         if (types.isSubtype(declaredThrown, declaredCaught)) {
           // No later catch blocks can apply.
-          labels.add(pair.second);
+          labels.add(catchLabel.label());
           return true;
         } else if (types.isSubtype(declaredCaught, declaredThrown)) {
           canApply = true;
@@ -100,7 +107,7 @@ import org.plumelib.util.IPair;
           DeclaredType declaredAlt = (DeclaredType) alternative;
           if (types.isSubtype(declaredThrown, declaredAlt)) {
             // No later catch blocks can apply.
-            labels.add(pair.second);
+            labels.add(catchLabel.label());
             return true;
           } else if (types.isSubtype(declaredAlt, declaredThrown)) {
             canApply = true;
@@ -109,7 +116,7 @@ import org.plumelib.util.IPair;
       }
 
       if (canApply) {
-        labels.add(pair.second);
+        labels.add(catchLabel.label());
       }
     }
 

@@ -1,0 +1,26 @@
+package annotations.tests.classfile.foo:
+annotation @A: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+annotation @B: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+	String value
+
+// annotation @C: @Retention(value=CLASS) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @C: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+	int fieldA
+	String fieldB
+
+package annotations.tests.classfile.cases:
+class TestMethodReceiver:
+
+  method test()V :
+  	receiver : @A
+  						 @B(value="first method")
+
+	method test2()V :
+	  receiver : @C(fieldA=2, fieldB="rec")
+
+	method test3()V :
+		receiver : @A
+
+	method test4()V :
+		receiver : @B(value="last method")

@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
 
 public class GenericsCasts {
   // Cast from a raw type to a generic type
@@ -17,7 +18,7 @@ public class GenericsCasts {
   void m() {
     // Cast from a wildcard to a normal type argument.
     // Warning only with -AcheckCastElementType.
-    // TODO:: warning: (cast.unsafe)
+    // TODO:: warning: [cast.unsafe]
     // :: warning: [unchecked] unchecked cast
     Data<GenericsCasts> c = (Data<GenericsCasts>) forName("HaHa!");
   }
@@ -26,7 +27,7 @@ public class GenericsCasts {
   // are currently problematic.
   // TODO: try to find a problem with skipping this check.
   class Test<K extends Object, V extends Object> {
-    class Entry<K extends Object, V extends Object> extends LinkedList<K> {}
+    @Modifiable class Entry<K extends Object, V extends Object> extends LinkedList<K> {}
 
     class Queue<T extends Object> {
       List<? extends T> poll() {
@@ -37,7 +38,7 @@ public class GenericsCasts {
     void trouble() {
       Queue<K> queue = new Queue<>();
       // Warning only with -AcheckCastElementType.
-      // TODO:: warning: (cast.unsafe)
+      // TODO:: warning: [cast.unsafe]
       // :: warning: [unchecked] unchecked cast
       Entry<K, V> e = (Entry<K, V>) queue.poll();
     }

@@ -2,6 +2,7 @@
 
 import java.util.List;
 import java.util.Optional;
+import org.checkerframework.dataflow.qual.*;
 
 /**
  * Test case for rule #3: "Prefer alternative APIs over Optional.isPresent() and Optional.get()."
@@ -13,6 +14,7 @@ public class Marks3aJdk11 {
       return 42;
     }
 
+    @Pure
     String getName() {
       return "Fozzy Bear";
     }
@@ -21,7 +23,7 @@ public class Marks3aJdk11 {
   String customerNameByID_acceptable3(List<Customer> custList, int custID) {
     Optional<Customer> opt = custList.stream().filter(c -> c.getID() == custID).findFirst();
 
-    // :: warning: (prefer.map.and.orelse)
+    // :: warning: [prefer.map.and.orelse]
     return opt.isEmpty() ? "UNKNOWN" : opt.get().getName();
   }
 }

@@ -12,43 +12,43 @@ public class CompoundAssignment {
 
   public void refinements() {
     field = "hello";
-    // :: error: (compound.assignment)
+    // :: error: [compound.assignment]
     field += method();
-    // :: error: (assignment)
-    // :: error: (compound.assignment)
+    // :: error: [assignment]
+    // :: error: [compound.assignment]
     @StringVal("hellohellohello") String test = field += method();
   }
 
   @StringVal("hello") String method() {
-    // :: error: (assignment)
+    // :: error: [assignment]
     field = "goodbye";
     return "hello";
   }
 
   void value() {
     @StringVal("hello") String s = "hello";
-    // :: error: (compound.assignment)
+    // :: error: [compound.assignment]
     s += "hello";
 
     @IntVal(1) int i = 1;
-    // :: error: (compound.assignment)
+    // :: error: [compound.assignment]
     i += 1;
 
     @IntVal(2) int j = 2;
-    // :: error: (compound.assignment)
+    // :: error: [compound.assignment]
     j += 2;
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     @IntVal(4) int four = j;
   }
 
   void value2() {
     @StringVal("hello") String s = "hello";
-    // :: error: (assignment)
+    // :: error: [assignment]
     s = s + "hello";
 
     @IntVal(1) int i = 1;
-    // :: error: (assignment)
+    // :: error: [assignment]
     i = i + 1;
   }
 
@@ -58,7 +58,7 @@ public class CompoundAssignment {
     if (afield == 5) {
       afield += 5;
     }
-    // :: error: (compound.assignment)
+    // :: error: [compound.assignment]
     afield += 2;
   }
 
@@ -66,7 +66,7 @@ public class CompoundAssignment {
     if (aparam == 5) {
       aparam += 5;
     }
-    // :: error: (compound.assignment)
+    // :: error: [compound.assignment]
     aparam += 2;
   }
 
@@ -81,7 +81,7 @@ public class CompoundAssignment {
     if (alocal == 5) {
       alocal += 5;
     }
-    // :: error: (compound.assignment)
+    // :: error: [compound.assignment]
     alocal += 2;
   }
 
@@ -95,7 +95,7 @@ public class CompoundAssignment {
 
   void errorCompundAssignments() {
     @StringVal("hello") String s = "hello";
-    // :: error: (compound.assignment)
+    // :: error: [compound.assignment]
     s += "";
   }
 }

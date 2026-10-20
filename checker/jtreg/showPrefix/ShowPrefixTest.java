@@ -1,7 +1,7 @@
 /*
  * @test
  *
- * @compile/fail/ref=ShowPrefixTest.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker ShowPrefixTest.java -AshowPrefixInWarningMessages
+ * @compile/fail/ref=ShowPrefixTest.goal -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker ShowPrefixTest.java -AshowPrefixInWarningMessages
  */
 
 import org.checkerframework.checker.nullness.qual.NonNull;

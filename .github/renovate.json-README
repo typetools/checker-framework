@@ -13,6 +13,3 @@ This schedule doesn't work:  Renovate accepts it but updates the dependency ever
       "schedule": ["on the last day of the month"]
 This schedule doesn't work:  Renovate accepts it but updates the dependency every day.
       "schedule": ["* 23 28 * *"]
-Or, more likely, the problems were with
-      "matchPackageNames": ["aws-java-sdk-bom"],
-which I used for both of the above.

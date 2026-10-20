@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Annotating libraries}{annotating-libraries}
 
 When your code uses a library that is not currently being compiled,
@@ -66,7 +65,7 @@ You can write annotations for a library, and make them known to a checker, in tw
   %% Leave out this complication.
   % This approach is possible with annotated source code.
 
-  Then, when check a client of the library,
+  Then, when checking a client of the library,
   supply the ``stub file'' textually to the Checker Framework.
 
   This approach does not require you to compile the library source
@@ -197,8 +196,8 @@ documentation.  Here are reasons for this rule:
   but globally inconsistent, or might not read all the documentation of the
   class to understand how it works.
 \item
-  It is not much more effort to annotate an entire class versus one method
-  or field.  In either case it is usually necessary to understand the entire
+  It is only a bit more effort to annotate an entire class than to annotate one
+  method or field.  In either case it is usually necessary to understand the entire
   class's design and implementation.  Once you have done that, you might as
   well annotate the whole thing.
 \item
@@ -228,7 +227,7 @@ This section describes how to create an annotated library.
 
 \begin{enumerate}
 \item See the
-  \href{https://search.maven.org/search?q=org.checkerframework.annotatedlib}{\<org.checkerframework.annotatedlib>
+  \href{https://central.sonatype.com/search?q=org.checkerframework.annotatedlib}{\<org.checkerframework.annotatedlib>
     group in the Maven Central Repository}
   to find out whether an annotated version of the library already exists.
 %% This adds clutter to the source code, so omit the step from these instructions.
@@ -282,7 +281,7 @@ This section describes how to create an annotated library.
 %  \<-AprintUnannotatedMethods> command-line argument while type-checking a
 %  client of the library.
 
-  % This is a strong recomendation, but not a requirement.  @AnnotatedFor
+  % This is a strong recommendation, but not a requirement.  @AnnotatedFor
   % can be written on a method as well.
   When you annotate a file, annotate the whole thing, not just a few of its
   methods.  Add an
@@ -326,7 +325,7 @@ This section describes how to create an annotated library.
     into your fork, add annotations to any newly-added methods in classes
     that are annotated with \<@AnnotatedFor>, rebuild to create an updated
     \<.jar> file, and inform the Checker Framework developers by opening an
-    issue or issuing a pull request.
+    issue or a pull request.
   \end{itemize}
 
 \end{enumerate}
@@ -352,14 +351,15 @@ The rest of this section tells you how to compile a library if you
 classes but not others.
 (There is another type of partial annotation, which is when you annotate
 method signatures but do not type-check the bodies.
-See Section~\ref{library-tips}.)
+See Section~\ref{library-tips-verify}.)
 
 Here are two concerns you may have when partially annotating a library:
 
 \begin{itemize}
 \item
   Ignoring type-checking errors in unannotated parts of the library.
-  Use the \<-AskipDefs> or \<-AonlyDefs> command-line arguments; see
+  Use the \<-AskipDefs>, \<-AonlyDefs>, \<-AskipFiles>, or \<-AonlyFiles>
+  command-line arguments; see
   Section~\ref{askipdefs}.
 
 \item
@@ -377,32 +377,54 @@ Here are two concerns you may have when partially annotating a library:
 
 \begin{sloppypar}
 When compiling a library that is not fully annotated, use command-line
-argument \<-AuseConservativeDefaultsForUncheckedCode=source,bytecode>.  This causes
-the checker to behave normally for classes with a relevant \<@AnnotatedFor>
-annotation.  For classes without \<@AnnotatedFor>, the checker uses
-conservative defaults
+argument \<-AuseConservativeDefaultsForUncheckedCode=source,bytecode>.
+This has the following effect.
+For classes with \<@AnnotatedFor> for the current checker,
+the checker applies defaults normally.
+For classes without \<@AnnotatedFor> for the current checker,
+the checker uses conservative defaults
 (see Section~\ref{defaults-classfile}) for any type use with no explicit
 user-written annotation, \emph{and} the checker issues no warnings.
 \end{sloppypar}
 
+For example, an unannotated method
+
+\begin{Verbatim}
+  String concatenate(String p1, String p2)
+\end{Verbatim}
+
+\noindent
+in a class \emph{with} a relevant \<@AnnotatedFor> is defaulted normally.
+
+In a class \emph{without} a relevant \<@AnnotatedFor>, it is interpreted as
+
+\begin{Verbatim}
+  @MyTopQualifier String concatenate(@MyBottomQualifier String p1, @MyBottomQualifier String p2)
+\end{Verbatim}
+
+\noindent
+where \<@MyTopQualifier> is the top qualifier in the hierarchy and
+\<@MyBottomQualifier> is the bottom qualifier in the hierarchy.
+These choices are conservative.  They are likely to cause many
+false-positive type-checking errors in client code, which will help you to
+know which library methods need annotations.  You can then write those
+library annotations.
+
 The \refqualclass{framework/qual}{AnnotatedFor} annotation, written on a
 class, indicates that the class has been annotated for certain type
-systems.  For example, \<@AnnotatedFor(\ttlcb"nullness", "regex"\ttrcb)> means that
+systems.
+You may write \<@AnnotatedFor> on a class that contains no explicit
+annotations from the given type system, if the defaulting rules already
+give appropriate qualifiers for every type in the class.
+
+For example, \<@AnnotatedFor(\ttlcb"nullness", "regex"\ttrcb)> means that
 the programmer has written annotations for the Nullness and Regular
-Expression type systems.  If one of those two type-checkers is run,
-the \<-AuseConservativeDefaultsForUncheckedCode=source,bytecode> command-line argument
-has no effect and this class is treated normally:
-unannotated types are defaulted using normal source-code
-defaults and type-checking warnings are issued.
-\refqualclass{framework/qual}{AnnotatedFor}'s arguments are any string that
-may be passed to the \<-processor> command-line argument:  the
-fully-qualified class name for the checker, or a shorthand for built-in
-checkers (see Section~\ref{shorthand-for-checkers}).
+Expression type systems.
+For any type system other than Nullness or Regex, that \<@AnnotatedFor>
+annotation has no effect --- the checker treats the class as
+unannotated for that type system.
 The argument to \refqualclass{framework/qual}{AnnotatedFor} is not an
 annotation name, but a checker name.
-Writing \<@AnnotatedFor> on a class doesn't necessarily mean that you wrote
-any annotations, but that you examined the source code and verified
-that all appropriate annotations are present.
 
 \begin{sloppypar}
 Whenever you compile a class using the Checker Framework, including when
@@ -427,7 +449,7 @@ such as method bodies.  Section~\ref{stub-format} describes
 the stub file format.
 
 Section~\ref{annotating-jdk} explains how you should choose between
-creating stub classes or creating an annotated library.
+creating stub classes and creating an annotated library.
 Section~\ref{stub-creating} describes how to create stub classes.
 Section~\ref{stub-using} describes how to use stub classes.
 These sections illustrate stub classes via the example of creating a \refqualclass{checker/interning/qual}{Interned}-annotated
@@ -439,7 +461,7 @@ There are two types of annotation files, which are files containing annotations 
 can be read by the Checker Framework.
 This section describes stub files, which are used by programmers and
 type system designers.
-Section~\ref{ajava-files} dscribes ajava files, which are used by
+Section~\ref{ajava-files} describes ajava files, which are used by
 tools, such as type inference.
 
 
@@ -483,7 +505,7 @@ In other words:
   \<A> is ignored.  See below for how to change this behavior and respect
   both types of annotations.
 \item
-  An un-annotated type variable in a stub file is used instead of
+  An unannotated type variable in a stub file is used instead of
   annotations on a type variable in bytecode.
   \\
   Use the \<-AstubWarnIfRedundantWithBytecode> command-line option to get a
@@ -540,6 +562,8 @@ class \<Sub> in a stub file.  The Checker Framework will use that type for
 In a fake override of \<m>, the formal parameter Java types of the method
 must be identical to those where \<m> is defined, but you can change its
 annotations.  (The return type and the receiver type can be different.)
+You may write the name of a formal parameter type in fully-qualified,
+partially-qualified, or simple form, and you may omit its type arguments.
 If a fake override has no annotations on a given type use, that type use is
 defaulted according to the usual defaulting rules.
 
@@ -585,9 +609,10 @@ SecureRandom sr = ...;
 \subsectionAndLabel{Stub file format}{stub-format}
 
 Every Java file is a valid stub file.  However, you can omit information
-that is not relevant to pluggable type-checking; this makes the stub file
+that is not relevant to pluggable type-checking, as explained below;
+this makes the stub file
 smaller and easier for people to read and write.
-Also note that the stub file's extension must be \<.astub>, not \<.java>.
+The stub file's extension must be \<.astub>, not \<.java>.
 
 As an illustration, a stub file for the Interning type system
 (Chapter~\ref{interning-checker}) could be:
@@ -613,8 +638,9 @@ following ways:
 \item{\textbf{Method declarations:}}
   You only have to specify the methods that you need to annotate.
   Any method declaration may be omitted, in which case the checker reads
-  its annotations from library's \<.class> files.  (If you are using a stub class, then
-  typically the library is unannotated.)
+  its annotations from the library's \<.class> files.  If you are using a stub class, then
+  often the library is unannotated, but you can use stub files to override
+  library annotations.
 
 \item{\textbf{Declaration specifiers:}}
   Declaration specifiers (e.g., \<public>, \<final>, \<volatile>)
@@ -625,19 +651,30 @@ following ways:
   In particular, it is valid to use \<java.lang.Object> for every method.
   This simplifies the creation of stub files.
 
-\item{\textbf{Import statements:}}
-  Imports may appear at the beginning of the file or after any package declaration.
-  The only required import statements are the ones to import type
-  annotations.  Import statements for types are optional.
-
 \item{\textbf{Multiple classes and packages:}}
   The stub file format permits having multiple classes and packages.
   The packages are separated by a package statement:
   \<package my.package;>.  Each package declaration may occur only once; in
   other words, all classes from a package must appear together.
 
+\item{\textbf{Import statements:}}
+  Imports may appear at the beginning of the file or after any package declaration.
+  An import applies to the whole file.
+  The only required import statements are the ones to import type
+  annotations.  Import statements for types are optional.  If you omit an
+  import statement for an annotation, occurrences of that annotation are
+  silently ignored; this is a common error in stub files.
+
 \end{description}
 
+When you create a stub file, it is recommended that you validate it by copying
+the stub file to a file with the \<.java> extension and running the
+type-checker.  This will ensure that your annotations are syntactically
+valid, are written in the correct locations, and are properly imported.
+When you run the type-checker on your annotations, there should not be any
+stub file that also contains annotations for the class.  In particular, if
+you are type-checking a stub file for a class in the JDK, then you should
+use the \<-Aignorejdkastub> command-line option.
 
 
 \subsectionAndLabel{Creating a stub file}{stub-creating}
@@ -651,26 +688,21 @@ annotations to the signatures, leaving the method bodies unchanged.
 The stub file parser silently ignores any annotations that it cannot
 resolve to a type, so don't forget the \<import> statement.
 
-Optionally (but highly recommended!), run the type-checker to verify that
-your annotations are correct.  When you run the type-checker on your
-annotations, there should not be any stub file that also contains
-annotations for the class.  In particular, if you are type-checking the JDK
-itself, then you should use the \<-Aignorejdkastub> command-line option.
-
-This approach retains the original
+This copy-and-annotate approach retains the original
 documentation and source code, making it easier for a programmer to
 double-check the annotations.  It also enables creation of diffs, easing
 the process of upgrading when a library adds new methods.  And, the
 annotations are in a format that the library maintainers can even
 incorporate.
 
-The downside of this approach is that the stub files are larger.  This can
+The downside of the copy-and-annotate approach is that the stub files are
+larger.  This can
 slow down the Checker Framework, because it parses the stub files each time
 it runs.
 % Furthermore, a programmer must search the stub file
 % for a given method rather than just skimming a few pages of method signatures.
 
-Alternatively, you can minimize source files to make them more suitable as stub files.
+You can minimize source files to speed up parsing them.
 Use the \<JavaStubifier> to convert, in-place, all \<.java> files in given directories into
 minimal stub files.
 
@@ -696,6 +728,49 @@ find project-stubs/ -name "*.java" -type f | xargs cat > project.astub
 
 % That file will contain many non-unique import statements, but that shouldn't be harmful.
 
+\subsubsectionAndLabel{If you do not have access to the Java source code}{stub-creating-without-source}
+
+If you do not have access to the library source code, you can create a stub
+file by hand.
+
+If you have access to the API documentation for the element you wish to
+annotate, it is often easiest to copy-paste names, types, and signatures
+from the API documentation.  (The API documentation is a \<.html> file that
+is sometimes colloquially called the ``Javadoc''.)  This avoids common
+mistakes when writing stub files by hand, such as typos in the package name
+or in a method signature.
+
+
+Here are steps to write a stub file by hand:
+\begin{enumerate}
+\item Create a file whose name ends in \<.astub>, or use an existing one.
+\item Write a package declaration, exactly as if you are
+writing a Java file for the target class.  (If the file already contains a
+declaration for that package, re-use it by doing the rest of your work
+under it; don't write a duplicate package declaration in the file.)
+Typically, it is easiest to copy-paste the package name from API
+documentation or from an import statement in the code that you are
+type-checking, to avoid typos.
+\item Write a class declaration header:  \<class> followed by the
+class name. The stub file format does not care whether the enclosing type
+is a class, interface, etc., so you can write ``\<class>'' regardless of
+what kind of type it is.
+
+A common mistake at this stage is that the
+target method or field may be defined in a superclass of the static type of
+the class that is actually being used in the code you are trying to
+analyze. For example, suppose that you are trying to annotate the
+\<drawImage(Image,int,int,int,int,ImageObserver)> method of an object whose static
+type is \<java.awt.Graphics2D>\@.  This method is actually defined in the abstract
+\<Graphics> class (which is the superclass of \<Graphics2D>), so it needs
+to appear within the class \<Graphics> rather than the class \<Graphics2D>
+in the stub file.
+\item Write the element declaration that you wish to annotate, within the class you just created.  \\
+For a method, this is the method signature, followed by ``\<;>''. \\
+For a field, this is the type, field name, and ``\<;>'', without an initializer.
+\item Annotate the declaration that you just wrote.
+\item Add import statements for any annotations you wrote.
+\end{enumerate}
 
 %% Changes in JDK 11 have broken StubGenerator.
 % \subsubsectionAndLabel{If you do not have access to the Java source code}{stub-creating-without-source}
@@ -784,7 +859,7 @@ Gradle plugin:
 \end{Verbatim}
 \item
   If the stub files appear under the \<src/main/resources/>
-  directory in a sub-directory matching the package of your checker class,
+  directory in a subdirectory matching the package of your checker class,
   the default Gradle build configuration is sufficient.
 \end{itemize}
 In either case, recall that a \refqualclass{framework/qual}{StubFiles}
@@ -797,9 +872,9 @@ unsound, or unsound except in certain circumstances), users must supply the
 If a stub file contains annotations that are used by the framework rather
 than by any specific checker (such as purity annotations), and you wish to
 distribute it with the Checker Framework, put the stub file in directory
-\<checker/resources/>.  You can also do this if the stub file has
+\<checker/src/main/resources/>.  You can also do this if the stub file has
 annotations for multiple checkers.  To use a stub file in directory
-\<checker/resources/>, users must supply the
+\<checker/src/main/resources/>, users must supply the
 \<-Astubs=checker.jar/stub-file-name.astub> command-line option.
 
 
@@ -825,7 +900,7 @@ Some command-line options make the stub parser issue more warnings:
   file provided on the command line, but does not warn about built-in stub files.
   These command-line options turn the warnings on or off (respectively) for
   all stub files. \\
-  The \<@NoStubParserWarning> annotation on a package or type in a stub file
+  The \<@NoAnnotationFileParserWarning> annotation on a package or type in a stub file
   causes no warning to be issued for that package or type, regardless of
   the command-line options.
 
@@ -859,13 +934,12 @@ Some command-line options make the stub parser issue more warnings:
   whether the \<-Werror> command-line argument is passed), but a note permits
   compilation to proceed.
 
+\item[\<-AstubDebug>]
+  Output debugging messages while parsing stub files, including about
+  unknown classes, methods, and annotations.  This overrides the
+  \<@NoAnnotationFileParserWarning> annotation.
+
 \end{description}
-
-Finally,
-use command-line option {\bf\<-AstubDebug>} to output debugging messages while
-parsing stub files, including about unknown classes, methods, and
-annotations.  This overrides the \<@NoAnnotationFileParserWarning> annotation.
-
 
 
 \subsubsectionAndLabel{Problems parsing stub libraries}{stub-troubleshooting-parsing}
@@ -889,7 +963,7 @@ AnnotationFileParser: Method enableForegroundNdefPush(Activity,NdefPushCallback)
 \end{Verbatim}
 
 \noindent
-by removing the method \<enableForgroundNdefPush(...)> from
+by removing the method \<enableForegroundNdefPush(...)> from
 the stub file, because it is not defined in class \<android.nfc.NfcAdapter>
 in the version of the library you are using.
 
@@ -900,9 +974,11 @@ There are two types of annotation files, which are files containing annotations 
 can be read by the Checker Framework.
 Section~\ref{stub} describes stub files, which are used by programmers and
 type system designers.
-This section dscribes ajava files.
-Ajava files are read and written by tools, such as whole-program type
-inference (see Section~\ref{whole-program-inference}).  This section about
+This section describes ajava files.
+Ajava files are primarily read and written by tools, such as whole-program type
+inference (see Section~\ref{whole-program-inference}).  (However,
+programmers are permitted to write \<.ajava> files.)
+This section about
 ajava files is primarily of interest to the maintainers of such tools.
 
 An ajava file is simply a valid Java source file.
@@ -928,8 +1004,8 @@ For example:
 \end{Verbatim}
 \end{myxsmall}
 
-If there's an annotation in both a source file and the corresponding a
-source file, the Checker Framework uses the greatest lower bound, as with
+If there's an annotation in both a source file and the corresponding ajava
+file, the Checker Framework uses the greatest lower bound, as with
 the \code{-AmergeStubsWithSource} option.
 
 
@@ -947,13 +1023,13 @@ due to mismatches.
 The ajava file must either (1) be found below one of the arguments to
 \code{-Aajava}, in a subdirectory matching its package name, or (2) be
 unambiguously specified directly with its full path. A pair of \<.ajava>
-files are specified ambiguously if one of their fully-qualified names
+files is specified ambiguously if one of their fully-qualified names
 is a substring of the other, and both are specified as \<.ajava> files (rather
 than being found under directories). For example, if the \<-Aajava> argument
 was \<-Aajava=~/foo/Bar.ajava:~/baz/foo/Bar.ajava>, the two \<.ajava> files
-would be considered ambiguous and a \<ambiguous.ajava> warning would be issued.
+would be considered ambiguous and an \<ambiguous.ajava> warning would be issued.
 Files found under a directory are always unambiguous, because their file structure
-must match their package name; the solution to a \<ambiguous.ajava> warning is to
+must match their package name; the solution to an \<ambiguous.ajava> warning is to
 convert the specific files in the \<-Aajava> argument to directories.
 
 The ajava file must be named
@@ -971,7 +1047,7 @@ named
 \subsubsectionAndLabel{Contents of an ajava file}{ajava-contents}
 
 The
-ajava file must contain the same source code as the source file with the following exceptions:
+ajava file must contain the same source code as the source file, with the following exceptions:
 \begin{itemize}
   \item The two may differ in annotations.
   \item The two may have different import statements.
@@ -1002,7 +1078,7 @@ containing Java files.  The \code{checker.jar} file must be in the classpath.
 Here is an example invocation:
 \begin{Verbatim}
   java -cp $CHECKERFRAMEWORK/checker/dist/checker.jar \
-    org.checkerframework.framework.ajava.InsertAjavaAnnoations \
+    org.checkerframework.framework.ajava.InsertAjavaAnnotations \
     <path-to-ajava-files> <path-to-java-files>
 \end{Verbatim}
 
@@ -1015,7 +1091,7 @@ may help you in determining which library files are read.
 
 \begin{description}
 \item \<-verbose>
-  Outputs info about compile phases --- when the compiler
+  Outputs information about compile phases --- when the compiler
   reads/parses/attributes/writes any file.  Also outputs the classpath and
   sourcepath paths.
 \end{description}
@@ -1031,7 +1107,7 @@ being silently ignored.  A typo in an annotation name, or a missing
 % LocalWords: CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
 % LocalWords: Interning's UsesObjectEquals ApermitMissingJdk AonlyUses java pre
 % LocalWords: Aignorejdkastub AstubWarnIfNotFound AstubDebug dont local'
-% LocalWords: enableForgroundNdefPush BCEL getopt
+% LocalWords: enableForegroundNdefPush BCEL getopt ajava html drawImage
 % LocalWords: NoAnnotationFileParserWarning CHECKERFRAMEWORK AnnotatedFor regex
 % LocalWords: AuseConservativeDefaultsForUnannotatedCode buildfile qual
 % LocalWords: AprintUnannotatedMethods checkername AskipDefs bcel mkdir
@@ -1043,4 +1119,7 @@ being silently ignored.  A typo in an annotation name, or a missing
 % LocalWords: AuseConservativeDefaultsForUncheckedCodesource nextInt
 % LocalWords: AstubWarnIfNotFoundIgnoresClasses AmergeStubsWithSource
 % LocalWords:  AstubWarnIfRedundantWithBytecode JavaStubifier StubFiles
-% LocalWords:  BaseTypeChecker
+% LocalWords:  BaseTypeChecker ImageObserver Graphics2D AstubWarnNote
+% LocalWords:  AstubNoWarnIfNotFound AstubWarn Werror AonlyFiles AskipFiles
+% LocalWords:  Aajava substring outerpackage innerpackage myMethod MyClass
+% LocalWords:  InsertAjavaAnnotations

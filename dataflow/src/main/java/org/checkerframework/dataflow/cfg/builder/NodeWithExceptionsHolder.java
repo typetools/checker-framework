@@ -37,7 +37,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
   }
 
   /**
-   * Get the exceptions for the node.
+   * Returns the exceptions for the node.
    *
    * @return exceptions for the node
    */

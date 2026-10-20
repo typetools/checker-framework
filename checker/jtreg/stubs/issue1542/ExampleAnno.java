@@ -15,6 +15,10 @@ public class ExampleAnno {
     float value();
   }
 
+  @interface ByteExample {
+    byte value();
+  }
+
   @interface ShortExample {
     short value();
   }
@@ -49,6 +53,10 @@ public class ExampleAnno {
 
   @interface FloatArrayExample {
     float[] value();
+  }
+
+  @interface ByteArrayExample {
+    byte[] value();
   }
 
   @interface ShortArrayExample {

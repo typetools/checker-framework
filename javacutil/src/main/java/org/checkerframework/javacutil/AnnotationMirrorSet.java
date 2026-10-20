@@ -13,6 +13,8 @@ import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.common.returnsreceiver.qual.This;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.plumelib.util.DeepCopyable;
 
 /**
@@ -41,7 +43,7 @@ public class AnnotationMirrorSet
   /** The canonical unmodifiable empty set. */
   private static AnnotationMirrorSet emptySet = unmodifiableSet(Collections.emptySet());
 
-  /// Constructors and factory methods
+  // Constructors and factory methods
 
   /** Default constructor. */
   public AnnotationMirrorSet() {}
@@ -52,6 +54,7 @@ public class AnnotationMirrorSet
    *
    * @param value the AnnotationMirror to put in the set
    */
+  @SuppressWarnings("this-escape") // `add()` is safe to call
   public AnnotationMirrorSet(AnnotationMirror value) {
     this.add(value);
   }
@@ -61,6 +64,7 @@ public class AnnotationMirrorSet
    *
    * @param annos the AnnotationMirrors to put in the set
    */
+  @SuppressWarnings("this-escape") // `addAll()` is safe to call
   public AnnotationMirrorSet(Collection<? extends AnnotationMirror> annos) {
     this.addAll(annos);
   }
@@ -90,7 +94,8 @@ public class AnnotationMirrorSet
    * @return a new unmodifiable {@link AnnotationMirrorSet} that contains only {@code value}
    */
   public static AnnotationMirrorSet singleton(AnnotationMirror value) {
-    // The implementation could be more efficient if Collections.singleton returned a NavigableSet.
+    // The implementation could be more efficient if Collections.singleton returned a
+    // NavigableSet.
     AnnotationMirrorSet result = new AnnotationMirrorSet();
     result.add(value);
     result.makeUnmodifiable();
@@ -100,7 +105,7 @@ public class AnnotationMirrorSet
   /**
    * Returns an unmodifiable AnnotationMirrorSet with the given elements.
    *
-   * @param annos the annotation mirrors that will constitute the new unmodifable set
+   * @param annos the annotation mirrors that will constitute the new unmodifiable set
    * @return an unmodifiable AnnotationMirrorSet with the given elements
    */
   public static AnnotationMirrorSet unmodifiableSet(Collection<? extends AnnotationMirror> annos) {
@@ -118,7 +123,7 @@ public class AnnotationMirrorSet
     return emptySet;
   }
 
-  /// Set methods
+  // Set methods
 
   @Override
   public int size() {
@@ -134,8 +139,7 @@ public class AnnotationMirrorSet
   public boolean contains(
       @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,
       @Nullable Object o) {
-    return o instanceof AnnotationMirror
-        && AnnotationUtils.containsSame(shadowSet, (AnnotationMirror) o);
+    return o instanceof AnnotationMirror am && AnnotationUtils.containsSame(shadowSet, am);
   }
 
   @Override
@@ -156,6 +160,7 @@ public class AnnotationMirrorSet
 
   @SuppressWarnings("keyfor:argument") // delegation
   @Override
+  @SideEffectsOnly("this")
   public boolean add(
       @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,
       AnnotationMirror annotationMirror) {
@@ -167,9 +172,10 @@ public class AnnotationMirrorSet
   }
 
   @Override
+  @SideEffectsOnly("this")
   public boolean remove(@Nullable Object o) {
-    if (o instanceof AnnotationMirror) {
-      AnnotationMirror found = AnnotationUtils.getSame(shadowSet, (AnnotationMirror) o);
+    if (o instanceof AnnotationMirror am) {
+      AnnotationMirror found = AnnotationUtils.getSame(shadowSet, am);
       return found != null && shadowSet.remove(found);
     }
     return false;
@@ -186,6 +192,7 @@ public class AnnotationMirrorSet
   }
 
   @Override
+  @SideEffectsOnly("this")
   public boolean addAll(
       @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,
       Collection<? extends AnnotationMirror> c) {
@@ -199,6 +206,7 @@ public class AnnotationMirrorSet
   }
 
   @Override
+  @SideEffectsOnly("this")
   public boolean retainAll(Collection<?> c) {
     AnnotationMirrorSet newSet = new AnnotationMirrorSet();
     for (Object o : c) {
@@ -217,6 +225,7 @@ public class AnnotationMirrorSet
   }
 
   @Override
+  @SideEffectsOnly("this")
   public boolean removeAll(Collection<?> c) {
     boolean result = true;
     for (Object a : c) {
@@ -228,6 +237,7 @@ public class AnnotationMirrorSet
   }
 
   @Override
+  @SideEffectsOnly("this")
   public void clear() {
     shadowSet.clear();
   }
@@ -242,10 +252,9 @@ public class AnnotationMirrorSet
     if (o == this) {
       return true;
     }
-    if (!(o instanceof AnnotationMirrorSet)) {
+    if (!(o instanceof AnnotationMirrorSet s)) {
       return false;
     }
-    AnnotationMirrorSet s = (AnnotationMirrorSet) o;
     if (this.size() != s.size()) {
       return false;
     }
@@ -265,7 +274,7 @@ public class AnnotationMirrorSet
     return result;
   }
 
-  /// NavigableSet methods
+  // NavigableSet methods
 
   @SuppressWarnings({
     "interning:override.return", // looks like a bug (in interning checker)
@@ -313,16 +322,19 @@ public class AnnotationMirrorSet
   }
 
   @Override
+  @SideEffectsOnly("this")
   public @Nullable @KeyFor("this") AnnotationMirror pollFirst() {
     return shadowSet.pollFirst();
   }
 
   @Override
+  @SideEffectsOnly("this")
   public @Nullable @KeyFor("this") AnnotationMirror pollLast() {
     return shadowSet.pollLast();
   }
 
   @Override
+  @Pure
   public AnnotationMirrorSet descendingSet() {
     throw new Error("Not yet implemented.");
   }

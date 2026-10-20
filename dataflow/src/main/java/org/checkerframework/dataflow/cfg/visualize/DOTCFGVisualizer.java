@@ -6,6 +6,11 @@ import com.sun.tools.javac.tree.JCTree;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -44,18 +49,20 @@ public class DOTCFGVisualizer<
     extends AbstractCFGVisualizer<V, S, T> {
 
   /** The output directory. */
-  @SuppressWarnings("nullness:initialization.field.uninitialized") // uses init method
   protected String outDir;
 
   /** The (optional) checker name. Used as a part of the name of the output dot file. */
   protected @Nullable String checkerName;
 
   /** Mapping from class/method representation to generated dot file. */
-  @SuppressWarnings("nullness:initialization.field.uninitialized") // uses init method
   protected Map<String, String> generated;
 
   /** Terminator for lines that are left-justified. */
   protected static final String leftJustifiedTerminator = "\\l";
+
+  /** Creates a DOTCFGVisualizer. */
+  @SuppressWarnings("nullness:initialization.fields.uninitialized") // `init()` does the work
+  public DOTCFGVisualizer() {}
 
   @Override
   @SuppressWarnings("nullness") // assume arguments are set correctly
@@ -63,9 +70,12 @@ public class DOTCFGVisualizer<
     super.init(args);
     this.outDir = (String) args.get("outdir");
     if (this.outDir == null) {
-      throw new BugInCF(
-          "outDir should never be null,"
-              + " provide it in args when calling DOTCFGVisualizer.init(args).");
+      throw new UserError(
+          "The outdir argument to -Acfgvis was missing. Provide a non-empty directory path.");
+    }
+    if (this.outDir.isEmpty()) {
+      throw new UserError(
+          "The outdir argument to -Acfgvis was empty. Provide a non-empty directory path.");
     }
     this.checkerName = (String) args.get("checkerName");
     this.generated = new HashMap<>();
@@ -81,7 +91,7 @@ public class DOTCFGVisualizer<
       ControlFlowGraph cfg, Block entry, @Nullable Analysis<V, S, T> analysis) {
     String dotGraph = visualizeGraph(cfg, entry, analysis);
 
-    Map<String, Object> vis = new HashMap<>(2);
+    Map<String, Object> vis = new HashMap<>(4);
     vis.put("dotGraph", dotGraph);
     return vis;
   }
@@ -96,7 +106,8 @@ public class DOTCFGVisualizer<
     }
     String dotFileName = dotOutputFileName(cfg.underlyingAST);
 
-    try (BufferedWriter out = new BufferedWriter(new FileWriter(dotFileName))) {
+    try (BufferedWriter out =
+        new BufferedWriter(new FileWriter(dotFileName, StandardCharsets.UTF_8))) {
       out.write(dotGraph);
     } catch (IOException e) {
       throw new UserError("Error creating dot file (is the path valid?): " + dotFileName, e);
@@ -110,7 +121,7 @@ public class DOTCFGVisualizer<
   public String visualizeNodes(
       Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<V, S, T> analysis) {
 
-    StringBuilder sbDotNodes = new StringBuilder();
+    StringBuilder sbDotNodes = new StringBuilder(64);
 
     IdentityHashMap<Block, List<Integer>> processOrder = getProcessOrder(cfg);
 
@@ -148,12 +159,18 @@ public class DOTCFGVisualizer<
 
   @Override
   protected String visualizeEdge(Object sId, Object eId, String flowRule) {
-    return "    " + format(sId) + " -> " + format(eId) + " [label=\"" + flowRule + "\"];";
+    return "    "
+        + escapeString(sId)
+        + " -> "
+        + escapeString(eId)
+        + " [label=\""
+        + flowRule
+        + "\"];";
   }
 
   @Override
   public String visualizeBlock(Block bb, @Nullable Analysis<V, S, T> analysis) {
-    return super.visualizeBlockHelper(bb, analysis, getSeparator());
+    return super.visualizeBlockWithSeparator(bb, analysis, getSeparator());
   }
 
   @Override
@@ -186,10 +203,8 @@ public class DOTCFGVisualizer<
    * @return the file name used for DOT output
    */
   protected String dotOutputFileName(UnderlyingAST ast) {
-    StringBuilder srcLoc = new StringBuilder();
-    StringBuilder outFile = new StringBuilder(outDir);
-
-    outFile.append("/");
+    StringBuilder srcLoc = new StringBuilder(32);
+    StringBuilder outFile = new StringBuilder();
 
     if (ast.getKind() == UnderlyingAST.Kind.ARBITRARY_CODE) {
       CFGStatement cfgStatement = (CFGStatement) ast;
@@ -198,11 +213,11 @@ public class DOTCFGVisualizer<
       outFile.append("-initializer-");
       outFile.append(ast.getUid());
 
-      srcLoc.append("<");
+      srcLoc.append('<');
       srcLoc.append(clsName);
       srcLoc.append("::initializer::");
       srcLoc.append(((JCTree) cfgStatement.getCode()).pos);
-      srcLoc.append(">");
+      srcLoc.append('>');
     } else if (ast.getKind() == UnderlyingAST.Kind.METHOD) {
       CFGMethod cfgMethod = (CFGMethod) ast;
       String clsName = cfgMethod.getSimpleClassName();
@@ -212,49 +227,49 @@ public class DOTCFGVisualizer<
         params.add(tree.getType().toString());
       }
       outFile.append(clsName);
-      outFile.append("-");
+      outFile.append('-');
       outFile.append(methodName);
       if (params.length() != 0) {
-        outFile.append("-");
+        outFile.append('-');
         outFile.append(params);
       }
 
-      srcLoc.append("<");
+      srcLoc.append('<');
       srcLoc.append(clsName);
       srcLoc.append("::");
       srcLoc.append(methodName);
-      srcLoc.append("(");
+      srcLoc.append('(');
       srcLoc.append(params);
       srcLoc.append(")::");
       srcLoc.append(((JCTree) cfgMethod.getMethod()).pos);
-      srcLoc.append(">");
+      srcLoc.append('>');
     } else if (ast.getKind() == UnderlyingAST.Kind.LAMBDA) {
       CFGLambda cfgLambda = (CFGLambda) ast;
       String clsName = cfgLambda.getSimpleClassName();
       String enclosingMethodName = cfgLambda.getEnclosingMethodName();
       long uid = TreeUtils.treeUids.get(cfgLambda.getCode());
       outFile.append(clsName);
-      outFile.append("-");
+      outFile.append('-');
       if (enclosingMethodName != null) {
         outFile.append(enclosingMethodName);
-        outFile.append("-");
+        outFile.append('-');
       }
       outFile.append(uid);
 
-      srcLoc.append("<");
+      srcLoc.append('<');
       srcLoc.append(clsName);
       if (enclosingMethodName != null) {
         srcLoc.append("::");
         srcLoc.append(enclosingMethodName);
-        srcLoc.append("(");
+        srcLoc.append('(');
         @SuppressWarnings("nullness") // enclosingMethodName != null => getEnclosingMethod() != null
         @NonNull MethodTree method = cfgLambda.getEnclosingMethod();
         srcLoc.append(method.getParameters());
-        srcLoc.append(")");
+        srcLoc.append(')');
       }
       srcLoc.append("::");
       srcLoc.append(((JCTree) cfgLambda.getCode()).pos);
-      srcLoc.append(">");
+      srcLoc.append('>');
     } else {
       throw new BugInCF("Unexpected AST kind: " + ast.getKind() + " value: " + ast);
     }
@@ -264,17 +279,17 @@ public class DOTCFGVisualizer<
     }
     outFile.append(".dot");
 
+    // make path safe for Linux
+    if (outFile.length() > 255) {
+      outFile.setLength(255);
+    }
     // make path safe for Windows
-    String outFileName = outFile.toString().replace("<", "_").replace(">", "");
+    String outFileBaseName = outFile.toString().replace("<", "_").replace(">", "");
+    String outFileName = outDir + "/" + outFileBaseName;
 
     generated.put(srcLoc.toString(), outFileName);
 
     return outFileName;
-  }
-
-  @Override
-  protected String format(Object obj) {
-    return escapeString(obj);
   }
 
   @Override
@@ -318,18 +333,9 @@ public class DOTCFGVisualizer<
    * @param str the string to be escaped
    * @return the escaped version of the string
    */
-  private static String escapeString(String str) {
+  @Override
+  protected String escapeString(String str) {
     return str.replace("\"", "\\\"").replace("\r", "\\\\r").replace("\n", "\\\\n");
-  }
-
-  /**
-   * Escape the double quotes from the string representation of the given object.
-   *
-   * @param obj an object
-   * @return an escaped version of the string representation of the object
-   */
-  private static String escapeString(Object obj) {
-    return escapeString(String.valueOf(obj));
   }
 
   /**
@@ -339,7 +345,12 @@ public class DOTCFGVisualizer<
   @Override
   public void shutdown() {
     // Open for append, in case of multiple sub-checkers.
-    try (FileWriter fstream = new FileWriter(outDir + "/methods.txt", true);
+    try (Writer fstream =
+            Files.newBufferedWriter(
+                Paths.get(outDir + "/methods.txt"),
+                StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND);
         BufferedWriter out = new BufferedWriter(fstream)) {
       for (Map.Entry<String, String> kv : generated.entrySet()) {
         out.write(kv.getKey());

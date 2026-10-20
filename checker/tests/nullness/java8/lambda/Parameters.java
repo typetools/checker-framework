@@ -13,20 +13,20 @@ interface NNConsumer {
 class LambdaParam {
 
   NullConsumer fn1 =
-      // :: error: (lambda.param)
+      // :: error: [lambda.param]
       (@NonNull String i) -> {};
   NullConsumer fn2 = (@Nullable String i) -> {};
-  // :: error: (lambda.param)
+  // :: error: [lambda.param]
   NullConsumer fn3 = (String i) -> {};
   NNConsumer fn4 = (String i) -> {};
   NNConsumer fn5 = (@Nullable String i) -> {};
   NNConsumer fn6 = (@NonNull String i) -> {};
 
   {
-    // :: error: (lambda.param)
+    // :: error: [lambda.param]
     NullConsumer fn1 = (@NonNull String i) -> {};
     NullConsumer fn2 = (@Nullable String i) -> {};
-    // :: error: (lambda.param)
+    // :: error: [lambda.param]
     NullConsumer fn3 = (String i) -> {};
     NNConsumer fn4 = (String i) -> {};
     NNConsumer fn5 = (@Nullable String i) -> {};
@@ -34,10 +34,10 @@ class LambdaParam {
   }
 
   static {
-    // :: error: (lambda.param)
+    // :: error: [lambda.param]
     NullConsumer fn1 = (@NonNull String i) -> {};
     NullConsumer fn2 = (@Nullable String i) -> {};
-    // :: error: (lambda.param)
+    // :: error: [lambda.param]
     NullConsumer fn3 = (String i) -> {};
     NNConsumer fn4 = (String i) -> {};
     NNConsumer fn5 = (@Nullable String i) -> {};
@@ -46,10 +46,10 @@ class LambdaParam {
 
   static void foo() {
     NullConsumer fn1 =
-        // :: error: (lambda.param)
+        // :: error: [lambda.param]
         (@NonNull String i) -> {};
     NullConsumer fn2 = (@Nullable String i) -> {};
-    // :: error: (lambda.param)
+    // :: error: [lambda.param]
     NullConsumer fn3 = (String i) -> {};
     NNConsumer fn4 = (String i) -> {};
     NNConsumer fn5 = (@Nullable String i) -> {};
@@ -58,10 +58,10 @@ class LambdaParam {
 
   void bar() {
     NullConsumer fn1 =
-        // :: error: (lambda.param)
+        // :: error: [lambda.param]
         (@NonNull String i) -> {};
     NullConsumer fn2 = (@Nullable String i) -> {};
-    // :: error: (lambda.param)
+    // :: error: [lambda.param]
     NullConsumer fn3 = (String i) -> {};
     NNConsumer fn4 = (String i) -> {};
     NNConsumer fn5 = (@Nullable String i) -> {};

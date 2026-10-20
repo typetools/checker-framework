@@ -26,65 +26,65 @@ Check for redundant annotations in the following locations
 */
 
 @NonNull class RedundantAnnotation<
-    // TODO :: warning: (redundant.anno)
+    // TODO :: warning: [redundant.anno]
     T extends @Nullable Object> {
 
   enum InnerEnum {
-    // TODO :: warning: (redundant.anno)
-    // :: error: (nullness.on.enum)
+    // TODO :: warning: [redundant.anno]
+    // :: error: [nullness.on.enum]
     @NonNull EXPLICIT,
     IMPLICIT,
   }
 
-  // :: warning: (redundant.anno)
+  // :: warning: [redundant.anno]
   @NonNull Object f;
 
-  // :: warning: (redundant.anno)
+  // :: warning: [redundant.anno]
   @NonNull Integer foo(InputStream arg) {
-    // :: warning: (redundant.anno)
+    // :: warning: [redundant.anno]
     @Nullable Object local;
     return Integer.valueOf(1);
   }
 
-  // :: warning: (redundant.anno)
+  // :: warning: [redundant.anno]
   void foo2(@NonNull Integer i) {}
 
-  // TODO :: warning: (redundant.anno)
-  // :: error: (nullness.on.constructor)
+  // TODO :: warning: [redundant.anno]
+  // :: error: [nullness.on.constructor]
   @NonNull RedundantAnnotation() {
     f = new Object();
   }
 
-  // :: error: (nullness.on.receiver)
-  // :: warning: (redundant.anno)
+  // :: error: [nullness.on.receiver]
+  // :: warning: [redundant.anno]
   void bar(@NonNull RedundantAnnotation<T> this, InputStream arg) throws Exception {
-    // :: warning: (redundant.anno)
+    // :: warning: [redundant.anno]
     try (@Nullable InputStream in = arg) {
 
-      // :: warning: (redundant.anno)
-      // :: warning: (nullness.on.exception.parameter)
+      // :: warning: [redundant.anno]
+      // :: warning: [nullness.on.exception.parameter]
     } catch (@NonNull Exception e) {
 
     }
 
-    // TODO :: warning: (redundant.anno) warning on the upper bound
+    // TODO :: warning: [redundant.anno] warning on the upper bound
     List<? extends @NonNull Object> l;
 
-    // TODO :: warning: (redundant.anno) warning on the lower bound
-    // :: error: (super.wildcard)
+    // TODO :: warning: [redundant.anno] warning on the lower bound
+    // :: error: [super.wildcard]
     List<? super @NonNull Object> l2;
 
     Object obj = null;
-    // TODO :: warning: (redundant.anno) for the typecast
+    // TODO :: warning: [redundant.anno] for the typecast
     String x = (@Nullable String) obj;
 
-    // TODO :: warning: (redundant.anno) for the instanceof
-    // :: error: (instanceof.nullable)
+    // TODO :: warning: [redundant.anno] for the instanceof
+    // :: error: [instanceof.nullable]
     boolean b = x instanceof @Nullable String;
 
-    // TODO :: warning: (redundant.anno) on the component type
+    // TODO :: warning: [redundant.anno] on the component type
     @NonNull String[] strs;
-    // TODO :: warning: (redundant.anno) on the component type
+    // TODO :: warning: [redundant.anno] on the component type
     strs = new @NonNull String[10];
   }
 }

@@ -38,10 +38,9 @@ public class SignedRightShiftNode extends BinaryOperationNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof SignedRightShiftNode)) {
+    if (!(obj instanceof SignedRightShiftNode other)) {
       return false;
     }
-    SignedRightShiftNode other = (SignedRightShiftNode) obj;
     return getLeftOperand().equals(other.getLeftOperand())
         && getRightOperand().equals(other.getRightOperand());
   }

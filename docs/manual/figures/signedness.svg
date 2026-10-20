@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="9.455224cm"
    height="8cm"
    viewBox="619 259 362.00001 293.33333"
    id="svg2"
    version="1.1"
-   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
-   sodipodi:docname="signedness.svg">
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   sodipodi:docname="signedness.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <metadata
      id="metadata80">
     <rdf:RDF>
@@ -113,24 +113,28 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="2560"
-     inkscape:window-height="1534"
+     inkscape:window-width="1763"
+     inkscape:window-height="1011"
      id="namedview76"
      showgrid="false"
      inkscape:snap-page="true"
      inkscape:zoom="1.094736"
-     inkscape:cx="45.247074"
-     inkscape:cy="191.49037"
-     inkscape:window-x="0"
-     inkscape:window-y="29"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="svg2"
+     inkscape:cx="50.697154"
+     inkscape:cy="86.778913"
+     inkscape:window-x="37"
+     inkscape:window-y="64"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="g66-3"
      inkscape:snap-others="true"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:snap-global="false" />
+     inkscape:snap-global="false"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="cm" />
   <g
      id="g4"
      transform="translate(-20,4.6244988)">
@@ -153,12 +157,10 @@
        style="font-style:normal;font-weight:normal;font-size:16px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="700"
        y="345.85001"
-       id="text10">
-      <tspan
+       id="text10"><tspan
          x="700"
          y="345.85001"
-         id="tspan12">@Unsigned</tspan>
-    </text>
+         id="tspan12">@Unsigned</tspan></text>
   </g>
   <g
      id="g14"
@@ -183,12 +185,10 @@
        style="font-style:normal;font-weight:normal;font-size:16px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="940"
        y="345.85001"
-       id="text20">
-      <tspan
+       id="text20"><tspan
          x="940"
          y="345.85001"
-         id="tspan22">@Signed</tspan>
-    </text>
+         id="tspan22">@Signed</tspan></text>
   </g>
   <g
      id="g24"
@@ -213,12 +213,10 @@
        style="font-style:normal;font-weight:normal;font-size:16px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="820"
        y="285.85001"
-       id="text30">
-      <tspan
+       id="text30"><tspan
          x="820"
          y="285.85001"
-         id="tspan32">@UnknownSignedness</tspan>
-    </text>
+         id="tspan32">@UnknownSignedness</tspan></text>
   </g>
   <g
      id="g34"
@@ -318,24 +316,11 @@
        font-size="16"
        style="font-style:normal;font-weight:normal;font-size:16px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="820"
-       y="395"
-       id="text72">
-      <tspan
+       y="404.8703"
+       id="text50"><tspan
          x="820"
-         y="395"
-         id="tspan74">@SignedPositive</tspan>
-    </text>
-    <text
-       font-size="16"
-       style="font-style:normal;font-weight:normal;font-size:16px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
-       x="820"
-       y="415"
-       id="text50">
-      <tspan
-         x="820"
-         y="415"
-         id="tspan48">@SignednessGlb</tspan>
-    </text>
+         y="404.8703"
+         id="tspan48">@SignednessGlb</tspan></text>
   </g>
   <g
      transform="translate(-20.638354,136.6169)"
@@ -360,12 +345,10 @@
        style="font-style:normal;font-weight:normal;font-size:16px;line-height:0%;font-family:'courier new';text-anchor:middle;fill:#000000"
        x="820"
        y="405.85001"
-       id="text72-7">
-      <tspan
+       id="text72-7"><tspan
          x="820"
          y="405.85001"
-         id="tspan74-4">@SignednessBottom</tspan>
-    </text>
+         id="tspan74-4">@SignednessBottom</tspan></text>
   </g>
   <path
      style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.89582634;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4669)"
@@ -392,28 +375,14 @@
        id="rect70-7" />
     <text
        font-size="16"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:15.99962139px;line-height:0%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:15.9996px;line-height:0%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
        x="820"
-       y="395"
-       id="text72-5">
-      <tspan
+       y="405.1297"
+       id="text72-5"><tspan
          sodipodi:role="line"
          id="tspan3819"
          x="820"
-         y="395">@SignedPositive-</tspan>
-    </text>
-    <text
-       font-size="16"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:15.99962139px;line-height:0%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
-       x="820"
-       y="415"
-       id="text50-5">
-      <tspan
-         sodipodi:role="line"
-         id="tspan3817"
-         x="820"
-         y="415">FromUnsigned</tspan>
-    </text>
+         y="405.1297">@SignedPositive</tspan></text>
   </g>
   <path
      style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.89582634;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker4669-2)"

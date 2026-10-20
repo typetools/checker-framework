@@ -38,7 +38,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.UserError;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * An annotated type factory for an accumulation checker.
@@ -86,19 +86,20 @@ public abstract class AccumulationAnnotatedTypeFactory
    * @param predicate the predicate annotation. Either null (if predicates are not supported), or an
    *     annotation with a single element named "value" whose type is a String.
    */
+  @SuppressWarnings("this-escape")
   protected AccumulationAnnotatedTypeFactory(
       BaseTypeChecker checker,
       Class<? extends Annotation> accumulator,
       Class<? extends Annotation> bottom,
       @Nullable Class<? extends Annotation> predicate) {
     super(checker);
-    if (!(checker instanceof AccumulationChecker)) {
+    if (!(checker instanceof AccumulationChecker ac)) {
       throw new TypeSystemError(
           "AccumulationAnnotatedTypeFactory cannot be used with a checker "
               + "class that is not a subtype of AccumulationChecker. Found class: "
               + checker.getClass());
     }
-    this.accumulationChecker = (AccumulationChecker) checker;
+    this.accumulationChecker = ac;
 
     this.accumulator = accumulator;
     // Check that the requirements of the accumulator are met.
@@ -202,7 +203,7 @@ public abstract class AccumulationAnnotatedTypeFactory
    */
   public AnnotationMirror createAccumulatorAnnotation(List<String> values) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, accumulator);
-    builder.setValue("value", CollectionsPlume.withoutDuplicatesSorted(values));
+    builder.setValue("value", CollectionsP.withoutDuplicatesSorted(values));
     return builder.build();
   }
 
@@ -292,14 +293,23 @@ public abstract class AccumulationAnnotatedTypeFactory
       if (returnsThis(tree)) {
         // There is a @This annotation on the return type of the invoked method.
         ExpressionTree receiverTree = TreeUtils.getReceiverTree(tree.getMethodSelect());
-        AnnotatedTypeMirror receiverType =
-            receiverTree == null ? null : getAnnotatedType(receiverTree);
-        // The current type of the receiver, or top if none exists.
-        AnnotationMirror receiverAnno =
-            receiverType == null ? top : receiverType.getPrimaryAnnotationInHierarchy(top);
-
         AnnotationMirror returnAnno = type.getPrimaryAnnotationInHierarchy(top);
-        type.replaceAnnotation(qualHierarchy.greatestLowerBound(returnAnno, receiverAnno));
+        AnnotationMirror glbAnno;
+        if (receiverTree == null) {
+          glbAnno = returnAnno;
+        } else {
+          AnnotatedTypeMirror receiverType = getAnnotatedType(receiverTree);
+          // The current type of the receiver, or top if none exists.
+          AnnotationMirror receiverAnno = receiverType.getPrimaryAnnotationInHierarchy(top);
+          glbAnno =
+              qualHierarchy.greatestLowerBoundShallow(
+                  returnAnno,
+                  type.getUnderlyingType(),
+                  receiverAnno,
+                  receiverType.getUnderlyingType());
+        }
+
+        type.replaceAnnotation(glbAnno);
       }
       return super.visitMethodInvocation(tree, type);
     }
@@ -404,7 +414,7 @@ public abstract class AccumulationAnnotatedTypeFactory
      */
     protected AccumulationQualifierHierarchy(
         Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-      super(qualifierClasses, elements);
+      super(qualifierClasses, elements, AccumulationAnnotatedTypeFactory.this);
     }
 
     /**
@@ -412,7 +422,7 @@ public abstract class AccumulationAnnotatedTypeFactory
      * them is bottom, in which case the result is also bottom.
      */
     @Override
-    public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public AnnotationMirror greatestLowerBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
       if (AnnotationUtils.areSame(a1, bottom) || AnnotationUtils.areSame(a2, bottom)) {
         return bottom;
       }
@@ -455,7 +465,7 @@ public abstract class AccumulationAnnotatedTypeFactory
      * one of them is bottom, in which case the result is the other annotation.
      */
     @Override
-    public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public AnnotationMirror leastUpperBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
       if (AnnotationUtils.areSame(a1, bottom)) {
         return a2;
       } else if (AnnotationUtils.areSame(a2, bottom)) {
@@ -501,7 +511,7 @@ public abstract class AccumulationAnnotatedTypeFactory
      * <p>isSubtype in this type system is subset.
      */
     @Override
-    public boolean isSubtype(AnnotationMirror subAnno, AnnotationMirror superAnno) {
+    public boolean isSubtypeQualifiers(AnnotationMirror subAnno, AnnotationMirror superAnno) {
       if (AnnotationUtils.areSame(subAnno, bottom)) {
         return true;
       } else if (AnnotationUtils.areSame(superAnno, bottom)) {
@@ -554,7 +564,7 @@ public abstract class AccumulationAnnotatedTypeFactory
    *
    * @param subAnno an accumulator annotation
    * @param pred a predicate
-   * @return whether the accumulator annotation satisfies the predicate
+   * @return true if the accumulator annotation satisfies the predicate
    */
   protected boolean evaluatePredicate(AnnotationMirror subAnno, String pred) {
     if (!isAccumulatorAnnotation(subAnno)) {
@@ -596,7 +606,7 @@ public abstract class AccumulationAnnotatedTypeFactory
    *
    * @param trueVariables a list of names that should be replaced with {@code true}
    * @param pred a predicate
-   * @return whether the true variables satisfy the predicate
+   * @return true if the true variables satisfy the predicate
    */
   protected boolean evaluatePredicate(List<String> trueVariables, String pred) {
     Expression expression;

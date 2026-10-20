@@ -2,6 +2,7 @@
 
 import java.util.*;
 import org.checkerframework.checker.mustcall.qual.Owning;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 public class Issue6030 {
 
@@ -16,6 +17,7 @@ public class Issue6030 {
       return iterator.hasNext();
     }
 
+    @SideEffectsOnly("this")
     public T next() {
       return null;
     }

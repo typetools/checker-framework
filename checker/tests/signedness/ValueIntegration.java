@@ -23,33 +23,33 @@ public class ValueIntegration {
     ptest = c;
 
     stest = upure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = upure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = upure;
 
     stest = umixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = umixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = umixed;
 
     stest = spure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = spure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = spure;
 
     stest = smixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = smixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = smixed;
 
     stest = bmixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = bmixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = bmixed;
   }
 
@@ -71,33 +71,33 @@ public class ValueIntegration {
       ptest = c;
 
       stest = upure;
-      // XX error: (assignment)
+      // XX error: [assignment]
       gtest = upure;
-      // XX error: (assignment)
+      // XX error: [assignment]
       ptest = upure;
 
       stest = umixed;
-      // XX error: (assignment)
+      // XX error: [assignment]
       gtest = umixed;
-      // XX error: (assignment)
+      // XX error: [assignment]
       ptest = umixed;
 
       stest = spure;
-      // XX error: (assignment)
+      // XX error: [assignment]
       gtest = spure;
-      // XX error: (assignment)
+      // XX error: [assignment]
       ptest = spure;
 
       stest = smixed;
-      // XX error: (assignment)
+      // XX error: [assignment]
       gtest = smixed;
-      // XX error: (assignment)
+      // XX error: [assignment]
       ptest = smixed;
 
       stest = bmixed;
-      // XX error: (assignment)
+      // XX error: [assignment]
       gtest = bmixed;
-      // XX error: (assignment)
+      // XX error: [assignment]
       ptest = bmixed;
   }
   */
@@ -118,33 +118,33 @@ public class ValueIntegration {
     ptest = c;
 
     stest = upure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = upure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = upure;
 
     stest = umixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = umixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = umixed;
 
     stest = spure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = spure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = spure;
 
     stest = smixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = smixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = smixed;
 
     stest = bmixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = bmixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = bmixed;
   }
 
@@ -164,33 +164,33 @@ public class ValueIntegration {
     ptest = c;
 
     stest = upure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = upure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = upure;
 
     stest = umixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = umixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = umixed;
 
     stest = spure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = spure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = spure;
 
     stest = smixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = smixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = smixed;
 
     stest = bmixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = bmixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = bmixed;
   }
 
@@ -208,21 +208,21 @@ public class ValueIntegration {
     ptest = c;
 
     stest = spure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = spure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = spure;
 
     stest = smixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = smixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = smixed;
 
     stest = bmixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = bmixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = bmixed;
   }
 
@@ -252,33 +252,33 @@ public class ValueIntegration {
     ptest = pc;
 
     stest = upure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = upure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = upure;
 
     stest = umixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = umixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = umixed;
 
     stest = spure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = spure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = spure;
 
     stest = smixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = smixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = smixed;
 
     stest = bmixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = bmixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = bmixed;
   }
 
@@ -310,33 +310,33 @@ public class ValueIntegration {
       ptest = pc;
 
       stest = upure;
-      // XX error: (assignment)
+      // XX error: [assignment]
       gtest = upure;
-      // XX error: (assignment)
+      // XX error: [assignment]
       ptest = upure;
 
       stest = umixed;
-      // XX error: (assignment)
+      // XX error: [assignment]
       gtest = umixed;
-      // XX error: (assignment)
+      // XX error: [assignment]
       ptest = umixed;
 
       stest = spure;
-      // XX error: (assignment)
+      // XX error: [assignment]
       gtest = spure;
-      // XX error: (assignment)
+      // XX error: [assignment]
       ptest = spure;
 
       stest = smixed;
-      // XX error: (assignment)
+      // XX error: [assignment]
       gtest = smixed;
-      // XX error: (assignment)
+      // XX error: [assignment]
       ptest = smixed;
 
       stest = bmixed;
-      // XX error: (assignment)
+      // XX error: [assignment]
       gtest = bmixed;
-      // XX error: (assignment)
+      // XX error: [assignment]
       ptest = bmixed;
   }
   */
@@ -367,33 +367,33 @@ public class ValueIntegration {
     ptest = pc;
 
     stest = upure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = upure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = upure;
 
     stest = umixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = umixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = umixed;
 
     stest = spure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = spure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = spure;
 
     stest = smixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = smixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = smixed;
 
     stest = bmixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = bmixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = bmixed;
   }
 
@@ -423,33 +423,33 @@ public class ValueIntegration {
     ptest = pc;
 
     stest = upure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = upure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = upure;
 
     stest = umixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = umixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = umixed;
 
     stest = spure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = spure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = spure;
 
     stest = smixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = smixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = smixed;
 
     stest = bmixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = bmixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = bmixed;
   }
 
@@ -477,21 +477,21 @@ public class ValueIntegration {
     ptest = pc;
 
     stest = spure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = spure;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = spure;
 
     stest = smixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = smixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = smixed;
 
     stest = bmixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     gtest = bmixed;
-    // :: error: (assignment)
+    // :: error: [assignment]
     ptest = bmixed;
   }
 }

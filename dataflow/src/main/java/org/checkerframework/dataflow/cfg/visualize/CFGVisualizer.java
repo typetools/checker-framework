@@ -23,7 +23,7 @@ import org.checkerframework.dataflow.expression.MethodCall;
  *
  * @param <V> the abstract value type to be tracked by the analysis
  * @param <S> the store type used in the analysis
- * @param <T> the transfer function type that is used to approximate runtime behavior
+ * @param <T> the transfer function type that is used to approximate run-time behavior
  */
 public interface CFGVisualizer<
     V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>> {
@@ -210,11 +210,11 @@ public interface CFGVisualizer<
   /**
    * Visualize a Node based on the analysis.
    *
-   * @param t the node
+   * @param n the node
    * @param analysis the current analysis
    * @return the String representation of the given node
    */
-  String visualizeBlockNode(Node t, @Nullable Analysis<V, S, T> analysis);
+  String visualizeBlockNode(Node n, @Nullable Analysis<V, S, T> analysis);
 
   /** Shutdown method called once from the shutdown hook of the {@code BaseTypeChecker}. */
   void shutdown();

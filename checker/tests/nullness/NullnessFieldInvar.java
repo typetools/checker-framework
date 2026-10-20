@@ -52,28 +52,28 @@ public class NullnessFieldInvar {
 
   class Use {
     void test(Super superO, Sub sub, SubSub1 subSub1, SubSub2 subSub2) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NonNull Object x1 = superO.o;
       @NonNull Object x2 = sub.o;
       @NonNull Object x3 = subSub1.o;
 
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NonNull Object x5 = sub.subO;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NonNull Object x6 = subSub1.subO;
       @NonNull Object x7 = subSub2.subO;
     }
 
     <SP extends Super, SB extends Sub, SS1 extends SubSub1, SS2 extends SubSub2> void test2(
         SP superO, SB sub, SS1 subSub1, SS2 subSub2) {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NonNull Object x1 = superO.o;
       @NonNull Object x2 = sub.o;
       @NonNull Object x3 = subSub1.o;
 
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NonNull Object x5 = sub.subO;
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NonNull Object x6 = subSub1.subO;
       @NonNull Object x7 = subSub2.subO;
     }
@@ -84,12 +84,12 @@ public class NullnessFieldInvar {
   }
 
   // nonfinal isn't final
-  // :: error: (field.invariant.not.final)
+  // :: error: [field.invariant.not.final]
   @FieldInvariant(field = "nonfinal", qualifier = NonNull.class)
   class SubSubInvalid extends SuperWithNonFinal {}
 
   // field is declared in this class
-  // :: error: (field.invariant.not.found)
+  // :: error: [field.invariant.not.found]
   @FieldInvariant(field = "field", qualifier = NonNull.class)
   class Invalid {
     final Object field = new Object();
@@ -103,9 +103,9 @@ public class NullnessFieldInvar {
     @Nullable Object subO;
 
     void test() {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NonNull Object x = o; // error
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NonNull Object x2 = subO; // error
 
       @NonNull Object x3 = super.o;
@@ -123,9 +123,9 @@ public class NullnessFieldInvar {
     @Nullable Object subO;
 
     void test() {
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NonNull Object x = o; // error
-      // :: error: (assignment)
+      // :: error: [assignment]
       @NonNull Object x2 = subO; // error
 
       @NonNull Object x3 = super.o;
@@ -139,19 +139,19 @@ public class NullnessFieldInvar {
 
   class Super2 {}
 
-  // :: error: (field.invariant.not.wellformed)
+  // :: error: [field.invariant.not.wellformed]
   @FieldInvariant(
       field = {},
       qualifier = NonNull.class)
   class Invalid1 extends Super2 {}
 
-  // :: error: (field.invariant.not.wellformed)
+  // :: error: [field.invariant.not.wellformed]
   @FieldInvariant(
       field = {"a", "b"},
       qualifier = {NonNull.class, NonNull.class, NonNull.class})
   class Invalid2 extends Super2 {}
 
-  // :: error: (field.invariant.not.found)
+  // :: error: [field.invariant.not.found]
   @FieldInvariant(field = "x", qualifier = NonNull.class)
   class NoSuper {}
 

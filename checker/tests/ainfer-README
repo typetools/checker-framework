@@ -7,7 +7,7 @@ The task ainferTest tests the -Ainfer command-line argument in three
 steps:
 
 1. The TestChecker will type-check all files in the "non-annotated" folder
-using the -Ainfer command-liner argument, which write the inferred types of
+using the -Ainfer command-line argument, which writes the inferred types of
 some elements into annotation files. The inferred types are written into
 annotation files, but are not considered during this type-check -- for that
 reason the expected error comments are necessary.

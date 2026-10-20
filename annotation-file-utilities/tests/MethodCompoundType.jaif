@@ -1,0 +1,6 @@
+package:
+    annotation @A: @Target(TYPE_USE)
+
+    class MethodCompoundType:
+        method m()[Ljava/util/Map;:
+            return: @A

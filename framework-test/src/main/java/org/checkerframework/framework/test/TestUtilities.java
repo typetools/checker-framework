@@ -3,14 +3,14 @@ package org.checkerframework.framework.test;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -30,12 +30,17 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 import org.junit.Assert;
-import org.plumelib.util.CollectionsPlume;
-import org.plumelib.util.StringsPlume;
-import org.plumelib.util.SystemPlume;
+import org.plumelib.util.CollectionsP;
+import org.plumelib.util.StringsP;
+import org.plumelib.util.SystemP;
 
 /** Utilities for testing. */
-public class TestUtilities {
+public final class TestUtilities {
+
+  /** Do not instantiate. */
+  private TestUtilities() {
+    throw new Error("Do not instantiate");
+  }
 
   /** True if the JVM is version 9 or above. */
   public static final boolean IS_AT_LEAST_9_JVM = SystemUtil.jreVersion >= 9;
@@ -58,20 +63,49 @@ public class TestUtilities {
   /** True if the JVM is version 18 or lower. */
   public static final boolean IS_AT_MOST_18_JVM = SystemUtil.jreVersion <= 18;
 
+  /** True if the JVM is version 21 or above. */
+  public static final boolean IS_AT_LEAST_21_JVM = SystemUtil.jreVersion >= 21;
+
+  /** True if the JVM is version 22 or above. */
+  public static final boolean IS_AT_LEAST_22_JVM = SystemUtil.jreVersion >= 22;
+
+  /** True if the JVM is version 25 or above. */
+  public static final boolean IS_AT_LEAST_25_JVM = SystemUtil.jreVersion >= 25;
+
   static {
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     OutputStream err = new ByteArrayOutputStream();
     compiler.run(null, null, err, "-version");
   }
 
+  /**
+   * Find test java sources within currentDir/tests.
+   *
+   * @param dirNames subdirectories of currentDir/tests
+   * @return found files
+   */
   public static List<File> findNestedJavaTestFiles(String... dirNames) {
     return findRelativeNestedJavaFiles(new File("tests"), dirNames);
   }
 
+  /**
+   * Find test java sources within {@code parent}.
+   *
+   * @param parent directory to search within
+   * @param dirNames subdirectories of {@code parent}
+   * @return found files
+   */
   public static List<File> findRelativeNestedJavaFiles(String parent, String... dirNames) {
     return findRelativeNestedJavaFiles(new File(parent), dirNames);
   }
 
+  /**
+   * Find test java sources within {@code parent}.
+   *
+   * @param parent directory to search within
+   * @param dirNames subdirectories of {@code parent}
+   * @return found files
+   */
   public static List<File> findRelativeNestedJavaFiles(File parent, String... dirNames) {
     File[] dirs = new File[dirNames.length];
 
@@ -169,7 +203,7 @@ public class TestUtilities {
    * @return the file names, each with {@code parent} prepended
    */
   public static List<Object[]> findFilesInParent(File parent, String... fileNames) {
-    return CollectionsPlume.mapList(
+    return CollectionsP.mapList(
         (String fileName) -> new Object[] {new File(parent, fileName)}, fileNames);
   }
 
@@ -227,7 +261,7 @@ public class TestUtilities {
       return false;
     }
 
-    try (Scanner in = new Scanner(file)) {
+    try (Scanner in = new Scanner(file, StandardCharsets.UTF_8)) {
       while (in.hasNext()) {
         String nextLine = in.nextLine();
         if (nextLine.contains("@skip-test")
@@ -237,11 +271,15 @@ public class TestUtilities {
             || (!IS_AT_LEAST_17_JVM && nextLine.contains("@below-java17-jdk-skip-test"))
             || (!IS_AT_MOST_17_JVM && nextLine.contains("@above-java17-jdk-skip-test"))
             || (!IS_AT_LEAST_18_JVM && nextLine.contains("@below-java18-jdk-skip-test"))
-            || (!IS_AT_MOST_18_JVM && nextLine.contains("@above-java18-jdk-skip-test"))) {
+            || (!IS_AT_MOST_18_JVM && nextLine.contains("@above-java18-jdk-skip-test"))
+            || (!IS_AT_LEAST_21_JVM && nextLine.contains("@below-java21-jdk-skip-test"))
+            || (!IS_AT_LEAST_22_JVM && nextLine.contains("@below-java22-jdk-skip-test"))
+            || (!IS_AT_LEAST_25_JVM && nextLine.contains("@below-java25-jdk-skip-test"))) {
+
           return false;
         }
       }
-    } catch (FileNotFoundException e) {
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
 
@@ -287,7 +325,7 @@ public class TestUtilities {
       Iterable<Diagnostic<? extends JavaFileObject>> actualDiagnostics, boolean usingAnomsgtxt) {
     Set<String> actualDiagnosticsStr = new LinkedHashSet<>();
     for (Diagnostic<? extends JavaFileObject> diagnostic : actualDiagnostics) {
-      String diagnosticStr = TestUtilities.diagnosticToString(diagnostic, usingAnomsgtxt);
+      String diagnosticStr = diagnosticToString(diagnostic, usingAnomsgtxt);
       if (diagnosticStr != null) {
         actualDiagnosticsStr.add(diagnosticStr);
       }
@@ -297,7 +335,7 @@ public class TestUtilities {
   }
 
   /**
-   * Return the file absolute pathnames, separated by commas.
+   * Returns the file absolute pathnames, separated by commas.
    *
    * @param javaFiles a list of Java files
    * @return the file absolute pathnames, separated by commas
@@ -314,9 +352,16 @@ public class TestUtilities {
     return new File("tests", fileRelativeToTestsDir);
   }
 
+  /**
+   * Returns the file that contains the expected output for the given test file: a file in the same
+   * directory, with the ".java" extension replaced by ".goal". The result might not exist.
+   *
+   * @param testFile a Java file that is a test input
+   * @return the file that contains the expected output for {@code testFile}
+   */
   public static File findComparisonFile(File testFile) {
     File comparisonFile =
-        new File(testFile.getParent(), testFile.getName().replace(".java", ".out"));
+        new File(testFile.getParent(), testFile.getName().replace(".java", ".goal"));
     return comparisonFile;
   }
 
@@ -347,7 +392,12 @@ public class TestUtilities {
    * @param lines what lines to write
    */
   public static void writeLines(File file, Iterable<?> lines) {
-    try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
+    try (BufferedWriter bw =
+        Files.newBufferedWriter(
+            file.toPath(),
+            StandardCharsets.UTF_8,
+            StandardOpenOption.CREATE,
+            StandardOpenOption.APPEND)) {
       Iterator<?> iter = lines.iterator();
       while (iter.hasNext()) {
         Object next = iter.next();
@@ -373,26 +423,32 @@ public class TestUtilities {
       List<String> missing,
       boolean usingNoMsgText,
       boolean testFailed) {
-    try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(file, true)))) {
+    try (PrintWriter pw =
+        new PrintWriter(
+            Files.newBufferedWriter(
+                file.toPath(),
+                StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND))) {
       pw.println("File: " + testFile.getAbsolutePath());
       pw.println("TestFailed: " + testFailed);
       pw.println("Using nomsgtxt: " + usingNoMsgText);
       pw.println("#Missing: " + missing.size() + "      #Unexpected: " + unexpected.size());
 
       pw.println("Expected:");
-      pw.println(StringsPlume.joinLines(expected));
+      pw.println(StringsP.joinLines(expected));
       pw.println();
 
       pw.println("Actual:");
-      pw.println(StringsPlume.joinLines(actual));
+      pw.println(StringsP.joinLines(actual));
       pw.println();
 
       pw.println("Missing:");
-      pw.println(StringsPlume.joinLines(missing));
+      pw.println(StringsP.joinLines(missing));
       pw.println();
 
       pw.println("Unexpected:");
-      pw.println(StringsPlume.joinLines(unexpected));
+      pw.println(StringsP.joinLines(unexpected));
       pw.println();
 
       pw.println();
@@ -411,7 +467,12 @@ public class TestUtilities {
    * @param config the configuration to append to the end of the file
    */
   public static void writeTestConfiguration(File file, TestConfiguration config) {
-    try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
+    try (BufferedWriter bw =
+        Files.newBufferedWriter(
+            file.toPath(),
+            StandardCharsets.UTF_8,
+            StandardOpenOption.CREATE,
+            StandardOpenOption.APPEND)) {
       bw.write(config.toString());
       bw.newLine();
       bw.newLine();
@@ -426,7 +487,13 @@ public class TestUtilities {
       Iterable<? extends JavaFileObject> files,
       Iterable<String> options,
       Iterable<String> processors) {
-    try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(file, true)))) {
+    try (PrintWriter pw =
+        new PrintWriter(
+            Files.newBufferedWriter(
+                file.toPath(),
+                StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND))) {
       pw.println("Files:");
       for (JavaFileObject f : files) {
         pw.println("    " + f.getName());
@@ -461,9 +528,9 @@ public class TestUtilities {
   public static void assertTestDidNotFail(TypecheckResult testResult) {
     if (testResult.didTestFail()) {
       if (getShouldEmitDebugInfo()) {
-        System.out.println("---------------- start of javac ouput ----------------");
+        System.out.println("---------------- start of javac output ----------------");
         System.out.println(testResult.getCompilationResult().getJavacOutput());
-        System.out.println("---------------- end of javac ouput ----------------");
+        System.out.println("---------------- end of javac output ----------------");
       } else {
         System.out.println("To see the javac command line and output, run with: -Pemit.test.debug");
       }
@@ -491,7 +558,8 @@ public class TestUtilities {
    *
    * @return the value of system property "emit.test.debug"
    */
+  @SuppressWarnings("PMD.BooleanGetMethodName")
   public static boolean getShouldEmitDebugInfo() {
-    return SystemPlume.getBooleanSystemProperty("emit.test.debug");
+    return SystemP.getBooleanSystemProperty("emit.test.debug");
   }
 }

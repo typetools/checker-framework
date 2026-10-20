@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.expression;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -18,23 +19,18 @@ public class ThisReference extends JavaExpression {
   }
 
   @Override
-  public boolean equals(@Nullable Object obj) {
-    return obj instanceof ThisReference;
-  }
-
-  @Override
-  public int hashCode() {
-    return 0;
-  }
-
-  @Override
   public String toString() {
-    return "this";
+    if (Node.disambiguateOwner) {
+      return "this{" + type + "}";
+    } else {
+      return "this";
+    }
   }
 
+  @SuppressWarnings("unchecked") // generic cast
   @Override
-  public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
-    return getClass() == clazz;
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
+    return getClass() == clazz ? (T) this : null;
   }
 
   @Override
@@ -43,13 +39,23 @@ public class ThisReference extends JavaExpression {
   }
 
   @Override
-  public boolean isUnassignableByOtherCode() {
-    return true;
+  public boolean isAssignableByOtherCode() {
+    return false;
   }
 
   @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return TypesUtils.isImmutableTypeInJdk(type);
+  public boolean isModifiableByOtherCode() {
+    return !TypesUtils.isImmutableTypeInJdk(type);
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    return obj instanceof ThisReference;
+  }
+
+  @Override
+  public int hashCode() {
+    return 0;
   }
 
   @Override
@@ -61,6 +67,9 @@ public class ThisReference extends JavaExpression {
   public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
     return this.syntacticEquals(other);
   }
+
+  // containsAsReceiver is not overridden: `this` has no receiver, so the inherited
+  // implementation (a syntactic equality test) is already correct.
 
   @Override
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {

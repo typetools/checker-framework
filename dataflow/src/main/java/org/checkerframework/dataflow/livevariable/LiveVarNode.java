@@ -38,10 +38,9 @@ public class LiveVarNode {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof LiveVarNode)) {
+    if (!(obj instanceof LiveVarNode other)) {
       return false;
     }
-    LiveVarNode other = (LiveVarNode) obj;
     // We use `.equals` instead of `==` here to compare value equality.
     return this.liveVariable.equals(other.liveVariable);
   }

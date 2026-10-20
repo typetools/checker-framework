@@ -24,10 +24,10 @@ public class ConstantTests {
     int s1 = 0xFFFFFFFE;
     @UnknownSignedness int y = s1 / 2;
 
-    // :: error: (operation.unsignedlhs)
+    // :: error: [operation.unsignedlhs]
     @UnknownSignedness int z = (uint_negative_one) / -2;
 
-    // :: error: (operation.unsignedlhs)
+    // :: error: [operation.unsignedlhs]
     @UnknownSignedness int w = u1lit / 2;
   }
 }

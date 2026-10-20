@@ -10,10 +10,10 @@ public class InvariantTypes {
   void testAsLocal() {
     @MonotonicNonNull Object[] lo;
     lo = new Object[5];
-    // :: error: (assignment)
+    // :: error: [assignment]
     lo[0] = null;
     lo[0] = new Object();
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     lo[1].toString();
   }
 
@@ -24,7 +24,7 @@ public class InvariantTypes {
   void testDecl(@MonotonicNonNull Object[] p) {}
 
   void testCall() {
-    // Type for array creation is propaged from parameter type
+    // Type for array creation is propagated from parameter type
     testDecl(new Object[5]);
   }
 }

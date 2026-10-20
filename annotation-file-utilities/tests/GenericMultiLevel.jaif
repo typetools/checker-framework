@@ -1,0 +1,19 @@
+package java.lang:
+annotation @A: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @B: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @C: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @D: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @E: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @F: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @G: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @H: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class GenericMultiLevel:
+
+    field field:
+        type: @java.lang.A
+        inner-type 3, 0: @B
+        inner-type 3, 0, 3, 0: @C
+        inner-type 3, 1: @G
+        inner-type 3, 1, 3, 0: @H

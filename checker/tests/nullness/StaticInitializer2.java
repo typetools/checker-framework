@@ -13,7 +13,7 @@ public class StaticInitializer2 {
   static String a;
 
   static {
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     a.toString();
   }
 }

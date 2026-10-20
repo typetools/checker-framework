@@ -21,7 +21,7 @@ public class NullnessSwitchArrows {
       default -> throw new IllegalStateException("Invalid day: " + day);
     }
 
-    // :: error: (dereference.of.nullable)
+    // :: error: [dereference.of.nullable]
     o.toString();
   }
 

@@ -1,0 +1,31 @@
+package org.checkerframework.afu.annotator.tests;
+
+import java.util.List;
+
+public class GenericCell {
+  private @java.lang.ThisUnderInitialization List<@java.lang.ThisUnderInitialization IntCell> internalList;
+
+  public GenericCell(@java.lang.UnderInitialization List<@java.lang.UnderInitialization IntCell> list) {
+    internalList = list;
+  }
+
+  public @java.lang.PolyRaw List<@java.lang.PolyRaw IntCell> getList(@java.lang.PolyRaw GenericCell this) {
+    return internalList;
+  }
+
+  public static class IntCell {
+    private int i;
+
+    public IntCell(int in) {
+      this.i = in;
+    }
+
+    public void set(int in) {
+      this.i = in;
+    }
+
+    public int get() {
+      return i;
+    }
+  }
+}

@@ -13,7 +13,10 @@ class SocketContainer {
 
   public SocketContainer(String host, int port) throws Exception {
     sock = new Socket(host, port);
-    sock = new Socket(host, port);
+    try {
+      sock = new Socket(host, port);
+    } catch (Exception ignored) {
+    }
   }
 
   @EnsuresCalledMethods(value = "this.sock", methods = "close")

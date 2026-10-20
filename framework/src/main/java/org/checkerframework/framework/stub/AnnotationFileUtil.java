@@ -34,11 +34,15 @@ import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.ElementUtils;
-import org.plumelib.util.IPair;
 
 /** Utility class for annotation files (stub files and ajava files). */
 public class AnnotationFileUtil {
+
+  /** Do not instantiate. */
+  private AnnotationFileUtil() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
    * The types of files that can contain annotations. Also indicates the file's source, such as from
    * the JDK, built in, or from the command line.
@@ -63,17 +67,11 @@ public class AnnotationFileUtil {
      * @return true if this represents a stub file
      */
     public boolean isStub() {
-      switch (this) {
-        case JDK_STUB:
-        case BUILTIN_STUB:
-        case COMMAND_LINE_STUB:
-        case AJAVA_AS_STUB:
-          return true;
-        case AJAVA:
-          return false;
-        default:
-          throw new BugInCF("unhandled case " + this);
-      }
+      return switch (this) {
+        case JDK_STUB, BUILTIN_STUB, COMMAND_LINE_STUB, AJAVA_AS_STUB -> true;
+        case AJAVA -> false;
+        default -> throw new BugInCF("unhandled case " + this);
+      };
     }
 
     /**
@@ -82,17 +80,11 @@ public class AnnotationFileUtil {
      * @return true if this annotation file is built-in (not provided on the command line)
      */
     public boolean isBuiltIn() {
-      switch (this) {
-        case JDK_STUB:
-        case BUILTIN_STUB:
-          return true;
-        case COMMAND_LINE_STUB:
-        case AJAVA_AS_STUB:
-        case AJAVA:
-          return false;
-        default:
-          throw new BugInCF("unhandled case " + this);
-      }
+      return switch (this) {
+        case JDK_STUB, BUILTIN_STUB -> true;
+        case COMMAND_LINE_STUB, AJAVA_AS_STUB, AJAVA -> false;
+        default -> throw new BugInCF("unhandled case " + this);
+      };
     }
 
     /**
@@ -101,17 +93,11 @@ public class AnnotationFileUtil {
      * @return true if this annotation file was provided on the command line (not built-in)
      */
     public boolean isCommandLine() {
-      switch (this) {
-        case JDK_STUB:
-        case BUILTIN_STUB:
-          return false;
-        case COMMAND_LINE_STUB:
-        case AJAVA_AS_STUB:
-        case AJAVA:
-          return true;
-        default:
-          throw new BugInCF("unhandled case " + this);
-      }
+      return switch (this) {
+        case JDK_STUB, BUILTIN_STUB -> false;
+        case COMMAND_LINE_STUB, AJAVA_AS_STUB, AJAVA -> true;
+        default -> throw new BugInCF("unhandled case " + this);
+      };
     }
   }
 
@@ -121,7 +107,7 @@ public class AnnotationFileUtil {
    * @param className fully qualified name of the type declaration to find
    * @param indexFile a StubUnit to search
    * @return the declaration in {@code indexFile} with {@code className} if it exists, null
-   *     otherwise.
+   *     otherwise
    */
   /*package-private*/ static @Nullable TypeDeclaration<?> findDeclaration(
       String className, StubUnit indexFile) {
@@ -129,9 +115,9 @@ public class AnnotationFileUtil {
 
     if (indexOfDot == -1) {
       // classes not within a package needs to be the first in the index file
-      assert !indexFile.getCompilationUnits().isEmpty();
-      assert indexFile.getCompilationUnits().get(0).getPackageDeclaration() == null;
-      return findDeclaration(className, indexFile.getCompilationUnits().get(0));
+      CompilationUnit cu = indexFile.getCompilationUnits().get(0);
+      assert !cu.getPackageDeclaration().isPresent();
+      return findDeclaration(className, cu);
     }
 
     String packageName = className.substring(0, indexOfDot);
@@ -164,10 +150,9 @@ public class AnnotationFileUtil {
     }
 
     for (BodyDeclaration<?> member : type.getMembers()) {
-      if (!(member instanceof FieldDeclaration)) {
+      if (!(member instanceof FieldDeclaration decl)) {
         continue;
       }
-      FieldDeclaration decl = (FieldDeclaration) member;
       for (VariableDeclarator var : decl.getVariables()) {
         if (toString(var).equals(field.getSimpleName().toString())) {
           return decl;
@@ -188,12 +173,12 @@ public class AnnotationFileUtil {
     String methodRep = toString(method);
 
     for (BodyDeclaration<?> member : type.getMembers()) {
-      if (member instanceof MethodDeclaration) {
-        if (toString((MethodDeclaration) member).equals(methodRep)) {
+      if (member instanceof MethodDeclaration md) {
+        if (toString(md).equals(methodRep)) {
           return member;
         }
-      } else if (member instanceof ConstructorDeclaration) {
-        if (toString((ConstructorDeclaration) member).equals(methodRep)) {
+      } else if (member instanceof ConstructorDeclaration cd) {
+        if (toString(cd).equals(methodRep)) {
           return member;
         }
       }
@@ -234,29 +219,44 @@ public class AnnotationFileUtil {
     return element.getSimpleName().toString();
   }
 
+  /**
+   * Returns a string representation of the given element, or null.
+   *
+   * @param element an Element
+   * @return a string representation of the given element, or null
+   */
   /*package-private*/ static @Nullable String toString(Element element) {
-    if (element instanceof ExecutableElement) {
-      return toString((ExecutableElement) element);
-    } else if (element instanceof VariableElement) {
-      return toString((VariableElement) element);
+    if (element instanceof ExecutableElement ee) {
+      return toString(ee);
+    } else if (element instanceof VariableElement ve) {
+      return toString(ve);
     } else {
       return null;
     }
   }
 
   /**
+   * A qualified name, split into the part before the last period and the part after it.
+   *
+   * @param typeName the part before the last period
+   * @param memberName the part after the last period; the name of a field or method of {@code
+   *     typeName}
+   */
+  public record QualifiedName(@FullyQualifiedName String typeName, String memberName) {}
+
+  /**
    * Split a name (which comes from an import statement) into the part before the last period and
    * the part after the last period.
    *
    * @param imported the name to split
-   * @return a pair of the type name and the field name
+   * @return the type name and the member name
    */
   @SuppressWarnings("signature") // string parsing
-  public static IPair<@FullyQualifiedName String, String> partitionQualifiedName(String imported) {
-    @FullyQualifiedName String typeName = imported.substring(0, imported.lastIndexOf("."));
-    String name = imported.substring(imported.lastIndexOf(".") + 1);
-    IPair<String, String> typeParts = IPair.of(typeName, name);
-    return typeParts;
+  public static QualifiedName partitionQualifiedName(String imported) {
+    int lastDot = imported.lastIndexOf('.');
+    @FullyQualifiedName String typeName = imported.substring(0, lastDot);
+    String memberName = imported.substring(lastDot + 1);
+    return new QualifiedName(typeName, memberName);
   }
 
   private static final class ElementPrinter extends SimpleVoidVisitor<Void> {
@@ -276,36 +276,36 @@ public class AnnotationFileUtil {
     public void visit(ConstructorDeclaration n, Void arg) {
       sb.append("<init>");
 
-      sb.append("(");
+      sb.append('(');
       if (n.getParameters() != null) {
         for (Iterator<Parameter> i = n.getParameters().iterator(); i.hasNext(); ) {
           Parameter p = i.next();
           p.accept(this, arg);
 
           if (i.hasNext()) {
-            sb.append(",");
+            sb.append(',');
           }
         }
       }
-      sb.append(")");
+      sb.append(')');
     }
 
     @Override
     public void visit(MethodDeclaration n, Void arg) {
       sb.append(n.getName());
 
-      sb.append("(");
+      sb.append('(');
       if (n.getParameters() != null) {
         for (Iterator<Parameter> i = n.getParameters().iterator(); i.hasNext(); ) {
           Parameter p = i.next();
           p.accept(this, arg);
 
           if (i.hasNext()) {
-            sb.append(",");
+            sb.append(',');
           }
         }
       }
-      sb.append(")");
+      sb.append(')');
     }
 
     @Override
@@ -325,32 +325,15 @@ public class AnnotationFileUtil {
     @Override
     public void visit(PrimitiveType n, Void arg) {
       switch (n.getType()) {
-        case BOOLEAN:
-          sb.append("boolean");
-          break;
-        case BYTE:
-          sb.append("byte");
-          break;
-        case CHAR:
-          sb.append("char");
-          break;
-        case DOUBLE:
-          sb.append("double");
-          break;
-        case FLOAT:
-          sb.append("float");
-          break;
-        case INT:
-          sb.append("int");
-          break;
-        case LONG:
-          sb.append("long");
-          break;
-        case SHORT:
-          sb.append("short");
-          break;
-        default:
-          throw new BugInCF("AnnotationFileUtil: unknown type: " + n.getType());
+        case BOOLEAN -> sb.append("boolean");
+        case BYTE -> sb.append("byte");
+        case CHAR -> sb.append("char");
+        case DOUBLE -> sb.append("double");
+        case FLOAT -> sb.append("float");
+        case INT -> sb.append("int");
+        case LONG -> sb.append("long");
+        case SHORT -> sb.append("short");
+        default -> throw new BugInCF("AnnotationFileUtil: unknown type: " + n.getType());
       }
     }
 
@@ -374,7 +357,7 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Return annotation files found at a given file system location (does not look on classpath).
+   * Returns annotation files found at a given file system location (does not look on classpath).
    *
    * @param location an annotation file (stub file or ajava file), a jarfile, or a directory. Look
    *     for it as an absolute file and relative to the current directory.
@@ -443,25 +426,30 @@ public class AnnotationFileUtil {
    */
   @SuppressWarnings({
     "JdkObsolete", // JarFile.entries()
-    "nullness:argument" // inference failed in Arrays.sort
+    "nullness:argument", // inference failed in Arrays.sort
+    "builder:required.method.not.called" // ownership passed to list of
+    // JarEntryAnnotationFileResource, where `file` appears in every element of the list
   })
   private static void addAnnotationFilesToList(
       File location, List<AnnotationFileResource> resources, AnnotationFileType fileType) {
     if (isAnnotationFile(location, fileType)) {
       resources.add(new FileAnnotationFileResource(location));
     } else if (isJar(location)) {
-      try (JarFile file = new JarFile(location)) {
-        Enumeration<JarEntry> entries = file.entries();
-        while (entries.hasMoreElements()) {
-          JarEntry entry = entries.nextElement();
-          if (isAnnotationFile(entry.getName(), fileType)) {
-            resources.add(new JarEntryAnnotationFileResource(file, entry));
-          }
-        }
+      JarFile file;
+      try {
+        file = new JarFile(location);
       } catch (IOException e) {
         System.err.println("AnnotationFileUtil: could not process JAR file: " + location);
         return;
       }
+      Enumeration<JarEntry> entries = file.entries();
+      while (entries.hasMoreElements()) {
+        JarEntry entry = entries.nextElement();
+        if (isAnnotationFile(entry.getName(), fileType)) {
+          resources.add(new JarEntryAnnotationFileResource(file, entry));
+        }
+      }
+
     } else if (location.isDirectory()) {
       File[] directoryContents = location.listFiles();
       Arrays.sort(directoryContents, Comparator.comparing(File::getName));
@@ -485,11 +473,10 @@ public class AnnotationFileUtil {
       return false;
     }
     TypeElement enclosing = (TypeElement) elt.getEnclosingElement();
-    // Can't use RECORD enum constant as it's not available before JDK 16:
-    if (!enclosing.getKind().name().equals("RECORD")) {
+    if (enclosing.getKind() != ElementKind.RECORD) {
       return false;
     }
-    List<? extends Element> recordComponents = ElementUtils.getRecordComponents(enclosing);
+    List<? extends Element> recordComponents = enclosing.getRecordComponents();
     if (recordComponents.size() == elt.getParameters().size()) {
       for (int i = 0; i < recordComponents.size(); i++) {
         if (!types.isSameType(

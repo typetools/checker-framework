@@ -278,7 +278,7 @@ public abstract class JointVisitorWithDefaultAction extends JointJavacJavaParser
   }
 
   @Override
-  public void processExpressionStatemen(
+  public void processExpressionStatement(
       ExpressionStatementTree javacTree, ExpressionStmt javaParserNode) {
     defaultJointAction(javacTree, javaParserNode);
   }

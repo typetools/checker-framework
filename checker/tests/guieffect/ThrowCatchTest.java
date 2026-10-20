@@ -6,7 +6,7 @@ import org.checkerframework.checker.guieffect.qual.UI;
 public class ThrowCatchTest {
   List<? extends @UI Object> ooo;
 
-  // :: error: (annotations.on.use)
+  // :: error: [annotations.on.use]
   List<? extends @UI Inner> iii;
 
   class Inner {}
@@ -16,15 +16,15 @@ public class ThrowCatchTest {
   // Type var test
   <E extends @UI PolyUIException> void throwTypeVarUI1(E ex1, @UI E ex2) throws PolyUIException {
     if (flag) {
-      // :: error: (throw)
+      // :: error: [throw]
       throw ex1;
     }
-    // :: error: (throw)
+    // :: error: [throw]
     throw ex2;
   }
 
   <@UI E extends @UI PolyUIException> void throwTypeVarUI2(E ex1) throws PolyUIException {
-    // :: error: (throw)
+    // :: error: [throw]
     throw ex1;
   }
 
@@ -47,7 +47,7 @@ public class ThrowCatchTest {
   <@AlwaysSafe E extends @UI PolyUIException> void throwTypeVarMixed(E ex1, @AlwaysSafe E ex2)
       throws PolyUIException {
     if (flag) {
-      // :: error: (throw)
+      // :: error: [throw]
       throw ex1;
     }
     throw ex2;
@@ -74,7 +74,7 @@ public class ThrowCatchTest {
 
   void throwDeclared() {
     try {
-      // :: error: (throw)
+      // :: error: [throw]
       throw ui;
     } catch (@UI PolyUIException UIParam) {
 

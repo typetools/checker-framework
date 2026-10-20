@@ -24,7 +24,7 @@ public interface AnnotationProvider {
   @Nullable AnnotationMirror getDeclAnnotation(Element elt, Class<? extends Annotation> anno);
 
   /**
-   * Return the annotation on {@code tree} that is in the hierarchy that contains the qualifier
+   * Returns the annotation on {@code tree} that is in the hierarchy that contains the qualifier
    * {@code target}. Returns null if none exists.
    *
    * @param tree the tree of which the annotation is returned
@@ -44,4 +44,16 @@ public interface AnnotationProvider {
    * @return true if a call to the method does not undo flow-sensitive type refinement
    */
   boolean isSideEffectFree(ExecutableElement methodElement);
+
+  /**
+   * Returns true if the given method is deterministic according to this AnnotationProvider &mdash;
+   * that is, if multiple calls to the given method (with the same arguments) return the same value.
+   *
+   * <p>Note that this method takes account of this AnnotationProvider's semantics, whereas {@code
+   * org.checkerframework.dataflow.util.PurityUtils#isDeterministic} does not.
+   *
+   * @param methodElement a method
+   * @return true if multiple calls to the method (with the same arguments) return the same value
+   */
+  boolean isDeterministic(ExecutableElement methodElement);
 }

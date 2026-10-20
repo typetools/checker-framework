@@ -170,6 +170,8 @@ class ValueTypeAnnotator extends TypeAnnotator {
    * @param regexes a list of strings that might all be regexes
    * @return true if all the given strings are valid regexes
    */
+  @SuppressWarnings(
+      "regex:argument") // strings are checked for validity by PatternSyntaxException catch
   private boolean allRegexesCompile(List<String> regexes) {
     for (String regex : regexes) {
       try {

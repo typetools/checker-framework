@@ -23,7 +23,7 @@ public interface AnnotatedTypeFormatter {
    * Formats type into a String.
    *
    * @param type the type to be converted
-   * @param printVerbose whether or not to print verbosely
+   * @param printVerbose if true, print verbosely
    * @see org.checkerframework.framework.qual.InvisibleQualifier
    * @return a string representation of type
    */

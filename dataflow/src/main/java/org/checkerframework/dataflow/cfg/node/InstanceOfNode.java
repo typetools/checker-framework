@@ -3,10 +3,12 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.InstanceOfTree;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.javacutil.TypesUtils;
@@ -27,8 +29,8 @@ public class InstanceOfNode extends Node {
   /** The tree associated with this node. */
   protected final InstanceOfTree tree;
 
-  /** The node of the binding variable if one exists. */
-  protected final @Nullable LocalVariableNode bindingVariable;
+  /** The node of the pattern if one exists. */
+  protected final @Nullable Node patternNode;
 
   /** For Types.isSameType. */
   protected final Types types;
@@ -50,14 +52,14 @@ public class InstanceOfNode extends Node {
    *
    * @param tree instanceof tree
    * @param operand the expression in the instanceof tree
-   * @param bindingVariable the binding variable or null if there is none
+   * @param patternNode the pattern node or null if there is none
    * @param refType the type in the instanceof
    * @param types types util
    */
   public InstanceOfNode(
       InstanceOfTree tree,
       Node operand,
-      @Nullable LocalVariableNode bindingVariable,
+      @Nullable Node patternNode,
       TypeMirror refType,
       Types types) {
     super(types.getPrimitiveType(TypeKind.BOOLEAN));
@@ -65,7 +67,7 @@ public class InstanceOfNode extends Node {
     this.operand = operand;
     this.refType = refType;
     this.types = types;
-    this.bindingVariable = bindingVariable;
+    this.patternNode = patternNode;
   }
 
   public Node getOperand() {
@@ -73,12 +75,36 @@ public class InstanceOfNode extends Node {
   }
 
   /**
-   * Returns the binding variable for this instanceof, or null if one does not exist.
-   *
-   * @return the binding variable for this instanceof, or null if one does not exist
+   * A list of all binding variables in this instanceof. This is lazily initialized, use {@link
+   * #getBindingVariables()}.
    */
-  public @Nullable LocalVariableNode getBindingVariable() {
-    return bindingVariable;
+  protected @MonotonicNonNull List<LocalVariableNode> bindingVariables = null;
+
+  /**
+   * Returns all the binding variables in this instanceof.
+   *
+   * @return all the binding variables in this instanceof
+   */
+  public List<LocalVariableNode> getBindingVariables() {
+    if (bindingVariables == null) {
+      if (patternNode instanceof DeconstructorPatternNode deconstructorPatternNode) {
+        bindingVariables = deconstructorPatternNode.getBindingVariables();
+      } else if (patternNode instanceof LocalVariableNode localVariableNode) {
+        bindingVariables = Collections.singletonList(localVariableNode);
+      } else {
+        bindingVariables = Collections.emptyList();
+      }
+    }
+    return bindingVariables;
+  }
+
+  /**
+   * Returns the pattern for this instanceof, or null if one does not exist.
+   *
+   * @return the pattern for this instanceof, or null if one does not exist
+   */
+  public @Nullable Node getPatternNode() {
+    return patternNode;
   }
 
   /**
@@ -106,16 +132,15 @@ public class InstanceOfNode extends Node {
         + getOperand()
         + " instanceof "
         + TypesUtils.simpleTypeName(getRefType())
-        + (bindingVariable == null ? "" : " " + getBindingVariable())
+        + (patternNode == null ? "" : " " + getPatternNode())
         + ")";
   }
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof InstanceOfNode)) {
+    if (!(obj instanceof InstanceOfNode other)) {
       return false;
     }
-    InstanceOfNode other = (InstanceOfNode) obj;
     // TODO: TypeMirror.equals may be too restrictive.
     // Check whether Types.isSameType is the better comparison.
     return getOperand().equals(other.getOperand())

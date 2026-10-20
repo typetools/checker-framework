@@ -20,14 +20,14 @@ public class ConstantsInterning {
     is = AC;
     is = A + "C";
     is = A + B + "C";
-    // :: error: (assignment)
+    // :: error: [assignment]
     is = D;
-    // :: error: (assignment)
+    // :: error: [assignment]
     is = A + E;
-    // :: error: (assignment)
+    // :: error: [assignment]
     is = is + is;
     is = Constants2.E;
-    // :: error: (assignment)
+    // :: error: [assignment]
     is = (String) F;
   }
 }

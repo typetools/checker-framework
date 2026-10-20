@@ -45,15 +45,14 @@ public class WideningConversionNode extends Node {
 
   @Override
   public String toString() {
-    return "WideningConversion{" + getOperand() + ", " + type + "}";
+    return "WideningConversion(" + getOperand() + ", " + type + ")";
   }
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof WideningConversionNode)) {
+    if (!(obj instanceof WideningConversionNode other)) {
       return false;
     }
-    WideningConversionNode other = (WideningConversionNode) obj;
     return getOperand().equals(other.getOperand())
         && TypesUtils.areSamePrimitiveTypes(getType(), other.getType());
   }

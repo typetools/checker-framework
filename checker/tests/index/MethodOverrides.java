@@ -1,4 +1,4 @@
-// This class should not issues any errors from the value checker.
+// This class should not issue any errors from the value checker.
 // The index checker should issue the errors instead.
 
 // There is a copy of this test at checker/tests/value-index-interaction/MethodOverrides.java,
@@ -13,7 +13,7 @@ public class MethodOverrides {
 }
 
 class MethodOverrides2 extends MethodOverrides {
-  // :: error: (override.return)
+  // :: error: [override.return]
   int read() {
     return -1;
   }

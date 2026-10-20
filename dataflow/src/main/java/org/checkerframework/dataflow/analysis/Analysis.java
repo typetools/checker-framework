@@ -16,7 +16,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
  *
  * @param <V> the abstract value type to be tracked by the analysis
  * @param <S> the store type used in the analysis
- * @param <T> the transfer function type that is used to approximated runtime behavior
+ * @param <T> the transfer function type that is used to approximate run-time behavior
  */
 public interface Analysis<
     V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>> {
@@ -41,7 +41,7 @@ public interface Analysis<
   }
 
   /**
-   * Get the direction of this analysis.
+   * Returns the direction of this analysis.
    *
    * @return the direction of this analysis
    */
@@ -71,18 +71,16 @@ public interface Analysis<
   /**
    * Runs the analysis again within the block of {@code node} and returns the store at the location
    * of {@code node}. If {@code before} is true, then the store immediately before the {@link Node}
-   * {@code node} is returned. Otherwise, the store immediately after {@code node} is returned. If
-   * {@code analysisCaches} is not null, this method uses a cache. {@code analysisCaches} is a map
-   * of a block of node to the cached analysis result. If the cache for {@code transferInput} is not
-   * in {@code analysisCaches}, this method creates new cache and stores it in {@code
-   * analysisCaches}. The cache is a map of nodes to the analysis results of the nodes.
+   * {@code node} is returned. Otherwise, the store immediately after {@code node} is returned.
    *
    * @param node the node to analyze
    * @param preOrPost which store to return: the store immediately before {@code node} or the store
    *     after {@code node}
    * @param blockTransferInput the transfer input of the block of this node
    * @param nodeValues abstract values of nodes
-   * @param analysisCaches caches of analysis results
+   * @param analysisCaches caches of analysis results. If it is not null, this method uses and
+   *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from a
+   *     node within the block to a TransferResult.
    * @return the store before or after {@code node} (depends on the value of {@code before}) after
    *     running the analysis
    */
@@ -102,14 +100,14 @@ public interface Analysis<
   AnalysisResult<V, S> getResult();
 
   /**
-   * Get the transfer function of this analysis.
+   * Returns the transfer function of this analysis.
    *
    * @return the transfer function of this analysis
    */
   @Nullable T getTransferFunction();
 
   /**
-   * Get the transfer input of a given {@link Block} b.
+   * Returns the transfer input of a given {@link Block} b.
    *
    * @param b a given Block
    * @return the transfer input of this Block
@@ -127,7 +125,7 @@ public interface Analysis<
   @Nullable V getValue(Node n);
 
   /**
-   * Return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
+   * Returns the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
    * available. Note that if the analysis has not finished yet, this value might not represent the
    * final value for this node.
    *

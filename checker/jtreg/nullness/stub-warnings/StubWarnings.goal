@@ -1,0 +1,5 @@
+- compiler.warn.proc.messager: binary.astub:(line 6,col 5): stub file specification is same as bytecode for Binary.foo()
+- compiler.warn.proc.messager: binary.astub:(line 8,col 5): stub file specification is same as bytecode for Binary.bar(java.lang.Object)
+- compiler.err.warnings.and.werror
+1 error
+2 warnings

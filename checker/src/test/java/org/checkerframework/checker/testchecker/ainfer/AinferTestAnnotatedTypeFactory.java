@@ -89,6 +89,12 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   private final ExecutableElement siblingWithFieldsValue2Element =
       TreeUtils.getMethod(AinferSiblingWithFields.class, "value2", 0, processingEnv);
 
+  /**
+   * Creates an AinferTestAnnotatedTypeFactory.
+   *
+   * @param checker the checker
+   */
+  @SuppressWarnings("this-escape")
   public AinferTestAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     // Support a declaration annotation that has the same meaning as @Sibling1, to test that the
@@ -159,10 +165,14 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
       if (wpi != null) {
         ExecutableElement execElt = TreeUtils.elementFromDeclaration(methodTree);
-        for (int i = 0; i < execElt.getParameters().size(); ++i) {
+        if (execElt.getSimpleName().contentEquals("iShouldBeSibling1")) {
+          wpi.addMethodDeclarationAnnotation(execElt, SIBLING1);
+        }
+        int numParams = execElt.getParameters().size();
+        for (int i = 0; i < numParams; ++i) {
           VariableElement param = execElt.getParameters().get(i);
           if (param.getSimpleName().contentEquals("iShouldBeTreatedAsSibling1")) {
-            wpi.addDeclarationAnnotationToFormalParameter(execElt, i, TREAT_AS_SIBLING1);
+            wpi.addDeclarationAnnotationToFormalParameter(execElt, i + 1, TREAT_AS_SIBLING1);
           }
         }
       }
@@ -206,7 +216,7 @@ public class AinferTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     protected AinferTestQualifierHierarchy(
         Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
-      super(qualifierClasses, elements);
+      super(qualifierClasses, elements, AinferTestAnnotatedTypeFactory.this);
       SIBLING_WITH_FIELDS_KIND = getQualifierKind(AinferSiblingWithFields.class.getCanonicalName());
     }
 

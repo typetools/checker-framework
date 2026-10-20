@@ -1,0 +1,88 @@
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+
+// AinferRelevanceTestChecker declares
+// `@RelevantJavaTypes({CharSequence.class, int.class, Map.Entry.class})`.
+// Whole-program inference must write, into the .ajava file, every annotation that it infers for a
+// relevant type:  `int` and `CharSequence`, which are listed; and `String`, which is relevant
+// because of subtyping.  If inference discards such an annotation, then the second (validation)
+// pass of this test issues the warnings that are written below.
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
+public class RelevantTypes {
+
+    static  @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 int intField;
+
+    static @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 String stringField;
+
+    static @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 CharSequence charSequenceField;
+
+    @org.checkerframework.framework.qual.EnsuresQualifier(expression = { "RelevantTypes.class.charSequenceField" }, qualifier = org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1.class)
+    @org.checkerframework.dataflow.qual.Impure
+    static void assignFields() {
+        intField = getSibling1Int();
+        stringField = getSibling1String();
+        charSequenceField = getSibling1String();
+    }
+
+    @org.checkerframework.dataflow.qual.Impure
+    static void useFields() {
+        // :: warning: [argument]
+        expectsSibling1Int(intField);
+        // :: warning: [argument]
+        expectsSibling1String(stringField);
+        // :: warning: [argument]
+        expectsSibling1CharSequence(charSequenceField);
+    }
+
+    @org.checkerframework.dataflow.qual.Impure
+    static  @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 int intReturn() {
+        return getSibling1Int();
+    }
+
+    @org.checkerframework.dataflow.qual.Impure
+    static @org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 String stringReturn() {
+        return getSibling1String();
+    }
+
+    @org.checkerframework.dataflow.qual.Impure
+    static void useReturns() {
+        // :: warning: [argument]
+        expectsSibling1Int(intReturn());
+        // :: warning: [argument]
+        expectsSibling1String(stringReturn());
+    }
+
+    // A leading annotation on a varargs formal parameter is on the parameter's element type, not on
+    // the array type that `...` creates.  Inference infers an annotation for each of the two, but
+    // the goal file contains only `@AinferSibling1 String ...`:  the annotation on the array type is
+    // omitted, because arrays are irrelevant to this checker.
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    static void varargs(@org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1 String... args) {
+    }
+
+    @org.checkerframework.dataflow.qual.Impure
+    static void callVarargs() {
+        varargs(getSibling1String());
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    static void expectsSibling1Int(int i) {
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    static void expectsSibling1String(String s) {
+    }
+
+    @org.checkerframework.dataflow.qual.SideEffectFree
+    static void expectsSibling1CharSequence(CharSequence cs) {
+    }
+
+    @org.checkerframework.dataflow.qual.Pure
+    static int getSibling1Int() {
+        return (int) 0;
+    }
+
+    @org.checkerframework.dataflow.qual.Pure
+    static String getSibling1String() {
+        return (String) "";
+    }
+}

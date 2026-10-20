@@ -8,7 +8,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /** JavaExpression for array creations. {@code new String[]()}. */
 public class ArrayCreation extends JavaExpression {
@@ -26,8 +26,8 @@ public class ArrayCreation extends JavaExpression {
    * Creates an ArrayCreation object.
    *
    * @param type array type
-   * @param dimensions list of dimension expressions; a {code null} element means that there is no
-   *     dimension expression for the given array level.
+   * @param dimensions list of dimension expressions; a {@code null} element means that there is no
+   *     dimension expression for the given array level
    * @param initializers list of initializer expressions
    */
   public ArrayCreation(
@@ -54,19 +54,20 @@ public class ArrayCreation extends JavaExpression {
     return initializers;
   }
 
+  @SuppressWarnings("unchecked") // generic cast
   @Override
-  public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
     for (JavaExpression n : dimensions) {
       if (n != null && n.getClass() == clazz) {
-        return true;
+        return (T) n;
       }
     }
     for (JavaExpression n : initializers) {
       if (n.getClass() == clazz) {
-        return true;
+        return (T) n;
       }
     }
-    return false;
+    return null;
   }
 
   @Override
@@ -75,26 +76,20 @@ public class ArrayCreation extends JavaExpression {
   }
 
   @Override
-  public boolean isUnassignableByOtherCode() {
-    return false;
+  public boolean isAssignableByOtherCode() {
+    return true;
   }
 
   @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return false;
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(dimensions, initializers, getType().toString());
+  public boolean isModifiableByOtherCode() {
+    return true;
   }
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ArrayCreation)) {
+    if (!(obj instanceof ArrayCreation other)) {
       return false;
     }
-    ArrayCreation other = (ArrayCreation) obj;
     return this.dimensions.equals(other.getDimensions())
         && this.initializers.equals(other.getInitializers())
         // It might be better to use Types.isSameType(getType(), other.getType()), but I
@@ -103,12 +98,16 @@ public class ArrayCreation extends JavaExpression {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(dimensions, initializers, getType().toString());
+  }
+
+  @Override
   public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof ArrayCreation)) {
+    if (!(je instanceof ArrayCreation other)) {
       return false;
     }
-    ArrayCreation other = (ArrayCreation) je;
-    return JavaExpression.syntacticEqualsList(this.dimensions, other.dimensions)
+    return syntacticEqualsList(this.dimensions, other.dimensions)
         && JavaExpression.syntacticEqualsList(this.initializers, other.initializers)
         && getType().toString().equals(other.getType().toString());
   }
@@ -124,19 +123,21 @@ public class ArrayCreation extends JavaExpression {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     if (dimensions.isEmpty()) {
-      sb.append("new " + type);
+      sb.append("new ");
+      sb.append(type);
     } else {
-      sb.append("new " + TypesUtils.getInnermostComponentType((ArrayType) type));
+      sb.append("new ");
+      sb.append(TypesUtils.getInnermostComponentType((ArrayType) type));
       for (JavaExpression dim : dimensions) {
-        sb.append("[");
+        sb.append('[');
         sb.append(dim == null ? "" : dim);
-        sb.append("]");
+        sb.append(']');
       }
     }
-    if (!initializers.isEmpty()) {
+    if (!initializers.isEmpty() || dimensions.isEmpty()) {
       sb.append(" {");
-      sb.append(StringsPlume.join(", ", initializers));
-      sb.append("}");
+      sb.append(StringsP.join(", ", initializers));
+      sb.append('}');
     }
     return sb.toString();
   }

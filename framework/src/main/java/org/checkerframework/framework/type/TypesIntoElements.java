@@ -84,10 +84,10 @@ public final class TypesIntoElements {
     */
 
     for (Tree mem : tree.getMembers()) {
-      if (mem.getKind() == Tree.Kind.METHOD) {
-        storeMethod(processingEnv, types, atypeFactory, (MethodTree) mem);
-      } else if (mem.getKind() == Tree.Kind.VARIABLE) {
-        storeVariable(processingEnv, types, atypeFactory, (VariableTree) mem);
+      if (mem instanceof MethodTree mt) {
+        storeMethod(processingEnv, types, atypeFactory, mt);
+      } else if (mem instanceof VariableTree vt) {
+        storeVariable(processingEnv, types, atypeFactory, vt);
       } else {
         // System.out.println("Unhandled member tree: " + mem);
       }
@@ -387,8 +387,13 @@ public final class TypesIntoElements {
       return res;
     }
 
-    /* Modeled after
-     * {@link com.sun.tools.javac.code.TypeAnnotations.TypeAnnotationPositions#locateNestedTypes(Type, TypeAnnotationPosition)}
+    /**
+     * Modeled after {@code
+     * com.sun.tools.javac.code.TypeAnnotations.TypeAnnotationPositions#locateNestedTypes(Type,
+     * TypeAnnotationPosition)}.
+     *
+     * @param type a type
+     * @param p the type's position
      */
     private void locateNestedTypes(AnnotatedDeclaredType type, TypeAnnotationPosition p) {
       // The number of "steps" to get from the full type to the

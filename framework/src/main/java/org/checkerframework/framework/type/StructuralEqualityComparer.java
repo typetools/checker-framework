@@ -5,19 +5,21 @@ import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AtmCombo;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * A visitor used to compare two type mirrors for "structural" equality. Structural equality implies
@@ -44,14 +46,6 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
   @Override
   public Boolean defaultAction(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void p) {
-    if (type1.getKind() == TypeKind.NULL || type2.getKind() == TypeKind.NULL) {
-      // If one of the types is the NULL type, compare main qualifiers only.
-      return arePrimeAnnosEqual(type1, type2);
-    }
-
-    if (type1.containsUninferredTypeArguments() || type2.containsUninferredTypeArguments()) {
-      return type1.atypeFactory.ignoreUninferredTypeArguments;
-    }
 
     return super.defaultAction(type1, type2, p);
   }
@@ -106,12 +100,22 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     return areEqual;
   }
 
-  /** Return true if type1 and type2 have the same set of annotations. */
-  protected boolean arePrimeAnnosEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+  /**
+   * Returns true if type1 and type2 have the same set of annotations.
+   *
+   * @param type1 a type
+   * @param type2 a type
+   * @return true if type1 and type2 have the same set of annotations
+   */
+  protected boolean arePrimaryAnnosEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
     if (currentTop != null) {
-      return AnnotationUtils.areSame(
-          type1.getPrimaryAnnotationInHierarchy(currentTop),
-          type2.getPrimaryAnnotationInHierarchy(currentTop));
+      AnnotationMirror anno1 = type1.getPrimaryAnnotationInHierarchy(currentTop);
+      AnnotationMirror anno2 = type2.getPrimaryAnnotationInHierarchy(currentTop);
+      TypeMirror typeMirror1 = type1.underlyingType;
+      TypeMirror typeMirror2 = type2.underlyingType;
+      QualifierHierarchy qh = type1.atypeFactory.getQualifierHierarchy();
+      return qh.isSubtypeShallow(anno1, typeMirror1, anno2, typeMirror2)
+          && qh.isSubtypeShallow(anno2, typeMirror2, anno1, typeMirror1);
     } else {
       throw new BugInCF("currentTop null");
     }
@@ -119,7 +123,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
   /**
    * Compare each type in types1 and types2 pairwise and return true if they are all equal. This
-   * method throws an exceptions if types1.size() != types2.size()
+   * method throws an exception if types1.size() != types2.size()
    *
    * @return true if for each pair (t1 = types1.get(i); t2 = types2.get(i)), areEqual(t1,t2)
    */
@@ -129,10 +133,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     if (types1.size() != types2.size()) {
       throw new BugInCF(
           "Mismatching collection sizes:%n    types 1: %s (%d)%n    types 2: %s (%d)",
-          StringsPlume.join("; ", types1),
-          types1.size(),
-          StringsPlume.join("; ", types2),
-          types2.size());
+          StringsP.join("; ", types1), types1.size(), StringsP.join("; ", types2), types2.size());
     }
 
     Iterator<? extends AnnotatedTypeMirror> types1Iter = types1.iterator();
@@ -154,7 +155,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
    *
    * @param type1 the first type
    * @param type2 the second type
-   * @return whether the two types are equal
+   * @return true if the two types are equal
    */
   protected boolean checkOrAreEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
     Boolean pastResult = visitHistory.get(type1, type2, currentTop);
@@ -177,7 +178,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
    */
   @Override
   public Boolean visitArray_Array(AnnotatedArrayType type1, AnnotatedArrayType type2, Void p) {
-    if (!arePrimeAnnosEqual(type1, type2)) {
+    if (!arePrimaryAnnosEqual(type1, type2)) {
       return false;
     }
 
@@ -203,40 +204,58 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
     // TODO: same class/interface is not enforced. Why?
 
-    if (!arePrimeAnnosEqual(type1, type2)) {
+    if (!arePrimaryAnnosEqual(type1, type2)) {
       return false;
     }
-
     // Prevent infinite recursion e.g. in Issue1587b
     visitHistory.put(type1, type2, currentTop, true);
 
-    boolean result = visitTypeArgs(type1, type2);
+    List<AnnotatedTypeMirror> type1Args = type1.getTypeArguments();
+    List<AnnotatedTypeMirror> type2Args = type2.getTypeArguments();
+
+    // Capture the types because the wildcards are only not equal if they are provably distinct.
+    // Provably distinct is computed using the captured and erased upper bounds of wildcards.
+    // See JLS 4.5.1. Type Arguments of Parameterized Types.
+    AnnotatedTypeFactory atypeFactory = type1.atypeFactory;
+    AnnotatedDeclaredType capturedType1 =
+        (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(type1);
+    AnnotatedDeclaredType capturedType2 =
+        (AnnotatedDeclaredType) atypeFactory.applyCaptureConversion(type2);
+    visitHistory.put(capturedType1, capturedType2, currentTop, true);
+
+    List<AnnotatedTypeMirror> capturedType1Args = capturedType1.getTypeArguments();
+    List<AnnotatedTypeMirror> capturedType2Args = capturedType2.getTypeArguments();
+    boolean result = true;
+    for (int i = 0; i < type1.getTypeArguments().size(); i++) {
+      AnnotatedTypeMirror type1Arg = type1Args.get(i);
+      AnnotatedTypeMirror type2Arg = type2Args.get(i);
+      Boolean pastResultTA = visitHistory.get(type1Arg, type2Arg, currentTop);
+      if (pastResultTA != null) {
+        result = pastResultTA;
+      } else {
+        if (type1Arg.getKind() != TypeKind.WILDCARD || type2Arg.getKind() != TypeKind.WILDCARD) {
+          result = areEqual(type1Arg, type2Arg);
+        } else {
+          AnnotatedWildcardType wildcardType1 = (AnnotatedWildcardType) type1Arg;
+          AnnotatedWildcardType wildcardType2 = (AnnotatedWildcardType) type2Arg;
+          if (type1.atypeFactory.ignoreRawTypeArguments
+              && (wildcardType1.isTypeArgOfRawType() || wildcardType2.isTypeArgOfRawType())) {
+            result = true;
+          } else {
+            AnnotatedTypeMirror capturedType1Arg = capturedType1Args.get(i);
+            AnnotatedTypeMirror capturedType2Arg = capturedType2Args.get(i);
+            result = areEqual(capturedType1Arg.getErased(), capturedType2Arg.getErased());
+          }
+        }
+      }
+      if (!result) {
+        break;
+      }
+    }
+
+    visitHistory.put(capturedType1, capturedType2, currentTop, result);
     visitHistory.put(type1, type2, currentTop, result);
     return result;
-  }
-
-  /**
-   * A helper class for visitDeclared_Declared. There are subtypes of DefaultTypeHierarchy that need
-   * to customize the handling of type arguments. This method provides a convenient extension point.
-   */
-  protected boolean visitTypeArgs(AnnotatedDeclaredType type1, AnnotatedDeclaredType type2) {
-
-    // TODO: ANYTHING WITH RAW TYPES? SHOULD WE HANDLE THEM LIKE DefaultTypeHierarchy, i.e. use
-    // ignoreRawTypes
-    List<? extends AnnotatedTypeMirror> type1Args = type1.getTypeArguments();
-    List<? extends AnnotatedTypeMirror> type2Args = type2.getTypeArguments();
-
-    if (type1Args.isEmpty() && type2Args.isEmpty()) {
-      return true;
-    }
-
-    if (type1Args.size() == type2Args.size()) {
-      return areAllEqual(type1Args, type2Args);
-    } else {
-      throw new BugInCF(
-          "Mismatching type argument sizes:%n    type 1: %s (%d)%n    type 2: %s (%d)",
-          type1, type1Args.size(), type2, type2Args.size());
-    }
   }
 
   /**
@@ -250,7 +269,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   @Override
   public Boolean visitIntersection_Intersection(
       AnnotatedIntersectionType type1, AnnotatedIntersectionType type2, Void p) {
-    if (!arePrimeAnnosEqual(type1, type2)) {
+    if (!arePrimaryAnnosEqual(type1, type2)) {
       return false;
     }
 
@@ -269,7 +288,12 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   @Override
   public Boolean visitPrimitive_Primitive(
       AnnotatedPrimitiveType type1, AnnotatedPrimitiveType type2, Void p) {
-    return arePrimeAnnosEqual(type1, type2);
+    return arePrimaryAnnosEqual(type1, type2);
+  }
+
+  @Override
+  public Boolean visitNull_Null(AnnotatedNullType type1, AnnotatedNullType type2, Void unused) {
+    return arePrimaryAnnosEqual(type1, type2);
   }
 
   /**
@@ -296,6 +320,17 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     return result;
   }
 
+  @Override
+  public Boolean visitUnion_Union(AnnotatedUnionType type1, AnnotatedUnionType type2, Void unused) {
+    if (!arePrimaryAnnosEqual(type1, type2)) {
+      return false;
+    }
+
+    boolean result = areAllEqual(type1.getAlternatives(), type2.getAlternatives());
+    visitHistory.put(type1, type2, currentTop, result);
+    return result;
+  }
+
   /**
    * Two wildcards are equal if:
    *
@@ -313,35 +348,14 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
       return pastResult;
     }
 
-    if (type1.atypeFactory.ignoreUninferredTypeArguments
-        && (type1.isUninferredTypeArgument() || type2.isUninferredTypeArgument())) {
+    if (type1.atypeFactory.ignoreRawTypeArguments
+        && (type1.isTypeArgOfRawType() || type2.isTypeArgOfRawType())) {
       return true;
     }
 
     Boolean result =
         areEqual(type1.getExtendsBound(), type2.getExtendsBound())
             && areEqual(type1.getSuperBound(), type2.getSuperBound());
-    visitHistory.put(type1, type2, currentTop, result);
-    return result;
-  }
-
-  @Override
-  public Boolean visitWildcard_Typevar(
-      AnnotatedWildcardType type1, AnnotatedTypeVariable type2, Void p) {
-    // Once #979 is completed, this should be removed.
-    Boolean pastResult = visitHistory.get(type1, type2, currentTop);
-    if (pastResult != null) {
-      return pastResult;
-    }
-
-    if (type1.atypeFactory.ignoreUninferredTypeArguments && type1.isUninferredTypeArgument()) {
-      return true;
-    }
-
-    Boolean result =
-        areEqual(type1.getExtendsBound(), type2.getUpperBound())
-            && areEqual(type1.getSuperBound(), type2.getLowerBound());
-
     visitHistory.put(type1, type2, currentTop, result);
     return result;
   }
@@ -355,7 +369,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
       throw new BugInCF(defaultErrorMessage(type1, type2, p));
     }
 
-    return arePrimeAnnosEqual(type1, type2);
+    return arePrimaryAnnosEqual(type1, type2);
   }
 
   @Override
@@ -365,6 +379,34 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
       throw new BugInCF(defaultErrorMessage(type1, type2, p));
     }
 
-    return arePrimeAnnosEqual(type1, type2);
+    return arePrimaryAnnosEqual(type1, type2);
+  }
+
+  @Override
+  public Boolean visitTypevar_Declared(
+      AnnotatedTypeVariable type1, AnnotatedDeclaredType type2, Void unused) {
+    // This case should not happen, but sometimes type argument inference incorrectly infers a
+    // captured type, when javac does not. See Issue6755.java.
+    if (TypesUtils.isCapturedTypeVariable(type1.underlyingType)) {
+      if (type1.getLowerBound().getKind() != TypeKind.NULL) {
+        return visit(type1.getLowerBound(), type2, unused);
+      }
+      return visit(type1.getUpperBound(), type2, unused);
+    }
+    return super.visitTypevar_Declared(type1, type2, unused);
+  }
+
+  @Override
+  public Boolean visitDeclared_Typevar(
+      AnnotatedDeclaredType type1, AnnotatedTypeVariable type2, Void unused) {
+    // This case should not happen, but sometimes type argument inference incorrectly infers a
+    // captured type, when javac does not. See Issue6755.java.
+    if (TypesUtils.isCapturedTypeVariable(type2.underlyingType)) {
+      if (type2.getLowerBound().getKind() != TypeKind.NULL) {
+        return visit(type1, type2.getLowerBound(), unused);
+      }
+      return visit(type1, type2.getUpperBound(), unused);
+    }
+    return super.visitDeclared_Typevar(type1, type2, unused);
   }
 }

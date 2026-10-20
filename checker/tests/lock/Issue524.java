@@ -30,14 +30,14 @@ public class Issue524 {
 
     {
       @SuppressWarnings("assignment") // prevent flow-sensitive type refinement
-      // :: error: (lock.expression.not.final)
+      // :: error: [lock.expression.not.final]
       @GuardedBy("localLock") MyClass q = someValue();
       localLock.lock();
       localLock.lock();
       // Without a fix for issue 524 in place, the error lock.not.held
       // (unguarded access to field, variable or parameter 'q' guarded by 'localLock') is
       // issued for the following line.
-      // :: error: (expression.unparsable)
+      // :: error: [expression.unparsable]
       q.field.toString();
     }
   }

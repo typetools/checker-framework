@@ -19,6 +19,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -52,19 +53,15 @@ public class TypeVarUseApplier {
         && ElementAnnotationUtil.contains(element.getKind(), acceptedKinds);
   }
 
+  /**
+   * Returns true if {@code type} is a generic array type.
+   *
+   * @param type an annotated type
+   * @return true if {@code type} is a generic array type
+   */
   private static boolean isGenericArrayType(AnnotatedTypeMirror type) {
     return type instanceof AnnotatedArrayType
-        && getNestedComponentType(type) instanceof AnnotatedTypeVariable;
-  }
-
-  private static AnnotatedTypeMirror getNestedComponentType(AnnotatedTypeMirror type) {
-
-    AnnotatedTypeMirror componentType = type;
-    while (componentType instanceof AnnotatedArrayType) {
-      componentType = ((AnnotatedArrayType) componentType).getComponentType();
-    }
-
-    return componentType;
+        && AnnotatedTypes.innermostComponentType(type) instanceof AnnotatedTypeVariable;
   }
 
   /** The generic array type, if any. */
@@ -104,7 +101,7 @@ public class TypeVarUseApplier {
 
     if (isGenericArrayType(type)) {
       this.arrayType = (AnnotatedArrayType) type;
-      this.typeVariable = (AnnotatedTypeVariable) getNestedComponentType(type);
+      this.typeVariable = (AnnotatedTypeVariable) AnnotatedTypes.innermostComponentType(type);
       this.declarationElem = (TypeParameterElement) typeVariable.getUnderlyingType().asElement();
       this.useElem = element;
       this.typeFactory = typeFactory;
@@ -182,38 +179,27 @@ public class TypeVarUseApplier {
   /**
    * Depending on what element type the annotations are stored on, the relevant annotations might be
    * stored with different annotation positions. getPrimaryAnnotations finds the correct annotations
-   * by annotation position and element kind and returns them
+   * by annotation position and element kind and returns them.
    */
   private static List<Attribute.TypeCompound> getAnnotations(
       Element useElem, Element declarationElem) {
-    final List<Attribute.TypeCompound> annotations;
-    switch (useElem.getKind()) {
-      case METHOD:
-        annotations = getReturnAnnos(useElem);
-        break;
-
-      case PARAMETER:
-        annotations = getParameterAnnos(useElem);
-        break;
-
-      case FIELD:
-      case LOCAL_VARIABLE:
-      case RESOURCE_VARIABLE:
-        annotations = getVariableAnnos(useElem);
-        break;
-
-      default:
-        throw new BugInCF(
-            "TypeVarUseApplier::extractAndApply : "
-                + "Unhandled element kind "
-                + useElem.getKind()
-                + "useElem ( "
-                + useElem
-                + " ) "
-                + "declarationElem ( "
-                + declarationElem
-                + " ) ");
-    }
+    final List<Attribute.TypeCompound> annotations =
+        switch (useElem.getKind()) {
+          case METHOD -> getReturnAnnos(useElem);
+          case PARAMETER -> getParameterAnnos(useElem);
+          case FIELD, LOCAL_VARIABLE, RESOURCE_VARIABLE -> getVariableAnnos(useElem);
+          default ->
+              throw new BugInCF(
+                  "TypeVarUseApplier::extractAndApply : "
+                      + "Unhandled element kind "
+                      + useElem.getKind()
+                      + "useElem ( "
+                      + useElem
+                      + " ) "
+                      + "declarationElem ( "
+                      + declarationElem
+                      + " ) ");
+        };
 
     return annotations;
   }
@@ -232,14 +218,8 @@ public class TypeVarUseApplier {
 
       TypeAnnotationPosition pos = anno.position;
       switch (pos.type) {
-        case FIELD:
-        case LOCAL_VARIABLE:
-        case RESOURCE_VARIABLE:
-        case EXCEPTION_PARAMETER:
-          annotations.add(anno);
-          break;
-
-        default:
+        case FIELD, LOCAL_VARIABLE, RESOURCE_VARIABLE, EXCEPTION_PARAMETER -> annotations.add(anno);
+        default -> {}
       }
     }
 

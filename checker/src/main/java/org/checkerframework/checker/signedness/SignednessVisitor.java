@@ -6,9 +6,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.InterningVisitor;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.signedness.qual.PolySigned;
@@ -16,13 +14,12 @@ import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.BinaryArgTypes;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.IPair;
 
 /**
  * The SignednessVisitor enforces the Signedness Checker rules. These rules are described in the
@@ -37,7 +34,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
   }
 
   /**
-   * Determines if an annotated type is annotated as {@link Unsigned} or {@link PolySigned}
+   * Returns true if an annotated type is annotated as {@link Unsigned} or {@link PolySigned}
    *
    * @param type the annotated type to be checked
    * @return true if the annotated type is annotated as {@link Unsigned} or {@link PolySigned}
@@ -47,7 +44,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
   }
 
   /**
-   * Determines if an annotated type is annotated as {@link Signed} or {@link PolySigned}
+   * Returns true if an annotated type is annotated as {@link Signed} or {@link PolySigned}
    *
    * @param type the annotated type to be checked
    * @return true if the annotated type is annotated as {@link Signed} or {@link PolySigned}
@@ -75,10 +72,9 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     ExpressionTree leftOp = tree.getLeftOperand();
     ExpressionTree rightOp = tree.getRightOperand();
 
-    IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes =
-        atypeFactory.binaryTreeArgTypes(tree);
-    AnnotatedTypeMirror leftOpType = argTypes.first;
-    AnnotatedTypeMirror rightOpType = argTypes.second;
+    BinaryArgTypes argTypes = atypeFactory.binaryTreeArgTypes(tree);
+    AnnotatedTypeMirror leftOpType = argTypes.left();
+    AnnotatedTypeMirror rightOpType = argTypes.right();
 
     Tree.Kind kind = tree.getKind();
 
@@ -94,16 +90,16 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case RIGHT_SHIFT:
         if (hasUnsignedAnnotation(leftOpType)
-            && !atypeFactory.isMaskedShiftEitherSignedness(tree, getCurrentPath())
-            && !atypeFactory.isCastedShiftEitherSignedness(tree, getCurrentPath())) {
+            && !SignednessShifts.isMaskedShiftEitherSignedness(tree, getCurrentPath())
+            && !SignednessShifts.isCastedShiftEitherSignedness(tree, getCurrentPath())) {
           checker.reportError(leftOp, "shift.signed", kind, leftOpType, rightOpType);
         }
         break;
 
       case UNSIGNED_RIGHT_SHIFT:
         if (hasSignedAnnotation(leftOpType)
-            && !atypeFactory.isMaskedShiftEitherSignedness(tree, getCurrentPath())
-            && !atypeFactory.isCastedShiftEitherSignedness(tree, getCurrentPath())) {
+            && !SignednessShifts.isMaskedShiftEitherSignedness(tree, getCurrentPath())
+            && !SignednessShifts.isCastedShiftEitherSignedness(tree, getCurrentPath())) {
           checker.reportError(leftOp, "shift.unsigned", kind, leftOpType, rightOpType);
         }
         break;
@@ -138,22 +134,15 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case PLUS:
         if (TreeUtils.isStringConcatenation(tree)) {
-          AnnotationMirror leftAnno = leftOpType.getEffectiveAnnotation();
-          AnnotationMirror rightAnno = rightOpType.getEffectiveAnnotation();
-
-          TypeMirror leftOpTM = leftOpType.getUnderlyingType();
-          TypeMirror rightOpTM = rightOpType.getUnderlyingType();
-          if (!TypesUtils.isCharOrCharacter(leftOpTM)
-              && !qualHierarchy.isSubtype(leftAnno, atypeFactory.SIGNED)) {
+          if (!typeHierarchy.isSubtypeShallowEffective(leftOpType, atypeFactory.SIGNED)) {
             checker.reportError(leftOp, "unsigned.concat");
-          } else if (!TypesUtils.isCharOrCharacter(rightOpTM)
-              && !qualHierarchy.isSubtype(rightAnno, atypeFactory.SIGNED)) {
+          } else if (!typeHierarchy.isSubtypeShallowEffective(rightOpType, atypeFactory.SIGNED)) {
             checker.reportError(rightOp, "unsigned.concat");
           }
           break;
         }
-        // Other plus binary trees should be handled in the default case.
-        // fall through
+      // Other plus binary trees should be handled in the default case.
+      // fall through
       default:
         if (leftOpType.hasPrimaryAnnotation(Unsigned.class)
             && rightOpType.hasPrimaryAnnotation(Signed.class)) {
@@ -170,7 +159,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
   // Ensure that method annotations are not written on methods they don't apply to.
   // Copied from InterningVisitor
   @Override
-  public Void visitMethod(MethodTree tree, Void p) {
+  public void processMethodTree(String className, MethodTree tree) {
     ExecutableElement methElt = TreeUtils.elementFromDeclaration(tree);
     boolean hasEqualsMethodAnno =
         atypeFactory.getDeclAnnotation(methElt, EqualsMethod.class) != null;
@@ -180,7 +169,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
           tree, "invalid.method.annotation", "@EqualsMethod", "1 or 2", methElt, params);
     }
 
-    return super.visitMethod(tree, p);
+    super.processMethodTree(className, tree);
   }
 
   @Override
@@ -256,10 +245,9 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     ExpressionTree var = tree.getVariable();
     ExpressionTree expr = tree.getExpression();
 
-    IPair<AnnotatedTypeMirror, AnnotatedTypeMirror> argTypes =
-        atypeFactory.compoundAssignmentTreeArgTypes(tree);
-    AnnotatedTypeMirror varType = argTypes.first;
-    AnnotatedTypeMirror exprType = argTypes.second;
+    BinaryArgTypes argTypes = atypeFactory.compoundAssignmentTreeArgTypes(tree);
+    AnnotatedTypeMirror varType = argTypes.left();
+    AnnotatedTypeMirror exprType = argTypes.right();
 
     Tree.Kind kind = tree.getKind();
 
@@ -310,18 +298,13 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
       case PLUS_ASSIGNMENT:
         if (TreeUtils.isStringCompoundConcatenation(tree)) {
-          TypeMirror exprTM = exprType.getUnderlyingType();
-          if (TypesUtils.isCharOrCharacter(exprTM)) {
-            break;
-          }
-          AnnotationMirror anno = exprType.getEffectiveAnnotation();
-          if (!qualHierarchy.isSubtype(anno, atypeFactory.SIGNED)) {
+          if (!typeHierarchy.isSubtypeShallowEffective(exprType, atypeFactory.SIGNED)) {
             checker.reportError(tree.getExpression(), "unsigned.concat");
           }
           break;
         }
-        // Other plus binary trees should be handled in the default case.
-        // fall through
+      // Other plus binary trees should be handled in the default case.
+      // fall through
       default:
         if (varType.hasPrimaryAnnotation(Unsigned.class)
             && exprType.hasPrimaryAnnotation(Signed.class)) {
@@ -362,9 +345,4 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
   @Override
   protected void checkConstructorResult(
       AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {}
-
-  @Override
-  protected boolean shouldWarnAboutIrrelevantJavaTypes() {
-    return true;
-  }
 }

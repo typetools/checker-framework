@@ -9,14 +9,15 @@ import java.util.Objects;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * A node for new array creation.
  *
  * <pre>
  *   <em>new type[1][2]</em>
- *   <em>new type[] = { expr1, expr2, ... }</em>
+ *   <em>new type[] { }</em>
+ *   <em>new type[] { expr1, expr2, ... }</em>
  * </pre>
  */
 public class ArrayCreationNode extends Node {
@@ -26,8 +27,8 @@ public class ArrayCreationNode extends Node {
 
   /**
    * The length of this list is the number of dimensions in the array. Each element is the size of
-   * the given dimension. It can be empty if initializers is non-empty, as in {@code new SomeType[]
-   * = { expr1, expr2, ... }}.
+   * the given dimension. If all the sizes are empty, an initializer must be present, as in {@code
+   * new SomeType[] { expr1, expr2, ... }} or {@code new SomeType[] { }}.
    */
   protected final List<Node> dimensions;
 
@@ -73,26 +74,26 @@ public class ArrayCreationNode extends Node {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("new " + type);
+    sb.append("new ");
+    sb.append(type);
     if (!dimensions.isEmpty()) {
       sb.append(" (");
-      sb.append(StringsPlume.join(", ", dimensions));
-      sb.append(")");
+      sb.append(StringsP.join(", ", dimensions));
+      sb.append(')');
     }
-    if (!initializers.isEmpty()) {
-      sb.append(" = {");
-      sb.append(StringsPlume.join(", ", initializers));
-      sb.append("}");
+    if (!initializers.isEmpty() || dimensions.isEmpty()) {
+      sb.append(" {");
+      sb.append(StringsP.join(", ", initializers));
+      sb.append('}');
     }
     return sb.toString();
   }
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof ArrayCreationNode)) {
+    if (!(obj instanceof ArrayCreationNode other)) {
       return false;
     }
-    ArrayCreationNode other = (ArrayCreationNode) obj;
 
     return getDimensions().equals(other.getDimensions())
         && getInitializers().equals(other.getInitializers());

@@ -48,10 +48,9 @@ public class JavaExpressionOptimizer extends JavaExpressionConverter {
 
   @Override
   protected JavaExpression visitLocalVariable(LocalVariable localVarExpr, Void unused) {
-    if (factory instanceof ValueAnnotatedTypeFactory) {
+    if (factory instanceof ValueAnnotatedTypeFactory vatf) {
       Element element = localVarExpr.getElement();
-      Long exactValue =
-          ValueCheckerUtils.getExactValue(element, (ValueAnnotatedTypeFactory) factory);
+      Long exactValue = ValueCheckerUtils.getExactValue(element, vatf);
       if (exactValue != null) {
         return new ValueLiteral(localVarExpr.getType(), exactValue.intValue());
       }
@@ -65,11 +64,10 @@ public class JavaExpressionOptimizer extends JavaExpressionConverter {
     List<JavaExpression> optArguments = convert(methodCallExpr.getArguments());
     // Length of string literal: convert it to an integer literal.
     if (methodCallExpr.getElement().getSimpleName().contentEquals("length")
-        && optReceiver instanceof ValueLiteral) {
-      Object value = ((ValueLiteral) optReceiver).getValue();
-      if (value instanceof String) {
-        return new ValueLiteral(
-            factory.types.getPrimitiveType(TypeKind.INT), ((String) value).length());
+        && optReceiver instanceof ValueLiteral vl) {
+      Object value = vl.getValue();
+      if (value instanceof String s) {
+        return new ValueLiteral(factory.types.getPrimitiveType(TypeKind.INT), s.length());
       }
     }
     return new MethodCall(

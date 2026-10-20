@@ -7,10 +7,10 @@ public class Subtyping {
       @UnderInitialization(Object.class) Object underObject,
       @UnknownInitialization(Subtyping.class) Object unknownSubtyping,
       @UnderInitialization(Subtyping.class) Object underSubtyping) {
-    // ::error: (assignment)
+    // ::error: [assignment]
     underObject = unknownObject;
     underObject = underSubtyping;
-    // ::error: (assignment)
+    // ::error: [assignment]
     underObject = unknownSubtyping;
   }
 
@@ -29,11 +29,11 @@ public class Subtyping {
       @UnderInitialization(Object.class) Object underObject,
       @UnknownInitialization(Subtyping.class) Object unknownSubtyping,
       @UnderInitialization(Subtyping.class) Object underSubtyping) {
-    // ::error: (assignment)
+    // ::error: [assignment]
     underSubtyping = unknownObject;
-    // ::error: (assignment)
+    // ::error: [assignment]
     underSubtyping = unknownSubtyping;
-    // ::error: (assignment)
+    // ::error: [assignment]
     underSubtyping = underObject;
   }
 
@@ -42,10 +42,10 @@ public class Subtyping {
       @UnderInitialization(Object.class) Object underObject,
       @UnknownInitialization(Subtyping.class) Object unknownSubtyping,
       @UnderInitialization(Subtyping.class) Object underSubtyping) {
-    // ::error: (assignment)
+    // ::error: [assignment]
     unknownSubtyping = unknownObject;
     unknownSubtyping = underSubtyping;
-    // ::error: (assignment)
+    // ::error: [assignment]
     unknownSubtyping = underObject;
   }
 }

@@ -6,8 +6,13 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 /** Duplicates annotated types and replaces components according to a replacement map. */
 public class AnnotatedTypeCopierWithReplacement {
 
+  /** Do not instantiate. */
+  private AnnotatedTypeCopierWithReplacement() {
+    throw new Error("Do not instantiate");
+  }
+
   /**
-   * Return a copy of type after making the specified replacements.
+   * Returns a copy of type after making the specified replacements.
    *
    * @param type the type that will be copied with replaced components
    * @param replacementMap a mapping of {@literal referenceToReplace => referenceOfReplacement}

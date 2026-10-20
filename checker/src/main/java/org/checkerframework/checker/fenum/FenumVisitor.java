@@ -16,7 +16,14 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TreeUtils;
 
+/** The visitor for Fenum Checker. */
 public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
+
+  /**
+   * Creates a Fenum Visitor.
+   *
+   * @param checker the checker
+   */
   public FenumVisitor(BaseTypeChecker checker) {
     super(checker);
   }
@@ -24,17 +31,14 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
   @Override
   public Void visitBinary(BinaryTree tree, Void p) {
     if (!TreeUtils.isStringConcatenation(tree)) {
-      // TODO: ignore string concatenations
-
       // The Fenum Checker is only concerned with primitive types, so just check that
       // the primary annotations are equivalent.
-      AnnotatedTypeMirror lhsAtm = atypeFactory.getAnnotatedType(tree.getLeftOperand());
-      AnnotatedTypeMirror rhsAtm = atypeFactory.getAnnotatedType(tree.getRightOperand());
+      AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(tree.getLeftOperand());
+      AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(tree.getRightOperand());
 
-      AnnotationMirrorSet lhs = lhsAtm.getEffectiveAnnotations();
-      AnnotationMirrorSet rhs = rhsAtm.getEffectiveAnnotations();
-      if (!(qualHierarchy.isSubtype(lhs, rhs) || qualHierarchy.isSubtype(rhs, lhs))) {
-        checker.reportError(tree, "binary", lhsAtm, rhsAtm);
+      if (!(typeHierarchy.isSubtypeShallowEffective(lhs, rhs)
+          || typeHierarchy.isSubtypeShallowEffective(rhs, lhs))) {
+        checker.reportError(tree, "binary", lhs, rhs);
       }
     }
     return super.visitBinary(tree, p);
@@ -46,7 +50,7 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
     AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(expr);
 
     for (CaseTree caseExpr : tree.getCases()) {
-      List<? extends ExpressionTree> realCaseExprs = TreeUtils.caseTreeGetExpressions(caseExpr);
+      List<? extends ExpressionTree> realCaseExprs = caseExpr.getExpressions();
       // Check all the case options against the switch expression type:
       for (ExpressionTree realCaseExpr : realCaseExprs) {
         AnnotatedTypeMirror caseType = atypeFactory.getAnnotatedType(realCaseExpr);

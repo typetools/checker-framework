@@ -1,10 +1,10 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 public class UnannoPrimitives {
-  // :: error: (nullness.on.primitive)
+  // :: error: [nullness.on.primitive]
   @Nullable int f;
 
-  // :: error: (nullness.on.primitive)
+  // :: error: [nullness.on.primitive]
   @NonNull int g;
 
   void local() {
@@ -15,10 +15,10 @@ public class UnannoPrimitives {
     int i = Integer.valueOf(99) + 1900;
     int j = 7 + 1900;
 
-    // :: error: (nullness.on.primitive)
+    // :: error: [nullness.on.primitive]
     @Nullable int f;
 
-    // :: error: (nullness.on.primitive)
+    // :: error: [nullness.on.primitive]
     @NonNull int g;
   }
 
@@ -28,31 +28,31 @@ public class UnannoPrimitives {
     String strDate = "/" + year;
   }
 
-  // :: error: (nullness.on.primitive)
+  // :: error: [nullness.on.primitive]
   @Nullable byte[] d1 = {4};
   byte @Nullable [] d1b = {4};
 
-  // :: error: (nullness.on.primitive)
+  // :: error: [nullness.on.primitive]
   @Nullable byte[][] twoD = {{4}};
 
-  // :: error: (nullness.on.primitive)
+  // :: error: [nullness.on.primitive]
   @Nullable byte[][][] threeD = {{{4}}};
 
-  // :: error: (nullness.on.primitive)
+  // :: error: [nullness.on.primitive]
   @Nullable byte[][][][] fourD = {{{{4}}}};
 
   @SuppressWarnings("ha!")
   byte[] d2 = {4};
 
-  // :: error: (nullness.on.primitive)
+  // :: error: [nullness.on.primitive]
   Object ar = new @Nullable byte[] {4};
 
-  // :: error: (nullness.on.primitive)
+  // :: error: [nullness.on.primitive]
   Object ar2 = new @NonNull byte[] {42};
 
   void testCasts(Integer i1) {
     Object i2 = (int) i1;
-    // :: error: (nullness.on.primitive)
+    // :: error: [nullness.on.primitive]
     Object i3 = (@Nullable int) i1;
   }
 }

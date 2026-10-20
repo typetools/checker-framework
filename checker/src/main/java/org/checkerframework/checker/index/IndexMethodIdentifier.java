@@ -85,7 +85,7 @@ public class IndexMethodIdentifier {
    *
    * @param methodTree the method invocation tree to be tested
    * @return true iff the argument is an invocation of one of String's indexOf or lastIndexOf
-   *     methods that takes another string as a parameter.
+   *     methods that takes another string as a parameter
    */
   public boolean isIndexOfString(Tree methodTree) {
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
@@ -132,10 +132,10 @@ public class IndexMethodIdentifier {
    *     this}
    */
   public boolean isLengthOfMethodInvocation(Tree tree) {
-    if (tree.getKind() != Tree.Kind.METHOD_INVOCATION) {
+    if (!(tree instanceof MethodInvocationTree mit)) {
       return false;
     }
-    return isLengthOfMethodInvocation(TreeUtils.elementFromUse((MethodInvocationTree) tree));
+    return isLengthOfMethodInvocation(TreeUtils.elementFromUse(mit));
   }
 
   /**
@@ -168,8 +168,7 @@ public class IndexMethodIdentifier {
    *     this}
    */
   public boolean isLengthOfMethodInvocation(Node node) {
-    if (node instanceof MethodInvocationNode) {
-      MethodInvocationNode methodInvocationNode = (MethodInvocationNode) node;
+    if (node instanceof MethodInvocationNode methodInvocationNode) {
       MethodAccessNode methodAccessNode = methodInvocationNode.getTarget();
       ExecutableElement ele = methodAccessNode.getMethod();
 

@@ -3,6 +3,7 @@ package org.checkerframework.dataflow.cfg.node;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Symbol;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -21,19 +22,23 @@ import org.checkerframework.javacutil.TreeUtils;
  * </pre>
  */
 public class FieldAccessNode extends Node {
-
+  /** The tree of the field access. */
   protected final Tree tree;
-  protected final VariableElement element;
-  protected final String field;
-  protected final Node receiver;
 
-  // TODO: add method to get modifiers (static, access level, ..)
+  /** The element of the accessed field. */
+  protected final VariableElement element;
+
+  /** The name of the accessed field. */
+  protected final String field;
+
+  /** The receiver node of the field access. */
+  protected final Node receiver;
 
   /**
    * Creates a new FieldAccessNode.
    *
    * @param tree the tree from which to create a FieldAccessNode
-   * @param receiver the receiver for the resuling FieldAccessNode
+   * @param receiver the receiver for the resulting FieldAccessNode
    */
   public FieldAccessNode(Tree tree, Node receiver) {
     super(TreeUtils.typeOf(tree));
@@ -42,12 +47,10 @@ public class FieldAccessNode extends Node {
     this.receiver = receiver;
     this.field = TreeUtils.getFieldName(tree);
 
-    if (tree instanceof MemberSelectTree) {
-      MemberSelectTree mstree = (MemberSelectTree) tree;
+    if (tree instanceof MemberSelectTree mstree) {
       assert TreeUtils.isUseOfElement(mstree) : "@AssumeAssertion(nullness): tree kind";
       this.element = TreeUtils.variableElementFromUse(mstree);
-    } else if (tree instanceof IdentifierTree) {
-      IdentifierTree itree = (IdentifierTree) tree;
+    } else if (tree instanceof IdentifierTree itree) {
       assert TreeUtils.isUseOfElement(itree) : "@AssumeAssertion(nullness): tree kind";
       this.element = TreeUtils.variableElementFromUse(itree);
     } else {
@@ -87,20 +90,27 @@ public class FieldAccessNode extends Node {
 
   @Override
   public String toString() {
-    return getReceiver() + "." + field;
+    if (disambiguateOwner) {
+      return getReceiver() + "." + field + "{owner=" + ((Symbol) element).owner + "}";
+    } else {
+      return getReceiver() + "." + field;
+    }
   }
 
-  /** Is this a static field? */
+  /**
+   * Returns true if the field is static.
+   *
+   * @return true if the field is static
+   */
   public boolean isStatic() {
     return ElementUtils.isStatic(getElement());
   }
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof FieldAccessNode)) {
+    if (!(obj instanceof FieldAccessNode other)) {
       return false;
     }
-    FieldAccessNode other = (FieldAccessNode) obj;
     return getReceiver().equals(other.getReceiver()) && getFieldName().equals(other.getFieldName());
   }
 

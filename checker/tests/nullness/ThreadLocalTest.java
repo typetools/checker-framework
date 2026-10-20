@@ -12,9 +12,9 @@ public class ThreadLocalTest {
   }
 
   void foo() {
-    // :: error: (type.argument)
+    // :: error: [type.argument]
     new ThreadLocal<@NonNull Object>();
-    // :: error: (type.argument)
+    // :: error: [type.argument]
     new InheritableThreadLocal<@NonNull Object>();
     new ThreadLocal<@Nullable Object>();
     new InheritableThreadLocal<@Nullable Object>();

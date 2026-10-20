@@ -1,4 +1,4 @@
-import org.checkerframework.common.util.report.qual.*;
+import org.checkerframework.common.util.count.report.qual.*;
 
 public class CallOverrides {
   class A {
@@ -15,12 +15,12 @@ public class CallOverrides {
   void test() {
     C c = new C();
 
-    // :: error: (methodcall)
+    // :: error: [methodcall]
     c.m();
 
     B b = c;
 
-    // :: error: (methodcall)
+    // :: error: [methodcall]
     b.m();
 
     A a = c;

@@ -7,10 +7,10 @@ interface Bar {}
 class Baz implements Foo, Bar {}
 
 public class IntersectionTypes {
-  // :: warning: (explicit.annotation.ignored)
+  // :: warning: [explicit.annotation.ignored]
   <S extends @LubglbB Foo & @LubglbC Bar> void call1(S p) {}
 
-  // :: warning: (explicit.annotation.ignored)
+  // :: warning: [explicit.annotation.ignored]
   <T extends @LubglbC Bar & @LubglbB Foo> void call2(T p) {}
 
   void foo1(@LubglbD Baz baz1) {
@@ -25,7 +25,7 @@ public class IntersectionTypes {
 
   void foo3(@LubglbB Baz baz3) {
     call1(baz3);
-    // :: error: (type.argument)
+    // :: error: [type.arguments.not.inferred]
     call2(baz3);
   }
 }

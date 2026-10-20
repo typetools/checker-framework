@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.StringJoiner;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * Implementation of a {@link TransferResult} with just one non-exceptional store. The result of
@@ -20,7 +20,7 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
   protected final S store;
 
   /**
-   * Whether the store changed; see {@link
+   * True if the store changed; see {@link
    * org.checkerframework.dataflow.analysis.TransferResult#storeChanged}.
    */
   private final boolean storeChanged;
@@ -40,7 +40,7 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
    *
    * @param value the abstract value produced by the transfer function
    * @param resultStore regular result store
-   * @param storeChanged whether the store changed; see {@link
+   * @param storeChanged true if the store changed; see {@link
    *     org.checkerframework.dataflow.analysis.TransferResult#storeChanged}
    * @see #RegularTransferResult(AbstractValue, Store, Map, boolean)
    */
@@ -108,7 +108,6 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
     this.storeChanged = storeChanged;
   }
 
-  /** The regular result store. */
   @Override
   public S getRegularStore() {
     return store;
@@ -135,10 +134,9 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
   public String toString() {
     StringJoiner result = new StringJoiner(System.lineSeparator());
     result.add("RegularTransferResult(");
-    result.add("  resultValue = " + StringsPlume.indentLinesExceptFirst(2, resultValue));
+    result.add("  resultValue = " + StringsP.indentLinesExceptFirst(2, resultValue));
     // "toString().trim()" works around bug where toString ends with a newline.
-    result.add(
-        "  store = " + StringsPlume.indentLinesExceptFirst(2, store.toString().trim()) + ")");
+    result.add("  store = " + StringsP.indentLinesExceptFirst(2, store.toString().trim()) + ")");
     return result.toString();
   }
 
@@ -150,5 +148,10 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
   @Override
   public boolean storeChanged() {
     return storeChanged;
+  }
+
+  @Override
+  public RegularTransferResult<V, S> withExceptionalStores(Map<TypeMirror, S> exceptionalStores) {
+    return new RegularTransferResult<>(resultValue, store, exceptionalStores, storeChanged);
   }
 }

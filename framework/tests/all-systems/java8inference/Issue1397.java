@@ -1,8 +1,6 @@
 // Test case for Issue 1397.
 // https://github.com/typetools/checker-framework/issues/1397
 
-// @above-java17-jdk-skip-test TODO: reinstate, false positives may be due to issue #979
-
 public class Issue1397 {
 
   class Box<T> {}
@@ -12,7 +10,6 @@ public class Issue1397 {
 
     abstract <T> T unbox(Box<T> p);
 
-    @SuppressWarnings("units")
     void foo(Box<Boolean> bb) {
       boolean res = false;
       res |= chk(unbox(bb));

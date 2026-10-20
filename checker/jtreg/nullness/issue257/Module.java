@@ -2,11 +2,11 @@
  * @test
  * @summary Test for Issue 257
  *
- * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker Small.java
+ * @compile -processor org.checkerframework.checker.nullness.NullnessChecker Small.java
  *
- * @compile -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker ClientBuilder.java Module.java
+ * @compile -processor org.checkerframework.checker.nullness.NullnessChecker ClientBuilder.java Module.java
  *
- * @compile -XDrawDiagnostics ClientBuilder.java
+ * @compile ClientBuilder.java
  */
 public class Module {
   void buildClient() {

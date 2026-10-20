@@ -20,7 +20,12 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * A helper class for UnitsRelations, providing numerous methods which help process Annotations and
  * Annotated Types representing various units.
  */
-public class UnitsRelationsTools {
+public final class UnitsRelationsTools {
+
+  /** Do not instantiate. */
+  private UnitsRelationsTools() {
+    throw new Error("Do not instantiate");
+  }
 
   /**
    * Creates an AnnotationMirror representing a unit defined by annoClass, with the specific Prefix

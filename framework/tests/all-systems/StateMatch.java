@@ -21,6 +21,6 @@ public class StateMatch {
       // the LUB of ATMs with empty sets of qualifiers.
       match = true;
     }
-    return (true);
+    return true;
   }
 }

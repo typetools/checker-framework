@@ -1,0 +1,9 @@
+package java.lang:
+annotation @Tainted: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+annotation @DoesNotExist: @Retention(value=RUNTIME) @java.lang.annotation.Target(value={TYPE_USE})
+
+package org.checkerframework.afu.annotator.tests:
+class ClassSimple: @java.lang.Tainted
+
+package:
+class ClassSimple: @java.lang.DoesNotExist

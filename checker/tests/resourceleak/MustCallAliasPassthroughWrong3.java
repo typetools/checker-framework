@@ -6,8 +6,9 @@ import org.checkerframework.checker.mustcall.qual.*;
 
 class MustCallAliasPassthroughWrong3 {
 
+  // :: warning: [mustcallalias.method.return.and.param]
   static InputStream missingMCA(@MustCallAlias InputStream is) {
-    // :: error: (return)
+    // :: error: [return]
     return is;
   }
 
@@ -15,7 +16,7 @@ class MustCallAliasPassthroughWrong3 {
     return is;
   }
 
-  // :: error: (required.method.not.called)
+  // :: error: [required.method.not.called]
   void use_bad(@Owning InputStream is) throws Exception {
     InputStream is2 = missingMCA(is);
     is2.close();

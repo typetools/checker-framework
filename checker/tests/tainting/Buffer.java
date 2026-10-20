@@ -9,13 +9,13 @@ import org.checkerframework.framework.qual.HasQualifierParameter;
 public class Buffer {
   final List<@PolyTainted String> list = new ArrayList<>();
   @PolyTainted String someString = "";
-  // :: error: (invalid.polymorphic.qualifier.use)
+  // :: error: [invalid.polymorphic.qualifier.use]
   static @PolyTainted Object staticField;
 
   public @PolyTainted Buffer() {}
 
   public @Untainted Buffer(@Tainted String s) {
-    // :: error: (assignment)
+    // :: error: [assignment]
     this.someString = s;
   }
 
@@ -36,9 +36,9 @@ public class Buffer {
   }
 
   public @PolyTainted String unTaintedOnly(@Untainted Buffer this, @PolyTainted String s) {
-    // :: error: (argument)
+    // :: error: [argument]
     list.add(s);
-    // :: error: (assignment)
+    // :: error: [assignment]
     someString = s;
     return s;
   }
@@ -51,26 +51,26 @@ public class Buffer {
     }
 
     void failingUses(@Tainted String tainted, @Untainted Buffer buffer) {
-      // :: error: (argument)
+      // :: error: [argument]
       buffer.list.add(tainted);
-      // :: error: (assignment)
+      // :: error: [assignment]
       buffer.someString = tainted;
-      // :: error: (argument)
+      // :: error: [argument]
       buffer.append(tainted);
     }
 
     void casts(@Untainted Object untainted, @Tainted Object tainted) {
       @Untainted Buffer b1 = (@Untainted Buffer) untainted; // ok
-      // :: error: (invariant.cast.unsafe)
+      // :: error: [invariant.cast.unsafe]
       @Untainted Buffer b2 = (@Untainted Buffer) tainted;
 
-      // :: error: (invariant.cast.unsafe)
+      // :: error: [invariant.cast.unsafe]
       @Tainted Buffer b3 = (@Tainted Buffer) untainted; // error
-      // :: error: (invariant.cast.unsafe)
+      // :: error: [invariant.cast.unsafe]
       @Tainted Buffer b4 = (@Tainted Buffer) tainted; // error
 
       @Untainted Buffer b5 = (Buffer) untainted; // ok
-      // :: error: (invariant.cast.unsafe)
+      // :: error: [invariant.cast.unsafe]
       @Tainted Buffer b6 = (Buffer) tainted;
     }
 

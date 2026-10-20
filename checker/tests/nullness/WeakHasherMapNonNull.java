@@ -12,9 +12,9 @@ public abstract class WeakHasherMapNonNull<K, V> extends AbstractMap<K, V> imple
   public boolean containsKey(@NonNull Object key) {
     // :: warning: [unchecked] unchecked cast
     K kkey = (K) key;
-    // :: error: (argument)
+    // :: error: [argument]
     hash.containsKey(null);
-    // :: error: (contracts.conditional.postcondition)
+    // :: error: [contracts.conditional.postcondition]
     return true;
   }
 }

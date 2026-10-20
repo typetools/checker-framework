@@ -1,39 +1,24 @@
 package org.checkerframework.checker.nullness;
 
-import java.util.concurrent.atomic.AtomicLong;
 import org.checkerframework.checker.initialization.InitializationStore;
-import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
-import org.plumelib.util.UniqueId;
 
 /**
  * Behaves like {@link InitializationStore}, but additionally tracks whether {@link PolyNull} is
  * known to be {@link NonNull} or {@link Nullable} (or not known to be either).
  */
-public class NullnessStore extends InitializationStore<NullnessValue, NullnessStore>
-    implements UniqueId {
+public class NullnessStore extends InitializationStore<NullnessValue, NullnessStore> {
 
   /** True if, at this point, {@link PolyNull} is known to be {@link NonNull}. */
   protected boolean isPolyNullNonNull;
 
   /** True if, at this point, {@link PolyNull} is known to be {@link Nullable}. */
   protected boolean isPolyNullNull;
-
-  /** The unique ID for the next-created object. */
-  private static final AtomicLong nextUid = new AtomicLong(0);
-
-  /** The unique ID of this object. */
-  private final transient long uid = nextUid.getAndIncrement();
-
-  @Override
-  public long getUid(@UnknownInitialization NullnessStore this) {
-    return uid;
-  }
 
   /**
    * Create a NullnessStore.

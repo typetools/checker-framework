@@ -4,7 +4,7 @@
 import org.checkerframework.checker.lock.qual.GuardedBy;
 
 public class ViewpointAdaptation {
-  // :: error: (expression.unparsable)
+  // :: error: [expression.unparsable]
   private final @GuardedBy("a") ViewpointAdaptation f = new ViewpointAdaptation();
 
   private @GuardedBy("this.lock") ViewpointAdaptation g = new ViewpointAdaptation();
@@ -15,7 +15,7 @@ public class ViewpointAdaptation {
 
   public void method1(final String a) {
     synchronized (a) {
-      // :: error: (expression.unparsable)
+      // :: error: [expression.unparsable]
       f.counter++;
     }
   }
@@ -23,11 +23,11 @@ public class ViewpointAdaptation {
   public void method2() {
     ViewpointAdaptation t = new ViewpointAdaptation();
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     t.g = g; // "t.lock" != "this.lock"
 
     synchronized (t.lock) {
-      // :: error: (lock.not.held)
+      // :: error: [lock.not.held]
       g.counter++;
     }
   }
@@ -42,7 +42,7 @@ public class ViewpointAdaptation {
     synchronized (l) {
       // Aliasing of lock expressions is not tracked by the Lock Checker.
       // The Lock Checker does not know that l == t.lock
-      // :: error: (lock.not.held)
+      // :: error: [lock.not.held]
       g.counter++;
     }
   }

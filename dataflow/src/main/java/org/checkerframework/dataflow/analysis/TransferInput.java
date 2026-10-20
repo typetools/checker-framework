@@ -5,16 +5,16 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 import org.plumelib.util.UniqueId;
 
 /**
  * {@code TransferInput} is used as the input type of the individual transfer functions of a {@link
  * ForwardTransferFunction} or a {@link BackwardTransferFunction}. It also contains a reference to
- * the node for which the transfer function will be applied.
+ * the node to which the transfer function will be applied.
  *
  * <p>A {@code TransferInput} contains one or two stores. If two stores are present, one belongs to
- * 'then', and the other to 'else'.
+ * "then", and the other to "else".
  *
  * @param <V> type of the abstract value that is tracked
  * @param <S> the store type used in the analysis
@@ -29,19 +29,17 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
    * The regular result store (or {@code null} if none is present, because {@link #thenStore} and
    * {@link #elseStore} are set). The following invariant is maintained:
    *
-   * <pre><code>
-   * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
-   * </code></pre>
+   * <pre>{@code store == null  <==>  thenStore != null && elseStore != null}</pre>
    */
   protected final @Nullable S store;
 
   /**
-   * The 'then' result store (or {@code null} if none is present). See invariant at {@link #store}.
+   * The "then" result store (or {@code null} if none is present). See invariant at {@link #store}.
    */
   protected final @Nullable S thenStore;
 
   /**
-   * The 'else' result store (or {@code null} if none is present). See invariant at {@link #store}.
+   * The "else" result store (or {@code null} if none is present). See invariant at {@link #store}.
    */
   protected final @Nullable S elseStore;
 
@@ -64,8 +62,8 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
    *
    * @param node the corresponding node
    * @param store the regular result store, or {@code null} if none is present
-   * @param thenStore the 'then' result store, or {@code null} if none is present
-   * @param elseStore the 'else' result store, or {@code null} if none is present
+   * @param thenStore the "then" result store, or {@code null} if none is present
+   * @param elseStore the "else" result store, or {@code null} if none is present
    * @param analysis analysis the corresponding analysis class to get intermediate flow results
    */
   private TransferInput(
@@ -166,7 +164,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
   }
 
   /**
-   * Returns the abstract value of node {@code n}, which is required to be a 'sub-node' (that is, a
+   * Returns the abstract value of node {@code n}, which is required to be a "sub-node" (that is, a
    * direct or indirect child) of the node this transfer input is associated with. Furthermore,
    * {@code n} cannot be a l-value node. Returns {@code null} if no value is available.
    *
@@ -273,6 +271,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
     }
   }
 
+  // `equals()` and `hashCode()` ignore the `analysis` field.
   @Override
   public boolean equals(@Nullable Object o) {
     if (o instanceof TransferInput) {
@@ -294,18 +293,18 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
 
   @Override
   public int hashCode() {
-    return Objects.hash(this.analysis, this.node, this.store, this.thenStore, this.elseStore);
+    return Objects.hash(this.store, this.thenStore, this.elseStore);
   }
 
   @Override
   public String toString() {
     if (store == null) {
       return "[then="
-          + StringsPlume.indentLinesExceptFirst(2, thenStore)
+          + StringsP.indentLinesExceptFirst(2, thenStore)
           + ","
           + System.lineSeparator()
           + "  else="
-          + StringsPlume.indentLinesExceptFirst(2, elseStore)
+          + StringsP.indentLinesExceptFirst(2, elseStore)
           + "]";
     } else {
       return "[" + store + "]";

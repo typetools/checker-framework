@@ -1,0 +1,4 @@
+package java.lang:
+annotation @OnThePackage: @Retention(value=RUNTIME)
+
+package org.checkerframework.afu.annotator.tests: @java.lang.OnThePackage

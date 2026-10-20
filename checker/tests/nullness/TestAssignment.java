@@ -8,7 +8,7 @@ public class TestAssignment {
   void a() {
     @NonNull String f = "abc";
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     f = null;
   }
 

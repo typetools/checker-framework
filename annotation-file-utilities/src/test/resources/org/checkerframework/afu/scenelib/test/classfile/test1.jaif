@@ -1,0 +1,79 @@
+package p2:
+annotation @A: @Retention(RUNTIME)
+    int value
+annotation @B: @Retention(RUNTIME)
+annotation @C: @Retention(RUNTIME)
+annotation @D: @Retention(CLASS)
+    String value
+annotation @F:
+    String value
+annotation @E: @Retention(CLASS)
+    annotation-field p2.A[] first
+    annotation-field p2.F second
+    enum Foo third
+    Class fourth // <? extends java.util.Map<?,?>>
+    Class fifth
+
+package p1:
+class Foo: @p2.A(value=12)
+    bound 0 &1: @p2.B
+    bound 1 &0: @p2.C
+        inner-type 1, 0, 2, 0, 3, 1: @p2.B
+
+    field bar:
+
+    field baz:
+        type: @p2.B
+            inner-type 0, 0: @p2.C
+
+    method <init>(Ljava/util/Set;)V: @p2.B
+        bound 2 &0: @p2.C
+            inner-type 0, 0: @p2.B
+        parameter #0: @p2.B
+            type:
+                inner-type 0, 0: @p2.C
+        receiver: @p2.D(value="spam")
+        local 1 #3+5: @p2.B
+            type:
+                inner-type 0, 0: @p2.C
+        typecast #7: @p2.B
+            inner-type 0, 0: @p2.C
+        instanceof #199: @p2.C
+            inner-type 1, 0: @p2.B
+        new #0:
+            inner-type 0, 0: @p2.C
+
+    method mapAllElements(Ljava/util/Map;)Ljava/util/Set;:
+
+class
+Bar
+:
+@
+p2.E
+(
+first
+=
+{
+@
+p2.A
+(
+value
+=
+-1
+)
+,
+@
+p2.A
+(
+value=-6
+),
+}
+,second=@p2.F(value="thestring"),
+third=fooconstant,
+fourth=java.util.Map.class,
+fifth=[[I.class
+)
+
+// Test comment
+// Test all the forms of class tokens
+class Baz: @p2.E(first={}, second=@p2.F(value="hello"), third=FOO_FOO, fourth=java.util.LinkedHashMap.class, fifth=void.class)

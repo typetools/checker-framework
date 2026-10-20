@@ -43,31 +43,31 @@ public class ThisSuper {
       synchronized (super.myLock) {
         super.locked.toString();
         super.locked2.toString();
-        // :: error: (contracts.precondition)
+        // :: error: [contracts.precondition]
         locked.toString();
       }
       synchronized (myLock) {
-        // :: error: (contracts.precondition)
+        // :: error: [contracts.precondition]
         super.locked.toString();
-        // :: error: (contracts.precondition)
+        // :: error: [contracts.precondition]
         super.locked2.toString();
         locked.toString();
       }
 
-      // :: error: (assignment)
+      // :: error: [assignment]
       les1.locked = le1.locked;
-      // :: error: (assignment)
+      // :: error: [assignment]
       les1.locked = le1.locked2;
 
-      // :: error: (assignment)
+      // :: error: [assignment]
       les1.locked = les2.locked;
 
-      // :: error: (assignment)
+      // :: error: [assignment]
       this.locked = super.locked;
-      // :: error: (assignment)
+      // :: error: [assignment]
       this.locked = super.locked2;
 
-      // :: error: (assignment)
+      // :: error: [assignment]
       m1 = m2;
     }
 
@@ -75,13 +75,13 @@ public class ThisSuper {
     public void accessLock() {
       synchronized (myLock) {
         this.locked.field = new Object();
-        // :: error: (lock.not.held)
+        // :: error: [lock.not.held]
         super.locked.field = new Object();
         System.out.println(
             this.locked.field
                 + " "
                 +
-                // :: error: (lock.not.held)
+                // :: error: [lock.not.held]
                 super.locked.field);
         System.out.println("Are locks equal? " + (super.locked == this.locked ? "yes" : "no"));
       }

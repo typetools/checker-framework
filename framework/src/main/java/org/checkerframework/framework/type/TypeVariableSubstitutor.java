@@ -13,8 +13,11 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** TypeVariableSusbtitutor replaces type variables from a declaration with arguments to its use. */
+/** TypeVariableSubstitutor replaces type variables from a declaration with arguments to its use. */
 public class TypeVariableSubstitutor {
+
+  /** Create a TypeVariableSubstitutor. */
+  public TypeVariableSubstitutor() {}
 
   /**
    * Given a mapping from type variable to its type argument, replace each instance of a type
@@ -95,7 +98,7 @@ public class TypeVariableSubstitutor {
      */
     private final List<TypeMirror> typeMirrors;
 
-    /** Whether or not a copy of type argument should be substituted. */
+    /** True if a copy of type argument should be substituted. */
     private final boolean copyArgument;
 
     /**
@@ -103,7 +106,7 @@ public class TypeVariableSubstitutor {
      *
      * @param typeParamToArg mapping from TypeVariable to the AnnotatedTypeMirror that will replace
      *     it
-     * @param copyArgument whether or not a copy of type argument should be substituted
+     * @param copyArgument true if a copy of type argument should be substituted
      */
     public Visitor(Map<TypeVariable, AnnotatedTypeMirror> typeParamToArg, boolean copyArgument) {
       int size = typeParamToArg.size();

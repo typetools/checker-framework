@@ -7,6 +7,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
@@ -22,6 +23,13 @@ public class FieldAccess extends JavaExpression {
 
   /** The field being accessed. */
   protected final VariableElement field;
+
+  /**
+   * The cached hash code, or 0 if it has not yet been computed. A FieldAccess is immutable, so the
+   * hash code is computed at most once. Caching it is worthwhile because every store operation
+   * hashes the expressions in the store.
+   */
+  private int hashCode = 0;
 
   /**
    * Returns the receiver.
@@ -95,30 +103,46 @@ public class FieldAccess extends JavaExpression {
 
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof FieldAccess)) {
+    if (!(obj instanceof FieldAccess fa)) {
       return false;
     }
-    FieldAccess fa = (FieldAccess) obj;
-    return fa.getField().equals(getField()) && fa.getReceiver().equals(getReceiver());
+    if (!fa.getField().equals(getField())) {
+      return false;
+    }
+
+    if (fa.getReceiver().equals(getReceiver())) {
+      return true;
+    }
+
+    return (fa.getReceiver() instanceof SuperReference || fa.getReceiver() instanceof ThisReference)
+        && (this.getReceiver() instanceof SuperReference
+            || this.getReceiver() instanceof ThisReference);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getField(), getReceiver());
+    if (hashCode == 0) {
+      hashCode = Objects.hash(getField(), getReceiver());
+    }
+    return hashCode;
   }
 
   @Override
   public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof FieldAccess)) {
+    if (!(je instanceof FieldAccess other)) {
       return false;
     }
-    FieldAccess other = (FieldAccess) je;
     return this.receiver.syntacticEquals(other.receiver) && this.field.equals(other.field);
   }
 
   @Override
   public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
     return syntacticEquals(other) || receiver.containsSyntacticEqualJavaExpression(other);
+  }
+
+  @Override
+  public boolean containsAsReceiver(AnnotationProvider provider, JavaExpression other) {
+    return syntacticEquals(other) || receiver.containsAsReceiver(provider, other);
   }
 
   @Override
@@ -129,8 +153,10 @@ public class FieldAccess extends JavaExpression {
 
   @Override
   public String toString() {
-    if (receiver instanceof ClassName) {
-      return receiver.getType() + "." + field;
+    String receiverString =
+        (receiver instanceof ClassName) ? receiver.getType().toString() : receiver.toString();
+    if (Node.disambiguateOwner) {
+      return receiverString + "." + field + "{owner=" + ((Symbol) field).owner + "}";
     } else {
       return receiver + "." + field;
     }
@@ -148,9 +174,13 @@ public class FieldAccess extends JavaExpression {
         ((Symbol) field).owner);
   }
 
+  @SuppressWarnings("unchecked") // generic cast
   @Override
-  public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
-    return getClass() == clazz || receiver.containsOfClass(clazz);
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
+    if (getClass() == clazz) {
+      return (T) this;
+    }
+    return receiver.containedOfClass(clazz);
   }
 
   @Override
@@ -159,13 +189,13 @@ public class FieldAccess extends JavaExpression {
   }
 
   @Override
-  public boolean isUnassignableByOtherCode() {
-    return isFinal() && getReceiver().isUnassignableByOtherCode();
+  public boolean isAssignableByOtherCode() {
+    return !isFinal() || getReceiver().isAssignableByOtherCode();
   }
 
   @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return isUnassignableByOtherCode() && TypesUtils.isImmutableTypeInJdk(getReceiver().type);
+  public boolean isModifiableByOtherCode() {
+    return isAssignableByOtherCode() || !TypesUtils.isImmutableTypeInJdk(getReceiver().type);
   }
 
   @Override

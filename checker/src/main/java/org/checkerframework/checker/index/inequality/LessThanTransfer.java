@@ -7,19 +7,18 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.IndexAbstractTransfer;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueCheckerUtils;
-import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.JavaExpressionParseUtil;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.util.JavaExpressionParseUtil;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * Implements 3 refinement rules:
@@ -50,7 +49,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
     // left > right so right < left
     // Refine right to @LessThan("left")
     JavaExpression leftJe = JavaExpression.fromNode(left);
-    if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
+    if (leftJe != null && !leftJe.isAssignableByOtherCode()) {
       if (isDoubleOrFloatLiteral(leftJe)) {
         return;
       }
@@ -63,7 +62,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
       }
       String leftString = leftJe.toString();
       if (!lessThanExpressions.contains(leftString)) {
-        lessThanExpressions = CollectionsPlume.append(lessThanExpressions, leftString);
+        lessThanExpressions = CollectionsP.append(lessThanExpressions, leftString);
         JavaExpression rightJe = JavaExpression.fromNode(right);
         store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
       }
@@ -85,7 +84,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
     // left > right so right is less than left
     // Refine right to @LessThan("left")
     JavaExpression leftJe = JavaExpression.fromNode(left);
-    if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
+    if (leftJe != null && !leftJe.isAssignableByOtherCode()) {
       if (isDoubleOrFloatLiteral(leftJe)) {
         return;
       }
@@ -98,7 +97,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
       }
       String leftIncremented = incrementedExpression(leftJe);
       if (!lessThanExpressions.contains(leftIncremented)) {
-        lessThanExpressions = CollectionsPlume.append(lessThanExpressions, leftIncremented);
+        lessThanExpressions = CollectionsP.append(lessThanExpressions, leftIncremented);
         JavaExpression rightJe = JavaExpression.fromNode(right);
         store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
       }
@@ -109,9 +108,10 @@ public class LessThanTransfer extends IndexAbstractTransfer {
   @Override
   public TransferResult<CFValue, CFStore> visitNumericalSubtraction(
       NumericalSubtractionNode n, TransferInput<CFValue, CFStore> in) {
+    TransferResult<CFValue, CFStore> result = super.visitNumericalSubtraction(n, in);
     LessThanAnnotatedTypeFactory factory = (LessThanAnnotatedTypeFactory) analysis.getTypeFactory();
     JavaExpression leftJe = JavaExpression.fromNode(n.getLeftOperand());
-    if (leftJe != null && leftJe.isUnassignableByOtherCode()) {
+    if (leftJe != null && !leftJe.isAssignableByOtherCode()) {
       ValueAnnotatedTypeFactory valueFactory = factory.getValueAnnotatedTypeFactory();
       Long right = ValueCheckerUtils.getMinValue(n.getRightOperand().getTree(), valueFactory);
       if (right != null && 0 < right) {
@@ -121,20 +121,18 @@ public class LessThanTransfer extends IndexAbstractTransfer {
           if (expressions == null) {
             expressions = Collections.singletonList(leftJe.toString());
           } else {
-            expressions = CollectionsPlume.append(expressions, leftJe.toString());
+            expressions = CollectionsP.append(expressions, leftJe.toString());
           }
         }
         AnnotationMirror refine = factory.createLessThanQualifier(expressions);
-        CFValue value = analysis.createSingleAnnotationValue(refine, n.getType());
-        CFStore info = in.getRegularStore();
-        return new RegularTransferResult<>(finishValue(value, info), info);
+        return recreateTransferResult(refine, result);
       }
     }
-    return super.visitNumericalSubtraction(n, in);
+    return result;
   }
 
   /**
-   * Return the expressions that {@code node} is less than.
+   * Returns the expressions that {@code node} is less than.
    *
    * @param node a CFG node
    * @return the expressions that {@code node} is less than
@@ -152,7 +150,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
   }
 
   /**
-   * Return true if {@code expr} is a double or float literal, which can't be parsed by {@link
+   * Returns true if {@code expr} is a double or float literal, which can't be parsed by {@link
    * JavaExpressionParseUtil}.
    */
   private boolean isDoubleOrFloatLiteral(JavaExpression expr) {
@@ -165,15 +163,14 @@ public class LessThanTransfer extends IndexAbstractTransfer {
   }
 
   /**
-   * Return the string representation of {@code expr + 1}.
+   * Returns the string representation of {@code expr + 1}.
    *
    * @param expr a JavaExpression
    * @return the string representation of {@code expr + 1}
    */
   private String incrementedExpression(JavaExpression expr) {
     expr = ValueCheckerUtils.optimize(expr, analysis.getTypeFactory());
-    if (expr instanceof ValueLiteral) {
-      ValueLiteral literal = (ValueLiteral) expr;
+    if (expr instanceof ValueLiteral literal) {
       if (literal.getValue() instanceof Number) {
         long longLiteral = ((Number) literal.getValue()).longValue();
         if (longLiteral != Long.MAX_VALUE) {

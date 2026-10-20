@@ -10,18 +10,18 @@ import org.checkerframework.checker.nullness.qual.*;
 public class MisuseProperties {
 
   void propertiesToHashtable(Properties p) {
-    // :: error: (argument)
+    // :: error: [argument]
     p.setProperty("line.separator", null);
-    // :: error: (argument)
+    // :: error: [argument]
     p.put("line.separator", null);
     Hashtable h = p;
     // Error, because HashTable value has NonNull bound.
     // put(K,V) as a member of the raw type java.util.Hashtable
     // :: warning: [unchecked] unchecked call to put(K,V) as a member of the raw type
     // java.util.Hashtable
-    // :: error: (argument)
+    // :: error: [argument]
     h.put("line.separator", null);
-    // :: error: (argument)
+    // :: error: [argument]
     System.setProperty("line.separator", null);
 
     Dictionary d1 = p;
@@ -30,11 +30,11 @@ public class MisuseProperties {
     // java.util.Dictionary
     d1.put("line.separator", null);
 
-    // :: error: (assignment)
+    // :: error: [assignment]
     Dictionary<Object, @Nullable Object> d2 = p;
     d2.put("line.separator", null);
 
-    // :: error: (clear.system.property)
+    // :: error: [clear.system.property]
     System.setProperties(p); // OK; p has no null values
 
     System.clearProperty("foo.bar"); // OK
@@ -43,7 +43,7 @@ public class MisuseProperties {
 
     // These first few need to be special-cased, I think:
 
-    // :: error: (clear.system.property)
+    // :: error: [clear.system.property]
     System.clearProperty("line.separator");
 
     p.remove("line.separator");

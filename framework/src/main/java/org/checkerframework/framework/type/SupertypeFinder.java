@@ -2,6 +2,7 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -28,12 +29,10 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
 
 /**
  * Finds the direct supertypes of an input AnnotatedTypeMirror. See <a
- * href="https://docs.oracle.com/javase/specs/jls/se17/html/jls-4.html#jls-4.10.2">JLS section
+ * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.10.2">JLS section
  * 4.10.2</a>.
  *
  * @see Types#directSupertypes(TypeMirror)
@@ -327,27 +326,16 @@ final class SupertypeFinder {
                 atypeFactory.getAnnotatedTypeFromTypeTree(classTree.getExtendsClause());
         supertypes.add(adt);
       } else if (!ElementUtils.isObject(TreeUtils.elementFromDeclaration(classTree))) {
-        supertypes.add(AnnotatedTypeMirror.createTypeOfObject(atypeFactory));
+        if (classTree.getKind() == Kind.RECORD) {
+          supertypes.add(AnnotatedTypeMirror.createTypeOfRecord(atypeFactory));
+        } else {
+          supertypes.add(AnnotatedTypeMirror.createTypeOfObject(atypeFactory));
+        }
       }
 
       for (Tree implemented : classTree.getImplementsClause()) {
         AnnotatedDeclaredType adt =
             (AnnotatedDeclaredType) atypeFactory.getAnnotatedTypeFromTypeTree(implemented);
-        if (adt.getTypeArguments().size() != adt.getUnderlyingType().getTypeArguments().size()
-            && classTree.getSimpleName().contentEquals("")) {
-          // classTree is an anonymous class with a diamond.
-          List<AnnotatedTypeMirror> args =
-              CollectionsPlume.mapList(
-                  (TypeParameterElement element) -> {
-                    AnnotatedTypeMirror arg =
-                        AnnotatedTypeMirror.createType(element.asType(), atypeFactory, false);
-                    // TODO: After #979 is fixed, calculate the correct type
-                    // using inference.
-                    return atypeFactory.getUninferredWildcardType((AnnotatedTypeVariable) arg);
-                  },
-                  TypesUtils.getTypeElement(adt.getUnderlyingType()).getTypeParameters());
-          adt.setTypeArguments(args);
-        }
         supertypes.add(adt);
       }
 
@@ -367,7 +355,7 @@ final class SupertypeFinder {
      * All enums implicitly extend {@code Enum<MyEnum>}, where {@code MyEnum} is the type of the
      * enum. This method creates the AnnotatedTypeMirror for {@code Enum<MyEnum>} where the
      * annotation on {@code MyEnum} is copied from the annotation on the upper bound of the type
-     * argument to Enum. For example, {@code class Enum<E extend @HERE Enum<E>>}.
+     * argument to Enum. For example, {@code class Enum<E extends @HERE Enum<E>>}.
      *
      * @param type annotated type of an enum
      * @param elem element corresponding to {@code type}
@@ -380,12 +368,7 @@ final class SupertypeFinder {
       for (AnnotatedTypeMirror t : adt.getTypeArguments()) {
         // If the type argument of super is the same as the input type
         if (atypeFactory.types.isSameType(t.getUnderlyingType(), type.getUnderlyingType())) {
-          AnnotationMirrorSet bounds =
-              ((AnnotatedDeclaredType) atypeFactory.getAnnotatedType(dt.asElement()))
-                  .typeArgs
-                  .get(0)
-                  .getEffectiveAnnotations();
-          t.addAnnotations(bounds);
+          t.addAnnotations(type.primaryAnnotations);
         }
       }
       adt.addAnnotations(type.getPrimaryAnnotations());
@@ -393,12 +376,10 @@ final class SupertypeFinder {
     }
 
     /**
-     *
-     *
      * <pre>{@code
      * For type = A[ ] ==>
      *  Object >: A[ ]
-     *  Clonable >: A[ ]
+     *  Cloneable >: A[ ]
      *  java.io.Serializable >: A[ ]
      *
      * if A is reference type, then also

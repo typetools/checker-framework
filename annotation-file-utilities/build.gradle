@@ -1,0 +1,194 @@
+plugins {
+  id("java-library")
+  id("base")
+}
+
+dependencies {
+  // Annotations in checker-qual.jar are used, but no checkers are (currently) run on the code.
+  compileOnly(project(":checker-qual"))
+
+  implementation(libs.options)
+  implementation(libs.plume.util)
+  implementation(libs.reflection.util)
+  implementation(libs.guava) {
+    // So long as Guava only uses annotations from checker-qual, excluding it should not cause problems.
+    exclude group: "org.checkerframework"
+  }
+  implementation(libs.asm)
+  testImplementation(libs.junit)
+  testImplementation(project(":checker-qual"))
+}
+
+
+shadowJar {
+  destinationDirectory = file("${projectDir}/dist")
+  includeEmptyDirs = false
+  archiveFileName = "annotation-file-utilities-all.jar"
+  // Don't include any class from the Checker Framework.
+  // This should just be checker-qual.
+  exclude("org/checkerframework/checker/**")
+  exclude("org/checkerframework/framework/**")
+  exclude("org/checkerframework/dataflow/**")
+}
+
+// Shadowing Test Sources and Dependencies
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+import java.nio.file.Files
+
+tasks.register("skinnyJar", ShadowJar) {
+  dependsOn(compileJava)
+  description = "Builds annotation-file-utilities.jar with only scene-lib and annotation-file-utilities classes."
+  includeEmptyDirs = false
+  destinationDirectory = file("${projectDir}/dist")
+  archiveFileName = "annotation-file-utilities.jar"
+  include("org/checkerframework/afu/scenelib/**/*.class")
+  include("org/checkerframework/afu/annotator/**/*.class")
+}
+
+tasks.register("testExample", JavaExec) {
+  dependsOn(compileTestJava)
+  description = "Run the scene-lib example test."
+
+  String outputDir = "${layout.buildDirectory.get()}/example-test/"
+  String resourceDir = "${projectDir}/src/test/resources/annotations/tests/executable/"
+
+  classpath(files(sourceSets.test.java.classesDirectory))
+  classpath += sourceSets.test.compileClasspath
+  mainClass = "org.checkerframework.afu.scenelib.test.executable.Example"
+
+  args = [
+    "${resourceDir}/example-input.jaif",
+    "foo.Bar",
+    "${outputDir}/example-output.jaif"
+  ]
+
+  doFirst {
+    file(outputDir).mkdir()
+    new File("${outputDir}/example-stdout.jaif").createNewFile()
+
+    standardOutput = new FileOutputStream("${outputDir}/example-stdout.jaif")
+  }
+  doLast {
+
+    byte[] goalJaif = Files.readAllBytes(new File(resourceDir, "example-output.jaif.goal").toPath())
+    byte[] outputJaif = Files.readAllBytes(new File(outputDir, "example-output.jaif").toPath())
+    if (!Arrays.equals(goalJaif, outputJaif)) {
+      throw new GradleException("In ${outputDir}, file example-output.jaif does not match goal.")
+    }
+
+    byte[] goalStdOut = Files.readAllBytes(new File(resourceDir, "example-stdout.jaif.goal").toPath())
+    byte[] stdOut = Files.readAllBytes(new File(outputDir, "example-stdout.jaif").toPath())
+    if (!Arrays.equals(goalStdOut, stdOut)) {
+      throw new GradleException("In ${outputDir}, file example-stdout.jaif does not match goal.")
+    }
+  }
+}
+
+tasks.register("testAnnotator", Exec) {
+  dependsOn(shadowJar)
+  description = "Run the annotator test."
+  group = "Verification"
+  workingDir = "${projectDir}/tests/"
+  executable = "make"
+}
+
+tasks.register("cleanTestAnnotator", Exec) {
+  description = "Clean the annotator test."
+  workingDir = "tests/"
+  executable = "make"
+  args("clean")
+}
+
+clean {
+  dependsOn(cleanTestAnnotator)
+  delete("dist/annotation-file-utilities.jar", "dist/annotation-file-utilities-all.jar", "annotation-tools.zip")
+}
+
+test.dependsOn(testExample)
+test.dependsOn(testAnnotator)
+
+// The OptionsDoclet rewrites Main.java's Javadoc without regard to this project's formatting
+// conventions, so run `./gradlew spotlessApply` afterward, as a separate Gradle invocation.
+// (`finalizedBy("spotlessApply")` would not be reliable: if the same build also runs
+// spotlessApply for another reason, Gradle may schedule it before these tasks rather than
+// after, leaving Main.java unformatted.)
+tasks.register("updateUserOptions") {
+  description = "Updates documentation of command-line arguments, in Javadoc and in the manual."
+  group = "documentation"
+  dependsOn("updateUserOptionsJavadoc", "updateUserOptionsHtml")
+}
+
+/**
+ * Creates a task named taskName that runs the OptionsDoclet to update the documentation of
+ * command-line arguments in docfile.
+ *
+ * @param taskName the name of the task to create
+ * @param taskDescription description of the task
+ * @param format the OptionsDoclet output format: "javadoc" or "html"
+ * @param docfile the file whose command-line argument documentation to update
+ * @return a TaskProvider for the new task
+ */
+def createUpdateUserOptionsTask(taskName, taskDescription, format, docfile) {
+  tasks.register(taskName, Javadoc) {
+    dependsOn("assemble")
+    // This task runs the OptionsDoclet rather than the standard doclet.  Under JDK 25 and
+    // JDK 26, running javadoc with a non-standard doclet throws "java.lang.AssertionError:
+    // ignored flag: -Xlint:-options".  JDK 21's javadoc works, so use it no matter which JDK
+    // runs Gradle.  This build configures no toolchain download resolver, so running this task
+    // requires a locally installed JDK 21; without one, it fails with "No matching toolchains
+    // found for requested specification".  Remove this pinning once javadoc again accepts a
+    // non-standard doclet under the JDK that runs Gradle.
+    // The OptionsDoclet loads the documented classes, so this JDK must be able to read them;
+    // that is, `targetCompatibility` (see the root build.gradle) must not exceed 21.
+    javadocTool = javaToolchains.javadocToolFor {
+      languageVersion = JavaLanguageVersion.of(21)
+    }
+    description = taskDescription
+
+    // Exclude scene-lib's classfile package.  Otherwise the @Option fields of ClassFileReader
+    // and ClassFileWriter appear in the annotator's documentation.
+    source = sourceSets.main.allJava
+    exclude("org/checkerframework/afu/scenelib/io/classfile/**")
+    classpath = project.sourceSets.main.compileClasspath + project.sourceSets.main.runtimeClasspath
+    // The OptionsDoclet writes to docfile rather than to destinationDir, but Gradle requires
+    // every Javadoc task to have a destination.  Give each task its own, so that these tasks
+    // do not have overlapping outputs with one another or with the `javadoc` task, all of
+    // which the java plugin otherwise points at "build/docs/javadoc".
+    destinationDir = file(layout.buildDirectory.dir("docs/${taskName}"))
+    // Nothing is written to destinationDir, and docfile is not declared as an output, so
+    // Gradle's up-to-date check would skip this task whenever the source files are unchanged,
+    // even if docfile had been edited by hand.  docfile cannot be declared as an output,
+    // because for updateUserOptionsJavadoc it is also an input (it is one of the source
+    // files).  So, always run this task.
+    outputs.upToDateWhen { false }
+    options.memberLevel = JavadocMemberLevel.PRIVATE
+    options.docletpath = project.sourceSets.main.runtimeClasspath as List
+    options.doclet = "org.plumelib.options.OptionsDoclet"
+    options.addStringOption("docfile", docfile)
+    options.addStringOption("format", format)
+    options.addStringOption("i", "-quiet")
+    options.noTimestamp(false)
+    title = ""
+  }
+}
+
+createUpdateUserOptionsTask(
+    "updateUserOptionsJavadoc",
+    "Updates documentation of command-line arguments in Javadoc.",
+    "javadoc",
+    "${projectDir}/src/main/java/org/checkerframework/afu/annotator/Main.java")
+
+createUpdateUserOptionsTask(
+    "updateUserOptionsHtml",
+    "Updates documentation of command-line arguments in the manual.",
+    "html",
+    // Read `afuManualDir` through `rootProject.ext`.  An unqualified reference would be an
+    // implicit lookup of a property in a parent project, which Gradle 10 will reject.
+    rootProject.file("${rootProject.ext.afuManualDir}/annotation-file-utilities.html").toString())
+
+tasks.named("assemble") {
+  dependsOn(shadowJar)
+  dependsOn(skinnyJar)
+}

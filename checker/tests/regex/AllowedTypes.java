@@ -21,15 +21,15 @@ public class AllowedTypes {
 
   @Regex MyMatchResult mp;
 
-  // :: error: (anno.on.irrelevant)
+  // :: error: [anno.on.irrelevant]
   @Regex List<String> l;
-  // :: error: (anno.on.irrelevant)
+  // :: error: [anno.on.irrelevant]
   ArrayList<@Regex Double> al;
-  // :: error: (anno.on.irrelevant)
+  // :: error: [anno.on.irrelevant]
   @Regex int i;
-  // :: error: (anno.on.irrelevant)
+  // :: error: [anno.on.irrelevant]
   @Regex boolean b;
-  // :: error: (anno.on.irrelevant)
+  // :: error: [anno.on.irrelevant]
   @Regex Integer i2;
 
   void testAllowedTypes() {
@@ -40,17 +40,17 @@ public class AllowedTypes {
     @Regex char c;
     @Regex Object o;
 
-    // :: error: (anno.on.irrelevant)
+    // :: error: [anno.on.irrelevant]
     @Regex List<String> l; // error
-    // :: error: (anno.on.irrelevant)
+    // :: error: [anno.on.irrelevant]
     ArrayList<@Regex Double> al; // error
-    // :: error: (anno.on.irrelevant)
+    // :: error: [anno.on.irrelevant]
     @Regex int i; // error
-    // :: error: (anno.on.irrelevant)
+    // :: error: [anno.on.irrelevant]
     @Regex boolean b; // error
 
     @Regex String regex = "a";
-    // :: error: (compound.assignment)
+    // :: error: [compound.assignment]
     regex += "(";
 
     String nonRegex = "a";

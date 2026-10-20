@@ -5,12 +5,14 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -25,6 +27,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.plumelib.reflection.Signatures;
+import org.plumelib.util.MapsP;
 
 /**
  * This AnnotatedTypeFactory adds PropertyKey annotations to String literals that contain values
@@ -34,6 +37,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   private final Set<String> lookupKeys;
 
+  @SuppressWarnings("this-escape")
   public PropertyKeyAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.lookupKeys = Collections.unmodifiableSet(buildLookupKeys());
@@ -131,10 +135,10 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     Set<String> result = new HashSet<>();
 
     if (checker.hasOption("propfiles")) {
-      result.addAll(keysOfPropertyFiles(checker.getOption("propfiles")));
+      result.addAll(keysOfPropertyFiles(checker.getStringsOption("propfiles", File.pathSeparator)));
     }
     if (checker.hasOption("bundlenames")) {
-      result.addAll(keysOfResourceBundle(checker.getOption("bundlenames")));
+      result.addAll(keysOfResourceBundle(checker.getStringsOption("bundlenames", ':')));
     }
 
     return result;
@@ -143,21 +147,18 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Obtains the keys from all the property files.
    *
-   * @param names a list of property files, separated by {@link File#pathSeparator}
+   * @param propfiles an array of property files, separated by {@link File#pathSeparator}
    * @return a set of all the keys found in all the property files
    */
-  private Set<String> keysOfPropertyFiles(String names) {
-    String[] namesArr = names.split(File.pathSeparator);
+  private Set<String> keysOfPropertyFiles(List<String> propfiles) {
 
-    if (namesArr == null) {
-      checker.message(
-          Diagnostic.Kind.WARNING, "Couldn't parse the properties files: <" + names + ">");
+    if (propfiles.isEmpty()) {
       return Collections.emptySet();
     }
 
-    Set<String> result = new HashSet<>(namesArr.length);
+    Set<String> result = new HashSet<>(MapsP.mapCapacity(propfiles));
 
-    for (String name : namesArr) {
+    for (String propfile : propfiles) {
       try {
         Properties prop = new Properties();
 
@@ -167,19 +168,20 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           cl = ClassLoader.getSystemClassLoader();
         }
 
-        try (InputStream in = cl.getResourceAsStream(name)) {
+        try (InputStream in = cl.getResourceAsStream(propfile)) {
           if (in != null) {
             prop.load(in);
           } else {
             // If the classloader didn't manage to load the file, try whether a
             // FileInputStream works. For absolute paths this might help.
-            try (InputStream fis = new FileInputStream(name)) {
+            try (InputStream fis = Files.newInputStream(Paths.get(propfile))) {
               prop.load(fis);
             } catch (FileNotFoundException e) {
+              // The `propertykeychecker.filenotfound` message key describes this problem, but
+              // it cannot be used here: issuing a diagnostic requires an AST node, and this
+              // problem is not associated with one.
               checker.message(
-                  Diagnostic.Kind.WARNING, "Couldn't find the properties file: " + name);
-              // report(null, "propertykeychecker.filenotfound", name);
-              // return Collections.emptySet();
+                  Diagnostic.Kind.WARNING, "Couldn't find the properties file: " + propfile);
               continue;
             }
           }
@@ -200,18 +202,21 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return result;
   }
 
-  private Set<String> keysOfResourceBundle(String bundleNames) {
-    String[] namesArr = bundleNames.split(":");
+  /**
+   * Returns the keys for the given resource bundles.
+   *
+   * @param bundleNames names of resource bundles
+   * @return the keys for the given resource bundles
+   */
+  private Set<String> keysOfResourceBundle(List<String> bundleNames) {
 
-    if (namesArr == null) {
-      checker.message(
-          Diagnostic.Kind.WARNING, "Couldn't parse the resource bundles: <" + bundleNames + ">");
+    if (bundleNames.isEmpty()) {
       return Collections.emptySet();
     }
 
-    Set<String> result = new HashSet<>(namesArr.length);
+    Set<String> result = new HashSet<>(MapsP.mapCapacity(bundleNames));
 
-    for (String bundleName : namesArr) {
+    for (String bundleName : bundleNames) {
       if (!Signatures.isBinaryName(bundleName)) {
         System.err.println(
             "Malformed resource bundle: <" + bundleName + "> should be a binary name.");

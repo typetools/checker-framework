@@ -16,6 +16,7 @@ import org.checkerframework.framework.testchecker.lubglb.quals.PolyLubglb;
 
 public class LubGlbAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+  @SuppressWarnings("this-escape")
   public LubGlbAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     this.postInit();

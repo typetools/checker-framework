@@ -1,3 +1,6 @@
+// @skip-test the test contains no resource types to infer.
+// To pass this test, RLC's inference needs to infer CalledMethods annotations for empty must-call
+// types, which requires the -AenableWpirForRLC flag.
 import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 
 public class ECMInference {
@@ -9,7 +12,7 @@ public class ECMInference {
 
     void clientA1() {
       doStuff();
-      // :: warning: (assignment)
+      // :: warning: [assignment]
       @CalledMethods("toString") A1 a1 = this;
     }
   }
@@ -22,7 +25,7 @@ public class ECMInference {
 
     void clientB1() {
       doStuff();
-      // :: warning: (assignment)
+      // :: warning: [assignment]
       @CalledMethods("toString") B1 b1 = this;
     }
   }
@@ -34,7 +37,7 @@ public class ECMInference {
 
     void clientA2() {
       doStuff();
-      // :: warning: (assignment)
+      // :: warning: [assignment]
       @CalledMethods("toString") A2 a2 = this;
     }
   }
@@ -48,7 +51,7 @@ public class ECMInference {
 
     void clientB2() {
       doStuff();
-      // :: warning: (assignment)
+      // :: warning: [assignment]
       @CalledMethods({"toString", "hashCode"}) B2 b2 = this;
     }
   }

@@ -70,57 +70,107 @@ public class MethodCall extends JavaExpression {
     return Collections.unmodifiableList(arguments);
   }
 
+  @SuppressWarnings("unchecked") // generic cast
   @Override
-  public boolean containsOfClass(Class<? extends JavaExpression> clazz) {
+  public <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz) {
+
     if (getClass() == clazz) {
-      return true;
+      return (T) this;
     }
-    if (receiver.containsOfClass(clazz)) {
-      return true;
+
+    T result = receiver.containedOfClass(clazz);
+    if (result != null) {
+      return result;
     }
     for (JavaExpression p : arguments) {
-      if (p.containsOfClass(clazz)) {
-        return true;
+      result = p.containedOfClass(clazz);
+      if (result != null) {
+        return result;
       }
     }
-    return false;
+    return null;
   }
 
   @Override
   public boolean isDeterministic(AnnotationProvider provider) {
-    return PurityUtils.isDeterministic(provider, method)
+    return (PurityUtils.isDeterministic(provider, method) || provider.isDeterministic(method))
         && listIsDeterministic(arguments, provider);
   }
 
   @Override
-  public boolean isUnassignableByOtherCode() {
+  public boolean isAssignableByOtherCode() {
+    // TODO: The following comment is no longer accurate.  It should be removed and the
+    // implementation changed.
     // There is no need to check that the method is deterministic, because a MethodCall is
     // only created for deterministic methods.
-    return receiver.isUnmodifiableByOtherCode()
-        && arguments.stream().allMatch(JavaExpression::isUnmodifiableByOtherCode);
+    return receiver.isModifiableByOtherCode()
+        || arguments.stream().anyMatch(JavaExpression::isModifiableByOtherCode);
   }
 
   @Override
-  public boolean isUnmodifiableByOtherCode() {
-    return isUnassignableByOtherCode();
+  public boolean isModifiableByOtherCode() {
+    return isAssignableByOtherCode();
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof MethodCall other)) {
+      return false;
+    }
+    if (method.getKind() == ElementKind.CONSTRUCTOR) {
+      return false;
+    }
+    boolean isComparingSuperWithThis =
+        (receiver instanceof SuperReference && other.receiver instanceof ThisReference)
+            || (receiver instanceof ThisReference && other.receiver instanceof SuperReference);
+    return method.equals(other.method)
+        && (receiver.equals(other.receiver) || isComparingSuperWithThis)
+        && arguments.equals(other.arguments);
+  }
+
+  @Override
+  public int hashCode() {
+    if (method.getKind() == ElementKind.CONSTRUCTOR) {
+      return System.identityHashCode(this);
+    }
+    return Objects.hash(method, receiver, arguments);
   }
 
   @Override
   public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof MethodCall)) {
+    if (!(je instanceof MethodCall other)) {
       return false;
     }
-    MethodCall other = (MethodCall) je;
     return method.equals(other.method)
         && this.receiver.syntacticEquals(other.receiver)
-        && JavaExpression.syntacticEqualsList(this.arguments, other.arguments);
+        && syntacticEqualsList(this.arguments, other.arguments);
   }
 
   @Override
   public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
     return syntacticEquals(other)
         || receiver.containsSyntacticEqualJavaExpression(other)
-        || JavaExpression.listContainsSyntacticEqualJavaExpression(arguments, other);
+        || listContainsSyntacticEqualJavaExpression(arguments, other);
+  }
+
+  @Override
+  public boolean containsAsReceiver(AnnotationProvider provider, JavaExpression other) {
+    if (syntacticEquals(other)) {
+      return true;
+    }
+    // A method that is not side-effect-free may create the object it returns, or may fetch it from
+    // state that has nothing to do with the receiver, so its result is not reached through the
+    // receiver.  A side-effect-free method is assumed to return a part of its receiver, such as
+    // the view that `List.subList` returns.  That assumption is unsound for a side-effect-free
+    // method that returns pre-existing state that the receiver does not reach, such as a static
+    // field; no annotation expresses the difference.
+    if (!PurityUtils.isSideEffectFree(provider, method) && !provider.isSideEffectFree(method)) {
+      return false;
+    }
+    return receiver.containsAsReceiver(provider, other);
   }
 
   @Override
@@ -137,31 +187,6 @@ public class MethodCall extends JavaExpression {
   }
 
   @Override
-  public boolean equals(@Nullable Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (!(obj instanceof MethodCall)) {
-      return false;
-    }
-    if (method.getKind() == ElementKind.CONSTRUCTOR) {
-      return false;
-    }
-    MethodCall other = (MethodCall) obj;
-    return method.equals(other.method)
-        && receiver.equals(other.receiver)
-        && arguments.equals(other.arguments);
-  }
-
-  @Override
-  public int hashCode() {
-    if (method.getKind() == ElementKind.CONSTRUCTOR) {
-      return super.hashCode();
-    }
-    return Objects.hash(method, receiver, arguments);
-  }
-
-  @Override
   public String toString() {
     StringBuilder preParen = new StringBuilder();
     if (receiver instanceof ClassName) {
@@ -169,10 +194,10 @@ public class MethodCall extends JavaExpression {
     } else {
       preParen.append(receiver);
     }
-    preParen.append(".");
+    preParen.append('.');
     String methodName = method.getSimpleName().toString();
     preParen.append(methodName);
-    preParen.append("(");
+    preParen.append('(');
     StringJoiner result = new StringJoiner(", ", preParen, ")");
     for (JavaExpression argument : arguments) {
       result.add(argument.toString());

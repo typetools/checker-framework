@@ -17,7 +17,6 @@ import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.checker.index.upperbound.OffsetEquation;
 import org.checkerframework.common.value.ValueCheckerUtils;
-import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
@@ -342,7 +341,9 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     JavaExpression leftJe = JavaExpression.fromNode(left);
 
     AnnotationMirror newLBType =
-        atypeFactory.getQualifierHierarchy().greatestLowerBound(rightAnno, leftAnno);
+        atypeFactory
+            .getQualifierHierarchy()
+            .greatestLowerBoundShallow(rightAnno, left.getType(), leftAnno, right.getType());
 
     store.insertValue(leftJe, newLBType);
   }
@@ -406,7 +407,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
    *      lit 0 + * &rarr; *
    *      lit 1 + * &rarr; call promote
    *      9. lit &ge; 2 + {gte-1, nn, or pos} &rarr; pos
-   *      let all other lits, including sets, fall through:
+   *      let all other literals, including sets, fall through:
    *      10. pos + pos &rarr; pos
    *      11. nn + * &rarr; *
    *      12. pos + gte-1 &rarr; nn
@@ -495,11 +496,9 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       // Check if the left side is a field access of an array's length, or invocation of
       // String.length. If so, try to look up the MinLen of the array, and potentially keep
       // this either NN or POS instead of GTEN1 or LBU.
-      if (leftExpr.getKind() == Tree.Kind.MEMBER_SELECT) {
-        MemberSelectTree mstree = (MemberSelectTree) leftExpr;
+      if (leftExpr instanceof MemberSelectTree mstree) {
         minLen = atypeFactory.getMinLenFromMemberSelectTree(mstree);
-      } else if (leftExpr.getKind() == Tree.Kind.METHOD_INVOCATION) {
-        MethodInvocationTree mitree = (MethodInvocationTree) leftExpr;
+      } else if (leftExpr instanceof MethodInvocationTree mitree) {
         minLen = atypeFactory.getMinLenFromMethodInvocationTree(mitree);
       }
 
@@ -757,7 +756,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     return UNKNOWN;
   }
 
-  /** Handles shifts (case 30). * &gt;&gt; NonNegative &rarr; NonNegative */
+  /** Handles shifts (case 30). * &gt;&gt; NonNegative &rarr; NonNegative. */
   private AnnotationMirror getAnnotationForRightShift(
       BinaryOperationNode node, TransferInput<CFValue, CFStore> p) {
     AnnotationMirror leftAnno = getLowerBoundAnnotation(node.getLeftOperand(), p);
@@ -773,7 +772,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
   /**
    * Handles masking (case 31). Particularly, handles the following cases: * &amp; NonNegative
-   * &rarr; NonNegative
+   * &rarr; NonNegative.
    */
   private AnnotationMirror getAnnotationForAnd(
       BitwiseAndNode node, TransferInput<CFValue, CFStore> p) {
@@ -846,7 +845,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       NumericalAdditionNode n, TransferInput<CFValue, CFStore> p) {
     TransferResult<CFValue, CFStore> result = super.visitNumericalAddition(n, p);
     AnnotationMirror newAnno = getAnnotationForPlus(n, p);
-    return createNewResult(result, newAnno);
+    return recreateTransferResult(newAnno, result);
   }
 
   @Override
@@ -854,7 +853,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       NumericalSubtractionNode n, TransferInput<CFValue, CFStore> p) {
     TransferResult<CFValue, CFStore> result = super.visitNumericalSubtraction(n, p);
     AnnotationMirror newAnno = getAnnotationForMinus(n, p);
-    return createNewResult(result, newAnno);
+    return recreateTransferResult(newAnno, result);
   }
 
   @Override
@@ -862,7 +861,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       NumericalMultiplicationNode n, TransferInput<CFValue, CFStore> p) {
     TransferResult<CFValue, CFStore> result = super.visitNumericalMultiplication(n, p);
     AnnotationMirror newAnno = getAnnotationForMultiply(n, p);
-    return createNewResult(result, newAnno);
+    return recreateTransferResult(newAnno, result);
   }
 
   @Override
@@ -870,7 +869,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       IntegerDivisionNode n, TransferInput<CFValue, CFStore> p) {
     TransferResult<CFValue, CFStore> result = super.visitIntegerDivision(n, p);
     AnnotationMirror newAnno = getAnnotationForDivide(n, p);
-    return createNewResult(result, newAnno);
+    return recreateTransferResult(newAnno, result);
   }
 
   @Override
@@ -878,7 +877,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       IntegerRemainderNode n, TransferInput<CFValue, CFStore> p) {
     TransferResult<CFValue, CFStore> transferResult = super.visitIntegerRemainder(n, p);
     AnnotationMirror resultAnno = getAnnotationForRemainder(n, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -886,7 +885,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       SignedRightShiftNode n, TransferInput<CFValue, CFStore> p) {
     TransferResult<CFValue, CFStore> transferResult = super.visitSignedRightShift(n, p);
     AnnotationMirror resultAnno = getAnnotationForRightShift(n, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -894,7 +893,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       UnsignedRightShiftNode n, TransferInput<CFValue, CFStore> p) {
     TransferResult<CFValue, CFStore> transferResult = super.visitUnsignedRightShift(n, p);
     AnnotationMirror resultAnno = getAnnotationForRightShift(n, p);
-    return createNewResult(transferResult, resultAnno);
+    return recreateTransferResult(resultAnno, transferResult);
   }
 
   @Override
@@ -902,21 +901,6 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       BitwiseAndNode n, TransferInput<CFValue, CFStore> p) {
     TransferResult<CFValue, CFStore> transferResult = super.visitBitwiseAnd(n, p);
     AnnotationMirror resultAnno = getAnnotationForAnd(n, p);
-    return createNewResult(transferResult, resultAnno);
-  }
-
-  /**
-   * Create a new transfer result based on the original result and the new annotation.
-   *
-   * @param result the original result
-   * @param resultAnno the new annotation
-   * @return the new transfer result
-   */
-  private TransferResult<CFValue, CFStore> createNewResult(
-      TransferResult<CFValue, CFStore> result, AnnotationMirror resultAnno) {
-    CFValue newResultValue =
-        analysis.createSingleAnnotationValue(
-            resultAnno, result.getResultValue().getUnderlyingType());
-    return new RegularTransferResult<>(newResultValue, result.getRegularStore());
+    return recreateTransferResult(resultAnno, transferResult);
   }
 }

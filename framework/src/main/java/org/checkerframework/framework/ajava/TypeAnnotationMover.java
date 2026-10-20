@@ -161,7 +161,7 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
   }
 
   /**
-   * Returns whether the annotation represented by {@code annotationDeclaration} might be a
+   * Returns true if the annotation represented by {@code annotationDeclaration} might be a
    * declaration annotation for {@code declarationType}. This holds if the TypeElement has no
    * {@code @Target} meta-annotation, or if {@code declarationType} is a target of the annotation.
    *
@@ -199,7 +199,7 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
   }
 
   /**
-   * Returns whether {@code type} has a name containing multiple parts separated by dots, e.g.
+   * Returns true if {@code type} has a name containing multiple parts separated by dots, e.g.
    * "java.lang.String" or "Outer.Inner".
    *
    * <p>Annotations should not be moved onto a Type for which this method returns true. A type like

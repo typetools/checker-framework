@@ -15,7 +15,6 @@ import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.Parameterized.Parameters;
-import org.junit.runners.Suite;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
@@ -34,8 +33,9 @@ import org.junit.runners.model.TestClass;
  * test against OR a {@code String []} where each String in the array is a directory in the tests
  * directory.
  */
-public class PerDirectorySuite extends Suite {
+public class PerDirectorySuite extends RootedSuite {
 
+  /** Name. */
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)
   public @interface Name {}
@@ -52,7 +52,10 @@ public class PerDirectorySuite extends Suite {
    *
    * @param klass the class whose tests to run
    */
-  @SuppressWarnings("nullness") // JUnit needs to be annotated
+  @SuppressWarnings({
+    "nullness", // JUnit needs to be annotated
+    "this-escape"
+  })
   public PerDirectorySuite(Class<?> klass) throws Throwable {
     super(klass, Collections.emptyList());
     TestClass testClass = getTestClass();
@@ -79,7 +82,7 @@ public class PerDirectorySuite extends Suite {
           "@Parameters annotation on method that does not return an array: " + method);
     }
     String[] dirs = (String[]) method.invokeExplosively(null);
-    return TestUtilities.findJavaFilesPerDirectory(new File("tests"), dirs);
+    return TestUtilities.findJavaFilesPerDirectory(resolveTestDirectory(), dirs);
   }
 
   /** Returns method annotated @Parameters, typically the getTestDirs or getTestFiles method. */
@@ -111,21 +114,21 @@ public class PerDirectorySuite extends Suite {
     Class<?> returnType = method.getReturnType();
     String methodName = method.getName();
     switch (methodName) {
-      case "getTestDirs":
+      case "getTestDirs" -> {
         if (!(returnType.isArray() && returnType.getComponentType() == String.class)) {
           throw new RuntimeException("getTestDirs should return String[], found " + returnType);
         }
-        break;
+      }
 
-      default:
-        throw new RuntimeException(
-            requiredFormsMessage
-                + "%n"
-                + "testClass="
-                + testClass.getName()
-                + "%n"
-                + "parameterMethods="
-                + method);
+      default ->
+          throw new RuntimeException(
+              requiredFormsMessage
+                  + "%n"
+                  + "testClass="
+                  + testClass.getName()
+                  + "%n"
+                  + "parameterMethods="
+                  + method);
     }
 
     int modifiers = method.getMethod().getModifiers();

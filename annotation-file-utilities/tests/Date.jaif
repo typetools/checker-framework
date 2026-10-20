@@ -1,0 +1,6 @@
+package org.checkerframework.afu.annotator.tests:
+class Date:
+
+    field t:
+
+    method <init>()V:

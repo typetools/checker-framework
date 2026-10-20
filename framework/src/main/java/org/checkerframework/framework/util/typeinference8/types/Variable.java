@@ -1,0 +1,250 @@
+package org.checkerframework.framework.util.typeinference8.types;
+
+import com.sun.source.tree.ExpressionTree;
+import java.util.Objects;
+import java.util.Set;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
+import org.checkerframework.framework.util.typeinference8.util.Theta;
+import org.checkerframework.javacutil.AnnotationMirrorMap;
+import org.checkerframework.javacutil.TypesUtils;
+
+/**
+ * An inference variable. It corresponds to a type argument for a particular method invocation, new
+ * class tree or method reference that needs to be inferred.
+ */
+@Interned public class Variable {
+
+  /** Bounds of this variable. */
+  protected final VariableBounds variableBounds;
+
+  /** Identification number. Used only to make debugging easier. */
+  protected final int id;
+
+  /**
+   * The expression for which this variable is being solved. Used to differentiate inference
+   * variables for two different invocations of the same method or constructor. This is set during
+   * inference.
+   */
+  protected final ExpressionTree invocation;
+
+  /** The Java type variable for which the instantiation of this variable is a type argument. */
+  protected final TypeVariable typeVariableJava;
+
+  /**
+   * The annotated type variable for which the instantiation of this variable is a type argument.
+   */
+  protected final AnnotatedTypeVariable typeVariable;
+
+  /** A mapping from type variable to inference variable. */
+  protected final Theta map;
+
+  /** The context. */
+  protected final Java8InferenceContext context;
+
+  /** This variable's hash code, or 0 if it has not been computed yet. */
+  private int hashCode = 0;
+
+  /**
+   * Creates a variable.
+   *
+   * @param typeVariable an annotated type variable
+   * @param typeVariableJava a java type variable
+   * @param invocation the invocation for which this variable is a type argument for
+   * @param context the context
+   * @param map a mapping from type variable to inference variable
+   */
+  Variable(
+      AnnotatedTypeVariable typeVariable,
+      TypeVariable typeVariableJava,
+      ExpressionTree invocation,
+      Java8InferenceContext context,
+      Theta map) {
+    this(typeVariable, typeVariableJava, invocation, context, map, context.getNextVariableId());
+  }
+
+  /**
+   * Creates a variable.
+   *
+   * @param typeVariable an annotated type variable
+   * @param typeVariableJava a java type variable
+   * @param invocation the invocation for which this variable is a type argument for
+   * @param context the context
+   * @param map a mapping from type variable to inference variable
+   * @param id a unique number for this variable
+   */
+  @SuppressWarnings({
+    "interning:argument", // "this" is interned
+    "nullness:argument", // VariableBounds stores "this" but doesn't use it during construction
+    "nullness:assignment", // VariableBounds stores "this" but doesn't use it during construction
+    "this-escape"
+  })
+  protected Variable(
+      AnnotatedTypeVariable typeVariable,
+      TypeVariable typeVariableJava,
+      ExpressionTree invocation,
+      Java8InferenceContext context,
+      Theta map,
+      int id) {
+    this.context = context;
+    assert typeVariable != null;
+    this.variableBounds = new VariableBounds(this, context);
+    this.typeVariableJava = typeVariableJava;
+    this.typeVariable = typeVariable;
+    this.invocation = invocation;
+    this.map = map;
+    this.id = id;
+  }
+
+  /**
+   * Returns this variable's current bounds.
+   *
+   * @return this variable's current bounds
+   */
+  public VariableBounds getBounds() {
+    return variableBounds;
+  }
+
+  /**
+   * Adds the initial bounds to this variable. These are the bounds implied by the upper bounds of
+   * the type variable. See end of JLS 18.1.3.
+   *
+   * @param map used to determine if the bounds refer to another variable
+   */
+  public void initialBounds(Theta map) {
+    TypeMirror upperBound = typeVariable.getUpperBound().getUnderlyingType();
+    // If Pl has no TypeBound, the bound {@literal al <: Object} appears in the set. Otherwise,
+    // for each type T delimited by & in the TypeBound, the bound {@literal al <: T[P1:=a1,...,
+    // Pp:=ap]} appears in the set; if this results in no proper upper bounds for al (only
+    // dependencies), then the bound {@literal al <: Object} also appears in the set.
+    if (upperBound.getKind() == TypeKind.INTERSECTION) {
+      for (AnnotatedTypeMirror bound : typeVariable.getUpperBound().directSupertypes()) {
+        AbstractType t1 = InferenceType.create(bound, map, context);
+        variableBounds.addBound(null, BoundKind.UPPER, t1);
+      }
+    } else {
+      AbstractType t1 = InferenceType.create(typeVariable.getUpperBound(), map, context);
+      variableBounds.addBound(null, BoundKind.UPPER, t1);
+    }
+    if (variableBounds.findProperUpperBounds().isEmpty()) {
+      // Every bound added above mentions an inference variable, so this resulted in no proper
+      // upper bounds for al (only dependencies).  Therefore, add the bound al <: Object, per the
+      // last clause of the comment above.  This happens for a type parameter such as the P1 of
+      // <P1 extends P2, P2>, whose only upper bound is a dependency.
+      variableBounds.addBound(null, BoundKind.UPPER, context.object);
+    }
+
+    Set<? extends AbstractQualifier> quals =
+        AbstractQualifier.create(
+            typeVariable.getLowerBound().getPrimaryAnnotations(),
+            AnnotationMirrorMap.emptyMap(),
+            context);
+    variableBounds.addQualifierBound(BoundKind.LOWER, quals);
+  }
+
+  /**
+   * Returns the invocation tree.
+   *
+   * @return the invocation tree
+   */
+  public ExpressionTree getInvocation() {
+    return invocation;
+  }
+
+  @SuppressWarnings("interning:not.interned") // Checking for exact object.
+  @Override
+  public boolean equals(@Nullable Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    Variable variable = (Variable) o;
+    return TypesUtils.areSame(typeVariableJava, variable.typeVariableJava)
+        && invocation == variable.invocation;
+  }
+
+  @Override
+  public int hashCode() {
+    // The fields that `equals` compares are final, and hashCodeForAreSame() builds a String, so
+    // compute this once.  This method is hot: inference puts these variables, and types that
+    // delegate to them, in hash sets.
+    if (hashCode == 0) {
+      // Objects.hashCode() is null-safe; `invocation` is null in some tests.
+      hashCode =
+          31 * (31 + TypesUtils.hashCodeForAreSame(typeVariableJava))
+              + Objects.hashCode(invocation);
+    }
+    return hashCode;
+  }
+
+  @Override
+  public String toString() {
+    return String.format("%s from %s", typeVariableJava, invocation);
+
+    // Uncomment for easier to read names for debugging.
+    // if (variableBounds.hasInstantiation()) {
+    //    return "a" + id + " := " + variableBounds.getInstantiation();
+    //  }
+    //  return "a" + id;
+  }
+
+  /**
+   * Returns the instantiation for this variable, or null if this variable has no instantiation.
+   *
+   * @return the instantiation for this variable, or null
+   */
+  public @Nullable ProperType getInstantiation() {
+    return variableBounds.getInstantiation();
+  }
+
+  /** Saves the current bounds, in case the first attempt at resolution fails. */
+  public void save() {
+    variableBounds.save();
+  }
+
+  /**
+   * Restore the bounds to the state previously saved. This method is called if the first attempt at
+   * resolution fails.
+   */
+  public void restore() {
+    variableBounds.restore();
+  }
+
+  /**
+   * Returns true if this variable was created for a capture bound.
+   *
+   * @return true if this variable was created for a capture bound
+   */
+  public boolean isCaptureVariable() {
+    return false;
+  }
+
+  /**
+   * Returns true if this variable was created for a capture bound and the type argument it captures
+   * is a wildcard.
+   *
+   * @return true if this variable was created for a captured wildcard
+   */
+  public boolean isCapturedWildcard() {
+    return false;
+  }
+
+  /**
+   * The Java type variable.
+   *
+   * @return the Java type variable
+   */
+  public TypeVariable getJavaType() {
+    return typeVariableJava;
+  }
+}

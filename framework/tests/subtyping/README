@@ -1,5 +1,5 @@
 To add a new file to the test suite, see
-  ../README
+  ../README.md
 
 To run the tests, do
   (cd $CHECKERFRAMEWORK && ./gradlew SubtypingEncryptedTest)
