@@ -352,8 +352,9 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
       AnnotationMirror upper1 = type1.getAnnotationInHierarchy(lower1);
       AnnotationMirror upper2 = type2.getAnnotationInHierarchy(lower1);
       if (lower2 == null || upper1 == null || upper2 == null) {
-        // One of the types has no annotation in this hierarchy, so its range cannot be compared
-        // with the other type's range.  Keep the lub of the bounds, already stored in lub.
+        // One of the types has no annotation in this hierarchy, as for a type argument of a lower
+        // bound built by AsSuperVisitor.asSuperLowerBound.  Keep the lub of the bounds, which is
+        // already stored in lub.
         continue;
       }
 
