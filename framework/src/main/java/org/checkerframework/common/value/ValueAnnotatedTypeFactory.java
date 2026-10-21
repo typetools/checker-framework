@@ -588,13 +588,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Determine the primitive integral TypeKind for the given integral type.
    *
-   * @param type the type to convert, must be an integral type, boxed or primitive, or a type that
-   *     unboxes to one
+   * @param type the type to convert, must be an integral type, boxed or primitive
    * @return one of INT, SHORT, BYTE, CHAR, or LONG
    */
-  private TypeKind toPrimitiveIntegralTypeKind(TypeMirror type) {
-    TypeKind typeKind = TypesUtils.unboxedTypeOrSelf(type, types).getKind();
-    if (TypeKindUtils.isIntegral(typeKind)) {
+  private static TypeKind toPrimitiveIntegralTypeKind(TypeMirror type) {
+    TypeKind typeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(type);
+    if (typeKind != null && TypeKindUtils.isIntegral(typeKind)) {
       return typeKind;
     }
     throw new TypeSystemError(type.toString() + " expected to be an integral type.");
