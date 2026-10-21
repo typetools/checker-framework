@@ -1291,7 +1291,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         Set<? extends ExecutableElement> overriddenMethods =
             ElementUtils.getOverriddenMethods(methodElt, types);
         for (ExecutableElement overriddenElt : overriddenMethods) {
-          inferPurityAnno(additionalKinds, wpi, overriddenElt);
+          // A call to the overridden method may pass an argument that a call to this method may
+          // not, so the kinds that are safe to infer depend on the method.
+          inferPurityAnno(kindsSafeToInfer(overriddenElt, additionalKinds), wpi, overriddenElt);
         }
       } else if (additionalKinds.isEmpty()) {
         // No need to suggest @Impure, since it is equivalent to no annotation.
@@ -1750,7 +1752,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * <p>Inference cannot annotate a lambda expression or a method reference, so it cannot make an
    * argument meet such a requirement; inferring the kind would introduce errors at call sites. A
-   * requirement that the written annotations already impose is not new, and the written kinds are
+   * requirement that calls to {@code method} already impose is not new: one that {@code method}
+   * inherits from a method that it overrides, or that its {@code @SideEffectsOnly} annotation
+   * imposes, counts as well as one that its written annotations impose. The written kinds are
    * always retained, so that inference neither weakens nor contradicts the written contract.
    *
    * <p>Discarding one kind can make another one required: determinism is required of an argument
@@ -1766,17 +1770,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       ExecutableElement method, EnumSet<PurityKind> kinds) {
     ProcessingEnvironment env = atypeFactory.getProcessingEnv();
     EnumSet<PurityKind> written = writtenPurityKinds(method);
+    // A superset of `written`.
+    EnumSet<PurityKind> alreadyRequired =
+        PurityChecker.functionalParameterKinds(atypeFactory, method, env);
     EnumSet<PurityKind> result = EnumSet.copyOf(kinds);
     result.addAll(written);
     while (!result.equals(written)) {
       // Each kind in `newlyRequired` is in `result` but not in `written`, because a written kind
-      // that is required of an argument is required already by the written kinds alone.
+      // that is required of an argument is required already by `alreadyRequired`.
       EnumSet<PurityKind> newlyRequired = EnumSet.noneOf(PurityKind.class);
       for (int i = 0; i < method.getParameters().size(); i++) {
         ExecutableElement paramFunction = PurityChecker.parameterFunctionalMethod(method, i, env);
         if (paramFunction != null) {
           EnumSet<PurityKind> required = purityRequiredOfArgument(paramFunction, result, false);
-          required.removeAll(purityRequiredOfArgument(paramFunction, written, false));
+          required.removeAll(purityRequiredOfArgument(paramFunction, alreadyRequired, false));
           newlyRequired.addAll(required);
         }
       }
@@ -3319,7 +3326,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       inferPurityAnno(lambdaKinds, wpi, functionalMethod);
       for (ExecutableElement overriddenElt :
           ElementUtils.getOverriddenMethods(functionalMethod, types)) {
-        inferPurityAnno(lambdaKinds, wpi, overriddenElt);
+        inferPurityAnno(kindsSafeToInfer(overriddenElt, lambdaKinds), wpi, overriddenElt);
       }
     }
   }
