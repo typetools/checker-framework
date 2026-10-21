@@ -111,4 +111,26 @@ public class TypeVarPrimitives {
   long captured(java.util.List<? extends Integer> l) {
     return l.get(0) * 2L;
   }
+
+  long enhancedForWildcard(java.util.List<? extends Integer> l) {
+    long sum = 0;
+    for (int x : l) {
+      sum += x;
+    }
+    for (long x : l) {
+      sum += x;
+    }
+    return sum;
+  }
+
+  <T extends Integer> long enhancedForWildcardTypeVar(java.util.List<? extends T> l) {
+    long sum = 0;
+    for (int x : l) {
+      sum += x;
+    }
+    for (long x : l) {
+      sum += x;
+    }
+    return sum;
+  }
 }
