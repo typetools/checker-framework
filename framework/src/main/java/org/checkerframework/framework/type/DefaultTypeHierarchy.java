@@ -985,8 +985,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
 
     if (TypesUtils.isCapturedTypeVariable(subTM) && TypesUtils.isCapturedTypeVariable(superTM)) {
-      // This case happens when the captured type variables should be the same type, but
-      // aren't because type argument inference isn't implemented correctly.
+      // This case happens when the captured type variables should be the same type, but aren't,
+      // either because type argument inference isn't implemented correctly or because the
+      // framework re-captured a type that javac had already captured, as it does for a method's
+      // receiver in methodFromUse.  Two captures of the same wildcard are compared like two uses
+      // of the same type variable.
       if (isSameCapturedWildcard((TypeVariable) subTM, (TypeVariable) superTM)
           && isSubtypeSameTypeVariable(subtype, supertype)) {
         return true;
