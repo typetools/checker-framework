@@ -2,7 +2,9 @@ package org.checkerframework.framework.util.typeinference8.types;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.tools.javac.code.Lint.LintCategory;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.util.Warner;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
@@ -179,6 +181,21 @@ public class ProperType extends AbstractType {
     } else {
       return ConstraintSet.FALSE;
     }
+  }
+
+  /**
+   * Returns true if unchecked conversion is necessary for {@code this} to be compatible with {@code
+   * target} in a loose invocation context (JLS 5.3). Ignores annotations.
+   *
+   * @param target the target type
+   * @return true if unchecked conversion is necessary for {@code this} to be compatible with {@code
+   *     target}
+   */
+  public boolean needsUncheckedConversionTo(ProperType target) {
+    // isConvertible records, in the javac Warner, any lint warnings that the conversion would need.
+    Warner lintRecorder = new Warner();
+    context.types.isConvertible((Type) getJavaType(), (Type) target.getJavaType(), lintRecorder);
+    return lintRecorder.hasNonSilentLint(LintCategory.UNCHECKED);
   }
 
   /**

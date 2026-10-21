@@ -48,8 +48,11 @@ public abstract class TypeConstraint implements Constraint {
   public @Nullable String derivation;
 
   /**
-   * For a constraint that has no {@code parent} and that is in the set C of argument constraints of
-   * an invocation (JLS 18.5.2.2), that invocation. Null otherwise. See {@link #getInvocation}.
+   * The invocation that needs unchecked conversion if unchecked conversion is necessary to reduce
+   * this constraint, or null if that is determined by this constraint's {@code parent}. Non-null
+   * for an argument constraint of an invocation or method reference that has no {@code parent} (JLS
+   * 18.5.1 and 18.5.2.2), and for an argument constraint of an exact method reference (JLS 18.2.1).
+   * See {@link #getInvocation}.
    */
   public @Nullable ExpressionTree invocation;
 
@@ -107,10 +110,10 @@ public abstract class TypeConstraint implements Constraint {
   }
 
   /**
-   * Returns the invocation whose argument constraint gave rise to this constraint: the {@link
-   * #invocation} of the nearest of this constraint and its ancestors that has one. If unchecked
-   * conversion is necessary to reduce this constraint, then that invocation needs unchecked
-   * conversion.
+   * Returns the invocation whose argument constraint gave rise to this constraint: the first
+   * non-null {@link #invocation} found by starting at this constraint and following {@link #parent}
+   * links. If unchecked conversion is necessary to reduce this constraint, then that invocation
+   * needs unchecked conversion.
    *
    * @return the invocation whose argument constraint gave rise to this constraint, or null if none
    *     did

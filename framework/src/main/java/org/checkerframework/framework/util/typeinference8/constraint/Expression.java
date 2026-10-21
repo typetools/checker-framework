@@ -189,9 +189,31 @@ public class Expression extends TypeConstraint {
     Theta map =
         context.inferenceTypeFactory.createThetaForInvocation(
             expressionTree, executableType, context);
-    BoundSet b2 = context.inference.createB2(executableType, args, map);
-    b2.recordUncheckedConversionFor(expressionTree);
+    BoundSet b2 = context.inference.createB2(expressionTree, executableType, args, map);
     return context.inference.createB3(b2, expressionTree, executableType, T, map);
+  }
+
+  /**
+   * Returns a constraint between a parameter type of the function type of the exact method
+   * reference {@code memRef} and the corresponding formal parameter type of its compile-time
+   * declaration (or, for the receiver of an unbound reference, the reference type). These parameter
+   * types act as the argument types of the method reference's implicit invocation of the
+   * compile-time declaration (JLS 15.13.1). Unchecked conversion that is necessary to reduce the
+   * constraint is necessary for the compile-time declaration to be applicable, so {@code memRef},
+   * not the enclosing invocation, needs it.
+   *
+   * @param s a parameter type of the function type
+   * @param t the corresponding formal parameter type of the compile-time declaration, or the
+   *     reference type
+   * @param kind the kind of the constraint
+   * @param memRef an exact method reference
+   * @return the constraint between {@code s} and {@code t}
+   */
+  private Typing memRefParameterConstraint(
+      AbstractType s, AbstractType t, Kind kind, MemberReferenceTree memRef) {
+    Typing constraint = new Typing(this, s, t, kind);
+    constraint.invocation = memRef;
+    return constraint;
   }
 
   /**
@@ -233,17 +255,35 @@ public class Expression extends TypeConstraint {
         }
 
         constraintSet.add(
-            new Typing(this, targetReference, referenceType, TypeConstraint.Kind.SUBTYPE));
+            memRefParameterConstraint(targetReference, referenceType, Kind.SUBTYPE, memRef));
       }
       for (int i = 0; i < ps.size(); i++) {
-        constraintSet.add(new Typing(this, ps.get(i), fs.get(i), TypeConstraint.Kind.SUBTYPE));
+        constraintSet.add(
+            memRefParameterConstraint(ps.get(i), fs.get(i), Kind.TYPE_COMPATIBILITY, memRef));
       }
+      // Reduce the parameter constraints now, rather than returning them. Reducing them records in
+      // context.needUncheckedConversion whether memRef needs unchecked conversion, which determines
+      // whether the return type below is erased (JLS 15.12.2.6).
+      BoundSet b2 = constraintSet.reduce(context);
       AbstractType r = T.getFunctionTypeReturnType();
-      if (r != null) {
-        AbstractType rPrime = typeOfPoAppMethod.getReturnType(null).capture(context);
-        constraintSet.add(new Typing(this, rPrime, r, TypeConstraint.Kind.TYPE_COMPATIBILITY));
+      if (r == null) {
+        return b2;
       }
-      return constraintSet;
+      // JLS 15.12.2.6: if unchecked conversion was necessary for the compile-time declaration to be
+      // applicable, the return type of its invocation type is the erasure of its return type.
+      AbstractType compileTimeReturn = typeOfPoAppMethod.getReturnType(null);
+      AbstractType invocationReturn =
+          context.needUncheckedConversion.contains(memRef)
+              ? compileTimeReturn.getErased()
+              : compileTimeReturn;
+      return ReductionResultPair.of(
+          new ConstraintSet(
+              new Typing(
+                  this,
+                  invocationReturn.capture(context),
+                  r,
+                  TypeConstraint.Kind.TYPE_COMPATIBILITY)),
+          b2);
     }
     // else the method reference is inexact.
 
@@ -285,7 +325,6 @@ public class Expression extends TypeConstraint {
     BoundSet b2;
     if (TreeUtils.needsTypeArgInference(memRef)) {
       b2 = context.inference.createB2MethodRef(compileTimeDecl, functionTypeParams, map);
-      b2.recordUncheckedConversionFor(memRef);
       if (!compileTimeReturn.isProper()) {
         return context.inference.createB3(b2, memRef, compileTimeDecl, r, map);
       }
