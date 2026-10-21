@@ -7,6 +7,8 @@
 
 ### User-visible changes
 
+New Confidential Checker to identify sensitive information exposure.
+
 ### Changes for type system implementers
 
 ### Closed issues
