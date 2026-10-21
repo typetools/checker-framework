@@ -61,4 +61,59 @@ public class Issue6872 {
           default -> c1;
         });
   }
+
+  // The lub of the arms takes T's annotation from c1, so c2 is not a subtype of the lub.
+  <T> void oneArmConstrainsT(
+      int i, Comparator<List<@Nullable T>> c1, Comparator<Collection<@NonNull T>> c2) {
+    Comparator<? super List<@Nullable T>> c =
+        switch (i) {
+          case 1 -> c1;
+          // :: error: (switch.expression)
+          default -> c2;
+        };
+    Comparator<? super List<@Nullable T>> c3 =
+        switch (i) {
+          // :: error: (switch.expression)
+          case 1 -> c2;
+          default -> c1;
+        };
+    // :: error: (assignment)
+    Comparator<? super List<@Nullable T>> c4 = i == 1 ? c1 : c2;
+  }
+
+  <T> void bothArmsAcceptNullableT(
+      int i, Comparator<List<@Nullable T>> c1, Comparator<Collection<@Nullable T>> c2) {
+    Comparator<? super List<@Nullable T>> c =
+        switch (i) {
+          case 1 -> c1;
+          default -> c2;
+        };
+  }
+
+  // Neither arm annotates the T in List<T>, so the lub's T is unannotated.
+  <T> void neitherArmAnnotatesT(
+      int i, Comparator<@Nullable Object> c1, Comparator<Collection<@Nullable T>> c2) {
+    Comparator<? super List<@Nullable T>> c =
+        // TODO: This is a false positive.
+        // :: error: (assignment)
+        switch (i) {
+          case 1 -> c1;
+          // TODO: This is a false positive.
+          // :: error: (switch.expression)
+          default -> c2;
+        };
+  }
+
+  <T> void neitherArmAnnotatesTInvalid(
+      int i, Comparator<@Nullable Object> c1, Comparator<Collection<@NonNull T>> c2) {
+    Comparator<? super List<@Nullable T>> c =
+        // :: error: (assignment)
+        switch (i) {
+          case 1 -> c1;
+          // :: error: (switch.expression)
+          default -> c2;
+        };
+    // :: error: (assignment)
+    Comparator<? super List<@Nullable T>> c3 = i == 1 ? c1 : c2;
+  }
 }
