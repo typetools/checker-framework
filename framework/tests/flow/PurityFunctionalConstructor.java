@@ -26,7 +26,7 @@ public class PurityFunctionalConstructor {
 
   void constructorCallSites() {
     new Holder(t -> t.length());
-    // :: error: [purity.assign.field]
+    // :: error: [purity.assign.field] :: error: [purity.functional.argument]
     new Holder(t -> count++);
     new UnannotatedHolder(t -> count++);
   }
@@ -34,7 +34,7 @@ public class PurityFunctionalConstructor {
   /** An anonymous class's arguments are passed to the super constructor. */
   void anonymousSubclass() {
     new Holder(t -> t.length()) {};
-    // :: error: [purity.assign.field]
+    // :: error: [purity.assign.field] :: error: [purity.functional.argument]
     new Holder(t -> count++) {};
   }
 

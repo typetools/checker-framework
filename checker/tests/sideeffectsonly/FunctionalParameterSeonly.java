@@ -24,7 +24,7 @@ public class FunctionalParameterSeonly {
 
   void callers() {
     runs(() -> {});
-    // :: error: (purity.assign.field)
+    // :: error: (purity.assign.field) :: error: (purity.functional.argument)
     runs(() -> count++);
   }
 

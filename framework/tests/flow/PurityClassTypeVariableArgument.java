@@ -81,7 +81,7 @@ public class PurityClassTypeVariableArgument {
 
     void self() {
       // The call is to SubBox.put, whose parameter is a functional interface.
-      // :: error: [purity.assign.field]
+      // :: error: [purity.assign.field] :: error: [purity.functional.argument]
       put(() -> count++);
     }
   }

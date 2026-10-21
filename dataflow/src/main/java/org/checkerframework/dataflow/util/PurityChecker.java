@@ -622,14 +622,6 @@ public final class PurityChecker {
     private final @Nullable ProcessingEnvironment env;
 
     /**
-     * The purity that {@link #enclosingMethod} requires of every argument to one of its
-     * functional-interface parameters, before any per-parameter refinement; see {@link
-     * PurityChecker#functionalParameterKinds}. Empty if there is no enclosing method or it has no
-     * purity annotation, in which case no call gets the assumption.
-     */
-    private final EnumSet<PurityKind> functionalParameterKinds;
-
-    /**
      * True if all methods should be assumed to be @SideEffectFree, for the purposes of
      * org.checkerframework.dataflow analysis.
      */
@@ -668,11 +660,6 @@ public final class PurityChecker {
       this.annoProvider = annoProvider;
       this.enclosingMethod = enclosingMethod;
       this.env = env;
-      this.functionalParameterKinds =
-          enclosingMethod == null || env == null
-              ? EnumSet.noneOf(PurityKind.class)
-              : functionalParameterKinds(
-                  annoProvider, TreeUtils.elementFromDeclaration(enclosingMethod), env);
       this.assumeSideEffectFree = assumeSideEffectFree;
       this.assumeDeterministic = assumeDeterministic;
       this.assumePureGetters = assumePureGetters;
@@ -692,8 +679,8 @@ public final class PurityChecker {
     private EnumSet<PurityKind> functionalParameterCallPurity(
         MethodInvocationTree tree, ExecutableElement invoked) {
       ProcessingEnvironment env = this.env;
-      if (functionalParameterKinds.isEmpty() || env == null) {
-        // There is no enclosing method, or it promises nothing.
+      if (env == null) {
+        // There is no enclosing method.
         return EnumSet.noneOf(PurityKind.class);
       }
       return PurityChecker.functionalParameterCallPurity(

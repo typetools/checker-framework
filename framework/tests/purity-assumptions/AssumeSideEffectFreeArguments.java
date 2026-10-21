@@ -59,7 +59,7 @@ public class AssumeSideEffectFreeArguments {
 
   /** The assumption is that a called method has no side effect, not that this code has none. */
   void theAssumptionIsAboutCalls(String s) {
-    // :: error: [purity.assign.field]
+    // :: error: [purity.assign.field] :: error: [purity.functional.argument]
     callee(t -> count++, s);
   }
 }

@@ -55,7 +55,7 @@ public class PurityNonFunctionalSingleMethodInterface {
     boolean b = isEmpty(list);
     String d = closeQuietly(in);
     runAction(() -> count++);
-    // :: error: [purity.assign.field]
+    // :: error: [purity.assign.field] :: error: [purity.functional.argument]
     applyStringFunction(s -> count++);
   }
 }

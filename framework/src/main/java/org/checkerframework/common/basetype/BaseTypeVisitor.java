@@ -1682,20 +1682,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (!checkPurityAnnotations || infer) {
       return;
     }
-    EnumSet<PurityKind> calleeKinds =
-        PurityChecker.functionalParameterKinds(
-            atypeFactory, callee, atypeFactory.getProcessingEnv());
-    if (calleeKinds.isEmpty()) {
-      return;
-    }
     ProcessingEnvironment env = atypeFactory.getProcessingEnv();
     List<? extends VariableElement> params = callee.getParameters();
+    // Computed only when a functional-interface parameter is found, because most callees have none.
+    EnumSet<PurityKind> calleeKinds = null;
     // The expanded form of a varargs call passes any number of elements of its array.
     int numToCheck = Math.min(params.size(), args.size());
     for (int i = 0; i < numToCheck; i++) {
       ExecutableElement paramFunction = PurityChecker.parameterFunctionalMethod(callee, i, env);
       if (paramFunction == null) {
         continue;
+      }
+      if (calleeKinds == null) {
+        calleeKinds = PurityChecker.functionalParameterKinds(atypeFactory, callee, env);
+      }
+      if (calleeKinds.isEmpty()) {
+        return;
       }
       EnumSet<PurityKind> required = purityRequiredOfArgument(paramFunction, calleeKinds, true);
       if (required.isEmpty()) {
@@ -1722,11 +1724,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     EnumSet<PurityKind> paramKinds = PurityUtils.getPurityKinds(atypeFactory, paramFunction);
     EnumSet<PurityKind> required = EnumSet.copyOf(methodKinds);
     required.removeAll(paramKinds);
-    if (paramFunction.getReturnType().getKind() == TypeKind.VOID) {
-      // A side-effect-free method that returns no value is deterministic:  two calls return the
-      // same (absent) value.  Without a guarantee that the argument is side-effect-free, the
-      // argument must still be checked for determinism, since its side effects can make a later
-      // call compute a different value.
+    if (PurityUtils.sideEffectFreeImpliesDeterministic(paramFunction.getReturnType())) {
+      // Without a guarantee that the argument is side-effect-free, the argument must still be
+      // checked for determinism, since its side effects can make a later call compute a different
+      // value.
       if (paramKinds.contains(PurityKind.SIDE_EFFECT_FREE)
           || methodKinds.contains(PurityKind.SIDE_EFFECT_FREE)) {
         required.remove(PurityKind.DETERMINISTIC);
@@ -1876,7 +1877,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               assumeDeterministic,
               assumePureGetters);
       if (!r.isPure(required)) {
+        // The errors in the body say what violates the requirement, and the error at the argument
+        // says which callee and parameter impose it.
         reportPurityErrors(r, required);
+        reportFunctionalArgumentError(arg, r.getKinds(), required, param, callee);
       }
       return;
     }
@@ -1939,14 +1943,33 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     if (!argKinds.containsAll(required)) {
-      reportErrorOnce(
-          arg,
-          "purity.functional.argument",
-          param.getSimpleName(),
-          ElementUtils.getSimpleDescription(callee),
-          purityKindsToString(argKinds),
-          purityKindsToString(required));
+      reportFunctionalArgumentError(arg, argKinds, required, param, callee);
     }
+  }
+
+  /**
+   * Reports that an argument to a functional-interface parameter lacks the purity that the callee
+   * requires of it.
+   *
+   * @param arg the argument
+   * @param argKinds the purity that the argument has
+   * @param required the purity that the argument is required to have
+   * @param param the parameter that {@code arg} is passed to
+   * @param callee the invoked method or constructor
+   */
+  private void reportFunctionalArgumentError(
+      ExpressionTree arg,
+      EnumSet<PurityKind> argKinds,
+      EnumSet<PurityKind> required,
+      VariableElement param,
+      ExecutableElement callee) {
+    reportErrorOnce(
+        arg,
+        "purity.functional.argument",
+        param.getSimpleName(),
+        ElementUtils.getSimpleDescription(callee),
+        purityKindsToString(argKinds),
+        purityKindsToString(required));
   }
 
   /**
@@ -3284,7 +3307,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                   Collections.singletonList(body), TreePathUtil.enclosingMethod(getCurrentPath()))
               .getKinds()
               .clone();
-      if (functionalMethod.getReturnType().getKind() == TypeKind.VOID) {
+      if (PurityUtils.sideEffectFreeImpliesDeterministic(functionalMethod.getReturnType())) {
         lambdaKinds.remove(PurityKind.DETERMINISTIC);
       }
       // Do not infer a kind that would newly constrain the arguments at call sites.

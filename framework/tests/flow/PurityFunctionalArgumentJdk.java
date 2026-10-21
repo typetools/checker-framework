@@ -18,7 +18,7 @@ public class PurityFunctionalArgumentJdk {
 
   void optionalMap(Optional<String> o) {
     o.map(s -> s.length());
-    // :: error: [purity.assign.field]
+    // :: error: [purity.assign.field] :: error: [purity.functional.argument]
     o.map(s -> count++);
   }
 
