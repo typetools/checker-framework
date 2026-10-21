@@ -47,12 +47,12 @@ public class InferenceResult {
   private final boolean annoInferenceFailed;
 
   /**
-   * The method invocations, class instance creations, and method references to which unchecked
-   * conversion is attributed.
+   * The method invocations, class instance creations, and method references that need unchecked
+   * conversion.
    *
-   * @see Java8InferenceContext#uncheckedConversionAttributedTo
+   * @see Java8InferenceContext#needUncheckedConversion
    */
-  private final Set<? extends ExpressionTree> uncheckedConversionAttributedTo;
+  private final Set<? extends ExpressionTree> needUncheckedConversion;
 
   /** True if inference crashed. */
   private final boolean inferenceCrashed;
@@ -64,37 +64,35 @@ public class InferenceResult {
    * Creates an inference result.
    *
    * @param variables instantiated variables
-   * @param uncheckedConversionAttributedTo the expressions to which unchecked conversion is
-   *     attributed
+   * @param needUncheckedConversion the expressions that need unchecked conversion
    * @param annoInferenceFailed true if inference failed because of annotations
    * @param errorMsg message to report to users if inference failed
    */
   public InferenceResult(
       Collection<Variable> variables,
-      Set<? extends ExpressionTree> uncheckedConversionAttributedTo,
+      Set<? extends ExpressionTree> needUncheckedConversion,
       boolean annoInferenceFailed,
       String errorMsg) {
-    this(variables, uncheckedConversionAttributedTo, annoInferenceFailed, false, errorMsg);
+    this(variables, needUncheckedConversion, annoInferenceFailed, false, errorMsg);
   }
 
   /**
    * Creates an inference result.
    *
    * @param variables instantiated variables
-   * @param uncheckedConversionAttributedTo the expressions to which unchecked conversion is
-   *     attributed
+   * @param needUncheckedConversion the expressions that need unchecked conversion
    * @param annoInferenceFailed true if inference failed because of annotations
    * @param inferenceCrashed the type argument inference code crashed
    * @param errorMsg message to report to users if inference failed
    */
   public InferenceResult(
       Collection<Variable> variables,
-      Set<? extends ExpressionTree> uncheckedConversionAttributedTo,
+      Set<? extends ExpressionTree> needUncheckedConversion,
       boolean annoInferenceFailed,
       boolean inferenceCrashed,
       String errorMsg) {
     this.results = convert(variables);
-    this.uncheckedConversionAttributedTo = uncheckedConversionAttributedTo;
+    this.needUncheckedConversion = needUncheckedConversion;
     this.annoInferenceFailed = annoInferenceFailed;
     this.errorMsg = errorMsg;
     this.inferenceCrashed = inferenceCrashed;
@@ -112,15 +110,15 @@ public class InferenceResult {
   }
 
   /**
-   * Returns true if unchecked conversion is attributed to {@code expressionTree}. If so, the return
-   * type of {@code expressionTree}'s invocation type is erased (JLS 15.12.2.6).
+   * Returns true if {@code expressionTree} needs unchecked conversion. If so, the return type of
+   * {@code expressionTree}'s invocation type is erased (JLS 15.12.2.6).
    *
    * @param expressionTree a method invocation, class instance creation, or method reference in this
    *     inference problem
-   * @return true if unchecked conversion is attributed to {@code expressionTree}
+   * @return true if {@code expressionTree} needs unchecked conversion
    */
-  public boolean isUncheckedConversion(ExpressionTree expressionTree) {
-    return uncheckedConversionAttributedTo.contains(expressionTree);
+  public boolean needsUncheckedConversion(ExpressionTree expressionTree) {
+    return needUncheckedConversion.contains(expressionTree);
   }
 
   /**

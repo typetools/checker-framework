@@ -79,11 +79,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         if (instantiated.isEmpty()) {
           return InferenceResult.emptyResult();
         }
+        // Like the instantiations, the set of expressions that need unchecked conversion is
+        // partial: reducing constraints that have not been reduced yet may add to it.  But some
+        // inference variable of `expressionTree` has been instantiated, so its applicability bound
+        // set B2 has already been computed, and this set does reflect any unchecked conversion
+        // that is necessary for `expressionTree` to be applicable.
         return new InferenceResult(
-            instantiated,
-            new LinkedHashSet<>(i.context.uncheckedConversionAttributedTo),
-            false,
-            "");
+            instantiated, new LinkedHashSet<>(i.context.needUncheckedConversion), false, "");
       }
     }
     // Null if outerTree is a member reference.

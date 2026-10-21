@@ -497,14 +497,14 @@ public class ConstraintSet implements ReductionResult {
     } else if (result == null || result == ConstraintSet.FALSE) {
       throw new FalseBoundException(constraint, result);
     } else if (result == UNCHECKED_CONVERSION) {
-      boundSet.setUncheckedConversion(true);
+      boundSet.setPendingUncheckedConversion(true);
     } else {
       throw new RuntimeException("Not found " + result);
     }
-    if (constraint instanceof TypeConstraint tc) {
+    if (boundSet.hasPendingUncheckedConversion() && constraint instanceof TypeConstraint tc) {
       ExpressionTree invocation = tc.getInvocation();
       if (invocation != null) {
-        boundSet.attributeUncheckedConversionTo(invocation);
+        boundSet.recordUncheckedConversionFor(invocation);
       }
     }
     if (this.annotationFailure) {

@@ -270,7 +270,7 @@ public class InvocationTypeInference {
         context.inferenceTypeFactory.createThetaForInvocation(
             invocation, inferenceExecutableType, context);
     BoundSet b2 = createB2(inferenceExecutableType, args, map);
-    b2.attributeUncheckedConversionTo(invocation);
+    b2.recordUncheckedConversionFor(invocation);
     BoundSet b3;
     if (target != null && TreeUtils.isPolyExpression(invocation)) {
       b3 = createB3(b2, invocation, inferenceExecutableType, target, map);
@@ -281,10 +281,15 @@ public class InvocationTypeInference {
 
     BoundSet b4 = getB4(b3, c);
     b4.resolve();
+    // Unchecked conversion that is necessary to reduce a constraint that no argument constraint
+    // gave rise to, such as one derived during incorporation or resolution, is necessary to infer
+    // `invocation` itself.  javac likewise erases the return type of `invocation` if solving its
+    // inference context needs unchecked conversion.
+    b4.recordUncheckedConversionFor(invocation);
     recordLambdaParameterTypes();
     return new InferenceResult(
         b4.getInstantiatedVariables(),
-        context.uncheckedConversionAttributedTo,
+        context.needUncheckedConversion,
         b4.annoInferenceFailed,
         b4.errorMsg);
   }
@@ -349,7 +354,7 @@ public class InvocationTypeInference {
         context.inferenceTypeFactory.createThetaForMethodReference(
             invocation, compileTimeDecl, p1, context);
     BoundSet b2 = createB2MethodRef(compileTimeDecl, functionTypeParams, map);
-    b2.attributeUncheckedConversionTo(invocation);
+    b2.recordUncheckedConversionFor(invocation);
     AbstractType r = target.getFunctionTypeReturnType();
     BoundSet b3;
     if (r == null) {
@@ -359,9 +364,12 @@ public class InvocationTypeInference {
     }
 
     List<Variable> thetaPrime = b3.resolve();
+    // See the comment in infer(ExpressionTree, AnnotatedExecutableType) about unchecked conversion
+    // that is necessary to resolve the bound set.
+    b3.recordUncheckedConversionFor(invocation);
 
     return new InferenceResult(
-        thetaPrime, context.uncheckedConversionAttributedTo, b3.annoInferenceFailed, b3.errorMsg);
+        thetaPrime, context.needUncheckedConversion, b3.annoInferenceFailed, b3.errorMsg);
   }
 
   /**
@@ -481,7 +489,7 @@ public class InvocationTypeInference {
       // declaration's type is used as-is, unparameterized. Using a raw type in place of its
       // parameterization requires unchecked conversion (JLS 5.1.9), matching javac's
       // rawtypes/unchecked warning for this reference.
-      b0.setUncheckedConversion(true);
+      b0.setPendingUncheckedConversion(true);
     }
 
     for (int i = firstArg; i < formals.size(); i++) {
@@ -526,7 +534,14 @@ public class InvocationTypeInference {
       AbstractType target,
       Theta map) {
     AbstractType r = executableType.getReturnType(map);
-    if (context.uncheckedConversionAttributedTo.contains(invocation)) {
+    // At this point, `invocation` is in needUncheckedConversion only if reducing and incorporating
+    // B2 needed unchecked conversion, as JLS 18.5.2.1 specifies.  Reducing the constraints of C,
+    // which happens later, may also add `invocation` to needUncheckedConversion and so erase the
+    // return type of its invocation type, but that does not affect B3.  This matches javac:
+    // Infer#instantiateMethod decides whether to generate return constraints before it completes
+    // the deferred attribution of arguments that are not pertinent to applicability, and
+    // Attr#checkMethodIdInternal erases the return type afterward.
+    if (context.needUncheckedConversion.contains(invocation)) {
       // If unchecked conversion was necessary for the method to be applicable during
       // constraint set reduction in 18.5.1, the constraint formula <|R| -> T> is reduced and
       // incorporated with B2.
@@ -649,8 +664,9 @@ public class InvocationTypeInference {
       }
       c.addAll(createAdditionalArgConstraints(ei, fi, map));
     }
-    // Unchecked conversion that is necessary to reduce one of these constraints is attributed to
-    // `invocation`.  The constraints of nested invocations already have their own invocation.
+    // If unchecked conversion is necessary to reduce one of these constraints, then `invocation`
+    // needs unchecked conversion.  The constraints of nested invocations already have their own
+    // invocation.
     c.setInvocation(invocation);
 
     return c;

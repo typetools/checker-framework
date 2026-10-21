@@ -108,8 +108,9 @@ public abstract class TypeConstraint implements Constraint {
 
   /**
    * Returns the invocation whose argument constraint gave rise to this constraint: the {@link
-   * #invocation} of the nearest of this constraint and its ancestors that has one. Unchecked
-   * conversion that is necessary to reduce this constraint is attributed to that invocation.
+   * #invocation} of the nearest of this constraint and its ancestors that has one. If unchecked
+   * conversion is necessary to reduce this constraint, then that invocation needs unchecked
+   * conversion.
    *
    * @return the invocation whose argument constraint gave rise to this constraint, or null if none
    *     did

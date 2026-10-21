@@ -151,16 +151,17 @@ public class Java8InferenceContext {
   public final Map<VariableElement, LambdaParamTarget> lambdaParamTargets = new HashMap<>();
 
   /**
-   * The method invocations, class instance creations, and method references to which unchecked
-   * conversion is attributed.
+   * The method invocations, class instance creations, and method references that need unchecked
+   * conversion.
    *
-   * <p>Unchecked conversion is attributed to an expression if it was necessary to check one of that
-   * expression's own arguments, whether or not the argument is pertinent to applicability.
-   * Unchecked conversion that was necessary to check an argument of a nested invocation is
-   * attributed to the nested invocation, not to the enclosing one; this matches javac. The
-   * invocation type of each expression in this set has an erased return type (JLS 15.12.2.6).
+   * <p>An expression needs unchecked conversion if unchecked conversion was necessary to check one
+   * of that expression's own arguments, whether or not the argument is pertinent to applicability.
+   * If unchecked conversion was necessary to check an argument of a nested invocation, then the
+   * nested invocation needs unchecked conversion, but the enclosing one does not; this matches
+   * javac. The invocation type of each expression in this set has an erased return type (JLS
+   * 15.12.2.6).
    */
-  public final Set<ExpressionTree> uncheckedConversionAttributedTo = new LinkedHashSet<>();
+  public final Set<ExpressionTree> needUncheckedConversion = new LinkedHashSet<>();
 
   /**
    * Records where each parameter of an implicitly typed lambda gets its type from.
