@@ -2455,23 +2455,6 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns true if any of the given cases has a {@code null} label.
-   *
-   * @param caseTrees the cases of a switch statement or expression
-   * @return true if any of the given cases has a {@code null} label
-   */
-  public static boolean hasNullCaseLabel(List<? extends CaseTree> caseTrees) {
-    for (CaseTree caseTree : caseTrees) {
-      for (Tree caseLabel : CaseUtils.getLabels(caseTree)) {
-        if (caseLabel.getKind() == Tree.Kind.NULL_LITERAL) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  /**
    * Returns true if the {@code variableTree} is declared using the {@code var} Java keyword.
    *
    * @param variableTree the variableTree to check

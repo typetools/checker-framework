@@ -2272,7 +2272,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // Unboxing models the NullPointerException that a switch without a null label throws when
       // its selector is null.
       if (TypesUtils.isUnboxable(selectorExprType, types)
-          && !TreeUtils.hasNullCaseLabel(caseTrees)) {
+          && !TreeUtils.hasNullCaseLabel(switchTree)) {
         selectorExprNode = unbox(selectorExprNode);
       }
 
