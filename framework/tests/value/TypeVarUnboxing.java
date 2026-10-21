@@ -65,6 +65,10 @@ public class TypeVarUnboxing {
     @IntRange(from = 0, to = 5) int wrong = t;
   }
 
+  <T extends Byte> void incompleteIntRange(@IntRange(from = 0) T t) {
+    @IntRange(from = 0, to = 127) byte result = t;
+  }
+
   void enhancedForWidening(@IntVal(3) Integer[] array, java.util.List<@IntVal(3) Integer> list) {
     for (long x : array) {
       @IntVal(3) long y = x;

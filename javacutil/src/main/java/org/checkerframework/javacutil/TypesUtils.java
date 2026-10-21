@@ -109,8 +109,9 @@ public final class TypesUtils {
   // Creating a Class<?>
 
   /**
-   * Returns the {@link Class} for a given {@link TypeMirror}. Returns {@code Object.class} if it
-   * cannot determine anything more specific.
+   * Returns the {@link Class} for a given {@link TypeMirror}. For a type variable or intersection
+   * type, returns the class of its erasure. Returns {@code Object.class} if it cannot determine
+   * anything more specific.
    *
    * @param typeMirror a TypeMirror
    * @return the class for {@code typeMirror}
@@ -140,6 +141,12 @@ public final class TypesUtils {
       case ARRAY:
         Class<?> componentClass = getClassFromType(((ArrayType) typeMirror).getComponentType());
         return componentClass.arrayType();
+
+      case TYPEVAR:
+        return getClassFromType(((TypeVariable) typeMirror).getUpperBound());
+
+      case INTERSECTION:
+        return getClassFromType(((IntersectionType) typeMirror).getBounds().get(0));
 
       case DECLARED:
         // BUG: need to compute a @ClassGetName, but this code computes a

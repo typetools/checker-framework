@@ -47,9 +47,6 @@ public final class ValueCheckerUtils {
   /**
    * Returns a list of the values of an annotation, and then cast the values to a given type.
    *
-   * <p>A type variable or intersection type that can be unboxed is converted using its boxed
-   * primitive bound.
-   *
    * @param anno the annotation that contains values
    * @param castTo the unannotated type that is casted to
    * @param isUnsigned true if the type being casted to is unsigned
@@ -61,11 +58,6 @@ public final class ValueCheckerUtils {
       TypeMirror castTo,
       boolean isUnsigned,
       ValueAnnotatedTypeFactory atypeFactory) {
-    // A type variable bounded by a primitive wrapper has that wrapper's runtime representation.
-    TypeMirror boxedType = TypesUtils.boxedPrimitiveForUnboxing(castTo, atypeFactory.types);
-    if (boxedType != null) {
-      castTo = boxedType;
-    }
     Class<?> castType = TypesUtils.getClassFromType(castTo);
     List<?> values;
     switch (AnnotationUtils.annotationName(anno)) {

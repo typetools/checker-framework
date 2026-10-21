@@ -588,13 +588,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Determine the primitive integral TypeKind for the given integral type.
    *
-   * @param type the type to convert, must be an integral type, boxed or primitive, or a type that
-   *     unboxes to one
+   * @param type the type to convert, must be an integral type, boxed or primitive
    * @return one of INT, SHORT, BYTE, CHAR, or LONG
    */
-  private TypeKind toPrimitiveIntegralTypeKind(TypeMirror type) {
-    TypeKind typeKind = TypesUtils.unboxedTypeOrSelf(type, types).getKind();
-    if (TypeKindUtils.isIntegral(typeKind)) {
+  private static TypeKind toPrimitiveIntegralTypeKind(TypeMirror type) {
+    TypeKind typeKind = TypeKindUtils.primitiveOrBoxedToTypeKind(type);
+    if (typeKind != null && TypeKindUtils.isIntegral(typeKind)) {
       return typeKind;
     }
     throw new TypeSystemError(type.toString() + " expected to be an integral type.");
@@ -680,16 +679,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   /*package-private*/ AnnotationMirror convertSpecialIntRangeToStandardIntRange(
       AnnotationMirror anm, TypeMirror typeMirror) {
-    TypeKind primitiveKind;
-    if (TypesUtils.isPrimitive(typeMirror)) {
-      primitiveKind = typeMirror.getKind();
-    } else if (TypesUtils.isBoxedPrimitive(typeMirror)) {
-      primitiveKind = types.unboxedType(typeMirror).getKind();
-    } else {
-      primitiveKind = TypeKind.LONG;
-    }
-
-    if (TypesUtils.isIntegralPrimitiveOrBoxed(typeMirror)) {
+    TypeKind primitiveKind = TypeKindUtils.primitiveOrBoxedToTypeKind(typeMirror);
+    if (primitiveKind != null && TypeKindUtils.isIntegral(primitiveKind)) {
       Range maxRange = Range.create(primitiveKind);
       return convertSpecialIntRangeToStandardIntRange(anm, maxRange.to);
 
@@ -847,12 +838,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return createStringAnnotation(stringVals);
     }
 
-    TypeKind primitiveKind;
-    if (TypesUtils.isPrimitive(resultType)) {
-      primitiveKind = resultType.getKind();
-    } else if (TypesUtils.isBoxedPrimitive(resultType)) {
-      primitiveKind = types.unboxedType(resultType).getKind();
-    } else {
+    TypeKind primitiveKind = TypeKindUtils.primitiveOrBoxedToTypeKind(resultType);
+    if (primitiveKind == null) {
       return UNKNOWNVAL;
     }
 
