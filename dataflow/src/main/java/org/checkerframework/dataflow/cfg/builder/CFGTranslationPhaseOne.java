@@ -1022,6 +1022,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
+   * Returns true if the argument type is boolean, or if unboxing conversion converts it to boolean.
+   *
+   * @param type a type
+   * @return true if the argument type is boolean or can be unboxed to boolean
+   */
+  protected boolean isBooleanOrBoxed(TypeMirror type) {
+    return TypesUtils.isBooleanType(TypesUtils.unboxedTypeOrSelf(type, types));
+  }
+
+  /**
    * Compute the type to which two numeric types must be promoted before performing a binary numeric
    * operation on them. The input types must both be convertible to numeric primitive types, and the
    * output type is primitive.
@@ -2262,7 +2272,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // Unboxing models the NullPointerException that a switch without a null label throws when
       // its selector is null.
       if (TypesUtils.isUnboxable(selectorExprType, types)
-          && !TreeUtils.hasNullCaseLabel(caseTrees)) {
+          && !TreeUtils.hasNullCaseLabel(switchTree)) {
         selectorExprNode = unbox(selectorExprNode);
       }
 
@@ -3726,17 +3736,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         Node value = scan(tree.getExpression(), p);
 
         TypeMirror leftType = TreeUtils.typeOf(tree.getVariable());
-        TypeMirror unboxedLeftType = TypesUtils.unboxedTypeOrSelf(leftType, types);
-        TypeMirror unboxedRightType =
-            TypesUtils.unboxedTypeOrSelf(TreeUtils.typeOf(tree.getExpression()), types);
+        TypeMirror rightType = TreeUtils.typeOf(tree.getExpression());
 
         Node targetRHS;
-        if (TypesUtils.isNumeric(unboxedLeftType) && TypesUtils.isNumeric(unboxedRightType)) {
-          TypeMirror promotedType = binaryPromotedType(unboxedLeftType, unboxedRightType);
+        if (isNumericOrBoxed(leftType) && isNumericOrBoxed(rightType)) {
+          TypeMirror promotedType = binaryPromotedType(leftType, rightType);
           targetRHS = binaryNumericPromotion(targetLHS, promotedType);
           value = binaryNumericPromotion(value, promotedType);
-        } else if (TypesUtils.isBooleanType(unboxedLeftType)
-            && TypesUtils.isBooleanType(unboxedRightType)) {
+        } else if (isBooleanOrBoxed(leftType) && isBooleanOrBoxed(rightType)) {
           targetRHS = unbox(targetLHS);
           value = unbox(value);
         } else {
@@ -4070,12 +4077,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       case AND, OR, XOR -> {
         // see JLS 15.22
-        TypeMirror unboxedLeftType =
-            TypesUtils.unboxedTypeOrSelf(TreeUtils.typeOf(leftTree), types);
-        TypeMirror unboxedRightType =
-            TypesUtils.unboxedTypeOrSelf(TreeUtils.typeOf(rightTree), types);
-        boolean isBooleanOp =
-            TypesUtils.isBooleanType(unboxedLeftType) && TypesUtils.isBooleanType(unboxedRightType);
+        TypeMirror leftType = TreeUtils.typeOf(leftTree);
+        TypeMirror rightType = TreeUtils.typeOf(rightTree);
+        boolean isBooleanOp = isBooleanOrBoxed(leftType) && isBooleanOrBoxed(rightType);
 
         Node left;
         Node right;
@@ -4083,9 +4087,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         if (isBooleanOp) {
           left = unbox(scan(leftTree, p));
           right = unbox(scan(rightTree, p));
-        } else if (TypesUtils.isNumeric(unboxedLeftType)
-            && TypesUtils.isNumeric(unboxedRightType)) {
-          TypeMirror promotedType = binaryPromotedType(unboxedLeftType, unboxedRightType);
+        } else if (isNumericOrBoxed(leftType) && isNumericOrBoxed(rightType)) {
+          TypeMirror promotedType = binaryPromotedType(leftType, rightType);
           left = binaryNumericPromotion(scan(leftTree, p), promotedType);
           right = binaryNumericPromotion(scan(rightTree, p), promotedType);
         } else {
