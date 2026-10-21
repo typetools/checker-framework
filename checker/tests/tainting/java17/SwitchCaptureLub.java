@@ -10,13 +10,24 @@ public class SwitchCaptureLub {
       Comparator<List<T>> c1,
       Comparator<Object> c2,
       List<? super Comparator<? super List<T>>> sink) {
+    // The Tainting Checker defaults lower bounds to @Untainted, so sink accepts only an
+    // @Untainted Comparator.
+    // :: error: (argument)
+    sink.add(c1);
     sink.add(
-        // TODO: This is a false positive.  The lub of the switch arms is a fresh capture of
-        // ? super Comparator<? super List<T>>, rather than the capture that is the parameter type.
         // :: error: (argument)
         switch (i) {
           case 2 -> c1;
           default -> c2;
         });
+  }
+
+  <T> void conditionalArms(
+      boolean b,
+      Comparator<List<T>> c1,
+      Comparator<Object> c2,
+      List<? super Comparator<? super List<T>>> sink) {
+    // :: error: (argument)
+    sink.add(b ? c1 : c2);
   }
 }

@@ -9,6 +9,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -973,35 +974,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     TypeMirror superTM = supertype.getUnderlyingType();
 
     if (AnnotatedTypes.haveSameDeclaration(checker.getTypeUtils(), subtype, supertype)) {
-      // The underlying types of subtype and supertype are uses of the same type parameter,
-      // but they
-      // may have different primary annotations.
-      boolean subtypeHasAnno = subtype.getPrimaryAnnotationInHierarchy(currentTop) != null;
-      boolean supertypeHasAnno = supertype.getPrimaryAnnotationInHierarchy(currentTop) != null;
-
-      if (subtypeHasAnno && supertypeHasAnno) {
-        // If both have primary annotations then just check the primary annotations
-        // as the bounds are the same.
-        return isPrimarySubtype(subtype, supertype);
-
-      } else if (!subtypeHasAnno && !supertypeHasAnno) {
-        // two unannotated uses of the same type parameter are of the same type
-        return areEqualInHierarchy(subtype, supertype);
-      } else if (subtypeHasAnno && !supertypeHasAnno) {
-        // This is the case "@A T <: T" where T is a type variable.
-        AnnotationMirrorSet superLBs =
-            AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, supertype);
-        AnnotationMirror superLB = qualHierarchy.findAnnotationInHierarchy(superLBs, currentTop);
-        return qualHierarchy.isSubtypeShallow(
-            subtype.getPrimaryAnnotationInHierarchy(currentTop), subTM, superLB, superTM);
-      } else if (!subtypeHasAnno && supertypeHasAnno) {
-        // This is the case "T <: @A T" where T is a type variable.
-        return qualHierarchy.isSubtypeShallow(
-            subtype.getAnnotationInHierarchy(currentTop),
-            subTM,
-            supertype.getPrimaryAnnotationInHierarchy(currentTop),
-            superTM);
-      }
+      return isSubtypeSameTypeVariable(subtype, supertype);
     }
 
     if (AnnotatedTypes.areCorrespondingTypeVariables(
@@ -1014,6 +987,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     if (TypesUtils.isCapturedTypeVariable(subTM) && TypesUtils.isCapturedTypeVariable(superTM)) {
       // This case happens when the captured type variables should be the same type, but
       // aren't because type argument inference isn't implemented correctly.
+      if (isSameCapturedWildcard((TypeVariable) subTM, (TypeVariable) superTM)
+          && isSubtypeSameTypeVariable(subtype, supertype)) {
+        return true;
+      }
       if (isContainedWithinBounds(
           subtype, supertype.getLowerBound(), supertype.getUpperBound(), false)) {
         return true;
@@ -1025,6 +1002,58 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
     }
     // check that the upper bound of the subtype is below the lower bound of the supertype
     return visitTypevar_Type(subtype, supertype);
+  }
+
+  /**
+   * Returns true if {@code subtype} is a subtype of {@code supertype}, treating them as uses of the
+   * same type variable that may have different primary annotations.
+   *
+   * @param subtype a type variable
+   * @param supertype a use of the same type variable as {@code subtype}
+   * @return true if {@code subtype} is a subtype of {@code supertype}
+   */
+  private boolean isSubtypeSameTypeVariable(
+      AnnotatedTypeVariable subtype, AnnotatedTypeVariable supertype) {
+    TypeMirror subTM = subtype.getUnderlyingType();
+    TypeMirror superTM = supertype.getUnderlyingType();
+    boolean subtypeHasAnno = subtype.getPrimaryAnnotationInHierarchy(currentTop) != null;
+    boolean supertypeHasAnno = supertype.getPrimaryAnnotationInHierarchy(currentTop) != null;
+
+    if (subtypeHasAnno && supertypeHasAnno) {
+      // If both have primary annotations then just check the primary annotations
+      // as the bounds are the same.
+      return isPrimarySubtype(subtype, supertype);
+
+    } else if (!subtypeHasAnno && !supertypeHasAnno) {
+      // two unannotated uses of the same type parameter are of the same type
+      return areEqualInHierarchy(subtype, supertype);
+    } else if (subtypeHasAnno && !supertypeHasAnno) {
+      // This is the case "@A T <: T" where T is a type variable.
+      AnnotationMirrorSet superLBs =
+          AnnotatedTypes.findEffectiveLowerBoundAnnotations(qualHierarchy, supertype);
+      AnnotationMirror superLB = qualHierarchy.findAnnotationInHierarchy(superLBs, currentTop);
+      return qualHierarchy.isSubtypeShallow(
+          subtype.getPrimaryAnnotationInHierarchy(currentTop), subTM, superLB, superTM);
+    } else {
+      // This is the case "T <: @A T" where T is a type variable.
+      return qualHierarchy.isSubtypeShallow(
+          subtype.getAnnotationInHierarchy(currentTop),
+          subTM,
+          supertype.getPrimaryAnnotationInHierarchy(currentTop),
+          superTM);
+    }
+  }
+
+  /**
+   * Returns true if {@code typeVar1} and {@code typeVar2} are captures of the same wildcard.
+   *
+   * @param typeVar1 a captured type variable
+   * @param typeVar2 a captured type variable
+   * @return true if {@code typeVar1} and {@code typeVar2} are captures of the same wildcard
+   */
+  @SuppressWarnings({"interning:not.interned", "TypeEquals"}) // same wildcard object
+  private boolean isSameCapturedWildcard(TypeVariable typeVar1, TypeVariable typeVar2) {
+    return TypesUtils.getCapturedWildcard(typeVar1) == TypesUtils.getCapturedWildcard(typeVar2);
   }
 
   @Override
