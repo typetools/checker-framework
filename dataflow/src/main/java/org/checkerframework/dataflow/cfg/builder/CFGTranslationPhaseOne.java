@@ -2007,6 +2007,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return node;
   }
 
+  /**
+   * Creates a declaration of a fresh variable that holds the iterator of an enhanced for loop over
+   * an {@code Iterable}.
+   *
+   * @param iteratorCall the call to {@code iterator()} that initializes the variable
+   * @param variableElement the element of the enhanced for loop's variable
+   * @return a declaration of a fresh iterator variable
+   */
   protected VariableTree createEnhancedForLoopIteratorVariable(
       MethodInvocationTree iteratorCall, VariableElement variableElement) {
     TypeMirror iteratorType = TreeUtils.typeOf(iteratorCall);
@@ -2021,6 +2029,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return iteratorVariable;
   }
 
+  /**
+   * Creates a declaration of a fresh variable that holds the array of an enhanced for loop over an
+   * array.
+   *
+   * @param expression the array expression that initializes the variable
+   * @param variableElement the element of the enhanced for loop's variable
+   * @return a declaration of a fresh array variable
+   */
   protected VariableTree createEnhancedForLoopArrayVariable(
       ExpressionTree expression, VariableElement variableElement) {
     TypeMirror arrayType = TreeUtils.typeOf(expression);

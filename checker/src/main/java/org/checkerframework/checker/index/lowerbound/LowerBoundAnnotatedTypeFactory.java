@@ -274,6 +274,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      *      gte-1 &rarr; nn
      *      lbu &rarr; lbu
      *  </pre>
+     *
+     * @param typeSrc the type whose annotation is promoted
+     * @param typeDst the type whose annotation is set
      */
     private void promoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
       if (typeSrc.hasAnnotation(POS)) {
@@ -296,6 +299,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      *       nn &rarr; gte-1
      *       gte-1, lbu &rarr; lbu
      *  </pre>
+     *
+     * @param typeSrc the type whose annotation is demoted
+     * @param typeDst the type whose annotation is set
      */
     private void demoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
       if (typeSrc.hasAnnotation(POS)) {
