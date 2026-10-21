@@ -1752,7 +1752,7 @@ public class MustCallConsistencyAnalyzer {
     ExecutableElement callee =
         callNode instanceof ObjectCreationNode ocn
             ? TreeUtils.getSuperConstructor(ocn.getTree())
-            : TreeUtils.elementFromUse(((MethodInvocationNode) callNode).getTree());
+            : ((MethodInvocationNode) callNode).getTarget().getMethod();
     if (!cmAtf.hasMustCallAlias(callee)) {
       return result;
     }
@@ -1816,13 +1816,16 @@ public class MustCallConsistencyAnalyzer {
    *     invoked
    */
   /*package-private*/ List<? extends VariableElement> getParametersOfInvocation(Node node) {
+    ExecutableElement executableElement;
     if (node instanceof MethodInvocationNode invocationNode) {
-      return TreeUtils.elementFromUse(invocationNode.getTree()).getParameters();
+      executableElement = invocationNode.getTarget().getMethod();
     } else if (node instanceof ObjectCreationNode ocn2) {
-      return TreeUtils.getSuperConstructor(ocn2.getTree()).getParameters();
+      executableElement = TreeUtils.getSuperConstructor(ocn2.getTree());
     } else {
       throw new TypeSystemError("unexpected node type " + node.getClass());
     }
+
+    return executableElement.getParameters();
   }
 
   /**
