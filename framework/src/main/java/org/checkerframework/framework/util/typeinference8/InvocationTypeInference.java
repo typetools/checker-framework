@@ -167,10 +167,11 @@ public class InvocationTypeInference {
 
   /**
    * True if {@link #infer(ExpressionTree, AnnotatedExecutableType)} has created constraints against
-   * the target type of {@link #inferenceExpression}, and that target type comes from the context of
-   * {@link #inferenceExpression} rather than from {@link AnnotatedTypeFactory#getDummyAssignedTo}.
+   * the target type of {@link #inferenceExpression}, that target type comes from the context of
+   * {@link #inferenceExpression} rather than from {@link AnnotatedTypeFactory#getDummyAssignedTo},
+   * and inference had not already failed before those constraints were created.
    */
-  private boolean contextTargetTypeConstrained = false;
+  private boolean contextTargetTypeCanCauseFailure = false;
 
   /**
    * True if {@link #useTargetType} is false, {@link #inferenceExpression} has a target type from
@@ -182,14 +183,16 @@ public class InvocationTypeInference {
 
   /**
    * Returns true if {@link #infer(ExpressionTree, AnnotatedExecutableType)} has created constraints
-   * against the target type of the expression for which inference is performed, and that target
-   * type comes from the expression's context rather than from {@link
-   * AnnotatedTypeFactory#getDummyAssignedTo}.
+   * against the target type of the expression for which inference is performed, that target type
+   * comes from the expression's context rather than from {@link
+   * AnnotatedTypeFactory#getDummyAssignedTo}, and inference had not already failed before those
+   * constraints were created. If this returns false and inference failed, then inference without
+   * the target type fails too.
    *
-   * @return true if inference created constraints against a target type from the context
+   * @return true if a failure of inference might be caused by a target type from the context
    */
-  public boolean isContextTargetTypeConstrained() {
-    return contextTargetTypeConstrained;
+  public boolean canContextTargetTypeCauseFailure() {
+    return contextTargetTypeCanCauseFailure;
   }
 
   /**
@@ -340,7 +343,8 @@ public class InvocationTypeInference {
     BoundSet b3;
     if (isPolyWithTarget && useTargetType) {
       assert target != null : "@AssumeAssertion(nullness): isPolyWithTarget implies target != null";
-      contextTargetTypeConstrained = targetFromContext;
+      // Check b2 before createB3, which might add bounds to it.
+      contextTargetTypeCanCauseFailure = targetFromContext && !b2.annoInferenceFailed;
       b3 = createB3(b2, invocation, inferenceExecutableType, target, map);
     } else {
       b3 = b2;

@@ -17,6 +17,7 @@ import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsChecker;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SupportedOptions;
@@ -233,11 +234,6 @@ public class ResourceLeakChecker extends AggregateChecker {
    *     only used for error reporting
    * @return the parsed set of types, or null if the value does not parse
    */
-  @SuppressWarnings({
-    // user input might not be a legal @CanonicalName, but it should be safe to pass to
-    // `SetOfTypes.anyOfTheseNames`
-    "signature:argument",
-  })
   protected @Nullable SetOfTypes parseExceptionSpecifier(
       String exceptionSpecifier, String ignoredExceptionsOptionValue) {
     Matcher m = EXCEPTION_SPECIFIER.matcher(exceptionSpecifier);
@@ -263,7 +259,9 @@ public class ResourceLeakChecker extends AggregateChecker {
             exceptionSpecifier,
             IGNORED_EXCEPTIONS,
             ignoredExceptionsOptionValue);
-        return SetOfTypes.anyOfTheseNames(ImmutableSet.of(qualifiedName));
+        @SuppressWarnings("signature:assignment") // user input; safe for `anyOfTheseNames`
+        @CanonicalName String canonicalName = qualifiedName;
+        return SetOfTypes.anyOfTheseNames(ImmutableSet.of(canonicalName));
       } else {
         return equalsSign == null ? SetOfTypes.allSubtypes(type) : SetOfTypes.singleton(type);
       }
