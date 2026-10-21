@@ -23,7 +23,6 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -1072,11 +1071,12 @@ public final class AnnotatedTypes {
    * Returns the method parameters for the invoked method (or constructor), with the same number of
    * arguments as passed to the invocation tree.
    *
-   * <p>This expands the parameters if the call uses varargs or contracts the parameters if the call
-   * is to an anonymous class that extends a class with an enclosing type. If the call is neither of
-   * these, then the parameters are returned unchanged. For example, String.format is declared to
-   * take {@code (String, Object...)}. Given {@code String.format(a, b, c, d)}, this returns
-   * (String, Object, Object, Object).
+   * <p>This expands the parameters if the call uses varargs, and it omits the enclosing-instance
+   * parameter if the call creates an anonymous class with an explicit enclosing expression, as in
+   * {@code outer.new Inner(...) {...}} (see {@link TreeUtils#parametersForArguments}). If the call
+   * is neither of these, then the parameters are returned unchanged. For example, String.format is
+   * declared to take {@code (String, Object...)}. Given {@code String.format(a, b, c, d)}, this
+   * returns (String, Object, Object, Object).
    *
    * @param atypeFactory the type factory to use for fetching annotated types
    * @param method the method or constructor's type
@@ -1091,29 +1091,8 @@ public final class AnnotatedTypes {
       List<? extends ExpressionTree> args,
       Tree invok) {
 
-    List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
-
-    // Handle anonymous constructors that extend a class with an enclosing type,
-    // as in `new MyClass() { ... }`.
-    ExecutableElement methodElement = method.getElement();
-    if (methodElement.getKind() == ElementKind.CONSTRUCTOR
-        && methodElement.getEnclosingElement().getSimpleName().contentEquals("")) {
-      DeclaredType t =
-          TypesUtils.getSuperClassOrInterface(
-              methodElement.getEnclosingElement().asType(), atypeFactory.types);
-      TypeMirror enclosingType = t.getEnclosingType();
-      if (enclosingType != null) {
-        if (!parameters.isEmpty()) {
-          if (atypeFactory.types.isSameType(enclosingType, parameters.get(0).getUnderlyingType())) {
-            if (args.isEmpty()
-                || !atypeFactory.types.isSameType(
-                    TreeUtils.typeOf(args.get(0)), parameters.get(0).getUnderlyingType())) {
-              parameters = parameters.subList(1, parameters.size());
-            }
-          }
-        }
-      }
-    }
+    List<AnnotatedTypeMirror> parameters =
+        TreeUtils.parametersForArguments(method.getElement(), invok, method.getParameterTypes());
 
     // Handle vararg methods.
     if (!TreeUtils.isVarargsCall(invok)) {
