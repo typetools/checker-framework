@@ -236,7 +236,7 @@ public class ResourceLeakChecker extends AggregateChecker {
   @SuppressWarnings({
     // user input might not be a legal @CanonicalName, but it should be safe to pass to
     // `SetOfTypes.anyOfTheseNames`
-    "signature:type.arguments.not.inferred",
+    "signature:argument",
   })
   protected @Nullable SetOfTypes parseExceptionSpecifier(
       String exceptionSpecifier, String ignoredExceptionsOptionValue) {
