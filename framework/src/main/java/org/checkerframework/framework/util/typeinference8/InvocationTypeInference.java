@@ -325,10 +325,11 @@ public class InvocationTypeInference {
     ExecutableType e = executableType.getUnderlyingType();
     AbstractExecutableType inferenceExecutableType =
         new AbstractInvocationType(executableType, e, invocation, context);
-    ProperType target = context.inferenceTypeFactory.getTargetType();
+    Tree contextTree = TreePathUtil.getContextForPolyExpression(context.getPathToExpression());
+    ProperType target = context.inferenceTypeFactory.getTargetType(contextTree);
     boolean isPolyWithTarget = target != null && TreeUtils.isPolyExpression(invocation);
-    boolean targetFromContext =
-        TreePathUtil.getContextForPolyExpression(context.getPathToExpression()) != null;
+    // If false, the target type comes from AnnotatedTypeFactory#getDummyAssignedTo.
+    boolean targetFromContext = contextTree != null;
     List<? extends ExpressionTree> args;
     if (invocation instanceof MethodInvocationTree mit) {
       args = mit.getArguments();
