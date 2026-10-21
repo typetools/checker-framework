@@ -114,6 +114,10 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     for (AnnotationMirror lowerBound : lowerBounds) {
       AnnotationMirror nullAnno = nullType.getPrimaryAnnotationInHierarchy(lowerBound);
       AnnotationMirror upperBound = otherAsLub.getAnnotationInHierarchy(lowerBound);
+      if (nullAnno == null || upperBound == null) {
+        // One of the types has no annotation in this hierarchy.  Keep otherType's annotation.
+        continue;
+      }
       if (qualHierarchy.isSubtypeShallow(upperBound, otherTM, nullAnno, nullTM)) {
         // @L <: @U <: @N
         lub.replaceAnnotation(nullAnno);
