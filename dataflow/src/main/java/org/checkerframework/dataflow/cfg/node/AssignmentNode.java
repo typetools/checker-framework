@@ -54,6 +54,12 @@ public class AssignmentNode extends Node {
   protected boolean desugaredFromEnhancedArrayForLoop;
 
   /**
+   * True if the assignment node assigns the selector of a switch that has no {@code case null}
+   * label. Such a switch throws NullPointerException if the selector is null.
+   */
+  protected boolean switchSelectorWithoutNullCase;
+
+  /**
    * Create a (non-synthetic) AssignmentNode.
    *
    * @param tree the {@code AssignmentTree} corresponding to the {@code AssignmentNode}
@@ -86,6 +92,7 @@ public class AssignmentNode extends Node {
     this.rhs = expression;
     this.synthetic = synthetic;
     this.desugaredFromEnhancedArrayForLoop = false;
+    this.switchSelectorWithoutNullCase = false;
   }
 
   /**
@@ -136,6 +143,26 @@ public class AssignmentNode extends Node {
   /** set the assignment node as desugared from an enhanced-for-loop over an array */
   public void setDesugaredFromEnhancedArrayForLoop() {
     desugaredFromEnhancedArrayForLoop = true;
+  }
+
+  /**
+   * Returns true if the assignment node assigns the selector of a switch that has no {@code case
+   * null} label. Such a switch throws NullPointerException if the selector is null, so the selector
+   * is non-null after the assignment.
+   *
+   * @return true if the assignment node assigns the selector of a switch that has no {@code case
+   *     null} label
+   */
+  public boolean isSwitchSelectorWithoutNullCase() {
+    return switchSelectorWithoutNullCase;
+  }
+
+  /**
+   * Marks the assignment node as assigning the selector of a switch that has no {@code case null}
+   * label.
+   */
+  public void setSwitchSelectorWithoutNullCase() {
+    switchSelectorWithoutNullCase = true;
   }
 
   @Override

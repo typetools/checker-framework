@@ -20,6 +20,7 @@ import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
@@ -349,6 +350,20 @@ public class NullnessTransfer
       ArrayAccessNode n, TransferInput<NullnessValue, NullnessStore> p) {
     TransferResult<NullnessValue, NullnessStore> result = super.visitArrayAccess(n, p);
     makeNonNull(result, n.getArray());
+    return result;
+  }
+
+  @Override
+  public TransferResult<NullnessValue, NullnessStore> visitAssignment(
+      AssignmentNode n, TransferInput<NullnessValue, NullnessStore> p) {
+    TransferResult<NullnessValue, NullnessStore> result = super.visitAssignment(n, p);
+    // A switch without a null label throws NullPointerException if its selector is null. An
+    // unboxed selector is refined by the unboxing instead.
+    if (n.isSwitchSelectorWithoutNullCase()
+        && !n.getExpression().getType().getKind().isPrimitive()) {
+      makeNonNull(result, n.getExpression());
+      makeNonNull(result, n.getTarget());
+    }
     return result;
   }
 

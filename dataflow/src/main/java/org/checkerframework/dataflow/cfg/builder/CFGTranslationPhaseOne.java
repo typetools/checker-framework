@@ -1395,9 +1395,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       return node;
     }
 
-    // If the operand is a primitive and the whole expression is
-    // boxed, then apply boxing.
-    if (TypesUtils.isPrimitive(nodeType) && TypesUtils.isBoxedPrimitive(destType)) {
+    // If the operand is a primitive and the whole expression is boxed (or is a type variable or
+    // intersection type that unboxing conversion applies to), then apply boxing.
+    if (TypesUtils.isPrimitive(nodeType) && TypesUtils.isUnboxable(destType, types)) {
       return box(node);
     }
 
@@ -1835,14 +1835,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       nextCallNode.setInSource(false);
       extendWithNode(nextCallNode);
 
-      AssignmentNode assignNode =
-          translateAssignment(variable, new LocalVariableNode(variable), nextCall);
-      // translateAssignment() scans variable and creates new nodes, so set the expression
-      // there, too.
-      MethodInvocationNode nextCallNode2 =
-          (MethodInvocationNode) withoutUnboxingOrWidening(assignNode.getExpression());
-      nextCallNode2.setIterableExpression(expression);
-      nextCallNode2.setEnhancedForLoop(tree);
+      translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
 
       assert statement != null;
       scan(statement, p);
@@ -1938,16 +1931,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(arrayAccessNode);
       AssignmentNode arrayAccessAssignNode =
           translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
-      // translateAssignment() scans variable and creates new nodes, so set the expression
-      // there, too.
-      Node arrayAccessAssignNodeExpr =
-          withoutUnboxingOrWidening(arrayAccessAssignNode.getExpression());
-      if (arrayAccessAssignNodeExpr instanceof ArrayAccessNode aan) {
-        aan.setArrayExpression(expression);
-        aan.setEnhancedForLoop(tree);
-      } else if (arrayAccessAssignNodeExpr instanceof MethodInvocationNode boxingNode) {
-        // If the array component type is a primitive, there may be a boxing conversion. Treat
-        // that as an iterator.
+      // If the array component type is a primitive and the loop variable's type is not, then
+      // assignment conversion boxes the component. Treat the boxing call as an iterator.
+      if (TypesUtils.isPrimitive(arrayAccessNode.getType())
+          && !TypesUtils.isPrimitive(variableElement.asType())
+          && arrayAccessAssignNode.getExpression() instanceof MethodInvocationNode boxingNode) {
         boxingNode.setIterableExpression(expression);
         boxingNode.setEnhancedForLoop(tree);
       }
@@ -1992,29 +1980,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     continueTargetLC = oldContinueTargetLC;
 
     return null;
-  }
-
-  /**
-   * If {@code node} is an unboxing conversion, a widening primitive conversion, or an unboxing
-   * conversion followed by a widening primitive conversion, returns the expression that it
-   * converts. Otherwise, returns {@code node}.
-   *
-   * <p>The element type of an enhanced for loop's iterable expression must not be used as the type
-   * of such a conversion. It may be used as the type of the expression that is converted.
-   *
-   * @param node a node that might be a conversion
-   * @return the expression that {@code node} converts, or {@code node} itself
-   */
-  private Node withoutUnboxingOrWidening(Node node) {
-    if (node instanceof WideningConversionNode widening) {
-      node = widening.getOperand();
-    }
-    if (node instanceof MethodInvocationNode min
-        && !min.getInSource()
-        && TypesUtils.isPrimitive(min.getType())) {
-      return min.getTarget().getReceiver();
-    }
-    return node;
   }
 
   /**
@@ -2269,10 +2234,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(selectorVarUseNode);
 
       Node selectorExprNode = scan(selectorExprTree, null);
-      // Unboxing models the NullPointerException that a switch without a null label throws when
-      // its selector is null.
-      if (TypesUtils.isUnboxable(selectorExprType, types)
-          && !TreeUtils.hasNullCaseLabel(switchTree)) {
+      // A switch without a null label throws NullPointerException when its selector is null.
+      boolean throwsOnNull =
+          !selectorExprType.getKind().isPrimitive() && !TreeUtils.hasNullCaseLabel(switchTree);
+      // Unboxing models the NullPointerException for an unboxable selector.
+      boolean unboxed = throwsOnNull && TypesUtils.isUnboxable(selectorExprType, types);
+      if (unboxed) {
         selectorExprNode = unbox(selectorExprNode);
       }
 
@@ -2281,7 +2248,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       selectorExprAssignment = new AssignmentNode(assign, selectorVarUseNode, selectorExprNode);
       selectorExprAssignment.setInSource(false);
-      extendWithNode(selectorExprAssignment);
+      if (throwsOnNull) {
+        selectorExprAssignment.setSwitchSelectorWithoutNullCase();
+      }
+      if (throwsOnNull && !unboxed) {
+        extendWithNodeWithException(selectorExprAssignment, nullPointerExceptionType);
+      } else {
+        extendWithNode(selectorExprAssignment);
+      }
     }
 
     /**
@@ -4114,7 +4088,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         Label shortCircuitLabel = new Label();
 
         // left-hand side
-        Node left = scan(leftTree, p);
+        Node left = unbox(scan(leftTree, p));
 
         ConditionalJump cjump;
         if (kind == Tree.Kind.CONDITIONAL_AND) {
@@ -4128,7 +4102,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
         // right-hand side
         addLabelForNextNode(rightStartLabel);
-        Node right = scan(rightTree, p);
+        Node right = unbox(scan(rightTree, p));
 
         // conditional expression itself
         addLabelForNextNode(shortCircuitLabel);
