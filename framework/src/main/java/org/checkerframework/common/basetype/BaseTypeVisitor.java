@@ -2871,7 +2871,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                   Collections.singletonList(body), TreePathUtil.enclosingMethod(getCurrentPath()))
               .getKinds()
               .clone();
-      if (functionalMethod.getReturnType().getKind() == TypeKind.VOID) {
+      if (PurityUtils.sideEffectFreeImpliesDeterministic(functionalMethod.getReturnType())) {
         lambdaKinds.remove(PurityKind.DETERMINISTIC);
       }
       WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
