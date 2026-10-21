@@ -4,6 +4,7 @@
 // can make a value violate an upper-bound qualifier, and a decrement can make a value violate a
 // lower-bound qualifier, so those operations on a value whose type is a type variable are errors.
 
+import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.LTLengthOf;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
@@ -46,5 +47,31 @@ public class TypeVarIncrement {
     // Only the lower bound may be violated.
     // :: error: [unary.decrement]
     --t;
+  }
+
+  // The value of a postfix increment or decrement is the operand's value.
+
+  <T extends @IndexFor("#2") Integer> int postfixIncrement(T t, int[] a) {
+    // :: error: [unary.increment]
+    return a[t++];
+  }
+
+  <T extends @IndexFor("#2") Integer> int postfixDecrement(T t, int[] a) {
+    // :: error: [unary.decrement]
+    return a[t--];
+  }
+
+  int postfixIncrementInt(@IndexFor("#2") int i, int[] a) {
+    // :: error: [unary.increment]
+    return a[i++];
+  }
+
+  int postfixDecrementInt(@IndexFor("#2") int i, int[] a) {
+    // :: error: [unary.decrement]
+    return a[i--];
+  }
+
+  <T extends @NonNegative Integer> @NonNegative int postfixIncrementNonNegative(T t) {
+    return t++;
   }
 }

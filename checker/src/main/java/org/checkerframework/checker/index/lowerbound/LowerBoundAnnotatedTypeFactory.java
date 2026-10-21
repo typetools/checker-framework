@@ -328,8 +328,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
           }
         }
         case PREFIX_DECREMENT -> demoteType(typeSrc, typeDst);
-        case POSTFIX_INCREMENT,
-            POSTFIX_DECREMENT -> {} // Do nothing. The CF should take care of these itself.
+        // The value of a postfix increment or decrement is the operand's value.
+        case POSTFIX_INCREMENT, POSTFIX_DECREMENT -> replaceAnnotations(typeSrc, typeDst);
         case BITWISE_COMPLEMENT ->
             handleBitWiseComplement(
                 getSearchIndexAnnotatedTypeFactory().getAnnotatedType(tree.getExpression()),
@@ -365,8 +365,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         AnnotatedTypeMirror rightType = getAnnotatedType(right);
         type.replaceAnnotation(
             qualHierarchy.greatestLowerBoundShallow(
-                leftType.getPrimaryAnnotationInHierarchy(POS), leftType.getUnderlyingType(),
-                rightType.getPrimaryAnnotationInHierarchy(POS), rightType.getUnderlyingType()));
+                leftType.getAnnotationInHierarchy(POS), leftType.getUnderlyingType(),
+                rightType.getAnnotationInHierarchy(POS), rightType.getUnderlyingType()));
       }
       return super.visitMethodInvocation(tree, type);
     }
@@ -474,7 +474,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   public boolean isNonNegative(Tree tree) {
     // TODO: consolidate with the isNonNegative method in LowerBoundTransfer
     AnnotatedTypeMirror treeType = getAnnotatedType(tree);
-    return treeType.hasPrimaryAnnotation(NonNegative.class)
-        || treeType.hasPrimaryAnnotation(Positive.class);
+    return treeType.hasAnnotation(NonNegative.class) || treeType.hasAnnotation(Positive.class);
   }
 }
