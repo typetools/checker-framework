@@ -1157,12 +1157,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param code the paths to the code that runs as part of the method or lambda: its body and, for
    *     a constructor, the instance initializers it runs; empty if the method has no body
+   * @param enclosingMethod the method declaration that lexically encloses {@code code}, or null if
+   *     none does
    * @return the purity of {@code code}, ignoring the {@code -Aassume*} command-line options
    */
-  private PurityResult purityForInference(List<TreePath> code) {
+  private PurityResult purityForInference(
+      List<TreePath> code, @Nullable MethodTree enclosingMethod) {
     return code.isEmpty()
         ? new PurityResult()
-        : PurityChecker.checkPurity(code, atypeFactory, false, false, false);
+        : PurityChecker.checkPurity(
+            code,
+            atypeFactory,
+            enclosingMethod,
+            atypeFactory.getProcessingEnv(),
+            false,
+            false,
+            false);
   }
 
   /**
@@ -1241,6 +1251,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
               : PurityChecker.checkPurity(
                   toCheck,
                   atypeFactory,
+                  tree,
+                  atypeFactory.getProcessingEnv(),
                   assumeSideEffectFree,
                   assumeDeterministic,
                   assumePureGetters);
@@ -1251,7 +1263,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     if (suggestPureMethods && !TreeUtils.isSynthetic(tree)) {
       // Issue a warning if the method is pure, but not annotated as such.
-      EnumSet<PurityKind> additionalKinds = purityForInference(toCheck).getKinds().clone();
+      EnumSet<PurityKind> additionalKinds = purityForInference(toCheck, tree).getKinds().clone();
       if (!infer) {
         // During WPI, propagate all purity kinds, even those that are already
         // present (because they were inferred in a previous WPI round).
@@ -2838,7 +2850,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (needToCheck) {
       PurityResult r =
           PurityChecker.checkPurity(
-              body, atypeFactory, assumeSideEffectFree, assumeDeterministic, assumePureGetters);
+              body,
+              atypeFactory,
+              TreePathUtil.enclosingMethod(getCurrentPath()),
+              atypeFactory.getProcessingEnv(),
+              assumeSideEffectFree,
+              assumeDeterministic,
+              assumePureGetters);
       if (!r.isPure(purityKinds)) {
         reportPurityErrors(r, purityKinds);
       }
@@ -2849,7 +2867,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // purity just as an overriding method does; see the treatment of overridden methods in
       // `checkPurityAnnotations`.
       EnumSet<PurityKind> lambdaKinds =
-          purityForInference(Collections.singletonList(body)).getKinds().clone();
+          purityForInference(
+                  Collections.singletonList(body), TreePathUtil.enclosingMethod(getCurrentPath()))
+              .getKinds()
+              .clone();
       if (functionalMethod.getReturnType().getKind() == TypeKind.VOID) {
         lambdaKinds.remove(PurityKind.DETERMINISTIC);
       }

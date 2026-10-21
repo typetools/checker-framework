@@ -167,9 +167,21 @@ public final class PurityUtils {
   }
 
   /**
+   * Returns true if a side-effect-free call that returns {@code returnType} is also deterministic.
+   * That holds when {@code returnType} is void: two calls of a side-effect-free method that returns
+   * no value return the same (absent) value.
+   *
+   * @param returnType the type of the value that a call returns
+   * @return true if a side-effect-free call that returns {@code returnType} is deterministic
+   */
+  public static boolean sideEffectFreeImpliesDeterministic(TypeMirror returnType) {
+    return returnType.getKind() == TypeKind.VOID;
+  }
+
+  /**
    * Adds {@link PurityKind#DETERMINISTIC} to {@code kinds} if {@code kinds} contains {@link
-   * PurityKind#SIDE_EFFECT_FREE} and {@code returnType} is void: two calls of a side-effect-free
-   * method that returns no value return the same (absent) value.
+   * PurityKind#SIDE_EFFECT_FREE} and {@code returnType} is void; see {@link
+   * #sideEffectFreeImpliesDeterministic}.
    *
    * <p>{@link #getPurityKinds} and {@link #isDeterministic} do not apply this rule, for two
    * reasons. First, a constructor's return type is void, but a {@code new} expression is not
@@ -180,7 +192,8 @@ public final class PurityUtils {
    * @param returnType the type of the value that the call returns
    */
   public static void addDeterminismOfVoidCall(EnumSet<PurityKind> kinds, TypeMirror returnType) {
-    if (returnType.getKind() == TypeKind.VOID && kinds.contains(PurityKind.SIDE_EFFECT_FREE)) {
+    if (kinds.contains(PurityKind.SIDE_EFFECT_FREE)
+        && sideEffectFreeImpliesDeterministic(returnType)) {
       kinds.add(PurityKind.DETERMINISTIC);
     }
   }
