@@ -37,6 +37,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.CollectionsP;
 
@@ -309,8 +310,11 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    */
   public @Nullable List<String> getLessThanExpressions(ExpressionTree expression) {
     AnnotatedTypeMirror annotatedTypeMirror = getAnnotatedType(expression);
-    return getLessThanExpressions(
-        annotatedTypeMirror.getPrimaryAnnotationInHierarchy(LESS_THAN_UNKNOWN));
+    AnnotationMirror anno = annotatedTypeMirror.getAnnotationInHierarchy(LESS_THAN_UNKNOWN);
+    if (anno == null) {
+      throw new BugInCF("no annotation: " + annotatedTypeMirror);
+    }
+    return getLessThanExpressions(anno);
   }
 
   /**

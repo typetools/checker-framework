@@ -44,6 +44,7 @@ import org.checkerframework.common.value.util.Range;
 import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -273,13 +274,16 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      *      gte-1 &rarr; nn
      *      lbu &rarr; lbu
      *  </pre>
+     *
+     * @param typeSrc the type whose annotation is promoted
+     * @param typeDst the type whose annotation is set
      */
     private void promoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
-      if (typeSrc.hasPrimaryAnnotation(POS)) {
+      if (typeSrc.hasAnnotation(POS)) {
         typeDst.replaceAnnotation(POS);
-      } else if (typeSrc.hasPrimaryAnnotation(NN)) {
+      } else if (typeSrc.hasAnnotation(NN)) {
         typeDst.replaceAnnotation(POS);
-      } else if (typeSrc.hasPrimaryAnnotation(GTEN1)) {
+      } else if (typeSrc.hasAnnotation(GTEN1)) {
         typeDst.replaceAnnotation(NN);
       } else { // Only unknown is left.
         typeDst.replaceAnnotation(UNKNOWN);
@@ -295,11 +299,14 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      *       nn &rarr; gte-1
      *       gte-1, lbu &rarr; lbu
      *  </pre>
+     *
+     * @param typeSrc the type whose annotation is demoted
+     * @param typeDst the type whose annotation is set
      */
     private void demoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
-      if (typeSrc.hasPrimaryAnnotation(POS)) {
+      if (typeSrc.hasAnnotation(POS)) {
         typeDst.replaceAnnotation(NN);
-      } else if (typeSrc.hasPrimaryAnnotation(NN)) {
+      } else if (typeSrc.hasAnnotation(NN)) {
         typeDst.replaceAnnotation(GTEN1);
       } else { // GTEN1 and UNKNOWN both become UNKNOWN.
         typeDst.replaceAnnotation(UNKNOWN);
@@ -311,7 +318,15 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror typeDst) {
       AnnotatedTypeMirror typeSrc = getAnnotatedType(tree.getExpression());
       switch (tree.getKind()) {
-        case PREFIX_INCREMENT -> promoteType(typeSrc, typeDst);
+        case PREFIX_INCREMENT -> {
+          if (typeDst instanceof AnnotatedTypeVariable) {
+            // An increment cannot make a value violate a lower-bound qualifier, so incrementing a
+            // value whose type is a type variable produces a value of the operand's type.
+            replaceAnnotations(typeSrc, typeDst);
+          } else {
+            promoteType(typeSrc, typeDst);
+          }
+        }
         case PREFIX_DECREMENT -> demoteType(typeSrc, typeDst);
         case POSTFIX_INCREMENT,
             POSTFIX_DECREMENT -> {} // Do nothing. The CF should take care of these itself.

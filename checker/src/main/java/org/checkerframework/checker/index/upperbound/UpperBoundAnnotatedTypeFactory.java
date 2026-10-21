@@ -68,6 +68,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory.JavaExpressionAndOffset;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -599,6 +600,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       if (tree.getKind() == Tree.Kind.BITWISE_COMPLEMENT) {
         addAnnotationForBitwiseComplement(
             getSearchIndexAnnotatedTypeFactory().getAnnotatedType(tree.getExpression()), type);
+      } else if (type instanceof AnnotatedTypeVariable
+          && tree.getKind() != Tree.Kind.PREFIX_INCREMENT) {
+        // If the type is a type variable, the tree is an increment or decrement. The value of a
+        // postfix increment or decrement is the operand's value, and a decrement cannot make a
+        // value violate an upper-bound qualifier, so the result has the operand's type.
+        atypeFactory.replaceAnnotations(atypeFactory.getAnnotatedType(tree.getExpression()), type);
       } else {
         type.addAnnotation(UNKNOWN);
       }
