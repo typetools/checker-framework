@@ -100,9 +100,9 @@ checked.
 
 \subsectionAndLabel{Functional-interface parameters of methods with purity annotations}{purity-functional-interface-parameters}
 
-A method annotated with a purity annotation may call the functional method of
-its own functional-interface parameters.  A functional-interface parameter is
-one whose type, or the interface that declares the type's functional method,
+A method annotated with a purity annotation may call the functional methods
+of its own functional-interface parameters.  A functional-interface parameter
+is one whose type, or the interface that declares the type's functional method,
 is annotated with \<@FunctionalInterface>, as \<Function>, \<Runnable>, and
 the other interfaces in \<java.util.function> are.  A parameter of a type such
 as \<Iterable>, \<AutoCloseable>, or \<Comparable> is not one, even though the
@@ -123,7 +123,8 @@ parameter is treated as having the purity that the method promises:
 \item
   In a \refqualclass{dataflow/qual}{SideEffectsOnly} method, the call is
   treated as side-effect-free.  The method itself may modify the expressions
-  listed in its annotation, but the code it is handed may not modify anything.
+  listed in its annotation, but each argument passed to one of its
+  functional-interface parameters is required to be side-effect-free.
 \fi
 \end{itemize}
 
@@ -158,8 +159,10 @@ apply.
 
 At each call to such a method, every argument passed to a functional-interface
 parameter must have the purity that the method promises (side-effect-free for
-a \<@SideEffectsOnly> method).  Only a parameter whose declared type is a
-functional interface is checked:  the method may assume nothing about an
+a \<@SideEffectsOnly> method).  The requirement is the same for every
+functional-interface parameter, and it applies even if the method's body never
+calls that parameter's functional method.  Only a parameter whose declared
+type is a functional interface is checked:  the method may assume nothing about an
 argument to a parameter whose type is a type variable, nor about the elements
 of a varargs array.  How the argument is checked depends on its form:
 

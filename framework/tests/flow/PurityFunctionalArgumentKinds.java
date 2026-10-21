@@ -44,7 +44,7 @@ public class PurityFunctionalArgumentKinds {
     return 1;
   }
 
-  // A @Pure or @Deterministic method may call the functional method of its own
+  // A @Pure or @Deterministic method may call the functional methods of its own
   // functional-interface parameters.
 
   @Pure

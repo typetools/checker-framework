@@ -150,20 +150,30 @@ public final class PurityChecker {
   }
 
   /**
-   * Returns the kinds of purity that a method promises for the functional method of its
-   * functional-interface parameters. At a call to {@code method}, each argument passed to a
-   * functional-interface parameter is required to have those kinds, so within the body the
-   * parameters may be assumed to have them.
+   * Returns the purity that {@code method} requires of every argument passed to one of its
+   * functional-interface parameters: the purity kinds of {@code method}'s own purity annotations,
+   * plus side-effect-freedom if {@code method} has or inherits {@code @SideEffectsOnly}. The result
+   * is one set that applies to all of {@code method}'s functional-interface parameters alike. It
+   * depends only on {@code method}'s annotations, not on which parameter is in question, nor on
+   * whether the body ever calls that parameter's functional method.
    *
-   * <p>A {@code @SideEffectsOnly} method may modify the listed expressions, but the code it is
-   * handed may not modify anything. A method inherits {@code @SideEffectsOnly} from the methods
-   * that it overrides, though {@code @SideEffectsOnly} is not inherited as an annotation.
+   * <p>Per-parameter computations refine this set. At a call to {@code method}, an argument is not
+   * required to have a kind that the parameter's functional method already promises, nor to be
+   * deterministic if it is side-effect-free and returns no value. Within the body, a call to a
+   * parameter's functional method may assume the purity computed by {@link
+   * #functionalParameterPurity}, which also accounts for the methods that {@code method} overrides.
+   *
+   * <p>A {@code @SideEffectsOnly} method may modify the listed expressions, but each argument
+   * passed to one of its functional-interface parameters is required to be side-effect-free. A
+   * method inherits {@code @SideEffectsOnly} from the methods that it overrides, though
+   * {@code @SideEffectsOnly} is not inherited as an annotation.
    *
    * @param annoProvider the annotation provider
    * @param method a method or constructor, or null
    * @param env the processing environment
-   * @return the purity kinds that {@code method} requires of its functional-interface arguments;
-   *     empty if {@code method} is null or has no purity annotation
+   * @return the purity kinds that {@code method} requires of every argument to one of its
+   *     functional-interface parameters; empty if {@code method} is null or has no purity
+   *     annotation
    */
   public static EnumSet<PurityKind> functionalParameterKinds(
       AnnotationProvider annoProvider,
@@ -612,10 +622,10 @@ public final class PurityChecker {
     private final @Nullable ProcessingEnvironment env;
 
     /**
-     * The purity that {@link #enclosingMethod} promises for the functional method of its
-     * functional-interface parameters, before accounting for the methods that it overrides. Empty
-     * if there is no enclosing method or it has no purity annotation, in which case no call gets
-     * the assumption.
+     * The purity that {@link #enclosingMethod} requires of every argument to one of its
+     * functional-interface parameters, before any per-parameter refinement; see {@link
+     * PurityChecker#functionalParameterKinds}. Empty if there is no enclosing method or it has no
+     * purity annotation, in which case no call gets the assumption.
      */
     private final EnumSet<PurityKind> functionalParameterKinds;
 
