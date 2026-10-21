@@ -2051,7 +2051,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @return the purity kinds of {@code method}
    */
   private EnumSet<PurityKind> implementationPurityKinds(ExecutableElement method) {
-    EnumSet<PurityKind> result = EnumSet.copyOf(PurityUtils.getPurityKinds(atypeFactory, method));
+    EnumSet<PurityKind> result = PurityUtils.getPurityKinds(atypeFactory, method);
     // Like PurityChecker, apply each assumption to every method, including one with no purity
     // annotation, so that a method reference is treated exactly like a lambda whose body calls
     // the referenced method.
