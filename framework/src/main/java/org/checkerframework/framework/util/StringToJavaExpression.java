@@ -192,7 +192,8 @@ public interface StringToJavaExpression {
       throws JavaExpressionParseException {
     ExecutableElement ee = TreeUtils.elementFromUse(methodInvocationTree);
     JavaExpression javaExpr = atMethodDecl(expression, ee, checker);
-    return javaExpr.atMethodInvocation(methodInvocationTree);
+    return javaExpr.atMethodInvocation(
+        methodInvocationTree, checker.getProcessingEnvironment().getTypeUtils());
   }
 
   /**
@@ -233,7 +234,8 @@ public interface StringToJavaExpression {
     // For an anonymous class, the contract is written on the super constructor.
     ExecutableElement ee = TreeUtils.getSuperConstructor(newClassTree);
     JavaExpression javaExpr = atMethodDecl(expression, ee, checker);
-    return javaExpr.atConstructorInvocation(newClassTree);
+    return javaExpr.atConstructorInvocation(
+        newClassTree, checker.getProcessingEnvironment().getTypeUtils());
   }
 
   /**

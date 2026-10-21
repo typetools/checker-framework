@@ -416,7 +416,10 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         // At a call of the form `super.m()`, viewpoint-adapting the callee's `this` yields `super`,
         // which denotes the same object that the caller writes as `this`.  See
         // `expressionFromTree`.
-        result.add(JavaExpression.superToThis(atDeclaration.atMethodInvocation(node)));
+        result.add(
+            JavaExpression.superToThis(
+                atDeclaration.atMethodInvocation(
+                    node, checker.getProcessingEnvironment().getTypeUtils())));
       }
     }
     return result;
@@ -798,7 +801,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         // a modification of it.
         continue;
       }
-      result.add(atDeclaration.atConstructorInvocation(node));
+      result.add(
+          atDeclaration.atConstructorInvocation(
+              node, checker.getProcessingEnvironment().getTypeUtils()));
     }
     return result;
   }
