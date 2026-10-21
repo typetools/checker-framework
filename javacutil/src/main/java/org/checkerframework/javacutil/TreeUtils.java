@@ -128,6 +128,10 @@ public final class TreeUtils {
   /** True if we are running on at least Java 21. */
   private static final boolean atLeastJava21 = sourceVersionNumber >= 21;
 
+  /** The kind of a {@code DeconstructionPatternTree}, or null if javac has no such kind. */
+  private static final Tree.@Nullable Kind DECONSTRUCTION_PATTERN_KIND =
+      atLeastJava21 ? Tree.Kind.valueOf("DECONSTRUCTION_PATTERN") : null;
+
   /**
    * The {@code TreeMaker.Select(JCExpression, Symbol)} method. Return type changes for JDK21+. Only
    * needs to be used while the code is compiled with JDK below 21.
@@ -2355,7 +2359,7 @@ public final class TreeUtils {
    * @return true if {@code tree} is a {@code DeconstructionPatternTree}
    */
   public static boolean isDeconstructionPatternTree(Tree tree) {
-    return tree.getKind().name().contentEquals("DECONSTRUCTION_PATTERN");
+    return tree.getKind() == DECONSTRUCTION_PATTERN_KIND;
   }
 
   /**
