@@ -9,8 +9,7 @@
 
 ### Changes for type system implementers
 
-`CFGTranslationPhaseOne`: renamed `isNumericOrBoxed()` to `isNumericAfterUnboxing()`
-and `isBooleanOrBoxed()` to `isBooleanAfterUnboxing()`.
+`CFGTranslationPhaseOne`: renamed `isNumericOrBoxed()` to `isNumericAfterUnboxing()`.
 
 ### Closed issues
 
