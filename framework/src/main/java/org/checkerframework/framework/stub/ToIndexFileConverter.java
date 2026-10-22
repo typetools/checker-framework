@@ -318,7 +318,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (rcvrAnnos != null) {
       for (AnnotationExpr expr : rcvrAnnos) {
         Annotation anno = extractAnnotation(expr);
-        method.receiver.tlAnnotationsHere.add(anno);
+        if (anno != null) {
+          method.receiver.tlAnnotationsHere.add(anno);
+        }
       }
     }
     return body == null ? null : body.accept(this, method);
@@ -387,7 +389,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (rcvrParam.isPresent()) {
       for (AnnotationExpr expr : rcvrParam.get().getAnnotations()) {
         Annotation anno = extractAnnotation(expr);
-        method.receiver.type.tlAnnotationsHere.add(anno);
+        if (anno != null) {
+          method.receiver.type.tlAnnotationsHere.add(anno);
+        }
       }
     }
     if (typeParams != null) {
@@ -449,7 +453,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       if (annos != null) {
         for (AnnotationExpr annoExpr : annos) {
           Annotation anno = extractAnnotation(annoExpr);
-          field.tlAnnotationsHere.add(anno);
+          if (anno != null) {
+            field.tlAnnotationsHere.add(anno);
+          }
         }
       }
     }
@@ -465,7 +471,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (annoExprs != null) {
       for (AnnotationExpr annoExpr : annoExprs) {
         Annotation anno = extractAnnotation(annoExpr);
-        elem.tlAnnotationsHere.add(anno);
+        if (anno != null) {
+          elem.tlAnnotationsHere.add(anno);
+        }
       }
     }
     return null;
