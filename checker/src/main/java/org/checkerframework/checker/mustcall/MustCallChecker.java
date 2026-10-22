@@ -174,8 +174,9 @@ public class MustCallChecker extends BaseTypeChecker {
       String exceptionSpecifier, String ignoredExceptionsOptionValue) {
     Matcher m = EXCEPTION_SPECIFIER.matcher(exceptionSpecifier);
     if (m.matches()) {
-      @Nullable String equalsSign = m.group(1);
+      String equalsSign = m.group(1);
       String qualifiedName = m.group(2);
+      assert qualifiedName != null : "@AssumeAssertion(nullness): group 2 is not optional";
 
       if (qualifiedName.equalsIgnoreCase("default")) {
         return DEFAULT_IGNORED_EXCEPTIONS;
