@@ -103,6 +103,19 @@ public final class NodeUtils {
   }
 
   /**
+   * Returns true if {@code n} is a call, such as {@code booleanValue()}, that the CFG inserts to
+   * unbox a value of a boxed primitive type. Such a call does not appear in the source code.
+   *
+   * @param n a method invocation node
+   * @return true if {@code n} is an unboxing call that the CFG inserted
+   */
+  public static boolean isUnboxing(MethodInvocationNode n) {
+    return !n.getInSource()
+        && n.getType().getKind().isPrimitive()
+        && TypesUtils.isBoxedPrimitive(n.getTarget().getReceiver().getType());
+  }
+
+  /**
    * Returns true if the given node statically evaluates to {@code value} and has no side effects.
    *
    * @param n a node
