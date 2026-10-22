@@ -4558,13 +4558,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // bounds.  OverrideChecker cannot compare the two methods' type parameter bounds, because the
     // type parameters of the compile-time declaration do not correspond to those of the function
     // type.
-    checkTypeArguments(
-        memberReferenceTree,
-        CollectionsP.mapList(AnnotatedTypeVariable::getBounds, invocationType.getTypeVariables()),
-        invocation.typeArgs(),
-        memberReferenceTree.getTypeArguments(),
-        ElementUtils.getSimpleDescription(compileTimeDeclaration),
-        compileTimeDeclaration.getTypeParameters());
+    if (!shouldSkipUses(memberReferenceTree)) {
+      checkTypeArguments(
+          memberReferenceTree,
+          CollectionsP.mapList(AnnotatedTypeVariable::getBounds, invocationType.getTypeVariables()),
+          invocation.typeArgs(),
+          memberReferenceTree.getTypeArguments(),
+          ElementUtils.getSimpleDescription(compileTimeDeclaration),
+          compileTimeDeclaration.getTypeParameters());
+    }
 
     // This needs to be done before invocationType.getReturnType() and
     // functionType.getReturnType()
@@ -4775,7 +4777,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @return true if {@code type} contains a use of any of {@code typeVars}
      */
     private boolean containsAnyTypeVariable(
-        AnnotatedTypeMirror type, Collection<TypeVariable> typeVars) {
+        AnnotatedTypeMirror type, Collection<? extends TypeVariable> typeVars) {
       Type underlying = (Type) type.getUnderlyingType();
       for (TypeVariable typeVar : typeVars) {
         if (underlying.contains((Type) typeVar)) {
