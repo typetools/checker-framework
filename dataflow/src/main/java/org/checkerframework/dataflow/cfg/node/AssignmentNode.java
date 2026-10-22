@@ -55,9 +55,10 @@ public class AssignmentNode extends Node {
 
   /**
    * True if the assignment node assigns the selector of a switch that has no {@code case null}
-   * label. Such a switch throws NullPointerException if the selector is null.
+   * label, and the assignment throws NullPointerException if the selector is null. An unboxable
+   * selector is instead unboxed, and the unboxing throws NullPointerException.
    */
-  protected boolean switchSelectorWithoutNullCase;
+  protected boolean throwsOnNullSelector;
 
   /**
    * Create a (non-synthetic) AssignmentNode.
@@ -92,7 +93,7 @@ public class AssignmentNode extends Node {
     this.rhs = expression;
     this.synthetic = synthetic;
     this.desugaredFromEnhancedArrayForLoop = false;
-    this.switchSelectorWithoutNullCase = false;
+    this.throwsOnNullSelector = false;
   }
 
   /**
@@ -147,22 +148,21 @@ public class AssignmentNode extends Node {
 
   /**
    * Returns true if the assignment node assigns the selector of a switch that has no {@code case
-   * null} label. Such a switch throws NullPointerException if the selector is null, so the selector
-   * is non-null after the assignment.
+   * null} label, and the assignment throws NullPointerException if the selector is null. The
+   * selector is non-null after the assignment completes normally.
    *
-   * @return true if the assignment node assigns the selector of a switch that has no {@code case
-   *     null} label
+   * @return true if the assignment throws NullPointerException if the switch selector is null
    */
-  public boolean isSwitchSelectorWithoutNullCase() {
-    return switchSelectorWithoutNullCase;
+  public boolean throwsOnNullSelector() {
+    return throwsOnNullSelector;
   }
 
   /**
-   * Marks the assignment node as assigning the selector of a switch that has no {@code case null}
-   * label.
+   * Marks the assignment node as throwing NullPointerException if the switch selector it assigns is
+   * null.
    */
-  public void setSwitchSelectorWithoutNullCase() {
-    switchSelectorWithoutNullCase = true;
+  public void setThrowsOnNullSelector() {
+    throwsOnNullSelector = true;
   }
 
   @Override

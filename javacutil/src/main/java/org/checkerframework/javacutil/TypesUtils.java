@@ -425,7 +425,8 @@ public final class TypesUtils {
    * Returns the boxed primitive type that unboxing conversion (JLS 5.1.8) unboxes when applied to
    * the given type, or null if unboxing conversion does not apply to the given type. The result is
    * the given type itself if it is a boxed primitive, or the erasure of the given type if it is a
-   * type variable or intersection type whose erasure is a boxed primitive.
+   * type variable or intersection type whose erasure is a boxed primitive. A wildcard is treated as
+   * its extends bound.
    *
    * <p>Javac's unboxing API accepts wrapper classes, such as {@code Integer}, but rejects type
    * variables. For example, erasing {@code T} when {@code T extends Integer} produces {@code
@@ -442,6 +443,13 @@ public final class TypesUtils {
    * @return the boxed primitive type that unboxing conversion unboxes, or null
    */
   public static @Nullable TypeMirror boxedPrimitiveForUnboxing(TypeMirror type, Types types) {
+    if (type.getKind() == TypeKind.WILDCARD) {
+      TypeMirror extendsBound = ((WildcardType) type).getExtendsBound();
+      if (extendsBound == null) {
+        return null;
+      }
+      type = extendsBound;
+    }
     TypeKind kind = type.getKind();
     if (kind == TypeKind.TYPEVAR || kind == TypeKind.INTERSECTION) {
       type = types.erasure(type);

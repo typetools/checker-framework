@@ -357,10 +357,8 @@ public class NullnessTransfer
   public TransferResult<NullnessValue, NullnessStore> visitAssignment(
       AssignmentNode n, TransferInput<NullnessValue, NullnessStore> p) {
     TransferResult<NullnessValue, NullnessStore> result = super.visitAssignment(n, p);
-    // A switch without a null label throws NullPointerException if its selector is null. An
-    // unboxed selector is refined by the unboxing instead.
-    if (n.isSwitchSelectorWithoutNullCase()
-        && !n.getExpression().getType().getKind().isPrimitive()) {
+    // A switch without a null label throws NullPointerException if its selector is null.
+    if (n.throwsOnNullSelector()) {
       makeNonNull(result, n.getExpression());
       makeNonNull(result, n.getTarget());
     }
