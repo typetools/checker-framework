@@ -51,7 +51,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -127,6 +129,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   /** A scene read from the input JAIF file, and will be written to the output JAIF file. */
   private final AScene scene;
+
+  /**
+   * A cache for {@link #getTargets}. Maps an annotation name, as written in the stub file, to the
+   * element types in the {@code @Target} meta-annotation of the annotation interface that the name
+   * denotes, or to null if they cannot be determined.
+   */
+  private final Map<String, @Nullable List<ElementType>> targetsCache = new HashMap<>();
 
   /**
    * Creates a new ToIndexFileConverter.
@@ -344,8 +353,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     for (VariableDeclarator v : decl.getVariables()) {
       AClass clazz = (AClass) elem;
       AField field = clazz.fields.getVivify(v.getNameAsString());
-      visitDecl(decl, field);
       visitType(decl.getCommonType(), field.type);
+      visitDeclAndTypeAnnotations(
+          decl.getAnnotations(), ElementType.FIELD, field, v.getType(), field.type);
     }
     return null;
   }
@@ -375,8 +385,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
     sb.append(')').append(getJVML(type));
     method = clazz.methods.getVivify(sb.toString());
-    visitDecl(decl, method);
     visitType(type, method.returnType);
+    visitDeclAndTypeAnnotations(
+        decl.getAnnotations(), ElementType.METHOD, method, type, method.returnType);
     if (params != null) {
       for (int i = 0; i < params.size(); i++) {
         visitParameter(params.get(i), method.parameters.getVivify(i));
@@ -445,10 +456,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       AField field = method.body.locals.getVivify(loc);
       visitType(expr.getCommonType(), field.type);
       if (annos != null) {
-        for (AnnotationExpr annoExpr : annos) {
-          Annotation anno = extractAnnotation(annoExpr);
-          field.tlAnnotationsHere.add(anno);
-        }
+        visitDeclAndTypeAnnotations(
+            annos, ElementType.LOCAL_VARIABLE, field, decl.getType(), field.type);
       }
     }
     return null;
@@ -489,26 +498,45 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         }
       }
     }
+    visitDeclAndTypeAnnotations(
+        param.getAnnotations(), ElementType.PARAMETER, field, type, field.type);
+  }
 
-    // An annotation that precedes the parameter's type is a declaration annotation, a type
-    // annotation, or both, according to its `@Target` (JLS 9.7.4).  As a type annotation, it
-    // applies to the innermost component type of an array type:  in `@A String[]`, `@A` annotates
-    // `String`.  An annotation whose `@Target` cannot be determined is recorded as a declaration
-    // annotation, as for a field.
+  /**
+   * Copies the annotations that precede a declaration's type to the declaration, to the type, or to
+   * both.
+   *
+   * <p>Such an annotation is a declaration annotation, a type annotation, or both, according to its
+   * {@code @Target} (JLS 9.7.4). As a type annotation, it applies to the innermost component type
+   * of an array type: in {@code @A String[]}, {@code @A} annotates {@code String}. An annotation
+   * whose {@code @Target} cannot be determined is recorded as a declaration annotation.
+   *
+   * @param exprs the annotations that precede the declaration's type
+   * @param declTarget the kind of declaration, such as {@link ElementType#FIELD}
+   * @param decl the scene element for the declaration
+   * @param type the declared type
+   * @param typeElem the scene element for {@code type}
+   */
+  private void visitDeclAndTypeAnnotations(
+      List<AnnotationExpr> exprs,
+      ElementType declTarget,
+      ADeclaration decl,
+      Type type,
+      ATypeElement typeElem) {
     List<TypePathEntry> elementLoc =
-        new ArrayList<>(Collections.nCopies(type.getArrayLevel(), TypePathEntry.ARRAY_ELEMENT));
-    for (AnnotationExpr expr : param.getAnnotations()) {
+        Collections.nCopies(type.getArrayLevel(), TypePathEntry.ARRAY_ELEMENT);
+    for (AnnotationExpr expr : exprs) {
       Annotation anno = extractAnnotation(expr);
       if (anno == null) {
         continue;
       }
       List<ElementType> targets = getTargets(expr);
-      if (targets == null || targets.contains(ElementType.PARAMETER)) {
-        field.tlAnnotationsHere.add(anno);
+      if (targets == null || targets.contains(declTarget)) {
+        decl.tlAnnotationsHere.add(anno);
       }
       if (targets != null && targets.contains(ElementType.TYPE_USE)) {
         ATypeElement elementType =
-            elementLoc.isEmpty() ? field.type : field.type.innerTypes.getVivify(elementLoc);
+            elementLoc.isEmpty() ? typeElem : typeElem.innerTypes.getVivify(elementLoc);
         elementType.tlAnnotationsHere.add(anno);
       }
     }
@@ -525,10 +553,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private @Nullable List<ElementType> getTargets(AnnotationExpr expr) {
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
     @BinaryName String name = expr.getNameAsString();
+    if (targetsCache.containsKey(name)) {
+      return targetsCache.get(name);
+    }
     String qualifiedName = resolve(name);
     Class<?> annoClass = qualifiedName == null ? null : loadClass(qualifiedName);
     Target target = annoClass == null ? null : annoClass.getAnnotation(Target.class);
-    return target == null ? null : Arrays.asList(target.value());
+    List<ElementType> result = target == null ? null : Arrays.asList(target.value());
+    targetsCache.put(name, result);
+    return result;
   }
 
   /**

@@ -237,6 +237,45 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * An annotation that precedes a field's type or a method's return type is recorded as a
+   * declaration annotation or as a type annotation, according to its {@code @Target}. As a type
+   * annotation, it applies to the innermost component type of an array type.
+   */
+  @Test
+  public void testFieldAndReturnTypeAnnotationTargets() throws Exception {
+    String[] stubFileLines = {
+      "package p;",
+      "import org.checkerframework.checker.nullness.qual.Nullable;",
+      "class C {",
+      "  @Nullable @Deprecated String f;",
+      "  @Nullable @Deprecated String[] m();",
+      "}"
+    };
+    AField field = fieldOfStub(stubFileLines);
+    Assert.assertNotNull("@Deprecated was not recorded on the field", field.lookup("Deprecated"));
+    Assert.assertNull("@Nullable was recorded on the field", field.lookup("Nullable"));
+    Assert.assertNotNull("@Nullable was not recorded on the type", field.type.lookup("Nullable"));
+    Assert.assertNull("@Deprecated was recorded on the type", field.type.lookup("Deprecated"));
+
+    String stubFile = String.join(System.lineSeparator(), stubFileLines);
+    AScene scene = new AScene();
+    ToIndexFileConverter.convert(
+        scene,
+        new ByteArrayInputStream(stubFile.getBytes(StandardCharsets.UTF_8)),
+        new ByteArrayOutputStream());
+    AMethod method = scene.classes.get("p.C").methods.get("m()[Ljava/lang/String;");
+    Assert.assertNotNull("no scene element for method m", method);
+    Assert.assertNotNull("@Deprecated was not recorded on the method", method.lookup("Deprecated"));
+    Assert.assertNull("@Nullable was recorded on the method", method.lookup("Nullable"));
+    Assert.assertNull(
+        "@Nullable was recorded on the array type", method.returnType.lookup("Nullable"));
+    ATypeElement componentType = method.returnType.innerTypes.get(element(Collections.emptyList()));
+    Assert.assertNotNull("no scene element for the component type", componentType);
+    Assert.assertNotNull(
+        "@Nullable was not recorded on the component type", componentType.lookup("Nullable"));
+  }
+
+  /**
    * Tests that an annotation on a nested type argument is recorded even when no annotation appears
    * on the type argument that encloses it.
    */
