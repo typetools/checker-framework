@@ -46,6 +46,10 @@ ifelse([ * "misc" is the only group that runs Spotless, the Javadoc linting
    tasks, and the manual's build.])dnl
 ifelse([ * "plume-lib" is the lone job that runs Gradle in another project's
    directory, once per plume-lib package.])dnl
+ifelse([Group "beam" is the Beam jobs, which run Gradle in Beam's directory.
+Beam's dependencies are several gigabytes, too large for the cache quota, so
+these jobs restore group "cf"'s entries, for this project's own build, and
+never save.])dnl
 ifelse([Group "cf" holds every other job. Those jobs build and test this
 project alone: Daikon builds with "make" and Guava with Maven, whose
 artifacts this cache does not cover.])dnl
@@ -62,13 +66,14 @@ other.])dnl
 ifelse([A "!" pattern removes files that an earlier pattern matched, so the
 include pattern must enumerate files, via "/**", rather than name the
 directory, which "actions/cache" would archive whole.])dnl
-ifelse([Takes 1 argument: the cache group.])dnl
+ifelse([Takes 1 or 2 arguments: the cache group, and optionally the action
+to use, which defaults to "actions/cache".])dnl
 define([gradle_cache], [dnl
-      - uses: actions/cache@v6
+      - uses: ifelse([$2],,[actions/cache],[$2])@v6
         with:
           path: ~/.gradle/wrapper
           key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-      - uses: actions/cache@v6
+      - uses: ifelse([$2],,[actions/cache],[$2])@v6
         with:
           path: |
             ~/.gradle/caches/modules-2/**
@@ -80,11 +85,17 @@ define([gradle_cache], [dnl
             gradle-modules-
 ])dnl
 dnl
+ifelse([Takes 1 argument: the cache group whose entries to restore. Like
+"gradle_cache", but never saves.])dnl
+define([gradle_cache_restore], [gradle_cache([$1], [actions/cache/restore])])dnl
+dnl
 ifelse([Takes 1 argument: the name of the test script that a job runs.
 Expands to the cache group that the job belongs to.])dnl
 define([cache_group], [dnl
 ifelse($1,test-cftests-nonjunit.sh,[nonjunit],
        $1,test-plume-lib.sh,[plume-lib],
+       $1,test-beam-part1.sh,[beam],
+       $1,test-beam-part2.sh,[beam],
        [cf])])dnl
 dnl
 ifelse([Gradle derives its user home from the JVM's "user.home" property, which
@@ -129,7 +140,7 @@ gradle_user_home()dnl
           fetch-depth: 25
           show-progress: false
           persist-credentials: false
-gradle_cache(cache_group($3))dnl
+ifelse(cache_group($3),beam,[gradle_cache_restore(cf)],[gradle_cache(cache_group($3))])dnl
       - name: $3
         run: $4
         env:
@@ -265,6 +276,17 @@ ifelse($1,canary_jdk,,[dnl
       - guava_part2_jdk[]canary_jdk
 ])dnl
 boilerplate(ubuntu, $1, test-guava-part2.sh, ./checker/bin-devel/test-guava-part2.sh)dnl
+])dnl
+dnl
+define([beam_job], [dnl
+  job_name(beam_part1_jdk$1)
+    dependsOn:
+      - canary_jobs
+boilerplate(ubuntu, $1, test-beam-part1.sh, ./checker/bin-devel/test-beam-part1.sh)dnl
+  job_name(beam_part2_jdk$1)
+    dependsOn:
+      - canary_jobs
+boilerplate(ubuntu, $1, test-beam-part2.sh, ./checker/bin-devel/test-beam-part2.sh)dnl
 ])dnl
 dnl
 define([plume_lib_job], [dnl
