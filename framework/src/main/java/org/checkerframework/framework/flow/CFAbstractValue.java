@@ -136,7 +136,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   }
 
   /**
-   * Returns the union of the given sets, or null if the union is equal to {@code base}. That is,
+   * Returns the union of the given sets, or null if the union is within {@code base}. That is,
    * returns null if {@code base} already contains {@code set1} and {@code set2}. A null argument
    * represents the empty set. Does not side-effect any argument.
    *
