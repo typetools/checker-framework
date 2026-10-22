@@ -16,6 +16,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.types.AbstractQualifier;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.CaptureVariable;
 import org.checkerframework.framework.util.typeinference8.types.Dependencies;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
@@ -468,6 +469,20 @@ public final class Resolution {
       }
       asList.add(ai);
       Set<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
+      if (ai instanceof CaptureVariable captureVariable) {
+        // See CaptureVariable#getWildcardLowerBound.
+        AbstractType wildcardLowerBound = captureVariable.getWildcardLowerBound();
+        if (wildcardLowerBound != null) {
+          wildcardLowerBound = wildcardLowerBound.applyInstantiations();
+          // `ai` depends on every variable in the capture bound, including those in
+          // `wildcardLowerBound` (see BoundSet#getDependencies), so any variable still in it is
+          // being resolved in this same set.  Like any other lower bound that is not proper, it
+          // is not used (JLS 18.4).
+          if (wildcardLowerBound.isProper()) {
+            lowerBounds.add((ProperType) wildcardLowerBound);
+          }
+        }
+      }
       ProperType lowerBound = context.inferenceTypeFactory.lub(lowerBounds);
       if (lowerBound != null) {
         // The annotated type is mutated below and by `createFreshTypeVariable`, but `lub` may
