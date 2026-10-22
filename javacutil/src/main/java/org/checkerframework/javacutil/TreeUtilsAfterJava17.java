@@ -35,6 +35,10 @@ public final class TreeUtilsAfterJava17 {
       throw new AssertionError("Cannot be instantiated.");
     }
 
+    /** The kind of a {@code DefaultCaseLabelTree}, or null if javac has no such kind. */
+    private static final Tree.@Nullable Kind DEFAULT_CASE_LABEL_KIND =
+        sourceVersionNumber >= 21 ? Tree.Kind.valueOf("DEFAULT_CASE_LABEL") : null;
+
     /** The {@code CaseTree.getLabels} method for Java 21 and higher; null otherwise. */
     private static @Nullable Method GET_LABELS =
         sourceVersionNumber >= 21 ? getMethod(CaseTree.class, "getLabels") : null;
@@ -70,7 +74,7 @@ public final class TreeUtilsAfterJava17 {
      * @return true if {@code tree} is a {@code DefaultCaseLabelTree}
      */
     public static boolean isDefaultCaseLabelTree(Tree tree) {
-      return tree.getKind().name().contentEquals("DEFAULT_CASE_LABEL");
+      return tree.getKind() == DEFAULT_CASE_LABEL_KIND;
     }
 
     /**
@@ -161,6 +165,10 @@ public final class TreeUtilsAfterJava17 {
      */
     private static @Nullable Method GET_CONSTANT_EXPRESSION = null;
 
+    /** The kind of a {@code ConstantCaseLabelTree}, or null if javac has no such kind. */
+    private static final Tree.@Nullable Kind CONSTANT_CASE_LABEL_KIND =
+        sourceVersionNumber >= 21 ? Tree.Kind.valueOf("CONSTANT_CASE_LABEL") : null;
+
     /**
      * Returns true if {@code tree} is a {@code ConstantCaseLabelTree}.
      *
@@ -168,7 +176,7 @@ public final class TreeUtilsAfterJava17 {
      * @return true if {@code tree} is a {@code ConstantCaseLabelTree}
      */
     public static boolean isConstantCaseLabelTree(Tree tree) {
-      return tree.getKind().name().contentEquals("CONSTANT_CASE_LABEL");
+      return tree.getKind() == CONSTANT_CASE_LABEL_KIND;
     }
 
     /**
@@ -254,6 +262,10 @@ public final class TreeUtilsAfterJava17 {
     /** The PatternCaseLabelTree.getPattern method for Java 21 and higher; null otherwise. */
     private static @Nullable Method GET_PATTERN = null;
 
+    /** The kind of a {@code PatternCaseLabelTree}, or null if javac has no such kind. */
+    private static final Tree.@Nullable Kind PATTERN_CASE_LABEL_KIND =
+        sourceVersionNumber >= 21 ? Tree.Kind.valueOf("PATTERN_CASE_LABEL") : null;
+
     /**
      * Returns true if {@code tree} is a {@code PatternCaseLabelTree}.
      *
@@ -261,7 +273,7 @@ public final class TreeUtilsAfterJava17 {
      * @return true if {@code tree} is a {@code PatternCaseLabelTree}
      */
     public static boolean isPatternCaseLabelTree(Tree tree) {
-      return tree.getKind().name().contentEquals("PATTERN_CASE_LABEL");
+      return tree.getKind() == PATTERN_CASE_LABEL_KIND;
     }
 
     /**

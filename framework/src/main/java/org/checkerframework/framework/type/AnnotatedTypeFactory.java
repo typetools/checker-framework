@@ -2515,6 +2515,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * The implementation of {@link #methodFromUse(MethodInvocationTree)} and {@link
    * #methodFromUseWithoutTypeArgInference(MethodInvocationTree)}.
    *
+   * <p>Type argument inference calls this method with {@code inferTypeArgs} false, possibly while
+   * it is inferring the type of an argument of {@code tree}. An override must not compute the type
+   * of an argument (for example, by calling {@link #getAnnotatedType(Tree)}) when {@code
+   * inferTypeArgs} is false: if the argument is a poly expression, doing so re-enters inference and
+   * recurses infinitely.
+   *
    * @param tree a method invocation tree
    * @param inferTypeArgs true if type arguments should be inferred
    * @return the type of the invoked method, any explicit type arguments, and if {@code
@@ -2601,6 +2607,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * The implementation of {@link #methodFromUse(ExpressionTree, ExecutableElement,
    * AnnotatedTypeMirror)} and {@link #methodFromUseWithoutTypeArgInference(ExpressionTree,
    * ExecutableElement, AnnotatedTypeMirror)}.
+   *
+   * <p>Type argument inference calls this method with {@code inferTypeArgs} false, possibly while
+   * it is inferring the type of an argument of {@code tree}. An override must not compute the type
+   * of an argument (for example, by calling {@link #getAnnotatedType(Tree)}) when {@code
+   * inferTypeArgs} is false: if the argument is a poly expression, doing so re-enters inference and
+   * recurses infinitely.
    *
    * @param tree either a MethodInvocationTree or a MemberReferenceTree
    * @param methodElt the element of the referenced method
@@ -5213,6 +5225,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           final AnnotatedTypeMirror newArg;
           if (types.isSameType(wildcardUbType, correctArgType)) {
             newArg = wildcardType.getExtendsBound().deepCopy();
+          } else if (TypesUtils.isSameTypeModuloCaptures(wildcardUbType, correctArgType, types)) {
+            // Keep the annotations on the bounds of the captured type variables, too.  This
+            // includes the case where correctArgType is itself a captured type variable.
+            newArg = this.toAnnotatedType(correctArgType, false);
+            replaceAnnotations(wildcardType.getExtendsBound(), newArg);
           } else if (correctArgType.getKind() == TypeKind.TYPEVAR) {
             newArg = this.toAnnotatedType(correctArgType, false);
             AnnotatedTypeVariable newArgAsTypeVar = (AnnotatedTypeVariable) newArg;
@@ -5247,9 +5264,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             getTypeVarSubstitutor().substitute(typeVarToTypeArg, groundFunctionalType);
     groundFunctionalType.addAnnotations(functionalType.getPrimaryAnnotations());
 
-    // When the groundTargetJavaType is different from the underlying type of functionalType,
-    // only the main annotations are copied.  Add default annotations in places without
-    // annotations.
+    // When the groundTargetJavaType is different from the underlying type of functionalType
+    // (other than by captured type variables), only the main annotations are copied.  Add
+    // default annotations in places without annotations.
     addDefaultAnnotations(groundFunctionalType);
     return groundFunctionalType;
   }
