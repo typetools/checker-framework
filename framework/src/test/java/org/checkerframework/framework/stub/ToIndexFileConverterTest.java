@@ -13,7 +13,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.checkerframework.afu.scenelib.el.AClass;
+import org.checkerframework.afu.scenelib.el.AElement;
 import org.checkerframework.afu.scenelib.el.AField;
+import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.afu.scenelib.el.AScene;
 import org.checkerframework.afu.scenelib.el.ATypeElement;
 import org.checkerframework.afu.scenelib.el.TypePathEntry;
@@ -191,6 +193,46 @@ public class ToIndexFileConverterTest {
     Assert.assertNotNull("@A was not recorded on the nested type argument", inner.lookup("A"));
   }
 
+  /**
+   * Tests that an annotation that {@code extractAnnotation} discards is not recorded as null, and
+   * that an annotation next to it is still recorded.
+   */
+  @Test
+  public void testDiscardedAnnotation() {
+    // `extractAnnotation` discards an annotation whose text contains `+`.
+    AClass clazz =
+        classOfStub(
+            "package p;",
+            "@A(\"x+y\") @B class C {",
+            "  @A(\"x+y\") @B int f;",
+            "  @A(\"x+y\") @B C() {}",
+            "  @A(\"x+y\") @B void m(@A(\"x+y\") @B C this) {}",
+            "}");
+    assertOnlyB("the class", clazz);
+    assertOnlyB("field f", clazz.fields.get("f"));
+    Assert.assertEquals("wrong methods", 2, clazz.methods.size());
+    for (AMethod method : clazz.methods.values()) {
+      assertOnlyB(method.methodSignature, method);
+      Assert.assertFalse(
+          "null was recorded on the receiver of " + method.methodSignature,
+          method.receiver.tlAnnotationsHere.contains(null));
+    }
+    assertOnlyB("the receiver type of m", clazz.methods.get("m()V").receiver.type);
+  }
+
+  /**
+   * Asserts that {@code @B} is recorded on {@code elem}, and that null is not.
+   *
+   * @param description a description of {@code elem}, for failure messages
+   * @param elem a scene element
+   */
+  private static void assertOnlyB(String description, AElement elem) {
+    Assert.assertNotNull("no scene element for " + description, elem);
+    Assert.assertFalse(
+        "null was recorded on " + description, elem.tlAnnotationsHere.contains(null));
+    Assert.assertNotNull("@B was not recorded on " + description, elem.lookup("B"));
+  }
+
   /** Tests {@code getJVML} on wildcard types. */
   @Test
   public void testGetJVMLWildcard() {
@@ -271,6 +313,18 @@ public class ToIndexFileConverterTest {
    * @return the scene element for field {@code f} of class {@code p.C}
    */
   private static AField fieldOfStub(String... lines) {
+    AField field = classOfStub(lines).fields.get("f");
+    Assert.assertNotNull("no scene element for field f", field);
+    return field;
+  }
+
+  /**
+   * Converts a stub file that declares a single class {@code p.C}, and returns the class.
+   *
+   * @param lines the lines of the stub file
+   * @return the scene element for class {@code p.C}
+   */
+  private static AClass classOfStub(String... lines) {
     String stubContents = String.join(System.lineSeparator(), lines);
     StubUnit stubUnit =
         StaticJavaParserUtil.parseStubUnit(
@@ -282,8 +336,6 @@ public class ToIndexFileConverterTest {
     TypeDeclaration<?> typeDecl = cu.getType(0);
     AClass clazz = scene.classes.getVivify("p." + typeDecl.getNameAsString());
     typeDecl.accept(converter, clazz);
-    AField field = clazz.fields.get("f");
-    Assert.assertNotNull("no scene element for field f", field);
-    return field;
+    return clazz;
   }
 }
