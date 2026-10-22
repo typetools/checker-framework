@@ -1,6 +1,8 @@
 package org.checkerframework.framework.flow;
 
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -131,6 +133,48 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     return true;
+  }
+
+  /**
+   * Returns the union of the given sets, or null if the union is equal to {@code base}. That is,
+   * returns null if {@code base} already contains {@code set1} and {@code set2}. A null argument
+   * represents the empty set. Does not side-effect any argument.
+   *
+   * <p>This is useful for subclasses whose values hold a set in addition to annotations, since
+   * values must not be side-effected.
+   *
+   * @param base a set, or null
+   * @param set1 a set, or null
+   * @param set2 a set, or null
+   * @return the union of the given sets, or null if the union is equal to {@code base}
+   */
+  protected static @Nullable Set<String> unionIfLarger(
+      @Nullable Set<String> base, @Nullable Set<String> set1, @Nullable Set<String> set2) {
+    if (isSubset(set1, base) && isSubset(set2, base)) {
+      return null;
+    }
+    Set<String> result = new LinkedHashSet<>();
+    if (base != null) {
+      result.addAll(base);
+    }
+    if (set1 != null) {
+      result.addAll(set1);
+    }
+    if (set2 != null) {
+      result.addAll(set2);
+    }
+    return result;
+  }
+
+  /**
+   * Returns true if {@code subset} is a subset of {@code superset}. Null represents the empty set.
+   *
+   * @param subset a set, or null
+   * @param superset a set, or null
+   * @return true if {@code subset} is a subset of {@code superset}
+   */
+  private static boolean isSubset(@Nullable Set<String> subset, @Nullable Set<String> superset) {
+    return subset == null || subset.isEmpty() || (superset != null && superset.containsAll(subset));
   }
 
   /**

@@ -13,7 +13,6 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.plumelib.util.MapsP;
 
 /**
  * KeyForValue holds additional information about which maps this value is a key for. This extra
@@ -44,8 +43,7 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
    * If the underlying type is a type variable or a wildcard, then this is a set of maps for which
    * this value is a key. Otherwise, it's null.
    */
-  // Cannot be final because lub re-assigns; add a new constructor to do this cleanly?
-  private @Nullable Set<String> keyForMaps;
+  private final @Nullable Set<String> keyForMaps;
 
   /**
    * Create a KeyForValue.
@@ -76,6 +74,23 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
   }
 
   /**
+   * Create a KeyForValue with the given keyForMaps.
+   *
+   * @param analysis the analysis
+   * @param annotations the annotations
+   * @param underlyingType the underlying type
+   * @param keyForMaps the maps for which this value is a key, or null
+   */
+  private KeyForValue(
+      CFAbstractAnalysis<KeyForValue, ?, ?> analysis,
+      AnnotationMirrorSet annotations,
+      TypeMirror underlyingType,
+      @Nullable Set<String> keyForMaps) {
+    super(analysis, annotations, underlyingType);
+    this.keyForMaps = keyForMaps;
+  }
+
+  /**
    * If the underlying type is a type variable or a wildcard, then this is a set of maps for which
    * this value is a key. Otherwise, it's null.
    */
@@ -92,13 +107,13 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
       return upperBound;
     }
     // Lub the keyForMaps by intersecting the sets.
-    upperBound.keyForMaps = new LinkedHashSet<>(this.keyForMaps.size());
-    upperBound.keyForMaps.addAll(this.keyForMaps);
-    upperBound.keyForMaps.retainAll(other.keyForMaps);
-    if (upperBound.keyForMaps.isEmpty()) {
-      upperBound.keyForMaps = null;
-    }
-    return upperBound;
+    Set<String> lubKeyForMaps = new LinkedHashSet<>(this.keyForMaps);
+    lubKeyForMaps.retainAll(other.keyForMaps);
+    return new KeyForValue(
+        analysis,
+        upperBound.getAnnotations(),
+        upperBound.getUnderlyingType(),
+        lubKeyForMaps.isEmpty() ? null : lubKeyForMaps);
   }
 
   @Override
@@ -114,43 +129,32 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
       // other annotations are not empty.  In this case, add the keyForMaps to the value with
       // no annotations and return it as most specific.
       if (other.getAnnotations().isEmpty()) {
-        return other.withKeyFor(this.keyForMaps);
+        return other.withKeyFor(this.keyForMaps, null);
       } else if (this.getAnnotations().isEmpty()) {
-        return this.withKeyFor(other.keyForMaps);
+        return this.withKeyFor(other.keyForMaps, null);
       }
       return null;
     }
 
-    mostSpecific = mostSpecific.withKeyFor(this.keyForMaps);
-    if (other != null) {
-      mostSpecific = mostSpecific.withKeyFor(other.keyForMaps);
-    }
-    return mostSpecific;
+    return mostSpecific.withKeyFor(this.keyForMaps, other == null ? null : other.keyForMaps);
   }
 
   /**
    * Returns a value that is like this one, but whose keyForMaps also contains {@code
-   * newKeyForMaps}. Does not side-effect this value, which might be shared by multiple stores.
+   * newKeyForMaps1} and {@code newKeyForMaps2}. Does not side-effect this value, which might be
+   * shared by multiple stores.
    *
-   * @param newKeyForMaps the maps to add, or null
-   * @return a value like this one whose keyForMaps also contains {@code newKeyForMaps}; it is
-   *     {@code this} if this value's keyForMaps already contains {@code newKeyForMaps}
+   * @param newKeyForMaps1 maps to add, or null
+   * @param newKeyForMaps2 more maps to add, or null
+   * @return a value like this one whose keyForMaps also contains {@code newKeyForMaps1} and {@code
+   *     newKeyForMaps2}; it is {@code this} if this value's keyForMaps already contains both
    */
-  private KeyForValue withKeyFor(@Nullable Set<String> newKeyForMaps) {
-    if (newKeyForMaps == null
-        || newKeyForMaps.isEmpty()
-        || (keyForMaps != null && keyForMaps.containsAll(newKeyForMaps))) {
+  private KeyForValue withKeyFor(
+      @Nullable Set<String> newKeyForMaps1, @Nullable Set<String> newKeyForMaps2) {
+    Set<String> resultKeyForMaps = unionIfLarger(keyForMaps, newKeyForMaps1, newKeyForMaps2);
+    if (resultKeyForMaps == null) {
       return this;
     }
-    KeyForValue result = new KeyForValue(analysis, getAnnotations(), getUnderlyingType());
-    Set<String> resultKeyForMaps =
-        new LinkedHashSet<>(
-            MapsP.mapCapacity((keyForMaps == null ? 0 : keyForMaps.size()) + newKeyForMaps.size()));
-    if (keyForMaps != null) {
-      resultKeyForMaps.addAll(keyForMaps);
-    }
-    resultKeyForMaps.addAll(newKeyForMaps);
-    result.keyForMaps = resultKeyForMaps;
-    return result;
+    return new KeyForValue(analysis, getAnnotations(), getUnderlyingType(), resultKeyForMaps);
   }
 }
