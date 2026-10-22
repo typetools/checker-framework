@@ -2224,14 +2224,27 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       selectorVarUseNode.setInSource(false);
       extendWithNode(selectorVarUseNode);
 
-      Node selectorExprNode = unbox(scan(selectorExprTree, null));
+      Node selectorExprNode = scan(selectorExprTree, null);
+      // A switch without a null label throws NullPointerException when its selector is null.
+      boolean throwsOnNull =
+          !selectorExprType.getKind().isPrimitive() && !TreeUtils.hasNullCaseLabel(switchTree);
+      // Unboxing models the NullPointerException for a boxed primitive selector.
+      boolean unboxed = throwsOnNull && TypesUtils.isBoxedPrimitive(selectorExprType);
+      if (unboxed) {
+        selectorExprNode = unbox(selectorExprNode);
+      }
 
       AssignmentTree assign = treeBuilder.buildAssignment(selectorVarUseTree, selectorExprTree);
       handleArtificialTree(assign);
 
       selectorExprAssignment = new AssignmentNode(assign, selectorVarUseNode, selectorExprNode);
       selectorExprAssignment.setInSource(false);
-      extendWithNode(selectorExprAssignment);
+      if (throwsOnNull && !unboxed) {
+        selectorExprAssignment.setThrowsOnNullSelector();
+        extendWithNodeWithException(selectorExprAssignment, nullPointerExceptionType);
+      } else {
+        extendWithNode(selectorExprAssignment);
+      }
     }
 
     /**
