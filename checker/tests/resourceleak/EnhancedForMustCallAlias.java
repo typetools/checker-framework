@@ -57,4 +57,13 @@ public class EnhancedForMustCallAlias extends LineNumberReader
       mayThrow();
     }
   }
+
+  static void leakOnException(String filename) throws IOException {
+    // :: error: [required.method.not.called]
+    EnhancedForMustCallAlias r = new EnhancedForMustCallAlias(new FileReader(filename));
+    for (String line : r) {
+      mayThrow();
+    }
+    r.close();
+  }
 }
