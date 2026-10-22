@@ -268,7 +268,7 @@ public class ContractsFromMethod {
     Name c = AnnotationUtils.getElementValueClassName(contractAnno, "qualifier", false);
 
     AnnotationMirror anno;
-    if (argumentAnno == null || argumentRenaming.isEmpty()) {
+    if (argumentAnno == null || argumentRenaming == null || argumentRenaming.isEmpty()) {
       // If there are no arguments, use factory method that allows caching.
       anno = AnnotationBuilder.fromName(factory.getElementUtils(), c);
     } else {
