@@ -241,6 +241,13 @@ The declaration in \code{Sub} is illegal because a client may call
 It is legal for the overriding method to state weaker bounds than the
 overridden method, because that permits more type arguments rather than fewer.
 
+The bounds are not checked when the overridden method is unchecked code that
+receives conservative defaults
+(Section~\ref{AuseConservativeDefaultsForUncheckedCodesource}), because no
+overriding method could contain the conservative bounds.  The Map Key Checker
+does not check lower bounds, because its default for lower bounds differs
+between the JDK and other code (Section~\ref{map-key-defaults-lowerbound}).
+
 
 \subsectionAndLabel{Type annotations on a use of a generic type variable}{type-variable-use}
 

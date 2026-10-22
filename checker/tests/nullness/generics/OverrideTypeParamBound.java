@@ -2,6 +2,7 @@
 // parameter bounds.  A client may call the overridden method with any type argument that is
 // within the overridden method's bounds, so the overriding method must permit all of them.
 
+import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -177,5 +178,33 @@ public class OverrideTypeParamBound {
     <T extends @Nullable Object> void f(@NonNull T p) {
       p.hashCode();
     }
+  }
+
+  // A method reference is checked as an override of the functional interface's method, but the
+  // type parameters of the method reference's compile-time declaration do not correspond to those
+  // of the functional interface's method.  Instead, the compile-time declaration's type arguments,
+  // which are inferred, are checked against its bounds.
+
+  interface ListConsumer {
+    <T extends @Nullable Object> void use(List<T> list);
+  }
+
+  static <@Nullable U extends @Nullable Object> void addNull(List<U> list) {
+    list.add(null);
+  }
+
+  static <U extends @Nullable Object> void ignore(List<U> list) {}
+
+  void methodReferences() {
+    // :: error: [type.argument]
+    ListConsumer bad = OverrideTypeParamBound::addNull;
+    ListConsumer good = OverrideTypeParamBound::ignore;
+  }
+
+  // Without the error above, this method would dereference null.
+  void clientOfMethodReference(ListConsumer c) {
+    List<@NonNull String> list = new ArrayList<>();
+    c.use(list);
+    list.get(0).length();
   }
 }
