@@ -120,47 +120,21 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       // The inference problem whose result is used.
       InvocationTypeInference chosenInference = java8Inference;
       if (result.inferenceFailed() && java8Inference.canContextTargetTypeCauseFailure()) {
-        // Inference failed, possibly only because of the constraint against the target type of
-        // outerTree.  Retry without that constraint, as if outerTree were not a poly expression.
-        // Use the retry's result if it succeeds and the type it infers for outerTree has the Java
-        // type that the target type requires but qualifiers that the target type does not
-        // permit.  Then the check of the assignment, return, argument, etc. that gives outerTree
-        // its target type determines whether the type of outerTree is compatible with its
-        // context, and reporting "type.arguments.not.inferred" as well would duplicate any error
-        // that the check reports.  Furthermore, the visitor skips the other checks of an
-        // invocation whose type arguments are not inferred, such as the checks of its arguments.
-        // The instantiation that the retry finds satisfies every other constraint, so it is a
-        // legitimate typing of outerTree and of every invocation nested within it.
+        // Retry inference without the target type of outerTree, so that the errors reported to
+        // the user are easier to fix.  The conditions below ensure that the newly inferred type
+        // is not assignable to the target type, so an assignment error will be issued instead of
+        // "type.arguments.not.inferred".
         //
-        // The check at the context does not necessarily report an error, because the target type
-        // that inference uses can be stricter than the type that the check uses.  For example,
-        // when a local variable's type is a type variable, the target type of its initializer
-        // lacks the local variable's default qualifiers (see
-        // InferenceFactory#assignedToVariable), but the check of the initialization uses them.
-        // In that case, the failure of the first attempt is spurious.
+        // (If an assignment error is not issued, it is because the type used to check the
+        // assignment is more relaxed than the target type used here.  In that case, the
+        // "type.arguments.not.inferred" error was spurious.  See
+        // InferenceFactory#assignedToVariable.)
         //
-        // The retry is used only under these conditions:
-        //  * The target type comes from the context of outerTree.  A target type from
-        //    AnnotatedTypeFactory#getDummyAssignedTo is not checked at the use site.
-        //  * The type that the retry infers for outerTree is assignable to the target type
-        //    according to its Java type but not according to its qualifiers (see
-        //    ProperType#isAssignable).  Otherwise, the first attempt failed for a reason other
-        //    than the incompatibility of that type with the target type, and the check at the
-        //    context would not detect that reason.
-        //  * The retry infers the same Java types as the first attempt.  The first attempt uses
-        //    the target type as javac does, and it failed only because of qualifiers (a failure
-        //    because of Java types throws FalseBoundException), so it instantiated every
-        //    inference variable.  If the Java types differ, then the target type is needed to
-        //    infer the Java types (for example, when it is the only source of the type of a
-        //    lambda parameter or of a lambda's return expression), and the retry does not type
-        //    the invocation as javac does.
-        //
-        // Only the target type of outerTree is dropped.  The constraints between a nested
-        // invocation (or lambda or method reference) and the formal parameter that it is an
-        // argument to remain: the inference variables of outerTree are inferred from them, and
-        // dropping them would change the inference of outerTree, not just of the nested
-        // expression.  If they are unsatisfiable, then inference fails regardless of the target
-        // type of outerTree, and "type.arguments.not.inferred" is reported.
+        // The retry's result is used only if:
+        //  * The target type is not from AnnotatedTypeFactory#getDummyAssignedTo.
+        //  * The retry infers the same type arguments as the first attempt, ignoring qualifiers.
+        //  * The qualifiers of the type that the retry infers for outerTree are not assignable
+        //    to the target type (see ProperType#isAssignable).
         InvocationTypeInference retry =
             new InvocationTypeInference(typeFactory, pathToExpression, false);
         InferenceResult retryResult = inferWithoutTargetType(retry, outerTree, outerMethodType);

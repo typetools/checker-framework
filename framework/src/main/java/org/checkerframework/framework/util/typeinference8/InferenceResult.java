@@ -35,7 +35,9 @@ public class InferenceResult {
 
   /**
    * A mapping from a tree that needs type argument inference to a map from type parameter to its
-   * inferred annotated type argument. If inference failed, this map will be empty.
+   * inferred annotated type argument. If inference crashed, this map is empty. If inference failed
+   * because of qualifiers, this map contains the type arguments that inference instantiated, whose
+   * qualifiers do not satisfy every constraint.
    */
   private final Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> results;
 
@@ -95,7 +97,9 @@ public class InferenceResult {
 
   /**
    * A mapping from a tree that needs type argument inference to a map from type parameter to its
-   * inferred annotated type argument. If inference failed, this map will be empty.
+   * inferred annotated type argument. If inference crashed, this map is empty. If inference failed
+   * because of qualifiers, this map contains the type arguments that inference instantiated, whose
+   * qualifiers do not satisfy every constraint.
    *
    * @return mapping from a tree that needs type argument inference to a map from type parameter to
    *     its inferred annotated type argument
