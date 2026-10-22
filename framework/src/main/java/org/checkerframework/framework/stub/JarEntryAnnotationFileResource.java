@@ -42,6 +42,9 @@ public class JarEntryAnnotationFileResource implements AnnotationFileResource {
         throw new IOException("No entry " + entryName + " in " + archive);
       }
       try (InputStream in = file.getInputStream(entry)) {
+        if (in == null) {
+          throw new IOException("Cannot read entry " + entryName + " in " + archive);
+        }
         return new ByteArrayInputStream(in.readAllBytes());
       }
     }
