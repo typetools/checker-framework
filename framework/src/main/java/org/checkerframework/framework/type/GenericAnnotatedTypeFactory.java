@@ -1210,10 +1210,12 @@ public abstract class GenericAnnotatedTypeFactory<
   public Store getRegularStore(Block block) {
     TransferInput<Value, Store> input;
     if (!analysis.isRunning()) {
+      assert flowResult != null : "@AssumeAssertion(nullness): dataflow analysis has completed";
       input = flowResult.getInput(block);
     } else {
       input = analysis.getInput(block);
     }
+    assert input != null : "@AssumeAssertion(nullness): block was analyzed";
 
     return input.getRegularStore();
   }
