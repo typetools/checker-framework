@@ -585,8 +585,11 @@ tasks.register("addFavicon", Exec) {
  * Javadoc tasks happen to exist, so that adding a Javadoc task to a subproject silently changes
  * every task that uses this classpath.
  *
- * <p>It reads each `javadoc` task's classpath lazily, so that it reflects changes that a
- * subproject's build script makes to that classpath after this method is called.
+ * <p>It reads each `javadoc` task's classpath when this method is called.  It does not read the
+ * classpath lazily, because every Javadoc task adds the fat checker.jar to its own classpath in
+ * `doFirst`.  A lazy read would see that addition after the subproject's `javadoc` task ran, and
+ * then the calling task would resolve the subproject's `checkerFatJar` configuration while
+ * executing, which Gradle forbids.
  *
  * <p>It uses `findByName` rather than `named`, which throws if a subproject has no `javadoc` task.
  * Every subproject currently applies the `java` plugin (see the `allprojects` block above), which
@@ -600,7 +603,7 @@ def subprojectsJavadocClasspath() {
   subprojects.each { proj ->
     def subprojectJavadoc = proj.tasks.findByName("javadoc")
     if (subprojectJavadoc != null) {
-      result += files({ subprojectJavadoc.classpath })
+      result += subprojectJavadoc.classpath
     }
   }
   return result
