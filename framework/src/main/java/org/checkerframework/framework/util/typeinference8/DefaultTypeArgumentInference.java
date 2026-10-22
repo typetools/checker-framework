@@ -18,12 +18,10 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -165,8 +163,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         // type of outerTree, and "type.arguments.not.inferred" is reported.
         InvocationTypeInference retry =
             new InvocationTypeInference(typeFactory, pathToExpression, false);
-        InferenceResult retryResult =
-            inferWithoutTargetType(typeFactory, retry, outerTree, outerMethodType);
+        InferenceResult retryResult = inferWithoutTargetType(retry, outerTree, outerMethodType);
         if (retryResult != null
             && !retryResult.inferenceFailed()
             && retry.isQualifiersIncompatibleWithTarget()
@@ -226,7 +223,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
   /**
    * Returns true if the two inference results infer type arguments for the same trees and type
-   * variables, and the Java types of corresponding type arguments are the same.
+   * variables, and the Java types of corresponding type arguments are the same, modulo captured
+   * type variables. Each inference problem may create its own captured type variables.
    *
    * @param result1 an inference result
    * @param result2 an inference result
@@ -250,77 +248,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       for (Map.Entry<TypeVariable, AnnotatedTypeMirror> typeArg1 : typeArgs1.entrySet()) {
         AnnotatedTypeMirror typeArg2 = typeArgs2.get(typeArg1.getKey());
         assert typeArg2 != null : "@AssumeAssertion(nullness): the key sets are equal";
-        if (!isSameTypeModuloCapture(
+        if (!TypesUtils.isSameTypeModuloCaptures(
             typeArg1.getValue().getUnderlyingType(), typeArg2.getUnderlyingType(), types)) {
           return false;
         }
       }
     }
     return true;
-  }
-
-  /**
-   * Returns true if the two types are the same, treating two captured type variables as the same if
-   * they capture the same wildcard. Each inference problem may create its own captured type
-   * variables, which {@link Types#isSameType} considers distinct.
-   *
-   * @param type1 a type
-   * @param type2 a type
-   * @param types the type utilities
-   * @return true if the two types are the same, modulo capture
-   */
-  private static boolean isSameTypeModuloCapture(
-      @Nullable TypeMirror type1, @Nullable TypeMirror type2, Types types) {
-    if (type1 == null || type2 == null) {
-      return type1 == null && type2 == null;
-    }
-    if (types.isSameType(type1, type2)) {
-      return true;
-    }
-    if (type1.getKind() != type2.getKind()) {
-      return false;
-    }
-    switch (type1.getKind()) {
-      case TYPEVAR -> {
-        WildcardType wildcard1 = TypesUtils.getCapturedWildcard((TypeVariable) type1);
-        WildcardType wildcard2 = TypesUtils.getCapturedWildcard((TypeVariable) type2);
-        return wildcard1 != null
-            && wildcard2 != null
-            && isSameTypeModuloCapture(wildcard1, wildcard2, types);
-      }
-      case DECLARED -> {
-        DeclaredType declared1 = (DeclaredType) type1;
-        DeclaredType declared2 = (DeclaredType) type2;
-        List<? extends TypeMirror> typeArgs1 = declared1.getTypeArguments();
-        List<? extends TypeMirror> typeArgs2 = declared2.getTypeArguments();
-        if (!types.isSameType(types.erasure(type1), types.erasure(type2))
-            || typeArgs1.size() != typeArgs2.size()
-            || !isSameTypeModuloCapture(
-                declared1.getEnclosingType(), declared2.getEnclosingType(), types)) {
-          return false;
-        }
-        for (int i = 0; i < typeArgs1.size(); i++) {
-          if (!isSameTypeModuloCapture(typeArgs1.get(i), typeArgs2.get(i), types)) {
-            return false;
-          }
-        }
-        return true;
-      }
-      case ARRAY -> {
-        return isSameTypeModuloCapture(
-            ((ArrayType) type1).getComponentType(), ((ArrayType) type2).getComponentType(), types);
-      }
-      case WILDCARD -> {
-        WildcardType wildcard1 = (WildcardType) type1;
-        WildcardType wildcard2 = (WildcardType) type2;
-        return isSameTypeModuloCapture(
-                wildcard1.getExtendsBound(), wildcard2.getExtendsBound(), types)
-            && isSameTypeModuloCapture(wildcard1.getSuperBound(), wildcard2.getSuperBound(), types);
-      }
-      default -> {
-        return false;
-      }
-    }
   }
 
   /**
@@ -332,18 +266,14 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * inferable, for example when the target type is the only source of the type of a lambda's return
    * expression.
    *
-   * <p>Any other exception indicates a bug. It is handled as for inference with the target type: if
-   * the {@code convertTypeArgInferenceCrashToWarning} option is false, it is rethrown; otherwise,
-   * this returns null, so the failure of inference with the target type is reported.
+   * <p>Any other exception indicates a bug, and it propagates to the caller.
    *
-   * @param typeFactory the type factory
    * @param retry the inference problem to solve; it does not use the target type
    * @param outerTree the invocation whose type arguments are inferred
    * @param outerMethodType the type of {@code outerTree}'s method before type argument substitution
-   * @return the result of inference, or null if inference threw an exception
+   * @return the result of inference, or null if inference fails because of the Java types
    */
   private @Nullable InferenceResult inferWithoutTargetType(
-      AnnotatedTypeFactory typeFactory,
       InvocationTypeInference retry,
       ExpressionTree outerTree,
       AnnotatedExecutableType outerMethodType) {
@@ -351,13 +281,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       return inferOnStack(retry, () -> retry.infer(outerTree, outerMethodType));
     } catch (FalseBoundException ex) {
       return null;
-    } catch (Exception ex) {
-      if (typeFactory
-          .getChecker()
-          .getBooleanOption("convertTypeArgInferenceCrashToWarning", true)) {
-        return null;
-      }
-      throw BugInCF.addLocation(outerTree, ex);
     }
   }
 
