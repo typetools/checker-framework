@@ -328,7 +328,7 @@ public final class Resolution {
       for (Variable ai : varsToResolve) {
         Set<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
         if (!lowerBounds.isEmpty()) {
-          resolveWithLowerBounds(ai, lowerBounds, context);
+          resolveWithLowerBounds(ai, lowerBounds);
           changed = true;
         }
       }
@@ -386,16 +386,23 @@ public final class Resolution {
    *
    * @param ai a variable to resolve
    * @param lowerBounds {@code ai}'s nonempty set of proper lower bounds
-   * @param context the context
    */
-  private static void resolveWithLowerBounds(
-      Variable ai, Set<ProperType> lowerBounds, Java8InferenceContext context) {
+  private void resolveWithLowerBounds(Variable ai, Set<ProperType> lowerBounds) {
     ai.getBounds().addBound(null, BoundKind.EQUAL, lubOfLowerBounds(ai, lowerBounds, context));
   }
 
   /**
    * Returns the least upper bound of {@code lowerBounds}, with the qualifier lower bounds of {@code
    * ai} applied.
+   *
+   * <p>Applying the qualifier lower bounds lubs them into the least upper bound of {@code
+   * lowerBounds}. If that type is not a type variable, its primary annotations become their least
+   * upper bound with the qualifier lower bounds. If that type is a type variable, the primary
+   * annotations of its lower bound change in the same way, and its own primary annotations are
+   * unchanged.
+   *
+   * <p>The result may share its AnnotatedTypeMirror with an element of {@code lowerBounds}, which
+   * is stored in a hash set of bounds. Callers must not mutate the result.
    *
    * @param ai a variable
    * @param lowerBounds a nonempty set of proper types, each of which is a lower bound of {@code ai}
