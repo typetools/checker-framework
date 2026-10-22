@@ -1093,13 +1093,21 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<V, S> in) {
 
-    if (in.containsTwoStores() && NodeUtils.isUnboxing(n)) {
-      // An unboxing call has no side effects, and it is true exactly when its receiver is true.
-      // Therefore, it keeps the separate then-store and else-store of its receiver, which hold
-      // the facts that are true when the receiver is true or false, respectively.
+    if (n.getIsUnboxing()) {
+      // An unboxing call has no side effects, and its result equals its receiver.  Therefore, the
+      // call keeps its receiver's stores, including any separate then-store and else-store.  For
+      // a Boolean receiver, those hold the facts that are true when the receiver is true or
+      // false, respectively.
       ExpressionTree unboxingTree = n.getTree();
-      V value = (unboxingTree == null) ? null : getValueFromFactory(unboxingTree, n);
-      return createTransferResult(value, in);
+      V factoryValue = (unboxingTree == null) ? null : getValueFromFactory(unboxingTree, n);
+      V resValue = moreSpecificValue(factoryValue, in.getRegularStore().getValue(n));
+      if (in.containsTwoStores()) {
+        in.getThenStore().updateForMethodCall(n, resValue);
+        in.getElseStore().updateForMethodCall(n, resValue);
+      } else {
+        in.getRegularStore().updateForMethodCall(n, resValue);
+      }
+      return createTransferResult(resValue, in);
     }
 
     S store = in.getRegularStore();
