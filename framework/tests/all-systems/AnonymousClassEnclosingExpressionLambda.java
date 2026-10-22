@@ -11,9 +11,11 @@ public class AnonymousClassEnclosingExpressionLambda {
     Inner(Object o, Function<String, String> f) {}
   }
 
+  static void run() {}
+
   void m(AnonymousClassEnclosingExpressionLambda outer) {
     Object o1 = outer.new Inner(() -> {}) {};
     Object o2 = outer.new Inner("", s -> s) {};
-    Object o3 = outer.new Inner(outer::hashCode) {};
+    Object o3 = outer.new Inner(AnonymousClassEnclosingExpressionLambda::run) {};
   }
 }
