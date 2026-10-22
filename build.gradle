@@ -812,6 +812,10 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
     classpath = subprojectsJavadocClasspath()
 
     destinationDir.deleteDir()
+    // The Javadoc-filtering scripts disable this property to filter doclint diagnostics while
+    // still detecting other Gradle failures.
+    failOnError =
+        providers.gradleProperty("${taskName}FailOnError").getOrElse("true").toBoolean()
     options.memberLevel = memberLevel
     options.addBooleanOption("Xdoclint:all", true)
     options.addStringOption("Xmaxerrs", "99999")
