@@ -142,6 +142,10 @@ public class UseOfVariable extends AbstractType {
     if (instantiation == null) {
       return this;
     }
+    if (!ignoreAnnotations && type.getPrimaryAnnotations().isEmpty()) {
+      // A shortcut for the common case, in which the code below also returns `instantiation`.
+      return instantiation;
+    }
     QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
     // A proper type's annotations are compared as written, so a polymorphic qualifier on one would
     // be treated as a concrete qualifier rather than as its QualifierVar.

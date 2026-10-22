@@ -123,19 +123,24 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       // Use the retry's result if it succeeds and the type it infers for outerTree has the Java
       // type that the target type requires but qualifiers that the target type does not permit.
       // Then the check of the assignment, return, argument, etc. that gives outerTree its target
-      // type reports that incompatibility, so reporting "type.arguments.not.inferred" as well
+      // type reports any incompatibility, so reporting "type.arguments.not.inferred" as well
       // would duplicate that error.  Furthermore, the visitor skips the other checks of an
       // invocation whose type arguments are not inferred, such as the checks of its arguments.
       // The instantiation that the retry finds satisfies every other constraint, so it is a
       // legitimate typing of outerTree and of every invocation nested within it.
       //
-      // The retry is used only under these conditions, so that the use-site check is certain to
-      // report the problem:
+      // The retry is used only under these conditions, so that the use-site check checks the
+      // retry's type:
       //  * The target type comes from the context of outerTree.  A target type from
       //    AnnotatedTypeFactory#getDummyAssignedTo is not checked at the use site.
       //  * The type that the retry infers for outerTree is not a subtype of the target type
       //    (using the same TypeHierarchy#isSubtype as the use-site check).  Otherwise, the type
       //    hierarchy accepts the retry's type, so using it might hide the problem entirely.
+      //    The use-site check might still accept the retry's type, because the type that it
+      //    checks against is not always the target type that inference uses.  For example, the
+      //    use-site check of the initializer of a local variable uses the type of the local
+      //    variable, whose qualifiers default to top.  Then outerTree is well-typed, and no error
+      //    is warranted.
       //  * The retry infers the same Java types as the first attempt, which are the Java types
       //    that javac infers.  Otherwise, the target type is needed to infer the Java types (for
       //    example, when it is the only source of the type of a lambda parameter or of a lambda's

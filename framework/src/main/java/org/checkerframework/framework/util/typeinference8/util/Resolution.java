@@ -112,7 +112,9 @@ public final class Resolution {
     Resolution resolution = new Resolution(context, dependencies);
     boundSet = resolution.resolveSmallestSet(unresolvedVars, boundSet);
     checkNoFalse(boundSet, "after resolving", unresolvedVars);
-    return resolveIgnoredAnnotations(Collections.singletonList(a), boundSet, context);
+    // Resolving `a` can also resolve the variables on which it depends, and give any of them an
+    // instantiation that ignores annotations.
+    return resolveIgnoredAnnotations(new ArrayList<>(dependencies.get(a)), boundSet, context);
   }
 
   /**
@@ -158,7 +160,8 @@ public final class Resolution {
       added |= var.getBounds().addBound(null, BoundKind.EQUAL, t);
     }
     if (added) {
-      boundSet.incorporateToFixedPoint(new BoundSet(context));
+      boundSet.reachFixedPoint();
+      checkNoFalse(boundSet, "after resolving ignored annotations of", vars);
     }
     return boundSet;
   }
@@ -492,8 +495,9 @@ public final class Resolution {
    *     replaced by the least upper bound of the qualifier lower bounds of {@code ai}, rather than
    *     lubbed with them
    * @param context the context
-   * @return a fresh copy of the least upper bound of {@code lowerBounds}, with the qualifier lower
-   *     bounds of {@code ai} applied
+   * @return the least upper bound of {@code lowerBounds}, with the qualifier lower bounds of {@code
+   *     ai} applied; it may share its annotated type with one of {@code lowerBounds}, so a caller
+   *     that mutates it must copy it first
    */
   private static ProperType lubOfLowerBounds(
       Variable ai,
@@ -502,14 +506,14 @@ public final class Resolution {
       Java8InferenceContext context) {
     ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
     assert lubProperType != null : "@AssumeAssertion(nullness): lowerBounds is nonempty";
-    // `lub` may return a type that shares its AnnotatedTypeMirror with one of `lowerBounds`, which
-    // is still stored in a hash set of bounds.  Replacing annotations in place, here or in a
-    // caller, would change that bound's hash code while it is in the set, so copy it.  Only the
-    // root annotations are changed below, so the copy keeps the origin.
-    lubProperType = lubProperType.copy();
     Set<AbstractQualifier> qualifierLowerBounds =
         ai.getBounds().getQualifierBoundsOfKind(BoundKind.LOWER);
     if (!qualifierLowerBounds.isEmpty()) {
+      // `lub` may return a type that shares its AnnotatedTypeMirror with one of `lowerBounds`,
+      // which is still stored in a hash set of bounds.  Replacing annotations in place would change
+      // that bound's hash code while it is in the set, so copy it.  Only the root annotations are
+      // changed below, so the copy keeps the origin.
+      lubProperType = lubProperType.copy();
       QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
       AnnotationMirrorSet lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
       if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR
@@ -578,8 +582,9 @@ public final class Resolution {
                 ? Collections.emptySet()
                 : AbstractQualifier.lub(qualifierLowerBounds, context);
       } else {
-        // `createFreshTypeVariable` mutates `lowerBound`, which is a fresh copy.
-        lowerBound = lubOfLowerBounds(ai, lowerBounds, false, context);
+        // `createFreshTypeVariable` mutates `lowerBound`.
+        lowerBound =
+            (ProperType) copyForMutation(lubOfLowerBounds(ai, lowerBounds, false, context));
         // `createFreshTypeVariable` uses `lowerBoundAnnos` only when `lowerBound` is null.
         lowerBoundAnnos = Collections.emptySet();
       }
@@ -590,10 +595,9 @@ public final class Resolution {
       AbstractType upperBound = context.inferenceTypeFactory.glb(upperBounds);
       if (upperBound != null) {
         // `glb` returns its argument when `upperBounds` is a singleton, and that type is still
-        // stored in `ai`'s set of upper bounds.  See the comment in `lubOfLowerBounds`.
-        upperBound =
-            upperBound.create(
-                upperBound.getAnnotatedType().deepCopy(), upperBound.ignoreAnnotations);
+        // stored in `ai`'s set of upper bounds.  This method and `createFreshTypeVariable` mutate
+        // `upperBound`.
+        upperBound = copyForMutation(upperBound);
       }
       Set<? extends AnnotationMirror> upperBoundAnnos;
       Set<AbstractQualifier> qualifierUpperBounds =
@@ -629,5 +633,18 @@ public final class Resolution {
 
     boundSet.reachFixedPoint();
     return boundSet;
+  }
+
+  /**
+   * Returns a copy of {@code type} whose annotated type is a deep copy of {@code type}'s. Unlike
+   * {@link ProperType#copy}, the copy has no origin, so any part of its annotated type may be
+   * mutated. A caller must copy a type before mutating it if the type may be stored in a hash set
+   * of bounds, because mutation would change its hash code.
+   *
+   * @param type a type
+   * @return a copy of {@code type} that may be mutated
+   */
+  private static AbstractType copyForMutation(AbstractType type) {
+    return type.create(type.getAnnotatedType().deepCopy(), type.ignoreAnnotations);
   }
 }
