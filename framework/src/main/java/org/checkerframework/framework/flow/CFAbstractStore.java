@@ -77,7 +77,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected final Map<LocalVariable, V> localVariableValues;
 
   /** Information collected about the current object. */
-  protected V thisValue;
+  protected @Nullable V thisValue;
 
   /** Information collected about fields, using the internal representation {@link FieldAccess}. */
   protected Map<FieldAccess, V> fieldValues;
