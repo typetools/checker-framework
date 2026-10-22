@@ -2619,7 +2619,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     ExecutableElement constructor = constructorType.getElement();
     CharSequence constructorName = ElementUtils.getSimpleDescription(constructor);
 
-    checkArguments(params, passedArguments, constructorName, constructor.getParameters());
+    checkArguments(
+        params,
+        passedArguments,
+        constructorName,
+        TreeUtils.parametersForArguments(constructor, tree, constructor.getParameters()));
     checkVarargs(constructorType, tree);
 
     List<AnnotatedTypeParameterBounds> paramBounds =
