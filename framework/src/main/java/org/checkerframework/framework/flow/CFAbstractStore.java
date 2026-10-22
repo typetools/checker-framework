@@ -652,7 +652,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     computeNewValueAndInsert(
         expr,
         newValue,
-        (previousValue, value) -> Objects.requireNonNull(value).greatestLowerBound(previousValue),
+        (previousValue, value) -> {
+          assert value != null
+              : "@AssumeAssertion(nullness): shouldInsert ensures a non-null value";
+          return value.greatestLowerBound(previousValue);
+        },
         permitNondeterministic);
   }
 
@@ -770,7 +774,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     computeNewValueAndInsert(
         expr,
         value,
-        (old, newValue) -> Objects.requireNonNull(newValue).mostSpecific(old, null),
+        (old, newValue) -> {
+          assert newValue != null
+              : "@AssumeAssertion(nullness): shouldInsert ensures a non-null value";
+          return newValue.mostSpecific(old, null);
+        },
         permitNondeterministic);
   }
 
