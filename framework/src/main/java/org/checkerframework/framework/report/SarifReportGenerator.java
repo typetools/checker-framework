@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Properties;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.Diagnostic;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Generates SARIF (Static Analysis Results Interchange Format) report files from checker
@@ -223,7 +224,7 @@ public class SarifReportGenerator {
    *     Number}, or a {@code Boolean}
    * @param indent the indentation level of the line on which {@code value} starts
    */
-  private static void appendJson(StringBuilder sb, Object value, int indent) {
+  private static void appendJson(StringBuilder sb, @Nullable Object value, int indent) {
     if (value instanceof Map<?, ?> map) {
       if (map.isEmpty()) {
         sb.append("{}");
@@ -234,7 +235,10 @@ public class SarifReportGenerator {
       for (Map.Entry<?, ?> entry : map.entrySet()) {
         sb.append(separator);
         sb.append("  ".repeat(indent + 1));
-        appendJsonString(sb, (String) entry.getKey());
+        if (!(entry.getKey() instanceof String key)) {
+          throw new IllegalArgumentException("Non-string JSON object key: " + entry.getKey());
+        }
+        appendJsonString(sb, key);
         sb.append(": ");
         appendJson(sb, entry.getValue(), indent + 1);
         separator = ",\n";
