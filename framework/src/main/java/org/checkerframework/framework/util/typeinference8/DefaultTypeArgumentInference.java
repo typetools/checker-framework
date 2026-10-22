@@ -243,11 +243,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     for (Map.Entry<Tree, Map<TypeVariable, AnnotatedTypeMirror>> entry : results1.entrySet()) {
       Map<TypeVariable, AnnotatedTypeMirror> typeArgs1 = entry.getValue();
       Map<TypeVariable, AnnotatedTypeMirror> typeArgs2 = results2.get(entry.getKey());
+      assert typeArgs2 != null : "@AssumeAssertion(nullness): the key sets are equal";
       if (!typeArgs1.keySet().equals(typeArgs2.keySet())) {
         return false;
       }
       for (Map.Entry<TypeVariable, AnnotatedTypeMirror> typeArg1 : typeArgs1.entrySet()) {
         AnnotatedTypeMirror typeArg2 = typeArgs2.get(typeArg1.getKey());
+        assert typeArg2 != null : "@AssumeAssertion(nullness): the key sets are equal";
         if (!isSameTypeModuloCapture(
             typeArg1.getValue().getUnderlyingType(), typeArg2.getUnderlyingType(), types)) {
           return false;
