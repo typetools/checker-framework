@@ -275,16 +275,14 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /**
    * Adds annotations to a scene element, omitting any that {@link #extractAnnotation} discards.
    *
-   * @param exprs annotations, or null to represent an empty list
+   * @param exprs annotations
    * @param elem the scene element to which to add the annotations
    */
-  private static void addAnnotations(@Nullable List<AnnotationExpr> exprs, AElement elem) {
-    if (exprs != null) {
-      for (AnnotationExpr expr : exprs) {
-        Annotation anno = extractAnnotation(expr);
-        if (anno != null) {
-          elem.tlAnnotationsHere.add(anno);
-        }
+  private static void addAnnotations(List<AnnotationExpr> exprs, AElement elem) {
+    for (AnnotationExpr expr : exprs) {
+      Annotation anno = extractAnnotation(expr);
+      if (anno != null) {
+        elem.tlAnnotationsHere.add(anno);
       }
     }
   }

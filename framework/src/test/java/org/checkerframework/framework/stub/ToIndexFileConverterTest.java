@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.checkerframework.afu.scenelib.el.AClass;
+import org.checkerframework.afu.scenelib.el.AElement;
 import org.checkerframework.afu.scenelib.el.AField;
 import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.afu.scenelib.el.AScene;
@@ -193,8 +194,8 @@ public class ToIndexFileConverterTest {
   }
 
   /**
-   * Tests that an annotation that {@code extractAnnotation} discards is not recorded as null, on a
-   * declaration or on a receiver.
+   * Tests that an annotation that {@code extractAnnotation} discards is not recorded as null, and
+   * that an annotation next to it is still recorded.
    */
   @Test
   public void testDiscardedAnnotation() {
@@ -202,23 +203,34 @@ public class ToIndexFileConverterTest {
     AClass clazz =
         classOfStub(
             "package p;",
-            "class C {",
-            "  @A(\"x+y\") C() {}",
-            "  @A(\"x+y\") void m(@A(\"x+y\") C this) {}",
+            "@A(\"x+y\") @B class C {",
+            "  @A(\"x+y\") @B int f;",
+            "  @A(\"x+y\") @B C() {}",
+            "  @A(\"x+y\") @B void m(@A(\"x+y\") @B C this) {}",
             "}");
-    Assert.assertFalse("null was recorded on the class", clazz.tlAnnotationsHere.contains(null));
+    assertOnlyB("the class", clazz);
+    assertOnlyB("field f", clazz.fields.get("f"));
     Assert.assertEquals("wrong methods", 2, clazz.methods.size());
     for (AMethod method : clazz.methods.values()) {
-      Assert.assertFalse(
-          "null was recorded on " + method.methodSignature,
-          method.tlAnnotationsHere.contains(null));
+      assertOnlyB(method.methodSignature, method);
       Assert.assertFalse(
           "null was recorded on the receiver of " + method.methodSignature,
           method.receiver.tlAnnotationsHere.contains(null));
-      Assert.assertFalse(
-          "null was recorded on the receiver type of " + method.methodSignature,
-          method.receiver.type.tlAnnotationsHere.contains(null));
     }
+    assertOnlyB("the receiver type of m", clazz.methods.get("m()V").receiver.type);
+  }
+
+  /**
+   * Asserts that {@code @B} is recorded on {@code elem}, and that null is not.
+   *
+   * @param description a description of {@code elem}, for failure messages
+   * @param elem a scene element
+   */
+  private static void assertOnlyB(String description, AElement elem) {
+    Assert.assertNotNull("no scene element for " + description, elem);
+    Assert.assertFalse(
+        "null was recorded on " + description, elem.tlAnnotationsHere.contains(null));
+    Assert.assertNotNull("@B was not recorded on " + description, elem.lookup("B"));
   }
 
   /** Tests {@code getJVML} on wildcard types. */
