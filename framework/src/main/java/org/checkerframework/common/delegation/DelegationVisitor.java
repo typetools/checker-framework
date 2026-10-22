@@ -125,7 +125,8 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
    */
   private void checkMustOverrideIsOverridable(MethodTree tree) {
     ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
-    if (annotationProvider.getDeclAnnotation(methodElt, DelegatorMustOverride.class) != null
+    if (methodElt != null
+        && annotationProvider.getDeclAnnotation(methodElt, DelegatorMustOverride.class) != null
         && !isOverridable(methodElt)) {
       checker.reportError(tree, "mustoverride.not.overridable", tree.getName());
     }
@@ -178,7 +179,7 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
    */
   private boolean isOverride(MethodTree tree) {
     ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
-    return !ElementUtils.getOverriddenMethods(methodElt, types).isEmpty();
+    return methodElt != null && !ElementUtils.getOverriddenMethods(methodElt, types).isEmpty();
   }
 
   /**
@@ -205,7 +206,8 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
     }
     ExecutableElement enclosingMethodElt = TreeUtils.elementFromDeclaration(enclosingMethod);
     ExecutableElement delegatedMethodElt = TreeUtils.elementFromUse(delegatedMethodCall);
-    return isSameMethod(enclosingMethodElt, delegatedMethodElt)
+    return enclosingMethodElt != null
+        && isSameMethod(enclosingMethodElt, delegatedMethodElt)
         && argumentsAreFormalParameters(enclosingMethod, delegatedMethodCall);
   }
 
@@ -257,7 +259,7 @@ public class DelegationVisitor extends SourceVisitor<Void, Void> {
     for (int i = 0; i < parameters.size(); i++) {
       VariableElement parameterElt = TreeUtils.elementFromDeclaration(parameters.get(i));
       Element argumentElt = TreeUtils.elementFromTree(TreeUtils.withoutParens(arguments.get(i)));
-      if (!parameterElt.equals(argumentElt)) {
+      if (parameterElt == null || !Objects.equals(parameterElt, argumentElt)) {
         return false;
       }
     }
