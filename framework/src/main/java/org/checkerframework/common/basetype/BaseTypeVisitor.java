@@ -3437,8 +3437,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                   && enclosingMethod.getReceiverParameter() == variableTree) {
                 yield TypeUseLocation.RECEIVER;
               }
-              ElementKind kind = TreeUtils.elementFromDeclaration(variableTree).getKind();
-              yield switch (kind) {
+              VariableElement variableElt = TreeUtils.elementFromDeclaration(variableTree);
+              if (variableElt == null) {
+                yield null;
+              }
+              yield switch (variableElt.getKind()) {
                 case FIELD -> TypeUseLocation.FIELD;
                 case LOCAL_VARIABLE, BINDING_VARIABLE -> TypeUseLocation.LOCAL_VARIABLE;
                 case RESOURCE_VARIABLE -> TypeUseLocation.RESOURCE_VARIABLE;
