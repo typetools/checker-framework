@@ -132,6 +132,9 @@ public class WholeProgramInferenceJavaParserStorage
   /** The element utilities for {@code atypeFactory}. */
   protected final Elements elements;
 
+  /** The type utilities for {@code atypeFactory}. */
+  protected final Types types;
+
   /**
    * Memoizes the name lookups that {@link JavaParserUtil#resolveTypeName} performs while writing
    * ajava files. Resolving one name looks up many candidate names, most of which name no type, and
@@ -232,6 +235,7 @@ public class WholeProgramInferenceJavaParserStorage
       AnnotatedTypeFactory atypeFactory, String inferOutputDirectory, boolean inferOutputOriginal) {
     this.atypeFactory = atypeFactory;
     this.elements = atypeFactory.getElementUtils();
+    this.types = atypeFactory.getProcessingEnv().getTypeUtils();
     try {
       this.inferOutputDirectory = Path.of(inferOutputDirectory);
     } catch (InvalidPathException e) {
@@ -1182,8 +1186,8 @@ public class WholeProgramInferenceJavaParserStorage
     if (parentNode instanceof Type type) {
       // JavaParser's `TypeParameter` is a `Type`, so an annotation on a type parameter
       // declaration, as in `<@Anno T>`, takes this branch.
-      // `JavaParserUtil.typeToTypeMirrorErasingTypeVariables` returns null for a type parameter
-      // declaration, so such an annotation is retained.
+      // `JavaParserUtil.typeToTypeMirrorUsingTypeVariableBounds` returns null for a type
+      // parameter declaration, so such an annotation is retained.
       return typeIsRelevant(gatf, type);
     }
     if (parentNode instanceof ArrayCreationLevel level) {
@@ -1266,9 +1270,8 @@ public class WholeProgramInferenceJavaParserStorage
    */
   private boolean typeIsRelevant(
       GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf, Type componentType, int arrayLevels) {
-    Types types = atypeFactory.getProcessingEnv().getTypeUtils();
     TypeMirror tm =
-        JavaParserUtil.typeToTypeMirrorErasingTypeVariables(
+        JavaParserUtil.typeToTypeMirrorUsingTypeVariableBounds(
             elements, types, componentType, typeElementCache);
     if (tm == null) {
       // The type could not be determined.  Be conservative.
