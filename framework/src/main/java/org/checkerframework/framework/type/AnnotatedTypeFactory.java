@@ -5052,6 +5052,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         NewClassTree newClass = (NewClassTree) parentTree;
         int indexOfLambda = newClass.getArguments().indexOf(tree);
         ParameterizedExecutableType con = this.constructorFromUse(newClass);
+        if (TreeUtils.isAnonymousConstructorWithExplicitEnclosingExpression(
+            con.executableType.getElement(), newClass)) {
+          // The first parameter of the anonymous constructor is the enclosing instance, which is
+          // not among the arguments.
+          indexOfLambda++;
+        }
         AnnotatedTypeMirror constructorParam =
             AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(con.executableType, indexOfLambda);
         assertIsFunctionalInterface(constructorParam.getUnderlyingType(), parentTree, tree);
