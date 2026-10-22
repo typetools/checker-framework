@@ -1764,12 +1764,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       MethodAccessNode iteratorAccessNode = new MethodAccessNode(iteratorSelect, expressionNode);
       iteratorAccessNode.setInSource(false);
-      extendWithNode(iteratorAccessNode);
+      extendWithNodeWithException(iteratorAccessNode, nullPointerExceptionType);
       MethodInvocationNode iteratorCallNode =
           new MethodInvocationNode(
               iteratorCall, iteratorAccessNode, Collections.emptyList(), getCurrentPath());
       iteratorCallNode.setInSource(false);
-      extendWithNode(iteratorCallNode);
+      extendWithMethodInvocationNode(TreeUtils.elementFromUse(iteratorCall), iteratorCallNode);
 
       translateAssignment(
           iteratorVariable, new LocalVariableNode(iteratorVariable), iteratorCallNode);
@@ -1789,7 +1789,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       MethodAccessNode hasNextAccessNode =
           new MethodAccessNode(hasNextSelect, iteratorReceiverNode);
       hasNextAccessNode.setInSource(false);
-      extendWithNode(hasNextAccessNode);
+      extendWithNodeWithException(hasNextAccessNode, nullPointerExceptionType);
 
       MethodInvocationTree hasNextCall = treeBuilder.buildMethodInvocation(hasNextSelect);
       handleArtificialTree(hasNextCall);
@@ -1798,7 +1798,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           new MethodInvocationNode(
               hasNextCall, hasNextAccessNode, Collections.emptyList(), getCurrentPath());
       hasNextCallNode.setInSource(false);
-      extendWithNode(hasNextCallNode);
+      extendWithMethodInvocationNode(TreeUtils.elementFromUse(hasNextCall), hasNextCallNode);
       extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
 
       // Loop body, starting with declaration of the loop iteration variable
@@ -1817,7 +1817,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       MethodAccessNode nextAccessNode = new MethodAccessNode(nextSelect, iteratorReceiverNode2);
       nextAccessNode.setInSource(false);
-      extendWithNode(nextAccessNode);
+      extendWithNodeWithException(nextAccessNode, nullPointerExceptionType);
 
       MethodInvocationTree nextCall = treeBuilder.buildMethodInvocation(nextSelect);
       handleArtificialTree(nextCall);
@@ -1831,14 +1831,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       nextCallNode.setIterableExpression(expression);
       nextCallNode.setEnhancedForLoop(tree);
       nextCallNode.setInSource(false);
-      extendWithNode(nextCallNode);
+      extendWithMethodInvocationNode(TreeUtils.elementFromUse(nextCall), nextCallNode);
 
-      AssignmentNode assignNode =
-          translateAssignment(variable, new LocalVariableNode(variable), nextCall);
-      // translateAssignment() scans variable and creates new nodes, so set the expression
-      // there, too.
-      ((MethodInvocationNode) assignNode.getExpression()).setIterableExpression(expression);
-      ((MethodInvocationNode) assignNode.getExpression()).setEnhancedForLoop(tree);
+      translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
 
       assert statement != null;
       scan(statement, p);
@@ -1934,15 +1929,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(arrayAccessNode);
       AssignmentNode arrayAccessAssignNode =
           translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
-      // translateAssignment() scans variable and creates new nodes, so set the expression
-      // there, too.
-      Node arrayAccessAssignNodeExpr = arrayAccessAssignNode.getExpression();
-      if (arrayAccessAssignNodeExpr instanceof ArrayAccessNode aan) {
-        aan.setArrayExpression(expression);
-        aan.setEnhancedForLoop(tree);
-      } else if (arrayAccessAssignNodeExpr instanceof MethodInvocationNode boxingNode) {
-        // If the array component type is a primitive, there may be a boxing or unboxing
-        // conversion. Treat that as an iterator.
+      // If the array component type is a primitive and the loop variable's type is not, then
+      // assignment conversion boxes the component. Treat the boxing call as an iterator.
+      if (TypesUtils.isPrimitive(arrayAccessNode.getType())
+          && !TypesUtils.isPrimitive(variableElement.asType())
+          && arrayAccessAssignNode.getExpression() instanceof MethodInvocationNode boxingNode) {
         boxingNode.setIterableExpression(expression);
         boxingNode.setEnhancedForLoop(tree);
       }
@@ -1989,6 +1980,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return null;
   }
 
+  /**
+   * Creates a declaration of a fresh variable that holds the iterator of an enhanced for loop over
+   * an {@code Iterable}.
+   *
+   * @param iteratorCall the call to {@code iterator()} that initializes the variable
+   * @param variableElement the element of the enhanced for loop's variable
+   * @return a declaration of a fresh iterator variable
+   */
   protected VariableTree createEnhancedForLoopIteratorVariable(
       MethodInvocationTree iteratorCall, VariableElement variableElement) {
     TypeMirror iteratorType = TreeUtils.typeOf(iteratorCall);
@@ -2003,6 +2002,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return iteratorVariable;
   }
 
+  /**
+   * Creates a declaration of a fresh variable that holds the array of an enhanced for loop over an
+   * array.
+   *
+   * @param expression the array expression that initializes the variable
+   * @param variableElement the element of the enhanced for loop's variable
+   * @return a declaration of a fresh array variable
+   */
   protected VariableTree createEnhancedForLoopArrayVariable(
       ExpressionTree expression, VariableElement variableElement) {
     TypeMirror arrayType = TreeUtils.typeOf(expression);
