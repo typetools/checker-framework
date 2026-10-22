@@ -146,7 +146,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * @param base a set, or null
    * @param set1 a set, or null
    * @param set2 a set, or null
-   * @return the union of the given sets, or null if the union is equal to {@code base}
+   * @return the union of the given sets, or null if the union is within {@code base}
    */
   protected static @Nullable Set<String> unionIfLarger(
       @Nullable Set<String> base, @Nullable Set<String> set1, @Nullable Set<String> set2) {
