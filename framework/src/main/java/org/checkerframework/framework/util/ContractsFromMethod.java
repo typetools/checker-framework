@@ -219,7 +219,7 @@ public class ContractsFromMethod {
    * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
    * @return the type annotation specified in {@code contractAnno.qualifier}
    */
-  private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
+  public @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno) {
     return getQualifierEnforcedByContractAnnotation(contractAnno, null, null);
   }
@@ -228,11 +228,12 @@ public class ContractsFromMethod {
    * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
    * contractAnno}, with elements/arguments taken from {@code argumentAnno}. May return null.
    *
-   * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
-   * @param argumentAnno supplies the elements/fields in the return value
+   * @param contractAnno a contract meta-annotation, such as {@code @PreconditionAnnotation}
+   * @param argumentAnno a contract annotation that is meta-annotated by {@code contractAnno}; it
+   *     supplies the elements/fields in the return value
    * @return the type annotation specified in {@code contractAnno.qualifier}
    */
-  private @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
+  public @Nullable AnnotationMirror getQualifierEnforcedByContractAnnotation(
       AnnotationMirror contractAnno, AnnotationMirror argumentAnno) {
 
     Map<String, String> argumentRenaming =
@@ -267,8 +268,8 @@ public class ContractsFromMethod {
     Name c = AnnotationUtils.getElementValueClassName(contractAnno, "qualifier", false);
 
     AnnotationMirror anno;
-    if (argumentAnno == null || argumentRenaming.isEmpty()) {
-      // If there are no arguments, use factory method that allows caching
+    if (argumentAnno == null || argumentRenaming == null || argumentRenaming.isEmpty()) {
+      // If there are no arguments, use factory method that allows caching.
       anno = AnnotationBuilder.fromName(factory.getElementUtils(), c);
     } else {
       AnnotationBuilder builder = new AnnotationBuilder(factory.getProcessingEnv(), c);
