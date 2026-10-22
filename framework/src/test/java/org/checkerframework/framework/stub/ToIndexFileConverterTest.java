@@ -233,6 +233,59 @@ public class ToIndexFileConverterTest {
     Assert.assertNotNull("@B was not recorded on " + description, elem.lookup("B"));
   }
 
+  /**
+   * Tests that the annotations of a receiver parameter, including those on its type arguments, are
+   * recorded on the receiver, and that a constructor's declaration annotations are not.
+   */
+  @Test
+  public void testReceiverParameter() {
+    AScene scene =
+        sceneOfStub(
+            "package p;",
+            "class C<T> {",
+            "  @A C() {}",
+            "  void m(@B C<@D T> this) {}",
+            "  class Inner {",
+            "    Inner(@E C<@F T> C.this, int i) {}",
+            "  }",
+            "}");
+    AClass clazz = scene.classes.get("p.C");
+    AMethod constructor = clazz.methods.get("<init>()V");
+    Assert.assertNotNull("@A was not recorded on the constructor", constructor.lookup("A"));
+    Assert.assertTrue(
+        "an annotation was recorded on the constructor's receiver",
+        constructor.receiver.tlAnnotationsHere.isEmpty());
+    Assert.assertTrue(
+        "an annotation was recorded on the constructor's receiver type",
+        constructor.receiver.type.tlAnnotationsHere.isEmpty());
+
+    ATypeElement methodRcvr = clazz.methods.get("m()V").receiver.type;
+    Assert.assertNotNull("@B was not recorded on the receiver type of m", methodRcvr.lookup("B"));
+    Assert.assertEquals(
+        "wrong type paths for the receiver of m",
+        Arrays.asList(outerTypeArgument),
+        new ArrayList<>(methodRcvr.innerTypes.keySet()));
+    Assert.assertNotNull(
+        "@D was not recorded on the receiver's type argument",
+        methodRcvr.innerTypes.get(outerTypeArgument).lookup("D"));
+
+    // Search every class, because this test does not depend on which class the converter puts an
+    // inner class's constructor in.
+    AMethod innerConstructor = null;
+    for (AClass c : scene.classes.values()) {
+      if (c.methods.containsKey("<init>(I)V")) {
+        innerConstructor = c.methods.get("<init>(I)V");
+      }
+    }
+    Assert.assertNotNull("no scene element for the constructor of Inner", innerConstructor);
+    ATypeElement innerRcvr = innerConstructor.receiver.type;
+    Assert.assertNotNull(
+        "@E was not recorded on the receiver type of Inner's constructor", innerRcvr.lookup("E"));
+    Assert.assertNotNull(
+        "@F was not recorded on the type argument of the receiver of Inner's constructor",
+        innerRcvr.innerTypes.get(outerTypeArgument).lookup("F"));
+  }
+
   /** Tests {@code getJVML} on wildcard types. */
   @Test
   public void testGetJVMLWildcard() {
@@ -325,6 +378,19 @@ public class ToIndexFileConverterTest {
    * @return the scene element for class {@code p.C}
    */
   private static AClass classOfStub(String... lines) {
+    AScene scene = sceneOfStub(lines);
+    AClass clazz = scene.classes.get("p.C");
+    Assert.assertNotNull("no scene element for class p.C", clazz);
+    return clazz;
+  }
+
+  /**
+   * Converts a stub file whose first type declaration is class {@code p.C}, and returns the scene.
+   *
+   * @param lines the lines of the stub file
+   * @return the scene that the converter populated from the stub file
+   */
+  private static AScene sceneOfStub(String... lines) {
     String stubContents = String.join(System.lineSeparator(), lines);
     StubUnit stubUnit =
         StaticJavaParserUtil.parseStubUnit(
@@ -336,6 +402,6 @@ public class ToIndexFileConverterTest {
     TypeDeclaration<?> typeDecl = cu.getType(0);
     AClass clazz = scene.classes.getVivify("p." + typeDecl.getNameAsString());
     typeDecl.accept(converter, clazz);
-    return clazz;
+    return scene;
   }
 }
