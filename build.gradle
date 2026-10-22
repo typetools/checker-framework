@@ -218,7 +218,14 @@ allprojects { currentProj ->
 
   configurations {
     // Holds the combined classpath of all subprojects including the subprojects themselves.
-    allProjects
+    allProjects {
+      // Select each subproject's ordinary variant, whose dependencies are its runtime classpath.
+      // Otherwise, a subproject that applies the Shadow plugin contributes its shadowed variant,
+      // whose dependencies omit the libraries bundled into the shadow jar, such as ASM.
+      attributes {
+        attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling, Bundling.EXTERNAL))
+      }
+    }
 
     // Exclude checker-qual dependency added by Error Prone to avoid a circular dependency.
     annotationProcessor.exclude group: "org.checkerframework", module: "checker-qual"
