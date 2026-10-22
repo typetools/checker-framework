@@ -574,27 +574,12 @@ tasks.register("addFavicon", Exec) {
  * Returns a classpath for a Javadoc task that documents the main sources of some or all of the
  * subprojects.
  *
- * <p>It is the union of the classpaths of the subprojects' `javadoc` tasks.  Each of those is the
- * subproject's classes plus its compile classpath, so it includes `compileOnly` dependencies and
- * libraries that a subproject bundles into its shadow jar, such as ASM.  It does not depend on
- * which variant of a subproject (plain or shadowed) Gradle would select for a project dependency.
- *
- * <p>It uses only the `javadoc` task's classpath from each subproject.  Every other Javadoc task,
- * such as `javadocPrivate` and the annotation-file-utilities tasks that run the OptionsDoclet,
- * would otherwise contribute its classpath too.  That would make the result depend on which other
- * Javadoc tasks happen to exist, so that adding a Javadoc task to a subproject silently changes
- * every task that uses this classpath.
- *
- * <p>It reads each `javadoc` task's classpath when this method is called.  It does not read the
- * classpath lazily, because every Javadoc task adds the fat checker.jar to its own classpath in
- * `doFirst`.  A lazy read would see that addition after the subproject's `javadoc` task ran, and
- * then the calling task would resolve the subproject's `checkerFatJar` configuration while
- * executing, which Gradle forbids.
+ * <p>It is the union of the classpaths of the subprojects' `javadoc` tasks (and no other
+ * classpaths, so adding a Javadoc task does not change every task that uses this classpath).  It
+ * includes `compileOnly` dependencies and libraries that a subproject bundles into its shadow jar,
+ * such as ASM.
  *
  * <p>It uses `findByName` rather than `named`, which throws if a subproject has no `javadoc` task.
- * Every subproject currently applies the `java` plugin (see the `allprojects` block above), which
- * creates that task, but a subproject that does not would otherwise break the configuration of
- * every task that uses this classpath.
  *
  * @return the union of the classpaths of the subprojects' `javadoc` tasks
  */
