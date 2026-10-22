@@ -1,9 +1,6 @@
 package org.checkerframework.framework.stub;
 
 import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.StubUnit;
-import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.Type;
 import java.io.ByteArrayInputStream;
@@ -19,7 +16,6 @@ import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.afu.scenelib.el.AScene;
 import org.checkerframework.afu.scenelib.el.ATypeElement;
 import org.checkerframework.afu.scenelib.el.TypePathEntry;
-import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -69,11 +65,49 @@ public class ToIndexFileConverterTest {
    * @return the JAIF that {@link ToIndexFileConverter} produces for the stub file
    */
   private static String convert(String... stubFileLines) throws Exception {
+    return convert(new AScene(), stubFileLines);
+  }
+
+  /**
+   * Converts a stub file to a JAIF, adding the stub file's information to a scene.
+   *
+   * @param scene the scene to augment
+   * @param stubFileLines the lines of the stub file
+   * @return the JAIF that {@link ToIndexFileConverter} produces for the stub file
+   */
+  private static String convert(AScene scene, String... stubFileLines) throws Exception {
     String stubFile = String.join(System.lineSeparator(), stubFileLines);
     ByteArrayInputStream in = new ByteArrayInputStream(stubFile.getBytes(StandardCharsets.UTF_8));
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    ToIndexFileConverter.convert(new AScene(), in, out);
+    ToIndexFileConverter.convert(scene, in, out);
     return out.toString(StandardCharsets.UTF_8.name());
+  }
+
+  /**
+   * Converts a stub file that declares a class {@code p.C}, and returns the class.
+   *
+   * @param stubFileLines the lines of the stub file
+   * @return the scene element for class {@code p.C}
+   */
+  private static AClass classOfStub(String... stubFileLines) throws Exception {
+    AScene scene = new AScene();
+    convert(scene, stubFileLines);
+    AClass clazz = scene.classes.get("p.C");
+    Assert.assertNotNull("no scene element for class p.C", clazz);
+    return clazz;
+  }
+
+  /**
+   * Converts a stub file that declares a class {@code p.C}, and returns the given method.
+   *
+   * @param method the JVML representation of a method of {@code p.C}
+   * @param stubFileLines the lines of the stub file
+   * @return the scene element for {@code method}
+   */
+  private static AMethod methodOfStub(String method, String... stubFileLines) throws Exception {
+    AMethod m = classOfStub(stubFileLines).methods.get(method);
+    Assert.assertNotNull("no scene element for method " + method, m);
+    return m;
   }
 
   /**
@@ -105,15 +139,7 @@ public class ToIndexFileConverterTest {
    * @return the scene element for the first parameter of {@code method}
    */
   private static AField firstParameter(String method, String... stubFileLines) throws Exception {
-    String stubFile = String.join(System.lineSeparator(), stubFileLines);
-    AScene scene = new AScene();
-    ToIndexFileConverter.convert(
-        scene,
-        new ByteArrayInputStream(stubFile.getBytes(StandardCharsets.UTF_8)),
-        new ByteArrayOutputStream());
-    AMethod m = scene.classes.get("p.C").methods.get(method);
-    Assert.assertNotNull("no scene element for method " + method, m);
-    AField param = m.parameters.get(0);
+    AField param = methodOfStub(method, stubFileLines).parameters.get(0);
     Assert.assertNotNull("no scene element for the first parameter of " + method, param);
     return param;
   }
@@ -272,14 +298,7 @@ public class ToIndexFileConverterTest {
     Assert.assertNotNull("@Nullable was not recorded on the type", field.type.lookup("Nullable"));
     Assert.assertNull("@Deprecated was recorded on the type", field.type.lookup("Deprecated"));
 
-    String stubFile = String.join(System.lineSeparator(), stubFileLines);
-    AScene scene = new AScene();
-    ToIndexFileConverter.convert(
-        scene,
-        new ByteArrayInputStream(stubFile.getBytes(StandardCharsets.UTF_8)),
-        new ByteArrayOutputStream());
-    AMethod method = scene.classes.get("p.C").methods.get("m()[Ljava/lang/String;");
-    Assert.assertNotNull("no scene element for method m", method);
+    AMethod method = methodOfStub("m()[Ljava/lang/String;", stubFileLines);
     Assert.assertNotNull("@Deprecated was not recorded on the method", method.lookup("Deprecated"));
     Assert.assertNull("@Nullable was recorded on the method", method.lookup("Nullable"));
     Assert.assertNull(
@@ -295,7 +314,7 @@ public class ToIndexFileConverterTest {
    * on the type argument that encloses it.
    */
   @Test
-  public void testNestedTypeArgumentWithoutEnclosingAnnotation() {
+  public void testNestedTypeArgumentWithoutEnclosingAnnotation() throws Exception {
     AField field =
         fieldOfStub(
             "package p;",
@@ -311,7 +330,7 @@ public class ToIndexFileConverterTest {
 
   /** Tests that annotations at several levels of nesting are each recorded at their own level. */
   @Test
-  public void testAnnotationsAtEveryLevel() {
+  public void testAnnotationsAtEveryLevel() throws Exception {
     AField field =
         fieldOfStub(
             "package p;",
@@ -331,7 +350,7 @@ public class ToIndexFileConverterTest {
 
   /** Tests that an annotation on the bound of a wildcard type argument is recorded. */
   @Test
-  public void testWildcardBound() {
+  public void testWildcardBound() throws Exception {
     AField field =
         fieldOfStub(
             "package p;",
@@ -349,7 +368,7 @@ public class ToIndexFileConverterTest {
    * array level to which it applies.
    */
   @Test
-  public void testArrayTypeArgument() {
+  public void testArrayTypeArgument() throws Exception {
     AField field =
         fieldOfStub(
             "package p;", "import java.util.List;", "class C {", "  List<@A String @B []> f;", "}");
@@ -372,7 +391,7 @@ public class ToIndexFileConverterTest {
    * rather than at a deeper one.
    */
   @Test
-  public void testNestedArrayTypeArgument() {
+  public void testNestedArrayTypeArgument() throws Exception {
     AField field =
         fieldOfStub(
             "package p;", "import java.util.List;", "class C {", "  List<String[] @A []> f;", "}");
@@ -388,7 +407,7 @@ public class ToIndexFileConverterTest {
    * array level to which it applies.
    */
   @Test
-  public void testArrayFieldType() {
+  public void testArrayFieldType() throws Exception {
     AField field = fieldOfStub("package p;", "class C {", "  String @A [] @B [] f;", "}");
     // `@A` applies to `String[][]`, the type of the field itself.
     Assert.assertNotNull("@A was not recorded on the field's type", field.type.lookup("A"));
@@ -406,7 +425,7 @@ public class ToIndexFileConverterTest {
    * be written to the JAIF as a content-free {@code inner-type} line.
    */
   @Test
-  public void testNoEntryForUnannotatedNestedType() {
+  public void testNoEntryForUnannotatedNestedType() throws Exception {
     AField field =
         fieldOfStub(
             "package p;",
@@ -500,19 +519,8 @@ public class ToIndexFileConverterTest {
    * @param lines the lines of the stub file
    * @return the scene element for field {@code f} of class {@code p.C}
    */
-  private static AField fieldOfStub(String... lines) {
-    String stubContents = String.join(System.lineSeparator(), lines);
-    StubUnit stubUnit =
-        StaticJavaParserUtil.parseStubUnit(
-            new ByteArrayInputStream(stubContents.getBytes(StandardCharsets.UTF_8)));
-    CompilationUnit cu = stubUnit.getCompilationUnits().get(0);
-    AScene scene = new AScene();
-    ToIndexFileConverter converter =
-        new ToIndexFileConverter(cu.getPackageDeclaration().get(), cu.getImports(), scene);
-    TypeDeclaration<?> typeDecl = cu.getType(0);
-    AClass clazz = scene.classes.getVivify("p." + typeDecl.getNameAsString());
-    typeDecl.accept(converter, clazz);
-    AField field = clazz.fields.get("f");
+  private static AField fieldOfStub(String... lines) throws Exception {
+    AField field = classOfStub(lines).fields.get("f");
     Assert.assertNotNull("no scene element for field f", field);
     return field;
   }
