@@ -13,6 +13,7 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
@@ -132,8 +133,15 @@ public class TreeBuilder {
     if (numIterTypeArgs == 1) {
       TypeMirror elementType = iteratorType.getTypeArguments().get(0);
       // Remove captured type variable from a wildcard.
-      if (elementType instanceof Type.CapturedType) {
-        elementType = ((Type.CapturedType) elementType).wildcard;
+      if (elementType instanceof Type.CapturedType captured) {
+        elementType = captured.wildcard;
+        // The wildcard may lack a bound of the capture that unboxing conversion depends on. For
+        // example, given `class Box<T extends Integer>`, the capture of `Box<?>`'s type argument
+        // is bounded by Integer, but the wildcard is not.
+        TypeMirror boxed = TypesUtils.boxedPrimitiveForUnboxing(captured, modelTypes);
+        if (boxed != null && !TypesUtils.isUnboxable(elementType, modelTypes)) {
+          elementType = new Type.WildcardType((Type) boxed, BoundKind.EXTENDS, symtab.boundClass);
+        }
         TypeElement iteratorElt = (TypeElement) modelTypes.asElement(iteratorType);
         assert iteratorElt != null
             : "@AssumeAssertion(nullness): the iterator type always has an element";
@@ -496,8 +504,8 @@ public class TreeBuilder {
    * Builds an AST Tree to access the *Value() method of a boxed type such as Short or Float, where
    * * is the corresponding primitive type (i.e. shortValue or floatValue).
    *
-   * @param expr an expression whose type is a boxed type, or a type variable or intersection type
-   *     whose erasure is a boxed type
+   * @param expr an expression to whose type unboxing conversion applies (see {@link
+   *     TypesUtils#boxedPrimitiveForUnboxing})
    * @return a MemberSelectTree that accesses the *Value() method of the expression
    */
   public MemberSelectTree buildPrimValueMethodAccess(Tree expr) {

@@ -459,8 +459,8 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if unboxing conversion (JLS 5.1.8) applies to the given type: it is a boxed
-   * primitive, or a type variable or intersection type whose erasure is a boxed primitive.
+   * Returns true if unboxing conversion (JLS 5.1.8) applies to the given type. See {@link
+   * #boxedPrimitiveForUnboxing} for the types to which unboxing conversion applies.
    *
    * @param type a type
    * @param types the type utilities
@@ -481,6 +481,30 @@ public final class TypesUtils {
   public static TypeMirror unboxedTypeOrSelf(TypeMirror type, Types types) {
     TypeMirror boxed = boxedPrimitiveForUnboxing(type, types);
     return boxed == null ? type : types.unboxedType(boxed);
+  }
+
+  /**
+   * Returns true if the given type is a numeric primitive, or if unboxing conversion (JLS 5.1.8)
+   * converts it to a numeric primitive.
+   *
+   * @param type a type
+   * @param types the type utilities
+   * @return true if the given type is a numeric primitive or can be unboxed to one
+   */
+  public static boolean isNumericAfterUnboxing(TypeMirror type, Types types) {
+    return isNumeric(unboxedTypeOrSelf(type, types));
+  }
+
+  /**
+   * Returns true if the given type is boolean, or if unboxing conversion (JLS 5.1.8) converts it to
+   * boolean.
+   *
+   * @param type a type
+   * @param types the type utilities
+   * @return true if the given type is boolean or can be unboxed to boolean
+   */
+  public static boolean isBooleanAfterUnboxing(TypeMirror type, Types types) {
+    return isBooleanType(unboxedTypeOrSelf(type, types));
   }
 
   /**

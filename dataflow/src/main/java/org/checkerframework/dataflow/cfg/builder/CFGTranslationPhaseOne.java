@@ -881,8 +881,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * If the input node's type is a boxed type, or a type variable or intersection type whose erasure
-   * is a boxed type, unbox it; otherwise leave it alone.
+   * If unboxing conversion applies to the input node's type (see {@link
+   * TypesUtils#boxedPrimitiveForUnboxing}), unbox it; otherwise leave it alone.
    *
    * @param node in input node
    * @return a Node representing the unboxed version of the input, which may simply be the input
@@ -1017,7 +1017,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return true if the argument type is a numeric primitive or can be unboxed to one
    */
   protected boolean isNumericAfterUnboxing(TypeMirror type) {
-    return TypesUtils.isNumeric(TypesUtils.unboxedTypeOrSelf(type, types));
+    return TypesUtils.isNumericAfterUnboxing(type, types);
   }
 
   /**
@@ -1027,7 +1027,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return true if the argument type is boolean or can be unboxed to boolean
    */
   protected boolean isBooleanAfterUnboxing(TypeMirror type) {
-    return TypesUtils.isBooleanType(TypesUtils.unboxedTypeOrSelf(type, types));
+    return TypesUtils.isBooleanAfterUnboxing(type, types);
   }
 
   /**
@@ -1763,12 +1763,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       MethodAccessNode iteratorAccessNode = new MethodAccessNode(iteratorSelect, expressionNode);
       iteratorAccessNode.setInSource(false);
-      extendWithNode(iteratorAccessNode);
+      extendWithNodeWithException(iteratorAccessNode, nullPointerExceptionType);
       MethodInvocationNode iteratorCallNode =
           new MethodInvocationNode(
               iteratorCall, iteratorAccessNode, Collections.emptyList(), getCurrentPath());
       iteratorCallNode.setInSource(false);
-      extendWithNode(iteratorCallNode);
+      extendWithMethodInvocationNode(TreeUtils.elementFromUse(iteratorCall), iteratorCallNode);
 
       translateAssignment(
           iteratorVariable, new LocalVariableNode(iteratorVariable), iteratorCallNode);
@@ -1788,7 +1788,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       MethodAccessNode hasNextAccessNode =
           new MethodAccessNode(hasNextSelect, iteratorReceiverNode);
       hasNextAccessNode.setInSource(false);
-      extendWithNode(hasNextAccessNode);
+      extendWithNodeWithException(hasNextAccessNode, nullPointerExceptionType);
 
       MethodInvocationTree hasNextCall = treeBuilder.buildMethodInvocation(hasNextSelect);
       handleArtificialTree(hasNextCall);
@@ -1797,7 +1797,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           new MethodInvocationNode(
               hasNextCall, hasNextAccessNode, Collections.emptyList(), getCurrentPath());
       hasNextCallNode.setInSource(false);
-      extendWithNode(hasNextCallNode);
+      extendWithMethodInvocationNode(TreeUtils.elementFromUse(hasNextCall), hasNextCallNode);
       extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
 
       // Loop body, starting with declaration of the loop iteration variable

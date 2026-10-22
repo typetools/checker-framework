@@ -137,4 +137,18 @@ public class TypeVarPrimitives {
     }
     return sum;
   }
+
+  abstract static class IntegerBox<T extends Integer> implements Iterable<T> {}
+
+  // The capture of the wildcard is bounded by Integer, the declared bound of T.
+  long enhancedForUnboundedWildcard(IntegerBox<?> box) {
+    long sum = 0;
+    for (int x : box) {
+      sum += x;
+    }
+    for (long x : box) {
+      sum += x;
+    }
+    return sum;
+  }
 }
