@@ -571,7 +571,8 @@ tasks.register("addFavicon", Exec) {
 }
 
 /**
- * Returns a classpath for a Javadoc task that documents the main sources of every subproject.
+ * Returns a classpath for a Javadoc task that documents the main sources of some or all of the
+ * subprojects.
  *
  * <p>It is the union of the classpaths of the subprojects' `javadoc` tasks.  Each of those is the
  * subproject's classes plus its compile classpath, so it includes `compileOnly` dependencies and
@@ -583,6 +584,9 @@ tasks.register("addFavicon", Exec) {
  * would otherwise contribute its classpath too.  That would make the result depend on which other
  * Javadoc tasks happen to exist, so that adding a Javadoc task to a subproject silently changes
  * every task that uses this classpath.
+ *
+ * <p>It reads each `javadoc` task's classpath lazily, so that it reflects changes that a
+ * subproject's build script makes to that classpath after this method is called.
  *
  * <p>It uses `findByName` rather than `named`, which throws if a subproject has no `javadoc` task.
  * Every subproject currently applies the `java` plugin (see the `allprojects` block above), which
@@ -596,7 +600,7 @@ def subprojectsJavadocClasspath() {
   subprojects.each { proj ->
     def subprojectJavadoc = proj.tasks.findByName("javadoc")
     if (subprojectJavadoc != null) {
-      result += subprojectJavadoc.classpath
+      result += files({ subprojectJavadoc.classpath })
     }
   }
   return result
@@ -625,7 +629,7 @@ tasks.register("allJavadoc", Javadoc) {
       project(":annotation-file-utilities").sourceSets.main.allJava,
       )
 
-  classpath += subprojectsJavadocClasspath()
+  classpath = subprojectsJavadocClasspath()
 
   finalizedBy("addFavicon")
 
@@ -807,6 +811,7 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
     destinationDir.deleteDir()
     options.memberLevel = memberLevel
     options.addBooleanOption("Xdoclint:all", true)
+    options.addStringOption("Xmaxerrs", "99999")
     options.addStringOption("Xmaxwarns", "99999")
 
     // options.addStringOption("skip", "ClassNotToCheck|OtherClass")

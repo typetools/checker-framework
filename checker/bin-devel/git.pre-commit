@@ -18,5 +18,10 @@ if [ -n "$CHANGED_JAVA_FILES" ]; then
     checker/bin-devel/.plume-scripts/lint-diff.py --guess-strip /tmp/diff.txt /tmp/warnings-requireJavadoc.txt
     (./gradlew javadocDoclintAll > /tmp/warnings-javadocDoclintAll.txt 2>&1) || true
     checker/bin-devel/.plume-scripts/lint-diff.py --guess-strip /tmp/diff.txt /tmp/warnings-javadocDoclintAll.txt
+    # lint-diff.py checks only changed lines, but a broken classpath yields errors in every file.
+    if grep -m 20 -e ": error: package .* does not exist$" -e ": error: cannot find symbol$" /tmp/warnings-javadocDoclintAll.txt; then
+      echo "javadocDoclintAll has classpath errors"
+      exit 1
+    fi
   fi
 fi
