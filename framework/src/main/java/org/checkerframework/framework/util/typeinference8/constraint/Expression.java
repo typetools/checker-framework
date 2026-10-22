@@ -258,8 +258,14 @@ public class Expression extends TypeConstraint {
             memRefParameterConstraint(targetReference, referenceType, Kind.SUBTYPE, memRef));
       }
       for (int i = 0; i < ps.size(); i++) {
-        constraintSet.add(
-            memRefParameterConstraint(ps.get(i), fs.get(i), Kind.TYPE_COMPATIBILITY, memRef));
+        AbstractType p = ps.get(i);
+        AbstractType f = fs.get(i);
+        // ‹P → F› for a primitive F reduces to ‹P = box(F)› (JLS 18.2.2), which would make P's
+        // qualifiers equal to the primitive's.  P is only unboxed to F, so require only a subtype.
+        // Unchecked conversion is never necessary to convert to a primitive type.
+        Kind kind =
+            !p.isProper() && f.getTypeKind().isPrimitive() ? Kind.SUBTYPE : Kind.TYPE_COMPATIBILITY;
+        constraintSet.add(memRefParameterConstraint(p, f, kind, memRef));
       }
       // Reduce the parameter constraints now, rather than returning them. Reducing them records in
       // context.needUncheckedConversion whether memRef needs unchecked conversion, which determines
