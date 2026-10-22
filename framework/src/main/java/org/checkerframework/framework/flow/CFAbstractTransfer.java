@@ -1093,6 +1093,15 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<V, S> in) {
 
+    if (in.containsTwoStores() && NodeUtils.isUnboxing(n)) {
+      // An unboxing call has no side effects, and it is true exactly when its receiver is true.
+      // Therefore, it keeps the separate then-store and else-store of its receiver, which hold
+      // the facts that are true when the receiver is true or false, respectively.
+      ExpressionTree unboxingTree = n.getTree();
+      V value = (unboxingTree == null) ? null : getValueFromFactory(unboxingTree, n);
+      return createTransferResult(value, in);
+    }
+
     S store = in.getRegularStore();
 
     ExecutableElement method = n.getTarget().getMethod();
@@ -1511,8 +1520,8 @@ public abstract class CFAbstractTransfer<
    * @param target the receiver whose value should be modified
    * @param newAnno the new value
    */
-  protected static void insertIntoStores(
-      TransferResult<CFValue, CFStore> result, JavaExpression target, AnnotationMirror newAnno) {
+  protected void insertIntoStores(
+      TransferResult<V, S> result, JavaExpression target, AnnotationMirror newAnno) {
     if (result.containsTwoStores()) {
       result.getThenStore().insertValue(target, newAnno);
       result.getElseStore().insertValue(target, newAnno);
