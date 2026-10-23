@@ -55,6 +55,14 @@ public class TargetTypeOnlyInferenceFailure {
     takesNonNullList(id(singleton(s)));
   }
 
+  void compoundAssignment(@NonNull String str, @Nullable String s, Integer i, @Nullable Integer n) {
+    // The target type of id(s) is the type of str, which id(s) is not compatible with.  But the
+    // compound assignment is legal, because string concatenation permits a null operand.
+    str += id(s);
+    // :: error: [unboxing.of.nullable]
+    i += id(n);
+  }
+
   void otherChecksOfTheInvocation(@Nullable String s, @Nullable Object o) {
     // The argument check of the invocation is performed too.
     // :: error: [assignment] :: error: [argument]

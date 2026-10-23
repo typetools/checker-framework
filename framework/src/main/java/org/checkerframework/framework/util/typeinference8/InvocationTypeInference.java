@@ -167,10 +167,11 @@ public class InvocationTypeInference {
 
   /**
    * True if {@link #infer(ExpressionTree, AnnotatedExecutableType)} has created constraints against
-   * the target type of {@link #inferenceExpression}, and that target type comes from the context of
-   * {@link #inferenceExpression} rather than from {@link AnnotatedTypeFactory#getDummyAssignedTo}.
+   * the target type of {@link #inferenceExpression}, that target type comes from the context of
+   * {@link #inferenceExpression} rather than from {@link AnnotatedTypeFactory#getDummyAssignedTo},
+   * and inference had not already failed before those constraints were created.
    */
-  private boolean contextTargetTypeConstrained = false;
+  private boolean contextTargetTypeCanCauseFailure = false;
 
   /**
    * True if {@link #useTargetType} is false, {@link #inferenceExpression} has a target type from
@@ -182,14 +183,16 @@ public class InvocationTypeInference {
 
   /**
    * Returns true if {@link #infer(ExpressionTree, AnnotatedExecutableType)} has created constraints
-   * against the target type of the expression for which inference is performed, and that target
-   * type comes from the expression's context rather than from {@link
-   * AnnotatedTypeFactory#getDummyAssignedTo}.
+   * against the target type of the expression for which inference is performed, that target type
+   * comes from the expression's context rather than from {@link
+   * AnnotatedTypeFactory#getDummyAssignedTo}, and inference had not already failed before those
+   * constraints were created. If this returns false and inference failed, then inference without
+   * the target type fails too.
    *
-   * @return true if inference created constraints against a target type from the context
+   * @return true if a failure of inference might be caused by a target type from the context
    */
-  public boolean isContextTargetTypeConstrained() {
-    return contextTargetTypeConstrained;
+  public boolean canContextTargetTypeCauseFailure() {
+    return contextTargetTypeCanCauseFailure;
   }
 
   /**
@@ -322,10 +325,11 @@ public class InvocationTypeInference {
     ExecutableType e = executableType.getUnderlyingType();
     AbstractExecutableType inferenceExecutableType =
         new AbstractInvocationType(executableType, e, invocation, context);
-    ProperType target = context.inferenceTypeFactory.getTargetType();
-    boolean isPolyWithTarget = target != null && TreeUtils.isPolyExpression(invocation);
-    boolean targetFromContext =
-        TreePathUtil.getContextForPolyExpression(context.getPathToExpression()) != null;
+    Tree contextTree = TreePathUtil.getContextForPolyExpression(context.getPathToExpression());
+    ProperType target = context.inferenceTypeFactory.getTargetType(contextTree);
+    boolean isPoly = TreeUtils.isPolyExpression(invocation);
+    // If false, the target type comes from AnnotatedTypeFactory#getDummyAssignedTo.
+    boolean targetFromContext = contextTree != null;
     List<? extends ExpressionTree> args;
     if (invocation instanceof MethodInvocationTree mit) {
       args = mit.getArguments();
@@ -338,9 +342,9 @@ public class InvocationTypeInference {
             invocation, inferenceExecutableType, context);
     BoundSet b2 = createB2(inferenceExecutableType, args, map);
     BoundSet b3;
-    if (isPolyWithTarget && useTargetType) {
-      assert target != null : "@AssumeAssertion(nullness): isPolyWithTarget implies target != null";
-      contextTargetTypeConstrained = targetFromContext;
+    if (target != null && isPoly && useTargetType) {
+      // Check b2 before createB3, which might add bounds to it.
+      contextTargetTypeCanCauseFailure = targetFromContext && !b2.annoInferenceFailed;
       b3 = createB3(b2, invocation, inferenceExecutableType, target, map);
     } else {
       b3 = b2;
@@ -349,8 +353,11 @@ public class InvocationTypeInference {
 
     BoundSet b4 = getB4(b3, c);
     b4.resolve();
-    if (isPolyWithTarget && !useTargetType && targetFromContext && !b4.annoInferenceFailed) {
-      assert target != null : "@AssumeAssertion(nullness): isPolyWithTarget implies target != null";
+    if (target != null
+        && isPoly
+        && !useTargetType
+        && targetFromContext
+        && !b4.annoInferenceFailed) {
       AbstractType returnType = inferenceExecutableType.getReturnType(map).applyInstantiations();
       qualifiersIncompatibleWithTarget =
           returnType.isProper()
