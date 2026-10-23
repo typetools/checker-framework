@@ -3419,6 +3419,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /** Returns the type-use location containing the tree currently being visited. */
+  @SuppressWarnings("interning:not.interned") // AST node comparison
   private @Nullable TypeUseLocation currentTypeUseLocation() {
     for (TreePath path = getCurrentPath(); path != null; path = path.getParentPath()) {
       Tree tree = path.getLeaf();
