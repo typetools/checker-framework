@@ -1761,14 +1761,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       Node expressionNode = scan(expression, p);
 
-      MethodAccessNode iteratorAccessNode = new MethodAccessNode(iteratorSelect, expressionNode);
-      iteratorAccessNode.setInSource(false);
-      extendWithNodeWithException(iteratorAccessNode, nullPointerExceptionType);
       MethodInvocationNode iteratorCallNode =
-          new MethodInvocationNode(
-              iteratorCall, iteratorAccessNode, Collections.emptyList(), getCurrentPath());
-      iteratorCallNode.setInSource(false);
-      extendWithMethodInvocationNode(TreeUtils.elementFromUse(iteratorCall), iteratorCallNode);
+          extendWithArtificialCall(iteratorCall, expressionNode, true);
 
       translateAssignment(
           iteratorVariable, new LocalVariableNode(iteratorVariable), iteratorCallNode);
@@ -1785,19 +1779,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       MemberSelectTree hasNextSelect = treeBuilder.buildHasNextMethodAccess(iteratorUse1);
       handleArtificialTree(hasNextSelect);
 
-      MethodAccessNode hasNextAccessNode =
-          new MethodAccessNode(hasNextSelect, iteratorReceiverNode);
-      hasNextAccessNode.setInSource(false);
-      extendWithNodeWithException(hasNextAccessNode, nullPointerExceptionType);
-
       MethodInvocationTree hasNextCall = treeBuilder.buildMethodInvocation(hasNextSelect);
       handleArtificialTree(hasNextCall);
 
-      MethodInvocationNode hasNextCallNode =
-          new MethodInvocationNode(
-              hasNextCall, hasNextAccessNode, Collections.emptyList(), getCurrentPath());
-      hasNextCallNode.setInSource(false);
-      extendWithMethodInvocationNode(TreeUtils.elementFromUse(hasNextCall), hasNextCallNode);
+      extendWithArtificialCall(hasNextCall, iteratorReceiverNode, true);
       extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
 
       // Loop body, starting with declaration of the loop iteration variable
@@ -1814,23 +1799,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       MemberSelectTree nextSelect = treeBuilder.buildNextMethodAccess(iteratorUse2);
       handleArtificialTree(nextSelect);
 
-      MethodAccessNode nextAccessNode = new MethodAccessNode(nextSelect, iteratorReceiverNode2);
-      nextAccessNode.setInSource(false);
-      extendWithNodeWithException(nextAccessNode, nullPointerExceptionType);
-
       MethodInvocationTree nextCall = treeBuilder.buildMethodInvocation(nextSelect);
       handleArtificialTree(nextCall);
 
       MethodInvocationNode nextCallNode =
-          new MethodInvocationNode(
-              nextCall, nextAccessNode, Collections.emptyList(), getCurrentPath());
+          extendWithArtificialCall(nextCall, iteratorReceiverNode2, true);
       // If the type of iteratorVariable is a capture, its type tree may be missing
       // annotations, so save the expression in the node so that the full type can be
       // found later.
       nextCallNode.setIterableExpression(expression);
       nextCallNode.setEnhancedForLoop(tree);
-      nextCallNode.setInSource(false);
-      extendWithMethodInvocationNode(TreeUtils.elementFromUse(nextCall), nextCallNode);
 
       translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
 
@@ -2659,14 +2637,36 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
     // TODO do we need to insert some kind of node representing a use of receiverNode
     // (which can be either a LocalVariableNode or a FieldAccessNode)?
-    MethodAccessNode closeAccessNode = new MethodAccessNode(closeSelect, receiverNode);
-    closeAccessNode.setInSource(false);
-    extendWithNode(closeAccessNode);
-    MethodInvocationNode closeCallNode =
-        new MethodInvocationNode(
-            closeCall, closeAccessNode, Collections.emptyList(), getCurrentPath());
-    closeCallNode.setInSource(false);
-    extendWithMethodInvocationNode(TreeUtils.elementFromUse(closeCall), closeCallNode);
+    // A try-with-resources statement closes a resource only if it is non-null (JLS 14.20.3.1).
+    extendWithArtificialCall(closeCall, receiverNode, false);
+  }
+
+  /**
+   * Extends the CFG with a call that has no arguments and that desugars a statement, such as the
+   * call to {@code iterator()} in an enhanced for loop.
+   *
+   * @param call the call
+   * @param receiver the receiver of the call
+   * @param receiverMayBeNull false if the receiver is known to be non-null. If the receiver is
+   *     {@code this}, the call never throws a {@code NullPointerException}, regardless of this
+   *     argument.
+   * @return the node for the call
+   */
+  private MethodInvocationNode extendWithArtificialCall(
+      MethodInvocationTree call, Node receiver, boolean receiverMayBeNull) {
+    MethodAccessNode accessNode =
+        new MethodAccessNode((MemberSelectTree) call.getMethodSelect(), receiver);
+    accessNode.setInSource(false);
+    if (receiverMayBeNull && !(receiver instanceof ThisNode)) {
+      extendWithNodeWithException(accessNode, nullPointerExceptionType);
+    } else {
+      extendWithNode(accessNode);
+    }
+    MethodInvocationNode callNode =
+        new MethodInvocationNode(call, accessNode, Collections.emptyList(), getCurrentPath());
+    callNode.setInSource(false);
+    extendWithMethodInvocationNode(TreeUtils.elementFromUse(call), callNode);
+    return callNode;
   }
 
   /**
@@ -3839,7 +3839,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         if (tree.toString().startsWith("<*nullchk*>")) {
           Node expr = scan(tree.getExpression(), p);
           result = new NullChkNode(tree, expr);
-          extendWithNode(result);
+          extendWithNodeWithException(result, nullPointerExceptionType);
           return result;
         }
 

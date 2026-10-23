@@ -23,6 +23,11 @@ public class EnhancedForUnboxing {
       // :: error: [assignment]
       @IntVal(2) int z = x;
     }
+    for (long x : array) {
+      @IntVal(1) long y = x;
+      // :: error: [assignment]
+      @IntVal(2) long z = x;
+    }
   }
 
   void boxArray(@IntVal(1) int[] array) {
@@ -30,6 +35,11 @@ public class EnhancedForUnboxing {
       @IntVal(1) Integer y = x;
       // :: error: [assignment]
       @IntVal(2) Integer z = x;
+    }
+    for (Number x : array) {
+      @IntVal(1) Number y = x;
+      // :: error: [assignment]
+      @IntVal(2) Number z = x;
     }
   }
 }

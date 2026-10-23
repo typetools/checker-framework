@@ -375,11 +375,7 @@ public class MustCallConsistencyAnalyzer {
 
       AnnotationMirror result =
           mcAtf.getAnnotatedType(alias.element).getAnnotationInHierarchy(mcAtf.TOP);
-      // A declared type of @MustCallUnknown or @PolyMustCall gives no information.  For example,
-      // the iterator variable of an enhanced for loop over an Iterable whose iterator() method
-      // returns @MustCallAlias has declared type @PolyMustCall.
-      if (result != null
-          && AnnotationUtils.areSameByName(result, MustCall.class.getCanonicalName())) {
+      if (result != null && !AnnotationUtils.areSame(result, mcAtf.TOP)) {
         return result;
       }
       // There wasn't an @MustCall annotation for it in the store and the type factory has no
