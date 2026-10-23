@@ -23,14 +23,20 @@ public class ExactMethodRefUncheckedReturnType {
     int size = call(ExactMethodRefUncheckedReturnType::strings).size();
   }
 
-  static <T> List<@Nullable String> withParameterizedFormal(List<String> l, T t) {
+  static <T> List<T> withParameterizedFormal(List<String> l, T t) {
     throw new UnsupportedOperationException();
   }
 
+  static <U> U id(U u) {
+    return u;
+  }
+
   // Unchecked conversion is necessary for `withParameterizedFormal` to be applicable, even though
-  // its formal parameter type does not mention T.  So its return type is the raw `List`.
+  // its formal parameter type does not mention T.  So its return type is the raw `List`, and the
+  // target type does not constrain T to be non-null.
   @SuppressWarnings("unchecked")
-  void uncheckedForProperFormal(List raw) {
-    List<String> l = withParameterizedFormal(raw, 1);
+  void uncheckedForProperFormal(List raw, @Nullable String ns) {
+    List<String> l = withParameterizedFormal(raw, ns);
+    List<String> l2 = id(withParameterizedFormal(raw, ns));
   }
 }

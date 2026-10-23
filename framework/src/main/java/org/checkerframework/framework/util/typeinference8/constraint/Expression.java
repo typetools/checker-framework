@@ -92,7 +92,7 @@ public class Expression extends TypeConstraint {
   public ReductionResult reduce(Java8InferenceContext context) {
     // See JLS 18.2.1
     if (getT().isProper()) {
-      return reduceProperType();
+      return reduceProperType(context);
     } else if (TreeUtils.isStandaloneExpression(expression)) {
       AbstractType s = new ProperType(expression, context);
       return new Typing(this, s, T, TypeConstraint.Kind.TYPE_COMPATIBILITY);
@@ -139,9 +139,10 @@ public class Expression extends TypeConstraint {
    * JLS 18.2.1: "If T is a proper type, the constraint reduces to true if the expression is
    * compatible in a loose invocation context with T (5.3), and false otherwise."
    *
+   * @param context the context
    * @return the result of reducing a proper type
    */
-  private ReductionResult reduceProperType() {
+  private ReductionResult reduceProperType(Java8InferenceContext context) {
     // Assume the constraint reduces to TRUE, if it did not the code wouldn't compile with
     // javac.
 
@@ -154,6 +155,15 @@ public class Expression extends TypeConstraint {
     // here would replace that message by "type.arguments.not.inferred" and would also suppress
     // every other check that BaseTypeVisitor performs on the invocation, because
     // BaseTypeVisitor.visitMethodInvocation returns as soon as inference fails.
+
+    // Whether unchecked conversion is necessary determines whether the return type of an invocation
+    // type is erased (JLS 15.12.2.6).  Unchecked conversion that is necessary to check a poly
+    // expression is attributed to that expression's own constraints, not to this one.
+    if (TreeUtils.isStandaloneExpression(expression)
+        && TypesUtils.needsUncheckedConversion(
+            TreeUtils.typeOf(expression), getT().getJavaType(), context.env)) {
+      return ReductionResult.UNCHECKED_CONVERSION;
+    }
 
     // TODO: This should return false in some cases.
     // com.sun.tools.javac.code.Types.isConvertible(com.sun.tools.javac.code.Type,
