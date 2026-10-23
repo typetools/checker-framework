@@ -62,8 +62,9 @@ public class MethodInvocationNode extends Node {
   protected @Nullable EnhancedForLoopTree enhancedForLoop;
 
   /**
-   * True if this node is a call, such as {@code booleanValue()}, that the CFG inserts to unbox a
-   * value of a boxed primitive type.
+   * True if this node is a call, such as {@code booleanValue()}, that unboxes a value of a boxed
+   * primitive type. The CFG inserts such a call wherever Java unboxes a value implicitly, and an
+   * explicit call such as {@code b.booleanValue()} is one too.
    *
    * <p>Is set by {@link #setIsUnboxing}.
    */
@@ -154,10 +155,11 @@ public class MethodInvocationNode extends Node {
   }
 
   /**
-   * Returns true if this node is a call, such as {@code booleanValue()}, that the CFG inserts to
-   * unbox a value of a boxed primitive type. Such a call does not appear in the source code.
+   * Returns true if this node is a call, such as {@code booleanValue()}, that unboxes a value of a
+   * boxed primitive type. Such a call is either inserted by the CFG or written explicitly in the
+   * source code.
    *
-   * @return true if this node is an unboxing call that the CFG inserted
+   * @return true if this node is an unboxing call
    */
   @Pure
   public boolean getIsUnboxing() {
@@ -165,9 +167,9 @@ public class MethodInvocationNode extends Node {
   }
 
   /**
-   * Marks this node as an unboxing call that the CFG inserted.
+   * Marks this node as an unboxing call.
    *
-   * @param isUnboxing true if this node is an unboxing call that the CFG inserted
+   * @param isUnboxing true if this node is an unboxing call
    * @see #getIsUnboxing()
    */
   public void setIsUnboxing(boolean isUnboxing) {
