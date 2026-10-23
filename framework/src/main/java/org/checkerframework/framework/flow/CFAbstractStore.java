@@ -1147,11 +1147,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     Iterator<Map.Entry<K, V>> iterator = map.entrySet().iterator();
     while (iterator.hasNext()) {
       Map.Entry<K, V> entry = iterator.next();
-      V oldValue = entry.getValue();
-      V newValue = removeDependentTypeReferences(oldValue, isAffectedName);
+      V newValue = removeDependentTypeReferences(entry.getValue(), isAffectedName);
       if (newValue == null) {
         iterator.remove();
-      } else if (newValue != oldValue) {
+      } else {
         entry.setValue(newValue);
       }
     }
