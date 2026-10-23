@@ -7,12 +7,14 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
 /** Shared implementation for qualifier hierarchies ordered by inclusion of string elements. */
+@AnnotatedFor("nullness")
 abstract class AbstractSetInclusionQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
   /** The processing environment; used for creating annotations. */
@@ -82,7 +84,17 @@ abstract class AbstractSetInclusionQualifierHierarchy extends MostlyNoElementQua
     return resultFromDifferentKinds(a1, qualifierKind1, a2, qualifierKind2, glbKind);
   }
 
-  /** Returns the input annotation whose kind is {@code resultKind}. */
+  /**
+   * Returns the input annotation whose kind is {@code resultKind}.
+   *
+   * @param a1 the first annotation
+   * @param qualifierKind1 the kind of {@code a1}
+   * @param a2 the second annotation
+   * @param qualifierKind2 the kind of {@code a2}
+   * @param resultKind the kind of the result, which must be {@code qualifierKind1} or {@code
+   *     qualifierKind2}
+   * @return whichever of {@code a1} and {@code a2} has kind {@code resultKind}
+   */
   private static AnnotationMirror resultFromDifferentKinds(
       AnnotationMirror a1,
       QualifierKind qualifierKind1,
@@ -95,11 +107,19 @@ abstract class AbstractSetInclusionQualifierHierarchy extends MostlyNoElementQua
       return a2;
     }
     throw new BugInCF(
-        "Unexpected QualifierKinds %s %s", qualifierKind1, qualifierKind2, resultKind);
+        "Unexpected QualifierKinds %s %s %s", qualifierKind1, qualifierKind2, resultKind);
   }
 
-  /** Returns an annotation whose values are the union or intersection of the input values. */
-  @SuppressWarnings("InvalidParam") // "value" is the annotation element's name.
+  /**
+   * Returns an annotation whose values are the union or intersection of the input values.
+   *
+   * @param a1 the first annotation
+   * @param a2 the second annotation
+   * @param resultKind the kind of the result
+   * @param union if true, take the union of the values; if false, take the intersection
+   * @return an annotation of kind {@code resultKind} whose values are the union or intersection of
+   *     the values of {@code a1} and {@code a2}
+   */
   private AnnotationMirror combineAnnotationValues(
       AnnotationMirror a1, AnnotationMirror a2, QualifierKind resultKind, boolean union) {
     Set<String> values = new LinkedHashSet<>(valuesStringList(a1));
@@ -114,7 +134,13 @@ abstract class AbstractSetInclusionQualifierHierarchy extends MostlyNoElementQua
     return builder.build();
   }
 
-  /** Returns a mutable list containing the annotation's {@code value} element. */
+  /**
+   * Returns a mutable list containing the annotation's {@code value} element. The {@code value}
+   * element must be an array of strings.
+   *
+   * @param annotation an annotation
+   * @return a mutable list containing the annotation's {@code value} element; may be the empty list
+   */
   private static List<String> valuesStringList(AnnotationMirror annotation) {
     @SuppressWarnings("deprecation") // concrete annotation class is not known
     List<String> result =
