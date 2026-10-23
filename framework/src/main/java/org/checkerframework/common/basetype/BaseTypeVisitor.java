@@ -4375,7 +4375,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *     signature in terms of the overridden method's type variables, and they compare the type
    *     variables' bounds separately; see {@link OverrideChecker#checkTypeParameterBounds}.
    */
-  @Deprecated // 2026-09-18
+  @Deprecated(forRemoval = true, since = "4.3.2") // 2026-09-18
+  @SuppressWarnings("removal") // calls areCorrespondingTypeVariables, also deprecated for removal
   protected boolean testTypevarContainment(AnnotatedTypeMirror inner, AnnotatedTypeMirror outer) {
     if (inner.getKind() == TypeKind.TYPEVAR && outer.getKind() == TypeKind.TYPEVAR) {
 
@@ -4550,9 +4551,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     // The type of the compileTimeDeclaration if it were invoked with a receiver expression
     // of type {@code type}
-    ParameterizedExecutableType invocation =
+    var parameterizedInvocationType =
         atypeFactory.methodFromUse(memberReferenceTree, compileTimeDeclaration, enclosingType);
-    AnnotatedExecutableType invocationType = invocation.executableType();
+    AnnotatedExecutableType invocationType = parameterizedInvocationType.executableType();
 
     // The type arguments of the compile-time declaration must be within its type parameters'
     // bounds.  OverrideChecker cannot compare the two methods' type parameter bounds, because the
@@ -4562,7 +4563,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       checkTypeArguments(
           memberReferenceTree,
           CollectionsP.mapList(AnnotatedTypeVariable::getBounds, invocationType.getTypeVariables()),
-          invocation.typeArgs(),
+          parameterizedInvocationType.typeArgs(),
           memberReferenceTree.getTypeArguments(),
           ElementUtils.getSimpleDescription(compileTimeDeclaration),
           compileTimeDeclaration.getTypeParameters());

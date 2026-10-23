@@ -1382,7 +1382,7 @@ public final class AnnotatedTypes {
    *     both signatures in terms of the same type variables; see {@link
    *     org.checkerframework.common.basetype.BaseTypeVisitor.OverrideChecker#adaptToOverridden}.
    */
-  @Deprecated // 2026-10-22
+  @Deprecated(forRemoval = true, since = "4.3.2") // 2026-10-22
   public static boolean areCorrespondingTypeVariables(
       Elements elements, AnnotatedTypeVariable type1, AnnotatedTypeVariable type2) {
     TypeParameterElement type1ParamElem =
