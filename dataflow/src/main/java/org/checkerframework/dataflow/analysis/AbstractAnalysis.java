@@ -131,6 +131,36 @@ public abstract class AbstractAnalysis<
     this.worklist = new Worklist(this.direction);
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>This is the fixpoint driver for both forward and backward analyses. Subclasses customize the
+   * analysis by overriding {@link #initFields}, {@link #initInitialInputs}, and {@link
+   * #performAnalysisBlock}, rather than by overriding this method.
+   */
+  @Override
+  public void performAnalysis(ControlFlowGraph cfg) {
+    if (isRunning) {
+      throw new BugInCF(
+          "AbstractAnalysis::performAnalysis() shouldn't be called when the analysis is running.");
+    }
+    isRunning = true;
+    try {
+      init(cfg);
+      while (!worklist.isEmpty()) {
+        Block block = worklist.remove();
+        performAnalysisBlock(block);
+      }
+      assert isRunning;
+    } finally {
+      // In case init or performAnalysisBlock crashed, reset the state of a running analysis.
+      isRunning = false;
+      currentNode = null;
+      currentTree = null;
+      currentInput = null;
+    }
+  }
+
   /** Initialize the transfer inputs of every basic block before performing the analysis. */
   @RequiresNonNull("cfg")
   protected abstract void initInitialInputs();
