@@ -996,7 +996,8 @@ in stub files.)
 The \code{-Aajava} command-line argument works like \code{-Astubs} (see
 Section~\ref{stub-using}). It takes a colon-separated list of
 ajava files (which end in the \code{.ajava} extension) and directories and
-\<.jar> and \<.zip> archives containing ajava files.
+\<.jar> and \<.zip> archives containing ajava files.  Any non-ajava files
+in the directory or archive are ignored.
 
 For example:
 
@@ -1025,9 +1026,8 @@ due to mismatches.
 
 The ajava file must either (1) be found below one of the arguments to
 \code{-Aajava}, in a subdirectory matching its package name, or (2) be
-unambiguously specified directly with its full path.  An ajava file must not
-be renamed; an ajava file whose name does not end with \<.ajava> is ignored.
-A pair of \<.ajava>
+unambiguously specified directly with its full path.  An ajava file name
+must end with \<.ajava>.  A pair of \<.ajava>
 files is specified ambiguously if one of their fully-qualified names
 is a substring of the other, and both are specified as \<.ajava> files (rather
 than being found under directories). For example, if the \<-Aajava> argument
