@@ -3821,7 +3821,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         if (tree.toString().startsWith("<*nullchk*>")) {
           Node expr = scan(tree.getExpression(), p);
           result = new NullChkNode(tree, expr);
-          extendWithNode(result);
+          extendWithNodeWithException(result, nullPointerExceptionType);
           return result;
         }
 
