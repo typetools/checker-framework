@@ -684,6 +684,10 @@ public abstract class CFAbstractTransfer<
    * not hold when {@code isNonNull(x) + ""} is true. A node whose input's then-store and else-store
    * do describe the node calls {@link #createTransferResultKeepingStores} instead.
    *
+   * <p>If the input has a then-store and an else-store, the result does too, but they are equal
+   * copies of the merged store. A caller can then refine the result's then-store and else-store
+   * separately, in place.
+   *
    * @param value the value; possibly null
    * @param in the transfer input
    * @return the input information, as a TransferResult
@@ -691,7 +695,13 @@ public abstract class CFAbstractTransfer<
   @SideEffectFree
   protected TransferResult<V, S> createTransferResult(@Nullable V value, TransferInput<V, S> in) {
     S store = in.getRegularStore();
-    return new RegularTransferResult<>(finishValue(value, store), store);
+    if (in.containsTwoStores()) {
+      S elseStore = store.copy();
+      return new ConditionalTransferResult<>(
+          finishValue(value, store, elseStore), store, elseStore);
+    } else {
+      return new RegularTransferResult<>(finishValue(value, store), store);
+    }
   }
 
   /**
