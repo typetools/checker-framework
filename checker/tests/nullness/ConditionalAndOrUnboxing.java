@@ -72,4 +72,58 @@ public class ConditionalAndOrUnboxing {
       o.hashCode();
     }
   }
+
+  // The facts that hold when an operand is true or false do not necessarily hold when the
+  // enclosing expression is true or false.
+
+  void unrefinedLeftOfAnd(@Nullable Object o, boolean x) {
+    if (isNN(o) && x) {
+    } else {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
+  void unrefinedLeftOfOr(@Nullable Object o, boolean x) {
+    if (isNN(o) || x) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
+  void unrefinedRightOfAnd(boolean x, @Nullable Object o) {
+    if (x && isNN(o)) {
+    } else {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
+  void unrefinedRightOfOr(boolean x, @Nullable Object o) {
+    if (x || isNN(o)) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
+  void unrefinedLeftOfBitwiseOr(@Nullable Object o, Boolean b) {
+    if (isNN(o) | b) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
+  void unrefinedLeftOfXor(@Nullable Object o, Boolean b) {
+    if (isNN(o) ^ b) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
+  void unrefinedLeftOfEqualTo(@Nullable Object o, boolean x) {
+    if (isNN(o) == x) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
 }
