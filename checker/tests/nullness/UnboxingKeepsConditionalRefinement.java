@@ -65,4 +65,48 @@ public class UnboxingKeepsConditionalRefinement {
       o.hashCode();
     }
   }
+
+  // In the following, a fact that holds when isNN(o) is true does not hold when the whole
+  // condition is true.
+
+  void bitwiseOr(@Nullable Object o, Boolean c) {
+    if (c | isNN(o)) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
+  void bitwiseXor(@Nullable Object o, Boolean c) {
+    if (c ^ isNN(o)) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
+  void equalTo(@Nullable Object o, boolean b) {
+    if (b == isNN(o)) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
+  void notEqual(@Nullable Object o, Boolean b) {
+    if (isNN(o) != b) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
+  void ternaryOperand(@Nullable Object o, boolean c) {
+    if (c ? isNN(o) : true) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
+  void bitwiseAnd(@Nullable Object o, Boolean c) {
+    if (c & isNN(o)) {
+      o.hashCode();
+    }
+  }
 }

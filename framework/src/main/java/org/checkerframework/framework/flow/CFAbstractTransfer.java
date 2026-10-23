@@ -1219,49 +1219,62 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<V, S> in) {
 
-    if (n.getIsUnboxing()) {
-      // An unboxing call has no side effects, and its result equals its receiver.  Therefore, the
-      // call keeps its receiver's stores, including any separate then-store and else-store.  For
-      // a Boolean receiver, those hold the facts that are true when the receiver is true or
-      // false, respectively.
-      ExpressionTree unboxingTree = n.getTree();
-      V factoryValue = (unboxingTree == null) ? null : getValueFromFactory(unboxingTree, n);
-      V resValue = moreSpecificValue(factoryValue, in.getRegularStore().getValue(n));
-      if (in.containsTwoStores()) {
-        in.getThenStore().updateForMethodCall(n, resValue);
-        in.getElseStore().updateForMethodCall(n, resValue);
-      } else {
-        in.getRegularStore().updateForMethodCall(n, resValue);
-      }
-      return createTransferResult(resValue, in);
-    }
-
-    S store = in.getRegularStore();
-
     ExecutableElement method = n.getTarget().getMethod();
-
-    // Perform WPI before the store has been side-effected.
-    if (shouldPerformWholeProgramInference(n.getTree(), method)) {
-      // Updates the inferred parameter types of the invoked method.
-      analysis.atypeFactory.getWholeProgramInference().updateFromMethodInvocation(n, method, store);
-    }
-
     ExpressionTree invocationTree = n.getTree();
-
-    // Determine the abstract value for the method call.
     // look up the call's value from factory
     V factoryValue = (invocationTree == null) ? null : getValueFromFactory(invocationTree, n);
-    // look up the call's value in the store (if possible)
-    V storeValue = store.getValue(n);
-    V resValue = moreSpecificValue(factoryValue, storeValue);
 
-    store.updateForMethodCall(n, resValue);
+    S thenStore;
+    S elseStore;
+    V resValue;
+    if (n.getIsUnboxing()) {
+      // An unboxing call that the CFG inserts has no side effects, and its result equals its
+      // receiver.  Therefore, the call keeps its receiver's stores, including any separate
+      // then-store and else-store.  For a Boolean receiver, those hold the facts that are true
+      // when the receiver is true or false, respectively.  There is no WPI, because the unboxing
+      // method is not in source code.
+      thenStore = in.getThenStore();
+      elseStore = in.getElseStore();
+      // look up the call's value in the stores (if possible)
+      V thenStoreValue = thenStore.getValue(n);
+      V elseStoreValue = elseStore.getValue(n);
+      V storeValue =
+          (thenStoreValue == null || elseStoreValue == null)
+              ? null
+              : thenStoreValue.leastUpperBound(elseStoreValue);
+      resValue = moreSpecificValue(factoryValue, storeValue);
 
-    // add new information based on postcondition
-    processPostconditions(n, store, method, invocationTree);
+      JavaExpression unboxingCall = JavaExpression.fromNode(n);
+      thenStore.replaceValue(unboxingCall, resValue);
+      elseStore.replaceValue(unboxingCall, resValue);
 
-    S thenStore = store;
-    S elseStore = thenStore.copy();
+      // add new information based on postcondition
+      processPostconditions(n, thenStore, method, invocationTree);
+      processPostconditions(n, elseStore, method, invocationTree);
+    } else {
+      S store = in.getRegularStore();
+
+      // Perform WPI before the store has been side-effected.
+      if (shouldPerformWholeProgramInference(invocationTree, method)) {
+        // Updates the inferred parameter types of the invoked method.
+        analysis
+            .atypeFactory
+            .getWholeProgramInference()
+            .updateFromMethodInvocation(n, method, store);
+      }
+
+      // look up the call's value in the store (if possible)
+      V storeValue = store.getValue(n);
+      resValue = moreSpecificValue(factoryValue, storeValue);
+
+      store.updateForMethodCall(n, resValue);
+
+      // add new information based on postcondition
+      processPostconditions(n, store, method, invocationTree);
+
+      thenStore = store;
+      elseStore = thenStore.copy();
+    }
 
     // add new information based on conditional postcondition
     processConditionalPostconditions(n, method, invocationTree, thenStore, elseStore);
