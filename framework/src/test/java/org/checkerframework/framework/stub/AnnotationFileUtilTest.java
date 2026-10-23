@@ -2,6 +2,7 @@ package org.checkerframework.framework.stub;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -96,6 +97,21 @@ public class AnnotationFileUtilTest {
         descriptions(zip, AnnotationFileType.COMMAND_LINE_STUB));
     Assert.assertEquals(
         Arrays.asList(zip.getPath() + "!Other.ajava"), descriptions(zip, AnnotationFileType.AJAVA));
+  }
+
+  /** Tests that the contents of an entry in a zip archive can be read. */
+  @Test
+  public void readEntryInZipArchive() throws IOException {
+    File zip = writeZip(new File(tmp.getRoot(), "stubs.zip"), "java/lang/String.astub");
+
+    List<AnnotationFileResource> resources =
+        AnnotationFileUtil.allAnnotationFiles(zip.getPath(), AnnotationFileType.COMMAND_LINE_STUB);
+    Assert.assertNotNull(resources);
+    Assert.assertEquals(1, resources.size());
+    try (InputStream in = resources.get(0).getInputStream()) {
+      Assert.assertEquals(
+          "package java.lang;", new String(in.readAllBytes(), StandardCharsets.UTF_8));
+    }
   }
 
   /**

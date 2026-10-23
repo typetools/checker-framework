@@ -1,7 +1,7 @@
 package org.checkerframework.framework.stub;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.jar.JarEntry;
@@ -9,7 +9,7 @@ import java.util.jar.JarFile;
 
 /**
  * {@link JarEntry}-based implementation of {@link AnnotationFileResource}. The archive is opened
- * only while the entry is being read, so this resource holds no open file handle.
+ * only while the entry is being read, so this resource itself holds no open file handle.
  */
 public class JarEntryAnnotationFileResource implements AnnotationFileResource {
   /** The JAR or ZIP archive. */
@@ -34,19 +34,40 @@ public class JarEntryAnnotationFileResource implements AnnotationFileResource {
     return archive.getPath() + "!" + entryName;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>The returned stream holds the archive open; closing the stream closes the archive.
+   */
   @Override
   public InputStream getInputStream() throws IOException {
-    try (JarFile file = new JarFile(archive)) {
+    JarFile file = new JarFile(archive);
+    try {
       JarEntry entry = file.getJarEntry(entryName);
       if (entry == null) {
         throw new IOException("No entry " + entryName + " in " + archive);
       }
-      try (InputStream in = file.getInputStream(entry)) {
-        if (in == null) {
-          throw new IOException("Cannot read entry " + entryName + " in " + archive);
-        }
-        return new ByteArrayInputStream(in.readAllBytes());
+      InputStream in = file.getInputStream(entry);
+      if (in == null) {
+        throw new IOException("Cannot read entry " + entryName + " in " + archive);
       }
+      return new FilterInputStream(in) {
+        @Override
+        public void close() throws IOException {
+          try {
+            super.close();
+          } finally {
+            file.close();
+          }
+        }
+      };
+    } catch (IOException | RuntimeException e) {
+      try {
+        file.close();
+      } catch (IOException closeException) {
+        e.addSuppressed(closeException);
+      }
+      throw e;
     }
   }
 }

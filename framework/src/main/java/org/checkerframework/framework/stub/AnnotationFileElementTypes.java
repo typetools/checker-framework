@@ -296,12 +296,14 @@ public class AnnotationFileElementTypes {
    * one that contains the test's annotation files.
    *
    * @param path a relative or absolute path, from a command-line argument
-   * @return {@code path} if it exists or if the {@code test.src} system property is not set;
-   *     otherwise, {@code path} resolved against the {@code test.src} system property
+   * @return {@code path} if it is absolute, if it exists, or if the {@code test.src} system
+   *     property is not set; otherwise, {@code path} resolved against the {@code test.src} system
+   *     property
    */
   private static String resolveAgainstTestSrc(String path) {
     String base = System.getProperty("test.src");
-    if (base == null || new File(path).exists()) {
+    File file = new File(path);
+    if (base == null || file.isAbsolute() || file.exists()) {
       return path;
     }
     return base + File.separator + path;
