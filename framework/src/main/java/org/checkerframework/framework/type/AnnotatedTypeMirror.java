@@ -770,17 +770,6 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Remove any annotation that is the top annotation in its qualifier hierarchy.
-   *
-   * @return true if an annotation was removed
-   */
-  public boolean removePrimaryTopAnnotations() {
-    int oldSize = primaryAnnotations.size();
-    primaryAnnotations.removeIf(am -> atypeFactory.isTop(am));
-    return oldSize != primaryAnnotations.size();
-  }
-
-  /**
    * Removes multiple primary annotations from the type.
    *
    * @param annotations the annotations to remove

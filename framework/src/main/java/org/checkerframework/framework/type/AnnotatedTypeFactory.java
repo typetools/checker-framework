@@ -6101,11 +6101,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           false,
           false);
     }
-
-    // Remove top annotations on the method signature after the above runs.
-    // This side effect won't affect any future call to wpiPrepareMethodForWriting, because
-    // methodAnnos is a deep copy of the real inference storage data structure.
-    methodAnnos.removePrimaryTopAnnotations();
   }
 
   /**

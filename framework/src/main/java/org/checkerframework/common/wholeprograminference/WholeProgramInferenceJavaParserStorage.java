@@ -986,23 +986,117 @@ public class WholeProgramInferenceJavaParserStorage
       ClassOrInterfaceAnnos classAnnos,
       @Nullable Collection<@BinaryName String> supertypes,
       @Nullable Collection<@BinaryName String> subtypes) {
-    if (classAnnos.callableDeclarations.isEmpty()) {
-      return;
+    for (FieldAnnos fieldAnnos : classAnnos.fields.values()) {
+      if (!containsAliasForTypeQualifier(fieldAnnos.declarationAnnotations)) {
+        removeDefaultPrimaryAnnotations(fieldAnnos.type, TypeUseLocation.FIELD);
+      }
     }
 
-    // fields
-    for (Map.Entry<String, FieldAnnos> fieldEntry : classAnnos.fields.entrySet()) {
-      fieldEntry.getValue().removePrimaryTopAnnotations();
-    }
-
-    // methods
     for (Map.Entry<String, CallableDeclarationAnnos> methodEntry :
         classAnnos.callableDeclarations.entrySet()) {
       String jvmSignature = methodEntry.getKey();
       List<CallableDeclarationAnnos> inSupertypes = findOverrides(jvmSignature, supertypes);
       List<CallableDeclarationAnnos> inSubtypes = findOverrides(jvmSignature, subtypes);
 
-      wpiPrepareMethodForWriting(methodEntry.getValue(), inSupertypes, inSubtypes);
+      CallableDeclarationAnnos methodAnnos = methodEntry.getValue();
+      wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
+      // This runs after wpiPrepareMethodForWriting, which may consult the method's annotations.
+      removeDefaultPrimaryAnnotations(methodAnnos);
+    }
+  }
+
+  /**
+   * Removes, from the types in the signature of the given method or constructor, each primary
+   * annotation that is the default for its location. Writing such an annotation would be redundant.
+   *
+   * @param methodAnnos the method or constructor annotations to modify
+   */
+  private void removeDefaultPrimaryAnnotations(CallableDeclarationAnnos methodAnnos) {
+    // A declaration annotation on a method that is an alias for a type qualifier applies to the
+    // method's return type.
+    if (!containsAliasForTypeQualifier(methodAnnos.declarationAnnotations)) {
+      removeDefaultPrimaryAnnotations(
+          methodAnnos.returnType,
+          methodAnnos.declaration.isConstructorDeclaration()
+              ? TypeUseLocation.CONSTRUCTOR_RESULT
+              : TypeUseLocation.RETURN);
+    }
+    removeDefaultPrimaryAnnotations(methodAnnos.receiverType, TypeUseLocation.RECEIVER);
+    if (methodAnnos.parameterTypes != null) {
+      for (int i = 0; i < methodAnnos.parameterTypes.size(); i++) {
+        if (!parameterHasAliasForTypeQualifier(methodAnnos, i + 1)) {
+          removeDefaultPrimaryAnnotations(
+              methodAnnos.parameterTypes.get(i), TypeUseLocation.PARAMETER);
+        }
+      }
+    }
+  }
+
+  /**
+   * Returns true if whole-program inference inferred, for the given formal parameter, a declaration
+   * annotation that is an alias for a type qualifier.
+   *
+   * @param methodAnnos the method or constructor annotations
+   * @param index1based the 1-based index of a formal parameter
+   * @return true if the formal parameter has a declaration annotation that is an alias for a type
+   *     qualifier
+   */
+  private boolean parameterHasAliasForTypeQualifier(
+      CallableDeclarationAnnos methodAnnos, int index1based) {
+    if (methodAnnos.paramsDeclAnnos == null) {
+      return false;
+    }
+    for (CallableDeclarationAnnos.ParamDeclAnno paramDeclAnno : methodAnnos.paramsDeclAnnos) {
+      if (paramDeclAnno.index1based() == index1based
+          && WholeProgramInferenceScenesStorage.isAliasForTypeQualifier(
+              paramDeclAnno.annotation(), atypeFactory)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if {@code declarationAnnotations} contains an alias for a type qualifier. Reading
+   * the output file gives the annotated element the aliased type qualifier, so none of the
+   * element's type annotations is redundant, even one that is the default.
+   *
+   * @param declarationAnnotations the declaration annotations that whole-program inference inferred
+   *     for an element, or null if there are none
+   * @return true if {@code declarationAnnotations} contains an alias for a type qualifier
+   */
+  private boolean containsAliasForTypeQualifier(
+      @Nullable Set<AnnotationMirror> declarationAnnotations) {
+    if (declarationAnnotations == null) {
+      return false;
+    }
+    for (AnnotationMirror anno : declarationAnnotations) {
+      if (WholeProgramInferenceScenesStorage.isAliasForTypeQualifier(anno, atypeFactory)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Removes from {@code atm} each primary annotation that is the default for {@code location}.
+   * Writing such an annotation would be redundant.
+   *
+   * <p>Does nothing if {@code atm} is a type variable or a wildcard. A primary annotation on a use
+   * of a type variable or wildcard overrides its bounds, so it is never redundant.
+   *
+   * @param atm a type to modify, or null
+   * @param location the location of {@code atm}
+   */
+  private void removeDefaultPrimaryAnnotations(
+      @Nullable AnnotatedTypeMirror atm, TypeUseLocation location) {
+    if (atm == null || atm.getKind() == TypeKind.TYPEVAR || atm.getKind() == TypeKind.WILDCARD) {
+      return;
+    }
+    for (AnnotationMirror anno : new ArrayList<>(atm.getPrimaryAnnotations())) {
+      if (WholeProgramInferenceScenesStorage.isDefaultFor(anno, location, atm, atypeFactory)) {
+        atm.removePrimaryAnnotation(anno);
+      }
     }
   }
 
@@ -1402,7 +1496,7 @@ public class WholeProgramInferenceJavaParserStorage
       Path outputPath, CompilationUnitAnnos root, boolean omitIrrelevantAnnotations) {
     try (Writer writer = Files.newBufferedWriter(outputPath, StandardCharsets.UTF_8)) {
 
-      // This commented one-line implementation uses JavaParser's lexical preserving printing, which
+      // This commented implementation uses JavaParser's lexical preserving printing, which
       // writes the file such that its formatting is close to the original source file it was
       // parsed from as possible. It is commented out because the JavaParser feature is very buggy
       // and crashes when adding annotations in certain locations.
@@ -2233,21 +2327,6 @@ public class WholeProgramInferenceJavaParserStorage
       }
     }
 
-    /** Removes the primary annotations in the signature that are the top in their hierarchy. */
-    public void removePrimaryTopAnnotations() {
-      if (returnType != null) {
-        returnType.removePrimaryTopAnnotations();
-      }
-      if (receiverType != null) {
-        receiverType.removePrimaryTopAnnotations();
-      }
-      if (parameterTypes != null) {
-        for (AnnotatedTypeMirror atm : parameterTypes) {
-          atm.removePrimaryTopAnnotations();
-        }
-      }
-    }
-
     @Override
     public String toString() {
       StringJoiner sj =
@@ -2415,13 +2494,6 @@ public class WholeProgramInferenceJavaParserStorage
       Type newType = (Type) declaration.getType().accept(new CloneVisitor(), null);
       WholeProgramInferenceJavaParserStorage.transferAnnotations(type, newType);
       declaration.setType(newType);
-    }
-
-    /** Removes the top annotations from this. */
-    public void removePrimaryTopAnnotations() {
-      if (type != null) {
-        type.removePrimaryTopAnnotations();
-      }
     }
 
     @Override
