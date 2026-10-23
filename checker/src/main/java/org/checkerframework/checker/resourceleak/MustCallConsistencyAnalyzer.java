@@ -1676,7 +1676,7 @@ public class MustCallConsistencyAnalyzer {
           "missing.creates.mustcall.for",
           enclosingMethodElt.getSimpleName().toString(),
           receiverString,
-          ((FieldAccessNode) lhs).getFieldName());
+          lhsFan.getFieldName());
       return;
     }
 
@@ -1705,7 +1705,7 @@ public class MustCallConsistencyAnalyzer {
         "incompatible.creates.mustcall.for",
         enclosingMethodElt.getSimpleName().toString(),
         receiverString,
-        ((FieldAccessNode) lhs).getFieldName(),
+        lhsFan.getFieldName(),
         String.join(", ", checked));
   }
 

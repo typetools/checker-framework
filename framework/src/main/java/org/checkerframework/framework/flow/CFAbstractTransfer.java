@@ -991,7 +991,7 @@ public abstract class CFAbstractTransfer<
         analysis
             .atypeFactory
             .getWholeProgramInference()
-            .updateFromFormalParameterAssignment((LocalVariableNode) lhs, rhs, param);
+            .updateFromFormalParameterAssignment(lhsLvn2, rhs, param);
       }
     }
 
