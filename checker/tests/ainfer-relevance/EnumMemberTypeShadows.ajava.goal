@@ -19,7 +19,7 @@ public class EnumMemberTypeShadows {
     abstract static class EnumDesc implements CharSequence {
     }
 
-    static @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType Object anonymous = new Object() {
+    static Object anonymous = new Object() {
 
         enum Nested {
 
