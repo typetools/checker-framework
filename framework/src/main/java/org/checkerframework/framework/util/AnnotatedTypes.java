@@ -887,6 +887,9 @@ public final class AnnotatedTypes {
    *   <li>If the underlying type of {@code type1} is a supertype of the underlying type of {@code
    *       type2}, then return a copy of {@code type2} whose primary annotations are the greatest
    *       lower bound of the primary annotations on {@code type1} and {@code type2}.
+   *   <li>If javac's glb of the underlying types is computed by replacing each captured type
+   *       variable by its lower bound, then return the annotated glb of the types with those
+   *       replacements.
    *   <li>If the underlying type of {@code type1} and {@code type2} are not in a subtyping
    *       relationship, then return an annotated intersection type whose bounds are {@code type1}
    *       and {@code type2}.
@@ -928,6 +931,17 @@ public final class AnnotatedTypes {
     }
 
     if (glbJava.getKind() != TypeKind.INTERSECTION) {
+      // When javac's glb would contain more than one class type, javac retries with each captured
+      // type variable replaced by its lower bound.  See
+      // com.sun.tools.javac.code.Types#glbFlattened.
+      boolean replace1 = hasCapturedLowerBound(type1);
+      boolean replace2 = hasCapturedLowerBound(type2);
+      if (replace1 || replace2) {
+        return annotatedGLB(
+            atypeFactory,
+            replace1 ? ((AnnotatedTypeVariable) type1).getLowerBound() : type1,
+            replace2 ? ((AnnotatedTypeVariable) type2).getLowerBound() : type2);
+      }
       // If one type isn't a subtype of the other, then GLB must be an intersection.
       throw new BugInCF(
           "AnnotatedTypes#annotatedGLB: expected intersection, got [%s] %s. "
@@ -972,6 +986,19 @@ public final class AnnotatedTypes {
     glb.setBounds(newBounds);
     glb.addAnnotations(glbAnno);
     return glb;
+  }
+
+  /**
+   * Returns true if {@code type} is a captured type variable whose lower bound is not the null
+   * type.
+   *
+   * @param type an annotated type
+   * @return true if {@code type} is a captured type variable with a lower bound
+   */
+  private static boolean hasCapturedLowerBound(AnnotatedTypeMirror type) {
+    return type.getKind() == TypeKind.TYPEVAR
+        && TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())
+        && ((AnnotatedTypeVariable) type).getLowerBound().getKind() != TypeKind.NULL;
   }
 
   /**
