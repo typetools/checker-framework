@@ -23,6 +23,7 @@ public class SubtypeIsSupersetQualifierHierarchy extends AbstractSetInclusionQua
    * @param processingEnv processing environment
    * @param atypeFactory the associated type factory
    */
+  @SuppressWarnings({"nullness:argument", "keyfor:argument"}) // false positive: same type as param
   public SubtypeIsSupersetQualifierHierarchy(
       Collection<Class<? extends Annotation>> qualifierClasses,
       ProcessingEnvironment processingEnv,
