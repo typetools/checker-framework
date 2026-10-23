@@ -1069,14 +1069,12 @@ public class MustCallConsistencyAnalyzer {
    */
   private void checkOwningResourceCollectionFieldAccess(FieldAccessNode node) {
     if (coAtf.isOwningCollectionField(node.getElement())) {
-      String receiverString = receiverAsString(node);
-      boolean isSelfAccess = "this".equals(receiverString);
-      boolean isSuperAccess = "super".equals(receiverString);
+      Node receiver = node.getReceiver();
+      boolean isSelfAccess = receiver instanceof ThisNode;
+      boolean isSuperAccess = receiver instanceof SuperNode;
       if (!isSelfAccess && !isSuperAccess) {
         checker.reportError(
-            node.getTree(),
-            "foreign.owningcollection.field.access",
-            node.getFieldName().toString());
+            node.getTree(), "foreign.owningcollection.field.access", node.getFieldName());
       }
     }
   }
