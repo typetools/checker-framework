@@ -744,6 +744,12 @@ public class QualifierDefaults {
       return false;
     }
 
+    if (!useConservativeDefaultsBytecode && !useConservativeDefaultsSource) {
+      // Every path below returns false when both flags are false, and the checks below are
+      // expensive.
+      return false;
+    }
+
     if (uncheckedCodeDefaults.isEmpty()) {
       return false;
     }
