@@ -62,6 +62,7 @@ import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.LambdaResultExpressionNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MarkerNode;
+import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -843,6 +844,58 @@ public abstract class CFAbstractTransfer<
             && ((BinaryOperationNode) next).getRightOperand() == operand;
       }
     }
+  }
+
+  /**
+   * A method access merges the then-store and else-store of its input, as most nodes do; see {@link
+   * #createTransferResult}.
+   *
+   * <p>The exception is the target of an unboxing call, such as {@code isNonNull(x).booleanValue}.
+   * The then-store and else-store of its input describe its receiver, so the method access passes
+   * them along for the unboxing call to use; see {@link #visitUnboxingCall}.
+   */
+  @Override
+  public TransferResult<V, S> visitMethodAccess(MethodAccessNode n, TransferInput<V, S> in) {
+    if (in.containsTwoStores() && isTargetOfUnboxingCall(n)) {
+      return createTransferResultKeepingStores(getValueFromFactory(n), in);
+    }
+    return super.visitMethodAccess(n, in);
+  }
+
+  /**
+   * Returns true if the given method access is the target of an unboxing call.
+   *
+   * @param n a method access
+   * @return true if the method access is the target of an unboxing call
+   */
+  @SuppressWarnings("interning:not.interned") // CFG node identity
+  private static boolean isTargetOfUnboxingCall(MethodAccessNode n) {
+    Block block = n.getBlock();
+    if (block == null) {
+      return false;
+    }
+    // The call follows n in its block or, because a method access can throw an exception, begins
+    // the block that succeeds it.
+    List<Node> nodes = block.getNodes();
+    int i = 0;
+    while (i < nodes.size() && nodes.get(i) != n) {
+      i++;
+    }
+    i++;
+    if (i >= nodes.size()) {
+      if (!(block instanceof SingleSuccessorBlock ssb)) {
+        return false;
+      }
+      block = ssb.getSuccessor();
+      if (block == null || block.getNodes().isEmpty()) {
+        return false;
+      }
+      nodes = block.getNodes();
+      i = 0;
+    }
+    return nodes.get(i) instanceof MethodInvocationNode call
+        && call.getIsUnboxing()
+        && call.getTarget() == n;
   }
 
   @Override
