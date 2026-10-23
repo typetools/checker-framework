@@ -59,7 +59,8 @@ public class AliasingTransfer extends CFTransfer {
 
   /**
    * Case 1: For every assignment, the LHS is refined if the RHS has type {@literal @}Unique and is
-   * a method invocation or a new class instance.
+   * a method invocation or a new class instance. Otherwise, neither the LHS nor the RHS keeps a
+   * refinement.
    */
   @Override
   public TransferResult<CFValue, CFStore> visitAssignment(
@@ -72,10 +73,13 @@ public class AliasingTransfer extends CFTransfer {
         && (rhs instanceof MethodInvocationNode || rhs instanceof ObjectCreationNode)) {
       return super.visitAssignment(n, in); // Do normal refinement.
     }
-    // Widen the type of the rhs if the RHS's declared type wasn't @Unique.
-    JavaExpression rhsExpr = JavaExpression.fromNode(rhs);
-    in.getRegularStore().clearValue(rhsExpr);
-    return new RegularTransferResult<>(null, in.getRegularStore());
+    // Widen the type of the rhs if the RHS's declared type wasn't @Unique.  Also widen the type of
+    // the lhs, which is now an alias of the rhs.
+    // If `in` has two stores, each call to getRegularStore() returns a new least upper bound.
+    CFStore store = in.getRegularStore();
+    store.clearValue(JavaExpression.fromNode(rhs));
+    store.clearValue(JavaExpression.fromNode(n.getTarget()));
+    return new RegularTransferResult<>(null, store);
   }
 
   /**
