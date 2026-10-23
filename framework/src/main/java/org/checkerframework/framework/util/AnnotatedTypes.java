@@ -23,7 +23,6 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -888,6 +887,9 @@ public final class AnnotatedTypes {
    *   <li>If the underlying type of {@code type1} is a supertype of the underlying type of {@code
    *       type2}, then return a copy of {@code type2} whose primary annotations are the greatest
    *       lower bound of the primary annotations on {@code type1} and {@code type2}.
+   *   <li>If javac's glb of the underlying types is computed by replacing each captured type
+   *       variable by its lower bound, then return the annotated glb of the types with those
+   *       replacements.
    *   <li>If the underlying type of {@code type1} and {@code type2} are not in a subtyping
    *       relationship, then return an annotated intersection type whose bounds are {@code type1}
    *       and {@code type2}.
@@ -929,6 +931,17 @@ public final class AnnotatedTypes {
     }
 
     if (glbJava.getKind() != TypeKind.INTERSECTION) {
+      // When javac's glb would contain more than one class type, javac retries with each captured
+      // type variable replaced by its lower bound.  See
+      // com.sun.tools.javac.code.Types#glbFlattened.
+      boolean replace1 = hasCapturedLowerBound(type1);
+      boolean replace2 = hasCapturedLowerBound(type2);
+      if (replace1 || replace2) {
+        return annotatedGLB(
+            atypeFactory,
+            replace1 ? ((AnnotatedTypeVariable) type1).getLowerBound() : type1,
+            replace2 ? ((AnnotatedTypeVariable) type2).getLowerBound() : type2);
+      }
       // If one type isn't a subtype of the other, then GLB must be an intersection.
       throw new BugInCF(
           "AnnotatedTypes#annotatedGLB: expected intersection, got [%s] %s. "
@@ -973,6 +986,19 @@ public final class AnnotatedTypes {
     glb.setBounds(newBounds);
     glb.addAnnotations(glbAnno);
     return glb;
+  }
+
+  /**
+   * Returns true if {@code type} is a captured type variable whose lower bound is not the null
+   * type.
+   *
+   * @param type an annotated type
+   * @return true if {@code type} is a captured type variable with a lower bound
+   */
+  private static boolean hasCapturedLowerBound(AnnotatedTypeMirror type) {
+    return type.getKind() == TypeKind.TYPEVAR
+        && TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())
+        && ((AnnotatedTypeVariable) type).getLowerBound().getKind() != TypeKind.NULL;
   }
 
   /**
@@ -1045,11 +1071,12 @@ public final class AnnotatedTypes {
    * Returns the method parameters for the invoked method (or constructor), with the same number of
    * arguments as passed to the invocation tree.
    *
-   * <p>This expands the parameters if the call uses varargs or contracts the parameters if the call
-   * is to an anonymous class that extends a class with an enclosing type. If the call is neither of
-   * these, then the parameters are returned unchanged. For example, String.format is declared to
-   * take {@code (String, Object...)}. Given {@code String.format(a, b, c, d)}, this returns
-   * (String, Object, Object, Object).
+   * <p>This expands the parameters if the call uses varargs, and it omits the enclosing-instance
+   * parameter if the call creates an anonymous class with an explicit enclosing expression, as in
+   * {@code outer.new Inner(...) {...}} (see {@link TreeUtils#parametersForArguments}). If the call
+   * is neither of these, then the parameters are returned unchanged. For example, String.format is
+   * declared to take {@code (String, Object...)}. Given {@code String.format(a, b, c, d)}, this
+   * returns (String, Object, Object, Object).
    *
    * @param atypeFactory the type factory to use for fetching annotated types
    * @param method the method or constructor's type
@@ -1064,29 +1091,8 @@ public final class AnnotatedTypes {
       List<? extends ExpressionTree> args,
       Tree invok) {
 
-    List<AnnotatedTypeMirror> parameters = method.getParameterTypes();
-
-    // Handle anonymous constructors that extend a class with an enclosing type,
-    // as in `new MyClass() { ... }`.
-    ExecutableElement methodElement = method.getElement();
-    if (methodElement.getKind() == ElementKind.CONSTRUCTOR
-        && methodElement.getEnclosingElement().getSimpleName().contentEquals("")) {
-      DeclaredType t =
-          TypesUtils.getSuperClassOrInterface(
-              methodElement.getEnclosingElement().asType(), atypeFactory.types);
-      TypeMirror enclosingType = t.getEnclosingType();
-      if (enclosingType != null) {
-        if (!parameters.isEmpty()) {
-          if (atypeFactory.types.isSameType(enclosingType, parameters.get(0).getUnderlyingType())) {
-            if (args.isEmpty()
-                || !atypeFactory.types.isSameType(
-                    TreeUtils.typeOf(args.get(0)), parameters.get(0).getUnderlyingType())) {
-              parameters = parameters.subList(1, parameters.size());
-            }
-          }
-        }
-      }
-    }
+    List<AnnotatedTypeMirror> parameters =
+        TreeUtils.parametersForArguments(method.getElement(), invok, method.getParameterTypes());
 
     // Handle vararg methods.
     if (!TreeUtils.isVarargsCall(invok)) {
