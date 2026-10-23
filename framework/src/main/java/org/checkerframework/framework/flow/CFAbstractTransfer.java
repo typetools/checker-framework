@@ -1219,65 +1219,85 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitMethodInvocation(
       MethodInvocationNode n, TransferInput<V, S> in) {
 
+    if (n.getIsUnboxing()) {
+      return visitUnboxingCall(n, in);
+    }
+
+    S store = in.getRegularStore();
+
     ExecutableElement method = n.getTarget().getMethod();
+
+    // Perform WPI before the store has been side-effected.
+    if (shouldPerformWholeProgramInference(n.getTree(), method)) {
+      // Updates the inferred parameter types of the invoked method.
+      analysis.atypeFactory.getWholeProgramInference().updateFromMethodInvocation(n, method, store);
+    }
+
     ExpressionTree invocationTree = n.getTree();
+
+    // Determine the abstract value for the method call.
     // look up the call's value from factory
     V factoryValue = (invocationTree == null) ? null : getValueFromFactory(invocationTree, n);
+    // look up the call's value in the store (if possible)
+    V storeValue = store.getValue(n);
+    V resValue = moreSpecificValue(factoryValue, storeValue);
 
-    S thenStore;
-    S elseStore;
-    V resValue;
-    if (n.getIsUnboxing()) {
-      // An unboxing call that the CFG inserts has no side effects, and its result equals its
-      // receiver.  Therefore, the call keeps its receiver's stores, including any separate
-      // then-store and else-store.  For a Boolean receiver, those hold the facts that are true
-      // when the receiver is true or false, respectively.  There is no WPI, because the unboxing
-      // method is not in source code.
-      thenStore = in.getThenStore();
-      elseStore = in.getElseStore();
-      // look up the call's value in the stores (if possible)
-      V thenStoreValue = thenStore.getValue(n);
-      V elseStoreValue = elseStore.getValue(n);
-      V storeValue =
-          (thenStoreValue == null || elseStoreValue == null)
-              ? null
-              : thenStoreValue.leastUpperBound(elseStoreValue);
-      resValue = moreSpecificValue(factoryValue, storeValue);
+    store.updateForMethodCall(n, resValue);
 
-      JavaExpression unboxingCall = JavaExpression.fromNode(n);
-      thenStore.replaceValue(unboxingCall, resValue);
-      elseStore.replaceValue(unboxingCall, resValue);
+    // add new information based on postcondition
+    processPostconditions(n, store, method, invocationTree);
 
-      // add new information based on postcondition
-      processPostconditions(n, thenStore, method, invocationTree);
-      processPostconditions(n, elseStore, method, invocationTree);
-    } else {
-      S store = in.getRegularStore();
-
-      // Perform WPI before the store has been side-effected.
-      if (shouldPerformWholeProgramInference(invocationTree, method)) {
-        // Updates the inferred parameter types of the invoked method.
-        analysis
-            .atypeFactory
-            .getWholeProgramInference()
-            .updateFromMethodInvocation(n, method, store);
-      }
-
-      // look up the call's value in the store (if possible)
-      V storeValue = store.getValue(n);
-      resValue = moreSpecificValue(factoryValue, storeValue);
-
-      store.updateForMethodCall(n, resValue);
-
-      // add new information based on postcondition
-      processPostconditions(n, store, method, invocationTree);
-
-      thenStore = store;
-      elseStore = thenStore.copy();
-    }
+    S thenStore = store;
+    S elseStore = thenStore.copy();
 
     // add new information based on conditional postcondition
     processConditionalPostconditions(n, method, invocationTree, thenStore, elseStore);
+
+    return new ConditionalTransferResult<>(
+        finishValue(resValue, thenStore, elseStore), thenStore, elseStore);
+  }
+
+  /**
+   * The transfer function for an unboxing call that the CFG inserts, such as {@code
+   * booleanValue()}. Such a call has no side effects, and its result equals its receiver.
+   * Therefore, the call keeps its receiver's stores, including any separate then-store and
+   * else-store. For a {@code Boolean} receiver, those hold the facts that are true when the
+   * receiver is true or false, respectively.
+   *
+   * <p>There is no whole-program inference, because the unboxing method is not in source code.
+   *
+   * @param n an unboxing call that the CFG inserts
+   * @param in the transfer input
+   * @return the transfer result for {@code n}
+   */
+  private TransferResult<V, S> visitUnboxingCall(MethodInvocationNode n, TransferInput<V, S> in) {
+    ExecutableElement method = n.getTarget().getMethod();
+    ExpressionTree unboxingTree = n.getTree();
+    assert unboxingTree != null
+        : "@AssumeAssertion(nullness): the CFG builds a tree for each unboxing call";
+
+    S thenStore = in.getThenStore();
+    S elseStore = in.getElseStore();
+
+    // Determine the abstract value for the method call.
+    V factoryValue = getValueFromFactory(unboxingTree, n);
+    // look up the call's value in the stores (if possible)
+    V thenStoreValue = thenStore.getValue(n);
+    V elseStoreValue = elseStore.getValue(n);
+    V storeValue =
+        (thenStoreValue == null || elseStoreValue == null)
+            ? null
+            : thenStoreValue.leastUpperBound(elseStoreValue);
+    V resValue = moreSpecificValue(factoryValue, storeValue);
+
+    JavaExpression unboxingCall = JavaExpression.fromNode(n);
+    thenStore.replaceValue(unboxingCall, resValue);
+    elseStore.replaceValue(unboxingCall, resValue);
+
+    // add new information based on postcondition and conditional postcondition
+    processPostconditions(n, thenStore, method, unboxingTree);
+    processPostconditions(n, elseStore, method, unboxingTree);
+    processConditionalPostconditions(n, method, unboxingTree, thenStore, elseStore);
 
     return new ConditionalTransferResult<>(
         finishValue(resValue, thenStore, elseStore), thenStore, elseStore);
@@ -1551,15 +1571,16 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns the abstract value of {@code (value1, value2)} that is more specific. If the two are
-   * incomparable, then {@code value1} is returned.
+   * incomparable, then {@code value1} is returned. If one of them is null, then the other is
+   * returned.
    *
-   * @param value1 an abstract value
-   * @param value2 another abstract value
+   * @param value1 an abstract value, or null
+   * @param value2 another abstract value, or null
    * @return the more specific value of the two parameters, or, if they are incomparable, {@code
    *     value1}
    */
   @Pure
-  public V moreSpecificValue(V value1, V value2) {
+  public @PolyNull V moreSpecificValue(@PolyNull V value1, @PolyNull V value2) {
     if (value1 == null) {
       return value2;
     }
