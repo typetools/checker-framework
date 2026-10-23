@@ -1145,12 +1145,15 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitInstanceOf(InstanceOfNode node, TransferInput<V, S> in) {
     TransferResult<V, S> result = super.visitInstanceOf(node, in);
+    // The facts below hold only when the instanceof is true.
+    S thenStore = result.getThenStore();
+    S elseStore = result.getElseStore();
     for (LocalVariableNode bindingVar : node.getBindingVariables()) {
       JavaExpression expr = JavaExpression.fromNode(bindingVar);
       AnnotatedTypeMirror expType =
           analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
       for (AnnotationMirror anno : expType.getAnnotations()) {
-        in.getRegularStore().insertOrRefine(expr, anno);
+        thenStore.insertOrRefine(expr, anno);
       }
     }
 
@@ -1165,12 +1168,11 @@ public abstract class CFAbstractTransfer<
           && !expType.getPrimaryAnnotations().isEmpty()) {
         JavaExpression expr = JavaExpression.fromTree(node.getTree().getExpression());
         for (AnnotationMirror anno : refType.getPrimaryAnnotations()) {
-          in.getRegularStore().insertOrRefine(expr, anno);
+          thenStore.insertOrRefine(expr, anno);
         }
-        return new RegularTransferResult<>(result.getResultValue(), in.getRegularStore());
       }
     }
-    return result;
+    return new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
   }
 
   /**
