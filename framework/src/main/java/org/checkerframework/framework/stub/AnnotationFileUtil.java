@@ -421,10 +421,8 @@ public class AnnotationFileUtil {
 
   /**
    * Returns true if a file that the user named explicitly, and that is not an archive, should be
-   * used as an annotation file of type {@code fileType}. A stub file is used no matter what its
-   * name is, unless its name indicates that it is an ajava file. An ajava file must not be renamed:
-   * it is used only if its name ends with {@code .ajava}, because the Checker Framework uses the
-   * name of an ajava file to find the source file that it corresponds to.
+   * used as an annotation file of type {@code fileType}. Every ajava file, and no stub file, must
+   * end with {@code .ajava}.
    *
    * @param path a file name or path
    * @param fileType the type of annotation file that the user supplied

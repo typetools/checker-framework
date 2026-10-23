@@ -10,11 +10,7 @@
 The `-Astubs` and `-Aajava` command-line options accept `.zip` archives, in
 addition to `.jar` archives and directories.
 
-A stub file that is named explicitly on the command line is used regardless of
-its file name extension, unless the name ends with `.ajava`.  An ajava file
-must not be renamed:  its name must end with `.ajava`.  Within a directory or
-archive, only files whose names end with `.astub` or `.ajava` are used, as
-before.
+Only, and all, ajava files must end with `.ajava`.
 
 ### Changes for type system implementers
 
