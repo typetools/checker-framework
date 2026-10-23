@@ -1,5 +1,7 @@
-name: Prek checks
+name: Prek style checks
 "on": [push, pull_request]
+permissions:
+  contents: read
 jobs:
   prek:
     runs-on: ubuntu-latest
@@ -12,4 +14,4 @@ jobs:
           java-version: '25'
           cache: 'gradle'
       - run: curl -fLSs https://raw.githubusercontent.com/CircleCI-Public/circleci-cli/main/install.sh | sudo bash
-      - uses: j178/prek-action@v3.0.0
+      - uses: j178/prek-action@v3.1.0
