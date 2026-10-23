@@ -10,6 +10,7 @@ import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
@@ -57,9 +58,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -143,6 +146,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   /** A scene read from the input JAIF file, and will be written to the output JAIF file. */
   private final AScene scene;
+
+  /**
+   * A cache for {@link #getTargets}. Maps an annotation name, as written in the stub file, to the
+   * element types in the {@code @Target} meta-annotation of the annotation interface that the name
+   * denotes, or to null if they cannot be determined.
+   */
+  private final Map<String, @Nullable List<ElementType>> targetsCache = new HashMap<>();
 
   /**
    * Creates a new ToIndexFileConverter.
@@ -296,6 +306,21 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     return new Annotation(def, Collections.emptyMap());
   }
 
+  /**
+   * Adds annotations to a scene element, omitting any that {@link #extractAnnotation} discards.
+   *
+   * @param exprs annotations
+   * @param elem the scene element to which to add the annotations
+   */
+  private static void addAnnotations(List<AnnotationExpr> exprs, AElement elem) {
+    for (AnnotationExpr expr : exprs) {
+      Annotation anno = extractAnnotation(expr);
+      if (anno != null) {
+        elem.tlAnnotationsHere.add(anno);
+      }
+    }
+  }
+
   @Override
   public Void visit(AnnotationDeclaration decl, AElement elem) {
     return null;
@@ -309,8 +334,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   @Override
   public Void visit(ClassOrInterfaceDeclaration decl, AElement elem) {
-    // A nested class's members belong to the nested class, not to the class that encloses it.
-    AClass clazz = classElement(decl);
+    AClass clazz = classFor(decl, elem);
     visitDecl(decl, clazz);
     return super.visit(decl, clazz);
   }
@@ -318,7 +342,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   @Override
   public Void visit(ConstructorDeclaration decl, AElement elem) {
     List<Parameter> params = decl.getParameters();
-    List<AnnotationExpr> rcvrAnnos = decl.getAnnotations();
     BlockStmt body = decl.getBody();
     StringBuilder sb = new StringBuilder("<init>(");
     AClass clazz = (AClass) elem;
@@ -338,12 +361,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         visitParameter(params.get(i), method.parameters.getVivify(i));
       }
     }
-    if (rcvrAnnos != null) {
-      for (AnnotationExpr expr : rcvrAnnos) {
-        Annotation anno = extractAnnotation(expr);
-        method.receiver.tlAnnotationsHere.add(anno);
-      }
-    }
+    visitReceiverParameter(decl, method);
     return body == null ? null : body.accept(this, method);
     // return super.visit(decl, elem);
   }
@@ -359,14 +377,14 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   @Override
   public Void visit(EnumDeclaration decl, AElement elem) {
-    AClass clazz = classElement(decl);
+    AClass clazz = classFor(decl, elem);
     visitDecl(decl, clazz);
     return super.visit(decl, clazz);
   }
 
   @Override
   public Void visit(RecordDeclaration decl, AElement elem) {
-    AClass clazz = classElement(decl);
+    AClass clazz = classFor(decl, elem);
     visitDecl(decl, clazz);
     return super.visit(decl, clazz);
   }
@@ -376,8 +394,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     for (VariableDeclarator v : decl.getVariables()) {
       AClass clazz = (AClass) elem;
       AField field = clazz.fields.getVivify(v.getNameAsString());
-      visitDecl(decl, field);
       visitType(decl.getCommonType(), field.type);
+      visitDeclAndTypeAnnotations(
+          decl.getAnnotations(), ElementType.FIELD, field, v.getType(), field.type);
     }
     return null;
   }
@@ -395,7 +414,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     Type type = decl.getType();
     List<Parameter> params = decl.getParameters();
     List<TypeParameter> typeParams = decl.getTypeParameters();
-    Optional<ReceiverParameter> rcvrParam = decl.getReceiverParameter();
     BlockStmt body = decl.getBody().orElse(null);
     StringBuilder sb = new StringBuilder(decl.getNameAsString()).append('(');
     AClass clazz = (AClass) elem;
@@ -407,19 +425,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
     sb.append(')').append(getJVML(type));
     method = clazz.methods.getVivify(sb.toString());
-    visitDecl(decl, method);
     visitType(type, method.returnType);
+    visitDeclAndTypeAnnotations(
+        decl.getAnnotations(), ElementType.METHOD, method, type, method.returnType);
     if (params != null) {
       for (int i = 0; i < params.size(); i++) {
         visitParameter(params.get(i), method.parameters.getVivify(i));
       }
     }
-    if (rcvrParam.isPresent()) {
-      for (AnnotationExpr expr : rcvrParam.get().getAnnotations()) {
-        Annotation anno = extractAnnotation(expr);
-        method.receiver.type.tlAnnotationsHere.add(anno);
-      }
-    }
+    visitReceiverParameter(decl, method);
     if (typeParams != null) {
       for (int i = 0; i < typeParams.size(); i++) {
         TypeParameter typeParam = typeParams.get(i);
@@ -476,25 +490,26 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       LocalLocation loc = new LocalLocation(i, decl.getNameAsString());
       AField field = method.body.locals.getVivify(loc);
       visitType(expr.getCommonType(), field.type);
-      if (annos != null) {
-        for (AnnotationExpr annoExpr : annos) {
-          Annotation anno = extractAnnotation(annoExpr);
-          field.tlAnnotationsHere.add(anno);
-        }
-      }
+      visitDeclAndTypeAnnotations(
+          annos, ElementType.LOCAL_VARIABLE, field, decl.getType(), field.type);
     }
     return null;
   }
 
   /**
-   * Returns the scene's element for the class that {@code decl} declares, creating the element if
-   * the scene does not yet contain it.
+   * Returns the scene element for a type declaration.
    *
-   * @param decl a type declaration in the stub file
-   * @return the scene's element for {@code decl}
+   * @param decl a type declaration
+   * @param elem the scene element for {@code decl} if it is a top-level type, or for its enclosing
+   *     type if it is a nested type
+   * @return the scene element for {@code decl}
    */
-  private AClass classElement(TypeDeclaration<?> decl) {
-    return scene.classes.getVivify(qualifiedStubBinaryName(decl));
+  private AClass classFor(TypeDeclaration<?> decl, AElement elem) {
+    AClass clazz = (AClass) elem;
+    if (!decl.isNestedType()) {
+      return clazz;
+    }
+    return scene.classes.getVivify(clazz.className + "$" + decl.getNameAsString());
   }
 
   /**
@@ -502,14 +517,23 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * for BodyDeclaration subclasses.
    */
   private Void visitDecl(BodyDeclaration<?> decl, ADeclaration elem) {
-    NodeList<AnnotationExpr> annoExprs = decl.getAnnotations();
-    if (annoExprs != null) {
-      for (AnnotationExpr annoExpr : annoExprs) {
-        Annotation anno = extractAnnotation(annoExpr);
-        elem.tlAnnotationsHere.add(anno);
-      }
-    }
+    addAnnotations(decl.getAnnotations(), elem);
     return null;
+  }
+
+  /**
+   * Copies information from a method's or constructor's receiver parameter, if it has one, to the
+   * receiver's scene element.
+   *
+   * @param decl a method or constructor declaration
+   * @param method the scene element for {@code decl}
+   */
+  private void visitReceiverParameter(CallableDeclaration<?> decl, AMethod method) {
+    Optional<ReceiverParameter> rcvrParam = decl.getReceiverParameter();
+    if (rcvrParam.isPresent()) {
+      addAnnotations(rcvrParam.get().getAnnotations(), method.receiver.type);
+      visitType(rcvrParam.get().getType(), method.receiver.type);
+    }
   }
 
   /**
@@ -525,33 +549,47 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     Type type = param.isVarArgs() ? new ArrayType(param.getType().clone()) : param.getType();
     visitType(type, field.type);
     if (param.isVarArgs()) {
-      for (AnnotationExpr expr : param.getVarArgsAnnotations()) {
-        Annotation anno = extractAnnotation(expr);
-        if (anno != null) {
-          field.type.tlAnnotationsHere.add(anno);
-        }
-      }
+      addAnnotations(param.getVarArgsAnnotations(), field.type);
     }
+    visitDeclAndTypeAnnotations(
+        param.getAnnotations(), ElementType.PARAMETER, field, type, field.type);
+  }
 
-    // An annotation that precedes the parameter's type is a declaration annotation, a type
-    // annotation, or both, according to its `@Target` (JLS 9.7.4).  As a type annotation, it
-    // applies to the innermost component type of an array type:  in `@A String[]`, `@A` annotates
-    // `String`.  An annotation whose `@Target` cannot be determined is recorded as a declaration
-    // annotation, as for a field.
+  /**
+   * Copies the annotations that precede a declaration's type to the declaration, to the type, or to
+   * both.
+   *
+   * <p>Such an annotation is a declaration annotation, a type annotation, or both, according to its
+   * {@code @Target} (JLS 9.7.4). As a type annotation, it applies to the innermost component type
+   * of an array type: in {@code @A String[]}, {@code @A} annotates {@code String}. An annotation
+   * whose {@code @Target} cannot be determined is recorded as a declaration annotation.
+   *
+   * @param exprs the annotations that precede the declaration's type
+   * @param declTarget the kind of declaration, such as {@link ElementType#FIELD}
+   * @param decl the scene element for the declaration
+   * @param type the declared type
+   * @param typeElem the scene element for {@code type}
+   */
+  private void visitDeclAndTypeAnnotations(
+      List<AnnotationExpr> exprs,
+      ElementType declTarget,
+      ADeclaration decl,
+      Type type,
+      ATypeElement typeElem) {
     List<TypePathEntry> elementLoc =
-        new ArrayList<>(Collections.nCopies(type.getArrayLevel(), TypePathEntry.ARRAY_ELEMENT));
-    for (AnnotationExpr expr : param.getAnnotations()) {
+        Collections.nCopies(type.getArrayLevel(), TypePathEntry.ARRAY_ELEMENT);
+    for (AnnotationExpr expr : exprs) {
       Annotation anno = extractAnnotation(expr);
       if (anno == null) {
         continue;
       }
       List<ElementType> targets = getTargets(expr);
-      if (targets == null || targets.contains(ElementType.PARAMETER)) {
-        field.tlAnnotationsHere.add(anno);
+      if (targets == null || targets.contains(declTarget)) {
+        decl.tlAnnotationsHere.add(anno);
       }
       if (targets != null && targets.contains(ElementType.TYPE_USE)) {
         ATypeElement elementType =
-            elementLoc.isEmpty() ? field.type : field.type.innerTypes.getVivify(elementLoc);
+            elementLoc.isEmpty() ? typeElem : typeElem.innerTypes.getVivify(elementLoc);
         elementType.tlAnnotationsHere.add(anno);
       }
     }
@@ -568,10 +606,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private @Nullable List<ElementType> getTargets(AnnotationExpr expr) {
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
     @FullyQualifiedName String name = expr.getNameAsString();
+    if (targetsCache.containsKey(name)) {
+      return targetsCache.get(name);
+    }
     String qualifiedName = resolve(name, expr.findCompilationUnit().orElse(null));
     Class<?> annoClass = qualifiedName == null ? null : loadClass(qualifiedName);
     Target target = annoClass == null ? null : annoClass.getAnnotation(Target.class);
-    return target == null ? null : Arrays.asList(target.value());
+    List<ElementType> result = target == null ? null : Arrays.asList(target.value());
+    targetsCache.put(name, result);
+    return result;
   }
 
   /**
@@ -582,15 +625,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @return null
    */
   private Void visitType(Type type, ATypeElement elem) {
-    List<AnnotationExpr> exprs = type.getAnnotations();
-    if (exprs != null) {
-      for (AnnotationExpr expr : exprs) {
-        Annotation anno = extractAnnotation(expr);
-        if (anno != null) {
-          elem.tlAnnotationsHere.add(anno);
-        }
-      }
-    }
+    addAnnotations(type.getAnnotations(), elem);
     visitInnerTypes(type, elem);
     return null;
   }
@@ -1082,7 +1117,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Finds the binary name of the class with the given name.
+   * Finds the fully qualified name of the class with the given name.
    *
    * @param className possibly unqualified name of class, in which a {@code .} (not a {@code $})
    *     separates a nested class from its enclosing class
