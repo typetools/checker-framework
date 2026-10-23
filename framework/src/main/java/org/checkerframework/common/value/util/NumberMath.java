@@ -45,7 +45,12 @@ public abstract class NumberMath<T extends Number> {
     return null;
   }
 
-  /** Returns {@code this + right}. */
+  /**
+   * Returns {@code this + right}.
+   *
+   * @param right the right operand
+   * @return {@code this + right}
+   */
   public Number plus(Number right) {
     return switch (binaryPromotion(right)) {
       case DOUBLE -> number.doubleValue() + right.doubleValue();
@@ -55,7 +60,12 @@ public abstract class NumberMath<T extends Number> {
     };
   }
 
-  /** Returns {@code this - right}. */
+  /**
+   * Returns {@code this - right}.
+   *
+   * @param right the right operand
+   * @return {@code this - right}
+   */
   public Number minus(Number right) {
     return switch (binaryPromotion(right)) {
       case DOUBLE -> number.doubleValue() - right.doubleValue();
@@ -65,7 +75,12 @@ public abstract class NumberMath<T extends Number> {
     };
   }
 
-  /** Returns {@code this * right}. */
+  /**
+   * Returns {@code this * right}.
+   *
+   * @param right the right operand
+   * @return {@code this * right}
+   */
   public Number times(Number right) {
     return switch (binaryPromotion(right)) {
       case DOUBLE -> number.doubleValue() * right.doubleValue();
@@ -78,6 +93,10 @@ public abstract class NumberMath<T extends Number> {
   /**
    * Returns {@code this / right}, or null if {@code right} is zero and the operation is integer
    * division.
+   *
+   * @param right the right operand
+   * @return {@code this / right}, or null if {@code right} is zero and the operation is integer
+   *     division
    */
   public @Nullable Number divide(Number right) {
     NumericType promotion = binaryPromotion(right);
@@ -95,6 +114,10 @@ public abstract class NumberMath<T extends Number> {
   /**
    * Returns {@code this % right}, or null if {@code right} is zero and the operation is integer
    * remainder.
+   *
+   * @param right the right operand
+   * @return {@code this % right}, or null if {@code right} is zero and the operation is integer
+   *     remainder
    */
   public @Nullable Number remainder(Number right) {
     NumericType promotion = binaryPromotion(right);
@@ -109,7 +132,12 @@ public abstract class NumberMath<T extends Number> {
     };
   }
 
-  /** Returns {@code this << right}. */
+  /**
+   * Returns {@code this << right}.
+   *
+   * @param right the right operand
+   * @return {@code this << right}
+   */
   public Number shiftLeft(Number right) {
     requireIntegral(right);
     if (isLong(number)) {
@@ -118,7 +146,12 @@ public abstract class NumberMath<T extends Number> {
     return number.intValue() << right.longValue();
   }
 
-  /** Returns {@code this >> right}. */
+  /**
+   * Returns {@code this >> right}.
+   *
+   * @param right the right operand
+   * @return {@code this >> right}
+   */
   public Number signedShiftRight(Number right) {
     requireIntegral(right);
     if (isLong(number)) {
@@ -127,7 +160,12 @@ public abstract class NumberMath<T extends Number> {
     return number.intValue() >> right.longValue();
   }
 
-  /** Returns {@code this >>> right}. */
+  /**
+   * Returns {@code this >>> right}.
+   *
+   * @param right the right operand
+   * @return {@code this >>> right}
+   */
   public Number unsignedShiftRight(Number right) {
     requireIntegral(right);
     if (isLong(number)) {
@@ -136,7 +174,12 @@ public abstract class NumberMath<T extends Number> {
     return number.intValue() >>> right.longValue();
   }
 
-  /** Returns {@code this & right}. */
+  /**
+   * Returns {@code this & right}.
+   *
+   * @param right the right operand
+   * @return {@code this & right}
+   */
   public Number bitwiseAnd(Number right) {
     requireIntegral(number);
     requireIntegral(right);
@@ -146,7 +189,12 @@ public abstract class NumberMath<T extends Number> {
     return number.intValue() & right.intValue();
   }
 
-  /** Returns {@code this | right}. */
+  /**
+   * Returns {@code this | right}.
+   *
+   * @param right the right operand
+   * @return {@code this | right}
+   */
   public Number bitwiseOr(Number right) {
     requireIntegral(number);
     requireIntegral(right);
@@ -156,7 +204,12 @@ public abstract class NumberMath<T extends Number> {
     return number.intValue() | right.intValue();
   }
 
-  /** Returns {@code this ^ right}. */
+  /**
+   * Returns {@code this ^ right}.
+   *
+   * @param right the right operand
+   * @return {@code this ^ right}
+   */
   public Number bitwiseXor(Number right) {
     requireIntegral(number);
     requireIntegral(right);
@@ -166,7 +219,11 @@ public abstract class NumberMath<T extends Number> {
     return number.intValue() ^ right.intValue();
   }
 
-  /** Returns {@code +this}. */
+  /**
+   * Returns {@code +this}.
+   *
+   * @return {@code +this}
+   */
   public Number unaryPlus() {
     return switch (numericType(number)) {
       case DOUBLE -> +number.doubleValue();
@@ -176,7 +233,11 @@ public abstract class NumberMath<T extends Number> {
     };
   }
 
-  /** Returns {@code -this}. */
+  /**
+   * Returns {@code -this}.
+   *
+   * @return {@code -this}
+   */
   public Number unaryMinus() {
     return switch (numericType(number)) {
       case DOUBLE -> -number.doubleValue();
@@ -186,7 +247,11 @@ public abstract class NumberMath<T extends Number> {
     };
   }
 
-  /** Returns {@code ~this}. */
+  /**
+   * Returns {@code ~this}.
+   *
+   * @return {@code ~this}
+   */
   public Number bitwiseComplement() {
     requireIntegral(number);
     if (isLong(number)) {
@@ -195,7 +260,12 @@ public abstract class NumberMath<T extends Number> {
     return ~number.intValue();
   }
 
-  /** Returns {@code this == right}. */
+  /**
+   * Returns {@code this == right}.
+   *
+   * @param right the right operand
+   * @return {@code this == right}
+   */
   public Boolean equalTo(Number right) {
     return switch (binaryPromotion(right)) {
       case DOUBLE -> number.doubleValue() == right.doubleValue();
@@ -205,7 +275,12 @@ public abstract class NumberMath<T extends Number> {
     };
   }
 
-  /** Returns {@code this != right}. */
+  /**
+   * Returns {@code this != right}.
+   *
+   * @param right the right operand
+   * @return {@code this != right}
+   */
   public Boolean notEqualTo(Number right) {
     return switch (binaryPromotion(right)) {
       case DOUBLE -> number.doubleValue() != right.doubleValue();
@@ -215,7 +290,12 @@ public abstract class NumberMath<T extends Number> {
     };
   }
 
-  /** Returns {@code this > right}. */
+  /**
+   * Returns {@code this > right}.
+   *
+   * @param right the right operand
+   * @return {@code this > right}
+   */
   public Boolean greaterThan(Number right) {
     return switch (binaryPromotion(right)) {
       case DOUBLE -> number.doubleValue() > right.doubleValue();
@@ -225,7 +305,12 @@ public abstract class NumberMath<T extends Number> {
     };
   }
 
-  /** Returns {@code this >= right}. */
+  /**
+   * Returns {@code this >= right}.
+   *
+   * @param right the right operand
+   * @return {@code this >= right}
+   */
   public Boolean greaterThanEq(Number right) {
     return switch (binaryPromotion(right)) {
       case DOUBLE -> number.doubleValue() >= right.doubleValue();
@@ -235,7 +320,12 @@ public abstract class NumberMath<T extends Number> {
     };
   }
 
-  /** Returns {@code this < right}. */
+  /**
+   * Returns {@code this < right}.
+   *
+   * @param right the right operand
+   * @return {@code this < right}
+   */
   public Boolean lessThan(Number right) {
     return switch (binaryPromotion(right)) {
       case DOUBLE -> number.doubleValue() < right.doubleValue();
@@ -245,7 +335,12 @@ public abstract class NumberMath<T extends Number> {
     };
   }
 
-  /** Returns {@code this <= right}. */
+  /**
+   * Returns {@code this <= right}.
+   *
+   * @param right the right operand
+   * @return {@code this <= right}
+   */
   public Boolean lessThanEq(Number right) {
     return switch (binaryPromotion(right)) {
       case DOUBLE -> number.doubleValue() <= right.doubleValue();
@@ -265,7 +360,12 @@ public abstract class NumberMath<T extends Number> {
     return isIntegral(number) && number.longValue() == 0;
   }
 
-  /** Returns the binary numeric promotion type for the operands. */
+  /**
+   * Returns the binary numeric promotion type for {@code this} and {@code right}.
+   *
+   * @param right the right operand
+   * @return the binary numeric promotion type for {@code this} and {@code right}
+   */
   private NumericType binaryPromotion(Number right) {
     NumericType leftType = numericType(number);
     NumericType rightType = numericType(right);
@@ -279,7 +379,13 @@ public abstract class NumberMath<T extends Number> {
     return NumericType.INT;
   }
 
-  /** Returns the numeric promotion type for {@code value}. */
+  /**
+   * Returns the numeric promotion type for {@code value}.
+   *
+   * @param value a number
+   * @return the numeric promotion type for {@code value}
+   * @throws UnsupportedOperationException if {@code value} is not a supported boxed primitive
+   */
   private static NumericType numericType(Number value) {
     if (value instanceof Double) {
       return NumericType.DOUBLE;
@@ -293,14 +399,24 @@ public abstract class NumberMath<T extends Number> {
     throw new UnsupportedOperationException("Unsupported number type: " + value.getClass());
   }
 
-  /** Throws an exception if {@code value} is not an integral boxed primitive. */
+  /**
+   * Throws an exception if {@code value} is not an integral boxed primitive.
+   *
+   * @param value a number
+   * @throws UnsupportedOperationException if {@code value} is not an integral boxed primitive
+   */
   private static void requireIntegral(Number value) {
     if (!isIntegral(value)) {
       throw new UnsupportedOperationException();
     }
   }
 
-  /** Returns whether {@code value} is an integral boxed primitive. */
+  /**
+   * Returns whether {@code value} is an integral boxed primitive.
+   *
+   * @param value a number
+   * @return whether {@code value} is an integral boxed primitive
+   */
   private static boolean isIntegral(Number value) {
     return value instanceof Byte
         || value instanceof Short
@@ -308,7 +424,12 @@ public abstract class NumberMath<T extends Number> {
         || value instanceof Long;
   }
 
-  /** Returns whether {@code value} is a boxed long. */
+  /**
+   * Returns whether {@code value} is a boxed long.
+   *
+   * @param value a number
+   * @return whether {@code value} is a boxed long
+   */
   private static boolean isLong(Number value) {
     return value instanceof Long;
   }
