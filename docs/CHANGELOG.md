@@ -9,6 +9,8 @@
 
 ### Changes for type system implementers
 
+New method `InstanceOfNode.getBindingPatternVariable()`.
+
 ### Closed issues
 
 ## Version 4.3.1 (2026-10-08)

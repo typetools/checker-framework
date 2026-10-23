@@ -8,6 +8,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
@@ -42,9 +43,6 @@ import org.checkerframework.dataflow.cfg.node.AbstractNodeVisitor;
 import org.checkerframework.dataflow.cfg.node.AnyPatternNode;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
-import org.checkerframework.dataflow.cfg.node.BitwiseAndNode;
-import org.checkerframework.dataflow.cfg.node.BitwiseOrNode;
-import org.checkerframework.dataflow.cfg.node.BitwiseXorNode;
 import org.checkerframework.dataflow.cfg.node.CaseNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
@@ -96,7 +94,6 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The default analysis transfer function for the Checker Framework. It propagates information
@@ -841,113 +838,13 @@ public abstract class CFAbstractTransfer<
     return visitLocalVariable(n.getSwitchExpressionVar(), vsTransferInput);
   }
 
-  // A boolean literal passes its input stores through unchanged, so the then store and else store
-  // that an operator node receives belong to the most recently evaluated non-constant boolean
-  // expression.  That is the right operand, or the left operand if the right operand is a constant.
-  // The transfer functions for boolean operators below keep a store only if it is valid for the
-  // operator's result.
-
-  /**
-   * Reverse the role of the 'thenStore' and 'elseStore', unless the operand is a constant (whose
-   * input stores belong to an earlier expression).
-   */
+  /** Reverse the role of the 'thenStore' and 'elseStore'. */
   @Override
   public TransferResult<V, S> visitConditionalNot(ConditionalNotNode n, TransferInput<V, S> p) {
     TransferResult<V, S> result = super.visitConditionalNot(n, p);
-    if (isConstantBoolean(n.getOperand())) {
-      return result;
-    }
     S thenStore = result.getThenStore();
     S elseStore = result.getElseStore();
     return new ConditionalTransferResult<>(result.getResultValue(), elseStore, thenStore);
-  }
-
-  @Override
-  public TransferResult<V, S> visitBitwiseAnd(BitwiseAndNode n, TransferInput<V, S> p) {
-    TransferResult<V, S> result = super.visitBitwiseAnd(n, p);
-    // If `l & r` is true, then both operands are true, so the then store holds.
-    return weakenConditionalStores(result, !TypesUtils.isBooleanType(n.getType()), true);
-  }
-
-  @Override
-  public TransferResult<V, S> visitBitwiseOr(BitwiseOrNode n, TransferInput<V, S> p) {
-    TransferResult<V, S> result = super.visitBitwiseOr(n, p);
-    // If `l | r` is false, then both operands are false, so the else store holds.
-    return weakenConditionalStores(result, true, !TypesUtils.isBooleanType(n.getType()));
-  }
-
-  @Override
-  public TransferResult<V, S> visitBitwiseXor(BitwiseXorNode n, TransferInput<V, S> p) {
-    TransferResult<V, S> result = super.visitBitwiseXor(n, p);
-    // The value of `l ^ r` does not determine the value of either operand.
-    return weakenConditionalStores(result, true, true);
-  }
-
-  /**
-   * Returns true if the node is a boolean constant: a boolean literal, possibly negated.
-   *
-   * @param n a node
-   * @return true if the node is a boolean constant
-   */
-  private static boolean isConstantBoolean(Node n) {
-    return NodeUtils.isConstantBoolean(n, true) || NodeUtils.isConstantBoolean(n, false);
-  }
-
-  /**
-   * Returns a transfer result like {@code result}, but in which the then store, the else store, or
-   * both are replaced by their least upper bound. A store must be replaced if it is not known to
-   * hold when the node evaluates to true (for the then store) or to false (for the else store).
-   *
-   * @param result a transfer result
-   * @param weakenThen if true, replace the then store
-   * @param weakenElse if true, replace the else store
-   * @return a transfer result like {@code result}, but with the given stores replaced
-   */
-  private TransferResult<V, S> weakenConditionalStores(
-      TransferResult<V, S> result, boolean weakenThen, boolean weakenElse) {
-    if (!result.containsTwoStores() || !(weakenThen || weakenElse)) {
-      return result;
-    }
-    S lub = result.getRegularStore();
-    if (weakenThen && weakenElse) {
-      return new RegularTransferResult<>(result.getResultValue(), lub);
-    }
-    return new ConditionalTransferResult<>(
-        result.getResultValue(),
-        weakenThen ? lub : result.getThenStore(),
-        weakenElse ? lub : result.getElseStore());
-  }
-
-  /**
-   * Adjusts the stores of the result of a comparison {@code l == r} or {@code l != r} of boolean
-   * operands. If exactly one operand is a constant, then the stores belong to the other operand,
-   * and they are swapped if the comparison is true when that operand is false. Otherwise, the
-   * comparison does not determine the value of either operand, and both stores are weakened.
-   *
-   * @param res the result of the comparison
-   * @param leftN the left operand
-   * @param rightN the right operand
-   * @param notEqualTo true for {@code !=}, false for {@code ==}
-   * @return the result of the comparison, with adjusted stores
-   */
-  private TransferResult<V, S> adjustStoresOfBooleanComparison(
-      TransferResult<V, S> res, Node leftN, Node rightN, boolean notEqualTo) {
-    if (!res.containsTwoStores()
-        || !TypesUtils.isBooleanType(leftN.getType())
-        || !TypesUtils.isBooleanType(rightN.getType())) {
-      return res;
-    }
-    boolean leftIsConstant = isConstantBoolean(leftN);
-    if (leftIsConstant == isConstantBoolean(rightN)) {
-      return weakenConditionalStores(res, true, true);
-    }
-    Node constantN = leftIsConstant ? leftN : rightN;
-    // `e == false` and `e != true` are true when `e` is false.
-    if (NodeUtils.isConstantBoolean(constantN, notEqualTo)) {
-      return new ConditionalTransferResult<>(
-          res.getResultValue(), res.getElseStore(), res.getThenStore());
-    }
-    return res;
   }
 
   @Override
@@ -959,7 +856,13 @@ public abstract class CFAbstractTransfer<
     V leftV = p.getValueOfSubNode(leftN);
     V rightV = p.getValueOfSubNode(rightN);
 
-    res = adjustStoresOfBooleanComparison(res, leftN, rightN, false);
+    if (res.containsTwoStores()
+        && (NodeUtils.isConstantBoolean(leftN, false)
+            || NodeUtils.isConstantBoolean(rightN, false))) {
+      S thenStore = res.getElseStore();
+      S elseStore = res.getThenStore();
+      res = new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
+    }
 
     // if annotations differ, use the one that is more precise for both
     // sides (and add it to the store if possible)
@@ -977,7 +880,13 @@ public abstract class CFAbstractTransfer<
     V leftV = p.getValueOfSubNode(leftN);
     V rightV = p.getValueOfSubNode(rightN);
 
-    res = adjustStoresOfBooleanComparison(res, leftN, rightN, true);
+    if (res.containsTwoStores()
+        && (NodeUtils.isConstantBoolean(leftN, true)
+            || NodeUtils.isConstantBoolean(rightN, true))) {
+      S thenStore = res.getElseStore();
+      S elseStore = res.getThenStore();
+      res = new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
+    }
 
     // if annotations differ, use the one that is more precise for both
     // sides (and add it to the store if possible)
@@ -1237,14 +1146,22 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitInstanceOf(InstanceOfNode node, TransferInput<V, S> in) {
     TransferResult<V, S> result = super.visitInstanceOf(node, in);
-    // Only the binding variable of a type pattern is refined by the expression's type.  The binding
+    // Only the variable of a binding pattern is refined by the expression's type.  The binding
     // variables of a deconstruction pattern have the types of record components, which may be
     // unrelated to the expression's type.
-    LocalVariableNode bindingVar =
-        node.getPatternNode() instanceof LocalVariableNode lvn ? lvn : null;
-    // The "reference type" is the type after "instanceof".
+    LocalVariableNode bindingVar = node.getBindingPatternVariable();
+    // The "reference type" is the type after "instanceof".  For a binding pattern, annotations on
+    // the reference type are written on the variable declaration, as in `e instanceof @A T v`.
     Tree refTypeTree = node.getTree().getType();
-    if (bindingVar == null && !(refTypeTree instanceof AnnotatedTypeTree)) {
+    boolean refTypeIsAnnotated = refTypeTree instanceof AnnotatedTypeTree;
+    if (bindingVar != null) {
+      VariableTree bindingVarTree = (VariableTree) bindingVar.getTree();
+      if (!bindingVarTree.getModifiers().getAnnotations().isEmpty()) {
+        refTypeTree = bindingVarTree;
+        refTypeIsAnnotated = true;
+      }
+    }
+    if (bindingVar == null && !refTypeIsAnnotated) {
       return result;
     }
 
@@ -1261,7 +1178,7 @@ public abstract class CFAbstractTransfer<
       }
     }
 
-    if (refTypeTree instanceof AnnotatedTypeTree) {
+    if (refTypeIsAnnotated) {
       AnnotatedTypeMirror refType = analysis.atypeFactory.getAnnotatedType(refTypeTree);
       if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
           && !refType.getPrimaryAnnotations().equals(expType.getPrimaryAnnotations())
