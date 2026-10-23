@@ -40,6 +40,8 @@ public class JarEntryAnnotationFileResource implements AnnotationFileResource {
    * <p>The returned stream holds the archive open; closing the stream closes the archive.
    */
   @Override
+  // The returned stream's close() method closes `in` and `file`; on exception, `file` is closed.
+  @SuppressWarnings("resourceleak:required.method.not.called")
   public InputStream getInputStream() throws IOException {
     JarFile file = new JarFile(archive);
     try {
