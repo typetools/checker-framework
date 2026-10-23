@@ -285,6 +285,21 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     return new Annotation(def, Collections.emptyMap());
   }
 
+  /**
+   * Adds annotations to a scene element, omitting any that {@link #extractAnnotation} discards.
+   *
+   * @param exprs annotations
+   * @param elem the scene element to which to add the annotations
+   */
+  private static void addAnnotations(List<AnnotationExpr> exprs, AElement elem) {
+    for (AnnotationExpr expr : exprs) {
+      Annotation anno = extractAnnotation(expr);
+      if (anno != null) {
+        elem.tlAnnotationsHere.add(anno);
+      }
+    }
+  }
+
   @Override
   public Void visit(AnnotationDeclaration decl, AElement elem) {
     return null;
@@ -325,12 +340,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         visitParameter(params.get(i), method.parameters.getVivify(i));
       }
     }
-    if (rcvrAnnos != null) {
-      for (AnnotationExpr expr : rcvrAnnos) {
-        Annotation anno = extractAnnotation(expr);
-        method.receiver.tlAnnotationsHere.add(anno);
-      }
-    }
+    addAnnotations(rcvrAnnos, method.receiver);
     return body == null ? null : body.accept(this, method);
     // return super.visit(decl, elem);
   }
@@ -394,10 +404,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       }
     }
     if (rcvrParam.isPresent()) {
-      for (AnnotationExpr expr : rcvrParam.get().getAnnotations()) {
-        Annotation anno = extractAnnotation(expr);
-        method.receiver.type.tlAnnotationsHere.add(anno);
-      }
+      addAnnotations(rcvrParam.get().getAnnotations(), method.receiver.type);
     }
     if (typeParams != null) {
       for (int i = 0; i < typeParams.size(); i++) {
@@ -455,10 +462,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       LocalLocation loc = new LocalLocation(i, decl.getNameAsString());
       AField field = method.body.locals.getVivify(loc);
       visitType(expr.getCommonType(), field.type);
-      if (annos != null) {
-        visitDeclAndTypeAnnotations(
-            annos, ElementType.LOCAL_VARIABLE, field, decl.getType(), field.type);
-      }
+      visitDeclAndTypeAnnotations(
+          annos, ElementType.LOCAL_VARIABLE, field, decl.getType(), field.type);
     }
     return null;
   }
@@ -468,13 +473,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * for BodyDeclaration subclasses.
    */
   private Void visitDecl(BodyDeclaration<?> decl, ADeclaration elem) {
-    NodeList<AnnotationExpr> annoExprs = decl.getAnnotations();
-    if (annoExprs != null) {
-      for (AnnotationExpr annoExpr : annoExprs) {
-        Annotation anno = extractAnnotation(annoExpr);
-        elem.tlAnnotationsHere.add(anno);
-      }
-    }
+    addAnnotations(decl.getAnnotations(), elem);
     return null;
   }
 
@@ -491,12 +490,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     Type type = param.isVarArgs() ? new ArrayType(param.getType().clone()) : param.getType();
     visitType(type, field.type);
     if (param.isVarArgs()) {
-      for (AnnotationExpr expr : param.getVarArgsAnnotations()) {
-        Annotation anno = extractAnnotation(expr);
-        if (anno != null) {
-          field.type.tlAnnotationsHere.add(anno);
-        }
-      }
+      addAnnotations(param.getVarArgsAnnotations(), field.type);
     }
     visitDeclAndTypeAnnotations(
         param.getAnnotations(), ElementType.PARAMETER, field, type, field.type);
@@ -572,15 +566,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @return null
    */
   private Void visitType(Type type, ATypeElement elem) {
-    List<AnnotationExpr> exprs = type.getAnnotations();
-    if (exprs != null) {
-      for (AnnotationExpr expr : exprs) {
-        Annotation anno = extractAnnotation(expr);
-        if (anno != null) {
-          elem.tlAnnotationsHere.add(anno);
-        }
-      }
-    }
+    addAnnotations(type.getAnnotations(), elem);
     visitInnerTypes(type, elem);
     return null;
   }
