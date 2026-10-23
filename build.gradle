@@ -153,11 +153,15 @@ subprojects { subProject ->
   || subProject.name.equals("annotation-file-utilities")
   || subProject.name.equals("dataflow")
   || subProject.name.equals("framework")) {
+    // The Shadow plugin creates the shadowJar task only once the Java plugin is applied.  If the
+    // task does not exist yet, an unqualified `shadowJar { ... }` here silently configures the root
+    // project's shadowJar task instead, and nothing in checker.jar is relocated.
+    apply plugin: "java"
     apply plugin: "com.gradleup.shadow"
-    shadow {
+    subProject.shadow {
       addShadowVariantIntoJavaComponent = false
     }
-    shadowJar {
+    subProject.tasks.named("shadowJar") {
       // If you add an external dependency, then do the following:
       //  * On the master branch and on the modified branch, run:
       //    ./gradlew assembleForJavac && jar tf checker/dist/checker.jar | grep -v '^annotated-jdk/' | sort > checker-jar-contents.txt
