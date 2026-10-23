@@ -3,6 +3,7 @@ package org.checkerframework.framework.util.typeinference8.constraint;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.typeinference8.types.AbstractQualifier;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.Qualifier;
@@ -160,7 +161,7 @@ public class QualifierTyping implements Constraint {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

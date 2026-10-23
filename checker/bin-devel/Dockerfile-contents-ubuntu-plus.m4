@@ -5,7 +5,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   autoconf \
   devscripts \
   dia \
-  hevea \
   imagemagick \
   junit \
   latexmk \
@@ -13,9 +12,11 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   libasound2-dev libcups2-dev libfontconfig1-dev \
   libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
   pdf2svg \
+  poppler-utils \
   rsync \
   shellcheck \
   shfmt \
+  texlive-extra-utils \
   texlive-font-utils \
   texlive-fonts-recommended \
   texlive-latex-base \

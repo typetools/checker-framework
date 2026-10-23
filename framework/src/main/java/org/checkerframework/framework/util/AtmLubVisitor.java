@@ -114,6 +114,10 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     for (AnnotationMirror lowerBound : lowerBounds) {
       AnnotationMirror nullAnno = nullType.getPrimaryAnnotationInHierarchy(lowerBound);
       AnnotationMirror upperBound = otherAsLub.getAnnotationInHierarchy(lowerBound);
+      if (nullAnno == null || upperBound == null) {
+        // One of the types has no annotation in this hierarchy.  Keep otherType's annotation.
+        continue;
+      }
       if (qualHierarchy.isSubtypeShallow(upperBound, otherTM, nullAnno, nullTM)) {
         // @L <: @U <: @N
         lub.replaceAnnotation(nullAnno);
@@ -347,6 +351,12 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
       AnnotationMirror lower2 = qualHierarchy.findAnnotationInHierarchy(type2LowerBoundAnnos, top);
       AnnotationMirror upper1 = type1.getAnnotationInHierarchy(lower1);
       AnnotationMirror upper2 = type2.getAnnotationInHierarchy(lower1);
+      if (lower2 == null || upper1 == null || upper2 == null) {
+        // One of the types has no annotation in this hierarchy, as for a type argument of a lower
+        // bound built by AsSuperVisitor.asSuperLowerBound.  Keep the lub of the bounds, which is
+        // already stored in lub.
+        continue;
+      }
 
       if (qualHierarchy.isSubtypeShallow(upper2, typeMirror2, upper1, typeMirror1)
           && qualHierarchy.isSubtypeShallow(upper1, typeMirror1, upper2, typeMirror2)

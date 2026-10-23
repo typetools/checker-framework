@@ -1,4 +1,3 @@
-\htmlhr
 % Reinstate when lists are supported:
 % \chapterAndLabel{Index Checker for sequence bounds (arrays, strings, lists)}{index-checker}
 \chapterAndLabel{Index Checker for sequence bounds (arrays and strings)}{index-checker}
@@ -326,7 +325,7 @@ qualifiers:
   represents a constant value, typically a literal written in source code.
   Its subtyping relationship is:
   \<@UpperBoundLiteral(lit)> <: \<@LTLengthOf(value="myArray", offset=off)>
-  if \<lit>+\<off> $\le$ -1.
+  if \<lit>+\<off> \lesym{} -1.
 
 \item[\refqualclass{checker/index/qual}{PolyUpperBound}]
   indicates qualifier polymorphism.
@@ -448,7 +447,7 @@ can establish the minimum length of a sequence:
   The value of an expression of this type is a sequence with at least
   \code{value} elements.  The default annotation is
   \code{@MinLen(0)}, and it may be applied to non-sequences.
-  \code{@MinLen($x$)} is a subtype of \code{@MinLen($x-1$)}.
+  \code{@MinLen(\textit{x})} is a subtype of \code{@MinLen(\textit{x}-1)}.
   A \code{@MinLen} annotation is treated internally as an
   \refqualclass{common/value/qual}{ArrayLenRange} with only its
   \code{from} field filled.

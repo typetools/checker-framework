@@ -6,7 +6,9 @@
 
 \begin{center}
 \begin{small}
-%BEGIN IMAGE
+% In HTML, lwarp renders this as an image.  The last optional argument is its
+% CSS style; the width is 1.5 times the image's natural width.
+\begin{lateximage}[Example inference rules for @ClassVal, @ClassBound, and @MethodVal][][width:445pt]
 \def\ruleHeader#1{\framebox[.4\linewidth]{#1}}
 \def\text#1{\textrm{#1}}
 \def\sym#1{\textit{#1}}
@@ -41,8 +43,7 @@
       {e: \<@ClassVal(>\nu\<)> \condspace p: \<@ArrayLen(>\pi\<)>} \\
 
 \end{tabular}
-%END IMAGE
-%HEVEA\imageflush
+\end{lateximage}
 \end{small}
 \end{center}
 \caption{\label{fig:reflection-inference}%

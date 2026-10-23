@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.checkerframework.afu.scenelib.type.Type;
+import org.checkerframework.checker.modifiability.qual.Growable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -15,7 +16,7 @@ public class ConstructorInsertion extends TypedInsertion {
   private @Nullable ReceiverInsertion receiverInsertion = null;
 
   /** The declaration annotations to write on the generated constructor. */
-  private Set<Insertion> declarationInsertions = new LinkedHashSet<>();
+  private @Growable Set<Insertion> declarationInsertions = new LinkedHashSet<>();
 
   /**
    * Construct a ConstructorInsertion.
@@ -28,7 +29,8 @@ public class ConstructorInsertion extends TypedInsertion {
    * @param criteria where to insert the text
    * @param innerTypeInsertions the inner types to go on this constructor
    */
-  public ConstructorInsertion(Type type, Criteria criteria, List<Insertion> innerTypeInsertions) {
+  public ConstructorInsertion(
+      Type type, Criteria criteria, @Growable List<Insertion> innerTypeInsertions) {
     super(type, criteria, true, innerTypeInsertions);
   }
 

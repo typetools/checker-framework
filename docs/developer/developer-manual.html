@@ -11,7 +11,8 @@
 
 <p>
   If you wish to use the Checker Framework, see its user manual
-  (<a href="https://checkerframework.org/manual/">HTML</a>,
+  (HTML: <a href="https://checkerframework.org/manual/">one page</a>,
+  <a href="https://checkerframework.org/manual/manual-multipage.html">multiple pages</a>;
   <a href="https://checkerframework.org/manual/checker-framework-manual.pdf">PDF</a>).
 </p>
 
@@ -257,6 +258,16 @@ If a nested class has a very common and generic name, do
 not <code>import</code> it.  In code, write the outer and inner class name
 (as in <code>Tree.Kind</code> or <code>Map.Entry</code>) rather than just
 the simple name <code>Kind</code> or <code>Entry</code>.
+</p>
+
+<p>
+Code that uses javac-internal classes (those in <code>com.sun.tools.javac</code>)
+should live in the utility classes in the <code>javacutil</code> subproject,
+such as <code>TypesUtils</code>, <code>TreeUtils</code>, and <code>ElementUtils</code>.
+Other code should call a method in one of those classes rather than using
+javac internals directly; if no suitable method exists, add one.
+This keeps dependencies on javac's unsupported internal API in one place,
+so they are easier to find and to update when a new JDK changes that API.
 </p>
 
 
