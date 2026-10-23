@@ -15,6 +15,9 @@ import org.checkerframework.javacutil.TreeUtils;
  * <pre>
  *   &lt;*nullchk*&gt;<em>expression</em>
  * </pre>
+ *
+ * The CFG builder also creates one for the selector of a switch that has no {@code case null}
+ * label.
  */
 public class NullChkNode extends Node {
   /** The entire tree of the null check. */

@@ -54,13 +54,6 @@ public class AssignmentNode extends Node {
   protected boolean desugaredFromEnhancedArrayForLoop;
 
   /**
-   * True if the assignment node assigns the selector of a switch that has no {@code case null}
-   * label, and the assignment throws NullPointerException if the selector is null. An unboxable
-   * selector is instead unboxed, and the unboxing throws NullPointerException.
-   */
-  protected boolean throwsOnNullSelector;
-
-  /**
    * Create a (non-synthetic) AssignmentNode.
    *
    * @param tree the {@code AssignmentTree} corresponding to the {@code AssignmentNode}
@@ -93,7 +86,6 @@ public class AssignmentNode extends Node {
     this.rhs = expression;
     this.synthetic = synthetic;
     this.desugaredFromEnhancedArrayForLoop = false;
-    this.throwsOnNullSelector = false;
   }
 
   /**
@@ -144,25 +136,6 @@ public class AssignmentNode extends Node {
   /** set the assignment node as desugared from an enhanced-for-loop over an array */
   public void setDesugaredFromEnhancedArrayForLoop() {
     desugaredFromEnhancedArrayForLoop = true;
-  }
-
-  /**
-   * Returns true if the assignment node assigns the selector of a switch that has no {@code case
-   * null} label, and the assignment throws NullPointerException if the selector is null. The
-   * selector is non-null after the assignment completes normally.
-   *
-   * @return true if the assignment throws NullPointerException if the switch selector is null
-   */
-  public boolean throwsOnNullSelector() {
-    return throwsOnNullSelector;
-  }
-
-  /**
-   * Marks the assignment node as throwing NullPointerException if the switch selector it assigns is
-   * null.
-   */
-  public void setThrowsOnNullSelector() {
-    throwsOnNullSelector = true;
   }
 
   @Override
