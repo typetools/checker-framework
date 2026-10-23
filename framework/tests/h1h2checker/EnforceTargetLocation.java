@@ -57,4 +57,26 @@ public class EnforceTargetLocation<T extends @H2OnlyOnLB Object> {
     }
     return cast;
   }
+
+  // A type argument or array component type is not at the location of its enclosing declaration.
+
+  // :: error: [type.annotations.on.location]
+  List<@H2OnlyOnReturn Object> typeArgumentOfReturn() {
+    return null;
+  }
+
+  void typeArgumentInBody() {
+    // :: error: [type.annotations.on.location]
+    class Local extends java.util.ArrayList<@H2OnlyOnReturn Object> {}
+  }
+
+  // :: error: [type.annotations.on.location]
+  @H2OnlyOnReturn
+  Object[] arrayComponentOfReturn() {
+    return new Object[0];
+  }
+
+  Object @H2OnlyOnReturn [] arrayReturn() {
+    return null;
+  }
 }
