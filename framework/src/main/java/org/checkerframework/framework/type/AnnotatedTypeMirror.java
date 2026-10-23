@@ -759,7 +759,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * Remove any primary annotation that is in the same qualifier hierarchy as the parameter.
    *
    * @param a an annotation from the same qualifier hierarchy
-   * @return if an annotation was removed
+   * @return true if an annotation was removed
    */
   public boolean removePrimaryAnnotationInHierarchy(AnnotationMirror a) {
     AnnotationMirror prev = this.getPrimaryAnnotationInHierarchy(a);

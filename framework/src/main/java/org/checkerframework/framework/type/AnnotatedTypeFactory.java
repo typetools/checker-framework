@@ -6027,6 +6027,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param className the class that contains the method, for diagnostics only
    * @param methodAnnos the method or constructor annotations to modify
+   * @see #wpiPrepareMethodForWriting(
+   *     WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos,
+   *     Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos>,
+   *     Collection<WholeProgramInferenceJavaParserStorage.CallableDeclarationAnnos>)
    */
   public void wpiPrepareMethodForWriting(String className, AMethod methodAnnos) {
     // This implementation does nothing.
