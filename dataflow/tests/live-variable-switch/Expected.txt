@@ -1,0 +1,97 @@
+2 -> 3 EACH_TO_EACH
+3 -> 4 EACH_TO_EACH
+4 -> 5 EACH_TO_EACH
+4 -> 1 NullPointerException
+5 -> 6 EACH_TO_EACH
+6 -> 10 THEN_TO_BOTH
+6 -> 13 ELSE_TO_BOTH
+10 -> 0 EACH_TO_EACH
+13 -> 0 EACH_TO_EACH
+
+2:
+Process order: 1
+AnalysisResult#0
+Before:   live variables = t
+~~~~~~~~~
+<entry>
+
+3:
+Process order: 2
+AnalysisResult#0
+Before:   live variables = t
+~~~~~~~~~
+s   [ VariableDeclaration ]
+t   [ LocalVariable ]
+s = t   [ Assignment ]
+switch#num0   [ VariableDeclaration ]
+switch#num0   [ LocalVariable ]
+s   [ LocalVariable ]
+~~~~~~~~~
+TransferInput#21
+After:   live variables = s
+
+4:
+Process order: 3
+AnalysisResult#0
+Before:   live variables = s
+~~~~~~~~~
+<*nullchk*>s   [ NullChk ]
+~~~~~~~~~
+TransferInput#19
+After:   live variables = s
+
+5:
+Process order: 4
+AnalysisResult#0
+Before:   live variables = s
+~~~~~~~~~
+switch#num0 = <*nullchk*>s   [ Assignment ]
+marker (start of switch statement #0)   [ Marker ]
+"a"   [ StringLiteral ]
+case "a":   [ Case ]
+~~~~~~~~~
+TransferInput#13
+After:   live variables = none
+
+1:
+Process order: 9
+AnalysisResult#0
+Before:   live variables = none
+~~~~~~~~~
+<exceptional-exit>
+
+6:
+Process order: 5
+AnalysisResult#0
+Before:   live variables = none
+~~~~~~~~~
+ConditionalBlock: then: 10, else: 13
+
+10:
+Process order: 6
+AnalysisResult#0
+Before:   live variables = none
+~~~~~~~~~
+1   [ IntegerLiteral ]
+return 1   [ Return ]
+~~~~~~~~~
+TransferInput#3
+After:   live variables = none
+
+13:
+Process order: 7
+AnalysisResult#0
+Before:   live variables = none
+~~~~~~~~~
+2   [ IntegerLiteral ]
+return 2   [ Return ]
+~~~~~~~~~
+TransferInput#4
+After:   live variables = none
+
+0:
+Process order: 8
+AnalysisResult#0
+Before:   live variables = none
+~~~~~~~~~
+<exit>

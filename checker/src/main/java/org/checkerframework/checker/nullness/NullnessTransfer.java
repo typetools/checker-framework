@@ -31,6 +31,7 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -358,7 +359,9 @@ public class NullnessTransfer
       NullChkNode n, TransferInput<NullnessValue, NullnessStore> p) {
     TransferResult<NullnessValue, NullnessStore> result = super.visitNullChk(n, p);
     // A null check throws NullPointerException if its operand is null.
-    makeNonNull(result, n.getOperand());
+    for (Node operand : splitAssignments(n.getOperand())) {
+      makeNonNull(result, NodeUtils.removeCasts(operand));
+    }
     refineToNonNull(result);
     return result;
   }
