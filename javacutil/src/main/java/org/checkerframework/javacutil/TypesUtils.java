@@ -1174,7 +1174,7 @@ public final class TypesUtils {
    */
   private static com.sun.tools.javac.util.List<Type> typeMirrorListToTypeList(
       List<TypeMirror> typeMirrors) {
-    @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
+    @SuppressWarnings("nullness:assignment") // Poly + inference bug.
     List<Type> typeList = CollectionsP.mapList(Type.class::cast, typeMirrors);
     return com.sun.tools.javac.util.List.from(typeList);
   }
@@ -1287,9 +1287,9 @@ public final class TypesUtils {
       List<? extends TypeMirror> typeVariables,
       List<? extends TypeMirror> typeArgs,
       ProcessingEnvironment env) {
-    @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
+    @SuppressWarnings("nullness:assignment") // Poly + inference bug.
     List<Type> newP = CollectionsP.mapList(Type.class::cast, typeVariables);
-    @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
+    @SuppressWarnings("nullness:assignment") // Poly + inference bug.
     List<Type> newT = CollectionsP.mapList(Type.class::cast, typeArgs);
 
     JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
