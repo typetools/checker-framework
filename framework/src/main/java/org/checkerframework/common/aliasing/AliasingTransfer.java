@@ -74,8 +74,10 @@ public class AliasingTransfer extends CFTransfer {
     }
     // Widen the type of the rhs if the RHS's declared type wasn't @Unique.
     JavaExpression rhsExpr = JavaExpression.fromNode(rhs);
-    in.getRegularStore().clearValue(rhsExpr);
-    return new RegularTransferResult<>(null, in.getRegularStore());
+    // If `in` has two stores, each call to getRegularStore() returns a new least upper bound.
+    CFStore store = in.getRegularStore();
+    store.clearValue(rhsExpr);
+    return new RegularTransferResult<>(null, store);
   }
 
   /**

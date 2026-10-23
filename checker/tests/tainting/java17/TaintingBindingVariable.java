@@ -22,4 +22,19 @@ public class TaintingBindingVariable {
       @Untainted String f2 = s;
     }
   }
+
+  void negated(@Untainted Object o) {
+    if (!(o instanceof String s)) {
+      return;
+    }
+    @Untainted String f = s;
+  }
+
+  void negated2(Object o) {
+    if (!(o instanceof String s)) {
+      return;
+    }
+    // :: error: [assignment]
+    @Untainted String f = s;
+  }
 }
