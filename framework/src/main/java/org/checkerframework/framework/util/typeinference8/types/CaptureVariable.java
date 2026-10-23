@@ -106,6 +106,37 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
     this.capturedWildcard = capturedWildcard;
   }
 
+  /**
+   * If the type argument that this variable captures is a wildcard of the form {@code ? super T},
+   * then {@code T}; otherwise null.
+   *
+   * <p>{@code T} is not added to this variable's bounds, because incorporating {@code T <: this}
+   * together with this variable's declared upper bound would imply that {@code T} is a subtype of
+   * the declared upper bound, which capture conversion does not require. Instead, {@code T} is used
+   * only when resolution creates a fresh type variable for this variable (JLS 18.4), so that the
+   * fresh type variable has the lower bound that capture conversion (JLS 5.1.10) gives it.
+   */
+  private @Nullable AbstractType wildcardLowerBound = null;
+
+  /**
+   * Returns the lower bound of the wildcard that this variable captures, or null if the captured
+   * type argument is not a wildcard of the form {@code ? super T}.
+   *
+   * @return the lower bound of the wildcard that this variable captures, or null
+   */
+  public @Nullable AbstractType getWildcardLowerBound() {
+    return wildcardLowerBound;
+  }
+
+  /**
+   * Sets the lower bound of the wildcard that this variable captures.
+   *
+   * @param wildcardLowerBound the lower bound of the wildcard that this variable captures
+   */
+  public void setWildcardLowerBound(AbstractType wildcardLowerBound) {
+    this.wildcardLowerBound = wildcardLowerBound;
+  }
+
   @Override
   public boolean isCaptureVariable() {
     return true;

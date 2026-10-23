@@ -98,6 +98,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.interning.qual.PolyInterned;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
@@ -126,6 +127,10 @@ public final class TreeUtils {
 
   /** True if we are running on at least Java 21. */
   private static final boolean atLeastJava21 = sourceVersionNumber >= 21;
+
+  /** The kind of a {@code DeconstructionPatternTree}, or null if javac has no such kind. */
+  private static final Tree.@Nullable Kind DECONSTRUCTION_PATTERN_KIND =
+      atLeastJava21 ? Tree.Kind.valueOf("DECONSTRUCTION_PATTERN") : null;
 
   /**
    * The {@code TreeMaker.Select(JCExpression, Symbol)} method. Return type changes for JDK21+. Only
@@ -1758,11 +1763,13 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns true if the passed constructor is anonymous and has an explicit enclosing expression.
+   * Returns true if {@code con} is an anonymous constructor and {@code tree} has an explicit
+   * enclosing expression, as in {@code outer.new Inner(...) {...}}.
    *
-   * @param con an ExecutableElement of a constructor declaration
-   * @param tree the NewClassTree of a constructor declaration
-   * @return true if there is an extra enclosing expression
+   * @param con the constructor invoked by {@code tree}
+   * @param tree a constructor invocation
+   * @return true if {@code con} is an anonymous constructor and {@code tree} has an explicit
+   *     enclosing expression
    */
   public static boolean isAnonymousConstructorWithExplicitEnclosingExpression(
       ExecutableElement con, NewClassTree tree) {
@@ -1770,6 +1777,28 @@ public final class TreeUtils {
     return (tree.getEnclosingExpression() != null)
         && con.getKind() == ElementKind.CONSTRUCTOR
         && ((TypeElement) con.getEnclosingElement()).getNestingKind() == NestingKind.ANONYMOUS;
+  }
+
+  /**
+   * Returns the elements of {@code params} that correspond to the arguments of {@code tree}.
+   *
+   * <p>For {@code outer.new Inner(...) {...}}, javac gives the anonymous constructor an extra first
+   * parameter for the enclosing instance {@code outer}, which is not among the arguments of {@code
+   * tree}. This method omits that parameter. Otherwise, this method returns {@code params}.
+   *
+   * @param <T> the type of the elements of {@code params}
+   * @param executable the method or constructor invoked by {@code tree}
+   * @param tree a method or constructor invocation
+   * @param params the parameters of {@code executable}, or their types, in order
+   * @return the elements of {@code params} that correspond to the arguments of {@code tree}
+   */
+  public static <@KeyForBottom T> List<T> parametersForArguments(
+      ExecutableElement executable, Tree tree, List<T> params) {
+    if (tree instanceof NewClassTree newClassTree
+        && isAnonymousConstructorWithExplicitEnclosingExpression(executable, newClassTree)) {
+      return params.subList(1, params.size());
+    }
+    return params;
   }
 
   /**
@@ -2369,7 +2398,7 @@ public final class TreeUtils {
    * @return true if {@code tree} is a {@code DeconstructionPatternTree}
    */
   public static boolean isDeconstructionPatternTree(Tree tree) {
-    return tree.getKind().name().contentEquals("DECONSTRUCTION_PATTERN");
+    return tree.getKind() == DECONSTRUCTION_PATTERN_KIND;
   }
 
   /**
