@@ -9,6 +9,7 @@ import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
@@ -300,14 +301,14 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   @Override
   public Void visit(ClassOrInterfaceDeclaration decl, AElement elem) {
-    visitDecl(decl, (ADeclaration) elem);
-    return super.visit(decl, elem);
+    AClass clazz = classFor(decl, elem);
+    visitDecl(decl, clazz);
+    return super.visit(decl, clazz);
   }
 
   @Override
   public Void visit(ConstructorDeclaration decl, AElement elem) {
     List<Parameter> params = decl.getParameters();
-    List<AnnotationExpr> rcvrAnnos = decl.getAnnotations();
     BlockStmt body = decl.getBody();
     StringBuilder sb = new StringBuilder("<init>(");
     AClass clazz = (AClass) elem;
@@ -330,7 +331,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         visitType(param.getType(), field.type);
       }
     }
-    addAnnotations(rcvrAnnos, method.receiver);
+    visitReceiverParameter(decl, method);
     return body == null ? null : body.accept(this, method);
     // return super.visit(decl, elem);
   }
@@ -344,8 +345,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   @Override
   public Void visit(EnumDeclaration decl, AElement elem) {
-    visitDecl(decl, (ADeclaration) elem);
-    return super.visit(decl, elem);
+    AClass clazz = classFor(decl, elem);
+    visitDecl(decl, clazz);
+    return super.visit(decl, clazz);
   }
 
   @Override
@@ -372,7 +374,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     Type type = decl.getType();
     List<Parameter> params = decl.getParameters();
     List<TypeParameter> typeParams = decl.getTypeParameters();
-    Optional<ReceiverParameter> rcvrParam = decl.getReceiverParameter();
     BlockStmt body = decl.getBody().orElse(null);
     StringBuilder sb = new StringBuilder(decl.getNameAsString()).append('(');
     AClass clazz = (AClass) elem;
@@ -394,9 +395,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         visitType(param.getType(), field.type);
       }
     }
-    if (rcvrParam.isPresent()) {
-      addAnnotations(rcvrParam.get().getAnnotations(), method.receiver.type);
-    }
+    visitReceiverParameter(decl, method);
     if (typeParams != null) {
       for (int i = 0; i < typeParams.size(); i++) {
         TypeParameter typeParam = typeParams.get(i);
@@ -459,12 +458,43 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
+   * Returns the scene element for a type declaration.
+   *
+   * @param decl a type declaration
+   * @param elem the scene element for {@code decl} if it is a top-level type, or for its enclosing
+   *     type if it is a nested type
+   * @return the scene element for {@code decl}
+   */
+  private AClass classFor(TypeDeclaration<?> decl, AElement elem) {
+    AClass clazz = (AClass) elem;
+    if (!decl.isNestedType()) {
+      return clazz;
+    }
+    return scene.classes.getVivify(clazz.className + "$" + decl.getNameAsString());
+  }
+
+  /**
    * Copies information from an AST declaration node to an {@link ADeclaration}. Called by visitors
    * for BodyDeclaration subclasses.
    */
   private Void visitDecl(BodyDeclaration<?> decl, ADeclaration elem) {
     addAnnotations(decl.getAnnotations(), elem);
     return null;
+  }
+
+  /**
+   * Copies information from a method's or constructor's receiver parameter, if it has one, to the
+   * receiver's scene element.
+   *
+   * @param decl a method or constructor declaration
+   * @param method the scene element for {@code decl}
+   */
+  private void visitReceiverParameter(CallableDeclaration<?> decl, AMethod method) {
+    Optional<ReceiverParameter> rcvrParam = decl.getReceiverParameter();
+    if (rcvrParam.isPresent()) {
+      addAnnotations(rcvrParam.get().getAnnotations(), method.receiver.type);
+      visitType(rcvrParam.get().getType(), method.receiver.type);
+    }
   }
 
   /** Copies information from an AST type node to an {@link ATypeElement}. */
