@@ -20,15 +20,7 @@ public class IndexMode {
   // This copy of getMode() adds an explicit `@MustCall` annotation to the String.
   public static Object getMode2(Map<String, @MustCall("hashCode") String> indexOptions) {
     try {
-      // TODO: a required.method.not.called error should be issued on this line, but currently
-      // it is not. The reason is an interaction between type variable defaulting,
-      // local dataflow, and the rules that the RLC uses for choosing a variable's must-call
-      // obligations: local inference defaults literalOption to @MustCallUnknown (i.e., the
-      // top MustCall type) even though the RHS expression's type is @MustCall("hashCode").
-      // Then, the rule for obligations says that if a variable has the top must-call type,
-      // use the type's default must-call type instead. For String, this is @MustCall({}),
-      // so no error is issued. This rule is important to avoid false positives in realistic
-      // code (such as the first getMode() method in this class).
+      // :: error: required.method.not.called
       String literalOption = indexOptions.get("is_literal");
     } catch (Exception e) {
     }

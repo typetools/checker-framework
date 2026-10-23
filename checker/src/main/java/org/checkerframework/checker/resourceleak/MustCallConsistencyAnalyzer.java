@@ -2098,18 +2098,8 @@ public class MustCallConsistencyAnalyzer {
         //    1b. if there is not any information about any alias in the resource alias
         //        set in the successor store, use the current block's MC store,
         //        which contain whatever information is true before this (empty) block.
-        // 2. if the current block has one or more nodes, always use the CM store after
-        //    the last node. To decide which MC store to use:
-        //    2a. if the last node in the block is the invocation of an
-        //        @CreatesMustCallFor method that might throw an exception, and the
-        //        consistency check is for an exceptional path, use the MC store
-        //        immediately before the method invocation, because the method threw an
-        //        exception rather than finishing and therefore did not actually create
-        //        any must-call obligation, so the MC store after might contain
-        //        must-call obligations that do not need to be fulfilled along this
-        //        path.
-        //    2b. in all other cases, use the MC store from after the last node in
-        //        the block.
+        // 2. if the current block has one or more nodes, always use the CM store and the
+        //    MC store after the last node.
         CFStore mcStore;
         AccumulationStore cmStore;
         if (currentBlockNodes.isEmpty() /* currentBlock is special or conditional */) {
@@ -2137,18 +2127,12 @@ public class MustCallConsistencyAnalyzer {
             cmStore = cmAtf.getStoreAfter(last);
             cmStoreAfter.put(last, cmStore);
           }
-          // If this is an exceptional block, check the MC store beforehand to avoid
-          // issuing an error about a call to a CreatesMustCallFor method that might
-          // throw an exception. Otherwise, use the store after.
-          if (exceptionType != null && isInvocationOfCreatesMustCallForMethod(last)) {
-            mcStore = mcAtf.getStoreBefore(last); // 2a. (MC)
+
+          if (mcStoreAfter.containsKey(last)) {
+            mcStore = mcStoreAfter.get(last);
           } else {
-            if (mcStoreAfter.containsKey(last)) {
-              mcStore = mcStoreAfter.get(last);
-            } else {
-              mcStore = mcAtf.getStoreAfter(last); // 2b. (MC)
-              mcStoreAfter.put(last, mcStore);
-            }
+            mcStore = mcAtf.getStoreAfter(last); // 2. (MC)
+            mcStoreAfter.put(last, mcStore);
           }
         }
 
@@ -2211,20 +2195,6 @@ public class MustCallConsistencyAnalyzer {
    */
   private boolean aliasInScopeInSuccessor(AccumulationStore successorStore, ResourceAlias alias) {
     return successorStore.getValue(alias.reference) != null;
-  }
-
-  /**
-   * Returns true if node is a MethodInvocationNode of a method with a CreatesMustCallFor
-   * annotation.
-   *
-   * @param node a node
-   * @return true if node is a MethodInvocationNode of a method with a CreatesMustCallFor annotation
-   */
-  private boolean isInvocationOfCreatesMustCallForMethod(Node node) {
-    if (!(node instanceof MethodInvocationNode miNode)) {
-      return false;
-    }
-    return cmAtf.hasCreatesMustCallFor(miNode);
   }
 
   /**
