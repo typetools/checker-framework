@@ -1149,7 +1149,7 @@ public abstract class CFAbstractTransfer<
       JavaExpression expr = JavaExpression.fromNode(bindingVar);
       AnnotatedTypeMirror expType =
           analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
-      for (AnnotationMirror anno : expType.getPrimaryAnnotations()) {
+      for (AnnotationMirror anno : expType.getAnnotations()) {
         in.getRegularStore().insertOrRefine(expr, anno);
       }
     }
@@ -1511,8 +1511,8 @@ public abstract class CFAbstractTransfer<
    * @param target the receiver whose value should be modified
    * @param newAnno the new value
    */
-  protected static void insertIntoStores(
-      TransferResult<CFValue, CFStore> result, JavaExpression target, AnnotationMirror newAnno) {
+  protected void insertIntoStores(
+      TransferResult<V, S> result, JavaExpression target, AnnotationMirror newAnno) {
     if (result.containsTwoStores()) {
       result.getThenStore().insertValue(target, newAnno);
       result.getElseStore().insertValue(target, newAnno);
