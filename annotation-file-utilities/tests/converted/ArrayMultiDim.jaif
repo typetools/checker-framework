@@ -34,4 +34,3 @@ class ArrayMultiDim:
         insert-annotation Variable.initializer, NewArray.type 2: @java.lang.F
         insert-annotation Variable.initializer, NewArray.type 3: @java.lang.C
         insert-annotation Variable.type: @java.lang.D
-

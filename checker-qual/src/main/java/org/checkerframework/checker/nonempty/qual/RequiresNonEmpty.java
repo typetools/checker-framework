@@ -9,9 +9,9 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 
 /**
- * Indicates a method precondition: the specified expressions that may be a {@link
+ * Indicates a method precondition: the specified expressions, each of which may be a {@link
  * java.util.Collection collection}, {@link java.util.Iterator iterator}, {@link java.lang.Iterable
- * iterable}, or {@link java.util.Map map} must be non-empty when the annotated method is invoked.
+ * iterable}, or {@link java.util.Map map}, must be non-empty when the annotated method is invoked.
  *
  * <p>For example:
  *
@@ -48,7 +48,7 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
  *     testClass.list1 = l1;
  *     testClass.m1(); // OK
  *
- *     testClass.m2(); // Compile-time error: m2 requires that list2 is @NonEmpty
+ *     testClass.m2(); // Compile-time error: m2 requires that list2 is @NonEmpty.
  *
  *     testClass.list2 = l2;
  *     testClass.m2(); // OK
@@ -74,10 +74,11 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 public @interface RequiresNonEmpty {
 
   /**
-   * The Java {@link java.util.Collection collection}, {@link java.util.Iterator iterator}, {@link
-   * java.lang.Iterable iterable}, or {@link java.util.Map map} that must be non-empty.
+   * The Java expressions, each a {@link java.util.Collection collection}, {@link java.util.Iterator
+   * iterator}, {@link java.lang.Iterable iterable}, or {@link java.util.Map map}, that must be
+   * non-empty.
    *
-   * @return the Java expression that must be non-empty
+   * @return the Java expressions that must be non-empty
    */
   String[] value();
 

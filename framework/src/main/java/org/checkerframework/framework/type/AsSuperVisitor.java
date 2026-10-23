@@ -172,7 +172,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
    * A helper method for asSuper(AMT, Wildcard) methods to use to annotate the wildcard's lower
    * bound.
    *
-   * <p>If the lower bound of superType is Null, then return copyPrimarayAnnos(type, superType)
+   * <p>If the lower bound of superType is Null, then return copyPrimaryAnnos(type, superType)
    *
    * <p>otherwise, return asSuper(type, superType.getLowerBound()
    *
@@ -209,6 +209,11 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     // If type and lowerBound are not the same type, then lowerBound is a subtype of type,
     // but there is no way to convert type to a subtype -- there is not an asSub method.  So,
     // just copy the primary annotations.
+    // The type arguments of lowerBound are unknown, so they stay unannotated rather than being
+    // defaulted.  AtmLubVisitor uses the other operand's annotations for an unannotated type.
+    // Defaults would make, for example, the lub of Comparator<List<@NonNull T>> and
+    // Comparator<@Nullable Object> be Comparator<? super List<T>> instead of
+    // Comparator<? super List<@NonNull T>>.
     return copyPrimaryAnnos(type, lowerBound);
   }
 

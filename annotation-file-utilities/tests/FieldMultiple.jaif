@@ -15,4 +15,3 @@ class FieldMultiple:
     field d: @java.lang.Tainted
 
     method <init>()V:
-

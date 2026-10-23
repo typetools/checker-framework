@@ -2,9 +2,14 @@ package org.checkerframework.afu.scenelib.el;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.StringJoiner;
 import org.checkerframework.afu.scenelib.Annotation;
 import org.checkerframework.afu.scenelib.util.coll.VivifyingMap;
+import org.checkerframework.checker.modifiability.qual.Growable;
+import org.checkerframework.checker.modifiability.qual.Modifiable;
+import org.checkerframework.checker.modifiability.qual.Replaceable;
 
 /**
  * An {@code AElement} represents a Java element and the annotations it carries. Some {@code
@@ -20,7 +25,7 @@ public class AElement implements Cloneable {
    * The top-level annotations directly on this element. Annotations on subelements are in those
    * subelements' {@code tlAnnotationsHere} sets, not here.
    */
-  public final Set<Annotation> tlAnnotationsHere;
+  public final @Modifiable Set<Annotation> tlAnnotationsHere;
 
   // TODO: What about methods; is `type` the return type?
   /**
@@ -125,9 +130,7 @@ public class AElement implements Cloneable {
 
   @Override
   public int hashCode() {
-    return getClass().getName().hashCode()
-        + tlAnnotationsHere.hashCode()
-        + (type == null ? 0 : type.hashCode());
+    return Objects.hash(getClass().getName(), tlAnnotationsHere, type);
   }
 
   /**
@@ -175,15 +178,17 @@ public class AElement implements Cloneable {
     return null;
   }
 
+  /**
+   * Append the top-level annotations on this element, to {@code sb}.
+   *
+   * @param sb where to output the formatted annotations
+   */
   public void tlAnnotationsHereFormatted(StringBuilder sb) {
-    boolean first = true;
+    StringJoiner sj = new StringJoiner(", ");
     for (Annotation aElement : tlAnnotationsHere) {
-      if (!first) {
-        sb.append(", ");
-      }
-      first = false;
-      sb.append(aElement.toString());
+      sj.add(aElement.toString());
     }
+    sb.append(sj);
   }
 
   public <R, T> R accept(ElementVisitor<R, T> v, T t) {
@@ -192,8 +197,17 @@ public class AElement implements Cloneable {
 
   // Static methods
 
-  static <K extends Object> VivifyingMap<K, AElement> newVivifyingLHMap_AE() {
-    return new VivifyingMap<K, AElement>(new LinkedHashMap<>()) {
+  /**
+   * Returns a new {@link LinkedHashMap}-backed map from keys to {@link AElement}s, which vivifies
+   * missing values.
+   *
+   * @param <K> the type of the map keys
+   * @return a new vivifying map from keys to {@link AElement}s
+   */
+  @SuppressWarnings("modifiability:return") // The anonymous subclass's constructor result
+  // is the top qualifier, so it does not propagate the backing map's @Modifiable type.
+  static <K extends Object> @Modifiable VivifyingMap<K, AElement> newVivifyingLHMap_AE() {
+    return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public AElement createValueFor(K k) {
         return new AElement(k);
@@ -209,7 +223,7 @@ public class AElement implements Cloneable {
   // Different from the above in that the elements are guaranteed to
   // contain a non-null "type" field.
   static <K extends Object> VivifyingMap<K, AElement> newVivifyingLHMap_AET() {
-    return new VivifyingMap<K, AElement>(new LinkedHashMap<>()) {
+    return new VivifyingMap<>(new LinkedHashMap<>()) {
       @Override
       public AElement createValueFor(K k) {
         return new AElement(k, true);
@@ -222,9 +236,21 @@ public class AElement implements Cloneable {
     };
   }
 
-  @SuppressWarnings("unchecked")
+  /**
+   * Copies the contents of {@code orig} into {@code copy}, cloning each value.
+   *
+   * @param <K> the type of the map keys
+   * @param <V> the type of the map values
+   * @param orig the map to copy from
+   * @param copy the map to copy into
+   */
+  @SuppressWarnings({
+    "unchecked",
+    "nullness:argument" // `orig.get(key)` passes a `K`, whose implicit upper bound is
+    // `@Nullable Object`, to `WrapperMap.get(Object)`, whose parameter is `@NonNull`.
+  })
   static <K, V extends AElement> void copyMapContents(
-      VivifyingMap<K, V> orig, VivifyingMap<K, V> copy) {
+      VivifyingMap<K, V> orig, @Growable @Replaceable VivifyingMap<K, V> copy) {
     for (K key : orig.keySet()) {
       V val = orig.get(key);
       copy.put(key, (V) val.clone());

@@ -1,8 +1,9 @@
 package org.checkerframework.afu.scenelib.io.classfile;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import org.checkerframework.afu.scenelib.el.AScene;
 import org.checkerframework.afu.scenelib.io.IndexFileWriter;
 import org.checkerframework.afu.scenelib.util.CommandLineUtils;
@@ -15,7 +16,7 @@ import org.plumelib.options.Options;
  * A {@code ClassFileReader } provides methods for reading in annotations from a class file into an
  * {@link AScene}.
  */
-public class ClassFileReader {
+public final class ClassFileReader {
 
   /** Do not instantiate. */
   private ClassFileReader() {
@@ -162,7 +163,7 @@ public class ClassFileReader {
    * @throws IOException if there is a problem reading from {@code fileName}
    */
   public static void read(AScene scene, String fileName) throws IOException {
-    try (FileInputStream fis = new FileInputStream(fileName)) {
+    try (InputStream fis = Files.newInputStream(Paths.get(fileName))) {
       read(scene, fis);
     }
   }
@@ -196,7 +197,7 @@ public class ClassFileReader {
    * {@code scene}.
    *
    * @param scene the scene into which the annotations should be inserted
-   * @param classReader the ClassReader for the class thet the annotations should be read from
+   * @param classReader the ClassReader for the class that the annotations should be read from
    */
   public static void read(AScene scene, ClassReader classReader) {
     ClassAnnotationSceneReader ca =

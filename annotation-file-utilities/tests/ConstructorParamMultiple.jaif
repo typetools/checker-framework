@@ -15,4 +15,3 @@ class ConstructorParamMultiple:
             inner-type 3, 0: @java.lang.UnderInitialization
         parameter #2:
             type: @java.lang.Tainted
-

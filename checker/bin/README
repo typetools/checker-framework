@@ -11,5 +11,6 @@ The other scripts are used for whole-program inference:
 infer-and-annotate.sh
 query-github.sh
 wpi.sh
+wpi2.sh
 wpi-many.sh
 wpi-summary.sh

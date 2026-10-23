@@ -142,6 +142,7 @@ public abstract class CheckerFrameworkPerDirectoryTest extends CheckerFrameworkR
     this.checkerOptions = new ArrayList<>(Arrays.asList(checkerOptions));
     this.checkerOptions.add("-AajavaChecks");
     this.checkerOptions.add("-AconvertTypeArgInferenceCrashToWarning=false");
+    this.checkerOptions.add("-AwarnUnneededSuppressions");
   }
 
   /** Run the tests. */

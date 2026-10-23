@@ -31,14 +31,15 @@ import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ExpressionAndOffset;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory.JavaExpressionAndOffset;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.IPair;
 
 /** Warns about array accesses that could be too high. */
 public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFactory> {
@@ -341,17 +342,22 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
    *
    * <p>This is useful for expressions like "n+1", for which {@link #parseJavaExpressionString}
    * returns null because the whole expression is not a receiver.
+   *
+   * @param s a Java expression, possibly with a constant offset
+   * @param atypeFactory the type factory
+   * @param currentPath the location at which {@code s} is evaluated
+   * @return the JavaExpression and offset for {@code s}, or null if {@code s} cannot be parsed
    */
-  static @Nullable IPair<JavaExpression, String> getExpressionAndOffsetFromJavaExpressionString(
+  static @Nullable JavaExpressionAndOffset getExpressionAndOffsetFromJavaExpressionString(
       String s, UpperBoundAnnotatedTypeFactory atypeFactory, TreePath currentPath) {
 
-    IPair<String, String> p = AnnotatedTypeFactory.getExpressionAndOffset(s);
+    ExpressionAndOffset p = AnnotatedTypeFactory.getExpressionAndOffset(s);
 
-    JavaExpression je = parseJavaExpressionString(p.first, atypeFactory, currentPath);
+    JavaExpression je = parseJavaExpressionString(p.expression(), atypeFactory, currentPath);
     if (je == null) {
       return null;
     }
-    return IPair.of(je, p.second);
+    return new JavaExpressionAndOffset(je, p.offset());
   }
 
   /**
@@ -367,6 +373,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     try {
       result = atypeFactory.parseJavaExpressionString(s, currentPath);
     } catch (JavaExpressionParseException e) {
+      // Do not report the error.  As the Javadoc says, failing to parse is an ordinary outcome
+      // for a string that is not a Java expression, such as "n+1".  If the string does come from
+      // an annotation, DependentTypesHelper reports the error.
       result = null;
     }
     return result;

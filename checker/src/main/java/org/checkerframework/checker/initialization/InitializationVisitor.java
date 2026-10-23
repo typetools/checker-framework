@@ -20,6 +20,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.initialization.InitializationAnnotatedTypeFactory.UninitializedFields;
 import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -41,12 +42,15 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.IPair;
 
 /**
  * The visitor for the freedom-before-commitment type-system. The freedom-before-commitment
  * type-system and this class are abstract and need to be combined with another type-system whose
  * safe initialization should be tracked. For an example, see the {@link NullnessChecker}.
+ *
+ * @param <Factory> the type of the annotated type factory
+ * @param <Value> the type of values in the store
+ * @param <Store> the type of the store
  */
 public class InitializationVisitor<
         Factory extends InitializationAnnotatedTypeFactory<Value, Store, ?, ?>,
@@ -83,7 +87,7 @@ public class InitializationVisitor<
   protected void checkConstructorInvocation(
       AnnotatedDeclaredType dt, AnnotatedExecutableType constructor, NewClassTree src) {
     // Receiver annotations for constructors are forbidden, therefore no check is necessary.
-    // TODO: nested constructors can have receivers!
+    // TODO: Constructors for inner classes can have receivers!
   }
 
   @Override
@@ -105,11 +109,11 @@ public class InitializationVisitor<
       @CompilerMessageKey String errorKey,
       Object... extraArgs) {
     // field write of the form x.f = y
-    if (TreeUtils.isFieldAccess(varTree)) {
+    VariableElement el = TreeUtils.asFieldAccess(varTree);
+    if (el != null) {
       // cast is safe: a field access can only be an IdentifierTree or MemberSelectTree
       ExpressionTree lhs = (ExpressionTree) varTree;
       ExpressionTree y = valueExp;
-      VariableElement el = TreeUtils.variableElementFromUse(lhs);
       AnnotatedTypeMirror xType = atypeFactory.getReceiverType(lhs);
       AnnotatedTypeMirror yType = atypeFactory.getAnnotatedType(y);
       // the special FBC rules do not apply if there is an explicit
@@ -345,11 +349,11 @@ public class InitializationVisitor<
       return;
     }
 
-    IPair<List<VariableTree>, List<VariableTree>> uninitializedFields =
+    UninitializedFields uninitializedFields =
         atypeFactory.getUninitializedFields(
             store, getCurrentPath(), staticFields, receiverAnnotations);
-    List<VariableTree> violatingFields = uninitializedFields.first;
-    List<VariableTree> nonviolatingFields = uninitializedFields.second;
+    List<VariableTree> violatingFields = uninitializedFields.withInvariantAnno();
+    List<VariableTree> nonviolatingFields = uninitializedFields.withoutInvariantAnno();
 
     // Remove fields that have already been initialized by an initializer block.
     violatingFields.removeAll(initializedFields);

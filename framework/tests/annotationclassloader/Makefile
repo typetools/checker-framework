@@ -22,7 +22,13 @@ FRAMEWORKBUILD := $(PROJECTDIR)/../../build/classes/java/main:$(PROJECTDIR)/../.
 CHECKERQUALBUILD := $(PROJECTDIR)/../../../checker-qual/build/classes/java/main
 
 
+.PHONY: all test clean
 all: load-from-dir-test load-from-jar-test
+
+test: all
+
+clean:
+	rm -f LoaderTest.java Out.txt
 
 # ======================================================
 # demo or manual test usage:

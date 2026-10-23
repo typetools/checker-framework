@@ -27,6 +27,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  *
  * @see java.util.Optional
  */
+@SuppressWarnings("PMD.ShortClassName")
 @AnnotatedFor("nullness")
 public final class Opt {
 

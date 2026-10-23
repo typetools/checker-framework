@@ -1,4 +1,3 @@
-@SuppressWarnings("ainfertest") // only check WPI for crashes
 public class SimpleLog {
   public SimpleLog() {
     try {

@@ -10,4 +10,3 @@ class MethodMultiple:
 
     method foo(Ljava/lang/String;)Ljava/lang/String;:
         return: @java.lang.UnderInitialization
-

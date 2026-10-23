@@ -9,7 +9,10 @@ JAVAC?=../../../checker/bin/javac
 # for custom projects, it is best to encode the full root path as a variable
 PROJECTDIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
+.PHONY: all test clean
 all: compile-for-test named-quals-test qual-folder-test clean
+
+test: all
 
 demo:
 	$(JAVAC) $(JAVAOPTS) $(FILES)
@@ -33,5 +36,6 @@ qual-folder-test:
 	rm -f Out.txt
 
 # test clean up
+.PHONY: clean
 clean:
-	rm -f qual/*.class
+	@rm -f qual/*.class

@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Integration with external tools}{external-tools}
 
 This chapter discusses how to run a checker from the command line, from a
@@ -8,7 +7,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 % copy of the list in file introduction.tex .
 \begin{itemize}
 \item Android (Section~\ref{android})
-\item Android Gradle Plugin (Section~\ref{android-gradle})
+\item Android Studio and the Android Gradle Plugin (Section~\ref{android-gradle})
 \item Ant (Section~\ref{ant-task})
 \item Bazel (Section~\ref{bazel})
 \item Buck (Section~\ref{buck})
@@ -17,7 +16,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 \item Eclipse (Section~\ref{eclipse})
 \item Gradle (Section~\ref{gradle})
 \item IntelliJ IDEA (Section~\ref{intellij})
-\item javac Diagnostics Wrapper (Section~\ref{javac-diagnostics-wrapper})
+\item javac diagnostics wrapper (Section~\ref{javac-diagnostics-wrapper})
 \item Lombok (Section~\ref{lombok})
 \item Maven (Section~\ref{maven})
 \item NetBeans (Section~\ref{netbeans})
@@ -36,7 +35,7 @@ inform us via the
 \href{https://github.com/typetools/checker-framework/issues}{issue tracker} so
 we can add it to this manual.
 
-All examples in this chapter are in the public domain, with no copyright nor
+All examples in this chapter are in the public domain, with no copyright or
 licensing restrictions.
 
 
@@ -67,10 +66,10 @@ the module's \<build.gradle> file --- not the project's \<build.gradle> file.
 \item Add a build variant for running checkers:
 
  \begin{Verbatim}
- android {
+android {
     ...
-      buildTypes {
-      ...
+    buildTypes {
+        ...
         checkTypes {
             javaCompileOptions.annotationProcessorOptions.
                     classNames.add("org.checkerframework.checker.nullness.NullnessChecker")
@@ -87,7 +86,7 @@ the module's \<build.gradle> file --- not the project's \<build.gradle> file.
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = "4.1.0"
+    ext.checkerFrameworkVersion = "4.3.1"
     implementation "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
     // or if you use no annotations in source code the above line could be
     // compileOnly "org.checkerframework:checker-qual-android:${checkerFrameworkVersion}"
@@ -115,9 +114,7 @@ that your Ant file already contains a compilation target that uses the
 \item
 Set the \code{cfJavac} property:
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   <property environment="env"/>
   <property name="checkerframework" value="${env.CHECKERFRAMEWORK}" />
@@ -131,16 +128,12 @@ Set the \code{cfJavac} property:
     </javac>
   </presetdef>
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 \item \textbf{Duplicate} the compilation target, then \textbf{modify} it slightly as
 indicated in this example:
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   <target name="check-nullness"
           description="Check for null pointer dereferences"
@@ -156,9 +149,7 @@ indicated in this example:
     </cf.javac>
   </target>
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 Fill in each ellipsis (\ldots) from the original compilation target.
 However, do not copy any \<fork=> setting from the original \code{<javac>}
@@ -183,7 +174,7 @@ This section explains each part of the Ant task.
 The \code{fork} field of the \code{javac} task
 ensures that an external \code{javac} program is called.  Otherwise, Ant will run
 \code{javac} via a Java method call, and there is no guarantee that it will get
-correct version of \code{javac}.
+the correct version of \code{javac}.
 
 The \code{-version} compiler argument is just for debugging; you may omit
 it.
@@ -237,13 +228,13 @@ file showing how to enable the Checker Framework:
 \begin{Verbatim}
 prebuilt_jar(
     name = 'checker-framework',
-    binary_jar = 'checker-4.1.0.jar',
+    binary_jar = 'checker-4.3.1.jar',
     visibility = [ 'PUBLIC' ]
 )
 
 prebuilt_jar(
     name = 'checker-qual',
-    binary_jar = 'checker-qual-4.1.0.jar',
+    binary_jar = 'checker-qual-4.3.1.jar',
     visibility = [ 'PUBLIC' ]
 )
 
@@ -271,7 +262,7 @@ For example, you might run
 ./buck build --verbose 8 //app:main
 \end{Verbatim}
 
-However, the command lines that buck prints with \<-v 8> is \emph{not} what
+However, the command lines that Buck prints with \<-v 8> are \emph{not} what
 Buck actually executes.  Buck's invocation of the Checker Framework may
 produce errors that cannot be reproduced from the command line.  This is
 because Buck uses
@@ -321,7 +312,7 @@ other than \<\${HOME}/checker-framework-\ReleaseVersion{}/>.
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profile| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-4.1.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-4.3.1
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
 
@@ -342,7 +333,7 @@ other than \<\${HOME}/checker-framework-\ReleaseVersion{}/>.
     file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-4.1.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-4.3.1
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -364,11 +355,11 @@ other than \<\${HOME}/checker-framework-\ReleaseVersion{}/>.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-4.1.0
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-4.3.1
   alias javacheck='java -jar "$CHECKERFRAMEWORK/checker/dist/checker.jar"'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-4.1.0\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-4.3.1\
   doskey javacheck=java -jar "%CHECKERFRAMEWORK%\checker\dist\checker.jar" $*
 \end{Verbatim}
 
@@ -444,16 +435,16 @@ the environment variable \<CHECKERFRAMEWORK> to point to the unzipped directory.
 Alternately, you can get all of the jars mentioned in this section from Maven Central:
 
 \begin{itemize}
-\item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-qual/4.1.0/checker-qual-4.1.0.jar}
-\item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-util/4.1.0/checker-util-4.1.0.jar}
-\item \<checker.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/4.1.0/checker-4.1.0-all.jar}
+\item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-qual/4.3.1/checker-qual-4.3.1.jar}
+\item \<checker-util.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-util/4.3.1/checker-util-4.3.1.jar}
+\item \<checker.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker/4.3.1/checker-4.3.1-all.jar}
 \end{itemize}
 
 These instructions should work on JDK 17 or later, but we only test with supported
 versions of Java: JDK 17, JDK 21, and JDK 25.
 
 
-\subsubsectionAndLabel{Non-modularized code}{javac-jdk11-non-modularized}
+\subsectionAndLabel{Non-modularized code}{javac-jdk11-non-modularized}
 
 To compile non-modularized code:
 
@@ -481,7 +472,7 @@ The arguments are explained above, except for two of them:
 \begin{enumerate}
 
 \item \<-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED> which
-opens the \<jdk.compiler/com.sun.tools.java.comp> package.  This is
+opens the \<jdk.compiler/com.sun.tools.javac.comp> package.  This is
 required because the Checker Framework reflectively accesses private members of this package.
 
 \item \<-J--add-exports=...=ALL-UNNAMED> which exports the listed packages.  This is
@@ -489,7 +480,7 @@ required because the Checker Framework accesses non-exported members of these pa
 
 \end{enumerate}
 
-If this option is missing, \<javac> may issue one of the below warnings:
+If these options are missing, \<javac> may issue one of the following warnings:
 \begin{Verbatim}
 WARNING: An illegal reflective access operation has occurred
 WARNING: Illegal reflective access by org.checkerframework.javacutil.Resolver
@@ -507,7 +498,7 @@ java.lang.IllegalAccessError: class org.checkerframework.javacutil.AbstractTypeP
 \end{Verbatim}
 
 
-\subsubsectionAndLabel{Modularized code}{javac-jdk11-modularized}
+\subsectionAndLabel{Modularized code}{javac-jdk11-modularized}
 
 To compile a module, first add \<requires
 org.checkerframework.checker.qual;> to your \<module-info.java>.  The Checker
@@ -531,8 +522,8 @@ javac \
   -processor org.checkerframework.checker.nullness.NullnessChecker
 \end{Verbatim}
 
-\<checker-qual.jar> must be on the module path rather than the class path, but
-do not put \<checker.jar> on the processor module path as it is not
+\<checker-qual.jar> must be on the module path rather than the classpath, but
+do not put \<checker.jar> on the processor module path, as it is not
 modularized.
 
 
@@ -570,14 +561,14 @@ run the Ant target by executing the following steps
 
 \item
   Select \code{build.xml} in one of the navigation views and choose
-  {\bf Run As $>$ Ant Build...} from its context menu.
+  {\bf Run As \textgreater{} Ant Build...} from its context menu.
 
 \item
   A launch configuration dialog is opened on a launch configuration
   for this Ant buildfile.
 
 \item
-  In the {\bf Targets} tab, select the new ant task (e.g., check-interning).
+  In the {\bf Targets} tab, select the new Ant task (e.g., check-interning).
 
 \item
   Click {\bf Run}.
@@ -599,8 +590,8 @@ this list.
 To eliminate the warnings:
 disable all ``Unhandled Token in @SuppressWarnings'' warnings in Eclipse.
 Look under the menu headings
-``Java $\rightarrow$ Compiler $\rightarrow$ Errors/Warnings $\rightarrow$
-Annotations $\rightarrow$ Unhandled Token in '@SuppressWarnings',''
+``Java \rightarrowsym{} Compiler \rightarrowsym{} Errors/Warnings \rightarrowsym{}
+Annotations \rightarrowsym{} Unhandled Token in '@SuppressWarnings',''
 and set it to ignore.
 
 
@@ -609,7 +600,7 @@ and set it to ignore.
 To run a checker
 on a project that uses the \href{https://gradle.org/}{Gradle} build system,
 use the
-\ahreforurl{https://github.com/kelloggm/checkerframework-gradle-plugin}{Checker
+\ahreforurl{https://github.com/typetools/checker-framework-gradle-plugin}{Checker
   Framework Gradle plugin}.  Its documentation explains how to use it.
 
 
@@ -650,8 +641,8 @@ When configuring the profile:
   ``org.checkerframework.checker.nullness.NullnessChecker''.
 \end{enumerate}
 
-\item Add \<.../checker-framework/checker/dist/checker-qual.jar>, as a dependency to all
-modules you wish to type check. (They should all have been associated with
+\item Add \<.../checker-framework/checker/dist/checker-qual.jar> as a dependency to all
+modules you wish to type-check. (They should all have been associated with
 the annotation profile above.)
 Instructions appear at
 \url{https://www.jetbrains.com/help/idea/creating-and-managing-projects.html}.
@@ -749,13 +740,13 @@ Therefore, you must run the Checker Framework in a postpass after the
 \href{https://projectlombok.org/features/delombok}{Delombok} tool
 (distributed with Lombok) to generate Java source code, then run the
 Checker Framework on that.  The
-\href{https://github.com/kelloggm/checkerframework-gradle-plugin}{Checker
+\href{https://github.com/typetools/checker-framework-gradle-plugin}{Checker
   Framework Gradle plugin} does this for you automatically.
 
 
-\subsectionAndLabel{Maven Projects using Lombok}{lombok-maven}
+\subsectionAndLabel{Maven projects using Lombok}{lombok-maven}
 
-\href{https://anthonywhitford.com/lombok.maven/lombok-maven-plugin/}{Lombok Maven Plugin}
+The \href{https://anthonywhitford.com/lombok.maven/lombok-maven-plugin/}{Lombok Maven Plugin}
 can be used to delombok source code for Maven projects. The
 \href{https://anthonywhitford.com/lombok.maven/lombok-maven-plugin/faq.html#alt-src-setup}
 {Lombok Maven Plugin FAQ} discusses how to configure the plugin when code
@@ -930,7 +921,7 @@ may suppress warnings from the stub parser.
 \end{enumerate}
 
 If you use \<animal-sniffer-maven-plugin>, you must upgrade to version 1.20
-or later.  Version 1.19 and earlier are broken.  If necessary, you can
+or later.  Versions 1.19 and earlier are broken.  If necessary, you can
 disable animal sniffer by modifying your POM file's properties:
 
 \begin{mysmall}
@@ -984,8 +975,8 @@ then perhaps you have omitted this line from your \<pom.xml>:
 
 \sectionAndLabel{NetBeans}{netbeans}
 
-There are two approaches to running a checker in NetBeans:  via modifying the
-project properties, or via a custom ant target.
+There are two approaches to running a checker in NetBeans:  modifying the
+project properties, or using a custom Ant target.
 
 Note: The ``compile and save'' action in NetBeans 8.1 automatically
 runs the Checker Framework, but this functionality has not yet
@@ -1025,8 +1016,8 @@ are currently unavailable on NetBeans 8.1 and 8.2.
 \item
   Enable annotation processor underlining in the editor. Go to
   ``Build>Compiling'' and check the box ``Enable Annotation
-  Processing,'' and under that, ``Enable Annotation Processing in
-  Editor.''
+  Processing'', and under that, ``Enable Annotation Processing in
+  Editor''.
 
 \item
   Add the checker to run, by clicking ``Add'' next to the box labeled
@@ -1041,15 +1032,13 @@ Compile on Save is enabled), or when the project is built, and
 annotation processor output will appear in the editor.
 
 
-\subsectionAndLabel{Adding a checker via an ant target}{netbeans-ant-target}
+\subsectionAndLabel{Adding a checker via an Ant target}{netbeans-ant-target}
 
 \begin{enumerate}
 \item
 Set the \code{cfJavac} property:
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   <property environment="env"/>
   <property name="checkerframework" value="${env.CHECKERFRAMEWORK}" />
@@ -1063,18 +1052,14 @@ Set the \code{cfJavac} property:
     </javac>
   </presetdef>
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 \item
 Override the \code{-init-macrodef-javac-with-processors} target to
 use \code{cf.javac} instead of \code{javac} and to run the checker.
 In this example, a nullness checker is run:
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   <target depends="-init-ap-cmdline-properties" if="ap.supported.internal"
         name="-init-macrodef-javac-with-processors">
@@ -1131,9 +1116,7 @@ In this example, a nullness checker is run:
   <target name="-post-jar">
   </target>
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 When Build and Clean Project is used, the output of the checker will
 now appear in the build console. However, annotation processor output
@@ -1171,8 +1154,9 @@ javacOptions ++= Seq(
 
 \subsectionAndLabel{For modularized code}{sbt-modularized-code}
 
-\begin{Verbatim}
 For compiling modularized code:
+
+\begin{Verbatim}
 javacOptions ++= Seq(
     "-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
     "-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",

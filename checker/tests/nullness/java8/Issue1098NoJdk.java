@@ -12,6 +12,8 @@ class Issue1098NoJdk {
   <T> void cls2(Class<T> p1, T p2) {}
 
   void use2(MyObject ths) {
+    // TODO: (#7708) This is a false positive.
+    // :: error: [argument]
     cls2(ths.getMyClass(), null);
   }
 }

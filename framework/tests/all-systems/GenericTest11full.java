@@ -1,7 +1,9 @@
 public class GenericTest11full {
-  @SuppressWarnings(
-      "nonempty:method.invocation") // Cannot determine statically whether the getBeans(...)
-  // call below will return a non-empty container.
+  @SuppressWarnings({
+    "unneeded.suppression", // nonempty only issues an error when run alone.
+    "nonempty:method.invocation" // Cannot determine statically whether the getBeans(...)
+    // call below will return a non-empty container.
+  })
   public void m(BeanManager beanManager) {
     Bean<?> bean = beanManager.getBeans(GenericTest11full.class).iterator().next();
     CreationalContext<?> context = beanManager.createCreationalContext(bean);

@@ -26,7 +26,6 @@ import org.checkerframework.framework.util.element.TypeVarUseApplier;
 import org.checkerframework.framework.util.element.VariableApplier;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.plumelib.util.IPair;
 
 /**
  * Utility methods for adding the annotations that are stored in an Element to the type that
@@ -92,7 +91,12 @@ public final class ElementAnnotationApplier {
     }
   }
 
-  /** Issues an "invalid.annotation.location.bytecode warning. */
+  /**
+   * Issues an "invalid.annotation.location.bytecode" warning.
+   *
+   * @param element the location at which to report the warning
+   * @param typeFactory the factory that reports the warning
+   */
   private static void reportInvalidLocation(Element element, AnnotatedTypeFactory typeFactory) {
     Element report = element;
     if (element.getEnclosingElement().getKind() == ElementKind.METHOD) {
@@ -178,22 +182,32 @@ public final class ElementAnnotationApplier {
   }
 
   /**
+   * A lambda parameter declaration and the lambda that declares it.
+   *
+   * @param param a lambda's formal parameter declaration
+   * @param lambda the lambda that declares {@code param}
+   */
+  public record LambdaParam(VariableTree param, LambdaExpressionTree lambda) {}
+
+  /**
    * Helper method to get the lambda tree for ParamApplier. Ideally, this method would be located in
    * ElementAnnotationUtil but since AnnotatedTypeFactory.declarationFromElement is protected, it
    * has been placed here.
    *
    * @param varEle the element that may represent a lambda's parameter
-   * @return a LambdaExpressionTree if the varEle represents a parameter in a lambda expression,
-   *     otherwise null
+   * @param typeFactory the type factory
+   * @return the parameter declaration and its LambdaExpressionTree if {@code varEle} represents a
+   *     parameter in a lambda expression, otherwise null
    */
-  public static @Nullable IPair<VariableTree, LambdaExpressionTree> getParamAndLambdaTree(
+  public static @Nullable LambdaParam getParamAndLambdaTree(
       VariableElement varEle, AnnotatedTypeFactory typeFactory) {
     VariableTree paramDecl = (VariableTree) typeFactory.declarationFromElement(varEle);
 
     if (paramDecl != null) {
+      @SuppressWarnings("nullness:dereference.of.nullable") // paramDecl is in the current file
       Tree parentTree = typeFactory.getPath(paramDecl).getParentPath().getLeaf();
       if (parentTree instanceof LambdaExpressionTree let) {
-        return IPair.of(paramDecl, let);
+        return new LambdaParam(paramDecl, let);
       }
     }
 
@@ -215,7 +229,12 @@ public final class ElementAnnotationApplier {
    * Annotates uses of type variables with annotation written explicitly on the type parameter
    * declaration and/or its upper bound.
    */
-  private static class TypeVarAnnotator extends AnnotatedTypeScanner<Void, AnnotatedTypeFactory> {
+  private static final class TypeVarAnnotator
+      extends AnnotatedTypeScanner<Void, AnnotatedTypeFactory> {
+
+    /** Creates a new TypeVarAnnotator. */
+    TypeVarAnnotator() {}
+
     @Override
     public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeFactory factory) {
       TypeParameterElement tpelt = (TypeParameterElement) type.getUnderlyingType().asElement();
@@ -224,7 +243,7 @@ public final class ElementAnnotationApplier {
           && type.getUpperBound().getPrimaryAnnotations().isEmpty()
           && tpelt.getEnclosingElement().getKind() != ElementKind.TYPE_PARAMETER) {
         try {
-          ElementAnnotationApplier.applyInternal(type, tpelt, factory);
+          applyInternal(type, tpelt, factory);
         } catch (UnexpectedAnnotationLocationException e) {
           // The above is the second call to applyInternal on this type and element, so
           // any errors were already reported by the first call. (See the only use of this

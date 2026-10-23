@@ -2,7 +2,7 @@
 
 name: CI
 
-on:  # yamllint disable-line rule:truthy
+"on":
   push:
     branches:
       - "**"
@@ -10,9 +10,12 @@ on:  # yamllint disable-line rule:truthy
     branches:
       - "**"
 
+# Auto-cancel any in-progress jobs from the same branch or PR.
+# A push to a branch that has a pull request triggers two runs, in different
+# groups; every job's "if:" skips the "pull_request" run (see defs.m4).
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -27,6 +30,7 @@ jobs:
   # The needs clauses are:
   #  * Everything depends on the canary jobs (the main jdk25 jobs), except those jobs themselves.
   #  * Any other *_jdkNN job depends on the corresponding *_jdk25 job.
+
   canary_jobs:
     needs:
       - junit_part1_jdk25
@@ -37,266 +41,834 @@ jobs:
       - typecheck_part1_jdk25
       - typecheck_part2_jdk25
       - misc_jdk25
-      - misc_jdk26
+      - misc_jdk27
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
       - name: canary_jobs
         run: true
+  ci_info:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk25-plus:latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          fetch-depth: 0
+          show-progress: false
+          persist-credentials: false
+      - name: clone_plume_scripts
+        run: ./checker/bin-devel/clone-plume-scripts.sh
+      - name: set_ci_org_and_branch
+        run: |
+          # PLUME_SCRIPTS is the documented way to tell these scripts where they live.
+          PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+          # shellcheck disable=SC2034  # used by the sourced script
+          CI_DEBUG=1
+          . "$PLUME_SCRIPTS"/set-ci-org-and-branch
+      - name: set_git_range
+        run: |
+          # The sourced script reads PLUME_SCRIPTS, to find set-ci-org-and-branch.
+          PLUME_SCRIPTS=./checker/bin-devel/.plume-scripts
+          # shellcheck disable=SC2034  # used by the sourced script
+          CI_DEBUG=1
+          . "$PLUME_SCRIPTS"/set-git-range
 
   junit_jdk17:
     needs:
       - canary_jobs
       - junit_part1_jdk25
       - junit_part2_jdk25
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk17:latest
     timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-cf-
+            gradle-modules-
       - name: test-cftests-junit.sh
         run: ./checker/bin-devel/test-cftests-junit.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "17"
+
   junit_jdk21:
     needs:
       - canary_jobs
       - junit_part1_jdk25
       - junit_part2_jdk25
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk21:latest
     timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-cf-
+            gradle-modules-
       - name: test-cftests-junit.sh
         run: ./checker/bin-devel/test-cftests-junit.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "21"
+
   junit_part1_jdk25:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-cf-
+            gradle-modules-
       - name: test-cftests-junit.sh part1
         run: ./checker/bin-devel/test-cftests-junit.sh part1
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
   junit_part2_jdk25:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-cf-
+            gradle-modules-
       - name: test-cftests-junit.sh part2
         run: ./checker/bin-devel/test-cftests-junit.sh part2
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
-  junit_jdk26:
+
+  junit_jdk27:
     needs:
       - canary_jobs
       - junit_part1_jdk25
       - junit_part2_jdk25
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
-      image: mdernst/cf-ubuntu-jdk26:latest
+      image: mdernst/cf-ubuntu-jdk27:latest
     timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-cf-
+            gradle-modules-
       - name: test-cftests-junit.sh
         run: ./checker/bin-devel/test-cftests-junit.sh
         env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "26"
+          ORG_GRADLE_PROJECT_jdkTestVersion: "27"
 
-  nonjunit_jdk25:
+  nonjunit_jdk21:
+    needs:
+      - canary_jobs
+      - nonjunit_jdk25
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
-      image: mdernst/cf-ubuntu-jdk25:latest
+      image: mdernst/cf-ubuntu-jdk21:latest
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-nonjunit-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-nonjunit-
+            gradle-modules-
+      - name: test-cftests-nonjunit.sh
+        run: ./checker/bin-devel/test-cftests-nonjunit.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: "21"
+
+  nonjunit_jdk25:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk25:latest
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-nonjunit-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-nonjunit-
+            gradle-modules-
       - name: test-cftests-nonjunit.sh
         run: ./checker/bin-devel/test-cftests-nonjunit.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
 
-  # Sometimes one of the invocations of wpi-many in `./gradlew wpiManyTest`
-  # takes much longer to complete than normal, and this Azure job times out.
-  # When there is a timeout, one cannot examine wpi or wpi-many logs.
-  # So use a timeout of 90 minutes, and hope that is enough.
   # Split into part1 and part2 only for the inference job that "canary_jobs" depends on.
   inference_part1_jdk25:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 90
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-cf-
+            gradle-modules-
       - name: test-cftests-inference-part1.sh
         run: ./checker/bin-devel/test-cftests-inference-part1.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
   inference_part2_jdk25:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 90
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-cf-
+            gradle-modules-
       - name: test-cftests-inference-part2.sh
         run: ./checker/bin-devel/test-cftests-inference-part2.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
 
-  misc_jdk17:
-    needs:
-      - canary_jobs
-      - misc_jdk25
-    runs-on: ubuntu-latest
-    container:
-      image: mdernst/cf-ubuntu-jdk17-plus:latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          set-safe-directory: true
-          # Unlimited history for contributors.tex generation.
-          fetch-depth: 0
-      - name: test-misc.sh
-        run: ./checker/bin-devel/test-misc.sh
-        env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "17"
   misc_jdk21:
     needs:
       - canary_jobs
       - misc_jdk25
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk21-plus:latest
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-misc-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-misc-
+            gradle-modules-
+      - name: clone_plume_scripts
+        run: ./checker/bin-devel/clone-plume-scripts.sh
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "21"
   misc_jdk25:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25-plus:latest
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-misc-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-misc-
+            gradle-modules-
+      - name: clone_plume_scripts
+        run: ./checker/bin-devel/clone-plume-scripts.sh
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
-  misc_jdk26:
+  misc_jdk27:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
-      image: mdernst/cf-ubuntu-jdk26-plus:latest
+      image: mdernst/cf-ubuntu-jdk27-plus:latest
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           # Unlimited history for contributors.tex generation.
           fetch-depth: 0
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-misc-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-misc-
+            gradle-modules-
+      - name: clone_plume_scripts
+        run: ./checker/bin-devel/clone-plume-scripts.sh
       - name: test-misc.sh
         run: ./checker/bin-devel/test-misc.sh
         env:
-          ORG_GRADLE_PROJECT_jdkTestVersion: "26"
+          ORG_GRADLE_PROJECT_jdkTestVersion: "27"
 
-  # Split into part1 and part2 only for the typecheck job that "canary_jobs" depends on.
   typecheck_part1_jdk25:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
-          fetch-depth: 0
+          fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-cf-
+            gradle-modules-
       - name: test-typecheck-part1.sh
         run: ./checker/bin-devel/test-typecheck-part1.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
   typecheck_part2_jdk25:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
-          fetch-depth: 0
+          fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-cf-
+            gradle-modules-
       - name: test-typecheck-part2.sh
         run: ./checker/bin-devel/test-typecheck-part2.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
 
-  # TEMPORARILY commented until Daikon release 5.8.24.
-  # daikon_job(canary_version)
-
-  guava_jdk25:
+  daikon_part1_jdk25:
     needs:
       - canary_jobs
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
     timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
-      - name: test-guava.sh
-        run: ./checker/bin-devel/test-guava.sh
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-cf-
+            gradle-modules-
+      - name: test-daikon-part1.sh
+        run: ./checker/bin-devel/test-daikon-part1.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+  daikon_part2_jdk25:
+    needs:
+      - canary_jobs
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk25:latest
+    timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-cf-
+            gradle-modules-
+      - name: test-daikon-part2.sh
+        run: ./checker/bin-devel/test-daikon-part2.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+  daikon_part3_jdk25:
+    needs:
+      - canary_jobs
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk25:latest
+    timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-cf-
+            gradle-modules-
+      - name: test-daikon-part3.sh
+        run: ./checker/bin-devel/test-daikon-part3.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+
+  guava_part1_jdk25:
+    needs:
+      - canary_jobs
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk25:latest
+    timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-cf-
+            gradle-modules-
+      - name: test-guava-part1.sh
+        run: ./checker/bin-devel/test-guava-part1.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+  guava_part2_jdk25:
+    needs:
+      - canary_jobs
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk25:latest
+    timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-cf-
+            gradle-modules-
+      - name: test-guava-part2.sh
+        run: ./checker/bin-devel/test-guava-part2.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+
+  beam_part1_jdk21:
+    needs:
+      - canary_jobs
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk21:latest
+    timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache/restore@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-cf-
+            gradle-modules-
+      - name: test-beam-part1.sh
+        run: ./checker/bin-devel/test-beam-part1.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: "21"
+  beam_part2_jdk21:
+    needs:
+      - canary_jobs
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    container:
+      image: mdernst/cf-ubuntu-jdk21:latest
+    timeout-minutes: 70
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          set-safe-directory: true
+          fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache/restore@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-cf-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-cf-
+            gradle-modules-
+      - name: test-beam-part2.sh
+        run: ./checker/bin-devel/test-beam-part2.sh
+        env:
+          ORG_GRADLE_PROJECT_jdkTestVersion: "21"
 
   plume_lib_jdk25:
     needs:
       - canary_jobs
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     container:
       image: mdernst/cf-ubuntu-jdk25:latest
+    env:
+      GRADLE_USER_HOME: /github/home/.gradle
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           set-safe-directory: true
           fetch-depth: 25
+          show-progress: false
+          persist-credentials: false
+      - uses: actions/cache@v6
+        with:
+          path: ~/.gradle/wrapper
+          key: gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2/**
+            !~/.gradle/caches/modules-2/**/*.lock
+            !~/.gradle/caches/modules-2/gc.properties
+          key: gradle-modules-plume-lib-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', 'gradle/libs.versions.toml', 'buildSrc/build.gradle', 'docs/examples/errorprone/build.gradle', 'docs/examples/lombok/build.gradle') }}
+          restore-keys: |
+            gradle-modules-plume-lib-
+            gradle-modules-
       - name: test-plume-lib.sh
         run: ./checker/bin-devel/test-plume-lib.sh
         env:
           ORG_GRADLE_PROJECT_jdkTestVersion: "25"
+
+  all_green:
+    # "all_green" is a required check. This job runs in every CI run, so that
+    # GitHub evaluates its name.  In a run whose other jobs are skipped, it is
+    # named "all_green (skipped)", lest it satisfy the requirement before the
+    # other run's "all_green" finishes.  (GitHub does not evaluate the name of
+    # a job that "if:" skips.)
+    name: ${{ (github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository) && 'all_green' || 'all_green (skipped)' }}
+    if: always()
+    needs:
+      - junit_jdk17
+      - junit_jdk21
+      - junit_jdk27
+      - nonjunit_jdk21
+      - misc_jdk21
+      - daikon_part1_jdk25
+      - daikon_part2_jdk25
+      - daikon_part3_jdk25
+      - guava_part1_jdk25
+      - guava_part2_jdk25
+      - beam_part1_jdk21
+      - beam_part2_jdk21
+      - plume_lib_jdk25
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any dependency failed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1

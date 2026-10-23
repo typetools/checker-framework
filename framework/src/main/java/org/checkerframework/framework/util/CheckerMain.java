@@ -3,8 +3,8 @@ package org.checkerframework.framework.util;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
@@ -26,7 +26,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * This class behaves similarly to javac. CheckerMain does the following:
@@ -222,7 +222,7 @@ public class CheckerMain {
     Iterator<String> argsIterator = args.iterator();
     while (argsIterator.hasNext()) {
       String arg = argsIterator.next();
-      Matcher matcher = CheckerMain.JVM_OPTS_REGEX.matcher(arg);
+      Matcher matcher = JVM_OPTS_REGEX.matcher(arg);
       if (matcher.matches()) {
         jvmArgs.add(arg);
         argsIterator.remove();
@@ -551,7 +551,7 @@ public class CheckerMain {
 
     if (!missingFiles.isEmpty()) {
       List<String> missingAbsoluteFilenames =
-          CollectionsPlume.mapList(File::getAbsolutePath, missingFiles);
+          CollectionsP.mapList(File::getAbsolutePath, missingFiles);
       throw new RuntimeException(
           "The following files could not be located: "
               + String.join(", ", missingAbsoluteFilenames));
@@ -627,7 +627,7 @@ public class CheckerMain {
    */
   private List<@FullyQualifiedName String> getAllCheckerClassNames() {
     ArrayList<@FullyQualifiedName String> checkerClassNames = new ArrayList<>();
-    try (FileInputStream fis = new FileInputStream(checkerJar);
+    try (InputStream fis = Files.newInputStream(checkerJar.toPath());
         JarInputStream checkerJarIs = new JarInputStream(fis)) {
       ZipEntry entry;
       while ((entry = checkerJarIs.getNextEntry()) != null) {

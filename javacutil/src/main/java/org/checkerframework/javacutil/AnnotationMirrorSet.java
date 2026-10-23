@@ -13,6 +13,8 @@ import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.common.returnsreceiver.qual.This;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.plumelib.util.DeepCopyable;
 
 /**
@@ -158,6 +160,7 @@ public class AnnotationMirrorSet
 
   @SuppressWarnings("keyfor:argument") // delegation
   @Override
+  @SideEffectsOnly("this")
   public boolean add(
       @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,
       AnnotationMirror annotationMirror) {
@@ -169,6 +172,7 @@ public class AnnotationMirrorSet
   }
 
   @Override
+  @SideEffectsOnly("this")
   public boolean remove(@Nullable Object o) {
     if (o instanceof AnnotationMirror am) {
       AnnotationMirror found = AnnotationUtils.getSame(shadowSet, am);
@@ -188,6 +192,7 @@ public class AnnotationMirrorSet
   }
 
   @Override
+  @SideEffectsOnly("this")
   public boolean addAll(
       @UnknownInitialization(AnnotationMirrorSet.class) AnnotationMirrorSet this,
       Collection<? extends AnnotationMirror> c) {
@@ -201,6 +206,7 @@ public class AnnotationMirrorSet
   }
 
   @Override
+  @SideEffectsOnly("this")
   public boolean retainAll(Collection<?> c) {
     AnnotationMirrorSet newSet = new AnnotationMirrorSet();
     for (Object o : c) {
@@ -219,6 +225,7 @@ public class AnnotationMirrorSet
   }
 
   @Override
+  @SideEffectsOnly("this")
   public boolean removeAll(Collection<?> c) {
     boolean result = true;
     for (Object a : c) {
@@ -230,6 +237,7 @@ public class AnnotationMirrorSet
   }
 
   @Override
+  @SideEffectsOnly("this")
   public void clear() {
     shadowSet.clear();
   }
@@ -314,16 +322,19 @@ public class AnnotationMirrorSet
   }
 
   @Override
+  @SideEffectsOnly("this")
   public @Nullable @KeyFor("this") AnnotationMirror pollFirst() {
     return shadowSet.pollFirst();
   }
 
   @Override
+  @SideEffectsOnly("this")
   public @Nullable @KeyFor("this") AnnotationMirror pollLast() {
     return shadowSet.pollLast();
   }
 
   @Override
+  @Pure
   public AnnotationMirrorSet descendingSet() {
     throw new Error("Not yet implemented.");
   }

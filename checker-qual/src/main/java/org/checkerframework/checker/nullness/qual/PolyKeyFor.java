@@ -14,7 +14,7 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
  * one in which every instance of {@code @PolyKeyFor} has been replaced by {@code @}{@link
  * UnknownKeyFor}, one in which every instance of {@code @}{@link PolyKeyFor} has been replaced by
  * {@code @}{@link KeyForBottom}, and ones in which every instance of {@code @PolyKeyFor} has been
- * replaced by {@code @}{@code KeyFor}, for every possible combination of map arguments.
+ * replaced by {@code @}{@link KeyFor}, for every possible combination of map arguments.
  *
  * @checker_framework.manual #nullness-checker Nullness Checker
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism

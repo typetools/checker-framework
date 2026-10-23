@@ -15,7 +15,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 
 /** This class provides a collection of utilities to ease working with format strings. */
 @AnnotatedFor("nullness")
-public class FormatUtil {
+public final class FormatUtil {
 
   /** Do not instantiate. */
   private FormatUtil() {
@@ -75,8 +75,7 @@ public class FormatUtil {
    */
   // TODO introduce more such functions, see RegexUtil for examples
   @ReturnsFormat
-  public static String asFormat(String format, ConversionCategory... cc)
-      throws IllegalFormatException {
+  public static String asFormat(String format, ConversionCategory... cc) {
     ConversionCategory[] fcc = formatParameterCategories(format);
     if (fcc.length != cc.length) {
       throw new ExcessiveOrMissingFormatArgumentException(cc.length, fcc.length);
@@ -97,7 +96,7 @@ public class FormatUtil {
    * @param format a format string
    * @throws IllegalFormatException if the format string is invalid
    */
-  public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
+  public static void tryFormatSatisfiability(String format) {
     try {
       @SuppressWarnings({
         "unused", // called for side effect, to see if it throws an exception
@@ -116,10 +115,11 @@ public class FormatUtil {
   /**
    * Returns a {@link ConversionCategory} for every conversion found in the format string.
    *
-   * <p>Throws an exception if the format is not syntactically valid.
+   * @param format a format string
+   * @return the conversion categories in the format string
+   * @throws IllegalFormatException if the format is not syntactically valid
    */
-  public static ConversionCategory[] formatParameterCategories(String format)
-      throws IllegalFormatException {
+  public static ConversionCategory[] formatParameterCategories(String format) {
     tryFormatSatisfiability(format);
 
     int last = -1; // index of last argument referenced

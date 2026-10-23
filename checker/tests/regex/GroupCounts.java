@@ -43,9 +43,7 @@ public class GroupCounts {
 
     // Make sure Pattern.compile still works when passed an @UnknownRegex String
     // that's actually a regex, with the warning suppressed.
-    @SuppressWarnings("regex:argument")
     Pattern p6 = Pattern.compile("(" + r + ")");
-    @SuppressWarnings("regex:argument")
     Pattern p6a = Pattern.compile("(" + r + ")", 0);
   }
 

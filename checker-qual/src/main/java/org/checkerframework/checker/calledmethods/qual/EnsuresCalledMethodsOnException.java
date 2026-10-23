@@ -48,7 +48,7 @@ public @interface EnsuresCalledMethodsOnException {
   String[] value();
 
   // NOTE 2023/10/6: There seems to be a fundamental limitation in the dataflow framework that
-  // prevent us from supporting a custom set of exceptions.  Specifically, in the following code:
+  // prevents us from supporting a custom set of exceptions.  Specifically, in the following code:
   //
   //     try {
   //       m1();
@@ -68,8 +68,7 @@ public @interface EnsuresCalledMethodsOnException {
   //  Class<? extends Throwable>[] exceptions();
 
   /**
-   * The methods guaranteed to be invoked on the expressions if the result of the method throws an
-   * exception.
+   * The methods guaranteed to be invoked on the expressions if the method throws an exception.
    *
    * @return the methods guaranteed to be invoked on the expressions if the method throws an
    *     exception

@@ -11,4 +11,3 @@ class LocalGeneric:
         return:
         insert-annotation Method.body, Block.statement 0, Variable.type, ParameterizedType.typeArgument 0: @java.lang.Tainted
         insert-annotation Method.body, Block.statement 0, Variable.type: @java.lang.UnderInitialization
-

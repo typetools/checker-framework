@@ -14,7 +14,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 
 /**
  * The default transfer function for an accumulation checker.
@@ -102,7 +102,7 @@ public class AccumulationTransfer
    *     returned true)
    * @param values a list of newly-accumulated values
    */
-  private void updateValueAndInsertIntoStore(
+  protected void updateValueAndInsertIntoStore(
       AccumulationStore store, JavaExpression target, List<String> values) {
     // Make a modifiable copy of the list.
     List<String> valuesAsList = new ArrayList<>(values);
@@ -110,7 +110,7 @@ public class AccumulationTransfer
     if (flowValue != null) {
       Set<String> accumulatedValues = flowValue.getAccumulatedValues();
       if (accumulatedValues != null) {
-        valuesAsList = CollectionsPlume.concatenate(valuesAsList, accumulatedValues);
+        valuesAsList = CollectionsP.concatenate(valuesAsList, accumulatedValues);
       } else {
         AnnotationMirrorSet flowAnnos = flowValue.getAnnotations();
         assert flowAnnos.size() <= 1;

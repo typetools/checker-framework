@@ -5,7 +5,7 @@ import java.io.File;
 /** Encapsulates the directory root to search within for test files to compile. */
 abstract class CheckerFrameworkRootedTest {
 
-  /** Constructs a test that will assert that can resolve its tests root directory. */
+  /** Constructs a test that uses {@code @TestRootDirectory} to find its test directory. */
   public CheckerFrameworkRootedTest() {}
 
   /**

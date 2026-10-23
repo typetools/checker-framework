@@ -9,6 +9,8 @@ configurations {
 dependencies {
   implementation(project(":checker-qual"))
 
+  testImplementation(libs.junit)
+
   // This is used by org.checkerframework.javacutil.TypesUtils.isImmutableTypeInJdk.
   // https://mvnrepository.com/artifact/org.plumelib/plume-util
   implementation(libs.hashmap.util)
@@ -26,7 +28,7 @@ dependencies {
 apply from: rootProject.file("gradle-mvn-push.gradle")
 
 final javacUtilPom(publication) {
-  sharedPublicationConfiguration(publication)
+  rootProject.sharedPublicationConfiguration(publication)
   publication.from(components.java)
 
   publication.pom {

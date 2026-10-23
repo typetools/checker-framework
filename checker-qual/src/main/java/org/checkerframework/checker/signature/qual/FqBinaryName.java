@@ -8,8 +8,8 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * An extension of binary name format to represent primitives and arrays. It is just like
- * fully-qualified name format, but uses "$" rather than "." to indicate a nested class.
+ * An extension of binary name format to represent primitives and arrays. It is just like fully
+ * qualified name format, but uses "$" rather than "." to indicate a nested class.
  *
  * <p>Examples include
  *

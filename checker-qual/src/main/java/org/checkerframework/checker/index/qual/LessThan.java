@@ -28,18 +28,18 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 @SubtypeOf({LessThanUnknown.class})
-// TODO: I chose to implement less than rather than greater than because in most of the case studies
-// false positives, the bigger value is final or effectively final, so it can appear in a dependent
-// annotation without causing soundness issues.
+// TODO: I chose to implement less than rather than greater than because in most of the false
+// positives in the case studies, the bigger value is final or effectively final, so it can
+// appear in a dependent annotation without causing soundness issues.
 public @interface LessThan {
   /**
    * The annotated expression's value is less than this expression.
    *
    * <p>The expressions in {@code value} may be addition/subtraction of any number of Java
-   * expressions. For example, {@code @LessThan(value = "x + y + 2"}}.
+   * expressions. For example, {@code @LessThan(value = "x + y + 2")}.
    *
-   * <p>The expression in {@code value} must be final or constant or the addition/subtract of final
-   * or constant expressions.
+   * <p>The expression in {@code value} must be final or constant, or the addition/subtraction of
+   * final or constant expressions.
    */
   @JavaExpression
   String[] value();

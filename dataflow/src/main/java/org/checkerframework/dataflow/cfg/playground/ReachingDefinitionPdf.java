@@ -13,7 +13,7 @@ import org.checkerframework.dataflow.reachingdef.ReachingDefinitionTransfer;
  *
  * <p>As an example, try {@code dataflow/manual/examples/ReachSimple.java}.
  */
-public class ReachingDefinitionPdf {
+public final class ReachingDefinitionPdf {
 
   /** Class cannot be instantiated. */
   private ReachingDefinitionPdf() {
