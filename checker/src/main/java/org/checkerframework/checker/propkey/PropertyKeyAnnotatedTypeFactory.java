@@ -4,14 +4,11 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
-import java.io.File;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.tools.Diagnostic;
 import org.checkerframework.checker.propkey.qual.PropertyKey;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -123,20 +120,6 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   private Set<String> buildLookupKeys() {
-    List<String> propertyFiles =
-        checker.hasOption("propfiles")
-            ? checker.getStringsOption("propfiles", File.pathSeparator)
-            : Collections.emptyList();
-    List<String> bundleNames =
-        checker.hasOption("bundlenames")
-            ? checker.getStringsOption("bundlenames", ':')
-            : Collections.emptyList();
-    return new HashSet<>(
-        PropertyFileUtils.load(
-                propertyFiles,
-                bundleNames,
-                getClass(),
-                message -> checker.message(Diagnostic.Kind.WARNING, message))
-            .keySet());
+    return new HashSet<>(PropertyFileUtils.load(checker, getClass()).keySet());
   }
 }

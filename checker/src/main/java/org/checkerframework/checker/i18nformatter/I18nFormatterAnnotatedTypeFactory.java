@@ -2,7 +2,6 @@ package org.checkerframework.checker.i18nformatter;
 
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
-import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -87,18 +86,11 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
    */
   private Map<String, String> buildLookup() {
     Map<String, String> result = new HashMap<>();
-    for (Map.Entry<String, Object> entry :
-        PropertyFileUtils.load(
-                checker.hasOption("propfiles")
-                    ? checker.getStringsOption("propfiles", File.pathSeparator)
-                    : Collections.emptyList(),
-                checker.hasOption("bundlenames")
-                    ? checker.getStringsOption("bundlenames", ':')
-                    : Collections.emptyList(),
-                getClass(),
-                System.err::println)
-            .entrySet()) {
-      result.put(entry.getKey(), (String) entry.getValue());
+    for (Map.Entry<String, Object> entry : PropertyFileUtils.load(checker, getClass()).entrySet()) {
+      // A ListResourceBundle may have non-String values, which are not translations.
+      if (entry.getValue() instanceof String value) {
+        result.put(entry.getKey(), value);
+      }
     }
     return result;
   }

@@ -1,16 +1,20 @@
 package org.checkerframework.checker.propkey;
 
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.function.Consumer;
+import javax.tools.Diagnostic;
+import org.checkerframework.framework.source.SourceChecker;
 import org.plumelib.reflection.Signatures;
 
 /** Utilities for loading property files and resource bundles. */
@@ -22,19 +26,15 @@ public final class PropertyFileUtils {
   }
 
   /**
-   * Loads the entries in property files and resource bundles.
+   * Loads the entries in the property files named by the {@code -Apropfiles} command-line option
+   * and in the resource bundles named by the {@code -Abundlenames} command-line option. Reports a
+   * warning for each file or bundle that cannot be loaded.
    *
-   * @param propertyFiles property-file names
-   * @param bundleNames resource-bundle names
+   * @param checker the checker whose options name the files and bundles, and which reports warnings
    * @param contextClass the class whose class loader loads property-file resources
-   * @param warn reports a warning that is not associated with an AST node
    * @return a map from each loaded key to its value
    */
-  public static Map<String, Object> load(
-      List<String> propertyFiles,
-      List<String> bundleNames,
-      Class<?> contextClass,
-      Consumer<String> warn) {
+  public static Map<String, Object> load(SourceChecker checker, Class<?> contextClass) {
     Map<String, Object> result = new HashMap<>();
 
     ClassLoader classLoader = contextClass.getClassLoader();
@@ -43,6 +43,20 @@ public final class PropertyFileUtils {
       classLoader = ClassLoader.getSystemClassLoader();
     }
 
+    // `getStringsOption` throws an exception if the checker does not support the option.  Some
+    // checkers that reuse a factory that calls this method, such as I18nFormatterLubGlbChecker,
+    // do not support these options.
+    List<String> propertyFiles =
+        checker.hasOption("propfiles")
+            ? checker.getStringsOption("propfiles", File.pathSeparator)
+            : Collections.emptyList();
+    List<String> bundleNames =
+        checker.hasOption("bundlenames")
+            ? checker.getStringsOption("bundlenames", ':')
+            : Collections.emptyList();
+
+    // These problems are not associated with an AST node, so they are reported via
+    // `checker.message` rather than `checker.reportWarning`.
     for (String propertyFile : propertyFiles) {
       try {
         Properties properties = new Properties();
@@ -53,8 +67,9 @@ public final class PropertyFileUtils {
             // Absolute paths, in particular, might not be class-loader resources.
             try (InputStream fileInput = Files.newInputStream(Paths.get(propertyFile))) {
               properties.load(fileInput);
-            } catch (FileNotFoundException e) {
-              warn.accept("Couldn't find the properties file: " + propertyFile);
+            } catch (NoSuchFileException e) {
+              checker.message(
+                  Diagnostic.Kind.WARNING, "Couldn't find the properties file: " + propertyFile);
               continue;
             }
           }
@@ -63,20 +78,25 @@ public final class PropertyFileUtils {
           result.put(key, properties.getProperty(key));
         }
       } catch (Exception e) {
-        warn.accept(
-            "Exception while loading properties file " + propertyFile + ": " + e.getMessage());
-        e.printStackTrace();
+        checker.message(
+            Diagnostic.Kind.WARNING,
+            "Exception while loading properties file " + propertyFile + ": " + e);
       }
     }
 
     for (String bundleName : bundleNames) {
       if (!Signatures.isBinaryName(bundleName)) {
-        warn.accept("Malformed resource bundle: <" + bundleName + "> should be a binary name.");
+        checker.message(
+            Diagnostic.Kind.WARNING,
+            "Malformed resource bundle: <" + bundleName + "> should be a binary name.");
         continue;
       }
-      ResourceBundle bundle = ResourceBundle.getBundle(bundleName);
-      if (bundle == null) {
-        warn.accept(
+      ResourceBundle bundle;
+      try {
+        bundle = ResourceBundle.getBundle(bundleName);
+      } catch (MissingResourceException e) {
+        checker.message(
+            Diagnostic.Kind.WARNING,
             "Couldn't find the resource bundle: <"
                 + bundleName
                 + "> for locale <"
