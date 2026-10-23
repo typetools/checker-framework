@@ -245,7 +245,7 @@ public class ToIndexFileConverterTest {
             "class C<T> {",
             "  @A C() {}",
             "  void m(@B C<@D T> this) {}",
-            "  class Inner {",
+            "  @G class Inner {",
             "    Inner(@E C<@F T> C.this, int i) {}",
             "  }",
             "}");
@@ -269,15 +269,14 @@ public class ToIndexFileConverterTest {
         "@D was not recorded on the receiver's type argument",
         methodRcvr.innerTypes.get(outerTypeArgument).lookup("D"));
 
-    // Search every class, because this test does not depend on which class the converter puts an
-    // inner class's constructor in.
-    AMethod innerConstructor = null;
-    for (AClass c : scene.classes.values()) {
-      if (c.methods.containsKey("<init>(I)V")) {
-        innerConstructor = c.methods.get("<init>(I)V");
-      }
-    }
+    AClass innerClass = scene.classes.get("p.C$Inner");
+    Assert.assertNotNull("no scene element for class p.C$Inner", innerClass);
+    Assert.assertNotNull("@G was not recorded on class Inner", innerClass.lookup("G"));
+    Assert.assertNull("@G was recorded on class C", clazz.lookup("G"));
+    AMethod innerConstructor = innerClass.methods.get("<init>(I)V");
     Assert.assertNotNull("no scene element for the constructor of Inner", innerConstructor);
+    Assert.assertFalse(
+        "the constructor of Inner was recorded on p.C", clazz.methods.containsKey("<init>(I)V"));
     ATypeElement innerRcvr = innerConstructor.receiver.type;
     Assert.assertNotNull(
         "@E was not recorded on the receiver type of Inner's constructor", innerRcvr.lookup("E"));

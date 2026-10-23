@@ -301,8 +301,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   @Override
   public Void visit(ClassOrInterfaceDeclaration decl, AElement elem) {
-    visitDecl(decl, (ADeclaration) elem);
-    return super.visit(decl, elem);
+    AClass clazz = classFor(decl, elem);
+    visitDecl(decl, clazz);
+    return super.visit(decl, clazz);
   }
 
   @Override
@@ -344,8 +345,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   @Override
   public Void visit(EnumDeclaration decl, AElement elem) {
-    visitDecl(decl, (ADeclaration) elem);
-    return super.visit(decl, elem);
+    AClass clazz = classFor(decl, elem);
+    visitDecl(decl, clazz);
+    return super.visit(decl, clazz);
   }
 
   @Override
@@ -453,6 +455,22 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       addAnnotations(annos, field);
     }
     return null;
+  }
+
+  /**
+   * Returns the scene element for a type declaration.
+   *
+   * @param decl a type declaration
+   * @param elem the scene element for {@code decl} if it is a top-level type, or for its enclosing
+   *     type if it is a nested type
+   * @return the scene element for {@code decl}
+   */
+  private AClass classFor(TypeDeclaration<?> decl, AElement elem) {
+    AClass clazz = (AClass) elem;
+    if (!decl.isNestedType()) {
+      return clazz;
+    }
+    return scene.classes.getVivify(clazz.className + "$" + decl.getNameAsString());
   }
 
   /**
