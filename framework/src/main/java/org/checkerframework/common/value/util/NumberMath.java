@@ -2,19 +2,24 @@ package org.checkerframework.common.value.util;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-/** Performs Java numeric operations on a boxed number. */
-public abstract class NumberMath<T extends Number> {
+/** Performs Java numeric operations whose left operand is a boxed number. */
+public final class NumberMath {
 
   /** The left operand. */
-  protected final T number;
+  private final Number number;
+
+  /** The numeric promotion type of {@link #number}. */
+  private final NumericType type;
 
   /**
    * Creates a NumberMath.
    *
    * @param number the left operand
+   * @param type the numeric promotion type of {@code number}
    */
-  protected NumberMath(T number) {
+  private NumberMath(Number number, NumericType type) {
     this.number = number;
+    this.type = type;
   }
 
   /**
@@ -23,26 +28,9 @@ public abstract class NumberMath<T extends Number> {
    * @param number a number
    * @return an arithmetic helper, or null if {@code number} is not a supported boxed primitive
    */
-  public static @Nullable NumberMath<?> getNumberMath(Number number) {
-    if (number instanceof Byte) {
-      return new ByteMath(number.byteValue());
-    }
-    if (number instanceof Double) {
-      return new DoubleMath(number.doubleValue());
-    }
-    if (number instanceof Float) {
-      return new FloatMath(number.floatValue());
-    }
-    if (number instanceof Integer) {
-      return new IntegerMath(number.intValue());
-    }
-    if (number instanceof Long) {
-      return new LongMath(number.longValue());
-    }
-    if (number instanceof Short) {
-      return new ShortMath(number.shortValue());
-    }
-    return null;
+  public static @Nullable NumberMath getNumberMath(Number number) {
+    NumericType type = numericTypeOrNull(number);
+    return type == null ? null : new NumberMath(number, type);
   }
 
   /**
@@ -225,7 +213,7 @@ public abstract class NumberMath<T extends Number> {
    * @return {@code +this}
    */
   public Number unaryPlus() {
-    return switch (numericType(number)) {
+    return switch (type) {
       case DOUBLE -> +number.doubleValue();
       case FLOAT -> +number.floatValue();
       case LONG -> +number.longValue();
@@ -239,7 +227,7 @@ public abstract class NumberMath<T extends Number> {
    * @return {@code -this}
    */
   public Number unaryMinus() {
-    return switch (numericType(number)) {
+    return switch (type) {
       case DOUBLE -> -number.doubleValue();
       case FLOAT -> -number.floatValue();
       case LONG -> -number.longValue();
@@ -367,7 +355,7 @@ public abstract class NumberMath<T extends Number> {
    * @return the binary numeric promotion type for {@code this} and {@code right}
    */
   private NumericType binaryPromotion(Number right) {
-    NumericType leftType = numericType(number);
+    NumericType leftType = type;
     NumericType rightType = numericType(right);
     if (leftType == NumericType.DOUBLE || rightType == NumericType.DOUBLE) {
       return NumericType.DOUBLE;
@@ -387,6 +375,22 @@ public abstract class NumberMath<T extends Number> {
    * @throws UnsupportedOperationException if {@code value} is not a supported boxed primitive
    */
   private static NumericType numericType(Number value) {
+    NumericType result = numericTypeOrNull(value);
+    if (result == null) {
+      throw new UnsupportedOperationException("Unsupported number type: " + value.getClass());
+    }
+    return result;
+  }
+
+  /**
+   * Returns the numeric promotion type for {@code value}, or null if {@code value} is not a
+   * supported boxed primitive.
+   *
+   * @param value a number
+   * @return the numeric promotion type for {@code value}, or null if {@code value} is not a
+   *     supported boxed primitive
+   */
+  private static @Nullable NumericType numericTypeOrNull(Number value) {
     if (value instanceof Double) {
       return NumericType.DOUBLE;
     } else if (value instanceof Float) {
@@ -396,7 +400,7 @@ public abstract class NumberMath<T extends Number> {
     } else if (value instanceof Byte || value instanceof Short || value instanceof Integer) {
       return NumericType.INT;
     }
-    throw new UnsupportedOperationException("Unsupported number type: " + value.getClass());
+    return null;
   }
 
   /**
