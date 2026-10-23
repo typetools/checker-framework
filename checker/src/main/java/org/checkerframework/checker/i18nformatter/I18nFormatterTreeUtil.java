@@ -421,7 +421,7 @@ public class I18nFormatterTreeUtil {
      * @see InvocationType
      */
     public final Result<InvocationType> getInvocationType() {
-      return FormatterTreeUtil.invocationType(tree, args, atypeFactory);
+      return FormatterTreeUtil.invocationType(tree, args);
     }
 
     public Result<FormatType> getInvalidInvocationType() {

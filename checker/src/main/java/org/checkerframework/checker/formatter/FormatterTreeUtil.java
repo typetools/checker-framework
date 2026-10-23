@@ -2,15 +2,12 @@ package org.checkerframework.checker.formatter;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
-import com.sun.source.util.SimpleTreeVisitor;
 import java.util.IllegalFormatException;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.NullType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -124,63 +121,50 @@ public class FormatterTreeUtil {
    * Returns how a format method's arguments are passed and the tree at which to report errors.
    *
    * @param invocationTree the format-method invocation
-   * @param args the arguments that follow the format string
-   * @param atypeFactory the type factory
+   * @param args the arguments whose values the format string formats; each is an argument of {@code
+   *     invocationTree}
    * @return how the arguments are passed and the tree at which to report errors
    */
   public static Result<InvocationType> invocationType(
-      MethodInvocationTree invocationTree,
-      List<? extends ExpressionTree> args,
-      AnnotatedTypeFactory atypeFactory) {
+      MethodInvocationTree invocationTree, List<? extends ExpressionTree> args) {
     InvocationType type = InvocationType.VARARG;
 
-    if (args.size() == 1) {
-      ExpressionTree first = args.get(0);
-      TypeMirror argType = atypeFactory.getAnnotatedType(first).getUnderlyingType();
+    if (args.size() == 1 && !isVarargsElement(invocationTree, args.get(0))) {
+      ExpressionTree arg = TreeUtils.withoutParens(args.get(0));
       type =
-          argType.accept(
-              new SimpleTypeVisitor8<>() {
-                @Override
-                protected InvocationType defaultAction(TypeMirror e, Class<Void> p) {
-                  return InvocationType.VARARG;
-                }
-
-                @Override
-                public InvocationType visitArray(ArrayType t, Class<Void> p) {
-                  return first.accept(
-                      new SimpleTreeVisitor<InvocationType, Class<Void>>() {
-                        @Override
-                        protected InvocationType defaultAction(Tree tree, Class<Void> p) {
-                          return InvocationType.ARRAY;
-                        }
-
-                        @Override
-                        public InvocationType visitTypeCast(TypeCastTree tree, Class<Void> p) {
-                          return atypeFactory
-                                      .getAnnotatedType(tree.getExpression())
-                                      .getUnderlyingType()
-                                      .getKind()
-                                  == TypeKind.NULL
-                              ? InvocationType.NULLARRAY
-                              : InvocationType.ARRAY;
-                        }
-                      },
-                      p);
-                }
-
-                @Override
-                public InvocationType visitNull(NullType t, Class<Void> p) {
-                  return InvocationType.NULLARRAY;
-                }
-              },
-              Void.TYPE);
+          switch (TreeUtils.typeOf(arg).getKind()) {
+            // The null literal is passed as a null array.
+            case NULL -> InvocationType.NULLARRAY;
+            // An array is passed; determine whether it is a null array such as "(Object[]) null".
+            case ARRAY ->
+                arg instanceof TypeCastTree cast
+                        && TreeUtils.typeOf(cast.getExpression()).getKind() == TypeKind.NULL
+                    ? InvocationType.NULLARRAY
+                    : InvocationType.ARRAY;
+            default -> InvocationType.VARARG;
+          };
     }
 
-    ExpressionTree location = invocationTree.getMethodSelect();
-    if (type != InvocationType.VARARG && !args.isEmpty()) {
-      location = args.get(0);
-    }
+    ExpressionTree location =
+        type == InvocationType.VARARG ? invocationTree.getMethodSelect() : args.get(0);
     return new Result<>(type, location);
+  }
+
+  /**
+   * Returns true if javac passes {@code arg} as an element of a newly-created varargs array, rather
+   * than passing {@code arg} itself. For example, in {@code String.format("%d", new int[] {1})},
+   * the argument {@code new int[] {1}} is a varargs element.
+   *
+   * @param invocationTree a method invocation
+   * @param arg an argument of {@code invocationTree}
+   * @return true if {@code arg} is an element of the varargs array of {@code invocationTree}
+   */
+  private static boolean isVarargsElement(MethodInvocationTree invocationTree, ExpressionTree arg) {
+    if (!TreeUtils.isVarargsCall(invocationTree)) {
+      return false;
+    }
+    int varargsIndex = TreeUtils.elementFromUse(invocationTree).getParameters().size() - 1;
+    return invocationTree.getArguments().indexOf(arg) >= varargsIndex;
   }
 
   /**
@@ -331,7 +315,7 @@ public class FormatterTreeUtil {
      * @see InvocationType
      */
     public final Result<InvocationType> getInvocationType() {
-      return invocationType(invocationTree, args, atypeFactory);
+      return invocationType(invocationTree, args);
     }
 
     /**
