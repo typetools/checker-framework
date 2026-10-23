@@ -56,8 +56,18 @@ public class QualifierVar extends AbstractQualifier {
     qualifierBounds.put(BoundKind.LOWER, new LinkedHashSet<>());
   }
 
+  /**
+   * Returns the qualifier bounds of kind {@code kind} on this variable.
+   *
+   * @param kind a kind of bound
+   * @return the qualifier bounds of kind {@code kind} on this variable
+   */
+  public Set<AbstractQualifier> getQualifierBoundsOfKind(BoundKind kind) {
+    return VariableBounds.getOfKind(qualifierBounds, kind);
+  }
+
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }
@@ -96,7 +106,7 @@ public class QualifierVar extends AbstractQualifier {
     if (kind == BoundKind.EQUAL && otherQual instanceof Qualifier q) {
       instantiation = q.getAnnotation();
     }
-    if (qualifierBounds.get(kind).add(otherQual)) {
+    if (getQualifierBoundsOfKind(kind).add(otherQual)) {
       return addConstraintsFromComplementaryBounds(kind, otherQual);
     }
     return ConstraintSet.TRUE;
@@ -113,21 +123,21 @@ public class QualifierVar extends AbstractQualifier {
     ConstraintSet constraints = new ConstraintSet();
     switch (kind) {
       case EQUAL -> {
-        for (AbstractQualifier t : qualifierBounds.get(BoundKind.EQUAL)) {
+        for (AbstractQualifier t : getQualifierBoundsOfKind(BoundKind.EQUAL)) {
           if (!s.equals(t)) {
             constraints.add(new QualifierTyping(s, t, Kind.QUALIFIER_EQUALITY));
           }
         }
       }
       case LOWER -> {
-        for (AbstractQualifier t : qualifierBounds.get(BoundKind.EQUAL)) {
+        for (AbstractQualifier t : getQualifierBoundsOfKind(BoundKind.EQUAL)) {
           if (!s.equals(t)) {
             constraints.add(new QualifierTyping(s, t, Kind.QUALIFIER_SUBTYPE));
           }
         }
       }
       case UPPER -> {
-        for (AbstractQualifier t : qualifierBounds.get(BoundKind.EQUAL)) {
+        for (AbstractQualifier t : getQualifierBoundsOfKind(BoundKind.EQUAL)) {
           if (!s.equals(t)) {
             constraints.add(new QualifierTyping(t, s, Kind.QUALIFIER_SUBTYPE));
           }
@@ -136,7 +146,7 @@ public class QualifierVar extends AbstractQualifier {
     }
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.UPPER) {
-      for (AbstractQualifier t : qualifierBounds.get(BoundKind.LOWER)) {
+      for (AbstractQualifier t : getQualifierBoundsOfKind(BoundKind.LOWER)) {
         if (!s.equals(t)) {
           constraints.add(new QualifierTyping(t, s, Kind.QUALIFIER_SUBTYPE));
         }
@@ -144,7 +154,7 @@ public class QualifierVar extends AbstractQualifier {
     }
 
     if (kind == BoundKind.EQUAL || kind == BoundKind.LOWER) {
-      for (AbstractQualifier t : qualifierBounds.get(BoundKind.UPPER)) {
+      for (AbstractQualifier t : getQualifierBoundsOfKind(BoundKind.UPPER)) {
         if (!s.equals(t)) {
           constraints.add(new QualifierTyping(s, t, Kind.QUALIFIER_SUBTYPE));
         }
@@ -162,7 +172,7 @@ public class QualifierVar extends AbstractQualifier {
   @Nullable AnnotationMirror getInstantiation() {
     if (instantiation == null) {
       AnnotationMirror lub = null;
-      for (AbstractQualifier lower : qualifierBounds.get(BoundKind.LOWER)) {
+      for (AbstractQualifier lower : getQualifierBoundsOfKind(BoundKind.LOWER)) {
         if (lower instanceof Qualifier ql) {
           if (lub != null) {
             lub =
@@ -180,7 +190,7 @@ public class QualifierVar extends AbstractQualifier {
         return instantiation;
       }
       AnnotationMirror glb = null;
-      for (AbstractQualifier upper : qualifierBounds.get(BoundKind.UPPER)) {
+      for (AbstractQualifier upper : getQualifierBoundsOfKind(BoundKind.UPPER)) {
         if (upper instanceof Qualifier qu) {
           if (glb != null) {
             glb =

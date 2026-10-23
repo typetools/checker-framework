@@ -157,9 +157,9 @@ public class Java8InferenceContext {
   public void addLambdaParamTargets(
       List<? extends VariableTree> parameters, AbstractType lambdaTargetType) {
     for (int i = 0; i < parameters.size(); i++) {
-      lambdaParamTargets.put(
-          TreeUtils.elementFromDeclaration(parameters.get(i)),
-          new LambdaParamTarget(lambdaTargetType, i));
+      VariableElement paramElt = TreeUtils.elementFromDeclaration(parameters.get(i));
+      assert paramElt != null : "@AssumeAssertion(nullness): javac attributed the lambda";
+      lambdaParamTargets.put(paramElt, new LambdaParamTarget(lambdaTargetType, i));
     }
   }
 

@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Regex Checker for regular expression syntax}{regex-checker}
 
 The Regex Checker prevents, at compile time, use of syntactically invalid
@@ -173,9 +172,7 @@ To use the \<RegexUtil> class, the \<checker-util.jar> file
 must be on the classpath at run time.
 
 \begin{figure}
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
 String regex = getRegexFromUser();
 if (! RegexUtil.isRegex(regex)) {
@@ -183,9 +180,7 @@ if (! RegexUtil.isRegex(regex)) {
 }
 Pattern p = Pattern.compile(regex);
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 \caption{Example use of \code{RegexUtil} methods.}
 \label{fig-regex-util-example}
 \end{figure}

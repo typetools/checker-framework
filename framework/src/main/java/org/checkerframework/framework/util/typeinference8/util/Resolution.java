@@ -16,11 +16,13 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.types.AbstractQualifier;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.CaptureVariable;
 import org.checkerframework.framework.util.typeinference8.types.Dependencies;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -252,7 +254,7 @@ public final class Resolution {
    *     as}
    */
   private static boolean hasUnresolvedEqualBoundToCaptureWithin(Variable v, Set<Variable> as) {
-    for (AbstractType t : v.getBounds().bounds.get(VariableBounds.BoundKind.EQUAL)) {
+    for (AbstractType t : v.getBounds().getBoundsOfKind(VariableBounds.BoundKind.EQUAL)) {
       for (Variable mentioned : t.getInferenceVariables()) {
         if (mentioned.isCaptureVariable()
             && as.contains(mentioned)
@@ -355,7 +357,7 @@ public final class Resolution {
    * Resolves {@code ai} by instantiating it to the greatest lower bound of its proper upper bounds.
    *
    * @param ai a variable to resolve
-   * @param upperBounds {@code ai}'s set of proper upper bounds
+   * @param upperBounds {@code ai}'s nonempty set of proper upper bounds
    */
   private void resolveWithUpperBounds(Variable ai, Set<ProperType> upperBounds) {
     ProperType ti = null;
@@ -376,6 +378,7 @@ public final class Resolution {
     if (useRuntimeException) {
       ti = context.inferenceTypeFactory.getRuntimeException();
     }
+    assert ti != null : "@AssumeAssertion(nullness): upperBounds is nonempty";
     ai.getBounds().addBound(null, BoundKind.EQUAL, ti);
   }
 
@@ -383,12 +386,37 @@ public final class Resolution {
    * Resolve {@code ai} by instantiating it to the least upper bound of its proper lower bounds.
    *
    * @param ai a variable to resolve
-   * @param lowerBounds {@code ai}'s set of proper lower bounds
+   * @param lowerBounds {@code ai}'s nonempty set of proper lower bounds
    */
   private void resolveWithLowerBounds(Variable ai, Set<ProperType> lowerBounds) {
+    ai.getBounds().addBound(null, BoundKind.EQUAL, lubOfLowerBounds(ai, lowerBounds, context));
+  }
+
+  /**
+   * Returns the least upper bound of {@code lowerBounds}, with the qualifier lower bounds of {@code
+   * ai} applied.
+   *
+   * <p>Applying the qualifier lower bounds lubs them into the least upper bound of {@code
+   * lowerBounds}. If that type is not a type variable, its primary annotations become their least
+   * upper bound with the qualifier lower bounds. If that type is a type variable, the primary
+   * annotations of its lower bound change in the same way, and its own primary annotations are
+   * unchanged.
+   *
+   * <p>The result may share its AnnotatedTypeMirror with an element of {@code lowerBounds}, which
+   * is stored in a hash set of bounds. Callers must not mutate the result.
+   *
+   * @param ai a variable
+   * @param lowerBounds a nonempty set of proper types, each of which is a lower bound of {@code ai}
+   * @param context the context
+   * @return the least upper bound of {@code lowerBounds}, with the qualifier lower bounds of {@code
+   *     ai} applied
+   */
+  private static ProperType lubOfLowerBounds(
+      Variable ai, Set<ProperType> lowerBounds, Java8InferenceContext context) {
     ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
+    assert lubProperType != null : "@AssumeAssertion(nullness): lowerBounds is nonempty";
     Set<AbstractQualifier> qualifierLowerBounds =
-        ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
+        ai.getBounds().getQualifierBoundsOfKind(BoundKind.LOWER);
     if (!qualifierLowerBounds.isEmpty()) {
       // `lub` may return a type that shares its AnnotatedTypeMirror with one of `lowerBounds`,
       // which is still stored in a hash set of bounds.  Replacing annotations in place would
@@ -398,7 +426,7 @@ public final class Resolution {
               lubProperType.create(
                   lubProperType.getAnnotatedType().deepCopy(), lubProperType.ignoreAnnotations);
       QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
-      Set<AnnotationMirror> lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
+      AnnotationMirrorSet lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
       if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
         Set<? extends AnnotationMirror> newLubAnnos =
             qh.leastUpperBoundsQualifiersOnly(
@@ -413,7 +441,7 @@ public final class Resolution {
         lubTV.getLowerBound().replaceAnnotations(newLubAnnos);
       }
     }
-    ai.getBounds().addBound(null, BoundKind.EQUAL, lubProperType);
+    return lubProperType;
   }
 
   /**
@@ -441,6 +469,20 @@ public final class Resolution {
       }
       asList.add(ai);
       Set<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
+      if (ai instanceof CaptureVariable captureVariable) {
+        // See CaptureVariable#getWildcardLowerBound.
+        AbstractType wildcardLowerBound = captureVariable.getWildcardLowerBound();
+        if (wildcardLowerBound != null) {
+          wildcardLowerBound = wildcardLowerBound.applyInstantiations();
+          // `ai` depends on every variable in the capture bound, including those in
+          // `wildcardLowerBound` (see BoundSet#getDependencies), so any variable still in it is
+          // being resolved in this same set.  Like any other lower bound that is not proper, it
+          // is not used (JLS 18.4).
+          if (wildcardLowerBound.isProper()) {
+            lowerBounds.add((ProperType) wildcardLowerBound);
+          }
+        }
+      }
       ProperType lowerBound = context.inferenceTypeFactory.lub(lowerBounds);
       if (lowerBound != null) {
         // The annotated type is mutated below and by `createFreshTypeVariable`, but `lub` may
@@ -455,7 +497,7 @@ public final class Resolution {
 
       Set<? extends AnnotationMirror> lowerBoundAnnos;
       Set<AbstractQualifier> qualifierLowerBounds =
-          ai.getBounds().qualifierBounds.get(BoundKind.LOWER);
+          ai.getBounds().getQualifierBoundsOfKind(BoundKind.LOWER);
       if (!qualifierLowerBounds.isEmpty()) {
         QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
         lowerBoundAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
@@ -480,6 +522,8 @@ public final class Resolution {
       }
 
       Set<AbstractType> upperBounds = ai.getBounds().upperBounds();
+      // Omit bounds that mention variables outside `as`, such as `alpha` in `ai <: alpha`.
+      upperBounds.removeIf(u -> !as.containsAll(u.getInferenceVariables()));
       AbstractType upperBound = context.inferenceTypeFactory.glb(upperBounds);
       if (upperBound != null) {
         // `glb` returns its argument when `upperBounds` is a singleton, and that type is still
@@ -490,7 +534,7 @@ public final class Resolution {
       }
       Set<? extends AnnotationMirror> upperBoundAnnos;
       Set<AbstractQualifier> qualifierUpperBounds =
-          ai.getBounds().qualifierBounds.get(BoundKind.UPPER);
+          ai.getBounds().getQualifierBoundsOfKind(BoundKind.UPPER);
       if (!qualifierUpperBounds.isEmpty()) {
         upperBoundAnnos = AbstractQualifier.glb(qualifierUpperBounds, context);
         if (upperBound != null) {

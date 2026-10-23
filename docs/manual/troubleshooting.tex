@@ -1,4 +1,3 @@
-\htmlhr
 \chapterAndLabel{Troubleshooting, getting help, and contributing}{troubleshooting}
 
 \begin{sloppypar}
@@ -38,16 +37,12 @@ to doing its normal processing.
 
 If you get the following error while compiling the Checker Framework itself:
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
 checker-framework/stubparser/dist/stubparser.jar(org/checkerframework/stubparser/ast/CompilationUnit.class):
 warning: [classfile] Signature attribute introduced in version 49.0 class files is ignored in version 46.0 class files
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 \noindent
 and you have used Eclipse to compile the Checker Framework, then probably
@@ -76,15 +71,11 @@ This section describes some possible problems and solutions.
 \item
 If you get the error
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
 com.sun.tools.javac.code.Symbol$CompletionFailure: class file for com.sun.source.tree.Tree not found
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 \noindent
 then you are using the source installation and file \code{tools.jar} is not
@@ -94,9 +85,7 @@ on your classpath.  See the installation instructions
 \item
 If you get an error like one of the following,
 
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
 ...\build.xml:59: Error running ${env.CHECKERFRAMEWORK}\checker\bin\javac.bat compiler
 \end{Verbatim}
@@ -108,9 +97,7 @@ If you get an error like one of the following,
 \begin{Verbatim}
 error: Annotation processor 'org.checkerframework.checker.signedness.SignednessChecker' not found
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 \noindent
 then the problem may be that you have not set the \code{CHECKERFRAMEWORK} environment
@@ -734,7 +721,6 @@ sudo apt -qqy install \
   devscripts \
   dia \
   graphviz \
-  hevea \
   imagemagick \
   junit \
   latexmk \
@@ -742,9 +728,11 @@ sudo apt -qqy install \
   libasound2-dev libcups2-dev libfontconfig1-dev \
   libx11-dev libxext-dev libxrender-dev libxrandr-dev libxtst-dev libxt-dev \
   pdf2svg \
+  poppler-utils \
   rsync \
   shellcheck \
   shfmt \
+  texlive-extra-utils \
   texlive-font-utils \
   texlive-fonts-recommended \
   texlive-latex-base \
@@ -772,15 +760,11 @@ In a startup file, write:
 % Can someone give a simpler command?
 % Command taken from:
 %   https://github.com/typetools/checker-framework/blob/master/checker/bin-devel/clone-related.sh
-%BEGIN LATEX
 \begin{smaller}
-%END LATEX
 \begin{Verbatim}
   export JAVA_HOME=${JAVA_HOME:-$(dirname "$(dirname "$(readlink -f "$(which javac)")")")}
 \end{Verbatim}
-%BEGIN LATEX
 \end{smaller}
-%END LATEX
 
 \item[macOS]
 \label{building-prerequisites-macos}
@@ -789,23 +773,13 @@ In a startup file, write:
 
 \begin{Verbatim}
 brew update
-brew install git graphviz ant hevea maven librsvg unzip make
+brew install git graphviz ant maven librsvg poppler unzip make
 brew install --cask temurin17
 brew install --cask mactex
 \end{Verbatim}
 
 Note: Running \<brew install --cask temurin17> is only necessary if you do not
 already have a JDK that is compatible with the Checker Framework installed.
-
-Make a \<latex> directory and copy the \<hevea.sty> file into it.
-(\url{https://hevea.inria.fr/} gives the current version number.)
-
-\begin{Verbatim}
-mkdir -p $HOME/Library/texmf/tex/latex
-cp -p /opt/homebrew/Cellar/hevea/2.38/lib/hevea/hevea.sty $HOME/Library/texmf/tex/latex/
-\end{Verbatim}
-
-Note: If copy permission is denied, try \<sudo>.
 
 If \<echo \$JAVA\_HOME> outputs nothing (that is, if the \<JAVA\_HOME>
 environment variable is not set), then write the following
@@ -1367,7 +1341,7 @@ title.
 %%  LocalWords:  Asumu Takikawa Brotherston McArthur Luo Bayne Coblenz Lai
 %%  LocalWords:  Barros Athaydes Ren Oblak Heule Steph Trask Stalnaker
 %%  LocalWords:  toolset's typechecking LiteralKind reifiable plaintext
-%%  LocalWords:  astub homebrew hevea allTests AatfDoNotCache Java''
+%%  LocalWords:  astub homebrew allTests AatfDoNotCache Java''
 %%  LocalWords:  compileJava typedefs LPAR Tunable OIGJ sudo wanted''
 % LocalWords:  addStandardLiteralQualifiers AprintGitProperties checkers''
 % LocalWords:  expressions'' strings'' access'' intents'' ownership''
