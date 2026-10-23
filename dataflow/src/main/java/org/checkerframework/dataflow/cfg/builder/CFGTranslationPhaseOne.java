@@ -926,26 +926,26 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private TreeInfo getTreeInfo(Tree tree) {
     TypeMirror type = TreeUtils.typeOf(tree);
-    boolean unboxable = TypesUtils.isUnboxable(type, types);
+    boolean isUnboxable = TypesUtils.isUnboxable(type, types);
     TypeMirror unboxedType = TypesUtils.unboxedTypeOrSelf(type, types);
 
-    boolean bool = TypesUtils.isBooleanType(unboxedType);
-    boolean numeric = TypesUtils.isNumeric(unboxedType);
+    boolean isBoolean = TypesUtils.isBooleanType(unboxedType);
+    boolean isNumeric = TypesUtils.isNumeric(unboxedType);
 
     return new TreeInfo() {
       @Override
       public boolean isNumeric() {
-        return numeric;
+        return isNumeric;
       }
 
       @Override
       public boolean isUnboxable() {
-        return unboxable;
+        return isUnboxable;
       }
 
       @Override
       public boolean isBoolean() {
-        return bool;
+        return isBoolean;
       }
 
       @Override
