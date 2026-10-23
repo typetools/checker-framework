@@ -17,6 +17,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.typeinference8.bound.BoundSet;
 import org.checkerframework.framework.util.typeinference8.types.AbstractQualifier;
 import org.checkerframework.framework.util.typeinference8.types.AbstractType;
+import org.checkerframework.framework.util.typeinference8.types.CaptureVariable;
 import org.checkerframework.framework.util.typeinference8.types.Dependencies;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
@@ -393,6 +394,30 @@ public final class Resolution {
    * @param lowerBounds {@code ai}'s nonempty set of proper lower bounds
    */
   private void resolveWithLowerBounds(Variable ai, Set<ProperType> lowerBounds) {
+    ai.getBounds().addBound(null, BoundKind.EQUAL, lubOfLowerBounds(ai, lowerBounds, context));
+  }
+
+  /**
+   * Returns the least upper bound of {@code lowerBounds}, with the qualifier lower bounds of {@code
+   * ai} applied.
+   *
+   * <p>Applying the qualifier lower bounds lubs them into the least upper bound of {@code
+   * lowerBounds}. If that type is not a type variable, its primary annotations become their least
+   * upper bound with the qualifier lower bounds. If that type is a type variable, the primary
+   * annotations of its lower bound change in the same way, and its own primary annotations are
+   * unchanged.
+   *
+   * <p>The result may share its AnnotatedTypeMirror with an element of {@code lowerBounds}, which
+   * is stored in a hash set of bounds. Callers must not mutate the result.
+   *
+   * @param ai a variable
+   * @param lowerBounds a nonempty set of proper types, each of which is a lower bound of {@code ai}
+   * @param context the context
+   * @return the least upper bound of {@code lowerBounds}, with the qualifier lower bounds of {@code
+   *     ai} applied
+   */
+  private static ProperType lubOfLowerBounds(
+      Variable ai, Set<ProperType> lowerBounds, Java8InferenceContext context) {
     ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
     assert lubProperType != null : "@AssumeAssertion(nullness): lowerBounds is nonempty";
     Set<AbstractQualifier> qualifierLowerBounds =
@@ -421,7 +446,7 @@ public final class Resolution {
         lubTV.getLowerBound().replaceAnnotations(newLubAnnos);
       }
     }
-    ai.getBounds().addBound(null, BoundKind.EQUAL, lubProperType);
+    return lubProperType;
   }
 
   /**
@@ -449,6 +474,20 @@ public final class Resolution {
       }
       asList.add(ai);
       Set<ProperType> lowerBounds = ai.getBounds().findProperLowerBounds();
+      if (ai instanceof CaptureVariable captureVariable) {
+        // See CaptureVariable#getWildcardLowerBound.
+        AbstractType wildcardLowerBound = captureVariable.getWildcardLowerBound();
+        if (wildcardLowerBound != null) {
+          wildcardLowerBound = wildcardLowerBound.applyInstantiations();
+          // `ai` depends on every variable in the capture bound, including those in
+          // `wildcardLowerBound` (see BoundSet#getDependencies), so any variable still in it is
+          // being resolved in this same set.  Like any other lower bound that is not proper, it
+          // is not used (JLS 18.4).
+          if (wildcardLowerBound.isProper()) {
+            lowerBounds.add((ProperType) wildcardLowerBound);
+          }
+        }
+      }
       ProperType lowerBound = context.inferenceTypeFactory.lub(lowerBounds);
       if (lowerBound != null) {
         // The annotated type is mutated below and by `createFreshTypeVariable`, but `lub` may
