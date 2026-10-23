@@ -167,12 +167,7 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
         if (anm == null) {
           anm = rlTypeFactory.top;
         }
-        if (result.containsTwoStores()) {
-          result.getThenStore().insertValue(localExp, anm);
-          result.getElseStore().insertValue(localExp, anm);
-        } else {
-          result.getRegularStore().insertValue(localExp, anm);
-        }
+        insertIntoStores(result, localExp, anm);
       }
     }
   }
