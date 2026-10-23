@@ -20,12 +20,12 @@ import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
-import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.NullChkNode;
 import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
@@ -354,14 +354,12 @@ public class NullnessTransfer
   }
 
   @Override
-  public TransferResult<NullnessValue, NullnessStore> visitAssignment(
-      AssignmentNode n, TransferInput<NullnessValue, NullnessStore> p) {
-    TransferResult<NullnessValue, NullnessStore> result = super.visitAssignment(n, p);
-    // A switch without a null label throws NullPointerException if its selector is null.
-    if (n.throwsOnNullSelector()) {
-      makeNonNull(result, n.getExpression());
-      makeNonNull(result, n.getTarget());
-    }
+  public TransferResult<NullnessValue, NullnessStore> visitNullChk(
+      NullChkNode n, TransferInput<NullnessValue, NullnessStore> p) {
+    TransferResult<NullnessValue, NullnessStore> result = super.visitNullChk(n, p);
+    // A null check throws NullPointerException if its operand is null.
+    makeNonNull(result, n.getOperand());
+    refineToNonNull(result);
     return result;
   }
 
