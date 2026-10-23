@@ -39,13 +39,13 @@ public class PurityFunctionalOverride {
 
   void callsThroughSupertype(Super receiver, String s) {
     receiver.m(t -> t.length(), s);
-    // :: error: [purity.assign.field]
+    // :: error: [purity.assign.field] :: error: [purity.functional.argument]
     receiver.m(t -> count++, s);
   }
 
   void callsThroughSubtype(Sub receiver, String s) {
     receiver.m(t -> t.length(), s);
-    // :: error: [purity.assign.field]
+    // :: error: [purity.assign.field] :: error: [purity.functional.argument]
     receiver.m(t -> count++, s);
   }
 

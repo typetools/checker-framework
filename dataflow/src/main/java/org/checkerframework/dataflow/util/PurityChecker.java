@@ -150,20 +150,30 @@ public final class PurityChecker {
   }
 
   /**
-   * Returns the kinds of purity that a method promises for the functional method of its
-   * functional-interface parameters. At a call to {@code method}, each argument passed to a
-   * functional-interface parameter is required to have those kinds, so within the body the
-   * parameters may be assumed to have them.
+   * Returns the purity that {@code method} requires of every argument passed to one of its
+   * functional-interface parameters: the purity kinds of {@code method}'s own purity annotations,
+   * plus side-effect-freedom if {@code method} has or inherits {@code @SideEffectsOnly}. The result
+   * is one set that applies to all of {@code method}'s functional-interface parameters alike. It
+   * depends only on {@code method}'s annotations, not on which parameter is in question, nor on
+   * whether the body ever calls that parameter's functional method.
    *
-   * <p>A {@code @SideEffectsOnly} method may modify the listed expressions, but the code it is
-   * handed may not modify anything. A method inherits {@code @SideEffectsOnly} from the methods
-   * that it overrides, though {@code @SideEffectsOnly} is not inherited as an annotation.
+   * <p>Per-parameter computations refine this set. At a call to {@code method}, an argument is not
+   * required to have a kind that the parameter's functional method already promises, nor to be
+   * deterministic if it is side-effect-free and returns no value. Within the body, a call to a
+   * parameter's functional method may assume the purity computed by {@link
+   * #functionalParameterPurity}, which also accounts for the methods that {@code method} overrides.
+   *
+   * <p>A {@code @SideEffectsOnly} method may modify the listed expressions, but each argument
+   * passed to one of its functional-interface parameters is required to be side-effect-free. A
+   * method inherits {@code @SideEffectsOnly} from the methods that it overrides, though
+   * {@code @SideEffectsOnly} is not inherited as an annotation.
    *
    * @param annoProvider the annotation provider
    * @param method a method or constructor, or null
    * @param env the processing environment
-   * @return the purity kinds that {@code method} requires of its functional-interface arguments;
-   *     empty if {@code method} is null or has no purity annotation
+   * @return the purity kinds that {@code method} requires of every argument to one of its
+   *     functional-interface parameters; empty if {@code method} is null or has no purity
+   *     annotation
    */
   public static EnumSet<PurityKind> functionalParameterKinds(
       AnnotationProvider annoProvider,
@@ -172,7 +182,7 @@ public final class PurityChecker {
     if (method == null) {
       return EnumSet.noneOf(PurityKind.class);
     }
-    EnumSet<PurityKind> result = EnumSet.copyOf(PurityUtils.getPurityKinds(annoProvider, method));
+    EnumSet<PurityKind> result = PurityUtils.getPurityKinds(annoProvider, method);
     if (!result.contains(PurityKind.SIDE_EFFECT_FREE)
         && hasOrInheritsSideEffectsOnly(annoProvider, method, env)) {
       result.add(PurityKind.SIDE_EFFECT_FREE);
@@ -616,14 +626,6 @@ public final class PurityChecker {
     private final @Nullable ProcessingEnvironment env;
 
     /**
-     * The purity that {@link #enclosingMethod} promises for the functional method of its
-     * functional-interface parameters, before accounting for the methods that it overrides. Empty
-     * if there is no enclosing method or it has no purity annotation, in which case no call gets
-     * the assumption.
-     */
-    private final EnumSet<PurityKind> functionalParameterKinds;
-
-    /**
      * True if all methods should be assumed to be @SideEffectFree, for the purposes of
      * org.checkerframework.dataflow analysis.
      */
@@ -662,11 +664,6 @@ public final class PurityChecker {
       this.annoProvider = annoProvider;
       this.enclosingMethod = enclosingMethod;
       this.env = env;
-      this.functionalParameterKinds =
-          enclosingMethod == null || env == null
-              ? EnumSet.noneOf(PurityKind.class)
-              : functionalParameterKinds(
-                  annoProvider, TreeUtils.elementFromDeclaration(enclosingMethod), env);
       this.assumeSideEffectFree = assumeSideEffectFree;
       this.assumeDeterministic = assumeDeterministic;
       this.assumePureGetters = assumePureGetters;
@@ -686,8 +683,8 @@ public final class PurityChecker {
     private EnumSet<PurityKind> functionalParameterCallPurity(
         MethodInvocationTree tree, ExecutableElement invoked) {
       ProcessingEnvironment env = this.env;
-      if (functionalParameterKinds.isEmpty() || env == null) {
-        // There is no enclosing method, or it promises nothing.
+      if (env == null) {
+        // There is no enclosing method.
         return EnumSet.noneOf(PurityKind.class);
       }
       return PurityChecker.functionalParameterCallPurity(
@@ -769,8 +766,7 @@ public final class PurityChecker {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void ignore) {
       ExecutableElement elt = TreeUtils.elementFromUse(tree);
-      EnumSet<PurityKind> callPurityKinds =
-          EnumSet.copyOf(PurityUtils.getPurityKinds(annoProvider, elt));
+      EnumSet<PurityKind> callPurityKinds = PurityUtils.getPurityKinds(annoProvider, elt);
       callPurityKinds.addAll(functionalParameterCallPurity(tree, elt));
       boolean pureGetter = assumePureGetters && ElementUtils.isGetter(elt);
       if (assumeSideEffectFree || pureGetter) {

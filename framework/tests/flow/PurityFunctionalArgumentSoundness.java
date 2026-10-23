@@ -31,6 +31,7 @@ public class PurityFunctionalArgumentSoundness {
   void escapingParameter(@Odd String p) {
     SideEffectFreeSupplier s =
         wrap(
+            // :: error: [purity.functional.argument]
             x -> {
               // :: error: [purity.assign.field]
               field = "";
