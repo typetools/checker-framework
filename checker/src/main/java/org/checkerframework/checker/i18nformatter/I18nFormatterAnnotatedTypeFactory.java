@@ -3,17 +3,10 @@ package org.checkerframework.checker.i18nformatter;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
-import java.util.ResourceBundle;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormat;
@@ -22,6 +15,7 @@ import org.checkerframework.checker.i18nformatter.qual.I18nFormatFor;
 import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nUnknownFormat;
 import org.checkerframework.checker.i18nformatter.util.I18nFormatUtil;
+import org.checkerframework.checker.propkey.PropertyFileUtils;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -35,7 +29,6 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypeSystemError;
-import org.plumelib.reflection.Signatures;
 
 /**
  * Adds {@link I18nFormat} to the type of tree, if it is a {@code String} or {@code char} literal
@@ -94,72 +87,19 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
    */
   private Map<String, String> buildLookup() {
     Map<String, String> result = new HashMap<>();
-
-    if (checker.hasOption("propfiles")) {
-      for (String propfile : checker.getStringsOption("propfiles", File.pathSeparator)) {
-        Properties prop = new Properties();
-        ClassLoader cl = this.getClass().getClassLoader();
-        if (cl == null) {
-          // The class loader is null if the system class loader was used.
-          cl = ClassLoader.getSystemClassLoader();
-        }
-        try (InputStream in = cl.getResourceAsStream(propfile)) {
-          if (in != null) {
-            prop.load(in);
-          } else {
-            // If the classloader didn't manage to load the file, try whether a
-            // FileInputStream works. For absolute paths this might help.
-            try (InputStream fis = Files.newInputStream(Paths.get(propfile))) {
-              prop.load(fis);
-            } catch (FileNotFoundException e) {
-              // The Property Key Checker's `propertykeychecker.filenotfound` message key
-              // describes this problem, but it cannot be used here: issuing a diagnostic
-              // requires an AST node, and this problem is not associated with one.
-              System.err.println("Couldn't find the properties file: " + propfile);
-              continue;
-            }
-          }
-
-          for (String key : prop.stringPropertyNames()) {
-            result.put(key, prop.getProperty(key));
-          }
-        } catch (Exception e) {
-          // TODO: is there a nicer way to report messages, that are not connected to
-          // an AST node?  One cannot use `report`, because it needs a node.
-          System.err.println(
-              "Exception in PropertyKeyChecker.keysOfPropertyFile while processing "
-                  + propfile
-                  + ": "
-                  + e);
-          e.printStackTrace();
-        }
-      }
+    for (Map.Entry<String, Object> entry :
+        PropertyFileUtils.load(
+                checker.hasOption("propfiles")
+                    ? checker.getStringsOption("propfiles", File.pathSeparator)
+                    : Collections.emptyList(),
+                checker.hasOption("bundlenames")
+                    ? checker.getStringsOption("bundlenames", ':')
+                    : Collections.emptyList(),
+                getClass(),
+                System.err::println)
+            .entrySet()) {
+      result.put(entry.getKey(), (String) entry.getValue());
     }
-
-    if (checker.hasOption("bundlenames")) {
-      for (String bundleName : checker.getStringsOption("bundlenames", ':')) {
-        if (!Signatures.isBinaryName(bundleName)) {
-          System.err.println(
-              "Malformed resource bundle: <" + bundleName + "> should be a binary name.");
-          continue;
-        }
-        ResourceBundle bundle = ResourceBundle.getBundle(bundleName);
-        if (bundle == null) {
-          System.err.println(
-              "Couldn't find the resource bundle: <"
-                  + bundleName
-                  + "> for locale <"
-                  + Locale.getDefault()
-                  + ">.");
-          continue;
-        }
-
-        for (String key : bundle.keySet()) {
-          result.put(key, bundle.getString(key));
-        }
-      }
-    }
-
     return result;
   }
 
