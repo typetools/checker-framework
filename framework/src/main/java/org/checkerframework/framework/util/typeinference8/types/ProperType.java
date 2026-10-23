@@ -55,9 +55,9 @@ public class ProperType extends AbstractType {
   private final Collection<Variable> originVariables;
 
   /**
-   * If {@link #origin} is non-null, the value of {@link #originInstantiationStamp} when this type
-   * was last found to be up to date; otherwise, 0. It is not used by {@link #equals} or {@link
-   * #hashCode}.
+   * If {@link #origin} is non-null, the value of {@link #instantiationStamp} for {@link
+   * #originVariables} when this type was last found to be up to date; otherwise, 0. It is not used
+   * by {@link #equals} or {@link #hashCode}.
    */
   private long originStamp;
 
@@ -121,7 +121,7 @@ public class ProperType extends AbstractType {
     this.origin = origin;
     this.originVariables =
         origin == null ? Collections.emptyList() : origin.getInferenceVariables();
-    this.originStamp = originInstantiationStamp();
+    this.originStamp = instantiationStamp(originVariables);
     verifyType(this.type);
   }
 
@@ -158,15 +158,14 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns a number that changes whenever the instantiation of a variable that {@link #origin}
-   * mentions changes.
+   * Returns a number that changes whenever the instantiation of one of {@code variables} changes.
    *
-   * @return a number that changes whenever the instantiation of a variable that {@link #origin}
-   *     mentions changes
+   * @param variables inference variables
+   * @return a number that changes whenever the instantiation of one of {@code variables} changes
    */
-  private long originInstantiationStamp() {
+  private static long instantiationStamp(Collection<Variable> variables) {
     long stamp = 0;
-    for (Variable variable : originVariables) {
+    for (Variable variable : variables) {
       stamp += variable.getBounds().getInstantiationChanges();
     }
     return stamp;
@@ -562,7 +561,7 @@ public class ProperType extends AbstractType {
    */
   @Override
   public AbstractType applyInstantiations() {
-    if (origin == null || originInstantiationStamp() == originStamp) {
+    if (origin == null || instantiationStamp(originVariables) == originStamp) {
       return this;
     }
     AbstractType result = origin.applyInstantiations();
@@ -579,7 +578,7 @@ public class ProperType extends AbstractType {
       // Nothing that this type depends on has changed.  Returning this type, rather than an
       // equal new one, tells the caller so; otherwise, two variables whose instantiations mention
       // each other would make each other change forever.
-      originStamp = originInstantiationStamp();
+      originStamp = instantiationStamp(originVariables);
       return this;
     }
     return new ProperType(
