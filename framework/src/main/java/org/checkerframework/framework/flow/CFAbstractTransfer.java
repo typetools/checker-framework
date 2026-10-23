@@ -30,6 +30,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.common.aliasing.AliasingAnnotatedTypeFactory;
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.ForwardTransferFunction;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -988,10 +989,10 @@ public abstract class CFAbstractTransfer<
           && lhsLvn2.getElement().getKind() == ElementKind.PARAMETER) {
         // lhs is a formal parameter of some method
         VariableElement param = lhsLvn2.getElement();
-        analysis
-            .atypeFactory
-            .getWholeProgramInference()
-            .updateFromFormalParameterAssignment(lhsLvn2, rhs, param);
+        WholeProgramInference wpi = analysis.atypeFactory.getWholeProgramInference();
+        assert wpi != null
+            : "@AssumeAssertion(nullness): shouldPerformWholeProgramInference returned true";
+        wpi.updateFromFormalParameterAssignment(lhsLvn2, rhs, param);
       }
     }
 
