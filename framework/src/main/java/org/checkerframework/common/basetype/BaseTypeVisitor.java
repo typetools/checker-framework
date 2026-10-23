@@ -4764,8 +4764,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * {@code @SideEffectsOnly} annotations, even if the method writes no annotation of its own:
      * such a method inherits the union of what the supertypes permit, which is more than either one
      * of them permits. See {@code AnnotatedTypeFactory.getSideEffectsOnlyExpressionMap}.
+     *
+     * <p>Like {@link #checkMethodReferencePurity}, this runs only under {@code
+     * -AcheckPurityAnnotations}, {@code -AsuggestPureMethods}, or {@code -Ainfer}.
      */
     private void checkSideEffectsOnly() {
+      if (!checkPurityAnnotations) {
+        return;
+      }
       if (isMethodReference) {
         // TODO: Check a method reference against the `@SideEffectsOnly` annotation of the
         // functional interface method.  The two annotations are written in unrelated scopes:  the
@@ -4779,7 +4785,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (overriddenExpressionStrings == null) {
         // The overridden method has no `@SideEffectsOnly` annotation, so it permits every side
         // effect that the overriding method might have.  (If the overridden method is
-        // `@SideEffectFree` or `@Pure`, `checkPurity` has already compared the two methods.)
+        // `@SideEffectFree` or `@Pure`, the overriding method inherits that annotation, and
+        // `BaseTypeVisitor.checkPurityAnnotations` checks the overriding method against it.)
         return;
       }
       ExecutableElement overriderElement = overrider.getElement();
