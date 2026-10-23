@@ -131,6 +131,25 @@ public abstract class AbstractAnalysis<
     this.worklist = new Worklist(this.direction);
   }
 
+  @Override
+  public void performAnalysis(ControlFlowGraph cfg) {
+    if (isRunning) {
+      throw new BugInCF("performAnalysis() shouldn't be called when the analysis is running.");
+    }
+    isRunning = true;
+    try {
+      init(cfg);
+      while (!worklist.isEmpty()) {
+        Block block = worklist.remove();
+        performAnalysisBlock(block);
+      }
+    } finally {
+      assert isRunning;
+      // In case performAnalysisBlock crashed, reset isRunning to false.
+      isRunning = false;
+    }
+  }
+
   /** Initialize the transfer inputs of every basic block before performing the analysis. */
   @RequiresNonNull("cfg")
   protected abstract void initInitialInputs();
