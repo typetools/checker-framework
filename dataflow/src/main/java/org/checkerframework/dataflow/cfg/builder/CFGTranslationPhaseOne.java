@@ -900,10 +900,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       MethodInvocationTree primValueCall = treeBuilder.buildMethodInvocation(primValueSelect);
       handleArtificialTree(primValueCall);
-      Node unboxed =
+      MethodInvocationNode unboxed =
           new MethodInvocationNode(
               primValueCall, primValueAccess, Collections.emptyList(), getCurrentPath());
       unboxed.setInSource(false);
+      unboxed.setIsUnboxing(true);
 
       // Add Throwable to account for unchecked exceptions
       addToConvertedLookupMap(node.getTree(), unboxed);
@@ -3261,6 +3262,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // TODO: lock the receiver for synchronized methods
 
     MethodInvocationNode node = new MethodInvocationNode(tree, target, arguments, getCurrentPath());
+    if (isUnboxingMethod(method)) {
+      // An explicit call such as `b.booleanValue()` is equivalent to unboxing `b`.
+      node.setIsUnboxing(true);
+    }
 
     ExtendedNode extendedNode = extendWithMethodInvocationNode(method, node);
 
@@ -3271,6 +3276,23 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendedNode.setTerminatesExecution(true);
     }
     return node;
+  }
+
+  /**
+   * Returns true if the given method is the method that unboxes a value of its boxed primitive
+   * type, such as {@code Boolean.booleanValue()} or {@code Integer.intValue()}, but not {@code
+   * Integer.longValue()}.
+   *
+   * @param method a method
+   * @return true if the method unboxes a value of the class that declares it
+   */
+  private boolean isUnboxingMethod(ExecutableElement method) {
+    if (ElementUtils.isStatic(method) || !method.getParameters().isEmpty()) {
+      return false;
+    }
+    TypeMirror declaringType = ElementUtils.enclosingTypeElement(method).asType();
+    return TypesUtils.isBoxedPrimitive(declaringType)
+        && method.getSimpleName().contentEquals(types.unboxedType(declaringType) + "Value");
   }
 
   /**
