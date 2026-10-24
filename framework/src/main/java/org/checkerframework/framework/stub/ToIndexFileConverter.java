@@ -816,8 +816,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @return the declaration of the first element of {@code identifiers}, or null
    */
   private static @Nullable Node firstDeclarationAt(Node n, String[] identifiers) {
-    if (identifiers.length == 1 && n instanceof NodeWithTypeParameters) {
-      for (TypeParameter typeParam : ((NodeWithTypeParameters<?>) n).getTypeParameters()) {
+    if (identifiers.length == 1 && n instanceof NodeWithTypeParameters<?> nodeWithTypeParams) {
+      for (TypeParameter typeParam : nodeWithTypeParams.getTypeParameters()) {
         if (typeParam.getNameAsString().equals(identifiers[0])) {
           return typeParam;
         }
