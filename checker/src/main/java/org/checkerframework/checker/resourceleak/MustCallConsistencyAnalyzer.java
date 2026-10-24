@@ -1747,7 +1747,7 @@ public class MustCallConsistencyAnalyzer {
     Preconditions.checkArgument(
         callNode instanceof MethodInvocationNode || callNode instanceof ObjectCreationNode);
     List<Node> result = new ArrayList<>();
-    if (!cmAtf.hasMustCallAlias(getInvokedExecutable(callNode))) {
+    if (!cmAtf.hasMustCallAlias(callNode.getTree())) {
       return result;
     }
 
@@ -1799,38 +1799,24 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Returns the method or constructor that is invoked by a method or constructor invocation.
-   *
-   * <p>For the creation of an anonymous class, this method returns the superclass constructor that
-   * the anonymous constructor invokes. The anonymous constructor lacks the declaration annotations,
-   * such as {@code @Owning} and {@code @MustCallAlias}, that the programmer wrote on the superclass
-   * constructor; and for {@code outer.new Inner(...) {...}} it has an extra first parameter for the
-   * enclosing instance {@code outer}, which is not among the arguments.
-   *
-   * @param node a method invocation or object creation node
-   * @return the method or constructor being invoked
-   */
-  private ExecutableElement getInvokedExecutable(Node node) {
-    if (node instanceof MethodInvocationNode invocationNode) {
-      return TreeUtils.elementFromUse(invocationNode.getTree());
-    } else if (node instanceof ObjectCreationNode ocn) {
-      return TreeUtils.getSuperConstructor(ocn.getTree());
-    } else {
-      throw new TypeSystemError("unexpected node type " + node.getClass());
-    }
-  }
-
-  /**
    * Returns the elements representing the formal parameters of a method or constructor, from an
-   * invocation of that method or constructor. For the creation of an anonymous class, they are the
-   * parameters of the superclass constructor; see {@link #getInvokedExecutable}.
+   * invocation of that method or constructor.
    *
    * @param node a method invocation or object creation node
    * @return a list of the declarations of the formal parameters of the method or constructor being
    *     invoked
    */
   /*package-private*/ List<? extends VariableElement> getParametersOfInvocation(Node node) {
-    return getInvokedExecutable(node).getParameters();
+    ExecutableElement executableElement;
+    if (node instanceof MethodInvocationNode invocationNode) {
+      executableElement = TreeUtils.elementFromUse(invocationNode.getTree());
+    } else if (node instanceof ObjectCreationNode ocn2) {
+      executableElement = TreeUtils.elementFromUse(ocn2.getTree());
+    } else {
+      throw new TypeSystemError("unexpected node type " + node.getClass());
+    }
+
+    return executableElement.getParameters();
   }
 
   /**

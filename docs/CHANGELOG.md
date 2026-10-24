@@ -9,13 +9,6 @@
 
 ### Changes for type system implementers
 
-For the creation of an anonymous class, the arguments of an `ObjectCreationNode`
-correspond to the parameters of the superclass constructor, even for an anonymous
-class with an explicit enclosing expression such as `outer.new Inner(...) {...}`.
-
-`CFGTranslationPhaseOne.convertCallArguments` takes a list of formal parameter
-types rather than an `ExecutableType`.
-
 ### Closed issues
 
 ## Version 4.3.1 (2026-10-08)
