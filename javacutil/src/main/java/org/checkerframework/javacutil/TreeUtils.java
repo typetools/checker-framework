@@ -1037,6 +1037,23 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns the value of the given expression, if it is a constant expression (JLS 15.29) of type
+   * {@code String}. Constant expressions include literals, references to constant variables (JLS
+   * 4.12.4), and concatenations of constant expressions.
+   *
+   * @param tree an expression
+   * @return the value of the expression if it is a constant expression of type {@code String}, or
+   *     null otherwise
+   */
+  public static @Nullable String stringConstantValue(ExpressionTree tree) {
+    Type type = ((JCTree) tree).type;
+    if (type != null && type.constValue() instanceof String s) {
+      return s;
+    }
+    return null;
+  }
+
+  /**
    * Returns the receiver tree of a field access or a method invocation.
    *
    * @param expression a field access or a method invocation
