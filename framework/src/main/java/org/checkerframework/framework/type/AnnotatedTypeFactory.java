@@ -2393,11 +2393,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param tree location to use
    * @return the enclosing type at the location of {@code tree} that is a subtype of {@code
    *     typeElement}
+   * @throws BugInCF if no type that encloses {@code tree} is a subtype of {@code typeElement}
    */
   public AnnotatedDeclaredType getEnclosingSubType(TypeElement typeElement, Tree tree) {
     AnnotatedDeclaredType thisType = getSelfType(tree);
-    while (!TypesUtils.isErasedSubtype(thisType.getUnderlyingType(), typeElement.asType(), types)) {
+    while (thisType != null
+        && !TypesUtils.isErasedSubtype(thisType.getUnderlyingType(), typeElement.asType(), types)) {
       thisType = thisType.getEnclosingType();
+    }
+    if (thisType == null) {
+      throw new BugInCF("No type that encloses %s is a subtype of %s", tree, typeElement);
     }
     return thisType;
   }
