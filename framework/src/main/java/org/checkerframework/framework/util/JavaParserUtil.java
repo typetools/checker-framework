@@ -1121,6 +1121,10 @@ public final class JavaParserUtil {
    * cannot be determined for a use of a type variable, an intersection type, a union type, {@code
    * var}, a wildcard, a type parameter declaration, or a type that is not on the classpath.
    *
+   * <p>For a class or interface type, the result is the type of the class or interface declaration,
+   * which ignores the type arguments that {@code type} has. For example, the result for {@code
+   * List<String>} is {@code java.util.List<E>}.
+   *
    * @param elements used for looking up names
    * @param types used for creating types
    * @param type a JavaParser type
@@ -1131,9 +1135,72 @@ public final class JavaParserUtil {
    */
   public static @Nullable TypeMirror typeToTypeMirror(
       Elements elements, Types types, Type type, Map<String, @Nullable TypeElement> cache) {
+    return typeToTypeMirror(elements, types, type, false, cache);
+  }
+
+  /**
+   * Returns the TypeMirror for the given JavaParser type, as {@link #typeToTypeMirror(Elements,
+   * Types, Type, Map)} does, except that a use of a type variable yields the TypeMirror for the
+   * type variable's upper bound. For example, given the declaration {@code class C<T extends
+   * Number>}, this method returns {@code java.lang.Number} for the type {@code T} and {@code
+   * java.lang.Number[]} for the type {@code T[]}.
+   *
+   * <p>The upper bound stands in for the type variable itself, which has no TypeMirror here,
+   * because a type variable has no {@code TypeElement} that {@code Elements} can look up. A caller
+   * that must distinguish a type variable from its bound should call {@link
+   * #resolveTypeNameAsTypeParameter(Elements, ClassOrInterfaceType, Map)}.
+   *
+   * <p>The result is not erased. Only a type variable that is the whole type, or the component type
+   * of an array type, is replaced. Like the result of {@link #typeToTypeMirror(Elements, Types,
+   * Type, Map)}, the result for a class or interface type is the type of its declaration, which may
+   * contain the declaration's own type variables, as in {@code java.lang.Comparable<T>} for the
+   * bound of {@code <U extends Comparable<U>>}. When a type variable's upper bound is an
+   * intersection type, which {@code Types} cannot create, this yields the intersection type's
+   * erasure -- that is, its leftmost bound. A caller that compares the result to another type
+   * should therefore erase it first.
+   *
+   * <p>Returns null if the TypeMirror cannot be determined: for the types for which {@link
+   * #typeToTypeMirror(Elements, Types, Type, Map)} returns null, other than a use of a type
+   * variable, and for a use of a type variable whose upper bound cannot be determined.
+   *
+   * @param elements used for looking up names
+   * @param types used for creating types
+   * @param type a JavaParser type
+   * @param cache maps a name to the type it names, or to null if it names no type; this method both
+   *     reads and writes it. See {@link #resolveTypeNameAsTypeElement(Elements,
+   *     ClassOrInterfaceType, Map)} for restrictions on it.
+   * @return the TypeMirror for {@code type}, with a type variable replaced by its upper bound, or
+   *     null if it cannot be determined
+   */
+  public static @Nullable TypeMirror typeToTypeMirrorUsingTypeVariableBounds(
+      Elements elements, Types types, Type type, Map<String, @Nullable TypeElement> cache) {
+    return typeToTypeMirror(elements, types, type, true, cache);
+  }
+
+  /**
+   * Returns the TypeMirror for the given JavaParser type, or null if it cannot be determined.
+   *
+   * @param elements used for looking up names
+   * @param types used for creating types
+   * @param type a JavaParser type
+   * @param useTypeVariableBounds if true, a use of a type variable yields the TypeMirror for the
+   *     type variable's upper bound, as in {@link
+   *     #typeToTypeMirrorUsingTypeVariableBounds(Elements, Types, Type, Map)}; if false, it yields
+   *     null, as in {@link #typeToTypeMirror(Elements, Types, Type, Map)}
+   * @param cache maps a name to the type it names, or to null if it names no type; this method both
+   *     reads and writes it
+   * @return the TypeMirror for {@code type}, or null if it cannot be determined
+   */
+  private static @Nullable TypeMirror typeToTypeMirror(
+      Elements elements,
+      Types types,
+      Type type,
+      boolean useTypeVariableBounds,
+      Map<String, @Nullable TypeElement> cache) {
     if (type instanceof ArrayType arrayType) {
       TypeMirror componentType =
-          typeToTypeMirror(elements, types, arrayType.getComponentType(), cache);
+          typeToTypeMirror(
+              elements, types, arrayType.getComponentType(), useTypeVariableBounds, cache);
       return componentType == null ? null : types.getArrayType(componentType);
     }
     if (type instanceof PrimitiveType primitiveType) {
@@ -1143,11 +1210,53 @@ public final class JavaParserUtil {
       return types.getNoType(TypeKind.VOID);
     }
     if (type instanceof ClassOrInterfaceType classType) {
-      TypeElement typeElt = resolveTypeNameAsTypeElement(elements, classType, cache);
-      return typeElt == null ? null : typeElt.asType();
+      ResolvedTypeName resolved = resolveTypeName(elements, classType, cache);
+      TypeElement typeElt = resolved.typeElement();
+      if (typeElt != null) {
+        return typeElt.asType();
+      }
+      TypeParameter typeParameter = resolved.typeParameter();
+      if (useTypeVariableBounds && typeParameter != null) {
+        return typeVariableUpperBound(elements, types, typeParameter, cache);
+      }
+      return null;
     }
     // An intersection type, a union type, `var`, a wildcard, a type parameter declaration, etc.
     return null;
+  }
+
+  /**
+   * Returns the TypeMirror for the upper bound of the given type variable declaration, or null if
+   * the upper bound cannot be determined.
+   *
+   * <p>When the upper bound is an intersection type, which {@code Types} cannot create, this
+   * returns the intersection type's erasure -- that is, its leftmost bound.
+   *
+   * @param elements used for looking up names
+   * @param types used for creating types
+   * @param typeParameter the declaration of a type variable
+   * @param cache maps a name to the type it names, or to null if it names no type; this method both
+   *     reads and writes it
+   * @return the TypeMirror for the upper bound of {@code typeParameter}, erased if that bound is an
+   *     intersection type, or null
+   */
+  private static @Nullable TypeMirror typeVariableUpperBound(
+      Elements elements,
+      Types types,
+      TypeParameter typeParameter,
+      Map<String, @Nullable TypeElement> cache) {
+    List<ClassOrInterfaceType> bounds = typeParameter.getTypeBound();
+    if (bounds.isEmpty()) {
+      // The implicit upper bound is `Object`.
+      TypeElement objectElt = getTypeElement(elements, "java.lang.Object", cache);
+      return objectElt == null ? null : objectElt.asType();
+    }
+    // If there are multiple bounds, the upper bound is an intersection type, which `Types` cannot
+    // create.  Use its leftmost bound, which is its erasure; that is sufficient for the clients of
+    // this method, which erase the type anyway.
+    // The bound may itself be a type variable, as in `<T extends U, U extends CharSequence>`; the
+    // recursion terminates because Java forbids a cycle among type variable bounds.
+    return typeToTypeMirror(elements, types, bounds.get(0), true, cache);
   }
 
   //
