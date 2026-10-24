@@ -1167,7 +1167,7 @@ public final class AnnotatedTypes {
 
   /**
    * Given an AnnotatedExecutableType of a method or constructor declaration, get the parameter type
-   * expected at the indexth position (unwrapping varargs if necessary).
+   * expected at the {@code index}th position (unwrapping varargs if necessary).
    *
    * @param methodType the type of a method or constructor containing the parameter to return
    * @param index position of the parameter type to return
@@ -1181,9 +1181,9 @@ public final class AnnotatedTypes {
 
   /**
    * Given the type of the method or constructor invoked by {@code invocation}, get the parameter
-   * type expected for the indexth argument of {@code invocation} (unwrapping varargs if necessary).
-   * Unlike {@link #getAnnotatedTypeMirrorOfParameter(AnnotatedExecutableType, int)}, this skips any
-   * parameter that does not correspond to an argument; see {@link
+   * type expected for the {@code index}th argument of {@code invocation} (unwrapping varargs if
+   * necessary). Unlike {@link #getAnnotatedTypeMirrorOfParameter(AnnotatedExecutableType, int)},
+   * this skips any parameter that does not correspond to an argument; see {@link
    * TreeUtils#parametersForArguments}.
    *
    * @param methodType the type of the method or constructor invoked by {@code invocation}
@@ -1202,7 +1202,7 @@ public final class AnnotatedTypes {
   }
 
   /**
-   * Returns the parameter type expected at the indexth position of {@code parameterTypes}
+   * Returns the parameter type expected at the {@code index}th position of {@code parameterTypes}
    * (unwrapping varargs if necessary).
    *
    * @param methodType the type of a method or constructor
