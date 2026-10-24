@@ -57,6 +57,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
+import org.checkerframework.dataflow.cfg.node.NullChkNode;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
@@ -953,7 +954,8 @@ public abstract class CFAbstractTransfer<
    * Takes a node, and either returns the node itself again (as a singleton list), or if the node is
    * an assignment node, returns the lhs and rhs (where splitAssignments is applied recursively to
    * the rhs -- that is, it is possible that the rhs does not appear in the result, but rather its
-   * lhs and rhs do).
+   * lhs and rhs do). A null check is replaced by its operand, to which splitAssignments is applied
+   * recursively.
    *
    * @param node possibly an assignment node
    * @return a list containing all the right- and left-hand sides in the given assignment node; it
@@ -966,6 +968,8 @@ public abstract class CFAbstractTransfer<
       result.add(a.getTarget());
       result.addAll(splitAssignments(a.getExpression()));
       return result;
+    } else if (node instanceof NullChkNode nullChk) {
+      return splitAssignments(nullChk.getOperand());
     } else {
       return Collections.singletonList(node);
     }
@@ -1492,6 +1496,12 @@ public abstract class CFAbstractTransfer<
     TransferResult<V, S> result = super.visitStringConversion(n, p);
     result.setResultValue(p.getValueOfSubNode(n.getOperand()));
     return result;
+  }
+
+  @Override
+  public TransferResult<V, S> visitNullChk(NullChkNode n, TransferInput<V, S> p) {
+    // A null check evaluates to its operand.
+    return createTransferResult(p.getValueOfSubNode(n.getOperand()), p);
   }
 
   @Override
