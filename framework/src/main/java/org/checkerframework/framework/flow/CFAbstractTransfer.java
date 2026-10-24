@@ -25,13 +25,11 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.common.aliasing.AliasingAnnotatedTypeFactory;
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
-import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.ForwardTransferFunction;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -1069,18 +1067,18 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitObjectCreation(ObjectCreationNode n, TransferInput<V, S> p) {
     NewClassTree newClassTree = n.getTree();
+    ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
     if (shouldPerformWholeProgramInference(n.getTree())) {
       // Can't infer annotations on an anonymous constructor, so use the super constructor.
       // The super constructor's parameters correspond to `n.getArguments()`.  For
       // `outer.new Inner(...) {...}`, the anonymous constructor has an extra first parameter for
       // `outer`, but `n` stores `outer` separately from its arguments.
-      ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
-      @SuppressWarnings("nullness:assignment") // WPI is non-null when -Ainfer is passed
-      @NonNull WholeProgramInference wpi = analysis.atypeFactory.getWholeProgramInference();
-      wpi.updateFromObjectCreation(
-          "<unknown from visitObjectCreation>", n, constructorElt, p.getRegularStore());
+      analysis
+          .atypeFactory
+          .getWholeProgramInference()
+          .updateFromObjectCreation(
+              "<unknown from visitObjectCreation>", n, constructorElt, p.getRegularStore());
     }
-    ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
     S store = p.getRegularStore();
     // add new information based on postcondition
     processPostconditions(n, store, constructorElt, newClassTree);
