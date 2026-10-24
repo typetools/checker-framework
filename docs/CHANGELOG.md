@@ -11,6 +11,9 @@
 
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
+Removed classes `ByteMath`, `ShortMath`, `IntegerMath`, `LongMath`, `FloatMath`,
+and `DoubleMath`.  Use `NumberMath.getNumberMath()` instead.
+
 ### Closed issues
 
 ## Version 4.3.1 (2026-10-08)
