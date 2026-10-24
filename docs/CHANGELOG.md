@@ -7,6 +7,13 @@
 
 ### User-visible changes
 
+The Nullness Checker runs a new subchecker, the Path Shape Checker, that
+determines which paths have a name and which have a parent.  As a result, the
+Nullness Checker treats `p.toAbsolutePath().getParent()` and similar calls on
+`Path` and `File` objects as non-null when it can prove that the receiver is
+neither a root nor the empty path.  Command-line option `-AnoPathShape`
+disables the Path Shape Checker.
+
 ### Changes for type system implementers
 
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
