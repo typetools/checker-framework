@@ -1050,6 +1050,20 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns true if the erased type of {@code type1} is the same type as the erased type of {@code
+   * type2}.
+   *
+   * @param type1 a type
+   * @param type2 a type
+   * @param types a Types object
+   * @return true if the erased type of {@code type1} is the same type as the erased type of {@code
+   *     type2}
+   */
+  public static boolean isErasedSameType(TypeMirror type1, TypeMirror type2, Types types) {
+    return types.isSameType(types.erasure(type1), types.erasure(type2));
+  }
+
+  /**
    * Returns true if {@code type} is a type variable created during capture conversion.
    *
    * @param type a type mirror
