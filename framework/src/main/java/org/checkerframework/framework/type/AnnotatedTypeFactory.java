@@ -2983,11 +2983,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         //  (.Outer x0) {
         //   x0.super();
         //   }
-        // The enclosing instance is passed to the super constructor as its receiver, so the
-        // type of the first parameter is the receiver type of the super constructor.
+        // So the code below deals with this.
         List<AnnotatedTypeMirror> p = new ArrayList<>(superCon.getParameterTypes().size() + 1);
+        if (con.getReceiverType() != null) {
+          // Because the anonymous constructor doesn't have annotated receiver type,
+          // we copy the receiver type from the super constructor invoked in the anonymous
+          // constructor.
+          con.setReceiverType(superCon.getReceiverType());
+        }
+        // The enclosing instance is the receiver of the super constructor.
         p.add(superCon.getReceiverType());
-        p.addAll(superCon.getParameterTypes());
+        p.addAll(1, superCon.getParameterTypes());
         con.setParameterTypes(p);
       } else {
         con.setParameterTypes(superCon.getParameterTypes());

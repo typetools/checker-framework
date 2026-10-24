@@ -1067,16 +1067,18 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitObjectCreation(ObjectCreationNode n, TransferInput<V, S> p) {
     NewClassTree newClassTree = n.getTree();
+    ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
     if (shouldPerformWholeProgramInference(n.getTree())) {
       // Can't infer annotations on an anonymous constructor, so use the super constructor.
-      ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
+      // The super constructor's parameters correspond to `n.getArguments()`.  For
+      // `outer.new Inner(...) {...}`, the anonymous constructor has an extra first parameter for
+      // `outer`, but `n` stores `outer` separately from its arguments.
       analysis
           .atypeFactory
           .getWholeProgramInference()
           .updateFromObjectCreation(
               "<unknown from visitObjectCreation>", n, constructorElt, p.getRegularStore());
     }
-    ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
     S store = p.getRegularStore();
     // add new information based on postcondition
     processPostconditions(n, store, constructorElt, newClassTree);
