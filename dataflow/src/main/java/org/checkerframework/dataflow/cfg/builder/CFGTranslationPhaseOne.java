@@ -1252,7 +1252,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // next argument, since label binding expects nodes to be generated in execution order.
     // Therefore, this method first determines which conversions need to be applied and then
     // iterates over the actual arguments.
-    List<? extends TypeMirror> formals = methodType.getParameterTypes();
+    List<? extends TypeMirror> formals =
+        TreeUtils.parametersForArguments(method, tree, methodType.getParameterTypes());
     int numFormals = formals.size();
 
     ArrayList<Node> convertedNodes = new ArrayList<>(numFormals);
