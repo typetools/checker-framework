@@ -7,9 +7,18 @@
 
 ### User-visible changes
 
+A `@DefaultQualifier` annotation on a nested element takes precedence over
+one on an enclosing element.
+
 ### Changes for type system implementers
 
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
+
+A default that a type system registers through
+`QualifierDefaults.addElementDefault()` now composes with the
+`@DefaultQualifier` annotations on the element and on the element's enclosing
+scopes, rather than suppressing them.  Where both a registered default and a
+`@DefaultQualifier` annotation apply, the registered default wins.
 
 ### Closed issues
 
