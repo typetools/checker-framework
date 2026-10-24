@@ -1415,7 +1415,11 @@ public final class AnnotatedTypes {
    *
    * @return true if type1 and type2 are corresponding type variables (that is, either one
    *     "overrides" the other)
+   * @deprecated To compare the signatures of an overriding method and an overridden method, express
+   *     both signatures in terms of the same type variables; see {@link
+   *     org.checkerframework.common.basetype.BaseTypeVisitor.OverrideChecker#adaptToOverridden}.
    */
+  @Deprecated(forRemoval = true, since = "4.3.2") // 2026-10-22
   public static boolean areCorrespondingTypeVariables(
       Elements elements, AnnotatedTypeVariable type1, AnnotatedTypeVariable type2) {
     TypeParameterElement type1ParamElem =
