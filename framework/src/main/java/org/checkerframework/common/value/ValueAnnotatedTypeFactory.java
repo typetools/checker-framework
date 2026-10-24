@@ -718,6 +718,22 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
+   * Returns true if {@code annotationName} is the name of {@link IntRangeFromPositive}, {@link
+   * IntRangeFromNonNegative}, or {@link IntRangeFromGTENegativeOne}: that is, if {@link
+   * #convertSpecialIntRangeToStandardIntRange(AnnotationMirror, long)} converts an annotation with
+   * that name.
+   *
+   * @param annotationName the fully-qualified name of an annotation
+   * @return true if {@code annotationName} is the name of a special int range annotation
+   */
+  private static boolean isSpecialIntRangeName(String annotationName) {
+    return switch (annotationName) {
+      case INTRANGE_FROMPOS_NAME, INTRANGE_FROMNONNEG_NAME, INTRANGE_FROMGTENEGONE_NAME -> true;
+      default -> false;
+    };
+  }
+
+  /**
    * Converts each {@link IntRangeFromPositive}, {@link IntRangeFromNonNegative}, and {@link
    * IntRangeFromGTENegativeOne} in {@code annos} to {@link IntRange}. Returns {@code annos} itself
    * if it contains no such annotation.
@@ -726,18 +742,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param typeMirror the Java type on which {@code annos} are written
    * @return {@code annos}, with every special int range replaced by the equivalent int range
    */
-  @SuppressWarnings("interning:not.interned") // the method returns its argument if unchanged
   /*package-private*/ AnnotationMirrorSet convertSpecialIntRangeToStandardIntRange(
       AnnotationMirrorSet annos, TypeMirror typeMirror) {
     AnnotationMirrorSet result = null;
     for (AnnotationMirror anno : annos) {
-      AnnotationMirror converted = convertSpecialIntRangeToStandardIntRange(anno, typeMirror);
-      if (converted != anno) {
+      if (isSpecialIntRangeName(AnnotationUtils.annotationName(anno))) {
         if (result == null) {
           result = new AnnotationMirrorSet(annos);
         }
         result.remove(anno);
-        result.add(converted);
+        result.add(convertSpecialIntRangeToStandardIntRange(anno, typeMirror));
       }
     }
     return result == null ? annos : result;
@@ -1574,10 +1588,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   public boolean isIntRange(AnnotationMirror anno) {
     String name = AnnotationUtils.annotationName(anno);
-    return name.equals(INTRANGE_NAME)
-        || name.equals(INTRANGE_FROMPOS_NAME)
-        || name.equals(INTRANGE_FROMNONNEG_NAME)
-        || name.equals(INTRANGE_FROMGTENEGONE_NAME);
+    return name.equals(INTRANGE_NAME) || isSpecialIntRangeName(name);
   }
 
   public int getMinLenValue(AnnotatedTypeMirror atm) {

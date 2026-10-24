@@ -11,7 +11,8 @@ public interface AbstractValue<V extends AbstractValue<V>> {
    * <ul>
    *   <li>Does not change {@code this}.
    *   <li>Does not change {@code other}.
-   *   <li>Returns a fresh object which is not aliased yet.
+   *   <li>Returns {@code this}, {@code other}, or a fresh object which is not aliased yet. A caller
+   *       must not side-effect the result, because the result might be aliased.
    *   <li>Returns an object of the same (dynamic) type as {@code this}, even if the signature is
    *       more permissive.
    *   <li>Is commutative.

@@ -11,6 +11,15 @@
 
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
+`AbstractValue.leastUpperBound()` and `CFAbstractValue.widenUpperBound()` may
+return `this` or the argument rather than a fresh object.  Do not side-effect
+the result.
+
+New method `CFAbstractValue.upperBoundOfEqualValuesIsThis()` lets the upper
+bound of two equal values be computed quickly.  A subclass of `CFAbstractValue`
+or `CFValue` should override it to return true if `equals()` accounts for all
+the state that the subclass's `upperBound()` combines.
+
 ### Closed issues
 
 ## Version 4.3.1 (2026-10-08)
