@@ -30,6 +30,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.common.aliasing.AliasingAnnotatedTypeFactory;
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.ForwardTransferFunction;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -685,6 +686,10 @@ public abstract class CFAbstractTransfer<
    * not hold when {@code isNonNull(x) + ""} is true. A node whose input's then-store and else-store
    * do describe the node calls {@link #createTransferResultKeepingStores} instead.
    *
+   * <p>If the input has a then-store and an else-store, the result does too, but they are equal
+   * copies of the merged store. A caller can then refine the result's then-store and else-store
+   * separately, in place.
+   *
    * @param value the value; possibly null
    * @param in the transfer input
    * @return the input information, as a TransferResult
@@ -692,7 +697,13 @@ public abstract class CFAbstractTransfer<
   @SideEffectFree
   protected TransferResult<V, S> createTransferResult(@Nullable V value, TransferInput<V, S> in) {
     S store = in.getRegularStore();
-    return new RegularTransferResult<>(finishValue(value, store), store);
+    if (in.containsTwoStores()) {
+      S elseStore = store.copy();
+      return new ConditionalTransferResult<>(
+          finishValue(value, store, elseStore), store, elseStore);
+    } else {
+      return new RegularTransferResult<>(finishValue(value, store), store);
+    }
   }
 
   /**
@@ -1264,10 +1275,10 @@ public abstract class CFAbstractTransfer<
           && lhsLvn2.getElement().getKind() == ElementKind.PARAMETER) {
         // lhs is a formal parameter of some method
         VariableElement param = lhsLvn2.getElement();
-        analysis
-            .atypeFactory
-            .getWholeProgramInference()
-            .updateFromFormalParameterAssignment((LocalVariableNode) lhs, rhs, param);
+        WholeProgramInference wpi = analysis.atypeFactory.getWholeProgramInference();
+        assert wpi != null
+            : "@AssumeAssertion(nullness): shouldPerformWholeProgramInference returned true";
+        wpi.updateFromFormalParameterAssignment(lhsLvn2, rhs, param);
       }
     }
 
@@ -1345,20 +1356,18 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitObjectCreation(ObjectCreationNode n, TransferInput<V, S> p) {
     NewClassTree newClassTree = n.getTree();
+    ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
     if (shouldPerformWholeProgramInference(n.getTree())) {
       // Can't infer annotations on an anonymous constructor, so use the super constructor.
-      ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
-      if (newClassTree.getClassBody() == null || !TreeUtils.hasSyntheticArgument(newClassTree)) {
-        // TODO: WPI could be changed to handle the synthetic argument, but for now just
-        // don't infer annotations for those new class trees.
-        analysis
-            .atypeFactory
-            .getWholeProgramInference()
-            .updateFromObjectCreation(
-                "<unknown from visitObjectCreation>", n, constructorElt, p.getRegularStore());
-      }
+      // The super constructor's parameters correspond to `n.getArguments()`.  For
+      // `outer.new Inner(...) {...}`, the anonymous constructor has an extra first parameter for
+      // `outer`, but `n` stores `outer` separately from its arguments.
+      WholeProgramInference wpi = analysis.atypeFactory.getWholeProgramInference();
+      assert wpi != null
+          : "@AssumeAssertion(nullness): shouldPerformWholeProgramInference returned true";
+      wpi.updateFromObjectCreation(
+          "<unknown from visitObjectCreation>", n, constructorElt, p.getRegularStore());
     }
-    ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
     S store = p.getRegularStore();
     // add new information based on postcondition
     processPostconditions(n, store, constructorElt, newClassTree);
