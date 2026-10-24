@@ -11,6 +11,8 @@
 
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
+`CFGTranslationPhaseOne`: renamed `isNumericOrBoxed()` to `isNumericAfterUnboxing()`.
+
 ### Closed issues
 
 ## Version 4.3.1 (2026-10-08)
