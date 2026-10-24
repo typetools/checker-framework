@@ -1,4 +1,5 @@
 import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.checker.calledmethods.qual.*;
@@ -372,5 +373,64 @@ class OwningFieldSubclass extends OwningFieldSuperclass {
   void replace(@OwningCollection List<Resource> list) {
     close();
     fieldList = list;
+  }
+}
+
+// In a constructor, a field of `this` takes ownership only if the constructor returns normally:
+// if it throws, the new object is unreachable, so nothing can dispose the field.
+class OwningFieldWrittenBeforeThrow implements Closeable {
+  List<Resource> fieldList;
+
+  static void mayFail() throws IOException {}
+
+  OwningFieldWrittenBeforeThrow() throws IOException {
+    // :: error: unfulfilled.collection.obligations
+    fieldList = OwningListFactory.newList();
+    mayFail();
+  }
+
+  OwningFieldWrittenBeforeThrow(int i) throws IOException {
+    List<Resource> list = new ArrayList<>();
+    // :: error: unfulfilled.collection.obligations
+    list.add(new Resource());
+    fieldList = list;
+    mayFail();
+  }
+
+  // The caller still owns the parameter if the constructor throws: no error.
+  OwningFieldWrittenBeforeThrow(@OwningCollection List<Resource> list) throws IOException {
+    fieldList = list;
+    mayFail();
+  }
+
+  @CollectionFieldDestructor("fieldList")
+  @Override
+  public void close() {
+    for (Resource r : fieldList) {
+      r.close();
+      r.flush();
+    }
+  }
+}
+
+class OwningFieldFilledBeforeThrow implements Closeable {
+  List<Resource> fieldList = new ArrayList<>();
+
+  static void mayFail() throws IOException {}
+
+  OwningFieldFilledBeforeThrow() throws IOException {
+    // :: error: required.method.not.called
+    Resource r = new Resource();
+    fieldList.add(r);
+    mayFail();
+  }
+
+  @CollectionFieldDestructor("fieldList")
+  @Override
+  public void close() {
+    for (Resource r : fieldList) {
+      r.close();
+      r.flush();
+    }
   }
 }

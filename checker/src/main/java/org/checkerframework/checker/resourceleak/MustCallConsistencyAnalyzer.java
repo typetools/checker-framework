@@ -560,17 +560,6 @@ public class MustCallConsistencyAnalyzer {
     }
 
     /**
-     * Create a CollectionObligation from an Obligation.
-     *
-     * @param obligation the obligation to create a CollectionObligation from
-     * @param mustCallMethod the method that must be called on the elements of the collection
-     */
-    private CollectionObligation(Obligation obligation, String mustCallMethod) {
-      super(obligation.resourceAliases, obligation.whenToEnforce);
-      this.mustCallMethod = mustCallMethod;
-    }
-
-    /**
      * Creates and returns a CollectionObligation derived from the given expression.
      *
      * @param tree the tree from which to create the CollectionObligation. Must be {@code
@@ -579,7 +568,8 @@ public class MustCallConsistencyAnalyzer {
      * @return a CollectionObligation derived from the given tree
      */
     public static CollectionObligation fromTree(Tree tree, String mustCallMethod) {
-      return new CollectionObligation(Obligation.fromTree(tree), mustCallMethod);
+      return new CollectionObligation(
+          mustCallMethod, Obligation.fromTree(tree).resourceAliases, MethodExitKind.ALL);
     }
 
     /**
@@ -983,6 +973,7 @@ public class MustCallConsistencyAnalyzer {
                   node, mustCallValues.get(0), receiverTree);
             }
           }
+          Set<MethodExitKind> toClear = MethodExitKind.ALL;
           if (receiverIsOwningField) {
             MethodInvocationTree invocationTree = node.getTree();
             TreePath currentPath = invocationTree == null ? null : cmAtf.getPath(invocationTree);
@@ -990,10 +981,17 @@ public class MustCallConsistencyAnalyzer {
                 currentPath == null ? null : TreePathUtil.enclosingMethod(currentPath);
             if (enclosingMethodTree != null) {
               checkEnclosingMethodIsCreatesMustCallFor(receiverNode, enclosingMethodTree);
+              // Inserting into a field of `this` in a constructor only clears obligations on normal
+              // return.
+              if (TreeUtils.isConstructor(enclosingMethodTree)
+                  && receiverNode instanceof FieldAccessNode receiverField
+                  && receiverField.getReceiver() instanceof ThisNode) {
+                toClear = MethodExitKind.ONLY_NORMAL_RETURN;
+              }
             }
           }
           // Transfer the inserted element's obligation to the owning collection receiver.
-          consumeInsertedArgumentObligationIfSingleElementInsert(obligations, node);
+          consumeInsertedArgumentObligationIfSingleElementInsert(obligations, node, toClear);
         }
         default -> {}
       }
@@ -1027,15 +1025,16 @@ public class MustCallConsistencyAnalyzer {
    * Models transfer of the inserted element's obligation to an owning collection receiver.
    *
    * <p>The inserted argument is identified by {@link
-   * CollectionOwnershipAnnotatedTypeFactory#getInsertedArgumentNode(MethodInvocationNode)}. We only
-   * consume obligations for single-element inserts, not bulk operations such as {@code addAll} or
-   * {@code putAll}.
+   * CollectionOwnershipAnnotatedTypeFactory#getInsertedArgumentNode(MethodInvocationNode)}. This
+   * method only consumes obligations for single-element inserts, not bulk operations such as {@code
+   * addAll} or {@code putAll}.
    *
    * @param obligations the currently tracked obligations
    * @param node the collection-mutating invocation
+   * @param toClear the method exits on which the receiver takes ownership of the element
    */
   private void consumeInsertedArgumentObligationIfSingleElementInsert(
-      Set<Obligation> obligations, MethodInvocationNode node) {
+      Set<Obligation> obligations, MethodInvocationNode node, Set<MethodExitKind> toClear) {
     Node inserted = coAtf.getInsertedArgumentNode(node);
     if (inserted == null) {
       return;
@@ -1050,8 +1049,9 @@ public class MustCallConsistencyAnalyzer {
 
     // Remove any tracked obligations for the inserted value from the caller context; responsibility
     // is now represented by the collection obligation on the receiver.
-    if (inserted instanceof LocalVariableNode) {
-      removeObligationsContainingVar(obligations, (LocalVariableNode) inserted);
+    if (inserted instanceof LocalVariableNode insertedVar) {
+      removeObligationsContainingVar(
+          obligations, insertedVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
       return;
     }
     if (inserted.getTree() != null) {
@@ -1651,9 +1651,24 @@ public class MustCallConsistencyAnalyzer {
         checkReassignmentToOwningField(obligations, assignmentNode);
       }
 
+      MethodTree enclosingMethod = cfg.getEnclosingMethod(assignmentNode.getTree());
+      boolean inConstructor = enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
+
+      // Determine which obligations this field assignment can clear.  In a constructor,
+      // assignments to `this.field` only clears obligations on normal return, since
+      // on exception `this` becomes inaccessible.
+      Set<MethodExitKind> toClear;
+      if (inConstructor
+          && lhs instanceof FieldAccessNode lhsFan
+          && lhsFan.getReceiver() instanceof ThisNode) {
+        toClear = Collections.singleton(MethodExitKind.NORMAL_RETURN);
+      } else {
+        toClear = MethodExitKind.ALL;
+      }
+
       if (coAtf.isOwningCollectionField(lhsElement)) {
         updateObligationsForOwningCollectionFieldAssignment(
-            obligations, assignmentNode, lhsElement);
+            obligations, assignmentNode, lhsElement, toClear);
       }
 
       // Remove Obligations from local variables, now that the owning field is responsible.
@@ -1662,23 +1677,8 @@ public class MustCallConsistencyAnalyzer {
           && rhs instanceof LocalVariableNode rhsVar
           && (cmAtf.canCreateObligations() || ElementUtils.isFinal(lhsElement))) {
 
-        MethodTree enclosingMethod = cfg.getEnclosingMethod(assignmentNode.getTree());
-        boolean inConstructor = enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
-
-        // Determine which obligations this field assignment can clear.  In a constructor,
-        // assignments to `this.field` only clears obligations on normal return, since
-        // on exception `this` becomes inaccessible.
-        Set<MethodExitKind> toClear;
-        if (inConstructor
-            && lhs instanceof FieldAccessNode lhsFan
-            && lhsFan.getReceiver() instanceof ThisNode) {
-          toClear = Collections.singleton(MethodExitKind.NORMAL_RETURN);
-        } else {
-          toClear = MethodExitKind.ALL;
-        }
-
-        @Nullable Element enclosingElem = lhsElement.getEnclosingElement();
-        @Nullable TypeElement enclosingType =
+        Element enclosingElem = lhsElement.getEnclosingElement();
+        TypeElement enclosingType =
             enclosingElem != null ? ElementUtils.enclosingTypeElement(enclosingElem) : null;
 
         // Assigning to an owning field is sufficient to clear a must-call alias obligation
@@ -2014,9 +2014,13 @@ public class MustCallConsistencyAnalyzer {
    * @param obligations current tracked Obligations
    * @param node an assignment to an owning collection field
    * @param lhsElement the field that {@code node} assigns
+   * @param toClear the method exits on which the field takes ownership of the rhs
    */
   private void updateObligationsForOwningCollectionFieldAssignment(
-      Set<Obligation> obligations, AssignmentNode node, Element lhsElement) {
+      Set<Obligation> obligations,
+      AssignmentNode node,
+      Element lhsElement,
+      Set<MethodExitKind> toClear) {
     Node lhs = node.getTarget();
     Node rhs = node.getExpression();
     if (!(lhs instanceof FieldAccessNode lhsField)) {
@@ -2024,9 +2028,9 @@ public class MustCallConsistencyAnalyzer {
           "Assignment " + node + " to field " + lhsElement + " has a non-field-access target");
     }
 
+    Node rhsTmpVarOrNode = removeCastsAndGetTmpVarIfPresent(rhs);
     CollectionOwnershipStore coStore = coAtf.getStoreBefore(node);
-    CollectionOwnershipType rhsCoType =
-        coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(rhs), coStore);
+    CollectionOwnershipType rhsCoType = coAtf.getCoType(rhsTmpVarOrNode, coStore);
     if (rhsCoType == null) {
       // The store has no type for some rhs expressions. Assume that such an rhs is owning.
       rhsCoType =
@@ -2080,9 +2084,9 @@ public class MustCallConsistencyAnalyzer {
     }
 
     // Remove the Obligations of the rhs, now that the owning collection field is responsible.
-    Tree rhsTree = rhs.getTree();
-    if (rhsTree != null) {
-      obligations.removeAll(getObligationsForVar(obligations, rhsTree));
+    if (rhsTmpVarOrNode instanceof LocalVariableNode rhsVar) {
+      removeObligationsContainingVar(
+          obligations, rhsVar, MustCallAliasHandling.NO_SPECIAL_HANDLING, toClear);
     }
   }
 
@@ -2998,6 +3002,8 @@ public class MustCallConsistencyAnalyzer {
           if (mustCallValues != null) {
             if (!ResourceLeakUtils.isIterator(paramElement.asType())) {
               for (String mustCallMethod : mustCallValues) {
+                // The method takes ownership only if it returns normally; if it throws, the caller
+                // still owns the collection.
                 result.add(
                     new CollectionObligation(
                         mustCallMethod,
@@ -3007,7 +3013,7 @@ public class MustCallConsistencyAnalyzer {
                                 paramElement,
                                 param,
                                 hasMustCallAlias)),
-                        MethodExitKind.ALL));
+                        MethodExitKind.ONLY_NORMAL_RETURN));
               }
             }
           }
