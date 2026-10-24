@@ -1747,10 +1747,6 @@ public final class TreeUtils {
    * parameter for the enclosing instance {@code outer}, which is not among the arguments of {@code
    * tree}. This method omits that parameter. Otherwise, this method returns {@code params}.
    *
-   * <p>A client that needs parameter elements, such as for their names or declaration annotations,
-   * should instead use the parameters of {@link #getSuperConstructor}. The anonymous constructor's
-   * parameters do not carry the declaration annotations of the super constructor's parameters.
-   *
    * @param <T> the type of the elements of {@code params}
    * @param executable the method or constructor invoked by {@code tree}
    * @param tree a method or constructor invocation
