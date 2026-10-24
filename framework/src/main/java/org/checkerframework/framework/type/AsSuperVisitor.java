@@ -203,45 +203,19 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
       lowerBound.replaceAnnotations(typeLowerBound);
       return lowerBound;
     }
-    if (areErasedJavaTypesEquivalent(type, lowerBound)) {
+    if (TypesUtils.isErasedSameType(
+        type.getUnderlyingType(), lowerBound.getUnderlyingType(), types)) {
       return visit(type, lowerBound, p);
     }
     // If type and lowerBound are not the same type, then lowerBound is a subtype of type,
     // but there is no way to convert type to a subtype -- there is not an asSub method.  So,
     // just copy the primary annotations.
+    // The type arguments of lowerBound are unknown, so they stay unannotated rather than being
+    // defaulted.  AtmLubVisitor uses the other operand's annotations for an unannotated type.
+    // Defaults would make, for example, the lub of Comparator<List<@NonNull T>> and
+    // Comparator<@Nullable Object> be Comparator<? super List<T>> instead of
+    // Comparator<? super List<@NonNull T>>.
     return copyPrimaryAnnos(type, lowerBound);
-  }
-
-  /**
-   * Returns true if the underlying, erased Java type of {@code subtype} is a subtype of the
-   * underlying, erased Java type of {@code supertype}.
-   *
-   * @param subtype a type
-   * @param supertype a type
-   * @return true if the underlying, erased Java type of {@code subtype} is a subtype of the
-   *     underlying, erased Java type of {@code supertype}
-   */
-  private boolean isErasedJavaSubtype(
-      AnnotatedDeclaredType subtype, AnnotatedDeclaredType supertype) {
-    TypeMirror javaSubtype = types.erasure(subtype.getUnderlyingType());
-    TypeMirror javaSupertype = types.erasure(supertype.getUnderlyingType());
-    return types.isSubtype(javaSubtype, javaSupertype);
-  }
-
-  /**
-   * Returns true if the underlying, erased Java type of {@code typeA} and {@code typeB} are
-   * equivalent.
-   *
-   * @param typeA a type
-   * @param typeB a type
-   * @return true if the underlying, erased Java type of {@code typeA} and {@code typeB} are
-   *     equivalent
-   */
-  private boolean areErasedJavaTypesEquivalent(
-      AnnotatedTypeMirror typeA, AnnotatedTypeMirror typeB) {
-    TypeMirror underlyingTypeA = types.erasure(typeA.getUnderlyingType());
-    TypeMirror underlyingTypeB = types.erasure(typeB.getUnderlyingType());
-    return types.isSameType(underlyingTypeA, underlyingTypeB);
   }
 
   @Override
@@ -335,7 +309,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   @Override
   public AnnotatedTypeMirror visitDeclared_Declared(
       AnnotatedDeclaredType type, AnnotatedDeclaredType superType, Void p) {
-    if (areErasedJavaTypesEquivalent(type, superType)) {
+    if (TypesUtils.isErasedSameType(
+        type.getUnderlyingType(), superType.getUnderlyingType(), types)) {
       return type;
     }
 
@@ -343,7 +318,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     // Walk up the directSupertypes.
     // directSupertypes() annotates type variables correctly and handles substitution.
     for (AnnotatedDeclaredType dst : type.directSupertypes()) {
-      if (isErasedJavaSubtype(dst, superType)) {
+      if (TypesUtils.isErasedSubtype(
+          dst.getUnderlyingType(), superType.getUnderlyingType(), types)) {
         // If two direct supertypes of type, dst1 and dst2, are subtypes of superType then
         // asSuper(dst1, superType) and asSuper(dst2, superType) return equivalent ATMs, so
         // return the first one found.
@@ -431,7 +407,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
       // Find the directSuperType that is a subtype of superType, then recur on that type so
       // that type arguments in superType are annotated correctly.
       if (bound.getKind() == TypeKind.DECLARED
-          && isErasedJavaSubtype((AnnotatedDeclaredType) bound, superType)) {
+          && TypesUtils.isErasedSubtype(
+              bound.getUnderlyingType(), superType.getUnderlyingType(), types)) {
         AnnotatedTypeMirror asSuper = visit(bound, superType, p);
 
         // The directSuperType might have a primary annotation that is a supertype of

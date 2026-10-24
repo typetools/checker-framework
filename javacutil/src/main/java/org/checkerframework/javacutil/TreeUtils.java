@@ -98,6 +98,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.interning.qual.PolyInterned;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.qual.Pure;
@@ -126,6 +127,10 @@ public final class TreeUtils {
 
   /** True if we are running on at least Java 21. */
   private static final boolean atLeastJava21 = sourceVersionNumber >= 21;
+
+  /** The kind of a {@code DeconstructionPatternTree}, or null if javac has no such kind. */
+  private static final Tree.@Nullable Kind DECONSTRUCTION_PATTERN_KIND =
+      atLeastJava21 ? Tree.Kind.valueOf("DECONSTRUCTION_PATTERN") : null;
 
   /**
    * The {@code TreeMaker.Select(JCExpression, Symbol)} method. Return type changes for JDK21+. Only
@@ -718,11 +723,7 @@ public final class TreeUtils {
       case ASSIGNMENT -> TreeInfo.symbol((JCTree) ((AssignmentTree) tree).getVariable());
       case ARRAY_ACCESS -> elementFromTree(((ArrayAccessTree) tree).getExpression());
       case NEW_CLASS -> ((JCNewClass) tree).constructor;
-      case MEMBER_REFERENCE -> {
-        // TreeInfo.symbol, which is used in the default case, didn't handle
-        // member references until JDK8u20. So handle it here.
-        yield (ExecutableElement) ((JCMemberReference) tree).sym;
-      }
+      case MEMBER_REFERENCE -> (ExecutableElement) ((JCMemberReference) tree).sym;
       default -> {
         Element defaultResult;
         if (isTypeDeclaration(tree) || tree instanceof VariableTree || tree instanceof MethodTree) {
@@ -786,53 +787,6 @@ public final class TreeUtils {
       }
       default -> false;
     };
-  }
-
-  /**
-   * Returns true if {@code tree} has a synthetic argument.
-   *
-   * <p>For some anonymous classes with an explicit enclosing expression, javac creates a synthetic
-   * argument to the constructor that is the enclosing expression of the NewClassTree. Suppose a
-   * programmer writes:
-   *
-   * <pre>{@code class Outer {
-   *   class Inner { }
-   *     void method() {
-   *       this.new Inner() {};
-   *     }
-   * }}</pre>
-   *
-   * Java 9 javac creates the following synthetic tree for {@code this.new Inner() {}}:
-   *
-   * <pre>{@code new Inner(this) {
-   *   (.Outer x0) {
-   *     x0.super();
-   *   }
-   * }}</pre>
-   *
-   * Java 11 javac creates a different tree without the synthetic argument for {@code this.new
-   * Inner() {}}; the first line in the below code differs:
-   *
-   * <pre>{@code this.new Inner() {
-   *   (.Outer x0) {
-   *     x0.super();
-   *   }
-   * }}</pre>
-   *
-   * @param tree a new class tree
-   * @return true if {@code tree} has a synthetic argument
-   */
-  public static boolean hasSyntheticArgument(NewClassTree tree) {
-    if (tree.getClassBody() == null || tree.getEnclosingExpression() != null) {
-      return false;
-    }
-    for (Tree member : tree.getClassBody().getMembers()) {
-      if (member instanceof MethodTree methodTree && isConstructor(methodTree)) {
-        StatementTree f = methodTree.getBody().getStatements().get(0);
-        return getReceiverTree(((ExpressionStatementTree) f).getExpression()) != null;
-      }
-    }
-    return false;
   }
 
   /**
@@ -1728,11 +1682,13 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns true if the passed constructor is anonymous and has an explicit enclosing expression.
+   * Returns true if {@code con} is an anonymous constructor and {@code tree} has an explicit
+   * enclosing expression, as in {@code outer.new Inner(...) {...}}.
    *
-   * @param con an ExecutableElement of a constructor declaration
-   * @param tree the NewClassTree of a constructor declaration
-   * @return true if there is an extra enclosing expression
+   * @param con the constructor invoked by {@code tree}
+   * @param tree a constructor invocation
+   * @return true if {@code con} is an anonymous constructor and {@code tree} has an explicit
+   *     enclosing expression
    */
   public static boolean isAnonymousConstructorWithExplicitEnclosingExpression(
       ExecutableElement con, NewClassTree tree) {
@@ -1740,6 +1696,28 @@ public final class TreeUtils {
     return (tree.getEnclosingExpression() != null)
         && con.getKind() == ElementKind.CONSTRUCTOR
         && ((TypeElement) con.getEnclosingElement()).getNestingKind() == NestingKind.ANONYMOUS;
+  }
+
+  /**
+   * Returns the elements of {@code params} that correspond to the arguments of {@code tree}.
+   *
+   * <p>For {@code outer.new Inner(...) {...}}, javac gives the anonymous constructor an extra first
+   * parameter for the enclosing instance {@code outer}, which is not among the arguments of {@code
+   * tree}. This method omits that parameter. Otherwise, this method returns {@code params}.
+   *
+   * @param <T> the type of the elements of {@code params}
+   * @param executable the method or constructor invoked by {@code tree}
+   * @param tree a method or constructor invocation
+   * @param params the parameters of {@code executable}, or their types, in order
+   * @return the elements of {@code params} that correspond to the arguments of {@code tree}
+   */
+  public static <@KeyForBottom T> List<T> parametersForArguments(
+      ExecutableElement executable, Tree tree, List<T> params) {
+    if (tree instanceof NewClassTree newClassTree
+        && isAnonymousConstructorWithExplicitEnclosingExpression(executable, newClassTree)) {
+      return params.subList(1, params.size());
+    }
+    return params;
   }
 
   /**
@@ -2340,7 +2318,7 @@ public final class TreeUtils {
    * @return true if {@code tree} is a {@code DeconstructionPatternTree}
    */
   public static boolean isDeconstructionPatternTree(Tree tree) {
-    return tree.getKind().name().contentEquals("DECONSTRUCTION_PATTERN");
+    return tree.getKind() == DECONSTRUCTION_PATTERN_KIND;
   }
 
   /**

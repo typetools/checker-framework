@@ -759,7 +759,7 @@ public class AnnotationBuilder {
     } else if (givenValue instanceof VariableElement ve) {
       found = ve.asType();
       if (expected.getKind() == TypeKind.DECLARED) {
-        isSubtype = types.isSubtype(types.erasure(found), types.erasure(expected));
+        isSubtype = TypesUtils.isErasedSubtype(found, expected, types);
       } else {
         isSubtype = false;
       }
@@ -767,7 +767,7 @@ public class AnnotationBuilder {
       String name = givenValue.getClass().getCanonicalName();
       assert name != null : "@AssumeAssertion(nullness): assumption";
       found = elements.getTypeElement(name).asType();
-      isSubtype = types.isSubtype(types.erasure(found), types.erasure(expected));
+      isSubtype = TypesUtils.isErasedSubtype(found, expected, types);
     }
     if (!isSubtype) {
       // Annotations in stub files sometimes are the same type, but Types#isSubtype fails

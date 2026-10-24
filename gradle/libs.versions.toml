@@ -4,7 +4,7 @@
 #  * Temporarily comment out "-Werror" in build.gradle files.
 #  * Repeatedly run `./gradlew clean compileJava` and fix all errors.
 #  * Uncomment "-Werror".
-errorprone-version = "2.50.0"
+errorprone-version = "2.51.0"
 
 junit-junit = "4.13.2"
 

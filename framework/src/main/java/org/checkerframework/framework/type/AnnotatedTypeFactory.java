@@ -2269,7 +2269,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
     // An implicit receiver is the first enclosing type that is a subtype of the type where the
     // element is declared.
-    while (thisType != null && !isSubtype(thisType.getUnderlyingType(), typeOfImplicitReceiver)) {
+    while (thisType != null
+        && !TypesUtils.isErasedSubtype(
+            thisType.getUnderlyingType(), typeOfImplicitReceiver, types)) {
       thisType = thisType.getEnclosingType();
     }
     return thisType;
@@ -2368,11 +2370,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param tree location to use
    * @return the enclosing type at the location of {@code tree} that is the same type as {@code
    *     typeElement}
+   * @throws BugInCF if no type that encloses {@code tree} is the same type as {@code typeElement}
    */
   public AnnotatedDeclaredType getEnclosingType(TypeElement typeElement, Tree tree) {
     AnnotatedDeclaredType thisType = getSelfType(tree);
-    while (!isSameType(thisType.getUnderlyingType(), typeElement.asType())) {
+    while (thisType != null
+        && !TypesUtils.isErasedSameType(
+            thisType.getUnderlyingType(), typeElement.asType(), types)) {
       thisType = thisType.getEnclosingType();
+    }
+    if (thisType == null) {
+      throw new BugInCF("No type that encloses %s is %s", tree, typeElement);
     }
     return thisType;
   }
@@ -2385,37 +2393,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param tree location to use
    * @return the enclosing type at the location of {@code tree} that is a subtype of {@code
    *     typeElement}
+   * @throws BugInCF if no type that encloses {@code tree} is a subtype of {@code typeElement}
    */
   public AnnotatedDeclaredType getEnclosingSubType(TypeElement typeElement, Tree tree) {
     AnnotatedDeclaredType thisType = getSelfType(tree);
-    while (!isSubtype(thisType.getUnderlyingType(), typeElement.asType())) {
+    while (thisType != null
+        && !TypesUtils.isErasedSubtype(thisType.getUnderlyingType(), typeElement.asType(), types)) {
       thisType = thisType.getEnclosingType();
     }
+    if (thisType == null) {
+      throw new BugInCF("No type that encloses %s is a subtype of %s", tree, typeElement);
+    }
     return thisType;
-  }
-
-  /**
-   * Returns true if the erasure of {@code type1} is a Java subtype of the erasure of {@code type2}.
-   *
-   * @param type1 a type
-   * @param type2 a type
-   * @return true if the erasure of {@code type1} is a Java subtype of the erasure of {@code type2}
-   */
-  private boolean isSubtype(TypeMirror type1, TypeMirror type2) {
-    return types.isSubtype(types.erasure(type1), types.erasure(type2));
-  }
-
-  /**
-   * Returns true if the erasure of {@code type1} is the same Java type as the erasure of {@code
-   * type2}.
-   *
-   * @param type1 a type
-   * @param type2 a type
-   * @return true if the erasure of {@code type1} is the same Java type as the erasure of {@code
-   *     type2}
-   */
-  private boolean isSameType(TypeMirror type1, TypeMirror type2) {
-    return types.isSameType(types.erasure(type1), types.erasure(type2));
   }
 
   /**
@@ -2998,10 +2987,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         //   }
         // So the code below deals with this.
         List<AnnotatedTypeMirror> p = new ArrayList<>(superCon.getParameterTypes().size() + 1);
-        if (TreeUtils.hasSyntheticArgument(tree)) {
-          p.add(con.getParameterTypes().get(0));
-          con.setReceiverType(superCon.getReceiverType());
-        } else if (con.getReceiverType() != null) {
+        if (con.getReceiverType() != null) {
           // Because the anonymous constructor doesn't have annotated receiver type,
           // we copy the receiver type from the super constructor invoked in the anonymous
           // constructor and add it to the parameterTypes as the first element.
@@ -5055,7 +5041,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         int indexOfLambda = newClass.getArguments().indexOf(tree);
         ParameterizedExecutableType con = this.constructorFromUse(newClass);
         AnnotatedTypeMirror constructorParam =
-            AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(con.executableType, indexOfLambda);
+            AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(
+                con.executableType, newClass, indexOfLambda);
         assertIsFunctionalInterface(constructorParam.getUnderlyingType(), parentTree, tree);
         return constructorParam;
       }
@@ -5071,7 +5058,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         int index = method.getArguments().indexOf(tree);
         ParameterizedExecutableType exe = this.methodFromUse(method);
         AnnotatedTypeMirror param =
-            AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(exe.executableType, index);
+            AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(exe.executableType, method, index);
         assertIsFunctionalInterface(param.getUnderlyingType(), parentTree, tree);
         return param;
       }
@@ -5225,6 +5212,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           final AnnotatedTypeMirror newArg;
           if (types.isSameType(wildcardUbType, correctArgType)) {
             newArg = wildcardType.getExtendsBound().deepCopy();
+          } else if (TypesUtils.isSameTypeModuloCaptures(wildcardUbType, correctArgType, types)) {
+            // Keep the annotations on the bounds of the captured type variables, too.  This
+            // includes the case where correctArgType is itself a captured type variable.
+            newArg = this.toAnnotatedType(correctArgType, false);
+            replaceAnnotations(wildcardType.getExtendsBound(), newArg);
           } else if (correctArgType.getKind() == TypeKind.TYPEVAR) {
             newArg = this.toAnnotatedType(correctArgType, false);
             AnnotatedTypeVariable newArgAsTypeVar = (AnnotatedTypeVariable) newArg;
@@ -5259,9 +5251,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             getTypeVarSubstitutor().substitute(typeVarToTypeArg, groundFunctionalType);
     groundFunctionalType.addAnnotations(functionalType.getPrimaryAnnotations());
 
-    // When the groundTargetJavaType is different from the underlying type of functionalType,
-    // only the main annotations are copied.  Add default annotations in places without
-    // annotations.
+    // When the groundTargetJavaType is different from the underlying type of functionalType
+    // (other than by captured type variables), only the main annotations are copied.  Add
+    // default annotations in places without annotations.
     addDefaultAnnotations(groundFunctionalType);
     return groundFunctionalType;
   }
