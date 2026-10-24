@@ -1747,12 +1747,13 @@ public class MustCallConsistencyAnalyzer {
     Preconditions.checkArgument(
         callNode instanceof MethodInvocationNode || callNode instanceof ObjectCreationNode);
     List<Node> result = new ArrayList<>();
-    if (!cmAtf.hasMustCallAlias(callNode.getTree())) {
+    ExecutableElement callee = getInvokedExecutable(callNode);
+    if (!cmAtf.hasMustCallAlias(callee)) {
       return result;
     }
 
     List<Node> args = getArgumentsOfInvocation(callNode);
-    List<? extends VariableElement> parameters = getParametersOfInvocation(callNode);
+    List<? extends VariableElement> parameters = callee.getParameters();
     for (int i = 0; i < args.size(); i++) {
       if (cmAtf.hasMustCallAlias(parameters.get(i))) {
         result.add(removeCastsAndGetTmpVarIfPresent(args.get(i)));
@@ -1799,24 +1800,42 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
+   * Returns the method or constructor that an invocation invokes. For the creation of an anonymous
+   * class, the result is the super constructor, because the anonymous constructor's parameters do
+   * not carry the super constructor's declaration annotations, such as {@code @Owning} and
+   * {@code @MustCallAlias}.
+   *
+   * @param node a method invocation or object creation node
+   * @return the method or constructor that {@code node} invokes
+   */
+  private ExecutableElement getInvokedExecutable(Node node) {
+    if (node instanceof MethodInvocationNode invocationNode) {
+      return invocationNode.getTarget().getMethod();
+    } else if (node instanceof ObjectCreationNode ocn) {
+      return TreeUtils.getSuperConstructor(ocn.getTree());
+    } else {
+      throw new TypeSystemError("unexpected node type " + node.getClass());
+    }
+  }
+
+  /**
    * Returns the elements representing the formal parameters of a method or constructor, from an
-   * invocation of that method or constructor.
+   * invocation of that method or constructor. For the creation of an anonymous class, the result is
+   * the parameters of the super constructor; see {@link #getInvokedExecutable}.
+   *
+   * <p>The i-th element of the result is the formal parameter for the i-th element of {@link
+   * #getArgumentsOfInvocation}. A varargs parameter corresponds to the single array argument that
+   * the CFG creates for it. The enclosing instance {@code outer} in {@code outer.new Inner(...)
+   * {...}} is neither an argument nor a parameter. The two lists have the same length, except that
+   * the implicit {@code super()} call in an enum constructor has no arguments, but its callee
+   * {@code Enum(String, int)} has two parameters.
    *
    * @param node a method invocation or object creation node
    * @return a list of the declarations of the formal parameters of the method or constructor being
    *     invoked
    */
   /*package-private*/ List<? extends VariableElement> getParametersOfInvocation(Node node) {
-    ExecutableElement executableElement;
-    if (node instanceof MethodInvocationNode invocationNode) {
-      executableElement = TreeUtils.elementFromUse(invocationNode.getTree());
-    } else if (node instanceof ObjectCreationNode ocn2) {
-      executableElement = TreeUtils.elementFromUse(ocn2.getTree());
-    } else {
-      throw new TypeSystemError("unexpected node type " + node.getClass());
-    }
-
-    return executableElement.getParameters();
+    return getInvokedExecutable(node).getParameters();
   }
 
   /**
