@@ -778,11 +778,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             }
             if (declaration == null && name == null) {
               declaration = packageQualifiedStubDeclaration(type, typeName, true);
-              if (declaration instanceof TypeDeclaration<?>) {
-                name = qualifiedStubBinaryName((TypeDeclaration<?>) declaration);
+              if (declaration instanceof TypeDeclaration<?> typeDecl) {
+                name = qualifiedStubBinaryName(typeDecl);
               }
-            } else if (declaration instanceof TypeDeclaration<?>) {
-              name = memberBinaryName((TypeDeclaration<?>) declaration, identifiers, 1, cu);
+            } else if (declaration instanceof TypeDeclaration<?> typeDecl) {
+              name = memberBinaryName(typeDecl, identifiers, 1, cu);
             }
             if (declaration instanceof TypeParameter typeParam) {
               // The JVML descriptor uses the erasure, which is the first bound, or Object if
@@ -879,8 +879,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     // Because `relativeName` is qualified by the package name, it names a top-level type of the
     // stub file or a member of one.
     Node declaration = stubDeclaration(cu, relativeName, true);
-    return (declaration instanceof TypeDeclaration<?>)
-        ? qualifiedStubBinaryName((TypeDeclaration<?>) declaration)
+    return (declaration instanceof TypeDeclaration<?> typeDecl)
+        ? qualifiedStubBinaryName(typeDecl)
         : null;
   }
 
@@ -944,8 +944,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     // are not its members.
     for (Node n = node; n != null; n = n.getParentNode().orElse(null)) {
       Node first = firstDeclarationAt(n, identifiers, inherited);
-      if (first instanceof TypeDeclaration<?>) {
-        return nestedTypeDeclaration((TypeDeclaration<?>) first, identifiers, inherited);
+      if (first instanceof TypeDeclaration<?> typeDecl) {
+        return nestedTypeDeclaration(typeDecl, identifiers, inherited);
       } else if (first != null || n instanceof CompilationUnit) {
         return first;
       }
@@ -967,8 +967,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private static @Nullable Node firstDeclarationAt(
       Node n, String[] identifiers, boolean inherited) {
     // Within one declaration, a type parameter and a member type cannot have the same name.
-    if (identifiers.length == 1 && n instanceof NodeWithTypeParameters) {
-      for (TypeParameter typeParam : ((NodeWithTypeParameters<?>) n).getTypeParameters()) {
+    if (identifiers.length == 1 && n instanceof NodeWithTypeParameters<?> nodeWithTypeParams) {
+      for (TypeParameter typeParam : nodeWithTypeParams.getTypeParameters()) {
         if (typeParam.getNameAsString().equals(identifiers[0])) {
           return typeParam;
         }
@@ -1028,9 +1028,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       return null;
     }
     for (BodyDeclaration<?> member : declaration.getMembers()) {
-      if (member instanceof TypeDeclaration<?>
-          && ((TypeDeclaration<?>) member).getNameAsString().equals(identifier)) {
-        return (TypeDeclaration<?>) member;
+      if (member instanceof TypeDeclaration<?> memberType
+          && memberType.getNameAsString().equals(identifier)) {
+        return memberType;
       }
     }
     if (!inherited) {
@@ -1109,8 +1109,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     for (Node n = declaration.getParentNode().orElse(null);
         n != null;
         n = n.getParentNode().orElse(null)) {
-      if (n instanceof TypeDeclaration<?>) {
-        binaryName.insert(0, ((TypeDeclaration<?>) n).getNameAsString() + "$");
+      if (n instanceof TypeDeclaration<?> typeDecl) {
+        binaryName.insert(0, typeDecl.getNameAsString() + "$");
       }
     }
     return binaryName.toString();
