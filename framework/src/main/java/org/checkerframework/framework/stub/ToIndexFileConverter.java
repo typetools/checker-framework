@@ -277,10 +277,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       if (typeDecls != null && cu.getPackageDeclaration().isPresent()) {
         List<ImportDeclaration> impDecls = cu.getImports();
         PackageDeclaration pkgDecl = cu.getPackageDeclaration().get();
+        ToIndexFileConverter converter =
+            new ToIndexFileConverter(pkgDecl, impDecls, scene, annotationDefs);
+        String pkgName = converter.pkgName;
         for (TypeDeclaration<?> typeDecl : typeDecls) {
-          ToIndexFileConverter converter =
-              new ToIndexFileConverter(pkgDecl, impDecls, scene, annotationDefs);
-          String pkgName = converter.pkgName;
           String name = typeDecl.getNameAsString();
           if (pkgName != null) {
             name = pkgName + "." + name;
@@ -354,9 +354,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     AMethod method;
 
     // Some of the methods in the generated parser use null to represent an empty list.
+    List<Type> paramTypes = new ArrayList<>();
     if (params != null) {
       for (Parameter param : params) {
-        sb.append(getJVML(parameterType(param)));
+        Type paramType = parameterType(param);
+        paramTypes.add(paramType);
+        sb.append(getJVML(paramType));
       }
     }
     sb.append(")V");
@@ -366,11 +369,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         decl.getAnnotations(),
         ElementType.CONSTRUCTOR,
         method,
-        new ClassOrInterfaceType(null, decl.getNameAsString()),
+        new ClassOrInterfaceType().setName(decl.getNameAsString()),
         method.returnType);
     if (params != null) {
       for (int i = 0; i < params.size(); i++) {
-        visitParameter(params.get(i), method.parameters.getVivify(i));
+        visitParameter(params.get(i), paramTypes.get(i), method.parameters.getVivify(i));
       }
     }
     visitReceiverParameter(decl, method);
@@ -421,9 +424,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     StringBuilder sb = new StringBuilder(decl.getNameAsString()).append('(');
     AClass clazz = (AClass) elem;
     AMethod method;
+    List<Type> paramTypes = new ArrayList<>();
     if (params != null) {
       for (Parameter param : params) {
-        sb.append(getJVML(parameterType(param)));
+        Type paramType = parameterType(param);
+        paramTypes.add(paramType);
+        sb.append(getJVML(paramType));
       }
     }
     sb.append(')').append(getJVML(type));
@@ -433,7 +439,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         decl.getAnnotations(), ElementType.METHOD, method, type, method.returnType);
     if (params != null) {
       for (int i = 0; i < params.size(); i++) {
-        visitParameter(params.get(i), method.parameters.getVivify(i));
+        visitParameter(params.get(i), paramTypes.get(i), method.parameters.getVivify(i));
       }
     }
     visitReceiverParameter(decl, method);
@@ -547,21 +553,18 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * Copies information from a formal parameter to an {@link AField}.
    *
    * @param param a formal parameter
+   * @param type the type of {@code param}, as returned by {@link #parameterType}
    * @param field the scene element for {@code param}
    */
-  private void visitParameter(Parameter param, AField field) {
-    Type type = parameterType(param);
+  private void visitParameter(Parameter param, Type type, AField field) {
     visitType(type, field.type);
-    if (param.isVarArgs()) {
-      // The annotations that precede the `...` apply to the array type.
-      addAnnotations(param.getVarArgsAnnotations(), field.type);
-    }
     visitDeclAndTypeAnnotations(
         param.getAnnotations(), ElementType.PARAMETER, field, type, field.type);
   }
 
   /**
-   * Returns a formal parameter's type. For a varargs parameter, that is an array type.
+   * Returns a formal parameter's type. For a varargs parameter, that is an array type, which bears
+   * the annotations that precede the {@code ...}.
    *
    * @param param a formal parameter
    * @return the type of {@code param}
@@ -570,9 +573,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (!param.isVarArgs()) {
       return param.getType();
     }
-    // For a varargs parameter, `getType()` is the element type.  Wrap a copy of it, because making
-    // a node the component of an array type would remove it from the parameter.
-    return new ArrayType(param.getType().clone());
+    // For a varargs parameter, `getType()` is the element type.  Wrap copies of it and of the
+    // annotations, because making a node part of the array type would remove it from the parameter.
+    NodeList<AnnotationExpr> annos = new NodeList<>();
+    for (AnnotationExpr anno : param.getVarArgsAnnotations()) {
+      annos.add(anno.clone());
+    }
+    return new ArrayType(param.getType().clone(), ArrayType.Origin.TYPE, annos);
   }
 
   /**
@@ -958,16 +965,18 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *
    * @param className a class name
    * @return the {@link Class} object corresponding to {@code className}, or null if none is found
-   *     or it cannot be loaded
+   *     or a class that it depends on is not found
    */
   private static @Nullable Class<?> loadClass(@ClassGetName String className) {
     assert className != null;
     try {
       return Class.forName(className, false, ToIndexFileConverter.class.getClassLoader());
-    } catch (ClassNotFoundException | LinkageError e) {
-      // A LinkageError, such as NoClassDefFoundError, means that the class exists but cannot be
-      // used -- for example, one of its supertypes is not on the classpath.  Treat it the same
-      // as a class that does not exist, rather than aborting the whole conversion.
+    } catch (ClassNotFoundException | NoClassDefFoundError e) {
+      // A NoClassDefFoundError means that the class exists but cannot be used, because a class
+      // that it depends on, such as a supertype, is not on the classpath.  Treat it the same as a
+      // class that does not exist, rather than aborting the whole conversion.  Other linkage
+      // errors, such as UnsupportedClassVersionError, indicate a misconfiguration, so they
+      // propagate.
       return null;
     }
   }

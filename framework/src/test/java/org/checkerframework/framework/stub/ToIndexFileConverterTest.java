@@ -203,6 +203,23 @@ public class ToIndexFileConverterTest {
         jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/ToIndexFileConverter;)V");
   }
 
+  /** Each top-level type of a compilation unit is converted. */
+  @Test
+  public void testSeveralTopLevelTypes() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import java.util.List;",
+            "class MyClass {",
+            "  void myMethod(List l) {}",
+            "}",
+            "class MyOtherClass {",
+            "  void myOtherMethod(List l) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/List;)V");
+    assertMethod(jaif, "MyOtherClass", "myOtherMethod(Ljava/util/List;)V");
+  }
+
   /** A varargs parameter's JVML descriptor is an array type. */
   @Test
   public void testVarargsDescriptor() throws Exception {
