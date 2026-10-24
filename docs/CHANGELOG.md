@@ -7,13 +7,12 @@
 
 ### User-visible changes
 
-A `@DefaultQualifier` annotation on a nested element now takes precedence over
-one on an enclosing element, as the manual specifies.  For example, a
-`@DefaultQualifier` for `ALL` on a method takes precedence over one for
-`RETURN` on the enclosing class.  A default for `OTHERWISE` still applies only
-where no default for a more concrete location applies.
+A `@DefaultQualifier` annotation on a nested element takes precedence over
+one on an enclosing element.
 
 ### Changes for type system implementers
+
+Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
 A default that a type system registers through
 `QualifierDefaults.addElementDefault()` now composes with the
