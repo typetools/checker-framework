@@ -1068,20 +1068,18 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitObjectCreation(ObjectCreationNode n, TransferInput<V, S> p) {
     NewClassTree newClassTree = n.getTree();
+    ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
     if (shouldPerformWholeProgramInference(n.getTree())) {
       // Can't infer annotations on an anonymous constructor, so use the super constructor.
-      ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
-      if (newClassTree.getClassBody() == null || !TreeUtils.hasSyntheticArgument(newClassTree)) {
-        // TODO: WPI could be changed to handle the synthetic argument, but for now just
-        // don't infer annotations for those new class trees.
-        analysis
-            .atypeFactory
-            .getWholeProgramInference()
-            .updateFromObjectCreation(
-                "<unknown from visitObjectCreation>", n, constructorElt, p.getRegularStore());
-      }
+      // The super constructor's parameters correspond to `n.getArguments()`.  For
+      // `outer.new Inner(...) {...}`, the anonymous constructor has an extra first parameter for
+      // `outer`, but `n` stores `outer` separately from its arguments.
+      WholeProgramInference wpi = analysis.atypeFactory.getWholeProgramInference();
+      assert wpi != null
+          : "@AssumeAssertion(nullness): shouldPerformWholeProgramInference returned true";
+      wpi.updateFromObjectCreation(
+          "<unknown from visitObjectCreation>", n, constructorElt, p.getRegularStore());
     }
-    ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
     S store = p.getRegularStore();
     // add new information based on postcondition
     processPostconditions(n, store, constructorElt, newClassTree);
