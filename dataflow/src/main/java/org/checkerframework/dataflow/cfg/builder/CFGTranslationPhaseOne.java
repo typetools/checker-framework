@@ -80,7 +80,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.ReferenceType;
 import javax.lang.model.type.TypeKind;
@@ -1237,7 +1236,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *
    * @param tree the invocation tree for the call
    * @param method an ExecutableElement representing a method to be called
-   * @param methodType an ExecutableType representing the type of the method call; the type must be
+   * @param formals the types of the formal parameters of {@code method}; the types must be
    *     viewpoint-adapted to the call
    * @param actualExprs a List of argument expressions to a call
    * @return a List of {@link Node}s representing arguments after conversions required by a call to
@@ -1246,13 +1245,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected List<Node> convertCallArguments(
       ExpressionTree tree,
       ExecutableElement method,
-      ExecutableType methodType,
+      List<? extends TypeMirror> formals,
       List<? extends ExpressionTree> actualExprs) {
     // NOTE: It is important to convert one method argument before generating CFG nodes for the
     // next argument, since label binding expects nodes to be generated in execution order.
     // Therefore, this method first determines which conversions need to be applied and then
     // iterates over the actual arguments.
-    List<? extends TypeMirror> formals = methodType.getParameterTypes();
     int numFormals = formals.size();
 
     ArrayList<Node> convertedNodes = new ArrayList<>(numFormals);
@@ -3255,7 +3253,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // See also BaseTypeVisitor.visitMethodInvocation and QualifierPolymorphism.annotate.
       arguments = Collections.emptyList();
     } else {
-      arguments = convertCallArguments(tree, method, TreeUtils.typeFromUse(tree), actualExprs);
+      arguments =
+          convertCallArguments(
+              tree, method, TreeUtils.typeFromUse(tree).getParameterTypes(), actualExprs);
     }
 
     // TODO: lock the receiver for synchronized methods
@@ -3316,13 +3316,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       enclosingExprNode = null;
     }
 
-    // Convert constructor arguments
-    ExecutableElement constructor = TreeUtils.elementFromUse(tree);
+    // Convert constructor arguments.
+    // For an anonymous class, the arguments correspond to the parameters of the superclass
+    // constructor.  The anonymous constructor has the same parameters, except that for
+    // `outer.new Inner(...) {...}` it has an extra first parameter for `outer`.  Use the types
+    // of the anonymous constructor's parameters, because they are adapted to the call site.
+    ExecutableElement constructor = TreeUtils.getSuperConstructor(tree);
+    List<? extends TypeMirror> formals = TreeUtils.typeFromUse(tree).getParameterTypes();
+    formals = formals.subList(formals.size() - constructor.getParameters().size(), formals.size());
 
     List<? extends ExpressionTree> actualExprs = tree.getArguments();
 
-    List<Node> arguments =
-        convertCallArguments(tree, constructor, TreeUtils.typeFromUse(tree), actualExprs);
+    List<Node> arguments = convertCallArguments(tree, constructor, formals, actualExprs);
 
     // TODO: for anonymous classes, don't use the identifier alone.
     // See https://github.com/typetools/checker-framework/issues/890 .
