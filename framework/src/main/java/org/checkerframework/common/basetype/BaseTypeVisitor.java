@@ -2613,9 +2613,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     List<AnnotatedTypeMirror> params =
         AnnotatedTypes.adaptParameters(atypeFactory, constructorType, passedArguments, tree);
 
-    ExecutableElement constructor = constructorType.getElement();
-    // For an anonymous class, the super constructor is the one that the programmer wrote, and its
-    // parameters correspond to the arguments.
+    // For an anonymous class, the super constructor is the one that the anonymous constructor
+    // calls, and its parameters correspond to the arguments of `tree`.
     ExecutableElement superConstructor = TreeUtils.getSuperConstructor(tree);
     CharSequence constructorName = ElementUtils.getSimpleDescription(superConstructor);
 
@@ -2631,7 +2630,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         typeargs,
         tree.getTypeArguments(),
         constructorName,
-        constructor.getTypeParameters());
+        superConstructor.getTypeParameters());
 
     boolean valid = validateTypeOf(tree);
 

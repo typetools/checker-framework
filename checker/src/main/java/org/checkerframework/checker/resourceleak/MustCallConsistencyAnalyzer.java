@@ -1802,6 +1802,10 @@ public class MustCallConsistencyAnalyzer {
    * Returns the elements representing the formal parameters of a method or constructor, from an
    * invocation of that method or constructor.
    *
+   * <p>For the creation of an anonymous class, returns the parameters of the super constructor,
+   * because they carry the declaration annotations (such as {@code @Owning}) that the programmer
+   * wrote, and because they correspond one-to-one to the arguments.
+   *
    * @param node a method invocation or object creation node
    * @return a list of the declarations of the formal parameters of the method or constructor being
    *     invoked
@@ -1811,7 +1815,7 @@ public class MustCallConsistencyAnalyzer {
     if (node instanceof MethodInvocationNode invocationNode) {
       executableElement = TreeUtils.elementFromUse(invocationNode.getTree());
     } else if (node instanceof ObjectCreationNode ocn2) {
-      executableElement = TreeUtils.elementFromUse(ocn2.getTree());
+      executableElement = TreeUtils.getSuperConstructor(ocn2.getTree());
     } else {
       throw new TypeSystemError("unexpected node type " + node.getClass());
     }
