@@ -755,11 +755,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             }
             if (declaration == null) {
               declaration = packageQualifiedStubDeclaration(type, typeName);
-              if (declaration instanceof TypeDeclaration<?>) {
-                name = qualifiedStubBinaryName((TypeDeclaration<?>) declaration);
+              if (declaration instanceof TypeDeclaration<?> typeDecl) {
+                name = qualifiedStubBinaryName(typeDecl);
               }
-            } else if (declaration instanceof TypeDeclaration<?>) {
-              name = memberBinaryName((TypeDeclaration<?>) declaration, identifiers, 1);
+            } else if (declaration instanceof TypeDeclaration<?> typeDecl) {
+              name = memberBinaryName(typeDecl, identifiers, 1);
             }
             if (declaration instanceof TypeParameter typeParam) {
               // The JVML descriptor uses the erasure, which is the first bound, or Object if
@@ -856,8 +856,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     // Because `relativeName` is qualified by the package name, it names a top-level type of the
     // stub file or a member of one.
     Node declaration = stubDeclaration(cu, relativeName);
-    return (declaration instanceof TypeDeclaration<?>)
-        ? qualifiedStubBinaryName((TypeDeclaration<?>) declaration)
+    return (declaration instanceof TypeDeclaration<?> typeDecl)
+        ? qualifiedStubBinaryName(typeDecl)
         : null;
   }
 
@@ -916,8 +916,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     // are not its members.
     for (Node n = node; n != null; n = n.getParentNode().orElse(null)) {
       Node first = firstDeclarationAt(n, identifiers);
-      if (first instanceof TypeDeclaration<?>) {
-        return nestedTypeDeclaration((TypeDeclaration<?>) first, identifiers);
+      if (first instanceof TypeDeclaration<?> typeDecl) {
+        return nestedTypeDeclaration(typeDecl, identifiers);
       } else if (first != null || n instanceof CompilationUnit) {
         return first;
       }
@@ -986,9 +986,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private static @Nullable TypeDeclaration<?> memberTypeDeclaration(
       TypeDeclaration<?> declaration, String identifier) {
     for (BodyDeclaration<?> member : declaration.getMembers()) {
-      if (member instanceof TypeDeclaration<?>
-          && ((TypeDeclaration<?>) member).getNameAsString().equals(identifier)) {
-        return (TypeDeclaration<?>) member;
+      if (member instanceof TypeDeclaration<?> memberType
+          && memberType.getNameAsString().equals(identifier)) {
+        return memberType;
       }
     }
     return null;
@@ -1005,8 +1005,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     for (Node n = declaration.getParentNode().orElse(null);
         n != null;
         n = n.getParentNode().orElse(null)) {
-      if (n instanceof TypeDeclaration<?>) {
-        binaryName.insert(0, ((TypeDeclaration<?>) n).getNameAsString() + "$");
+      if (n instanceof TypeDeclaration<?> typeDecl) {
+        binaryName.insert(0, typeDecl.getNameAsString() + "$");
       }
     }
     return binaryName.toString();
