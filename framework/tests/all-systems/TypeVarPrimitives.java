@@ -44,6 +44,10 @@ public class TypeVarPrimitives {
     return (b & true) || b == false;
   }
 
+  <T extends Boolean> boolean conditionalOps(T b) {
+    return (b && true) || (b || false);
+  }
+
   <T extends Boolean> boolean compoundBoolean(T t) {
     boolean x = true;
     x &= t;
@@ -129,6 +133,20 @@ public class TypeVarPrimitives {
       sum += x;
     }
     for (long x : l) {
+      sum += x;
+    }
+    return sum;
+  }
+
+  abstract static class IntegerBox<T extends Integer> implements Iterable<T> {}
+
+  // The capture of the wildcard is bounded by Integer, the declared bound of T.
+  long enhancedForUnboundedWildcard(IntegerBox<?> box) {
+    long sum = 0;
+    for (int x : box) {
+      sum += x;
+    }
+    for (long x : box) {
       sum += x;
     }
     return sum;

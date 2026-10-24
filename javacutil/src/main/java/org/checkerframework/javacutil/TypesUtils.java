@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -425,7 +426,8 @@ public final class TypesUtils {
    * Returns the boxed primitive type that unboxing conversion (JLS 5.1.8) unboxes when applied to
    * the given type, or null if unboxing conversion does not apply to the given type. The result is
    * the given type itself if it is a boxed primitive, or the erasure of the given type if it is a
-   * type variable or intersection type whose erasure is a boxed primitive.
+   * type variable or intersection type whose erasure is a boxed primitive. A wildcard is treated as
+   * its extends bound.
    *
    * <p>Javac's unboxing API accepts wrapper classes, such as {@code Integer}, but rejects type
    * variables. For example, erasing {@code T} when {@code T extends Integer} produces {@code
@@ -442,6 +444,13 @@ public final class TypesUtils {
    * @return the boxed primitive type that unboxing conversion unboxes, or null
    */
   public static @Nullable TypeMirror boxedPrimitiveForUnboxing(TypeMirror type, Types types) {
+    if (type.getKind() == TypeKind.WILDCARD) {
+      TypeMirror extendsBound = ((WildcardType) type).getExtendsBound();
+      if (extendsBound == null) {
+        return null;
+      }
+      type = extendsBound;
+    }
     TypeKind kind = type.getKind();
     if (kind == TypeKind.TYPEVAR || kind == TypeKind.INTERSECTION) {
       type = types.erasure(type);
@@ -450,8 +459,8 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if unboxing conversion (JLS 5.1.8) applies to the given type: it is a boxed
-   * primitive, or a type variable or intersection type whose erasure is a boxed primitive.
+   * Returns true if unboxing conversion (JLS 5.1.8) applies to the given type. See {@link
+   * #boxedPrimitiveForUnboxing} for the types to which unboxing conversion applies.
    *
    * @param type a type
    * @param types the type utilities
@@ -472,6 +481,30 @@ public final class TypesUtils {
   public static TypeMirror unboxedTypeOrSelf(TypeMirror type, Types types) {
     TypeMirror boxed = boxedPrimitiveForUnboxing(type, types);
     return boxed == null ? type : types.unboxedType(boxed);
+  }
+
+  /**
+   * Returns true if the given type is a numeric primitive, or if unboxing conversion (JLS 5.1.8)
+   * converts it to a numeric primitive.
+   *
+   * @param type a type
+   * @param types the type utilities
+   * @return true if the given type is a numeric primitive or can be unboxed to one
+   */
+  public static boolean isNumericAfterUnboxing(TypeMirror type, Types types) {
+    return isNumeric(unboxedTypeOrSelf(type, types));
+  }
+
+  /**
+   * Returns true if the given type is boolean, or if unboxing conversion (JLS 5.1.8) converts it to
+   * boolean.
+   *
+   * @param type a type
+   * @param types the type utilities
+   * @return true if the given type is boolean or can be unboxed to boolean
+   */
+  public static boolean isBooleanAfterUnboxing(TypeMirror type, Types types) {
+    return isBooleanType(unboxedTypeOrSelf(type, types));
   }
 
   /**
@@ -1014,6 +1047,20 @@ public final class TypesUtils {
    */
   public static boolean isErasedSubtype(TypeMirror subtype, TypeMirror supertype, Types types) {
     return types.isSubtype(types.erasure(subtype), types.erasure(supertype));
+  }
+
+  /**
+   * Returns true if the erased type of {@code type1} is the same type as the erased type of {@code
+   * type2}.
+   *
+   * @param type1 a type
+   * @param type2 a type
+   * @param types a Types object
+   * @return true if the erased type of {@code type1} is the same type as the erased type of {@code
+   *     type2}
+   */
+  public static boolean isErasedSameType(TypeMirror type1, TypeMirror type2, Types types) {
+    return types.isSameType(types.erasure(type1), types.erasure(type2));
   }
 
   /**
@@ -1752,6 +1799,197 @@ public final class TypesUtils {
     return unboxedKind == TypeKind.BYTE
         || unboxedKind == TypeKind.SHORT
         || unboxedKind == TypeKind.CHAR;
+  }
+
+  /**
+   * Returns true if {@code t1} and {@code t2} are the same type, except that captured type
+   * variables in {@code t1} may differ from the corresponding captured type variables in {@code
+   * t2}.
+   *
+   * <p>More precisely, returns true if there is a one-to-one correspondence between the captured
+   * type variables of {@code t1} and those of {@code t2} such that:
+   *
+   * <ul>
+   *   <li>replacing each captured type variable of {@code t1} by its counterpart makes {@code t1}
+   *       the same type as {@code t2}, and
+   *   <li>the upper and lower bounds of each pair of corresponding captured type variables are
+   *       likewise the same, under the same correspondence.
+   * </ul>
+   *
+   * As in {@link Types#isSameType}, {@code ?} is the same as {@code ? extends Object}. Otherwise, a
+   * wildcard that lacks an extends or super bound matches only a wildcard that also lacks that
+   * bound. Bounds that refer, directly or indirectly, back to a captured type variable (such as
+   * {@code CAP#1 extends Comparable<CAP#1>}) are handled by assuming that a pair of captured type
+   * variables corresponds while their bounds are compared.
+   *
+   * <p>This relation is symmetric.
+   *
+   * @param t1 a type
+   * @param t2 a type
+   * @param types the type utilities
+   * @return true if {@code t1} and {@code t2} are the same type modulo captured type variables
+   */
+  public static boolean isSameTypeModuloCaptures(TypeMirror t1, TypeMirror t2, Types types) {
+    return isSameTypeModuloCaptures(t1, t2, types, new CaptureCorrespondence());
+  }
+
+  /**
+   * A one-to-one correspondence between the captured type variables of a first type and those of a
+   * second type, built up by {@link #isSameTypeModuloCaptures(TypeMirror, TypeMirror, Types,
+   * CaptureCorrespondence)}. Captured type variables are stored without type annotations.
+   *
+   * <p>A pair stays in the correspondence after its bounds are compared. This is sound because
+   * every comparison is a conjunction: if comparing any pair's bounds fails, then the whole
+   * comparison fails. Keeping the pairs also means that each pair's bounds are compared at most
+   * once.
+   *
+   * @param firstToSecond a map from each captured type variable of the first type to its
+   *     counterpart in the second type
+   * @param secondToFirst the inverse of {@code firstToSecond}
+   */
+  private record CaptureCorrespondence(
+      IdentityHashMap<TypeMirror, TypeMirror> firstToSecond,
+      IdentityHashMap<TypeMirror, TypeMirror> secondToFirst) {
+
+    /** Creates an empty correspondence. */
+    CaptureCorrespondence() {
+      this(new IdentityHashMap<>(), new IdentityHashMap<>());
+    }
+  }
+
+  /**
+   * Returns true if {@code t1} and {@code t2} are the same type modulo captured type variables.
+   *
+   * @param t1 a type
+   * @param t2 a type
+   * @param types the type utilities
+   * @param visited the correspondence between the captured type variables of {@code t1} and those
+   *     of {@code t2}; this method may add pairs to it
+   * @return true if {@code t1} and {@code t2} are the same type modulo captured type variables
+   */
+  private static boolean isSameTypeModuloCaptures(
+      TypeMirror t1, TypeMirror t2, Types types, CaptureCorrespondence visited) {
+    if (isCapturedTypeVariable(t1) && isCapturedTypeVariable(t2)) {
+      // javac represents a captured type variable by several TypeMirrors that differ only in their
+      // type annotations, but by a single unannotated TypeMirror, so use that one in the
+      // IdentityHashMaps.
+      TypeMirror cap1 = TypeAnnotationUtils.unannotatedType(t1);
+      TypeMirror cap2 = TypeAnnotationUtils.unannotatedType(t2);
+      // The captured type variable that cap1 is already paired with, if any.
+      TypeMirror cap1Counterpart = visited.firstToSecond().get(cap1);
+      if (cap1Counterpart != null || visited.secondToFirst().containsKey(cap2)) {
+        // cap1 or cap2 was paired earlier in this comparison, or is paired because its bounds are
+        // being compared.  The correspondence is one-to-one, so cap1 and cap2 correspond only if
+        // they are paired with each other.
+        return cap1Counterpart != null && types.isSameType(cap1Counterpart, cap2);
+      }
+      visited.firstToSecond().put(cap1, cap2);
+      visited.secondToFirst().put(cap2, cap1);
+      TypeVariable v1 = (TypeVariable) t1;
+      TypeVariable v2 = (TypeVariable) t2;
+      return isSameTypeModuloCaptures(v1.getUpperBound(), v2.getUpperBound(), types, visited)
+          && isSameTypeModuloCaptures(v1.getLowerBound(), v2.getLowerBound(), types, visited);
+    }
+    if (t1.getKind() != t2.getKind()) {
+      return false;
+    }
+    switch (t1.getKind()) {
+      case DECLARED -> {
+        DeclaredType d1 = (DeclaredType) t1;
+        DeclaredType d2 = (DeclaredType) t2;
+        return d1.asElement().equals(d2.asElement())
+            && isSameTypeModuloCaptures(
+                d1.getEnclosingType(), d2.getEnclosingType(), types, visited)
+            && isSameTypesModuloCaptures(
+                d1.getTypeArguments(), d2.getTypeArguments(), types, visited);
+      }
+      case ARRAY -> {
+        return isSameTypeModuloCaptures(
+            ((ArrayType) t1).getComponentType(),
+            ((ArrayType) t2).getComponentType(),
+            types,
+            visited);
+      }
+      case INTERSECTION -> {
+        return isSameTypesModuloCaptures(
+            ((IntersectionType) t1).getBounds(),
+            ((IntersectionType) t2).getBounds(),
+            types,
+            visited);
+      }
+      case WILDCARD -> {
+        WildcardType w1 = (WildcardType) t1;
+        WildcardType w2 = (WildcardType) t2;
+        TypeMirror extends1 = w1.getExtendsBound();
+        TypeMirror extends2 = w2.getExtendsBound();
+        // `?` is the same as `? extends Object`.
+        if (extends1 != null && isObject(extends1)) {
+          extends1 = null;
+        }
+        if (extends2 != null && isObject(extends2)) {
+          extends2 = null;
+        }
+        return isSameBoundModuloCaptures(extends1, extends2, types, visited)
+            && isSameBoundModuloCaptures(w1.getSuperBound(), w2.getSuperBound(), types, visited);
+      }
+      case TYPEVAR -> {
+        // At most one of t1 and t2 is a captured type variable.
+        return !isCapturedTypeVariable(t1)
+            && !isCapturedTypeVariable(t2)
+            && areSame((TypeVariable) t1, (TypeVariable) t2);
+      }
+      default -> {
+        return types.isSameType(t1, t2);
+      }
+    }
+  }
+
+  /**
+   * Returns true if {@code ts1} and {@code ts2} have the same length and their corresponding
+   * elements are the same type modulo captured type variables.
+   *
+   * @param ts1 a list of types
+   * @param ts2 a list of types
+   * @param types the type utilities
+   * @param visited the correspondence between captured type variables
+   * @return true if {@code ts1} and {@code ts2} are pairwise the same modulo captured type
+   *     variables
+   */
+  private static boolean isSameTypesModuloCaptures(
+      List<? extends TypeMirror> ts1,
+      List<? extends TypeMirror> ts2,
+      Types types,
+      CaptureCorrespondence visited) {
+    if (ts1.size() != ts2.size()) {
+      return false;
+    }
+    for (int i = 0; i < ts1.size(); i++) {
+      if (!isSameTypeModuloCaptures(ts1.get(i), ts2.get(i), types, visited)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Returns true if {@code b1} and {@code b2} are the same wildcard bound, modulo captured type
+   * variables. A missing bound is only the same as another missing bound.
+   *
+   * @param b1 a wildcard bound, or null if the wildcard has no such bound
+   * @param b2 a wildcard bound, or null if the wildcard has no such bound
+   * @param types the type utilities
+   * @param visited the correspondence between captured type variables
+   * @return true if {@code b1} and {@code b2} are the same bound modulo captured type variables
+   */
+  private static boolean isSameBoundModuloCaptures(
+      @Nullable TypeMirror b1,
+      @Nullable TypeMirror b2,
+      Types types,
+      CaptureCorrespondence visited) {
+    if (b1 == null) {
+      return b2 == null;
+    }
+    return b2 != null && isSameTypeModuloCaptures(b1, b2, types, visited);
   }
 
   /**

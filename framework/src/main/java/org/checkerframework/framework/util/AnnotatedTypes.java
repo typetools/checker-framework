@@ -887,6 +887,9 @@ public final class AnnotatedTypes {
    *   <li>If the underlying type of {@code type1} is a supertype of the underlying type of {@code
    *       type2}, then return a copy of {@code type2} whose primary annotations are the greatest
    *       lower bound of the primary annotations on {@code type1} and {@code type2}.
+   *   <li>If javac's glb of the underlying types is computed by replacing each captured type
+   *       variable by its lower bound, then return the annotated glb of the types with those
+   *       replacements.
    *   <li>If the underlying type of {@code type1} and {@code type2} are not in a subtyping
    *       relationship, then return an annotated intersection type whose bounds are {@code type1}
    *       and {@code type2}.
@@ -928,6 +931,17 @@ public final class AnnotatedTypes {
     }
 
     if (glbJava.getKind() != TypeKind.INTERSECTION) {
+      // When javac's glb would contain more than one class type, javac retries with each captured
+      // type variable replaced by its lower bound.  See
+      // com.sun.tools.javac.code.Types#glbFlattened.
+      boolean replace1 = hasCapturedLowerBound(type1);
+      boolean replace2 = hasCapturedLowerBound(type2);
+      if (replace1 || replace2) {
+        return annotatedGLB(
+            atypeFactory,
+            replace1 ? ((AnnotatedTypeVariable) type1).getLowerBound() : type1,
+            replace2 ? ((AnnotatedTypeVariable) type2).getLowerBound() : type2);
+      }
       // If one type isn't a subtype of the other, then GLB must be an intersection.
       throw new BugInCF(
           "AnnotatedTypes#annotatedGLB: expected intersection, got [%s] %s. "
@@ -972,6 +986,19 @@ public final class AnnotatedTypes {
     glb.setBounds(newBounds);
     glb.addAnnotations(glbAnno);
     return glb;
+  }
+
+  /**
+   * Returns true if {@code type} is a captured type variable whose lower bound is not the null
+   * type.
+   *
+   * @param type an annotated type
+   * @return true if {@code type} is a captured type variable with a lower bound
+   */
+  private static boolean hasCapturedLowerBound(AnnotatedTypeMirror type) {
+    return type.getKind() == TypeKind.TYPEVAR
+        && TypesUtils.isCapturedTypeVariable(type.getUnderlyingType())
+        && ((AnnotatedTypeVariable) type).getLowerBound().getKind() != TypeKind.NULL;
   }
 
   /**
@@ -1140,7 +1167,7 @@ public final class AnnotatedTypes {
 
   /**
    * Given an AnnotatedExecutableType of a method or constructor declaration, get the parameter type
-   * expected at the indexth position (unwrapping varargs if necessary).
+   * expected at the {@code index}th position (unwrapping varargs if necessary).
    *
    * @param methodType the type of a method or constructor containing the parameter to return
    * @param index position of the parameter type to return
@@ -1149,7 +1176,44 @@ public final class AnnotatedTypes {
    */
   public static AnnotatedTypeMirror getAnnotatedTypeMirrorOfParameter(
       AnnotatedExecutableType methodType, int index) {
-    List<AnnotatedTypeMirror> parameterTypes = methodType.getParameterTypes();
+    return getAnnotatedTypeMirrorOfParameter(methodType, methodType.getParameterTypes(), index);
+  }
+
+  /**
+   * Given the type of the method or constructor invoked by {@code invocation}, get the parameter
+   * type expected for the {@code index}th argument of {@code invocation} (unwrapping varargs if
+   * necessary). Unlike {@link #getAnnotatedTypeMirrorOfParameter(AnnotatedExecutableType, int)},
+   * this skips any parameter that does not correspond to an argument; see {@link
+   * TreeUtils#parametersForArguments}.
+   *
+   * @param methodType the type of the method or constructor invoked by {@code invocation}
+   * @param invocation a method or constructor invocation
+   * @param index the position of an argument of {@code invocation}
+   * @return the type of the parameter for the argument in the index position. If that parameter is
+   *     a varArgs, return the component type of the varargs and NOT the array type.
+   */
+  public static AnnotatedTypeMirror getAnnotatedTypeMirrorOfParameter(
+      AnnotatedExecutableType methodType, Tree invocation, int index) {
+    return getAnnotatedTypeMirrorOfParameter(
+        methodType,
+        TreeUtils.parametersForArguments(
+            methodType.getElement(), invocation, methodType.getParameterTypes()),
+        index);
+  }
+
+  /**
+   * Returns the parameter type expected at the {@code index}th position of {@code parameterTypes}
+   * (unwrapping varargs if necessary).
+   *
+   * @param methodType the type of a method or constructor
+   * @param parameterTypes the types of the parameters of {@code methodType}, possibly without some
+   *     leading parameters that do not correspond to arguments
+   * @param index position of the parameter type to return
+   * @return the type of the parameter in the index position. If that parameter is a varArgs, return
+   *     the component type of the varargs and NOT the array type.
+   */
+  private static AnnotatedTypeMirror getAnnotatedTypeMirrorOfParameter(
+      AnnotatedExecutableType methodType, List<AnnotatedTypeMirror> parameterTypes, int index) {
     boolean hasVarargs = methodType.getElement().isVarArgs();
 
     int lastIndex = parameterTypes.size() - 1;

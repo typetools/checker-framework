@@ -37,4 +37,22 @@ public class TypeVarSwitchSelector {
     }
     return t;
   }
+
+  @NonNull Object objectPattern(@Nullable Object o) {
+    // :: error: [switching.nullable]
+    switch (o) {
+      case String str -> {}
+      default -> {}
+    }
+    return o;
+  }
+
+  @NonNull Object objectWithNull(@Nullable Object o) {
+    switch (o) {
+      case null -> {}
+      default -> {}
+    }
+    // :: error: [return]
+    return o;
+  }
 }
