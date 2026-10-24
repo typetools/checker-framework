@@ -479,7 +479,13 @@ public class AnnotationFileUtil {
             }
           }
         } catch (IOException e) {
-          System.err.println("AnnotationFileUtil: could not process archive: " + location);
+          System.err.println(
+              "AnnotationFileUtil: could not process archive "
+                  + location
+                  + ": "
+                  + e.getClass().getName()
+                  + ": "
+                  + e.getMessage());
         }
       } else if (isUserSupplied
           ? isUsableNamedFile(name, fileType)
