@@ -2989,14 +2989,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       constructorFromUsePreSubstitution(tree, superCon, inferTypeArgs);
       // no viewpoint adaptation needed for super invocation
       superCon = AnnotatedTypes.asMemberOf(types, this, type, superCon.getElement(), superCon);
-      if (!TreeUtils.isAnonymousConstructorWithExplicitEnclosingExpression(
-          con.getElement(), tree)) {
+      if (superCon.getParameterTypes().size() == con.getParameterTypes().size()) {
         con.setParameterTypes(superCon.getParameterTypes());
       } else {
-        // If the anonymous class creation has an explicit enclosing expression, then the
-        // enclosing instance is the first parameter of the anonymous constructor. For example,
+        // If the super class of the anonymous class has an enclosing type, then it is the
+        // first parameter of the anonymous constructor. For example,
         // class Outer { class Inner {} }
-        //  outer.new Inner() {};
+        //  new Inner() {};
         // Then javac creates the following constructor:
         //  (.Outer x0) {
         //   x0.super();
