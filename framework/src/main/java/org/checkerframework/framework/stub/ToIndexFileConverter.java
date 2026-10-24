@@ -1041,14 +1041,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       // that this method terminates.
       Node supertypeDeclaration =
           stubDeclaration(supertypeScope(declaration), supertype.getNameWithScope(), false);
-      if (!(supertypeDeclaration instanceof TypeDeclaration<?>)) {
+      if (!(supertypeDeclaration instanceof TypeDeclaration<?> supertypeDecl)) {
         // The supertype is not declared in the stub file, so its members are unknown here.
         // `classpathMemberClass` searches such a supertype on the classpath.
         continue;
       }
-      TypeDeclaration<?> result =
-          memberTypeDeclaration(
-              (TypeDeclaration<?>) supertypeDeclaration, identifier, true, visited);
+      TypeDeclaration<?> result = memberTypeDeclaration(supertypeDecl, identifier, true, visited);
       // A private member type is not inherited.
       if (result != null && !result.isPrivate()) {
         return result;
@@ -1066,11 +1064,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private static List<ClassOrInterfaceType> supertypes(TypeDeclaration<?> declaration) {
     List<ClassOrInterfaceType> result = new ArrayList<>(2);
-    if (declaration instanceof NodeWithExtends<?>) {
-      result.addAll(((NodeWithExtends<?>) declaration).getExtendedTypes());
+    if (declaration instanceof NodeWithExtends<?> nodeWithExtends) {
+      result.addAll(nodeWithExtends.getExtendedTypes());
     }
-    if (declaration instanceof NodeWithImplements<?>) {
-      result.addAll(((NodeWithImplements<?>) declaration).getImplementedTypes());
+    if (declaration instanceof NodeWithImplements<?> nodeWithImplements) {
+      result.addAll(nodeWithImplements.getImplementedTypes());
     }
     return result;
   }
@@ -1381,10 +1379,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       // `memberTypeDeclaration` does.
       Node supertypeDeclaration =
           stubDeclaration(supertypeScope(declaration), supertypeName, false);
-      if (supertypeDeclaration instanceof TypeDeclaration<?>) {
-        result =
-            classpathMemberClass(
-                (TypeDeclaration<?>) supertypeDeclaration, identifier, true, cu, visited);
+      if (supertypeDeclaration instanceof TypeDeclaration<?> supertypeDecl) {
+        result = classpathMemberClass(supertypeDecl, identifier, true, cu, visited);
       } else {
         String supertypeBinaryName = resolve(supertypeName, cu);
         result =
