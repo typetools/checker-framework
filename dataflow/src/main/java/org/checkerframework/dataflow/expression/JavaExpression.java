@@ -38,6 +38,7 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.NullChkNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.SuperNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
@@ -503,6 +504,9 @@ public abstract class JavaExpression {
     } else if (receiverNode instanceof NarrowingConversionNode narrowingConversionNode) {
       // ignore narrowing
       return fromNode(narrowingConversionNode.getOperand());
+    } else if (receiverNode instanceof NullChkNode nullChkNode) {
+      // ignore null check
+      return fromNode(nullChkNode.getOperand());
     } else if (receiverNode instanceof UnaryOperationNode uopn) {
       return new UnaryOperation(uopn, fromNode(uopn.getOperand()));
     } else if (receiverNode instanceof BinaryOperationNode bopn) {

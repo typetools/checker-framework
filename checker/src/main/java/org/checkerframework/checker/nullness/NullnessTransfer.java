@@ -25,11 +25,13 @@ import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.NullChkNode;
 import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -349,6 +351,18 @@ public class NullnessTransfer
       ArrayAccessNode n, TransferInput<NullnessValue, NullnessStore> p) {
     TransferResult<NullnessValue, NullnessStore> result = super.visitArrayAccess(n, p);
     makeNonNull(result, n.getArray());
+    return result;
+  }
+
+  @Override
+  public TransferResult<NullnessValue, NullnessStore> visitNullChk(
+      NullChkNode n, TransferInput<NullnessValue, NullnessStore> p) {
+    TransferResult<NullnessValue, NullnessStore> result = super.visitNullChk(n, p);
+    // A null check throws NullPointerException if its operand is null.
+    for (Node operand : splitAssignments(n.getOperand())) {
+      makeNonNull(result, NodeUtils.removeCasts(operand));
+    }
+    refineToNonNull(result);
     return result;
   }
 

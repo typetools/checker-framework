@@ -679,16 +679,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   /*package-private*/ AnnotationMirror convertSpecialIntRangeToStandardIntRange(
       AnnotationMirror anm, TypeMirror typeMirror) {
-    TypeKind primitiveKind;
-    if (TypesUtils.isPrimitive(typeMirror)) {
-      primitiveKind = typeMirror.getKind();
-    } else if (TypesUtils.isBoxedPrimitive(typeMirror)) {
-      primitiveKind = types.unboxedType(typeMirror).getKind();
-    } else {
-      primitiveKind = TypeKind.LONG;
-    }
-
-    if (TypesUtils.isIntegralPrimitiveOrBoxed(typeMirror)) {
+    TypeKind primitiveKind = TypeKindUtils.primitiveOrBoxedToTypeKind(typeMirror);
+    if (primitiveKind != null && TypeKindUtils.isIntegral(primitiveKind)) {
       Range maxRange = Range.create(primitiveKind);
       return convertSpecialIntRangeToStandardIntRange(anm, maxRange.to);
 
@@ -846,12 +838,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return createStringAnnotation(stringVals);
     }
 
-    TypeKind primitiveKind;
-    if (TypesUtils.isPrimitive(resultType)) {
-      primitiveKind = resultType.getKind();
-    } else if (TypesUtils.isBoxedPrimitive(resultType)) {
-      primitiveKind = types.unboxedType(resultType).getKind();
-    } else {
+    TypeKind primitiveKind = TypeKindUtils.primitiveOrBoxedToTypeKind(resultType);
+    if (primitiveKind == null) {
       return UNKNOWNVAL;
     }
 
