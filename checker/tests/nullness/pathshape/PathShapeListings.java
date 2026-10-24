@@ -106,6 +106,12 @@ public class PathShapeListings {
     @HasParent Path p3 = Files.list(d).findFirst().get();
   }
 
+  // A qualifier that the programmer wrote is not refined.
+  void explicitQualifiers(@HasParent Path[] hasParentArray) {
+    @HasName Path[] array = hasParentArray;
+    array[0] = Path.of("x");
+  }
+
   void localVariableReassigned(Path d) throws IOException {
     Stream<Path> s = Files.list(d.resolve("a"));
     // :: error: (dereference.of.nullable)

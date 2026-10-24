@@ -76,6 +76,10 @@ public class PathShapeConstants {
     // :: error: (assignment)
     @HasName Path p10 = Path.of("a", more);
     @HasName Path p11 = Paths.get("a");
+    // On Windows, the strings are joined with a backslash, forming the long-path prefix, so this is
+    // the root `C:\`.
+    // :: error: (assignment)
+    @HasName Path p12 = Path.of("\\\\?", "C:\\");
   }
 
   void files() {

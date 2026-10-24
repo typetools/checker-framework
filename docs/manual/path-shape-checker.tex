@@ -159,8 +159,9 @@ interfaces have no methods that insert elements.
 
 An effectively final local variable with an initializer takes the type
 arguments and the array component type of its initializer, as if the variable
-had been declared with \<var>.  For example, the Path Shape Checker accepts
-this code:
+had been declared with \<var>.  This does not override a path shape qualifier
+that you write on a type argument or on the array component type.  For
+example, the Path Shape Checker accepts this code:
 
 \begin{Verbatim}
   try (Stream<Path> s = Files.list(Path.of("mydir"))) {

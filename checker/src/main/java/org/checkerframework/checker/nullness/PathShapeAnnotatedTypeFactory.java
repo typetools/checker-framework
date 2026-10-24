@@ -8,21 +8,17 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
 import java.io.File;
 import java.lang.annotation.Annotation;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.Spliterator;
-import java.util.stream.Stream;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -30,8 +26,13 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.UnionType;
+import javax.lang.model.type.WildcardType;
 import org.checkerframework.checker.nullness.PathShapeClassifier.PathShape;
 import org.checkerframework.checker.nullness.qual.HasName;
 import org.checkerframework.checker.nullness.qual.HasParent;
@@ -48,9 +49,6 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.DefaultTypeHierarchy;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -85,24 +83,6 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The {@code java.io.File} class. */
   /*package-private*/ final TypeElement fileElement = getTypeElement(File.class);
-
-  /**
-   * Interfaces with one type parameter, whose instances are read-only: they have no methods that
-   * insert elements. This checker treats their type argument as covariant, which is sound because
-   * of that property.
-   */
-  private final Set<TypeElement> covariantTypes =
-      new LinkedHashSet<>(
-          Arrays.asList(
-              getTypeElement(Iterable.class),
-              getTypeElement(DirectoryStream.class),
-              getTypeElement(Iterator.class),
-              getTypeElement(Optional.class),
-              getTypeElement(Spliterator.class),
-              getTypeElement(Stream.class)));
-
-  /** A list containing only 0, the index of the first type argument. */
-  private static final List<Integer> FIRST_TYPE_ARGUMENT = Collections.singletonList(0);
 
   /**
    * Creates a new PathShapeAnnotatedTypeFactory.
@@ -182,57 +162,98 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @return true if {@code tree} uses paths
    */
   private boolean usesPaths(Tree tree) {
-    Boolean result =
-        new TreeScanner<Boolean, Void>() {
-          @Override
-          public Boolean scan(Tree t, Void p) {
-            if (t == null) {
-              return false;
-            }
-            TypeMirror type = TreeUtils.typeOf(t);
-            if (type != null && mentionsPathOrFile(type)) {
-              return true;
-            }
-            return super.scan(t, p);
-          }
+    // Types that have been examined, to avoid infinite recursion through type variable bounds such
+    // as `T extends Comparable<T>`.
+    Set<TypeMirror> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+    class UsesPathsScanner extends TreeScanner<Void, Void> {
+      // True if a tree whose type mentions a path has been found.
+      boolean found = false;
 
-          @Override
-          public Boolean reduce(Boolean r1, Boolean r2) {
-            return (r1 != null && r1) || (r2 != null && r2);
-          }
-        }.scan(tree, null);
-    return result != null && result;
+      @Override
+      public Void scan(Tree t, Void p) {
+        // Once a use of a path has been found, return immediately without descending.
+        if (found || t == null) {
+          return null;
+        }
+        TypeMirror type = TreeUtils.typeOf(t);
+        if (type != null && mentionsPathOrFile(type, visited)) {
+          found = true;
+          return null;
+        }
+        return super.scan(t, p);
+      }
+    }
+    UsesPathsScanner scanner = new UsesPathsScanner();
+    scanner.scan(tree, null);
+    return scanner.found;
   }
 
   /**
    * Returns true if the given type mentions a {@code Path} or a {@code File}: it is a subtype of
-   * one of them, or one of its type arguments or its array component type mentions one of them.
-   * Also returns true for a path shape qualifier, so that a class that writes one is checked.
+   * one of them, or a part of it (such as a type argument, an array component type, a bound, or a
+   * parameter or return type) mentions one of them. Also returns true for a path shape qualifier,
+   * so that a class that writes one is checked.
    *
    * @param type a type
+   * @param visited types that have already been examined; is side-effected by this method
    * @return true if {@code type} mentions a {@code Path} or a {@code File}
    */
-  private boolean mentionsPathOrFile(TypeMirror type) {
+  private boolean mentionsPathOrFile(TypeMirror type, Set<TypeMirror> visited) {
+    if (!visited.add(type)) {
+      return false;
+    }
     switch (type.getKind()) {
       case DECLARED -> {
         DeclaredType declaredType = (DeclaredType) type;
-        if (isPathOrFile((TypeElement) declaredType.asElement())) {
-          return true;
-        }
-        for (TypeMirror typeArg : declaredType.getTypeArguments()) {
-          if (mentionsPathOrFile(typeArg)) {
-            return true;
-          }
-        }
-        return false;
+        return isPathOrFile((TypeElement) declaredType.asElement())
+            || mentionsAny(declaredType.getTypeArguments(), visited);
       }
       case ARRAY -> {
-        return mentionsPathOrFile(((ArrayType) type).getComponentType());
+        return mentionsPathOrFile(((ArrayType) type).getComponentType(), visited);
+      }
+      case WILDCARD -> {
+        WildcardType wildcard = (WildcardType) type;
+        return (wildcard.getExtendsBound() != null
+                && mentionsPathOrFile(wildcard.getExtendsBound(), visited))
+            || (wildcard.getSuperBound() != null
+                && mentionsPathOrFile(wildcard.getSuperBound(), visited));
+      }
+      case TYPEVAR -> {
+        TypeVariable typeVar = (TypeVariable) type;
+        return mentionsPathOrFile(typeVar.getUpperBound(), visited)
+            || mentionsPathOrFile(typeVar.getLowerBound(), visited);
+      }
+      case INTERSECTION -> {
+        return mentionsAny(((IntersectionType) type).getBounds(), visited);
+      }
+      case UNION -> {
+        return mentionsAny(((UnionType) type).getAlternatives(), visited);
+      }
+      case EXECUTABLE -> {
+        ExecutableType methodType = (ExecutableType) type;
+        return mentionsPathOrFile(methodType.getReturnType(), visited)
+            || mentionsAny(methodType.getParameterTypes(), visited);
       }
       default -> {
         return false;
       }
     }
+  }
+
+  /**
+   * Returns true if any of the given types mentions a {@code Path} or a {@code File}.
+   *
+   * @param types types
+   * @param visited types that have already been examined; is side-effected by this method
+   * @return true if any of {@code types} mentions a {@code Path} or a {@code File}
+   */
+  private boolean mentionsAny(List<? extends TypeMirror> types, Set<TypeMirror> visited) {
+    for (TypeMirror type : types) {
+      if (mentionsPathOrFile(type, visited)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -262,61 +283,9 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   @Override
-  protected TypeHierarchy createTypeHierarchy() {
-    return new PathShapeTypeHierarchy(
-        checker,
-        getQualifierHierarchy(),
-        ignoreRawTypeArguments,
-        checker.hasOption("invariantArrays"));
-  }
-
-  @Override
   public CFTransfer createFlowTransferFunction(
       CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     return new PathShapeTransfer(analysis);
-  }
-
-  /**
-   * Returns true if the type argument of the given type is treated as covariant. See {@link
-   * #covariantTypes}.
-   *
-   * @param type a declared type
-   * @return true if the type argument of {@code type} is treated as covariant
-   */
-  private boolean isCovariant(AnnotatedDeclaredType type) {
-    return covariantTypes.contains(TypesUtils.getTypeElement(type.getUnderlyingType()));
-  }
-
-  /**
-   * The type hierarchy for the Path Shape Checker. It treats the type argument of {@link
-   * #covariantTypes} as covariant.
-   */
-  private class PathShapeTypeHierarchy extends DefaultTypeHierarchy {
-
-    /**
-     * Creates a new PathShapeTypeHierarchy.
-     *
-     * @param checker the type-checker that is associated with this
-     * @param qualHierarchy the qualifier hierarchy that is associated with this
-     * @param ignoreRawTypes whether to ignore raw types
-     * @param invariantArrayComponents whether to make array subtyping invariant with respect to
-     *     array component types
-     */
-    PathShapeTypeHierarchy(
-        BaseTypeChecker checker,
-        QualifierHierarchy qualHierarchy,
-        boolean ignoreRawTypes,
-        boolean invariantArrayComponents) {
-      super(checker, qualHierarchy, ignoreRawTypes, invariantArrayComponents);
-    }
-
-    @Override
-    public List<Integer> getCovariantArgIndexes(AnnotatedDeclaredType type) {
-      if (isCovariant(type)) {
-        return FIRST_TYPE_ARGUMENT;
-      }
-      return super.getCovariantArgIndexes(type);
-    }
   }
 
   // ///////////////////////////////////////////////////////////////////////////
@@ -416,7 +385,9 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * If {@code variable} is an effectively final local variable that has an initializer, refines the
    * type arguments or array component type of {@code type} from the type of the initializer. This
-   * has the same effect as declaring the variable with {@code var}, so it is sound.
+   * has the same effect as declaring the variable with {@code var}, so it is sound. It refines only
+   * the type arguments and array component type that are {@code @UnknownPathShape}, so it does not
+   * override a more specific qualifier that the programmer wrote.
    *
    * @param variable a variable
    * @param type the type of a declaration or use of {@code variable}; is side-effected by this
@@ -485,13 +456,16 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Refines {@code type} to the path shape of {@code from}, if both are declared types.
+   * Refines {@code type} to the path shape of {@code from}, if both are declared types and {@code
+   * type} is {@code @UnknownPathShape}.
    *
    * @param type a type argument or array component type; is side-effected by this method
    * @param from the corresponding part of the initializer's type
    */
   private void refineFrom(AnnotatedTypeMirror type, AnnotatedTypeMirror from) {
-    if (type.getKind() == TypeKind.DECLARED && from.getKind() == TypeKind.DECLARED) {
+    if (type.getKind() == TypeKind.DECLARED
+        && from.getKind() == TypeKind.DECLARED
+        && type.hasPrimaryAnnotation(UNKNOWN_PATH_SHAPE)) {
       refine(type, getPathShape(from));
     }
   }

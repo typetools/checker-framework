@@ -1,5 +1,6 @@
 package org.checkerframework.checker.nullness;
 
+import java.util.List;
 import org.checkerframework.checker.nullness.qual.HasName;
 import org.checkerframework.checker.nullness.qual.HasParent;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -52,6 +53,40 @@ public final class PathShapeClassifier {
    */
   public static PathShape classifyPath(String s) {
     return weaker(unixPath(s), windowsPath(s));
+  }
+
+  /**
+   * Returns the shape of {@code Path.of(first, more...)}.
+   *
+   * @param strings the arguments to {@code Path.of}: {@code first}, followed by the elements of
+   *     {@code more}
+   * @return the shape of {@code Path.of(first, more...)} under both Unix and Windows rules
+   */
+  public static PathShape classifyPath(List<String> strings) {
+    // Each platform joins the strings with its own separator.  The Windows result can depend on
+    // the separator; for example, Windows recognizes the prefix "\\?\" only with backslashes.
+    return weaker(unixPath(join(strings, '/')), windowsPath(join(strings, '\\')));
+  }
+
+  /**
+   * Joins the arguments of {@code Path.of(first, more...)} into a path string, as {@code
+   * FileSystem.getPath} does: it omits empty strings in {@code more}.
+   *
+   * @param strings {@code first}, followed by the elements of {@code more}
+   * @param separator the platform's separator
+   * @return the path string
+   */
+  private static String join(List<String> strings, char separator) {
+    StringBuilder sb = new StringBuilder(strings.get(0));
+    for (String segment : strings.subList(1, strings.size())) {
+      if (!segment.isEmpty()) {
+        if (sb.length() > 0) {
+          sb.append(separator);
+        }
+        sb.append(segment);
+      }
+    }
+    return sb.toString();
   }
 
   /**

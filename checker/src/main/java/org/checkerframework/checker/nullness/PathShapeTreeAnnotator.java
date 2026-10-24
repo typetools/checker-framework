@@ -4,6 +4,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
+import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -224,21 +225,15 @@ public class PathShapeTreeAnnotator extends TreeAnnotator {
       // The other strings are passed in an array.
       return PathShape.UNKNOWN;
     }
-    // Join the non-empty strings, as Path.of does.  A Windows Path treats '/' as a separator.
-    StringBuilder joined = new StringBuilder();
+    List<String> constants = new ArrayList<>(args.size());
     for (ExpressionTree arg : args) {
       String constant = TreeUtils.stringConstantValue(arg);
       if (constant == null) {
         return PathShape.UNKNOWN;
       }
-      if (!constant.isEmpty()) {
-        if (joined.length() > 0) {
-          joined.append('/');
-        }
-        joined.append(constant);
-      }
+      constants.add(constant);
     }
-    return PathShapeClassifier.classifyPath(joined.toString());
+    return PathShapeClassifier.classifyPath(constants);
   }
 
   /**

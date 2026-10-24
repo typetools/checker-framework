@@ -7,6 +7,7 @@ import static org.checkerframework.checker.nullness.PathShapeClassifier.PathShap
 import java.io.File;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import org.checkerframework.checker.nullness.PathShapeClassifier.PathShape;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.junit.Assert;
@@ -152,6 +153,17 @@ public class PathShapeClassifierTest {
         HAS_NAME);
     // The long-path prefix requires an absolute path.
     check("\\\\?\\foo", HAS_NAME, null, HAS_NAME, HAS_PARENT, HAS_NAME, HAS_NAME);
+  }
+
+  @Test
+  public void testJoin() {
+    Assert.assertEquals(HAS_PARENT, PathShapeClassifier.classifyPath(Arrays.asList("a", "b")));
+    Assert.assertEquals(HAS_PARENT, PathShapeClassifier.classifyPath(Arrays.asList("a", "", "b")));
+    Assert.assertEquals(HAS_NAME, PathShapeClassifier.classifyPath(Arrays.asList("", "a")));
+    Assert.assertEquals(UNKNOWN, PathShapeClassifier.classifyPath(Arrays.asList("", "")));
+    // Windows joins the strings with a backslash, which forms the long-path prefix "\\?\", so
+    // the result is the root "C:\".  On Unix, the result has two names.
+    Assert.assertEquals(UNKNOWN, PathShapeClassifier.classifyPath(Arrays.asList("\\\\?", "C:\\")));
   }
 
   @Test
