@@ -9,6 +9,8 @@
 
 ### Changes for type system implementers
 
+Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
+
 The Checker Framework now enforces `@TargetLocations` restrictions on explicitly
 written type qualifiers.
 
