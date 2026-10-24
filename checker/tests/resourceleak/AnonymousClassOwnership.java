@@ -7,9 +7,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+import org.checkerframework.checker.mustcall.qual.CreatesMustCallFor;
 import org.checkerframework.checker.mustcall.qual.InheritableMustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.Owning;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class AnonymousClassOwnership {
 
@@ -106,5 +108,87 @@ public class AnonymousClassOwnership {
   // :: error: (required.method.not.called)
   void mustCallAliasLeak(@Owning InputStream in) {
     InputStream w = new BufferedInputStream(in) {};
+  }
+
+  class TwoParams {
+    // :: error: (required.method.not.called)
+    TwoParams(Closeable notOwned, @Owning Closeable owned) {}
+  }
+
+  // Only the argument for the @Owning parameter is transferred.
+  void twoParams(
+      AnonymousClassOwnership outer,
+      // :: error: (required.method.not.called)
+      @Owning Closeable notOwned,
+      @Owning Closeable owned) {
+    outer.new TwoParams(notOwned, owned) {};
+  }
+
+  class NotOwning {
+    NotOwning(Closeable c) {}
+  }
+
+  void notOwning(
+      AnonymousClassOwnership outer,
+      // :: error: (required.method.not.called)
+      @Owning Closeable c) {
+    outer.new NotOwning(c) {};
+  }
+
+  class OnlyVarargs {
+    OnlyVarargs(Closeable... cs) {}
+  }
+
+  void onlyVarargs(AnonymousClassOwnership outer, Closeable a, Closeable b) {
+    outer.new OnlyVarargs() {};
+    outer.new OnlyVarargs(a, b) {};
+  }
+
+  static class Nested {
+    // :: error: (required.method.not.called)
+    Nested(@Owning Closeable c) {}
+  }
+
+  void nested(@Owning Closeable c) {
+    new Nested(c) {};
+  }
+
+  @InheritableMustCall("disconnect")
+  static class Holder {
+
+    private @Owning @Nullable Node head = null;
+
+    @CreatesMustCallFor("this")
+    void addNamed() {
+      head = new Node(head);
+    }
+
+    @CreatesMustCallFor("this")
+    void addAnonymous() {
+      head = new Node(head) {};
+    }
+
+    @EnsuresCalledMethods(value = "this.head", methods = "disconnect")
+    void disconnect() {
+      if (head != null) {
+        head.disconnect();
+      }
+    }
+  }
+
+  @InheritableMustCall("disconnect")
+  static class Node {
+    private final @Owning @Nullable Node next;
+
+    Node(@Owning @Nullable Node next) {
+      this.next = next;
+    }
+
+    @EnsuresCalledMethods(value = "this.next", methods = "disconnect")
+    void disconnect() {
+      if (next != null) {
+        next.disconnect();
+      }
+    }
   }
 }

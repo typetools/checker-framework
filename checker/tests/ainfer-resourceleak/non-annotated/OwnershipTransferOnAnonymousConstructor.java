@@ -24,5 +24,15 @@ class OwnershipTransferOnAnonymousConstructor {
       Socket s2 = s;
       baz(outer, s2);
     }
+
+    void implicitEnclosing(Socket s) {
+      Foo f = new Foo(s) {};
+    }
+
+    // :: warning: [required.method.not.called]
+    void testOwningOnImplicitEnclosing(@Owning Socket s) {
+      Socket s2 = s;
+      implicitEnclosing(s2);
+    }
   }
 }
