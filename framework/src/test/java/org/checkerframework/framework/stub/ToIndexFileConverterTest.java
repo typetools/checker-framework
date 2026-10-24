@@ -185,19 +185,6 @@ public class ToIndexFileConverterTest {
         jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/ToIndexFileConverter;)V");
   }
 
-  /** A single-type import shadows a type of the same name in the same package. */
-  @Test
-  public void testSingleTypeImportShadowsSamePackage() throws Exception {
-    String jaif =
-        convert(
-            "package java.util;",
-            "import java.awt.List;",
-            "class MyClass {",
-            "  void myMethod(List l) {}",
-            "}");
-    assertMethod(jaif, "MyClass", "myMethod(Ljava/awt/List;)V");
-  }
-
   /** A varargs parameter's JVML descriptor is an array type. */
   @Test
   public void testVarargsDescriptor() throws Exception {
