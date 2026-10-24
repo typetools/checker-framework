@@ -511,11 +511,10 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     }
     ExpressionTree iterableExpr = node.getExpression();
     TypeMirror iterableType = TreeUtils.typeOf(iterableExpr);
+    // A loop over an array calls no method.  A loop over an `Iterable` is compiled to
+    //   `Iterator<T> i = expr.iterator(); while (i.hasNext()) { T x = i.next(); ... }`
+    // so it calls `iterator()` on `expr`, then `hasNext()` and `next()` on the iterator.
     if (iterableType.getKind() != TypeKind.ARRAY) {
-      // The loop is compiled to
-      //   `Iterator<T> i = expr.iterator(); while (i.hasNext()) { T x = i.next(); ... }`.
-      // The loop creates the iterator, so no caller can observe a modification of it; only what
-      // `iterator()` modifies is visible outside the method.
       ExecutableElement iteratorMethod = noArgumentMethod(iterableType, "iterator");
       if (iteratorMethod == null) {
         checker.reportError(node, "purity.unknown.sideeffectsonly", "iterator");
@@ -527,6 +526,11 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
           node,
           iteratorMethod,
           isNewObjectTree(iterableExpr) ? null : expressionFromTree(iterableExpr));
+      // The receiver of `hasNext()` and `next()` is the iterator.  Only the compiler-generated
+      // variable `i` refers to the iterator, and `iterator()` is assumed to return a new object, so
+      // no caller can observe a modification of the iterator itself, such as advancing it.  A null
+      // receiver denotes such an object.  Anything else that `hasNext()` or `next()` modifies is
+      // still checked.
       TypeMirror iteratorType = iteratorMethod.getReturnType();
       for (String iteratorMethodName : new String[] {"hasNext", "next"}) {
         ExecutableElement iteratorElem = noArgumentMethod(iteratorType, iteratorMethodName);
@@ -1137,10 +1141,13 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
 
     @Override
     public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void aVoid) {
-      // The loop variable's declaration has no initializer, so `visitVariable` records nothing for
-      // it.  If this scanner did not note the variable here, an assignment in the loop body would
-      // be the variable's only recorded value, and the variable would be treated as fresh or as
-      // covered even before that assignment.
+      // Each iteration assigns the loop variable an element of the iterable or array, which might
+      // be an object that existed before the method was called.  That assignment does not appear
+      // in the source code, so neither `visitVariable` nor `visitAssignment` adds it to
+      // `assignedValues`.  Adding the variable to `otherwiseAssigned` prevents the variable from
+      // being treated as fresh or as covered.  For example, in
+      // `for (Object o : list) { o = new Object(); ... }`, `o` is not fresh, even though the only
+      // assignment in the source code assigns a `new` expression.
       VariableElement local = localVariable(TreeUtils.elementFromDeclaration(node.getVariable()));
       if (local != null) {
         otherwiseAssigned.add(local);
