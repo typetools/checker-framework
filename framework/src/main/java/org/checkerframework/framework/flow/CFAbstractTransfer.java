@@ -30,6 +30,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.common.aliasing.AliasingAnnotatedTypeFactory;
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.ForwardTransferFunction;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -988,10 +989,10 @@ public abstract class CFAbstractTransfer<
           && lhsLvn2.getElement().getKind() == ElementKind.PARAMETER) {
         // lhs is a formal parameter of some method
         VariableElement param = lhsLvn2.getElement();
-        analysis
-            .atypeFactory
-            .getWholeProgramInference()
-            .updateFromFormalParameterAssignment((LocalVariableNode) lhs, rhs, param);
+        WholeProgramInference wpi = analysis.atypeFactory.getWholeProgramInference();
+        assert wpi != null
+            : "@AssumeAssertion(nullness): shouldPerformWholeProgramInference returned true";
+        wpi.updateFromFormalParameterAssignment(lhsLvn2, rhs, param);
       }
     }
 
@@ -1073,11 +1074,11 @@ public abstract class CFAbstractTransfer<
       // The super constructor's parameters correspond to `n.getArguments()`.  For
       // `outer.new Inner(...) {...}`, the anonymous constructor has an extra first parameter for
       // `outer`, but `n` stores `outer` separately from its arguments.
-      analysis
-          .atypeFactory
-          .getWholeProgramInference()
-          .updateFromObjectCreation(
-              "<unknown from visitObjectCreation>", n, constructorElt, p.getRegularStore());
+      WholeProgramInference wpi = analysis.atypeFactory.getWholeProgramInference();
+      assert wpi != null
+          : "@AssumeAssertion(nullness): shouldPerformWholeProgramInference returned true";
+      wpi.updateFromObjectCreation(
+          "<unknown from visitObjectCreation>", n, constructorElt, p.getRegularStore());
     }
     S store = p.getRegularStore();
     // add new information based on postcondition
