@@ -9,6 +9,8 @@
 
 ### Changes for type system implementers
 
+Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
+
 `PurityChecker.checkPurity()` takes two new arguments: the method declaration
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
