@@ -901,10 +901,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       MethodInvocationTree primValueCall = treeBuilder.buildMethodInvocation(primValueSelect);
       handleArtificialTree(primValueCall);
-      Node unboxed =
+      MethodInvocationNode unboxed =
           new MethodInvocationNode(
               primValueCall, primValueAccess, Collections.emptyList(), getCurrentPath());
       unboxed.setInSource(false);
+      unboxed.setIsUnboxing(true);
 
       // Add Throwable to account for unchecked exceptions
       addToConvertedLookupMap(node.getTree(), unboxed);
