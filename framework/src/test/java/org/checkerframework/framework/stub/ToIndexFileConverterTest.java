@@ -423,6 +423,23 @@ public class ToIndexFileConverterTest {
         jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/ToIndexFileConverter;)V");
   }
 
+  /** Each top-level type of a compilation unit is converted. */
+  @Test
+  public void testSeveralTopLevelTypes() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import java.util.List;",
+            "class MyClass {",
+            "  void myMethod(List l) {}",
+            "}",
+            "class MyOtherClass {",
+            "  void myOtherMethod(List l) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/List;)V");
+    assertMethod(jaif, "MyOtherClass", "myOtherMethod(Ljava/util/List;)V");
+  }
+
   /** A varargs parameter's JVML descriptor is an array type. */
   @Test
   public void testVarargsDescriptor() throws Exception {
@@ -527,6 +544,25 @@ public class ToIndexFileConverterTest {
         param.type.innerTypes.get(oneLevel).lookup("Nullable"));
   }
 
+  /** The {@code @Target} of a nested annotation interface determines where it is recorded. */
+  @Test
+  public void testNestedAnnotationTargets() throws Exception {
+    AField param =
+        firstParameter(
+            "m(Ljava/lang/String;)V",
+            "package p;",
+            "import org.checkerframework.framework.testchecker.defaulting.UpperBoundQual;",
+            "class C {",
+            "  void m(@UpperBoundQual.UbImplicit String s) {}",
+            "}");
+    Assert.assertNull(
+        "@UpperBoundQual.UbImplicit was recorded on the parameter",
+        param.lookup("UpperBoundQual.UbImplicit"));
+    Assert.assertNotNull(
+        "@UpperBoundQual.UbImplicit was not recorded on the type",
+        param.type.lookup("UpperBoundQual.UbImplicit"));
+  }
+
   /**
    * An annotation that precedes a field's type or a method's return type is recorded as a
    * declaration annotation or as a type annotation, according to its {@code @Target}. As a type
@@ -557,6 +593,137 @@ public class ToIndexFileConverterTest {
     Assert.assertNotNull("no scene element for the component type", componentType);
     Assert.assertNotNull(
         "@Nullable was not recorded on the component type", componentType.lookup("Nullable"));
+  }
+
+  /**
+   * An annotation on a {@code void} method is recorded only as a declaration annotation, even if
+   * its {@code @Target} includes {@code TYPE_USE}.
+   */
+  @Test
+  public void testVoidMethodAnnotationTargets() throws Exception {
+    String[] stubFileLines = {
+      "package p;",
+      "import org.checkerframework.checker.mustcall.qual.MustCallAlias;",
+      "import org.checkerframework.checker.nullness.qual.Nullable;",
+      "class C {",
+      "  @MustCallAlias void m1();",
+      "  @Nullable void m2();",
+      "}"
+    };
+    AMethod method = methodOfStub("m1()V", stubFileLines);
+    Assert.assertNotNull(
+        "@MustCallAlias was not recorded on the method", method.lookup("MustCallAlias"));
+    Assert.assertTrue(
+        "an annotation was recorded on the void return type",
+        method.returnType.tlAnnotationsHere.isEmpty());
+
+    method = methodOfStub("m2()V", stubFileLines);
+    Assert.assertNotNull("@Nullable was not recorded on the method", method.lookup("Nullable"));
+    Assert.assertTrue(
+        "an annotation was recorded on the void return type",
+        method.returnType.tlAnnotationsHere.isEmpty());
+  }
+
+  /**
+   * An annotation that precedes a constructor declaration is recorded as a declaration annotation
+   * or as an annotation on the type of the constructed object, according to its {@code @Target}.
+   */
+  @Test
+  public void testConstructorAnnotationTargets() throws Exception {
+    AMethod constructor =
+        methodOfStub(
+            "<init>()V",
+            "package p;",
+            "import org.checkerframework.checker.mustcall.qual.MustCallAlias;",
+            "import org.checkerframework.checker.nullness.qual.Nullable;",
+            "class C {",
+            "  @Nullable @Deprecated @MustCallAlias C() {}",
+            "}");
+    Assert.assertNull("@Nullable was recorded on the constructor", constructor.lookup("Nullable"));
+    Assert.assertNotNull(
+        "@Nullable was not recorded on the constructed type",
+        constructor.returnType.lookup("Nullable"));
+    Assert.assertNotNull(
+        "@Deprecated was not recorded on the constructor", constructor.lookup("Deprecated"));
+    Assert.assertNull(
+        "@Deprecated was recorded on the constructed type",
+        constructor.returnType.lookup("Deprecated"));
+    Assert.assertNotNull(
+        "@MustCallAlias was not recorded on the constructor", constructor.lookup("MustCallAlias"));
+    Assert.assertNotNull(
+        "@MustCallAlias was not recorded on the constructed type",
+        constructor.returnType.lookup("MustCallAlias"));
+  }
+
+  /**
+   * An annotation whose {@code @Target} permits neither the declaration nor {@code TYPE_USE} is
+   * recorded as a declaration annotation.
+   */
+  @Test
+  public void testAnnotationNotPermittedByTarget() throws Exception {
+    String[] stubFileLines = {
+      "package p;", "class C {", "  @Override String f;", "  void m(@Override String s) {}", "}"
+    };
+    AField field = fieldOfStub(stubFileLines);
+    Assert.assertNotNull("@Override was not recorded on the field", field.lookup("Override"));
+    AField param = firstParameter("m(Ljava/lang/String;)V", stubFileLines);
+    Assert.assertNotNull("@Override was not recorded on the parameter", param.lookup("Override"));
+  }
+
+  /**
+   * The annotations of a field whose brackets follow its name are recorded at the type paths of
+   * that field's own type, which may differ from the type of another field in the same declaration.
+   */
+  @Test
+  public void testBracketsAfterFieldName() throws Exception {
+    AClass clazz =
+        classOfStub(
+            "package p;",
+            "import java.util.List;",
+            "import org.checkerframework.checker.nullness.qual.Nullable;",
+            "class C {",
+            "  @Nullable List<@B String> g, f[];",
+            "}");
+    AField g = clazz.fields.get("g");
+    Assert.assertNotNull("@Nullable was not recorded on the type of g", g.type.lookup("Nullable"));
+    Assert.assertEquals(
+        "wrong type paths for g",
+        Arrays.asList(outerTypeArgument),
+        new ArrayList<>(g.type.innerTypes.keySet()));
+    Assert.assertNotNull(
+        "@B was not recorded on the type argument of g",
+        g.type.innerTypes.get(outerTypeArgument).lookup("B"));
+
+    AField f = clazz.fields.get("f");
+    List<TypePathEntry> elementTypePath = element(Collections.emptyList());
+    List<TypePathEntry> typeArgumentPath = new ArrayList<>(elementTypePath);
+    typeArgumentPath.add(firstTypeArgument);
+    Assert.assertNull("@Nullable was recorded on the array type", f.type.lookup("Nullable"));
+    Assert.assertEquals(
+        "wrong type paths for f", Arrays.asList(typeArgumentPath, elementTypePath), typePaths(f));
+    Assert.assertNotNull(
+        "@Nullable was not recorded on the component type",
+        f.type.innerTypes.get(elementTypePath).lookup("Nullable"));
+    Assert.assertNotNull(
+        "@B was not recorded on the type argument of the component type",
+        f.type.innerTypes.get(typeArgumentPath).lookup("B"));
+  }
+
+  /**
+   * A qualified annotation name that ends with a single-type import's name does not cause a crash.
+   */
+  @Test
+  public void testQualifiedNameEndingWithImport() throws Exception {
+    AField param =
+        firstParameter(
+            "m(Ljava/lang/String;)V",
+            "package p;",
+            "import x.y.Nullable;",
+            "class C {",
+            "  void m(@a.b.x.y.Nullable String s) {}",
+            "}");
+    Assert.assertNotNull(
+        "@a.b.x.y.Nullable was not recorded on the parameter", param.lookup("a.b.x.y.Nullable"));
   }
 
   /**

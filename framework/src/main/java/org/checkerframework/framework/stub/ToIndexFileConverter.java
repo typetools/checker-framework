@@ -149,6 +149,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private final Map<String, @Nullable List<ElementType>> targetsCache = new HashMap<>();
 
   /**
+   * A cache for {@link #resolve}. Maps a class name, as written in the stub file, to the fully
+   * qualified name that it identifies, or to null if resolution fails.
+   */
+  private final Map<String, @Nullable @BinaryName String> resolveCache = new HashMap<>();
+
+  /**
    * Creates a new ToIndexFileConverter.
    *
    * @param pkgDecl the AST node for package declaration
@@ -266,9 +272,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       if (typeDecls != null && cu.getPackageDeclaration().isPresent()) {
         List<ImportDeclaration> impDecls = cu.getImports();
         PackageDeclaration pkgDecl = cu.getPackageDeclaration().get();
+        ToIndexFileConverter converter = new ToIndexFileConverter(pkgDecl, impDecls, scene);
+        String pkgName = converter.pkgName;
         for (TypeDeclaration<?> typeDecl : typeDecls) {
-          ToIndexFileConverter converter = new ToIndexFileConverter(pkgDecl, impDecls, scene);
-          String pkgName = converter.pkgName;
           String name = typeDecl.getNameAsString();
           if (pkgName != null) {
             name = pkgName + "." + name;
@@ -342,17 +348,26 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     AMethod method;
 
     // Some of the methods in the generated parser use null to represent an empty list.
+    List<Type> paramTypes = new ArrayList<>();
     if (params != null) {
       for (Parameter param : params) {
-        sb.append(getJVML(param));
+        Type paramType = parameterType(param);
+        paramTypes.add(paramType);
+        sb.append(getJVML(paramType));
       }
     }
     sb.append(")V");
     method = clazz.methods.getVivify(sb.toString());
-    visitDecl(decl, method);
+    // A type annotation on a constructor declaration applies to the type of the constructed object.
+    visitDeclAndTypeAnnotations(
+        decl.getAnnotations(),
+        ElementType.CONSTRUCTOR,
+        method,
+        new ClassOrInterfaceType().setName(decl.getNameAsString()),
+        method.returnType);
     if (params != null) {
       for (int i = 0; i < params.size(); i++) {
-        visitParameter(params.get(i), method.parameters.getVivify(i));
+        visitParameter(params.get(i), paramTypes.get(i), method.parameters.getVivify(i));
       }
     }
     visitReceiverParameter(decl, method);
@@ -388,7 +403,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     for (VariableDeclarator v : decl.getVariables()) {
       AClass clazz = (AClass) elem;
       AField field = clazz.fields.getVivify(v.getNameAsString());
-      visitType(decl.getCommonType(), field.type);
+      visitType(v.getType(), field.type);
       visitDeclAndTypeAnnotations(
           decl.getAnnotations(), ElementType.FIELD, field, v.getType(), field.type);
     }
@@ -412,9 +427,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     StringBuilder sb = new StringBuilder(decl.getNameAsString()).append('(');
     AClass clazz = (AClass) elem;
     AMethod method;
+    List<Type> paramTypes = new ArrayList<>();
     if (params != null) {
       for (Parameter param : params) {
-        sb.append(getJVML(param));
+        Type paramType = parameterType(param);
+        paramTypes.add(paramType);
+        sb.append(getJVML(paramType));
       }
     }
     sb.append(')').append(getJVML(type));
@@ -424,7 +442,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         decl.getAnnotations(), ElementType.METHOD, method, type, method.returnType);
     if (params != null) {
       for (int i = 0; i < params.size(); i++) {
-        visitParameter(params.get(i), method.parameters.getVivify(i));
+        visitParameter(params.get(i), paramTypes.get(i), method.parameters.getVivify(i));
       }
     }
     visitReceiverParameter(decl, method);
@@ -483,7 +501,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       VariableDeclarator decl = varDecls.get(i);
       LocalLocation loc = new LocalLocation(i, decl.getNameAsString());
       AField field = method.body.locals.getVivify(loc);
-      visitType(expr.getCommonType(), field.type);
+      visitType(decl.getType(), field.type);
       visitDeclAndTypeAnnotations(
           annos, ElementType.LOCAL_VARIABLE, field, decl.getType(), field.type);
     }
@@ -509,6 +527,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /**
    * Copies information from an AST declaration node to an {@link ADeclaration}. Called by visitors
    * for BodyDeclaration subclasses.
+   *
+   * @param decl the AST declaration node to inspect
+   * @param elem destination declaration element
+   * @return null
    */
   private Void visitDecl(BodyDeclaration<?> decl, ADeclaration elem) {
     addAnnotations(decl.getAnnotations(), elem);
@@ -534,19 +556,33 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * Copies information from a formal parameter to an {@link AField}.
    *
    * @param param a formal parameter
+   * @param type the type of {@code param}, as returned by {@link #parameterType}
    * @param field the scene element for {@code param}
    */
-  private void visitParameter(Parameter param, AField field) {
-    // For a varargs parameter, `getType()` is the element type, and the annotations that precede
-    // the `...` apply to the array type.  Wrap a copy of the element type, because making a node
-    // the component of an array type would remove it from the parameter.
-    Type type = param.isVarArgs() ? new ArrayType(param.getType().clone()) : param.getType();
+  private void visitParameter(Parameter param, Type type, AField field) {
     visitType(type, field.type);
-    if (param.isVarArgs()) {
-      addAnnotations(param.getVarArgsAnnotations(), field.type);
-    }
     visitDeclAndTypeAnnotations(
         param.getAnnotations(), ElementType.PARAMETER, field, type, field.type);
+  }
+
+  /**
+   * Returns a formal parameter's type. For a varargs parameter, that is an array type, which bears
+   * the annotations that precede the {@code ...}.
+   *
+   * @param param a formal parameter
+   * @return the type of {@code param}
+   */
+  private static Type parameterType(Parameter param) {
+    if (!param.isVarArgs()) {
+      return param.getType();
+    }
+    // For a varargs parameter, `getType()` is the element type.  Wrap copies of it and of the
+    // annotations, because making a node part of the array type would remove it from the parameter.
+    NodeList<AnnotationExpr> annos = new NodeList<>();
+    for (AnnotationExpr anno : param.getVarArgsAnnotations()) {
+      annos.add(anno.clone());
+    }
+    return new ArrayType(param.getType().clone(), ArrayType.Origin.TYPE, annos);
   }
 
   /**
@@ -555,8 +591,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *
    * <p>Such an annotation is a declaration annotation, a type annotation, or both, according to its
    * {@code @Target} (JLS 9.7.4). As a type annotation, it applies to the innermost component type
-   * of an array type: in {@code @A String[]}, {@code @A} annotates {@code String}. An annotation
-   * whose {@code @Target} cannot be determined is recorded as a declaration annotation.
+   * of an array type: in {@code @A String[]}, {@code @A} annotates {@code String}. It is not a type
+   * annotation if {@code type} is {@code void}. An annotation that is not a type annotation is
+   * recorded as a declaration annotation, even if its {@code @Target} cannot be determined or does
+   * not permit the declaration.
    *
    * @param exprs the annotations that precede the declaration's type
    * @param declTarget the kind of declaration, such as {@link ElementType#FIELD}
@@ -578,20 +616,22 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         continue;
       }
       List<ElementType> targets = getTargets(expr);
-      if (targets == null || targets.contains(declTarget)) {
-        decl.tlAnnotationsHere.add(anno);
-      }
-      if (targets != null && targets.contains(ElementType.TYPE_USE)) {
+      if (targets != null && targets.contains(ElementType.TYPE_USE) && !type.isVoidType()) {
         ATypeElement elementType =
             elementLoc.isEmpty() ? typeElem : typeElem.innerTypes.getVivify(elementLoc);
         elementType.tlAnnotationsHere.add(anno);
+        if (targets.contains(declTarget)) {
+          decl.tlAnnotationsHere.add(anno);
+        }
+      } else {
+        decl.tlAnnotationsHere.add(anno);
       }
     }
   }
 
   /**
-   * Returns the {@code @Target} meta-annotation of the annotation interface that an annotation
-   * instantiates.
+   * Returns the element types in the {@code @Target} meta-annotation of the annotation interface
+   * that an annotation instantiates.
    *
    * @param expr an annotation
    * @return the element types in the {@code @Target} meta-annotation of {@code expr}'s annotation
@@ -711,17 +751,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Computes a formal parameter's JVML descriptor.
-   *
-   * @param param a formal parameter
-   * @return the JVML descriptor of {@code param}'s type
-   */
-  private String getJVML(Parameter param) {
-    // For a varargs parameter, `getType()` returns the element type rather than the array type.
-    return (param.isVarArgs() ? "[" : "") + getJVML(param.getType());
-  }
-
-  /**
    * Computes a type's JVML representation: its field descriptor, such as {@code I} for {@code int}
    * or {@code [[Ljava/lang/String;} for {@code String[][]}. For {@code void}, the result is {@code
    * V}.
@@ -835,7 +864,23 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *     if resolution fails
    */
   private @Nullable @BinaryName String resolve(@FullyQualifiedName String className) {
+    if (resolveCache.containsKey(className)) {
+      return resolveCache.get(className);
+    }
+    String result = resolveUncached(className);
+    resolveCache.put(className, result);
+    return result;
+  }
 
+  /**
+   * Finds the fully qualified name of the class with the given name, without consulting the cache.
+   *
+   * @param className possibly unqualified name of class, in which a {@code .} (not a {@code $})
+   *     separates a nested class from its enclosing class
+   * @return binary name of class that {@code className} identifies in the current context, or null
+   *     if resolution fails
+   */
+  private @Nullable @BinaryName String resolveUncached(@FullyQualifiedName String className) {
     // The order of the lookups below is the order in which Java resolves a type name: a
     // single-type import shadows a type in the current package, which shadows a type that an
     // import-on-demand declaration makes available.
@@ -849,7 +894,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         }
       }
     }
-
     if (pkgName != null) {
       // The first identifier of `className` names a type in the current package, not a
       // subpackage, so every later identifier names a member type.
@@ -941,16 +985,18 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *
    * @param className a class name
    * @return the {@link Class} object corresponding to {@code className}, or null if none is found
-   *     or it cannot be loaded
+   *     or a class that it depends on is not found
    */
   private static @Nullable Class<?> loadClass(@ClassGetName String className) {
     assert className != null;
     try {
       return Class.forName(className, false, ToIndexFileConverter.class.getClassLoader());
-    } catch (ClassNotFoundException | LinkageError e) {
-      // A LinkageError, such as NoClassDefFoundError, means that the class exists but cannot be
-      // used -- for example, one of its supertypes is not on the classpath.  Treat it the same
-      // as a class that does not exist, rather than aborting the whole conversion.
+    } catch (ClassNotFoundException | NoClassDefFoundError e) {
+      // A NoClassDefFoundError means that the class exists but cannot be used, because a class
+      // that it depends on, such as a supertype, is not on the classpath.  Treat it the same as a
+      // class that does not exist, rather than aborting the whole conversion.  Other linkage
+      // errors, such as UnsupportedClassVersionError, indicate a misconfiguration, so they
+      // propagate.
       return null;
     }
   }
