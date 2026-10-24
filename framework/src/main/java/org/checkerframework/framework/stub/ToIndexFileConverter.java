@@ -9,6 +9,7 @@ import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
@@ -272,6 +273,21 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     return new Annotation(def, Collections.emptyMap());
   }
 
+  /**
+   * Adds annotations to a scene element, omitting any that {@link #extractAnnotation} discards.
+   *
+   * @param exprs annotations
+   * @param elem the scene element to which to add the annotations
+   */
+  private static void addAnnotations(List<AnnotationExpr> exprs, AElement elem) {
+    for (AnnotationExpr expr : exprs) {
+      Annotation anno = extractAnnotation(expr);
+      if (anno != null) {
+        elem.tlAnnotationsHere.add(anno);
+      }
+    }
+  }
+
   @Override
   public Void visit(AnnotationDeclaration decl, AElement elem) {
     return null;
@@ -285,14 +301,14 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   @Override
   public Void visit(ClassOrInterfaceDeclaration decl, AElement elem) {
-    visitDecl(decl, (ADeclaration) elem);
-    return super.visit(decl, elem);
+    AClass clazz = classFor(decl, elem);
+    visitDecl(decl, clazz);
+    return super.visit(decl, clazz);
   }
 
   @Override
   public Void visit(ConstructorDeclaration decl, AElement elem) {
     List<Parameter> params = decl.getParameters();
-    List<AnnotationExpr> rcvrAnnos = decl.getAnnotations();
     BlockStmt body = decl.getBody();
     StringBuilder sb = new StringBuilder("<init>(");
     AClass clazz = (AClass) elem;
@@ -315,12 +331,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         visitType(param.getType(), field.type);
       }
     }
-    if (rcvrAnnos != null) {
-      for (AnnotationExpr expr : rcvrAnnos) {
-        Annotation anno = extractAnnotation(expr);
-        method.receiver.tlAnnotationsHere.add(anno);
-      }
-    }
+    visitReceiverParameter(decl, method);
     return body == null ? null : body.accept(this, method);
     // return super.visit(decl, elem);
   }
@@ -334,8 +345,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   @Override
   public Void visit(EnumDeclaration decl, AElement elem) {
-    visitDecl(decl, (ADeclaration) elem);
-    return super.visit(decl, elem);
+    AClass clazz = classFor(decl, elem);
+    visitDecl(decl, clazz);
+    return super.visit(decl, clazz);
   }
 
   @Override
@@ -362,7 +374,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     Type type = decl.getType();
     List<Parameter> params = decl.getParameters();
     List<TypeParameter> typeParams = decl.getTypeParameters();
-    Optional<ReceiverParameter> rcvrParam = decl.getReceiverParameter();
     BlockStmt body = decl.getBody().orElse(null);
     StringBuilder sb = new StringBuilder(decl.getNameAsString()).append('(');
     AClass clazz = (AClass) elem;
@@ -384,12 +395,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         visitType(param.getType(), field.type);
       }
     }
-    if (rcvrParam.isPresent()) {
-      for (AnnotationExpr expr : rcvrParam.get().getAnnotations()) {
-        Annotation anno = extractAnnotation(expr);
-        method.receiver.type.tlAnnotationsHere.add(anno);
-      }
-    }
+    visitReceiverParameter(decl, method);
     if (typeParams != null) {
       for (int i = 0; i < typeParams.size(); i++) {
         TypeParameter typeParam = typeParams.get(i);
@@ -446,42 +452,64 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       LocalLocation loc = new LocalLocation(i, decl.getNameAsString());
       AField field = method.body.locals.getVivify(loc);
       visitType(expr.getCommonType(), field.type);
-      if (annos != null) {
-        for (AnnotationExpr annoExpr : annos) {
-          Annotation anno = extractAnnotation(annoExpr);
-          field.tlAnnotationsHere.add(anno);
-        }
-      }
+      addAnnotations(annos, field);
     }
     return null;
   }
 
   /**
+   * Returns the scene element for a type declaration.
+   *
+   * @param decl a type declaration
+   * @param elem the scene element for {@code decl} if it is a top-level type, or for its enclosing
+   *     type if it is a nested type
+   * @return the scene element for {@code decl}
+   */
+  private AClass classFor(TypeDeclaration<?> decl, AElement elem) {
+    AClass clazz = (AClass) elem;
+    if (!decl.isNestedType()) {
+      return clazz;
+    }
+    return scene.classes.getVivify(clazz.className + "$" + decl.getNameAsString());
+  }
+
+  /**
    * Copies information from an AST declaration node to an {@link ADeclaration}. Called by visitors
    * for BodyDeclaration subclasses.
+   *
+   * @param decl the AST declaration node to inspect
+   * @param elem destination declaration element
+   * @return null
    */
   private Void visitDecl(BodyDeclaration<?> decl, ADeclaration elem) {
-    NodeList<AnnotationExpr> annoExprs = decl.getAnnotations();
-    if (annoExprs != null) {
-      for (AnnotationExpr annoExpr : annoExprs) {
-        Annotation anno = extractAnnotation(annoExpr);
-        elem.tlAnnotationsHere.add(anno);
-      }
-    }
+    addAnnotations(decl.getAnnotations(), elem);
     return null;
   }
 
-  /** Copies information from an AST type node to an {@link ATypeElement}. */
-  private Void visitType(Type type, ATypeElement elem) {
-    List<AnnotationExpr> exprs = type.getAnnotations();
-    if (exprs != null) {
-      for (AnnotationExpr expr : exprs) {
-        Annotation anno = extractAnnotation(expr);
-        if (anno != null) {
-          elem.tlAnnotationsHere.add(anno);
-        }
-      }
+  /**
+   * Copies information from a method's or constructor's receiver parameter, if it has one, to the
+   * receiver's scene element.
+   *
+   * @param decl a method or constructor declaration
+   * @param method the scene element for {@code decl}
+   */
+  private void visitReceiverParameter(CallableDeclaration<?> decl, AMethod method) {
+    Optional<ReceiverParameter> rcvrParam = decl.getReceiverParameter();
+    if (rcvrParam.isPresent()) {
+      addAnnotations(rcvrParam.get().getAnnotations(), method.receiver.type);
+      visitType(rcvrParam.get().getType(), method.receiver.type);
     }
+  }
+
+  /**
+   * Copies information from an AST type node to an {@link ATypeElement}.
+   *
+   * @param type the AST Type node to inspect
+   * @param elem destination type element
+   * @return null
+   */
+  private Void visitType(Type type, ATypeElement elem) {
+    addAnnotations(type.getAnnotations(), elem);
     visitInnerTypes(type, elem);
     return null;
   }
