@@ -9,6 +9,8 @@
 
 ### Changes for type system implementers
 
+Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
+
 Removed classes `ByteMath`, `ShortMath`, `IntegerMath`, `LongMath`, `FloatMath`,
 and `DoubleMath`.  Use `NumberMath.getNumberMath()` instead.
 
