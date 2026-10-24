@@ -1,6 +1,9 @@
 package org.checkerframework.checker.collectionownership;
 
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.util.List;
@@ -8,6 +11,8 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
 import org.checkerframework.checker.collectionownership.qual.CollectionFieldDestructor;
@@ -18,6 +23,9 @@ import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.UnderlyingAST;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
+import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
@@ -26,10 +34,14 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
+import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -68,6 +80,92 @@ public class CollectionOwnershipTransfer
     this.atypeFactory = (CollectionOwnershipAnnotatedTypeFactory) analysis.getTypeFactory();
     this.mcAtf = ResourceLeakUtils.getMustCallAnnotatedTypeFactory(checker);
     this.checker = checker;
+  }
+
+  /**
+   * Returns the initial store, in which each owning collection field of {@code this} has a
+   * collection ownership type and parameters are initialized to their declared qualifier type.
+   *
+   * <p>Initializer expressions and blocks start each owning collection field declared in the class
+   * at {@code @OwningCollectionBottom} (not yet assigned), and each constructor starts from the
+   * state the initializers leave ({@code @OwningCollectionBottom} if there are none). Inherited
+   * owning collection fields start at {@code @OwningCollection}, since the superclass constructor
+   * may already have given them an obligation. Other instance methods start with the declared type
+   * of the class's own fields (see {@link CFAbstractTransfer#initialStore}).
+   *
+   * @param underlyingAST the AST of the CFG being analyzed: a method, a lambda, a field
+   *     initializer, or an initializer block
+   * @param parameters a list of local variable nodes representing formal parameters (if any)
+   * @return the initial store for {@code underlyingAST}
+   */
+  @Override
+  public CollectionOwnershipStore initialStore(
+      UnderlyingAST underlyingAST, List<LocalVariableNode> parameters) {
+    CollectionOwnershipStore store = super.initialStore(underlyingAST, parameters);
+    ClassTree classTree;
+    boolean ownFieldsMayBeUnassigned;
+    if (underlyingAST instanceof CFGStatement initializer) {
+      if (isStaticInitializer(initializer.getCode())) {
+        return store;
+      }
+      // For initializer code, super.initialStore returns the store that the previous initializer
+      // left, not a copy.
+      store = analysis.createCopiedStore(store);
+      classTree = initializer.getClassTree();
+      ownFieldsMayBeUnassigned = true;
+    } else if (underlyingAST instanceof CFGMethod method) {
+      MethodTree methodTree = method.getMethod();
+      if (methodTree.getModifiers().getFlags().contains(Modifier.STATIC)) {
+        return store;
+      }
+      classTree = method.getClassTree();
+      ownFieldsMayBeUnassigned = TreeUtils.isConstructor(methodTree);
+    } else {
+      // A lambda starts from the store of its enclosing code.
+      return store;
+    }
+
+    TypeElement classElement = TreeUtils.elementFromDeclaration(classTree);
+    if (classElement == null) {
+      throw new BugInCF("Class " + classTree.getSimpleName() + " has no element");
+    }
+    ThisReference thisReference = new ThisReference(classElement.asType());
+    for (VariableElement field :
+        ElementUtils.getAllFieldsIn(classElement, atypeFactory.getElementUtils())) {
+      if (ElementUtils.isStatic(field) || !atypeFactory.isOwningCollectionField(field)) {
+        continue;
+      }
+      FieldAccess fieldAccess = new FieldAccess(thisReference, field);
+      if (store.getValue(fieldAccess) != null) {
+        continue;
+      }
+      if (!field.getEnclosingElement().equals(classElement)) {
+        // Inherited fields start at @OwningCollection
+        store.insertValue(
+            fieldAccess,
+            analysis.createSingleAnnotationValue(atypeFactory.OWNINGCOLLECTION, field.asType()));
+      } else if (ownFieldsMayBeUnassigned) {
+        // Fields declared in the class start at @OwningCollectionBottom
+        store.insertValue(
+            fieldAccess, analysis.createSingleAnnotationValue(atypeFactory.BOTTOM, field.asType()));
+      }
+    }
+    return store;
+  }
+
+  /**
+   * Returns true if the given initializer is a static field initializer or a static initializer
+   * block.
+   *
+   * @param initializer a field declaration or an initializer block
+   * @return true if {@code initializer} is static
+   */
+  private static boolean isStaticInitializer(Tree initializer) {
+    if (initializer instanceof BlockTree block) {
+      return block.isStatic();
+    }
+    return initializer instanceof VariableTree field
+        && field.getModifiers().getFlags().contains(Modifier.STATIC);
   }
 
   @Override

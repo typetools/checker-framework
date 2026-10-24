@@ -43,6 +43,7 @@ import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipStore;
+import org.checkerframework.checker.collectionownership.CollectionOwnershipTransfer;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipUtils;
 import org.checkerframework.checker.collectionownership.DisposalLoopInfo;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
@@ -1643,12 +1644,16 @@ public class MustCallConsistencyAnalyzer {
 
     // Ownership transfer to @Owning field.
     if (lhsElement.getKind() == ElementKind.FIELD) {
-      checkReassignmentToOwningCollectionField(obligations, assignmentNode);
       boolean isOwningField = !noLightweightOwnership && cmAtf.hasOwning(lhsElement);
       // Check that the must-call obligations of the lhs have been satisfied, if the field is
       // non-final and owning.
       if (isOwningField && cmAtf.canCreateObligations() && !ElementUtils.isFinal(lhsElement)) {
         checkReassignmentToOwningField(obligations, assignmentNode);
+      }
+
+      if (coAtf.isOwningCollectionField(lhsElement)) {
+        updateObligationsForOwningCollectionFieldAssignment(
+            obligations, assignmentNode, lhsElement);
       }
 
       // Remove Obligations from local variables, now that the owning field is responsible.
@@ -1995,176 +2000,89 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Issues an error if the given (re-)assignment to a resource collection field is not valid. A
-   * (re-)assignment is valid if the field previously is null, declared final, or of type
-   * {@code @OwningCollectionWithoutObligation}.
+   * Updates the Obligations for an assignment to an owning collection field: issues an error if the
+   * assignment might overwrite a collection whose elements have unfulfilled obligations.
+   *
+   * <p>The collection ownership type of the field before the assignment decides (see {@link
+   * CollectionOwnershipTransfer#initialStore(UnderlyingAST, List)}): a field of type
+   * {@code @OwningCollectionBottom} (not yet assigned, or null) or
+   * {@code @OwningCollectionWithoutObligation} may be reassigned, and a field of type
+   * {@code @OwningCollection} may not. A method that assigns an owning collection to the field must
+   * be annotated {@code @CreatesMustCallFor("this")}; field initializers, initializer blocks, and
+   * constructors are exempt.
    *
    * @param obligations current tracked Obligations
-   * @param node an assignment to a non-final, owning field
+   * @param node an assignment to an owning collection field
+   * @param lhsElement the field that {@code node} assigns
    */
-  private void checkReassignmentToOwningCollectionField(
-      Set<Obligation> obligations, AssignmentNode node) {
+  private void updateObligationsForOwningCollectionFieldAssignment(
+      Set<Obligation> obligations, AssignmentNode node, Element lhsElement) {
     Node lhs = node.getTarget();
     Node rhs = node.getExpression();
-
-    if (!coAtf.isResourceCollection(lhs.getType()) && !coAtf.isResourceCollection(rhs.getType())) {
-      return;
+    if (!(lhs instanceof FieldAccessNode lhsField)) {
+      throw new BugInCF(
+          "Assignment " + node + " to field " + lhsElement + " has a non-field-access target");
     }
 
-    boolean isOwningCollectionField =
-        coAtf.isOwningCollectionField(TreeUtils.elementFromTree(lhs.getTree()));
-    boolean isFinalField = false;
-
-    if (lhs != null && lhs.getTree() != null) {
-      Element lhsElt = TreeUtils.elementFromTree(lhs.getTree());
-      if (lhsElt != null) {
-        if (lhsElt.getModifiers().contains(Modifier.FINAL)) {
-          isFinalField = true;
-        }
-      }
+    CollectionOwnershipStore coStore = coAtf.getStoreBefore(node);
+    CollectionOwnershipType rhsCoType =
+        coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(rhs), coStore);
+    if (rhsCoType == null) {
+      // The store has no type for some rhs expressions. Assume that such an rhs is owning.
+      rhsCoType =
+          NodeUtils.removeCasts(rhs) instanceof NullLiteralNode
+              ? CollectionOwnershipType.OwningCollectionBottom
+              : CollectionOwnershipType.OwningCollection;
+    }
+    CollectionOwnershipType lhsCoType = coAtf.getCoType(lhs, coStore);
+    if (lhsCoType == null) {
+      // The store has a value for each owning collection field accessed through `this` or
+      // `super`. Other receivers are already reported by checkOwningResourceCollectionFieldAccess.
+      // Assume that such a field has an obligation.
+      lhsCoType = CollectionOwnershipType.OwningCollection;
     }
 
-    TreePath currentPath = cmAtf.getPath(node.getTree());
-    MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(currentPath);
-
-    if (enclosingMethodTree == null) {
-      // The assignment is taking place in a variable declaration's
-      // initializer or in an initializer block.
-      if (node.getTree() instanceof VariableTree) {
-        // assignment is a field initializer. Permitted only if RHS is
-        // @OwningCollectionWithoutObligation
-        // or null.
-        CollectionOwnershipStore coStore = coAtf.getStoreBefore(node);
-        CollectionOwnershipType rhsCoType =
-            coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(rhs), coStore);
-        if (rhsCoType == null) {
-          if (TreeUtils.isNullExpression(rhs.getTree())) {
-            // assignment to null allowed
-            return;
-          } else {
-            rhsCoType = CollectionOwnershipType.NotOwningCollection;
-          }
-        }
-        switch (rhsCoType) {
-          case OwningCollectionWithoutObligation:
-            return;
-          case OwningCollection:
-            // remove obligations of rhs if lhs is @OC field.
-            // Although only safe if lhs is also final, remove
-            // obligations to prevent a second error. The illegal
-            // assignment error below is issued if lhs not final.
-            if (isOwningCollectionField) {
-              Set<Obligation> obligationsForVar = getObligationsForVar(obligations, rhs.getTree());
-              for (Obligation obligation : obligationsForVar) {
-                obligations.remove(obligation);
-              }
-              if (isFinalField) {
-                return;
-              }
-            }
-          // fall through
-          case NotOwningCollection:
-            checker.reportError(
-                node.getTree(), "illegal.owningcollection.field.assignment", rhsCoType.toString());
-            return;
-          case OwningCollectionBottom:
-            return;
-        }
-      } else {
-        // is an initialization block. Not supported.
-        checker.reportError(
-            node,
-            "unfulfilled.collection.obligations",
-            coAtf.getMustCallValuesOfResourceCollectionComponent(lhs.getTree()).get(0),
-            lhs.getTree(),
-            "Field assignment outside method or declaration might overwrite field's current value");
-      }
-    } else {
-      // The assignment is taking place in a (possibly constructor) method.
-      CollectionOwnershipStore coStore = coAtf.getStoreBefore(node);
-      CollectionOwnershipType rhsCoType =
-          coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(rhs), coStore);
-      if (rhsCoType == null) {
-        if (TreeUtils.isNullExpression(rhs.getTree())) {
-          rhsCoType = CollectionOwnershipType.OwningCollectionBottom;
-        } else {
-          rhsCoType = CollectionOwnershipType.NotOwningCollection;
-        }
-      }
-
-      if (isFinalField) {
-        // special case because final field is not in store before initial assignment.
-        // final assignment is always allowed. Remove obligations of RHS if field is owning.
-        if (isOwningCollectionField) {
-          Set<Obligation> obligationsForVar = getObligationsForVar(obligations, rhs.getTree());
-          for (Obligation obligation : obligationsForVar) {
-            obligations.remove(obligation);
-          }
-        }
+    switch (lhsCoType) {
+      case NotOwningCollection -> {
+        // Only possible after a type error, such as assigning a @NotOwningCollection collection
+        // to the field, which is already reported.
         return;
       }
-
-      CollectionOwnershipType lhsCoType =
-          coAtf.getCoType(removeCastsAndGetTmpVarIfPresent(lhs), coStore);
-      if (lhsCoType == null) {
-        if (TreeUtils.isConstructor(enclosingMethodTree)) {
-          // If this is in a constructor, it may be the field's first assignment.
-          // TODO: after PR #7050 is merged, use that logic here to determine if first assignment.
-          // Treat as first assignment into this.field: ownership transfers into the object.
-          // So the constructor should not be forced to discharge the parameter’s obligation.
-          if (isOwningCollectionField) {
-            Set<Obligation> obs = getObligationsForVar(obligations, rhs.getTree());
-            for (Obligation o : obs) {
-              obligations.remove(o);
-            }
-          }
-          return;
+      case OwningCollection -> {
+        List<String> mustCallValues =
+            coAtf.getMustCallValuesOfResourceCollectionComponent(lhsField.getTree());
+        if (mustCallValues == null || mustCallValues.isEmpty()) {
+          mustCallValues =
+              Collections.singletonList(
+                  CollectionOwnershipAnnotatedTypeFactory.UNKNOWN_METHOD_NAME);
         }
-        // TODO: instead of throwing an exception here, we should probably treat it as Owning
-        // collection and issue an error below to be sound.
-        throw new BugInCF(
-            "Expression " + lhs + " cannot be found in CollectionOwnership store " + coStore);
-      } else if (lhsCoType == CollectionOwnershipType.OwningCollectionBottom) {
-        // Bottom represents null; it’s allowed on RHS of assignment.
-        throw new BugInCF(
-            "Expression "
-                + node
-                + " has resource collection operand, but @OwningCollectionBottom type.");
+        checker.reportError(
+            node.getTree(),
+            "unfulfilled.collection.obligations",
+            formatMissingMustCallMethods(mustCallValues),
+            lhsField.getTree(),
+            "Field assignment might overwrite field's current value");
       }
-
-      switch (lhsCoType) {
-        case NotOwningCollection -> {
-          // doesn't own elements. safe to overwrite.
-          return;
-          // doesn't own elements. safe to overwrite.
-        }
-        case OwningCollectionWithoutObligation -> {
-          // no obligation. assignment allowed.
-          // but if rhs is owning, demand CreatesMustCallFor("this")
-          if (rhsCoType == CollectionOwnershipType.OwningCollection
-              || rhsCoType == CollectionOwnershipType.NotOwningCollection) {
+      case OwningCollectionWithoutObligation, OwningCollectionBottom -> {
+        // The field has no obligation, so it may be reassigned. A method that assigns an owning
+        // collection to it must be annotated @CreatesMustCallFor("this").
+        if (rhsCoType == CollectionOwnershipType.OwningCollection) {
+          TreePath currentPath = cmAtf.getPath(node.getTree());
+          if (currentPath == null) {
+            throw new BugInCF("Assignment " + node + " has no tree path");
+          }
+          MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(currentPath);
+          if (enclosingMethodTree != null) {
             checkEnclosingMethodIsCreatesMustCallFor(lhs, enclosingMethodTree);
-            if (isOwningCollectionField) {
-              Set<Obligation> obligationsForVar = getObligationsForVar(obligations, rhs.getTree());
-              for (Obligation obligation : obligationsForVar) {
-                obligations.remove(obligation);
-              }
-            }
           }
-          return;
         }
-        case OwningCollection -> {
-          // assignment not allowed
-          checker.reportError(
-              node.getTree(),
-              "unfulfilled.collection.obligations",
-              coAtf.getMustCallValuesOfResourceCollectionComponent(lhs.getTree()).get(0),
-              lhs.getTree(),
-              "Field assignment might overwrite field's current value");
-          return;
-        }
-        default -> {}
       }
+    }
+
+    // Remove the Obligations of the rhs, now that the owning collection field is responsible.
+    Tree rhsTree = rhs.getTree();
+    if (rhsTree != null) {
+      obligations.removeAll(getObligationsForVar(obligations, rhsTree));
     }
   }
 
@@ -3220,13 +3138,17 @@ public class MustCallConsistencyAnalyzer {
       if (!reportedErrorAliases.contains(firstAlias)) {
         if (!checker.shouldSkipUses(TreeUtils.elementFromTree(firstAlias.tree))) {
           reportedErrorAliases.add(firstAlias);
-          String methodName = collectionObligation.mustCallMethod;
+          // Like the required.method.not.called error, name all the must-call methods of the
+          // elements, even though this Obligation is for only one of them.
+          List<String> mustCallValues =
+              coAtf.getMustCallValuesOfResourceCollectionComponent(firstAlias.tree);
+          if (mustCallValues == null || mustCallValues.isEmpty()) {
+            mustCallValues = Collections.singletonList(collectionObligation.mustCallMethod);
+          }
           checker.reportError(
               firstAlias.tree,
               "unfulfilled.collection.obligations",
-              methodName.equals(CollectionOwnershipAnnotatedTypeFactory.UNKNOWN_METHOD_NAME)
-                  ? "Unknown"
-                  : methodName,
+              formatMissingMustCallMethods(mustCallValues),
               firstAlias.stringForErrorMessage(),
               outOfScopeReason);
         }
