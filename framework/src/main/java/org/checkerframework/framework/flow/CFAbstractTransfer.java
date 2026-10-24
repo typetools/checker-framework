@@ -1071,6 +1071,9 @@ public abstract class CFAbstractTransfer<
     NewClassTree newClassTree = n.getTree();
     if (shouldPerformWholeProgramInference(n.getTree())) {
       // Can't infer annotations on an anonymous constructor, so use the super constructor.
+      // The super constructor's parameters correspond to `n.getArguments()`.  For
+      // `outer.new Inner(...) {...}`, the anonymous constructor has an extra first parameter for
+      // `outer`, but `n` stores `outer` separately from its arguments.
       ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
       @SuppressWarnings("nullness:assignment") // WPI is non-null when -Ainfer is passed
       @NonNull WholeProgramInference wpi = analysis.atypeFactory.getWholeProgramInference();
