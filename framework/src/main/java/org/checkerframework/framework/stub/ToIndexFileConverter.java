@@ -349,7 +349,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         decl.getAnnotations(),
         ElementType.CONSTRUCTOR,
         method,
-        new ClassOrInterfaceType(null, decl.getNameAsString()),
+        new ClassOrInterfaceType().setName(decl.getNameAsString()),
         method.returnType);
     if (params != null) {
       for (int i = 0; i < params.size(); i++) {
