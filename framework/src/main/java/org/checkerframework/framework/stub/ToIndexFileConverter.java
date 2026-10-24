@@ -80,6 +80,7 @@ import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
+import org.plumelib.reflection.Signatures;
 
 /**
  * Convert a JAIF file plus a stub file into index files (JAIFs). Note that the resulting index
@@ -138,8 +139,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private final Map<String, @Nullable List<ElementType>> targetsCache = new HashMap<>();
 
   /**
-   * A cache for {@link #resolve}. Maps a class name, as written in the stub file, to the binary
-   * name of the class that it identifies, or to null if resolution fails.
+   * A cache for {@link #resolve}. Maps a class name, as written in the stub file, to the fully
+   * qualified name that it identifies, or to null if resolution fails.
    */
   private final Map<String, @Nullable @BinaryName String> resolveCache = new HashMap<>();
 
@@ -607,7 +608,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *     interface, or null if that interface cannot be loaded or has no {@code @Target}
    */
   private @Nullable List<ElementType> getTargets(AnnotationExpr expr) {
-    String name = expr.getNameAsString();
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
+    @BinaryName String name = expr.getNameAsString();
     if (targetsCache.containsKey(name)) {
       return targetsCache.get(name);
     }
@@ -732,8 +734,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         new GenericVisitorAdapter<String, Void>() {
           @Override
           public String visit(ClassOrInterfaceType type, Void v) {
-            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameWithScope
-            @FullyQualifiedName String typeName = type.getNameWithScope();
+            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
+            @FullyQualifiedName String typeName = type.getNameAsString();
+            @SuppressWarnings("signature" // TODO:  bug in ToIndexFileConverter:
+            // resolve requires a @BinaryName, but this passes a @FullyQualifiedName.
+            // They differ for inner classes.
+            )
             String name = resolve(typeName);
             if (name == null) {
               // could be defined in the same stub file
@@ -787,13 +793,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Finds the binary name of the class with the given name.
+   * Finds the fully qualified name of the class with the given name.
    *
-   * @param className possibly unqualified name of class, as written in the stub file
-   * @return binary name of class that {@code className} identifies in the current context, or null
-   *     if resolution fails
+   * @param className possibly unqualified name of class
+   * @return fully qualified name of class that {@code className} identifies in the current context,
+   *     or null if resolution fails
    */
-  private @Nullable @BinaryName String resolve(String className) {
+  private @Nullable @BinaryName String resolve(@BinaryName String className) {
     if (resolveCache.containsKey(className)) {
       return resolveCache.get(className);
     }
@@ -803,86 +809,66 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Finds the binary name of the class with the given name, without consulting the cache.
+   * Finds the fully qualified name of the class with the given name, without consulting the cache.
    *
-   * @param className possibly unqualified name of class, as written in the stub file
-   * @return binary name of class that {@code className} identifies in the current context, or null
-   *     if resolution fails
+   * @param className possibly unqualified name of class
+   * @return fully qualified name of class that {@code className} identifies in the current context,
+   *     or null if resolution fails
    */
-  private @Nullable @BinaryName String resolveUncached(String className) {
+  private @Nullable @BinaryName String resolveUncached(@BinaryName String className) {
     // A single-type import shadows types in the same package and types imported on demand
     // (JLS 6.4.1).
     for (String importName : imports) {
       if (!importName.endsWith(".*")) {
         String qualifiedName = mergeImport(importName, className);
-        String binaryName = qualifiedName == null ? null : loadableBinaryName(qualifiedName);
-        if (binaryName != null) {
-          return binaryName;
+        if (qualifiedName != null && loadClass(qualifiedName) != null) {
+          return qualifiedName;
         }
       }
     }
 
     if (pkgName != null) {
-      String binaryName = loadableBinaryName(pkgName + "." + className);
-      if (binaryName != null) {
-        return binaryName;
+      String qualifiedName = Signatures.addPackage(pkgName, className);
+      if (loadClass(qualifiedName) != null) {
+        return qualifiedName;
       }
     }
 
     {
       // Every Java program implicitly does "import java.lang.*",
       // so see whether this class is in that package.
-      String binaryName = loadableBinaryName("java.lang." + className);
-      if (binaryName != null) {
-        return binaryName;
+      String qualifiedName = Signatures.addPackage("java.lang", className);
+      if (loadClass(qualifiedName) != null) {
+        return qualifiedName;
       }
     }
 
     for (String importName : imports) {
       if (importName.endsWith(".*")) {
         String qualifiedName = mergeImport(importName, className);
-        String binaryName = qualifiedName == null ? null : loadableBinaryName(qualifiedName);
-        if (binaryName != null) {
-          return binaryName;
+        if (qualifiedName != null && loadClass(qualifiedName) != null) {
+          return qualifiedName;
         }
       }
     }
 
-    return loadableBinaryName(className);
-  }
-
-  /**
-   * Returns the binary name of the class with the given name, if that class can be loaded.
-   *
-   * @param name a fully qualified class name, in which a nested class is separated from its
-   *     enclosing class by "." or "$"
-   * @return the binary name of the class named {@code name}, or null if no such class can be loaded
-   */
-  @SuppressWarnings("signature") // string manipulation of signature strings
-  private static @Nullable @BinaryName String loadableBinaryName(String name) {
-    // Try each split of the name into a package name and nested class names, from the longest
-    // package name to the shortest.
-    String binaryName = name;
-    while (true) {
-      if (loadClass(binaryName) != null) {
-        return binaryName;
-      }
-      int lastDot = binaryName.lastIndexOf('.');
-      if (lastDot < 0) {
-        return null;
-      }
-      binaryName = binaryName.substring(0, lastDot) + "$" + binaryName.substring(lastDot + 1);
+    if (loadClass(className) != null) {
+      return className;
     }
+
+    return null;
   }
 
   /**
-   * Combines an import with a partially qualified class name, yielding a fully qualified name.
+   * Combines an import with a partial binary name, yielding a binary name.
    *
    * @param importName package name or (for an inner class) the outer class name
    * @param className the class name
    * @return fully qualified class name if resolution succeeds, null otherwise
    */
-  private static @Nullable String mergeImport(String importName, String className) {
+  @SuppressWarnings("signature") // string manipulation of signature strings
+  private static @Nullable @BinaryName String mergeImport(
+      String importName, @BinaryName String className) {
     if (importName.isEmpty() || importName.equals(className)) {
       return className;
     }

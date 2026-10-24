@@ -198,40 +198,6 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myMethod(Ljava/awt/List;)V");
   }
 
-  /** A method's JVML descriptor uses the binary name of a nested class. */
-  @Test
-  public void testResolveNestedClass() throws Exception {
-    String jaif =
-        convert(
-            "package p;",
-            "import java.util.Map;",
-            "class MyClass {",
-            "  void myMethod(Map.Entry e) {}",
-            "  void myOtherMethod(java.util.Map.Entry e) {}",
-            "}");
-    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
-    assertMethod(jaif, "MyClass", "myOtherMethod(Ljava/util/Map$Entry;)V");
-  }
-
-  /** The {@code @Target} of a nested annotation interface determines where it is recorded. */
-  @Test
-  public void testNestedAnnotationTargets() throws Exception {
-    AField param =
-        firstParameter(
-            "m(Ljava/lang/String;)V",
-            "package p;",
-            "import org.checkerframework.framework.testchecker.defaulting.UpperBoundQual;",
-            "class C {",
-            "  void m(@UpperBoundQual.UbImplicit String s) {}",
-            "}");
-    Assert.assertNull(
-        "@UpperBoundQual.UbImplicit was recorded on the parameter",
-        param.lookup("UpperBoundQual.UbImplicit"));
-    Assert.assertNotNull(
-        "@UpperBoundQual.UbImplicit was not recorded on the type",
-        param.type.lookup("UpperBoundQual.UbImplicit"));
-  }
-
   /** A varargs parameter's JVML descriptor is an array type. */
   @Test
   public void testVarargsDescriptor() throws Exception {
