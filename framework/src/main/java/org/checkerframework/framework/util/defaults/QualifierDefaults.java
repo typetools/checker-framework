@@ -113,17 +113,39 @@ public class QualifierDefaults {
    * Defaults that a type system has explicitly declared for an Element, via {@link
    * #addElementDefault}. These compose with the defaults written as {@code @DefaultQualifier} on
    * the element and with the defaults of the element's enclosing scopes, and they take precedence
-   * over both; see {@link #defaultsAt} and {@link #applyDefaultsElement}.
+   * over both; see {@link #defaultsAt} and {@link #precedenceList}.
    */
   private final IdentityHashMap<Element, DefaultSet> elementDeclaredDefaults =
       new IdentityHashMap<>();
 
   /**
    * Memoizes {@link #defaultsAt}: a mapping from an Element to all the defaults that apply to that
-   * Element, including the defaults contributed by the Element's enclosing scopes. Only non-empty
-   * answers are stored.
+   * Element, including the defaults contributed by the Element's enclosing scopes.
+   *
+   * <p>This is an LRU cache, because most Elements map to {@link ScopeDefaults#EMPTY} and an
+   * unbounded map would retain an entry for every scope in the compilation.
    */
-  private final IdentityHashMap<Element, ScopeDefaults> defaultsAtCache = new IdentityHashMap<>();
+  private final Map<Element, ScopeDefaults> defaultsAtCache = MapsP.createLruCache(CACHE_SIZE);
+
+  /**
+   * Memoizes {@link #precedenceList} for the scopes that have defaults of their own. A scope
+   * without such defaults needs no entry, because its precedence list is one of the two shared
+   * arrays {@link #checkedCodeDefaultsArray} and {@link #uncheckedThenCheckedArray}. Like {@link
+   * #defaultsAtCache}, this is an LRU cache.
+   */
+  private final Map<Element, PrecedenceList> precedenceListCache = MapsP.createLruCache(CACHE_SIZE);
+
+  /**
+   * The precedence list for a scope that has no element defaults and to which conservative defaults
+   * do not apply. Computed on demand by {@link #getCheckedCodeDefaultsArray}.
+   */
+  private @Nullable PrecedenceList checkedCodeDefaultsArray = null;
+
+  /**
+   * The precedence list for a scope that has no element defaults and to which conservative defaults
+   * apply. Computed on demand by {@link #getUncheckedThenCheckedArray}.
+   */
+  private @Nullable PrecedenceList uncheckedThenCheckedArray = null;
 
   /** A mapping of Element &rarr; Whether or not that element is AnnotatedFor this type system. */
   private final IdentityHashMap<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
@@ -284,6 +306,7 @@ public class QualifierDefaults {
    */
   public void addCheckedCodeDefault(
       AnnotationMirror absoluteDefaultAnno, TypeUseLocation location) {
+    clearDefaultsCaches();
     checkDuplicates(checkedCodeDefaults, absoluteDefaultAnno, location);
     checkedCodeDefaults.add(new Default(absoluteDefaultAnno, location));
   }
@@ -296,6 +319,7 @@ public class QualifierDefaults {
    */
   public void addUncheckedCodeDefault(
       AnnotationMirror uncheckedDefaultAnno, TypeUseLocation location) {
+    clearDefaultsCaches();
     checkDuplicates(uncheckedCodeDefaults, uncheckedDefaultAnno, location);
     checkIsValidUncheckedCodeLocation(uncheckedDefaultAnno, location);
 
@@ -338,7 +362,21 @@ public class QualifierDefaults {
       elementDeclaredDefaults.put(elem, prevset);
     }
     prevset.add(new Default(elementDefaultAnno, location));
+    clearDefaultsCaches();
+  }
+
+  /**
+   * Discards every memoized answer that a newly-added default could invalidate. The standard
+   * defaults methods {@code addClimbStandardDefaults}, {@code addUncheckedStandardDefaults}, and
+   * the plural {@code add*CodeDefaults} all funnel through {@link #addCheckedCodeDefault} or {@link
+   * #addUncheckedCodeDefault}, so those two methods plus {@link #addElementDefault} are the only
+   * callers this method needs.
+   */
+  private void clearDefaultsCaches() {
     defaultsAtCache.clear();
+    precedenceListCache.clear();
+    checkedCodeDefaultsArray = null;
+    uncheckedThenCheckedArray = null;
   }
 
   /**
@@ -705,7 +743,11 @@ public class QualifierDefaults {
             concat(elementDefaults, parentDefaults.elementDefaults),
             concat(qualifierDefaults, parentDefaults.qualifierDefaults));
 
-    if (!result.isEmpty()) {
+    // Memoize the empty answer as well as a non-empty one: most elements have no applicable
+    // default, and recomputing that walks the whole chain of enclosing scopes every time.
+    // Do not memoize while an annotation file is being parsed, because getDeclAnnotation can
+    // return null for an element whose annotation file has not been read yet.
+    if (atypeFactory.shouldCache && !atypeFactory.isParsingAnnotationFiles()) {
       defaultsAtCache.put(elt, result);
     }
 
@@ -781,22 +823,8 @@ public class QualifierDefaults {
   }
 
   /**
-   * Applies default annotations to a type.
-   *
-   * <p>The defaults are applied in this order: first the defaults that {@link #addElementDefault}
-   * registered for the scope or for one of its enclosing scopes, together with the
-   * {@code @DefaultQualifier} annotations on the scope and on its enclosing scopes; then the
-   * conservative defaults if conservative defaults apply to the scope; and last the checked code
-   * defaults. A default that is applied earlier takes precedence over one that is applied later.
-   *
-   * <p>In the first group, a registered default precedes a {@code @DefaultQualifier} annotation,
-   * and a default of a nearer scope precedes a default of an enclosing scope, whatever the
-   * locations of the two defaults. For example, a {@code @DefaultQualifier} for {@link
-   * TypeUseLocation#ALL} on a method precedes a {@code @DefaultQualifier} for {@link
-   * TypeUseLocation#RETURN} on the enclosing class. The defaults of any one scope are ordered by
-   * {@link TypeUseLocation}. The exception is {@link TypeUseLocation#OTHERWISE}, which means "apply
-   * if nothing more concrete is provided": every {@link TypeUseLocation#OTHERWISE} default comes
-   * after every other default of the first group, whatever scope each comes from.
+   * Applies default annotations to a type. Conservative defaults are applied first as appropriate,
+   * followed by source code defaults.
    *
    * <p>For a discussion on the rules for application of source code and conservative defaults,
    * please see the linked manual sections.
@@ -809,36 +837,115 @@ public class QualifierDefaults {
    * @checker_framework.manual #annotating-libraries Annotating libraries
    */
   private void applyDefaultsElement(Element annotationScope, AnnotatedTypeMirror type) {
-    ScopeDefaults scopeDefaults = defaultsAt(annotationScope);
+    PrecedenceList defaults = precedenceList(annotationScope);
     DefaultApplierElement applier =
         createDefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
-
-    if (!scopeDefaults.isEmpty()) {
-      List<Default> defaults = new ArrayList<>(scopeDefaults.elementDefaults);
-      defaults.addAll(scopeDefaults.qualifierDefaults);
-      // Move the OTHERWISE defaults to the end, so that any more concrete default takes
-      // precedence even when the OTHERWISE default belongs to a nearer scope or was registered.
-      // The sort is stable, so otherwise the order above decides: nearer scopes first.
-      defaults.sort(OTHERWISE_LAST);
-      for (Default def : defaults) {
-        applier.applyDefault(def);
-      }
-    }
-
-    if (applyConservativeDefaults(annotationScope)) {
-      for (Default def : uncheckedCodeDefaults) {
-        applier.applyDefault(def);
-      }
-    }
-
-    for (Default def : checkedCodeDefaults) {
+    for (Default def : defaults.defaults) {
       applier.applyDefault(def);
     }
+  }
+
+  /**
+   * Returns every default that applies to the given scope, in the order in which the defaults are
+   * to be applied: first the defaults that {@link #addElementDefault} registered for the scope or
+   * for one of its enclosing scopes, together with the {@code @DefaultQualifier} annotations on the
+   * scope and on its enclosing scopes; then the conservative defaults if conservative defaults
+   * apply to the scope; and last the checked code defaults.
+   *
+   * <p>In the first group, a registered default precedes a {@code @DefaultQualifier} annotation,
+   * and a default of a nearer scope precedes a default of an enclosing scope, whatever the
+   * locations of the two defaults. For example, a {@code @DefaultQualifier} for {@link
+   * TypeUseLocation#ALL} on a method precedes a {@code @DefaultQualifier} for {@link
+   * TypeUseLocation#RETURN} on the enclosing class. The defaults of any one scope are ordered by
+   * {@link TypeUseLocation}. The exception is {@link TypeUseLocation#OTHERWISE}, which means "apply
+   * if nothing more concrete is provided": every {@link TypeUseLocation#OTHERWISE} default comes
+   * after every other default of the first group, whatever scope each comes from.
+   *
+   * <p>The result is memoized, and callers must not modify the result.
+   *
+   * @param annotationScope the element representing the nearest enclosing default annotation scope
+   *     for the type, or null
+   * @return the defaults that apply to {@code annotationScope}, in the order to apply them
+   */
+  protected PrecedenceList precedenceList(@Nullable Element annotationScope) {
+    if (annotationScope == null) {
+      return getCheckedCodeDefaultsArray();
+    }
+
+    PrecedenceList cached = precedenceListCache.get(annotationScope);
+    if (cached != null) {
+      return cached;
+    }
+
+    ScopeDefaults scopeDefaults = defaultsAt(annotationScope);
+    boolean conservative = applyConservativeDefaults(annotationScope);
+
+    if (scopeDefaults.isEmpty()) {
+      // The common case.  Return a shared array, so that the overwhelming majority of scopes
+      // need no per-scope storage at all.
+      return conservative ? getUncheckedThenCheckedArray() : getCheckedCodeDefaultsArray();
+    }
+
+    List<Default> list = new ArrayList<>(scopeDefaults.elementDefaults);
+    list.addAll(scopeDefaults.qualifierDefaults);
+    // Move the OTHERWISE defaults to the end, so that any more concrete default takes precedence
+    // even when the OTHERWISE default belongs to a nearer scope or was registered.  The sort is
+    // stable, so otherwise the order above decides: nearer scopes first.
+    list.sort(OTHERWISE_LAST);
+    if (conservative) {
+      list.addAll(uncheckedCodeDefaults);
+    }
+    list.addAll(checkedCodeDefaults);
+    PrecedenceList result = makePrecedenceList(list);
+
+    if (atypeFactory.shouldCache && !atypeFactory.isParsingAnnotationFiles()) {
+      precedenceListCache.put(annotationScope, result);
+    }
+    return result;
   }
 
   /** Orders the defaults for {@link TypeUseLocation#OTHERWISE} after all other defaults. */
   private static final Comparator<Default> OTHERWISE_LAST =
       Comparator.comparing(def -> def.location == TypeUseLocation.OTHERWISE);
+
+  /**
+   * Returns the precedence list for a scope that has no element defaults and to which conservative
+   * defaults do not apply.
+   *
+   * @return the precedence list consisting of just the checked code defaults
+   */
+  private PrecedenceList getCheckedCodeDefaultsArray() {
+    if (checkedCodeDefaultsArray == null) {
+      checkedCodeDefaultsArray = makePrecedenceList(new ArrayList<>(checkedCodeDefaults));
+    }
+    return checkedCodeDefaultsArray;
+  }
+
+  /**
+   * Returns the precedence list for a scope that has no element defaults and to which conservative
+   * defaults apply.
+   *
+   * @return the precedence list consisting of the unchecked code defaults then the checked code
+   *     defaults
+   */
+  private PrecedenceList getUncheckedThenCheckedArray() {
+    if (uncheckedThenCheckedArray == null) {
+      List<Default> list = new ArrayList<>(uncheckedCodeDefaults);
+      list.addAll(checkedCodeDefaults);
+      uncheckedThenCheckedArray = makePrecedenceList(list);
+    }
+    return uncheckedThenCheckedArray;
+  }
+
+  /**
+   * Creates a {@link PrecedenceList} for the defaults that apply to a scope.
+   *
+   * @param defaults every default that applies to the scope, in the order in which to apply them
+   * @return a precedence list for {@code defaults}
+   */
+  private PrecedenceList makePrecedenceList(List<Default> defaults) {
+    return new PrecedenceList(defaults);
+  }
 
   /**
    * The defaults that apply to a scope, other than the checked code defaults and the conservative
@@ -902,6 +1009,25 @@ public class QualifierDefaults {
      */
     public boolean isEmpty() {
       return elementDefaults.isEmpty() && qualifierDefaults.isEmpty();
+    }
+  }
+
+  /**
+   * A precedence list: every {@link Default} that applies to some scope, in the order in which to
+   * apply them.
+   */
+  protected static class PrecedenceList {
+
+    /** The defaults, in the order in which to apply them. Callers must not modify this array. */
+    public final Default[] defaults;
+
+    /**
+     * Creates a PrecedenceList.
+     *
+     * @param defaults every default that applies to the scope, in the order in which to apply them
+     */
+    public PrecedenceList(List<Default> defaults) {
+      this.defaults = defaults.toArray(new Default[0]);
     }
   }
 
