@@ -2269,7 +2269,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
     // An implicit receiver is the first enclosing type that is a subtype of the type where the
     // element is declared.
-    while (thisType != null && !isSubtype(thisType.getUnderlyingType(), typeOfImplicitReceiver)) {
+    while (thisType != null
+        && !TypesUtils.isErasedSubtype(
+            thisType.getUnderlyingType(), typeOfImplicitReceiver, types)) {
       thisType = thisType.getEnclosingType();
     }
     return thisType;
@@ -2372,7 +2374,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   public AnnotatedDeclaredType getEnclosingType(TypeElement typeElement, Tree tree) {
     AnnotatedDeclaredType thisType = getSelfType(tree);
-    while (thisType != null && !isSameType(thisType.getUnderlyingType(), typeElement.asType())) {
+    while (thisType != null
+        && !TypesUtils.isErasedSameType(
+            thisType.getUnderlyingType(), typeElement.asType(), types)) {
       thisType = thisType.getEnclosingType();
     }
     if (thisType == null) {
@@ -2389,37 +2393,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @param tree location to use
    * @return the enclosing type at the location of {@code tree} that is a subtype of {@code
    *     typeElement}
+   * @throws BugInCF if no type that encloses {@code tree} is a subtype of {@code typeElement}
    */
   public AnnotatedDeclaredType getEnclosingSubType(TypeElement typeElement, Tree tree) {
     AnnotatedDeclaredType thisType = getSelfType(tree);
-    while (!isSubtype(thisType.getUnderlyingType(), typeElement.asType())) {
+    while (thisType != null
+        && !TypesUtils.isErasedSubtype(thisType.getUnderlyingType(), typeElement.asType(), types)) {
       thisType = thisType.getEnclosingType();
     }
+    if (thisType == null) {
+      throw new BugInCF("No type that encloses %s is a subtype of %s", tree, typeElement);
+    }
     return thisType;
-  }
-
-  /**
-   * Returns true if the erasure of {@code type1} is a Java subtype of the erasure of {@code type2}.
-   *
-   * @param type1 a type
-   * @param type2 a type
-   * @return true if the erasure of {@code type1} is a Java subtype of the erasure of {@code type2}
-   */
-  private boolean isSubtype(TypeMirror type1, TypeMirror type2) {
-    return types.isSubtype(types.erasure(type1), types.erasure(type2));
-  }
-
-  /**
-   * Returns true if the erasure of {@code type1} is the same Java type as the erasure of {@code
-   * type2}.
-   *
-   * @param type1 a type
-   * @param type2 a type
-   * @return true if the erasure of {@code type1} is the same Java type as the erasure of {@code
-   *     type2}
-   */
-  private boolean isSameType(TypeMirror type1, TypeMirror type2) {
-    return types.isSameType(types.erasure(type1), types.erasure(type2));
   }
 
   /**

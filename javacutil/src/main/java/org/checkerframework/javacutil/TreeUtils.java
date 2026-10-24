@@ -718,11 +718,7 @@ public final class TreeUtils {
       case ASSIGNMENT -> TreeInfo.symbol((JCTree) ((AssignmentTree) tree).getVariable());
       case ARRAY_ACCESS -> elementFromTree(((ArrayAccessTree) tree).getExpression());
       case NEW_CLASS -> ((JCNewClass) tree).constructor;
-      case MEMBER_REFERENCE -> {
-        // TreeInfo.symbol, which is used in the default case, didn't handle
-        // member references until JDK8u20. So handle it here.
-        yield (ExecutableElement) ((JCMemberReference) tree).sym;
-      }
+      case MEMBER_REFERENCE -> (ExecutableElement) ((JCMemberReference) tree).sym;
       default -> {
         Element defaultResult;
         if (isTypeDeclaration(tree) || tree instanceof VariableTree || tree instanceof MethodTree) {
