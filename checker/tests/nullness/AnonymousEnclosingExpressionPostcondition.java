@@ -14,15 +14,6 @@ public class AnonymousEnclosingExpressionPostcondition {
     }
   }
 
-  class ArrayInner {
-    @EnsuresNonNull("#1")
-    ArrayInner(Object @Nullable ... args) {
-      if (args == null) {
-        throw new Error();
-      }
-    }
-  }
-
   static class Box {
     @Nullable Object f;
   }
@@ -47,14 +38,6 @@ public class AnonymousEnclosingExpressionPostcondition {
   void someVarargs(AnonymousEnclosingExpressionPostcondition outer, @Nullable Object c) {
     outer.new Inner(c, "a", "b") {};
     c.toString();
-  }
-
-  @SuppressWarnings("argument") // The Nullness Checker does not permit covariant array assignment.
-  void arrayAsVarargs(AnonymousEnclosingExpressionPostcondition outer, String[] @Nullable [] args) {
-    // :: warning: non-varargs call of varargs method with inexact argument type for last
-    // parameter;
-    outer.new ArrayInner(args) {};
-    args.toString();
   }
 
   void implicitEnclosing(@Nullable Object c) {

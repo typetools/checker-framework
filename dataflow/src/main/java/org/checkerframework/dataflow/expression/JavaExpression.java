@@ -22,9 +22,8 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.EqualsMethod;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -52,6 +51,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.CollectionsP;
 
 // The Lock Checker also supports "<self>" as a JavaExpression, but that is implemented in the Lock
@@ -367,17 +367,13 @@ public abstract class JavaExpression {
    * Viewpoint-adapts {@code this} to the {@code methodInvocationTree}.
    *
    * @param methodInvocationTree method invocation
-   * @param types type utilities
    * @return viewpoint-adapted version of this
    */
-  public final JavaExpression atMethodInvocation(
-      MethodInvocationTree methodInvocationTree, Types types) {
+  public final JavaExpression atMethodInvocation(MethodInvocationTree methodInvocationTree) {
     JavaExpression receiverJe = getReceiver(methodInvocationTree);
-    ExecutableElement method = TreeUtils.elementFromUse(methodInvocationTree);
-    ExecutableType methodType = TreeUtils.typeFromUse(methodInvocationTree);
     List<JavaExpression> argumentsJe =
         argumentTreesToJavaExpressions(
-            method, methodType.getParameterTypes(), methodInvocationTree.getArguments(), types);
+            TreeUtils.elementFromUse(methodInvocationTree), methodInvocationTree.getArguments());
     return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
   }
 
@@ -398,21 +394,15 @@ public abstract class JavaExpression {
    * Viewpoint-adapts {@code this} to the {@code newClassTree}.
    *
    * @param newClassTree constructor invocation
-   * @param types type utilities
    * @return viewpoint-adapted version of this
    */
-  public JavaExpression atConstructorInvocation(NewClassTree newClassTree, Types types) {
+  public JavaExpression atConstructorInvocation(NewClassTree newClassTree) {
     JavaExpression receiverJe = getReceiver(newClassTree);
     // For an anonymous class, use the super constructor, whose parameters correspond to the
     // arguments.  The anonymous constructor may have an extra parameter for the enclosing instance.
-    ExecutableElement constructor = TreeUtils.getSuperConstructor(newClassTree);
-    ExecutableType constructorType =
-        newClassTree.getClassBody() == null
-            ? TreeUtils.typeFromUse(newClassTree)
-            : TreeUtils.typeFromUse(TreeUtils.getSuperConstructorInvocation(newClassTree));
     List<JavaExpression> argumentsJe =
         argumentTreesToJavaExpressions(
-            constructor, constructorType.getParameterTypes(), newClassTree.getArguments(), types);
+            TreeUtils.getSuperConstructor(newClassTree), newClassTree.getArguments());
     return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
   }
 
@@ -880,17 +870,12 @@ public abstract class JavaExpression {
    * Converts method or constructor arguments from Trees to JavaExpressions, accounting for varargs.
    *
    * @param method the method or constructor being invoked
-   * @param parameterTypes the method or constructor parameter types at the invocation
    * @param argTrees the arguments to the method or constructor
-   * @param types type utilities
    * @return the arguments, as JavaExpressions
    */
   private static List<JavaExpression> argumentTreesToJavaExpressions(
-      ExecutableElement method,
-      List<? extends TypeMirror> parameterTypes,
-      List<? extends ExpressionTree> argTrees,
-      Types types) {
-    if (isVarargsInvocation(method, parameterTypes, argTrees, types)) {
+      ExecutableElement method, List<? extends ExpressionTree> argTrees) {
+    if (isVarargsInvocation(method, argTrees)) {
       List<JavaExpression> result = new ArrayList<>(method.getParameters().size());
       for (int i = 0; i < method.getParameters().size() - 1; i++) {
         result.add(fromTree(argTrees.get(i)));
@@ -916,24 +901,24 @@ public abstract class JavaExpression {
    * passed in an array.
    *
    * @param method the method or constructor
-   * @param parameterTypes the method or constructor parameter types at the invocation
    * @param args the arguments at the call site
-   * @param types type utilities
    * @return true if method is a varargs method and its varargs arguments are not passed in an array
    */
   private static boolean isVarargsInvocation(
-      ExecutableElement method,
-      List<? extends TypeMirror> parameterTypes,
-      List<? extends ExpressionTree> args,
-      Types types) {
+      ExecutableElement method, List<? extends ExpressionTree> args) {
     if (!method.isVarArgs()) {
       return false;
     }
-    if (parameterTypes.size() != args.size()) {
+    if (method.getParameters().size() != args.size()) {
       return true;
     }
     TypeMirror lastArgType = TreeUtils.typeOf(args.get(args.size() - 1));
-    TypeMirror lastParamType = parameterTypes.get(parameterTypes.size() - 1);
-    return !types.isAssignable(lastArgType, lastParamType);
+    if (lastArgType.getKind() != TypeKind.ARRAY) {
+      return true;
+    }
+    List<? extends VariableElement> paramElts = method.getParameters();
+    VariableElement lastParamElt = paramElts.get(paramElts.size() - 1);
+    return TypesUtils.getArrayDepth(ElementUtils.getType(lastParamElt))
+        != TypesUtils.getArrayDepth(lastArgType);
   }
 }
