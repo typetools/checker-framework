@@ -8,6 +8,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
@@ -1144,32 +1145,50 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitInstanceOf(InstanceOfNode node, TransferInput<V, S> in) {
     TransferResult<V, S> result = super.visitInstanceOf(node, in);
-    for (LocalVariableNode bindingVar : node.getBindingVariables()) {
+    // Only the variable of a binding pattern is refined by the expression's type.  The binding
+    // variables of a deconstruction pattern have the types of record components, which may be
+    // unrelated to the expression's type.
+    LocalVariableNode bindingVar = node.getBindingPatternVariable();
+    // The "reference type" is the type after "instanceof".  For a binding pattern, annotations on
+    // the reference type are written on the variable declaration, as in `e instanceof @A T v`.
+    Tree refTypeTree = node.getTree().getType();
+    boolean refTypeIsAnnotated = refTypeTree instanceof AnnotatedTypeTree;
+    if (bindingVar != null) {
+      VariableTree bindingVarTree = (VariableTree) bindingVar.getTree();
+      if (!bindingVarTree.getModifiers().getAnnotations().isEmpty()) {
+        refTypeTree = bindingVarTree;
+        refTypeIsAnnotated = true;
+      }
+    }
+    if (bindingVar == null && !refTypeIsAnnotated) {
+      return result;
+    }
+
+    AnnotatedTypeMirror expType =
+        analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
+    // The facts below hold only when the instanceof is true.  Get the else store before refining
+    // the then store, because for a RegularTransferResult the then store is the regular store.
+    S elseStore = result.getElseStore();
+    S thenStore = result.getThenStore();
+    if (bindingVar != null) {
       JavaExpression expr = JavaExpression.fromNode(bindingVar);
-      AnnotatedTypeMirror expType =
-          analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
       for (AnnotationMirror anno : expType.getAnnotations()) {
-        in.getRegularStore().insertOrRefine(expr, anno);
+        thenStore.insertOrRefine(expr, anno);
       }
     }
 
-    // The "reference type" is the type after "instanceof".
-    Tree refTypeTree = node.getTree().getType();
-    if (refTypeTree != null && refTypeTree instanceof AnnotatedTypeTree) {
+    if (refTypeIsAnnotated) {
       AnnotatedTypeMirror refType = analysis.atypeFactory.getAnnotatedType(refTypeTree);
-      AnnotatedTypeMirror expType =
-          analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
       if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
           && !refType.getPrimaryAnnotations().equals(expType.getPrimaryAnnotations())
           && !expType.getPrimaryAnnotations().isEmpty()) {
         JavaExpression expr = JavaExpression.fromTree(node.getTree().getExpression());
         for (AnnotationMirror anno : refType.getPrimaryAnnotations()) {
-          in.getRegularStore().insertOrRefine(expr, anno);
+          thenStore.insertOrRefine(expr, anno);
         }
-        return new RegularTransferResult<>(result.getResultValue(), in.getRegularStore());
       }
     }
-    return result;
+    return new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
   }
 
   /**

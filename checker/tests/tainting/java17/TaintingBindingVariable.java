@@ -16,10 +16,29 @@ public class TaintingBindingVariable {
     // :: warning: [instanceof.pattern.unsafe]
     if (o instanceof @Untainted String s) {
       @Untainted String f = s;
+      @Untainted Object g = o;
+    } else {
+      // :: error: [assignment]
+      @Untainted Object g = o;
     }
     if (o instanceof String s) {
       // :: error: [assignment]
       @Untainted String f2 = s;
     }
+  }
+
+  void negated(@Untainted Object o) {
+    if (!(o instanceof String s)) {
+      return;
+    }
+    @Untainted String f = s;
+  }
+
+  void negated2(Object o) {
+    if (!(o instanceof String s)) {
+      return;
+    }
+    // :: error: [assignment]
+    @Untainted String f = s;
   }
 }
