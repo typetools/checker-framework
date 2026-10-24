@@ -9,6 +9,8 @@
 
 ### Changes for type system implementers
 
+Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
+
 `AbstractValue.leastUpperBound()` and `CFAbstractValue.widenUpperBound()` may
 return `this` or the argument rather than a fresh object.  Do not side-effect
 the result.

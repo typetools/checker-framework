@@ -49,8 +49,15 @@ else
   # `--continue` ensures determinism: don't stop after the first parallel task failure.
   (./gradlew requireJavadoc --continue --warning-mode=all > /tmp/warnings-requireJavadoc.txt 2>&1) || true
   "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-requireJavadoc.txt || failures+=("ci-lint-diff /tmp/warnings-requireJavadoc.txt")
-  (./gradlew javadocDoclintAll --continue --warning-mode=all > /tmp/warnings-javadocDoclintAll.txt 2>&1) || true
+  ./gradlew javadocDoclintAll -PjavadocDoclintAllFailOnError=false --continue --warning-mode=all > /tmp/warnings-javadocDoclintAll.txt 2>&1 \
+    || failures+=("gradlew javadocDoclintAll")
   "$PLUME_SCRIPTS"/ci-lint-diff /tmp/warnings-javadocDoclintAll.txt || failures+=("ci-lint-diff /tmp/warnings-javadocDoclintAll.txt")
+  # ci-lint-diff checks only changed lines, but a broken classpath yields errors in every file.
+  # Report those errors wherever they are.  Leave other errors, which come from doclint and
+  # differ among JDK versions, to ci-lint-diff.
+  if grep -m 20 -e ": error: package .* does not exist$" -e ": error: cannot find symbol$" /tmp/warnings-javadocDoclintAll.txt; then
+    failures+=("javadocDoclintAll classpath errors")
+  fi
 fi
 if [ ${#failures[@]} -gt 0 ]; then
   echo "Failures:"
