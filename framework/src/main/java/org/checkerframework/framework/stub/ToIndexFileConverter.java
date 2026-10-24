@@ -937,8 +937,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private static @Nullable Node firstDeclarationAt(Node n, String[] identifiers) {
     // Within one declaration, a type parameter and a member type cannot have the same name.
-    if (identifiers.length == 1 && n instanceof NodeWithTypeParameters) {
-      for (TypeParameter typeParam : ((NodeWithTypeParameters<?>) n).getTypeParameters()) {
+    if (identifiers.length == 1 && n instanceof NodeWithTypeParameters<?> nodeWithTypeParams) {
+      for (TypeParameter typeParam : nodeWithTypeParams.getTypeParameters()) {
         if (typeParam.getNameAsString().equals(identifiers[0])) {
           return typeParam;
         }
