@@ -1,36 +1,75 @@
 package org.checkerframework.framework.stub;
 
+import java.io.File;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-/** {@link JarEntry}-based implementation of {@link AnnotationFileResource}. */
+/**
+ * {@link JarEntry}-based implementation of {@link AnnotationFileResource}. The archive is opened
+ * only while the entry is being read, so this resource itself holds no open file handle.
+ */
 public class JarEntryAnnotationFileResource implements AnnotationFileResource {
-  /** The underlying JarFile. */
-  private final JarFile file;
+  /** The JAR or ZIP archive. */
+  private final File archive;
 
-  /** The entry in the jar file. */
-  private final JarEntry entry;
+  /** The name of the entry in the archive. */
+  private final String entryName;
 
   /**
    * Constructs a {@code AnnotationFileResource} for the specified entry in the specified JAR file.
    *
-   * @param file the JAR file
-   * @param entry the JAR entry
+   * @param archive the JAR or ZIP archive
+   * @param entryName the name of the entry in the archive
    */
-  public JarEntryAnnotationFileResource(JarFile file, JarEntry entry) {
-    this.file = file;
-    this.entry = entry;
+  public JarEntryAnnotationFileResource(File archive, String entryName) {
+    this.archive = archive;
+    this.entryName = entryName;
   }
 
   @Override
   public String getDescription() {
-    return file.getName() + "!" + entry.getName();
+    return archive.getPath() + "!" + entryName;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>The returned stream holds the archive open; closing the stream closes the archive.
+   */
   @Override
+  // The returned stream's close() method closes `in` and `file`; on exception, `file` is closed.
+  @SuppressWarnings("resourceleak:required.method.not.called")
   public InputStream getInputStream() throws IOException {
-    return file.getInputStream(entry);
+    JarFile file = new JarFile(archive);
+    try {
+      JarEntry entry = file.getJarEntry(entryName);
+      if (entry == null) {
+        throw new IOException("No entry " + entryName + " in " + archive);
+      }
+      InputStream in = file.getInputStream(entry);
+      if (in == null) {
+        throw new IOException("Cannot read entry " + entryName + " in " + archive);
+      }
+      return new FilterInputStream(in) {
+        @Override
+        public void close() throws IOException {
+          try {
+            super.close();
+          } finally {
+            file.close();
+          }
+        }
+      };
+    } catch (IOException | RuntimeException e) {
+      try {
+        file.close();
+      } catch (IOException closeException) {
+        e.addSuppressed(closeException);
+      }
+      throw e;
+    }
   }
 }

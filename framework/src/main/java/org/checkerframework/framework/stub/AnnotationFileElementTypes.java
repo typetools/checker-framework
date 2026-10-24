@@ -291,6 +291,25 @@ public class AnnotationFileElementTypes {
   }
 
   /**
+   * Returns the path to use for an annotation file that was named on the command line. This is a
+   * special case when running in jtreg, which runs the compiler in a different directory than the
+   * one that contains the test's annotation files.
+   *
+   * @param path a relative or absolute path, from a command-line argument
+   * @return {@code path} if it is absolute, if it exists, or if the {@code test.src} system
+   *     property is not set; otherwise, {@code path} resolved against the {@code test.src} system
+   *     property
+   */
+  private static String resolveAgainstTestSrc(String path) {
+    String base = System.getProperty("test.src");
+    File file = new File(path);
+    if (base == null || file.isAbsolute() || file.exists()) {
+      return path;
+    }
+    return base + File.separator + path;
+  }
+
+  /**
    * Parses the files in {@code annotationFiles} of the given file type. This includes files listed
    * directly in {@code annotationFiles} and for each listed directory, also includes all files
    * located in that directory (recursively).
@@ -298,13 +317,6 @@ public class AnnotationFileElementTypes {
    * @param annotationFiles list of files and directories to parse
    * @param fileType the file type of files to parse
    */
-  @SuppressWarnings("builder:required.method.not.called" // `allFiles` may contain multiple
-  // JarEntryAnnotationFileResource.  Each of those references a zip file entry resource, which
-  // itself references a ZipFile resource -- the same ZipFile for multiple zip file entries.
-  // Closing any one of the zip file entries will close the ZipFile, which invalidates the
-  // other zipfile entries.  Therefore, this code does not close any of them.  This code may
-  // leak resources.
-  )
   private void parseAnnotationFiles(List<String> annotationFiles, AnnotationFileType fileType) {
     if (annotationFiles.isEmpty()) {
       return;
@@ -317,39 +329,50 @@ public class AnnotationFileElementTypes {
           processingEnv, "AFET.parseAnnotationFiles(%s, %s)", annotationFiles, fileType);
     }
     for (String path : annotationFiles) {
-      // Special case when running in jtreg.
-      String base = System.getProperty("test.src");
-      String fullPath = (base == null) ? path : base + "/" + path;
+      String fullPath = resolveAgainstTestSrc(path);
+
+      File namedFile = new File(fullPath);
+      if (namedFile.isFile()
+          && !AnnotationFileUtil.isJarOrZip(namedFile.getName())
+          && !AnnotationFileUtil.isUsableNamedFile(fullPath, fileType)) {
+        checker.message(
+            Diagnostic.Kind.WARNING,
+            fileType.isStub()
+                ? "Ignoring " + path + ", which is an ajava file; supply it via -Aajava"
+                : "Ignoring "
+                    + path
+                    + ": the name of an ajava file must end with"
+                    + " <ClassName>-<checker.qualified.name>.ajava");
+        continue;
+      }
 
       List<AnnotationFileResource> allFiles =
           AnnotationFileUtil.allAnnotationFiles(fullPath, fileType);
       if (allFiles != null) {
         for (AnnotationFileResource resource : allFiles) {
-          BufferedInputStream annotationFileStream;
-          try {
-            annotationFileStream = new BufferedInputStream(resource.getInputStream());
+          try (BufferedInputStream annotationFileStream =
+              new BufferedInputStream(resource.getInputStream())) {
+            // Is it necessary to also skip files that consist only of Java comments?
+            Boolean isWhitespaceOnly = SystemUtil.isWhitespaceOnly(annotationFileStream, 100);
+            if (isWhitespaceOnly != null && (boolean) isWhitespaceOnly) {
+              continue;
+            }
+            // We use parseStubFile here even for ajava files because at this stage
+            // ajava files are parsed as stub files. The extra annotation data in an
+            // ajava file is parsed when type-checking the ajava file's corresponding
+            // Java file.
+            AnnotationFileParser.parseStubFile(
+                resource.getDescription(),
+                annotationFileStream,
+                factory,
+                processingEnv,
+                annotationFileAnnos,
+                fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
           } catch (IOException e) {
             checker.message(
                 Diagnostic.Kind.NOTE,
                 "Could not read annotation resource: " + resource.getDescription());
-            continue;
           }
-          // Is it necessary to also skip files that consist only of Java comments?
-          Boolean isWhitespaceOnly = SystemUtil.isWhitespaceOnly(annotationFileStream, 100);
-          if (isWhitespaceOnly != null && (boolean) isWhitespaceOnly) {
-            continue;
-          }
-          // We use parseStubFile here even for ajava files because at this stage
-          // ajava files are parsed as stub files. The extra annotation data in an
-          // ajava file is parsed when type-checking the ajava file's corresponding
-          // Java file.
-          AnnotationFileParser.parseStubFile(
-              resource.getDescription(),
-              annotationFileStream,
-              factory,
-              processingEnv,
-              annotationFileAnnos,
-              fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
         }
       } else {
         // We didn't find the files.

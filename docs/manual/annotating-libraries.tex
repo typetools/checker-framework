@@ -478,9 +478,10 @@ original library classes.  For example:
 \end{Verbatim}
 \end{myxsmall}
 
-Each stub path entry is a stub file (ending with \<.astub>), directory, or
-\<.jar> file; specifying a directory or \<.jar> file is
-equivalent to specifying every file in it whose name ends with
+Each stub path entry is a stub file (ending with
+\<.astub>), a directory, or a \<.jar> or \<.zip> archive.
+Specifying a directory or archive is equivalent to
+specifying every file in it whose name ends with
 \code{.astub}.  The stub path entries are delimited by
 \<File.pathSeparator> (``\<:>'' for Linux and Mac, ``\<;>'' for Windows).
 
@@ -612,7 +613,9 @@ Every Java file is a valid stub file.  However, you can omit information
 that is not relevant to pluggable type-checking, as explained below;
 this makes the stub file
 smaller and easier for people to read and write.
-The stub file's extension must be \<.astub>, not \<.java>.
+The stub file's extension should be \<.astub>, not \<.java>.  A stub file
+in a directory or archive is read only if its name ends with \<.astub>
+(see Section~\ref{stub-using}).
 
 As an illustration, a stub file for the Interning type system
 (Chapter~\ref{interning-checker}) could be:
@@ -992,8 +995,9 @@ in stub files.)
 
 The \code{-Aajava} command-line argument works like \code{-Astubs} (see
 Section~\ref{stub-using}). It takes a colon-separated list of
-files and directories containing ajava files, which end in the \code{.ajava}
-extension.
+ajava files (which end in the \code{.ajava} extension) and directories and
+\<.jar> and \<.zip> archives containing ajava files.  Any non-ajava files
+in the directory or archive are ignored.
 
 For example:
 
@@ -1022,7 +1026,8 @@ due to mismatches.
 
 The ajava file must either (1) be found below one of the arguments to
 \code{-Aajava}, in a subdirectory matching its package name, or (2) be
-unambiguously specified directly with its full path. A pair of \<.ajava>
+unambiguously specified directly with its full path.  An ajava file name
+must end with \<.ajava>.  A pair of \<.ajava>
 files is specified ambiguously if one of their fully-qualified names
 is a substring of the other, and both are specified as \<.ajava> files (rather
 than being found under directories). For example, if the \<-Aajava> argument
