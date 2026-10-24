@@ -11,13 +11,17 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -27,6 +31,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -161,6 +166,33 @@ public class QualifierDefaults {
   /** CLIMB locations whose standard default is bottom for a given type system. */
   public static final List<TypeUseLocation> STANDARD_CLIMB_DEFAULTS_BOTTOM =
       List.of(TypeUseLocation.IMPLICIT_LOWER_BOUND);
+
+  /**
+   * Locations whose default, when applied at the top level of a type, annotates some node other
+   * than the node being visited: the alternatives of a union type, or the parameter, receiver, or
+   * return types of an executable type.
+   */
+  private static final Set<TypeUseLocation> CROSS_NODE_LOCATIONS =
+      Collections.unmodifiableSet(
+          EnumSet.of(
+              TypeUseLocation.EXCEPTION_PARAMETER,
+              TypeUseLocation.RECEIVER,
+              TypeUseLocation.PARAMETER,
+              TypeUseLocation.RETURN,
+              TypeUseLocation.CONSTRUCTOR_RESULT));
+
+  /** Locations whose default can annotate a node below the top level of a type. */
+  private static final Set<TypeUseLocation> DESCENDANT_LOCATIONS =
+      Collections.unmodifiableSet(
+          EnumSet.of(
+              TypeUseLocation.LOWER_BOUND,
+              TypeUseLocation.EXPLICIT_LOWER_BOUND,
+              TypeUseLocation.IMPLICIT_LOWER_BOUND,
+              TypeUseLocation.UPPER_BOUND,
+              TypeUseLocation.EXPLICIT_UPPER_BOUND,
+              TypeUseLocation.IMPLICIT_UPPER_BOUND,
+              TypeUseLocation.OTHERWISE,
+              TypeUseLocation.ALL));
 
   /** List of TypeUseLocations that are valid for unchecked code defaults. */
   private static final List<TypeUseLocation> validUncheckedCodeDefaultLocations =
@@ -840,9 +872,7 @@ public class QualifierDefaults {
     PrecedenceList defaults = precedenceList(annotationScope);
     DefaultApplierElement applier =
         createDefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
-    for (Default def : defaults.defaults) {
-      applier.applyDefault(def);
-    }
+    applier.applyDefaults(defaults);
   }
 
   /**
@@ -944,7 +974,7 @@ public class QualifierDefaults {
    * @return a precedence list for {@code defaults}
    */
   private PrecedenceList makePrecedenceList(List<Default> defaults) {
-    return new PrecedenceList(defaults);
+    return new PrecedenceList(defaults, minimizeDefaults(defaults));
   }
 
   /**
@@ -1014,21 +1044,202 @@ public class QualifierDefaults {
 
   /**
    * A precedence list: every {@link Default} that applies to some scope, in the order in which to
-   * apply them.
+   * apply them, together with whether applying them all in one traversal of the type gives the same
+   * result as traversing the type once per {@link Default}.
+   *
+   * <p>The two orders differ only when a {@link Default} that annotates a node below the top level
+   * of the type precedes a {@link Default} that annotates, from the top-level node, some node other
+   * than the top-level node. Within a single {@link DefaultSet} that cannot happen, because a
+   * {@link DefaultSet} is sorted by {@link TypeUseLocation} and the cross-node locations all
+   * precede the descendant locations. It can happen where two {@link DefaultSet}s are concatenated,
+   * because the second one starts over at a low {@link TypeUseLocation}.
    */
   protected static class PrecedenceList {
 
-    /** The defaults, in the order in which to apply them. Callers must not modify this array. */
+    /**
+     * The defaults, in the order in which to apply them, without the ones that {@link
+     * QualifierDefaults#minimizeDefaults} removed. Callers must not modify this array.
+     */
     public final Default[] defaults;
+
+    /**
+     * Every default that applies to the scope, in the order in which to apply them. This differs
+     * from {@link #defaults} only if {@link QualifierDefaults#minimizeDefaults} removed something.
+     * It is used for an applier that customizes how a default is applied, for which the assumptions
+     * that justify removing a default do not hold. Callers must not modify this array.
+     */
+    public final Default[] allDefaults;
+
+    /** True if one traversal of the type suffices for all of {@link #defaults}. */
+    public final boolean singlePassSafe;
 
     /**
      * Creates a PrecedenceList.
      *
-     * @param defaults every default that applies to the scope, in the order in which to apply them
+     * @param allDefaults every default that applies to the scope, in the order in which to apply
+     *     them
+     * @param defaults {@code allDefaults} without the entries that {@link
+     *     QualifierDefaults#minimizeDefaults} removed; its elements must appear in {@code
+     *     allDefaults}, in the same order
      */
-    public PrecedenceList(List<Default> defaults) {
+    public PrecedenceList(List<Default> allDefaults, List<Default> defaults) {
       this.defaults = defaults.toArray(new Default[0]);
+      // minimizeDefaults only removes entries, so equal sizes mean equal contents.
+      this.allDefaults =
+          allDefaults.size() == defaults.size()
+              ? this.defaults
+              : allDefaults.toArray(new Default[0]);
+      boolean safe = true;
+      boolean sawDescendantLocation = false;
+      for (Default def : this.defaults) {
+        if (sawDescendantLocation && CROSS_NODE_LOCATIONS.contains(def.location)) {
+          safe = false;
+          break;
+        }
+        if (DESCENDANT_LOCATIONS.contains(def.location)) {
+          sawDescendantLocation = true;
+        }
+      }
+      this.singlePassSafe = safe;
     }
+  }
+
+  /**
+   * Removes from a precedence list every {@link Default} that a preceding {@link Default} makes
+   * redundant, namely one whose location and qualifier hierarchy both already appeared.
+   *
+   * <p>Dropping such a {@link Default} does not change the result. Two {@link Default}s with the
+   * same location reach {@link DefaultApplierElement#addAnnotation} at exactly the same nodes,
+   * because which nodes a scan annotates depends on the location, the scope, and the structure of
+   * the type, but never on the qualifier. {@code addAnnotation} fills a hierarchy only when that
+   * hierarchy is empty, and the two {@link Default}s are in the same hierarchy, so the later one is
+   * a no-op. Keeping the earlier one preserves which qualifier wins.
+   *
+   * <p>A {@link Default} whose qualifier is not a qualifier of this type system is never redundant,
+   * because applying it does nothing at all.
+   *
+   * <p>This method removes nothing if the type system's canonicalization depends on the type being
+   * annotated, because then which hierarchy a {@link Default} lands in is not known here. An
+   * applier that overrides {@link DefaultApplierElement#addAnnotation} does not use this method's
+   * result; see {@link DefaultApplierElement#applyDefaults}.
+   *
+   * @param defaults a precedence list
+   * @return the precedence list, without the redundant entries
+   */
+  protected List<Default> minimizeDefaults(List<Default> defaults) {
+    if (canonicalAnnotationIsTypeDependent()) {
+      // Two defaults that are in the same hierarchy here might be in different hierarchies at
+      // some node of the type, where each of them would be applied, so neither is redundant.
+      return defaults;
+    }
+    QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
+    EnumMap<TypeUseLocation, AnnotationMirrorSet> seen = new EnumMap<>(TypeUseLocation.class);
+    List<Default> result = new ArrayList<>(defaults.size());
+    for (Default def : defaults) {
+      AnnotationMirror anno = atypeFactory.canonicalAnnotation(def.anno);
+      if (!atypeFactory.isSupportedQualifier(anno)) {
+        // The qualifier is in no hierarchy of this type system, so it has no top and applying
+        // it is a no-op.  Retain it rather than crashing in getTopAnnotation.
+        result.add(def);
+        continue;
+      }
+      AnnotationMirror top = qualHierarchy.getTopAnnotation(anno);
+      AnnotationMirrorSet tops =
+          seen.computeIfAbsent(def.location, __ -> new AnnotationMirrorSet());
+      if (tops.add(top)) {
+        result.add(def);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * For each class of applier that has been used, whether it overrides {@link
+   * DefaultApplierElement#applyDefault} or {@link DefaultApplierElement#addAnnotation}.
+   */
+  private static final Map<Class<?>, Boolean> applierIsCustomizedCache = new ConcurrentHashMap<>();
+
+  /**
+   * Returns true if the given class overrides {@link DefaultApplierElement#applyDefault}, {@link
+   * DefaultApplierElement#addAnnotation}, or {@link DefaultApplierElement#shouldBeAnnotated}, any
+   * of which may apply a default other than in the way that {@link #minimizeDefaults} and the
+   * single-traversal optimization assume. For example, an override of {@code shouldBeAnnotated} may
+   * read {@link DefaultApplierElement#location}, which holds a single location only when the type
+   * is traversed once per default. Such an applier is given every default and one traversal of the
+   * type per default.
+   *
+   * @param applierClass {@link DefaultApplierElement} or a subclass of it
+   * @return true if {@code applierClass} overrides {@code applyDefault}, {@code addAnnotation}, or
+   *     {@code shouldBeAnnotated}
+   */
+  private static boolean applierIsCustomized(Class<?> applierClass) {
+    return applierIsCustomizedCache.computeIfAbsent(
+        applierClass,
+        c ->
+            isOverridden(c, DefaultApplierElement.class, "applyDefault", Default.class)
+                || isOverridden(
+                    c,
+                    DefaultApplierElement.class,
+                    "addAnnotation",
+                    AnnotatedTypeMirror.class,
+                    AnnotationMirror.class)
+                || isOverridden(
+                    c,
+                    DefaultApplierElement.class,
+                    "shouldBeAnnotated",
+                    AnnotatedTypeMirror.class,
+                    boolean.class));
+  }
+
+  /**
+   * For each type factory class that has been used, whether it overrides {@link
+   * AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror, TypeMirror)}.
+   */
+  private static final Map<Class<?>, Boolean> canonicalAnnotationIsTypeDependentCache =
+      new ConcurrentHashMap<>();
+
+  /**
+   * Returns true if this type system canonicalizes an annotation differently depending on the type
+   * that the annotation is applied to; that is, if the type factory overrides {@link
+   * AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror, TypeMirror)}. If it does, then the
+   * qualifier hierarchy that a {@link Default} lands in cannot be determined from the {@link
+   * Default} alone.
+   *
+   * @return true if canonicalization depends on the type being annotated
+   */
+  private boolean canonicalAnnotationIsTypeDependent() {
+    return canonicalAnnotationIsTypeDependentCache.computeIfAbsent(
+        atypeFactory.getClass(),
+        c ->
+            isOverridden(
+                c,
+                AnnotatedTypeFactory.class,
+                "canonicalAnnotation",
+                AnnotationMirror.class,
+                TypeMirror.class));
+  }
+
+  /**
+   * Returns true if the given method is overridden; that is, if some class that is {@code subclass}
+   * or a proper subclass of {@code baseClass} declares the method.
+   *
+   * @param subclass {@code baseClass} or a subclass of it
+   * @param baseClass the class that declares the method being overridden
+   * @param methodName the name of the method
+   * @param parameterTypes the erased parameter types of the method
+   * @return true if {@code subclass} overrides the method
+   */
+  private static boolean isOverridden(
+      Class<?> subclass, Class<?> baseClass, String methodName, Class<?>... parameterTypes) {
+    for (Class<?> c = subclass; c != null && c != baseClass; c = c.getSuperclass()) {
+      try {
+        Method unused = c.getDeclaredMethod(methodName, parameterTypes);
+        return true;
+      } catch (NoSuchMethodException e) {
+        // Class c does not declare the method; look in the superclass of c.
+      }
+    }
+    return false;
   }
 
   /**
@@ -1062,8 +1273,17 @@ public class QualifierDefaults {
     /** The type to which to apply the default. */
     protected final AnnotatedTypeMirror type;
 
-    /** Location to which to apply the default. (Should only be set by the applyDefault method.) */
+    /**
+     * Location of the default currently being applied. (Should only be set by {@link
+     * #applyDefaults}.)
+     */
     protected TypeUseLocation location;
+
+    /** The defaults to apply at each node. (Should only be set by {@link #applyDefaults}.) */
+    protected Default[] defaults = new Default[0];
+
+    /** Reused by {@link #applyDefault}, so that one default costs no array allocation. */
+    private final Default[] singletonDefaults = new Default[1];
 
     /** The default element applier implementation. */
     protected final DefaultApplierElementImpl impl;
@@ -1099,8 +1319,42 @@ public class QualifierDefaults {
      * @param def default to apply
      */
     public void applyDefault(Default def) {
+      // Set the location before the traversal, because shouldBeAnnotated may read it.
       this.location = def.location;
-      impl.visit(type, def.anno);
+      singletonDefaults[0] = def;
+      this.defaults = singletonDefaults;
+      impl.visit(type, null);
+    }
+
+    /**
+     * Apply every default in a precedence list to the type.
+     *
+     * <p>When the precedence list permits, this traverses the type once and applies every default
+     * at each node, rather than traversing the type once per default.
+     *
+     * <p>It does not do so if this object's class overrides {@link #applyDefault}, {@link
+     * #addAnnotation}, or {@link #shouldBeAnnotated}. Such an applier is instead given one
+     * traversal of the type per default, so that the override runs for each default, and is given
+     * even the defaults that {@link QualifierDefaults#minimizeDefaults} removed, because the
+     * override may not have the semantics that removing them assumes.
+     *
+     * @param precedenceList the defaults to apply, in the order in which to apply them
+     */
+    public void applyDefaults(PrecedenceList precedenceList) {
+      if (applierIsCustomized(getClass())) {
+        for (Default def : precedenceList.allDefaults) {
+          applyDefault(def);
+        }
+      } else if (precedenceList.singlePassSafe) {
+        if (precedenceList.defaults.length != 0) {
+          this.defaults = precedenceList.defaults;
+          impl.visit(type, null);
+        }
+      } else {
+        for (Default def : precedenceList.defaults) {
+          applyDefault(def);
+        }
+      }
     }
 
     /**
@@ -1137,22 +1391,39 @@ public class QualifierDefaults {
     }
 
     /**
-     * Applies {@link DefaultApplierElement#location}'s default at every node of a type where the
-     * default applies.
+     * Applies {@link DefaultApplierElement#defaults} at every node of a type, where each default
+     * applies.
      */
-    protected class DefaultApplierElementImpl extends AnnotatedTypeScanner<Void, AnnotationMirror> {
+    protected class DefaultApplierElementImpl extends AnnotatedTypeScanner<Void, Void> {
 
       /** Creates a {@code DefaultApplierElementImpl}. */
       protected DefaultApplierElementImpl() {}
 
       @Override
-      public Void scan(@FindDistinct AnnotatedTypeMirror t, AnnotationMirror qual) {
+      public Void scan(@FindDistinct AnnotatedTypeMirror t, Void p) {
         if (!shouldBeAnnotated(t, t == defaultableTypeVar)) {
-          return super.scan(t, qual);
+          return super.scan(t, p);
         }
 
         // Some defaults only apply to the top level type.
         boolean isTopLevelType = t == type;
+        for (Default def : defaults) {
+          location = def.location;
+          applyDefaultAtNode(t, def.anno, isTopLevelType);
+        }
+
+        return super.scan(t, p);
+      }
+
+      /**
+       * Apply one default at one node of the type, without traversing below the node.
+       *
+       * @param t the node
+       * @param qual the default's qualifier
+       * @param isTopLevelType true if {@code t} is the type that defaults are being applied to
+       */
+      protected void applyDefaultAtNode(
+          @FindDistinct AnnotatedTypeMirror t, AnnotationMirror qual, boolean isTopLevelType) {
         switch (location) {
           case FIELD -> {
             if (scope != null && scope.getKind() == ElementKind.FIELD && isTopLevelType) {
@@ -1283,8 +1554,6 @@ public class QualifierDefaults {
               throw new BugInCF(
                   "QualifierDefaults.DefaultApplierElement: unhandled location: " + location);
         }
-
-        return super.scan(t, qual);
       }
 
       @Override
@@ -1305,22 +1574,22 @@ public class QualifierDefaults {
       private BoundType boundType = BoundType.UNBOUNDED;
 
       @Override
-      public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotationMirror qual) {
+      public Void visitTypeVariable(AnnotatedTypeVariable type, Void p) {
         if (visitedNodes.containsKey(type)) {
           return visitedNodes.get(type);
         }
 
-        visitBounds(type, type.getUpperBound(), type.getLowerBound(), qual);
+        visitBounds(type, type.getUpperBound(), type.getLowerBound(), p);
         return null;
       }
 
       @Override
-      public Void visitWildcard(AnnotatedWildcardType type, AnnotationMirror qual) {
+      public Void visitWildcard(AnnotatedWildcardType type, Void p) {
         if (visitedNodes.containsKey(type)) {
           return visitedNodes.get(type);
         }
 
-        visitBounds(type, type.getExtendsBound(), type.getSuperBound(), qual);
+        visitBounds(type, type.getExtendsBound(), type.getSuperBound(), p);
         return null;
       }
 
@@ -1332,7 +1601,7 @@ public class QualifierDefaults {
           AnnotatedTypeMirror boundedType,
           AnnotatedTypeMirror upperBound,
           AnnotatedTypeMirror lowerBound,
-          AnnotationMirror qual) {
+          Void p) {
 
         boolean prevIsUpperBound = isUpperBound;
         boolean prevIsLowerBound = isLowerBound;
@@ -1343,13 +1612,13 @@ public class QualifierDefaults {
         try {
           isLowerBound = true;
           isUpperBound = false;
-          scanAndReduce(lowerBound, qual, null);
+          scanAndReduce(lowerBound, p, null);
 
           visitedNodes.put(type, null);
 
           isLowerBound = false;
           isUpperBound = true;
-          scanAndReduce(upperBound, qual, null);
+          scanAndReduce(upperBound, p, null);
 
           visitedNodes.put(type, null);
 
