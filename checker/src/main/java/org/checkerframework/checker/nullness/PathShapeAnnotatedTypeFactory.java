@@ -154,6 +154,15 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
   }
 
+  @Override
+  public void postProcessClassTree(ClassTree tree) {
+    // Skip storing the types of the class's members.  Every path shape qualifier in them is
+    // defaulted, so storing them has no effect.
+    if (shouldCheck(tree)) {
+      super.postProcessClassTree(tree);
+    }
+  }
+
   /**
    * Returns true if the given tree uses paths: some tree within it has a type that mentions a
    * {@code Path} or a {@code File}, or is a path shape qualifier.
