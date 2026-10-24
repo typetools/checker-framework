@@ -12,6 +12,8 @@ one on an enclosing element.
 
 ### Changes for type system implementers
 
+Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
+
 A default that a type system registers through
 `QualifierDefaults.addElementDefault()` now composes with the
 `@DefaultQualifier` annotations on the element and on the element's enclosing
