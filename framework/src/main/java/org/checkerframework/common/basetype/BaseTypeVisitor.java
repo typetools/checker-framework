@@ -4673,13 +4673,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * signature in terms of the overridden method's type variables, which is what makes the two
      * signatures comparable. See {@link #adaptToOverridden}.
      *
-     * <p>Because this mapping is null for every method reference, {@link #checkTypeParameterBounds}
-     * does nothing for a method reference. No mapping is possible: the overrider is the invocation
-     * type of the method reference's compile-time declaration, whose type variables, when any
-     * remain, do not correspond to the functional interface method's type variables. Instead,
-     * {@link BaseTypeVisitor#checkMethodReferenceAsOverride} checks that the compile-time
-     * declaration's type arguments, which are inferred at the method reference, are within the
-     * compile-time declaration's bounds.
+     * <p>This mapping is null for a method reference. No mapping is possible: the overrider is the
+     * invocation type of the method reference's compile-time declaration, whose type variables,
+     * when any remain, do not correspond to the functional interface method's type variables.
      */
     protected final @Nullable Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping;
 
@@ -5227,12 +5223,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Issue an error if a type parameter of the overriding method has bounds that do not contain
      * the bounds of the corresponding type parameter of the overridden method.
-     *
-     * <p>A client may call the overridden method with any type argument that is within the
-     * overridden method's bounds, and the overriding method is what runs. Therefore, the overriding
-     * method must permit every such type argument: its upper bound must be a supertype of the
-     * overridden method's upper bound, and its lower bound must be a subtype of the overridden
-     * method's lower bound.
      *
      * <p>Nothing is checked if the overridden method is unchecked code that receives conservative
      * defaults (see {@code -AuseConservativeDefaultsForUncheckedCode}). Its type parameters then
