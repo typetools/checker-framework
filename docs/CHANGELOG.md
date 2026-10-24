@@ -11,6 +11,9 @@
 
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
+The Checker Framework now enforces `@TargetLocations` restrictions on explicitly
+written type qualifiers.
+
 ### Closed issues
 
 ## Version 4.3.1 (2026-10-08)
