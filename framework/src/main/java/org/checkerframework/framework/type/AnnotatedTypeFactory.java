@@ -2974,10 +2974,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       constructorFromUsePreSubstitution(tree, superCon, inferTypeArgs);
       // no viewpoint adaptation needed for super invocation
       superCon = AnnotatedTypes.asMemberOf(types, this, type, superCon.getElement(), superCon);
-      if (!TreeUtils.isAnonymousConstructorWithExplicitEnclosingExpression(
-          con.getElement(), tree)) {
-        con.setParameterTypes(superCon.getParameterTypes());
-      } else {
+      if (TreeUtils.isAnonymousConstructorWithExplicitEnclosingExpression(con.getElement(), tree)) {
         // If the anonymous class creation has an explicit enclosing expression, then the
         // enclosing instance is the first parameter of the anonymous constructor. For example,
         // class Outer { class Inner {} }
@@ -2986,22 +2983,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         //  (.Outer x0) {
         //   x0.super();
         //   }
-        // So the code below deals with this.
+        // The enclosing instance is passed to the super constructor as its receiver, so the
+        // type of the first parameter is the receiver type of the super constructor.
         List<AnnotatedTypeMirror> p = new ArrayList<>(superCon.getParameterTypes().size() + 1);
-        if (TreeUtils.hasSyntheticArgument(tree)) {
-          p.add(con.getParameterTypes().get(0));
-          con.setReceiverType(superCon.getReceiverType());
-        } else if (con.getReceiverType() != null) {
-          // Because the anonymous constructor doesn't have annotated receiver type,
-          // we copy the receiver type from the super constructor invoked in the anonymous
-          // constructor and add it to the parameterTypes as the first element.
-          con.setReceiverType(superCon.getReceiverType());
-          p.add(con.getReceiverType());
-        } else {
-          p.add(con.getParameterTypes().get(0));
-        }
-        p.addAll(1, superCon.getParameterTypes());
+        p.add(superCon.getReceiverType());
+        p.addAll(superCon.getParameterTypes());
         con.setParameterTypes(p);
+      } else {
+        con.setParameterTypes(superCon.getParameterTypes());
       }
       Set<? extends AnnotationMirror> lub =
           qualHierarchy.leastUpperBoundsShallow(

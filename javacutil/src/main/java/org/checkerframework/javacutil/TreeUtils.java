@@ -821,7 +821,10 @@ public final class TreeUtils {
    *
    * @param tree a new class tree
    * @return true if {@code tree} has a synthetic argument
+   * @deprecated javac on JDK 11 and later never creates a synthetic argument, so this method always
+   *     returns false
    */
+  @Deprecated(forRemoval = true, since = "4.3.2")
   public static boolean hasSyntheticArgument(NewClassTree tree) {
     if (tree.getClassBody() == null || tree.getEnclosingExpression() != null) {
       return false;
