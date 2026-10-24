@@ -9,6 +9,8 @@
 
 ### Changes for type system implementers
 
+Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
+
 New method `InstanceOfNode.getBindingPatternVariable()`.
 
 ### Closed issues
