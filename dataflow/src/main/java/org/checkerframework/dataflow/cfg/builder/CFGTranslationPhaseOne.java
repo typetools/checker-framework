@@ -881,14 +881,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * If the input node is a boxed type, unbox it, otherwise leave it alone.
+   * If unboxing conversion applies to the input node's type (see {@link
+   * TypesUtils#boxedPrimitiveForUnboxing}), unbox it; otherwise leave it alone.
    *
    * @param node in input node
    * @return a Node representing the unboxed version of the input, which may simply be the input
    *     node
    */
   protected Node unbox(Node node) {
-    if (TypesUtils.isBoxedPrimitive(node.getType())) {
+    if (TypesUtils.isUnboxable(node.getType(), types)) {
 
       MemberSelectTree primValueSelect = treeBuilder.buildPrimValueMethodAccess(node.getTree());
       handleArtificialTree(primValueSelect);
@@ -900,10 +901,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       MethodInvocationTree primValueCall = treeBuilder.buildMethodInvocation(primValueSelect);
       handleArtificialTree(primValueCall);
-      Node unboxed =
+      MethodInvocationNode unboxed =
           new MethodInvocationNode(
               primValueCall, primValueAccess, Collections.emptyList(), getCurrentPath());
       unboxed.setInSource(false);
+      unboxed.setIsUnboxing(true);
 
       // Add Throwable to account for unchecked exceptions
       addToConvertedLookupMap(node.getTree(), unboxed);
@@ -914,28 +916,37 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
   }
 
+  /**
+   * Returns information about the tree's type for deciding which operand conversions to apply.
+   * Records whether unboxing conversion applies and whether the type is numeric or boolean after
+   * unboxing. The recorded type is the unboxed type if unboxing applies, or the original type
+   * otherwise.
+   *
+   * @param tree the tree whose type to inspect
+   * @return information about the tree's type and its unboxing conversion
+   */
   private TreeInfo getTreeInfo(Tree tree) {
     TypeMirror type = TreeUtils.typeOf(tree);
-    boolean boxed = TypesUtils.isBoxedPrimitive(type);
-    TypeMirror unboxedType = boxed ? types.unboxedType(type) : type;
+    boolean isUnboxable = TypesUtils.isUnboxable(type, types);
+    TypeMirror unboxedType = TypesUtils.unboxedTypeOrSelf(type, types);
 
-    boolean bool = TypesUtils.isBooleanType(type);
-    boolean numeric = TypesUtils.isNumeric(unboxedType);
+    boolean isBoolean = TypesUtils.isBooleanType(unboxedType);
+    boolean isNumeric = TypesUtils.isNumeric(unboxedType);
 
     return new TreeInfo() {
       @Override
       public boolean isNumeric() {
-        return numeric;
+        return isNumeric;
       }
 
       @Override
-      public boolean isBoxed() {
-        return boxed;
+      public boolean isUnboxable() {
+        return isUnboxable;
       }
 
       @Override
       public boolean isBoolean() {
-        return bool;
+        return isBoolean;
       }
 
       @Override
@@ -1000,42 +1011,38 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns true if the argument type is a numeric primitive or a boxed numeric primitive and false
-   * otherwise.
+   * Returns true if the argument type is a numeric primitive, or if unboxing conversion converts it
+   * to a numeric primitive.
+   *
+   * @param type a type
+   * @return true if the argument type is a numeric primitive or can be unboxed to one
    */
-  protected boolean isNumericOrBoxed(TypeMirror type) {
-    if (TypesUtils.isBoxedPrimitive(type)) {
-      type = types.unboxedType(type);
-    }
-    return TypesUtils.isNumeric(type);
+  protected boolean isNumericAfterUnboxing(TypeMirror type) {
+    return TypesUtils.isNumericAfterUnboxing(type, types);
+  }
+
+  /**
+   * Returns true if the argument type is boolean, or if unboxing conversion converts it to boolean.
+   *
+   * @param type a type
+   * @return true if the argument type is boolean or can be unboxed to boolean
+   */
+  protected boolean isBooleanAfterUnboxing(TypeMirror type) {
+    return TypesUtils.isBooleanAfterUnboxing(type, types);
   }
 
   /**
    * Compute the type to which two numeric types must be promoted before performing a binary numeric
-   * operation on them. The input types must both be numeric and the output type is primitive.
+   * operation on them. The input types must both be convertible to numeric primitive types, and the
+   * output type is primitive.
    *
    * @param left the type of the left operand
    * @param right the type of the right operand
    * @return a TypeMirror representing the binary numeric promoted type
    */
   protected TypeMirror binaryPromotedType(TypeMirror left, TypeMirror right) {
-    if (!left.getKind().isPrimitive()) {
-      if (TypesUtils.isCapturedTypeVariable(left)) {
-        // This doesn't seem legal according to the JLS, but javac accepts it.
-        left = types.unboxedType(TypesUtils.upperBound(left));
-      } else {
-        left = types.unboxedType(left);
-      }
-    }
-
-    if (!right.getKind().isPrimitive()) {
-      if (TypesUtils.isCapturedTypeVariable(right)) {
-        // This doesn't seem legal according to the JLS, but javac accepts it.
-        right = types.unboxedType(TypesUtils.upperBound(right));
-      } else {
-        right = types.unboxedType(right);
-      }
-    }
+    left = TypesUtils.unboxedTypeOrSelf(left, types);
+    right = TypesUtils.unboxedTypeOrSelf(right, types);
 
     TypeKind promotedTypeKind = TypeKindUtils.widenedNumericType(left, right);
     return types.getPrimitiveType(promotedTypeKind);
@@ -1113,8 +1120,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return a Node with the value narrowed and boxed to the destType, which may be the input node
    */
   protected Node narrowAndBox(Node node, TypeMirror destType) {
-    if (TypesUtils.isBoxedPrimitive(destType)) {
-      return box(narrow(node, types.unboxedType(destType)));
+    if (TypesUtils.isUnboxable(destType, types)) {
+      return box(narrow(node, TypesUtils.unboxedTypeOrSelf(destType, types)));
     } else {
       return narrow(node, destType);
     }
@@ -1130,13 +1137,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected boolean conversionRequiresNarrowing(TypeMirror varType, Node node) {
     // Narrowing is restricted to cases where the left-hand side is byte, char, short or Byte,
     // Char, Short and the right-hand side is a constant.
-    TypeMirror unboxedVarType =
-        TypesUtils.isBoxedPrimitive(varType) ? types.unboxedType(varType) : varType;
-    TypeKind unboxedVarKind = unboxedVarType.getKind();
-    boolean isLeftNarrowableTo =
-        unboxedVarKind == TypeKind.BYTE
-            || unboxedVarKind == TypeKind.SHORT
-            || unboxedVarKind == TypeKind.CHAR;
+    boolean isLeftNarrowableTo = TypesUtils.canBeNarrowingPrimitiveConversion(varType, types);
     boolean isRightConstant = node instanceof ValueLiteralNode;
     return isLeftNarrowableTo && isRightConstant;
   }
@@ -1165,7 +1166,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     boolean isRightNumeric = TypesUtils.isNumeric(nodeType);
     boolean isRightPrimitive = TypesUtils.isPrimitive(nodeType);
-    boolean isRightBoxed = TypesUtils.isBoxedPrimitive(nodeType);
+    boolean isRightUnboxable = TypesUtils.isUnboxable(nodeType, types);
     boolean isRightReference = nodeType instanceof ReferenceType;
     boolean isLeftNumeric = TypesUtils.isNumeric(varType);
     boolean isLeftPrimitive = TypesUtils.isPrimitive(varType);
@@ -1184,7 +1185,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       } else {
         node = box(node);
       }
-    } else if (isRightBoxed && isLeftPrimitive) {
+    } else if (isRightUnboxable && isLeftPrimitive) {
       node = unbox(node);
       nodeType = node.getType();
 
@@ -1408,13 +1409,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // If the operand is byte or Byte and the whole expression is
     // short, then convert to short.
-    boolean isBoxedPrimitive = TypesUtils.isBoxedPrimitive(nodeType);
-    TypeMirror unboxedNodeType = isBoxedPrimitive ? types.unboxedType(nodeType) : nodeType;
-    TypeMirror unboxedDestType =
-        TypesUtils.isBoxedPrimitive(destType) ? types.unboxedType(destType) : destType;
+    boolean isNodeUnboxable = TypesUtils.isUnboxable(nodeType, types);
+    TypeMirror unboxedNodeType = TypesUtils.unboxedTypeOrSelf(nodeType, types);
+    TypeMirror unboxedDestType = TypesUtils.unboxedTypeOrSelf(destType, types);
     if (TypesUtils.isNumeric(unboxedNodeType) && TypesUtils.isNumeric(unboxedDestType)) {
       if (unboxedNodeType.getKind() == TypeKind.BYTE && destType.getKind() == TypeKind.SHORT) {
-        if (isBoxedPrimitive) {
+        if (isNodeUnboxable) {
           node = unbox(node);
         }
         return widen(node, destType);
@@ -1424,7 +1424,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // is the unboxed version of it, then apply unboxing.
       TypeKind destKind = destType.getKind();
       if (destKind == TypeKind.BYTE || destKind == TypeKind.CHAR || destKind == TypeKind.SHORT) {
-        if (isBoxedPrimitive) {
+        if (isNodeUnboxable) {
           return unbox(node);
         } else if (nodeType.getKind() == TypeKind.INT) {
           return narrow(node, destType);
@@ -1769,14 +1769,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       Node expressionNode = scan(expression, p);
 
-      MethodAccessNode iteratorAccessNode = new MethodAccessNode(iteratorSelect, expressionNode);
-      iteratorAccessNode.setInSource(false);
-      extendWithNode(iteratorAccessNode);
       MethodInvocationNode iteratorCallNode =
-          new MethodInvocationNode(
-              iteratorCall, iteratorAccessNode, Collections.emptyList(), getCurrentPath());
-      iteratorCallNode.setInSource(false);
-      extendWithNode(iteratorCallNode);
+          extendWithArtificialCall(iteratorCall, expressionNode, true);
 
       translateAssignment(
           iteratorVariable, new LocalVariableNode(iteratorVariable), iteratorCallNode);
@@ -1793,19 +1787,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       MemberSelectTree hasNextSelect = treeBuilder.buildHasNextMethodAccess(iteratorUse1);
       handleArtificialTree(hasNextSelect);
 
-      MethodAccessNode hasNextAccessNode =
-          new MethodAccessNode(hasNextSelect, iteratorReceiverNode);
-      hasNextAccessNode.setInSource(false);
-      extendWithNode(hasNextAccessNode);
-
       MethodInvocationTree hasNextCall = treeBuilder.buildMethodInvocation(hasNextSelect);
       handleArtificialTree(hasNextCall);
 
-      MethodInvocationNode hasNextCallNode =
-          new MethodInvocationNode(
-              hasNextCall, hasNextAccessNode, Collections.emptyList(), getCurrentPath());
-      hasNextCallNode.setInSource(false);
-      extendWithNode(hasNextCallNode);
+      extendWithArtificialCall(hasNextCall, iteratorReceiverNode, true);
       extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
 
       // Loop body, starting with declaration of the loop iteration variable
@@ -1822,30 +1807,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       MemberSelectTree nextSelect = treeBuilder.buildNextMethodAccess(iteratorUse2);
       handleArtificialTree(nextSelect);
 
-      MethodAccessNode nextAccessNode = new MethodAccessNode(nextSelect, iteratorReceiverNode2);
-      nextAccessNode.setInSource(false);
-      extendWithNode(nextAccessNode);
-
       MethodInvocationTree nextCall = treeBuilder.buildMethodInvocation(nextSelect);
       handleArtificialTree(nextCall);
 
       MethodInvocationNode nextCallNode =
-          new MethodInvocationNode(
-              nextCall, nextAccessNode, Collections.emptyList(), getCurrentPath());
+          extendWithArtificialCall(nextCall, iteratorReceiverNode2, true);
       // If the type of iteratorVariable is a capture, its type tree may be missing
       // annotations, so save the expression in the node so that the full type can be
       // found later.
       nextCallNode.setIterableExpression(expression);
       nextCallNode.setEnhancedForLoop(tree);
-      nextCallNode.setInSource(false);
-      extendWithNode(nextCallNode);
 
-      AssignmentNode assignNode =
-          translateAssignment(variable, new LocalVariableNode(variable), nextCall);
-      // translateAssignment() scans variable and creates new nodes, so set the expression
-      // there, too.
-      ((MethodInvocationNode) assignNode.getExpression()).setIterableExpression(expression);
-      ((MethodInvocationNode) assignNode.getExpression()).setEnhancedForLoop(tree);
+      translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
 
       assert statement != null;
       scan(statement, p);
@@ -1941,15 +1914,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(arrayAccessNode);
       AssignmentNode arrayAccessAssignNode =
           translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
-      // translateAssignment() scans variable and creates new nodes, so set the expression
-      // there, too.
-      Node arrayAccessAssignNodeExpr = arrayAccessAssignNode.getExpression();
-      if (arrayAccessAssignNodeExpr instanceof ArrayAccessNode aan) {
-        aan.setArrayExpression(expression);
-        aan.setEnhancedForLoop(tree);
-      } else if (arrayAccessAssignNodeExpr instanceof MethodInvocationNode boxingNode) {
-        // If the array component type is a primitive, there may be a boxing or unboxing
-        // conversion. Treat that as an iterator.
+      // If the array component type is a primitive and the loop variable's type is not, then
+      // assignment conversion boxes the component. Treat the boxing call as an iterator.
+      if (TypesUtils.isPrimitive(arrayAccessNode.getType())
+          && !TypesUtils.isPrimitive(variableElement.asType())
+          && arrayAccessAssignNode.getExpression() instanceof MethodInvocationNode boxingNode) {
         boxingNode.setIterableExpression(expression);
         boxingNode.setEnhancedForLoop(tree);
       }
@@ -1996,6 +1965,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return null;
   }
 
+  /**
+   * Creates a declaration of a fresh variable that holds the iterator of an enhanced for loop over
+   * an {@code Iterable}.
+   *
+   * @param iteratorCall the call to {@code iterator()} that initializes the variable
+   * @param variableElement the element of the enhanced for loop's variable
+   * @return a declaration of a fresh iterator variable
+   */
   protected VariableTree createEnhancedForLoopIteratorVariable(
       MethodInvocationTree iteratorCall, VariableElement variableElement) {
     TypeMirror iteratorType = TreeUtils.typeOf(iteratorCall);
@@ -2010,6 +1987,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return iteratorVariable;
   }
 
+  /**
+   * Creates a declaration of a fresh variable that holds the array of an enhanced for loop over an
+   * array.
+   *
+   * @param expression the array expression that initializes the variable
+   * @param variableElement the element of the enhanced for loop's variable
+   * @return a declaration of a fresh array variable
+   */
   protected VariableTree createEnhancedForLoopArrayVariable(
       ExpressionTree expression, VariableElement variableElement) {
     TypeMirror arrayType = TreeUtils.typeOf(expression);
@@ -2208,6 +2193,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * the selector expression to the variable. This assignment node is stored in {@link
      * #selectorExprAssignment}. It can later be used to refine the selector expression in case
      * bodies.
+     *
+     * <p>If the switch has no {@code case null} label, a null selector throws NullPointerException.
+     * For a boxed selector, the unboxing throws it. For any other reference selector, the assigned
+     * expression is a {@link NullChkNode} of the selector expression.
      */
     private void buildSelector() {
       // Create a synthetic variable to which the switch selector expression will be assigned
@@ -2231,7 +2220,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       selectorVarUseNode.setInSource(false);
       extendWithNode(selectorVarUseNode);
 
-      Node selectorExprNode = unbox(scan(selectorExprTree, null));
+      Node selectorExprNode = scan(selectorExprTree, null);
+      // A switch without a null label throws NullPointerException when its selector is null.
+      if (!selectorExprType.getKind().isPrimitive() && !TreeUtils.hasNullCaseLabel(switchTree)) {
+        if (TypesUtils.isBoxedPrimitive(selectorExprType)) {
+          // Unboxing throws the NullPointerException.
+          selectorExprNode = unbox(selectorExprNode);
+        } else {
+          UnaryTree nullCheckTree = treeBuilder.buildNullCheck(selectorExprTree);
+          handleArtificialTree(nullCheckTree);
+          NullChkNode nullCheckNode = new NullChkNode(nullCheckTree, selectorExprNode);
+          nullCheckNode.setInSource(false);
+          extendWithNodeWithException(nullCheckNode, nullPointerExceptionType);
+          selectorExprNode = nullCheckNode;
+        }
+      }
 
       AssignmentTree assign = treeBuilder.buildAssignment(selectorVarUseTree, selectorExprTree);
       handleArtificialTree(assign);
@@ -2647,14 +2650,36 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
     // TODO do we need to insert some kind of node representing a use of receiverNode
     // (which can be either a LocalVariableNode or a FieldAccessNode)?
-    MethodAccessNode closeAccessNode = new MethodAccessNode(closeSelect, receiverNode);
-    closeAccessNode.setInSource(false);
-    extendWithNode(closeAccessNode);
-    MethodInvocationNode closeCallNode =
-        new MethodInvocationNode(
-            closeCall, closeAccessNode, Collections.emptyList(), getCurrentPath());
-    closeCallNode.setInSource(false);
-    extendWithMethodInvocationNode(TreeUtils.elementFromUse(closeCall), closeCallNode);
+    // A try-with-resources statement closes a resource only if it is non-null (JLS 14.20.3.1).
+    extendWithArtificialCall(closeCall, receiverNode, false);
+  }
+
+  /**
+   * Extends the CFG with a call that has no arguments and that desugars a statement, such as the
+   * call to {@code iterator()} in an enhanced for loop.
+   *
+   * @param call the call
+   * @param receiver the receiver of the call
+   * @param receiverMayBeNull false if the receiver is known to be non-null. If the receiver is
+   *     {@code this}, the call never throws a {@code NullPointerException}, regardless of this
+   *     argument.
+   * @return the node for the call
+   */
+  private MethodInvocationNode extendWithArtificialCall(
+      MethodInvocationTree call, Node receiver, boolean receiverMayBeNull) {
+    MethodAccessNode accessNode =
+        new MethodAccessNode((MemberSelectTree) call.getMethodSelect(), receiver);
+    accessNode.setInSource(false);
+    if (receiverMayBeNull && !(receiver instanceof ThisNode)) {
+      extendWithNodeWithException(accessNode, nullPointerExceptionType);
+    } else {
+      extendWithNode(accessNode);
+    }
+    MethodInvocationNode callNode =
+        new MethodInvocationNode(call, accessNode, Collections.emptyList(), getCurrentPath());
+    callNode.setInSource(false);
+    extendWithMethodInvocationNode(TreeUtils.elementFromUse(call), callNode);
+    return callNode;
   }
 
   /**
@@ -3696,11 +3721,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         TypeMirror rightType = TreeUtils.typeOf(tree.getExpression());
 
         Node targetRHS;
-        if (isNumericOrBoxed(leftType) && isNumericOrBoxed(rightType)) {
+        if (isNumericAfterUnboxing(leftType) && isNumericAfterUnboxing(rightType)) {
           TypeMirror promotedType = binaryPromotedType(leftType, rightType);
           targetRHS = binaryNumericPromotion(targetLHS, promotedType);
           value = binaryNumericPromotion(value, promotedType);
-        } else if (TypesUtils.isBooleanType(leftType) && TypesUtils.isBooleanType(rightType)) {
+        } else if (isBooleanAfterUnboxing(leftType) && isBooleanAfterUnboxing(rightType)) {
           targetRHS = unbox(targetLHS);
           value = unbox(value);
         } else {
@@ -3984,17 +4009,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       case GREATER_THAN, GREATER_THAN_EQUAL, LESS_THAN, LESS_THAN_EQUAL -> {
         // see JLS 15.20.1
-        TypeMirror leftType = TreeUtils.typeOf(leftTree);
-        if (TypesUtils.isBoxedPrimitive(leftType)) {
-          leftType = types.unboxedType(leftType);
-        }
-
-        TypeMirror rightType = TreeUtils.typeOf(rightTree);
-        if (TypesUtils.isBoxedPrimitive(rightType)) {
-          rightType = types.unboxedType(rightType);
-        }
-
-        TypeMirror promotedType = binaryPromotedType(leftType, rightType);
+        TypeMirror promotedType =
+            binaryPromotedType(TreeUtils.typeOf(leftTree), TreeUtils.typeOf(rightTree));
         Node left = binaryNumericPromotion(scan(leftTree, p), promotedType);
         Node right = binaryNumericPromotion(scan(rightTree, p), promotedType);
 
@@ -4019,7 +4035,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
         if (leftInfo.isNumeric()
             && rightInfo.isNumeric()
-            && !(leftInfo.isBoxed() && rightInfo.isBoxed())) {
+            && !(leftInfo.isUnboxable() && rightInfo.isUnboxable())) {
           // JLS 15.21.1 numerical equality
           TypeMirror promotedType =
               binaryPromotedType(leftInfo.unboxedType(), rightInfo.unboxedType());
@@ -4027,10 +4043,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           right = binaryNumericPromotion(right, promotedType);
         } else if (leftInfo.isBoolean()
             && rightInfo.isBoolean()
-            && !(leftInfo.isBoxed() && rightInfo.isBoxed())) {
+            && !(leftInfo.isUnboxable() && rightInfo.isUnboxable())) {
           // JLS 15.21.2 boolean equality
-          left = unboxAsNeeded(left, leftInfo.isBoxed());
-          right = unboxAsNeeded(right, rightInfo.isBoxed());
+          left = unboxAsNeeded(left, leftInfo.isUnboxable());
+          right = unboxAsNeeded(right, rightInfo.isUnboxable());
         }
 
         if (kind == Tree.Kind.EQUAL_TO) {
@@ -4045,8 +4061,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         // see JLS 15.22
         TypeMirror leftType = TreeUtils.typeOf(leftTree);
         TypeMirror rightType = TreeUtils.typeOf(rightTree);
-        boolean isBooleanOp =
-            TypesUtils.isBooleanType(leftType) && TypesUtils.isBooleanType(rightType);
+        boolean isBooleanOp = isBooleanAfterUnboxing(leftType) && isBooleanAfterUnboxing(rightType);
 
         Node left;
         Node right;
@@ -4054,7 +4069,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         if (isBooleanOp) {
           left = unbox(scan(leftTree, p));
           right = unbox(scan(rightTree, p));
-        } else if (isNumericOrBoxed(leftType) && isNumericOrBoxed(rightType)) {
+        } else if (isNumericAfterUnboxing(leftType) && isNumericAfterUnboxing(rightType)) {
           TypeMirror promotedType = binaryPromotedType(leftType, rightType);
           left = binaryNumericPromotion(scan(leftTree, p), promotedType);
           right = binaryNumericPromotion(scan(rightTree, p), promotedType);
@@ -4081,7 +4096,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         Label shortCircuitLabel = new Label();
 
         // left-hand side
-        Node left = scan(leftTree, p);
+        Node left = unbox(scan(leftTree, p));
 
         ConditionalJump cjump;
         if (kind == Tree.Kind.CONDITIONAL_AND) {
@@ -4095,7 +4110,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
         // right-hand side
         addLabelForNextNode(rightStartLabel);
-        Node right = scan(rightTree, p);
+        Node right = unbox(scan(rightTree, p));
 
         // conditional expression itself
         addLabelForNextNode(shortCircuitLabel);

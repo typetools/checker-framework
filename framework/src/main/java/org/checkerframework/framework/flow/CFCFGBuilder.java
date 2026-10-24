@@ -11,8 +11,10 @@ import com.sun.source.tree.VariableTree;
 import java.util.Collection;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -159,8 +161,23 @@ public class CFCFGBuilder extends CFGBuilder {
     @Override
     protected VariableTree createEnhancedForLoopIteratorVariable(
         MethodInvocationTree iteratorCall, VariableElement variableElement) {
+      TypeMirror iteratorType = TreeUtils.typeOf(iteratorCall);
+      // Omit the top-level annotations of the declared return type of iterator(), which may be
+      // polymorphic qualifiers such as @MustCallAlias.  Like a local variable whose declared type
+      // has no top-level annotations, the iterator variable is refined by the assignment of the
+      // iterator() call.  Keep the annotations on the type arguments, which are not refined.
+      if (iteratorType.getKind() == TypeKind.DECLARED) {
+        DeclaredType declaredType = (DeclaredType) iteratorType;
+        TypeElement typeElement = (TypeElement) declaredType.asElement();
+        TypeMirror[] typeArgs = declaredType.getTypeArguments().toArray(new TypeMirror[0]);
+        TypeMirror enclosingType = declaredType.getEnclosingType();
+        iteratorType =
+            enclosingType.getKind() == TypeKind.DECLARED
+                ? types.getDeclaredType((DeclaredType) enclosingType, typeElement, typeArgs)
+                : types.getDeclaredType(typeElement, typeArgs);
+      }
       Tree annotatedIteratorTypeTree =
-          ((CFTreeBuilder) treeBuilder).buildAnnotatedType(TreeUtils.typeOf(iteratorCall));
+          ((CFTreeBuilder) treeBuilder).buildAnnotatedType(iteratorType);
       handleArtificialTree(annotatedIteratorTypeTree);
 
       // Declare and initialize a new, unique iterator variable
