@@ -582,11 +582,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       V v = (V) this;
       return v;
     }
-    // An upper bound of a value and itself is that value.  Testing for this is worthwhile because
-    // merging the stores at a control-flow join point computes an upper bound for every expression
-    // in the store, and most of those expressions have the same value along both branches.  The
-    // identity test is sound for every subclass; the equality test is sound only for a subclass
-    // that opts in.
+    // An upper bound of a value and itself is that value.  This improves efficiency when merging
+    // the stores at a control-flow join point.
     if (this == other || (upperBoundOfEqualValuesIsThis() && this.equals(other))) {
       @SuppressWarnings("unchecked")
       V v = (V) this;
@@ -604,9 +601,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    *
    * <p>That holds for a value all of whose state {@link #equals} accounts for, which is the common
    * case. It lets {@link #leastUpperBound(CFAbstractValue)} and {@link #widenUpperBound} return the
-   * receiver instead of computing and allocating an equal value, which is worthwhile because
-   * merging the stores at a control-flow join point computes an upper bound for every expression in
-   * the store.
+   * receiver instead of computing and allocating an equal value.
    *
    * <p>This implementation returns false, which is always sound. A subclass should override this
    * method to return true whenever {@code equals} accounts for all the state that its {@link
