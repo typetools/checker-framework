@@ -7,10 +7,6 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 // This documentation does not clarify how this class is different.
 /**
  * The default abstract value used in the Checker Framework: a set of annotations and a TypeMirror.
- *
- * <p>A subclass of CFValue gets a faster upper-bound computation only if it overrides {@link
- * #upperBoundOfEqualValuesIsThis} to return true, which is correct if {@link #equals} accounts for
- * all of the subclass's state.
  */
 public class CFValue extends CFAbstractValue<CFValue> {
 
@@ -26,19 +22,5 @@ public class CFValue extends CFAbstractValue<CFValue> {
       AnnotationMirrorSet annotations,
       TypeMirror underlyingType) {
     super(analysis, annotations, underlyingType);
-  }
-
-  /**
-   * {@inheritDoc}
-   *
-   * <p>A CFValue has no state beyond what {@link #equals} accounts for, so this implementation
-   * returns true for a CFValue. It returns false for an instance of a subclass, which might add
-   * state that {@code equals} ignores but that its {@link #upperBound(CFAbstractValue, TypeMirror,
-   * boolean)} combines; the upper bound of two equal values would then discard that state of the
-   * argument.
-   */
-  @Override
-  protected boolean upperBoundOfEqualValuesIsThis() {
-    return getClass() == CFValue.class;
   }
 }

@@ -15,10 +15,8 @@ Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 return `this` or the argument rather than a fresh object.  Do not side-effect
 the result.
 
-New method `CFAbstractValue.upperBoundOfEqualValuesIsThis()` lets the upper
-bound of two equal values be computed quickly.  A subclass of `CFAbstractValue`
-or `CFValue` should override it to return true if `equals()` accounts for all
-the state that the subclass's `upperBound()` combines.
+A subclass of `CFAbstractValue` or `CFValue` that adds state must override
+`equals()` and `hashCode()` to account for that state.
 
 ### Closed issues
 

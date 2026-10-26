@@ -259,6 +259,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     return underlyingType;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>A subclass that adds state must override this method and {@link #hashCode} to account for
+   * that state. The dataflow analysis uses {@code equals} to determine whether it has reached a
+   * fixed point, so ignoring some state could stop the analysis before that state has stabilized.
+   * Furthermore, an upper bound of two equal values is the receiver, so ignoring some state would
+   * discard that state of the argument.
+   */
   @SuppressWarnings({"interning:not.interned", "TypeEquals"}) // efficiency pre-test
   @Override
   public boolean equals(@Nullable Object obj) {
@@ -575,7 +584,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * @param shouldWiden true if the lub should perform widening
    * @return the least upper bound of this and {@code other}
    */
-  @SuppressWarnings("interning:not.interned") // identity test is a fast special case
   private V upperBound(@Nullable V other, boolean shouldWiden) {
     if (other == null) {
       @SuppressWarnings("unchecked")
@@ -583,8 +591,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       return v;
     }
     // An upper bound of a value and itself is that value.  This improves efficiency when merging
-    // the stores at a control-flow join point.
-    if (this == other || (upperBoundOfEqualValuesIsThis() && this.equals(other))) {
+    // the stores at a control-flow join point.  The shortcut does not apply to a wildcard, because
+    // TypesUtils.leastUpperBound replaces a wildcard by its upper bound.
+    if (underlyingType.getKind() != TypeKind.WILDCARD && this.equals(other)) {
       @SuppressWarnings("unchecked")
       V v = (V) this;
       return v;
@@ -594,24 +603,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         TypesUtils.leastUpperBound(
             this.getUnderlyingType(), other.getUnderlyingType(), processingEnv);
     return upperBound(other, lubTypeMirror, shouldWiden);
-  }
-
-  /**
-   * Returns true if an upper bound of this value and a value that {@link #equals} it is this value.
-   *
-   * <p>That holds for a value all of whose state {@link #equals} accounts for, which is the common
-   * case. It lets {@link #leastUpperBound(CFAbstractValue)} and {@link #widenUpperBound} return the
-   * receiver instead of computing and allocating an equal value.
-   *
-   * <p>This implementation returns false, which is always sound. A subclass should override this
-   * method to return true whenever {@code equals} accounts for all the state that its {@link
-   * #upperBound(CFAbstractValue, TypeMirror, boolean)} combines; otherwise, the upper bound would
-   * discard the state that {@code equals} ignores.
-   *
-   * @return true if an upper bound of this value and a value equal to it is this value
-   */
-  protected boolean upperBoundOfEqualValuesIsThis() {
-    return false;
   }
 
   /**

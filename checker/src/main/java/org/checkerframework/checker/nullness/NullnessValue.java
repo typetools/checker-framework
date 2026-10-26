@@ -1,5 +1,6 @@
 package org.checkerframework.checker.nullness;
 
+import java.util.Objects;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -43,16 +44,17 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
     super(analysis, annotations, underlyingType);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * <p>A NullnessValue whose poly-null fields are both false has no state beyond what {@link
-   * #equals} accounts for: the poly-null block in {@link #upperBound} cannot apply when this
-   * value's fields are both false, and a newly created NullnessValue has both fields false.
-   */
   @Override
-  protected boolean upperBoundOfEqualValuesIsThis() {
-    return !isPolyNullNonNull && !isPolyNullNull;
+  public boolean equals(@Nullable Object obj) {
+    return super.equals(obj)
+        && obj instanceof NullnessValue other
+        && isPolyNullNonNull == other.isPolyNullNonNull
+        && isPolyNullNull == other.isPolyNullNull;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), isPolyNullNonNull, isPolyNullNull);
   }
 
   @Override

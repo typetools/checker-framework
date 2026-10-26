@@ -1,6 +1,7 @@
 package org.checkerframework.common.accumulation;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -95,16 +96,16 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
     return accumulatedValues;
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * <p>{@link #equals} does not account for {@link #accumulatedValues}, which {@link #upperBound}
-   * intersects. Two values can be equal and yet have different accumulated values, because {@link
-   * #mostSpecific} creates a value that has accumulated values but no annotations.
-   */
   @Override
-  protected boolean upperBoundOfEqualValuesIsThis() {
-    return accumulatedValues == null;
+  public boolean equals(@Nullable Object obj) {
+    return super.equals(obj)
+        && obj instanceof AccumulationValue other
+        && Objects.equals(accumulatedValues, other.accumulatedValues);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), accumulatedValues);
   }
 
   @Override
