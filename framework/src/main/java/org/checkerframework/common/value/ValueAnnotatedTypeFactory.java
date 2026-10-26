@@ -679,22 +679,25 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   /*package-private*/ AnnotationMirror convertSpecialIntRangeToStandardIntRange(
       AnnotationMirror anm, TypeMirror typeMirror) {
-    TypeKind primitiveKind;
-    if (TypesUtils.isPrimitive(typeMirror)) {
-      primitiveKind = typeMirror.getKind();
-    } else if (TypesUtils.isBoxedPrimitive(typeMirror)) {
-      primitiveKind = types.unboxedType(typeMirror).getKind();
-    } else {
-      primitiveKind = TypeKind.LONG;
-    }
+    return convertSpecialIntRangeToStandardIntRange(anm, maxValueOf(typeMirror));
+  }
 
-    if (TypesUtils.isIntegralPrimitiveOrBoxed(typeMirror)) {
-      Range maxRange = Range.create(primitiveKind);
-      return convertSpecialIntRangeToStandardIntRange(anm, maxRange.to);
-
-    } else {
-      return convertSpecialIntRangeToStandardIntRange(anm, Long.MAX_VALUE);
+  /**
+   * Returns the largest value of {@code typeMirror} if it is an integral primitive or boxed type,
+   * and {@code Long.MAX_VALUE} otherwise.
+   *
+   * @param typeMirror a type
+   * @return the largest value of {@code typeMirror}, or {@code Long.MAX_VALUE}
+   */
+  private long maxValueOf(TypeMirror typeMirror) {
+    if (!TypesUtils.isIntegralPrimitiveOrBoxed(typeMirror)) {
+      return Long.MAX_VALUE;
     }
+    TypeKind primitiveKind =
+        TypesUtils.isPrimitive(typeMirror)
+            ? typeMirror.getKind()
+            : types.unboxedType(typeMirror).getKind();
+    return Range.create(primitiveKind).to;
   }
 
   /**
@@ -708,28 +711,26 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   private AnnotationMirror convertSpecialIntRangeToStandardIntRange(
       AnnotationMirror anm, long max) {
-    // A switch computes the annotation's name once, rather than once per comparison.
-    return switch (AnnotationUtils.annotationName(anm)) {
-      case INTRANGE_FROMPOS_NAME -> createIntRangeAnnotation(1, max);
-      case INTRANGE_FROMNONNEG_NAME -> createIntRangeAnnotation(0, max);
-      case INTRANGE_FROMGTENEGONE_NAME -> createIntRangeAnnotation(-1, max);
-      default -> anm;
-    };
+    Long from = specialIntRangeFrom(AnnotationUtils.annotationName(anm));
+    return from == null ? anm : createIntRangeAnnotation(from, max);
   }
 
   /**
-   * Returns true if {@code annotationName} is the name of {@link IntRangeFromPositive}, {@link
-   * IntRangeFromNonNegative}, or {@link IntRangeFromGTENegativeOne}: that is, if {@link
-   * #convertSpecialIntRangeToStandardIntRange(AnnotationMirror, long)} converts an annotation with
-   * that name.
+   * If {@code annotationName} is the name of {@link IntRangeFromPositive}, {@link
+   * IntRangeFromNonNegative}, or {@link IntRangeFromGTENegativeOne}, returns the lower bound of the
+   * equivalent {@link IntRange}. Otherwise, returns null.
    *
    * @param annotationName the fully-qualified name of an annotation
-   * @return true if {@code annotationName} is the name of a special int range annotation
+   * @return the lower bound of the int range that the special int range annotation named {@code
+   *     annotationName} is equivalent to, or null if {@code annotationName} does not name a special
+   *     int range annotation
    */
-  private static boolean isSpecialIntRangeName(String annotationName) {
+  private static @Nullable Long specialIntRangeFrom(String annotationName) {
     return switch (annotationName) {
-      case INTRANGE_FROMPOS_NAME, INTRANGE_FROMNONNEG_NAME, INTRANGE_FROMGTENEGONE_NAME -> true;
-      default -> false;
+      case INTRANGE_FROMPOS_NAME -> 1L;
+      case INTRANGE_FROMNONNEG_NAME -> 0L;
+      case INTRANGE_FROMGTENEGONE_NAME -> -1L;
+      default -> null;
     };
   }
 
@@ -746,12 +747,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       AnnotationMirrorSet annos, TypeMirror typeMirror) {
     AnnotationMirrorSet result = null;
     for (AnnotationMirror anno : annos) {
-      if (isSpecialIntRangeName(AnnotationUtils.annotationName(anno))) {
+      Long from = specialIntRangeFrom(AnnotationUtils.annotationName(anno));
+      if (from != null) {
         if (result == null) {
           result = new AnnotationMirrorSet(annos);
         }
         result.remove(anno);
-        result.add(convertSpecialIntRangeToStandardIntRange(anno, typeMirror));
+        result.add(createIntRangeAnnotation(from, maxValueOf(typeMirror)));
       }
     }
     return result == null ? annos : result;
@@ -1588,7 +1590,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    */
   public boolean isIntRange(AnnotationMirror anno) {
     String name = AnnotationUtils.annotationName(anno);
-    return name.equals(INTRANGE_NAME) || isSpecialIntRangeName(name);
+    return name.equals(INTRANGE_NAME) || specialIntRangeFrom(name) != null;
   }
 
   public int getMinLenValue(AnnotatedTypeMirror atm) {

@@ -591,8 +591,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       return v;
     }
     // An upper bound of a value and itself is that value.  This improves efficiency when merging
-    // the stores at a control-flow join point.  The shortcut does not apply to a wildcard, because
-    // TypesUtils.leastUpperBound replaces a wildcard by its upper bound.
+    // the stores at a control-flow join point.  The shortcut does not apply to a wildcard, not even
+    // when `this == other`:  TypesUtils.leastUpperBound replaces a wildcard by its upper bound, so
+    // the upper bound of a wildcard value and itself has a different underlying type.
     if (underlyingType.getKind() != TypeKind.WILDCARD && this.equals(other)) {
       @SuppressWarnings("unchecked")
       V v = (V) this;
