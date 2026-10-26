@@ -182,6 +182,18 @@ public class ProperType extends AbstractType {
   }
 
   /**
+   * Returns true if unchecked conversion is necessary for {@code this} to be compatible with {@code
+   * target} in a loose invocation context (JLS 5.3). Ignores annotations.
+   *
+   * @param target the target type
+   * @return true if unchecked conversion is necessary for {@code this} to be compatible with {@code
+   *     target}
+   */
+  public boolean needsUncheckedConversionTo(ProperType target) {
+    return TypesUtils.needsUncheckedConversion(getJavaType(), target.getJavaType(), context.env);
+  }
+
+  /**
    * Is {@code this} assignable to {@code superType}?
    *
    * @param superType super type
