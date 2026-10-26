@@ -217,9 +217,6 @@ allprojects { currentProj ->
   }
 
   configurations {
-    // Holds the combined classpath of all subprojects including the subprojects themselves.
-    allProjects
-
     // Exclude checker-qual dependency added by Error Prone to avoid a circular dependency.
     annotationProcessor.exclude group: "org.checkerframework", module: "checker-qual"
 
@@ -230,8 +227,6 @@ allprojects { currentProj ->
 
   dependencies {
     errorprone(rootProject.libs.error.prone.core)
-
-    allProjects(subprojects)
   }
 
   ext {
@@ -575,6 +570,30 @@ tasks.register("addFavicon", Exec) {
   ]
 }
 
+/**
+ * Returns a classpath for a Javadoc task that documents the main sources of some or all of the
+ * subprojects.
+ *
+ * <p>It is the union of the classpaths of the subprojects' `javadoc` tasks (and no other
+ * classpaths, so adding a Javadoc task does not change every task that uses this classpath).  It
+ * includes `compileOnly` dependencies and libraries that a subproject bundles into its shadow jar,
+ * such as ASM.
+ *
+ * <p>It uses `findByName` rather than `named`, which throws if a subproject has no `javadoc` task.
+ *
+ * @return the union of the classpaths of the subprojects' `javadoc` tasks
+ */
+def subprojectsJavadocClasspath() {
+  def result = files()
+  subprojects.each { proj ->
+    def subprojectJavadoc = proj.tasks.findByName("javadoc")
+    if (subprojectJavadoc != null) {
+      result += subprojectJavadoc.classpath
+    }
+  }
+  return result
+}
+
 // `gradle allJavadoc` builds the Javadoc for all modules in `docs/api`.
 //   This is what is published to checkerframework.org.
 // `gradle javadoc` builds the Javadoc for each sub-project in <subproject>/build/docs/javadoc/ .
@@ -598,21 +617,7 @@ tasks.register("allJavadoc", Javadoc) {
       project(":annotation-file-utilities").sourceSets.main.allJava,
       )
 
-  // Use only the `javadoc` task's classpath from each subproject.  Every other Javadoc task,
-  // such as `javadocPrivate` and the annotation-file-utilities tasks that run the OptionsDoclet,
-  // would otherwise contribute its classpath too.  That would make this task's classpath depend
-  // on which other Javadoc tasks happen to exist, so that adding a Javadoc task to a subproject
-  // silently changes this task.
-  // Use `findByName` rather than `named`, which throws if a subproject has no `javadoc` task.
-  // Every subproject currently applies the `java` plugin (see the `allprojects` block above),
-  // which creates that task, but a subproject that does not would otherwise break the
-  // configuration of this unrelated task.
-  subprojects.each { proj ->
-    def subprojectJavadoc = proj.tasks.findByName("javadoc")
-    if (subprojectJavadoc != null) {
-      classpath += subprojectJavadoc.classpath
-    }
-  }
+  classpath = subprojectsJavadocClasspath()
 
   finalizedBy("addFavicon")
 
@@ -789,11 +794,16 @@ def createJavadocTask(taskName, taskDescription, memberLevel) {
       }
     }
 
-    classpath = configurations.allProjects
+    classpath = subprojectsJavadocClasspath()
 
     destinationDir.deleteDir()
+    // The Javadoc-filtering scripts disable this property to filter doclint diagnostics while
+    // still detecting other Gradle failures.
+    failOnError =
+        providers.gradleProperty("${taskName}FailOnError").getOrElse("true").toBoolean()
     options.memberLevel = memberLevel
     options.addBooleanOption("Xdoclint:all", true)
+    options.addStringOption("Xmaxerrs", "99999")
     options.addStringOption("Xmaxwarns", "99999")
 
     // options.addStringOption("skip", "ClassNotToCheck|OtherClass")
