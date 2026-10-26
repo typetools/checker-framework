@@ -45,7 +45,7 @@ class Test2<X extends @Nullable Object> {
 
 class Test3<X extends @Nullable Object> {
   APair<@NonNull X, @NonNull X> test1(@Nullable X p) {
-    // :: error: [return]
+    // :: error: [type.arguments.not.inferred]
     return APair.of(p, (X) null);
   }
 }

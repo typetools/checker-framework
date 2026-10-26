@@ -22,7 +22,7 @@ public class IncorporationFixedPoint {
   }
 
   void use(@Nullable String arg) {
-    // :: error: [assignment]
+    // :: error: [assignment] :: error: [type.arguments.not.inferred]
     @NonNull String r = m(arg);
   }
 

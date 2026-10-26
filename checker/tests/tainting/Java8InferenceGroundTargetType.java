@@ -46,11 +46,9 @@ public class Java8InferenceGroundTargetType {
     // determined by <T' <: T>, which equates `U` with the second type argument of T', namely
     // @Tainted B.  The call therefore returns @Tainted B, which is not a subtype of the
     // @Untainted B type of the local variable, so no instantiation of `U` satisfies all the
-    // bounds and inference with the target type fails.  Inference without the target type
-    // succeeds with `U = @Tainted B`, so the incompatibility is reported as an assignment error,
-    // and the lambda is checked as in `matchingSecondParameter`.
+    // bounds and inference fails.
     default void mismatchedSecondParameter(@Untainted B b) {
-      // :: error: [assignment] :: error: [lambda.param]
+      // :: error: [assignment] :: error: [type.arguments.not.inferred]
       @Untainted B r = foo((@Untainted B x, @Tainted B y) -> {}, b);
     }
 

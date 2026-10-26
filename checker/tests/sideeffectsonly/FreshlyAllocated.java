@@ -102,4 +102,15 @@ public class FreshlyAllocated {
     a.add(fresh);
     fresh.add("x");
   }
+
+  @SideEffectsOnly("this")
+  void loopVariableReassigned(List<List<String>> lists) {
+    // Each iteration assigns the loop variable, so assigning a new object to it in the body does
+    // not make it fresh.
+    for (List<String> l : lists) {
+      // :: error: (purity.incorrect.sideeffectsonly)
+      l.add("x");
+      l = new ArrayList<>();
+    }
+  }
 }

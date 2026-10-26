@@ -2,6 +2,7 @@ package org.checkerframework.javacutil;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Lint.LintCategory;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
@@ -14,6 +15,7 @@ import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
+import com.sun.tools.javac.util.Warner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -965,6 +967,40 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns true if unchecked conversion is necessary for {@code source} to be compatible with
+   * {@code target} in a loose invocation context (JLS 5.3). Ignores annotations.
+   *
+   * @param source the source type
+   * @param target the target type
+   * @param processingEnv the processing environment
+   * @return true if unchecked conversion is necessary for {@code source} to be compatible with
+   *     {@code target}
+   */
+  public static boolean needsUncheckedConversion(
+      TypeMirror source, TypeMirror target, ProcessingEnvironment processingEnv) {
+    com.sun.tools.javac.code.Types javacTypes =
+        com.sun.tools.javac.code.Types.instance(InternalUtils.getJavacContext(processingEnv));
+    // isConvertible records, in the javac Warner, any lint warnings that the conversion would need.
+    Warner lintRecorder = new Warner();
+    javacTypes.isConvertible((Type) source, (Type) target, lintRecorder);
+    return lintRecorder.hasNonSilentLint(LintCategory.UNCHECKED);
+  }
+
+  /**
+   * Returns true if the erased type of {@code type1} is the same type as the erased type of {@code
+   * type2}.
+   *
+   * @param type1 a type
+   * @param type2 a type
+   * @param types a Types object
+   * @return true if the erased type of {@code type1} is the same type as the erased type of {@code
+   *     type2}
+   */
+  public static boolean isErasedSameType(TypeMirror type1, TypeMirror type2, Types types) {
+    return types.isSameType(types.erasure(type1), types.erasure(type2));
+  }
+
+  /**
    * Returns true if {@code type} is a type variable created during capture conversion.
    *
    * @param type a type mirror
@@ -1174,7 +1210,7 @@ public final class TypesUtils {
    */
   private static com.sun.tools.javac.util.List<Type> typeMirrorListToTypeList(
       List<TypeMirror> typeMirrors) {
-    @SuppressWarnings("nullness:assignment") // Poly + inference bug.
+    @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
     List<Type> typeList = CollectionsP.mapList(Type.class::cast, typeMirrors);
     return com.sun.tools.javac.util.List.from(typeList);
   }
@@ -1287,9 +1323,9 @@ public final class TypesUtils {
       List<? extends TypeMirror> typeVariables,
       List<? extends TypeMirror> typeArgs,
       ProcessingEnvironment env) {
-    @SuppressWarnings("nullness:assignment") // Poly + inference bug.
+    @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
     List<Type> newP = CollectionsP.mapList(Type.class::cast, typeVariables);
-    @SuppressWarnings("nullness:assignment") // Poly + inference bug.
+    @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
     List<Type> newT = CollectionsP.mapList(Type.class::cast, typeArgs);
 
     JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
