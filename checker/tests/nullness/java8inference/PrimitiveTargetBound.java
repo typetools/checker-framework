@@ -24,7 +24,7 @@ public class PrimitiveTargetBound {
   // variable alone, so it is @Nullable and unboxing it is unsafe.
 
   void intTarget() {
-    // :: error: [unboxing.of.nullable]
+    // :: error: [type.arguments.not.inferred] :: error: [unboxing.of.nullable]
     int x = getInteger();
   }
 
@@ -39,12 +39,12 @@ public class PrimitiveTargetBound {
   }
 
   void booleanTarget() {
-    // :: error: [unboxing.of.nullable]
+    // :: error: [type.arguments.not.inferred] :: error: [unboxing.of.nullable]
     boolean x = getBoolean();
   }
 
   void charTarget() {
-    // :: error: [unboxing.of.nullable]
+    // :: error: [type.arguments.not.inferred] :: error: [unboxing.of.nullable]
     char x = getCharacter();
   }
 

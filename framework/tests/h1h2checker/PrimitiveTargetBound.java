@@ -15,7 +15,7 @@ public class PrimitiveTargetBound {
   // The target type is primitive, so the type argument is resolved from the bounds of the type
   // variable alone: @H1Top Integer, which is not a subtype of the target type.
   void primitiveTarget() {
-    // :: error: [assignment]
+    // :: error: [assignment] :: error: [type.arguments.not.inferred]
     @H1S1 int x = get();
   }
 

@@ -35,7 +35,7 @@ public class SharedLowerBound {
   // `@NonNull String`.
   void resultIsNullable(@NonNull String s, List<@NonNull String> l) {
     @Nullable String ok = second(first(s, l), null);
-    // :: error: [assignment]
+    // :: error: [assignment] :: error: [type.arguments.not.inferred]
     @NonNull String bad = second(first(s, l), null);
   }
 }

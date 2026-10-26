@@ -21,7 +21,7 @@ public class EnumInvariantTypeArgument {
 
   void useDifferentQualifiers() {
     // MyEnum implements Box<@Tainted MyEnum>, not Box<@Untainted MyEnum>.
-    // :: error: (assignment)
+    // :: error: (assignment) :: error: (type.arguments.not.inferred)
     Box<@Untainted MyEnum> box = create();
   }
 

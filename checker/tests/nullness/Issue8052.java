@@ -64,7 +64,7 @@ public class Issue8052 {
               }
               return "x";
             })
-        // :: error: (return)
+        // :: error: (type.arguments.not.inferred)
         .collect(Collectors.toList());
   }
 
