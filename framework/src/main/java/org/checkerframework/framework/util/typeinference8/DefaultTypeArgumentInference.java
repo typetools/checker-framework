@@ -126,7 +126,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           inferOnStack(java8Inference, () -> java8Inference.infer(outerTree, outerMethodType));
       // The inference problem whose result is used.
       InvocationTypeInference chosenInference = java8Inference;
-      if (result.inferenceFailed() && java8Inference.canContextTargetTypeCauseFailure()) {
+      if (result.failedAfterTargetTypeConstraints()) {
         // Retry inference without the target type of outerTree, so that the errors reported to
         // the user are easier to fix.  The conditions below ensure that the newly inferred type
         // is not assignable to the target type, so an assignment error will be issued instead of

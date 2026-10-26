@@ -166,34 +166,12 @@ public class InvocationTypeInference {
   }
 
   /**
-   * True if {@link #infer(ExpressionTree, AnnotatedExecutableType)} has created constraints against
-   * the target type of {@link #inferenceExpression}, that target type comes from the context of
-   * {@link #inferenceExpression} rather than from {@link AnnotatedTypeFactory#getDummyAssignedTo},
-   * and inference had not already failed before those constraints were created.
-   */
-  private boolean contextTargetTypeCanCauseFailure = false;
-
-  /**
    * True if {@link #useTargetType} is false, {@link #inferenceExpression} has a target type from
    * its context, inference succeeded, and the inferred type of {@link #inferenceExpression} is
    * assignable to that target type according to its Java type but not according to its qualifiers.
    * A primitive target type is boxed before the comparison.
    */
   private boolean qualifiersIncompatibleWithTarget = false;
-
-  /**
-   * Returns true if {@link #infer(ExpressionTree, AnnotatedExecutableType)} has created constraints
-   * against the target type of the expression for which inference is performed, that target type
-   * comes from the expression's context rather than from {@link
-   * AnnotatedTypeFactory#getDummyAssignedTo}, and inference had not already failed before those
-   * constraints were created. If this returns false and inference failed, then inference without
-   * the target type fails too.
-   *
-   * @return true if a failure of inference might be caused by a target type from the context
-   */
-  public boolean canContextTargetTypeCauseFailure() {
-    return contextTargetTypeCanCauseFailure;
-  }
 
   /**
    * Returns true if this inference problem ignored the target type, succeeded, and inferred a type
@@ -327,7 +305,7 @@ public class InvocationTypeInference {
         new AbstractInvocationType(executableType, e, invocation, context);
     Tree contextTree = TreePathUtil.getContextForPolyExpression(context.getPathToExpression());
     ProperType target = context.inferenceTypeFactory.getTargetType(contextTree);
-    boolean isPoly = TreeUtils.isPolyExpression(invocation);
+    boolean isPolyExpression = TreeUtils.isPolyExpression(invocation);
     // If false, the target type comes from AnnotatedTypeFactory#getDummyAssignedTo.
     boolean targetFromContext = contextTree != null;
     List<? extends ExpressionTree> args;
@@ -342,9 +320,12 @@ public class InvocationTypeInference {
             invocation, inferenceExecutableType, context);
     BoundSet b2 = createB2(invocation, inferenceExecutableType, args, map);
     BoundSet b3;
-    if (target != null && isPoly && useTargetType) {
+    // True if inference creates constraints against a target type from the context, and inference
+    // has not already failed before it creates them.
+    boolean targetTypeConstraintsBeforeFailure = false;
+    if (target != null && isPolyExpression && useTargetType) {
       // Check b2 before createB3, which might add bounds to it.
-      contextTargetTypeCanCauseFailure = targetFromContext && !b2.annoInferenceFailed;
+      targetTypeConstraintsBeforeFailure = targetFromContext && !b2.annoInferenceFailed;
       b3 = createB3(b2, invocation, inferenceExecutableType, target, map);
     } else {
       b3 = b2;
@@ -359,7 +340,7 @@ public class InvocationTypeInference {
     // inference context needs unchecked conversion.
     b4.recordUncheckedConversionFor(invocation);
     if (target != null
-        && isPoly
+        && isPolyExpression
         && !useTargetType
         && targetFromContext
         && !b4.annoInferenceFailed) {
@@ -373,6 +354,8 @@ public class InvocationTypeInference {
         b4.getInstantiatedVariables(),
         context.needUncheckedConversion,
         b4.annoInferenceFailed,
+        targetTypeConstraintsBeforeFailure,
+        false,
         b4.errorMsg);
   }
 

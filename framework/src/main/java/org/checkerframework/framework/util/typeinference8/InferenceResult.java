@@ -49,6 +49,14 @@ public class InferenceResult {
   private final boolean annoInferenceFailed;
 
   /**
+   * True if type argument inference failed because of annotations, inference created constraints
+   * against a target type that comes from the context of the invocation rather than from {@link
+   * org.checkerframework.framework.type.AnnotatedTypeFactory#getDummyAssignedTo}, and inference had
+   * not already failed before it created those constraints.
+   */
+  private final boolean failedAfterTargetTypeConstraints;
+
+  /**
    * The method invocations, class instance creations, and method references that need unchecked
    * conversion.
    *
@@ -75,7 +83,7 @@ public class InferenceResult {
       Set<? extends ExpressionTree> needUncheckedConversion,
       boolean annoInferenceFailed,
       String errorMsg) {
-    this(variables, needUncheckedConversion, annoInferenceFailed, false, errorMsg);
+    this(variables, needUncheckedConversion, annoInferenceFailed, false, false, errorMsg);
   }
 
   /**
@@ -93,9 +101,33 @@ public class InferenceResult {
       boolean annoInferenceFailed,
       boolean inferenceCrashed,
       String errorMsg) {
+    this(
+        variables, needUncheckedConversion, annoInferenceFailed, false, inferenceCrashed, errorMsg);
+  }
+
+  /**
+   * Creates an inference result.
+   *
+   * @param variables instantiated variables
+   * @param needUncheckedConversion the expressions that need unchecked conversion
+   * @param annoInferenceFailed true if inference failed because of annotations
+   * @param failedAfterTargetTypeConstraints true if inference created constraints against a target
+   *     type that comes from the context of the invocation, and inference had not already failed
+   *     before it created those constraints
+   * @param inferenceCrashed the type argument inference code crashed
+   * @param errorMsg message to report to users if inference failed
+   */
+  public InferenceResult(
+      Collection<Variable> variables,
+      Set<? extends ExpressionTree> needUncheckedConversion,
+      boolean annoInferenceFailed,
+      boolean failedAfterTargetTypeConstraints,
+      boolean inferenceCrashed,
+      String errorMsg) {
     this.results = convert(variables);
     this.needUncheckedConversion = needUncheckedConversion;
     this.annoInferenceFailed = annoInferenceFailed;
+    this.failedAfterTargetTypeConstraints = annoInferenceFailed && failedAfterTargetTypeConstraints;
     this.errorMsg = errorMsg;
     this.inferenceCrashed = inferenceCrashed;
   }
@@ -132,6 +164,20 @@ public class InferenceResult {
    */
   public boolean inferenceFailed() {
     return annoInferenceFailed;
+  }
+
+  /**
+   * True if type argument inference failed because of annotations, inference created constraints
+   * against a target type that comes from the context of the invocation rather than from {@link
+   * org.checkerframework.framework.type.AnnotatedTypeFactory#getDummyAssignedTo}, and inference had
+   * not already failed before it created those constraints. If inference failed but this returns
+   * false, then inference without the target type fails too.
+   *
+   * @return true if inference failed, and the failure might be caused by a target type from the
+   *     context of the invocation
+   */
+  public boolean failedAfterTargetTypeConstraints() {
+    return failedAfterTargetTypeConstraints;
   }
 
   /**
