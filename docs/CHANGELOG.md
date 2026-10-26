@@ -11,6 +11,9 @@
 
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
+A subclass of `CFAbstractValue` or `CFValue` that adds state must override
+`equals()` and `hashCode()` to account for that state.
+
 ### Closed issues
 
 ## Version 4.3.1 (2026-10-08)

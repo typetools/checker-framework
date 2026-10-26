@@ -1,6 +1,7 @@
 package org.checkerframework.common.accumulation;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -93,6 +94,18 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
    */
   public @Nullable Set<String> getAccumulatedValues() {
     return accumulatedValues;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    return super.equals(obj)
+        && obj instanceof AccumulationValue other
+        && Objects.equals(accumulatedValues, other.accumulatedValues);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), accumulatedValues);
   }
 
   @Override

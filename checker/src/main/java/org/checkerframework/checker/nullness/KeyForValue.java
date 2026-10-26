@@ -3,6 +3,7 @@ package org.checkerframework.checker.nullness;
 import com.sun.source.tree.ExpressionTree;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -96,6 +97,18 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
    */
   public @Nullable Set<String> getKeyForMaps() {
     return keyForMaps;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    return super.equals(obj)
+        && obj instanceof KeyForValue other
+        && Objects.equals(keyForMaps, other.keyForMaps);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), keyForMaps);
   }
 
   @Override

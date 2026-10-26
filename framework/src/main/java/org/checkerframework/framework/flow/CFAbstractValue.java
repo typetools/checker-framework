@@ -259,6 +259,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     return underlyingType;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>A subclass that adds state must override this method and {@link #hashCode} to account for
+   * that state. The dataflow analysis uses {@code equals} to determine whether it has reached a
+   * fixed point, so ignoring some state could stop the analysis before that state has stabilized.
+   */
   @SuppressWarnings({"interning:not.interned", "TypeEquals"}) // efficiency pre-test
   @Override
   public boolean equals(@Nullable Object obj) {
