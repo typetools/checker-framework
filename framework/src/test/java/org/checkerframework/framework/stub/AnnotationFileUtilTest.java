@@ -202,6 +202,22 @@ public class AnnotationFileUtilTest {
     Assert.assertEquals(Arrays.asList(), descriptions(ajava, AnnotationFileType.COMMAND_LINE_STUB));
   }
 
+  /** Tests that a single entry can be looked up by name in a zip archive. */
+  @Test
+  public void archiveEntryInZipArchive() throws IOException {
+    File zip =
+        writeZip(new File(tmp.getRoot(), "ajava.zip"), "p/Foo-checker.ajava", "Bar-checker.ajava");
+
+    AnnotationFileResource entry = AnnotationFileUtil.archiveEntry(zip, "p/Foo-checker.ajava");
+    Assert.assertNotNull(entry);
+    Assert.assertEquals(zip.getPath() + "!p/Foo-checker.ajava", entry.getDescription());
+    try (InputStream in = entry.getInputStream()) {
+      Assert.assertEquals(
+          "package java.lang;", new String(in.readAllBytes(), StandardCharsets.UTF_8));
+    }
+    Assert.assertNull(AnnotationFileUtil.archiveEntry(zip, "Foo-checker.ajava"));
+  }
+
   /** Tests that a nonexistent location yields null. */
   @Test
   public void nonexistentLocation() {

@@ -392,6 +392,31 @@ public class AnnotationFileUtil {
   }
 
   /**
+   * Returns the entry with the given name in the given archive, or null if there is none.
+   *
+   * @param archive a JAR or ZIP archive
+   * @param entryName the name of an entry in the archive, using "/" as the separator
+   * @return the entry, or null if {@code archive} has no such entry or cannot be read
+   */
+  public static @Nullable AnnotationFileResource archiveEntry(File archive, String entryName) {
+    try (JarFile file = new JarFile(archive)) {
+      if (file.getJarEntry(entryName) == null) {
+        return null;
+      }
+    } catch (IOException e) {
+      System.err.println(
+          "AnnotationFileUtil: could not process archive "
+              + archive
+              + ": "
+              + e.getClass().getName()
+              + ": "
+              + e.getMessage());
+      return null;
+    }
+    return new JarEntryAnnotationFileResource(archive, entryName);
+  }
+
+  /**
    * Returns true if the given file is an annotation file of the given kind. A hidden file (one
    * whose name starts with ".") is not an annotation file; an example is the {@code ._Foo.astub}
    * metadata file that macOS adds to archives and to non-Mac file systems.
@@ -414,7 +439,7 @@ public class AnnotationFileUtil {
    * @param name a file name
    * @return true if {@code name} is the name of a JAR or ZIP file
    */
-  static boolean isJarOrZip(String name) {
+  public static boolean isJarOrZip(String name) {
     String lowerCaseName = name.toLowerCase(Locale.ROOT);
     return lowerCaseName.endsWith(".jar") || lowerCaseName.endsWith(".zip");
   }

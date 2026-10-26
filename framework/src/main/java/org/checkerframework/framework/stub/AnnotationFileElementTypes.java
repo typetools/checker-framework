@@ -265,13 +265,38 @@ public class AnnotationFileElementTypes {
    * ajava file.
    *
    * @param ajavaPath path to an ajava file
-   * @param root javac tree for the compilation unit stored in {@code ajavaFile}
+   * @param root javac tree for the compilation unit stored in {@code ajavaPath}
    */
   public void parseAjavaFileWithTree(String ajavaPath, CompilationUnitTree root) {
+    parseAjavaFileWithTree(
+        new AnnotationFileResource() {
+          @Override
+          public String getDescription() {
+            return ajavaPath;
+          }
+
+          @Override
+          public InputStream getInputStream() throws IOException {
+            return Files.newInputStream(Paths.get(ajavaPath));
+          }
+        },
+        root);
+  }
+
+  /**
+   * Parses the ajava file {@code ajavaFile} assuming {@code root} represents the compilation unit
+   * of that file. Like {@link #parseAjavaFileWithTree(String, CompilationUnitTree)}, but the ajava
+   * file need not be in the file system; for example, it may be an entry in an archive.
+   *
+   * @param ajavaFile an ajava file
+   * @param root javac tree for the compilation unit stored in {@code ajavaFile}
+   */
+  public void parseAjavaFileWithTree(AnnotationFileResource ajavaFile, CompilationUnitTree root) {
+    String ajavaPath = ajavaFile.getDescription();
     parsing = true;
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-    try (InputStream in = Files.newInputStream(Paths.get(ajavaPath))) {
+    try (InputStream in = ajavaFile.getInputStream()) {
       if (stubDebug) {
         AnnotationFileParser.stubDebugStatic(
             processingEnv,
