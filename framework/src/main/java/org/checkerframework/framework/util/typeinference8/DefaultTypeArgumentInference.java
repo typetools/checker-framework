@@ -11,6 +11,7 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -82,7 +83,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         if (instantiated.isEmpty()) {
           return InferenceResult.emptyResult();
         }
-        return new InferenceResult(instantiated, false, false, "");
+        // Like the instantiations, the set of expressions that need unchecked conversion is
+        // partial: reducing constraints that have not been reduced yet may add to it.  But some
+        // inference variable of `expressionTree` has been instantiated, so its applicability bound
+        // set B2 has already been computed, and this set does reflect any unchecked conversion
+        // that is necessary for `expressionTree` to be applicable.
+        return new InferenceResult(
+            instantiated, new LinkedHashSet<>(i.context.needUncheckedConversion), false, "");
       }
     }
     // Null if outerTree is a member reference.
@@ -186,7 +193,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         // deal with it gracefully.
         return new InferenceResult(
             Collections.emptyList(),
-            false,
+            Collections.emptySet(),
             true,
             true,
             "An exception occurred: " + ex.getLocalizedMessage());
