@@ -13,9 +13,20 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
-/** Shared implementation for qualifier hierarchies ordered by inclusion of string elements. */
+/**
+ * A {@link org.checkerframework.framework.type.QualifierHierarchy} where, when a qualifier has
+ * arguments, the subtype relation is determined by a subset or superset test on the elements
+ * (arguments). The elements must be strings.
+ *
+ * <p>This assumes that if the lub or glb of two qualifier kinds has elements, then it is one of the
+ * two qualifier kinds. Otherwise, computing the lub or glb throws {@link BugInCF}.
+ *
+ * @see SubtypeIsSubsetQualifierHierarchy
+ * @see SubtypeIsSupersetQualifierHierarchy
+ */
 @AnnotatedFor("nullness")
-abstract class AbstractSetInclusionQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
+public abstract class AbstractSetInclusionQualifierHierarchy
+    extends MostlyNoElementQualifierHierarchy {
 
   /** The processing environment; used for creating annotations. */
   private final ProcessingEnvironment processingEnv;

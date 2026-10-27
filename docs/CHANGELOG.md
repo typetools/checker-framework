@@ -9,6 +9,9 @@
 
 ### Changes for type system implementers
 
+New class `AbstractSetInclusionQualifierHierarchy` is the superclass of
+`SubtypeIsSubsetQualifierHierarchy` and `SubtypeIsSupersetQualifierHierarchy`.
+
 ### Closed issues
 
 ## Version 4.3.1 (2026-10-08)
