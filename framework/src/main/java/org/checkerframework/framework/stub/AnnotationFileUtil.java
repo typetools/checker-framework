@@ -424,34 +424,36 @@ public class AnnotationFileUtil {
    * @param resources the list to add the found files to
    * @param fileType type of annotation files to add
    */
-  @SuppressWarnings({
-    "JdkObsolete", // JarFile.entries()
-    "nullness:argument", // inference failed in Arrays.sort
-    "builder:required.method.not.called" // ownership passed to list of
-    // JarEntryAnnotationFileResource, where `file` appears in every element of the list
-  })
+  @SuppressWarnings("JdkObsolete") // JarFile.entries()
   private static void addAnnotationFilesToList(
       File location, List<AnnotationFileResource> resources, AnnotationFileType fileType) {
     if (isAnnotationFile(location, fileType)) {
       resources.add(new FileAnnotationFileResource(location));
     } else if (isJar(location)) {
-      JarFile file;
-      try {
-        file = new JarFile(location);
-      } catch (IOException e) {
-        System.err.println("AnnotationFileUtil: could not process JAR file: " + location);
-        return;
-      }
-      Enumeration<JarEntry> entries = file.entries();
-      while (entries.hasMoreElements()) {
-        JarEntry entry = entries.nextElement();
-        if (isAnnotationFile(entry.getName(), fileType)) {
-          resources.add(new JarEntryAnnotationFileResource(file, entry));
+      try (JarFile file = new JarFile(location)) {
+        Enumeration<JarEntry> entries = file.entries();
+        while (entries.hasMoreElements()) {
+          JarEntry entry = entries.nextElement();
+          if (isAnnotationFile(entry.getName(), fileType)) {
+            resources.add(new JarEntryAnnotationFileResource(location, entry.getName()));
+          }
         }
+      } catch (IOException e) {
+        System.err.println(
+            "AnnotationFileUtil: could not process archive "
+                + location
+                + ": "
+                + e.getClass().getName()
+                + ": "
+                + e.getMessage());
       }
 
     } else if (location.isDirectory()) {
       File[] directoryContents = location.listFiles();
+      if (directoryContents == null) {
+        System.err.println("AnnotationFileUtil: could not list directory: " + location);
+        return;
+      }
       Arrays.sort(directoryContents, Comparator.comparing(File::getName));
       for (File enclosed : directoryContents) {
         addAnnotationFilesToList(enclosed, resources, fileType);

@@ -11,6 +11,9 @@
 
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
+The `JarEntryAnnotationFileResource` constructor takes the archive as a `File`
+and the entry's name as a `String`, rather than a `JarFile` and a `JarEntry`.
+
 ### Closed issues
 
 ## Version 4.3.1 (2026-10-08)
