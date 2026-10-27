@@ -19,9 +19,9 @@ they conventionally end `.astub`.
 
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
-The `JarEntryAnnotationFileResource` constructor takes the archive as a `File`,
-the entry's name as a `String`, and the entry's contents as a `byte[]`, rather
-than a `JarFile` and a `JarEntry`.
+`PurityChecker.checkPurity()` takes two new arguments: the method declaration
+that lexically encloses the statement being checked (or null, as for an
+arbitrary expression) and the processing environment.
 
 `AnnotationFileElementTypes.parseAjavaFileWithTree()` takes an
 `AnnotationFileResource` rather than a path.
