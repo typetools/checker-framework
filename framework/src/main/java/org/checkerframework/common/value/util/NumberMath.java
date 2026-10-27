@@ -26,11 +26,11 @@ public final class NumberMath {
    * Returns an arithmetic helper for {@code number}.
    *
    * @param number a number
-   * @return an arithmetic helper, or null if {@code number} is not a supported boxed primitive
+   * @return an arithmetic helper
+   * @throws UnsupportedOperationException if {@code number} is not a supported boxed primitive
    */
-  public static @Nullable NumberMath getNumberMath(Number number) {
-    NumericType type = numericTypeOrNull(number);
-    return type == null ? null : new NumberMath(number, type);
+  public static NumberMath getNumberMath(Number number) {
+    return new NumberMath(number, numericType(number));
   }
 
   /**
@@ -375,22 +375,6 @@ public final class NumberMath {
    * @throws UnsupportedOperationException if {@code value} is not a supported boxed primitive
    */
   private static NumericType numericType(Number value) {
-    NumericType result = numericTypeOrNull(value);
-    if (result == null) {
-      throw new UnsupportedOperationException("Unsupported number type: " + value.getClass());
-    }
-    return result;
-  }
-
-  /**
-   * Returns the numeric promotion type for {@code value}, or null if {@code value} is not a
-   * supported boxed primitive.
-   *
-   * @param value a number
-   * @return the numeric promotion type for {@code value}, or null if {@code value} is not a
-   *     supported boxed primitive
-   */
-  private static @Nullable NumericType numericTypeOrNull(Number value) {
     if (value instanceof Double) {
       return NumericType.DOUBLE;
     } else if (value instanceof Float) {
@@ -400,7 +384,7 @@ public final class NumberMath {
     } else if (value instanceof Byte || value instanceof Short || value instanceof Integer) {
       return NumericType.INT;
     }
-    return null;
+    throw new UnsupportedOperationException("Unsupported number type: " + value.getClass());
   }
 
   /**
