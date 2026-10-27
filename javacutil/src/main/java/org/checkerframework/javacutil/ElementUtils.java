@@ -1070,7 +1070,7 @@ public final class ElementUtils {
     if (owner1.isInterface() != owner2.isInterface()) {
       return owner1.isInterface() == origin.isInterface();
     }
-    return owner1 != owner2 && owner1.isSubClass(owner2, javacTypes);
+    return !owner1.equals(owner2) && owner1.isSubClass(owner2, javacTypes);
   }
 
   /**
