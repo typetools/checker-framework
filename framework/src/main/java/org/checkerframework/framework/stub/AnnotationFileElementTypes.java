@@ -341,14 +341,15 @@ public class AnnotationFileElementTypes {
       if (namedFile.isFile()
           && !AnnotationFileUtil.isJarOrZip(namedFile.getName())
           && !AnnotationFileUtil.isUsableNamedFile(fullPath, fileType)) {
-        checker.message(
-            Diagnostic.Kind.WARNING,
-            fileType.isStub()
-                ? "Ignoring " + path + ", which is an ajava file; supply it via -Aajava"
-                : "Ignoring "
-                    + path
-                    + ": the name of an ajava file must end with"
-                    + " <ClassName>-<checker.qualified.name>.ajava");
+        String reason;
+        if (fileType == AnnotationFileType.COMMAND_LINE_STUB) {
+          reason = ", which is an ajava file; supply it via -Aajava";
+        } else if (fileType.isStub()) {
+          reason = ": the name of a stub file must not end with .ajava";
+        } else {
+          reason = ": the name of an ajava file must end with .ajava";
+        }
+        checker.message(Diagnostic.Kind.WARNING, "Ignoring " + path + reason);
         continue;
       }
 

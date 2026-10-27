@@ -8,7 +8,9 @@
 ### User-visible changes
 
 The `-Astubs` and `-Aajava` command-line options accept `.zip` archives, in
-addition to `.jar` archives and directories.
+addition to `.jar` archives and directories.  An archive is read only if it is
+named in the option; an archive within a directory that is named in the option
+is ignored.
 
 All ajava files must end with `.ajava`.  Stub files must not end with `.ajava`;
 they conventionally end `.astub`.

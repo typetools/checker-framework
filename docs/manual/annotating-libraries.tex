@@ -482,7 +482,8 @@ Each stub path entry is a stub file (ending with
 \<.astub>), a directory, or a \<.jar> or \<.zip> archive.
 Specifying a directory or archive is equivalent to
 specifying every file in it whose name ends with
-\code{.astub}.  The stub path entries are delimited by
+\code{.astub}.  An archive within a directory is not read.
+The stub path entries are delimited by
 \<File.pathSeparator> (``\<:>'' for Linux and Mac, ``\<;>'' for Windows).
 
 A checker automatically reads some of its own stub files, even without a
@@ -997,7 +998,7 @@ The \code{-Aajava} command-line argument works like \code{-Astubs} (see
 Section~\ref{stub-using}). It takes a colon-separated list of
 ajava files (which end in the \code{.ajava} extension) and directories and
 \<.jar> and \<.zip> archives containing ajava files.  Any non-ajava files
-in the directory or archive are ignored.
+in the directory or archive, including archives within a directory, are ignored.
 
 For example:
 
