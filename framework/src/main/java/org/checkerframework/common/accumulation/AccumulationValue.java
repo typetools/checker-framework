@@ -119,9 +119,9 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
       return lub;
     }
     // Lub the accumulatedValues by intersecting the lists as if they were sets.
-    lub.accumulatedValues = new HashSet<>(this.accumulatedValues.size());
-    lub.accumulatedValues.addAll(this.accumulatedValues);
-    lub.accumulatedValues.retainAll(other.accumulatedValues);
+    Set<String> lubAccumulatedValues = new HashSet<>(this.accumulatedValues);
+    lubAccumulatedValues.retainAll(other.accumulatedValues);
+    lub.accumulatedValues = lubAccumulatedValues;
     return lub;
   }
 
