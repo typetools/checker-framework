@@ -2113,17 +2113,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return lengthAccessNode;
   }
 
-  /**
-   * Returns false if the expression is never null, judging from its syntax.
-   *
-   * @param expression an expression of reference type
-   * @return false if the expression is never null; true if it may be null
-   */
-  private static boolean mayBeNull(ExpressionTree expression) {
-    expression = TreeUtils.withoutParens(expression);
-    return !(expression instanceof NewClassTree || expression instanceof NewArrayTree);
-  }
-
   @Override
   public Node visitLabeledStatement(LabeledStatementTree tree, Void p) {
     // This method can set the break target after generating all Nodes in the contained
