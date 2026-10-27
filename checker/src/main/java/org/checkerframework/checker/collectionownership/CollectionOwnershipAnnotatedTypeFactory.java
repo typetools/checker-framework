@@ -582,7 +582,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
     if (args.isEmpty()) {
       return null;
     }
-    return args.getLast();
+    return args.get(args.size() - 1);
   }
 
   /**
@@ -1036,6 +1036,15 @@ public class CollectionOwnershipAnnotatedTypeFactory
               break;
             }
           }
+        }
+      } else if (elt.getKind() == ElementKind.LOCAL_VARIABLE) {
+        // Locals default to top. Where dataflow has no value for a local, such as in a catch block
+        // reached only through ignored exceptions, its declared type is used, and checks that do
+        // not skip unreachable code, such as the thrown type of a throw statement, would fail.
+        // Collection ownership is not meaningful for a non-collection local, so keep it at bottom.
+        AnnotationMirror localAnno = type.getAnnotationInHierarchy(TOP);
+        if (localAnno == null || AnnotationUtils.areSameByName(TOP, localAnno)) {
+          type.replaceAnnotation(BOTTOM);
         }
       }
     }
