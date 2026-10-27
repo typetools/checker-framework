@@ -89,13 +89,25 @@ public class InstanceOfNode extends Node {
     if (bindingVariables == null) {
       if (patternNode instanceof DeconstructorPatternNode deconstructorPatternNode) {
         bindingVariables = deconstructorPatternNode.getBindingVariables();
-      } else if (patternNode instanceof LocalVariableNode localVariableNode) {
-        bindingVariables = Collections.singletonList(localVariableNode);
       } else {
-        bindingVariables = Collections.emptyList();
+        LocalVariableNode bindingPatternVariable = getBindingPatternVariable();
+        bindingVariables =
+            bindingPatternVariable == null
+                ? Collections.emptyList()
+                : Collections.singletonList(bindingPatternVariable);
       }
     }
     return bindingVariables;
+  }
+
+  /**
+   * Returns the variable of this instanceof's binding pattern, as in {@code e instanceof T v}.
+   * Returns null if this instanceof has no pattern or has a deconstruction pattern.
+   *
+   * @return the variable of this instanceof's binding pattern, or null
+   */
+  public @Nullable LocalVariableNode getBindingPatternVariable() {
+    return patternNode instanceof LocalVariableNode localVariableNode ? localVariableNode : null;
   }
 
   /**
