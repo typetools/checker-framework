@@ -240,8 +240,8 @@ public class SameLenTransfer extends CFTransfer {
       TransferResult<CFValue, CFStore> result,
       Node firstNode,
       Node secondNode,
-      CFValue firstValue,
-      CFValue secondValue,
+      @Nullable CFValue firstValue,
+      @Nullable CFValue secondValue,
       boolean notEqualTo) {
     // If result is a Regular transfer, then the elseStore is a copy of the then store, that is
     // created when getElseStore is called.  So do that before refining any values.

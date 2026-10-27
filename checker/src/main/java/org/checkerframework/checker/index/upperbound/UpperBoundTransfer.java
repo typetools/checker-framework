@@ -399,8 +399,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       TransferResult<CFValue, CFStore> res,
       Node firstNode,
       Node secondNode,
-      CFValue firstValue,
-      CFValue secondValue,
+      @Nullable CFValue firstValue,
+      @Nullable CFValue secondValue,
       boolean notEqualTo) {
     TransferResult<CFValue, CFStore> result =
         super.strengthenAnnotationOfEqualTo(

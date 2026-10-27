@@ -911,8 +911,10 @@ public abstract class CFAbstractTransfer<
    *
    * @param firstNode the node that might be more precise
    * @param secondNode the node whose type to possibly refine
-   * @param firstValue the abstract value that might be more precise
-   * @param secondValue the abstract value that might be less precise
+   * @param firstValue the abstract value that might be more precise, or null if no value is
+   *     available
+   * @param secondValue the abstract value that might be less precise, or null if no value is
+   *     available
    * @param res the previous result
    * @param notEqualTo if true, indicates that the logic is flipped (i.e., the information is added
    *     to the {@code elseStore} instead of the {@code thenStore}) for a not-equal comparison
@@ -922,8 +924,8 @@ public abstract class CFAbstractTransfer<
       TransferResult<V, S> res,
       Node firstNode,
       Node secondNode,
-      V firstValue,
-      V secondValue,
+      @Nullable V firstValue,
+      @Nullable V secondValue,
       boolean notEqualTo) {
     if (firstValue != null) {
       // Only need to insert if the second value is actually different.

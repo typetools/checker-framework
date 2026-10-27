@@ -1475,8 +1475,8 @@ public class ValueTransfer extends CFTransfer {
       TransferResult<CFValue, CFStore> transferResult,
       Node firstNode,
       Node secondNode,
-      CFValue firstValue,
-      CFValue secondValue,
+      @Nullable CFValue firstValue,
+      @Nullable CFValue secondValue,
       boolean notEqualTo) {
     if (firstValue == null) {
       return transferResult;
