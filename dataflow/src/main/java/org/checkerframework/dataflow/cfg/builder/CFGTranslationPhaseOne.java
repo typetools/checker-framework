@@ -1990,6 +1990,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
+   * Returns false if the expression is never null, judging from its syntax.
+   *
+   * @param expression an expression of reference type
+   * @return false if the expression is never null; true if it may be null
+   */
+  private static boolean mayBeNull(ExpressionTree expression) {
+    expression = TreeUtils.withoutParens(expression);
+    return !(expression instanceof NewClassTree || expression instanceof NewArrayTree);
+  }
+
+  /**
    * Marks the boxing or unboxing calls that assignment conversion applied to an element of an
    * enhanced for loop, so that the type of each call is the element type of the iterable
    * expression. Assignment conversion may box or unbox the element, for example in {@code for (int
@@ -2011,17 +2022,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         conversion.setEnhancedForLoop(tree);
       }
     }
-  }
-
-  /**
-   * Returns false if the expression is never null, judging from its syntax.
-   *
-   * @param expression an expression of reference type
-   * @return false if the expression is never null; true if it may be null
-   */
-  private static boolean mayBeNull(ExpressionTree expression) {
-    expression = TreeUtils.withoutParens(expression);
-    return !(expression instanceof NewClassTree || expression instanceof NewArrayTree);
   }
 
   /**
