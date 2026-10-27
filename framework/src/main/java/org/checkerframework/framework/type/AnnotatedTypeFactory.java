@@ -2987,10 +2987,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         //   }
         // So the code below deals with this.
         List<AnnotatedTypeMirror> p = new ArrayList<>(superCon.getParameterTypes().size() + 1);
-        if (TreeUtils.hasSyntheticArgument(tree)) {
-          p.add(con.getParameterTypes().get(0));
-          con.setReceiverType(superCon.getReceiverType());
-        } else if (con.getReceiverType() != null) {
+        if (con.getReceiverType() != null) {
           // Because the anonymous constructor doesn't have annotated receiver type,
           // we copy the receiver type from the super constructor invoked in the anonymous
           // constructor and add it to the parameterTypes as the first element.
@@ -5044,7 +5041,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         int indexOfLambda = newClass.getArguments().indexOf(tree);
         ParameterizedExecutableType con = this.constructorFromUse(newClass);
         AnnotatedTypeMirror constructorParam =
-            AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(con.executableType, indexOfLambda);
+            AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(
+                con.executableType, newClass, indexOfLambda);
         assertIsFunctionalInterface(constructorParam.getUnderlyingType(), parentTree, tree);
         return constructorParam;
       }
@@ -5060,7 +5058,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         int index = method.getArguments().indexOf(tree);
         ParameterizedExecutableType exe = this.methodFromUse(method);
         AnnotatedTypeMirror param =
-            AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(exe.executableType, index);
+            AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(exe.executableType, method, index);
         assertIsFunctionalInterface(param.getUnderlyingType(), parentTree, tree);
         return param;
       }

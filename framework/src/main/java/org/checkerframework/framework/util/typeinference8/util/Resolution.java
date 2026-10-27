@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util.typeinference8.util;
 
+import com.sun.source.tree.ExpressionTree;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -229,6 +230,8 @@ public final class Resolution {
       BoundSet copy = new BoundSet(boundSet);
       // Save the current bounds in case the first attempt at resolution fails.
       copy.saveBounds();
+      Set<ExpressionTree> savedNeedUncheckedConversion =
+          new LinkedHashSet<>(context.needUncheckedConversion);
       try {
         BoundSet resolvedBounds = resolveWithoutCapture(as, boundSet);
         if (!resolvedBounds.containsFalse()) {
@@ -238,8 +241,10 @@ public final class Resolution {
         // Try with capture.
       }
       boundSet = copy;
-      // If resolveWithoutCapture fails, then undo all resolved variables from the failed attempt.
+      // If resolveWithoutCapture fails, then undo all resolved variables from the failed attempt,
+      // and forget any unchecked conversion that only the failed attempt needed.
       boundSet.restore();
+      context.needUncheckedConversion.retainAll(savedNeedUncheckedConversion);
       return resolveWithCapture(as, boundSet, context);
     }
   }
