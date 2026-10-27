@@ -73,16 +73,20 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       AnnotationBuilder.fromClass(elements, HasParent.class);
 
   /** The {@code java.nio.file.Path} interface. */
-  /*package-private*/ final TypeElement pathElement = getTypeElement(Path.class);
+  /*package-private*/ final TypeElement pathElement =
+      ElementUtils.getTypeElement(processingEnv, Path.class);
 
   /** The {@code java.nio.file.Paths} class. */
-  /*package-private*/ final TypeElement pathsElement = getTypeElement(Paths.class);
+  /*package-private*/ final TypeElement pathsElement =
+      ElementUtils.getTypeElement(processingEnv, Paths.class);
 
   /** The {@code java.nio.file.Files} class. */
-  /*package-private*/ final TypeElement filesElement = getTypeElement(Files.class);
+  /*package-private*/ final TypeElement filesElement =
+      ElementUtils.getTypeElement(processingEnv, Files.class);
 
   /** The {@code java.io.File} class. */
-  /*package-private*/ final TypeElement fileElement = getTypeElement(File.class);
+  /*package-private*/ final TypeElement fileElement =
+      ElementUtils.getTypeElement(processingEnv, File.class);
 
   /**
    * Creates a new PathShapeAnnotatedTypeFactory.
@@ -95,16 +99,6 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     this.postInit();
   }
 
-  /**
-   * Returns the type element for the given class.
-   *
-   * @param clazz a class
-   * @return the type element for {@code clazz}
-   */
-  private TypeElement getTypeElement(Class<?> clazz) {
-    return ElementUtils.getTypeElement(processingEnv, clazz);
-  }
-
   @Override
   protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
     return new LinkedHashSet<>(
@@ -114,6 +108,12 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             HasParent.class,
             PathShapeBottom.class,
             PolyPathShape.class));
+  }
+
+  /** Returns false. Redundancy in the path shape hierarchy is not worth warning about. */
+  @Override
+  public boolean shouldWarnIfStubRedundantWithBytecode() {
+    return false;
   }
 
   // ///////////////////////////////////////////////////////////////////////////
@@ -138,6 +138,7 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param tree a class
    * @return true if the Path Shape Checker should check {@code tree}
    */
+  @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
   /*package-private*/ boolean shouldCheck(ClassTree tree) {
     if (tree != currentTopLevelClass && root != null && root.getTypeDecls().contains(tree)) {
       currentTopLevelClass = tree;
@@ -385,7 +386,7 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return;
     }
     AnnotationMirror qualifier = toQualifier(shape);
-    @Nullable AnnotationMirror existing = type.getPrimaryAnnotationInHierarchy(qualifier);
+    AnnotationMirror existing = type.getPrimaryAnnotationInHierarchy(qualifier);
     if (existing == null || qualHierarchy.isSubtypeQualifiersOnly(qualifier, existing)) {
       type.replaceAnnotation(qualifier);
     }

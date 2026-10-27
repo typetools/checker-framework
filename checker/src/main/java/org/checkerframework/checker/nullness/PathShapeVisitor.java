@@ -5,6 +5,7 @@ import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -51,7 +52,9 @@ public class PathShapeVisitor extends BaseTypeVisitor<PathShapeAnnotatedTypeFact
     // The type factory cannot refine the type of the declaration itself, because computing the type
     // of some initializers, such as array initializers, requires the type of the declaration.
     AnnotatedTypeMirror varType = atypeFactory.getAnnotatedTypeLhs(varTree);
-    atypeFactory.refineFromInitializer(TreeUtils.elementFromDeclaration(variableTree), varType);
+    @SuppressWarnings("nullness:assignment") // the visitor visits only attributed trees
+    VariableElement variable = TreeUtils.elementFromDeclaration(variableTree);
+    atypeFactory.refineFromInitializer(variable, varType);
     if (!validateType(varTree, varType)) {
       return true;
     }

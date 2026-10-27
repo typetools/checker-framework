@@ -1,9 +1,5 @@
 package org.checkerframework.checker.nullness;
 
-import static org.checkerframework.checker.nullness.PathShapeClassifier.PathShape.HAS_NAME;
-import static org.checkerframework.checker.nullness.PathShapeClassifier.PathShape.HAS_PARENT;
-import static org.checkerframework.checker.nullness.PathShapeClassifier.PathShape.UNKNOWN;
-
 import java.io.File;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -22,6 +18,15 @@ import org.junit.Test;
  * expected Unix results are checked against the running JDK when the tests run on Unix.
  */
 public class PathShapeClassifierTest {
+
+  /** Abbreviation for {@link PathShape#HAS_NAME}. */
+  private static final PathShape HAS_NAME = PathShape.HAS_NAME;
+
+  /** Abbreviation for {@link PathShape#HAS_PARENT}. */
+  private static final PathShape HAS_PARENT = PathShape.HAS_PARENT;
+
+  /** Abbreviation for {@link PathShape#UNKNOWN}. */
+  private static final PathShape UNKNOWN = PathShape.UNKNOWN;
 
   /**
    * Checks the path shape of a string under each set of rules.

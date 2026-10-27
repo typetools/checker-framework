@@ -208,8 +208,8 @@ public class PathShapeTreeAnnotator extends TreeAnnotator {
    */
   private boolean firstParameterIsPath(ExecutableElement method) {
     return !method.getParameters().isEmpty()
-        && factory.pathElement.equals(
-            TypesUtils.getTypeElement(method.getParameters().get(0).asType()));
+        && TypesUtils.isDeclaredOfName(
+            method.getParameters().get(0).asType(), "java.nio.file.Path");
   }
 
   /**
