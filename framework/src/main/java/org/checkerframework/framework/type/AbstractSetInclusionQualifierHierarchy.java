@@ -17,7 +17,8 @@ import org.checkerframework.javacutil.BugInCF;
 /**
  * A {@link org.checkerframework.framework.type.QualifierHierarchy} where, when a qualifier has
  * arguments, the subtype relation is determined by a subset or superset test on the elements
- * (arguments). The elements must be strings.
+ * (arguments). Each qualifier that has elements must have exactly one element, named {@code value},
+ * whose type is {@code String[]}.
  *
  * <p>This assumes that if the lub or glb of two qualifier kinds has elements, then it is one of the
  * two qualifier kinds. Otherwise, computing the lub or glb throws {@link BugInCF}.
@@ -28,9 +29,6 @@ import org.checkerframework.javacutil.BugInCF;
 @AnnotatedFor("nullness")
 public abstract class AbstractSetInclusionQualifierHierarchy
     extends MostlyNoElementQualifierHierarchy {
-
-  /** The processing environment; used for creating annotations. */
-  private final ProcessingEnvironment processingEnv;
 
   /** Whether a qualifier is a subtype when its elements are a subset of another qualifier's. */
   private final boolean subtypeIsSubset;
@@ -50,7 +48,6 @@ public abstract class AbstractSetInclusionQualifierHierarchy
       GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory,
       boolean subtypeIsSubset) {
     super(qualifierClasses, processingEnv.getElementUtils(), atypeFactory);
-    this.processingEnv = processingEnv;
     this.subtypeIsSubset = subtypeIsSubset;
   }
 
@@ -153,7 +150,7 @@ public abstract class AbstractSetInclusionQualifierHierarchy
       return a2;
     }
     AnnotationBuilder builder =
-        new AnnotationBuilder(processingEnv, resultKind.getAnnotationClass());
+        new AnnotationBuilder(atypeFactory.getProcessingEnv(), resultKind.getAnnotationClass());
     builder.setValue("value", values.toArray());
     return builder.build();
   }
