@@ -1131,7 +1131,8 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns the greatest lower bound of {@code a} and {@code b}.
+   * Returns the greatest lower bound of {@code a} and {@code b}. The result ignores annotations
+   * (see {@link AbstractType#ignoreAnnotations}) only if both {@code a} and {@code b} do.
    *
    * @param a type to glb
    * @param b type to glb
@@ -1172,32 +1173,34 @@ public class InferenceFactory {
         glbATM.replaceAnnotations(aAtm.getPrimaryAnnotations());
       }
     }
+    // The annotations of a type that ignores annotations put no constraint on the result, so the
+    // result ignores annotations only if both types do.  This is the same rule as in `lub`.
+    boolean ignoreAnnotations = a.ignoreAnnotations && b.ignoreAnnotations;
     // As in `lub`, the result keeps the record of ignored substitutions of an input that it differs
     // from only at its root and at those ignored substitutions.
-    boolean bothIgnore = a.ignoreAnnotations && b.ignoreAnnotations;
-    ProperType withOrigin = withOriginOf(a, glb, glbATM, bothIgnore);
+    ProperType withOrigin = withOriginOf(a, glb, glbATM, ignoreAnnotations);
     if (withOrigin == null) {
-      withOrigin = withOriginOf(b, glb, glbATM, bothIgnore);
+      withOrigin = withOriginOf(b, glb, glbATM, ignoreAnnotations);
     }
     if (withOrigin != null) {
       return withOrigin;
     }
     if (context.types.isSameType(aJavaType, (Type) glb)) {
-      return a.create(glbATM, false);
+      return a.create(glbATM, ignoreAnnotations);
     }
 
     if (context.types.isSameType(bJavaType, (Type) glb)) {
-      return b.create(glbATM, false);
+      return b.create(glbATM, ignoreAnnotations);
     }
 
     if (a.isInferenceType()) {
-      return a.create(glbATM, false);
+      return a.create(glbATM, ignoreAnnotations);
     } else if (b.isInferenceType()) {
-      return b.create(glbATM, false);
+      return b.create(glbATM, ignoreAnnotations);
     }
 
     assert a.isProper() && b.isProper();
-    return new ProperType(glbATM, context, a.ignoreAnnotations && b.ignoreAnnotations);
+    return new ProperType(glbATM, context, ignoreAnnotations);
   }
 
   /**
