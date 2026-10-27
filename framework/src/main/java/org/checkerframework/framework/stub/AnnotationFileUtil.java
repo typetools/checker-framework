@@ -533,7 +533,6 @@ public class AnnotationFileUtil {
    *     only if its name indicates that it is an annotation file of type {@code fileType}. An
    *     archive found by searching a directory is not opened.
    */
-  @SuppressWarnings("JdkObsolete") // JarFile.entries()
   private static void addAnnotationFilesToList(
       File location,
       List<AnnotationFileResource> resources,
