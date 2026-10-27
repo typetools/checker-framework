@@ -398,9 +398,11 @@ public abstract class JavaExpression {
    */
   public JavaExpression atConstructorInvocation(NewClassTree newClassTree) {
     JavaExpression receiverJe = getReceiver(newClassTree);
+    // For an anonymous class, use the super constructor, whose parameters correspond to the
+    // arguments.  The anonymous constructor may have an extra parameter for the enclosing instance.
     List<JavaExpression> argumentsJe =
         argumentTreesToJavaExpressions(
-            TreeUtils.elementFromUse(newClassTree), newClassTree.getArguments());
+            TreeUtils.getSuperConstructor(newClassTree), newClassTree.getArguments());
     return ViewpointAdaptJavaExpression.viewpointAdapt(this, receiverJe, argumentsJe);
   }
 

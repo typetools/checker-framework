@@ -222,7 +222,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   @Override
   protected void constructorFromUsePreSubstitution(
       NewClassTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
-    ExecutableElement declaration = TreeUtils.elementFromUse(tree);
+    // For an anonymous class, `type` is either the anonymous constructor or the superclass
+    // constructor that it invokes, so use `type`'s element rather than the element of `tree`.
+    ExecutableElement declaration = type.getElement();
     changeNonOwningParameterTypesToTop(declaration, type);
     super.constructorFromUsePreSubstitution(tree, type, resolvePolyQuals);
   }
