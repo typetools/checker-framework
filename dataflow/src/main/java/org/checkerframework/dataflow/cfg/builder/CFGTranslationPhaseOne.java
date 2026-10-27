@@ -2011,11 +2011,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns false if the value of the given node is never null, judging from the node's syntax. For
+   * Returns true if the value of the given node may be null, judging from the node's syntax. For
    * example, {@code this} and the result of {@code new} are never null.
    *
    * @param node a node of reference type
-   * @return false if the value of the node is never null; true if it may be null
+   * @return true if the value of the node may be null; false if it is never null
    */
   private static boolean mayBeNull(Node node) {
     if (node instanceof ThisNode
