@@ -19,8 +19,9 @@ they conventionally end `.astub`.
 
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
-The `JarEntryAnnotationFileResource` constructor takes the archive as a `File`
-and the entry's name as a `String`, rather than a `JarFile` and a `JarEntry`.
+The `JarEntryAnnotationFileResource` constructor takes the archive as a `File`,
+the entry's name as a `String`, and the entry's contents as a `byte[]`, rather
+than a `JarFile` and a `JarEntry`.
 
 ### Closed issues
 

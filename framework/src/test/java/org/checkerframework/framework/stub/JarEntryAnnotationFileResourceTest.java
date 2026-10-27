@@ -70,16 +70,20 @@ public class JarEntryAnnotationFileResourceTest {
     Assert.assertEquals(jar.getPath() + "!B.astub", resources.get(1).getDescription());
     Assert.assertEquals("B.astub", contents(resources.get(1)));
     Assert.assertEquals("a/A.astub", contents(resources.get(0)));
-    // Reading an entry a second time works, because each read opens the archive anew.
+    // Reading an entry a second time works.
     Assert.assertEquals("a/A.astub", contents(resources.get(0)));
   }
 
-  /** Tests that reading a nonexistent entry throws an IOException. */
+  /** Tests that an entry can be read after its archive has been deleted. */
   @Test
-  public void readMissingEntry() throws IOException {
+  public void readEntryAfterArchiveIsDeleted() throws IOException {
     File jar = writeJar(new File(tmp.getRoot(), "stubs.jar"), "A.astub");
 
-    AnnotationFileResource resource = new JarEntryAnnotationFileResource(jar, "Missing.astub");
-    Assert.assertThrows(IOException.class, resource::getInputStream);
+    List<AnnotationFileResource> resources =
+        AnnotationFileUtil.allAnnotationFiles(jar.getPath(), AnnotationFileType.COMMAND_LINE_STUB);
+    Assert.assertNotNull(resources);
+    Assert.assertEquals(1, resources.size());
+    Files.delete(jar.toPath());
+    Assert.assertEquals("A.astub", contents(resources.get(0)));
   }
 }
