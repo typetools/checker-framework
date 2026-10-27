@@ -752,14 +752,18 @@ public final class TreeUtils {
     //
     // which is a method invocation of the super constructor.
 
-    // The method call is guaranteed to return nonnull.
-    JCMethodDecl anonConstructor =
-        (JCMethodDecl) TreeInfo.declarationFor(jcNewClass.constructor, jcNewClass);
-    assert anonConstructor != null;
-    assert anonConstructor.body.stats.size() == 1;
-    JCExpressionStatement stmt = (JCExpressionStatement) anonConstructor.body.stats.head;
-    JCMethodInvocation superInvok = (JCMethodInvocation) stmt.expr;
-    return (ExecutableElement) TreeInfo.symbol(superInvok.meth);
+    // The anonymous constructor is a member of the class body.  Searching only the members, rather
+    // than calling TreeInfo.declarationFor, avoids scanning the entire class body.
+    for (JCTree member : jcNewClass.def.defs) {
+      if (member instanceof JCMethodDecl anonConstructor
+          && jcNewClass.constructor.equals(anonConstructor.sym)) {
+        assert anonConstructor.body.stats.size() == 1;
+        JCExpressionStatement stmt = (JCExpressionStatement) anonConstructor.body.stats.head;
+        JCMethodInvocation superInvok = (JCMethodInvocation) stmt.expr;
+        return (ExecutableElement) TreeInfo.symbol(superInvok.meth);
+      }
+    }
+    throw new BugInCF("No anonymous constructor in %s", newClassTree);
   }
 
   /**
