@@ -1147,10 +1147,10 @@ public abstract class CFAbstractTransfer<
     // If `in` has a then-store and an else-store, each call to `in.getRegularStore()` returns a
     // new store, so call it just once.
     S store = in.getRegularStore();
+    AnnotatedTypeMirror expType =
+        analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
     for (LocalVariableNode bindingVar : node.getBindingVariables()) {
       JavaExpression expr = JavaExpression.fromNode(bindingVar);
-      AnnotatedTypeMirror expType =
-          analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
       for (AnnotationMirror anno : expType.getAnnotations()) {
         store.insertOrRefine(expr, anno);
       }
@@ -1160,8 +1160,6 @@ public abstract class CFAbstractTransfer<
     Tree refTypeTree = node.getTree().getType();
     if (refTypeTree != null && refTypeTree instanceof AnnotatedTypeTree) {
       AnnotatedTypeMirror refType = analysis.atypeFactory.getAnnotatedType(refTypeTree);
-      AnnotatedTypeMirror expType =
-          analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
       if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
           && !refType.getPrimaryAnnotations().equals(expType.getPrimaryAnnotations())
           && !expType.getPrimaryAnnotations().isEmpty()) {
