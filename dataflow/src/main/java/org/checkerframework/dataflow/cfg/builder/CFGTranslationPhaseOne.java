@@ -1870,17 +1870,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // NullPointerException.  Represent that first access before the loop, and the access in the
       // loop condition without the exception.
       if (mayBeNull(expression)) {
-        IdentifierTree arrayUse0 = treeBuilder.buildVariableUse(arrayVariable);
-        handleArtificialTree(arrayUse0);
-        LocalVariableNode arrayNode0 = new LocalVariableNode(arrayUse0);
-        arrayNode0.setInSource(false);
-        extendWithNode(arrayNode0);
-
-        MemberSelectTree lengthSelect0 = treeBuilder.buildArrayLengthAccess(arrayUse0);
-        handleArtificialTree(lengthSelect0);
-        FieldAccessNode lengthAccessNode0 = new FieldAccessNode(lengthSelect0, arrayNode0);
-        lengthAccessNode0.setInSource(false);
-        extendWithNodeWithException(lengthAccessNode0, nullPointerExceptionType);
+        extendWithArrayLengthAccess(arrayVariable, true);
       }
 
       // Compare index to array length
@@ -1891,18 +1881,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       indexNode1.setInSource(false);
       extendWithNode(indexNode1);
 
-      IdentifierTree arrayUse1 = treeBuilder.buildVariableUse(arrayVariable);
-      handleArtificialTree(arrayUse1);
-      LocalVariableNode arrayNode1 = new LocalVariableNode(arrayUse1);
-      extendWithNode(arrayNode1);
-
-      MemberSelectTree lengthSelect = treeBuilder.buildArrayLengthAccess(arrayUse1);
-      handleArtificialTree(lengthSelect);
-      FieldAccessNode lengthAccessNode = new FieldAccessNode(lengthSelect, arrayNode1);
-      lengthAccessNode.setInSource(false);
       // This length access cannot throw NullPointerException; see above.  The element access below
       // is safe due to the bounds check and the synthetic array temp not being reassigned.
-      extendWithNode(lengthAccessNode);
+      FieldAccessNode lengthAccessNode = extendWithArrayLengthAccess(arrayVariable, false);
+      MemberSelectTree lengthSelect = (MemberSelectTree) lengthAccessNode.getTree();
 
       BinaryTree lessThan = treeBuilder.buildLessThan(indexUse1, lengthSelect);
       handleArtificialTree(lessThan);
@@ -1978,6 +1960,33 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     continueTargetLC = oldContinueTargetLC;
 
     return null;
+  }
+
+  /**
+   * Extends the CFG with an access to the length of the array variable of an enhanced for loop.
+   *
+   * @param arrayVariable the array variable
+   * @param mayThrowNullPointerException true if the access may throw a {@code NullPointerException}
+   * @return the node for the access
+   */
+  private FieldAccessNode extendWithArrayLengthAccess(
+      VariableTree arrayVariable, boolean mayThrowNullPointerException) {
+    IdentifierTree arrayUse = treeBuilder.buildVariableUse(arrayVariable);
+    handleArtificialTree(arrayUse);
+    LocalVariableNode arrayNode = new LocalVariableNode(arrayUse);
+    arrayNode.setInSource(false);
+    extendWithNode(arrayNode);
+
+    MemberSelectTree lengthSelect = treeBuilder.buildArrayLengthAccess(arrayUse);
+    handleArtificialTree(lengthSelect);
+    FieldAccessNode lengthAccessNode = new FieldAccessNode(lengthSelect, arrayNode);
+    lengthAccessNode.setInSource(false);
+    if (mayThrowNullPointerException) {
+      extendWithNodeWithException(lengthAccessNode, nullPointerExceptionType);
+    } else {
+      extendWithNode(lengthAccessNode);
+    }
+    return lengthAccessNode;
   }
 
   /**
@@ -2710,8 +2719,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // (which can be either a LocalVariableNode or a FieldAccessNode)?
     // A try-with-resources statement calls close() only if the resource is non-null (JLS
     // 14.20.3.1).  The CFG omits that null test: it represents the call as unconditional, even on
-    // paths where the resource is null.
-    extendWithArtificialCall(closeCall, receiverNode, NullReceiver.SKIPS_CALL);
+    // paths where the resource is null.  A resource variable is final, so it is non-null if its
+    // initializer is.
+    boolean resourceMayBeNull =
+        !(resourceDeclarationTree instanceof VariableTree variableTree
+            && variableTree.getInitializer() != null
+            && !mayBeNull(variableTree.getInitializer()));
+    extendWithArtificialCall(
+        closeCall,
+        receiverNode,
+        resourceMayBeNull ? NullReceiver.SKIPS_CALL : NullReceiver.IMPOSSIBLE);
   }
 
   /** What happens when the receiver of a call that desugars a statement is null. */
