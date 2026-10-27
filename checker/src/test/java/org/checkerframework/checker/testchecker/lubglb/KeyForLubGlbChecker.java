@@ -1,6 +1,9 @@
 package org.checkerframework.checker.testchecker.lubglb;
 
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.nullness.KeyForAnnotatedTypeFactory;
 import org.checkerframework.checker.nullness.KeyForSubchecker;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -9,9 +12,10 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * Tests the LUB and GLB computation of the KeyFor Checker, whose qualifier hierarchy is a {@code
- * SubtypeIsSupersetQualifierHierarchy}. The LUB of two {@code @KeyFor} annotations is the
- * intersection of their values, and the GLB is the union.
+ * Tests the LUB, GLB, and canonicalization of the KeyFor Checker, whose qualifier hierarchy is a
+ * {@code SubtypeIsSupersetQualifierHierarchy}. The LUB of two {@code @KeyFor} annotations is the
+ * intersection of their values, and the GLB is the union. The canonical form of a {@code @KeyFor}
+ * annotation has sorted values without duplicates.
  */
 public class KeyForLubGlbChecker extends KeyForSubchecker {
 
@@ -61,6 +65,20 @@ public class KeyForLubGlbChecker extends KeyForSubchecker {
     }
   }
 
+  /**
+   * Throws an exception if {@code actual} is not the same as {@code expected}.
+   *
+   * @param description a description of how {@code actual} was computed
+   * @param actual the actual result
+   * @param expected the expected result
+   */
+  private void sameAssert(String description, AnnotationMirror actual, AnnotationMirror expected) {
+    if (!AnnotationUtils.areSame(expected, actual)) {
+      throw new AssertionError(
+          String.format("%s should be %s, but is %s", description, expected, actual));
+    }
+  }
+
   @Override
   public void initChecker() {
     super.initChecker();
@@ -91,5 +109,31 @@ public class KeyForLubGlbChecker extends KeyForSubchecker {
     glbAssert(cb, cba, cba);
     lubAssert(cba, bc, bc);
     glbAssert(cb, bc, cb);
+
+    KeyForAnnotatedTypeFactory atypeFactory =
+        (KeyForAnnotatedTypeFactory) ((BaseTypeVisitor<?>) visitor).getTypeFactory();
+    QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
+
+    // The canonical form has sorted values without duplicates.
+    AnnotationMirror bab = keyFor("b", "a", "b");
+    sameAssert("canonicalize(" + ba + ")", qualHierarchy.canonicalize(ba), ab);
+    sameAssert("canonicalize(" + bab + ")", qualHierarchy.canonicalize(bab), ab);
+    sameAssert("canonicalAnnotation(" + ba + ")", atypeFactory.canonicalAnnotation(ba), ab);
+    if (qualHierarchy.canonicalize(ab) != ab) {
+      throw new AssertionError("canonicalize(" + ab + ") should return its argument");
+    }
+    sameAssert(
+        "createKeyForAnnotationMirrorWithValue([b, a])",
+        atypeFactory.createKeyForAnnotationMirrorWithValue(
+            new LinkedHashSet<>(Arrays.asList("b", "a"))),
+        ab);
+
+    // For canonical arguments, the result does not depend on the order of the arguments or their
+    // values.
+    AnnotationMirror canonicalBa = qualHierarchy.canonicalize(ba);
+    lubAssert(ab, canonicalBa, ab);
+    lubAssert(canonicalBa, ab, ab);
+    glbAssert(ab, canonicalBa, ab);
+    glbAssert(canonicalBa, ab, ab);
   }
 }
