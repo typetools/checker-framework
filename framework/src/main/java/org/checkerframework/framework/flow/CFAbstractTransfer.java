@@ -8,6 +8,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
@@ -1131,6 +1132,23 @@ public abstract class CFAbstractTransfer<
       DeconstructorPatternNode n, TransferInput<V, S> in) {
     // TODO: Implement getting the type of a DeconstructorPatternTree.
     V value = null;
+    // Each binding variable is assigned a record component.
+    S store = in.getRegularStore();
+    for (Node nestedPattern : n.getNestedPatterns()) {
+      if (nestedPattern instanceof LocalVariableNode bindingVar
+          && bindingVar.getTree() instanceof VariableTree bindingVarTree) {
+        AnnotatedTypeMirror componentType =
+            analysis.atypeFactory.getDeconstructedComponentType(bindingVarTree);
+        V componentValue =
+            componentType == null
+                ? null
+                : analysis.createAbstractValue(
+                    componentType.getAnnotations(), bindingVar.getType());
+        if (componentValue != null) {
+          store.insertValue(JavaExpression.fromNode(bindingVar), componentValue);
+        }
+      }
+    }
     return createTransferResult(value, in);
   }
 
@@ -1146,9 +1164,7 @@ public abstract class CFAbstractTransfer<
     TransferResult<V, S> result = super.visitInstanceOf(node, in);
     // Only the variable of a binding pattern is refined by the expression's type.  The binding
     // variables of a deconstruction pattern hold record components, whose types may be unrelated
-    // to the expression's type, so they are not refined here.
-    // TODO: Give the binding variables of a deconstruction pattern the types of the record
-    // components.
+    // to the expression's type; visitDeconstructorPattern gives them the components' types.
     LocalVariableNode bindingVar = node.getBindingPatternVariable();
     if (bindingVar != null) {
       JavaExpression expr = JavaExpression.fromNode(bindingVar);

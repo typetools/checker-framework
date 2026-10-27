@@ -12,6 +12,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -20,6 +21,8 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.SwitchExpressionTree;
+import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
@@ -68,6 +71,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
@@ -97,6 +101,9 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJa
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage.InferredDeclared;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.MethodCall;
+import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -140,6 +147,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -3863,6 +3871,180 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public @Nullable TreePath getVisitorTreePath() {
     return visitorTreePath;
   }
+
+  /**
+   * Returns true if {@code variableTree} is a binding variable of a deconstruction pattern, such as
+   * {@code y} in {@code o instanceof Point(int x, int y)}.
+   *
+   * @param variableTree a variable declaration
+   * @return true if {@code variableTree} is a binding variable of a deconstruction pattern
+   */
+  public boolean isDeconstructionBindingVariable(VariableTree variableTree) {
+    return getBindingPatternPath(variableTree) != null;
+  }
+
+  /**
+   * If {@code variableTree} is a binding variable of a deconstruction pattern, returns the path to
+   * its binding pattern, whose parent is the deconstruction pattern. Otherwise, returns null.
+   *
+   * @param variableTree a variable declaration
+   * @return the path to the binding pattern of {@code variableTree}, or null
+   */
+  private @Nullable TreePath getBindingPatternPath(VariableTree variableTree) {
+    if (TreeUtils.elementFromDeclaration(variableTree).getKind() != ElementKind.BINDING_VARIABLE) {
+      return null;
+    }
+    TreePath path = getPath(variableTree);
+    TreePath bindingPatternPath = path == null ? null : path.getParentPath();
+    TreePath parentPath = bindingPatternPath == null ? null : bindingPatternPath.getParentPath();
+    if (parentPath == null || !TreeUtils.isDeconstructionPatternTree(parentPath.getLeaf())) {
+      return null;
+    }
+    return bindingPatternPath;
+  }
+
+  /**
+   * Returns true if {@code variableTree}, a binding variable of a deconstruction pattern, is
+   * declared by a pattern that is unconditional for its record component. An unconditional pattern
+   * matches every value of the component, including null. Any other pattern tests the component's
+   * Java type, as {@code instanceof} does, and does not match null.
+   *
+   * @param variableTree a binding variable of a deconstruction pattern
+   * @return true if the pattern that declares {@code variableTree} is unconditional for its record
+   *     component
+   */
+  public boolean isUnconditionalForComponent(VariableTree variableTree) {
+    TreePath bindingPatternPath = getBindingPatternPath(variableTree);
+    TreePath deconstructionPatternPath =
+        bindingPatternPath == null ? null : bindingPatternPath.getParentPath();
+    if (bindingPatternPath == null || deconstructionPatternPath == null) {
+      throw new BugInCF("Not a binding variable of a deconstruction pattern: %s", variableTree);
+    }
+    Tree deconstructionPatternTree = deconstructionPatternPath.getLeaf();
+    int index =
+        TreeUtilsAfterJava17.DeconstructionPatternUtils.getNestedPatterns(deconstructionPatternTree)
+            .indexOf(bindingPatternPath.getLeaf());
+    DeclaredType recordType = (DeclaredType) TreeUtils.typeOf(deconstructionPatternTree);
+    TypeElement recordElement = (TypeElement) recordType.asElement();
+    ExecutableElement accessor = recordElement.getRecordComponents().get(index).getAccessor();
+    TypeMirror componentType =
+        ((ExecutableType) types.asMemberOf(recordType, accessor)).getReturnType();
+    return types.isSubtype(
+        types.erasure(componentType), types.erasure(TreeUtils.typeOf(variableTree)));
+  }
+
+  /**
+   * If {@code variableTree} is a binding variable of a deconstruction pattern, returns the type of
+   * the record component that it is bound to. For example, in {@code o instanceof Point(int x, int
+   * y)}, {@code y} is bound to {@code Point}'s second component. Otherwise, returns null.
+   *
+   * <p>The result is the type of the component's accessor method, as a member of the type of the
+   * value that the deconstruction pattern matches. If that type does not determine the record's
+   * type arguments (for example, if it is {@code Object}), then the result may be a type variable.
+   *
+   * @param variableTree a variable declaration
+   * @return the type of the record component that {@code variableTree} is bound to, or null if
+   *     {@code variableTree} is not a binding variable of a deconstruction pattern
+   */
+  public @Nullable AnnotatedTypeMirror getDeconstructedComponentType(VariableTree variableTree) {
+    TreePath bindingPatternPath = getBindingPatternPath(variableTree);
+    if (bindingPatternPath == null) {
+      return null;
+    }
+    MatchedValue component = getMatchedValue(bindingPatternPath);
+    return component == null ? null : component.type();
+  }
+
+  /**
+   * A value that a pattern matches.
+   *
+   * @param type the type of the value
+   * @param expression an expression for the value; used to viewpoint-adapt dependent types
+   */
+  private record MatchedValue(AnnotatedTypeMirror type, JavaExpression expression) {}
+
+  /**
+   * Returns the value that the pattern at {@code patternPath} matches: the expression of an {@code
+   * instanceof}, the selector of a {@code switch}, or a component of an enclosing deconstruction
+   * pattern.
+   *
+   * @param patternPath the path to a pattern
+   * @return the value that the pattern matches, or null if it cannot be determined
+   */
+  private @Nullable MatchedValue getMatchedValue(TreePath patternPath) {
+    TreePath parentPath = patternPath.getParentPath();
+    if (parentPath == null) {
+      return null;
+    }
+    Tree parent = parentPath.getLeaf();
+    ExpressionTree matchedTree;
+    if (parent instanceof InstanceOfTree instanceOfTree) {
+      matchedTree = instanceOfTree.getExpression();
+    } else if (TreeUtils.isDeconstructionPatternTree(parent)) {
+      int index =
+          TreeUtilsAfterJava17.DeconstructionPatternUtils.getNestedPatterns(parent)
+              .indexOf(patternPath.getLeaf());
+      return getComponent(parentPath, index);
+    } else if (parent.getKind().name().equals("PATTERN_CASE_LABEL")) {
+      // The path is: switch, case, case label, pattern.
+      TreePath casePath = parentPath.getParentPath();
+      TreePath switchPath = casePath == null ? null : casePath.getParentPath();
+      Tree switchTree = switchPath == null ? null : switchPath.getLeaf();
+      if (switchTree instanceof SwitchTree switchStatement) {
+        matchedTree = switchStatement.getExpression();
+      } else if (switchTree instanceof SwitchExpressionTree switchExpression) {
+        matchedTree = switchExpression.getExpression();
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+    return new MatchedValue(getAnnotatedType(matchedTree), JavaExpression.fromTree(matchedTree));
+  }
+
+  /**
+   * Returns the component of the value that the deconstruction pattern at {@code
+   * deconstructionPatternPath} matches.
+   *
+   * @param deconstructionPatternPath the path to a deconstruction pattern
+   * @param index the index of a record component
+   * @return the component at {@code index} of the value that the deconstruction pattern matches
+   */
+  private MatchedValue getComponent(TreePath deconstructionPatternPath, int index) {
+    DeclaredType recordType = (DeclaredType) TreeUtils.typeOf(deconstructionPatternPath.getLeaf());
+    TypeElement recordElement = (TypeElement) recordType.asElement();
+    ExecutableElement accessor = recordElement.getRecordComponents().get(index).getAccessor();
+
+    MatchedValue matched = getMatchedValue(deconstructionPatternPath);
+    AnnotatedTypeMirror recordAType = getAnnotatedType(recordElement);
+    if (matched != null
+        && types.isSubtype(
+            types.erasure(matched.type().getUnderlyingType()), types.erasure(recordType))) {
+      recordAType = AnnotatedTypes.asSuper(this, matched.type(), recordAType);
+    }
+    // Otherwise, the matched value's type does not determine the record's type arguments, and
+    // the record's declared type (with type variables as type arguments) is used.
+    AnnotatedTypeMirror componentType =
+        AnnotatedTypes.asMemberOf(types, this, recordAType, accessor).getReturnType();
+    JavaExpression receiver = matched == null ? new Unknown(recordType) : matched.expression();
+    viewpointAdaptRecordComponent(componentType, accessor, receiver);
+    JavaExpression componentExpression =
+        new MethodCall(
+            componentType.getUnderlyingType(), accessor, receiver, Collections.emptyList());
+    return new MatchedValue(componentType, componentExpression);
+  }
+
+  /**
+   * Viewpoint-adapts the type of a record component to an access of that component of {@code
+   * receiver}, as in a deconstruction pattern. This implementation does nothing.
+   *
+   * @param type the type of the record component; is side-effected by this method
+   * @param accessor the accessor method of the record component
+   * @param receiver the record whose component is accessed
+   */
+  protected void viewpointAdaptRecordComponent(
+      AnnotatedTypeMirror type, ExecutableElement accessor, JavaExpression receiver) {}
 
   /**
    * Gets the path for the given {@link Tree} under the current root by checking from the visitor's

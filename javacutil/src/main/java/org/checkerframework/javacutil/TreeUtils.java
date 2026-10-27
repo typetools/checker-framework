@@ -9,6 +9,7 @@ import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
@@ -69,6 +70,7 @@ import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Position;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -2421,6 +2423,40 @@ public final class TreeUtils {
     }
     JCExpression type = variableDecl.vartype;
     return type != null && type.pos == Position.NOPOS;
+  }
+
+  /**
+   * Returns true if {@code variableTree} is declared using the {@code var} Java keyword. Unlike
+   * {@link #isVariableTreeDeclaredUsingVar(VariableTree)}, this method also handles a binding
+   * variable of a record pattern, for which javac replaces {@code var} by a type tree for the
+   * inferred type, without recording that {@code var} was used. This method examines the source
+   * code of {@code root}.
+   *
+   * @param variableTree the variableTree to check
+   * @param root the compilation unit that contains {@code variableTree}
+   * @return true if the variableTree is declared using the {@code var} Java keyword
+   */
+  public static boolean isVariableTreeDeclaredUsingVar(
+      VariableTree variableTree, CompilationUnitTree root) {
+    if (isVariableTreeDeclaredUsingVar(variableTree)) {
+      return true;
+    }
+    JCExpression type = ((JCVariableDecl) variableTree).vartype;
+    if (type == null) {
+      return false;
+    }
+    CharSequence source;
+    try {
+      source = root.getSourceFile().getCharContent(true);
+    } catch (IOException e) {
+      return false;
+    }
+    int start = TreeInfo.getStartPos(type);
+    int end = start + "var".length();
+    return start >= 0
+        && end < source.length()
+        && source.subSequence(start, end).toString().equals("var")
+        && !Character.isJavaIdentifierPart(source.charAt(end));
   }
 
   /**
