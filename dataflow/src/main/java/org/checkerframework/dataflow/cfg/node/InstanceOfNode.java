@@ -89,12 +89,10 @@ public class InstanceOfNode extends Node {
     if (bindingVariables == null) {
       if (patternNode instanceof DeconstructorPatternNode deconstructorPatternNode) {
         bindingVariables = deconstructorPatternNode.getBindingVariables();
+      } else if (patternNode instanceof LocalVariableNode localVariableNode) {
+        bindingVariables = Collections.singletonList(localVariableNode);
       } else {
-        LocalVariableNode bindingPatternVariable = getBindingPatternVariable();
-        bindingVariables =
-            bindingPatternVariable == null
-                ? Collections.emptyList()
-                : Collections.singletonList(bindingPatternVariable);
+        bindingVariables = Collections.emptyList();
       }
     }
     return bindingVariables;

@@ -140,6 +140,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
 import org.checkerframework.javacutil.TypeSystemError;
@@ -3862,6 +3863,46 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   public @Nullable TreePath getVisitorTreePath() {
     return visitorTreePath;
+  }
+
+  /**
+   * If {@code variableTree} is a binding variable of a deconstruction pattern, returns the type of
+   * the record component that it is bound to. For example, in {@code o instanceof Point(int x, int
+   * y)}, the record component for {@code y} is {@code Point}'s second component. Otherwise, returns
+   * null.
+   *
+   * <p>The result is the declared type of the record component's accessor method. If the record is
+   * generic, the result may be a type variable.
+   *
+   * @param variableTree a variable declaration
+   * @return the type of the record component that {@code variableTree} is bound to, or null if
+   *     {@code variableTree} is not a binding variable of a deconstruction pattern
+   */
+  public @Nullable AnnotatedTypeMirror getDeconstructedComponentType(VariableTree variableTree) {
+    if (TreeUtils.elementFromDeclaration(variableTree).getKind() != ElementKind.BINDING_VARIABLE) {
+      return null;
+    }
+    TreePath path = getPath(variableTree);
+    // The parent is a binding pattern, and the grandparent may be a deconstruction pattern.
+    TreePath bindingPatternPath = path == null ? null : path.getParentPath();
+    TreePath deconstructionPatternPath =
+        bindingPatternPath == null ? null : bindingPatternPath.getParentPath();
+    if (bindingPatternPath == null
+        || deconstructionPatternPath == null
+        || !TreeUtils.isDeconstructionPatternTree(deconstructionPatternPath.getLeaf())) {
+      return null;
+    }
+    Tree deconstructionPatternTree = deconstructionPatternPath.getLeaf();
+    int index =
+        TreeUtilsAfterJava17.DeconstructionPatternUtils.getNestedPatterns(deconstructionPatternTree)
+            .indexOf(bindingPatternPath.getLeaf());
+    TypeElement recordElement =
+        TypesUtils.getTypeElement(TreeUtils.typeOf(deconstructionPatternTree));
+    if (recordElement == null) {
+      throw new BugInCF("No record for deconstruction pattern %s", deconstructionPatternTree);
+    }
+    ExecutableElement accessor = recordElement.getRecordComponents().get(index).getAccessor();
+    return getAnnotatedType(accessor).getReturnType();
   }
 
   /**

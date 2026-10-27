@@ -432,8 +432,13 @@ public class NullnessVisitor
       }
     }
     // Don't call super because it will issue an incorrect instanceof.unsafe warning.
-    // Instead, just scan the part before "instanceof".
+    // Instead, just scan the part before "instanceof" and any deconstruction pattern, whose
+    // binding variables are checked against the record components.
     super.scan(tree.getExpression(), p);
+    Tree patternTree = tree.getPattern();
+    if (patternTree != null && TreeUtils.isDeconstructionPatternTree(patternTree)) {
+      super.scan(patternTree, p);
+    }
     return null;
   }
 

@@ -117,6 +117,13 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       }
     }
 
+    // A binding variable of a deconstruction pattern has the qualifiers of its record component,
+    // except in hierarchies where it is explicitly annotated.
+    AnnotatedTypeMirror componentType = f.getDeconstructedComponentType(variableTree);
+    if (componentType != null) {
+      result.addMissingAnnotations(componentType.getAnnotations());
+    }
+
     AnnotatedTypeMirror lambdaParamType = inferLambdaParamAnnotations(f, result, elt);
     if (lambdaParamType != null) {
       return lambdaParamType;
