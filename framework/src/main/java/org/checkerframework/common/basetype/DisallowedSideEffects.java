@@ -28,15 +28,11 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
-import javax.lang.model.util.Elements;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ArrayCreation;
@@ -668,40 +664,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    */
   protected @Nullable ExecutableElement noArgumentMethod(
       TypeMirror receiverType, String methodName) {
-    TypeMirror upperBound = TypesUtils.upperBound(receiverType);
-    if (upperBound instanceof IntersectionType intersectionType) {
-      for (TypeMirror bound : intersectionType.getBounds()) {
-        ExecutableElement result = noArgumentMethod(bound, methodName);
-        if (result != null) {
-          return result;
-        }
-      }
-      return null;
-    }
-    if (!(upperBound instanceof DeclaredType declaredType)) {
-      return null;
-    }
-    Elements elements = checker.getElementUtils();
-    TypeElement typeElement = (TypeElement) declaredType.asElement();
-    ExecutableElement result = null;
-    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(typeElement))) {
-      // A static method is not a candidate, because the desugared call has a receiver. Neither is a
-      // synthetic method: a covariant-return override such as {@code MyIterator iterator()} makes
-      // javac add a bridge method {@code Iterator iterator()} to the member closure, and the bridge
-      // carries none of the declaration annotations that the method it forwards to does.
-      if (method.getParameters().isEmpty()
-          && method.getSimpleName().contentEquals(methodName)
-          && !method.getModifiers().contains(Modifier.STATIC)
-          && !TreeUtils.isSynthetic(method)) {
-        // `Elements.getAllMembers` may return both a method and a method that overrides it, and it
-        // does not specify the order in which it returns them. The call invokes the most-derived
-        // one, whose annotations therefore are the ones to check the call against.
-        if (result == null || elements.overrides(method, result, typeElement)) {
-          result = method;
-        }
-      }
-    }
-    return result;
+    return ElementUtils.getNoArgumentMethod(
+        receiverType, methodName, checker.getProcessingEnvironment());
   }
 
   @Override
