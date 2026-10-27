@@ -274,7 +274,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     if (this == obj) {
       return true;
     }
-    if (!(obj instanceof CFAbstractValue<?> other)) {
+    if (!(obj instanceof CFAbstractValue<?> other) || this.getClass() != other.getClass()) {
       return false;
     }
 
