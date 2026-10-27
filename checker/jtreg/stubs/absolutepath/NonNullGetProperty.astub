@@ -1,0 +1,7 @@
+package java.lang;
+
+import org.checkerframework.checker.nullness.qual.NonNull;
+
+public final class System {
+  public static @NonNull String getProperty(String key);
+}
