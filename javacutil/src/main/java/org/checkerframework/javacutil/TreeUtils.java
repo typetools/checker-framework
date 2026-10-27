@@ -756,7 +756,7 @@ public final class TreeUtils {
     // than calling TreeInfo.declarationFor, avoids scanning the entire class body.
     for (JCTree member : jcNewClass.def.defs) {
       if (member instanceof JCMethodDecl anonConstructor
-          && anonConstructor.sym == jcNewClass.constructor) {
+          && jcNewClass.constructor.equals(anonConstructor.sym)) {
         assert anonConstructor.body.stats.size() == 1;
         JCExpressionStatement stmt = (JCExpressionStatement) anonConstructor.body.stats.head;
         JCMethodInvocation superInvok = (JCMethodInvocation) stmt.expr;
