@@ -20,11 +20,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import javax.lang.model.element.Element;
@@ -419,31 +421,27 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Returns the entry with the given name in the given archive, or null if there is none.
+   * Returns the entries in an archive whose names end with the given string.
    *
    * @param archive a JAR or ZIP archive
-   * @param entryName the name of an entry in the archive, using "/" as the separator
-   * @return the entry, or null if {@code archive} has no such entry or cannot be read
+   * @param nameEnding the end of the name of each entry to return
+   * @return a map from the name of each entry in {@code archive} whose name ends with {@code
+   *     nameEnding} to that entry. Entry names use "/" as the separator. The map is empty if {@code
+   *     archive} cannot be read. An entry that cannot be read is in the map; see {@link
+   *     #archiveEntry}.
    */
-  public static @Nullable AnnotationFileResource archiveEntry(File archive, String entryName) {
+  public static Map<String, AnnotationFileResource> archiveEntries(
+      File archive, String nameEnding) {
+    Map<String, AnnotationFileResource> result = new HashMap<>();
     try (JarFile file = new JarFile(archive)) {
-      JarEntry entry = file.getJarEntry(entryName);
-      if (entry == null) {
-        return null;
-      }
-      try (InputStream in = file.getInputStream(entry)) {
-        return new JarEntryAnnotationFileResource(archive, entryName, in.readAllBytes());
-      }
+      file.stream()
+          .filter(entry -> entry.getName().endsWith(nameEnding))
+          .forEach(entry -> result.put(entry.getName(), archiveEntry(archive, file, entry)));
     } catch (IOException e) {
-      System.err.println(
-          "AnnotationFileUtil: could not process archive "
-              + archive
-              + ": "
-              + e.getClass().getName()
-              + ": "
-              + e.getMessage());
-      return null;
+      System.err.println("AnnotationFileUtil: could not process archive " + archive + ": " + e);
+      return Collections.emptyMap();
     }
+    return result;
   }
 
   /**
@@ -498,6 +496,53 @@ public class AnnotationFileUtil {
   }
 
   /**
+   * Returns the contents of an entry in an archive.
+   *
+   * @param archive an open JAR or ZIP archive
+   * @param entry an entry in {@code archive}
+   * @return the contents of {@code entry}
+   * @throws IOException if the entry cannot be read
+   */
+  private static byte[] readEntry(JarFile archive, JarEntry entry) throws IOException {
+    try (InputStream in = archive.getInputStream(entry)) {
+      if (in == null) {
+        throw new IOException("no entry " + entry.getName() + " in " + archive.getName());
+      }
+      return in.readAllBytes();
+    }
+  }
+
+  /**
+   * Returns an annotation file resource for an entry in an archive. If the entry cannot be read,
+   * the resource's {@link AnnotationFileResource#getInputStream} throws the exception, so the
+   * client reports the error when it reads this entry and still processes the archive's other
+   * entries.
+   *
+   * @param archive a JAR or ZIP archive
+   * @param file {@code archive}, open
+   * @param entry an entry in {@code archive}
+   * @return an annotation file resource for {@code entry}
+   */
+  private static AnnotationFileResource archiveEntry(File archive, JarFile file, JarEntry entry) {
+    try {
+      return new JarEntryAnnotationFileResource(archive, entry.getName(), readEntry(file, entry));
+    } catch (IOException e) {
+      String description = archive.getPath() + "!" + entry.getName();
+      return new AnnotationFileResource() {
+        @Override
+        public String getDescription() {
+          return description;
+        }
+
+        @Override
+        public InputStream getInputStream() throws IOException {
+          throw e;
+        }
+      };
+    }
+  }
+
+  /**
    * Side-effects {@code resources} by adding annotation files of the given file type to it.
    *
    * @param location an annotation file (a stub file, ajava file, or IntelliJ IDEA annotation file),
@@ -512,7 +557,6 @@ public class AnnotationFileUtil {
    *     only if its name indicates that it is an annotation file of type {@code fileType}. An
    *     archive found by searching a directory is not opened.
    */
-  @SuppressWarnings("JdkObsolete") // JarFile.entries()
   private static void addAnnotationFilesToList(
       File location,
       List<AnnotationFileResource> resources,
@@ -532,26 +576,12 @@ public class AnnotationFileUtil {
       String name = location.getName();
       if (isUserSupplied && isJarOrZip(name)) {
         try (JarFile file = new JarFile(location)) {
-          Enumeration<JarEntry> entries = file.entries();
-          while (entries.hasMoreElements()) {
-            JarEntry entry = entries.nextElement();
-            if (isAnnotationFile(entry.getName(), fileType)) {
-              byte[] contents;
-              try (InputStream in = file.getInputStream(entry)) {
-                contents = in.readAllBytes();
-              }
-              resources.add(
-                  new JarEntryAnnotationFileResource(location, entry.getName(), contents));
-            }
-          }
+          file.stream()
+              .filter(entry -> isAnnotationFile(entry.getName(), fileType))
+              .forEach(entry -> resources.add(archiveEntry(location, file, entry)));
         } catch (IOException e) {
           System.err.println(
-              "AnnotationFileUtil: could not process archive "
-                  + location
-                  + ": "
-                  + e.getClass().getName()
-                  + ": "
-                  + e.getMessage());
+              "AnnotationFileUtil: could not process archive " + location + ": " + e);
         }
       } else if (isUserSupplied
           ? isUsableNamedFile(name, fileType)

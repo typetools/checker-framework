@@ -113,6 +113,7 @@ import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.AnnotationFileElementTypes;
 import org.checkerframework.framework.stub.AnnotationFileResource;
 import org.checkerframework.framework.stub.AnnotationFileUtil;
+import org.checkerframework.framework.stub.FileAnnotationFileResource;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -354,6 +355,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * stores annotations on all element locations such as in anonymous class bodies.
    */
   protected @Nullable AnnotationFileElementTypes currentFileAjavaTypes;
+
+  /**
+   * Maps each archive named by the {@code -Aajava} command-line option to the ajava files in it for
+   * this checker, keyed by entry name. Each archive is read once, rather than once per compilation
+   * unit.
+   */
+  private final Map<File, Map<String, AnnotationFileResource>> ajavaArchiveEntries =
+      new HashMap<>();
 
   /**
    * A cache used to store elements whose declaration annotations have already been stored by
@@ -1012,7 +1021,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // is unbounded, so it must be cleared whether or not caching is enabled.
     lambdaParamTypes.clear();
 
-    if (root != null && checker.hasOption("ajava")) {
+    if (newRoot != null && checker.hasOption("ajava")) {
       // Search for an ajava file with annotations for the current source file and the current
       // checker. It will be in a directory specified by the "ajava" option in a subdirectory
       // corresponding to this file's package. For example, a file in package a.b would be in
@@ -1021,12 +1030,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       // elements.
 
       String packagePrefix =
-          root.getPackageName() != null
-              ? TreeUtils.nameExpressionToString(root.getPackageName()) + "."
+          newRoot.getPackageName() != null
+              ? TreeUtils.nameExpressionToString(newRoot.getPackageName()) + "."
               : "";
 
       // The method getName() returns a path.
-      String rootFile = root.getSourceFile().getName();
+      String rootFile = newRoot.getSourceFile().getName();
       String className = rootFile;
       // Extract the basename.
       int lastSeparator = className.lastIndexOf(File.separator);
@@ -1040,38 +1049,38 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
       String qualifiedName = packagePrefix + className;
 
-      // If the set candidateAjavaFiles has exactly one element after the loop, a specific
-      // .ajava file was supplied, with no ambiguity, and can be parsed. For an explanation,
-      // see the comment below about possible ambiguity.
-      Set<String> candidateAjavaFiles = new HashSet<>(1);
-      // Maps each element of candidateAjavaFiles that is an archive entry to that entry.
-      Map<String, AnnotationFileResource> archiveEntries = new HashMap<>(1);
+      // Maps the description of each candidate .ajava file to that file. If it has exactly one
+      // element after the loop, a specific .ajava file was supplied, with no ambiguity, and can be
+      // parsed. For an explanation, see the comment below about possible ambiguity.
+      Map<String, AnnotationFileResource> candidateAjavaFiles = new LinkedHashMap<>(1);
+      // All .ajava files for this checker end in this string.
+      String checkerAjavaEnding = "-" + checker.getClass().getCanonicalName() + ".ajava";
       // All .ajava files for this class + checker combo end in this string.
-      String ajavaEnding =
-          qualifiedName.replaceAll("\\.", "/")
-              + "-"
-              + checker.getClass().getCanonicalName()
-              + ".ajava";
+      String ajavaEnding = qualifiedName.replaceAll("\\.", "/") + checkerAjavaEnding;
       for (String ajavaOption : checker.getStringsOption("ajava", File.pathSeparator)) {
-        File ajavaFile = AnnotationFileUtil.findFileSystemLocation(ajavaOption);
-        String ajavaLocation = (ajavaFile == null) ? ajavaOption : ajavaFile.getPath();
+        File foundLocation = AnnotationFileUtil.findFileSystemLocation(ajavaOption);
+        File ajavaLocationFile = (foundLocation == null) ? new File(ajavaOption) : foundLocation;
+        String ajavaLocation = ajavaLocationFile.getPath();
         // ajavaLocation might be (1) a directory, (2) the name of a specific ajava file, or
         // (3) a jar or zip archive. This code must handle all three possible cases.
         // Case (1): ajavaPath is a directory
         String ajavaPath = ajavaLocation + File.separator + ajavaEnding;
         File ajavaFileInDir = new File(ajavaPath);
-        File ajavaLocationFile = new File(ajavaLocation);
         if (ajavaFileInDir.exists()) {
           // There is a candidate ajava file in one of the root directories.
-          candidateAjavaFiles.add(ajavaPath);
+          AnnotationFileResource ajavaFile = new FileAnnotationFileResource(ajavaFileInDir);
+          candidateAjavaFiles.put(ajavaFile.getDescription(), ajavaFile);
         } else if (ajavaLocationFile.isFile()
             && AnnotationFileUtil.isJarOrZip(ajavaLocationFile.getName())) {
           // Case (3): ajavaLocation is an archive, whose root is like a directory in case (1).
           AnnotationFileResource entry =
-              AnnotationFileUtil.archiveEntry(ajavaLocationFile, ajavaEnding);
+              ajavaArchiveEntries
+                  .computeIfAbsent(
+                      ajavaLocationFile,
+                      archive -> AnnotationFileUtil.archiveEntries(archive, checkerAjavaEnding))
+                  .get(ajavaEnding);
           if (entry != null) {
-            candidateAjavaFiles.add(entry.getDescription());
-            archiveEntries.put(entry.getDescription(), entry);
+            candidateAjavaFiles.put(entry.getDescription(), entry);
           }
         } else {
           // Check case (2): ajavaPath might be a specific .ajava file. The tricky thing
@@ -1087,26 +1096,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           if (ajavaLocation.endsWith(File.separator + ajavaEnding)) {
             // This is a candidate ajava file. If it is the only candidate, then it
             // might be unambiguous. If not, issue a warning.
-            candidateAjavaFiles.add(ajavaLocation);
+            AnnotationFileResource ajavaFile = new FileAnnotationFileResource(ajavaLocationFile);
+            candidateAjavaFiles.put(ajavaFile.getDescription(), ajavaFile);
           }
         }
       }
       if (candidateAjavaFiles.size() == 1) {
-        String ajavaPath = candidateAjavaFiles.toArray(new String[0])[0];
-        AnnotationFileResource archiveEntry = archiveEntries.get(ajavaPath);
+        AnnotationFileResource ajavaFile = candidateAjavaFiles.values().iterator().next();
         currentFileAjavaTypes = new AnnotationFileElementTypes(this);
         try {
-          if (archiveEntry != null) {
-            currentFileAjavaTypes.parseAjavaFileWithTree(archiveEntry, root);
-          } else {
-            currentFileAjavaTypes.parseAjavaFileWithTree(ajavaPath, root);
-          }
+          currentFileAjavaTypes.parseAjavaFileWithTree(ajavaFile, newRoot);
         } catch (Throwable e) {
           throw new Error(
-              "Problem while parsing " + ajavaPath + " that corresponds to " + rootFile, e);
+              "Problem while parsing "
+                  + ajavaFile.getDescription()
+                  + " that corresponds to "
+                  + rootFile,
+              e);
         }
       } else if (candidateAjavaFiles.size() > 1) {
-        checker.reportWarning(root, "ambiguous.ajava", String.join(", ", candidateAjavaFiles));
+        checker.reportWarning(
+            newRoot, "ambiguous.ajava", String.join(", ", candidateAjavaFiles.keySet()));
       }
     } else {
       currentFileAjavaTypes = null;
