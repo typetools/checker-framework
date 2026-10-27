@@ -2028,17 +2028,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // so only validate if commonAssignmentCheck wasn't called.
       validateTypeOf(tree);
     }
-    // A binding variable of a deconstruction pattern holds the record component's value, and no
-    // run-time check examines its qualifiers.  So, its qualifiers must be supertypes of the
-    // component's.  (isTypeCastSafe is too lenient:  it permits a qualifier that is the type's
-    // declaration bound, such as @NonNull, but a nested pattern may match null.)
-    // A component whose type is a type variable is not checked; see TypeFromMemberVisitor.
-    AnnotatedTypeMirror componentType = atypeFactory.getDeconstructedComponentType(tree);
-    if (componentType != null
-        && componentType.getKind() != TypeKind.TYPEVAR
-        && !typeHierarchy.isSubtypeShallowEffective(componentType, variableType)) {
-      checker.reportWarning(tree, "instanceof.pattern.unsafe", componentType, tree);
-    }
     warnRedundantAnnotations(tree, variableType);
     Void result = super.visitVariable(tree, p);
 
@@ -3300,8 +3289,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             checker.reportWarning(tree, "instanceof.pattern.unsafe", expType, variableTree);
           }
         }
+      } else {
+        // TODO: implement deconstructed patterns.
       }
-      // The binding variables of a deconstruction pattern are checked by visitVariable.
     } else {
       Tree refTypeTree = tree.getType();
       validateTypeOf(refTypeTree);

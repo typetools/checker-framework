@@ -7,15 +7,10 @@ import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.RecordComponentElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 import org.checkerframework.checker.initialization.InitializationTransfer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -25,10 +20,8 @@ import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
-import org.checkerframework.dataflow.cfg.node.DeconstructorPatternNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
-import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -356,30 +349,6 @@ public class NullnessTransfer
       ArrayAccessNode n, TransferInput<NullnessValue, NullnessStore> p) {
     TransferResult<NullnessValue, NullnessStore> result = super.visitArrayAccess(n, p);
     makeNonNull(result, n.getArray());
-    return result;
-  }
-
-  @Override
-  public TransferResult<NullnessValue, NullnessStore> visitDeconstructorPattern(
-      DeconstructorPatternNode n, TransferInput<NullnessValue, NullnessStore> p) {
-    TransferResult<NullnessValue, NullnessStore> result = super.visitDeconstructorPattern(n, p);
-    // A nested type pattern that is not unconditional for its record component's type, such as
-    // `String s` for a component of type Object, does not match null.
-    Types types = analysis.getTypes();
-    DeclaredType recordType = (DeclaredType) n.getType();
-    List<? extends RecordComponentElement> components =
-        ((TypeElement) recordType.asElement()).getRecordComponents();
-    List<Node> nestedPatterns = n.getNestedPatterns();
-    for (int i = 0; i < nestedPatterns.size(); i++) {
-      if (nestedPatterns.get(i) instanceof LocalVariableNode bindingVar) {
-        ExecutableType accessorType =
-            (ExecutableType) types.asMemberOf(recordType, components.get(i).getAccessor());
-        if (!types.isSubtype(
-            types.erasure(accessorType.getReturnType()), types.erasure(bindingVar.getType()))) {
-          makeNonNull(result, bindingVar);
-        }
-      }
-    }
     return result;
   }
 
