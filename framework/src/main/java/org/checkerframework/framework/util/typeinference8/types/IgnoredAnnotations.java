@@ -60,28 +60,32 @@ final class IgnoredAnnotations {
    */
   static ReplacedTypes replaceIgnoredForSubtype(
       AbstractType sub, AbstractType sup, QualifierHierarchy qh, Types types) {
-    boolean mayHaveIgnoredSubstitutions = hasOrigin(sub) || hasOrigin(sup);
-    if (!sub.ignoreAnnotations && !sup.ignoreAnnotations && !mayHaveIgnoredSubstitutions) {
-      return new ReplacedTypes(sub.getAnnotatedType(), sup.getAnnotatedType());
+    AbstractType currentSub = current(sub);
+    AbstractType currentSup = current(sup);
+    boolean mayHaveIgnoredSubstitutions = hasOrigin(currentSub) || hasOrigin(currentSup);
+    if (!currentSub.ignoreAnnotations
+        && !currentSup.ignoreAnnotations
+        && !mayHaveIgnoredSubstitutions) {
+      return new ReplacedTypes(currentSub.getAnnotatedType(), currentSup.getAnnotatedType());
     }
-    AbstractType alignedSub = sub;
+    AbstractType alignedSub = currentSub;
     if (mayHaveIgnoredSubstitutions) {
       // Compare the type arguments of the same class, so that corresponding positions line up.
-      alignedSub = alignedToClass(sub, sup.getJavaType(), types);
+      alignedSub = alignedToClass(currentSub, currentSup.getJavaType(), types);
     }
     AnnotatedTypeMirror subATM = alignedSub.getAnnotatedType().deepCopy();
-    AnnotatedTypeMirror supATM = sup.getAnnotatedType().deepCopy();
+    AnnotatedTypeMirror supATM = currentSup.getAnnotatedType().deepCopy();
     if (mayHaveIgnoredSubstitutions) {
       replaceIgnoredSubstitutions(
           subATM,
           supATM,
           ignoredSubstitutions(alignedSub, subATM, qh),
-          ignoredSubstitutions(sup, supATM, qh));
+          ignoredSubstitutions(currentSup, supATM, qh));
     }
-    if (sub.ignoreAnnotations) {
+    if (currentSub.ignoreAnnotations) {
       subATM.replaceAnnotations(qh.getBottomAnnotations());
     }
-    if (sup.ignoreAnnotations) {
+    if (currentSup.ignoreAnnotations) {
       supATM.replaceAnnotations(qh.getTopAnnotations());
     }
     return new ReplacedTypes(subATM, supATM);
@@ -100,19 +104,26 @@ final class IgnoredAnnotations {
    */
   static ReplacedTypes replaceIgnoredForEquality(
       AbstractType type1, AbstractType type2, QualifierHierarchy qh) {
-    boolean mayHaveIgnoredSubstitutions = hasOrigin(type1) || hasOrigin(type2);
-    if (!type1.ignoreAnnotations && !type2.ignoreAnnotations && !mayHaveIgnoredSubstitutions) {
-      return new ReplacedTypes(type1.getAnnotatedType(), type2.getAnnotatedType());
+    AbstractType current1 = current(type1);
+    AbstractType current2 = current(type2);
+    boolean mayHaveIgnoredSubstitutions = hasOrigin(current1) || hasOrigin(current2);
+    if (!current1.ignoreAnnotations
+        && !current2.ignoreAnnotations
+        && !mayHaveIgnoredSubstitutions) {
+      return new ReplacedTypes(current1.getAnnotatedType(), current2.getAnnotatedType());
     }
-    AnnotatedTypeMirror atm1 = type1.getAnnotatedType().deepCopy();
-    AnnotatedTypeMirror atm2 = type2.getAnnotatedType().deepCopy();
+    AnnotatedTypeMirror atm1 = current1.getAnnotatedType().deepCopy();
+    AnnotatedTypeMirror atm2 = current2.getAnnotatedType().deepCopy();
     if (mayHaveIgnoredSubstitutions) {
       replaceIgnoredSubstitutions(
-          atm1, atm2, ignoredSubstitutions(type1, atm1, qh), ignoredSubstitutions(type2, atm2, qh));
+          atm1,
+          atm2,
+          ignoredSubstitutions(current1, atm1, qh),
+          ignoredSubstitutions(current2, atm2, qh));
     }
-    if (type1.ignoreAnnotations) {
+    if (current1.ignoreAnnotations) {
       copyRootAnnotations(atm2, atm1);
-    } else if (type2.ignoreAnnotations) {
+    } else if (current2.ignoreAnnotations) {
       copyRootAnnotations(atm1, atm2);
     }
     return new ReplacedTypes(atm1, atm2);
@@ -139,14 +150,16 @@ final class IgnoredAnnotations {
       TypeMirror lubType,
       QualifierHierarchy qh,
       Types types) {
-    if (!hasOrigin(type1) && !hasOrigin(type2)) {
-      return new ReplacedTypes(type1.getAnnotatedType(), type2.getAnnotatedType());
+    AbstractType current1 = current(type1);
+    AbstractType current2 = current(type2);
+    if (!hasOrigin(current1) && !hasOrigin(current2)) {
+      return new ReplacedTypes(current1.getAnnotatedType(), current2.getAnnotatedType());
     }
-    AbstractType aligned1 = alignedToClass(type1, lubType, types);
-    AbstractType aligned2 = alignedToClass(type2, lubType, types);
+    AbstractType aligned1 = alignedToClass(current1, lubType, types);
+    AbstractType aligned2 = alignedToClass(current2, lubType, types);
     if (!types.isSameType(
         types.erasure(aligned1.getJavaType()), types.erasure(aligned2.getJavaType()))) {
-      return new ReplacedTypes(type1.getAnnotatedType(), type2.getAnnotatedType());
+      return new ReplacedTypes(current1.getAnnotatedType(), current2.getAnnotatedType());
     }
     AnnotatedTypeMirror atm1 = aligned1.getAnnotatedType().deepCopy();
     AnnotatedTypeMirror atm2 = aligned2.getAnnotatedType().deepCopy();
@@ -156,6 +169,19 @@ final class IgnoredAnnotations {
         ignoredSubstitutions(aligned1, atm1, qh),
         ignoredSubstitutions(aligned2, atm2, qh));
     return new ReplacedTypes(atm1, atm2);
+  }
+
+  /**
+   * Returns {@code type}, or, if it is a proper type with an origin (see {@link
+   * ProperType#getOrigin}) that is out of date, {@code type} with the current instantiations
+   * substituted. The ignored substitutions of a type are found from the current instantiations, so
+   * its annotated type must be made from them too.
+   *
+   * @param type a type
+   * @return {@code type}, with the current instantiations substituted if it has an origin
+   */
+  private static AbstractType current(AbstractType type) {
+    return hasOrigin(type) ? type.applyInstantiations() : type;
   }
 
   /**

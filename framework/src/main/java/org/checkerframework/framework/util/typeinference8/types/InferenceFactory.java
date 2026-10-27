@@ -1070,13 +1070,35 @@ public class InferenceFactory {
     // annotations change.  A result that differs elsewhere cannot keep the record, because a type
     // with an origin computes its parts from the origin.
     for (ProperType properType : properTypes) {
-      if (properType.getOrigin() != null
-          && context.types.isSameType((Type) properType.getJavaType(), (Type) lubTM)
-          && differsOnlyAtRootOrIgnored(properType, lubATM)) {
-        return properType.withAnnotatedType(lubATM, ignoreAnnotations);
+      ProperType withOrigin = withOriginOf(properType, lubTM, lubATM, ignoreAnnotations);
+      if (withOrigin != null) {
+        return withOrigin;
       }
     }
     return new ProperType(lubATM, context, ignoreAnnotations);
+  }
+
+  /**
+   * Returns a copy of {@code type} whose annotated type is {@code atm}, if {@code type} is a proper
+   * type with an origin (see {@link ProperType#getOrigin}), its Java type is {@code javaType}, and
+   * {@code atm} differs from it only at the root and at its ignored substitutions. The copy keeps
+   * the origin. Otherwise, returns null.
+   *
+   * @param type an input to a least upper bound or greatest lower bound computation
+   * @param javaType the Java type of the result of that computation
+   * @param atm the annotated type of the result of that computation
+   * @param ignoreAnnotations true if the root annotations of the result should be ignored
+   * @return a copy of {@code type} whose annotated type is {@code atm}, or null
+   */
+  private @Nullable ProperType withOriginOf(
+      AbstractType type, TypeMirror javaType, AnnotatedTypeMirror atm, boolean ignoreAnnotations) {
+    if (type instanceof ProperType properType
+        && properType.getOrigin() != null
+        && context.types.isSameType((Type) properType.getJavaType(), (Type) javaType)
+        && differsOnlyAtRootOrIgnored(properType, atm)) {
+      return properType.withAnnotatedType(atm, ignoreAnnotations);
+    }
+    return null;
   }
 
   /**
@@ -1132,8 +1154,14 @@ public class InferenceFactory {
     Type bJavaType = (Type) b.getJavaType();
     TypeMirror glb = TypesUtils.greatestLowerBound(aJavaType, bJavaType, context.env);
 
-    AnnotatedTypeMirror aAtm = a.getAnnotatedType();
-    AnnotatedTypeMirror bAtm = b.getAnnotatedType();
+    // The annotations of an ignored substitution put no constraint on the result.  Positions
+    // correspond only if `a` and `b` are of the same class; see
+    // IgnoredAnnotations#replaceIgnoredForCombining.
+    ReplacedTypes combined =
+        IgnoredAnnotations.replaceIgnoredForCombining(
+            a, b, glb, typeFactory.getQualifierHierarchy(), context.modelTypes);
+    AnnotatedTypeMirror aAtm = combined.type1();
+    AnnotatedTypeMirror bAtm = combined.type2();
     AnnotatedTypeMirror glbATM = AnnotatedTypes.annotatedGLB(typeFactory, aAtm, bAtm);
     if (glb.getKind() == TypeKind.ERROR) {
       // Javac cannot express the greatest lower bound; this happens for two type variables whose
@@ -1155,6 +1183,16 @@ public class InferenceFactory {
       } else {
         glbATM.replaceAnnotations(aAtm.getPrimaryAnnotations());
       }
+    }
+    // As in `lub`, the result keeps the record of ignored substitutions of an input that it differs
+    // from only at its root and at those ignored substitutions.
+    boolean bothIgnore = a.ignoreAnnotations && b.ignoreAnnotations;
+    ProperType withOrigin = withOriginOf(a, glb, glbATM, bothIgnore);
+    if (withOrigin == null) {
+      withOrigin = withOriginOf(b, glb, glbATM, bothIgnore);
+    }
+    if (withOrigin != null) {
+      return withOrigin;
     }
     if (context.types.isSameType(aJavaType, (Type) glb)) {
       return a.create(glbATM, false);
