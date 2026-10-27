@@ -40,9 +40,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class KeyForValue extends CFAbstractValue<KeyForValue> {
   /**
-   * If the underlying type is a type variable or a wildcard, then this is the set of maps for which
-   * this value is a key; it is non-null, even if there are no such maps, so that {@link #equals}
-   * need not equate null with the empty set. Otherwise, it's null.
+   * If the underlying type is a type variable or a wildcard, then this is the possibly-empty set of
+   * maps for which this value is a key. Otherwise, it's null.
    */
   private final @Nullable Set<String> keyForMaps;
 
