@@ -59,4 +59,11 @@ public class InstanceOfDeconstruction {
       isUntainted(a);
     }
   }
+
+  // The variable of a binding pattern is still refined to the type of the expression.
+  void bindingPattern(@Untainted Object o) {
+    if (o instanceof String s) {
+      isUntainted(s);
+    }
+  }
 }
