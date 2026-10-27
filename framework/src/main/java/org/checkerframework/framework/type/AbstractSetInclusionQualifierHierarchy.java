@@ -2,6 +2,7 @@ package org.checkerframework.framework.type;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -122,23 +123,34 @@ public abstract class AbstractSetInclusionQualifierHierarchy
   }
 
   /**
-   * Returns an annotation whose values are the union or intersection of the input values. The
-   * values are sorted, so the result does not depend on the order of the arguments or their values.
+   * Returns an annotation whose values are the union or intersection of the input values. If the
+   * union or intersection is the set of values of {@code a1} or of {@code a2}, returns that
+   * argument. Otherwise, returns a new annotation whose values are sorted, so it does not depend on
+   * the order of the arguments or their values.
    *
    * @param a1 the first annotation
    * @param a2 the second annotation
-   * @param resultKind the kind of the result
+   * @param resultKind the kind of the result, which is the kind of both {@code a1} and {@code a2}
    * @param union if true, take the union of the values; if false, take the intersection
    * @return an annotation of kind {@code resultKind} whose values are the union or intersection of
    *     the values of {@code a1} and {@code a2}
    */
   private AnnotationMirror combineAnnotationValues(
       AnnotationMirror a1, AnnotationMirror a2, QualifierKind resultKind, boolean union) {
-    Set<String> values = new TreeSet<>(valuesStringList(a1));
+    Set<String> values1 = new HashSet<>(valuesStringList(a1));
+    Set<String> values2 = new HashSet<>(valuesStringList(a2));
+    Set<String> values = new TreeSet<>(values1);
     if (union) {
-      values.addAll(valuesStringList(a2));
+      values.addAll(values2);
     } else {
-      values.retainAll(valuesStringList(a2));
+      values.retainAll(values2);
+    }
+    // Returning an argument avoids creating an annotation that has the same values as the argument
+    // but is not the same according to AnnotationUtils.areSame, which compares values in order.
+    if (values.equals(values1)) {
+      return a1;
+    } else if (values.equals(values2)) {
+      return a2;
     }
     AnnotationBuilder builder =
         new AnnotationBuilder(processingEnv, resultKind.getAnnotationClass());
