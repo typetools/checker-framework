@@ -8,7 +8,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.checkerframework.framework.stub.AnnotationFileUtil.AnnotationFileType;
@@ -202,20 +205,36 @@ public class AnnotationFileUtilTest {
     Assert.assertEquals(Arrays.asList(), descriptions(ajava, AnnotationFileType.COMMAND_LINE_STUB));
   }
 
-  /** Tests that a single entry can be looked up by name in a zip archive. */
+  /** Tests that the entries in a zip archive are looked up by the end of their names. */
   @Test
-  public void archiveEntryInZipArchive() throws IOException {
+  public void archiveEntriesInZipArchive() throws IOException {
     File zip =
-        writeZip(new File(tmp.getRoot(), "ajava.zip"), "p/Foo-checker.ajava", "Bar-checker.ajava");
+        writeZip(
+            new File(tmp.getRoot(), "ajava.zip"),
+            "p/Foo-checker.ajava",
+            "Bar-checker.ajava",
+            "p/Foo-otherchecker.ajava");
 
-    AnnotationFileResource entry = AnnotationFileUtil.archiveEntry(zip, "p/Foo-checker.ajava");
+    Map<String, AnnotationFileResource> entries =
+        AnnotationFileUtil.archiveEntries(zip, "-checker.ajava");
+    Assert.assertEquals(
+        new HashSet<>(Arrays.asList("p/Foo-checker.ajava", "Bar-checker.ajava")), entries.keySet());
+    AnnotationFileResource entry = entries.get("p/Foo-checker.ajava");
     Assert.assertNotNull(entry);
     Assert.assertEquals(zip.getPath() + "!p/Foo-checker.ajava", entry.getDescription());
     try (InputStream in = entry.getInputStream()) {
       Assert.assertEquals(
           "package java.lang;", new String(in.readAllBytes(), StandardCharsets.UTF_8));
     }
-    Assert.assertNull(AnnotationFileUtil.archiveEntry(zip, "Foo-checker.ajava"));
+  }
+
+  /** Tests that an archive that cannot be read has no entries. */
+  @Test
+  public void archiveEntriesInUnreadableArchive() throws IOException {
+    File notZip = write(new File(tmp.getRoot(), "not-an-archive.zip"), "package p;");
+
+    Assert.assertEquals(
+        Collections.emptyMap(), AnnotationFileUtil.archiveEntries(notZip, "-checker.ajava"));
   }
 
   /**
@@ -234,7 +253,8 @@ public class AnnotationFileUtilTest {
       System.setProperty("test.src", tmp.getRoot().getPath());
       File found = AnnotationFileUtil.findFileSystemLocation(zip.getName());
       Assert.assertEquals(zip, found);
-      Assert.assertNotNull(AnnotationFileUtil.archiveEntry(found, "p/Foo-checker.ajava"));
+      Assert.assertNotNull(
+          AnnotationFileUtil.archiveEntries(found, "-checker.ajava").get("p/Foo-checker.ajava"));
       // An absolute path is not looked for relative to test.src.
       Assert.assertNull(AnnotationFileUtil.findFileSystemLocation(absent.getAbsolutePath()));
     } finally {

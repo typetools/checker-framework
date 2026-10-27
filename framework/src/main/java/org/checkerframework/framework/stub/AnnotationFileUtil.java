@@ -20,11 +20,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import javax.lang.model.element.Element;
@@ -417,20 +420,28 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Returns the entry with the given name in the given archive, or null if there is none.
+   * Returns the entries in an archive whose names end with the given string.
    *
    * @param archive a JAR or ZIP archive
-   * @param entryName the name of an entry in the archive, using "/" as the separator
-   * @return the entry, or null if {@code archive} has no such entry or cannot be read
+   * @param nameEnding the end of the name of each entry to return
+   * @return a map from the name of each entry in {@code archive} whose name ends with {@code
+   *     nameEnding} to that entry. Entry names use "/" as the separator. The map is empty if {@code
+   *     archive} cannot be read.
    */
-  public static @Nullable AnnotationFileResource archiveEntry(File archive, String entryName) {
+  @SuppressWarnings("JdkObsolete") // JarFile.entries()
+  public static Map<String, AnnotationFileResource> archiveEntries(
+      File archive, String nameEnding) {
+    Map<String, AnnotationFileResource> result = new HashMap<>();
     try (JarFile file = new JarFile(archive)) {
-      JarEntry entry = file.getJarEntry(entryName);
-      if (entry == null) {
-        return null;
-      }
-      try (InputStream in = file.getInputStream(entry)) {
-        return new JarEntryAnnotationFileResource(archive, entryName, in.readAllBytes());
+      Enumeration<JarEntry> entries = file.entries();
+      while (entries.hasMoreElements()) {
+        JarEntry entry = entries.nextElement();
+        String entryName = entry.getName();
+        if (entryName.endsWith(nameEnding)) {
+          result.put(
+              entryName,
+              new JarEntryAnnotationFileResource(archive, entryName, readEntry(file, entry)));
+        }
       }
     } catch (IOException e) {
       System.err.println(
@@ -440,8 +451,9 @@ public class AnnotationFileUtil {
               + e.getClass().getName()
               + ": "
               + e.getMessage());
-      return null;
+      return Collections.emptyMap();
     }
+    return result;
   }
 
   /**
@@ -545,12 +557,9 @@ public class AnnotationFileUtil {
           while (entries.hasMoreElements()) {
             JarEntry entry = entries.nextElement();
             if (isAnnotationFile(entry.getName(), fileType)) {
-              byte[] contents;
-              try (InputStream in = file.getInputStream(entry)) {
-                contents = in.readAllBytes();
-              }
               resources.add(
-                  new JarEntryAnnotationFileResource(location, entry.getName(), contents));
+                  new JarEntryAnnotationFileResource(
+                      location, entry.getName(), readEntry(file, entry)));
             }
           }
         } catch (IOException e) {
