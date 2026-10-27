@@ -269,7 +269,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
   @SuppressWarnings({"interning:not.interned", "TypeEquals"}) // efficiency pre-test
   @Override
   public boolean equals(@Nullable Object obj) {
-    if (!(obj instanceof CFAbstractValue<?> other)) {
+    if (!(obj instanceof CFAbstractValue<?> other) || this.getClass() != other.getClass()) {
       return false;
     }
 
