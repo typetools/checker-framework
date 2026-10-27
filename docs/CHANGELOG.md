@@ -10,7 +10,8 @@
 The `-Astubs` and `-Aajava` command-line options accept `.zip` archives, in
 addition to `.jar` archives and directories.
 
-All ajava files must end with `.ajava`.  Stub files must not end with `.ajava`.
+All ajava files must end with `.ajava`.  Stub files must not end with `.ajava`;
+they conventionally end `.astub`.
 
 ### Changes for type system implementers
 
