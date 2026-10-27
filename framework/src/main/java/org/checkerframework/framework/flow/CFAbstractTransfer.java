@@ -8,6 +8,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
@@ -1358,6 +1359,16 @@ public abstract class CFAbstractTransfer<
       result =
           strengthenAnnotationOfEqualTo(
               result, caseOperand, assign.getTarget(), caseValue, switchValue, false);
+      // As for instanceof, the variable of a type pattern (such as `case String s`) is refined
+      // by the selector expression's type.
+      if (switchValue != null
+          && caseOperand instanceof LocalVariableNode bindingVar
+          && bindingVar.getTree() instanceof VariableTree) {
+        JavaExpression bindingVarExpr = JavaExpression.fromNode(bindingVar);
+        for (AnnotationMirror anno : switchValue.getAnnotations()) {
+          result.getThenStore().insertOrRefine(bindingVarExpr, anno);
+        }
+      }
 
       // Lub the result of one case label constant with the result of the others.
       if (lubResult == null) {
