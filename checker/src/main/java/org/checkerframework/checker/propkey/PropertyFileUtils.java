@@ -74,8 +74,9 @@ public final class PropertyFileUtils {
             }
           }
         }
-        for (String key : properties.stringPropertyNames()) {
-          result.put(key, properties.getProperty(key));
+        // `Properties.load` stores only String keys.
+        for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+          result.put((String) entry.getKey(), entry.getValue());
         }
       } catch (Exception e) {
         checker.message(

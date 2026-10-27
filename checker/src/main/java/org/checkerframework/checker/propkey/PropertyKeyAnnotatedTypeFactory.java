@@ -119,6 +119,11 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return this.lookupKeys;
   }
 
+  /**
+   * Returns the keys in the property files and resource bundles named on the command line.
+   *
+   * @return the keys in the property files and resource bundles named on the command line
+   */
   private Set<String> buildLookupKeys() {
     return new HashSet<>(PropertyFileUtils.load(checker, getClass()).keySet());
   }
