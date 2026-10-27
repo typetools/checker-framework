@@ -3907,7 +3907,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the path to the binding pattern of {@code variableTree}, or null
    */
   private @Nullable TreePath getBindingPatternPath(VariableTree variableTree) {
-    if (TreeUtils.elementFromDeclaration(variableTree).getKind() != ElementKind.BINDING_VARIABLE) {
+    VariableElement elt = TreeUtils.elementFromDeclaration(variableTree);
+    if (elt == null || elt.getKind() != ElementKind.BINDING_VARIABLE) {
       return null;
     }
     TreePath path = getPath(variableTree);
