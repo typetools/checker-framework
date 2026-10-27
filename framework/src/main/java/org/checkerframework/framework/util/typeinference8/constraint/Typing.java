@@ -485,7 +485,11 @@ public class Typing extends TypeConstraint {
       // with T (5.3), and false otherwise.
       ReductionResult r = ((ProperType) S).isSubTypeUnchecked((ProperType) T);
       if (ConstraintSet.TRUE == r) {
-        return ConstraintSet.TRUE;
+        // Whether unchecked conversion is necessary determines whether the return type of an
+        // invocation type is erased (JLS 15.12.2.6).
+        return ((ProperType) S).needsUncheckedConversionTo((ProperType) T)
+            ? ReductionResult.UNCHECKED_CONVERSION
+            : ConstraintSet.TRUE;
       }
       return ((ProperType) S).isAssignable((ProperType) T);
     } else if (S.isProper() && S.getTypeKind().isPrimitive()) {
