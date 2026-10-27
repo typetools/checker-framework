@@ -1887,6 +1887,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       translateAssignment(indexVariable, new LocalVariableNode(indexVariable), zeroNode);
 
+      // The array variable is never reassigned, so only the first access to its length can throw
+      // NullPointerException.  Represent that first access before the loop, and the access in the
+      // loop condition without the exception.
+      if (mayBeNull(expression)) {
+        extendWithArrayLengthAccess(arrayVariable, true);
+      }
+
       // Compare index to array length
       addLabelForNextNode(conditionStart);
       IdentifierTree indexUse1 = treeBuilder.buildVariableUse(indexVariable);
@@ -1895,18 +1902,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       indexNode1.setInSource(false);
       extendWithNode(indexNode1);
 
-      IdentifierTree arrayUse1 = treeBuilder.buildVariableUse(arrayVariable);
-      handleArtificialTree(arrayUse1);
-      LocalVariableNode arrayNode1 = new LocalVariableNode(arrayUse1);
-      extendWithNode(arrayNode1);
-
-      MemberSelectTree lengthSelect = treeBuilder.buildArrayLengthAccess(arrayUse1);
-      handleArtificialTree(lengthSelect);
-      FieldAccessNode lengthAccessNode = new FieldAccessNode(lengthSelect, arrayNode1);
-      lengthAccessNode.setInSource(false);
-      // Attach NPE to length access; element access is safe due to prior bounds check and the
-      // synthetic array temp not being reassigned.
-      extendWithNodeWithException(lengthAccessNode, nullPointerExceptionType);
+      // This length access cannot throw NullPointerException; see above.  The element access below
+      // is safe due to the bounds check and the synthetic array temp not being reassigned.
+      FieldAccessNode lengthAccessNode = extendWithArrayLengthAccess(arrayVariable, false);
+      MemberSelectTree lengthSelect = (MemberSelectTree) lengthAccessNode.getTree();
 
       BinaryTree lessThan = treeBuilder.buildLessThan(indexUse1, lengthSelect);
       handleArtificialTree(lessThan);
@@ -1994,6 +1993,44 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     continueTargetLC = oldContinueTargetLC;
 
     return null;
+  }
+
+  /**
+   * Extends the CFG with an access to the length of the array variable of an enhanced for loop.
+   *
+   * @param arrayVariable the array variable
+   * @param mayThrowNullPointerException true if the access may throw a {@code NullPointerException}
+   * @return the node for the access
+   */
+  private FieldAccessNode extendWithArrayLengthAccess(
+      VariableTree arrayVariable, boolean mayThrowNullPointerException) {
+    IdentifierTree arrayUse = treeBuilder.buildVariableUse(arrayVariable);
+    handleArtificialTree(arrayUse);
+    LocalVariableNode arrayNode = new LocalVariableNode(arrayUse);
+    arrayNode.setInSource(false);
+    extendWithNode(arrayNode);
+
+    MemberSelectTree lengthSelect = treeBuilder.buildArrayLengthAccess(arrayUse);
+    handleArtificialTree(lengthSelect);
+    FieldAccessNode lengthAccessNode = new FieldAccessNode(lengthSelect, arrayNode);
+    lengthAccessNode.setInSource(false);
+    if (mayThrowNullPointerException) {
+      extendWithNodeWithException(lengthAccessNode, nullPointerExceptionType);
+    } else {
+      extendWithNode(lengthAccessNode);
+    }
+    return lengthAccessNode;
+  }
+
+  /**
+   * Returns false if the expression is never null, judging from its syntax.
+   *
+   * @param expression an expression of reference type
+   * @return false if the expression is never null; true if it may be null
+   */
+  private static boolean mayBeNull(ExpressionTree expression) {
+    expression = TreeUtils.withoutParens(expression);
+    return !(expression instanceof NewClassTree || expression instanceof NewArrayTree);
   }
 
   protected VariableTree createEnhancedForLoopIteratorVariable(
