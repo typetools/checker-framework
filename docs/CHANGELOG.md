@@ -22,6 +22,10 @@ scopes, rather than suppressing them.  Where both a registered default and a
 
 Removed `DefaultSet.EMPTY`.
 
+`PurityChecker.checkPurity()` takes two new arguments: the method declaration
+that lexically encloses the statement being checked (or null, as for an
+arbitrary expression) and the processing environment.
+
 ### Closed issues
 
 ## Version 4.3.1 (2026-10-08)
