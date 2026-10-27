@@ -357,29 +357,44 @@ public class AnnotationFileUtil {
   }
 
   /**
-   * Returns the path to use for an annotation file location that was named on the command line.
-   * This is a special case when running in jtreg, which runs the compiler in a different directory
-   * than the one that contains the test's annotation files.
+   * Returns the file system location that a path names. Looks for it as an absolute path or
+   * relative to the current directory, then relative to the {@code user.dir} system property, then
+   * relative to the {@code test.src} system property (which jtreg sets to the directory that
+   * contains the test).
    *
-   * @param path a relative or absolute path, from a command-line argument
-   * @return {@code path} if it is absolute, if it exists, or if the {@code test.src} system
-   *     property is not set; otherwise, {@code path} resolved against the {@code test.src} system
-   *     property
+   * @param location a relative or absolute path
+   * @return the file or directory that {@code location} names, or null if none exists
    */
-  public static String resolveAgainstTestSrc(String path) {
-    String base = System.getProperty("test.src");
-    File file = new File(path);
-    if (base == null || file.isAbsolute() || file.exists()) {
-      return path;
+  public static @Nullable File findFileSystemLocation(String location) {
+    File file = new File(location);
+    if (file.exists()) {
+      return file;
     }
-    return base + File.separator + path;
+    if (file.isAbsolute()) {
+      return null;
+    }
+
+    file = new File(System.getProperty("user.dir"), location);
+    if (file.exists()) {
+      return file;
+    }
+
+    String testSrc = System.getProperty("test.src");
+    if (testSrc != null) {
+      file = new File(testSrc, location);
+      if (file.exists()) {
+        return file;
+      }
+    }
+
+    return null;
   }
 
   /**
    * Returns annotation files found at a given file system location (does not look on classpath).
    *
    * @param location an annotation file (stub file or ajava file), a jarfile, or a directory. Look
-   *     for it as an absolute file and relative to the current directory.
+   *     for it as described in {@link #findFileSystemLocation}.
    * @param fileType file type of files to collect
    * @return annotation files with the given file type found in the file system (does not look on
    *     classpath). Returns null if the file system location does not exist; the caller may wish to
@@ -387,23 +402,13 @@ public class AnnotationFileUtil {
    */
   public static @Nullable List<AnnotationFileResource> allAnnotationFiles(
       String location, AnnotationFileType fileType) {
-    File file = new File(location);
-    if (file.exists()) {
-      List<AnnotationFileResource> resources = new ArrayList<>();
-      addAnnotationFilesToList(file, resources, fileType);
-      return resources;
+    File file = findFileSystemLocation(location);
+    if (file == null) {
+      return null;
     }
-
-    // The file doesn't exist.  Maybe it is relative to the current working directory, so try
-    // that.
-    file = new File(System.getProperty("user.dir"), location);
-    if (file.exists()) {
-      List<AnnotationFileResource> resources = new ArrayList<>();
-      addAnnotationFilesToList(file, resources, fileType);
-      return resources;
-    }
-
-    return null;
+    List<AnnotationFileResource> resources = new ArrayList<>();
+    addAnnotationFilesToList(file, resources, fileType);
+    return resources;
   }
 
   /**
