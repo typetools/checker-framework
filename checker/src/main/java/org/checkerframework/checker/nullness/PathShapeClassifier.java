@@ -96,7 +96,7 @@ public final class PathShapeClassifier {
    * @return the shape of {@code new File(s)} under both Unix and Windows rules
    */
   public static PathShape classifyFile(String s) {
-    return weaker(unixFile(s), windowsFile(s));
+    return weaker(unixShape(s), windowsFile(s));
   }
 
   /**
@@ -155,23 +155,14 @@ public final class PathShapeClassifier {
   }
 
   /**
-   * Returns the shape of {@code new File(s)} on Unix.
-   *
-   * @param s a path string
-   * @return the shape of {@code new File(s)} on Unix
-   */
-  /*package-private*/ static PathShape unixFile(String s) {
-    return unixShape(s);
-  }
-
-  /**
-   * Returns the shape of a Unix path. Unix path normalization, for both {@code Path} and {@code
-   * File}, removes redundant and trailing slashes.
+   * Returns the shape of a Unix path. It is the shape of {@code new File(s)} on Unix, and of {@code
+   * Path.of(s)} if {@code s} is a valid Unix path. Unix path normalization, for both {@code Path}
+   * and {@code File}, removes redundant and trailing slashes.
    *
    * @param s a path string
    * @return the shape of the Unix path
    */
-  private static PathShape unixShape(String s) {
+  /*package-private*/ static PathShape unixShape(String s) {
     boolean hasRoot = s.startsWith("/");
     int nameCount = 0;
     for (String name : s.split("/", -1)) {

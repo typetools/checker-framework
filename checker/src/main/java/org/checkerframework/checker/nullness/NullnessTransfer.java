@@ -490,7 +490,8 @@ public class NullnessTransfer
 
     // Refine result to @NonNull if n is an invocation of Path.getParent() or a similar method,
     // and the receiver's path shape guarantees a non-null result.
-    if (pathShapeTypeFactory != null && pathShapeTypeFactory.returnsNonNullPathComponent(tree)) {
+    if (pathShapeTypeFactory != null
+        && pathShapeTypeFactory.returnsNonNullPathComponent(tree, method)) {
       makeNonNull(result, n);
       refineToNonNull(result);
     }

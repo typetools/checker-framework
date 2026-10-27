@@ -49,7 +49,7 @@ public class PathShapeClassifierTest {
       PathShape file) {
     Assert.assertEquals("unixPath " + s, unixPath, PathShapeClassifier.unixPath(s));
     Assert.assertEquals("windowsPath " + s, windowsPath, PathShapeClassifier.windowsPath(s));
-    Assert.assertEquals("unixFile " + s, unixFile, PathShapeClassifier.unixFile(s));
+    Assert.assertEquals("unixFile " + s, unixFile, PathShapeClassifier.unixShape(s));
     Assert.assertEquals("windowsFile " + s, windowsFile, PathShapeClassifier.windowsFile(s));
     Assert.assertEquals("classifyPath " + s, path, PathShapeClassifier.classifyPath(s));
     Assert.assertEquals("classifyFile " + s, file, PathShapeClassifier.classifyFile(s));

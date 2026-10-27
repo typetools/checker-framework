@@ -1,6 +1,5 @@
 package org.checkerframework.checker.nullness;
 
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
@@ -11,6 +10,7 @@ import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,11 +19,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
@@ -47,7 +49,6 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -88,6 +89,34 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /*package-private*/ final TypeElement fileElement =
       ElementUtils.getTypeElement(processingEnv, File.class);
 
+  /** The {@code Path.getParent()} method. */
+  private final ExecutableElement pathGetParent =
+      TreeUtils.getMethod(Path.class, "getParent", 0, processingEnv);
+
+  /** The {@code Path.getFileName()} method. */
+  private final ExecutableElement pathGetFileName =
+      TreeUtils.getMethod(Path.class, "getFileName", 0, processingEnv);
+
+  /** The {@code File.getParent()} method. */
+  private final ExecutableElement fileGetParent =
+      TreeUtils.getMethod(File.class, "getParent", 0, processingEnv);
+
+  /** The {@code File.getParentFile()} method. */
+  private final ExecutableElement fileGetParentFile =
+      TreeUtils.getMethod(File.class, "getParentFile", 0, processingEnv);
+
+  /** The {@code Files.isRegularFile(Path, LinkOption...)} method. */
+  /*package-private*/ final ExecutableElement filesIsRegularFile =
+      TreeUtils.getMethod(Files.class, "isRegularFile", 2, processingEnv);
+
+  /** The {@code File.isFile()} method. */
+  /*package-private*/ final ExecutableElement fileIsFile =
+      TreeUtils.getMethod(File.class, "isFile", 0, processingEnv);
+
+  /** The {@code Stream.toList()} method. */
+  private final ExecutableElement streamToList =
+      TreeUtils.getMethod(Stream.class, "toList", 0, processingEnv);
+
   /**
    * Creates a new PathShapeAnnotatedTypeFactory.
    *
@@ -117,52 +146,11 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   // ///////////////////////////////////////////////////////////////////////////
-  // Skipping classes that do not use paths
+  // Determining whether a class uses paths
   //
-
-  /** The top-level class that was most recently passed to {@link #shouldCheck}. */
-  private @Nullable ClassTree currentTopLevelClass = null;
-
-  /** True if {@link #currentTopLevelClass} uses paths, as determined by {@link #usesPaths}. */
-  private boolean currentTopLevelClassUsesPaths = false;
 
   /** A cache for {@link #isPathOrFile}. */
   private final Map<TypeElement, Boolean> isPathOrFileCache = new HashMap<>();
-
-  /**
-   * Returns true if the Path Shape Checker should check the given class. It checks a class only if
-   * the class, or the top-level class that contains it, uses paths. In a class that does not use
-   * paths, the Path Shape Checker never issues a warning and never refines a type, so checking the
-   * class would only waste time.
-   *
-   * @param tree a class
-   * @return true if the Path Shape Checker should check {@code tree}
-   */
-  @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
-  /*package-private*/ boolean shouldCheck(ClassTree tree) {
-    if (tree != currentTopLevelClass && root != null && root.getTypeDecls().contains(tree)) {
-      currentTopLevelClass = tree;
-      currentTopLevelClassUsesPaths = usesPaths(tree);
-    }
-    return currentTopLevelClassUsesPaths;
-  }
-
-  @Override
-  public void preProcessClassTree(ClassTree classTree) {
-    // Skip dataflow analysis, which is the most expensive part of checking a class.
-    if (shouldCheck(classTree)) {
-      super.preProcessClassTree(classTree);
-    }
-  }
-
-  @Override
-  public void postProcessClassTree(ClassTree tree) {
-    // Skip storing the types of the class's members.  Every path shape qualifier in them is
-    // defaulted, so storing them has no effect.
-    if (shouldCheck(tree)) {
-      super.postProcessClassTree(tree);
-    }
-  }
 
   /**
    * Returns true if the given tree uses paths: some tree within it has a type that mentions a
@@ -171,7 +159,7 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @param tree a tree
    * @return true if {@code tree} uses paths
    */
-  private boolean usesPaths(Tree tree) {
+  /*package-private*/ boolean usesPaths(Tree tree) {
     // Types that have been examined, to avoid infinite recursion through type variable bounds such
     // as `T extends Comparable<T>`.
     Set<TypeMirror> visited = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -393,27 +381,48 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
+   * For each effectively final local variable whose initializer has been examined by {@link
+   * #refineFromInitializer}, the path shapes of the type arguments of the initializer's type,
+   * viewed as the variable's declared type. A path shape is {@code UNKNOWN} if the type argument is
+   * not a declared type. The list is empty if the variable has no initializer, or if the
+   * initializer's type is not a declared type or is raw.
+   *
+   * <p>{@link PathShapeTransfer} removes a variable's entry whenever dataflow analysis processes
+   * the variable's declaration, because the type of the initializer can change as the analysis
+   * proceeds.
+   */
+  private final Map<VariableElement, List<PathShape>> initializerShapes = new HashMap<>();
+
+  /**
    * If {@code variable} is an effectively final local variable that has an initializer, refines the
-   * type arguments or array component type of {@code type} from the type of the initializer. This
-   * has the same effect as declaring the variable with {@code var}, so it is sound. It refines only
-   * the type arguments and array component type that are {@code @UnknownPathShape}, so it does not
-   * override a more specific qualifier that the programmer wrote.
+   * covariant type arguments (see {@link org.checkerframework.framework.qual.Covariant}) of {@code
+   * type} from the type of the initializer. This is sound, because it has the same effect on those
+   * type arguments as declaring the variable with {@code var}. It refines only the type arguments
+   * that are {@code @UnknownPathShape}, so it does not override a more specific qualifier that the
+   * programmer wrote.
+   *
+   * <p>Because the refined type arguments are covariant, a use of the variable remains acceptable
+   * wherever the declared type is. This method does not refine invariant type arguments, such as
+   * that of {@code List}, nor array component types, because doing so would reject code such as
+   * passing the variable to a method whose formal parameter has the declared type, or storing an
+   * element whose path shape is unknown.
    *
    * @param variable a variable
-   * @param type the type of a declaration or use of {@code variable}; is side-effected by this
-   *     method
+   * @param type the type of a use of {@code variable}; is side-effected by this method
    */
   /*package-private*/ void refineFromInitializer(Element variable, AnnotatedTypeMirror type) {
-    TypeKind typeKind = type.getKind();
-    List<AnnotatedTypeMirror> parts;
-    if (typeKind == TypeKind.ARRAY) {
-      parts = Collections.singletonList(((AnnotatedArrayType) type).getComponentType());
-    } else if (typeKind == TypeKind.DECLARED) {
-      parts = ((AnnotatedDeclaredType) type).getTypeArguments();
-    } else {
+    if (type.getKind() != TypeKind.DECLARED) {
       return;
     }
-    if (!hasRelevantDeclaredType(parts)) {
+    AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
+    List<AnnotatedTypeMirror> typeArgs = declaredType.getTypeArguments();
+    List<Integer> refinable = new ArrayList<>();
+    for (int i : getTypeHierarchy().getCovariantArgIndexes(declaredType)) {
+      if (i < typeArgs.size() && isRefinable(typeArgs.get(i))) {
+        refinable.add(i);
+      }
+    }
+    if (refinable.isEmpty()) {
       return;
     }
     ElementKind kind = variable.getKind();
@@ -421,63 +430,71 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         && ElementUtils.isEffectivelyFinal(variable))) {
       return;
     }
-    Tree decl = declarationFromElement(variable);
-    if (!(decl instanceof VariableTree varTree) || varTree.getInitializer() == null) {
-      return;
-    }
-    AnnotatedTypeMirror initializerType = getAnnotatedType(varTree.getInitializer());
-    if (initializerType.getKind() != typeKind) {
-      return;
-    }
-    if (typeKind == TypeKind.ARRAY) {
-      refineFrom(
-          ((AnnotatedArrayType) type).getComponentType(),
-          ((AnnotatedArrayType) initializerType).getComponentType());
-      return;
-    }
-    AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
-    AnnotatedDeclaredType initializerAsSuper =
-        AnnotatedTypes.castedAsSuper(this, (AnnotatedDeclaredType) initializerType, declaredType);
-    List<AnnotatedTypeMirror> typeArgs = declaredType.getTypeArguments();
-    List<AnnotatedTypeMirror> initializerTypeArgs = initializerAsSuper.getTypeArguments();
-    if (typeArgs.size() != initializerTypeArgs.size()) {
-      // One of the types is raw.
-      return;
-    }
-    for (int i = 0; i < typeArgs.size(); i++) {
-      refineFrom(typeArgs.get(i), initializerTypeArgs.get(i));
-    }
-  }
-
-  /**
-   * Returns true if one of the given types is a declared type to which a path shape qualifier
-   * applies.
-   *
-   * @param types type arguments or an array component type
-   * @return true if one of {@code types} is a declared type to which a path shape qualifier applies
-   */
-  private boolean hasRelevantDeclaredType(List<AnnotatedTypeMirror> types) {
-    for (AnnotatedTypeMirror type : types) {
-      if (type.getKind() == TypeKind.DECLARED && isRelevant(type)) {
-        return true;
+    VariableElement localVariable = (VariableElement) variable;
+    List<PathShape> shapes = initializerShapes.get(localVariable);
+    if (shapes == null) {
+      shapes = computeInitializerShapes(localVariable, declaredType);
+      if (shouldCache) {
+        initializerShapes.put(localVariable, shapes);
       }
     }
-    return false;
+    if (shapes.size() != typeArgs.size()) {
+      return;
+    }
+    for (int i : refinable) {
+      refine(typeArgs.get(i), shapes.get(i));
+    }
   }
 
   /**
-   * Refines {@code type} to the path shape of {@code from}, if both are declared types and {@code
-   * type} is {@code @UnknownPathShape}.
+   * Returns true if the given type argument may be refined by {@link #refineFromInitializer}: it is
+   * a declared type to which a path shape qualifier applies, and it is {@code @UnknownPathShape}.
    *
-   * @param type a type argument or array component type; is side-effected by this method
-   * @param from the corresponding part of the initializer's type
+   * @param typeArg a type argument
+   * @return true if {@code typeArg} may be refined
    */
-  private void refineFrom(AnnotatedTypeMirror type, AnnotatedTypeMirror from) {
-    if (type.getKind() == TypeKind.DECLARED
-        && from.getKind() == TypeKind.DECLARED
-        && type.hasPrimaryAnnotation(UNKNOWN_PATH_SHAPE)) {
-      refine(type, getPathShape(from));
+  private boolean isRefinable(AnnotatedTypeMirror typeArg) {
+    return typeArg.getKind() == TypeKind.DECLARED
+        && isRelevant(typeArg)
+        && typeArg.hasPrimaryAnnotation(UNKNOWN_PATH_SHAPE);
+  }
+
+  /**
+   * Returns the path shapes of the type arguments of the type of the initializer of the given
+   * variable, viewed as {@code declaredType}. See {@link #initializerShapes}.
+   *
+   * @param variable a local variable
+   * @param declaredType the type of a use of {@code variable}
+   * @return the path shapes of the type arguments of the initializer's type
+   */
+  private List<PathShape> computeInitializerShapes(
+      VariableElement variable, AnnotatedDeclaredType declaredType) {
+    Tree decl = declarationFromElement(variable);
+    if (!(decl instanceof VariableTree varTree) || varTree.getInitializer() == null) {
+      return Collections.emptyList();
     }
+    AnnotatedTypeMirror initializerType = getAnnotatedType(varTree.getInitializer());
+    if (initializerType.getKind() != TypeKind.DECLARED) {
+      return Collections.emptyList();
+    }
+    AnnotatedDeclaredType initializerAsSuper =
+        AnnotatedTypes.castedAsSuper(this, (AnnotatedDeclaredType) initializerType, declaredType);
+    List<PathShape> result = new ArrayList<>();
+    for (AnnotatedTypeMirror typeArg : initializerAsSuper.getTypeArguments()) {
+      result.add(
+          typeArg.getKind() == TypeKind.DECLARED ? getPathShape(typeArg) : PathShape.UNKNOWN);
+    }
+    return result;
+  }
+
+  /**
+   * Discards the result of {@link #refineFromInitializer} for the given variable, because the type
+   * of its initializer might have changed.
+   *
+   * @param variable a variable
+   */
+  /*package-private*/ void forgetInitializerShapes(VariableElement variable) {
+    initializerShapes.remove(variable);
   }
 
   // ///////////////////////////////////////////////////////////////////////////
@@ -485,16 +502,13 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   //
 
   /**
-   * Returns true if the given method is declared in the given class and has the given name.
+   * Returns true if the given method invocation is an invocation of {@code Stream.toList()}.
    *
-   * @param method a method
-   * @param clazz a class
-   * @param name a method name
-   * @return true if {@code method} is {@code clazz.name}
+   * @param tree a method invocation
+   * @return true if {@code tree} is an invocation of {@code Stream.toList()}
    */
-  /*package-private*/ static boolean isMethod(
-      ExecutableElement method, TypeElement clazz, String name) {
-    return method.getEnclosingElement().equals(clazz) && method.getSimpleName().contentEquals(name);
+  /*package-private*/ boolean isStreamToList(MethodInvocationTree tree) {
+    return TreeUtils.elementFromUse(tree).equals(streamToList);
   }
 
   /**
@@ -504,16 +518,16 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * {@code Path.getFileName()} on a {@code @HasName} receiver.
    *
    * @param tree a method invocation
+   * @param method the method that {@code tree} invokes
    * @return true if {@code tree} returns a non-null value because of the path shape of its receiver
    */
-  public boolean returnsNonNullPathComponent(MethodInvocationTree tree) {
-    ExecutableElement method = TreeUtils.elementFromUse(tree);
+  public boolean returnsNonNullPathComponent(MethodInvocationTree tree, ExecutableElement method) {
     PathShape required;
-    if (isMethod(method, pathElement, "getParent")
-        || isMethod(method, fileElement, "getParent")
-        || isMethod(method, fileElement, "getParentFile")) {
+    if (method.equals(pathGetParent)
+        || method.equals(fileGetParent)
+        || method.equals(fileGetParentFile)) {
       required = PathShape.HAS_PARENT;
-    } else if (isMethod(method, pathElement, "getFileName")) {
+    } else if (method.equals(pathGetFileName)) {
       required = PathShape.HAS_NAME;
     } else {
       return false;

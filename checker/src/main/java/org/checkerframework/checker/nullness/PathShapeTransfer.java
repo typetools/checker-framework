@@ -5,6 +5,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
@@ -17,6 +19,10 @@ import org.checkerframework.framework.flow.CFValue;
  * The transfer function for the Path Shape Checker. If {@code Files.isRegularFile(p)} or {@code
  * f.isFile()} returns true, then {@code p} or {@code f} is {@code @HasName}, because a root and the
  * empty path always denote a directory.
+ *
+ * <p>When it processes the declaration of a local variable, it also discards the type factory's
+ * record of the variable's initializer; see {@link
+ * PathShapeAnnotatedTypeFactory#forgetInitializerShapes}.
  *
  * @checker_framework.manual #path-shape-checker Path Shape Checker
  */
@@ -33,6 +39,17 @@ public class PathShapeTransfer extends CFTransfer {
   public PathShapeTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     super(analysis);
     this.factory = (PathShapeAnnotatedTypeFactory) analysis.getTypeFactory();
+  }
+
+  @Override
+  public TransferResult<CFValue, CFStore> visitAssignment(
+      AssignmentNode n, TransferInput<CFValue, CFStore> in) {
+    if (n.getTarget() instanceof LocalVariableNode target) {
+      // The type of the initializer might differ from when the analysis last processed the
+      // declaration, such as in a loop.
+      factory.forgetInitializerShapes(target.getElement());
+    }
+    return super.visitAssignment(n, in);
   }
 
   @Override
@@ -58,9 +75,9 @@ public class PathShapeTransfer extends CFTransfer {
    */
   private @Nullable Node regularFileTestSubject(MethodInvocationNode n) {
     ExecutableElement method = n.getTarget().getMethod();
-    if (PathShapeAnnotatedTypeFactory.isMethod(method, factory.filesElement, "isRegularFile")) {
+    if (method.equals(factory.filesIsRegularFile)) {
       return n.getArgument(0);
-    } else if (PathShapeAnnotatedTypeFactory.isMethod(method, factory.fileElement, "isFile")) {
+    } else if (method.equals(factory.fileIsFile)) {
       return n.getTarget().getReceiver();
     } else {
       return null;

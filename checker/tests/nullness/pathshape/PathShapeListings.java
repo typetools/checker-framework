@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -49,11 +50,27 @@ public class PathShapeListings {
     @HasParent File @Nullable [] fs4 = name.listFiles();
     @HasParent File @Nullable [] fs5 = name.listFiles((dir, n) -> true);
     @HasParent File @Nullable [] fs6 = name.listFiles(f -> true);
-    File[] fs7 = name.listFiles();
+    @HasParent File @Nullable [] fs7 = name.listFiles();
     if (fs7 != null) {
       for (File f : fs7) {
         f.getParentFile().toString();
       }
+    }
+    // A local variable does not take the array component type of its initializer.
+    File[] fs8 = name.listFiles();
+    if (fs8 != null) {
+      for (File f : fs8) {
+        // :: error: (dereference.of.nullable)
+        f.getParentFile().toString();
+      }
+    }
+  }
+
+  // The listing is a fresh array, so storing any File into it is safe.
+  void storeIntoListing(File dir) throws IOException {
+    File[] files = dir.listFiles();
+    if (files != null && files.length > 0) {
+      files[0] = files[0].getCanonicalFile();
     }
   }
 
@@ -85,25 +102,61 @@ public class PathShapeListings {
   void invariance(List<@HasName Path> l) {
     // :: error: (argument)
     takeList(l);
-    // l2 takes the type arguments of its initializer, as if it were declared with `var`.
+    // :: error: (assignment)
     List<Path> l2 = l;
+    var l3 = l;
     // :: error: (argument)
-    l2.add(Path.of("/"));
+    l3.add(Path.of("/"));
   }
 
   void takeList(List<Path> l) {}
 
-  // An effectively final local variable takes the type arguments of its initializer.
+  // An effectively final local variable takes the covariant type arguments of its initializer.
   void localVariables(Path d) throws IOException {
     try (Stream<Path> s = Files.list(d.resolve("a"))) {
       s.forEach(p -> p.getParent().toString());
     }
-    List<Path> l = Files.list(d.resolve("a")).toList();
-    l.get(0).getParent().toString();
     Stream<Path> s2 = Files.list(d);
     @HasName Path p2 = s2.findFirst().get();
     // :: error: (assignment)
     @HasParent Path p3 = Files.list(d).findFirst().get();
+    // The type argument of List is invariant, so it is not refined.
+    List<Path> l = Files.list(d.resolve("a")).toList();
+    // :: error: (dereference.of.nullable)
+    l.get(0).getParent().toString();
+    takeList(l);
+    // A variable declared with `var` has the type of its initializer.
+    var l2 = Files.list(d.resolve("a")).toList();
+    l2.get(0).getParent().toString();
+  }
+
+  // Each local variable is refined from the refined type of the previous one.
+  void chain(Path d) throws IOException {
+    Stream<Path> a = Files.list(d.resolve("a"));
+    Stream<Path> b = a.filter(p -> true);
+    Stream<Path> c = b.sorted();
+    c.forEach(p -> p.getParent().toString());
+  }
+
+  // The initializer is re-examined on each iteration of a loop.
+  void loop(boolean b) throws IOException {
+    Path d = Path.of("a");
+    while (b) {
+      Stream<Path> s = Files.list(d);
+      // :: error: (dereference.of.nullable)
+      s.forEach(p -> p.getParent().toString());
+      d = Path.of("");
+    }
+  }
+
+  // Optional.orElse takes an argument whose type is the type argument.  These are false positives.
+  Path orElse(Path dir) throws IOException {
+    // :: error: (argument)
+    Path p1 = Files.list(dir).findFirst().orElse(dir);
+    Optional<Path> first = Files.list(dir).findFirst();
+    // :: error: (argument)
+    Path p2 = first.orElse(dir);
+    return ((Optional<Path>) Files.list(dir).findFirst()).orElse(dir);
   }
 
   // A qualifier that the programmer wrote is not refined.
@@ -124,9 +177,20 @@ public class PathShapeListings {
     l.add(Path.of("/"));
   }
 
-  // A List is not read-only, so its type argument is invariant.  This is a false positive.
+  // Stream.toList() returns an unmodifiable list, so its type argument is treated as covariant.
   List<Path> toList(Path d) throws IOException {
-    // :: error: (return)
     return Files.list(d).toList();
+  }
+
+  List<Path> toListOfLocal(Path dir) throws IOException {
+    try (Stream<Path> s = Files.list(dir)) {
+      takeList(s.toList());
+      List<Path> l = s.toList();
+      Collection<Path> c = s.toList();
+      List<@HasName Path> named = s.toList();
+      // :: error: (assignment)
+      List<@HasParent Path> parents = s.toList();
+      return s.toList();
+    }
   }
 }

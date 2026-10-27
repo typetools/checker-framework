@@ -22,10 +22,10 @@ import org.checkerframework.javacutil.TypesUtils;
  * arguments of a method or constructor invocation, or on the values of compile-time constants.
  * These rules map one qualifier to a different one, so they cannot be expressed as annotations.
  *
- * <p>This class also refines the type arguments and array component type of each use of an
- * effectively final local variable, from the type of the variable's initializer. For example, given
- * {@code Stream<Path> s = Files.list(dir)}, the type of each use of {@code s} is {@code
- * Stream<@HasName Path>}. {@link PathShapeVisitor} does the same for the variable's declaration.
+ * <p>This class also refines the covariant type arguments of each use of an effectively final local
+ * variable, from the type of the variable's initializer, as described in {@link
+ * PathShapeAnnotatedTypeFactory#refineFromInitializer}. For example, given {@code Stream<Path> s =
+ * Files.list(dir)}, the type of each use of {@code s} is {@code Stream<@HasName Path>}.
  *
  * @checker_framework.manual #path-shape-checker Path Shape Checker
  */

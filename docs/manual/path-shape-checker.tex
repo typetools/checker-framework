@@ -156,19 +156,31 @@ type argument of \<Iterable>, \<Iterator>, \<Spliterator>, \<Optional>,
 \<Stream>, and \<DirectoryStream> as covariant, so it accepts code such
 as \<Stream<Path> s = Files.list(dir);>.  This is sound, because these
 interfaces have no methods that insert elements.
+Likewise, \<Stream.toList()> returns an unmodifiable list, so the Path Shape
+Checker treats the type argument of its result as covariant.  It accepts
+code such as \<return Files.list(dir).toList();> in a method whose return
+type is \<List<Path>>.
 
-An effectively final local variable with an initializer takes the type
-arguments and the array component type of its initializer, as if the variable
-had been declared with \<var>.  This changes only a type argument or array
-component type whose qualifier is \<@UnknownPathShape>, whether that
-qualifier is written or defaulted.  For example, the Path Shape Checker
-accepts this code:
+An effectively final local variable with an initializer takes the covariant
+type arguments of its initializer, as if the variable had been declared with
+\<var>.  This changes only a type argument whose qualifier is
+\<@UnknownPathShape>, whether that qualifier is written or defaulted.  For
+example, the Path Shape Checker accepts this code:
 
 \begin{Verbatim}
   try (Stream<Path> s = Files.list(Path.of("mydir"))) {
     s.forEach(p -> p.getParent().toString());   // OK:  p is @HasParent
   }
 \end{Verbatim}
+
+\noindent
+The variable does not take other type arguments, such as that of \<List>,
+nor the component type of an array.  Doing so would make the Path Shape
+Checker reject correct code that uses the variable where its declared type
+is expected, such as passing a \<List<Path>> variable to a method whose
+formal parameter type is \<List<Path>>, or storing a \<File> whose path
+shape is unknown into a \<File[]> variable.  To make a variable take all
+the type arguments of its initializer, declare it with \<var>.
 
 
 \sectionAndLabel{Limitations}{path-shape-limitations}
@@ -185,11 +197,15 @@ root.  To make the Path Shape Checker sound for such paths, pass the
 command-line argument \<-Astubs=sound-file-topath.astub> to the Nullness
 Checker.  Then, \<File.toPath()> returns \<@UnknownPathShape>.
 
-Because type arguments of other types, such as \<List>, are invariant, the
-Path Shape Checker rejects some correct code, such as returning
-\<Files.list(dir).toList()> from a method whose return type is
-\<List<Path>>.  You can write the more precise return type
-\<List<@HasName Path>>, or you can suppress the warning.
+A rule that refines a type argument can make the Path Shape Checker reject
+some correct code.  For example, \<Files.list(dir).findFirst()> has type
+\<Optional<@HasName Path>>, so the Path Shape Checker rejects
+\<Files.list(dir).findFirst().orElse(dir)> unless \<dir> is
+\<@HasName>.  The same is true if the result of \<findFirst()> is the
+initializer of an effectively final local variable of type
+\<Optional<Path>>, because the variable takes the covariant type arguments of
+its initializer.  You can cast the result of \<findFirst()> to
+\<Optional<Path>>, or you can suppress the warning.
 
 %% LocalWords:  pathshape HasName HasParent UnknownPathShape PathShapeBottom
 %% LocalWords:  PolyPathShape AnoPathShape getParent getParentFile getName
