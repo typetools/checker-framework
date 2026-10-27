@@ -7,7 +7,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -52,6 +51,7 @@ import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
+import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -117,13 +117,13 @@ public class CollectionOwnershipAnnotatedTypeFactory
   /** The {@code @}{@link OwningCollectionWithoutObligation} annotation. */
   public final AnnotationMirror OWNINGCOLLECTIONWITHOUTOBLIGATION;
 
-  /** The {@code @}{@link OwningCollectionBottom}{@code ()} annotation. */
+  /** The {@code @}{@link OwningCollectionBottom} annotation. */
   public final AnnotationMirror BOTTOM;
 
-  /** The {@code @}{@link PolyOwningCollection}{@code ()} polymorphic annotation. */
+  /** The {@code @}{@link PolyOwningCollection} polymorphic annotation. */
   public final AnnotationMirror POLY;
 
-  /** The value element of the {@code @}{@link CollectionFieldDestructor} annotation. */
+  /** The {@code value} element of the {@code @}{@link CollectionFieldDestructor} annotation. */
   private final ExecutableElement collectionFieldDestructorValueElement =
       TreeUtils.getMethod(CollectionFieldDestructor.class, "value", 0, processingEnv);
 
@@ -730,19 +730,19 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *
    * @param node the node
    * @param coStore the store
-   * @return the {@code CollectionOwnershipType} that the given node has in the given store
+   * @return the {@code CollectionOwnershipType} that the given node has in the given store, or
+   *     {@code null} if no information is available
    */
-  public CollectionOwnershipType getCoType(Node node, @Nullable CollectionOwnershipStore coStore) {
+  public @Nullable CollectionOwnershipType getCoType(
+      Node node, @Nullable CollectionOwnershipStore coStore) {
     if (coStore == null) {
       return null;
     }
     JavaExpression jx = JavaExpression.fromNode(node);
-    CFValue storeVal;
-    try {
-      storeVal = coStore.getValue(jx);
-    } catch (BugInCF e) {
-      storeVal = null;
+    if (!CFAbstractStore.canInsertJavaExpression(jx)) {
+      return null;
     }
+    CFValue storeVal = coStore.getValue(jx);
     if (storeVal == null) {
       return null;
     }
@@ -753,32 +753,42 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * Returns the flow-sensitive {@code CollectionOwnershipType} of the given tree.
    *
    * @param tree the tree
-   * @return the {@code CollectionOwnershipType} that the given tree has
+   * @return the {@code CollectionOwnershipType} that the given tree has, or {@code null} if no
+   *     information is available
    */
-  public CollectionOwnershipType getCoType(Tree tree) {
-    JavaExpression jx = null;
+  public @Nullable CollectionOwnershipType getCoType(Tree tree) {
+    JavaExpression jx;
     if (tree instanceof ExpressionTree expressionTree) {
       jx = JavaExpression.fromTree(expressionTree);
     } else if (tree instanceof VariableTree variableTree) {
       jx = JavaExpression.fromVariableTree(variableTree);
-    }
-    try {
-      CollectionOwnershipStore coStore = getStoreBefore(tree);
-      CFValue storeVal = coStore.getValue(jx);
-      return getCoType(storeVal.getAnnotations());
-    } catch (Exception e) {
+    } else {
       return null;
     }
+    if (!CFAbstractStore.canInsertJavaExpression(jx)) {
+      return null;
+    }
+    CollectionOwnershipStore coStore = getStoreBefore(tree);
+    if (coStore == null) {
+      return null;
+    }
+    CFValue storeVal = coStore.getValue(jx);
+    if (storeVal == null) {
+      return null;
+    }
+    return getCoType(storeVal.getAnnotations());
   }
 
   /**
    * Utility method to extract the {@code CollectionOwnershipType} from a collection of {@code
    * AnnotationMirror}s.
    *
-   * @param annos the {@code AnnotationMirror} collection
-   * @return the extracted {@code CollectionOwnershipType} from annos
+   * @param annos the {@code AnnotationMirror} collection; null elements are ignored
+   * @return the extracted {@code CollectionOwnershipType} from annos, or {@code null} if no element
+   *     of annos corresponds to a {@code CollectionOwnershipType}
    */
-  public CollectionOwnershipType getCoType(Collection<? extends AnnotationMirror> annos) {
+  public @Nullable CollectionOwnershipType getCoType(
+      Collection<? extends @Nullable AnnotationMirror> annos) {
     for (AnnotationMirror anm : annos) {
       if (anm == null) {
         continue;
@@ -808,7 +818,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
     AnnotationMirror collectionFieldDestructorAnno =
         getDeclAnnotation(method, CollectionFieldDestructor.class);
     if (collectionFieldDestructorAnno == null) {
-      return new ArrayList<String>();
+      return Collections.emptyList();
     }
     return AnnotationUtils.getElementValueArray(
         collectionFieldDestructorAnno, collectionFieldDestructorValueElement, String.class);
@@ -833,15 +843,15 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Returns a JavaExpression for the given String. Returns null if string is not parsable as a Java
-   * expression.
+   * Returns a JavaExpression for the given String. Returns null if the string is not parsable as a
+   * Java expression or the method has no source declaration.
    *
    * @param s the string
    * @param method the method with the annotation
    * @return a JavaExpression for the given String, or null if the string is not parsable as a Java
-   *     expression
+   *     expression or the method has no source declaration
    */
-  public JavaExpression stringToJavaExpression(String s, ExecutableElement method) {
+  public @Nullable JavaExpression stringToJavaExpression(String s, ExecutableElement method) {
     Tree methodTree = declarationFromElement(method);
     if (methodTree instanceof MethodTree mit) {
       try {
