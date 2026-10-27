@@ -317,9 +317,7 @@ public class AnnotationFileElementTypes {
           processingEnv, "AFET.parseAnnotationFiles(%s, %s)", annotationFiles, fileType);
     }
     for (String path : annotationFiles) {
-      // Special case when running in jtreg.
-      String base = System.getProperty("test.src");
-      String fullPath = (base == null) ? path : base + "/" + path;
+      String fullPath = AnnotationFileUtil.resolveAgainstTestSrc(path);
 
       List<AnnotationFileResource> allFiles =
           AnnotationFileUtil.allAnnotationFiles(fullPath, fileType);
