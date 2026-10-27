@@ -1,6 +1,7 @@
 package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
@@ -39,8 +40,6 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
-import org.checkerframework.dataflow.cfg.block.Block;
-import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.AbstractNodeVisitor;
 import org.checkerframework.dataflow.cfg.node.AnyPatternNode;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
@@ -492,6 +491,8 @@ public abstract class CFAbstractTransfer<
         PurityChecker.checkPurity(
             expressionOrStatement,
             aTypeFactory,
+            TreePathUtil.enclosingMethod(expressionOrStatement),
+            aTypeFactory.getProcessingEnv(),
             isAssumeSideEffectFreeEnabled,
             isAssumeDeterministicEnabled,
             aTypeFactory.getChecker().hasOption("assumePureGetters"));
@@ -696,12 +697,18 @@ public abstract class CFAbstractTransfer<
    */
   @SideEffectFree
   protected TransferResult<V, S> createTransferResult(@Nullable V value, TransferInput<V, S> in) {
-    S store = in.getRegularStore();
     if (in.containsTwoStores()) {
-      S elseStore = store.copy();
+      S thenStore = in.getThenStore();
+      S elseStore = in.getElseStore();
+      // Equal stores, such as those of most method invocations, need no merging.
+      if (!thenStore.equals(elseStore)) {
+        thenStore = thenStore.leastUpperBound(elseStore);
+        elseStore = thenStore.copy();
+      }
       return new ConditionalTransferResult<>(
-          finishValue(value, store, elseStore), store, elseStore);
+          finishValue(value, thenStore, elseStore), thenStore, elseStore);
     } else {
+      S store = in.getRegularStore();
       return new RegularTransferResult<>(finishValue(value, store), store);
     }
   }
@@ -802,59 +809,40 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitValueLiteral(ValueLiteralNode n, TransferInput<V, S> in) {
     if (n instanceof BooleanLiteralNode
         && in.containsTwoStores()
-        && isRightOperandOfBooleanOperator(n)) {
+        && isRightOperandOfBooleanOperator(n.getTree())) {
       return createTransferResultKeepingStores(getValueFromFactory(n), in);
     }
     return super.visitValueLiteral(n, in);
   }
 
   /**
-   * Returns true if the given node is the right operand of {@code ==}, {@code !=}, {@code &},
-   * {@code |}, or {@code ^}, possibly within {@code !} operators and casts.
+   * Returns true if the given tree is the right operand of {@code ==}, {@code !=}, {@code &},
+   * {@code |}, or {@code ^}, possibly within parentheses, {@code !} operators, and casts.
    *
-   * @param n a node
-   * @return true if the node is the right operand of a boolean operator
+   * @param tree a tree
+   * @return true if the tree is the right operand of a boolean operator
    */
-  @SuppressWarnings("interning:not.interned") // CFG node identity
-  private static boolean isRightOperandOfBooleanOperator(Node n) {
-    Block block = n.getBlock();
-    if (block == null) {
+  private boolean isRightOperandOfBooleanOperator(Tree tree) {
+    TreePath path = analysis.atypeFactory.getPath(tree);
+    if (path == null) {
       return false;
     }
-    // The operator, and any operators between it and n, follow n in its block or in the blocks
-    // that succeed it. A cast, for example, is in its own block because it can throw an exception.
-    List<Node> nodes = block.getNodes();
-    int i = 0;
-    while (i < nodes.size() && nodes.get(i) != n) {
-      i++;
-    }
-    i++;
-    Node operand = n;
-    while (true) {
-      if (i >= nodes.size()) {
-        if (!(block instanceof SingleSuccessorBlock ssb)) {
+    Tree operand = tree;
+    for (TreePath parentPath = path.getParentPath();
+        parentPath != null;
+        parentPath = parentPath.getParentPath()) {
+      Tree parent = parentPath.getLeaf();
+      switch (parent.getKind()) {
+        case PARENTHESIZED, TYPE_CAST, LOGICAL_COMPLEMENT -> operand = parent;
+        case EQUAL_TO, NOT_EQUAL_TO, AND, OR, XOR -> {
+          return ((BinaryTree) parent).getRightOperand() == operand;
+        }
+        default -> {
           return false;
         }
-        block = ssb.getSuccessor();
-        if (block == null || block.getNodes().isEmpty()) {
-          return false;
-        }
-        nodes = block.getNodes();
-        i = 0;
-      }
-      Node next = nodes.get(i++);
-      if ((next instanceof ConditionalNotNode cnn && cnn.getOperand() == operand)
-          || (next instanceof TypeCastNode tcn && tcn.getOperand() == operand)) {
-        operand = next;
-      } else {
-        return (next instanceof EqualToNode
-                || next instanceof NotEqualNode
-                || next instanceof BitwiseAndNode
-                || next instanceof BitwiseOrNode
-                || next instanceof BitwiseXorNode)
-            && ((BinaryOperationNode) next).getRightOperand() == operand;
       }
     }
+    return false;
   }
 
   /**
@@ -1113,7 +1101,9 @@ public abstract class CFAbstractTransfer<
     Node rightN = n.getRightOperand();
     if (!in.containsTwoStores()
         || !TypesUtils.isBooleanType(leftN.getType())
-        || !TypesUtils.isBooleanType(rightN.getType())) {
+        || !TypesUtils.isBooleanType(rightN.getType())
+        // If x's then-store and else-store are equal, so are the result's.
+        || in.getThenStore().equals(in.getElseStore())) {
       return result;
     }
     // The stores of `in` describe x; y is the other operand.
@@ -1334,7 +1324,8 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitLambdaResultExpression(
       LambdaResultExpressionNode n, TransferInput<V, S> in) {
-    return n.getResult().accept(this, in);
+    // The result is evaluated just before this node, so the input already describes it.
+    return createTransferResultKeepingStores(in.getValueOfSubNode(n.getResult()), in);
   }
 
   /**
@@ -1710,25 +1701,6 @@ public abstract class CFAbstractTransfer<
     }
     return lubResult;
   }
-
-  // /**
-  //  * In a cast {@code (@A C) e} of some expression {@code e} to a new type {@code @A C}, we
-  // usually
-  //  * take the annotation of the type {@code C} (here {@code @A}). However, if the inferred
-  //  * annotation of {@code e} is more precise, we keep that one.
-  //  */
-  // @Override
-  // public TransferResult<V, S> visitTypeCast(TypeCastNode n,
-  // TransferInput<V, S> p) {
-  // TransferResult<V, S> result = super.visitTypeCast(n, p);
-  // V value = result.getResultValue();
-  // V operandValue = p.getValueOfSubNode(n.getOperand());
-  // // Normally we take the value of the type cast node. However, if the old
-  // // flow-refined value was more precise, we keep that value.
-  // V resultValue = moreSpecificValue(value, operandValue);
-  // result.setResultValue(resultValue);
-  // return result;
-  // }
 
   /**
    * Returns the abstract value of {@code (value1, value2)} that is more specific. If the two are
