@@ -2,9 +2,9 @@ package org.checkerframework.framework.type;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -122,7 +122,8 @@ public abstract class AbstractSetInclusionQualifierHierarchy
   }
 
   /**
-   * Returns an annotation whose values are the union or intersection of the input values.
+   * Returns an annotation whose values are the union or intersection of the input values. The
+   * values are sorted, so the result does not depend on the order of the arguments or their values.
    *
    * @param a1 the first annotation
    * @param a2 the second annotation
@@ -133,7 +134,7 @@ public abstract class AbstractSetInclusionQualifierHierarchy
    */
   private AnnotationMirror combineAnnotationValues(
       AnnotationMirror a1, AnnotationMirror a2, QualifierKind resultKind, boolean union) {
-    Set<String> values = new LinkedHashSet<>(valuesStringList(a1));
+    Set<String> values = new TreeSet<>(valuesStringList(a1));
     if (union) {
       values.addAll(valuesStringList(a2));
     } else {
