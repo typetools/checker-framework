@@ -218,6 +218,37 @@ public class AnnotationFileUtilTest {
     Assert.assertNull(AnnotationFileUtil.archiveEntry(zip, "Foo-checker.ajava"));
   }
 
+  /**
+   * Tests that a relative location that exists only under the {@code test.src} directory, such as
+   * an ajava archive in a jtreg test, is resolved against that directory.
+   */
+  @Test
+  public void resolveAgainstTestSrc() throws IOException {
+    File zip = writeZip(new File(tmp.getRoot(), "ajava-for-test-src.zip"), "p/Foo-checker.ajava");
+    File absent = new File(tmp.getRoot(), "absent.zip");
+    String oldTestSrc = System.getProperty("test.src");
+    try {
+      System.clearProperty("test.src");
+      Assert.assertEquals(zip.getName(), AnnotationFileUtil.resolveAgainstTestSrc(zip.getName()));
+
+      System.setProperty("test.src", tmp.getRoot().getPath());
+      String resolved = AnnotationFileUtil.resolveAgainstTestSrc(zip.getName());
+      Assert.assertEquals(zip.getPath(), resolved);
+      Assert.assertNotNull(
+          AnnotationFileUtil.archiveEntry(new File(resolved), "p/Foo-checker.ajava"));
+      // An absolute path is not changed.
+      Assert.assertEquals(
+          absent.getAbsolutePath(),
+          AnnotationFileUtil.resolveAgainstTestSrc(absent.getAbsolutePath()));
+    } finally {
+      if (oldTestSrc == null) {
+        System.clearProperty("test.src");
+      } else {
+        System.setProperty("test.src", oldTestSrc);
+      }
+    }
+  }
+
   /** Tests that a nonexistent location yields null. */
   @Test
   public void nonexistentLocation() {

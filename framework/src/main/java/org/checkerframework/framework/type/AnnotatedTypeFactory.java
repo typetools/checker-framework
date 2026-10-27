@@ -1052,7 +1052,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
               + "-"
               + checker.getClass().getCanonicalName()
               + ".ajava";
-      for (String ajavaLocation : checker.getStringsOption("ajava", File.pathSeparator)) {
+      for (String ajavaOption : checker.getStringsOption("ajava", File.pathSeparator)) {
+        String ajavaLocation = AnnotationFileUtil.resolveAgainstTestSrc(ajavaOption);
         // ajavaLocation might be (1) a directory, (2) the name of a specific ajava file, or
         // (3) a jar or zip archive. This code must handle all three possible cases.
         // Case (1): ajavaPath is a directory
@@ -1090,9 +1091,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
       }
       if (candidateAjavaFiles.size() == 1) {
-        currentFileAjavaTypes = new AnnotationFileElementTypes(this);
         String ajavaPath = candidateAjavaFiles.toArray(new String[0])[0];
         AnnotationFileResource archiveEntry = archiveEntries.get(ajavaPath);
+        currentFileAjavaTypes = new AnnotationFileElementTypes(this);
         try {
           if (archiveEntry != null) {
             currentFileAjavaTypes.parseAjavaFileWithTree(archiveEntry, root);
