@@ -3887,6 +3887,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * Returns true if {@code elt} is a binding variable of a deconstruction pattern, such as {@code
+   * y} in {@code o instanceof Point(int x, int y)}.
+   *
+   * @param elt an element
+   * @return true if {@code elt} is a binding variable of a deconstruction pattern
+   */
+  public boolean isDeconstructionBindingVariable(Element elt) {
+    return elt.getKind() == ElementKind.BINDING_VARIABLE
+        && declarationFromElement(elt) instanceof VariableTree variableTree
+        && isDeconstructionBindingVariable(variableTree);
+  }
+
+  /**
    * If {@code variableTree} is a binding variable of a deconstruction pattern, returns the path to
    * its binding pattern, whose parent is the deconstruction pattern. Otherwise, returns null.
    *

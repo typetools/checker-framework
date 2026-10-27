@@ -59,9 +59,8 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     // A binding variable of a deconstruction pattern is like a local variable that is assigned the
     // record component.  If it is declared using var, it has the component's type, except that its
     // primary annotations are defaulted.
-    boolean isDeconstructionBindingVariable = f.isDeconstructionBindingVariable(variableTree);
     CompilationUnitTree root = f.root;
-    if (isDeconstructionBindingVariable
+    if (f.isDeconstructionBindingVariable(variableTree)
         && root != null
         && TreeUtils.isVariableTreeDeclaredUsingVar(variableTree, root)) {
       AnnotatedTypeMirror componentType = f.getDeconstructedComponentType(variableTree);
@@ -132,12 +131,6 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
           innerType.addAnnotation(anno);
         }
       }
-    }
-
-    // Like an unannotated local variable, an unannotated binding variable of a deconstruction
-    // pattern has the top qualifier; dataflow refines it to the qualifier of the record component.
-    if (isDeconstructionBindingVariable && result.getKind() != TypeKind.TYPEVAR) {
-      result.addMissingAnnotations(f.getQualifierHierarchy().getTopAnnotations());
     }
 
     AnnotatedTypeMirror lambdaParamType = inferLambdaParamAnnotations(f, result, elt);
