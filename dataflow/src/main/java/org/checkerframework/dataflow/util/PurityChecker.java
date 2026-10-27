@@ -23,10 +23,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -65,6 +66,10 @@ public final class PurityChecker {
    *
    * @param statement the statement to check
    * @param annoProvider the annotation provider
+   * @param enclosingMethod the method declaration that lexically encloses {@code statement}, or
+   *     null if none does. Pass the enclosing method for a lambda body too. Pass null for an
+   *     arbitrary expression, which no method's contract governs.
+   * @param env the processing environment; used only if {@code enclosingMethod} is non-null
    * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
    * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
    * @param assumePureGetters true if all getter methods should be assumed to be @Pure
@@ -74,12 +79,16 @@ public final class PurityChecker {
   public static PurityResult checkPurity(
       TreePath statement,
       AnnotationProvider annoProvider,
+      @Nullable MethodTree enclosingMethod,
+      @Nullable ProcessingEnvironment env,
       boolean assumeSideEffectFree,
       boolean assumeDeterministic,
       boolean assumePureGetters) {
     return checkPurity(
         Collections.singletonList(statement),
         annoProvider,
+        enclosingMethod,
+        env,
         assumeSideEffectFree,
         assumeDeterministic,
         assumePureGetters);
@@ -89,13 +98,17 @@ public final class PurityChecker {
    * Compute whether the given statements, taken together, are side-effect-free, deterministic, or
    * both. Returns a result that can be queried.
    *
-   * <p>Use this rather than calling {@link #checkPurity(TreePath, AnnotationProvider, boolean,
-   * boolean, boolean)} once per statement, for code that runs as a unit but is not contiguous in
-   * the source code: a constructor together with the instance initializers that run as part of it,
-   * for example.
+   * <p>Use this rather than calling {@link #checkPurity(TreePath, AnnotationProvider, MethodTree,
+   * ProcessingEnvironment, boolean, boolean, boolean)} once per statement, for code that runs as a
+   * unit but is not contiguous in the source code: a constructor together with the instance
+   * initializers that run as part of it, for example.
    *
    * @param statements the statements to check
    * @param annoProvider the annotation provider
+   * @param enclosingMethod the method declaration that lexically encloses {@code statements}, or
+   *     null if none does; see {@link #checkPurity(TreePath, AnnotationProvider, MethodTree,
+   *     ProcessingEnvironment, boolean, boolean, boolean)}
+   * @param env the processing environment; used only if {@code enclosingMethod} is non-null
    * @param assumeSideEffectFree true if all methods should be assumed to be @SideEffectFree
    * @param assumeDeterministic true if all methods should be assumed to be @Deterministic
    * @param assumePureGetters true if all getter methods should be assumed to be @Pure
@@ -105,6 +118,8 @@ public final class PurityChecker {
   public static PurityResult checkPurity(
       List<TreePath> statements,
       AnnotationProvider annoProvider,
+      @Nullable MethodTree enclosingMethod,
+      @Nullable ProcessingEnvironment env,
       boolean assumeSideEffectFree,
       boolean assumeDeterministic,
       boolean assumePureGetters) {
@@ -375,20 +390,18 @@ public final class PurityChecker {
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void ignore) {
       ExecutableElement elt = TreeUtils.elementFromUse(tree);
-      EnumSet<PurityKind> eltPurityKinds = PurityUtils.getPurityKinds(annoProvider, elt);
+      EnumSet<PurityKind> callPurityKinds = PurityUtils.getPurityKinds(annoProvider, elt);
       boolean pureGetter = assumePureGetters && ElementUtils.isGetter(elt);
-      boolean seFree =
-          assumeSideEffectFree
-              || pureGetter
-              || eltPurityKinds.contains(PurityKind.SIDE_EFFECT_FREE);
-      boolean det =
-          assumeDeterministic
-              || pureGetter
-              || eltPurityKinds.contains(PurityKind.DETERMINISTIC)
-              // A side-effect-free method with no return value is deterministic:  two calls
-              // return the same (absent) value.  This includes a `this()` or `super()` call,
-              // whose element's return type is void.
-              || (seFree && elt.getReturnType().getKind() == TypeKind.VOID);
+      if (assumeSideEffectFree || pureGetter) {
+        callPurityKinds.add(PurityKind.SIDE_EFFECT_FREE);
+      }
+      if (assumeDeterministic || pureGetter) {
+        callPurityKinds.add(PurityKind.DETERMINISTIC);
+      }
+      // The element of a `this()` or `super()` call returns void, too.
+      PurityUtils.addDeterminismOfVoidCall(callPurityKinds, elt.getReturnType());
+      boolean seFree = callPurityKinds.contains(PurityKind.SIDE_EFFECT_FREE);
+      boolean det = callPurityKinds.contains(PurityKind.DETERMINISTIC);
       if (!det && !seFree) {
         purityResult.addNotBothReason(tree, "call");
       } else if (!det) {
