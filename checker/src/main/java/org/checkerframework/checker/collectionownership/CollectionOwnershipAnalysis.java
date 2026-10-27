@@ -2,10 +2,9 @@ package org.checkerframework.checker.collectionownership;
 
 import com.google.common.collect.ImmutableSet;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.mustcall.SetOfTypes;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
-import org.checkerframework.checker.resourceleak.SetOfTypes;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -47,8 +46,8 @@ public class CollectionOwnershipAnalysis
    * @return the ignored-exception policy for collection-ownership dataflow
    */
   private static SetOfTypes createIgnoredExceptionPolicy(BaseTypeChecker checker) {
-    ResourceLeakChecker resourceLeakChecker = ResourceLeakUtils.getResourceLeakChecker(checker);
-    SetOfTypes baseIgnoredExceptions = resourceLeakChecker.getIgnoredExceptions();
+    SetOfTypes baseIgnoredExceptions =
+        ResourceLeakUtils.getRLCCalledMethodsChecker(checker).getIgnoredExceptions();
     SetOfTypes exactThrowableOnly =
         SetOfTypes.anyOfTheseNames(ImmutableSet.of(Throwable.class.getCanonicalName()));
     return (types, exceptionType) ->
