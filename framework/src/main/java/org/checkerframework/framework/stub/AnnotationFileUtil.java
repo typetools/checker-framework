@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -442,30 +441,40 @@ public class AnnotationFileUtil {
    * @param resources the list to add the found files to
    * @param fileType type of annotation files to add
    */
-  @SuppressWarnings("JdkObsolete") // JarFile.entries()
   private static void addAnnotationFilesToList(
       File location, List<AnnotationFileResource> resources, AnnotationFileType fileType) {
     if (isAnnotationFile(location, fileType)) {
       resources.add(new FileAnnotationFileResource(location));
     } else if (isJar(location)) {
       try (JarFile file = new JarFile(location)) {
-        Enumeration<JarEntry> entries = file.entries();
-        while (entries.hasMoreElements()) {
-          JarEntry entry = entries.nextElement();
-          if (isAnnotationFile(entry.getName(), fileType)) {
-            resources.add(
-                new JarEntryAnnotationFileResource(
-                    location, entry.getName(), readEntry(file, entry)));
-          }
-        }
+        file.stream()
+            .filter(entry -> isAnnotationFile(entry.getName(), fileType))
+            .forEach(
+                entry -> {
+                  try {
+                    resources.add(
+                        new JarEntryAnnotationFileResource(
+                            location, entry.getName(), readEntry(file, entry)));
+                  } catch (IOException e) {
+                    // The client reports the error when it reads this entry, and it still
+                    // processes the archive's other entries.
+                    String description = location.getPath() + "!" + entry.getName();
+                    resources.add(
+                        new AnnotationFileResource() {
+                          @Override
+                          public String getDescription() {
+                            return description;
+                          }
+
+                          @Override
+                          public InputStream getInputStream() throws IOException {
+                            throw e;
+                          }
+                        });
+                  }
+                });
       } catch (IOException e) {
-        System.err.println(
-            "AnnotationFileUtil: could not process archive "
-                + location
-                + ": "
-                + e.getClass().getName()
-                + ": "
-                + e.getMessage());
+        System.err.println("AnnotationFileUtil: could not process archive " + location + ": " + e);
       }
 
     } else if (location.isDirectory()) {
