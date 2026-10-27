@@ -17,6 +17,7 @@ import com.github.javaparser.ast.type.WildcardType;
 import com.github.javaparser.ast.visitor.SimpleVoidVisitor;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -435,7 +436,11 @@ public class AnnotationFileUtil {
         while (entries.hasMoreElements()) {
           JarEntry entry = entries.nextElement();
           if (isAnnotationFile(entry.getName(), fileType)) {
-            resources.add(new JarEntryAnnotationFileResource(location, entry.getName()));
+            byte[] contents;
+            try (InputStream in = file.getInputStream(entry)) {
+              contents = in.readAllBytes();
+            }
+            resources.add(new JarEntryAnnotationFileResource(location, entry.getName(), contents));
           }
         }
       } catch (IOException e) {

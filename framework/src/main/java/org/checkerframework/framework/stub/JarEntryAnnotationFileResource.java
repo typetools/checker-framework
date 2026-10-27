@@ -1,15 +1,12 @@
 package org.checkerframework.framework.stub;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FilterInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 /**
- * {@link JarEntry}-based implementation of {@link AnnotationFileResource}. The archive is opened
- * only while the entry is being read, so this resource itself holds no open file handle.
+ * Implementation of {@link AnnotationFileResource} for an entry in a JAR or ZIP archive. The
+ * resource holds the entry's contents, so it holds no open file handle.
  */
 public class JarEntryAnnotationFileResource implements AnnotationFileResource {
   /** The JAR or ZIP archive. */
@@ -18,15 +15,20 @@ public class JarEntryAnnotationFileResource implements AnnotationFileResource {
   /** The name of the entry in the archive. */
   private final String entryName;
 
+  /** The contents of the entry. */
+  private final byte[] contents;
+
   /**
-   * Constructs a {@code AnnotationFileResource} for the specified entry in the specified JAR file.
+   * Constructs a {@code AnnotationFileResource} for the specified entry in the specified archive.
    *
    * @param archive the JAR or ZIP archive
    * @param entryName the name of the entry in the archive
+   * @param contents the contents of the entry
    */
-  public JarEntryAnnotationFileResource(File archive, String entryName) {
+  public JarEntryAnnotationFileResource(File archive, String entryName, byte[] contents) {
     this.archive = archive;
     this.entryName = entryName;
+    this.contents = contents;
   }
 
   @Override
@@ -34,42 +36,8 @@ public class JarEntryAnnotationFileResource implements AnnotationFileResource {
     return archive.getPath() + "!" + entryName;
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * <p>The returned stream holds the archive open; closing the stream closes the archive.
-   */
   @Override
-  // The returned stream's close() method closes `in` and `file`; on exception, `file` is closed.
-  @SuppressWarnings("resourceleak:required.method.not.called")
-  public InputStream getInputStream() throws IOException {
-    JarFile file = new JarFile(archive);
-    try {
-      JarEntry entry = file.getJarEntry(entryName);
-      if (entry == null) {
-        throw new IOException("No entry " + entryName + " in " + archive);
-      }
-      InputStream in = file.getInputStream(entry);
-      if (in == null) {
-        throw new IOException("Cannot read entry " + entryName + " in " + archive);
-      }
-      return new FilterInputStream(in) {
-        @Override
-        public void close() throws IOException {
-          try {
-            super.close();
-          } finally {
-            file.close();
-          }
-        }
-      };
-    } catch (IOException | RuntimeException e) {
-      try {
-        file.close();
-      } catch (IOException closeException) {
-        e.addSuppressed(closeException);
-      }
-      throw e;
-    }
+  public InputStream getInputStream() {
+    return new ByteArrayInputStream(contents);
   }
 }
