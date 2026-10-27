@@ -1963,44 +1963,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Extends the CFG with an access to the length of the array variable of an enhanced for loop.
-   *
-   * @param arrayVariable the array variable
-   * @param mayThrowNullPointerException true if the access may throw a {@code NullPointerException}
-   * @return the node for the access
-   */
-  private FieldAccessNode extendWithArrayLengthAccess(
-      VariableTree arrayVariable, boolean mayThrowNullPointerException) {
-    IdentifierTree arrayUse = treeBuilder.buildVariableUse(arrayVariable);
-    handleArtificialTree(arrayUse);
-    LocalVariableNode arrayNode = new LocalVariableNode(arrayUse);
-    arrayNode.setInSource(false);
-    extendWithNode(arrayNode);
-
-    MemberSelectTree lengthSelect = treeBuilder.buildArrayLengthAccess(arrayUse);
-    handleArtificialTree(lengthSelect);
-    FieldAccessNode lengthAccessNode = new FieldAccessNode(lengthSelect, arrayNode);
-    lengthAccessNode.setInSource(false);
-    if (mayThrowNullPointerException) {
-      extendWithNodeWithException(lengthAccessNode, nullPointerExceptionType);
-    } else {
-      extendWithNode(lengthAccessNode);
-    }
-    return lengthAccessNode;
-  }
-
-  /**
-   * Returns false if the expression is never null, judging from its syntax.
-   *
-   * @param expression an expression of reference type
-   * @return false if the expression is never null; true if it may be null
-   */
-  private static boolean mayBeNull(ExpressionTree expression) {
-    expression = TreeUtils.withoutParens(expression);
-    return !(expression instanceof NewClassTree || expression instanceof NewArrayTree);
-  }
-
-  /**
    * Marks the boxing or unboxing calls that assignment conversion applied to an element of an
    * enhanced for loop, so that the type of each call is the element type of the iterable
    * expression. Assignment conversion may box or unbox the element, for example in {@code for (int
@@ -2089,6 +2051,44 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         treeBuilder.buildVariableDecl(
             arrayType, uniqueName("array"), variableElement.getEnclosingElement(), expression);
     return arrayVariable;
+  }
+
+  /**
+   * Extends the CFG with an access to the length of the array variable of an enhanced for loop.
+   *
+   * @param arrayVariable the array variable
+   * @param mayThrowNullPointerException true if the access may throw a {@code NullPointerException}
+   * @return the node for the access
+   */
+  private FieldAccessNode extendWithArrayLengthAccess(
+      VariableTree arrayVariable, boolean mayThrowNullPointerException) {
+    IdentifierTree arrayUse = treeBuilder.buildVariableUse(arrayVariable);
+    handleArtificialTree(arrayUse);
+    LocalVariableNode arrayNode = new LocalVariableNode(arrayUse);
+    arrayNode.setInSource(false);
+    extendWithNode(arrayNode);
+
+    MemberSelectTree lengthSelect = treeBuilder.buildArrayLengthAccess(arrayUse);
+    handleArtificialTree(lengthSelect);
+    FieldAccessNode lengthAccessNode = new FieldAccessNode(lengthSelect, arrayNode);
+    lengthAccessNode.setInSource(false);
+    if (mayThrowNullPointerException) {
+      extendWithNodeWithException(lengthAccessNode, nullPointerExceptionType);
+    } else {
+      extendWithNode(lengthAccessNode);
+    }
+    return lengthAccessNode;
+  }
+
+  /**
+   * Returns false if the expression is never null, judging from its syntax.
+   *
+   * @param expression an expression of reference type
+   * @return false if the expression is never null; true if it may be null
+   */
+  private static boolean mayBeNull(ExpressionTree expression) {
+    expression = TreeUtils.withoutParens(expression);
+    return !(expression instanceof NewClassTree || expression instanceof NewArrayTree);
   }
 
   @Override
