@@ -335,12 +335,11 @@ public class AnnotationFileElementTypes {
           processingEnv, "AFET.parseAnnotationFiles(%s, %s)", annotationFiles, fileType);
     }
     for (String path : annotationFiles) {
-      String fullPath = AnnotationFileUtil.resolveAgainstTestSrc(path);
-
-      File namedFile = new File(fullPath);
-      if (namedFile.isFile()
+      File namedFile = AnnotationFileUtil.findFileSystemLocation(path);
+      if (namedFile != null
+          && namedFile.isFile()
           && !AnnotationFileUtil.isJarOrZip(namedFile.getName())
-          && !AnnotationFileUtil.isUsableNamedFile(fullPath, fileType)) {
+          && !AnnotationFileUtil.isUsableNamedFile(namedFile.getPath(), fileType)) {
         String reason;
         if (fileType == AnnotationFileType.COMMAND_LINE_STUB) {
           reason = ", which is an ajava file; supply it via -Aajava";
@@ -353,8 +352,7 @@ public class AnnotationFileElementTypes {
         continue;
       }
 
-      List<AnnotationFileResource> allFiles =
-          AnnotationFileUtil.allAnnotationFiles(fullPath, fileType);
+      List<AnnotationFileResource> allFiles = AnnotationFileUtil.allAnnotationFiles(path, fileType);
       if (allFiles != null) {
         for (AnnotationFileResource resource : allFiles) {
           try (BufferedInputStream annotationFileStream =
@@ -426,13 +424,16 @@ public class AnnotationFileElementTypes {
                   (parentPath == null
                       ? "current directory"
                       : "directory " + parentPath.getAbsolutePath());
+              String testSrc = System.getProperty("test.src");
               String msg =
                   checker.getClass().getSimpleName()
                       + " did not find annotation file or directory "
                       + path
                       + " on classpath or within "
                       + parentPathDescription
-                      + (fullPath.equals(path) ? "" : (" or at " + fullPath));
+                      + ((testSrc == null || new File(path).isAbsolute())
+                          ? ""
+                          : (" or within directory " + testSrc));
               StringJoiner sj = new StringJoiner(System.lineSeparator() + "  ");
               sj.add(msg);
               sj.add("Classpath:");

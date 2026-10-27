@@ -1053,7 +1053,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
               + checker.getClass().getCanonicalName()
               + ".ajava";
       for (String ajavaOption : checker.getStringsOption("ajava", File.pathSeparator)) {
-        String ajavaLocation = AnnotationFileUtil.resolveAgainstTestSrc(ajavaOption);
+        File ajavaFile = AnnotationFileUtil.findFileSystemLocation(ajavaOption);
+        String ajavaLocation = (ajavaFile == null) ? ajavaOption : ajavaFile.getPath();
         // ajavaLocation might be (1) a directory, (2) the name of a specific ajava file, or
         // (3) a jar or zip archive. This code must handle all three possible cases.
         // Case (1): ajavaPath is a directory
