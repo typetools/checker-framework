@@ -284,6 +284,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** SwitchBuilder for the current switch. Used to match yield statements to enclosing switches. */
   private SwitchBuilder switchBuilder;
 
+  /** The switch expressions none of whose results may be null. */
+  private final Set<SwitchExpressionNode> neverNullSwitchExpressions =
+      Collections.newSetFromMap(new IdentityHashMap<>());
+
   /**
    * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
    * have at least one corresponding Node. Trees that undergo conversions, such as boxing or
@@ -1998,27 +2002,54 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns true if the value of the given node may be null, judging from the node's syntax. For
-   * example, {@code this} and the result of {@code new} are never null.
+   * Returns true if the value of the given node may be null. Returns false only if the kind of the
+   * node guarantees that its value is never null, whatever the values of variables. For example,
+   * {@code this}, the result of {@code new}, and a call to {@code Integer.valueOf} are never null.
+   * A type name, as in {@code String.valueOf(x)}, is never null because it has no value.
    *
-   * @param node a node of reference type
+   * @param node a node of reference type, or a type name
    * @return true if the value of the node may be null; false if it is never null
    */
-  private static boolean mayBeNull(Node node) {
+  private boolean mayBeNull(Node node) {
     if (node instanceof ThisNode
         || node instanceof SuperNode
+        || node instanceof ClassNameNode
         || node instanceof ObjectCreationNode
         || node instanceof ArrayCreationNode
         || node instanceof StringLiteralNode
-        || node instanceof StringConcatenateNode) {
+        || node instanceof StringConcatenateNode
+        || node instanceof FunctionalInterfaceNode) {
       return false;
+    } else if (node instanceof FieldAccessNode fieldAccess) {
+      // A class literal or a qualified `this`.
+      String fieldName = fieldAccess.getFieldName();
+      return !(fieldName.equals("class") || fieldName.equals("this"));
+    } else if (node instanceof MethodInvocationNode invocation) {
+      return !isBoxedPrimitiveValueOf(invocation.getTarget().getMethod());
     } else if (node instanceof TypeCastNode cast) {
       return mayBeNull(cast.getOperand());
     } else if (node instanceof TernaryExpressionNode ternary) {
       return mayBeNull(ternary.getThenOperand()) || mayBeNull(ternary.getElseOperand());
+    } else if (node instanceof SwitchExpressionNode switchExpression) {
+      return !neverNullSwitchExpressions.contains(switchExpression);
+    } else if (node instanceof AssignmentNode assignment) {
+      return mayBeNull(assignment.getExpression());
     } else {
       return true;
     }
+  }
+
+  /**
+   * Returns true if the given method is a static {@code valueOf} method of a boxed primitive type,
+   * such as {@code Integer.valueOf}. Such a method never returns null.
+   *
+   * @param method a method
+   * @return true if the method is a static {@code valueOf} method of a boxed primitive type
+   */
+  private static boolean isBoxedPrimitiveValueOf(ExecutableElement method) {
+    return ElementUtils.isStatic(method)
+        && method.getSimpleName().contentEquals("valueOf")
+        && TypesUtils.isBoxedPrimitive(method.getEnclosingElement().asType());
   }
 
   /**
@@ -2029,7 +2060,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param receiver the receiver of the access
    * @return true if the access may throw a {@code NullPointerException}
    */
-  private static boolean accessMayThrowNullPointerException(Element member, Node receiver) {
+  private boolean accessMayThrowNullPointerException(Element member, Node receiver) {
     return !ElementUtils.isStatic(member) && mayBeNull(receiver);
   }
 
@@ -2187,6 +2218,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private AssignmentNode selectorExprAssignment;
 
+    /** True if some result of the switch expression may be null. */
+    private boolean someResultMayBeNull = false;
+
     /**
      * If {@link #switchTree} is a switch expression, then this is a result variable: the synthetic
      * variable that all results of {@code #switchTree} are assigned to. Otherwise, this is null.
@@ -2299,6 +2333,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             new SwitchExpressionNode(
                 TreeUtils.typeOf(switchTree), switchExpressionTree, switchExprVarUseNode);
         extendWithNode(switchExpressionNode);
+        if (!someResultMayBeNull) {
+          neverNullSwitchExpressions.add(switchExpressionNode);
+        }
         return switchExpressionNode;
       } else {
         return null;
@@ -2462,6 +2499,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendWithNode(switchExprVarUseNode);
 
       Node resultExprNode = scan(resultExpression, null);
+      someResultMayBeNull |= mayBeNull(resultExprNode);
 
       AssignmentTree assign = treeBuilder.buildAssignment(switchExprVarUseTree, resultExpression);
       handleArtificialTree(assign);
@@ -2753,9 +2791,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // 14.20.3.1).  The CFG omits that null test: it represents the call as unconditional, even on
     // paths where the resource is null.  A resource variable is final, so it is non-null if its
     // initializer is.
-    boolean resourceMayBeNull =
-        !(resourceToCloseNode instanceof AssignmentNode assignment
-            && !mayBeNull(assignment.getExpression()));
+    boolean resourceMayBeNull = mayBeNull(resourceToCloseNode);
     extendWithArtificialCall(
         closeCall,
         receiverNode,
@@ -4334,7 +4370,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Node array = scan(tree.getExpression(), p);
     Node index = unaryNumericPromotion(scan(tree.getIndex(), p));
     Node arrayAccess = new ArrayAccessNode(tree, array, index);
-    extendWithNodeWithExceptions(arrayAccess, arrayAccessExceptionTypes);
+    extendWithNodeWithExceptions(
+        arrayAccess,
+        mayBeNull(array)
+            ? arrayAccessExceptionTypes
+            : Collections.singleton(arrayIndexOutOfBoundsExceptionType));
     return arrayAccess;
   }
 
