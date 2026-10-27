@@ -41,8 +41,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class KeyForValue extends CFAbstractValue<KeyForValue> {
   /**
-   * If the underlying type is a type variable or a wildcard, then this is a set of maps for which
-   * this value is a key. Otherwise, it's null.
+   * If the underlying type is a type variable or a wildcard, then this is the set of maps for which
+   * this value is a key, or null if there are none. Otherwise, it's null. The set is never empty,
+   * so that {@link #equals} need not equate null with the empty set.
    */
   private final @Nullable Set<String> keyForMaps;
 
@@ -67,8 +68,7 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
       List<String> list =
           AnnotationUtils.getElementValueArray(
               keyfor, atypeFactory.keyForValueElement, String.class);
-      keyForMaps = new LinkedHashSet<>(list.size());
-      keyForMaps.addAll(list);
+      keyForMaps = list.isEmpty() ? null : new LinkedHashSet<>(list);
     } else {
       keyForMaps = null;
     }
@@ -80,7 +80,7 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
    * @param analysis the analysis
    * @param annotations the annotations
    * @param underlyingType the underlying type
-   * @param keyForMaps the maps for which this value is a key, or null
+   * @param keyForMaps the maps for which this value is a key; null or non-empty
    */
   private KeyForValue(
       CFAbstractAnalysis<KeyForValue, ?, ?> analysis,
