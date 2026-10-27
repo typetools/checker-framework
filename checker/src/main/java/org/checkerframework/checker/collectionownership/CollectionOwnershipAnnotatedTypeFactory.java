@@ -193,7 +193,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *
    * @param tree the condition tree
    * @return the {@link DisposalLoopInfo} for condition {@code tree} if exists, otherwise {@code
-   *     null}.
+   *     null}
    */
   public @Nullable DisposalLoopInfo getDisposalLoopInfoForConditionTree(Tree tree) {
     return conditionToDisposalLoopInfoMap.get(tree);
@@ -205,7 +205,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *
    * @param block the loop-condition block
    * @return the {@link DisposalLoopInfo} for conditional {@code block} if exists, otherwise {@code
-   *     null}.
+   *     null}
    */
   public @Nullable DisposalLoopInfo getDisposalLoopInfoForConditionBlock(Block block) {
     return conditionalBlockToDisposalLoopInfoMap.get(block);
@@ -418,6 +418,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    */
   private void runResourceLeakPostAnalyze(ControlFlowGraph cfg) {
     ResourceLeakChecker rlc = ResourceLeakUtils.getResourceLeakChecker(this);
+    assert root != null : "@AssumeAssertion(nullness): at this point root is always nonnull";
     rlc.setRoot(root);
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
         new MustCallConsistencyAnalyzer(rlc, false);
@@ -581,7 +582,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
     if (args.isEmpty()) {
       return null;
     }
-    return args.get(args.size() - 1);
+    return args.getLast();
   }
 
   /**
@@ -652,12 +653,12 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * <p>That is, if the given type is a Java.util.Collection implementation, this method returns the
    * MustCall values of its type variable upper bound if there are any or else null.
    *
-   * @param atm the AnnotatedTypeMirror
+   * @param atm the AnnotatedTypeMirror, or null if the type is not available
    * @return if the given type is a collection, returns the MustCall values of its elements or null
-   *     if there are none or if the given type is not a collection
+   *     if there are none, if the given type is not a collection, or if {@code atm} is null
    */
   public @Nullable List<String> getMustCallValuesOfResourceCollectionComponent(
-      AnnotatedTypeMirror atm) {
+      @Nullable AnnotatedTypeMirror atm) {
     if (atm == null) {
       return null;
     }
@@ -717,8 +718,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
     }
 
     if (componentType != null) {
-      List<String> list = ResourceLeakUtils.getMcValues(componentType, mcAtf);
-      return list;
+      return ResourceLeakUtils.getMcValues(componentType, mcAtf);
     } else {
       return null;
     }
@@ -906,56 +906,50 @@ public class CollectionOwnershipAnnotatedTypeFactory
           AnnotatedTypes.overriddenMethods(
               elements, CollectionOwnershipAnnotatedTypeFactory.this, t.getElement());
 
-      if (overriddenMethods != null) {
-        for (ExecutableElement superElt : overriddenMethods.values()) {
-          AnnotatedExecutableType annotatedSuperMethod =
-              CollectionOwnershipAnnotatedTypeFactory.this.getAnnotatedType(superElt);
+      for (ExecutableElement superElt : overriddenMethods.values()) {
+        AnnotatedExecutableType annotatedSuperMethod =
+            CollectionOwnershipAnnotatedTypeFactory.this.getAnnotatedType(superElt);
 
-          if (!receiverHasExplicitAnno) {
-            AnnotatedDeclaredType superReceiver = annotatedSuperMethod.getReceiverType();
-            AnnotationMirror superReceiverAnno = superReceiver.getPrimaryAnnotationInHierarchy(TOP);
-            boolean superReceiverHasExplicitAnno =
-                superReceiverAnno != null
-                    && !AnnotationUtils.areSameByName(BOTTOM, superReceiverAnno)
-                    && !AnnotationUtils.areSameByName(POLY, superReceiverAnno);
-            if (superReceiverHasExplicitAnno) {
-              receiverType.replaceAnnotation(superReceiverAnno);
-            }
+        if (!receiverHasExplicitAnno) {
+          AnnotatedDeclaredType superReceiver = annotatedSuperMethod.getReceiverType();
+          assert receiverType != null && superReceiver != null
+              : "@AssumeAssertion(nullness): an overriding method and the method it overrides are instance methods";
+          AnnotationMirror superReceiverAnno = superReceiver.getPrimaryAnnotationInHierarchy(TOP);
+          if (superReceiverAnno != null
+              && !AnnotationUtils.areSameByName(BOTTOM, superReceiverAnno)
+              && !AnnotationUtils.areSameByName(POLY, superReceiverAnno)) {
+            receiverType.replaceAnnotation(superReceiverAnno);
           }
+        }
 
-          if (!returnHasExplicitAnno) {
-            AnnotatedTypeMirror superReturnType = annotatedSuperMethod.getReturnType();
-            AnnotationMirror superReturnAnno = superReturnType.getPrimaryAnnotationInHierarchy(TOP);
-            boolean superReturnHasExplicitAnno =
-                superReturnAnno != null
-                    && !AnnotationUtils.areSameByName(BOTTOM, superReturnAnno)
-                    && !AnnotationUtils.areSameByName(POLY, superReturnAnno);
-            if (superReturnHasExplicitAnno) {
-              returnType.replaceAnnotation(superReturnAnno);
-            }
+        if (!returnHasExplicitAnno) {
+          AnnotatedTypeMirror superReturnType = annotatedSuperMethod.getReturnType();
+          AnnotationMirror superReturnAnno = superReturnType.getPrimaryAnnotationInHierarchy(TOP);
+          if (superReturnAnno != null
+              && !AnnotationUtils.areSameByName(BOTTOM, superReturnAnno)
+              && !AnnotationUtils.areSameByName(POLY, superReturnAnno)) {
+            returnType.replaceAnnotation(superReturnAnno);
           }
+        }
 
-          List<? extends AnnotatedTypeMirror> paramTypes = t.getParameterTypes();
-          List<? extends AnnotatedTypeMirror> superParamTypes =
-              annotatedSuperMethod.getParameterTypes();
-          for (int i = 0; i < superParamTypes.size(); i++) {
-            AnnotationMirror paramAnno = paramTypes.get(i).getAnnotationInHierarchy(TOP);
-            boolean paramHasExplicitAnno =
-                paramAnno != null && !AnnotationUtils.areSameByName(BOTTOM, paramAnno);
-            if (!paramHasExplicitAnno) {
-              AnnotationMirror superParamAnno =
-                  superParamTypes.get(i).getPrimaryAnnotationInHierarchy(TOP);
-              boolean superParamHasExplicitAnno =
-                  superParamAnno != null
-                      && !AnnotationUtils.areSameByName(BOTTOM, superParamAnno)
-                      && !AnnotationUtils.areSameByName(POLY, superParamAnno);
-              if (superParamHasExplicitAnno) {
-                paramTypes.get(i).replaceAnnotation(superParamAnno);
-              }
+        List<? extends AnnotatedTypeMirror> paramTypes = t.getParameterTypes();
+        List<? extends AnnotatedTypeMirror> superParamTypes =
+            annotatedSuperMethod.getParameterTypes();
+        for (int i = 0; i < superParamTypes.size(); i++) {
+          AnnotationMirror paramAnno = paramTypes.get(i).getAnnotationInHierarchy(TOP);
+          boolean paramHasExplicitAnno =
+              paramAnno != null && !AnnotationUtils.areSameByName(BOTTOM, paramAnno);
+          if (!paramHasExplicitAnno) {
+            AnnotationMirror superParamAnno =
+                superParamTypes.get(i).getPrimaryAnnotationInHierarchy(TOP);
+            if (superParamAnno != null
+                && !AnnotationUtils.areSameByName(BOTTOM, superParamAnno)
+                && !AnnotationUtils.areSameByName(POLY, superParamAnno)) {
+              paramTypes.get(i).replaceAnnotation(superParamAnno);
             }
           }
         }
-      } // end "if (overriddenMethods != null)"
+      }
 
       if (isResourceCollection(returnType.getUnderlyingType())) {
         AnnotationMirror manualAnno = returnType.getAnnotationInHierarchy(TOP);
@@ -997,7 +991,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
           AnnotationMirror fieldAnno = type.getAnnotationInHierarchy(TOP);
           if (fieldAnno == null || AnnotationUtils.areSameByName(BOTTOM, fieldAnno)) {
             TreePath currentPath = getPath(tree);
-            MethodTree enclosingMethodTree = TreePathUtil.enclosingMethod(currentPath);
+            MethodTree enclosingMethodTree =
+                currentPath == null ? null : TreePathUtil.enclosingMethod(currentPath);
             if (enclosingMethodTree != null && TreeUtils.isConstructor(enclosingMethodTree)) {
               type.replaceAnnotation(OWNINGCOLLECTIONWITHOUTOBLIGATION);
             } else {
@@ -1034,19 +1029,13 @@ public class CollectionOwnershipAnnotatedTypeFactory
           List<? extends AnnotatedTypeMirror> paramTypes = annotatedMethod.getParameterTypes();
           for (int i = 0; i < params.size(); i++) {
             if (params.get(i).getSimpleName() == elt.getSimpleName()) {
-              type.replaceAnnotation(paramTypes.get(i).getAnnotationInHierarchy(TOP));
+              AnnotationMirror paramAnno = paramTypes.get(i).getAnnotationInHierarchy(TOP);
+              if (paramAnno != null) {
+                type.replaceAnnotation(paramAnno);
+              }
               break;
             }
           }
-        }
-      } else if (elt.getKind() == ElementKind.LOCAL_VARIABLE) {
-        // Non-resource locals such as "Socket sock = null" can be reconstructed
-        // as @NotOwningCollection at identifier use sites because of the defaulting path. For
-        // plain non-collection locals, collection-ownership qualifiers are not meaningful, so
-        // override that fallback here and keep them at bottom.
-        AnnotationMirror localAnno = type.getAnnotationInHierarchy(TOP);
-        if (localAnno == null || AnnotationUtils.areSameByName(TOP, localAnno)) {
-          type.replaceAnnotation(BOTTOM);
         }
       }
     }

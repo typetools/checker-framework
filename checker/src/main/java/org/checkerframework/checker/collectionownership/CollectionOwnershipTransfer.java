@@ -9,7 +9,6 @@ import com.sun.source.tree.VariableTree;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -28,6 +27,7 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
+import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -192,8 +192,8 @@ public class CollectionOwnershipTransfer
         case OwningCollection, OwningCollectionWithoutObligation -> {
           JavaExpression rhsJE = JavaExpression.fromNode(rhs);
           if (node.isDesugaredFromEnhancedArrayForLoop()
-              || atypeFactory.isOwningCollectionField(
-                  TreeUtils.elementFromTree(node.getExpression().getTree()))) {
+              || (node.getExpression() instanceof FieldAccessNode rhsFieldAccess
+                  && atypeFactory.isOwningCollectionField(rhsFieldAccess.getElement()))) {
             replaceInStores(res, lhsJE, atypeFactory.NOTOWNINGCOLLECTION);
           } else {
             // Make the RHS @NotOwningCollection to reflect the ownership transfer, unless there is
@@ -286,14 +286,17 @@ public class CollectionOwnershipTransfer
     ExecutableElement method = node.getTarget().getMethod();
     List<Node> args = node.getArguments();
     res = transferOwnershipForMethodInvocation(method, node, args, res);
-    res = updateStoreForDisposalLoop(res, node.getTree());
+    Tree tree = node.getTree();
+    if (tree != null) {
+      // An invocation without a tree cannot be a disposal-loop condition.
+      res = updateStoreForDisposalLoop(res, tree);
+    }
 
     // Check whether the method is annotated @CreatesCollectionObligation.
-    ExecutableElement methodElement = TreeUtils.elementFromUse(node.getTree());
     boolean hasCreatesCollectionObligation =
-        atypeFactory.getDeclAnnotation(methodElement, CreatesCollectionObligation.class) != null;
+        atypeFactory.getDeclAnnotation(method, CreatesCollectionObligation.class) != null;
     boolean hasCollectionFieldDestructor =
-        atypeFactory.getDeclAnnotation(methodElement, CollectionFieldDestructor.class) != null;
+        atypeFactory.getDeclAnnotation(method, CollectionFieldDestructor.class) != null;
     if (hasCreatesCollectionObligation) {
       Node receiverNode = node.getTarget().getReceiver();
       JavaExpression receiverJE = JavaExpression.fromNode(receiverNode);
@@ -303,11 +306,9 @@ public class CollectionOwnershipTransfer
       }
     }
     if (hasCollectionFieldDestructor) {
-      List<String> destructedFields =
-          atypeFactory.getCollectionFieldDestructorAnnoFields(methodElement);
+      List<String> destructedFields = atypeFactory.getCollectionFieldDestructorAnnoFields(method);
       for (String destructedFieldName : destructedFields) {
-        JavaExpression fieldExpr =
-            atypeFactory.stringToJavaExpression(destructedFieldName, methodElement);
+        JavaExpression fieldExpr = atypeFactory.stringToJavaExpression(destructedFieldName, method);
         if (fieldExpr != null) {
           replaceInStores(res, fieldExpr, atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION);
         }
@@ -359,7 +360,6 @@ public class CollectionOwnershipTransfer
         continue;
       }
 
-      Element argElem = TreeUtils.elementFromTree(arg.getTree());
       boolean transferOwnership = false;
       switch (paramType) {
         case OwningCollection -> {
@@ -382,9 +382,11 @@ public class CollectionOwnershipTransfer
         default -> {}
       }
       if (transferOwnership) {
-        if (argElem.getKind().isField()) {
+        if (arg instanceof FieldAccessNode argFieldAccess) {
           checker.reportError(
-              arg.getTree(), "transfer.owningcollection.field.ownership", arg.getTree().toString());
+              argFieldAccess.getTree(),
+              "transfer.owningcollection.field.ownership",
+              argFieldAccess.getTree().toString());
         } else {
           replaceInStores(res, argJE, atypeFactory.NOTOWNINGCOLLECTION);
         }
@@ -445,10 +447,11 @@ public class CollectionOwnershipTransfer
       LocalVariableNode temp = mcAtf.getTempVar(node);
       if (temp != null) {
         JavaExpression localExp = JavaExpression.fromNode(temp);
+        Tree tree = node.getTree();
+        assert tree != null
+            : "@AssumeAssertion(nullness): Must Call creates temp vars only for nodes with trees";
         AnnotationMirror anm =
-            atypeFactory
-                .getAnnotatedType(node.getTree())
-                .getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
+            atypeFactory.getAnnotatedType(tree).getPrimaryAnnotationInHierarchy(atypeFactory.TOP);
         insertIntoStores(result, localExp, anm == null ? atypeFactory.TOP : anm);
       }
     }
