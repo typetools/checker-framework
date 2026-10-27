@@ -50,7 +50,7 @@ public class VariableBounds {
   private @Nullable ProperType instantiation = null;
 
   /**
-   * The number of times {@link #instantiation} has been set; see {@link #getInstantiationChanges}.
+   * The number of times {@link #instantiation} has changed; see {@link #getInstantiationChanges}.
    */
   private int instantiationChanges = 0;
 
@@ -169,7 +169,11 @@ public class VariableBounds {
     if (savedBounds == null || savedQualifierBounds == null) {
       throw new BugInCF("restore() called before save()");
     }
-    instantiation = null;
+    if (instantiation != null) {
+      instantiation = null;
+      // A type whose origin mentions this variable must be substituted again.
+      instantiationChanges++;
+    }
     bounds.clear();
     for (BoundKind kind : BoundKind.values()) {
       bounds.put(kind, new LinkedHashSet<>(getOfKind(savedBounds, kind)));
@@ -182,7 +186,7 @@ public class VariableBounds {
   }
 
   /**
-   * Sets {@code instantiation} to {@code type}.
+   * Sets {@code instantiation} to {@code type}, unless it is already equal to {@code type}.
    *
    * @param type the proper type to which this variable is instantiated; it must be a reference
    *     type, because an inference variable can only be instantiated to a reference type
@@ -190,14 +194,19 @@ public class VariableBounds {
   private void setInstantiation(ProperType type) {
     assert !type.getTypeKind().isPrimitive()
         : "instantiation of " + variable + " is the primitive type " + type;
+    if (type.equals(instantiation)) {
+      // Leave the stamp unchanged, so that types whose origins mention this variable are not
+      // substituted again.
+      return;
+    }
     instantiation = type;
     instantiationChanges++;
   }
 
   /**
-   * Returns the number of times this variable's instantiation has been set.
+   * Returns a number that changes whenever this variable's instantiation changes.
    *
-   * @return the number of times this variable's instantiation has been set
+   * @return a number that changes whenever this variable's instantiation changes
    */
   int getInstantiationChanges() {
     return instantiationChanges;
