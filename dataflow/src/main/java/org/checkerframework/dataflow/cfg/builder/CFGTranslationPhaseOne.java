@@ -1770,7 +1770,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Node expressionNode = scan(expression, p);
 
       MethodInvocationNode iteratorCallNode =
-          extendWithArtificialCall(iteratorCall, expressionNode, true);
+          extendWithArtificialCall(iteratorCall, expressionNode, mayBeNull(expression));
 
       translateAssignment(
           iteratorVariable, new LocalVariableNode(iteratorVariable), iteratorCallNode);
@@ -1819,6 +1819,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       nextCallNode.setEnhancedForLoop(tree);
 
       translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
+      setIterableExpressionOnConversions(nextCallNode, expression, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -1879,7 +1880,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       lengthAccessNode.setInSource(false);
       // Attach NPE to length access; element access is safe due to prior bounds check and the
       // synthetic array temp not being reassigned.
-      extendWithNodeWithException(lengthAccessNode, nullPointerExceptionType);
+      if (mayBeNull(expression)) {
+        extendWithNodeWithException(lengthAccessNode, nullPointerExceptionType);
+      } else {
+        extendWithNode(lengthAccessNode);
+      }
 
       BinaryTree lessThan = treeBuilder.buildLessThan(indexUse1, lengthSelect);
       handleArtificialTree(lessThan);
@@ -1912,16 +1917,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       arrayAccessNode.setEnhancedForLoop(tree);
       arrayAccessNode.setInSource(false);
       extendWithNode(arrayAccessNode);
-      AssignmentNode arrayAccessAssignNode =
-          translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
-      // If the array component type is a primitive and the loop variable's type is not, then
-      // assignment conversion boxes the component. Treat the boxing call as an iterator.
-      if (TypesUtils.isPrimitive(arrayAccessNode.getType())
-          && !TypesUtils.isPrimitive(variableElement.asType())
-          && arrayAccessAssignNode.getExpression() instanceof MethodInvocationNode boxingNode) {
-        boxingNode.setIterableExpression(expression);
-        boxingNode.setEnhancedForLoop(tree);
-      }
+      translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
+      setIterableExpressionOnConversions(arrayAccessNode, expression, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -1966,6 +1963,63 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
+   * Marks the boxing or unboxing calls that assignment conversion applied to an element of an
+   * enhanced for loop, so that the type of each call is the element type of the iterable
+   * expression. Assignment conversion may box or unbox the element, for example in {@code for (int
+   * x : listOfInteger)} or {@code for (Integer x : arrayOfInt)}.
+   *
+   * @param element the node for the element, before conversion
+   * @param expression the iterable expression of the enhanced for loop
+   * @param tree the enhanced for loop
+   */
+  private void setIterableExpressionOnConversions(
+      Node element, ExpressionTree expression, EnhancedForLoopTree tree) {
+    Set<Node> converted = treeToConvertedCfgNodes.get(element.getTree());
+    if (converted == null) {
+      return;
+    }
+    for (Node node : converted) {
+      if (node instanceof MethodInvocationNode conversion) {
+        conversion.setIterableExpression(expression);
+        conversion.setEnhancedForLoop(tree);
+      }
+    }
+  }
+
+  /**
+   * Returns false if the expression is never null, judging from its syntax.
+   *
+   * @param expression an expression of reference type
+   * @return false if the expression is never null; true if it may be null
+   */
+  private static boolean mayBeNull(ExpressionTree expression) {
+    expression = TreeUtils.withoutParens(expression);
+    return !(expression instanceof NewClassTree || expression instanceof NewArrayTree);
+  }
+
+  /**
+   * Returns the given type without its top-level annotations, but with the annotations on its type
+   * arguments and array components. A variable declared with the result is refined by its
+   * initializer, like a local variable whose declared type has no top-level annotations. Returns
+   * the type unchanged if it is neither an array type nor a top-level declared type.
+   *
+   * @param type a type
+   * @return the type without its top-level annotations
+   */
+  protected TypeMirror withoutTopLevelAnnotations(TypeMirror type) {
+    if (type instanceof ArrayType arrayType) {
+      return types.getArrayType(arrayType.getComponentType());
+    } else if (type instanceof DeclaredType declaredType
+        && declaredType.getEnclosingType().getKind() == TypeKind.NONE) {
+      return types.getDeclaredType(
+          (TypeElement) declaredType.asElement(),
+          declaredType.getTypeArguments().toArray(new TypeMirror[0]));
+    } else {
+      return type;
+    }
+  }
+
+  /**
    * Creates a declaration of a fresh variable that holds the iterator of an enhanced for loop over
    * an {@code Iterable}.
    *
@@ -1975,7 +2029,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   protected VariableTree createEnhancedForLoopIteratorVariable(
       MethodInvocationTree iteratorCall, VariableElement variableElement) {
-    TypeMirror iteratorType = TreeUtils.typeOf(iteratorCall);
+    TypeMirror iteratorType = withoutTopLevelAnnotations(TreeUtils.typeOf(iteratorCall));
 
     // Declare and initialize a new, unique iterator variable
     VariableTree iteratorVariable =
@@ -1997,7 +2051,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   protected VariableTree createEnhancedForLoopArrayVariable(
       ExpressionTree expression, VariableElement variableElement) {
-    TypeMirror arrayType = TreeUtils.typeOf(expression);
+    TypeMirror arrayType = withoutTopLevelAnnotations(TreeUtils.typeOf(expression));
 
     // Declare and initialize a temporary array variable
     VariableTree arrayVariable =
@@ -2632,7 +2686,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
     // TODO do we need to insert some kind of node representing a use of receiverNode
     // (which can be either a LocalVariableNode or a FieldAccessNode)?
-    // A try-with-resources statement closes a resource only if it is non-null (JLS 14.20.3.1).
+    // The call cannot throw NullPointerException, because a try-with-resources statement calls
+    // close() only if the resource is non-null (JLS 14.20.3.1).  The CFG omits that null test:
+    // it represents the call as unconditional, even on paths where the resource is null.
     extendWithArtificialCall(closeCall, receiverNode, false);
   }
 
@@ -3276,20 +3332,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     MethodInvocationNode node = new MethodInvocationNode(tree, target, arguments, getCurrentPath());
 
-    ExtendedNode extendedNode = extendWithMethodInvocationNode(method, node);
-
-    /* Check for the TerminatesExecution annotation. */
-    boolean terminatesExecution =
-        annotationProvider.getDeclAnnotation(method, TerminatesExecution.class) != null;
-    if (terminatesExecution) {
-      extendedNode.setTerminatesExecution(true);
-    }
+    extendWithMethodInvocationNode(method, node);
     return node;
   }
 
   /**
    * Extends the CFG with a MethodInvocationNode, accounting for potential exceptions thrown by the
-   * invocation.
+   * invocation and for a {@link TerminatesExecution} annotation on the invoked method.
    *
    * @param method the invoked method
    * @param node the invocation
@@ -3305,7 +3354,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // Add types to account for unchecked exceptions
     thrownSet.addAll(uncheckedExceptionTypes);
 
-    return extendWithNodeWithExceptions(node, thrownSet);
+    ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
+    if (annotationProvider.getDeclAnnotation(method, TerminatesExecution.class) != null) {
+      extendedNode.setTerminatesExecution(true);
+    }
+    return extendedNode;
   }
 
   @Override

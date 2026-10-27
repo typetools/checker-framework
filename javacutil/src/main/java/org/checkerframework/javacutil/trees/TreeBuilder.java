@@ -177,6 +177,9 @@ public class TreeBuilder {
     // cases calling that method crashes with a Symbol$CompletionFailure exception.  See
     // https://github.com/typetools/checker-framework/issues/6396.  The code below directly
     // searches all supertypes for the method and avoids the crash.
+    // The closure lists a type before its supertypes, so this finds an overriding close method
+    // rather than a method that it overrides.
+    closureLoop:
     for (Type s : javacTypes.closure(((Symbol) exprElement).type)) {
       for (Symbol m : s.tsym.members().getSymbolsByName(closeName)) {
         if (!(m instanceof Symbol.MethodSymbol msym)) {
@@ -184,7 +187,7 @@ public class TreeBuilder {
         }
         if (!msym.isStatic() && msym.getParameters().isEmpty()) {
           closeMethod = msym;
-          break;
+          break closureLoop;
         }
       }
     }
