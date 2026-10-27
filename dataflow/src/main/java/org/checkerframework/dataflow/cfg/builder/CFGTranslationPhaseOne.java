@@ -658,6 +658,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
+   * Extend the list of extended nodes with a node that might throw a {@code NullPointerException}.
+   *
+   * @param node the node to add
+   * @param mayThrowNullPointerException true if the node might throw a {@code NullPointerException}
+   */
+  private void extendWithNode(Node node, boolean mayThrowNullPointerException) {
+    if (mayThrowNullPointerException) {
+      extendWithNodeWithException(node, nullPointerExceptionType);
+    } else {
+      extendWithNode(node);
+    }
+  }
+
+  /**
    * Extend the list of extended nodes with a node, where {@code node} might throw the exception
    * {@code cause}.
    *
@@ -2105,11 +2119,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     handleArtificialTree(lengthSelect);
     FieldAccessNode lengthAccessNode = new FieldAccessNode(lengthSelect, arrayNode);
     lengthAccessNode.setInSource(false);
-    if (mayThrowNullPointerException) {
-      extendWithNodeWithException(lengthAccessNode, nullPointerExceptionType);
-    } else {
-      extendWithNode(lengthAccessNode);
-    }
+    extendWithNode(lengthAccessNode, mayThrowNullPointerException);
     return lengthAccessNode;
   }
 
@@ -2756,7 +2766,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   private enum NullReceiver {
     /** The receiver may be null, and then the call throws a {@code NullPointerException}. */
     THROWS,
-    /** The receiver is never null. */
+    /**
+     * The receiver is never null, for a reason that its syntax does not show, such as being a final
+     * variable whose initializer is never null. For a receiver whose syntax shows that it is never
+     * null, such as {@code this}, {@code IMPOSSIBLE} and {@code THROWS} are equivalent.
+     */
     IMPOSSIBLE,
     /**
      * The receiver may be null, and then the call is skipped. The CFG represents the call as
@@ -2783,11 +2797,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     MethodAccessNode accessNode =
         new MethodAccessNode((MemberSelectTree) call.getMethodSelect(), receiver);
     accessNode.setInSource(false);
-    if (nullReceiver == NullReceiver.THROWS && mayBeNull(receiver)) {
-      extendWithNodeWithException(accessNode, nullPointerExceptionType);
-    } else {
-      extendWithNode(accessNode);
-    }
+    extendWithNode(accessNode, nullReceiver == NullReceiver.THROWS && mayBeNull(receiver));
     MethodInvocationNode callNode =
         new MethodInvocationNode(call, accessNode, Collections.emptyList(), getCurrentPath());
     callNode.setInSource(false);
@@ -3384,11 +3394,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     MethodAccessNode target = new MethodAccessNode(methodSelect, method, receiver);
 
-    if (accessMayThrowNullPointerException(method, receiver)) {
-      extendWithNodeWithException(target, nullPointerExceptionType);
-    } else {
-      extendWithNode(target);
-    }
+    extendWithNode(target, accessMayThrowNullPointerException(method, receiver));
 
     List<Node> arguments;
     if (TreeUtils.isEnumSuperCall(tree)) {
@@ -3567,11 +3573,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       target.setLValue();
 
       Element element = TreeUtils.elementFromUse(variable);
-      if (accessMayThrowNullPointerException(element, receiver)) {
-        extendWithNodeWithException(target, nullPointerExceptionType);
-      } else {
-        extendWithNode(target);
-      }
+      extendWithNode(target, accessMayThrowNullPointerException(element, receiver));
 
       // add assignment node
       assignmentNode = new AssignmentNode(tree, target, expression);
@@ -4358,11 +4360,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Node node = new FieldAccessNode(tree, expr);
 
     Element element = TreeUtils.elementFromUse(tree);
-    if (accessMayThrowNullPointerException(element, expr)) {
-      extendWithNodeWithException(node, nullPointerExceptionType);
-    } else {
-      extendWithNode(node);
-    }
+    extendWithNode(node, accessMayThrowNullPointerException(element, expr));
 
     return node;
   }
