@@ -35,9 +35,9 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
 
   /**
-   * If the underlying type is a type variable or a wildcard, then this is the set of accumulated
-   * values; it is non-null, even if there are no accumulated values, so that {@link #equals} need
-   * not equate null with the empty set. Otherwise, it is null.
+   * If the underlying type is a type variable or a wildcard and the annotations include an
+   * accumulator annotation, then this is the set of accumulated values, which may be empty.
+   * Otherwise, it is null.
    */
   private @Nullable Set<String> accumulatedValues = null;
 
@@ -64,9 +64,7 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
           break;
         }
       }
-      if (accumulator == null) {
-        accumulatedValues = new HashSet<>();
-      } else {
+      if (accumulator != null) {
         accumulatedValues = new HashSet<>(typeFactory.getAccumulatedValues(accumulator));
       }
     }
@@ -90,8 +88,9 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
   }
 
   /**
-   * If the underlying type is a type variable or a wildcard, then this is a set of accumulated
-   * values. Otherwise, it is null.
+   * If the underlying type is a type variable or a wildcard and the annotations include an
+   * accumulator annotation, then this is the set of accumulated values, which may be empty.
+   * Otherwise, it is null.
    *
    * @return the set (this is not a copy of the set, but an alias)
    */
