@@ -1768,10 +1768,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Node expressionNode = scan(expression, p);
 
       MethodInvocationNode iteratorCallNode =
-          extendWithArtificialCall(
-              iteratorCall,
-              expressionNode,
-              mayBeNull(expression) ? NullReceiver.THROWS : NullReceiver.IMPOSSIBLE);
+          extendWithArtificialCall(iteratorCall, expressionNode, NullReceiver.THROWS);
 
       translateAssignment(
           iteratorVariable, new LocalVariableNode(iteratorVariable), iteratorCallNode);
@@ -1869,7 +1866,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // The array variable is never reassigned, so only the first access to its length can throw
       // NullPointerException.  Represent that first access before the loop, and the access in the
       // loop condition without the exception.
-      if (mayBeNull(expression)) {
+      if (mayBeNull(expressionNode)) {
         IdentifierTree arrayUse0 = treeBuilder.buildVariableUse(arrayVariable);
         handleArtificialTree(arrayUse0);
         LocalVariableNode arrayNode0 = new LocalVariableNode(arrayUse0);
@@ -2005,14 +2002,39 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns false if the expression is never null, judging from its syntax.
+   * Returns false if the value of the given node is never null, judging from the node's syntax. For
+   * example, {@code this} and the result of {@code new} are never null.
    *
-   * @param expression an expression of reference type
-   * @return false if the expression is never null; true if it may be null
+   * @param node a node of reference type
+   * @return false if the value of the node is never null; true if it may be null
    */
-  private static boolean mayBeNull(ExpressionTree expression) {
-    expression = TreeUtils.withoutParens(expression);
-    return !(expression instanceof NewClassTree || expression instanceof NewArrayTree);
+  private static boolean mayBeNull(Node node) {
+    if (node instanceof ThisNode
+        || node instanceof SuperNode
+        || node instanceof ObjectCreationNode
+        || node instanceof ArrayCreationNode
+        || node instanceof StringLiteralNode
+        || node instanceof StringConcatenateNode) {
+      return false;
+    } else if (node instanceof TypeCastNode cast) {
+      return mayBeNull(cast.getOperand());
+    } else if (node instanceof TernaryExpressionNode ternary) {
+      return mayBeNull(ternary.getThenOperand()) || mayBeNull(ternary.getElseOperand());
+    } else {
+      return true;
+    }
+  }
+
+  /**
+   * Returns true if accessing the given member through the given receiver may throw a {@code
+   * NullPointerException}.
+   *
+   * @param member the accessed field or method
+   * @param receiver the receiver of the access
+   * @return true if the access may throw a {@code NullPointerException}
+   */
+  private static boolean accessMayThrowNullPointerException(Element member, Node receiver) {
+    return !ElementUtils.isStatic(member) && mayBeNull(receiver);
   }
 
   /**
@@ -2735,8 +2757,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *
    * @param call the call
    * @param receiver the receiver of the call
-   * @param nullReceiver what happens when the receiver is null. If the receiver is {@code this}, it
-   *     is never null, regardless of this argument.
+   * @param nullReceiver what happens when the receiver is null. If the receiver is never null, such
+   *     as {@code this}, the call does not throw a {@code NullPointerException}, regardless of this
+   *     argument.
    * @return the node for the call
    */
   private MethodInvocationNode extendWithArtificialCall(
@@ -2744,7 +2767,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     MethodAccessNode accessNode =
         new MethodAccessNode((MemberSelectTree) call.getMethodSelect(), receiver);
     accessNode.setInSource(false);
-    if (nullReceiver == NullReceiver.THROWS && !(receiver instanceof ThisNode)) {
+    if (nullReceiver == NullReceiver.THROWS && mayBeNull(receiver)) {
       extendWithNodeWithException(accessNode, nullPointerExceptionType);
     } else {
       extendWithNode(accessNode);
@@ -3345,11 +3368,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     MethodAccessNode target = new MethodAccessNode(methodSelect, method, receiver);
 
-    if (ElementUtils.isStatic(method) || receiver instanceof ThisNode) {
-      // No NullPointerException can be thrown, use normal node
-      extendWithNode(target);
-    } else {
+    if (accessMayThrowNullPointerException(method, receiver)) {
       extendWithNodeWithException(target, nullPointerExceptionType);
+    } else {
+      extendWithNode(target);
     }
 
     List<Node> arguments;
@@ -3529,11 +3551,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       target.setLValue();
 
       Element element = TreeUtils.elementFromUse(variable);
-      if (ElementUtils.isStatic(element) || receiver instanceof ThisNode) {
-        // No NullPointerException can be thrown, use normal node
-        extendWithNode(target);
-      } else {
+      if (accessMayThrowNullPointerException(element, receiver)) {
         extendWithNodeWithException(target, nullPointerExceptionType);
+      } else {
+        extendWithNode(target);
       }
 
       // add assignment node
@@ -4321,13 +4342,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Node node = new FieldAccessNode(tree, expr);
 
     Element element = TreeUtils.elementFromUse(tree);
-    if (ElementUtils.isStatic(element)
-        || expr instanceof ImplicitThisNode
-        || expr instanceof ExplicitThisNode) {
-      // No NullPointerException can be thrown, use normal node
-      extendWithNode(node);
-    } else {
+    if (accessMayThrowNullPointerException(element, expr)) {
       extendWithNodeWithException(node, nullPointerExceptionType);
+    } else {
+      extendWithNode(node);
     }
 
     return node;
