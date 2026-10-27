@@ -58,6 +58,10 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
   protected NullnessValue upperBound(
       @Nullable NullnessValue other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {
     NullnessValue result = super.upperBound(other, upperBoundTypeMirror, shouldWiden);
+    if (other != null) {
+      result.isPolyNullNonNull = this.isPolyNullNonNull && other.isPolyNullNonNull;
+      result.isPolyNullNull = this.isPolyNullNull && other.isPolyNullNull;
+    }
 
     AnnotationMirror resultNullableAnno =
         analysis.getTypeFactory().getAnnotationByClass(result.annotations, Nullable.class);
