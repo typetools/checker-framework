@@ -182,8 +182,8 @@ public class Issue8284Nullness {
   }
 
   // T's Java-type-only instantiation, from the ignored bound on T, is substituted into S's lower
-  // bound Box<T>
-  // before T's annotations are known.  S's instantiation must still end up consistent with T's.
+  // bound Box<T> before T's annotations are known.  S's instantiation must still end up consistent
+  // with T's.
   static <U extends @Nullable Object> void substitutedIntoAnotherBound(
       Box<@Nullable U> nullableU, @NonNull U nn, Box<@NonNull U> nonNullU, @Nullable U nble) {
     id(nullableBox(nullableU, nn));

@@ -48,9 +48,16 @@ public class ProperType extends AbstractType {
   private final @Nullable InferenceType origin;
 
   /**
-   * If {@link #origin} is non-null, the value of {@link #instantiationStamp} for it when this type
-   * was last found to be up to date; otherwise, 0. It is not used by {@link #equals} or {@link
-   * #hashCode}.
+   * The inference variables that {@link #origin} mentions, or the empty list if {@link #origin} is
+   * null. It is cached because {@link #applyInstantiations}, which is called on every round of
+   * incorporation, needs it, and computing it traverses {@link #origin}.
+   */
+  private final Collection<Variable> originVariables;
+
+  /**
+   * If {@link #origin} is non-null, the value of {@link #instantiationStamp} for {@link
+   * #originVariables} when this type was last found to be up to date; otherwise, 0. It is not used
+   * by {@link #equals} or {@link #hashCode}.
    */
   private long originStamp;
 
@@ -112,7 +119,9 @@ public class ProperType extends AbstractType {
     this.type = type;
     this.qualifierVars = qualifierVars;
     this.origin = origin;
-    this.originStamp = origin == null ? 0 : instantiationStamp(origin);
+    this.originVariables =
+        origin == null ? Collections.emptyList() : origin.getInferenceVariables();
+    this.originStamp = instantiationStamp(originVariables);
     verifyType(this.type);
   }
 
@@ -127,6 +136,7 @@ public class ProperType extends AbstractType {
     this.type = context.typeFactory.getAnnotatedType(tree);
     this.qualifierVars = AnnotationMirrorMap.emptyMap();
     this.origin = null;
+    this.originVariables = Collections.emptyList();
     this.originStamp = 0;
     verifyType(this.type);
   }
@@ -142,21 +152,20 @@ public class ProperType extends AbstractType {
     this.type = context.typeFactory.getAnnotatedType(varTree);
     this.qualifierVars = AnnotationMirrorMap.emptyMap();
     this.origin = null;
+    this.originVariables = Collections.emptyList();
     this.originStamp = 0;
     verifyType(this.type);
   }
 
   /**
-   * Returns a number that changes whenever the instantiation of a variable that {@code type}
-   * mentions changes.
+   * Returns a number that changes whenever the instantiation of one of {@code variables} changes.
    *
-   * @param type a type
-   * @return a number that changes whenever the instantiation of a variable that {@code type}
-   *     mentions changes
+   * @param variables inference variables
+   * @return a number that changes whenever the instantiation of one of {@code variables} changes
    */
-  private static long instantiationStamp(AbstractType type) {
+  private static long instantiationStamp(Collection<Variable> variables) {
     long stamp = 0;
-    for (Variable variable : type.getInferenceVariables()) {
+    for (Variable variable : variables) {
       stamp += variable.getBounds().getInstantiationChanges();
     }
     return stamp;
@@ -564,7 +573,7 @@ public class ProperType extends AbstractType {
    */
   @Override
   public AbstractType applyInstantiations() {
-    if (origin == null || instantiationStamp(origin) == originStamp) {
+    if (origin == null || instantiationStamp(originVariables) == originStamp) {
       return this;
     }
     AbstractType result = origin.applyInstantiations();
@@ -581,7 +590,7 @@ public class ProperType extends AbstractType {
       // Nothing that this type depends on has changed.  Returning this type, rather than an
       // equal new one, tells the caller so; otherwise, two variables whose instantiations mention
       // each other would make each other change forever.
-      originStamp = instantiationStamp(origin);
+      originStamp = instantiationStamp(originVariables);
       return this;
     }
     return new ProperType(
