@@ -46,14 +46,16 @@ public class Termination {
     }
   }
 
-  // The desugared call to close() terminates execution.
-  void t3(@Odd String p1, String p2, boolean b1) {
+  // The desugared call to close() does not terminate execution, because a try-with-resources
+  // statement does not call close() if the resource is null.
+  void t3(@Odd String p1, String p2, boolean b1, TerminatingCloseable c) {
     String l1 = p2;
     if (b1) {
       l1 = p1;
     } else {
-      try (TerminatingCloseable c = new TerminatingCloseable()) {}
+      try (c) {}
     }
+    // :: error: [assignment]
     @Odd String l3 = l1;
   }
 }
