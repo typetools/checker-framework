@@ -146,8 +146,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             new InvocationTypeInference(typeFactory, pathToExpression, false);
         InferenceResult retryResult = inferWithoutTargetType(retry, outerTree, outerMethodType);
         if (retryResult != null
-            && !retryResult.inferenceFailed()
-            && retry.isQualifiersIncompatibleWithTarget()
+            && retryResult.qualifiersIncompatibleWithTarget()
             && haveSameJavaTypes(
                 result, retryResult, typeFactory.getProcessingEnv().getTypeUtils())) {
           chosenInference = retry;

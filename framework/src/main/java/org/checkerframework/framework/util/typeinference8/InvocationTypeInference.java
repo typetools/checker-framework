@@ -166,26 +166,6 @@ public class InvocationTypeInference {
   }
 
   /**
-   * True if {@link #useTargetType} is false, {@link #inferenceExpression} has a target type from
-   * its context, inference succeeded, and the inferred type of {@link #inferenceExpression} is
-   * assignable to that target type according to its Java type but not according to its qualifiers.
-   * A primitive target type is boxed before the comparison.
-   */
-  private boolean qualifiersIncompatibleWithTarget = false;
-
-  /**
-   * Returns true if this inference problem ignored the target type, succeeded, and inferred a type
-   * for the expression whose Java type is compatible with the target type but whose qualifiers are
-   * not.
-   *
-   * @return true if inference without the target type inferred a type whose qualifiers are
-   *     incompatible with the target type
-   */
-  public boolean isQualifiersIncompatibleWithTarget() {
-    return qualifiersIncompatibleWithTarget;
-  }
-
-  /**
    * Returns the tree for which type arguments are being inferred.
    *
    * @return the tree for which type arguments are being inferred
@@ -339,12 +319,19 @@ public class InvocationTypeInference {
     // `invocation` itself.  javac likewise erases the return type of `invocation` if solving its
     // inference context needs unchecked conversion.
     b4.recordUncheckedConversionFor(invocation);
+    // True if inference ignored the target type, succeeded, and inferred a type for `invocation`
+    // that is assignable to the target type according to its Java type but not its qualifiers.
+    boolean qualifiersIncompatibleWithTarget = false;
     if (target != null
         && isPolyExpression
         && !useTargetType
         && targetFromContext
         && !b4.annoInferenceFailed) {
       AbstractType returnType = inferenceExecutableType.getReturnType(map).applyInstantiations();
+      if (context.needUncheckedConversion.contains(invocation)) {
+        // AnnotatedTypeFactory#methodFromUse erases the return type in this case.
+        returnType = returnType.getErased();
+      }
       qualifiersIncompatibleWithTarget =
           returnType.isProper()
               && ((ProperType) returnType).isAssignable(target.boxType())
@@ -355,6 +342,7 @@ public class InvocationTypeInference {
         context.needUncheckedConversion,
         b4.annoInferenceFailed,
         targetTypeConstraintsBeforeFailure,
+        qualifiersIncompatibleWithTarget,
         false,
         b4.errorMsg);
   }

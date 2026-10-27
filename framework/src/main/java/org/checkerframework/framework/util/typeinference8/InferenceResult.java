@@ -57,6 +57,15 @@ public class InferenceResult {
   private final boolean failedAfterTargetTypeConstraints;
 
   /**
+   * True if type argument inference ignored the target type of the invocation, succeeded, and
+   * inferred a type for the invocation that is assignable to a target type that comes from the
+   * context of the invocation according to its Java type but not according to its qualifiers. A
+   * primitive target type is boxed before the comparison, and the inferred type is erased if the
+   * invocation needs unchecked conversion.
+   */
+  private final boolean qualifiersIncompatibleWithTarget;
+
+  /**
    * The method invocations, class instance creations, and method references that need unchecked
    * conversion.
    *
@@ -83,7 +92,7 @@ public class InferenceResult {
       Set<? extends ExpressionTree> needUncheckedConversion,
       boolean annoInferenceFailed,
       String errorMsg) {
-    this(variables, needUncheckedConversion, annoInferenceFailed, false, false, errorMsg);
+    this(variables, needUncheckedConversion, annoInferenceFailed, false, false, false, errorMsg);
   }
 
   /**
@@ -102,7 +111,13 @@ public class InferenceResult {
       boolean inferenceCrashed,
       String errorMsg) {
     this(
-        variables, needUncheckedConversion, annoInferenceFailed, false, inferenceCrashed, errorMsg);
+        variables,
+        needUncheckedConversion,
+        annoInferenceFailed,
+        false,
+        false,
+        inferenceCrashed,
+        errorMsg);
   }
 
   /**
@@ -114,6 +129,9 @@ public class InferenceResult {
    * @param failedAfterTargetTypeConstraints true if inference created constraints against a target
    *     type that comes from the context of the invocation, and inference had not already failed
    *     before it created those constraints
+   * @param qualifiersIncompatibleWithTarget true if inference ignored the target type of the
+   *     invocation and inferred a type for the invocation whose Java type is assignable to a target
+   *     type from the context of the invocation but whose qualifiers are not
    * @param inferenceCrashed the type argument inference code crashed
    * @param errorMsg message to report to users if inference failed
    */
@@ -122,12 +140,15 @@ public class InferenceResult {
       Set<? extends ExpressionTree> needUncheckedConversion,
       boolean annoInferenceFailed,
       boolean failedAfterTargetTypeConstraints,
+      boolean qualifiersIncompatibleWithTarget,
       boolean inferenceCrashed,
       String errorMsg) {
     this.results = convert(variables);
     this.needUncheckedConversion = needUncheckedConversion;
     this.annoInferenceFailed = annoInferenceFailed;
     this.failedAfterTargetTypeConstraints = annoInferenceFailed && failedAfterTargetTypeConstraints;
+    this.qualifiersIncompatibleWithTarget =
+        !annoInferenceFailed && qualifiersIncompatibleWithTarget;
     this.errorMsg = errorMsg;
     this.inferenceCrashed = inferenceCrashed;
   }
@@ -178,6 +199,18 @@ public class InferenceResult {
    */
   public boolean failedAfterTargetTypeConstraints() {
     return failedAfterTargetTypeConstraints;
+  }
+
+  /**
+   * True if type argument inference ignored the target type of the invocation, succeeded, and
+   * inferred a type for the invocation that is assignable to a target type that comes from the
+   * context of the invocation according to its Java type but not according to its qualifiers.
+   *
+   * @return true if inference without the target type succeeded and inferred a type whose
+   *     qualifiers are incompatible with the target type
+   */
+  public boolean qualifiersIncompatibleWithTarget() {
+    return qualifiersIncompatibleWithTarget;
   }
 
   /**
