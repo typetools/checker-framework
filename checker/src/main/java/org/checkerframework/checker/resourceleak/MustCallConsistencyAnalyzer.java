@@ -3477,7 +3477,8 @@ public class MustCallConsistencyAnalyzer {
    * @return the called-methods for the loop on the iterated element, or {@code null} if there's no
    *     definite called-methods on the iterated element of the loop
    */
-  public Set<String> analyzeDisposalLoop(ControlFlowGraph cfg, DisposalLoopInfo disposalLoopInfo) {
+  public @Nullable Set<String> analyzeDisposalLoop(
+      ControlFlowGraph cfg, DisposalLoopInfo disposalLoopInfo) {
 
     // ensure checked loop is initialized in a valid way
     Objects.requireNonNull(
@@ -3503,9 +3504,11 @@ public class MustCallConsistencyAnalyzer {
     }
 
     // Add an obligation for the element of the collection iterated over
-    Obligation collectionElementObligation = Obligation.fromTree(collectionElement);
+    Obligation collectionElementObligation;
     if (collectionElement instanceof VariableTree variableTree) {
       VariableElement varElt = TreeUtils.elementFromDeclaration(variableTree);
+      assert varElt != null
+          : "@AssumeAssertion(nullness): a loop variable has an element as the CFG is already built";
       boolean hasMustCallAlias = cmAtf.hasMustCallAlias(varElt);
       collectionElementObligation =
           new Obligation(
@@ -3513,6 +3516,8 @@ public class MustCallConsistencyAnalyzer {
                   new ResourceAlias(
                       new LocalVariable(varElt), varElt, collectionElement, hasMustCallAlias)),
               Collections.singleton(MethodExitKind.NORMAL_RETURN));
+    } else {
+      collectionElementObligation = Obligation.fromTree(collectionElement);
     }
 
     BlockWithObligations loopBodyEntry =
@@ -3635,7 +3640,7 @@ public class MustCallConsistencyAnalyzer {
     }
     // If update isn't even reachable from entry under the filtered edge relation,
     // region is empty.
-    if (!forward.contains(update) && !allowedPreds.containsKey(update)) {
+    if (!allowedPreds.containsKey(update)) {
       return Collections.emptySet();
     }
     // Backward reachability to update, but ONLY using the filtered reverse edges we built.
@@ -3677,73 +3682,60 @@ public class MustCallConsistencyAnalyzer {
    * @param obligations the set of tracked obligations
    * @param loopUpdateBlock block that updates the loop
    * @return the union of methods in the CalledMethods type of the collection element and all its
-   *     resource aliases or {@code null} if the called methods is bottom
+   *     resource aliases, or {@code null} if one of these CalledMethods types is bottom.
    */
-  private Set<String> analyzeTypeOfCollectionElement(
+  private @Nullable Set<String> analyzeTypeOfCollectionElement(
       Block lastLoopBodyBlock,
       DisposalLoopInfo disposalLoopInfo,
       Set<Obligation> obligations,
       Block loopUpdateBlock) {
-    AccumulationStore store = null;
+    AccumulationStore store;
     if (lastLoopBodyBlock.getType() == BlockType.CONDITIONAL_BLOCK) {
       ConditionalBlock conditionalBlock = (ConditionalBlock) lastLoopBodyBlock;
       @SuppressWarnings("interning:not.interned")
       boolean thenSuccessor = conditionalBlock.getThenSuccessor() == loopUpdateBlock;
       store = cmAtf.getStoreAfterConditionalBlock(conditionalBlock, thenSuccessor);
-    } else if (lastLoopBodyBlock.getLastNode() == null) {
-      throw new BugInCF("Loop Body Analysis -- Block " + lastLoopBodyBlock + " has no nodes");
-      // store = cmAtf.getStoreAfterBlock(lastLoopBodyBlock);
     } else {
-      store = cmAtf.getStoreAfter(lastLoopBodyBlock.getLastNode());
+      Node lastNode = lastLoopBodyBlock.getLastNode();
+      if (lastNode == null) {
+        throw new BugInCF("Loop Body Analysis -- Block " + lastLoopBodyBlock + " has no nodes");
+      }
+      store = cmAtf.getStoreAfter(lastNode);
     }
     Obligation collectionElementObligation =
         getObligationForVar(obligations, disposalLoopInfo.iteratedElementTree());
     if (collectionElementObligation == null) {
-      // the loop did something weird. Might have reassigned the collection element.
-      // The sound thing to do is return an empty list.
-      // TODO SCK look at this. Why is the collection element obligaiton gone?
+      // The loop body overwrote every alias of the collection element, so no method is known to
+      // be called on it. The sound thing to do is return an empty set.
       return new HashSet<>();
-      // throw new BugInCF(
-      //     "No obligation for collection element "
-      //         + potentiallyFulfillingLoop.collectionElementTree);
     }
 
-    Set<String> calledMethodsAfterThisBlock = null;
-
-    // add the called methods of the ICE
+    // The references to the collection element: the iterated collection element and its resource
+    // aliases.
+    List<JavaExpression> references = new ArrayList<>();
     IteratedCollectionElement ice =
         store.getIteratedCollectionElement(
             disposalLoopInfo.iteratedElementNode(), disposalLoopInfo.iteratedElementTree());
     if (ice != null) {
-      AccumulationValue cmValOfIce = store.getValue(ice);
-      List<String> calledMethods = getCalledMethods(cmValOfIce);
-      if (calledMethods != null) {
-        calledMethodsAfterThisBlock = new HashSet<>(calledMethods);
-      }
+      references.add(ice);
+    }
+    for (ResourceAlias alias : collectionElementObligation.resourceAliases) {
+      references.add(alias.reference);
     }
 
-    // add the called methods of possible aliases of the collection element
-    boolean hasAnyLiveAlias = false;
-    for (ResourceAlias alias : collectionElementObligation.resourceAliases) {
-      AccumulationValue cmValOfAlias = store.getValue(alias.reference);
-      if (cmValOfAlias == null) {
+    Set<String> calledMethodsAfterThisBlock = new HashSet<>();
+    for (JavaExpression reference : references) {
+      AccumulationValue cmVal = store.getValue(reference);
+      if (cmVal == null) {
         continue;
       }
-      List<String> calledMethods = getCalledMethods(cmValOfAlias);
-      if (calledMethods != null) {
-        hasAnyLiveAlias = true;
-        if (calledMethodsAfterThisBlock == null) {
-          calledMethodsAfterThisBlock = new HashSet<>(calledMethods);
-        } else {
-          calledMethodsAfterThisBlock.addAll(calledMethods);
-        }
+      List<String> calledMethods = getCalledMethods(cmVal);
+      if (calledMethods == null) {
+        // Bottom: the collection element is null on this path, or the path is unreachable.
+        return null;
       }
+      calledMethodsAfterThisBlock.addAll(calledMethods);
     }
-    if (!hasAnyLiveAlias) {
-      // if any alias is not reachable, then./ called methods is bottom
-      return null;
-    }
-
     return calledMethodsAfterThisBlock;
   }
 
@@ -3755,7 +3747,7 @@ public class MustCallConsistencyAnalyzer {
    * @return the set of called methods of the given value or null if the accumulation value is
    *     bottom
    */
-  private List<String> getCalledMethods(AccumulationValue cmVal) {
+  private @Nullable List<String> getCalledMethods(AccumulationValue cmVal) {
     Set<String> calledMethods = cmVal.getAccumulatedValues();
     if (calledMethods != null) {
       return new ArrayList<>(calledMethods);
@@ -3770,7 +3762,7 @@ public class MustCallConsistencyAnalyzer {
         }
       }
     }
-    return null;
+    return Collections.emptyList();
   }
 
   /**

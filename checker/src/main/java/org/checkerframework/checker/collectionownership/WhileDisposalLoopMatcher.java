@@ -2,6 +2,7 @@ package org.checkerframework.checker.collectionownership;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
@@ -14,6 +15,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
+import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -27,6 +29,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
@@ -116,7 +119,7 @@ final class WhileDisposalLoopMatcher {
    */
   @Nullable DisposalLoopInfo match(WhileLoopTree tree) {
     ExpressionTree conditionWithoutParens = TreeUtils.withoutParens(tree.getCondition());
-    WhileHeaderInfo headerMatch = matchWhileHeader(conditionWithoutParens);
+    WhileHeaderInfo headerMatch = matchWhileHeader(conditionWithoutParens, tree);
     if (headerMatch == null) {
       return null;
     }
@@ -188,11 +191,12 @@ final class WhileDisposalLoopMatcher {
    * </ul>
    *
    * @param condition the while-loop condition with parentheses removed
+   * @param loop the while loop whose condition is {@code condition}
    * @return the recovered header facts, or {@code null} if the header is unsupported
    */
-  private @Nullable WhileHeaderInfo matchWhileHeader(ExpressionTree condition) {
+  private @Nullable WhileHeaderInfo matchWhileHeader(ExpressionTree condition, WhileLoopTree loop) {
     if (condition instanceof MethodInvocationTree methodInvocationTree) {
-      return matchIteratorHeaderInfo(methodInvocationTree);
+      return matchIteratorHeaderInfo(methodInvocationTree, loop);
     }
 
     if (condition instanceof UnaryTree unaryTree
@@ -216,9 +220,11 @@ final class WhileDisposalLoopMatcher {
    * {@link WhileHeaderInfo}.
    *
    * @param invocation the candidate header invocation
+   * @param loop the while loop whose condition is {@code invocation}
    * @return the recovered header facts, or {@code null} if the header does not match
    */
-  private @Nullable WhileHeaderInfo matchIteratorHeaderInfo(MethodInvocationTree invocation) {
+  private @Nullable WhileHeaderInfo matchIteratorHeaderInfo(
+      MethodInvocationTree invocation, WhileLoopTree loop) {
     if (!TreeUtils.isHasNextCall(invocation)) {
       return null;
     }
@@ -232,7 +238,7 @@ final class WhileDisposalLoopMatcher {
       return null;
     }
 
-    ExpressionTree collectionTree = recoverCollectionFromIteratorReceiver(receiver);
+    ExpressionTree collectionTree = recoverCollectionFromIteratorReceiver(receiver, loop);
     if (collectionTree == null) {
       return null;
     }
@@ -297,7 +303,7 @@ final class WhileDisposalLoopMatcher {
       }
     }
 
-    if (sizeCall == null) {
+    if (sizeCall == null || zeroLiteral == null) {
       return null;
     }
 
@@ -377,13 +383,15 @@ final class WhileDisposalLoopMatcher {
    * (it.hasNext())}.
    *
    * <p>This only recognizes local iterator variables initialized directly by {@code
-   * collection.iterator()}.
+   * collection.iterator()} and declared right before the loop, so that no element is taken from the
+   * iterator before the loop starts.
    *
    * @param iteratorReceiver the iterator receiver expression
+   * @param loop the while loop whose header uses {@code iteratorReceiver}
    * @return the collection expression, or {@code null} if it cannot be recovered
    */
   private @Nullable ExpressionTree recoverCollectionFromIteratorReceiver(
-      ExpressionTree iteratorReceiver) {
+      ExpressionTree iteratorReceiver, WhileLoopTree loop) {
     Element iteratorElement = TreeUtils.elementFromTree(iteratorReceiver);
     if (!(iteratorElement instanceof VariableElement)) {
       return null;
@@ -394,6 +402,9 @@ final class WhileDisposalLoopMatcher {
 
     Tree declaration = rlccAtf.declarationFromElement(iteratorElement);
     if (!(declaration instanceof VariableTree variableTreeDeclaration)) {
+      return null;
+    }
+    if (!isStatementRightBefore(variableTreeDeclaration, loop)) {
       return null;
     }
 
@@ -416,6 +427,25 @@ final class WhileDisposalLoopMatcher {
       return null;
     }
     return CollectionOwnershipUtils.referenceExpression(collectionExpression);
+  }
+
+  /**
+   * Returns true if {@code statement} is the statement right before {@code loop} in the same block.
+   *
+   * @param statement a statement
+   * @param loop a while loop
+   * @return true if {@code statement} immediately precedes {@code loop} in the same block
+   */
+  private boolean isStatementRightBefore(
+      @FindDistinct StatementTree statement, WhileLoopTree loop) {
+    TreePath loopPath = rlccAtf.getPath(loop);
+    TreePath parentPath = loopPath == null ? null : loopPath.getParentPath();
+    if (parentPath == null || !(parentPath.getLeaf() instanceof BlockTree block)) {
+      return false;
+    }
+    List<? extends StatementTree> statements = block.getStatements();
+    int loopIndex = statements.indexOf(loop);
+    return loopIndex > 0 && statements.get(loopIndex - 1) == statement;
   }
 
   /**
@@ -575,27 +605,12 @@ final class WhileDisposalLoopMatcher {
       if (illegal) {
         return null;
       }
-      recordExtractionIfAny(tree.getExpression());
       return super.visitAssignment(tree, p);
     }
 
     @Override
-    public Void visitVariable(VariableTree tree, Void p) {
-      ExpressionTree initializer = tree.getInitializer();
-      if (initializer != null) {
-        recordExtractionIfAny(initializer);
-      }
-      return super.visitVariable(tree, p);
-    }
-
-    @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
-      ExpressionTree receiver = receiverOfInvocation(tree);
-      if (receiver != null) {
-        // For chained calls such as `it.next().close()` or `queue.poll().close()`, the extraction
-        // call appears as the receiver of an outer invocation.
-        recordExtractionIfAny(receiver);
-      }
+      recordExtractionIfAny(tree);
       return super.visitMethodInvocation(tree, p);
     }
 

@@ -193,7 +193,8 @@ final class IndexedForDisposalLoopMatcher {
 
     ExpressionTree initializerValue = initVariable.getInitializer();
     if (!(initializerValue instanceof LiteralTree literalTree)
-        || !literalTree.getValue().equals(0)) {
+        || !(literalTree.getValue() instanceof Integer initialValue)
+        || initialValue != 0) {
       return null;
     }
 

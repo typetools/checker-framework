@@ -125,6 +125,37 @@ class WhileLoopBodyAnalysisTest {
     checkArgIsOCWO2(resources);
   }
 
+  /*
+   * An extraction passed as an argument still advances the iterator, so this loop takes two
+   * elements per iteration and disposes only one of them.
+   */
+  // :: error: unfulfilled.collection.obligations
+  void whileIteratorExtractionAsArgument(@OwningCollection Collection<Resource> resources) {
+    Iterator<Resource> it = resources.iterator();
+    while (it.hasNext()) {
+      log(it.next());
+      Resource r = it.next();
+      r.close();
+      r.flush();
+    }
+  }
+
+  /*
+   * An element taken from the iterator before the loop is not disposed by the loop.
+   */
+  // :: error: unfulfilled.collection.obligations
+  void whileIteratorAdvancedBeforeLoop(@OwningCollection Collection<Resource> resources) {
+    Iterator<Resource> it = resources.iterator();
+    Resource first = it.next();
+    while (it.hasNext()) {
+      Resource r = it.next();
+      r.close();
+      r.flush();
+    }
+  }
+
+  void log(Resource r) {}
+
   // :: error: illegal.type.annotation
   void checkArgIsOCWO(@OwningCollectionWithoutObligation Iterable<Resource> arg) {}
 

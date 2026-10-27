@@ -79,7 +79,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected final Map<IteratedCollectionElement, V> iteratedCollectionElements;
 
   /** Information collected about the current object. */
-  protected V thisValue;
+  protected @Nullable V thisValue;
 
   /** Information collected about fields, using the internal representation {@link FieldAccess}. */
   protected Map<FieldAccess, V> fieldValues;
@@ -650,7 +650,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return;
     }
     computeNewValueAndInsert(
-        expr, newValue, CFAbstractValue<V>::greatestLowerBound, permitNondeterministic);
+        expr,
+        newValue,
+        (previousValue, value) -> {
+          assert value != null
+              : "@AssumeAssertion(nullness): shouldInsert ensures a non-null value";
+          return value.greatestLowerBound(previousValue);
+        },
+        permitNondeterministic);
   }
 
   /** Returns true if {@code expr} can be stored in this store. */
@@ -765,7 +772,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected void insertValue(
       JavaExpression expr, @Nullable V value, boolean permitNondeterministic) {
     computeNewValueAndInsert(
-        expr, value, (old, newValue) -> newValue.mostSpecific(old, null), permitNondeterministic);
+        expr,
+        value,
+        (old, newValue) -> {
+          assert newValue != null
+              : "@AssumeAssertion(nullness): shouldInsert ensures a non-null value";
+          return newValue.mostSpecific(old, null);
+        },
+        permitNondeterministic);
   }
 
   /**
@@ -781,21 +795,21 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected void computeNewValueAndInsert(
       JavaExpression expr,
       @Nullable V value,
-      BinaryOperator<V> merger,
+      BinaryOperator<@Nullable V> merger,
       boolean permitNondeterministic) {
     if (!shouldInsert(expr, value, permitNondeterministic)) {
       return;
     }
 
     if (expr instanceof LocalVariable localVar) {
-      V oldValue = localVariableValues.get(localVar);
-      V newValue = merger.apply(oldValue, value);
+      @Nullable V oldValue = localVariableValues.get(localVar);
+      @Nullable V newValue = merger.apply(oldValue, value);
       if (newValue != null) {
         localVariableValues.put(localVar, newValue);
       }
     } else if (expr instanceof IteratedCollectionElement collectionElt) {
-      V oldValue = iteratedCollectionElements.get(collectionElt);
-      V newValue = merger.apply(oldValue, value);
+      @Nullable V oldValue = iteratedCollectionElements.get(collectionElt);
+      @Nullable V newValue = merger.apply(oldValue, value);
       if (newValue != null) {
         iteratedCollectionElements.put(collectionElt, newValue);
       }
@@ -804,8 +818,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       // also fixed) if concurrent semantics are enabled.
       boolean isMonotonic = isMonotonicUpdate(fieldAcc, value);
       if (sequentialSemantics || isMonotonic || !fieldAcc.isAssignableByOtherCode()) {
-        V oldValue = fieldValues.get(fieldAcc);
-        V newValue = merger.apply(oldValue, value);
+        @Nullable V oldValue = fieldValues.get(fieldAcc);
+        @Nullable V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
           fieldValues.put(fieldAcc, newValue);
         }
@@ -813,32 +827,32 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     } else if (expr instanceof MethodCall method) {
       // Don't store any information if concurrent semantics are enabled.
       if (sequentialSemantics) {
-        V oldValue = methodCallExpressions.get(method);
-        V newValue = merger.apply(oldValue, value);
+        @Nullable V oldValue = methodCallExpressions.get(method);
+        @Nullable V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
           methodCallExpressions.put(method, newValue);
         }
       }
     } else if (expr instanceof ArrayAccess arrayAccess) {
       if (sequentialSemantics) {
-        V oldValue = arrayValues.get(arrayAccess);
-        V newValue = merger.apply(oldValue, value);
+        @Nullable V oldValue = arrayValues.get(arrayAccess);
+        @Nullable V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
           arrayValues.put(arrayAccess, newValue);
         }
       }
     } else if (expr instanceof ThisReference || expr instanceof SuperReference) {
       if (sequentialSemantics || !expr.isAssignableByOtherCode()) {
-        V oldValue = thisValue;
-        V newValue = merger.apply(oldValue, value);
+        @Nullable V oldValue = thisValue;
+        @Nullable V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
           thisValue = newValue;
         }
       }
     } else if (expr instanceof ClassName className) {
       if (sequentialSemantics || !className.isAssignableByOtherCode()) {
-        V oldValue = classValues.get(className);
-        V newValue = merger.apply(oldValue, value);
+        @Nullable V oldValue = classValues.get(className);
+        @Nullable V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
           classValues.put(className, newValue);
         }

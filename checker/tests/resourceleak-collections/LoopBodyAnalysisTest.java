@@ -139,6 +139,16 @@ class LoopBodyAnalysisTest {
     }
   }
 
+  // An indexed loop whose initializer is the null literal is not a disposal loop, and should not
+  // crash the checker.
+  void indexForLoopNullInitializer(@OwningCollection List<Resource> resources) {
+    for (Integer i = null; i < resources.size(); i++) {}
+    for (Resource r : resources) {
+      r.close();
+      r.flush();
+    }
+  }
+
   // :: error: illegal.type.annotation
   void checkArgIsOCWO(@OwningCollectionWithoutObligation Iterable<Resource> arg) {}
 }
