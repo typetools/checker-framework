@@ -154,10 +154,11 @@ public abstract class AbstractAnalysis<
       assert isRunning;
     } finally {
       // In case init or performAnalysisBlock crashed, reset the state of a running analysis.
+      // currentInput is not reset:  runAnalysisFor, which may run after the analysis, returns it
+      // for reentrant queries.
       isRunning = false;
       currentNode = null;
       currentTree = null;
-      currentInput = null;
     }
   }
 
