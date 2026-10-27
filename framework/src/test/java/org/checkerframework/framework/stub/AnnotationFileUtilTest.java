@@ -2,6 +2,7 @@ package org.checkerframework.framework.stub;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -98,6 +99,21 @@ public class AnnotationFileUtilTest {
         Arrays.asList(zip.getPath() + "!Other.ajava"), descriptions(zip, AnnotationFileType.AJAVA));
   }
 
+  /** Tests that the contents of an entry in a zip archive can be read. */
+  @Test
+  public void readEntryInZipArchive() throws IOException {
+    File zip = writeZip(new File(tmp.getRoot(), "stubs.zip"), "java/lang/String.astub");
+
+    List<AnnotationFileResource> resources =
+        AnnotationFileUtil.allAnnotationFiles(zip.getPath(), AnnotationFileType.COMMAND_LINE_STUB);
+    Assert.assertNotNull(resources);
+    Assert.assertEquals(1, resources.size());
+    try (InputStream in = resources.get(0).getInputStream()) {
+      Assert.assertEquals(
+          "package java.lang;", new String(in.readAllBytes(), StandardCharsets.UTF_8));
+    }
+  }
+
   /**
    * Tests that a file named explicitly is used even if its name does not end with {@code .astub}.
    */
@@ -184,6 +200,50 @@ public class AnnotationFileUtilTest {
     File ajava = write(new File(tmp.getRoot(), "Foo-checker.ajava"), "package p;");
 
     Assert.assertEquals(Arrays.asList(), descriptions(ajava, AnnotationFileType.COMMAND_LINE_STUB));
+  }
+
+  /** Tests that a single entry can be looked up by name in a zip archive. */
+  @Test
+  public void archiveEntryInZipArchive() throws IOException {
+    File zip =
+        writeZip(new File(tmp.getRoot(), "ajava.zip"), "p/Foo-checker.ajava", "Bar-checker.ajava");
+
+    AnnotationFileResource entry = AnnotationFileUtil.archiveEntry(zip, "p/Foo-checker.ajava");
+    Assert.assertNotNull(entry);
+    Assert.assertEquals(zip.getPath() + "!p/Foo-checker.ajava", entry.getDescription());
+    try (InputStream in = entry.getInputStream()) {
+      Assert.assertEquals(
+          "package java.lang;", new String(in.readAllBytes(), StandardCharsets.UTF_8));
+    }
+    Assert.assertNull(AnnotationFileUtil.archiveEntry(zip, "Foo-checker.ajava"));
+  }
+
+  /**
+   * Tests that a relative location that exists only under the {@code test.src} directory, such as
+   * an ajava archive in a jtreg test, is found in that directory.
+   */
+  @Test
+  public void findFileSystemLocationInTestSrc() throws IOException {
+    File zip = writeZip(new File(tmp.getRoot(), "ajava-for-test-src.zip"), "p/Foo-checker.ajava");
+    File absent = new File(tmp.getRoot(), "absent.zip");
+    String oldTestSrc = System.getProperty("test.src");
+    try {
+      System.clearProperty("test.src");
+      Assert.assertNull(AnnotationFileUtil.findFileSystemLocation(zip.getName()));
+
+      System.setProperty("test.src", tmp.getRoot().getPath());
+      File found = AnnotationFileUtil.findFileSystemLocation(zip.getName());
+      Assert.assertEquals(zip, found);
+      Assert.assertNotNull(AnnotationFileUtil.archiveEntry(found, "p/Foo-checker.ajava"));
+      // An absolute path is not looked for relative to test.src.
+      Assert.assertNull(AnnotationFileUtil.findFileSystemLocation(absent.getAbsolutePath()));
+    } finally {
+      if (oldTestSrc == null) {
+        System.clearProperty("test.src");
+      } else {
+        System.setProperty("test.src", oldTestSrc);
+      }
+    }
   }
 
   /** Tests that a nonexistent location yields null. */

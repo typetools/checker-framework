@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util.typeinference8.bound;
 
+import com.sun.source.tree.ExpressionTree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -46,8 +47,12 @@ public class BoundSet implements ReductionResult {
   /** True if this bounds set contains the false bound. */
   private boolean containsFalse;
 
-  /** True if unchecked conversion was necessary to reduce and incorporate this bound set. */
-  private boolean uncheckedConversion;
+  /**
+   * True if unchecked conversion was necessary to reduce and incorporate this bound set, and {@link
+   * #recordUncheckedConversionFor} has not yet recorded which expression needs that unchecked
+   * conversion.
+   */
+  private boolean pendingUncheckedConversion;
 
   /**
    * Creates a bound set.
@@ -60,7 +65,7 @@ public class BoundSet implements ReductionResult {
     this.captures = new LinkedHashSet<>();
     this.context = context;
     this.containsFalse = false;
-    this.uncheckedConversion = false;
+    this.pendingUncheckedConversion = false;
   }
 
   /**
@@ -73,7 +78,7 @@ public class BoundSet implements ReductionResult {
     this.containsFalse = toCopy.containsFalse;
     this.captures = new LinkedHashSet<>(toCopy.captures);
     this.variables = new LinkedHashSet<>(toCopy.variables);
-    this.uncheckedConversion = toCopy.uncheckedConversion;
+    this.pendingUncheckedConversion = toCopy.pendingUncheckedConversion;
     this.annoInferenceFailed = toCopy.annoInferenceFailed;
     this.errorMsg = toCopy.errorMsg;
   }
@@ -122,7 +127,7 @@ public class BoundSet implements ReductionResult {
     boolean changed = captures.addAll(newSet.captures);
     changed |= variables.addAll(newSet.variables);
     containsFalse |= newSet.containsFalse;
-    uncheckedConversion |= newSet.uncheckedConversion;
+    pendingUncheckedConversion |= newSet.pendingUncheckedConversion;
     annoInferenceFailed |= newSet.annoInferenceFailed;
     if (this.errorMsg.isEmpty()) {
       this.errorMsg = newSet.errorMsg;
@@ -147,22 +152,47 @@ public class BoundSet implements ReductionResult {
   }
 
   /**
-   * Returns true if unchecked conversion was necessary to reduce and incorporate this bound set.
+   * Returns true if unchecked conversion was necessary to reduce and incorporate this bound set,
+   * and {@link #recordUncheckedConversionFor} has not yet recorded which expression needs that
+   * unchecked conversion.
    *
-   * @return true if unchecked conversion was necessary to reduce and incorporate this bound set
+   * @return true if this bound set has pending unchecked conversion
    */
-  public boolean isUncheckedConversion() {
-    return uncheckedConversion;
+  public boolean hasPendingUncheckedConversion() {
+    return pendingUncheckedConversion;
   }
 
   /**
-   * Sets whether unchecked conversion was necessary to reduce and incorporate this bound set.
+   * Sets whether this bound set has pending unchecked conversion: unchecked conversion that was
+   * necessary to reduce and incorporate this bound set, for which {@link
+   * #recordUncheckedConversionFor} has not yet recorded which expression needs it.
    *
-   * @param uncheckedConversion true if unchecked conversion was necessary to reduce and incorporate
-   *     this bound set
+   * @param pendingUncheckedConversion true if this bound set has pending unchecked conversion
    */
-  public void setUncheckedConversion(boolean uncheckedConversion) {
-    this.uncheckedConversion = uncheckedConversion;
+  public void setPendingUncheckedConversion(boolean pendingUncheckedConversion) {
+    this.pendingUncheckedConversion = pendingUncheckedConversion;
+  }
+
+  /**
+   * If this bound set has pending unchecked conversion, records that {@code expression} needs
+   * unchecked conversion. That is, if {@link #hasPendingUncheckedConversion()} is true, adds {@code
+   * expression} to {@link Java8InferenceContext#needUncheckedConversion} and sets {@link
+   * #hasPendingUncheckedConversion()} to false; otherwise, does nothing.
+   *
+   * <p>The caller passes the expression whose own arguments gave rise to the pending unchecked
+   * conversion; see {@link Java8InferenceContext#needUncheckedConversion}. The return type of that
+   * expression's invocation type is erased (JLS 15.12.2.6). Setting {@link
+   * #hasPendingUncheckedConversion()} to false prevents an enclosing expression from also being
+   * recorded as needing the same unchecked conversion.
+   *
+   * @param expression a method invocation, class instance creation, or method reference
+   * @see Java8InferenceContext#needUncheckedConversion
+   */
+  public void recordUncheckedConversionFor(ExpressionTree expression) {
+    if (pendingUncheckedConversion) {
+      context.needUncheckedConversion.add(expression);
+      pendingUncheckedConversion = false;
+    }
   }
 
   /**
@@ -276,11 +306,11 @@ public class BoundSet implements ReductionResult {
     //
     // The difference matters because these rules reverse the usual direction of a dependency.  For
     // a non-wildcard type argument Ai, the bound alphai = Ai holds, so applying them makes every
-    // variable mentioned in Ai's bounds depend on alphai, and that can create a cycle where javac
-    // has none.  See tests/all-systems/Issue7694.java: applying them to the variable that captures
-    // `E` in `Collector<E, ?, List<E>>` puts the variable for `Optional.empty()` in the same
-    // resolution set as the variable it is a lower bound of, and resolution then discards that
-    // lower bound for not being proper.
+    // variable mentioned in Ai's bounds depend on alphai, and those dependencies can create a cycle
+    // where javac has none.  See tests/all-systems/Issue7694.java: applying them to the variable
+    // that captures `E` in `Collector<E, ?, List<E>>` puts the variable for `Optional.empty()` in
+    // the same resolution set as the variable it is a lower bound of, and resolution then discards
+    // that lower bound for not being proper.
     for (CaptureBound capture : captures) {
       List<? extends CaptureVariable> lhsVars = capture.getAllVariablesOnLHS();
       Set<Variable> rhsVars = capture.getAllVariablesOnRHS();
@@ -371,10 +401,6 @@ public class BoundSet implements ReductionResult {
           alpha.getBounds().applyInstantiationsToBounds();
         }
       }
-      if (newBounds.isUncheckedConversion()) {
-        this.setUncheckedConversion(true);
-      }
-
       if (!boundsChangeInst) {
         return;
       }

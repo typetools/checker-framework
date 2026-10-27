@@ -11,15 +11,20 @@ Added support for IntelliJ IDEA annotation files (`annotations.xml`) via the
 `-AintellijAnnotations` command-line option.
 
 The `-Astubs` and `-Aajava` command-line options accept `.zip` archives, in
-addition to `.jar` archives and directories.
+addition to `.jar` archives and directories.  An archive is read only if it is
+named in the option; an archive within a directory that is named in the option
+is ignored.
 
-A stub file that is named explicitly on the command line is used regardless of
-its file name extension, unless the name ends with `.ajava`.  An ajava file
-must not be renamed:  its name must end with `.ajava`.  Within a directory or
-archive, only files whose names end with `.astub` or `.ajava` are used, as
-before.
+All ajava files must end with `.ajava`.  Stub files must not end with `.ajava`;
+they conventionally end `.astub`.
 
 ### Changes for type system implementers
+
+Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
+
+The `JarEntryAnnotationFileResource` constructor takes the archive as a `File`,
+the entry's name as a `String`, and the entry's contents as a `byte[]`, rather
+than a `JarFile` and a `JarEntry`.
 
 ### Closed issues
 

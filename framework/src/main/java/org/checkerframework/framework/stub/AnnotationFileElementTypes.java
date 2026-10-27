@@ -274,13 +274,38 @@ public class AnnotationFileElementTypes {
    * ajava file.
    *
    * @param ajavaPath path to an ajava file
-   * @param root javac tree for the compilation unit stored in {@code ajavaFile}
+   * @param root javac tree for the compilation unit stored in {@code ajavaPath}
    */
   public void parseAjavaFileWithTree(String ajavaPath, CompilationUnitTree root) {
+    parseAjavaFileWithTree(
+        new AnnotationFileResource() {
+          @Override
+          public String getDescription() {
+            return ajavaPath;
+          }
+
+          @Override
+          public InputStream getInputStream() throws IOException {
+            return Files.newInputStream(Paths.get(ajavaPath));
+          }
+        },
+        root);
+  }
+
+  /**
+   * Parses the ajava file {@code ajavaFile} assuming {@code root} represents the compilation unit
+   * of that file. Like {@link #parseAjavaFileWithTree(String, CompilationUnitTree)}, but the ajava
+   * file need not be in the file system; for example, it may be an entry in an archive.
+   *
+   * @param ajavaFile an ajava file
+   * @param root javac tree for the compilation unit stored in {@code ajavaFile}
+   */
+  public void parseAjavaFileWithTree(AnnotationFileResource ajavaFile, CompilationUnitTree root) {
+    String ajavaPath = ajavaFile.getDescription();
     parsing = true;
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-    try (InputStream in = Files.newInputStream(Paths.get(ajavaPath))) {
+    try (InputStream in = ajavaFile.getInputStream()) {
       if (stubDebug) {
         AnnotationFileParser.stubDebugStatic(
             processingEnv,
@@ -318,11 +343,8 @@ public class AnnotationFileElementTypes {
       }
       SourceChecker checker = factory.getChecker();
       for (String path : intellijAnnotationPaths) {
-        String fullPath = resolveAgainstTestSrc(path);
-
         List<AnnotationFileResource> allFiles =
-            AnnotationFileUtil.allAnnotationFiles(
-                fullPath, AnnotationFileType.INTELLIJ_ANNOTATIONS);
+            AnnotationFileUtil.allAnnotationFiles(path, AnnotationFileType.INTELLIJ_ANNOTATIONS);
         if (allFiles == null) {
           checker.message(
               Diagnostic.Kind.ERROR, "IntelliJ IDEA annotations file not found: " + path);
@@ -333,8 +355,6 @@ public class AnnotationFileElementTypes {
           checker.message(Diagnostic.Kind.WARNING, "No annotations.xml file found within " + path);
         } else {
           for (AnnotationFileResource resource : allFiles) {
-            // Closing the stream is safe even for a jar file entry:  it does not close the
-            // JarFile that other entries in `allFiles` share.
             try (BufferedInputStream annotationFileStream =
                 new BufferedInputStream(resource.getInputStream())) {
               IntelliJAnnotationParser.parseAnnotationsXml(
@@ -357,23 +377,6 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Returns the path to use for an annotation file that was named on the command line. This is a
-   * special case when running in jtreg, which runs the compiler in a different directory than the
-   * one that contains the test's annotation files.
-   *
-   * @param path a relative or absolute path, from a command-line argument
-   * @return {@code path} if it exists or if the {@code test.src} system property is not set;
-   *     otherwise, {@code path} resolved against the {@code test.src} system property
-   */
-  private static String resolveAgainstTestSrc(String path) {
-    String base = System.getProperty("test.src");
-    if (base == null || new File(path).exists()) {
-      return path;
-    }
-    return base + File.separator + path;
-  }
-
-  /**
    * Parses the files in {@code annotationFiles} of the given file type. This includes files listed
    * directly in {@code annotationFiles} and for each listed directory, also includes all files
    * located in that directory (recursively).
@@ -393,25 +396,24 @@ public class AnnotationFileElementTypes {
           processingEnv, "AFET.parseAnnotationFiles(%s, %s)", annotationFiles, fileType);
     }
     for (String path : annotationFiles) {
-      String fullPath = resolveAgainstTestSrc(path);
-
-      File namedFile = new File(fullPath);
-      if (namedFile.isFile()
+      File namedFile = AnnotationFileUtil.findFileSystemLocation(path);
+      if (namedFile != null
+          && namedFile.isFile()
           && !AnnotationFileUtil.isJarOrZip(namedFile.getName())
-          && !AnnotationFileUtil.isUsableNamedFile(fullPath, fileType)) {
-        checker.message(
-            Diagnostic.Kind.WARNING,
-            fileType.isStub()
-                ? "Ignoring " + path + ", which is an ajava file; supply it via -Aajava"
-                : "Ignoring "
-                    + path
-                    + ": the name of an ajava file must end with"
-                    + " <ClassName>-<checker.qualified.name>.ajava");
+          && !AnnotationFileUtil.isUsableNamedFile(namedFile.getPath(), fileType)) {
+        String reason;
+        if (fileType == AnnotationFileType.COMMAND_LINE_STUB) {
+          reason = ", which is an ajava file; supply it via -Aajava";
+        } else if (fileType.isStub()) {
+          reason = ": the name of a stub file must not end with .ajava";
+        } else {
+          reason = ": the name of an ajava file must end with .ajava";
+        }
+        checker.message(Diagnostic.Kind.WARNING, "Ignoring " + path + reason);
         continue;
       }
 
-      List<AnnotationFileResource> allFiles =
-          AnnotationFileUtil.allAnnotationFiles(fullPath, fileType);
+      List<AnnotationFileResource> allFiles = AnnotationFileUtil.allAnnotationFiles(path, fileType);
       if (allFiles != null) {
         for (AnnotationFileResource resource : allFiles) {
           try (BufferedInputStream annotationFileStream =
@@ -483,13 +485,16 @@ public class AnnotationFileElementTypes {
                   (parentPath == null
                       ? "current directory"
                       : "directory " + parentPath.getAbsolutePath());
+              String testSrc = System.getProperty("test.src");
               String msg =
                   checker.getClass().getSimpleName()
                       + " did not find annotation file or directory "
                       + path
                       + " on classpath or within "
                       + parentPathDescription
-                      + (fullPath.equals(path) ? "" : (" or at " + fullPath));
+                      + ((testSrc == null || new File(path).isAbsolute())
+                          ? ""
+                          : (" or within directory " + testSrc));
               StringJoiner sj = new StringJoiner(System.lineSeparator() + "  ");
               sj.add(msg);
               sj.add("Classpath:");
