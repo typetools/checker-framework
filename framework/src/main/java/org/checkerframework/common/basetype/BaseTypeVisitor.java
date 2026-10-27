@@ -2032,8 +2032,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // run-time check examines its qualifiers.  So, its qualifiers must be supertypes of the
     // component's.  (isTypeCastSafe is too lenient:  it permits a qualifier that is the type's
     // declaration bound, such as @NonNull, but a nested pattern may match null.)
+    // A component whose type is a type variable is not checked; see TypeFromMemberVisitor.
     AnnotatedTypeMirror componentType = atypeFactory.getDeconstructedComponentType(tree);
     if (componentType != null
+        && componentType.getKind() != TypeKind.TYPEVAR
         && !typeHierarchy.isSubtypeShallowEffective(componentType, variableType)) {
       checker.reportWarning(tree, "instanceof.pattern.unsafe", componentType, tree);
     }

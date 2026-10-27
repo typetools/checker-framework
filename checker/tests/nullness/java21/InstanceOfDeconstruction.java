@@ -51,9 +51,23 @@ public class InstanceOfDeconstruction {
     }
   }
 
+  record NBox(@Nullable Object o) {}
+
+  void typeTest(Object o) {
+    // A nested type pattern that is not unconditional does not match null.
+    if (o instanceof NBox(String s)) {
+      s.length();
+    }
+    if (o instanceof NBox(Object x)) {
+      // :: error: [dereference.of.nullable]
+      x.toString();
+    }
+  }
+
   void genericComponent(Box<@Nullable String> b) {
     if (b instanceof Box(String s)) {
-      // :: error: [dereference.of.nullable]
+      // TODO: Issue a dereference.of.nullable error.  A component whose type is a type variable
+      // is not handled.
       s.length();
     }
   }
