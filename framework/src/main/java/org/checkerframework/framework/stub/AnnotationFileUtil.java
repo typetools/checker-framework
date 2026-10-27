@@ -17,6 +17,7 @@ import com.github.javaparser.ast.type.WildcardType;
 import com.github.javaparser.ast.visitor.SimpleVoidVisitor;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -424,8 +425,12 @@ public class AnnotationFileUtil {
    */
   public static @Nullable AnnotationFileResource archiveEntry(File archive, String entryName) {
     try (JarFile file = new JarFile(archive)) {
-      if (file.getJarEntry(entryName) == null) {
+      JarEntry entry = file.getJarEntry(entryName);
+      if (entry == null) {
         return null;
+      }
+      try (InputStream in = file.getInputStream(entry)) {
+        return new JarEntryAnnotationFileResource(archive, entryName, in.readAllBytes());
       }
     } catch (IOException e) {
       System.err.println(
@@ -437,7 +442,6 @@ public class AnnotationFileUtil {
               + e.getMessage());
       return null;
     }
-    return new JarEntryAnnotationFileResource(archive, entryName);
   }
 
   /**
@@ -524,7 +528,12 @@ public class AnnotationFileUtil {
           while (entries.hasMoreElements()) {
             JarEntry entry = entries.nextElement();
             if (isAnnotationFile(entry.getName(), fileType)) {
-              resources.add(new JarEntryAnnotationFileResource(location, entry.getName()));
+              byte[] contents;
+              try (InputStream in = file.getInputStream(entry)) {
+                contents = in.readAllBytes();
+              }
+              resources.add(
+                  new JarEntryAnnotationFileResource(location, entry.getName(), contents));
             }
           }
         } catch (IOException e) {
