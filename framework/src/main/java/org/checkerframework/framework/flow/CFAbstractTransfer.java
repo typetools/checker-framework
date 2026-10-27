@@ -479,6 +479,8 @@ public abstract class CFAbstractTransfer<
         PurityChecker.checkPurity(
             expressionOrStatement,
             aTypeFactory,
+            TreePathUtil.enclosingMethod(expressionOrStatement),
+            aTypeFactory.getProcessingEnv(),
             isAssumeSideEffectFreeEnabled,
             isAssumeDeterministicEnabled,
             aTypeFactory.getChecker().hasOption("assumePureGetters"));
@@ -1146,8 +1148,10 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitInstanceOf(InstanceOfNode node, TransferInput<V, S> in) {
     TransferResult<V, S> result = super.visitInstanceOf(node, in);
     // Only the variable of a binding pattern is refined by the expression's type.  The binding
-    // variables of a deconstruction pattern have the types of record components, which may be
-    // unrelated to the expression's type.
+    // variables of a deconstruction pattern hold record components, whose types may be unrelated
+    // to the expression's type, so they are not refined here.
+    // TODO: Give the binding variables of a deconstruction pattern the types of the record
+    // components.
     LocalVariableNode bindingVar = node.getBindingPatternVariable();
     // The "reference type" is the type after "instanceof".  For a binding pattern, annotations on
     // the reference type are written on the variable declaration, as in `e instanceof @A T v`.
