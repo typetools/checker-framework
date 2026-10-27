@@ -821,6 +821,7 @@ public abstract class CFAbstractTransfer<
    * @param tree a tree
    * @return true if the tree is the right operand of a boolean operator
    */
+  @SuppressWarnings("interning:not.interned") // reference equality of trees
   private boolean isRightOperandOfBooleanOperator(Tree tree) {
     TreePath path = analysis.atypeFactory.getPath(tree);
     if (path == null) {
