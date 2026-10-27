@@ -114,7 +114,9 @@ public final class Resolution {
     Resolution resolution = new Resolution(context, dependencies);
     boundSet = resolution.resolveSmallestSet(unresolvedVars, boundSet);
     checkNoFalse(boundSet, "after resolving", unresolvedVars);
-    return resolveIgnoredAnnotations(Collections.singletonList(a), boundSet, context);
+    // Resolving `a` can also resolve the variables on which it depends, and give any of them an
+    // instantiation that ignores annotations.
+    return resolveIgnoredAnnotations(new ArrayList<>(dependencies.get(a)), boundSet, context);
   }
 
   /**
@@ -160,7 +162,8 @@ public final class Resolution {
       added |= var.getBounds().addBound(null, BoundKind.EQUAL, t);
     }
     if (added) {
-      boundSet.incorporateToFixedPoint(new BoundSet(context));
+      boundSet.reachFixedPoint();
+      checkNoFalse(boundSet, "after resolving ignored annotations of", vars);
     }
     return boundSet;
   }
@@ -521,9 +524,9 @@ public final class Resolution {
         ai.getBounds().getQualifierBoundsOfKind(BoundKind.LOWER);
     if (!qualifierLowerBounds.isEmpty()) {
       // `lub` may return a type that shares its AnnotatedTypeMirror with one of `lowerBounds`,
-      // which is still stored in a hash set of bounds.  Replacing annotations in place would
-      // change that bound's hash code while it is in the set, so copy before mutating.  Only the
-      // root annotations are changed below, so the copy keeps the origin.
+      // which is still stored in a hash set of bounds.  Replacing annotations in place would change
+      // that bound's hash code while it is in the set, so copy it.  Only the root annotations are
+      // changed below, so the copy keeps the origin.
       lubProperType = lubProperType.copy();
       QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
       AnnotationMirrorSet lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
@@ -596,41 +599,21 @@ public final class Resolution {
           }
         }
       }
-      ProperType lowerBound = context.inferenceTypeFactory.lub(lowerBounds);
-      if (lowerBound != null) {
-        // The annotated type is mutated below and by `createFreshTypeVariable`, but `lub` may
-        // return a type that shares its AnnotatedTypeMirror with one of `lowerBounds`, which is
-        // still stored in a hash set of bounds.  Replacing annotations in place would change that
-        // bound's hash code while it is in the set, so copy before mutating.
-        lowerBound =
-            (ProperType)
-                lowerBound.create(
-                    lowerBound.getAnnotatedType().deepCopy(), lowerBound.ignoreAnnotations);
-      }
-
+      ProperType lowerBound;
       Set<? extends AnnotationMirror> lowerBoundAnnos;
-      Set<AbstractQualifier> qualifierLowerBounds =
-          ai.getBounds().getQualifierBoundsOfKind(BoundKind.LOWER);
-      if (!qualifierLowerBounds.isEmpty()) {
-        QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
-        lowerBoundAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
-        if (lowerBound != null) {
-          if (lowerBound.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
-            Set<? extends AnnotationMirror> newLubAnnos =
-                qh.leastUpperBoundsQualifiersOnly(
-                    lowerBoundAnnos, lowerBound.getAnnotatedType().getPrimaryAnnotations());
-            lowerBound.getAnnotatedType().replaceAnnotations(newLubAnnos);
-            lowerBoundAnnos = newLubAnnos;
-          } else {
-            AnnotatedTypeVariable lubTV = (AnnotatedTypeVariable) lowerBound.getAnnotatedType();
-            Set<? extends AnnotationMirror> newLubAnnos =
-                qh.leastUpperBoundsQualifiersOnly(
-                    lowerBoundAnnos, lubTV.getLowerBound().getPrimaryAnnotations());
-            lubTV.getLowerBound().replaceAnnotations(newLubAnnos);
-            lowerBoundAnnos = newLubAnnos;
-          }
-        }
+      if (lowerBounds.isEmpty()) {
+        lowerBound = null;
+        Set<AbstractQualifier> qualifierLowerBounds =
+            ai.getBounds().getQualifierBoundsOfKind(BoundKind.LOWER);
+        lowerBoundAnnos =
+            qualifierLowerBounds.isEmpty()
+                ? Collections.emptySet()
+                : AbstractQualifier.lub(qualifierLowerBounds, context);
       } else {
+        // `createFreshTypeVariable` mutates `lowerBound`.
+        lowerBound =
+            (ProperType) copyForMutation(lubOfLowerBounds(ai, lowerBounds, false, context));
+        // `createFreshTypeVariable` uses `lowerBoundAnnos` only when `lowerBound` is null.
         lowerBoundAnnos = Collections.emptySet();
       }
 
@@ -640,10 +623,9 @@ public final class Resolution {
       AbstractType upperBound = context.inferenceTypeFactory.glb(upperBounds);
       if (upperBound != null) {
         // `glb` returns its argument when `upperBounds` is a singleton, and that type is still
-        // stored in `ai`'s set of upper bounds.  See the comment about `lowerBound` above.
-        upperBound =
-            upperBound.create(
-                upperBound.getAnnotatedType().deepCopy(), upperBound.ignoreAnnotations);
+        // stored in `ai`'s set of upper bounds.  This method and `createFreshTypeVariable` mutate
+        // `upperBound`.
+        upperBound = copyForMutation(upperBound);
       }
       Set<? extends AnnotationMirror> upperBoundAnnos;
       Set<AbstractQualifier> qualifierUpperBounds =
@@ -679,5 +661,18 @@ public final class Resolution {
 
     boundSet.reachFixedPoint();
     return boundSet;
+  }
+
+  /**
+   * Returns a copy of {@code type} whose annotated type is a deep copy of {@code type}'s. Unlike
+   * {@link ProperType#copy}, the copy has no origin, so any part of its annotated type may be
+   * mutated. A caller must copy a type before mutating it if the type may be stored in a hash set
+   * of bounds, because mutation would change its hash code.
+   *
+   * @param type a type
+   * @return a copy of {@code type} that may be mutated
+   */
+  private static AbstractType copyForMutation(AbstractType type) {
+    return type.create(type.getAnnotatedType().deepCopy(), type.ignoreAnnotations);
   }
 }
