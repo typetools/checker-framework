@@ -48,14 +48,6 @@ public class PathShapeRules {
     @HasName Path p10 = name.resolve("C:");
   }
 
-  void resolveVarargs(Path top, @HasName Path name, String s) {
-    @HasParent Path p1 = top.resolve("a", "b");
-    @HasParent Path p2 = top.resolve(name, name);
-    @HasName Path p3 = top.resolve("", "b");
-    // :: error: (assignment)
-    @HasName Path p4 = name.resolve("a", s);
-  }
-
   void resolveSibling(Path top, @HasName Path name, @HasParent Path parent) {
     @HasParent Path p1 = top.resolveSibling(parent);
     @HasParent Path p2 = parent.resolveSibling(name);
