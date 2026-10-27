@@ -416,6 +416,23 @@ public class AnnotationFileUtil {
   }
 
   /**
+   * Returns the contents of an entry in an archive.
+   *
+   * @param archive an open JAR or ZIP archive
+   * @param entry an entry in {@code archive}
+   * @return the contents of {@code entry}
+   * @throws IOException if the entry cannot be read
+   */
+  private static byte[] readEntry(JarFile archive, JarEntry entry) throws IOException {
+    try (InputStream in = archive.getInputStream(entry)) {
+      if (in == null) {
+        throw new IOException("no entry " + entry.getName() + " in " + archive.getName());
+      }
+      return in.readAllBytes();
+    }
+  }
+
+  /**
    * Side-effects {@code resources} by adding annotation files of the given file type to it.
    *
    * @param location an annotation file (a stub file or ajava file), a jarfile, or a directory. If a
@@ -436,11 +453,9 @@ public class AnnotationFileUtil {
         while (entries.hasMoreElements()) {
           JarEntry entry = entries.nextElement();
           if (isAnnotationFile(entry.getName(), fileType)) {
-            byte[] contents;
-            try (InputStream in = file.getInputStream(entry)) {
-              contents = in.readAllBytes();
-            }
-            resources.add(new JarEntryAnnotationFileResource(location, entry.getName(), contents));
+            resources.add(
+                new JarEntryAnnotationFileResource(
+                    location, entry.getName(), readEntry(file, entry)));
           }
         }
       } catch (IOException e) {
