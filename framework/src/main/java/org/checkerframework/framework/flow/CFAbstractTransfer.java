@@ -1170,26 +1170,37 @@ public abstract class CFAbstractTransfer<
 
     AnnotatedTypeMirror expType =
         analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
-    // The facts below hold only when the instanceof is true.  Get the else store before refining
-    // the then store, because for a RegularTransferResult the then store is the regular store.
-    S elseStore = result.getElseStore();
-    S thenStore = result.getThenStore();
-    if (bindingVar != null) {
-      JavaExpression expr = JavaExpression.fromNode(bindingVar);
-      for (AnnotationMirror anno : expType.getAnnotations()) {
-        thenStore.insertOrRefine(expr, anno);
-      }
-    }
-
+    // The annotations to which the binding variable is refined.
+    AnnotationMirrorSet bindingVarAnnos =
+        bindingVar == null ? AnnotationMirrorSet.emptySet() : expType.getAnnotations();
+    // The annotations to which the expression is refined.
+    AnnotationMirrorSet expAnnos = AnnotationMirrorSet.emptySet();
     if (refTypeIsAnnotated) {
       AnnotatedTypeMirror refType = analysis.atypeFactory.getAnnotatedType(refTypeTree);
       if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
           && !refType.getPrimaryAnnotations().equals(expType.getPrimaryAnnotations())
           && !expType.getPrimaryAnnotations().isEmpty()) {
-        JavaExpression expr = JavaExpression.fromTree(node.getTree().getExpression());
-        for (AnnotationMirror anno : refType.getPrimaryAnnotations()) {
-          thenStore.insertOrRefine(expr, anno);
-        }
+        expAnnos = refType.getPrimaryAnnotations();
+      }
+    }
+    if (bindingVarAnnos.isEmpty() && expAnnos.isEmpty()) {
+      return result;
+    }
+
+    // The facts below hold only when the instanceof is true.  Get the else store before refining
+    // the then store, because for a RegularTransferResult the then store is the regular store.
+    S elseStore = result.getElseStore();
+    S thenStore = result.getThenStore();
+    if (!bindingVarAnnos.isEmpty()) {
+      JavaExpression expr = JavaExpression.fromNode(bindingVar);
+      for (AnnotationMirror anno : bindingVarAnnos) {
+        thenStore.insertOrRefine(expr, anno);
+      }
+    }
+    if (!expAnnos.isEmpty()) {
+      JavaExpression expr = JavaExpression.fromTree(node.getTree().getExpression());
+      for (AnnotationMirror anno : expAnnos) {
+        thenStore.insertOrRefine(expr, anno);
       }
     }
     return new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
