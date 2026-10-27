@@ -1,6 +1,7 @@
 package org.checkerframework.common.accumulation;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -35,8 +36,9 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
 
   /**
-   * If the underlying type is a type variable or a wildcard, then this is a set of accumulated
-   * values. Otherwise, it is null.
+   * If the underlying type is a type variable or a wildcard, then this is the set of accumulated
+   * values, or null if there are none. Otherwise, it is null. The set is never empty, so that
+   * {@link #equals} need not equate null with the empty set.
    */
   private @Nullable Set<String> accumulatedValues = null;
 
@@ -64,7 +66,10 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
         }
       }
       if (accumulator != null) {
-        accumulatedValues = new HashSet<>(typeFactory.getAccumulatedValues(accumulator));
+        List<String> values = typeFactory.getAccumulatedValues(accumulator);
+        if (!values.isEmpty()) {
+          accumulatedValues = new HashSet<>(values);
+        }
       }
     }
   }
@@ -75,7 +80,7 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
    * @param analysis the analysis class this value belongs to
    * @param annotations the annotations in this abstract value
    * @param underlyingType the underlying (Java) type in this abstract value
-   * @param accumulatedValues the accumulated values, or null
+   * @param accumulatedValues the accumulated values; null or non-empty
    */
   private AccumulationValue(
       CFAbstractAnalysis<AccumulationValue, ?, ?> analysis,
