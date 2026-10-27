@@ -8,6 +8,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
@@ -1148,9 +1149,17 @@ public abstract class CFAbstractTransfer<
     // variables of a deconstruction pattern have the types of record components, which may be
     // unrelated to the expression's type.
     LocalVariableNode bindingVar = node.getBindingPatternVariable();
-    // The "reference type" is the type after "instanceof".
+    // The "reference type" is the type after "instanceof".  For a binding pattern, annotations on
+    // the reference type are written on the variable declaration, as in `e instanceof @A T v`.
     Tree refTypeTree = node.getTree().getType();
     boolean refTypeIsAnnotated = refTypeTree instanceof AnnotatedTypeTree;
+    if (bindingVar != null) {
+      VariableTree bindingVarTree = (VariableTree) bindingVar.getTree();
+      if (!bindingVarTree.getModifiers().getAnnotations().isEmpty()) {
+        refTypeTree = bindingVarTree;
+        refTypeIsAnnotated = true;
+      }
+    }
     if (bindingVar == null && !refTypeIsAnnotated) {
       return result;
     }
