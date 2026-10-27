@@ -501,7 +501,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     //   `Iterator<T> i = expr.iterator(); while (i.hasNext()) { T x = i.next(); ... }`
     // so it calls `iterator()` on `expr`, then `hasNext()` and `next()` on the iterator.
     if (iterableType.getKind() != TypeKind.ARRAY) {
-      ExecutableElement iteratorMethod = noArgumentMethod(iterableType, "iterator");
+      ExecutableElement iteratorMethod =
+          ElementUtils.getNoArgumentMethod(
+              iterableType, "iterator", checker.getProcessingEnvironment());
       if (iteratorMethod == null) {
         checker.reportError(node, "purity.unknown.sideeffectsonly", "iterator");
         return super.visitEnhancedForLoop(node, aVoid);
@@ -519,7 +521,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       // still checked.
       TypeMirror iteratorType = iteratorMethod.getReturnType();
       for (String iteratorMethodName : new String[] {"hasNext", "next"}) {
-        ExecutableElement iteratorElem = noArgumentMethod(iteratorType, iteratorMethodName);
+        ExecutableElement iteratorElem =
+            ElementUtils.getNoArgumentMethod(
+                iteratorType, iteratorMethodName, checker.getProcessingEnvironment());
         if (iteratorElem == null) {
           checker.reportError(node, "purity.unknown.sideeffectsonly", iteratorMethodName);
         } else {
@@ -544,7 +548,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       } else {
         resourceExpr = expressionFromTree((ExpressionTree) resource);
       }
-      ExecutableElement closeMethod = noArgumentMethod(TreeUtils.typeOf(resource), "close");
+      ExecutableElement closeMethod =
+          ElementUtils.getNoArgumentMethod(
+              TreeUtils.typeOf(resource), "close", checker.getProcessingEnvironment());
       if (closeMethod == null) {
         checker.reportError(resource, "purity.unknown.sideeffectsonly", "close");
       } else {
@@ -661,7 +667,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * @param receiverType the type of the receiver of the call
    * @param methodName the name of the method
    * @return the invoked method, or null if the type has no such method
+   * @deprecated use {@link ElementUtils#getNoArgumentMethod}
    */
+  @Deprecated // 2026-10-27
   protected @Nullable ExecutableElement noArgumentMethod(
       TypeMirror receiverType, String methodName) {
     return ElementUtils.getNoArgumentMethod(
