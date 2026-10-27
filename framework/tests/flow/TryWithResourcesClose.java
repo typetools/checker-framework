@@ -65,4 +65,15 @@ public class TryWithResourcesClose {
     try (r) {}
     @Odd String s = r.f;
   }
+
+  static class PrivateCloseBase {
+    private void close() {}
+  }
+
+  static class PrivateCloseSubclass extends PrivateCloseBase implements DefaultClose {}
+
+  void privateSuperclassMethod(PrivateCloseSubclass r) {
+    try (r) {}
+    @Odd String s = staticF;
+  }
 }
