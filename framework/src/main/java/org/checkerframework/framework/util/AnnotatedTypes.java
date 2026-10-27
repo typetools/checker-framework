@@ -767,7 +767,7 @@ public final class AnnotatedTypes {
             atypeFactory.getTypeArgumentInference().inferTypeArgs(atypeFactory, expr, preType);
         return new TypeArguments(
             inferenceResult.getTypeArgumentsForExpression(expr),
-            inferenceResult.isUncheckedConversion(),
+            inferenceResult.needsUncheckedConversion(expr),
             inferenceResult.inferenceCrashed());
       }
       targs = memRef.getTypeArguments();
@@ -810,7 +810,7 @@ public final class AnnotatedTypes {
             atypeFactory.getTypeArgumentInference().inferTypeArgs(atypeFactory, expr, preType);
         return new TypeArguments(
             inferenceResult.getTypeArgumentsForExpression(expr),
-            inferenceResult.isUncheckedConversion(),
+            inferenceResult.needsUncheckedConversion(expr),
             inferenceResult.inferenceCrashed());
       } else {
         return emptyFalsePair;
@@ -1167,7 +1167,7 @@ public final class AnnotatedTypes {
 
   /**
    * Given an AnnotatedExecutableType of a method or constructor declaration, get the parameter type
-   * expected at the indexth position (unwrapping varargs if necessary).
+   * expected at the {@code index}th position (unwrapping varargs if necessary).
    *
    * @param methodType the type of a method or constructor containing the parameter to return
    * @param index position of the parameter type to return
@@ -1176,7 +1176,44 @@ public final class AnnotatedTypes {
    */
   public static AnnotatedTypeMirror getAnnotatedTypeMirrorOfParameter(
       AnnotatedExecutableType methodType, int index) {
-    List<AnnotatedTypeMirror> parameterTypes = methodType.getParameterTypes();
+    return getAnnotatedTypeMirrorOfParameter(methodType, methodType.getParameterTypes(), index);
+  }
+
+  /**
+   * Given the type of the method or constructor invoked by {@code invocation}, get the parameter
+   * type expected for the {@code index}th argument of {@code invocation} (unwrapping varargs if
+   * necessary). Unlike {@link #getAnnotatedTypeMirrorOfParameter(AnnotatedExecutableType, int)},
+   * this skips any parameter that does not correspond to an argument; see {@link
+   * TreeUtils#parametersForArguments}.
+   *
+   * @param methodType the type of the method or constructor invoked by {@code invocation}
+   * @param invocation a method or constructor invocation
+   * @param index the position of an argument of {@code invocation}
+   * @return the type of the parameter for the argument in the index position. If that parameter is
+   *     a varArgs, return the component type of the varargs and NOT the array type.
+   */
+  public static AnnotatedTypeMirror getAnnotatedTypeMirrorOfParameter(
+      AnnotatedExecutableType methodType, Tree invocation, int index) {
+    return getAnnotatedTypeMirrorOfParameter(
+        methodType,
+        TreeUtils.parametersForArguments(
+            methodType.getElement(), invocation, methodType.getParameterTypes()),
+        index);
+  }
+
+  /**
+   * Returns the parameter type expected at the {@code index}th position of {@code parameterTypes}
+   * (unwrapping varargs if necessary).
+   *
+   * @param methodType the type of a method or constructor
+   * @param parameterTypes the types of the parameters of {@code methodType}, possibly without some
+   *     leading parameters that do not correspond to arguments
+   * @param index position of the parameter type to return
+   * @return the type of the parameter in the index position. If that parameter is a varArgs, return
+   *     the component type of the varargs and NOT the array type.
+   */
+  private static AnnotatedTypeMirror getAnnotatedTypeMirrorOfParameter(
+      AnnotatedExecutableType methodType, List<AnnotatedTypeMirror> parameterTypes, int index) {
     boolean hasVarargs = methodType.getElement().isVarArgs();
 
     int lastIndex = parameterTypes.size() - 1;

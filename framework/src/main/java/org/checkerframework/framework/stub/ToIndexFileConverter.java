@@ -476,6 +476,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /**
    * Copies information from an AST declaration node to an {@link ADeclaration}. Called by visitors
    * for BodyDeclaration subclasses.
+   *
+   * @param decl the AST declaration node to inspect
+   * @param elem destination declaration element
+   * @return null
    */
   private Void visitDecl(BodyDeclaration<?> decl, ADeclaration elem) {
     addAnnotations(decl.getAnnotations(), elem);
@@ -497,7 +501,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
   }
 
-  /** Copies information from an AST type node to an {@link ATypeElement}. */
+  /**
+   * Copies information from an AST type node to an {@link ATypeElement}.
+   *
+   * @param type the AST Type node to inspect
+   * @param elem destination type element
+   * @return null
+   */
   private Void visitType(Type type, ATypeElement elem) {
     addAnnotations(type.getAnnotations(), elem);
     visitInnerTypes(type, elem);
