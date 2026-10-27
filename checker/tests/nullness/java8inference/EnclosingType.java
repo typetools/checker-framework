@@ -107,32 +107,32 @@ public class EnclosingType {
 
   void bareInner() {
     @Nullable String ok = fromInner(nullableInner());
-    // :: error: (assignment)
+    // :: error: (assignment) :: error: (type.arguments.not.inferred)
     @NonNull String bad = fromInner(nullableInner());
     @NonNull String alsoOk = fromInner(nonNullInner());
   }
 
   void nestedInGeneric() {
     @Nullable String ok = fromInnerList(nullableInnerList());
-    // :: error: (assignment)
+    // :: error: (assignment) :: error: (type.arguments.not.inferred)
     @NonNull String bad = fromInnerList(nullableInnerList());
   }
 
   void nestedInArray() {
     @Nullable String ok = fromInnerArray(nullableInnerArray());
-    // :: error: (assignment)
+    // :: error: (assignment) :: error: (type.arguments.not.inferred)
     @NonNull String bad = fromInnerArray(nullableInnerArray());
   }
 
   void nestedInFunctionalInterface() {
     @Nullable String ok = fromSupplier(nullableInnerSupplier());
-    // :: error: (assignment)
+    // :: error: (assignment) :: error: (type.arguments.not.inferred)
     @NonNull String bad = fromSupplier(nullableInnerSupplier());
   }
 
   void innerWithOwnTypeArgument() {
     @Nullable String ok = fromInner2(nullableInner2());
-    // :: error: (assignment)
+    // :: error: (assignment) :: error: (type.arguments.not.inferred)
     @NonNull String bad = fromInner2(nullableInner2());
   }
 

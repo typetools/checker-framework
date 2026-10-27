@@ -3,6 +3,7 @@ package org.checkerframework.framework.util;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.main.JavaCompiler;
@@ -12,9 +13,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.tools.StandardLocation;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.javacutil.BugInCF;
@@ -76,6 +80,88 @@ public class JavaParserUtilTest {
         SUBPKG,
         "class IntermediateSub extends " + SUPERPKG + ".Intermediate { Visible f; }",
         "Visible");
+  }
+
+  /**
+   * Tests that {@link JavaParserUtil#resolveTypeName} resolves the simple name of a member type
+   * that a local class or an anonymous class inherits only when that class really inherits it. Such
+   * a class has no name that {@link Elements} can look up, so its own package -- that of the
+   * compilation unit that declares it -- determines whether it inherits a package-private member
+   * type of its supertype.
+   */
+  @Test
+  public void testResolveMemberTypeInheritedByUnnameableClass() {
+    // A public member type is inherited, even across packages.
+    assertResolvesTo(SUPERPKG + ".Base.Visible", SUPERPKG, localClass("Visible"), "Visible");
+    assertResolvesTo(SUPERPKG + ".Base.Visible", SUBPKG, localClass("Visible"), "Visible");
+    assertResolvesTo(SUPERPKG + ".Base.Visible", SUPERPKG, anonymousClass("Visible"), "Visible");
+    assertResolvesTo(SUPERPKG + ".Base.Visible", SUBPKG, anonymousClass("Visible"), "Visible");
+
+    // A package-private member type is inherited only within the package that declares it.
+    assertResolvesTo(SUPERPKG + ".Base.Hidden", SUPERPKG, localClass("Hidden"), "Hidden");
+    assertResolvesTo(null, SUBPKG, localClass("Hidden"), "Hidden");
+    assertResolvesTo(SUPERPKG + ".Base.Hidden", SUPERPKG, anonymousClass("Hidden"), "Hidden");
+    assertResolvesTo(null, SUBPKG, anonymousClass("Hidden"), "Hidden");
+
+    // A private member type is never inherited.
+    assertResolvesTo(null, SUPERPKG, localClass("Secret"), "Secret");
+    assertResolvesTo(null, SUPERPKG, anonymousClass("Secret"), "Secret");
+
+    // When the class does not inherit the package-private member type, the name resolves to the
+    // type of the same simple name that is declared in the class's own package.
+    assertResolvesTo(SUPERPKG + ".Base.Shadowed", SUPERPKG, localClass("Shadowed"), "Shadowed");
+    assertResolvesTo(SUBPKG + ".Shadowed", SUBPKG, localClass("Shadowed"), "Shadowed");
+    assertResolvesTo(SUPERPKG + ".Base.Shadowed", SUPERPKG, anonymousClass("Shadowed"), "Shadowed");
+    assertResolvesTo(SUBPKG + ".Shadowed", SUBPKG, anonymousClass("Shadowed"), "Shadowed");
+  }
+
+  /**
+   * Tests that {@link JavaParserUtil#resolveTypeName} resolves a nested type name whose first
+   * component names a member type of an enclosing class and whose later components name inherited
+   * member types. Such a name is not canonical, so it cannot be looked up directly.
+   */
+  @Test
+  public void testResolveNestedNameOfDeclaredMemberType() {
+    String memberOwner =
+        "class MemberOwner { private static class Member extends Base {}"
+            + " Member.Visible f; Member.Secret g; }";
+
+    // The name of the member type itself is canonical.
+    assertResolvesTo(SUPERPKG + ".MemberOwner.Member", SUPERPKG, memberOwner, "Member");
+
+    // `Member` inherits `Visible` rather than declaring it, so `Member.Visible` is not canonical
+    // and the member types of `Member`'s supertypes must be searched.
+    assertResolvesTo(SUPERPKG + ".Base.Visible", SUPERPKG, memberOwner, "Member.Visible");
+
+    // A member type of an enclosing class shadows every other type whose name starts with the
+    // member type's simple name, so a suffix that names no member type of `Member` names nothing.
+    assertResolvesTo(null, SUPERPKG, memberOwner, "Member.Secret");
+  }
+
+  /**
+   * Returns the declaration of a class named {@code Outer}, which is not a subtype of {@code Base},
+   * that declares a local class that extends {@code Base} and that uses the given type name.
+   *
+   * @param typeName the type name that the local class uses
+   * @return a type declaration that contains a local class that uses {@code typeName}
+   */
+  private static String localClass(String typeName) {
+    return "class Outer { void m() { class Local extends "
+        + SUPERPKG
+        + ".Base { "
+        + typeName
+        + " f; } } }";
+  }
+
+  /**
+   * Returns the declaration of a class named {@code Outer}, which is not a subtype of {@code Base},
+   * that declares an anonymous subclass of {@code Base} that uses the given type name.
+   *
+   * @param typeName the type name that the anonymous class uses
+   * @return a type declaration that contains an anonymous class that uses {@code typeName}
+   */
+  private static String anonymousClass(String typeName) {
+    return "class Outer { Object o = new " + SUPERPKG + ".Base() { " + typeName + " f; }; }";
   }
 
   /**
@@ -146,6 +232,97 @@ public class JavaParserUtilTest {
   }
 
   /**
+   * Tests that {@link JavaParserUtil#typeToTypeMirrorUsingTypeVariableBounds} replaces a use of a
+   * type variable by the type variable's upper bound, and that {@link
+   * JavaParserUtil#typeToTypeMirror} does not.
+   */
+  @Test
+  public void testTypeToTypeMirrorUsingTypeVariableBounds() {
+    String bounded = "class SamePackageSub<T extends Number> { T f; T[] g; String h; int i; }";
+    assertTypeMirror("java.lang.Number", bounded, "T");
+    assertTypeMirror("java.lang.Number[]", bounded, "T[]");
+    assertTypeMirror("java.lang.String", bounded, "String");
+    assertTypeMirror("int", bounded, "int");
+
+    // The implicit upper bound is `Object`.
+    assertTypeMirror("java.lang.Object", "class SamePackageSub<T> { T f; }", "T");
+
+    // A bound that is itself a type variable is replaced by its own upper bound.
+    assertTypeMirror(
+        "java.lang.CharSequence",
+        "class SamePackageSub<T extends U, U extends CharSequence> { T f; }",
+        "T");
+
+    // The upper bound of `T` is an intersection type, whose erasure is its leftmost bound.
+    assertTypeMirror(
+        "java.lang.Number", "class SamePackageSub<T extends Number & Runnable> { T f; }", "T");
+
+    // The result is the type of the declaration, which is not erased.
+    assertTypeMirror(
+        "java.lang.Comparable<T>", "class SamePackageSub<U extends Comparable<U>> { U f; }", "U");
+    assertTypeMirror(
+        "java.util.List<E>",
+        "import java.util.List; class SamePackageSub<T> { List<T> f; }",
+        "List<T>");
+
+    // A type parameter of a method shadows a type parameter of the class.
+    assertTypeMirror(
+        "java.lang.Number",
+        "class SamePackageSub<T extends CharSequence> { <T extends Number> void m(T p) {} }",
+        "T");
+
+    // A bound that is not on the classpath cannot be determined.
+    assertTypeMirror(null, "class SamePackageSub<T extends NotOnClasspath> { T f; }", "T");
+
+    // A type parameter declaration has no TypeMirror.
+    String source = "package " + SUPERPKG + "; class SamePackageSub<T extends Number> {}";
+    TypeParameter declaration =
+        StaticJavaParser.parse(source).findFirst(TypeParameter.class).orElseThrow();
+    Assert.assertNull(
+        source,
+        JavaParserUtil.typeToTypeMirrorUsingTypeVariableBounds(
+            elements, types, declaration, new HashMap<>()));
+  }
+
+  /**
+   * Asserts that {@link JavaParserUtil#typeToTypeMirrorUsingTypeVariableBounds} converts the given
+   * type, as written in the given compilation unit, to a TypeMirror whose string representation is
+   * {@code expected}. Also asserts that {@link JavaParserUtil#typeToTypeMirror} converts the type
+   * to the same TypeMirror, or to null if the type contains a use of a type variable.
+   *
+   * @param expected the string representation of the expected TypeMirror, or null if the TypeMirror
+   *     should not be determined
+   * @param typeDeclaration the type declaration that the compilation unit, which is in package
+   *     {@link #SUPERPKG}, contains, possibly preceded by imports; it must be the declaration of a
+   *     type that is on the classpath, and it must contain {@code typeString}
+   * @param typeString the type to convert, as written in {@code typeDeclaration}
+   */
+  private static void assertTypeMirror(
+      @Nullable String expected, String typeDeclaration, String typeString) {
+    String source = "package " + SUPERPKG + "; " + typeDeclaration;
+    Type type =
+        StaticJavaParser.parse(source).findAll(Type.class).stream()
+            .filter(t -> !(t instanceof TypeParameter) && t.toString().equals(typeString))
+            .findFirst()
+            .orElseThrow(() -> new BugInCF("No type %s in %s", typeString, source));
+
+    TypeMirror withBounds =
+        JavaParserUtil.typeToTypeMirrorUsingTypeVariableBounds(
+            elements, types, type, new HashMap<>());
+    Assert.assertEquals(source, expected, withBounds == null ? null : withBounds.toString());
+
+    boolean usesTypeVariable =
+        type.getElementType() instanceof ClassOrInterfaceType classType
+            && JavaParserUtil.resolveTypeNameAsTypeParameter(elements, classType) != null;
+    TypeMirror withoutBounds =
+        JavaParserUtil.typeToTypeMirror(elements, types, type, new HashMap<>());
+    Assert.assertEquals(
+        source,
+        usesTypeVariable ? null : expected,
+        withoutBounds == null ? null : withoutBounds.toString());
+  }
+
+  /**
    * Asserts that {@link JavaParserUtil#resolveTypeNameAsTypeElement} resolves {@code typeName}, as
    * written in the given compilation unit, to a type element with the given fully-qualified name.
    *
@@ -205,6 +382,9 @@ public class JavaParserUtilTest {
   /** Used by the tests to look up names. */
   private static final Elements elements;
 
+  /** Used by the tests to create types. */
+  private static final Types types;
+
   static {
     Context context = new Context();
     // The file manager must be created, and its classpath set, before the compilation environment
@@ -222,6 +402,7 @@ public class JavaParserUtilTest {
     javac.initModules(com.sun.tools.javac.util.List.nil());
     javac.enterDone();
     elements = env.getElementUtils();
+    types = env.getTypeUtils();
   }
 
   /**

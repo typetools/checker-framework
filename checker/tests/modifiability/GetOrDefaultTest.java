@@ -134,16 +134,24 @@ public class GetOrDefaultTest {
 
   void foo7(MyGodMap<String, List<String>> m) {
     List<String> d1 = m.getOrDefault2("hello", d);
-    // :: error: [assignment] :: error: [assignment] :: error: [assignment]
+    // :: error: [assignment] :: error: [type.arguments.not.inferred] :: error: [assignment] ::
+    // error: [type.arguments.not.inferred] :: error: [assignment] :: error:
+    // [type.arguments.not.inferred]
     @Modifiable List<String> d2 = m.getOrDefault2("hello", d);
-    // :: error: [assignment] :: error: [assignment] :: error: [assignment]
+    // :: error: [assignment] :: error: [type.arguments.not.inferred] :: error: [assignment] ::
+    // error: [type.arguments.not.inferred] :: error: [assignment] :: error:
+    // [type.arguments.not.inferred]
     @Unmodifiable List<String> d3 = m.getOrDefault2("hello", d);
     List<String> d4 = m.getOrDefault2("hello", dm);
     @Modifiable List<String> d5 = m.getOrDefault2("hello", dm);
-    // :: error: [assignment] :: error: [assignment] :: error: [assignment]
+    // :: error: [assignment] :: error: [type.arguments.not.inferred] :: error: [assignment] ::
+    // error: [type.arguments.not.inferred] :: error: [assignment] :: error:
+    // [type.arguments.not.inferred]
     @Unmodifiable List<String> d6 = m.getOrDefault2("hello", dm);
     List<String> d7 = m.getOrDefault2("hello", du);
-    // :: error: [assignment] :: error: [assignment] :: error: [assignment]
+    // :: error: [assignment] :: error: [type.arguments.not.inferred] :: error: [assignment] ::
+    // error: [type.arguments.not.inferred] :: error: [assignment] :: error:
+    // [type.arguments.not.inferred]
     @Modifiable List<String> d8 = m.getOrDefault2("hello", du);
     @Unmodifiable List<String> d9 = m.getOrDefault2("hello", du);
   }
@@ -162,7 +170,9 @@ public class GetOrDefaultTest {
     @Unmodifiable List<String> d3 = m.getOrDefault2("hello", d);
     List<String> d4 = m.getOrDefault2("hello", dm);
     @Modifiable List<String> d5 = m.getOrDefault2("hello", dm);
-    // :: error: [assignment] :: error: [assignment] :: error: [assignment]
+    // :: error: [assignment] :: error: [type.arguments.not.inferred] :: error: [assignment] ::
+    // error: [type.arguments.not.inferred] :: error: [assignment] :: error:
+    // [type.arguments.not.inferred]
     @Unmodifiable List<String> d6 = m.getOrDefault2("hello", dm);
     // :: error: [type.arguments.not.inferred] :: error: [type.arguments.not.inferred] :: error:
     // [type.arguments.not.inferred]
@@ -199,7 +209,9 @@ public class GetOrDefaultTest {
     // [type.arguments.not.inferred]
     @Unmodifiable List<String> d6 = m.getOrDefault2("hello", dm);
     List<String> d7 = m.getOrDefault2("hello", du);
-    // :: error: [assignment] :: error: [assignment] :: error: [assignment]
+    // :: error: [assignment] :: error: [type.arguments.not.inferred] :: error: [assignment] ::
+    // error: [type.arguments.not.inferred] :: error: [assignment] :: error:
+    // [type.arguments.not.inferred]
     @Modifiable List<String> d8 = m.getOrDefault2("hello", du);
     @Unmodifiable List<String> d9 = m.getOrDefault2("hello", du);
   }

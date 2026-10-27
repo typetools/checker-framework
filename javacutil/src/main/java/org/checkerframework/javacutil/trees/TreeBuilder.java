@@ -634,7 +634,7 @@ public class TreeBuilder {
    * @return a NewArrayTree to create a new array with initializers
    */
   public NewArrayTree buildNewArray(TypeMirror componentType, List<ExpressionTree> elems) {
-    @SuppressWarnings("nullness:assignment") // Poly + inference bug.
+    @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
     List<JCExpression> exprs = CollectionsP.mapList(JCExpression.class::cast, elems);
 
     JCTree.JCNewArray newArray =

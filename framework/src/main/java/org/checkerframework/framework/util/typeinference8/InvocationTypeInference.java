@@ -52,7 +52,6 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SwitchExpressionScanner;
 import org.checkerframework.javacutil.SwitchExpressionScanner.FunctionalSwitchExpressionScanner;
-import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -128,83 +127,20 @@ public class InvocationTypeInference {
   protected final Tree inferenceExpression;
 
   /**
-   * If false, the target type of {@link #inferenceExpression} is not used: inference is performed
-   * as if the invocation were not a poly expression. See {@link
-   * DefaultTypeArgumentInference#inferTypeArgs}.
-   */
-  protected final boolean useTargetType;
-
-  /**
-   * Creates an inference problem that uses the target type of the expression.
-   *
-   * @param factory the annotated type factory to use
-   * @param pathToExpression path to the expression for which inference is performed
-   */
-  public InvocationTypeInference(AnnotatedTypeFactory factory, TreePath pathToExpression) {
-    this(factory, pathToExpression, true);
-  }
-
-  /**
    * Creates an inference problem.
    *
    * @param factory the annotated type factory to use
    * @param pathToExpression path to the expression for which inference is performed
-   * @param useTargetType if false, ignore the target type of the expression for which inference is
-   *     performed
    */
   @SuppressWarnings({
     "nullness:argument", // Java8InferenceContext doesn't use "this" during construction
     "nullness:assignment", // Java8InferenceContext doesn't use "this" during construction
     "this-escape"
   })
-  public InvocationTypeInference(
-      AnnotatedTypeFactory factory, TreePath pathToExpression, boolean useTargetType) {
+  public InvocationTypeInference(AnnotatedTypeFactory factory, TreePath pathToExpression) {
     this.checker = factory.getChecker();
     this.context = new Java8InferenceContext(factory, pathToExpression, this);
     this.inferenceExpression = pathToExpression.getLeaf();
-    this.useTargetType = useTargetType;
-  }
-
-  /**
-   * True if {@link #infer(ExpressionTree, AnnotatedExecutableType)} has created constraints against
-   * the target type of {@link #inferenceExpression}, that target type comes from the context of
-   * {@link #inferenceExpression} rather than from {@link AnnotatedTypeFactory#getDummyAssignedTo},
-   * and inference had not already failed before those constraints were created.
-   */
-  private boolean contextTargetTypeCanCauseFailure = false;
-
-  /**
-   * True if {@link #useTargetType} is false, {@link #inferenceExpression} has a target type from
-   * its context, inference succeeded, and the inferred type of {@link #inferenceExpression} is
-   * assignable to that target type according to its Java type but not according to its qualifiers.
-   * A primitive target type is boxed before the comparison.
-   */
-  private boolean qualifiersIncompatibleWithTarget = false;
-
-  /**
-   * Returns true if {@link #infer(ExpressionTree, AnnotatedExecutableType)} has created constraints
-   * against the target type of the expression for which inference is performed, that target type
-   * comes from the expression's context rather than from {@link
-   * AnnotatedTypeFactory#getDummyAssignedTo}, and inference had not already failed before those
-   * constraints were created. If this returns false and inference failed, then inference without
-   * the target type fails too.
-   *
-   * @return true if a failure of inference might be caused by a target type from the context
-   */
-  public boolean canContextTargetTypeCauseFailure() {
-    return contextTargetTypeCanCauseFailure;
-  }
-
-  /**
-   * Returns true if this inference problem ignored the target type, succeeded, and inferred a type
-   * for the expression whose Java type is compatible with the target type but whose qualifiers are
-   * not.
-   *
-   * @return true if inference without the target type inferred a type whose qualifiers are
-   *     incompatible with the target type
-   */
-  public boolean isQualifiersIncompatibleWithTarget() {
-    return qualifiersIncompatibleWithTarget;
   }
 
   /**
@@ -312,9 +248,6 @@ public class InvocationTypeInference {
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2">JLS
    * 18.5.2</a>.
    *
-   * <p>This method does not record the types of implicitly typed lambda parameters; the caller
-   * calls {@link #recordLambdaParameterTypes()} if it uses the result.
-   *
    * @param invocation invocation which needs inference
    * @param executableType type of the method invocation
    * @return the result of inference
@@ -325,11 +258,7 @@ public class InvocationTypeInference {
     ExecutableType e = executableType.getUnderlyingType();
     AbstractExecutableType inferenceExecutableType =
         new AbstractInvocationType(executableType, e, invocation, context);
-    Tree contextTree = TreePathUtil.getContextForPolyExpression(context.getPathToExpression());
-    ProperType target = context.inferenceTypeFactory.getTargetType(contextTree);
-    boolean isPoly = TreeUtils.isPolyExpression(invocation);
-    // If false, the target type comes from AnnotatedTypeFactory#getDummyAssignedTo.
-    boolean targetFromContext = contextTree != null;
+    ProperType target = context.inferenceTypeFactory.getTargetType();
     List<? extends ExpressionTree> args;
     if (invocation instanceof MethodInvocationTree mit) {
       args = mit.getArguments();
@@ -340,33 +269,26 @@ public class InvocationTypeInference {
     Theta map =
         context.inferenceTypeFactory.createThetaForInvocation(
             invocation, inferenceExecutableType, context);
-    BoundSet b2 = createB2(inferenceExecutableType, args, map);
+    BoundSet b2 = createB2(invocation, inferenceExecutableType, args, map);
     BoundSet b3;
-    if (target != null && isPoly && useTargetType) {
-      // Check b2 before createB3, which might add bounds to it.
-      contextTargetTypeCanCauseFailure = targetFromContext && !b2.annoInferenceFailed;
+    if (target != null && TreeUtils.isPolyExpression(invocation)) {
       b3 = createB3(b2, invocation, inferenceExecutableType, target, map);
     } else {
       b3 = b2;
     }
-    ConstraintSet c = createC(inferenceExecutableType, args, map);
+    ConstraintSet c = createC(invocation, inferenceExecutableType, args, map);
 
     BoundSet b4 = getB4(b3, c);
     b4.resolve();
-    if (target != null
-        && isPoly
-        && !useTargetType
-        && targetFromContext
-        && !b4.annoInferenceFailed) {
-      AbstractType returnType = inferenceExecutableType.getReturnType(map).applyInstantiations();
-      qualifiersIncompatibleWithTarget =
-          returnType.isProper()
-              && ((ProperType) returnType).isAssignable(target.boxType())
-                  == ConstraintSet.TRUE_ANNO_FAIL;
-    }
+    // Unchecked conversion that is necessary to reduce a constraint that no argument constraint
+    // gave rise to, such as one derived during incorporation or resolution, is necessary to infer
+    // `invocation` itself.  javac likewise erases the return type of `invocation` if solving its
+    // inference context needs unchecked conversion.
+    b4.recordUncheckedConversionFor(invocation);
+    recordLambdaParameterTypes();
     return new InferenceResult(
         b4.getInstantiatedVariables(),
-        b4.isUncheckedConversion(),
+        context.needUncheckedConversion,
         b4.annoInferenceFailed,
         b4.errorMsg);
   }
@@ -375,10 +297,9 @@ public class InvocationTypeInference {
    * Records, on the type factory, the type of every implicitly typed lambda parameter that this
    * inference problem determined.
    *
-   * <p>Call this only after {@link #infer(ExpressionTree, AnnotatedExecutableType)}, so that the
-   * recorded types are final, and only if the result of this inference problem is used.
+   * <p>Call this only after resolution, so that the recorded types are final.
    */
-  public void recordLambdaParameterTypes() {
+  private void recordLambdaParameterTypes() {
     for (VariableElement param : context.lambdaParamTargets.keySet()) {
       AnnotatedTypeMirror type = getLambdaParameterType(param);
       if (type == null) {
@@ -441,9 +362,12 @@ public class InvocationTypeInference {
     }
 
     List<Variable> thetaPrime = b3.resolve();
+    // See the comment in infer(ExpressionTree, AnnotatedExecutableType) about unchecked conversion
+    // that is necessary to resolve the bound set.
+    b3.recordUncheckedConversionFor(invocation);
 
     return new InferenceResult(
-        thetaPrime, b3.isUncheckedConversion(), b3.annoInferenceFailed, b3.errorMsg);
+        thetaPrime, context.needUncheckedConversion, b3.annoInferenceFailed, b3.errorMsg);
   }
 
   /**
@@ -466,13 +390,21 @@ public class InvocationTypeInference {
    *   <li value="4">Reducing and incorporating those constraints which finally produces B2.
    * </ol>
    *
+   * <p>If unchecked conversion is necessary to reduce and incorporate those constraints, then this
+   * method records that {@code invocation} needs unchecked conversion.
+   *
+   * @param invocation the method invocation or class instance creation whose arguments are {@code
+   *     args}
    * @param executableType the type of the method or constructor invoked
    * @param args argument expression trees
    * @param map map of type variables to (inference) variables
    * @return bound set used to determine whether a method is applicable
    */
   public BoundSet createB2(
-      AbstractExecutableType executableType, List<? extends ExpressionTree> args, Theta map) {
+      ExpressionTree invocation,
+      AbstractExecutableType executableType,
+      List<? extends ExpressionTree> args,
+      Theta map) {
 
     // boundSet starts as B0 and then is transformed into B2 and returned.
     BoundSet boundSet = BoundSet.initialBounds(map, context);
@@ -499,6 +431,10 @@ public class InvocationTypeInference {
         c.add(new Expression("Argument constraint", ei, fi));
       }
     }
+    // Constraints that these constraints give rise to may be reduced after B2 is created, while
+    // B3 or B4 is incorporated.  Unchecked conversion that is necessary to reduce one of them is
+    // still necessary for `invocation` to be applicable.
+    c.setInvocation(invocation);
 
     BoundSet newBounds = c.reduce(context);
     if (newBounds.containsFalse()) {
@@ -506,14 +442,18 @@ public class InvocationTypeInference {
     }
     // Incorporating the constraints into boundSet (which is B1) makes boundSet be B2.
     boundSet.incorporateToFixedPoint(newBounds);
+    boundSet.recordUncheckedConversionFor(invocation);
 
     return boundSet;
   }
 
   /**
-   * Same as {@link #createB2(AbstractExecutableType, List, Theta)}, but for method references. A
-   * list of types is used instead of a list of arguments. These types are the types of the formal
-   * parameters of function type of target type of the method reference.
+   * Same as {@link #createB2(ExpressionTree, AbstractExecutableType, List, Theta)}, but for method
+   * references. A list of types is used instead of a list of arguments. These types are the types
+   * of the formal parameters of function type of target type of the method reference.
+   *
+   * <p>If unchecked conversion is necessary for the compile-time declaration to be applicable, then
+   * this method records that the method reference needs unchecked conversion.
    *
    * @param executableType the type of the method or constructor invoked
    * @param args types to use as arguments; this method does not modify it
@@ -563,7 +503,7 @@ public class InvocationTypeInference {
       // declaration's type is used as-is, unparameterized. Using a raw type in place of its
       // parameterization requires unchecked conversion (JLS 5.1.9), matching javac's
       // rawtypes/unchecked warning for this reference.
-      b0.setUncheckedConversion(true);
+      b0.setPendingUncheckedConversion(true);
     }
 
     for (int i = firstArg; i < formals.size(); i++) {
@@ -575,6 +515,8 @@ public class InvocationTypeInference {
               executableType.getMethodRef(), i);
       c.add(new Typing(source, ei, fi, Kind.TYPE_COMPATIBILITY));
     }
+    // See the comment in createB2.
+    c.setInvocation(methodRef);
 
     BoundSet newBounds = c.reduce(context);
     if (newBounds.containsFalse()) {
@@ -584,6 +526,7 @@ public class InvocationTypeInference {
     }
     // Incorporating the constraints into b0 (which is B1) makes b0 be B2.
     b0.incorporateToFixedPoint(newBounds);
+    b0.recordUncheckedConversionFor(methodRef);
 
     return b0;
   }
@@ -594,7 +537,9 @@ public class InvocationTypeInference {
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.1">JLS
    * 18.5.2.1</a>.)
    *
-   * @param b2 BoundSet created by {@link #createB2(AbstractExecutableType, List, Theta)}
+   * @param b2 BoundSet created by {@link #createB2(ExpressionTree, AbstractExecutableType, List,
+   *     Theta)} or {@link #createB2MethodRef}, which records whether {@code invocation} needs
+   *     unchecked conversion
    * @param invocation a method or constructor invocation
    * @param executableType the type of the method or constructor invoked by expression
    * @param target target type of the invocation
@@ -608,7 +553,14 @@ public class InvocationTypeInference {
       AbstractType target,
       Theta map) {
     AbstractType r = executableType.getReturnType(map);
-    if (b2.isUncheckedConversion()) {
+    // At this point, `invocation` is in needUncheckedConversion only if reducing and incorporating
+    // B2 needed unchecked conversion, as JLS 18.5.2.1 specifies.  Reducing the constraints of C,
+    // which happens later, may also add `invocation` to needUncheckedConversion and so erase the
+    // return type of its invocation type, but that does not affect B3.  This matches javac:
+    // Infer#instantiateMethod decides whether to generate return constraints before it completes
+    // the deferred attribution of arguments that are not pertinent to applicability, and
+    // Attr#checkMethodIdInternal erases the return type afterward.
+    if (context.needUncheckedConversion.contains(invocation)) {
       // If unchecked conversion was necessary for the method to be applicable during
       // constraint set reduction in 18.5.1, the constraint formula <|R| -> T> is reduced and
       // incorporated with B2.
@@ -707,6 +659,8 @@ public class InvocationTypeInference {
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.5.2.2">JLS
    * 18.5.2.2</a>.)
    *
+   * @param invocation the method invocation or class instance creation whose arguments are {@code
+   *     args}
    * @param executableType type of method invoked
    * @param args argument expression trees
    * @param map map from type variable to inference variable
@@ -714,7 +668,10 @@ public class InvocationTypeInference {
    *     applicability
    */
   public ConstraintSet createC(
-      AbstractExecutableType executableType, List<? extends ExpressionTree> args, Theta map) {
+      ExpressionTree invocation,
+      AbstractExecutableType executableType,
+      List<? extends ExpressionTree> args,
+      Theta map) {
     ConstraintSet c = new ConstraintSet();
     List<AbstractType> formals = executableType.getParameterTypes(map, args.size());
 
@@ -726,13 +683,18 @@ public class InvocationTypeInference {
       }
       c.addAll(createAdditionalArgConstraints(ei, fi, map));
     }
+    // If unchecked conversion is necessary to reduce one of these constraints, then `invocation`
+    // needs unchecked conversion.  The constraints of nested invocations already have their own
+    // invocation.
+    c.setInvocation(invocation);
 
     return c;
   }
 
   /**
    * Adds argument constraints for the argument {@code ei} and its subexpressions. These are in
-   * addition to the constraints added in {@link #createC(AbstractExecutableType, List, Theta)}.
+   * addition to the constraints added in {@link #createC(ExpressionTree, AbstractExecutableType,
+   * List, Theta)}.
    *
    * <p>It does this by traversing {@code ei} if it is a method reference, lambda, method
    * invocation, new class tree, conditional expression, switch expression, or parenthesized
@@ -830,7 +792,7 @@ public class InvocationTypeInference {
         context.inferenceTypeFactory.getTypeOfMethodAdaptedToUse(invocation);
     Theta newMap =
         context.inferenceTypeFactory.createThetaForInvocation(invocation, executableType, context);
-    ConstraintSet set = context.inference.createC(executableType, args, newMap);
+    ConstraintSet set = context.inference.createC(invocation, executableType, args, newMap);
     set.applyInstantiations();
     return set;
   }

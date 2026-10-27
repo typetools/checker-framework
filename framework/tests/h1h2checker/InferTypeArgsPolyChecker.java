@@ -86,10 +86,7 @@ public class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
 
     // :: error: [type.arguments.not.inferred]
     String str = methodD2(os2, os1, "");
-    // DD is inferred to be @H1S1 @H2S1 OUTER_SCOPE_TV, from os2.  That is not a subtype of the
-    // target type that inference uses, OUTER_SCOPE_TV without the local variable default (see
-    // InferenceFactory#assignedToVariable).  But the initialization of osNaked3 is legal, because
-    // the local variable default does apply to it.  So no error is expected.
+    // :: error: [type.arguments.not.inferred]
     OUTER_SCOPE_TV osNaked3 = methodD2(os1, os1, os2);
   }
 
