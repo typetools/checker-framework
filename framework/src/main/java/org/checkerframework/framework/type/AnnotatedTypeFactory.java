@@ -2984,15 +2984,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         //   x0.super();
         //   }
         // So the code below deals with this.
+        // The enclosing instance is the receiver of the super constructor.
+        AnnotatedDeclaredType superReceiver = superCon.getReceiverType();
+        if (superReceiver == null) {
+          throw new BugInCF("super constructor %s of %s has no receiver", superCon, tree);
+        }
         List<AnnotatedTypeMirror> p = new ArrayList<>(superCon.getParameterTypes().size() + 1);
         if (con.getReceiverType() != null) {
           // Because the anonymous constructor doesn't have annotated receiver type,
           // we copy the receiver type from the super constructor invoked in the anonymous
           // constructor.
-          con.setReceiverType(superCon.getReceiverType());
+          con.setReceiverType(superReceiver);
         }
-        // The enclosing instance is the receiver of the super constructor.
-        p.add(superCon.getReceiverType());
+        p.add(superReceiver);
         p.addAll(1, superCon.getParameterTypes());
         con.setParameterTypes(p);
       } else {
