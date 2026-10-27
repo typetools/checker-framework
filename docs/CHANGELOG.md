@@ -11,6 +11,9 @@
 
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
+New method `BaseTypeVisitor.shouldSkipClass()` lets a checker skip a class
+entirely, including dataflow analysis.
+
 ### Closed issues
 
 ## Version 4.3.1 (2026-10-08)
