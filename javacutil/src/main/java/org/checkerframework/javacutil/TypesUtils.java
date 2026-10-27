@@ -2,6 +2,7 @@ package org.checkerframework.javacutil;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Lint.LintCategory;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
@@ -14,6 +15,7 @@ import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
+import com.sun.tools.javac.util.Warner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -962,6 +964,26 @@ public final class TypesUtils {
    */
   public static boolean isErasedSubtype(TypeMirror subtype, TypeMirror supertype, Types types) {
     return types.isSubtype(types.erasure(subtype), types.erasure(supertype));
+  }
+
+  /**
+   * Returns true if unchecked conversion is necessary for {@code source} to be compatible with
+   * {@code target} in a loose invocation context (JLS 5.3). Ignores annotations.
+   *
+   * @param source the source type
+   * @param target the target type
+   * @param processingEnv the processing environment
+   * @return true if unchecked conversion is necessary for {@code source} to be compatible with
+   *     {@code target}
+   */
+  public static boolean needsUncheckedConversion(
+      TypeMirror source, TypeMirror target, ProcessingEnvironment processingEnv) {
+    com.sun.tools.javac.code.Types javacTypes =
+        com.sun.tools.javac.code.Types.instance(InternalUtils.getJavacContext(processingEnv));
+    // isConvertible records, in the javac Warner, any lint warnings that the conversion would need.
+    Warner lintRecorder = new Warner();
+    javacTypes.isConvertible((Type) source, (Type) target, lintRecorder);
+    return lintRecorder.hasNonSilentLint(LintCategory.UNCHECKED);
   }
 
   /**
