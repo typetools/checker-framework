@@ -1661,6 +1661,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     for (PurityKind purityKind : purityKinds) {
       switch (purityKind) {
         case SIDE_EFFECT_FREE -> result.add("@SideEffectFree");
+        case SIDE_EFFECTS_ONLY -> result.add("@SideEffectsOnly");
         case DETERMINISTIC -> result.add("@Deterministic");
       }
     }
