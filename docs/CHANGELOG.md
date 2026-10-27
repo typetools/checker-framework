@@ -12,6 +12,8 @@
 New class `AbstractSetInclusionQualifierHierarchy` is the superclass of
 `SubtypeIsSubsetQualifierHierarchy` and `SubtypeIsSupersetQualifierHierarchy`.
 
+Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
+
 ### Closed issues
 
 ## Version 4.3.1 (2026-10-08)
