@@ -177,6 +177,7 @@ public class TreeBuilder {
     // cases calling that method crashes with a Symbol$CompletionFailure exception.  See
     // https://github.com/typetools/checker-framework/issues/6396.  The code below directly
     // searches all supertypes for the method and avoids the crash.
+    closureLoop:
     for (Type s : javacTypes.closure(((Symbol) exprElement).type)) {
       for (Symbol m : s.tsym.members().getSymbolsByName(closeName)) {
         if (!(m instanceof Symbol.MethodSymbol msym)) {
@@ -184,13 +185,21 @@ public class TreeBuilder {
         }
         if (!msym.isStatic() && msym.getParameters().isEmpty()) {
           closeMethod = msym;
-          break;
+          break closureLoop;
         }
       }
     }
 
     assert closeMethod != null
         : "@AssumeAssertion(nullness): no close method declared for expression type";
+
+    // The search above may find an abstract close method of an interface, rather than the method
+    // that the expression type inherits from a superclass.  Use the method that implements it.
+    Symbol.MethodSymbol implementation =
+        closeMethod.implementation((Symbol.TypeSymbol) exprElement, javacTypes, true);
+    if (implementation != null) {
+      closeMethod = implementation;
+    }
 
     JCTree.JCFieldAccess closeAccess = TreeUtils.Select(maker, autoCloseableExpr, closeMethod);
 
