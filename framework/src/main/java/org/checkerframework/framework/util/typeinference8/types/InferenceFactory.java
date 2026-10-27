@@ -227,7 +227,10 @@ public class InferenceFactory {
 
         AnnotatedTypeMirror paramType =
             assignedToExecutable(
-                path, methodInvocation, methodInvocation.getArguments(), executableType);
+                path,
+                methodInvocation,
+                methodInvocation.getArguments(),
+                executableType.getParameterTypes());
         return new ProperType(paramType, this.context);
       }
       case NEW_CLASS -> {
@@ -235,7 +238,14 @@ public class InferenceFactory {
         AnnotatedExecutableType constructorType =
             factory.constructorFromUseWithoutTypeArgInference(newClassTree).executableType();
         AnnotatedTypeMirror constATM =
-            assignedToExecutable(path, newClassTree, newClassTree.getArguments(), constructorType);
+            assignedToExecutable(
+                path,
+                newClassTree,
+                newClassTree.getArguments(),
+                TreeUtils.parametersForArguments(
+                    constructorType.getElement(),
+                    newClassTree,
+                    constructorType.getParameterTypes()));
         return new ProperType(constATM, this.context);
       }
       case NEW_ARRAY -> {
@@ -342,24 +352,24 @@ public class InferenceFactory {
    * @param path path to the argument
    * @param invocation a method or constructor invocation
    * @param arguments the argument expression tress
-   * @param executableType the type of the method or constructor
+   * @param paramTypes the types of the formal parameters of the method or constructor that
+   *     correspond to {@code arguments}; see {@link TreeUtils#parametersForArguments}
    * @return the rhs of the assignment of an argument and its formal parameter
    */
   private static AnnotatedTypeMirror assignedToExecutable(
       TreePath path,
       ExpressionTree invocation,
       List<? extends ExpressionTree> arguments,
-      AnnotatedExecutableType executableType) {
+      List<AnnotatedTypeMirror> paramTypes) {
     int treeIndex = argumentIndex(path, invocation, arguments);
 
-    if (treeIndex >= executableType.getParameterTypes().size() - 1
-        && TreeUtils.isVarargsCall(invocation)) {
-      treeIndex = executableType.getParameterTypes().size() - 1;
-      AnnotatedTypeMirror typeMirror = executableType.getParameterTypes().get(treeIndex);
+    if (treeIndex >= paramTypes.size() - 1 && TreeUtils.isVarargsCall(invocation)) {
+      treeIndex = paramTypes.size() - 1;
+      AnnotatedTypeMirror typeMirror = paramTypes.get(treeIndex);
       return ((AnnotatedArrayType) typeMirror).getComponentType();
     }
 
-    return executableType.getParameterTypes().get(treeIndex);
+    return paramTypes.get(treeIndex);
   }
 
   /**

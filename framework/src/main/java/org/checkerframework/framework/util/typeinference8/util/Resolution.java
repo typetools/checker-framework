@@ -114,7 +114,9 @@ public final class Resolution {
     Resolution resolution = new Resolution(context, dependencies);
     boundSet = resolution.resolveSmallestSet(unresolvedVars, boundSet);
     checkNoFalse(boundSet, "after resolving", unresolvedVars);
-    return resolveIgnoredAnnotations(Collections.singletonList(a), boundSet, context);
+    // Resolving `a` can also resolve the variables on which it depends, and give any of them an
+    // instantiation that ignores annotations.
+    return resolveIgnoredAnnotations(new ArrayList<>(dependencies.get(a)), boundSet, context);
   }
 
   /**
@@ -160,7 +162,8 @@ public final class Resolution {
       added |= var.getBounds().addBound(null, BoundKind.EQUAL, t);
     }
     if (added) {
-      boundSet.incorporateToFixedPoint(new BoundSet(context));
+      boundSet.reachFixedPoint();
+      checkNoFalse(boundSet, "after resolving ignored annotations of", vars);
     }
     return boundSet;
   }
