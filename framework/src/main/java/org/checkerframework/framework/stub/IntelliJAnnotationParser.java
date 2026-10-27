@@ -126,8 +126,7 @@ public final class IntelliJAnnotationParser {
     NodeList itemNodes = doc.getElementsByTagName("item");
     for (int i = 0; i < itemNodes.getLength(); i++) {
       Node node = itemNodes.item(i);
-      if (node.getNodeType() == Node.ELEMENT_NODE) {
-        org.w3c.dom.Element itemElement = (org.w3c.dom.Element) node;
+      if (node instanceof org.w3c.dom.Element itemElement) {
         String itemName = itemElement.getAttribute("name");
         if (itemName == null || itemName.trim().isEmpty()) {
           continue;
@@ -258,8 +257,9 @@ public final class IntelliJAnnotationParser {
     NodeList children = parent.getChildNodes();
     for (int i = 0; i < children.getLength(); i++) {
       Node child = children.item(i);
-      if (child.getNodeType() == Node.ELEMENT_NODE && tagName.equals(child.getNodeName())) {
-        result.add((org.w3c.dom.Element) child);
+      if (child instanceof org.w3c.dom.Element childElement
+          && tagName.equals(childElement.getNodeName())) {
+        result.add(childElement);
       }
     }
     return result;
@@ -566,7 +566,7 @@ public final class IntelliJAnnotationParser {
     }
     String escape = s.substring(1);
     if (escape.length() == 1) {
-      @Nullable Character simpleEscape =
+      Character simpleEscape =
           switch (escape.charAt(0)) {
             case 'n' -> '\n';
             case 'r' -> '\r';
