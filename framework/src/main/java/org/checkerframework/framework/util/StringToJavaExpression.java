@@ -230,7 +230,8 @@ public interface StringToJavaExpression {
   static JavaExpression atConstructorInvocation(
       String expression, NewClassTree newClassTree, SourceChecker checker)
       throws JavaExpressionParseException {
-    ExecutableElement ee = TreeUtils.elementFromUse(newClassTree);
+    // For an anonymous class, the contract is written on the super constructor.
+    ExecutableElement ee = TreeUtils.getSuperConstructor(newClassTree);
     JavaExpression javaExpr = atMethodDecl(expression, ee, checker);
     return javaExpr.atConstructorInvocation(newClassTree);
   }
