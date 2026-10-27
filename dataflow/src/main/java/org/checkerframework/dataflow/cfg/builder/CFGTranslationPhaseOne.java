@@ -1995,6 +1995,31 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return null;
   }
 
+  protected VariableTree createEnhancedForLoopIteratorVariable(
+      MethodInvocationTree iteratorCall, VariableElement variableElement) {
+    TypeMirror iteratorType = TreeUtils.typeOf(iteratorCall);
+
+    // Declare and initialize a new, unique iterator variable
+    VariableTree iteratorVariable =
+        treeBuilder.buildVariableDecl(
+            iteratorType, // annotatedIteratorTypeTree,
+            uniqueName("iter"),
+            variableElement.getEnclosingElement(),
+            iteratorCall);
+    return iteratorVariable;
+  }
+
+  protected VariableTree createEnhancedForLoopArrayVariable(
+      ExpressionTree expression, VariableElement variableElement) {
+    TypeMirror arrayType = TreeUtils.typeOf(expression);
+
+    // Declare and initialize a temporary array variable
+    VariableTree arrayVariable =
+        treeBuilder.buildVariableDecl(
+            arrayType, uniqueName("array"), variableElement.getEnclosingElement(), expression);
+    return arrayVariable;
+  }
+
   /**
    * Extends the CFG with an access to the length of the array variable of an enhanced for loop.
    *
@@ -2031,31 +2056,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   private static boolean mayBeNull(ExpressionTree expression) {
     expression = TreeUtils.withoutParens(expression);
     return !(expression instanceof NewClassTree || expression instanceof NewArrayTree);
-  }
-
-  protected VariableTree createEnhancedForLoopIteratorVariable(
-      MethodInvocationTree iteratorCall, VariableElement variableElement) {
-    TypeMirror iteratorType = TreeUtils.typeOf(iteratorCall);
-
-    // Declare and initialize a new, unique iterator variable
-    VariableTree iteratorVariable =
-        treeBuilder.buildVariableDecl(
-            iteratorType, // annotatedIteratorTypeTree,
-            uniqueName("iter"),
-            variableElement.getEnclosingElement(),
-            iteratorCall);
-    return iteratorVariable;
-  }
-
-  protected VariableTree createEnhancedForLoopArrayVariable(
-      ExpressionTree expression, VariableElement variableElement) {
-    TypeMirror arrayType = TreeUtils.typeOf(expression);
-
-    // Declare and initialize a temporary array variable
-    VariableTree arrayVariable =
-        treeBuilder.buildVariableDecl(
-            arrayType, uniqueName("array"), variableElement.getEnclosingElement(), expression);
-    return arrayVariable;
   }
 
   @Override
