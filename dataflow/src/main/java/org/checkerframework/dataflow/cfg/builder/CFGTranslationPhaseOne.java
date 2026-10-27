@@ -1235,10 +1235,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * list of {@link Node}s representing the arguments converted for a call of the method. This
    * method applies to both method invocations and constructor calls.
    *
+   * <p>For {@code outer.new Inner(...) {...}}, the anonymous constructor's first parameter is the
+   * enclosing instance {@code outer}, which is not among {@code actualExprs}. This method skips
+   * that parameter and matches the remaining formal parameters with {@code actualExprs}; see {@link
+   * TreeUtils#parametersForArguments}.
+   *
    * @param tree the invocation tree for the call
    * @param method an ExecutableElement representing a method to be called
    * @param methodType an ExecutableType representing the type of the method call; the type must be
-   *     viewpoint-adapted to the call
+   *     viewpoint-adapted to the call. For an anonymous constructor with an explicit enclosing
+   *     expression, its first parameter type is that of the enclosing instance.
    * @param actualExprs a List of argument expressions to a call
    * @return a List of {@link Node}s representing arguments after conversions required by a call to
    *     this method
