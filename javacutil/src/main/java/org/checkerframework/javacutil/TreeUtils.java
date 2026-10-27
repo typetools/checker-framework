@@ -752,14 +752,18 @@ public final class TreeUtils {
     //
     // which is a method invocation of the super constructor.
 
-    // The method call is guaranteed to return nonnull.
-    JCMethodDecl anonConstructor =
-        (JCMethodDecl) TreeInfo.declarationFor(jcNewClass.constructor, jcNewClass);
-    assert anonConstructor != null;
-    assert anonConstructor.body.stats.size() == 1;
-    JCExpressionStatement stmt = (JCExpressionStatement) anonConstructor.body.stats.head;
-    JCMethodInvocation superInvok = (JCMethodInvocation) stmt.expr;
-    return (ExecutableElement) TreeInfo.symbol(superInvok.meth);
+    // The anonymous constructor is a member of the class body.  Searching only the members, rather
+    // than calling TreeInfo.declarationFor, avoids scanning the entire class body.
+    for (JCTree member : jcNewClass.def.defs) {
+      if (member instanceof JCMethodDecl anonConstructor
+          && jcNewClass.constructor.equals(anonConstructor.sym)) {
+        assert anonConstructor.body.stats.size() == 1;
+        JCExpressionStatement stmt = (JCExpressionStatement) anonConstructor.body.stats.head;
+        JCMethodInvocation superInvok = (JCMethodInvocation) stmt.expr;
+        return (ExecutableElement) TreeInfo.symbol(superInvok.meth);
+      }
+    }
+    throw new BugInCF("No anonymous constructor in %s", newClassTree);
   }
 
   /**
@@ -1695,6 +1699,11 @@ public final class TreeUtils {
    * <p>For {@code outer.new Inner(...) {...}}, javac gives the anonymous constructor an extra first
    * parameter for the enclosing instance {@code outer}, which is not among the arguments of {@code
    * tree}. This method omits that parameter. Otherwise, this method returns {@code params}.
+   *
+   * <p>For a {@link NewClassTree} that creates an anonymous class, a client that needs parameter
+   * elements, such as for their names or declaration annotations, should instead use the parameters
+   * of {@link #getSuperConstructor}. The anonymous constructor's parameters have synthesized names
+   * and do not carry the declaration annotations of the super constructor's parameters.
    *
    * @param <T> the type of the elements of {@code params}
    * @param executable the method or constructor invoked by {@code tree}
