@@ -1,6 +1,7 @@
 // Tests that dataflow analysis terminates for nested loops whose stores contain a value of
-// type-variable type with no accumulated values.  The analysis reaches a fixed point only if
-// AccumulationValue represents an empty set of accumulated values in just one way.
+// type-variable type with no accumulated values.  The analysis reaches a fixed point only if the
+// AccumulationValue at the loop head does not alternate between a null and an empty set of
+// accumulated values.
 
 import java.util.List;
 
