@@ -36,19 +36,19 @@ public class BoundSetTest {
     Assert.assertFalse(original.annoInferenceFailed);
     Assert.assertEquals("", original.errorMsg);
     Assert.assertFalse(original.containsFalse());
-    Assert.assertFalse(original.isUncheckedConversion());
+    Assert.assertFalse(original.hasPendingUncheckedConversion());
 
     original.annoInferenceFailed = true;
     original.errorMsg = "@Tainted String <: @Untainted String";
     original.addFalse();
-    original.setUncheckedConversion(true);
+    original.setPendingUncheckedConversion(true);
 
     BoundSet copy = new BoundSet(original);
 
     Assert.assertTrue(copy.annoInferenceFailed);
     Assert.assertEquals("@Tainted String <: @Untainted String", copy.errorMsg);
     Assert.assertTrue(copy.containsFalse());
-    Assert.assertTrue(copy.isUncheckedConversion());
+    Assert.assertTrue(copy.hasPendingUncheckedConversion());
   }
 
   /**

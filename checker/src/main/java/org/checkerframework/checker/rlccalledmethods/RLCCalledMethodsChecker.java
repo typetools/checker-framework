@@ -4,10 +4,10 @@ import java.util.Set;
 import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.mustcall.MustCallNoCreatesMustCallForChecker;
+import org.checkerframework.checker.mustcall.SetOfTypes;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
-import org.checkerframework.checker.resourceleak.SetOfTypes;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SourceChecker;
@@ -37,13 +37,21 @@ public class RLCCalledMethodsChecker extends CalledMethodsChecker {
 
   /**
    * Returns the set of exceptions that should be ignored. This set comes from the {@link
-   * ResourceLeakChecker#IGNORED_EXCEPTIONS} option if it was provided, or {@link
-   * ResourceLeakChecker#DEFAULT_IGNORED_EXCEPTIONS} if not.
+   * MustCallChecker#IGNORED_EXCEPTIONS} option if it was provided, or {@link
+   * MustCallChecker#DEFAULT_IGNORED_EXCEPTIONS} if not.
    *
    * @return the set of exceptions to ignore
+   * @see MustCallChecker#getIgnoredExceptions()
    */
   public SetOfTypes getIgnoredExceptions() {
-    return getResourceLeakChecker().getIgnoredExceptions();
+    MustCallChecker mustCallChecker = getSubchecker(MustCallChecker.class);
+    if (mustCallChecker == null) {
+      mustCallChecker = getSubchecker(MustCallNoCreatesMustCallForChecker.class);
+    }
+    if (mustCallChecker == null) {
+      throw new TypeSystemError("No Must Call Checker is a subchecker of " + this);
+    }
+    return mustCallChecker.getIgnoredExceptions();
   }
 
   /**
