@@ -58,4 +58,15 @@ public class Termination {
     // :: error: [assignment]
     @Odd String l3 = l1;
   }
+
+  // The desugared call to close() terminates execution, because the resource is not null.
+  void t4(@Odd String p1, String p2, boolean b1) {
+    String l1 = p2;
+    if (b1) {
+      l1 = p1;
+    } else {
+      try (TerminatingCloseable c = new TerminatingCloseable()) {}
+    }
+    @Odd String l3 = l1;
+  }
 }
