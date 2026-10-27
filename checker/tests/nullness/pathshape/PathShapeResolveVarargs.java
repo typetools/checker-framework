@@ -1,7 +1,6 @@
 // @below-java22-jdk-skip-test
 
-// Tests Path.resolve(String, String...) and Path.resolve(Path, Path...), which were added in Java
-// 22.
+// Tests Path.resolve(String, String...) and Path.resolve(Path, Path...), added in Java 22.
 
 import java.nio.file.Path;
 import org.checkerframework.checker.nullness.qual.HasName;
