@@ -138,21 +138,22 @@ final class IgnoredAnnotations {
    * Returns the annotated types of {@code type1} and {@code type2}, where the annotations at each
    * ignored substitution of one type are replaced by those at the corresponding position of the
    * other. If either type has ignored substitutions, then both are first viewed as the class of
-   * {@code lubType}. Primary annotations are not replaced. If nothing is replaced, the result holds
-   * the types' own annotated types; otherwise it holds copies.
+   * {@code resultType}. Primary annotations are not replaced. If nothing is replaced, the result
+   * holds the types' own annotated types; otherwise it holds copies.
    *
    * @param type1 a type
    * @param type2 a type
-   * @param lubType the Java type of the least upper bound of {@code type1} and {@code type2}
+   * @param resultType the Java type of the least upper bound or greatest lower bound of {@code
+   *     type1} and {@code type2}
    * @param qh the qualifier hierarchy
    * @param types the type utilities
    * @return the annotated types of {@code type1} and {@code type2}, with ignored substitutions
    *     replaced
    */
-  static ReplacedTypes replaceIgnoredForCombining(
+  static ReplacedTypes replaceIgnoredForLubOrGlb(
       AbstractType type1,
       AbstractType type2,
-      TypeMirror lubType,
+      TypeMirror resultType,
       QualifierHierarchy qh,
       Types types) {
     AbstractType current1 = current(type1);
@@ -160,8 +161,8 @@ final class IgnoredAnnotations {
     if (!hasOrigin(current1) && !hasOrigin(current2)) {
       return new ReplacedTypes(current1.getAnnotatedType(), current2.getAnnotatedType());
     }
-    AbstractType aligned1 = alignedToClass(current1, lubType, types);
-    AbstractType aligned2 = alignedToClass(current2, lubType, types);
+    AbstractType aligned1 = alignedToClass(current1, resultType, types);
+    AbstractType aligned2 = alignedToClass(current2, resultType, types);
     if (!types.isSameType(
         types.erasure(aligned1.getJavaType()), types.erasure(aligned2.getJavaType()))) {
       return new ReplacedTypes(current1.getAnnotatedType(), current2.getAnnotatedType());

@@ -1020,14 +1020,14 @@ public class InferenceFactory {
     TypeMirror lubTM = first.getJavaType();
     AnnotatedTypeMirror lubATM = first.getAnnotatedType();
     // The least upper bound so far, as a type, so that its ignored substitutions, if it is still
-    // one of `properTypes`, can be found; see IgnoredAnnotations#replaceIgnoredForCombining.
+    // one of `properTypes`, can be found; see IgnoredAnnotations#replaceIgnoredForLubOrGlb.
     ProperType lubSoFar = first;
     boolean ignoreAnnotations = first.ignoreAnnotations;
     while (iter.hasNext()) {
       ProperType properType = iter.next();
       lubTM = lub(context.env, lubTM, properType.getJavaType());
       ReplacedTypes combined =
-          IgnoredAnnotations.replaceIgnoredForCombining(
+          IgnoredAnnotations.replaceIgnoredForLubOrGlb(
               lubSoFar, properType, lubTM, qh, context.modelTypes);
       lubATM = combined.type1();
       AnnotatedTypeMirror atm = combined.type2();
@@ -1146,9 +1146,9 @@ public class InferenceFactory {
 
     // The annotations of an ignored substitution put no constraint on the result.  Positions
     // correspond only if `a` and `b` are of the same class; see
-    // IgnoredAnnotations#replaceIgnoredForCombining.
+    // IgnoredAnnotations#replaceIgnoredForLubOrGlb.
     ReplacedTypes combined =
-        IgnoredAnnotations.replaceIgnoredForCombining(
+        IgnoredAnnotations.replaceIgnoredForLubOrGlb(
             a, b, glb, typeFactory.getQualifierHierarchy(), context.modelTypes);
     AnnotatedTypeMirror aAtm = combined.type1();
     AnnotatedTypeMirror bAtm = combined.type2();
