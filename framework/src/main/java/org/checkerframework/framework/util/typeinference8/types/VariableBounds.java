@@ -46,7 +46,10 @@ public class VariableBounds {
   /** The context. */
   private final Java8InferenceContext context;
 
-  /** The type to which this variable is instantiated, or null if it has no instantiation. */
+  /**
+   * The current instantiation of this variable, or null if it has none. It can be replaced during
+   * inference, for example by a later equal bound, or cleared by {@link #restore}.
+   */
   private @Nullable ProperType instantiation = null;
 
   /**
@@ -204,9 +207,11 @@ public class VariableBounds {
   }
 
   /**
-   * Returns a number that changes whenever this variable's instantiation changes.
+   * Returns a number that changes whenever the current instantiation of this variable is set,
+   * replaced, or cleared.
    *
-   * @return a number that changes whenever this variable's instantiation changes
+   * @return a number that changes whenever the current instantiation of this variable is set,
+   *     replaced, or cleared
    */
   int getInstantiationChanges() {
     return instantiationChanges;

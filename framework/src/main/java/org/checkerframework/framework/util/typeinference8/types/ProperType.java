@@ -210,10 +210,12 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns a number that changes whenever the instantiation of one of {@code variables} changes.
+   * Returns a number that changes whenever the current instantiation of one of {@code variables} is
+   * set, replaced, or cleared.
    *
    * @param variables inference variables
-   * @return a number that changes whenever the instantiation of one of {@code variables} changes
+   * @return a number that changes whenever the current instantiation of one of {@code variables} is
+   *     set, replaced, or cleared
    */
   private static long instantiationStamp(Collection<Variable> variables) {
     long stamp = 0;
