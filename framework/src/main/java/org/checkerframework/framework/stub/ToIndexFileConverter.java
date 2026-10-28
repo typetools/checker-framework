@@ -800,7 +800,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
               name = resolve(typeName, cu);
             }
             if (name == null) {
-              name = typeName;
+              name = unresolvedBinaryName(typeName);
             }
             return "L" + name.replace('.', '/') + ";";
           }
@@ -1084,10 +1084,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     for (String declName : singleTypeImports) {
       String qualifiedName = mergeImport(declName, className);
       if (qualifiedName != null) {
-        String binaryName = classBinaryName(qualifiedName, cu);
-        if (binaryName != null) {
-          return binaryName;
-        }
+        // The import determines the type that `className` refers to, even if that type cannot be
+        // loaded, so do not look further.  If it cannot be loaded, `unresolvedBinaryName` uses
+        // the import.
+        return classBinaryName(qualifiedName, cu);
       }
     }
     if (pkgName != null) {
@@ -1188,6 +1188,69 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       result.append('$').append(identifiers[i]);
     }
     return result.toString();
+  }
+
+  /**
+   * Returns the binary name that a type name most likely refers to, for a type name that cannot be
+   * resolved. Because such a name does not indicate which of its dot-separated components are
+   * package names and which are class names, this method uses the Java convention that a package
+   * name starts with a lowercase letter and a class name starts with an uppercase letter. A name
+   * whose first identifier a single-type import names is qualified by that import. Any other name
+   * with no package name is assumed to refer to the stub file's own package.
+   *
+   * @param typeName a type name that resolution failed on
+   * @return the binary name that {@code typeName} most likely refers to
+   */
+  private String unresolvedBinaryName(@FullyQualifiedName String typeName) {
+    for (String declName : singleTypeImports) {
+      String qualifiedName = mergeImport(declName, typeName);
+      // An unchanged name is an import of a type in the unnamed package, which gives no package.
+      if (qualifiedName != null && !qualifiedName.equals(typeName)) {
+        // The import is fully qualified, so do not qualify the result by the stub file's package.
+        return splitBinaryName(qualifiedName, null);
+      }
+    }
+    return splitBinaryName(typeName, pkgName);
+  }
+
+  /**
+   * Returns the binary name that a type name most likely refers to, using the Java convention that
+   * a package name starts with a lowercase letter and a class name starts with an uppercase letter.
+   *
+   * @param typeName a type name
+   * @param defaultPackage the package of {@code typeName} if it has no package name, or null
+   * @return the binary name that {@code typeName} most likely refers to
+   */
+  private static String splitBinaryName(String typeName, @Nullable String defaultPackage) {
+    String[] identifiers = typeName.split("\\.", -1);
+    // The index of the outermost class name; every identifier before it is a package name.
+    int outermostClass = 0;
+    while (outermostClass < identifiers.length - 1
+        && !startsWithUppercase(identifiers[outermostClass])) {
+      outermostClass++;
+    }
+    StringBuilder result = new StringBuilder();
+    if (outermostClass == 0 && defaultPackage != null) {
+      // The name has no package name, so it refers to the default package.
+      result.append(defaultPackage).append('.');
+    }
+    for (int i = 0; i < identifiers.length; i++) {
+      if (i > 0) {
+        result.append(i <= outermostClass ? '.' : '$');
+      }
+      result.append(identifiers[i]);
+    }
+    return result.toString();
+  }
+
+  /**
+   * Returns true if {@code identifier} starts with an uppercase letter.
+   *
+   * @param identifier an identifier
+   * @return true if {@code identifier} starts with an uppercase letter
+   */
+  private static boolean startsWithUppercase(String identifier) {
+    return !identifier.isEmpty() && Character.isUpperCase(identifier.charAt(0));
   }
 
   /**
