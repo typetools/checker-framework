@@ -33,6 +33,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
@@ -1653,6 +1654,38 @@ public final class AnnotatedTypes {
    */
   public static boolean hasExplicitExtendsBound(AnnotatedTypeMirror wildcard) {
     return TypesUtils.hasExplicitExtendsBound(wildcard.getUnderlyingType());
+  }
+
+  /**
+   * Returns the type parameter that {@code wildcard} instantiates.
+   *
+   * <p>If {@code wildcard} is a type argument of {@code enclosingType}, the result is the
+   * corresponding type parameter of {@code enclosingType}'s class. Otherwise, the result is the
+   * type parameter that javac recorded for the wildcard, which is less reliable: javac overwrites
+   * that record whenever it substitutes the wildcard for a type variable, so it may be a type
+   * parameter of a different class. Which type parameter it is depends on which computations have
+   * already been performed on the wildcard.
+   *
+   * @param wildcard a wildcard type
+   * @param enclosingType a declared type of which {@code wildcard} might be a type argument, or
+   *     null
+   * @return the type parameter that {@code wildcard} instantiates, or null if it is not known
+   */
+  public static @Nullable TypeParameterElement wildcardToTypeParam(
+      @FindDistinct AnnotatedWildcardType wildcard, @Nullable AnnotatedDeclaredType enclosingType) {
+    if (enclosingType != null) {
+      TypeElement typeElement = TypesUtils.getTypeElement(enclosingType.getUnderlyingType());
+      if (typeElement != null) {
+        List<AnnotatedTypeMirror> typeArgs = enclosingType.getTypeArguments();
+        List<? extends TypeParameterElement> typeParams = typeElement.getTypeParameters();
+        for (int i = 0; i < typeArgs.size() && i < typeParams.size(); i++) {
+          if (typeArgs.get(i) == wildcard) {
+            return typeParams.get(i);
+          }
+        }
+      }
+    }
+    return TypesUtils.wildcardToTypeParam(wildcard.getUnderlyingType());
   }
 
   /**
