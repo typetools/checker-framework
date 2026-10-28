@@ -446,11 +446,8 @@ final class IgnoredAnnotations {
       Set<AnnotatedTypeMirror> ignored2) {
     if (ignored1.contains(atm1)) {
       copyPrimaryAnnotations(boundOf(atm2), atm1);
-      return;
-    }
-    if (ignored2.contains(atm2)) {
+    } else if (ignored2.contains(atm2)) {
       copyPrimaryAnnotations(boundOf(atm1), atm2);
-      return;
     }
     if (atm1.getKind() != atm2.getKind()) {
       // A type argument is compared with a wildcard's bound; see #boundOf.
