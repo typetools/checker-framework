@@ -30,6 +30,12 @@ import org.checkerframework.javacutil.BugInCF;
 public abstract class AbstractSetInclusionQualifierHierarchy
     extends MostlyNoElementQualifierHierarchy {
 
+  /**
+   * The processing environment; used for creating annotations. It is non-null, unlike the result of
+   * {@code atypeFactory.getProcessingEnv()} under conservative defaults for unchecked code.
+   */
+  private final ProcessingEnvironment processingEnv;
+
   /** Whether a qualifier is a subtype when its elements are a subset of another qualifier's. */
   private final boolean subtypeIsSubset;
 
@@ -48,6 +54,7 @@ public abstract class AbstractSetInclusionQualifierHierarchy
       GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory,
       boolean subtypeIsSubset) {
     super(qualifierClasses, processingEnv.getElementUtils(), atypeFactory);
+    this.processingEnv = processingEnv;
     this.subtypeIsSubset = subtypeIsSubset;
   }
 
@@ -150,7 +157,7 @@ public abstract class AbstractSetInclusionQualifierHierarchy
       return a2;
     }
     AnnotationBuilder builder =
-        new AnnotationBuilder(atypeFactory.getProcessingEnv(), resultKind.getAnnotationClass());
+        new AnnotationBuilder(processingEnv, resultKind.getAnnotationClass());
     builder.setValue("value", values.toArray());
     return builder.build();
   }
