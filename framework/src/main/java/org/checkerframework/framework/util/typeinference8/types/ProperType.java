@@ -698,7 +698,7 @@ public class ProperType extends AbstractType {
    *     ConstraintSet#TRUE_ANNO_FAIL}
    */
   public ConstraintSet checkAnnotationEquality(ProperType other) {
-    if (IgnoredAnnotations.decidedByIgnoredPrimaryAnnotations(this, other)) {
+    if (IgnoredAnnotations.noAnnotationsToCompare(this, other)) {
       return ConstraintSet.TRUE;
     }
     ReplacedTypes compared =

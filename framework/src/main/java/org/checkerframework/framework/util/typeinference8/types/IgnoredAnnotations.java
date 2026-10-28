@@ -212,16 +212,16 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns true if at least one of {@code type1} and {@code type2} ignores its primary
-   * annotations, neither has an origin (see {@link ProperType#getOrigin}), and neither has
-   * annotations other than its primary annotations.
+   * Returns true if comparing the annotations of {@code type1} and {@code type2} would compare
+   * nothing: neither has an origin (see {@link ProperType#getOrigin}) or annotations other than its
+   * primary annotations, and at least one of them ignores its primary annotations.
    *
    * @param type1 a type
    * @param type2 a type
-   * @return true if one of {@code type1} and {@code type2} ignores its primary annotations and
-   *     neither has an origin or annotations other than its primary annotations
+   * @return true if comparing the annotations of {@code type1} and {@code type2} would compare
+   *     nothing
    */
-  static boolean decidedByIgnoredPrimaryAnnotations(AbstractType type1, AbstractType type2) {
+  static boolean noAnnotationsToCompare(AbstractType type1, AbstractType type2) {
     return (type1.ignoreAnnotations || type2.ignoreAnnotations)
         && !hasOrigin(type1)
         && !hasOrigin(type2)
