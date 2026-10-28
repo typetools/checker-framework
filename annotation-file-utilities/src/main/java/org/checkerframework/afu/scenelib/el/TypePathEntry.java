@@ -20,7 +20,7 @@ import org.objectweb.asm.TypePath;
  *
  * <p>{@code TypePathEntry} is immutable.
  */
-public class TypePathEntry {
+public final class TypePathEntry {
   /**
    * The kind of TypePathEntry; that is, how to get from the previous node in a TypePath to this
    * one. One of TypePath.ARRAY_ELEMENT, TypePath.INNER_TYPE, TypePath.WILDCARD_BOUND,
@@ -124,7 +124,7 @@ public class TypePathEntry {
       case TypePath.ARRAY_ELEMENT -> "[";
       case TypePath.INNER_TYPE -> ".";
       case TypePath.WILDCARD_BOUND -> "*";
-      case TypePath.TYPE_ARGUMENT -> String.valueOf(argument) + ";";
+      case TypePath.TYPE_ARGUMENT -> argument + ";";
       default -> throw new Error("Bad step " + step);
     };
   }

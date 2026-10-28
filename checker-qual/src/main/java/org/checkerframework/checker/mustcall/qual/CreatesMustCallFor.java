@@ -30,7 +30,7 @@ import org.checkerframework.framework.qual.JavaExpression;
  * never to missed alarms (lack of warnings at incorrect code).
  *
  * <p>As an example, consider the following code, which uses a {@code @CreatesMustCallFor}
- * annotation to indicate that the {@code reset()} method re-assigns the {@code socket} field:
+ * annotation to indicate that the {@code reset()} method reassigns the {@code socket} field:
  *
  * <pre>
  * &#64;MustCall("stop")
@@ -78,7 +78,7 @@ public @interface CreatesMustCallFor {
    * Returns the expression whose must-call type is reset after a call to a method with this
    * annotation. The expression must be visible in the scope immediately before each call site, so
    * it can only refer to fields, the method's parameters (which should be referenced via the "#X"
-   * syntax, where "#1" is the first argument, #2 is the second, etc.), or {@code "this"}. The
+   * syntax, where "#1" is the first argument, "#2" is the second, etc.), or {@code "this"}. The
    * default is {@code "this"}. At call-sites, the viewpoint-adapted referent of expression must be
    * owning (an owning field, a local variable tracked in a resource alias set, etc.) or a {@code
    * reset.not.owning} error is issued.

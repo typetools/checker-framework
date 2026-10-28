@@ -124,4 +124,3 @@ class Bound:
     insert-annotation Class.typeParameter 0, TypeParameter.bound 2: @F
     insert-annotation Class.typeParameter 0: @A
     insert-annotation Class.typeParameter 1: @J
-

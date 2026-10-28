@@ -5,7 +5,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -78,6 +77,11 @@ public class LocalVariableNode extends Node {
     return receiver;
   }
 
+  /**
+   * Returns the name of the variable.
+   *
+   * @return the name of the variable
+   */
   public String getName() {
     if (tree instanceof IdentifierTree itree) {
       return itree.getName().toString();
@@ -97,7 +101,7 @@ public class LocalVariableNode extends Node {
 
   @Override
   public String toString() {
-    return getName().toString();
+    return getName();
   }
 
   @Override
@@ -110,7 +114,7 @@ public class LocalVariableNode extends Node {
 
   @Override
   public int hashCode() {
-    return Objects.hash(getName());
+    return getName().hashCode();
   }
 
   @Override

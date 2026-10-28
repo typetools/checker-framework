@@ -113,36 +113,6 @@ public class MethodCall extends JavaExpression {
   }
 
   @Override
-  public boolean syntacticEquals(JavaExpression je) {
-    if (!(je instanceof MethodCall other)) {
-      return false;
-    }
-    return method.equals(other.method)
-        && this.receiver.syntacticEquals(other.receiver)
-        && JavaExpression.syntacticEqualsList(this.arguments, other.arguments);
-  }
-
-  @Override
-  public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
-    return syntacticEquals(other)
-        || receiver.containsSyntacticEqualJavaExpression(other)
-        || JavaExpression.listContainsSyntacticEqualJavaExpression(arguments, other);
-  }
-
-  @Override
-  public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
-    if (receiver.containsModifiableAliasOf(store, other)) {
-      return true;
-    }
-    for (JavaExpression p : arguments) {
-      if (p.containsModifiableAliasOf(store, other)) {
-        return true;
-      }
-    }
-    return false; // the method call itself is not modifiable
-  }
-
-  @Override
   public boolean equals(@Nullable Object obj) {
     if (this == obj) {
       return true;
@@ -170,6 +140,53 @@ public class MethodCall extends JavaExpression {
   }
 
   @Override
+  public boolean syntacticEquals(JavaExpression je) {
+    if (!(je instanceof MethodCall other)) {
+      return false;
+    }
+    return method.equals(other.method)
+        && this.receiver.syntacticEquals(other.receiver)
+        && syntacticEqualsList(this.arguments, other.arguments);
+  }
+
+  @Override
+  public boolean containsSyntacticEqualJavaExpression(JavaExpression other) {
+    return syntacticEquals(other)
+        || receiver.containsSyntacticEqualJavaExpression(other)
+        || listContainsSyntacticEqualJavaExpression(arguments, other);
+  }
+
+  @Override
+  public boolean containsAsReceiver(AnnotationProvider provider, JavaExpression other) {
+    if (syntacticEquals(other)) {
+      return true;
+    }
+    // A method that is not side-effect-free may create the object it returns, or may fetch it from
+    // state that has nothing to do with the receiver, so its result is not reached through the
+    // receiver.  A side-effect-free method is assumed to return a part of its receiver, such as
+    // the view that `List.subList` returns.  That assumption is unsound for a side-effect-free
+    // method that returns pre-existing state that the receiver does not reach, such as a static
+    // field; no annotation expresses the difference.
+    if (!PurityUtils.isSideEffectFree(provider, method) && !provider.isSideEffectFree(method)) {
+      return false;
+    }
+    return receiver.containsAsReceiver(provider, other);
+  }
+
+  @Override
+  public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
+    if (receiver.containsModifiableAliasOf(store, other)) {
+      return true;
+    }
+    for (JavaExpression p : arguments) {
+      if (p.containsModifiableAliasOf(store, other)) {
+        return true;
+      }
+    }
+    return false; // the method call itself is not modifiable
+  }
+
+  @Override
   public String toString() {
     StringBuilder preParen = new StringBuilder();
     if (receiver instanceof ClassName) {
@@ -177,10 +194,10 @@ public class MethodCall extends JavaExpression {
     } else {
       preParen.append(receiver);
     }
-    preParen.append(".");
+    preParen.append('.');
     String methodName = method.getSimpleName().toString();
     preParen.append(methodName);
-    preParen.append("(");
+    preParen.append('(');
     StringJoiner result = new StringJoiner(", ", preParen, ")");
     for (JavaExpression argument : arguments) {
       result.add(argument.toString());

@@ -9,6 +9,7 @@ import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
@@ -37,7 +38,6 @@ import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,6 +45,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -71,7 +73,7 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.ClassGetName;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
-import org.checkerframework.framework.util.JavaParserUtil;
+import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.reflection.Signatures;
 
@@ -91,11 +93,32 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private static final Pattern importPattern =
       Pattern.compile("\\bimport *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
 
+  // The asm library is not on this class's compile classpath, so the following three constants
+  // are written literally rather than as references to fields of org.objectweb.asm.TypePath.
+
+  /**
+   * The {@code step} value of a {@link TypePathEntry} that steps from an array type to its
+   * component type; that is, {@code org.objectweb.asm.TypePath.ARRAY_ELEMENT}.
+   */
+  private static final int ARRAY_ELEMENT = 0;
+
+  /**
+   * The {@code step} value of a {@link TypePathEntry} that steps from a wildcard to its bound; that
+   * is, {@code org.objectweb.asm.TypePath.WILDCARD_BOUND}.
+   */
+  private static final int WILDCARD_BOUND = 2;
+
+  /**
+   * The {@code step} value of a {@link TypePathEntry} that steps from a parameterized type to one
+   * of its type arguments; that is, {@code org.objectweb.asm.TypePath.TYPE_ARGUMENT}.
+   */
+  private static final int TYPE_ARGUMENT = 3;
+
   /**
    * Package name that is active at the current point in the input file. Changes as package
-   * declarations are encountered.
+   * declarations are encountered. Null if the input file has no package declaration.
    */
-  private final @DotSeparatedIdentifiers String pkgName;
+  private final @Nullable @DotSeparatedIdentifiers String pkgName;
 
   /** Imports that appear in the stub file. */
   private final List<String> imports;
@@ -162,7 +185,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       for (int i = 1; i < args.length; i++) {
         String f0 = args[i];
         String f1 = (f0.endsWith(".astub") ? f0.substring(0, f0.length() - 6) : f0) + ".jaif";
-        try (InputStream in = new BufferedInputStream(new FileInputStream(f0));
+        try (InputStream in = new BufferedInputStream(Files.newInputStream(Paths.get(f0)));
             OutputStream out = new BufferedOutputStream(new FileOutputStream(f1)); ) {
           convert(new AScene(scene), in, out);
         }
@@ -188,7 +211,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       throws IOException, DefException, ParseException {
     StubUnit iu;
     try {
-      iu = JavaParserUtil.parseStubUnit(in);
+      iu = StaticJavaParserUtil.parseStubUnit(in);
     } catch (ParseProblemException e) {
       iu = null;
       throw new BugInCF(
@@ -243,9 +266,26 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
     @SuppressWarnings("signature") // special case for annotations containing "+"
     AnnotationDef def =
-        new AnnotationDef(exprName, "ToIndexFileConverter.extractAnnotation(" + expr + ")");
-    def.setFieldTypes(Collections.emptyMap());
+        new AnnotationDef(
+            exprName,
+            Collections.emptyMap(),
+            "ToIndexFileConverter.extractAnnotation(" + expr + ")");
     return new Annotation(def, Collections.emptyMap());
+  }
+
+  /**
+   * Adds annotations to a scene element, omitting any that {@link #extractAnnotation} discards.
+   *
+   * @param exprs annotations
+   * @param elem the scene element to which to add the annotations
+   */
+  private static void addAnnotations(List<AnnotationExpr> exprs, AElement elem) {
+    for (AnnotationExpr expr : exprs) {
+      Annotation anno = extractAnnotation(expr);
+      if (anno != null) {
+        elem.tlAnnotationsHere.add(anno);
+      }
+    }
   }
 
   @Override
@@ -261,14 +301,14 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   @Override
   public Void visit(ClassOrInterfaceDeclaration decl, AElement elem) {
-    visitDecl(decl, (ADeclaration) elem);
-    return super.visit(decl, elem);
+    AClass clazz = classFor(decl, elem);
+    visitDecl(decl, clazz);
+    return super.visit(decl, clazz);
   }
 
   @Override
   public Void visit(ConstructorDeclaration decl, AElement elem) {
     List<Parameter> params = decl.getParameters();
-    List<AnnotationExpr> rcvrAnnos = decl.getAnnotations();
     BlockStmt body = decl.getBody();
     StringBuilder sb = new StringBuilder("<init>(");
     AClass clazz = (AClass) elem;
@@ -291,12 +331,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         visitType(param.getType(), field.type);
       }
     }
-    if (rcvrAnnos != null) {
-      for (AnnotationExpr expr : rcvrAnnos) {
-        Annotation anno = extractAnnotation(expr);
-        method.receiver.tlAnnotationsHere.add(anno);
-      }
-    }
+    visitReceiverParameter(decl, method);
     return body == null ? null : body.accept(this, method);
     // return super.visit(decl, elem);
   }
@@ -310,8 +345,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   @Override
   public Void visit(EnumDeclaration decl, AElement elem) {
-    visitDecl(decl, (ADeclaration) elem);
-    return super.visit(decl, elem);
+    AClass clazz = classFor(decl, elem);
+    visitDecl(decl, clazz);
+    return super.visit(decl, clazz);
   }
 
   @Override
@@ -338,7 +374,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     Type type = decl.getType();
     List<Parameter> params = decl.getParameters();
     List<TypeParameter> typeParams = decl.getTypeParameters();
-    Optional<ReceiverParameter> rcvrParam = decl.getReceiverParameter();
     BlockStmt body = decl.getBody().orElse(null);
     StringBuilder sb = new StringBuilder(decl.getNameAsString()).append('(');
     AClass clazz = (AClass) elem;
@@ -360,12 +395,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         visitType(param.getType(), field.type);
       }
     }
-    if (rcvrParam.isPresent()) {
-      for (AnnotationExpr expr : rcvrParam.get().getAnnotations()) {
-        Annotation anno = extractAnnotation(expr);
-        method.receiver.type.tlAnnotationsHere.add(anno);
-      }
-    }
+    visitReceiverParameter(decl, method);
     if (typeParams != null) {
       for (int i = 0; i < typeParams.size(); i++) {
         TypeParameter typeParam = typeParams.get(i);
@@ -422,42 +452,64 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       LocalLocation loc = new LocalLocation(i, decl.getNameAsString());
       AField field = method.body.locals.getVivify(loc);
       visitType(expr.getCommonType(), field.type);
-      if (annos != null) {
-        for (AnnotationExpr annoExpr : annos) {
-          Annotation anno = extractAnnotation(annoExpr);
-          field.tlAnnotationsHere.add(anno);
-        }
-      }
+      addAnnotations(annos, field);
     }
     return null;
   }
 
   /**
+   * Returns the scene element for a type declaration.
+   *
+   * @param decl a type declaration
+   * @param elem the scene element for {@code decl} if it is a top-level type, or for its enclosing
+   *     type if it is a nested type
+   * @return the scene element for {@code decl}
+   */
+  private AClass classFor(TypeDeclaration<?> decl, AElement elem) {
+    AClass clazz = (AClass) elem;
+    if (!decl.isNestedType()) {
+      return clazz;
+    }
+    return scene.classes.getVivify(clazz.className + "$" + decl.getNameAsString());
+  }
+
+  /**
    * Copies information from an AST declaration node to an {@link ADeclaration}. Called by visitors
    * for BodyDeclaration subclasses.
+   *
+   * @param decl the AST declaration node to inspect
+   * @param elem destination declaration element
+   * @return null
    */
   private Void visitDecl(BodyDeclaration<?> decl, ADeclaration elem) {
-    NodeList<AnnotationExpr> annoExprs = decl.getAnnotations();
-    if (annoExprs != null) {
-      for (AnnotationExpr annoExpr : annoExprs) {
-        Annotation anno = extractAnnotation(annoExpr);
-        elem.tlAnnotationsHere.add(anno);
-      }
-    }
+    addAnnotations(decl.getAnnotations(), elem);
     return null;
   }
 
-  /** Copies information from an AST type node to an {@link ATypeElement}. */
-  private Void visitType(Type type, ATypeElement elem) {
-    List<AnnotationExpr> exprs = type.getAnnotations();
-    if (exprs != null) {
-      for (AnnotationExpr expr : exprs) {
-        Annotation anno = extractAnnotation(expr);
-        if (anno != null) {
-          elem.tlAnnotationsHere.add(anno);
-        }
-      }
+  /**
+   * Copies information from a method's or constructor's receiver parameter, if it has one, to the
+   * receiver's scene element.
+   *
+   * @param decl a method or constructor declaration
+   * @param method the scene element for {@code decl}
+   */
+  private void visitReceiverParameter(CallableDeclaration<?> decl, AMethod method) {
+    Optional<ReceiverParameter> rcvrParam = decl.getReceiverParameter();
+    if (rcvrParam.isPresent()) {
+      addAnnotations(rcvrParam.get().getAnnotations(), method.receiver.type);
+      visitType(rcvrParam.get().getType(), method.receiver.type);
     }
+  }
+
+  /**
+   * Copies information from an AST type node to an {@link ATypeElement}.
+   *
+   * @param type the AST Type node to inspect
+   * @param elem destination type element
+   * @return null
+   */
+  private Void visitType(Type type, ATypeElement elem) {
+    addAnnotations(type.getAnnotations(), elem);
     visitInnerTypes(type, elem);
     return null;
   }
@@ -478,7 +530,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
               List<Type> typeArgs = type.getTypeArguments().get();
               for (int i = 0; i < typeArgs.size(); i++) {
                 Type inner = typeArgs.get(i);
-                List<TypePathEntry> ext = extendedTypePath(loc, 3, i);
+                List<TypePathEntry> ext = extendedTypePath(loc, TYPE_ARGUMENT, i);
                 visitInnerType(inner, ext);
               }
             }
@@ -487,19 +539,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
           @Override
           public Void visit(ArrayType type, List<TypePathEntry> loc) {
-            List<TypePathEntry> ext = loc;
-            int n = type.getArrayLevel();
-            Type currentType = type;
-            for (int i = 0; i < n; i++) {
-              ext = extendedTypePath(ext, 1, 0);
-              for (AnnotationExpr expr : currentType.getAnnotations()) {
-                ATypeElement typeElem = elem.innerTypes.getVivify(ext);
-                Annotation anno = extractAnnotation(expr);
-                typeElem.tlAnnotationsHere.add(anno);
-              }
-              currentType =
-                  ((com.github.javaparser.ast.type.ArrayType) currentType).getComponentType();
-            }
+            // The annotations on `type` itself apply to the array type, whose type path is `loc`;
+            // the caller has already recorded them.  This method handles the component type, which
+            // is one ARRAY_ELEMENT step deeper.  A multi-dimensional array is a nest of ArrayType
+            // nodes, so one step per call suffices.
+            List<TypePathEntry> ext = extendedTypePath(loc, ARRAY_ELEMENT, 0);
+            visitInnerType(type.getComponentType(), ext);
             return null;
           }
 
@@ -508,24 +553,36 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             ReferenceType lower = type.getExtendedType().orElse(null);
             ReferenceType upper = type.getSuperType().orElse(null);
             if (lower != null) {
-              List<TypePathEntry> ext = extendedTypePath(loc, 2, 0);
+              List<TypePathEntry> ext = extendedTypePath(loc, WILDCARD_BOUND, 0);
               visitInnerType(lower, ext);
             }
             if (upper != null) {
-              List<TypePathEntry> ext = extendedTypePath(loc, 2, 0);
+              List<TypePathEntry> ext = extendedTypePath(loc, WILDCARD_BOUND, 0);
               visitInnerType(upper, ext);
             }
             return null;
           }
 
-          /** Copies information from an AST inner type node to an {@link ATypeElement}. */
+          /**
+           * Copies information from an AST inner type node to an {@link ATypeElement}, then
+           * descends into the inner type's own inner types.
+           *
+           * @param type the AST node for the inner type
+           * @param loc the type path of {@code type}
+           */
           private void visitInnerType(Type type, List<TypePathEntry> loc) {
-            ATypeElement typeElem = elem.innerTypes.getVivify(loc);
             for (AnnotationExpr expr : type.getAnnotations()) {
               Annotation anno = extractAnnotation(expr);
-              typeElem.tlAnnotationsHere.add(anno);
-              type.accept(this, loc);
+              if (anno != null) {
+                // Vivify the entry for `loc` only when there is an annotation to put in it.  An
+                // entry with no annotations would be written to the JAIF as a content-free
+                // `inner-type` line.
+                elem.innerTypes.getVivify(loc).tlAnnotationsHere.add(anno);
+              }
             }
+            // Descend into the type's own inner types, exactly once, whether or not the type
+            // itself is annotated.
+            type.accept(this, loc);
           }
 
           /**
@@ -544,12 +601,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Computes a type's "binary name".
+   * Computes a type's JVML representation: its field descriptor, such as {@code I} for {@code int}
+   * or {@code [[Ljava/lang/String;} for {@code String[][]}. For {@code void}, the result is {@code
+   * V}.
    *
    * @param type the type
-   * @return the type's binary name
+   * @return the type's JVML representation
    */
-  private String getJVML(Type type) {
+  // Not private, so that it can be tested.
+  String getJVML(Type type) {
     return type.accept(
         new GenericVisitorAdapter<String, Void>() {
           @Override
@@ -600,7 +660,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
           @Override
           public String visit(WildcardType type, Void v) {
-            return type.getSuperType().get().accept(this, null);
+            // The erasure of a wildcard is the erasure of its upper bound.  The upper bound of an
+            // unbounded wildcard, and of a "super" wildcard, is Object.
+            ReferenceType extendedType = type.getExtendedType().orElse(null);
+            if (extendedType == null) {
+              return "Ljava/lang/Object;";
+            }
+            return extendedType.accept(this, null);
           }
         },
         null);

@@ -298,7 +298,7 @@ public class NullnessVisitor
    * "new Object[0][0];". Also true for empty dimensions, as in "new Object[] {...}".
    *
    * @param tree the constructor invocation to check
-   * @return true if every array dimention has a size of zero
+   * @return true if every array dimension has a size of zero
    */
   private static boolean isNewArrayAllZeroDims(NewArrayTree tree) {
     boolean isAllZeros = true;
@@ -771,6 +771,11 @@ public class NullnessVisitor
   @Override
   public Void visitConditionalExpression(ConditionalExpressionTree tree, Void p) {
     checkForNullability(tree.getCondition(), CONDITION_NULLABLE);
+    // super checks a standalone conditional's operands, but not a poly conditional's.
+    if (TreeUtils.isPolyExpression(tree) && isPrimitive(tree)) {
+      checkForNullability(tree.getTrueExpression(), UNBOXING_OF_NULLABLE);
+      checkForNullability(tree.getFalseExpression(), UNBOXING_OF_NULLABLE);
+    }
     return super.visitConditionalExpression(tree, p);
   }
 

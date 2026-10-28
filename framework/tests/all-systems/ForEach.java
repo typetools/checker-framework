@@ -32,9 +32,11 @@ public class ForEach {
     }
   }
 
-  @SuppressWarnings(
-      "nonempty") // TODO: the Non-Empty Checker requires the Side Effects Only checker to
-  // eliminate the false positive here.
+  @SuppressWarnings({
+    "unneeded.suppression", // nonempty only issues an error when run alone.
+    "nonempty" // TODO: the Non-Empty Checker requires the Side Effects Only checker to
+    // eliminate the false positive here.
+  })
   public static <T extends Object> List<T> removeDuplicates(List<T> l) {
     // There are shorter solutions that do not maintain order.
     HashSet<T> hs = new HashSet<>(l.size());

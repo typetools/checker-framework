@@ -1,20 +1,31 @@
-\htmlhr
 \chapterAndLabel{Purity Checker}{purity-checker}
 
-The Purity Checker identifies methods that have no side effects, that
-return the same value each time they are called on the same argument, or both.
+A \emph{side-effect-free} method is one that has no externally-visible side
+effects:  it changes no object that exists when it is called, except in ways
+that no caller can observe, such as updating a private cache.
+A \emph{deterministic} method returns the same value each time it is called
+on the same arguments; equality is with respect to \<==>, not \<.equals()>.
+A \emph{pure} method is both side-effect-free and deterministic.
+The Purity Checker can check and infer all three types of methods,
+and ``purity'' refers to all concepts.
 
-Purity analysis aids type refinement (Section~\ref{type-refinement}).
+All checkers utilize purity annotations to aid type refinement
+(Section~\ref{type-refinement}).  By default, purity annotations are
+trusted, not checked.
 
-All checkers utilize purity annotations on called methods.
-You do not need to run the Purity Checker directly.
-However you may run just the Purity Checker by
-supplying the following command-line options to javac:
+To check purity annotations, pass \<-AcheckPurityAnnotations> to any
+checker.
+The Purity Checker is conservative, so you are likely to need to suppress
+some warnings.
+To run \emph{only} the Purity Checker (this is uncommon),
+supply the following command-line option to javac:
 \code{-processor org.checkerframework.framework.util.PurityChecker}.
+That implies \<-AcheckPurityAnnotations>, so you do not need to supply
+both options.
 
-The Checker Framework can infer purity annotations.
-If you supply the command-line option \<-AsuggestPureMethods>, then the
-Checker Framework will suggest methods that can be marked as
+To infer purity annotations,
+supply the command-line option \<-AsuggestPureMethods>.
+The Checker Framework will suggest methods that can be marked as
 \<@SideEffectFree>, \<@Deterministic>, or \<@Pure>.
 In addition, such suggestions are output by \<-Ainfer> and when using
 whole-program inference.
@@ -27,6 +38,11 @@ whole-program inference.
 \item[\refqualclass{dataflow/qual}{SideEffectFree}]
   indicates that the method has no externally-visible side effects.
 
+\iffalse
+\item[\refqualclass{dataflow/qual}{SideEffectsOnly}]
+  indicates that the method has limited externally-visible side effects.
+\fi
+
 \item[\refqualclass{dataflow/qual}{Deterministic}]
   indicates that if the method is called multiple times with identical
   arguments, then it returns the identical result according to \<==>
@@ -38,43 +54,113 @@ whole-program inference.
 \end{description}
 
 
-\sectionAndLabel{Purity annotations are trusted}{purity-trusted}
+\sectionAndLabel{Lambdas, method references, and functional interfaces}{purity-functional-interfaces}
 
-By default, purity annotations are trusted.  Purity annotations on called
-methods affect type-checking of client code.  However, you can make a
-mistake by writing \<\refqualclass{dataflow/qual}{SideEffectFree}>
-on the declaration of a method that
-is not actually side-effect-free or by writing \<@Deterministic> on the
-declaration of a method that is not actually deterministic.
+Creating a lambda, or declaring a local or anonymous class, is not itself a
+side effect.  A lambda expression evaluates to an object but does not run the code
+in the lambda's body.  A side-effect-free method may therefore create a lambda
+whose body has side effects:
 
-To enable
-checking of the annotations, supply the command-line option
-\<-AcheckPurityAnnotations>.  It is not enabled by default because of a high false
-positive rate.  In the future, after a new purity-checking analysis is
-implemented, the Checker Framework will default to checking purity
-annotations.
-
-
-\sectionAndLabel{Overriding methods must respect specifications in superclasses}{purity-override}
-
-If a method in a superclass has a purity annotation, then every overriding
-definition must also have that purity annotation (or a stronger one).
-
-Here is an example error if this requirement is violated:
-
-\begin{mysmall}
 \begin{Verbatim}
-MyClass.java:1465: error: int hashCode() in MyClass cannot override int hashCode(Object this) in java.lang.Object;
-attempting to use an incompatible purity declaration
-    public int hashCode() {
-               ^
-  found   : []
-  required: [SIDE_EFFECT_FREE, DETERMINISTIC]
+  @SideEffectFree
+  Runnable makeRunnable() {
+    return () -> count++;  // OK: creating the lambda has no side effect
+  }
 \end{Verbatim}
-\end{mysmall}
 
 \noindent
-The reason for the error is that the \<Object> class is annotated as:
+The effects of the body occur where the functional method is invoked, and
+each such invocation is checked on its own.
+
+Likewise, evaluating a method reference does not run the referenced method.
+However, the qualifier expression of a method reference \<\emph{expr}::m>
+is evaluated where the method reference appears, so its effects are effects
+of the enclosing method:
+
+\begin{Verbatim}
+  @SideEffectFree
+  Supplier<String> makeSupplier() {
+    return sideEffect()::toString;  // error: sideEffect() is called here
+  }
+\end{Verbatim}
+
+The body of a lambda is checked against the purity annotations on the
+functional interface method that the lambda implements, not against those on
+the method that creates the lambda.  For example:
+
+\begin{Verbatim}
+  @FunctionalInterface
+  interface PureSupplier {
+    @SideEffectFree String get();
+  }
+
+  PureSupplier s1 = () -> "hello";                  // OK
+  PureSupplier s2 = () -> { count++; return ""; };  // error: the body has a side effect
+\end{Verbatim}
+
+\noindent
+Similarly, the method that a method reference refers to must be annotated
+at least as pure as the functional interface method:
+
+\begin{Verbatim}
+  @SideEffectFree String name() { ... }
+  String describe() { ... }
+
+  PureSupplier s3 = this::name;      // OK
+  PureSupplier s4 = this::describe;  // error: describe() is not @SideEffectFree
+\end{Verbatim}
+
+\noindent
+The functional interface method's purity annotations include those that it
+inherits from methods that it overrides
+(Section \ref{purity-override}).  If the functional interface method has no
+purity annotation --- for example, because it is declared in an unannotated
+library and no stub file annotates it --- then neither a lambda's body nor
+a method reference is checked against it.
+
+The errors shown in this section are reported only when purity annotations
+are checked:  by the Purity Checker, or by another checker when you pass
+\<-AcheckPurityAnnotations>.  With \<-Ainfer>, the body of a lambda is not
+checked; instead, it is used to infer the purity of the functional interface
+method.
+
+
+\sectionAndLabel{Purity annotations are trusted}{purity-trusted}
+
+By default, purity annotations are trusted by every checker built with the
+Checker Framework.  Purity annotations on called methods affect
+type-checking of client code, so an incorrect purity annotation can make
+type-checking unsound.  You can make a
+mistake
+%
+by writing \refqualclass{dataflow/qual}{SideEffectFree} on the
+declaration of a method that is not side-effect-free,
+%
+\iffalse
+by writing \refqualclass{dataflow/qual}{SideEffectsOnly} on the
+declaration of a method that side-effects more than the listed expressions,
+\fi
+or
+%
+by writing \refqualclass{dataflow/qual}{Deterministic} on the
+declaration of a method that is not deterministic.
+
+Other than in the Purity Checker, checking of purity annotations
+(\<-AcheckPurityAnnotations>) is not enabled by default because of a high
+false positive rate.  In the future,
+after a new purity-checking analysis is implemented, the Checker Framework
+will default to checking purity annotations.
+
+
+\sectionAndLabel{Overriding methods inherit specifications from overridden methods}{purity-override}
+
+A purity annotation is inherited:  if a method in a superclass or
+superinterface has a purity annotation, then every overriding definition has
+that annotation too, even if the annotation is not written on the overriding
+definition.  An overriding definition may strengthen the specification by
+writing a stronger annotation, but it cannot weaken it.
+
+For example, the \<Object> class is annotated as:
 
 \begin{Verbatim}
 class Object {
@@ -86,21 +172,21 @@ class Object {
 \noindent
 (where \refqualclass{dataflow/qual}{Pure} means both
 \refqualclass{dataflow/qual}{SideEffectFree} and
-\refqualclass{dataflow/qual}{Deterministic}).  Every overriding
-definition, including those in your program, must use be at least as strong
-a specification.  For \<hashCode>, every overriding definition must be
-annotated as \<@Pure>.
+\refqualclass{dataflow/qual}{Deterministic}).  Therefore, every definition
+of \<hashCode>, including those in your program, is implicitly annotated
+as \<@Pure> and its body is checked accordingly:
 
-You can fix the definition by adding \<@Pure> to your method definition.
-Alternately, you can suppress the warning.
-You can suppress each such warning individually using
-\<@SuppressWarnings("purity.overriding")>,
-or you can use the \<-AsuppressWarnings=purity.overriding>
-command-line argument to suppress all such warnings.
-% The \<-AassumeSideEffectFree> command-line argument suppresses the
-% warning, but it does more too; don't mention it here.
-In the future, the Checker Framework will support inheriting annotations
-from superclass definitions.
+\begin{mysmall}
+\begin{Verbatim}
+MyClass.java:1465: error: [purity.assign.field] field assignment not allowed in deterministic side-effect-free method
+    this.hash = h;
+        ^
+\end{Verbatim}
+\end{mysmall}
+
+\noindent
+You can fix the definition by making its body pure.  Alternately, you can
+suppress the warning; see \chapterpageref{suppressing-warnings}.
 
 
 \sectionAndLabel{Suppressing warnings}{purity-suppress-warnings}
@@ -117,10 +203,10 @@ is defined as an instance method with no formal parameters, whose name
 starts with ``get'', ``is'', ``not'', or ``has'' followed by an uppercase
 letter.
 
-This can make
+These options can make
 flow-sensitive type refinement much more effective, since method calls will
 not cause the analysis to discard information that it has learned.
-However, this option can mask real errors.  It is most appropriate when one
+However, these options can mask real errors.  They are most appropriate when one
 of the following is true:
 \begin{itemize}
 \item
@@ -135,5 +221,6 @@ of the following is true:
 \end{itemize}
 
 
-%%  LocalWords:  AsuggestPureMethods AcheckPurityAnnotations
-%%  LocalWords:  AsuppressWarnings AassumeSideEffectFree
+%%  LocalWords:  AsuggestPureMethods AcheckPurityAnnotations Ainfer
+%%  LocalWords:  AsuppressWarnings AassumeSideEffectFree SideEffectsOnly
+%%  LocalWords:  TODO AassumeDeterministic AassumePure AassumePureGetters

@@ -32,6 +32,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -44,6 +45,7 @@ import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnalysis;
 import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
@@ -84,8 +86,7 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
-import org.plumelib.util.IPair;
+import org.plumelib.util.CollectionsP;
 
 /**
  * An analyzer that checks consistency of {@link MustCall} and {@link CalledMethods} types, thereby
@@ -1050,17 +1051,18 @@ public class MustCallConsistencyAnalyzer {
    * @param obligations the current set of tracked Obligations. If ownership is transferred, it is
    *     side-effected to remove any Obligations that are resource-aliased to the return node.
    * @param cfg the CFG of the enclosing method
-   * @param node a return node
+   * @param node a return node, which must have an expression
    */
   private void updateObligationsForOwningReturn(
       Set<Obligation> obligations, ControlFlowGraph cfg, ReturnNode node) {
     if (isTransferOwnershipAtReturn(cfg)) {
-      Node returnExpr = node.getResult();
+      @SuppressWarnings("nullness:assignment") // the return node has an expression
+      @NonNull Node returnExpr = node.getResult();
       returnExpr = getTempVarOrNode(returnExpr);
-      if (returnExpr instanceof LocalVariableNode) {
+      if (returnExpr instanceof LocalVariableNode lvn) {
         removeObligationsContainingVar(
             obligations,
-            (LocalVariableNode) returnExpr,
+            lvn,
             MustCallAliasHandling.NO_SPECIAL_HANDLING,
             MethodExitKind.ONLY_NORMAL_RETURN);
       }
@@ -1346,7 +1348,7 @@ public class MustCallConsistencyAnalyzer {
     // Replacements to eventually perform in Obligations.  This map is kept to avoid a
     // ConcurrentModificationException in the loop below.
     Map<Obligation, Obligation> replacements = new LinkedHashMap<>();
-    // Cache to re-use on subsequent iterations.
+    // Cache to reuse on subsequent iterations.
     ResourceAlias aliasForAssignment = null;
     for (Obligation obligation : obligations) {
       // This is a non-null value iff the resource alias set for obligation needs to
@@ -1493,11 +1495,30 @@ public class MustCallConsistencyAnalyzer {
         return;
       }
     } else if (permitInitializationLeak && TreeUtils.isConstructor(enclosingMethodTree)) {
+      @SuppressWarnings("nullness:dereference.of.nullable") // a constructor has an enclosing class
       Element enclosingClassElement =
           TreeUtils.elementFromDeclaration(enclosingMethodTree).getEnclosingElement();
       if (ElementUtils.isTypeElement(enclosingClassElement)) {
-        Element receiverElement = TypesUtils.getTypeElement(receiver.getType());
-        if (Objects.equals(enclosingClassElement, receiverElement)) {
+        Element receiverTypeElement = TypesUtils.getTypeElement(receiver.getType());
+        if (Objects.equals(enclosingClassElement, receiverTypeElement)) {
+          return;
+        }
+      }
+    } else if (TreeUtils.isConstructor(enclosingMethodTree)) {
+      // If this assignment is the first write to the private field in this constructor,
+      // then do not throw non-final owning field reassignment error.
+      // (If the field is not private, conservatively throw the owning file reassignment error.)
+      ExecutableElement elementFromDeclaration =
+          TreeUtils.elementFromDeclaration(enclosingMethodTree);
+      @SuppressWarnings("nullness:dereference.of.nullable") // a constructor has an enclosing class
+      Element enclosingClassElement = elementFromDeclaration.getEnclosingElement();
+      Element receiverTypeElement = TypesUtils.getTypeElement(receiver.getType());
+      if (Objects.equals(enclosingClassElement, receiverTypeElement)) {
+        VariableElement lhsElement = lhs.getElement();
+        if (lhsElement.getModifiers().contains(Modifier.PRIVATE)
+            && ConstructorFirstWriteAnalysis.isFirstWriteToFieldInConstructor(
+                node.getTree(), lhsElement, enclosingMethodTree, cmAtf)) {
+          // Safe; first assignment in constructor.
           return;
         }
       }
@@ -1655,7 +1676,7 @@ public class MustCallConsistencyAnalyzer {
           "missing.creates.mustcall.for",
           enclosingMethodElt.getSimpleName().toString(),
           receiverString,
-          ((FieldAccessNode) lhs).getFieldName());
+          lhsFan.getFieldName());
       return;
     }
 
@@ -1668,6 +1689,9 @@ public class MustCallConsistencyAnalyzer {
                     targetStrWithoutAdaptation, enclosingMethod, checker)
                 .toString();
       } catch (JavaExpressionParseException e) {
+        // Do not report the error here; that would duplicate the one that
+        // `CreatesMustCallForToJavaExpression` issues at the declaration of `enclosingMethod`,
+        // which is being compiled.  Compare the unadapted string instead.
         targetStr = targetStrWithoutAdaptation;
       }
       if (targetStr.equals(receiverString)) {
@@ -1681,7 +1705,7 @@ public class MustCallConsistencyAnalyzer {
         "incompatible.creates.mustcall.for",
         enclosingMethodElt.getSimpleName().toString(),
         receiverString,
-        ((FieldAccessNode) lhs).getFieldName(),
+        lhsFan.getFieldName(),
         String.join(", ", checked));
   }
 
@@ -1723,12 +1747,13 @@ public class MustCallConsistencyAnalyzer {
     Preconditions.checkArgument(
         callNode instanceof MethodInvocationNode || callNode instanceof ObjectCreationNode);
     List<Node> result = new ArrayList<>();
-    if (!cmAtf.hasMustCallAlias(callNode.getTree())) {
+    ExecutableElement callee = getInvokedExecutable(callNode);
+    if (!cmAtf.hasMustCallAlias(callee)) {
       return result;
     }
 
     List<Node> args = getArgumentsOfInvocation(callNode);
-    List<? extends VariableElement> parameters = getParametersOfInvocation(callNode);
+    List<? extends VariableElement> parameters = callee.getParameters();
     for (int i = 0; i < args.size(); i++) {
       if (cmAtf.hasMustCallAlias(parameters.get(i))) {
         result.add(removeCastsAndGetTmpVarIfPresent(args.get(i)));
@@ -1775,24 +1800,42 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
+   * Returns the method or constructor that an invocation invokes. For the creation of an anonymous
+   * class, the result is the super constructor, because the anonymous constructor's parameters do
+   * not carry the super constructor's declaration annotations, such as {@code @Owning} and
+   * {@code @MustCallAlias}.
+   *
+   * @param node a method invocation or object creation node
+   * @return the method or constructor that {@code node} invokes
+   */
+  private ExecutableElement getInvokedExecutable(Node node) {
+    if (node instanceof MethodInvocationNode invocationNode) {
+      return invocationNode.getTarget().getMethod();
+    } else if (node instanceof ObjectCreationNode ocn) {
+      return TreeUtils.getSuperConstructor(ocn.getTree());
+    } else {
+      throw new TypeSystemError("unexpected node type " + node.getClass());
+    }
+  }
+
+  /**
    * Returns the elements representing the formal parameters of a method or constructor, from an
-   * invocation of that method or constructor.
+   * invocation of that method or constructor. For the creation of an anonymous class, the result is
+   * the parameters of the super constructor; see {@link #getInvokedExecutable}.
+   *
+   * <p>The i-th element of the result is the formal parameter for the i-th element of {@link
+   * #getArgumentsOfInvocation}. A varargs parameter corresponds to the single array argument that
+   * the CFG creates for it. The enclosing instance {@code outer} in {@code outer.new Inner(...)
+   * {...}} is neither an argument nor a parameter. The two lists have the same length, except that
+   * the implicit {@code super()} call in an enum constructor has no arguments, but its callee
+   * {@code Enum(String, int)} has two parameters.
    *
    * @param node a method invocation or object creation node
    * @return a list of the declarations of the formal parameters of the method or constructor being
    *     invoked
    */
   /*package-private*/ List<? extends VariableElement> getParametersOfInvocation(Node node) {
-    ExecutableElement executableElement;
-    if (node instanceof MethodInvocationNode invocationNode) {
-      executableElement = TreeUtils.elementFromUse(invocationNode.getTree());
-    } else if (node instanceof ObjectCreationNode ocn2) {
-      executableElement = TreeUtils.elementFromUse(ocn2.getTree());
-    } else {
-      throw new TypeSystemError("unexpected node type " + node.getClass());
-    }
-
-    return executableElement.getParameters();
+    return getInvokedExecutable(node).getParameters();
   }
 
   /**
@@ -1838,18 +1881,17 @@ public class MustCallConsistencyAnalyzer {
    * messages.
    *
    * @param block input block
-   * @return set of pairs (b, t), where b is a successor block, and t is the type of exception for
-   *     the CFG edge from block to b, or {@code null} if b is a non-exceptional successor
+   * @return the successor blocks, each paired with the type of exception for the CFG edge from
+   *     block to it, or {@code null} if it is a non-exceptional successor
    */
-  private Set<IPair<Block, @Nullable TypeMirror>> getSuccessorsExceptIgnoredExceptions(
-      Block block) {
+  private Set<SuccessorAndExceptionType> getSuccessorsExceptIgnoredExceptions(Block block) {
     if (block.getType() == Block.BlockType.EXCEPTION_BLOCK) {
       ExceptionBlock excBlock = (ExceptionBlock) block;
-      Set<IPair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
+      Set<SuccessorAndExceptionType> result = new LinkedHashSet<>();
       // regular successor
       Block regularSucc = excBlock.getSuccessor();
       if (regularSucc != null) {
-        result.add(IPair.of(regularSucc, null));
+        result.add(new SuccessorAndExceptionType(regularSucc, null));
       }
       // non-ignored exception successors
       Map<TypeMirror, Set<Block>> exceptionalSuccessors = excBlock.getExceptionalSuccessors();
@@ -1857,19 +1899,28 @@ public class MustCallConsistencyAnalyzer {
         TypeMirror exceptionType = entry.getKey();
         if (!cmAtf.isIgnoredExceptionType(exceptionType)) {
           for (Block exSucc : entry.getValue()) {
-            result.add(IPair.of(exSucc, exceptionType));
+            result.add(new SuccessorAndExceptionType(exSucc, exceptionType));
           }
         }
       }
       return result;
     } else {
-      Set<IPair<Block, @Nullable TypeMirror>> result = new LinkedHashSet<>();
+      Set<SuccessorAndExceptionType> result = new LinkedHashSet<>();
       for (Block b : block.getSuccessors()) {
-        result.add(IPair.of(b, null));
+        result.add(new SuccessorAndExceptionType(b, null));
       }
       return result;
     }
   }
+
+  /**
+   * A successor block, and the type of exception that leads to it.
+   *
+   * @param successor a successor block
+   * @param exceptionType the type of exception for the CFG edge to {@code successor}, or null if
+   *     {@code successor} is a non-exceptional successor
+   */
+  private record SuccessorAndExceptionType(Block successor, @Nullable TypeMirror exceptionType) {}
 
   /**
    * Propagates a set of Obligations to successors, and performs consistency checks when variables
@@ -1913,7 +1964,7 @@ public class MustCallConsistencyAnalyzer {
     // computes the set of Obligations that should be propagated to it and then adds it to the
     // worklist if any of its resource aliases are still in scope in the successor block. If
     // none are, then the loop performs a consistency check for that Obligation.
-    for (IPair<Block, @Nullable TypeMirror> successorAndExceptionType :
+    for (SuccessorAndExceptionType successorAndExceptionType :
         getSuccessorsExceptIgnoredExceptions(currentBlock)) {
 
       // A *mutable* set that eventually holds the set of dataflow facts to be propagated to
@@ -1930,7 +1981,8 @@ public class MustCallConsistencyAnalyzer {
         } else if (node instanceof ReturnNode rn) {
           updateObligationsForOwningReturn(obligations, cfg, rn);
         } else if (node instanceof MethodInvocationNode || node instanceof ObjectCreationNode) {
-          updateObligationsForInvocation(obligations, node, successorAndExceptionType.second);
+          updateObligationsForInvocation(
+              obligations, node, successorAndExceptionType.exceptionType());
         }
         // All other types of nodes are ignored. This is safe, because other kinds of
         // nodes cannot create or modify the resource-alias sets that the algorithm is
@@ -1940,8 +1992,8 @@ public class MustCallConsistencyAnalyzer {
       propagateObligationsToSuccessorBlock(
           obligations,
           currentBlock,
-          successorAndExceptionType.first,
-          successorAndExceptionType.second,
+          successorAndExceptionType.successor(),
+          successorAndExceptionType.exceptionType(),
           visited,
           worklist);
     }
@@ -2248,7 +2300,7 @@ public class MustCallConsistencyAnalyzer {
   }
 
   /**
-   * Gets the Obligation whose resource aliase set contains the given local variable, if one exists
+   * Gets the Obligation whose resource alias set contains the given local variable, if one exists
    * in {@code obligations}.
    *
    * @param obligations a set of Obligations
@@ -2530,7 +2582,7 @@ public class MustCallConsistencyAnalyzer {
       for (BlockWithObligations bwo : bwos) {
         blocksWithDuplicates.add(bwo.block);
       }
-      Collection<Block> duplicateBlocks = CollectionsPlume.duplicates(blocksWithDuplicates);
+      Collection<Block> duplicateBlocks = CollectionsP.duplicates(blocksWithDuplicates);
       StringJoiner result = new StringJoiner(", ", "BWOs[", "]");
       for (BlockWithObligations bwo : bwos) {
         ImmutableSet<Obligation> obligations = bwo.obligations;

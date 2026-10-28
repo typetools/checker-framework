@@ -7,21 +7,24 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
+import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** The result of type argument inferrece. */
+/** The result of type argument inference. */
 public class InferenceResult {
 
   /** An empty inference result. */
   @SuppressWarnings("interning:assignment")
   private static final @InternedDistinct InferenceResult emptyResult =
-      new InferenceResult(Collections.emptyList(), false, false, "");
+      new InferenceResult(Collections.emptyList(), Collections.emptySet(), false, "");
 
   /**
    * Returns an empty inference result.
@@ -43,8 +46,13 @@ public class InferenceResult {
    */
   private final boolean annoInferenceFailed;
 
-  /** True if unchecked conversion was necessary to infer the type arguments. */
-  private final boolean uncheckedConversion;
+  /**
+   * The method invocations, class instance creations, and method references that need unchecked
+   * conversion.
+   *
+   * @see Java8InferenceContext#needUncheckedConversion
+   */
+  private final Set<? extends ExpressionTree> needUncheckedConversion;
 
   /** True if inference crashed. */
   private final boolean inferenceCrashed;
@@ -56,35 +64,35 @@ public class InferenceResult {
    * Creates an inference result.
    *
    * @param variables instantiated variables
-   * @param uncheckedConversion where unchecked conversion was required to infer the type arguments
+   * @param needUncheckedConversion the expressions that need unchecked conversion
    * @param annoInferenceFailed true if inference failed because of annotations
    * @param errorMsg message to report to users if inference failed
    */
   public InferenceResult(
       Collection<Variable> variables,
-      boolean uncheckedConversion,
+      Set<? extends ExpressionTree> needUncheckedConversion,
       boolean annoInferenceFailed,
       String errorMsg) {
-    this(variables, uncheckedConversion, annoInferenceFailed, false, errorMsg);
+    this(variables, needUncheckedConversion, annoInferenceFailed, false, errorMsg);
   }
 
   /**
    * Creates an inference result.
    *
    * @param variables instantiated variables
-   * @param uncheckedConversion where unchecked conversion was required to infer the type arguments
+   * @param needUncheckedConversion the expressions that need unchecked conversion
    * @param annoInferenceFailed true if inference failed because of annotations
    * @param inferenceCrashed the type argument inference code crashed
    * @param errorMsg message to report to users if inference failed
    */
   public InferenceResult(
       Collection<Variable> variables,
-      boolean uncheckedConversion,
+      Set<? extends ExpressionTree> needUncheckedConversion,
       boolean annoInferenceFailed,
       boolean inferenceCrashed,
       String errorMsg) {
     this.results = convert(variables);
-    this.uncheckedConversion = uncheckedConversion;
+    this.needUncheckedConversion = needUncheckedConversion;
     this.annoInferenceFailed = annoInferenceFailed;
     this.errorMsg = errorMsg;
     this.inferenceCrashed = inferenceCrashed;
@@ -102,12 +110,15 @@ public class InferenceResult {
   }
 
   /**
-   * True if unchecked conversion was necessary to infer the type arguments.
+   * Returns true if {@code expressionTree} needs unchecked conversion. If so, the return type of
+   * {@code expressionTree}'s invocation type is erased (JLS 15.12.2.6).
    *
-   * @return true if unchecked conversion was necessary to infer the type arguments
+   * @param expressionTree a method invocation, class instance creation, or method reference in this
+   *     inference problem
+   * @return true if {@code expressionTree} needs unchecked conversion
    */
-  public boolean isUncheckedConversion() {
-    return uncheckedConversion;
+  public boolean needsUncheckedConversion(ExpressionTree expressionTree) {
+    return needUncheckedConversion.contains(expressionTree);
   }
 
   /**
@@ -141,23 +152,23 @@ public class InferenceResult {
     for (Variable variable : variables) {
       Map<TypeVariable, AnnotatedTypeMirror> typeMap =
           map.computeIfAbsent(variable.getInvocation(), k -> new HashMap<>());
-      typeMap.put(variable.getJavaType(), variable.getInstantiation().getAnnotatedType());
+      ProperType instantiation = variable.getInstantiation();
+      assert instantiation != null : "@AssumeAssertion(nullness): variables are instantiated";
+      typeMap.put(variable.getJavaType(), instantiation.getAnnotatedType());
     }
     return map;
   }
 
   /**
-   * Returns a mapping from type variable to its type argument for the {@code expressionTree}.
+   * Returns a mapping from type variable to its type argument for the {@code expressionTree}. If no
+   * type arguments were inferred for {@code expressionTree}, then this returns an empty map.
    *
    * @param expressionTree a tree for which type arguments were inferred
    * @return a mapping from type variable to its type argument for the {@code expressionTree}
    */
   public Map<TypeVariable, AnnotatedTypeMirror> getTypeArgumentsForExpression(
       ExpressionTree expressionTree) {
-    if (this == emptyResult || results.isEmpty()) {
-      return Collections.emptyMap();
-    }
-    return results.get(expressionTree);
+    return results.getOrDefault(expressionTree, Collections.emptyMap());
   }
 
   /**
@@ -171,21 +182,27 @@ public class InferenceResult {
 
   /**
    * Switch the {@link TypeVariable}s in {@code results} with the {@code TypeVariable}s in {@code
-   * methodType} so that the {@code TypeVariable}s in the result are {@code .equals}. {@link
+   * executableType} so that the {@code TypeVariable}s in the result are {@code .equals}. {@link
    * TypesUtils#areSame(TypeVariable, TypeVariable)} is used to decide which type variables to swap.
    *
-   * @param methodType annotated method type
+   * @param executableType annotated method type
    * @param tree method invocation tree
    * @return this
    */
   /* package-private */ InferenceResult swapTypeVariables(
-      AnnotatedExecutableType methodType, ExpressionTree tree) {
+      AnnotatedExecutableType executableType, ExpressionTree tree) {
     Map<TypeVariable, AnnotatedTypeMirror> map = results.get(tree);
-    for (AnnotatedTypeVariable tv : methodType.getTypeVariables()) {
+    if (map == null) {
+      // No type arguments were inferred for tree, so there is nothing to swap.
+      return this;
+    }
+    for (AnnotatedTypeVariable tv : executableType.getTypeVariables()) {
       TypeVariable typeVariable = tv.getUnderlyingType();
       for (TypeVariable t : new HashSet<>(map.keySet())) {
         if (TypesUtils.areSame(t, typeVariable)) {
-          map.put(typeVariable, map.remove(t));
+          AnnotatedTypeMirror type = map.remove(t);
+          assert type != null : "@AssumeAssertion(nullness): t is a key of map";
+          map.put(typeVariable, type);
         }
       }
     }

@@ -30,6 +30,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.common.aliasing.AliasingAnnotatedTypeFactory;
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.ForwardTransferFunction;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -73,6 +74,7 @@ import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.dataflow.util.PurityChecker;
+import org.checkerframework.dataflow.util.PurityKind;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -436,7 +438,11 @@ public abstract class CFAbstractTransfer<
               .getTypeFactoryOfSubcheckerOrNull(AliasingChecker.class);
       if (aliasingAtf != null) {
         int indexOfLambdaActual = invok.getArguments().indexOf(lambdaTree);
-        VariableElement lambdaFormal = methodElt.getParameters().get(indexOfLambdaActual);
+        List<? extends VariableElement> formals = methodElt.getParameters();
+        // In a varargs invocation, the lambda may be an element of the vararg array, in which
+        // case its index among the arguments is beyond the last formal parameter.
+        VariableElement lambdaFormal =
+            formals.get(Math.min(indexOfLambdaActual, formals.size() - 1));
         return aliasingAtf.getAnnotatedType(lambdaFormal).getAnnotation(NonLeaked.class) == null;
       }
     }
@@ -472,10 +478,12 @@ public abstract class CFAbstractTransfer<
         PurityChecker.checkPurity(
             expressionOrStatement,
             aTypeFactory,
+            TreePathUtil.enclosingMethod(expressionOrStatement),
+            aTypeFactory.getProcessingEnv(),
             isAssumeSideEffectFreeEnabled,
             isAssumeDeterministicEnabled,
             aTypeFactory.getChecker().hasOption("assumePureGetters"));
-    return result.isPure(EnumSet.allOf(Pure.Kind.class));
+    return result.isPure(EnumSet.of(PurityKind.SIDE_EFFECT_FREE, PurityKind.DETERMINISTIC));
   }
 
   /**
@@ -934,7 +942,7 @@ public abstract class CFAbstractTransfer<
               thenStore.insertValue(secondInternal, firstValue);
             }
             // To handle `(a = b = c) == x`, repeat for all insertable receivers of
-            // splitted assignments instead of returning.
+            // split assignments instead of returning.
             res = new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
           }
         }
@@ -983,10 +991,10 @@ public abstract class CFAbstractTransfer<
           && lhsLvn2.getElement().getKind() == ElementKind.PARAMETER) {
         // lhs is a formal parameter of some method
         VariableElement param = lhsLvn2.getElement();
-        analysis
-            .atypeFactory
-            .getWholeProgramInference()
-            .updateFromFormalParameterAssignment((LocalVariableNode) lhs, rhs, param);
+        WholeProgramInference wpi = analysis.atypeFactory.getWholeProgramInference();
+        assert wpi != null
+            : "@AssumeAssertion(nullness): shouldPerformWholeProgramInference returned true";
+        wpi.updateFromFormalParameterAssignment(lhsLvn2, rhs, param);
       }
     }
 
@@ -1062,23 +1070,23 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitObjectCreation(ObjectCreationNode n, TransferInput<V, S> p) {
     NewClassTree newClassTree = n.getTree();
+    ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
     if (shouldPerformWholeProgramInference(n.getTree())) {
       // Can't infer annotations on an anonymous constructor, so use the super constructor.
-      ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
-      if (newClassTree.getClassBody() == null || !TreeUtils.hasSyntheticArgument(newClassTree)) {
-        // TODO: WPI could be changed to handle the synthetic argument, but for now just
-        // don't infer annotations for those new class trees.
-        analysis
-            .atypeFactory
-            .getWholeProgramInference()
-            .updateFromObjectCreation(
-                "<unknown from visitObjectCreation>", n, constructorElt, p.getRegularStore());
-      }
+      // The super constructor's parameters correspond to `n.getArguments()`.  For
+      // `outer.new Inner(...) {...}`, the anonymous constructor has an extra first parameter for
+      // `outer`, but `n` stores `outer` separately from its arguments.
+      WholeProgramInference wpi = analysis.atypeFactory.getWholeProgramInference();
+      assert wpi != null
+          : "@AssumeAssertion(nullness): shouldPerformWholeProgramInference returned true";
+      wpi.updateFromObjectCreation(
+          "<unknown from visitObjectCreation>", n, constructorElt, p.getRegularStore());
     }
-    ExecutableElement constructorElt = TreeUtils.getSuperConstructor(newClassTree);
     S store = p.getRegularStore();
     // add new information based on postcondition
     processPostconditions(n, store, constructorElt, newClassTree);
+    // TODO: This does not call `store.updateForMethodCall`, so a constructor's
+    // `@SideEffectsOnly` annotation has no effect yet on type refinement at a `new` expression.
     return super.visitObjectCreation(n, p);
   }
 
@@ -1105,7 +1113,7 @@ public abstract class CFAbstractTransfer<
     V storeValue = store.getValue(n);
     V resValue = moreSpecificValue(factoryValue, storeValue);
 
-    store.updateForMethodCall(n, analysis.atypeFactory, resValue);
+    store.updateForMethodCall(n, resValue);
 
     // add new information based on postcondition
     processPostconditions(n, store, method, invocationTree);
@@ -1142,7 +1150,7 @@ public abstract class CFAbstractTransfer<
       JavaExpression expr = JavaExpression.fromNode(bindingVar);
       AnnotatedTypeMirror expType =
           analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
-      for (AnnotationMirror anno : expType.getPrimaryAnnotations()) {
+      for (AnnotationMirror anno : expType.getAnnotations()) {
         in.getRegularStore().insertOrRefine(expr, anno);
       }
     }
@@ -1174,8 +1182,12 @@ public abstract class CFAbstractTransfer<
    * @return true if to perform whole-program inference on the tree
    */
   protected boolean shouldPerformWholeProgramInference(Tree tree) {
+    // Test `infer` first: computing the path is expensive, and it is needed only if WPI is on.
+    if (!infer || tree == null) {
+      return infer;
+    }
     TreePath path = this.analysis.atypeFactory.getPath(tree);
-    return infer && (tree == null || !analysis.checker.shouldSuppressWarnings(path, ""));
+    return !analysis.checker.shouldSuppressWarnings(path, "");
   }
 
   /**
@@ -1500,8 +1512,8 @@ public abstract class CFAbstractTransfer<
    * @param target the receiver whose value should be modified
    * @param newAnno the new value
    */
-  protected static void insertIntoStores(
-      TransferResult<CFValue, CFStore> result, JavaExpression target, AnnotationMirror newAnno) {
+  protected void insertIntoStores(
+      TransferResult<V, S> result, JavaExpression target, AnnotationMirror newAnno) {
     if (result.containsTwoStores()) {
       result.getThenStore().insertValue(target, newAnno);
       result.getElseStore().insertValue(target, newAnno);

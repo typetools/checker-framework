@@ -1,10 +1,14 @@
 \documentclass{article}
+% The HTML version is produced by lwarp; see the Makefile.
+\usepackage[latexmk,HomeHTMLFilename=annotation-file-format,HTMLFilename={}]{lwarp}
+% manual.css is a copy of ../manual/manual.css; see the Makefile.
+\CSSFilename{manual.css}
+\input{../manual/lwarp-workarounds.tex}
 \usepackage{fancyvrb}
 \usepackage{graphicx}
 \usepackage{fullpage}
 \usepackage{relsize}
 \usepackage{url}
-\usepackage{hevea}
 \usepackage[shortcuts]{extdash}
 \usepackage{textcomp}
 % \usepackage{verbdef}
@@ -15,42 +19,44 @@
 \def\dblfloatpagefraction{\topfraction}  % default .5
 \def\textfraction{.1}
 
-%HEVEA \footerfalse    % Disable hevea advertisement in footer
-
+\begin{warpprint}
 \newcommand{\code}[1]{\ifmmode{\mbox{\relax\ttfamily{#1}}}\else{\relax\ttfamily #1}\fi}
-%% Hevea version omits "\smaller"
-%HEVEA \renewcommand{\code}[1]{\ifmmode{\mbox{\ttfamily{#1}}}\else{\ttfamily #1}\fi}
+\end{warpprint}
+\begin{warpHTML}
+\newcommand{\code}[1]{\texttt{#1}}
+\end{warpHTML}
 
+% The argument is the HEIGHT, not the width.  It is used only in print.
 \newcommand{\includeimage}[2]{
 \begin{center}
-\ifhevea\imgsrc{#1.png}\else
-\resizebox{!}{#2}{\includegraphics{figures/#1}}
-\vspace{-1.5\baselineskip}
-\fi
+\ifbool{warpingHTML}
+{\includegraphics{figures/#1}}
+{\resizebox{!}{#2}{\includegraphics{figures/#1}}
+\vspace{-1.5\baselineskip}}
 \end{center}}
 
+\begin{warpprint}
 % Add line between figure and text
 \makeatletter
 \def\topfigrule{\kern3\p@ \hrule \kern -3.4\p@} % the \hrule is .4pt high
 \def\botfigrule{\kern-3\p@ \hrule \kern 2.6\p@} % the \hrule is .4pt high
 \def\dblfigrule{\kern3\p@ \hrule \kern -3.4\p@} % the \hrule is .4pt high
 \makeatother
+\end{warpprint}
 
 
 \title{Annotation File Format Specification}
-% Hevea ignores \date, so move the date into \author
-\author{\url{https://checkerframework.org/annotation-file-utilities/} \\
-\today}
-\date{}
+\author{\url{https://checkerframework.org/annotation-file-utilities/}}
+\date{\today}
 
 \begin{document}
 
 \maketitle
 
-%HEVEA \setcounter{tocdepth}{2}
+\warpHTMLonly{\setcounter{tocdepth}{2}}
 \tableofcontents
 
-\section{Purpose:  External storage of annotations\label{purpose}}
+\section{Purpose:  External storage of annotations}\label{purpose}
 
 Java annotations are meta-data about Java program elements, as in
 ``\code{@Deprecated class Date \{ \ldots\ \}}''.
@@ -62,9 +68,7 @@ it inserts the annotations in the resulting \code{.class} file (as
 Sometimes, it is convenient to specify the annotations outside the source
 code or the \code{.class} file.
 \begin{itemize}
-%BEGIN LATEX
-\itemsep 0pt \parskip 0pt
-%END LATEX
+\warpprintonly{\itemsep 0pt \parskip 0pt}
 \item
   When source code is not available, a textual file provides a format for
   writing and storing annotations that is much easier to read and modify
@@ -101,9 +105,9 @@ The Annotation File Utilities
 of tools that process annotation files.
 
 The file format discussed in this document supports both standard Java SE 5
-declaration annotations and also the type annotations that are introduced by Java SE 8.
+declaration annotations and also the type annotations that were introduced by Java SE 8.
 The file format provides a simple syntax to represent the structure of a Java
-program. For annotations in method bodies of \code{.class} files the annotation
+program. For annotations in method bodies of \code{.class} files, the annotation
 file closely follows
 section ``Class File Format Extensions'' of the JSR 308 design document~\cite{JSR308-webpage-201310},
 which explains how the annotations are stored in the \code{.class}
@@ -133,26 +137,32 @@ annotation index file''), but this is not required.
 
 % \verbdef\lineend|"\n"|
 
-%BEGIN LATEX
+\begin{warpprint}
 \DefineShortVerb{\|}
 \SaveVerb{newline}|\n|
 \UndefineShortVerb{\|}
 \newcommand{\lineend}{\bnflit{\UseVerb{newline}}}
-%END LATEX
-%HEVEA \newcommand{\bs}{\char"5C}
-%HEVEA \newcommand{\lineend}{\bnflit{\bs{}n}}
+\end{warpprint}
+\begin{warpHTML}
+\newcommand{\lineend}{\bnflit{\textbackslash{}n}}
+\end{warpHTML}
 
 % literal
-\newcommand{\bnflit}[1]{\textrm{``}\textbf{#1}\textrm{''}}
+% lwarp truncates any line in a tabbing environment whose HTML markup is wider
+% than lwarp's intermediate PDF page, so the HTML version uses less markup.
+\ifbool{warpingHTML}
+  {\newcommand{\bnflit}[1]{\textquotedblleft\textbf{#1}\textquotedblright}}
+  {\newcommand{\bnflit}[1]{\textrm{``}\textbf{#1}\textrm{''}}}
 % non-terminal
 \newcommand{\bnfnt}[1]{\textsf{\emph{#1}}}
 % comment
 \newcommand{\bnfcmt}{\rm \# }
 % alternative
-\newcommand{\bnfor}{\ensuremath{|}}
+% In HTML, lwarp would render math as an image, which does not work in tabbing.
+\newcommand{\bnfor}{\ifbool{warpingHTML}{\textbar}{\ensuremath{|}}}
 
 
-\section{Grammar\label{grammar}}
+\section{Grammar}\label{grammar}
 
 This section describes the annotation file format in detail by presenting it in
 the form of a grammar. Section~\ref{grammar-conventions} details the conventions
@@ -161,10 +171,10 @@ basic structure of a Java program (classes, methods, etc.) in an annotation
 file. Section~\ref{annotations-grammar} shows how to add annotations to an
 annotation file.
 
-\subsection{Grammar conventions\label{grammar-conventions}}
+\subsection{Grammar conventions}\label{grammar-conventions}
 
 Throughout this document, ``name'' is any valid Java simple name or
-binary name, ``type'' is any valid type, and ``value'' is any
+binary name, ``type'' is any valid type, ``value'' is any
 valid Java constant, and quoted strings are literal values.
 %
 The Kleene qualifiers ``*'' (zero or more), ``?'' (zero or one), and ``+''
@@ -176,7 +186,7 @@ denote optional syntax, which is equivalent to ``( \ldots\ )\ ?''\ but more conc
 We use the hash/pound/octothorpe symbol (``\#'') for comments within the grammar.
 
 In the annotation file,
-besides its use as token separator,
+besides its use as a token separator,
 whitespace (excluding
 newlines) is optional with one exception: no space is permitted
 between an ``@'' character and a subsequent name. Indentation is
@@ -190,10 +200,10 @@ This is omitted from the grammar for simplicity.
 Block comments (``/* \ldots\ */'') are not allowed.
 
 The line end symbol \lineend{} is used for all the different line end
-conventions, that is, Windows- and Unix-style newlines are supported.
+conventions; that is, Windows- and Unix-style newlines are supported.
 
 
-\subsection{Java file grammar\label{java-file-grammar}}
+\subsection{Java file grammar}\label{java-file-grammar}
 
 This section shows how to represent the basic structure of a Java program
 (classes, methods, etc.) in an annotation file. For Java elements that can
@@ -202,7 +212,7 @@ in Section~\ref{annotations-grammar}, which describes how annotations are used
 in an annotation file.
 
 An annotation file has the same basic structure as a Java program. That is,
-there are packages, classes, fields and methods.
+there are packages, classes, fields, and methods.
 
 The annotation file may omit certain program elements --- for instance, it
 may mention only some of the packages in a program, or only some of the
@@ -211,9 +221,9 @@ Program elements that do not appear in the annotation file are treated as
 unannotated.
 
 
-\subsubsection{Package definitions\label{package-definitions}}
+\subsubsection{Package definitions}\label{package-definitions}
 
-At the root of an annotation file is one or more package definitions.
+At the root of an annotation file are one or more package definitions.
 A package definition describes a package containing a list of annotation
 definitions and classes.  A package definition also contains any
 annotations on the package (such as those from a
@@ -234,7 +244,7 @@ Use a package line of \code{package:} for the default package. Note that
 annotations on the default package are not allowed.
 
 
-\subsubsection{Class definitions\label{class-definitions}}
+\subsubsection{Class definitions}\label{class-definitions}
 
 A class definition describes the annotations present on a class declaration,
 as well as fields and methods of the class. It is organized according to
@@ -249,7 +259,7 @@ all such definitions.
 % TODO: add test cases for this.
 
 Inner classes are treated as ordinary classes whose names happen to contain
-\code{\$} signs and must be defined at the top level of a class definition file.
+\code{\$} signs and must be defined at the top level of an annotation file.
 (To change this, the grammar would have to be extended with a closing
 delimiter for classes; otherwise, it would be ambiguous whether a
 field or method appearing after an inner class definition belonged to the
@@ -304,7 +314,7 @@ as on \code{String} in \code{List<String>::size}.
 \end{tabbing}
 
 
-\paragraph{Type Parameter Bounds}
+\paragraph{Type parameter bounds}
 
 The \bnfnt{typeparam-bound} production defines annotations on a bound of a
 type variable declaration, such as on \code{Number} and \code{Date} in
@@ -358,18 +368,18 @@ define annotations on code within static or instance initializer blocks.
 \begin{tabbing}
 \qquad \= \kill
 \bnfnt{staticinit} ::= \\
-\qquad    \bnfcmt The integer is the zero-based index of the implemented interface. \\
+\qquad    \bnfcmt The integer is the zero-based index of the static initializer block. \\
 \qquad    \bnflit{staticinit} \bnflit{*} \bnfnt{integer} \bnflit{:} \lineend  \\
 \qquad        \bnfnt{compound-type}*
 \\
 \bnfnt{instanceinit} ::= \\
-\qquad    \bnfcmt The integer is the zero-based index of the implemented interface. \\
+\qquad    \bnfcmt The integer is the zero-based index of the instance initializer block. \\
 \qquad    \bnflit{instanceinit} \bnflit{*} \bnfnt{integer} \bnflit{:} \lineend  \\
 \qquad        \bnfnt{compound-type}*
 \end{tabbing}
 
 
-\subsubsection{Field definitions\label{field-definitons}}
+\subsubsection{Field definitions}\label{field-definitions}
 
 A field definition can have annotations on the declaration, the type of the
 field, or --- if in source code --- the field's initialization.
@@ -387,18 +397,25 @@ Annotations on the \bnflit{field} line are on the field declaration, not the
 type of the field.
 
 The \bnfnt{expression-annotations} production specifies annotations on the
-initialization expression of a field. If a field is initialized at declaration
-then in bytecode the initialization is moved to the constructor when the class
-is compiled. Therefore for bytecode, annotations on the initialization
-expression go in the constructor (see Section~\ref{method-definitions}), rather
-than the field definition. Source code annotations for the field initialization
+initialization expression of a field. If a field is initialized at declaration,
+then in bytecode the initialization is moved out of the field definition when
+the class is compiled: the initialization of an instance field is moved to each
+constructor, and the initialization of a static field is moved to the class
+initialization method \code{<clinit>()V}\@.  Therefore, for bytecode,
+annotations on the initialization expression of an instance field go in each
+constructor, and annotations on the initialization expression of a static field
+go in \code{<clinit>()V} (see Section~\ref{method-definitions}), rather than in
+the field definition.  (The \bnfnt{staticinit} and \bnfnt{instanceinit}
+productions do not apply: they represent only explicit initializer blocks, not
+field initializers.)
+Source code annotations for the field initialization
 expression are valid on the field definition.
 
 
-\subsubsection{Method definitions\label{method-definitions}}
+\subsubsection{Method definitions}\label{method-definitions}
 
 A method definition can have annotations on the method declaration, in the
-method signature (return type, parameters, etc.), as well as the method body.
+method signature (return type, parameters, etc.), and in the method body.
 
 \begin{tabbing}
 \qquad \= \kill
@@ -470,7 +487,7 @@ parameter in a method declaration.  A method receiver is the implicit formal
 parameter, \code{this}, used in non-static methods.  For source code insertion,
 the receiver parameter will be inserted if it does not already exist.
 
-Only inner classes have a receiver.  A top-level constructor does not have
+Only constructors of inner classes have a receiver.  A top-level constructor does not have
 a receiver, though it does have a result.  The type of a constructor result
 is represented as a return type.
 
@@ -503,7 +520,7 @@ first formal parameter. The receiver parameter is not index 0. Use the
 \bnfnt{receiver-definition} production to annotate the receiver parameter.
 
 
-\subsection{Bytecode Locations\label{bytecode-locations}}
+\subsection{Bytecode locations}\label{bytecode-locations}
 
 Certain elements in the body of a method or the initialization expression of a
 field can be annotated. The \bnfnt{expression-annotations} rule describes the
@@ -549,7 +566,7 @@ a full typecast (\code{insert-annotation} instead of
 tool generates a full typecast if Java syntax requires one.
 
 
-\subsubsection{Bytecode offsets\label{bytecode-offsets}}
+\subsubsection{Bytecode offsets}\label{bytecode-offsets}
 
 For locations in bytecode, the
 annotation file uses offsets into the bytecode array of the class file to
@@ -557,13 +574,13 @@ indicate the specific expression to which the annotation refers.  Because
 different compilation strategies yield different \code{.class} files, a
 tool that maps such annotations from an annotation file into source code must
 have access to the specific \code{.class} file that was used to generate
-the annotation file.   The
+the annotation file.  The
 \code{javap -v} command is an effective technique to discover bytecode
 offsets.  Non-expression annotations such as those on methods,
 fields, classes, etc., do not use a bytecode offset.
 
 
-\subsubsection{Source code indexes\label{source-code-indexes}}
+\subsubsection{Source code indexes}\label{source-code-indexes}
 
 For locations in source code, the annotation file indicates the kind of
 expression, plus a zero-based index to indicate which occurrence of that kind of
@@ -589,7 +606,7 @@ occurrences in nested classes are not included. Use a new
 insertions in a nested class.
 
 
-\subsubsection{Code locations grammar\label{code-grammar}}
+\subsubsection{Code locations grammar}\label{code-grammar}
 
 For each kind of expression, the grammar contains a separate location rule.
 This location rule contains the bytecode offset syntax followed by the
@@ -696,7 +713,7 @@ The grammar uses \bnflit{\#} for bytecode offsets and \bnflit{*} for source code
 \end{tabbing}
 
 
-\subsubsection{AST paths\label{ast-paths}}
+\subsubsection{AST paths}\label{ast-paths}
 
 A path through the AST (abstract
 syntax tree) specifies an arbitrary expression in source code to modify.
@@ -707,9 +724,9 @@ insert either a bare annotation (\bnflit{insert-annotation}) or a cast
 For a cast insertion, the \code{.jaif} file specifies the type to cast to.
 The annotations on the \bnflit{insert-typecast} line will be inserted on
 the outermost type of the type to cast to. If the type to cast to is a compound
-type then annotations on parts of the compound type are specified with the
+type, then annotations on parts of the compound type are specified with the
 \bnfnt{compound-type} rule. If there are no annotations on
-the \bnflit{insert-typecast} line then a cast with no annotations will be
+the \bnflit{insert-typecast} line, then a cast with no annotations will be
 inserted or, if compound type annotations are specified, a cast with annotations
 only on the compound types will be inserted.
 
@@ -720,7 +737,7 @@ of \code{Map.Entry<java.lang.String, java.lang.Object>}.
 \begin{tabbing}
 \bnfnt{source-insert-typecast} ::= \\
 \qquad    \bnfcmt \bnfnt{ast-path} is described below. \\
-\qquad    \bnfcmt \bnfnt{type} is the un-annotated type to cast to. \\
+\qquad    \bnfcmt \bnfnt{type} is the unannotated type to cast to. \\
 \qquad    \bnflit{insert-typecast} \bnfnt{ast-path}\bnflit{:} \bnfnt{type-annotation}* \bnfnt{type} \lineend \\
 \qquad        \bnfnt{compound-type}*
 \end{tabbing}
@@ -728,7 +745,7 @@ of \code{Map.Entry<java.lang.String, java.lang.Object>}.
 An AST path represents a traversal through the AST. AST paths can only be
 used in \bnfnt{field-definition}s and \bnfnt{method-definition}s.
 An AST path starts with the first element under the definition. For
-methods this is \code{Block} and for fields this is \code{Variable}.
+methods, this is \code{Block}, and for fields, this is \code{Variable}.
 
 An AST path is composed of one or more AST entries, separated by commas. Each
 AST entry is composed of a tree kind, a child selector, and an optional
@@ -738,7 +755,7 @@ argument. An example AST entry is:
 Block.statement 1
 \end{verbatim}
 
-The tree kind is \code{Block}, the child selector is \code{statement} and the
+The tree kind is \code{Block}, the child selector is \code{statement}, and the
 argument is \code{1}.
 
 The available tree kinds correspond to the Java AST tree nodes (from the package
@@ -759,7 +776,7 @@ Block.statement 1, Switch.case 1, Case.statement 0, ExpressionStatement.expressi
     MethodInvocation.argument 0
 \end{verbatim}
 
-Since the above example starts with a \code{Block} it belongs in a
+Since the above example starts with a \code{Block}, it belongs in a
 \bnfnt{method-definition}. This AST path would select an expression that is in
 statement 1 of the method, case 1 of the switch statement, statement 0 of the
 case, and argument 0 of a method call (\code{ExpressionStatement} is just a
@@ -844,7 +861,7 @@ Note that a cast can be inserted on any expression, not
 just the deepest expression in the AST. For example, a cast could be inserted on
 the expression \code{i + j}, the identifier \code{i}, and/or the identifier \code{j}.
 
-To help create correct AST paths it may be useful to view the AST of a class.
+To help create correct AST paths, it may be useful to view the AST of a class.
 The Checker Framework has a processor to do this. The following command will
 output indented AST nodes for the entire input program.
 
@@ -857,7 +874,7 @@ The following is the grammar for AST paths.
 \begin{tabbing}
 \qquad \= \kill
 \bnfnt{ast-path} ::= \\
-\qquad    \bnfnt{ast-entry} [ \bnflit{,} \bnfnt{ast-entry} ]+ \\
+\qquad    \bnfnt{ast-entry} ( \bnflit{,} \bnfnt{ast-entry} )* \\
 \\
 \bnfnt{ast-entry} ::= \\
 \qquad    \bnfnt{annotated-type} \\
@@ -897,11 +914,11 @@ The following is the grammar for AST paths.
 \qquad    \bnfor{} \bnfnt{type-parameter} \\
 \qquad    \bnfor{} \bnfnt{unary} \\
 \qquad    \bnfor{} \bnfnt{union-type} \\
-\qquad    \bnfor{} \bnfnt{variable-type} \\
+\qquad    \bnfor{} \bnfnt{variable} \\
 \qquad    \bnfor{} \bnfnt{while-loop} \\
-\qquad    \bnfor{} \bnfnt{wildcard-tree} \\
+\qquad    \bnfor{} \bnfnt{wildcard} \\
 \\
-\bnfnt{annotated-type} :: = \\
+\bnfnt{annotated-type} ::= \\
 \qquad    \bnflit{AnnotatedType} \bnflit{.} ( ( \bnflit{annotation} \bnfnt{integer} ) \bnfor{} \bnflit{underlyingType} ) \\
 \\
 \bnfnt{annotation} ::= \\
@@ -1026,14 +1043,14 @@ The following is the grammar for AST paths.
 \end{tabbing}
 
 
-\subsection{Annotations\label{annotations-grammar}}
+\subsection{Annotations}\label{annotations-grammar}
 
 This section describes the details of how annotations are defined, how
 annotations are used, and the different kinds of annotations in an annotation
 file.
 
 
-\subsubsection{Annotation definitions\label{annotation-definitions}}
+\subsubsection{Annotation definitions}\label{annotation-definitions}
 
 An annotation definition describes the annotation's fields and their
 types, so that they may be referenced in a compact way throughout the
@@ -1044,7 +1061,7 @@ must be defined before use.
 annotation file, an annotation that is meta-annotated with itself.)
 The two exceptions to this rule are the \code{@java.lang.annotation.Target} and
 \code{@java.lang.annotation.Retention} meta-annotations. These meta-annotations
-are often used in annotation definitions so for ease of use are they not required to
+are often used in annotation definitions, so for ease of use they are not required to
 be defined themselves.
 In the annotation file, the annotation definition appears within the
 package that defines the annotation.  The annotation may be applied to
@@ -1081,7 +1098,7 @@ that annotation in an annotation file.
 \end{tabbing}
 
 
-\subsubsection{Annotation uses\label{annotation-uses}}
+\subsubsection{Annotation uses}\label{annotation-uses}
 
 Java SE 8 has two kinds of annotations: ``declaration annotations'' and ``type
 annotations''. Declaration annotations can be written only on method formal
@@ -1097,7 +1114,7 @@ annotation file: \bnfnt{decl-annotation} and \bnfnt{type-annotation}.
 The \bnfnt{decl-annotation} and \bnfnt{type-annotation} productions use the same
 syntax to specify an annotation. These two different rules exist only to show
 which type of annotation is valid in a given location. A declaration annotation
-must be used where the \bnfnt{decl-annotation} production is used and a type
+must be used where the \bnfnt{decl-annotation} production is used, and a type
 annotation must be used where the \bnfnt{type-annotation} production is used.
 
 The syntax for an annotation is the same as in a Java source file.
@@ -1115,17 +1132,17 @@ The syntax for an annotation is the same as in a Java source file.
 \bnfnt{annotation} ::= \\
 \qquad    \bnfcmt The name may be the annotation's simple name, unless the file \\
 \qquad    \bnfcmt contains definitions for two annotations with the same simple name. \\
-\qquad    \bnfcmt In this case, the fully-qualified name of the annotation name is required. \\
+\qquad    \bnfcmt In this case, the fully-qualified name of the annotation is required. \\
 % TODO:
 % Perhaps we could add that if a class is in the same package
 % as an annotation it may always use the simple name (even if there's another
 % annotation with the same simple name in another package)? - MP 06/28
-\qquad    \bnflit{@}\bnfnt{name} [ \bnflit{(} \bnfnt{annotation-field} [ \bnflit{,} \bnfnt{annotation-field} ]+ \bnflit{)} ] \\
+\qquad    \bnflit{@}\bnfnt{name} [ \bnflit{(} \bnfnt{annotation-field} ( \bnflit{,} \bnfnt{annotation-field} )* \bnflit{)} ] \\
 \\
 \bnfnt{annotation-field} ::= \\
 \qquad    \bnfcmt In Java, if a single-field annotation has a field named \\
 \qquad    \bnfcmt ``\code{value}'', then that field name may be elided in uses of the\\
-\qquad    \bnfcmt annotation:   ``\code{@A(12)}'' rather than ``\code{@A(value=12)}''. \\
+\qquad    \bnfcmt annotation:  ``\code{@A(12)}'' rather than ``\code{@A(value=12)}''. \\
 \qquad    \bnfcmt The same convention holds in an annotation file. \\
 \qquad    \bnfnt{name} \bnflit{=} \bnfnt{value}
 \end{tabbing}
@@ -1149,8 +1166,8 @@ annotations.
 
 A compound type is a parameterized, wildcard, array, or nested type. Annotations
 may be on any type in a compound type. In order to specify the location of an
-annotation within a compound type we use a ``type path''. A
-type path is composed one or more pairs of type kind and type argument index.
+annotation within a compound type, we use a ``type path''. A
+type path is composed of one or more pairs of type kind and type argument index.
 
 \begin{tabbing}
 \qquad \= \kill
@@ -1170,7 +1187,7 @@ type path is composed one or more pairs of type kind and type argument index.
 
 \noindent
 The type argument index used in the \bnfnt{type-path} rule must be \bnflit{0} unless the \bnfnt{type-kind} is
-\bnflit{3}. In this case, the type argument index selects which type argument
+\bnflit{3}. In the latter case, the type argument index selects which type argument
 of a parameterized type to use.
 
 \urldef\cftp\url|https://checkerframework.org/jsr308/specification/java-annotation-design.html#class-file:ext:type_path|
@@ -1179,10 +1196,10 @@ understanding, in Section 3.4 of the JSR 308 Specification.\footnotemark
 \footnotetext{\cftp}
 
 
-\section{Example\label{example}}
+\section{Example}\label{example}
 
 Consider the code of Figure~\ref{fig:java-example}.
-Figure~\ref{fig:annotation-file-examples} shows two legal annotation files
+Figure~\ref{fig:annotation-file-examples} shows two legal annotation files,
 each of which represents its annotations.
 
 
@@ -1247,17 +1264,17 @@ class Foo: @A(value=12)
 \begin{minipage}[t]{.45\textwidth}
 \begin{verbatim}
 package p2:
-annotation @A
+annotation @A:
     int value
 
 package p2:
-annotation @B
+annotation @B:
 
 package p2:
-annotation @C
+annotation @C:
 
 package p2:
-annotation @D
+annotation @D:
     String value
 
 package p1:
@@ -1286,7 +1303,7 @@ class Foo:
 \end{figure}
 
 
-\section{Types and values\label{types-and-values}}
+\section{Types and values}\label{types-and-values}
 
 The Java language permits several types for annotation fields: primitives,
 \code{String}s, \code{java.lang.Class} tokens (possibly parameterized),
@@ -1335,7 +1352,7 @@ between each pair of adjacent elements; a comma following the last element is
 optional as in Java.  Also as in Java, the braces may be omitted if the
 array has only one element.
 Examples: \code{\char`\{1\char`\}}, \code{1},
-\code{\char`\{true, false,\char`\}} and \code{\char`\{\char`\}}.
+\code{\char`\{true, false,\char`\}}, and \code{\char`\{\char`\}}.
 \end{itemize}
 
 The following example annotation file shows how types and values are represented.
@@ -1376,7 +1393,7 @@ class Foo: @p1.ClassInfo(
 \end{verbatim}
 
 
-\section{Alternative formats\label{alternative-formats}}
+\section{Alternative formats}\label{alternative-formats}
 
 We mention multiple alternatives to the format described in this document.
 Each of them has its own merits.
@@ -1415,15 +1432,15 @@ described in this document primarily for method bodies.
 The Checker Framework~\cite{DietlDEMS2011,CF} defines a format
 called ``stub files''. A stub file is similar
 to the \code{.spec}/\code{.jml} files described in the previous paragraph. It
-uses Java syntax, only allows annotations on method signatures and does not require
-method bodies. A stub file is used to add annotations to method signatures of
+uses Java syntax, allows annotations on class declarations, fields, and method
+signatures, and omits method bodies. A stub file is used to add annotations to
 existing Java classes. For example, the Checker Framework uses stub files to add
-annotations to method signatures of libraries (such as the JDK) without modifying
+annotations to libraries (such as the JDK) without modifying
 the source code or bytecode of the library. A single stub file can contain
-multiple packages and classes. This format only allows annotations on method
-signatures, not class signatures, fields, and method bodies like in a \code{.jaif}
-file. Further, stub files are only used by the Checker Framework at run time,
-they cannot be used to insert annotations into a source or classfile.
+multiple packages and classes. Unlike a \code{.jaif} file, a stub file cannot
+express annotations within method bodies. Further, stub files are only read by
+the Checker Framework during type checking; they cannot be used to insert
+annotations into a source file or classfile.
 
 
 Eclipse defines its own file format for external nullness annotations:

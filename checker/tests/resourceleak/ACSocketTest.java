@@ -151,7 +151,7 @@ public class ACSocketTest {
 
   protected Socket sock;
 
-  // This type.argument error is undesirable, but is a necessary consquence of our approach to
+  // This type.argument error is undesirable, but is a necessary consequence of our approach to
   // handling generics in the Must Call Checker, which prevents containers from having
   // @MustCall("close") type arguments without errors (in exchange for avoiding many false
   // positives on containers that do not have must-call obligations on their component types).

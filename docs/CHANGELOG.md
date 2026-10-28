@@ -3,6 +3,127 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
+## Version 4.3.2 (2026-11-01)
+
+### User-visible changes
+
+### Changes for type system implementers
+
+Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
+
+`PurityChecker.checkPurity()` takes two new arguments: the method declaration
+that lexically encloses the statement being checked (or null, as for an
+arbitrary expression) and the processing environment.
+
+### Closed issues
+
+## Version 4.3.1 (2026-10-08)
+
+### Closed issues
+
+\#8325.
+
+## Version 4.3.0 (2026-10-01)
+
+### User-visible changes
+
+The new Modifiability Checker warns when a program might throw
+`UnsupportedOperationException` at run time because it calls a mutating method on
+a collection that does not support the method.
+
+The new `wpi2.sh` script does whole-program inference, but requires buildfile edits.
+
+Purity Checker:
+
+* Renamed message keys `purity.not.deterministic.X`,
+  `purity.not.sideeffectfree.X`, and
+  `purity.not.deterministic.not.sideeffectfree.X` to `purity.X`.
+* `-AcheckPurityAnnotations` issues warnings that it missed previously.
+
+The Checker Framework runs under JDK 27 -- that is, it runs on a version 27 JVM.
+
+The Checker Framework runs noticeably faster, due to performance tuning.
+
+The HTML version of the manual has a new look.  In addition to the
+single-page version, there is a
+[multi-page version](https://checkerframework.org/manual/manual-multipage.html).
+
+### Changes for type system implementers
+
+`JavaParserUtil`: moved `DEFAULT_LANGUAGE_LEVEL`, `parseCompilationUnit()`,
+`parseStubUnit()`, and `parseExpression()` into new class `StaticJavaParserUtil`.
+
+Renamed `AnnotatedTypes.innerMostType()` to `innermostComponentType()`.
+
+Removed the unused method
+`WholeProgramInferenceScenesStorage.updateAnnotationSetInScene()`.
+
+Methods that used to return (or accept) an `IPair` now use a record with
+meaningful component names.
+
+### Closed issues
+
+\#294, #1170, #1184, #1256, #1440, #1444, #1669, #2090, #2172, #2429, #2448,
+\#2561, #2637, #2704, #2722, #2770, #2896, #2995, #3015, #3025, #3027, #3146,
+\#3281, #3624, #4690, #4708, #4754, #5064, #5201, #6038, #6716, #6741, #6748,
+\#6756, #6768, #6832, #6881, #7023, #7049, #7064, #7311, #7683, #8053, #8054,
+\#8055, #8167, #8168, #8169, #8238, #8261, #8284.
+
+## Version 4.2.3 (2026-09-01)
+
+### User-visible changes
+
+The `-AsuggestPureMethods` command-line option and the `purity.effectively.pure`
+warning no longer require `-AcheckPurityAnnotations` to also be supplied.
+
+### Changes for type system implementers
+
+Made the field `Java8InferenceContext.pathToExpression` private; use
+`getPathToExpression()` and `setPathToExpression()` instead.
+
+Renamed `TreeUtils.isLikeDiamondMemberReference()` to `isRawTypedMemberReference()`.
+
+### Closed issues
+
+\#2816, #7677, #7678, #7681, #7682, #7684, #7693, #7694, #7696, #7698, #7701,
+\#7702, #7875, #8046, #8047, #8048, #8050, #8052.
+
+## Version 4.2.2 (2026-08-06)
+
+### Implementation details
+
+Renamed `CFAbstractValue.validateSet()` to `hasAnnotationFromEveryHierarchy()`.
+
+### Closed issues
+
+\#7723, #7784, #7806.
+
+## Version 4.2.1 (2026-07-01)
+
+### Closed issues
+
+\#7726.
+
+## Version 4.2.0 (2026-06-01)
+
+### User-visible changes
+
+Renamed error message key "createsmustcallfor.target.unparseable" to "createsmustcallfor.target.unparsable".
+
+### Implementation details
+
+In `AnnotatedTypeFactory`:
+
+* new overload `canonicalAnnotation(AnnotationMirror, TypeMirror)`.
+
+In `TypeHierarchy`:
+
+* new method `equalsShallowEffective()`.
+
+### Closed issues
+
+\#7676, #7679, #7680, #7695, #7697, #7699, #7700, #7727.
+
 ## Version 4.1.0 (2026-05-01)
 
 ### User-visible changes
@@ -16,9 +137,15 @@ Removed deprecated names "builder", "object.construction", and
 ### Implementation details
 
 New method annotation `@DoesNotUnrefineReceiver`.
-`AnnotatedTypeFactory` has a new method `hasDoesNotUnrefineReceiver()`.
+
+In `AnnotatedTypeFactory`:
+
+* new method `hasDoesNotUnrefineReceiver()`.
+* `isAliasedTypeAnnotation()` is now protected rather than public.
 
 ### Closed issues
+
+\#6890, #7364, #7488.
 
 ## Version 4.0.0 (2026-04-07)
 
@@ -79,7 +206,7 @@ to list here.
 
 ### Implementation details
 
-All previously-deprecated methods and classes have been removed.  If your
+All previously deprecated methods and classes have been removed.  If your
 project builds upon the Checker Framework, we suggest that you upgrade to
 version 3.55.1, resolve all the deprecation warnings, then upgrade to version
 4.0.0.
@@ -781,8 +908,9 @@ Renamed Gradle task `copyJarsToDist` to `assembleForJavac`.
 Dropped support for `-ApermitUnsupportedJdkVersion` command-line argument.
 You can now run the Checker Framework under any JDK version, without a warning.
 
-Pass `-Astubs=permit-nullness-assertion-exception.astub` to not be warned about null
-pointer exceptions within nullness assertion methods like `Objects.requireNonNull`.
+Pass `-Astubs=permit-nullness-assertion-exception.astub` to not be warned about
+null pointer exceptions within nullness assertion methods like
+`Objects.requireNonNull`.
 
 Pass `-Astubs=sometimes-nullable.astub` to unsoundly permit passing null to
 calls if null is sometimes but not always permitted.
@@ -830,7 +958,7 @@ introduced since JDK 11).
 Added `-AnoWarnMemoryConstraints` to change the "Memory constraints are impeding
 performance; please increase max heap size" message from a warning to a note.
 
-'unneeded.suppression' warnings can now themeselves be suppressed.
+'unneeded.suppression' warnings can now themselves be suppressed.
 
 ### Implementation details
 
@@ -1075,6 +1203,8 @@ Java records are type-checked.  Thanks to Neil Brown.
 
 Method renamings and signature changes (old methods are removed) in `GenericAnnotatedTypeFactory`:
 
+<!-- markdownlint-disable line-length -->
+
 * `getPreconditionAnnotation(VariableElement, AnnotatedTypeMirror)` => `getPreconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror)`
 * `getPostconditionAnnotation(VariableElement, AnnotatedTypeMirror, List<AnnotationMirror>)` => `getPostconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror, List<AnnotationMirror>)`
 * `getPreOrPostconditionAnnotation(VariableElement, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)` => `getPreOrPostconditionAnnotations(String, AnnotatedTypeMirror, AnnotatedTypeMirror, Analysis.BeforeOrAfter, List<AnnotationMirror>)`
@@ -1084,6 +1214,8 @@ Method renamings and signature changes (old method is removed) in `WholeProgramI
 
 * `getPreOrPostconditionsForField(Analysis.BeforeOrAfter, ExecutableElement, VariableElement, AnnotatedTypeFactory)` =>  `getPreOrPostconditions(Analysis.BeforeOrAfter, ExecutableElement, String, AnnotatedTypeMirror, AnnotatedTypeFactory)`
 
+<!-- markdownlint-enable line-length -->
+
 Method renamings:
 
 * `CFAbstractAnalysis.getFieldValues` => `getFieldInitialValues`
@@ -1091,7 +1223,7 @@ Method renamings:
 The following methods no longer take a `fieldValues` parameter:
 
 * `GenericAnnotatedTypeFactory#createFlowAnalysis`
-* `CFAnalysis` construtor
+* `CFAnalysis` constructor
 * `CFAbstractAnalysis#performAnalysis`
 * `CFAbstractAnalysis` constructors
 
@@ -1764,7 +1896,8 @@ BackwardAnalysis, BackwardTransferFunction, and BackwardAnalysisImpl.
 To adapt existing code:
 
 * `extends Analysis<V, S, T>` => `extends ForwardAnalysisImpl<V, S, T>`
-* `implements TransferFunction<V, S>` => `implements ForwardTransferFunction<V, S>`
+* `implements TransferFunction<V, S>`
+  => `implements ForwardTransferFunction<V, S>`
 
 In AbstractQualifierPolymorphism, use AnnotationMirrors instead of sets of
 annotation mirrors.
@@ -2343,7 +2476,7 @@ With the "-target 7" flag, the resulting .class files still run with JDK 7.
 
 The stub file format has changed to be more similar to regular Java syntax.
 Most notably, receiver annotations are written using standard Java 8 syntax
-(a special first formal paramter named "this") and inner classes are written
+(a special first formal parameter named "this") and inner classes are written
 using standard Java syntax (rather than at the top level using a name that
 contains "$". You need to update your stub files to conform to the new syntax.
 
@@ -2978,7 +3111,7 @@ Added the GUI Effect Checker, which prevents "invalid thread access" errors
 when a background thread in a GUI attempts to access the UI.
 
 Changed the Java package of all type-checkers and qualifiers.  The package
-"checkers" has been renamed to "org.checkerframeork.checker".  This
+"checkers" has been renamed to "org.checkerframework.checker".  This
 requires you to change your import statements, such as from
   import checkers.nullness.quals.*;
 to
@@ -3053,7 +3186,7 @@ Many more Java expressions can be written as annotation arguments.
 Initialization Checker:
 This new abstract type-checker verifies initialization properties.  It
 needs to be combined with another type system whose proper initialization
-should be checked.  This is the new default initialzation checker for the
+should be checked.  This is the new default initialization checker for the
 Nullness Checker.  It is based on the "Freedom Before Commitment" approach.
 
 Renamed method annotations used by the Nullness Checker:
@@ -4079,7 +4212,7 @@ Functionality
 
 Bug fixes
 
-* Fixed flow erros related to loop controls and break/continue
+* Fixed flow errors related to loop controls and break/continue
 
 Manual
 
@@ -4230,7 +4363,7 @@ Manual Documentations
 
 Functionality
 
-* Added pre-liminary support for lazy initialization in nullness
+* Added preliminary support for lazy initialization in nullness
     see LazyNonNull
 
 Bug fixes
@@ -4497,8 +4630,8 @@ Framework
 
 * Added support for annotations found in classfiles
 * Added support for the ARRAY-IN array syntax
-* Added AnnotationBuilder, to create AnotationMirrors with values
-* Improved the readability of recursive types string representation
+* Added AnnotationBuilder, to create AnnotationMirrors with values
+* Improved the readability of the string representation of recursive types
 
 Nullness Checker
 
@@ -5161,7 +5294,7 @@ Code Changes
   * added handling for unary trees
 
 * checkers.nonnull
-  * added a tests for the flow-senstive analysis and varargs methods
+  * added tests for the flow-sensitive analysis and varargs methods
   * improved flow-sensitive analysis: else statements, asserts,
       return/throw statements, instanceof checks, complex conditionals with &&
   * fixed a bug in the flow-sensitive analysis that incorrectly inferred

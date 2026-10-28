@@ -1,4 +1,4 @@
-// Copied from the all-systems tests, because of the expected error
+// Copied from framework/tests/flow/PurityMethodRef.java, because of the expected error
 // on line 26. During the first round of WPI, errors are warnings: so the test fails.
 // The class has been renamed so that an -AskipDefs=TestPure command-line argument
 // can suppress the original errors.

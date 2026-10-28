@@ -21,7 +21,6 @@ import com.github.javaparser.printer.DefaultPrettyPrinter;
 import com.github.javaparser.utils.Pair;
 import com.sun.source.util.JavacTask;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileVisitResult;
@@ -55,9 +54,11 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.stub.AnnotationFileParser;
 import org.checkerframework.framework.util.JavaParserUtil;
-import org.plumelib.util.FilesPlume;
+import org.checkerframework.framework.util.StaticJavaParserUtil;
+import org.plumelib.util.FilesP;
 import org.plumelib.util.MapsP;
 
 /**
@@ -88,7 +89,7 @@ public class InsertAjavaAnnotations {
       System.exit(1);
     }
 
-    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
     try (JavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null)) {
       if (fileManager == null) {
         System.err.println("Could not get file manager");
@@ -392,7 +393,7 @@ public class InsertAjavaAnnotations {
       StringBuilder insertionContent = new StringBuilder();
       for (AnnotationExpr annotation : annotations) {
         insertionContent.append(printer.print(annotation));
-        insertionContent.append(" ");
+        insertionContent.append(' ');
       }
 
       // Can't test `annotations.isEmpty()` earlier because `annotations` has type `Iterable`.
@@ -488,8 +489,8 @@ public class InsertAjavaAnnotations {
    */
   public String insertAnnotations(
       InputStream annotationFile, String javaFileContents, @Regex String lineSeparator) {
-    CompilationUnit annotationCu = JavaParserUtil.parseCompilationUnit(annotationFile);
-    CompilationUnit javaCu = JavaParserUtil.parseCompilationUnit(javaFileContents);
+    CompilationUnit annotationCu = StaticJavaParserUtil.parseCompilationUnit(annotationFile);
+    CompilationUnit javaCu = StaticJavaParserUtil.parseCompilationUnit(javaFileContents);
     BuildInsertionsVisitor insertionVisitor =
         new BuildInsertionsVisitor(javaFileContents, lineSeparator);
     annotationCu.accept(insertionVisitor, javaCu);
@@ -520,6 +521,7 @@ public class InsertAjavaAnnotations {
    * @return a negative integer, zero, or a positive integer if {@code insertion1} belongs before,
    *     at the same position, or after {@code insertion2} respectively in the above ordering
    */
+  @Pure
   private static int compareInsertions(Insertion insertion1, Insertion insertion2) {
     int cmp = Integer.compare(insertion1.position, insertion2.position);
     if (cmp == 0 && (insertion1.ownLine != insertion2.ownLine)) {
@@ -542,12 +544,12 @@ public class InsertAjavaAnnotations {
   public void insertAnnotations(String annotationFileName, String javaFileName) {
     try {
       File javaFile = new File(javaFileName);
-      String fileContents = FilesPlume.readString(Path.of(javaFileName));
-      @SuppressWarnings("regex") // next release of plume-lib annotates `inferLineSeparator()`
-      @Regex String lineSeparator = FilesPlume.inferLineSeparator(javaFileName);
-      try (FileInputStream annotationInputStream = new FileInputStream(annotationFileName)) {
+      String fileContents = FilesP.readString(Path.of(javaFileName));
+      @Regex String lineSeparator = FilesP.inferLineSeparator(javaFileName);
+      try (InputStream annotationInputStream =
+          Files.newInputStream(Paths.get(annotationFileName))) {
         String result = insertAnnotations(annotationInputStream, fileContents, lineSeparator);
-        FilesPlume.writeString(javaFile, result);
+        FilesP.writeString(javaFile, result);
       }
     } catch (IOException e) {
       System.err.println(
@@ -587,7 +589,7 @@ public class InsertAjavaAnnotations {
     InsertAjavaAnnotations inserter = new InsertAjavaAnnotations(createElements());
     // For each Java file, this visitor inserts annotations into it.
     FileVisitor<Path> insertionVisitor =
-        new SimpleFileVisitor<Path>() {
+        new SimpleFileVisitor<>() {
           @Override
           public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
             if (!path.getFileName().toString().endsWith(".java")) {
@@ -596,7 +598,7 @@ public class InsertAjavaAnnotations {
 
             CompilationUnit root = null;
             try {
-              root = JavaParserUtil.parseCompilationUnit(path.toFile());
+              root = StaticJavaParserUtil.parseCompilationUnit(path.toFile());
             } catch (IOException e) {
               System.err.println("Failed to read file: " + path);
               System.exit(1);

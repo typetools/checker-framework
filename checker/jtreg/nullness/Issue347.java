@@ -3,7 +3,7 @@
  * @summary Test for Issue 347: concurrent semantics has desired behavior
  *
  * @compile -processor org.checkerframework.checker.nullness.NullnessChecker -Alint Issue347.java
- * @compile/fail/ref=Issue347-con.out -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Alint Issue347.java -AconcurrentSemantics
+ * @compile/fail/ref=Issue347-con.goal -XDrawDiagnostics -processor org.checkerframework.checker.nullness.NullnessChecker -Alint Issue347.java -AconcurrentSemantics
  */
 
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;

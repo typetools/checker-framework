@@ -7,7 +7,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
-/** Methods whose receiver is an {@link java.util.Optional} and return an {@code Optional}. */
+/**
+ * A method annotation for methods whose receiver is an {@link java.util.Optional} and that return
+ * an {@code Optional}.
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

@@ -31,6 +31,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -41,7 +42,6 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.ArrayMap;
-import org.plumelib.util.IPair;
 
 /**
  * A visitor to validate the types in a tree.
@@ -73,7 +73,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   /** AnnotatedTypeFactory. */
   protected final AnnotatedTypeFactory atypeFactory;
 
-  /** The qualifer hierarchy. */
+  /** The qualifier hierarchy. */
   protected final QualifierHierarchy qualHierarchy;
 
   // TODO: clean up coupling between components
@@ -321,10 +321,9 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * Try to reconstruct the ParameterizedTypeTree from the given tree.
      * TODO: there has to be a nicer way to do this...
      */
-    IPair<ParameterizedTypeTree, AnnotatedDeclaredType> p =
-        extractParameterizedTypeTree(tree, type);
-    ParameterizedTypeTree typeArgTree = p.first;
-    type = p.second;
+    TypeAndTree p = extractParameterizedTypeTree(tree, type);
+    ParameterizedTypeTree typeArgTree = p.typeTree();
+    type = p.type();
 
     if (typeArgTree == null) {
       return super.visitDeclared(type, tree);
@@ -412,6 +411,16 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   }
 
   /**
+   * A type and its {@link ParameterizedTypeTree}.
+   *
+   * @param type the type of {@code typeTree}, or the type that was searched if {@code typeTree} is
+   *     null
+   * @param typeTree a parameterized type tree, or null if there is none
+   */
+  private record TypeAndTree(
+      AnnotatedDeclaredType type, @Nullable ParameterizedTypeTree typeTree) {}
+
+  /**
    * If {@code tree} has a {@link ParameterizedTypeTree}, then the tree and its type is returned.
    * Otherwise null and {@code type} are returned.
    *
@@ -420,8 +429,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
    * @return if {@code tree} has a {@code ParameterizedTypeTree}, then returns the tree and its
    *     type. Otherwise, returns null and {@code type}.
    */
-  private IPair<@Nullable ParameterizedTypeTree, AnnotatedDeclaredType>
-      extractParameterizedTypeTree(Tree tree, AnnotatedDeclaredType type) {
+  private TypeAndTree extractParameterizedTypeTree(Tree tree, AnnotatedDeclaredType type) {
     ParameterizedTypeTree typeargtree = null;
 
     switch (tree.getKind()) {
@@ -457,10 +465,9 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
           // TODO: add more test cases to ensure that nested types are
           // handled correctly,
           // e.g. @Nullable() List<@Nullable Object>[][]
-          IPair<ParameterizedTypeTree, AnnotatedDeclaredType> p =
-              extractParameterizedTypeTree(undtr, type);
-          typeargtree = p.first;
-          type = p.second;
+          TypeAndTree p = extractParameterizedTypeTree(undtr, type);
+          typeargtree = p.typeTree();
+          type = p.type();
         }
       }
       case IDENTIFIER,
@@ -483,11 +490,10 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         // No need to do anything further.
     }
 
-    return IPair.of(typeargtree, type);
+    return new TypeAndTree(type, typeargtree);
   }
 
   @Override
-  @SuppressWarnings("signature:argument") // PrimitiveType.toString(): @PrimitiveType
   public Void visitPrimitive(AnnotatedPrimitiveType type, Tree tree) {
     if (!checkTopLevelDeclaredOrPrimitiveType
         || checker.shouldSkipUses(type.getUnderlyingType().toString())) {
@@ -503,12 +509,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
   @Override
   public Void visitArray(AnnotatedArrayType type, Tree tree) {
-    // TODO: is there already or add a helper method
-    // to determine the non-array component type
-    AnnotatedTypeMirror comp = type;
-    do {
-      comp = ((AnnotatedArrayType) comp).getComponentType();
-    } while (comp.getKind() == TypeKind.ARRAY);
+    AnnotatedTypeMirror comp = AnnotatedTypes.innermostComponentType(type);
 
     if (comp.getKind() == TypeKind.DECLARED
         && checker.shouldSkipUses(((AnnotatedDeclaredType) comp).getUnderlyingType().asElement())) {
@@ -580,30 +581,30 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       }
     }
 
+    TypeHierarchy hierarchy = atypeFactory.getTypeHierarchy();
     for (int i = 0; i < numTypeArgs; i++) {
       AnnotatedTypeMirror captureTypeArg = capturedType.getTypeArguments().get(i);
       if (type.getTypeArguments().get(i).getKind() == TypeKind.WILDCARD) {
         AnnotatedWildcardType wildcard = (AnnotatedWildcardType) type.getTypeArguments().get(i);
+        AnnotatedTypeMirror extendsBound = wildcard.getExtendsBound();
         if (TypesUtils.isCapturedTypeVariable(captureTypeArg.getUnderlyingType())) {
           AnnotatedTypeVariable capturedTypeVar = (AnnotatedTypeVariable) captureTypeArg;
           // Substitute the captured type variables with their wildcards. Without
           // this, the isSubtype check crashes because wildcards aren't comparable
           // with type variables.
+          AnnotatedTypeMirror upperBound = capturedTypeVar.getUpperBound();
           AnnotatedTypeMirror captureTypeVarUB =
               atypeFactory
                   .getTypeVarSubstitutor()
-                  .substituteWithoutCopyingTypeArguments(
-                      typeVarToWildcard, capturedTypeVar.getUpperBound());
-          if (!atypeFactory
-              .getTypeHierarchy()
-              .isSubtype(captureTypeVarUB, wildcard.getExtendsBound())) {
+                  .substituteWithoutCopyingTypeArguments(typeVarToWildcard, upperBound);
+          if (!hierarchy.isSubtype(captureTypeVarUB, extendsBound)) {
             checker.reportError(
                 tree.getTypeArguments().get(i),
                 "type.argument",
                 element.getTypeParameters().get(i),
                 element.getSimpleName(),
-                wildcard.getExtendsBound(),
-                capturedTypeVar.getUpperBound());
+                extendsBound,
+                upperBound);
           }
         } else if (AnnotatedTypes.hasExplicitSuperBound(wildcard)) {
           // If the super bound of the wildcard is the same as the upper bound of the
@@ -615,19 +616,10 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
           // For example, Set<@1 ? super @2 Object> will collapse into Set<@2 Object>.
           // So, issue a warning if the annotations on the extends bound are not the
           // same as the annotations on the super bound.
-
-          if (!(atypeFactory
-                  .getTypeHierarchy()
-                  .isSubtypeShallowEffective(wildcard.getSuperBound(), wildcard.getExtendsBound())
-              && atypeFactory
-                  .getTypeHierarchy()
-                  .isSubtypeShallowEffective(
-                      wildcard.getExtendsBound(), wildcard.getSuperBound()))) {
+          AnnotatedTypeMirror superBound = wildcard.getSuperBound();
+          if (!hierarchy.equalsShallowEffective(superBound, extendsBound)) {
             checker.reportError(
-                tree.getTypeArguments().get(i),
-                "super.wildcard",
-                wildcard.getExtendsBound(),
-                wildcard.getSuperBound());
+                tree.getTypeArguments().get(i), "super.wildcard", superBound, extendsBound);
           }
         }
       }

@@ -1,0 +1,54 @@
+import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
+
+// A use of a type variable is relevant only if the type variable's upper bound is relevant.
+// `Number` is not listed in the checker's `@RelevantJavaTypes` and is not related to a listed type
+// by subtyping, so inference must not write, into the .ajava file, an annotation that it infers
+// for a use of `T`.  The checker rejects the annotation that is written below, for the same
+// reason, in both passes of this test.
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
+public class IrrelevantTypeVariable<T extends Number> {
+
+    T field;
+
+    @org.checkerframework.dataflow.qual.Impure
+    void assignField(T t) {
+        field = t;
+    }
+}
+
+// Likewise when the upper bound is an intersection type.  Its erasure is its leftmost bound,
+// `Number`, which is not relevant.
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
+class IrrelevantIntersectionTypeVariable<T extends Number & java.io.Serializable> {
+
+    T field;
+
+    @org.checkerframework.dataflow.qual.Impure
+    void assignField(T t) {
+        field = t;
+    }
+}
+
+// Likewise when the upper bound is another type variable, whose upper bound is not relevant.
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
+class IrrelevantTypeVariableBoundedByTypeVariable<U extends Number, T extends U> {
+
+    T field;
+
+    @org.checkerframework.dataflow.qual.Impure
+    void assignField(T t) {
+        field = t;
+    }
+}
+
+// Likewise when a use of the type variable is the element type of an array type.
+@org.checkerframework.framework.qual.AnnotatedFor("org.checkerframework.checker.testchecker.ainfer.AinferRelevanceTestChecker")
+class IrrelevantTypeVariableArray<T extends Number> {
+
+    T[] field;
+
+    @org.checkerframework.dataflow.qual.Impure
+    void assignField(T[] t) {
+        field = t;
+    }
+}

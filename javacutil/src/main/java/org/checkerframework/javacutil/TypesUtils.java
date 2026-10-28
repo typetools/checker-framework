@@ -1,22 +1,29 @@
 package org.checkerframework.javacutil;
 
 import com.sun.tools.javac.code.BoundKind;
+import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Lint.LintCategory;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.code.Type.ClassType;
+import com.sun.tools.javac.code.Type.IntersectionClassType;
 import com.sun.tools.javac.code.TypeTag;
+import com.sun.tools.javac.code.Types.FunctionDescriptorLookupError;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Names;
+import com.sun.tools.javac.util.Warner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -44,9 +51,9 @@ import org.checkerframework.checker.signature.qual.BinaryName;
 import org.checkerframework.checker.signature.qual.CanonicalNameOrEmpty;
 import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
-import org.plumelib.util.CollectionsPlume;
+import org.plumelib.util.CollectionsP;
 import org.plumelib.util.ImmutableTypes;
-import org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsP;
 
 /**
  * A utility class that helps with {@link TypeMirror}s. It complements {@link Types}, providing
@@ -141,7 +148,7 @@ public final class TypesUtils {
         // BUG: need to compute a @ClassGetName, but this code computes a
         // @CanonicalNameOrEmpty.  They are different for inner classes.
         @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for Names.toString
-        @DotSeparatedIdentifiers String typeString = TypesUtils.getQualifiedName((DeclaredType) typeMirror).toString();
+        @DotSeparatedIdentifiers String typeString = getQualifiedName((DeclaredType) typeMirror);
         if (typeString.equals("<nulltype>")) {
           return void.class;
         }
@@ -252,17 +259,33 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns the depth of an array type.
+   *
+   * @param arrayType an array type
+   * @return the depth of {@code arrayType}
+   */
+  public static int getArrayDepth(TypeMirror arrayType) {
+    int counter = 0;
+    TypeMirror componentType = arrayType;
+    while (componentType.getKind() == TypeKind.ARRAY) {
+      counter++;
+      componentType = ((ArrayType) componentType).getComponentType();
+    }
+    return counter;
+  }
+
+  /**
    * Given an array type, returns the type with all array levels stripped off.
    *
-   * @param at an array type
+   * @param arrayType an array type
    * @return the type with all array levels stripped off
    */
-  public static TypeMirror getInnermostComponentType(ArrayType at) {
-    TypeMirror result = at;
-    while (result.getKind() == TypeKind.ARRAY) {
-      result = ((ArrayType) result).getComponentType();
+  public static TypeMirror getInnermostComponentType(ArrayType arrayType) {
+    TypeMirror componentType = arrayType;
+    while (componentType.getKind() == TypeKind.ARRAY) {
+      componentType = ((ArrayType) componentType).getComponentType();
     }
-    return result;
+    return componentType;
   }
 
   // Equality
@@ -349,8 +372,7 @@ public final class TypesUtils {
    * @return true if the type is {@code char} or {@code Character}
    */
   public static boolean isCharOrCharacter(TypeMirror type) {
-    return type.getKind() == TypeKind.CHAR
-        || TypesUtils.isDeclaredOfName(type, "java.lang.Character");
+    return type.getKind() == TypeKind.CHAR || isDeclaredOfName(type, "java.lang.Character");
   }
 
   /**
@@ -411,7 +433,7 @@ public final class TypesUtils {
   public static boolean isImmutableTypeInJdk(TypeMirror type) {
     return isPrimitive(type)
         || (type.getKind() == TypeKind.DECLARED
-            && ImmutableTypes.isImmutable(getQualifiedName((DeclaredType) type).toString()));
+            && ImmutableTypes.isImmutable(getQualifiedName((DeclaredType) type)));
   }
 
   /**
@@ -465,7 +487,7 @@ public final class TypesUtils {
     return switch (type.getKind()) {
       case BOOLEAN, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SHORT -> true;
       case DECLARED -> {
-        String qualifiedName = getQualifiedName((DeclaredType) type).toString();
+        String qualifiedName = getQualifiedName((DeclaredType) type);
         yield (qualifiedName.equals("java.lang.Boolean")
             || qualifiedName.equals("java.lang.Byte")
             || qualifiedName.equals("java.lang.Character")
@@ -509,7 +531,7 @@ public final class TypesUtils {
    */
   public static boolean isNumericBoxed(TypeMirror type) {
     return type.getKind() == TypeKind.DECLARED
-        && numericBoxedTypes.contains(getQualifiedName((DeclaredType) type).toString());
+        && numericBoxedTypes.contains(getQualifiedName((DeclaredType) type));
   }
 
   /**
@@ -568,7 +590,7 @@ public final class TypesUtils {
       return false;
     }
 
-    String qualifiedName = getQualifiedName((DeclaredType) declaredType).toString();
+    String qualifiedName = getQualifiedName((DeclaredType) declaredType);
     return switch (primitiveType.getKind()) {
       case BOOLEAN -> qualifiedName.equals("java.lang.Boolean");
       case BYTE -> qualifiedName.equals("java.lang.Byte");
@@ -593,7 +615,7 @@ public final class TypesUtils {
       return false;
     }
 
-    String qualifiedName = getQualifiedName((DeclaredType) type).toString();
+    String qualifiedName = getQualifiedName((DeclaredType) type);
     return qualifiedName.equals("java.lang.Double") || qualifiedName.equals("java.lang.Float");
   }
 
@@ -632,16 +654,57 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if {@code type} is a functional interface type (as defined in JLS 9.8).
+   * Returns true if {@code type} is a functional interface type (as defined in JLS 9.9). This
+   * includes an intersection type that induces a notional functional interface, such as {@code
+   * Runnable & java.io.Serializable}.
    *
    * @param type possible functional interface type
    * @param env the processing environment
-   * @return true if {@code type} is a functional interface type (as defined in JLS 9.8)
+   * @return true if {@code type} is a functional interface type (as defined in JLS 9.9)
    */
   public static boolean isFunctionalInterface(TypeMirror type, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
-    return javacTypes.isFunctionalInterface((Type) type);
+    Type javaType = (Type) type;
+    if (javaType.isIntersection()) {
+      javaType = notionalInterface((IntersectionClassType) javaType, javacTypes);
+    }
+    return javacTypes.isFunctionalInterface(javaType);
+  }
+
+  /**
+   * Returns the notional interface induced by the intersection type {@code type} (<a
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.9">JLS 4.9</a>). Per
+   * <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-9.html#jls-9.9">JLS 9.9</a>,
+   * the function type of an intersection type that induces a notional functional interface is the
+   * function type of that notional interface. If {@code type} has a component that is a class, then
+   * it induces a notional class rather than a notional interface, and {@code type} is returned
+   * unchanged.
+   *
+   * <p>javac does not represent the notional interface directly: the symbol of an intersection type
+   * is a synthetic compound class symbol that is never marked as an interface, so javac's function
+   * descriptor lookup rejects it. This method builds the notional interface the same way that
+   * {@code Attr.getTargetInfo} does when attributing a lambda expression or a method reference
+   * whose target type is an intersection type: it creates a fresh intersection of the non-wildcard
+   * parameterizations (JLS 9.9) of the components and marks its symbol as an interface. {@code
+   * type} itself is not modified.
+   *
+   * @param type an intersection type
+   * @param javacTypes the javac Types instance
+   * @return the notional interface induced by {@code type}, or {@code type} if it does not induce a
+   *     notional interface
+   */
+  private static Type notionalInterface(
+      IntersectionClassType type, com.sun.tools.javac.code.Types javacTypes) {
+    if (!type.allInterfaces) {
+      // The intersection induces a notional class, which is not a functional interface.
+      return type;
+    }
+    com.sun.tools.javac.util.List<Type> components =
+        type.getExplicitComponents().map(javacTypes::removeWildcards);
+    IntersectionClassType notionalInterface = javacTypes.makeIntersectionType(components);
+    notionalInterface.tsym.flags_field |= Flags.INTERFACE;
+    return notionalInterface;
   }
 
   /**
@@ -683,7 +746,7 @@ public final class TypesUtils {
    *     has no bounds
    */
   public static TypeMirror upperBound(TypeMirror type) {
-    do {
+    while (true) {
       if (type instanceof TypeVariable tvar) {
         if (tvar.getUpperBound() != null) {
           type = tvar.getUpperBound();
@@ -699,7 +762,7 @@ public final class TypesUtils {
       } else {
         break;
       }
-    } while (true);
+    }
     return type;
   }
 
@@ -818,7 +881,7 @@ public final class TypesUtils {
     while (true) {
       switch (effectiveUpper.getKind()) {
         case WILDCARD -> {
-          effectiveUpper = ((javax.lang.model.type.WildcardType) effectiveUpper).getExtendsBound();
+          effectiveUpper = ((WildcardType) effectiveUpper).getExtendsBound();
           if (effectiveUpper == null) {
             return null;
           }
@@ -904,6 +967,40 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns true if unchecked conversion is necessary for {@code source} to be compatible with
+   * {@code target} in a loose invocation context (JLS 5.3). Ignores annotations.
+   *
+   * @param source the source type
+   * @param target the target type
+   * @param processingEnv the processing environment
+   * @return true if unchecked conversion is necessary for {@code source} to be compatible with
+   *     {@code target}
+   */
+  public static boolean needsUncheckedConversion(
+      TypeMirror source, TypeMirror target, ProcessingEnvironment processingEnv) {
+    com.sun.tools.javac.code.Types javacTypes =
+        com.sun.tools.javac.code.Types.instance(InternalUtils.getJavacContext(processingEnv));
+    // isConvertible records, in the javac Warner, any lint warnings that the conversion would need.
+    Warner lintRecorder = new Warner();
+    javacTypes.isConvertible((Type) source, (Type) target, lintRecorder);
+    return lintRecorder.hasNonSilentLint(LintCategory.UNCHECKED);
+  }
+
+  /**
+   * Returns true if the erased type of {@code type1} is the same type as the erased type of {@code
+   * type2}.
+   *
+   * @param type1 a type
+   * @param type2 a type
+   * @param types a Types object
+   * @return true if the erased type of {@code type1} is the same type as the erased type of {@code
+   *     type2}
+   */
+  public static boolean isErasedSameType(TypeMirror type1, TypeMirror type2, Types types) {
+    return types.isSameType(types.erasure(type1), types.erasure(type2));
+  }
+
+  /**
    * Returns true if {@code type} is a type variable created during capture conversion.
    *
    * @param type a type mirror
@@ -914,6 +1011,24 @@ public final class TypesUtils {
       return false;
     }
     return ((Type.TypeVar) TypeAnnotationUtils.unannotatedType(type)).isCaptured();
+  }
+
+  /**
+   * Returns true if {@code type} is a type variable that the compiler created rather than one that
+   * is declared in source code: either a captured type variable, or a fresh type variable that
+   * javac's type inference creates for an inference variable whose bounds mention itself.
+   *
+   * @param type a type mirror
+   * @return true if {@code type} is a captured or synthetic type variable
+   */
+  public static boolean isCapturedOrSyntheticTypeVariable(TypeMirror type) {
+    if (isCapturedTypeVariable(type)) {
+      return true;
+    }
+    return type.getKind() == TypeKind.TYPEVAR
+        && (((Type.TypeVar) TypeAnnotationUtils.unannotatedType(type)).tsym.flags()
+                & Flags.SYNTHETIC)
+            != 0;
   }
 
   /**
@@ -1096,7 +1211,7 @@ public final class TypesUtils {
   private static com.sun.tools.javac.util.List<Type> typeMirrorListToTypeList(
       List<TypeMirror> typeMirrors) {
     @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
-    List<Type> typeList = CollectionsPlume.mapList(Type.class::cast, typeMirrors);
+    List<Type> typeList = CollectionsP.mapList(Type.class::cast, typeMirrors);
     return com.sun.tools.javac.util.List.from(typeList);
   }
 
@@ -1209,9 +1324,9 @@ public final class TypesUtils {
       List<? extends TypeMirror> typeArgs,
       ProcessingEnvironment env) {
     @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
-    List<Type> newP = CollectionsPlume.mapList(Type.class::cast, typeVariables);
+    List<Type> newP = CollectionsP.mapList(Type.class::cast, typeVariables);
     @SuppressWarnings("nullness:type.arguments.not.inferred") // Poly + inference bug.
-    List<Type> newT = CollectionsPlume.mapList(Type.class::cast, typeArgs);
+    List<Type> newT = CollectionsP.mapList(Type.class::cast, typeArgs);
 
     JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) env;
     com.sun.tools.javac.code.Types types =
@@ -1220,22 +1335,6 @@ public final class TypesUtils {
         (Type) type,
         com.sun.tools.javac.util.List.from(newP),
         com.sun.tools.javac.util.List.from(newT));
-  }
-
-  /**
-   * Returns the depth of an array type.
-   *
-   * @param arrayType an array type
-   * @return the depth of {@code arrayType}
-   */
-  public static int getArrayDepth(TypeMirror arrayType) {
-    int counter = 0;
-    TypeMirror type = arrayType;
-    while (type.getKind() == TypeKind.ARRAY) {
-      counter++;
-      type = ((ArrayType) type).getComponentType();
-    }
-    return counter;
   }
 
   /**
@@ -1269,7 +1368,7 @@ public final class TypesUtils {
     Names names = Names.instance(javacEnv.getContext());
     Symtab syms = Symtab.instance(javacEnv.getContext());
     com.sun.tools.javac.util.Name capturedName = names.fromString("<captured wildcard>");
-    WildcardType wildcardType = null;
+    WildcardType wildcardType;
     if (lower != null
         && (lower.getKind() == TypeKind.ARRAY
             || lower.getKind() == TypeKind.DECLARED
@@ -1320,9 +1419,12 @@ public final class TypesUtils {
    * @param collection a collection of type variables
    * @param types types
    * @return the first TypeVariable in {@code collection} that does not contain any other type in
-   *     the collection, but maybe itsself
+   *     the collection, but maybe itself
    */
-  @SuppressWarnings("interning:not.interned") // must be the same object from collection
+  @SuppressWarnings({
+    "interning:not.interned",
+    "TypeEquals"
+  }) // must be the same object from collection
   private static TypeVariable doesNotContainOthers(
       Collection<? extends TypeVariable> collection, Types types) {
     for (TypeVariable candidate : collection) {
@@ -1337,23 +1439,38 @@ public final class TypesUtils {
         return candidate;
       }
     }
-    throw new BugInCF("Not found: %s", StringsPlume.join(",", collection));
+    throw new BugInCF("Not found: %s", StringsP.join(",", collection));
   }
 
   /**
    * This method returns the single abstract method declared by {@code functionalInterfaceType}.
-   * (The type of this method is referred to as the function type.)
+   * (The type of this method is referred to as the function type.) If {@code
+   * functionalInterfaceType} is an intersection type that induces a notional functional interface,
+   * then the single abstract method of that notional interface is returned (JLS 9.9).
    *
    * @param functionalInterfaceType a functional interface type
    * @param env the processing environment
    * @return the single abstract method declared by the type
+   * @throws BugInCF if {@code functionalInterfaceType} is not a functional interface type.
    */
   public static ExecutableElement findFunction(
       TypeMirror functionalInterfaceType, ProcessingEnvironment env) {
     Context ctx = ((JavacProcessingEnvironment) env).getContext();
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
-    return (ExecutableElement)
-        javacTypes.findDescriptorSymbol(((Type) functionalInterfaceType).asElement());
+    Type javaType = (Type) functionalInterfaceType;
+    if (javaType.isIntersection()) {
+      javaType = notionalInterface((IntersectionClassType) javaType, javacTypes);
+    }
+    try {
+      return (ExecutableElement) javacTypes.findDescriptorSymbol(javaType.asElement());
+    } catch (FunctionDescriptorLookupError ex) {
+      // FunctionDescriptorLookupError does not have a stack trace, so catch it here and throw a
+      // BugInCF.
+      throw new BugInCF(
+          "%s is not a functional interface."
+              + " Call TypesUtils.isFunctionalInterface() before calling TypesUtils.findFunction.",
+          functionalInterfaceType);
+    }
   }
 
   /**
@@ -1383,6 +1500,150 @@ public final class TypesUtils {
     DeclaredType declType = (DeclaredType) typeelem.asType();
     return !declType.getTypeArguments().isEmpty()
         && ((DeclaredType) type).getTypeArguments().isEmpty();
+  }
+
+  /**
+   * Returns true if some type parameter is in scope in the declaration of {@code typeElement}; that
+   * is, {@code typeElement} is generic or is a non-static member of a type declaration for which
+   * this method returns true.
+   *
+   * <p>Only such a type declaration has a raw type, so only the members of such a type declaration
+   * are erased by rawness (JLS 4.8).
+   *
+   * @param typeElement a type declaration
+   * @return true if some type parameter is in scope in the declaration of {@code typeElement}
+   */
+  public static boolean isGenericOrEnclosedByGeneric(TypeElement typeElement) {
+    for (Element enclosing = typeElement;
+        enclosing != null;
+        enclosing = enclosing.getEnclosingElement()) {
+      if (enclosing instanceof TypeElement enclosingType
+          && !enclosingType.getTypeParameters().isEmpty()) {
+        return true;
+      }
+      if (ElementUtils.isStatic(enclosing)) {
+        // The type parameters of an enclosing type declaration are not in scope in a static
+        // declaration.
+        return false;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if accessing {@code member} through a receiver of type {@code receiverType} is an
+   * access on a raw type.
+   *
+   * <p>If {@code receiverType} is a type variable, a wildcard, or an intersection type, then its
+   * bounds are tested, because the member is a member of a bound.
+   *
+   * @param receiverType the receiver of the access; for a constructor invocation, the class being
+   *     instantiated. Null stands for an unknown receiver, for which this method returns false. Do
+   *     not pass null for an implicit receiver, because a member inherited from a raw supertype is
+   *     erased even when it is accessed without a receiver; use {@link TreeUtils#isRawCall} for a
+   *     call whose receiver is implicit.
+   * @param member the method, constructor, or field being accessed
+   * @param env the processing environment
+   * @return true if accessing {@code member} through a receiver of type {@code receiverType} is an
+   *     access on a raw type
+   */
+  public static boolean isRawCall(
+      @Nullable TypeMirror receiverType, Element member, ProcessingEnvironment env) {
+    if (receiverType == null || ElementUtils.isStatic(member)) {
+      return false;
+    }
+    TypeElement declaringClass = ElementUtils.enclosingTypeElement(member);
+    if (declaringClass == null || !isGenericOrEnclosedByGeneric(declaringClass)) {
+      // Only a type declaration in which some type parameter is in scope has a raw type, so only
+      // such a declaration supplies a member whose type is erased.  Testing this first avoids
+      // walking the supertypes of `receiverType` for a member of a non-generic declaration, such
+      // as any member of Object.
+      return false;
+    }
+    switch (receiverType.getKind()) {
+      case DECLARED -> {
+        // Handled below.
+      }
+      case TYPEVAR -> {
+        // A member accessed through a type variable is a member of the type variable's upper
+        // bound, so the access is raw exactly when an access through that bound is raw.  This
+        // also covers a capture variable, whose upper bound is the captured wildcard's bound.
+        return isRawCall(((TypeVariable) receiverType).getUpperBound(), member, env);
+      }
+      case WILDCARD -> {
+        // getExtendsBound() returns null for `?` and for `? super X`, and isRawCall returns
+        // false for a null type; neither has a raw upper bound.
+        return isRawCall(((WildcardType) receiverType).getExtendsBound(), member, env);
+      }
+      case INTERSECTION -> {
+        // The member comes from whichever bound declares it, so the access is raw if any bound
+        // makes it raw.
+        for (TypeMirror bound : ((IntersectionType) receiverType).getBounds()) {
+          if (isRawCall(bound, member, env)) {
+            return true;
+          }
+        }
+        return false;
+      }
+      default -> {
+        return false;
+      }
+    }
+    // Section 4.8, "Raw Types".
+    // (https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.8)
+    //
+    // The type of a constructor (§8.8), instance method (8.4, 9.4), or non-static field
+    // (8.3) of a raw type C that is not inherited from its superclasses or superinterfaces
+    // is the raw type that corresponds to the erasure of its type in the generic declaration
+    // corresponding to C.  A member that *is* inherited is erased too, because the supertypes
+    // of a raw type are the erasures of the supertypes of any of its parameterizations, so the
+    // member is a member of a raw supertype.
+    //
+    // Therefore, the member's type is erased exactly when the class that declares it, viewed as
+    // a supertype of receiverType, is raw.  Javac's supertype() erases the supertypes of a raw
+    // type, so asSuper() returns a raw type in that case.
+    com.sun.tools.javac.code.Types javacTypes =
+        com.sun.tools.javac.code.Types.instance(InternalUtils.getJavacContext(env));
+    Type site = javacTypes.asSuper((Type) receiverType, (Symbol) declaringClass);
+    if (site == null) {
+      if (!hasEnclosingInstanceOfType(declaringClass, ((DeclaredType) receiverType).asElement())) {
+        return false;
+      }
+      // `receiverType` is not a subtype of the class that declares the member, but it encloses
+      // it, so `receiverType` is an enclosing instance rather than a receiver.  This happens for
+      // a qualified superclass constructor invocation `outer.super(...)` and for a qualified
+      // class instance creation expression `outer.new Inner(...)`.  The member is erased when
+      // the type of the enclosing instance is raw.
+      site = (Type) receiverType;
+    }
+    // Type.isRaw() is also true for a type nested in a raw type; the members of `Outer.Inner` are
+    // erased when `Outer` is raw, even though `Inner` declares no type parameters.
+    return site.isRaw();
+  }
+
+  /**
+   * Returns true if an instance of {@code inner} has an enclosing instance of type {@code outer};
+   * that is, {@code inner} is {@code outer}, or {@code inner} is nested within {@code outer} and no
+   * declaration between the two is static.
+   *
+   * @param inner a type declaration
+   * @param outer a type declaration
+   * @return true if an instance of {@code inner} has an enclosing instance of type {@code outer}
+   */
+  private static boolean hasEnclosingInstanceOfType(TypeElement inner, Element outer) {
+    for (Element enclosing = inner;
+        enclosing != null;
+        enclosing = enclosing.getEnclosingElement()) {
+      if (outer.equals(enclosing)) {
+        return true;
+      }
+      if (ElementUtils.isStatic(enclosing)) {
+        // A static declaration has no enclosing instance, so neither does anything declared
+        // within it.
+        return false;
+      }
+    }
+    return false;
   }
 
   /**
@@ -1444,15 +1705,15 @@ public final class TypesUtils {
    * upperBound} must be {@code null} or {@code Object}. If {@code upperBound} is non-null and not
    * {@code Object}, then {@code lowerBound} must be {@code null};
    *
-   * @param lowerBound the lower bound for the wildcard
-   * @param upperBound the upper bound for the wildcard
+   * @param lowerBound the lower bound for the wildcard, or null if it has none
+   * @param upperBound the upper bound for the wildcard, or null if it has none
    * @param types TypesUtils
    * @return a wildcard with the given bounds
    */
   public static TypeMirror createWildcard(
-      TypeMirror lowerBound, TypeMirror upperBound, Types types) {
+      @Nullable TypeMirror lowerBound, @Nullable TypeMirror upperBound, Types types) {
     TypeMirror nonObjectUpperBound = upperBound;
-    if (isObject(upperBound)) {
+    if (upperBound != null && isObject(upperBound)) {
       nonObjectUpperBound = null;
     }
 
@@ -1479,6 +1740,197 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns true if {@code t1} and {@code t2} are the same type, except that captured type
+   * variables in {@code t1} may differ from the corresponding captured type variables in {@code
+   * t2}.
+   *
+   * <p>More precisely, returns true if there is a one-to-one correspondence between the captured
+   * type variables of {@code t1} and those of {@code t2} such that:
+   *
+   * <ul>
+   *   <li>replacing each captured type variable of {@code t1} by its counterpart makes {@code t1}
+   *       the same type as {@code t2}, and
+   *   <li>the upper and lower bounds of each pair of corresponding captured type variables are
+   *       likewise the same, under the same correspondence.
+   * </ul>
+   *
+   * As in {@link Types#isSameType}, {@code ?} is the same as {@code ? extends Object}. Otherwise, a
+   * wildcard that lacks an extends or super bound matches only a wildcard that also lacks that
+   * bound. Bounds that refer, directly or indirectly, back to a captured type variable (such as
+   * {@code CAP#1 extends Comparable<CAP#1>}) are handled by assuming that a pair of captured type
+   * variables corresponds while their bounds are compared.
+   *
+   * <p>This relation is symmetric.
+   *
+   * @param t1 a type
+   * @param t2 a type
+   * @param types the type utilities
+   * @return true if {@code t1} and {@code t2} are the same type modulo captured type variables
+   */
+  public static boolean isSameTypeModuloCaptures(TypeMirror t1, TypeMirror t2, Types types) {
+    return isSameTypeModuloCaptures(t1, t2, types, new CaptureCorrespondence());
+  }
+
+  /**
+   * A one-to-one correspondence between the captured type variables of a first type and those of a
+   * second type, built up by {@link #isSameTypeModuloCaptures(TypeMirror, TypeMirror, Types,
+   * CaptureCorrespondence)}. Captured type variables are stored without type annotations.
+   *
+   * <p>A pair stays in the correspondence after its bounds are compared. This is sound because
+   * every comparison is a conjunction: if comparing any pair's bounds fails, then the whole
+   * comparison fails. Keeping the pairs also means that each pair's bounds are compared at most
+   * once.
+   *
+   * @param firstToSecond a map from each captured type variable of the first type to its
+   *     counterpart in the second type
+   * @param secondToFirst the inverse of {@code firstToSecond}
+   */
+  private record CaptureCorrespondence(
+      IdentityHashMap<TypeMirror, TypeMirror> firstToSecond,
+      IdentityHashMap<TypeMirror, TypeMirror> secondToFirst) {
+
+    /** Creates an empty correspondence. */
+    CaptureCorrespondence() {
+      this(new IdentityHashMap<>(), new IdentityHashMap<>());
+    }
+  }
+
+  /**
+   * Returns true if {@code t1} and {@code t2} are the same type modulo captured type variables.
+   *
+   * @param t1 a type
+   * @param t2 a type
+   * @param types the type utilities
+   * @param visited the correspondence between the captured type variables of {@code t1} and those
+   *     of {@code t2}; this method may add pairs to it
+   * @return true if {@code t1} and {@code t2} are the same type modulo captured type variables
+   */
+  private static boolean isSameTypeModuloCaptures(
+      TypeMirror t1, TypeMirror t2, Types types, CaptureCorrespondence visited) {
+    if (isCapturedTypeVariable(t1) && isCapturedTypeVariable(t2)) {
+      // javac represents a captured type variable by several TypeMirrors that differ only in their
+      // type annotations, but by a single unannotated TypeMirror, so use that one in the
+      // IdentityHashMaps.
+      TypeMirror cap1 = TypeAnnotationUtils.unannotatedType(t1);
+      TypeMirror cap2 = TypeAnnotationUtils.unannotatedType(t2);
+      // The captured type variable that cap1 is already paired with, if any.
+      TypeMirror cap1Counterpart = visited.firstToSecond().get(cap1);
+      if (cap1Counterpart != null || visited.secondToFirst().containsKey(cap2)) {
+        // cap1 or cap2 was paired earlier in this comparison, or is paired because its bounds are
+        // being compared.  The correspondence is one-to-one, so cap1 and cap2 correspond only if
+        // they are paired with each other.
+        return cap1Counterpart != null && types.isSameType(cap1Counterpart, cap2);
+      }
+      visited.firstToSecond().put(cap1, cap2);
+      visited.secondToFirst().put(cap2, cap1);
+      TypeVariable v1 = (TypeVariable) t1;
+      TypeVariable v2 = (TypeVariable) t2;
+      return isSameTypeModuloCaptures(v1.getUpperBound(), v2.getUpperBound(), types, visited)
+          && isSameTypeModuloCaptures(v1.getLowerBound(), v2.getLowerBound(), types, visited);
+    }
+    if (t1.getKind() != t2.getKind()) {
+      return false;
+    }
+    switch (t1.getKind()) {
+      case DECLARED -> {
+        DeclaredType d1 = (DeclaredType) t1;
+        DeclaredType d2 = (DeclaredType) t2;
+        return d1.asElement().equals(d2.asElement())
+            && isSameTypeModuloCaptures(
+                d1.getEnclosingType(), d2.getEnclosingType(), types, visited)
+            && isSameTypesModuloCaptures(
+                d1.getTypeArguments(), d2.getTypeArguments(), types, visited);
+      }
+      case ARRAY -> {
+        return isSameTypeModuloCaptures(
+            ((ArrayType) t1).getComponentType(),
+            ((ArrayType) t2).getComponentType(),
+            types,
+            visited);
+      }
+      case INTERSECTION -> {
+        return isSameTypesModuloCaptures(
+            ((IntersectionType) t1).getBounds(),
+            ((IntersectionType) t2).getBounds(),
+            types,
+            visited);
+      }
+      case WILDCARD -> {
+        WildcardType w1 = (WildcardType) t1;
+        WildcardType w2 = (WildcardType) t2;
+        TypeMirror extends1 = w1.getExtendsBound();
+        TypeMirror extends2 = w2.getExtendsBound();
+        // `?` is the same as `? extends Object`.
+        if (extends1 != null && isObject(extends1)) {
+          extends1 = null;
+        }
+        if (extends2 != null && isObject(extends2)) {
+          extends2 = null;
+        }
+        return isSameBoundModuloCaptures(extends1, extends2, types, visited)
+            && isSameBoundModuloCaptures(w1.getSuperBound(), w2.getSuperBound(), types, visited);
+      }
+      case TYPEVAR -> {
+        // At most one of t1 and t2 is a captured type variable.
+        return !isCapturedTypeVariable(t1)
+            && !isCapturedTypeVariable(t2)
+            && areSame((TypeVariable) t1, (TypeVariable) t2);
+      }
+      default -> {
+        return types.isSameType(t1, t2);
+      }
+    }
+  }
+
+  /**
+   * Returns true if {@code ts1} and {@code ts2} have the same length and their corresponding
+   * elements are the same type modulo captured type variables.
+   *
+   * @param ts1 a list of types
+   * @param ts2 a list of types
+   * @param types the type utilities
+   * @param visited the correspondence between captured type variables
+   * @return true if {@code ts1} and {@code ts2} are pairwise the same modulo captured type
+   *     variables
+   */
+  private static boolean isSameTypesModuloCaptures(
+      List<? extends TypeMirror> ts1,
+      List<? extends TypeMirror> ts2,
+      Types types,
+      CaptureCorrespondence visited) {
+    if (ts1.size() != ts2.size()) {
+      return false;
+    }
+    for (int i = 0; i < ts1.size(); i++) {
+      if (!isSameTypeModuloCaptures(ts1.get(i), ts2.get(i), types, visited)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Returns true if {@code b1} and {@code b2} are the same wildcard bound, modulo captured type
+   * variables. A missing bound is only the same as another missing bound.
+   *
+   * @param b1 a wildcard bound, or null if the wildcard has no such bound
+   * @param b2 a wildcard bound, or null if the wildcard has no such bound
+   * @param types the type utilities
+   * @param visited the correspondence between captured type variables
+   * @return true if {@code b1} and {@code b2} are the same bound modulo captured type variables
+   */
+  private static boolean isSameBoundModuloCaptures(
+      @Nullable TypeMirror b1,
+      @Nullable TypeMirror b2,
+      Types types,
+      CaptureCorrespondence visited) {
+    if (b1 == null) {
+      return b2 == null;
+    }
+    return b2 != null && isSameTypeModuloCaptures(b1, b2, types, visited);
+  }
+
+  /**
    * Returns true if the two type variables are the same type variable. Meaning they have the same
    * name and the same enclosing element. Unlike {@link Types#isSameType(TypeMirror, TypeMirror)},
    * they do not have to be the same object.
@@ -1491,6 +1943,7 @@ public final class TypesUtils {
    * @param typeVariable2 a type variable
    * @return if the two type variables are the same type variable
    */
+  @SuppressWarnings("TypeEquals") // early exit from comparison method
   @EqualsMethod
   public static boolean areSame(TypeVariable typeVariable1, TypeVariable typeVariable2) {
     if (typeVariable1 == typeVariable2) {
@@ -1501,5 +1954,25 @@ public final class TypesUtils {
 
     return typeVariable1.asElement().getSimpleName().contentEquals(otherName)
         && otherEnclosingElement.equals(typeVariable1.asElement().getEnclosingElement());
+  }
+
+  /**
+   * Returns a hash code that is consistent with {@link #areSame(TypeVariable, TypeVariable)}: if
+   * {@code areSame} returns true for two type variables, then this method returns the same value
+   * for both of them.
+   *
+   * <p>Use this method wherever type variables are compared using {@code areSame} but are also
+   * hashed, such as in a hash table or in a {@code hashCode} method whose {@code equals} method
+   * uses {@code areSame}.
+   *
+   * @param typeVariable a type variable
+   * @return a hash code consistent with {@code areSame}
+   */
+  public static int hashCodeForAreSame(TypeVariable typeVariable) {
+    // areSame compares asElement()'s getSimpleName() and getEnclosingElement().  The name is
+    // converted to a String because areSame compares names with Name.contentEquals, and Name does
+    // not specify that its hashCode is consistent with contentEquals.
+    Element element = typeVariable.asElement();
+    return Objects.hash(element.getSimpleName().toString(), element.getEnclosingElement());
   }
 }

@@ -17,12 +17,12 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
  * confused with "Value" in the name of this class) that cannot be stored in the accumulation type,
  * because they are not a refinement of that type. This situation occurs for type variables and
  * wildcards, for which calling {@link AccumulationTransfer#accumulate(Node, TransferResult,
- * String...)} would otherwise have no effect (since the types are invariant: T is not a supertype
- * of Accumulator(a) T unless both bounds of T are supertypes of Accumulator(a)). This enables an
- * accumulation checker (or, typically, a client of that accumulation checker) to resolve
- * accumulated facts even on types that are type variables. For example, the Resource Leak Checker
- * uses this facility to check that calls to close() on variables whose type is a type variable have
- * actually occurred, such as in this example:
+ * String...)} would otherwise have no effect (since the types are invariant: {@code T} is not a
+ * supertype of {@code Accumulator(a) T} unless both bounds of T are supertypes of Accumulator(a)).
+ * This enables an accumulation checker (or, typically, a client of that accumulation checker) to
+ * resolve accumulated facts even on types that are type variables. For example, the Resource Leak
+ * Checker uses this facility to check that calls to close() on variables whose type is a type
+ * variable have actually occurred, such as in this example:
  *
  * <pre><code>
  *   public static &lt;T extends java.io.Closeable&gt; void close(
@@ -40,7 +40,7 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
   private @Nullable Set<String> accumulatedValues = null;
 
   /**
-   * Creates a new CFAbstractValue.
+   * Creates a new AccumulationValue.
    *
    * @param analysis the analysis class this value belongs to
    * @param annotations the annotations in this abstract value
@@ -66,6 +66,23 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
         accumulatedValues = new HashSet<>(typeFactory.getAccumulatedValues(accumulator));
       }
     }
+  }
+
+  /**
+   * Creates a new AccumulationValue with the given accumulated values.
+   *
+   * @param analysis the analysis class this value belongs to
+   * @param annotations the annotations in this abstract value
+   * @param underlyingType the underlying (Java) type in this abstract value
+   * @param accumulatedValues the accumulated values, or null
+   */
+  private AccumulationValue(
+      CFAbstractAnalysis<AccumulationValue, ?, ?> analysis,
+      AnnotationMirrorSet annotations,
+      TypeMirror underlyingType,
+      @Nullable Set<String> accumulatedValues) {
+    super(analysis, annotations, underlyingType);
+    this.accumulatedValues = accumulatedValues;
   }
 
   /**
@@ -104,46 +121,41 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
     }
     AccumulationValue mostSpecific = super.mostSpecific(other, backup);
     if (mostSpecific != null) {
-      mostSpecific.addAccumulatedValues(this.accumulatedValues);
-      mostSpecific.addAccumulatedValues(other.accumulatedValues);
-      return mostSpecific;
+      return mostSpecific.withAccumulatedValues(this.accumulatedValues, other.accumulatedValues);
     }
 
     // mostSpecific is null if the two types are not comparable.  This is normally
-    // because one of this or other is a type variable and annotations is empty, but the
-    // other annotations are not empty.  In this case, copy the accumulatedValues to the
+    // because one of this or other is a type variable with no annotations, but the
+    // other annotations are non-empty.  In this case, add the accumulatedValues to the
     // value with no annotations and return it as most specific.
     if (other.getAnnotations().isEmpty()) {
-      mostSpecific =
-          new AccumulationValue(
-              analysis, AnnotationMirrorSet.emptySet(), other.getUnderlyingType());
-      mostSpecific.addAccumulatedValues(this.accumulatedValues);
-      mostSpecific.addAccumulatedValues(other.accumulatedValues);
-      return mostSpecific;
+      return other.withAccumulatedValues(this.accumulatedValues, null);
     } else if (this.getAnnotations().isEmpty()) {
-      mostSpecific =
-          new AccumulationValue(
-              analysis, AnnotationMirrorSet.emptySet(), other.getUnderlyingType());
-      mostSpecific.addAccumulatedValues(this.accumulatedValues);
-      mostSpecific.addAccumulatedValues(other.accumulatedValues);
-      return mostSpecific;
+      return this.withAccumulatedValues(other.accumulatedValues, null);
     }
     return null;
   }
 
   /**
-   * Merges its argument into the {@link #accumulatedValues} field of this.
+   * Returns a value that is like this one, but whose {@link #accumulatedValues} also contains
+   * {@code newAccumulatedValues1} and {@code newAccumulatedValues2}. Does not side-effect this
+   * value, which might be shared by multiple stores.
    *
-   * @param newAccumulatedValues a new list of accumulated values
+   * @param newAccumulatedValues1 accumulated values to add, or null
+   * @param newAccumulatedValues2 more accumulated values to add, or null
+   * @return a value like this one whose accumulatedValues also contains {@code
+   *     newAccumulatedValues1} and {@code newAccumulatedValues2}; it is {@code this} if this
+   *     value's accumulatedValues already contains both
    */
-  private void addAccumulatedValues(Set<String> newAccumulatedValues) {
-    if (newAccumulatedValues == null || newAccumulatedValues.isEmpty()) {
-      return;
+  private AccumulationValue withAccumulatedValues(
+      @Nullable Set<String> newAccumulatedValues1, @Nullable Set<String> newAccumulatedValues2) {
+    Set<String> resultAccumulatedValues =
+        unionIfLarger(accumulatedValues, newAccumulatedValues1, newAccumulatedValues2);
+    if (resultAccumulatedValues == null) {
+      return this;
     }
-    if (accumulatedValues == null) {
-      accumulatedValues = new HashSet<>(newAccumulatedValues.size());
-    }
-    accumulatedValues.addAll(newAccumulatedValues);
+    return new AccumulationValue(
+        analysis, getAnnotations(), getUnderlyingType(), resultAccumulatedValues);
   }
 
   @Override

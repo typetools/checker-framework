@@ -8,7 +8,7 @@ import org.checkerframework.checker.mustcall.qual.MustCallUnknown;
 public class MustCallSubtypingTest {
 
   @MustCall({"toString"}) String foo(@MustCall({"hashCode"}) String arg) {
-    // :: (return)
+    // :: error: [return]
     return arg;
   }
 
@@ -63,69 +63,69 @@ public class MustCallSubtypingTest {
   void client(Integer i, Integer[] ia) {
     requiresMustCallEmptyObject(i);
     requiresMustCallEmptyObject(ia);
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallEmptyObject(mcHashCode);
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallEmptyObject(mcToString);
     requiresMustCallEmptyObject(mcEmpty);
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallEmptyObject(mcUnknown);
 
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallEmptyString(mcHashCode);
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallEmptyString(mcToString);
     requiresMustCallEmptyString(mcEmpty);
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallEmptyString(mcUnknown);
 
     requiresMustCallHashCodeObject(i);
     requiresMustCallHashCodeObject(ia);
     requiresMustCallHashCodeObject(mcHashCode);
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallHashCodeObject(mcToString);
     requiresMustCallHashCodeObject(mcEmpty);
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallHashCodeObject(mcUnknown);
 
     requiresMustCallHashCodeString(mcHashCode);
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallHashCodeString(mcToString);
     requiresMustCallHashCodeString(mcEmpty);
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallHashCodeString(mcUnknown);
 
     requiresMustCallToStringObject(i);
     requiresMustCallToStringObject(ia);
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallToStringObject(mcHashCode);
     requiresMustCallToStringObject(mcToString);
     requiresMustCallToStringObject(mcEmpty);
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallToStringObject(mcUnknown);
 
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallToStringString(mcHashCode);
     requiresMustCallToStringString(mcToString);
     requiresMustCallToStringString(mcEmpty);
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallToStringString(mcUnknown);
 
     requiresMustCallUnknownObject(i);
     requiresMustCallUnknownObject(ia);
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallUnknownObject(mcHashCode);
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallUnknownObject(mcToString);
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallUnknownObject(mcEmpty);
     requiresMustCallUnknownObject(mcUnknown);
 
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallUnknownString(mcHashCode);
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallUnknownString(mcToString);
-    // :: (argument)
+    // :: error: [argument]
     requiresMustCallUnknownString(mcEmpty);
     requiresMustCallUnknownString(mcUnknown);
   }

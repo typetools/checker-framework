@@ -31,28 +31,29 @@ import java.lang.annotation.Target;
  * names may be used in E and P, if a {@link QualifierArgument} in E gives the name of the
  * corresponding element in P.
  *
- * <p>For example, the following code declares a postcondition annotation for the {@link
+ * <p>For example, the following code declares a conditional postcondition annotation for the {@link
  * org.checkerframework.common.value.qual.MinLen} qualifier:
  *
  * <pre><code>
  * {@literal @}ConditionalPostconditionAnnotation(qualifier = MinLen.class)
  * {@literal @}Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
- * public {@literal @}interface EnsuresMinLen {
+ * public {@literal @}interface EnsuresMinLenIf {
  *   String[] expression();
  *   boolean result();
  *   {@literal @}QualifierArgument("value")
  *   int targetValue() default 0;
+ * }
  * </code></pre>
  *
- * The {@code expression} element holds the expressions to which the qualifier applies and {@code
+ * The {@code expression} element holds the expressions to which the qualifier applies, and {@code
  * targetValue} holds the value for the {@code value} argument of {@link
  * org.checkerframework.common.value.qual.MinLen}.
  *
- * <p>The following code then uses the annotation on a method that ensures {@code field} to be
+ * <p>The following code then uses the annotation on a method that ensures that {@code field} is
  * {@code @MinLen(4)} upon returning {@code true}.
  *
  * <pre><code>
- * {@literal @}EnsuresMinLenIf(expression = "field", result = true, targetValue = 4")
+ * {@literal @}EnsuresMinLenIf(expression = "field", result = true, targetValue = 4)
  * public boolean isFieldBool() {
  *   return field == "true" || field == "false";
  * }

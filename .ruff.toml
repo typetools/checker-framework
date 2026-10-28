@@ -1,0 +1,69 @@
+line-length = 100
+output-format = "concise"
+
+[lint]
+preview = true
+extend-select = [
+  "I",
+  "D",
+  "DOC",
+  "B",
+  "A",
+  "COM",
+  "C4",
+  "DTZ",
+  "EM",
+  "EXE",
+  "FA",
+  "INT",
+  "ISC",
+  "ICN",
+  "PIE",
+  "PYI",
+  "Q",
+  "RET",
+  "SLF",
+  "SIM",
+  "SLOT",
+  "TID",
+  "TC",
+  "ARG",
+  "PTH",
+  "FLY",
+  "NPY",
+  "PD",
+  "N",
+  "PERF",
+  "E",
+  "W",
+  "F",
+  "PLC",
+  "PLE",
+  "UP",
+  "FURB",
+  "RUF",
+  "TRY",
+]
+extend-ignore = [
+  "missing-trailing-comma",
+  "incorrect-blank-line-before-class",
+  "multi-line-summary-second-line",
+  "missing-trailing-period",
+  "missing-blank-line-after-last-section",
+  "docstring-missing-exception",
+  "multiple-leading-hashes-for-block-comment",
+  "raw-string-in-exception",
+  "compare-to-empty-string",
+  "unnecessary-assign",
+  "collapsible-if",
+  "if-else-block-instead-of-if-exp",
+  "raise-vanilla-class",
+  "raise-vanilla-args",
+  "try-consider-else",
+]
+
+[lint.pycodestyle]
+max-line-length = 100
+
+[format]
+docstring-code-format = false
