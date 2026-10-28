@@ -69,9 +69,9 @@ public class ProperType extends AbstractType {
   private long upToDateStamp;
 
   /**
-   * A part of a type that {@link #partFromOrigin} or {@link #partsFromOrigin} computes. Each part
-   * is cached in {@link #partCache} or {@link #partCacheForLists}, depending on whether it is a
-   * single type or a list of types.
+   * A part of a type that {@link #partFromOrigin} or {@link #listPartFromOrigin} computes. Each
+   * part is cached in {@link #partCache} or {@link #partCacheForLists}, depending on whether it is
+   * a single type or a list of types.
    */
   private enum Part {
     /** {@link ProperType#getTypeArguments}; cached in {@link ProperType#partCacheForLists}. */
@@ -108,9 +108,9 @@ public class ProperType extends AbstractType {
   private @Nullable Map<Part, @Nullable AbstractType> partCache = null;
 
   /**
-   * The parts of this type that {@link #partsFromOrigin} has computed and whose content is a list
-   * of types: a map from a {@link Part} of this type to the types at that part. It is null if no
-   * such part has been computed since {@link #partCacheStamp} was set. See {@link #partCache}.
+   * The parts of this type that {@link #listPartFromOrigin} has computed and whose content is a
+   * list of types: a map from a {@link Part} of this type to the types at that part. It is null if
+   * no such part has been computed since {@link #partCacheStamp} was set. See {@link #partCache}.
    */
   private @Nullable Map<Part, @Nullable List<AbstractType>> partCacheForLists = null;
 
@@ -371,26 +371,28 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns parts of this type, computed from {@link #origin} if this type has one; see {@link
-   * #partFromOrigin}. If any part of the origin is not a proper type once instantiations are
-   * applied, then all the parts are computed from {@link #type} instead.
+   * Returns a part of this type whose content is a list of types, computed from {@link #origin} if
+   * this type has one; see {@link #partFromOrigin}. If any type in the part computed from the
+   * origin is not a proper type once instantiations are applied, then the whole part is computed
+   * from {@link #type} instead.
    *
-   * <p>If {@code sharesPrimaryAnnotations} is true, then each part gets the primary annotations of
-   * the corresponding part computed from {@link #type}, as in {@link #partFromOrigin}.
+   * <p>If {@code sharesPrimaryAnnotations} is true, then each type in the part gets the primary
+   * annotations of the corresponding type in the part computed from {@link #type}, as in {@link
+   * #partFromOrigin}.
    *
-   * <p>If this type has an origin, the parts are cached in {@link #partCacheForLists}, as in {@link
+   * <p>If this type has an origin, the part is cached in {@link #partCacheForLists}, as in {@link
    * #partFromOrigin}. The result is a new list, which the caller may mutate.
    *
    * @param key the part
-   * @param parts computes the parts of a type
-   * @param plain computes the parts of this type from {@link #type}
-   * @param sharesPrimaryAnnotations true if the primary annotations of each part are determined by
-   *     those of this type
-   * @return the parts of this type
+   * @param part computes the part of a type
+   * @param plain computes the part of this type from {@link #type}
+   * @param sharesPrimaryAnnotations true if the primary annotations of each type in the part are
+   *     determined by those of this type
+   * @return the part of this type
    */
-  private @Nullable List<AbstractType> partsFromOrigin(
+  private @Nullable List<AbstractType> listPartFromOrigin(
       Part key,
-      Function<AbstractType, @Nullable List<AbstractType>> parts,
+      Function<AbstractType, @Nullable List<AbstractType>> part,
       Supplier<@Nullable List<AbstractType>> plain,
       boolean sharesPrimaryAnnotations) {
     InferenceType origin = this.origin;
@@ -407,29 +409,29 @@ public class ProperType extends AbstractType {
         cached(
             cache,
             key,
-            () -> computePartsFromOrigin(origin, parts, plain, sharesPrimaryAnnotations));
+            () -> computeListPartFromOrigin(origin, part, plain, sharesPrimaryAnnotations));
     // The cached list must not be mutated.
     return result == null ? null : new ArrayList<>(result);
   }
 
   /**
-   * Returns parts of this type, computed from {@code origin}, or from {@link #type} if any part of
-   * {@code origin} is not a proper type once instantiations are applied. See {@link
-   * #partsFromOrigin}.
+   * Returns a part of this type whose content is a list of types, computed from {@code origin}, or
+   * from {@link #type} if any type in the part computed from {@code origin} is not a proper type
+   * once instantiations are applied. See {@link #listPartFromOrigin}.
    *
    * @param origin the origin of this type
-   * @param parts computes the parts of a type
-   * @param plain computes the parts of this type from {@link #type}
-   * @param sharesPrimaryAnnotations true if the primary annotations of each part are determined by
-   *     those of this type
-   * @return the parts of this type
+   * @param part computes the part of a type
+   * @param plain computes the part of this type from {@link #type}
+   * @param sharesPrimaryAnnotations true if the primary annotations of each type in the part are
+   *     determined by those of this type
+   * @return the part of this type
    */
-  private @Nullable List<AbstractType> computePartsFromOrigin(
+  private @Nullable List<AbstractType> computeListPartFromOrigin(
       InferenceType origin,
-      Function<AbstractType, @Nullable List<AbstractType>> parts,
+      Function<AbstractType, @Nullable List<AbstractType>> part,
       Supplier<@Nullable List<AbstractType>> plain,
       boolean sharesPrimaryAnnotations) {
-    List<AbstractType> derived = parts.apply(origin);
+    List<AbstractType> derived = part.apply(origin);
     if (derived == null) {
       return plain.get();
     }
@@ -442,10 +444,10 @@ public class ProperType extends AbstractType {
       result.add(r);
     }
     if (sharesPrimaryAnnotations) {
-      List<AbstractType> plainParts = plain.get();
-      if (plainParts != null && plainParts.size() == result.size()) {
+      List<AbstractType> plainPart = plain.get();
+      if (plainPart != null && plainPart.size() == result.size()) {
         for (int i = 0; i < result.size(); i++) {
-          result.set(i, withPrimaryAnnotationsOf((ProperType) result.get(i), plainParts.get(i)));
+          result.set(i, withPrimaryAnnotationsOf((ProperType) result.get(i), plainPart.get(i)));
         }
       }
     }
@@ -465,7 +467,7 @@ public class ProperType extends AbstractType {
 
   @Override
   public @Nullable List<AbstractType> getTypeArguments() {
-    return partsFromOrigin(
+    return listPartFromOrigin(
         Part.TYPE_ARGUMENTS, AbstractType::getTypeArguments, super::getTypeArguments, false);
   }
 
@@ -503,7 +505,7 @@ public class ProperType extends AbstractType {
 
   @Override
   public @Nullable List<AbstractType> getFunctionTypeParameterTypes() {
-    return partsFromOrigin(
+    return listPartFromOrigin(
         Part.FUNCTION_TYPE_PARAMETER_TYPES,
         AbstractType::getFunctionTypeParameterTypes,
         super::getFunctionTypeParameterTypes,
@@ -546,7 +548,7 @@ public class ProperType extends AbstractType {
   @Override
   public List<AbstractType> getIntersectionBounds() {
     List<AbstractType> result =
-        partsFromOrigin(
+        listPartFromOrigin(
             Part.INTERSECTION_BOUNDS,
             AbstractType::getIntersectionBounds,
             super::getIntersectionBounds,
