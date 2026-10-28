@@ -849,9 +849,17 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns a copy of this type, with the same origin (unlike {@link #create}), whose annotated
-   * type is a deep copy of this type's. Only the primary annotations of the copy's annotated type
-   * may be mutated; see {@link #partFromOrigin}.
+   * Returns a copy of this type that has:
+   *
+   * <ul>
+   *   <li>the same {@link #origin} (unlike {@link #create}),
+   *   <li>the same {@link #upToDateStamp},
+   *   <li>an annotated type that is a deep copy of this type's, and
+   *   <li>the same {@link #ignoreAnnotations}.
+   * </ul>
+   *
+   * <p>Only the primary annotations of the copy's annotated type may be mutated; see {@link
+   * #partFromOrigin}.
    *
    * @return a copy of this type
    */
@@ -860,10 +868,17 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns a copy of this type, with the same origin and {@link #upToDateStamp}, whose annotated
-   * type is {@code atm} and whose {@link #ignoreAnnotations} is {@code ignoreAnnotations}. {@code
-   * atm} must be this type's annotated type, or a copy of it, with only its primary annotations
-   * changed; see {@link #partFromOrigin}.
+   * Returns a copy of this type that has:
+   *
+   * <ul>
+   *   <li>the same {@link #origin},
+   *   <li>the same {@link #upToDateStamp},
+   *   <li>{@code atm} as its annotated type, and
+   *   <li>{@code ignoreAnnotations} as its {@link #ignoreAnnotations}.
+   * </ul>
+   *
+   * <p>{@code atm} must be this type's annotated type, or a copy of it, with only its primary
+   * annotations changed; see {@link #partFromOrigin}.
    *
    * @param atm this type's annotated type, or a copy of it, with only its primary annotations
    *     changed
