@@ -58,10 +58,11 @@ public class ProperType extends AbstractType {
 
   /**
    * If {@link #origin} is non-null, the value of {@link #instantiationStamp} for {@link
-   * #originVariables} when this type was last found to be up to date; otherwise, 0. It is not used
-   * by {@link #equals} or {@link #hashCode}.
+   * #originVariables} when this type was last found to be up to date; otherwise, 0. This type is up
+   * to date if {@link #type} is what substituting the current instantiations into {@link #origin}
+   * gives, apart from primary annotations. It is not used by {@link #equals} or {@link #hashCode}.
    */
-  private long originStamp;
+  private long upToDateStamp;
 
   /** A part of a type that {@link #partFromOrigin} or {@link #partsFromOrigin} computes. */
   private enum Part {
@@ -164,7 +165,7 @@ public class ProperType extends AbstractType {
     this.origin = origin;
     this.originVariables =
         origin == null ? Collections.emptyList() : origin.getInferenceVariables();
-    this.originStamp = instantiationStamp(originVariables);
+    this.upToDateStamp = instantiationStamp(originVariables);
     verifyType(this.type);
   }
 
@@ -180,7 +181,7 @@ public class ProperType extends AbstractType {
     this.qualifierVars = AnnotationMirrorMap.emptyMap();
     this.origin = null;
     this.originVariables = Collections.emptyList();
-    this.originStamp = 0;
+    this.upToDateStamp = 0;
     verifyType(this.type);
   }
 
@@ -196,7 +197,7 @@ public class ProperType extends AbstractType {
     this.qualifierVars = AnnotationMirrorMap.emptyMap();
     this.origin = null;
     this.originVariables = Collections.emptyList();
-    this.originStamp = 0;
+    this.upToDateStamp = 0;
     verifyType(this.type);
   }
 
@@ -734,7 +735,7 @@ public class ProperType extends AbstractType {
    */
   @Override
   public AbstractType applyInstantiations() {
-    if (origin == null || instantiationStamp(originVariables) == originStamp) {
+    if (origin == null || instantiationStamp(originVariables) == upToDateStamp) {
       return this;
     }
     AbstractType result = origin.applyInstantiations();
@@ -751,7 +752,7 @@ public class ProperType extends AbstractType {
       // Nothing that this type depends on has changed.  Returning this type, rather than an
       // equal new one, tells the caller so; otherwise, two variables whose instantiations mention
       // each other would make each other change forever.
-      originStamp = instantiationStamp(originVariables);
+      upToDateStamp = instantiationStamp(originVariables);
       return this;
     }
     return new ProperType(
@@ -795,7 +796,7 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns a copy of this type, with the same origin and {@link #originStamp}, whose annotated
+   * Returns a copy of this type, with the same origin and {@link #upToDateStamp}, whose annotated
    * type is {@code atm} and whose {@link #ignoreAnnotations} is {@code ignoreAnnotations}. {@code
    * atm} must be this type's annotated type, or a copy of it, with only its primary annotations
    * changed; see {@link #origin}.
@@ -807,7 +808,7 @@ public class ProperType extends AbstractType {
    */
   ProperType withAnnotatedType(AnnotatedTypeMirror atm, boolean ignoreAnnotations) {
     ProperType result = new ProperType(atm, qualifierVars, context, ignoreAnnotations, origin);
-    result.originStamp = originStamp;
+    result.upToDateStamp = upToDateStamp;
     return result;
   }
 
