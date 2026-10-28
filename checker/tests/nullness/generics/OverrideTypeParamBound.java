@@ -4,6 +4,7 @@
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -199,6 +200,21 @@ public class OverrideTypeParamBound {
     // :: error: [type.argument]
     ListConsumer bad = OverrideTypeParamBound::addNull;
     ListConsumer good = OverrideTypeParamBound::ignore;
+  }
+
+  static class Box<E> {
+    <U extends @NonNull Object> U id(U u) {
+      return u;
+    }
+  }
+
+  // The ReferenceType is raw, so the class's type arguments are inferred, but the method's type
+  // arguments are explicit.
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  void rawReferenceTypeWithExplicitTypeArguments() {
+    BiFunction<Box, String, Object> good = Box::<String>id;
+    // :: error: [type.argument]
+    BiFunction<Box, @Nullable String, @Nullable Object> bad = Box::<@Nullable String>id;
   }
 
   // Without the error above, this method would dereference null.

@@ -762,16 +762,24 @@ public final class AnnotatedTypes {
     } else if (expr instanceof NewClassTree nct) {
       targs = nct.getTypeArguments();
     } else if (expr instanceof MemberReferenceTree memRef) {
+      targs = memRef.getTypeArguments();
       if (inferTypeArgs && TreeUtils.needsTypeArgInference(memRef)) {
         InferenceResult inferenceResult =
             atypeFactory.getTypeArgumentInference().inferTypeArgs(atypeFactory, expr, preType);
+        Map<TypeVariable, AnnotatedTypeMirror> typeArguments =
+            inferenceResult.getTypeArgumentsForExpression(expr);
+        if (targs != null && !targs.isEmpty()) {
+          // For a raw ReferenceType, as in `List::<String>m`, inference infers only the type
+          // arguments of ReferenceType.  The method's type arguments are explicit.
+          typeArguments = new HashMap<>(typeArguments);
+          typeArguments.putAll(explicitTypeArguments(atypeFactory, preType, targs));
+        }
         return new TypeArguments(
-            inferenceResult.getTypeArgumentsForExpression(expr),
+            typeArguments,
             inferenceResult.needsUncheckedConversion(expr),
             inferenceResult.inferenceCrashed());
       }
-      targs = memRef.getTypeArguments();
-      if (memRef.getTypeArguments() == null) {
+      if (targs == null) {
         return emptyFalsePair;
       }
     } else {
@@ -795,15 +803,7 @@ public final class AnnotatedTypes {
         return emptyFalsePair;
       }
 
-      Map<TypeVariable, AnnotatedTypeMirror> typeArguments = new HashMap<>();
-      for (int i = 0; i < elt.getTypeParameters().size(); ++i) {
-        AnnotatedTypeVariable typeVar = tvars.get(i);
-        AnnotatedTypeMirror typeArg = atypeFactory.getAnnotatedTypeFromTypeTree(targs.get(i));
-        // TODO: the call to getTypeParameterDeclaration shouldn't be necessary - typeVar
-        // already should be a declaration.
-        typeArguments.put(typeVar.getUnderlyingType(), typeArg);
-      }
-      return new TypeArguments(typeArguments, false, false);
+      return new TypeArguments(explicitTypeArguments(atypeFactory, preType, targs), false, false);
     } else {
       if (inferTypeArgs) {
         InferenceResult inferenceResult =
@@ -816,6 +816,31 @@ public final class AnnotatedTypes {
         return emptyFalsePair;
       }
     }
+  }
+
+  /**
+   * Returns a mapping from the type variables of {@code methodType} to the explicit type arguments
+   * {@code targs}.
+   *
+   * @param atypeFactory the annotated type factory
+   * @param methodType the type of the method or constructor whose type arguments are {@code targs}
+   * @param targs the explicit type arguments, one per type variable of {@code methodType}
+   * @return a mapping from the type variables of {@code methodType} to the explicit type arguments
+   */
+  private static Map<TypeVariable, AnnotatedTypeMirror> explicitTypeArguments(
+      AnnotatedTypeFactory atypeFactory,
+      AnnotatedExecutableType methodType,
+      List<? extends Tree> targs) {
+    List<? extends AnnotatedTypeVariable> tvars = methodType.getTypeVariables();
+    Map<TypeVariable, AnnotatedTypeMirror> typeArguments = new HashMap<>();
+    for (int i = 0; i < tvars.size(); ++i) {
+      AnnotatedTypeVariable typeVar = tvars.get(i);
+      AnnotatedTypeMirror typeArg = atypeFactory.getAnnotatedTypeFromTypeTree(targs.get(i));
+      // TODO: the call to getTypeParameterDeclaration shouldn't be necessary - typeVar
+      // already should be a declaration.
+      typeArguments.put(typeVar.getUnderlyingType(), typeArg);
+    }
+    return typeArguments;
   }
 
   /**
