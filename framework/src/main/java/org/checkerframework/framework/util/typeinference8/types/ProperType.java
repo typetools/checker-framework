@@ -34,18 +34,22 @@ public class ProperType extends AbstractType {
    */
   private final AnnotatedTypeMirror type;
 
-  /** A mapping from polymorphic annotation to {@link QualifierVar}. */
+  /**
+   * Maps each polymorphic qualifier in the type of the method or constructor being invoked to the
+   * qualifier variable that stands for it at this invocation. When this type's primary annotations
+   * are used as qualifiers (see {@link #getQualifiers}), a polymorphic qualifier that is a key is
+   * replaced by its variable.
+   */
   private final AnnotationMirrorMap<QualifierVar> qualifierVars;
 
   /**
-   * The type that this type was made from by substituting instantiations, if at least one of them
-   * ignores annotations (see {@link AbstractType#ignoreAnnotations}); otherwise, null.
+   * The type that this type was made from by substituting instantiations, if at least one of those
+   * instantiations ignores annotations (see {@link AbstractType#ignoreAnnotations}); otherwise,
+   * null.
    *
-   * <p>A position where such an instantiation was substituted is an ignored substitution: its
-   * annotations say nothing about the variable's, so they are ignored. {@link #type} does not
-   * record which positions those are, but the origin does: it has a use of the variable at each
-   * one. So this type computes its parts from its origin (see {@link #partFromOrigin}), and {@link
-   * #applyInstantiations} substitutes again when the variable's instantiation changes.
+   * <p>The origin records which positions of {@link #type} are ignored substitutions (see {@link
+   * IgnoredAnnotations}): it has a use of a variable at each one. {@link #type} does not record
+   * them.
    */
   private final @Nullable InferenceType origin;
 
@@ -57,52 +61,73 @@ public class ProperType extends AbstractType {
   private final Collection<Variable> originVariables;
 
   /**
-   * If {@link #origin} is non-null, the value of {@link #instantiationStamp} for {@link
-   * #originVariables} when this type was last found to be up to date; otherwise, 0. It is not used
-   * by {@link #equals} or {@link #hashCode}.
+   * If {@link #origin} is non-null, the value of {@link #instantiationVersion} for {@link
+   * #originVariables} when this type was last found to be up to date; otherwise, 0. This type is up
+   * to date if {@link #type} is what substituting the current instantiations into {@link #origin}
+   * gives, apart from primary annotations. It is not used by {@link #equals} or {@link #hashCode}.
    */
-  private long originStamp;
+  private long upToDateVersion;
 
-  /** A part of a type that {@link #partFromOrigin} or {@link #partsFromOrigin} computes. */
+  /**
+   * A <em>part</em> of a type is a type directly nested in it. This enum names the parts that
+   * {@link #partFromOrigin} or {@link #listPartFromOrigin} computes. Each part is cached in {@link
+   * #partCache} or {@link #partCacheForLists}, depending on whether it is a single type or a list
+   * of types.
+   */
   private enum Part {
-    /** {@link ProperType#getTypeArguments}. */
+    /** {@link ProperType#getTypeArguments}; cached in {@link ProperType#partCacheForLists}. */
     TYPE_ARGUMENTS,
-    /** {@link ProperType#getEnclosingType}. */
+    /** {@link ProperType#getEnclosingType}; cached in {@link ProperType#partCache}. */
     ENCLOSING_TYPE,
-    /** {@link ProperType#getComponentType}. */
+    /** {@link ProperType#getComponentType}; cached in {@link ProperType#partCache}. */
     COMPONENT_TYPE,
-    /** {@link ProperType#getFunctionTypeParameterTypes}. */
+    /**
+     * {@link ProperType#getFunctionTypeParameterTypes}; cached in {@link
+     * ProperType#partCacheForLists}.
+     */
     FUNCTION_TYPE_PARAMETER_TYPES,
-    /** {@link ProperType#getFunctionTypeReturnType}. */
+    /** {@link ProperType#getFunctionTypeReturnType}; cached in {@link ProperType#partCache}. */
     FUNCTION_TYPE_RETURN_TYPE,
-    /** {@link ProperType#getWildcardLowerBound}. */
+    /** {@link ProperType#getWildcardLowerBound}; cached in {@link ProperType#partCache}. */
     WILDCARD_LOWER_BOUND,
-    /** {@link ProperType#getWildcardUpperBound}. */
+    /** {@link ProperType#getWildcardUpperBound}; cached in {@link ProperType#partCache}. */
     WILDCARD_UPPER_BOUND,
-    /** {@link ProperType#getIntersectionBounds}. */
+    /** {@link ProperType#getIntersectionBounds}; cached in {@link ProperType#partCacheForLists}. */
     INTERSECTION_BOUNDS
   }
 
   /**
-   * The parts of this type that {@link #partFromOrigin} has computed, keyed by a {@link Part} or,
-   * for {@link #asSuper}, by the supertype; null if none has been computed since {@link
-   * #partCacheStamp} was set. Only a type with an {@link #origin} caches its parts, because
+   * The parts of this type that {@link #partFromOrigin} has computed: a map from a {@link Part} of
+   * this type to the type at that part. It is null if no part has been computed since {@link
+   * #partCacheVersion} was set. Only a type with an {@link #origin} caches its parts, because
    * computing a part from the origin substitutes instantiations.
+   *
+   * <p>This map, {@link #partCacheForLists}, and {@link #asSuperCache} are conceptually a single
+   * cache from a part of this type to its content. They are separate only so that each map has
+   * precise key and value types.
    */
-  private @Nullable Map<Object, @Nullable AbstractType> partCache = null;
+  private @Nullable Map<Part, @Nullable AbstractType> partCache = null;
 
   /**
-   * The parts of this type that {@link #partsFromOrigin} has computed; null if none has been
-   * computed since {@link #partCacheStamp} was set. See {@link #partCache}.
+   * The parts of this type that {@link #listPartFromOrigin} has computed and whose content is a
+   * list of types: a map from a {@link Part} of this type to the types at that part. It is null if
+   * no such part has been computed since {@link #partCacheVersion} was set. See {@link #partCache}.
    */
-  private @Nullable Map<Part, @Nullable List<AbstractType>> partsCache = null;
+  private @Nullable Map<Part, @Nullable List<AbstractType>> partCacheForLists = null;
 
   /**
-   * The value of {@link #instantiationStamp} for {@link #originVariables} when the parts in {@link
-   * #partCache} and {@link #partsCache} were computed. The parts depend on the instantiations of
-   * those variables.
+   * The results of {@link #asSuper} computed from {@link #origin}: a map from a supertype to this
+   * type viewed as that supertype. It is null if none has been computed since {@link
+   * #partCacheVersion} was set. See {@link #partCache}.
    */
-  private long partCacheStamp = 0;
+  private @Nullable Map<TypeMirror, @Nullable AbstractType> asSuperCache = null;
+
+  /**
+   * The value of {@link #instantiationVersion} for {@link #originVariables} when the contents of
+   * {@link #partCache}, {@link #partCacheForLists}, and {@link #asSuperCache} were computed. The
+   * contents depend on the instantiations of those variables.
+   */
+  private long partCacheVersion = 0;
 
   /**
    * Creates a proper type.
@@ -130,7 +155,9 @@ public class ProperType extends AbstractType {
    * Creates a proper type.
    *
    * @param type the annotated type
-   * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
+   * @param qualifierVars a map from each polymorphic qualifier in the type of the method or
+   *     constructor being invoked to the qualifier variable that stands for it at this invocation;
+   *     see {@link #qualifierVars}
    * @param context the context
    * @param ignoreAnnotations true if the annotations on this type should be ignored
    */
@@ -146,7 +173,9 @@ public class ProperType extends AbstractType {
    * Creates a proper type.
    *
    * @param type the annotated type
-   * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
+   * @param qualifierVars a map from each polymorphic qualifier in the type of the method or
+   *     constructor being invoked to the qualifier variable that stands for it at this invocation;
+   *     see {@link #qualifierVars}
    * @param context the context
    * @param ignoreAnnotations true if the annotations on this type should be ignored
    * @param origin the type that {@code type} was made from by substituting instantiations, at least
@@ -164,7 +193,7 @@ public class ProperType extends AbstractType {
     this.origin = origin;
     this.originVariables =
         origin == null ? Collections.emptyList() : origin.getInferenceVariables();
-    this.originStamp = instantiationStamp(originVariables);
+    this.upToDateVersion = instantiationVersion(originVariables);
     verifyType(this.type);
   }
 
@@ -180,7 +209,7 @@ public class ProperType extends AbstractType {
     this.qualifierVars = AnnotationMirrorMap.emptyMap();
     this.origin = null;
     this.originVariables = Collections.emptyList();
-    this.originStamp = 0;
+    this.upToDateVersion = 0;
     verifyType(this.type);
   }
 
@@ -196,22 +225,24 @@ public class ProperType extends AbstractType {
     this.qualifierVars = AnnotationMirrorMap.emptyMap();
     this.origin = null;
     this.originVariables = Collections.emptyList();
-    this.originStamp = 0;
+    this.upToDateVersion = 0;
     verifyType(this.type);
   }
 
   /**
-   * Returns a number that changes whenever the instantiation of one of {@code variables} changes.
+   * Returns a number that changes whenever the current instantiation of one of {@code variables} is
+   * set, replaced, or cleared.
    *
    * @param variables inference variables
-   * @return a number that changes whenever the instantiation of one of {@code variables} changes
+   * @return a number that changes whenever the current instantiation of one of {@code variables} is
+   *     set, replaced, or cleared
    */
-  private static long instantiationStamp(Collection<Variable> variables) {
-    long stamp = 0;
+  private static long instantiationVersion(Collection<Variable> variables) {
+    long version = 0;
     for (Variable variable : variables) {
-      stamp += variable.getBounds().getInstantiationChanges();
+      version += variable.getBounds().getInstantiationChanges();
     }
-    return stamp;
+    return version;
   }
 
   /**
@@ -219,39 +250,56 @@ public class ProperType extends AbstractType {
    * has no origin, or the part of the origin is not a proper type once instantiations are applied,
    * then the part is computed from {@link #type} instead.
    *
-   * <p>If {@code sharesRoot} is true, then a part computed from the origin gets the root
-   * annotations and {@link #ignoreAnnotations} of the part computed from {@link #type}; see {@link
-   * #withRootOf}.
+   * <p>If {@code sharesPrimaryAnnotations} is true, then a part computed from the origin gets the
+   * primary annotations and {@link #ignoreAnnotations} of the part computed from {@link #type}; see
+   * {@link #withPrimaryAnnotationsOf}.
    *
-   * <p>If this type has an origin, the part is cached until the instantiation of a variable that
-   * the origin mentions changes.
+   * <p>If this type has an origin, the part is cached in {@link #partCache} until the current
+   * instantiation of a variable that the origin mentions is set, replaced, or cleared.
    *
-   * @param key the key under which to cache the part: a {@link Part}, or the supertype for {@link
-   *     #asSuper}
+   * @param key the part
    * @param part computes the part of a type
    * @param plain computes the part of this type from {@link #type}
-   * @param sharesRoot true if the root annotations of the part are determined by those of this type
+   * @param sharesPrimaryAnnotations true if the primary annotations of the part are determined by
+   *     those of this type
    * @return the part of this type
    */
   private @Nullable AbstractType partFromOrigin(
-      Object key,
+      Part key,
       Function<AbstractType, @Nullable AbstractType> part,
       Supplier<@Nullable AbstractType> plain,
-      boolean sharesRoot) {
+      boolean sharesPrimaryAnnotations) {
     InferenceType origin = this.origin;
     if (origin == null) {
       return plain.get();
     }
-    validatePartCaches();
-    Map<Object, @Nullable AbstractType> cache = partCache;
-    if (cache != null && cache.containsKey(key)) {
-      return cache.get(key);
-    }
+    clearPartCachesIfStale();
+    Map<Part, @Nullable AbstractType> cache = partCache;
     if (cache == null) {
       cache = new HashMap<>();
       partCache = cache;
     }
-    AbstractType result = computePartFromOrigin(origin, part, plain, sharesRoot);
+    return cached(
+        cache, key, () -> computePartFromOrigin(origin, part, plain, sharesPrimaryAnnotations));
+  }
+
+  /**
+   * Returns the value that {@code cache} maps {@code key} to. If {@code cache} has no mapping for
+   * {@code key}, first maps {@code key} to the result of {@code compute}.
+   *
+   * @param <K> the type of keys
+   * @param <V> the type of values
+   * @param cache a cache
+   * @param key a key
+   * @param compute computes the value for {@code key}
+   * @return the value that {@code cache} maps {@code key} to
+   */
+  private static <K, V> @Nullable V cached(
+      Map<K, @Nullable V> cache, K key, Supplier<@Nullable V> compute) {
+    if (cache.containsKey(key)) {
+      return cache.get(key);
+    }
+    V result = compute.get();
     cache.put(key, result);
     return result;
   }
@@ -264,121 +312,127 @@ public class ProperType extends AbstractType {
    * @param origin the origin of this type
    * @param part computes the part of a type
    * @param plain computes the part of this type from {@link #type}
-   * @param sharesRoot true if the root annotations of the part are determined by those of this type
+   * @param sharesPrimaryAnnotations true if the primary annotations of the part are determined by
+   *     those of this type
    * @return the part of this type
    */
   private @Nullable AbstractType computePartFromOrigin(
       InferenceType origin,
       Function<AbstractType, @Nullable AbstractType> part,
       Supplier<@Nullable AbstractType> plain,
-      boolean sharesRoot) {
+      boolean sharesPrimaryAnnotations) {
     // A part computed from the origin knows which of its positions are ignored substitutions.
     AbstractType derived = part.apply(origin);
     if (derived != null) {
       AbstractType result = derived.applyInstantiations();
       if (result.isProper()) {
-        return sharesRoot ? withRootOf((ProperType) result, plain.get()) : result;
+        return sharesPrimaryAnnotations
+            ? withPrimaryAnnotationsOf((ProperType) result, plain.get())
+            : result;
       }
     }
     return plain.get();
   }
 
   /**
-   * Empties {@link #partCache} and {@link #partsCache} if the instantiation of a variable that
-   * {@link #origin} mentions has changed since their parts were computed.
+   * Empties {@link #partCache}, {@link #partCacheForLists}, and {@link #asSuperCache} if the
+   * current instantiation of a variable that {@link #origin} mentions has been set, replaced, or
+   * cleared since their contents were computed.
    */
-  private void validatePartCaches() {
-    long stamp = instantiationStamp(originVariables);
-    if (stamp != partCacheStamp) {
+  private void clearPartCachesIfStale() {
+    long version = instantiationVersion(originVariables);
+    if (version != partCacheVersion) {
       partCache = null;
-      partsCache = null;
-      partCacheStamp = stamp;
+      partCacheForLists = null;
+      asSuperCache = null;
+      partCacheVersion = version;
     }
   }
 
   /**
-   * Returns {@code derived}, a part of this type computed from {@link #origin}, with the root
+   * Returns {@code derived}, a part of this type computed from {@link #origin}, with the primary
    * annotations and {@link #ignoreAnnotations} of {@code plainPart}, the same part computed from
    * {@link #type}.
    *
    * @param derived a part of this type computed from {@link #origin}
    * @param plainPart the same part of this type computed from {@link #type}, or null
-   * @return {@code derived}, with the root annotations of {@code plainPart}
+   * @return {@code derived}, with the primary annotations of {@code plainPart}
    */
-  private ProperType withRootOf(ProperType derived, @Nullable AbstractType plainPart) {
+  private ProperType withPrimaryAnnotationsOf(
+      ProperType derived, @Nullable AbstractType plainPart) {
     if (plainPart == null) {
       return derived;
     }
-    // The origin's root annotations are not this type's: they may have been changed since this
+    // The origin's primary annotations are not this type's: they may have been changed since this
     // type was made, for example by UseOfVariable#applyInstantiations or #withAnnotatedType.
     // `derived` may be an instantiation that is stored as a bound, so copy before mutating.
     AnnotatedTypeMirror atm = derived.getAnnotatedType().deepCopy();
-    IgnoredAnnotations.copyRootAnnotations(plainPart.getAnnotatedType(), atm);
+    IgnoredAnnotations.copyPrimaryAnnotations(plainPart.getAnnotatedType(), atm);
     return derived.withAnnotatedType(atm, plainPart.ignoreAnnotations);
   }
 
   /**
-   * Returns parts of this type, computed from {@link #origin} if this type has one; see {@link
-   * #partFromOrigin}. If any part of the origin is not a proper type once instantiations are
-   * applied, then all the parts are computed from {@link #type} instead.
+   * Returns a part of this type whose content is a list of types, computed from {@link #origin} if
+   * this type has one; see {@link #partFromOrigin}. If any type in the part computed from the
+   * origin is not a proper type once instantiations are applied, then the whole part is computed
+   * from {@link #type} instead.
    *
-   * <p>If {@code sharesRoot} is true, then each part gets the root annotations of the corresponding
-   * part computed from {@link #type}, as in {@link #partFromOrigin}.
+   * <p>If {@code sharesPrimaryAnnotations} is true, then each type in the part gets the primary
+   * annotations of the corresponding type in the part computed from {@link #type}, as in {@link
+   * #partFromOrigin}.
    *
-   * <p>If this type has an origin, the parts are cached as in {@link #partFromOrigin}. The result
-   * is a new list, which the caller may mutate.
+   * <p>If this type has an origin, the part is cached in {@link #partCacheForLists}, as in {@link
+   * #partFromOrigin}. The result is a new list, which the caller may mutate.
    *
-   * @param key the key under which to cache the parts
-   * @param parts computes the parts of a type
-   * @param plain computes the parts of this type from {@link #type}
-   * @param sharesRoot true if the root annotations of each part are determined by those of this
-   *     type
-   * @return the parts of this type
+   * @param key the part
+   * @param part computes the part of a type
+   * @param plain computes the part of this type from {@link #type}
+   * @param sharesPrimaryAnnotations true if the primary annotations of each type in the part are
+   *     determined by those of this type
+   * @return the part of this type
    */
-  private @Nullable List<AbstractType> partsFromOrigin(
+  private @Nullable List<AbstractType> listPartFromOrigin(
       Part key,
-      Function<AbstractType, @Nullable List<AbstractType>> parts,
+      Function<AbstractType, @Nullable List<AbstractType>> part,
       Supplier<@Nullable List<AbstractType>> plain,
-      boolean sharesRoot) {
+      boolean sharesPrimaryAnnotations) {
     InferenceType origin = this.origin;
     if (origin == null) {
       return plain.get();
     }
-    validatePartCaches();
-    Map<Part, @Nullable List<AbstractType>> cache = partsCache;
-    List<AbstractType> result;
-    if (cache != null && cache.containsKey(key)) {
-      result = cache.get(key);
-    } else {
-      if (cache == null) {
-        cache = new HashMap<>();
-        partsCache = cache;
-      }
-      result = computePartsFromOrigin(origin, parts, plain, sharesRoot);
-      cache.put(key, result);
+    clearPartCachesIfStale();
+    Map<Part, @Nullable List<AbstractType>> cache = partCacheForLists;
+    if (cache == null) {
+      cache = new HashMap<>();
+      partCacheForLists = cache;
     }
+    List<AbstractType> result =
+        cached(
+            cache,
+            key,
+            () -> computeListPartFromOrigin(origin, part, plain, sharesPrimaryAnnotations));
     // The cached list must not be mutated.
     return result == null ? null : new ArrayList<>(result);
   }
 
   /**
-   * Returns parts of this type, computed from {@code origin}, or from {@link #type} if any part of
-   * {@code origin} is not a proper type once instantiations are applied. See {@link
-   * #partsFromOrigin}.
+   * Returns a part of this type whose content is a list of types, computed from {@code origin}, or
+   * from {@link #type} if any type in the part computed from {@code origin} is not a proper type
+   * once instantiations are applied. See {@link #listPartFromOrigin}.
    *
    * @param origin the origin of this type
-   * @param parts computes the parts of a type
-   * @param plain computes the parts of this type from {@link #type}
-   * @param sharesRoot true if the root annotations of each part are determined by those of this
-   *     type
-   * @return the parts of this type
+   * @param part computes the part of a type
+   * @param plain computes the part of this type from {@link #type}
+   * @param sharesPrimaryAnnotations true if the primary annotations of each type in the part are
+   *     determined by those of this type
+   * @return the part of this type
    */
-  private @Nullable List<AbstractType> computePartsFromOrigin(
+  private @Nullable List<AbstractType> computeListPartFromOrigin(
       InferenceType origin,
-      Function<AbstractType, @Nullable List<AbstractType>> parts,
+      Function<AbstractType, @Nullable List<AbstractType>> part,
       Supplier<@Nullable List<AbstractType>> plain,
-      boolean sharesRoot) {
-    List<AbstractType> derived = parts.apply(origin);
+      boolean sharesPrimaryAnnotations) {
+    List<AbstractType> derived = part.apply(origin);
     if (derived == null) {
       return plain.get();
     }
@@ -390,11 +444,11 @@ public class ProperType extends AbstractType {
       }
       result.add(r);
     }
-    if (sharesRoot) {
-      List<AbstractType> plainParts = plain.get();
-      if (plainParts != null && plainParts.size() == result.size()) {
+    if (sharesPrimaryAnnotations) {
+      List<AbstractType> plainPart = plain.get();
+      if (plainPart != null && plainPart.size() == result.size()) {
         for (int i = 0; i < result.size(); i++) {
-          result.set(i, withRootOf((ProperType) result.get(i), plainParts.get(i)));
+          result.set(i, withPrimaryAnnotationsOf((ProperType) result.get(i), plainPart.get(i)));
         }
       }
     }
@@ -406,7 +460,7 @@ public class ProperType extends AbstractType {
    *
    * @return true if this type has a primary annotation
    */
-  private boolean boundsShareRoot() {
+  private boolean boundsSharePrimaryAnnotations() {
     // If a wildcard or an intersection type has a primary annotation, then its bounds have it too,
     // as AnnotatedWildcardType and AnnotatedIntersectionType ensure.
     return !type.getPrimaryAnnotations().isEmpty();
@@ -414,7 +468,7 @@ public class ProperType extends AbstractType {
 
   @Override
   public @Nullable List<AbstractType> getTypeArguments() {
-    return partsFromOrigin(
+    return listPartFromOrigin(
         Part.TYPE_ARGUMENTS, AbstractType::getTypeArguments, super::getTypeArguments, false);
   }
 
@@ -432,13 +486,27 @@ public class ProperType extends AbstractType {
 
   @Override
   public @Nullable AbstractType asSuper(TypeMirror superType) {
-    return partFromOrigin(
-        superType, t -> t.asSuper(superType), () -> super.asSuper(superType), true);
+    InferenceType origin = this.origin;
+    if (origin == null) {
+      return super.asSuper(superType);
+    }
+    clearPartCachesIfStale();
+    Map<TypeMirror, @Nullable AbstractType> cache = asSuperCache;
+    if (cache == null) {
+      cache = new HashMap<>();
+      asSuperCache = cache;
+    }
+    return cached(
+        cache,
+        superType,
+        () ->
+            computePartFromOrigin(
+                origin, t -> t.asSuper(superType), () -> super.asSuper(superType), true));
   }
 
   @Override
   public @Nullable List<AbstractType> getFunctionTypeParameterTypes() {
-    return partsFromOrigin(
+    return listPartFromOrigin(
         Part.FUNCTION_TYPE_PARAMETER_TYPES,
         AbstractType::getFunctionTypeParameterTypes,
         super::getFunctionTypeParameterTypes,
@@ -461,7 +529,7 @@ public class ProperType extends AbstractType {
             Part.WILDCARD_LOWER_BOUND,
             AbstractType::getWildcardLowerBound,
             super::getWildcardLowerBound,
-            boundsShareRoot());
+            boundsSharePrimaryAnnotations());
     assert result != null : "@AssumeAssertion(nullness): getWildcardLowerBound is non-null";
     return result;
   }
@@ -473,7 +541,7 @@ public class ProperType extends AbstractType {
             Part.WILDCARD_UPPER_BOUND,
             AbstractType::getWildcardUpperBound,
             super::getWildcardUpperBound,
-            boundsShareRoot());
+            boundsSharePrimaryAnnotations());
     assert result != null : "@AssumeAssertion(nullness): getWildcardUpperBound is non-null";
     return result;
   }
@@ -481,11 +549,11 @@ public class ProperType extends AbstractType {
   @Override
   public List<AbstractType> getIntersectionBounds() {
     List<AbstractType> result =
-        partsFromOrigin(
+        listPartFromOrigin(
             Part.INTERSECTION_BOUNDS,
             AbstractType::getIntersectionBounds,
             super::getIntersectionBounds,
-            boundsShareRoot());
+            boundsSharePrimaryAnnotations());
     assert result != null : "@AssumeAssertion(nullness): getIntersectionBounds is non-null";
     return result;
   }
@@ -631,7 +699,7 @@ public class ProperType extends AbstractType {
    *     ConstraintSet#TRUE_ANNO_FAIL}
    */
   public ConstraintSet checkAnnotationEquality(ProperType other) {
-    if (IgnoredAnnotations.decidedByIgnoredRoot(this, other)) {
+    if (IgnoredAnnotations.noAnnotationsToCompare(this, other)) {
       return ConstraintSet.TRUE;
     }
     ReplacedTypes compared =
@@ -725,11 +793,11 @@ public class ProperType extends AbstractType {
    * <p>A proper type has no inference variables, so this returns this type, unless it has an {@link
    * #origin} and the instantiation of a variable that the origin mentions has changed since this
    * type was made. Then it returns the origin with the current instantiations applied and with this
-   * type's root annotations, or this type if that result is the same as this type.
+   * type's primary annotations, or this type if that result is the same as this type.
    */
   @Override
   public AbstractType applyInstantiations() {
-    if (origin == null || instantiationStamp(originVariables) == originStamp) {
+    if (origin == null || instantiationVersion(originVariables) == upToDateVersion) {
       return this;
     }
     AbstractType result = origin.applyInstantiations();
@@ -737,16 +805,16 @@ public class ProperType extends AbstractType {
       return this;
     }
     ProperType properResult = (ProperType) result;
-    // `origin` has no ignored substitution at its root, so the root annotations of this type are
+    // No ignored substitution of `origin` affects the primary annotations of this type, so they are
     // still right, and they may differ from those of `origin` if resolution set them; see
     // Resolution#lubOfLowerBounds.  `result` is a new type, so its annotated type may be mutated.
     AnnotatedTypeMirror resultATM = properResult.getAnnotatedType();
-    IgnoredAnnotations.copyRootAnnotations(type, resultATM);
+    IgnoredAnnotations.copyPrimaryAnnotations(type, resultATM);
     if (properResult.origin != null && isSameAnnotatedType(resultATM, type)) {
       // Nothing that this type depends on has changed.  Returning this type, rather than an
       // equal new one, tells the caller so; otherwise, two variables whose instantiations mention
       // each other would make each other change forever.
-      originStamp = instantiationStamp(originVariables);
+      upToDateVersion = instantiationVersion(originVariables);
       return this;
     }
     return new ProperType(
@@ -755,33 +823,45 @@ public class ProperType extends AbstractType {
 
   /**
    * Returns the type that this type was made from by substituting instantiations, if at least one
-   * of them ignores annotations; otherwise, null. See {@link #origin}.
+   * of those instantiations ignores annotations; otherwise, null. See {@link #origin}.
    *
    * @return the type that this type was made from, or null
    */
+  @Override
   @Nullable InferenceType getOrigin() {
     return origin;
   }
 
   /**
-   * Returns true if {@code a} and {@code b} are the same annotated type.
+   * Returns true if {@code a} and {@code b} have the same Java type and each is a subtype of the
+   * other. Unlike {@link AnnotatedTypeMirror#equals}, which {@link #equals} uses, this does not
+   * require the underlying Java types to be the same object, so it can compare types made by
+   * separate substitutions of instantiations. It compares only annotated types, not the other
+   * fields that {@link #equals} compares, such as {@link #origin}.
    *
    * @param a an annotated type
    * @param b an annotated type
-   * @return true if {@code a} and {@code b} are the same annotated type
+   * @return true if {@code a} and {@code b} have the same Java type and each is a subtype of the
+   *     other
    */
   private boolean isSameAnnotatedType(AnnotatedTypeMirror a, AnnotatedTypeMirror b) {
-    // AnnotatedTypeMirror#equals requires the underlying types to be the same object, and
-    // substituting instantiations makes new ones.
     return context.types.isSameType((Type) a.getUnderlyingType(), (Type) b.getUnderlyingType())
         && typeFactory.getTypeHierarchy().isSubtype(a, b)
         && typeFactory.getTypeHierarchy().isSubtype(b, a);
   }
 
   /**
-   * Returns a copy of this type, with the same origin (unlike {@link #create}), whose annotated
-   * type is a deep copy of this type's. Only the root annotations of the copy's annotated type may
-   * be mutated; see {@link #origin}.
+   * Returns a copy of this type that has:
+   *
+   * <ul>
+   *   <li>the same {@link #origin} (unlike {@link #create}),
+   *   <li>the same {@link #upToDateVersion},
+   *   <li>an annotated type that is a deep copy of this type's, and
+   *   <li>the same {@link #ignoreAnnotations}.
+   * </ul>
+   *
+   * <p>Only the primary annotations of the copy's annotated type may be mutated; see {@link
+   * #partFromOrigin}.
    *
    * @return a copy of this type
    */
@@ -790,18 +870,26 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns a copy of this type, with the same origin and {@link #originStamp}, whose annotated
-   * type is {@code atm} and whose {@link #ignoreAnnotations} is {@code ignoreAnnotations}. {@code
-   * atm} must be this type's annotated type, or a copy of it, with only its root annotations
-   * changed; see {@link #origin}.
+   * Returns a copy of this type that has:
    *
-   * @param atm this type's annotated type, or a copy of it, with only its root annotations changed
-   * @param ignoreAnnotations true if the root annotations of {@code atm} should be ignored
+   * <ul>
+   *   <li>the same {@link #origin},
+   *   <li>the same {@link #upToDateVersion},
+   *   <li>{@code atm} as its annotated type, and
+   *   <li>{@code ignoreAnnotations} as its {@link #ignoreAnnotations}.
+   * </ul>
+   *
+   * <p>{@code atm} must be this type's annotated type, or a copy of it, with only its primary
+   * annotations changed; see {@link #partFromOrigin}.
+   *
+   * @param atm this type's annotated type, or a copy of it, with only its primary annotations
+   *     changed
+   * @param ignoreAnnotations true if the primary annotations of {@code atm} should be ignored
    * @return a copy of this type whose annotated type is {@code atm}
    */
   ProperType withAnnotatedType(AnnotatedTypeMirror atm, boolean ignoreAnnotations) {
     ProperType result = new ProperType(atm, qualifierVars, context, ignoreAnnotations, origin);
-    result.originStamp = originStamp;
+    result.upToDateVersion = upToDateVersion;
     return result;
   }
 

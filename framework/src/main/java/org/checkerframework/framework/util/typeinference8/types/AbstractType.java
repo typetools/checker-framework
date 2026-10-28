@@ -195,13 +195,23 @@ public abstract class AbstractType {
   public abstract Collection<Variable> getInferenceVariables();
 
   /**
-   * Returns a new type that is the same as this one except the variables in {@code instantiations}
-   * have been replaced by their instantiation.
+   * Returns this type with each use of an inference variable that has an instantiation replaced by
+   * that instantiation (see {@link Variable#getInstantiation}). The result may be this type itself.
    *
-   * @return a new type that is the same as this one except the variables in {@code instantiations}
-   *     have been replaced by their instantiation
+   * @return this type with the instantiations of its inference variables substituted
    */
   public abstract AbstractType applyInstantiations();
+
+  /**
+   * Returns the type that this type was made from by substituting instantiations, if this is a
+   * proper type made that way and at least one of those instantiations ignores annotations;
+   * otherwise, null. See {@link ProperType#getOrigin}.
+   *
+   * @return the type that this type was made from, or null
+   */
+  @Nullable InferenceType getOrigin() {
+    return null;
+  }
 
   /**
    * Returns true if this type is java.lang.Object.
@@ -738,7 +748,7 @@ public abstract class AbstractType {
    *     ConstraintSet#TRUE_ANNO_FAIL}
    */
   protected final ConstraintSet checkAnnotationSubtype(ProperType superType) {
-    if (IgnoredAnnotations.decidedByIgnoredRoot(this, superType)) {
+    if (IgnoredAnnotations.noAnnotationsToCompare(this, superType)) {
       return ConstraintSet.TRUE;
     }
     ReplacedTypes compared =
