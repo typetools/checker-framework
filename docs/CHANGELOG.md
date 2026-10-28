@@ -18,6 +18,10 @@ A subclass of `CFAbstractValue` or `CFValue` that adds state must override
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
 
+Deprecated methods:
+
+* `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.getNoArgumentMethod()`
+
 ### Closed issues
 
 ## Version 4.3.1 (2026-10-08)
