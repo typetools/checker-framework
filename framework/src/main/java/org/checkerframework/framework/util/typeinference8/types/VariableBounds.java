@@ -46,11 +46,24 @@ public class VariableBounds {
   /** The context. */
   private final Java8InferenceContext context;
 
-  /** The type to which this variable is instantiated, or null if it has no instantiation. */
+  /**
+   * The current instantiation of this variable, or null if it has none. It is set from one of this
+   * variable's proper {@code EQUAL} bounds, or from the result of substituting instantiations into
+   * that bound. It can be replaced during inference, for example by a later equal bound, or cleared
+   * by {@link #restore}.
+   */
   private @Nullable ProperType instantiation = null;
 
   /**
-   * The number of times {@link #instantiation} has changed; see {@link #getInstantiationChanges}.
+   * The number of times {@link #instantiation} has been set, replaced, or cleared; see {@link
+   * #getInstantiationChanges}.
+   *
+   * <p>A {@link ProperType} with an origin sums this count over the variables that its origin
+   * mentions (see {@link ProperType#instantiationVersion}), and substitutes into its origin again
+   * only when the sum differs from the sum when it was last up to date; see {@link
+   * ProperType#applyInstantiations}. So the count is incremented only when the instantiation
+   * actually changes: setting an instantiation equal to the current one leaves the count unchanged,
+   * so that types whose origins mention this variable are not substituted again needlessly.
    */
   private int instantiationChanges = 0;
 
@@ -171,7 +184,6 @@ public class VariableBounds {
     }
     if (instantiation != null) {
       instantiation = null;
-      // A type whose origin mentions this variable must be substituted again.
       instantiationChanges++;
     }
     bounds.clear();
@@ -195,8 +207,7 @@ public class VariableBounds {
     assert !type.getTypeKind().isPrimitive()
         : "instantiation of " + variable + " is the primitive type " + type;
     if (type.equals(instantiation)) {
-      // Leave the stamp unchanged, so that types whose origins mention this variable are not
-      // substituted again.
+      // Leave instantiationChanges unchanged; see its Javadoc.
       return;
     }
     instantiation = type;
@@ -204,9 +215,11 @@ public class VariableBounds {
   }
 
   /**
-   * Returns a number that changes whenever this variable's instantiation changes.
+   * Returns a number that changes whenever the current instantiation of this variable is set,
+   * replaced, or cleared.
    *
-   * @return a number that changes whenever this variable's instantiation changes
+   * @return a number that changes whenever the current instantiation of this variable is set,
+   *     replaced, or cleared
    */
   int getInstantiationChanges() {
     return instantiationChanges;
@@ -786,7 +799,9 @@ public class VariableBounds {
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public boolean applyInstantiationsToBounds() {
     boolean changed = false;
-    // The new version of the bound that is this variable's instantiation, if that bound changes.
+    // The instantiation is set from one of this variable's proper EQUAL bounds, so applying
+    // instantiations to the bounds below may replace it.  This is the result of applying
+    // instantiations to that bound, or null if the bound is unchanged.
     AbstractType refreshedInstantiation = null;
     for (Set<AbstractType> boundList : bounds.values()) {
       if (boundList.isEmpty()) {
@@ -821,8 +836,9 @@ public class VariableBounds {
     }
     constraints.applyInstantiations();
 
-    // An instantiation that was made by substituting one that ignores annotations is substituted
-    // again when that one changes; see ProperType#origin.
+    // If this variable's instantiation was made by substituting another variable's instantiation
+    // that ignores annotations, then substitute again, in case that other instantiation has
+    // changed; see ProperType#applyInstantiations.
     if (instantiation != null) {
       AbstractType refreshed =
           refreshedInstantiation != null
