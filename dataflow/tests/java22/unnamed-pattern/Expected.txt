@@ -5,9 +5,9 @@
 5 -> 6 EACH_TO_EACH
 6 -> 10 THEN_TO_BOTH
 6 -> 12 ELSE_TO_BOTH
-10 -> 14 EACH_TO_EACH
-12 -> 14 EACH_TO_EACH
-14 -> 0 EACH_TO_EACH
+10 -> 15 EACH_TO_EACH
+12 -> 15 EACH_TO_EACH
+15 -> 0 EACH_TO_EACH
 
 2:
 Process order: 1
@@ -89,6 +89,8 @@ Process order: 7
 TransferInput#24
 Before:   reaching definitions = { to_increment = 0, switch#num0 = <*nullchk*>i }
 ~~~~~~~~~
+_   [ AnyPattern ]
+WrappedBoolean(_)   [ DeconstructorPattern ]
 to_increment   [ LocalVariable ]
 to_increment   [ LocalVariable ]
 2   [ IntegerLiteral ]
@@ -99,9 +101,9 @@ expression statement to_increment = to_increment + 2   [ ExpressionStatement ]
 AnalysisResult#0
 After:   reaching definitions = { switch#num0 = <*nullchk*>i, to_increment = (to_increment + 2) }
 
-14:
+15:
 Process order: 8
-TransferInput#40
+TransferInput#42
 Before:   reaching definitions = { switch#num0 = <*nullchk*>i, to_increment = (to_increment + 2), to_increment = (to_increment + 1) }
 ~~~~~~~~~
 marker (end of switch statement #0)   [ Marker ]
@@ -113,7 +115,7 @@ After:   reaching definitions = { switch#num0 = <*nullchk*>i, to_increment = (to
 
 0:
 Process order: 9
-TransferInput#45
+TransferInput#47
 Before:   reaching definitions = { switch#num0 = <*nullchk*>i, to_increment = (to_increment + 2), to_increment = (to_increment + 1) }
 ~~~~~~~~~
 <exit>
