@@ -25,7 +25,7 @@ public class AnonymousClassScope {
     static class Base {
 
         @org.checkerframework.dataflow.qual.SideEffectFree
-        Base(@org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType Object argument) {
+        Base(Object argument) {
         }
 
         static class Foo {
