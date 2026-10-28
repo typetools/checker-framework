@@ -135,11 +135,11 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns the annotated types of {@code type1} and {@code type2} with their ignored substitutions
-   * replaced. If either type has ignored substitutions, then both are viewed as the class of {@code
-   * lubType}, and an ignored substitution of one has the annotations of the corresponding position
-   * of the other. The primary annotations are not replaced. If nothing is replaced, the result
-   * holds the types' own annotated types; otherwise it holds copies.
+   * Returns the annotated types of {@code type1} and {@code type2}, where the annotations at each
+   * ignored substitution of one type are replaced by those at the corresponding position of the
+   * other. If either type has ignored substitutions, then both are first viewed as the class of
+   * {@code lubType}. Primary annotations are not replaced. If nothing is replaced, the result holds
+   * the types' own annotated types; otherwise it holds copies.
    *
    * @param type1 a type
    * @param type2 a type
