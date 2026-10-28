@@ -1749,8 +1749,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       exprType = TypesUtils.upperBound(exprType);
 
       assert (exprType instanceof DeclaredType) : "an Iterable must be a DeclaredType";
-      DeclaredType declaredExprType = (DeclaredType) exprType;
-      declaredExprType.getTypeArguments();
 
       MemberSelectTree iteratorSelect = treeBuilder.buildIteratorMethodAccess(expression);
       handleArtificialTree(iteratorSelect);
@@ -1770,7 +1768,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       Node expressionNode = scan(expression, p);
 
       MethodInvocationNode iteratorCallNode =
-          extendWithArtificialCall(iteratorCall, expressionNode, true);
+          extendWithArtificialCall(
+              iteratorCall,
+              expressionNode,
+              mayBeNull(expression) ? NullReceiver.THROWS : NullReceiver.IMPOSSIBLE);
 
       translateAssignment(
           iteratorVariable, new LocalVariableNode(iteratorVariable), iteratorCallNode);
@@ -1790,7 +1791,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       MethodInvocationTree hasNextCall = treeBuilder.buildMethodInvocation(hasNextSelect);
       handleArtificialTree(hasNextCall);
 
-      extendWithArtificialCall(hasNextCall, iteratorReceiverNode, true);
+      // The iterator is null only if iterator() returned null.  Then the first call to hasNext()
+      // throws NullPointerException.  Later calls cannot, but the RuntimeException edge of every
+      // call subsumes that NullPointerException edge anyway.
+      extendWithArtificialCall(hasNextCall, iteratorReceiverNode, NullReceiver.THROWS);
       extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
 
       // Loop body, starting with declaration of the loop iteration variable
@@ -1811,7 +1815,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(nextCall);
 
       MethodInvocationNode nextCallNode =
-          extendWithArtificialCall(nextCall, iteratorReceiverNode2, true);
+          // hasNext() was just called on the same iterator, so the iterator is not null.
+          extendWithArtificialCall(nextCall, iteratorReceiverNode2, NullReceiver.IMPOSSIBLE);
       // If the type of iteratorVariable is a capture, its type tree may be missing
       // annotations, so save the expression in the node so that the full type can be
       // found later.
@@ -1819,6 +1824,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       nextCallNode.setEnhancedForLoop(tree);
 
       translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
+      setIterableExpressionOnConversions(nextCallNode, expression, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -1860,6 +1866,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       translateAssignment(indexVariable, new LocalVariableNode(indexVariable), zeroNode);
 
+      // The array variable is never reassigned, so only the first access to its length can throw
+      // NullPointerException.  Represent that first access before the loop, and the access in the
+      // loop condition without the exception.
+      if (mayBeNull(expression)) {
+        extendWithArrayLengthAccess(arrayVariable, true);
+      }
+
       // Compare index to array length
       addLabelForNextNode(conditionStart);
       IdentifierTree indexUse1 = treeBuilder.buildVariableUse(indexVariable);
@@ -1868,18 +1881,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       indexNode1.setInSource(false);
       extendWithNode(indexNode1);
 
-      IdentifierTree arrayUse1 = treeBuilder.buildVariableUse(arrayVariable);
-      handleArtificialTree(arrayUse1);
-      LocalVariableNode arrayNode1 = new LocalVariableNode(arrayUse1);
-      extendWithNode(arrayNode1);
-
-      MemberSelectTree lengthSelect = treeBuilder.buildArrayLengthAccess(arrayUse1);
-      handleArtificialTree(lengthSelect);
-      FieldAccessNode lengthAccessNode = new FieldAccessNode(lengthSelect, arrayNode1);
-      lengthAccessNode.setInSource(false);
-      // Attach NPE to length access; element access is safe due to prior bounds check and the
-      // synthetic array temp not being reassigned.
-      extendWithNodeWithException(lengthAccessNode, nullPointerExceptionType);
+      // This length access cannot throw NullPointerException; see above.  The element access below
+      // is safe due to the bounds check and the synthetic array temp not being reassigned.
+      FieldAccessNode lengthAccessNode = extendWithArrayLengthAccess(arrayVariable, false);
+      MemberSelectTree lengthSelect = (MemberSelectTree) lengthAccessNode.getTree();
 
       BinaryTree lessThan = treeBuilder.buildLessThan(indexUse1, lengthSelect);
       handleArtificialTree(lessThan);
@@ -1912,16 +1917,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       arrayAccessNode.setEnhancedForLoop(tree);
       arrayAccessNode.setInSource(false);
       extendWithNode(arrayAccessNode);
-      AssignmentNode arrayAccessAssignNode =
-          translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
-      // If the array component type is a primitive and the loop variable's type is not, then
-      // assignment conversion boxes the component. Treat the boxing call as an iterator.
-      if (TypesUtils.isPrimitive(arrayAccessNode.getType())
-          && !TypesUtils.isPrimitive(variableElement.asType())
-          && arrayAccessAssignNode.getExpression() instanceof MethodInvocationNode boxingNode) {
-        boxingNode.setIterableExpression(expression);
-        boxingNode.setEnhancedForLoop(tree);
-      }
+      translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
+      setIterableExpressionOnConversions(arrayAccessNode, expression, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -1966,6 +1963,56 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
+   * Marks the boxing or unboxing calls that assignment conversion applied to an element of an
+   * enhanced for loop, so that the type of each call is the element type of the iterable
+   * expression. Assignment conversion may box or unbox the element, for example in {@code for (int
+   * x : listOfInteger)} or {@code for (Integer x : arrayOfInt)}.
+   *
+   * @param element the node for the element, before conversion
+   * @param expression the iterable expression of the enhanced for loop
+   * @param tree the enhanced for loop
+   */
+  private void setIterableExpressionOnConversions(
+      Node element, ExpressionTree expression, EnhancedForLoopTree tree) {
+    Set<Node> converted = treeToConvertedCfgNodes.get(element.getTree());
+    if (converted == null) {
+      return;
+    }
+    for (Node node : converted) {
+      if (node instanceof MethodInvocationNode conversion) {
+        conversion.setIterableExpression(expression);
+        conversion.setEnhancedForLoop(tree);
+      }
+    }
+  }
+
+  /**
+   * Returns the given type without its top-level annotations, but with the annotations on its type
+   * arguments and array components. A variable declared with the result is refined by its
+   * initializer, like a local variable whose declared type has no top-level annotations. Returns
+   * the type unchanged if it is neither an array type nor a declared type.
+   *
+   * @param type a type
+   * @return the type without its top-level annotations
+   */
+  protected TypeMirror withoutTopLevelAnnotations(TypeMirror type) {
+    if (type instanceof ArrayType arrayType) {
+      return types.getArrayType(arrayType.getComponentType());
+    } else if (type instanceof DeclaredType declaredType) {
+      TypeElement typeElement = (TypeElement) declaredType.asElement();
+      TypeMirror[] typeArgs = declaredType.getTypeArguments().toArray(new TypeMirror[0]);
+      TypeMirror enclosingType = declaredType.getEnclosingType();
+      if (enclosingType instanceof DeclaredType enclosingDeclaredType) {
+        return types.getDeclaredType(enclosingDeclaredType, typeElement, typeArgs);
+      } else {
+        return types.getDeclaredType(typeElement, typeArgs);
+      }
+    } else {
+      return type;
+    }
+  }
+
+  /**
    * Creates a declaration of a fresh variable that holds the iterator of an enhanced for loop over
    * an {@code Iterable}.
    *
@@ -1975,7 +2022,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   protected VariableTree createEnhancedForLoopIteratorVariable(
       MethodInvocationTree iteratorCall, VariableElement variableElement) {
-    TypeMirror iteratorType = TreeUtils.typeOf(iteratorCall);
+    TypeMirror iteratorType = withoutTopLevelAnnotations(TreeUtils.typeOf(iteratorCall));
 
     // Declare and initialize a new, unique iterator variable
     VariableTree iteratorVariable =
@@ -1997,13 +2044,51 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   protected VariableTree createEnhancedForLoopArrayVariable(
       ExpressionTree expression, VariableElement variableElement) {
-    TypeMirror arrayType = TreeUtils.typeOf(expression);
+    TypeMirror arrayType = withoutTopLevelAnnotations(TreeUtils.typeOf(expression));
 
     // Declare and initialize a temporary array variable
     VariableTree arrayVariable =
         treeBuilder.buildVariableDecl(
             arrayType, uniqueName("array"), variableElement.getEnclosingElement(), expression);
     return arrayVariable;
+  }
+
+  /**
+   * Extends the CFG with an access to the length of the array variable of an enhanced for loop.
+   *
+   * @param arrayVariable the array variable
+   * @param mayThrowNullPointerException true if the access may throw a {@code NullPointerException}
+   * @return the node for the access
+   */
+  private FieldAccessNode extendWithArrayLengthAccess(
+      VariableTree arrayVariable, boolean mayThrowNullPointerException) {
+    IdentifierTree arrayUse = treeBuilder.buildVariableUse(arrayVariable);
+    handleArtificialTree(arrayUse);
+    LocalVariableNode arrayNode = new LocalVariableNode(arrayUse);
+    arrayNode.setInSource(false);
+    extendWithNode(arrayNode);
+
+    MemberSelectTree lengthSelect = treeBuilder.buildArrayLengthAccess(arrayUse);
+    handleArtificialTree(lengthSelect);
+    FieldAccessNode lengthAccessNode = new FieldAccessNode(lengthSelect, arrayNode);
+    lengthAccessNode.setInSource(false);
+    if (mayThrowNullPointerException) {
+      extendWithNodeWithException(lengthAccessNode, nullPointerExceptionType);
+    } else {
+      extendWithNode(lengthAccessNode);
+    }
+    return lengthAccessNode;
+  }
+
+  /**
+   * Returns false if the expression is never null, judging from its syntax.
+   *
+   * @param expression an expression of reference type
+   * @return false if the expression is never null; true if it may be null
+   */
+  private static boolean mayBeNull(ExpressionTree expression) {
+    expression = TreeUtils.withoutParens(expression);
+    return !(expression instanceof NewClassTree || expression instanceof NewArrayTree);
   }
 
   @Override
@@ -2303,6 +2388,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             new CaseNode(caseTree, selectorExprAssignment, exprs, guard, env.getTypeUtils());
         extendWithNode(test);
         extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+      } else if (!isDefaultCase) {
+        // The labels are not tested, but their patterns declare and bind variables.
+        for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
+          scan(exprTree, null);
+        }
       }
 
       // Handle the case body
@@ -2650,8 +2740,33 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
     // TODO do we need to insert some kind of node representing a use of receiverNode
     // (which can be either a LocalVariableNode or a FieldAccessNode)?
-    // A try-with-resources statement closes a resource only if it is non-null (JLS 14.20.3.1).
-    extendWithArtificialCall(closeCall, receiverNode, false);
+    // A try-with-resources statement calls close() only if the resource is non-null (JLS
+    // 14.20.3.1).  The CFG omits that null test: it represents the call as unconditional, even on
+    // paths where the resource is null.  A resource variable is final, so it is non-null if its
+    // initializer is.
+    boolean resourceMayBeNull =
+        !(resourceDeclarationTree instanceof VariableTree variableTree
+            && variableTree.getInitializer() != null
+            && !mayBeNull(variableTree.getInitializer()));
+    extendWithArtificialCall(
+        closeCall,
+        receiverNode,
+        resourceMayBeNull ? NullReceiver.SKIPS_CALL : NullReceiver.IMPOSSIBLE);
+  }
+
+  /** What happens when the receiver of a call that desugars a statement is null. */
+  private enum NullReceiver {
+    /** The receiver may be null, and then the call throws a {@code NullPointerException}. */
+    THROWS,
+    /** The receiver is never null. */
+    IMPOSSIBLE,
+    /**
+     * The receiver may be null, and then the call is skipped. The CFG represents the call as
+     * unconditional, so the call is treated as one that might not happen: it does not throw a
+     * {@code NullPointerException}, and it does not terminate execution even if it is annotated
+     * {@link TerminatesExecution}.
+     */
+    SKIPS_CALL
   }
 
   /**
@@ -2660,17 +2775,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *
    * @param call the call
    * @param receiver the receiver of the call
-   * @param receiverMayBeNull false if the receiver is known to be non-null. If the receiver is
-   *     {@code this}, the call never throws a {@code NullPointerException}, regardless of this
-   *     argument.
+   * @param nullReceiver what happens when the receiver is null. If the receiver is {@code this}, it
+   *     is never null, regardless of this argument.
    * @return the node for the call
    */
   private MethodInvocationNode extendWithArtificialCall(
-      MethodInvocationTree call, Node receiver, boolean receiverMayBeNull) {
+      MethodInvocationTree call, Node receiver, NullReceiver nullReceiver) {
     MethodAccessNode accessNode =
         new MethodAccessNode((MemberSelectTree) call.getMethodSelect(), receiver);
     accessNode.setInSource(false);
-    if (receiverMayBeNull && !(receiver instanceof ThisNode)) {
+    if (nullReceiver == NullReceiver.THROWS && !(receiver instanceof ThisNode)) {
       extendWithNodeWithException(accessNode, nullPointerExceptionType);
     } else {
       extendWithNode(accessNode);
@@ -2678,7 +2792,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     MethodInvocationNode callNode =
         new MethodInvocationNode(call, accessNode, Collections.emptyList(), getCurrentPath());
     callNode.setInSource(false);
-    extendWithMethodInvocationNode(TreeUtils.elementFromUse(call), callNode);
+    extendWithMethodInvocationNode(
+        TreeUtils.elementFromUse(call), callNode, nullReceiver != NullReceiver.SKIPS_CALL);
     return callNode;
   }
 
@@ -3294,14 +3409,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     MethodInvocationNode node = new MethodInvocationNode(tree, target, arguments, getCurrentPath());
 
-    ExtendedNode extendedNode = extendWithMethodInvocationNode(method, node);
-
-    /* Check for the TerminatesExecution annotation. */
-    boolean terminatesExecution =
-        annotationProvider.getDeclAnnotation(method, TerminatesExecution.class) != null;
-    if (terminatesExecution) {
-      extendedNode.setTerminatesExecution(true);
-    }
+    extendWithMethodInvocationNode(method, node, true);
     return node;
   }
 
@@ -3311,10 +3419,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *
    * @param method the invoked method
    * @param node the invocation
+   * @param honorTerminatesExecution if true and the method is annotated {@link
+   *     TerminatesExecution}, the invocation terminates execution
    * @return an ExtendedNode representing the invocation and its possible thrown exceptions
    */
   private ExtendedNode extendWithMethodInvocationNode(
-      ExecutableElement method, MethodInvocationNode node) {
+      ExecutableElement method, MethodInvocationNode node, boolean honorTerminatesExecution) {
     List<? extends TypeMirror> thrownTypes = method.getThrownTypes();
     Set<TypeMirror> thrownSet =
         new LinkedHashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
@@ -3323,7 +3433,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // Add types to account for unchecked exceptions
     thrownSet.addAll(uncheckedExceptionTypes);
 
-    return extendWithNodeWithExceptions(node, thrownSet);
+    ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
+    if (honorTerminatesExecution
+        && annotationProvider.getDeclAnnotation(method, TerminatesExecution.class) != null) {
+      extendedNode.setTerminatesExecution(true);
+    }
+    return extendedNode;
   }
 
   @Override
