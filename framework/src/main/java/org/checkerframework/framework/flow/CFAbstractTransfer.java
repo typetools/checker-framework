@@ -8,7 +8,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
@@ -1153,18 +1152,7 @@ public abstract class CFAbstractTransfer<
     // TODO: Give the binding variables of a deconstruction pattern the types of the record
     // components.
     LocalVariableNode bindingVar = node.getBindingPatternVariable();
-    // The "reference type" is the type after "instanceof".  For a binding pattern, annotations on
-    // the reference type are written on the variable declaration, as in `e instanceof @A T v`.
-    Tree refTypeTree = node.getTree().getType();
-    boolean refTypeIsAnnotated = refTypeTree instanceof AnnotatedTypeTree;
-    if (bindingVar != null) {
-      VariableTree bindingVarTree = (VariableTree) bindingVar.getTree();
-      if (!bindingVarTree.getModifiers().getAnnotations().isEmpty()) {
-        refTypeTree = bindingVarTree;
-        refTypeIsAnnotated = true;
-      }
-    }
-    if (bindingVar == null && !refTypeIsAnnotated) {
+    if (bindingVar == null && !(node.getTree().getType() instanceof AnnotatedTypeTree)) {
       return result;
     }
 
@@ -1174,15 +1162,8 @@ public abstract class CFAbstractTransfer<
     AnnotationMirrorSet bindingVarAnnos =
         bindingVar == null ? AnnotationMirrorSet.emptySet() : expType.getAnnotations();
     // The annotations to which the expression is refined.
-    AnnotationMirrorSet expAnnos = AnnotationMirrorSet.emptySet();
-    if (refTypeIsAnnotated) {
-      AnnotatedTypeMirror refType = analysis.atypeFactory.getAnnotatedType(refTypeTree);
-      if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
-          && !refType.getPrimaryAnnotations().equals(expType.getPrimaryAnnotations())
-          && !expType.getPrimaryAnnotations().isEmpty()) {
-        expAnnos = refType.getPrimaryAnnotations();
-      }
-    }
+    AnnotationMirrorSet expAnnos =
+        analysis.atypeFactory.getInstanceOfRefinement(node.getTree(), expType);
     if (bindingVarAnnos.isEmpty() && expAnnos.isEmpty()) {
       return result;
     }

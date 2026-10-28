@@ -27,6 +27,24 @@ public class TaintingBindingVariable {
     }
   }
 
+  void typeAnnotationOnBindingType(Object o) {
+    // :: warning: [instanceof.pattern.unsafe]
+    if (o instanceof java.lang.@Untainted String s) {
+      @Untainted String f = s;
+      @Untainted Object g = o;
+    }
+  }
+
+  void negatedAnnotated(Object o) {
+    // :: warning: [instanceof.pattern.unsafe]
+    if (!(o instanceof @Untainted String s)) {
+      // :: error: [assignment]
+      @Untainted Object g = o;
+      return;
+    }
+    @Untainted Object g = o;
+  }
+
   void negated(@Untainted Object o) {
     if (!(o instanceof String s)) {
       return;
