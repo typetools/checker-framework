@@ -115,7 +115,12 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
       @Nullable AccumulationValue other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {
     AccumulationValue lub = super.upperBound(other, upperBoundTypeMirror, shouldWiden);
 
-    if (other == null || other.accumulatedValues == null || this.accumulatedValues == null) {
+    if (other == null) {
+      return lub;
+    }
+    Set<String> thisAccumulatedValues = this.accumulatedValues;
+    Set<String> otherAccumulatedValues = other.accumulatedValues;
+    if (thisAccumulatedValues == null || otherAccumulatedValues == null) {
       return lub;
     }
     // A bottom value represents every value having been accumulated, so it is the identity for
@@ -125,12 +130,12 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
     boolean otherIsBottom = other.getAnnotations().contains(bottom);
     if (thisIsBottom != otherIsBottom) {
       lub.accumulatedValues =
-          new HashSet<>(thisIsBottom ? other.accumulatedValues : this.accumulatedValues);
+          new HashSet<>(thisIsBottom ? otherAccumulatedValues : thisAccumulatedValues);
       return lub;
     }
     // Lub the accumulatedValues by intersecting the lists as if they were sets.
-    Set<String> lubAccumulatedValues = new HashSet<>(this.accumulatedValues);
-    lubAccumulatedValues.retainAll(other.accumulatedValues);
+    Set<String> lubAccumulatedValues = new HashSet<>(thisAccumulatedValues);
+    lubAccumulatedValues.retainAll(otherAccumulatedValues);
     lub.accumulatedValues = lubAccumulatedValues;
     return lub;
   }
