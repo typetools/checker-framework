@@ -912,9 +912,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(primValueSelect);
       MethodAccessNode primValueAccess = new MethodAccessNode(primValueSelect, node);
       primValueAccess.setInSource(false);
-      // Method access may throw NullPointerException
-      insertNodeWithExceptionsAfter(
-          primValueAccess, Collections.singleton(nullPointerExceptionType), node);
+      if (mayBeNull(node)) {
+        insertNodeWithExceptionsAfter(
+            primValueAccess, Collections.singleton(nullPointerExceptionType), node);
+      } else {
+        insertNodeAfter(primValueAccess, node);
+      }
 
       MethodInvocationTree primValueCall = treeBuilder.buildMethodInvocation(primValueSelect);
       handleArtificialTree(primValueCall);
