@@ -68,7 +68,8 @@ final class IgnoredAnnotations {
       AbstractType sub, AbstractType sup, QualifierHierarchy qh, Types types) {
     AbstractType upToDateSub = upToDate(sub);
     AbstractType upToDateSup = upToDate(sup);
-    boolean mayHaveIgnoredSubstitutions = hasOrigin(upToDateSub) || hasOrigin(upToDateSup);
+    boolean mayHaveIgnoredSubstitutions =
+        upToDateSub.getOrigin() != null || upToDateSup.getOrigin() != null;
     if (!upToDateSub.ignoreAnnotations
         && !upToDateSup.ignoreAnnotations
         && !mayHaveIgnoredSubstitutions) {
@@ -112,7 +113,8 @@ final class IgnoredAnnotations {
       AbstractType type1, AbstractType type2, QualifierHierarchy qh) {
     AbstractType upToDate1 = upToDate(type1);
     AbstractType upToDate2 = upToDate(type2);
-    boolean mayHaveIgnoredSubstitutions = hasOrigin(upToDate1) || hasOrigin(upToDate2);
+    boolean mayHaveIgnoredSubstitutions =
+        upToDate1.getOrigin() != null || upToDate2.getOrigin() != null;
     if (!upToDate1.ignoreAnnotations
         && !upToDate2.ignoreAnnotations
         && !mayHaveIgnoredSubstitutions) {
@@ -159,7 +161,7 @@ final class IgnoredAnnotations {
       Types types) {
     AbstractType upToDate1 = upToDate(type1);
     AbstractType upToDate2 = upToDate(type2);
-    if (!hasOrigin(upToDate1) && !hasOrigin(upToDate2)) {
+    if (upToDate1.getOrigin() == null && upToDate2.getOrigin() == null) {
       return new ReplacedTypes(upToDate1.getAnnotatedType(), upToDate2.getAnnotatedType());
     }
     AbstractType aligned1 = viewedAsClass(upToDate1, resultType, types);
@@ -188,7 +190,7 @@ final class IgnoredAnnotations {
    * @return {@code type} brought up to date
    */
   private static AbstractType upToDate(AbstractType type) {
-    return hasOrigin(type) ? type.applyInstantiations() : type;
+    return type.getOrigin() != null ? type.applyInstantiations() : type;
   }
 
   /**
@@ -225,8 +227,8 @@ final class IgnoredAnnotations {
    */
   static boolean noAnnotationsToCompare(AbstractType type1, AbstractType type2) {
     return (type1.ignoreAnnotations || type2.ignoreAnnotations)
-        && !hasOrigin(type1)
-        && !hasOrigin(type2)
+        && type1.getOrigin() == null
+        && type2.getOrigin() == null
         && hasNoTypeArguments(type1.getAnnotatedType())
         && hasNoTypeArguments(type2.getAnnotatedType());
   }
@@ -258,16 +260,6 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns true if {@code type} is a proper type with an origin; see {@link ProperType#getOrigin}.
-   *
-   * @param type a type
-   * @return true if {@code type} is a proper type with an origin
-   */
-  private static boolean hasOrigin(AbstractType type) {
-    return type instanceof ProperType properType && properType.getOrigin() != null;
-  }
-
-  /**
    * Returns the ignored substitutions of {@code atm}, which is {@code type}'s annotated type or a
    * deep copy of it. The result is an identity set.
    *
@@ -278,10 +270,7 @@ final class IgnoredAnnotations {
    */
   private static Set<AnnotatedTypeMirror> ignoredSubstitutions(
       AbstractType type, AnnotatedTypeMirror atm, QualifierHierarchy qh) {
-    if (!(type instanceof ProperType properType)) {
-      return Collections.emptySet();
-    }
-    InferenceType origin = properType.getOrigin();
+    InferenceType origin = type.getOrigin();
     if (origin == null) {
       return Collections.emptySet();
     }

@@ -827,6 +827,7 @@ public class ProperType extends AbstractType {
    *
    * @return the type that this type was made from, or null
    */
+  @Override
   @Nullable InferenceType getOrigin() {
     return origin;
   }

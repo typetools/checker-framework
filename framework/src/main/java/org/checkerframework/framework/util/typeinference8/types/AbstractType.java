@@ -203,6 +203,17 @@ public abstract class AbstractType {
   public abstract AbstractType applyInstantiations();
 
   /**
+   * Returns the type that this type was made from by substituting instantiations, if this is a
+   * proper type made that way and at least one of those instantiations ignores annotations;
+   * otherwise, null. See {@link ProperType#getOrigin}.
+   *
+   * @return the type that this type was made from, or null
+   */
+  @Nullable InferenceType getOrigin() {
+    return null;
+  }
+
+  /**
    * Returns true if this type is java.lang.Object.
    *
    * @return true if this type is java.lang.Object
