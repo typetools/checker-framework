@@ -31,9 +31,10 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
  *   <li>the primary annotations of a type whose {@link AbstractType#ignoreAnnotations} is true,
  *       including those of its bounds if it is a type variable or a wildcard, but not annotations
  *       nested in it, such as those of its type arguments; and
- *   <li>an ignored substitution: a position in a {@link ProperType} where an instantiation that
- *       ignores annotations was substituted. The type's {@link ProperType#getOrigin() origin} has a
- *       use of the variable there.
+ *   <li>an <em>ignored substitution</em>: a position in a {@link ProperType} where {@link
+ *       AbstractType#applyInstantiations} replaced a use of an inference variable by the variable's
+ *       instantiation, and that instantiation ignores annotations. The type's {@link
+ *       ProperType#getOrigin() origin} still has the use of the variable there.
  * </ul>
  *
  * The rest of each type is compared as usual.
