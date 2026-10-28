@@ -281,9 +281,10 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Adds to {@code result} each ignored substitution of {@code atm}, which is {@code origin} with
-   * instantiations substituted. A position of {@code atm} is an ignored substitution if the
-   * corresponding position of {@code origin} is a use of a variable such that either:
+   * Adds to {@code result} each ignored substitution of {@code substituted}, which is {@code
+   * origin} with instantiations substituted. A position of {@code substituted} is an ignored
+   * substitution if the corresponding position of {@code origin} is a use of a variable such that
+   * either:
    *
    * <ul>
    *   <li>the variable's instantiation ignores annotations, and the use's non-polymorphic primary
@@ -293,7 +294,7 @@ final class IgnoredAnnotations {
    * </ul>
    *
    * @param origin a type that mentions inference variables
-   * @param atm {@code origin} with instantiations substituted
+   * @param substituted {@code origin} with instantiations substituted
    * @param map the inference variables of {@code origin}
    * @param qh the qualifier hierarchy
    * @param visiting the variables whose instantiations are being scanned
@@ -301,7 +302,7 @@ final class IgnoredAnnotations {
    */
   private static void collectIgnoredSubstitutions(
       AnnotatedTypeMirror origin,
-      AnnotatedTypeMirror atm,
+      AnnotatedTypeMirror substituted,
       Theta map,
       QualifierHierarchy qh,
       Set<Variable> visiting,
@@ -315,14 +316,14 @@ final class IgnoredAnnotations {
         }
         if (instantiation.ignoreAnnotations
             && nonPolymorphicCount(origin, qh) < qh.getTopAnnotations().size()) {
-          result.add(atm);
+          result.add(substituted);
         }
         InferenceType instantiationOrigin = instantiation.getOrigin();
         // An F-bounded variable's instantiation can mention the variable itself.
         if (instantiationOrigin != null && visiting.add(variable)) {
           collectIgnoredSubstitutions(
               instantiationOrigin.getAnnotatedType(),
-              atm,
+              substituted,
               instantiationOrigin.getMap(),
               qh,
               visiting,
@@ -332,41 +333,47 @@ final class IgnoredAnnotations {
       }
       return;
     }
-    if (origin.getKind() != atm.getKind()) {
+    if (origin.getKind() != substituted.getKind()) {
       return;
     }
     switch (origin.getKind()) {
       case DECLARED -> {
         AnnotatedDeclaredType originDT = (AnnotatedDeclaredType) origin;
-        AnnotatedDeclaredType atmDT = (AnnotatedDeclaredType) atm;
+        AnnotatedDeclaredType substitutedDT = (AnnotatedDeclaredType) substituted;
         collectPairwise(
-            originDT.getTypeArguments(), atmDT.getTypeArguments(), map, qh, visiting, result);
+            originDT.getTypeArguments(),
+            substitutedDT.getTypeArguments(),
+            map,
+            qh,
+            visiting,
+            result);
         AnnotatedDeclaredType originEnclosing = originDT.getEnclosingType();
-        AnnotatedDeclaredType atmEnclosing = atmDT.getEnclosingType();
-        if (originEnclosing != null && atmEnclosing != null) {
-          collectIgnoredSubstitutions(originEnclosing, atmEnclosing, map, qh, visiting, result);
+        AnnotatedDeclaredType substitutedEnclosing = substitutedDT.getEnclosingType();
+        if (originEnclosing != null && substitutedEnclosing != null) {
+          collectIgnoredSubstitutions(
+              originEnclosing, substitutedEnclosing, map, qh, visiting, result);
         }
       }
       case ARRAY ->
           collectIgnoredSubstitutions(
               ((AnnotatedArrayType) origin).getComponentType(),
-              ((AnnotatedArrayType) atm).getComponentType(),
+              ((AnnotatedArrayType) substituted).getComponentType(),
               map,
               qh,
               visiting,
               result);
       case WILDCARD -> {
         AnnotatedWildcardType originWT = (AnnotatedWildcardType) origin;
-        AnnotatedWildcardType atmWT = (AnnotatedWildcardType) atm;
+        AnnotatedWildcardType substitutedWT = (AnnotatedWildcardType) substituted;
         collectIgnoredSubstitutions(
-            originWT.getExtendsBound(), atmWT.getExtendsBound(), map, qh, visiting, result);
+            originWT.getExtendsBound(), substitutedWT.getExtendsBound(), map, qh, visiting, result);
         collectIgnoredSubstitutions(
-            originWT.getSuperBound(), atmWT.getSuperBound(), map, qh, visiting, result);
+            originWT.getSuperBound(), substitutedWT.getSuperBound(), map, qh, visiting, result);
       }
       case INTERSECTION ->
           collectPairwise(
               ((AnnotatedIntersectionType) origin).getBounds(),
-              ((AnnotatedIntersectionType) atm).getBounds(),
+              ((AnnotatedIntersectionType) substituted).getBounds(),
               map,
               qh,
               visiting,
@@ -380,7 +387,7 @@ final class IgnoredAnnotations {
    * have the same length.
    *
    * @param origins types that mention inference variables
-   * @param atms {@code origins} with instantiations substituted
+   * @param substitutedTypes {@code origins} with instantiations substituted
    * @param map the inference variables of {@code origins}
    * @param qh the qualifier hierarchy
    * @param visiting the variables whose instantiations are being scanned
@@ -388,17 +395,17 @@ final class IgnoredAnnotations {
    */
   private static void collectPairwise(
       List<? extends AnnotatedTypeMirror> origins,
-      List<? extends AnnotatedTypeMirror> atms,
+      List<? extends AnnotatedTypeMirror> substitutedTypes,
       Theta map,
       QualifierHierarchy qh,
       Set<Variable> visiting,
       Set<AnnotatedTypeMirror> result) {
-    if (origins.size() != atms.size()) {
+    if (origins.size() != substitutedTypes.size()) {
       return;
     }
-    Iterator<? extends AnnotatedTypeMirror> atmIter = atms.iterator();
+    Iterator<? extends AnnotatedTypeMirror> substitutedIter = substitutedTypes.iterator();
     for (AnnotatedTypeMirror origin : origins) {
-      collectIgnoredSubstitutions(origin, atmIter.next(), map, qh, visiting, result);
+      collectIgnoredSubstitutions(origin, substitutedIter.next(), map, qh, visiting, result);
     }
   }
 
