@@ -14,6 +14,10 @@ New class `AbstractSetInclusionQualifierHierarchy` is the superclass of
 
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
+`PurityChecker.checkPurity()` takes two new arguments: the method declaration
+that lexically encloses the statement being checked (or null, as for an
+arbitrary expression) and the processing environment.
+
 ### Closed issues
 
 ## Version 4.3.1 (2026-10-08)
