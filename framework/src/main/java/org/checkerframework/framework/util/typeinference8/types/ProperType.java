@@ -34,7 +34,12 @@ public class ProperType extends AbstractType {
    */
   private final AnnotatedTypeMirror type;
 
-  /** A mapping from polymorphic annotation to {@link QualifierVar}. */
+  /**
+   * Maps each polymorphic qualifier in the type of the method or constructor being invoked to the
+   * qualifier variable that stands for it at this invocation. When this type's primary annotations
+   * are used as qualifiers (see {@link #getQualifiers}), a polymorphic qualifier that is a key is
+   * replaced by its variable.
+   */
   private final AnnotationMirrorMap<QualifierVar> qualifierVars;
 
   /**
@@ -130,7 +135,9 @@ public class ProperType extends AbstractType {
    * Creates a proper type.
    *
    * @param type the annotated type
-   * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
+   * @param qualifierVars a map from each polymorphic qualifier in the type of the method or
+   *     constructor being invoked to the qualifier variable that stands for it at this invocation;
+   *     see {@link #qualifierVars}
    * @param context the context
    * @param ignoreAnnotations true if the annotations on this type should be ignored
    */
@@ -146,7 +153,9 @@ public class ProperType extends AbstractType {
    * Creates a proper type.
    *
    * @param type the annotated type
-   * @param qualifierVars a mapping from polymorphic annotation to {@link QualifierVar}
+   * @param qualifierVars a map from each polymorphic qualifier in the type of the method or
+   *     constructor being invoked to the qualifier variable that stands for it at this invocation;
+   *     see {@link #qualifierVars}
    * @param context the context
    * @param ignoreAnnotations true if the annotations on this type should be ignored
    * @param origin the type that {@code type} was made from by substituting instantiations, at least
