@@ -69,9 +69,10 @@ public class ProperType extends AbstractType {
   private long upToDateVersion;
 
   /**
-   * A part of a type that {@link #partFromOrigin} or {@link #listPartFromOrigin} computes. Each
-   * part is cached in {@link #partCache} or {@link #partCacheForLists}, depending on whether it is
-   * a single type or a list of types.
+   * A <em>part</em> of a type is a type directly nested in it. This enum names the parts that
+   * {@link #partFromOrigin} or {@link #listPartFromOrigin} computes. Each part is cached in {@link
+   * #partCache} or {@link #partCacheForLists}, depending on whether it is a single type or a list
+   * of types.
    */
   private enum Part {
     /** {@link ProperType#getTypeArguments}; cached in {@link ProperType#partCacheForLists}. */

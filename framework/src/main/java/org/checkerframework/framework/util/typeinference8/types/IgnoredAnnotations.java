@@ -23,8 +23,9 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
 /**
  * Utility methods for comparing types some of whose annotations are ignored.
  *
- * <p>Two kinds of position in a type have annotations that are ignored, because they come from a
- * formula about a use of an inference variable that has an explicit primary annotation, such as
+ * <p>A <em>position</em> in a type is the type itself or a type nested in it at any depth. Two
+ * kinds of position in a type have annotations that are ignored, because they come from a formula
+ * about a use of an inference variable that has an explicit primary annotation, such as
  * {@code @Nullable T}, and so say nothing about the variable's annotations:
  *
  * <ul>
@@ -213,8 +214,9 @@ final class IgnoredAnnotations {
 
   /**
    * Returns true if comparing the annotations of {@code type1} and {@code type2} would compare
-   * nothing: neither has an origin (see {@link ProperType#getOrigin}) or annotations other than its
-   * primary annotations, and at least one of them ignores its primary annotations.
+   * nothing: neither has an origin (see {@link ProperType#getOrigin}), neither has type arguments
+   * at any depth (see {@link #hasNoTypeArguments}), and at least one of them ignores its primary
+   * annotations.
    *
    * @param type1 a type
    * @param type2 a type
@@ -225,30 +227,31 @@ final class IgnoredAnnotations {
     return (type1.ignoreAnnotations || type2.ignoreAnnotations)
         && !hasOrigin(type1)
         && !hasOrigin(type2)
-        && hasOnlyPrimaryAnnotations(type1.getAnnotatedType())
-        && hasOnlyPrimaryAnnotations(type2.getAnnotatedType());
+        && hasNoTypeArguments(type1.getAnnotatedType())
+        && hasNoTypeArguments(type2.getAnnotatedType());
   }
 
   /**
-   * Returns true if {@code type} has no annotations other than its primary annotations. Returns
-   * false for a type variable.
+   * Returns true if {@code type} is a primitive type, the null type, or a declared type with no
+   * type arguments whose enclosing type, if any, also satisfies this condition. Returns false for
+   * every other kind of type, such as an array, a wildcard, or a type variable, any of which can
+   * contain a type that has type arguments.
    *
    * @param type an annotated type
-   * @return true if {@code type} has no annotations other than its primary annotations
+   * @return true if {@code type} has no type arguments at any depth
    */
-  private static boolean hasOnlyPrimaryAnnotations(AnnotatedTypeMirror type) {
+  private static boolean hasNoTypeArguments(AnnotatedTypeMirror type) {
     switch (type.getKind()) {
       case DECLARED -> {
         AnnotatedDeclaredType declared = (AnnotatedDeclaredType) type;
         AnnotatedDeclaredType enclosing = declared.getEnclosingType();
         return declared.getTypeArguments().isEmpty()
-            && (enclosing == null || hasOnlyPrimaryAnnotations(enclosing));
+            && (enclosing == null || hasNoTypeArguments(enclosing));
       }
       case NULL -> {
         return true;
       }
       default -> {
-        // A type variable's bounds can have type arguments.
         return type.getKind().isPrimitive();
       }
     }
