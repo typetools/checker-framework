@@ -51,11 +51,11 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns the annotated types of {@code sub} and {@code sup}, in that order, with their ignored
-   * positions replaced. A type that ignores annotations has bottom primary annotations if it is
-   * {@code sub}, and top primary annotations if it is {@code sup}. An ignored substitution has the
-   * annotations of the corresponding position of the other type. If neither type has an ignored
-   * position, the result holds the types' own annotated types; otherwise it holds copies.
+   * Returns the annotated types of {@code sub} and {@code sup} with their ignored positions
+   * replaced. A type that ignores annotations has bottom primary annotations if it is {@code sub},
+   * and top primary annotations if it is {@code sup}. An ignored substitution has the annotations
+   * of the corresponding position of the other type. If neither type has an ignored position, the
+   * result holds the types' own annotated types; otherwise it holds copies.
    *
    * @param sub the potential subtype
    * @param sup the potential supertype
@@ -98,9 +98,9 @@ final class IgnoredAnnotations {
 
   /**
    * Returns the annotated types of {@code type1} and {@code type2}, which have the same Java type,
-   * in that order, with their ignored positions replaced. An ignored position of one type has the
-   * annotations of the corresponding position of the other type. If neither type has an ignored
-   * position, the result holds the types' own annotated types; otherwise it holds copies.
+   * with their ignored positions replaced. An ignored position of one type has the annotations of
+   * the corresponding position of the other type. If neither type has an ignored position, the
+   * result holds the types' own annotated types; otherwise it holds copies.
    *
    * @param type1 a type
    * @param type2 a type with the same Java type as {@code type1}
@@ -135,11 +135,11 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns the annotated types of {@code type1} and {@code type2}, in the order given, with their
-   * ignored substitutions replaced. If either type has ignored substitutions, then both are viewed
-   * as the class of {@code lubType}, and an ignored substitution of one has the annotations of the
-   * corresponding position of the other. The primary annotations are not replaced. If nothing is
-   * replaced, the result holds the types' own annotated types; otherwise it holds copies.
+   * Returns the annotated types of {@code type1} and {@code type2} with their ignored substitutions
+   * replaced. If either type has ignored substitutions, then both are viewed as the class of {@code
+   * lubType}, and an ignored substitution of one has the annotations of the corresponding position
+   * of the other. The primary annotations are not replaced. If nothing is replaced, the result
+   * holds the types' own annotated types; otherwise it holds copies.
    *
    * @param type1 a type
    * @param type2 a type
