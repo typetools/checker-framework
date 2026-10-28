@@ -1,36 +1,43 @@
 package org.checkerframework.framework.stub;
 
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
-/** {@link JarEntry}-based implementation of {@link AnnotationFileResource}. */
+/**
+ * Implementation of {@link AnnotationFileResource} for an entry in a JAR or ZIP archive. The
+ * resource holds the entry's contents, so it holds no open file handle.
+ */
 public class JarEntryAnnotationFileResource implements AnnotationFileResource {
-  /** The underlying JarFile. */
-  private final JarFile file;
+  /** The JAR or ZIP archive. */
+  private final File archive;
 
-  /** The entry in the jar file. */
-  private final JarEntry entry;
+  /** The name of the entry in the archive. */
+  private final String entryName;
+
+  /** The contents of the entry. */
+  private final byte[] contents;
 
   /**
-   * Constructs a {@code AnnotationFileResource} for the specified entry in the specified JAR file.
+   * Constructs a {@code AnnotationFileResource} for the specified entry in the specified archive.
    *
-   * @param file the JAR file
-   * @param entry the JAR entry
+   * @param archive the JAR or ZIP archive
+   * @param entryName the name of the entry in the archive
+   * @param contents the contents of the entry
    */
-  public JarEntryAnnotationFileResource(JarFile file, JarEntry entry) {
-    this.file = file;
-    this.entry = entry;
+  public JarEntryAnnotationFileResource(File archive, String entryName, byte[] contents) {
+    this.archive = archive;
+    this.entryName = entryName;
+    this.contents = contents;
   }
 
   @Override
   public String getDescription() {
-    return file.getName() + "!" + entry.getName();
+    return archive.getPath() + "!" + entryName;
   }
 
   @Override
-  public InputStream getInputStream() throws IOException {
-    return file.getInputStream(entry);
+  public InputStream getInputStream() {
+    return new ByteArrayInputStream(contents);
   }
 }
