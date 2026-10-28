@@ -3768,9 +3768,9 @@ public class MustCallConsistencyAnalyzer {
    * analysis should be aborted and immediately return. This happens if a {@code Block} is
    * encountered, which does not have an incoming store, meaning the analysis is not supposed to
    * reach it. However, in the loop body analysis, such a store may be explicitly explored (if a
-   * potential disposal loop is in an unreachable {@code Block}). It is then impossible to proceed
-   * with the analysis, since stores for these {@code Block}s don't exist. Hence, the analysis
-   * should abort.
+   * {@linkplain DisposalLoopInfo potential disposal loop} is in an unreachable {@code Block}). It
+   * is then impossible to proceed with the analysis, since stores for these {@code Block}s don't
+   * exist. Hence, the analysis should abort.
    */
   @SuppressWarnings("serial")
   private static class InvalidLoopBodyAnalysisException extends Exception {

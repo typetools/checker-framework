@@ -82,7 +82,7 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
 
   /**
    * Accumulates the called methods to this collection element if the given node is the element of a
-   * collection iterated over in a potential disposal loop.
+   * collection iterated over in a {@linkplain DisposalLoopInfo potential disposal loop}.
    *
    * @param valuesAsList the list of called methods
    * @param result the transfer result
