@@ -118,6 +118,16 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
     if (other == null || other.accumulatedValues == null || this.accumulatedValues == null) {
       return lub;
     }
+    // A bottom value represents every value having been accumulated, so it is the identity for
+    // lub.  Any accumulatedValues it has (from mostSpecific) must not shrink the other's set.
+    AnnotationMirror bottom = ((AccumulationAnnotatedTypeFactory) analysis.getTypeFactory()).bottom;
+    boolean thisIsBottom = this.getAnnotations().contains(bottom);
+    boolean otherIsBottom = other.getAnnotations().contains(bottom);
+    if (thisIsBottom != otherIsBottom) {
+      lub.accumulatedValues =
+          new HashSet<>(thisIsBottom ? other.accumulatedValues : this.accumulatedValues);
+      return lub;
+    }
     // Lub the accumulatedValues by intersecting the lists as if they were sets.
     Set<String> lubAccumulatedValues = new HashSet<>(this.accumulatedValues);
     lubAccumulatedValues.retainAll(other.accumulatedValues);
