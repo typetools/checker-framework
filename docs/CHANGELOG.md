@@ -26,6 +26,10 @@ arbitrary expression) and the processing environment.
 `AnnotationFileElementTypes.parseAjavaFileWithTree()` takes an
 `AnnotationFileResource` rather than a path.
 
+Deprecated methods:
+
+* `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.getNoArgumentMethod()`
+
 ### Closed issues
 
 ## Version 4.3.1 (2026-10-08)
