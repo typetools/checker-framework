@@ -157,6 +157,7 @@ public final class Resolution {
                 context);
       }
       if (t == null) {
+        // The bounds include EQUAL bounds that ignore annotations.
         t = lubOfLowerBounds(var, var.getBounds().findLowerBoundsForAnnotations(), true, context);
       }
       added |= var.getBounds().addBound(null, BoundKind.EQUAL, t);
@@ -493,11 +494,11 @@ public final class Resolution {
    * Returns the least upper bound of {@code lowerBounds}, with the qualifier lower bounds of {@code
    * ai} applied.
    *
-   * <p>Applying the qualifier lower bounds lubs them into the least upper bound of {@code
-   * lowerBounds}, except as described for {@code includesEqualBounds}. If that type is not a type
-   * variable, its primary annotations become their least upper bound with the qualifier lower
-   * bounds. If that type is a type variable, the primary annotations of its lower bound change in
-   * the same way, and its own primary annotations are unchanged.
+   * <p>The qualifier lower bounds of {@code ai} are lubbed into the primary annotations of the
+   * least upper bound of {@code lowerBounds}, or replace them if {@code replaceIgnoredAnnotations}
+   * is true and that type ignores annotations and is not a type variable. If that type is a type
+   * variable, the primary annotations of its lower bound change instead, and its own primary
+   * annotations are unchanged.
    *
    * <p>The result may share its AnnotatedTypeMirror with an element of {@code lowerBounds}, which
    * is stored in a hash set of bounds. Callers must not mutate the result.
@@ -505,10 +506,10 @@ public final class Resolution {
    * @param ai a variable
    * @param lowerBounds a nonempty set of proper types, each of which is a lower bound of {@code ai}
    *     or has the Java type of {@code ai}
-   * @param includesEqualBounds if true, and the least upper bound ignores annotations (see {@link
-   *     AbstractType#ignoreAnnotations}) and is not a type variable, then its primary annotations
-   *     are replaced by the least upper bound of the qualifier lower bounds of {@code ai}, rather
-   *     than lubbed with them
+   * @param replaceIgnoredAnnotations if true, and the least upper bound ignores annotations (see
+   *     {@link AbstractType#ignoreAnnotations}) and is not a type variable, then its primary
+   *     annotations are replaced by the least upper bound of the qualifier lower bounds of {@code
+   *     ai}, rather than lubbed with them
    * @param context the context
    * @return the least upper bound of {@code lowerBounds}, with the qualifier lower bounds of {@code
    *     ai} applied
@@ -516,7 +517,7 @@ public final class Resolution {
   private static ProperType lubOfLowerBounds(
       Variable ai,
       Set<ProperType> lowerBounds,
-      boolean includesEqualBounds,
+      boolean replaceIgnoredAnnotations,
       Java8InferenceContext context) {
     ProperType lubProperType = context.inferenceTypeFactory.lub(lowerBounds);
     assert lubProperType != null : "@AssumeAssertion(nullness): lowerBounds is nonempty";
@@ -531,7 +532,7 @@ public final class Resolution {
       QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
       AnnotationMirrorSet lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
       if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR
-          && includesEqualBounds
+          && replaceIgnoredAnnotations
           && lubProperType.ignoreAnnotations) {
         // The primary annotations of `lubProperType` say nothing about `ai`'s, so the qualifier
         // lower bounds replace them rather than being lubbed with them.  Replacing them when only
