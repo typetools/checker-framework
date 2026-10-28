@@ -2301,6 +2301,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             new CaseNode(caseTree, selectorExprAssignment, exprs, guard, env.getTypeUtils());
         extendWithNode(test);
         extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+      } else if (!isDefaultCase) {
+        // The labels are not tested, but their patterns declare and bind variables.
+        for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
+          scan(exprTree, null);
+        }
       }
 
       // Handle the case body
