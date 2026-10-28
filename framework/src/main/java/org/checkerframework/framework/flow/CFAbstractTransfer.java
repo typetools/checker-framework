@@ -82,6 +82,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
@@ -1146,32 +1147,62 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitInstanceOf(InstanceOfNode node, TransferInput<V, S> in) {
     TransferResult<V, S> result = super.visitInstanceOf(node, in);
-    for (LocalVariableNode bindingVar : node.getBindingVariables()) {
-      JavaExpression expr = JavaExpression.fromNode(bindingVar);
-      AnnotatedTypeMirror expType =
-          analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
-      for (AnnotationMirror anno : expType.getAnnotations()) {
-        in.getRegularStore().insertOrRefine(expr, anno);
-      }
+    // Only the variable of a binding pattern is refined by the expression's type.  The binding
+    // variables of a deconstruction pattern hold record components, whose types may be unrelated
+    // to the expression's type, so they are not refined here.
+    // TODO: Give the binding variables of a deconstruction pattern the types of the record
+    // components.
+    LocalVariableNode bindingVar = node.getBindingPatternVariable();
+    if (bindingVar == null && !(node.getTree().getType() instanceof AnnotatedTypeTree)) {
+      return result;
     }
 
-    // The "reference type" is the type after "instanceof".
-    Tree refTypeTree = node.getTree().getType();
-    if (refTypeTree != null && refTypeTree instanceof AnnotatedTypeTree) {
-      AnnotatedTypeMirror refType = analysis.atypeFactory.getAnnotatedType(refTypeTree);
-      AnnotatedTypeMirror expType =
-          analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
-      if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
-          && !refType.getPrimaryAnnotations().equals(expType.getPrimaryAnnotations())
-          && !expType.getPrimaryAnnotations().isEmpty()) {
-        JavaExpression expr = JavaExpression.fromTree(node.getTree().getExpression());
-        for (AnnotationMirror anno : refType.getPrimaryAnnotations()) {
-          in.getRegularStore().insertOrRefine(expr, anno);
-        }
-        return new RegularTransferResult<>(result.getResultValue(), in.getRegularStore());
+    AnnotatedTypeMirror expType =
+        analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
+    // The annotations to which the binding variable is refined.  The binding variable has the
+    // expression's value, and it also has its own declared type.
+    AnnotationMirrorSet bindingVarAnnos = new AnnotationMirrorSet();
+    if (bindingVar != null) {
+      AnnotatedTypeMirror declaredType =
+          analysis.atypeFactory.getAnnotatedTypeLhs(bindingVar.getTree());
+      QualifierHierarchy qualHierarchy = analysis.atypeFactory.getQualifierHierarchy();
+      for (AnnotationMirror expAnno : expType.getAnnotations()) {
+        AnnotationMirror declaredAnno = declaredType.getPrimaryAnnotationInHierarchy(expAnno);
+        AnnotationMirror glb =
+            declaredAnno == null
+                ? expAnno
+                : qualHierarchy.greatestLowerBoundShallow(
+                    expAnno,
+                    expType.getUnderlyingType(),
+                    declaredAnno,
+                    declaredType.getUnderlyingType());
+        bindingVarAnnos.add(glb);
       }
     }
-    return result;
+    // The annotations to which the expression is refined.
+    AnnotationMirrorSet expAnnos =
+        analysis.atypeFactory.getInstanceOfRefinement(node.getTree(), expType);
+    if (bindingVarAnnos.isEmpty() && expAnnos.isEmpty()) {
+      return result;
+    }
+
+    // The facts below hold only when the instanceof is true.  Get the else store before refining
+    // the then store, because for a RegularTransferResult the then store is the regular store.
+    S elseStore = result.getElseStore();
+    S thenStore = result.getThenStore();
+    if (!bindingVarAnnos.isEmpty()) {
+      JavaExpression expr = JavaExpression.fromNode(bindingVar);
+      for (AnnotationMirror anno : bindingVarAnnos) {
+        thenStore.insertOrRefine(expr, anno);
+      }
+    }
+    if (!expAnnos.isEmpty()) {
+      JavaExpression expr = JavaExpression.fromTree(node.getTree().getExpression());
+      for (AnnotationMirror anno : expAnnos) {
+        thenStore.insertOrRefine(expr, anno);
+      }
+    }
+    return new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
   }
 
   /**
