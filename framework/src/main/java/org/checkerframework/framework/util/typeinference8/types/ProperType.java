@@ -56,7 +56,8 @@ public class ProperType extends AbstractType {
   /**
    * The inference variables that {@link #origin} mentions, or the empty list if {@link #origin} is
    * null. It is cached because {@link #applyInstantiations}, which is called on every round of
-   * incorporation, needs it, and computing it traverses {@link #origin}.
+   * incorporation, needs it, and computing it traverses {@link #origin}. It is never mutated, so
+   * types with the same origin share it.
    */
   private final Collection<Variable> originVariables;
 
@@ -187,12 +188,41 @@ public class ProperType extends AbstractType {
       Java8InferenceContext context,
       boolean ignoreAnnotations,
       @Nullable InferenceType origin) {
+    this(
+        type,
+        qualifierVars,
+        context,
+        ignoreAnnotations,
+        origin,
+        origin == null ? Collections.emptyList() : origin.getInferenceVariables());
+  }
+
+  /**
+   * Creates a proper type.
+   *
+   * @param type the annotated type
+   * @param qualifierVars a map from each polymorphic qualifier in the type of the method or
+   *     constructor being invoked to the qualifier variable that stands for it at this invocation;
+   *     see {@link #qualifierVars}
+   * @param context the context
+   * @param ignoreAnnotations true if the annotations on this type should be ignored
+   * @param origin the type that {@code type} was made from by substituting instantiations, at least
+   *     one of which ignores annotations, or null; see {@link #origin}
+   * @param originVariables the inference variables that {@code origin} mentions, or the empty list
+   *     if {@code origin} is null; see {@link #originVariables}
+   */
+  private ProperType(
+      AnnotatedTypeMirror type,
+      AnnotationMirrorMap<QualifierVar> qualifierVars,
+      Java8InferenceContext context,
+      boolean ignoreAnnotations,
+      @Nullable InferenceType origin,
+      Collection<Variable> originVariables) {
     super(context, ignoreAnnotations);
     this.type = type;
     this.qualifierVars = qualifierVars;
     this.origin = origin;
-    this.originVariables =
-        origin == null ? Collections.emptyList() : origin.getInferenceVariables();
+    this.originVariables = originVariables;
     this.upToDateVersion = instantiationVersion(originVariables);
     verifyType(this.type);
   }
@@ -818,7 +848,12 @@ public class ProperType extends AbstractType {
       return this;
     }
     return new ProperType(
-        resultATM, qualifierVars, context, ignoreAnnotations, properResult.origin);
+        resultATM,
+        qualifierVars,
+        context,
+        ignoreAnnotations,
+        properResult.origin,
+        properResult.originVariables);
   }
 
   /**
@@ -888,7 +923,8 @@ public class ProperType extends AbstractType {
    * @return a copy of this type whose annotated type is {@code atm}
    */
   ProperType withAnnotatedType(AnnotatedTypeMirror atm, boolean ignoreAnnotations) {
-    ProperType result = new ProperType(atm, qualifierVars, context, ignoreAnnotations, origin);
+    ProperType result =
+        new ProperType(atm, qualifierVars, context, ignoreAnnotations, origin, originVariables);
     result.upToDateVersion = upToDateVersion;
     return result;
   }
