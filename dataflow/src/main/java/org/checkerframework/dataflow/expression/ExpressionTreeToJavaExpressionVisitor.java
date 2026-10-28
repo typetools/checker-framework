@@ -866,6 +866,10 @@ final class ExpressionTreeToJavaExpressionVisitor extends SimpleTreeVisitor<Java
       }
       case UNARY_MINUS -> {
         if (operand instanceof ValueLiteral valueLiteral) {
+          if (valueLiteral.getValue() instanceof Character c) {
+            // Unary numeric promotion: the negation of a char is an int.
+            valueLiteral = new ValueLiteral(types.getPrimitiveType(TypeKind.INT), (int) c);
+          }
           return valueLiteral.negate();
         }
       }

@@ -17,10 +17,10 @@ import com.github.javaparser.ast.type.WildcardType;
 import com.github.javaparser.ast.visitor.SimpleVoidVisitor;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.jar.JarEntry;
@@ -357,10 +357,44 @@ public class AnnotationFileUtil {
   }
 
   /**
+   * Returns the file system location that a path names. Looks for it as an absolute path or
+   * relative to the current directory, then relative to the {@code user.dir} system property, then
+   * relative to the {@code test.src} system property (which jtreg sets to the directory that
+   * contains the test).
+   *
+   * @param location a relative or absolute path
+   * @return the file or directory that {@code location} names, or null if none exists
+   */
+  public static @Nullable File findFileSystemLocation(String location) {
+    File file = new File(location);
+    if (file.exists()) {
+      return file;
+    }
+    if (file.isAbsolute()) {
+      return null;
+    }
+
+    file = new File(System.getProperty("user.dir"), location);
+    if (file.exists()) {
+      return file;
+    }
+
+    String testSrc = System.getProperty("test.src");
+    if (testSrc != null) {
+      file = new File(testSrc, location);
+      if (file.exists()) {
+        return file;
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Returns annotation files found at a given file system location (does not look on classpath).
    *
    * @param location an annotation file (stub file or ajava file), a jarfile, or a directory. Look
-   *     for it as an absolute file and relative to the current directory.
+   *     for it as described in {@link #findFileSystemLocation}.
    * @param fileType file type of files to collect
    * @return annotation files with the given file type found in the file system (does not look on
    *     classpath). Returns null if the file system location does not exist; the caller may wish to
@@ -368,23 +402,13 @@ public class AnnotationFileUtil {
    */
   public static @Nullable List<AnnotationFileResource> allAnnotationFiles(
       String location, AnnotationFileType fileType) {
-    File file = new File(location);
-    if (file.exists()) {
-      List<AnnotationFileResource> resources = new ArrayList<>();
-      addAnnotationFilesToList(file, resources, fileType);
-      return resources;
+    File file = findFileSystemLocation(location);
+    if (file == null) {
+      return null;
     }
-
-    // The file doesn't exist.  Maybe it is relative to the current working directory, so try
-    // that.
-    file = new File(System.getProperty("user.dir"), location);
-    if (file.exists()) {
-      List<AnnotationFileResource> resources = new ArrayList<>();
-      addAnnotationFilesToList(file, resources, fileType);
-      return resources;
-    }
-
-    return null;
+    List<AnnotationFileResource> resources = new ArrayList<>();
+    addAnnotationFilesToList(file, resources, fileType);
+    return resources;
   }
 
   /**
@@ -415,6 +439,23 @@ public class AnnotationFileUtil {
   }
 
   /**
+   * Returns the contents of an entry in an archive.
+   *
+   * @param archive an open JAR or ZIP archive
+   * @param entry an entry in {@code archive}
+   * @return the contents of {@code entry}
+   * @throws IOException if the entry cannot be read
+   */
+  private static byte[] readEntry(JarFile archive, JarEntry entry) throws IOException {
+    try (InputStream in = archive.getInputStream(entry)) {
+      if (in == null) {
+        throw new IOException("no entry " + entry.getName() + " in " + archive.getName());
+      }
+      return in.readAllBytes();
+    }
+  }
+
+  /**
    * Side-effects {@code resources} by adding annotation files of the given file type to it.
    *
    * @param location an annotation file (a stub file or ajava file), a jarfile, or a directory. If a
@@ -424,34 +465,48 @@ public class AnnotationFileUtil {
    * @param resources the list to add the found files to
    * @param fileType type of annotation files to add
    */
-  @SuppressWarnings({
-    "JdkObsolete", // JarFile.entries()
-    "nullness:argument", // inference failed in Arrays.sort
-    "builder:required.method.not.called" // ownership passed to list of
-    // JarEntryAnnotationFileResource, where `file` appears in every element of the list
-  })
   private static void addAnnotationFilesToList(
       File location, List<AnnotationFileResource> resources, AnnotationFileType fileType) {
     if (isAnnotationFile(location, fileType)) {
       resources.add(new FileAnnotationFileResource(location));
     } else if (isJar(location)) {
-      JarFile file;
-      try {
-        file = new JarFile(location);
+      try (JarFile file = new JarFile(location)) {
+        file.stream()
+            .filter(entry -> isAnnotationFile(entry.getName(), fileType))
+            .forEach(
+                entry -> {
+                  try {
+                    resources.add(
+                        new JarEntryAnnotationFileResource(
+                            location, entry.getName(), readEntry(file, entry)));
+                  } catch (IOException e) {
+                    // The client reports the error when it reads this entry, and it still
+                    // processes the archive's other entries.
+                    String description = location.getPath() + "!" + entry.getName();
+                    resources.add(
+                        new AnnotationFileResource() {
+                          @Override
+                          public String getDescription() {
+                            return description;
+                          }
+
+                          @Override
+                          public InputStream getInputStream() throws IOException {
+                            throw e;
+                          }
+                        });
+                  }
+                });
       } catch (IOException e) {
-        System.err.println("AnnotationFileUtil: could not process JAR file: " + location);
-        return;
-      }
-      Enumeration<JarEntry> entries = file.entries();
-      while (entries.hasMoreElements()) {
-        JarEntry entry = entries.nextElement();
-        if (isAnnotationFile(entry.getName(), fileType)) {
-          resources.add(new JarEntryAnnotationFileResource(file, entry));
-        }
+        System.err.println("AnnotationFileUtil: could not process archive " + location + ": " + e);
       }
 
     } else if (location.isDirectory()) {
       File[] directoryContents = location.listFiles();
+      if (directoryContents == null) {
+        System.err.println("AnnotationFileUtil: could not list directory: " + location);
+        return;
+      }
       Arrays.sort(directoryContents, Comparator.comparing(File::getName));
       for (File enclosed : directoryContents) {
         addAnnotationFilesToList(enclosed, resources, fileType);

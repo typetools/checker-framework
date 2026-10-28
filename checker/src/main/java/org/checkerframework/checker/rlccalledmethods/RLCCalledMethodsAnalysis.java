@@ -3,8 +3,7 @@ package org.checkerframework.checker.rlccalledmethods;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnalysis;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
-import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
-import org.checkerframework.checker.resourceleak.SetOfTypes;
+import org.checkerframework.checker.mustcall.SetOfTypes;
 
 /**
  * This variant of CFAnalysis extends the set of ignored exception types.
@@ -15,7 +14,7 @@ public class RLCCalledMethodsAnalysis extends CalledMethodsAnalysis {
 
   /**
    * The set of exceptions to ignore, cached from {@link
-   * ResourceLeakChecker#getIgnoredExceptions()}.
+   * RLCCalledMethodsChecker#getIgnoredExceptions()}.
    */
   private final SetOfTypes ignoredExceptions;
 
