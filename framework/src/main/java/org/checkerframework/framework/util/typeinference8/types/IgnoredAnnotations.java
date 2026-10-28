@@ -37,7 +37,11 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
  *       ProperType#getOrigin() origin} still has the use of the variable there.
  * </ul>
  *
- * The rest of each type is compared as usual.
+ * <p>Before two types are compared for subtyping or equality, or combined by a least upper bound or
+ * greatest lower bound, the methods of this class replace the annotations at their ignored
+ * positions with annotations that cannot affect the result: for example, bottom for a subtype and
+ * top for a supertype, or the annotations at the corresponding position of the other type. The rest
+ * of each type is then compared or combined as usual.
  */
 final class IgnoredAnnotations {
 
