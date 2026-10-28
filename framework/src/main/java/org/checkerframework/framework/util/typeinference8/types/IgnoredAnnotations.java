@@ -315,7 +315,7 @@ final class IgnoredAnnotations {
           return;
         }
         if (instantiation.ignoreAnnotations
-            && nonPolymorphicCount(origin, qh) < qh.getTopAnnotations().size()) {
+            && nonPolymorphicPrimaryAnnotationCount(origin, qh) < qh.getTopAnnotations().size()) {
           result.add(substituted);
         }
         InferenceType instantiationOrigin = instantiation.getOrigin();
@@ -416,7 +416,8 @@ final class IgnoredAnnotations {
    * @param qh the qualifier hierarchy
    * @return the number of primary annotations of {@code type} that are not polymorphic
    */
-  private static int nonPolymorphicCount(AnnotatedTypeMirror type, QualifierHierarchy qh) {
+  private static int nonPolymorphicPrimaryAnnotationCount(
+      AnnotatedTypeMirror type, QualifierHierarchy qh) {
     int count = 0;
     for (AnnotationMirror anno : type.getPrimaryAnnotations()) {
       if (!qh.isPolymorphicQualifier(anno)) {
