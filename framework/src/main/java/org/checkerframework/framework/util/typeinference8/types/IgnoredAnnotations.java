@@ -496,17 +496,16 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns the lower bound of {@code type} if it is a wildcard that has one, its upper bound if it
-   * is a wildcard that does not, and {@code type} itself otherwise.
+   * Returns the lower bound of {@code type} if it is a wildcard that has a lower bound, its upper
+   * bound if it is a wildcard that does not have a lower bound, and {@code type} itself otherwise.
    *
    * @param type a type
    * @return the lower or upper bound of {@code type} if it is a wildcard, otherwise {@code type}
    */
   private static AnnotatedTypeMirror boundOf(AnnotatedTypeMirror type) {
     if (type instanceof AnnotatedWildcardType wildcard) {
-      return wildcard.getSuperBound().getKind() == TypeKind.NULL
-          ? wildcard.getExtendsBound()
-          : wildcard.getSuperBound();
+      AnnotatedTypeMirror superBound = wildcard.getSuperBound();
+      return superBound.getKind() == TypeKind.NULL ? wildcard.getExtendsBound() : superBound;
     }
     return type;
   }
