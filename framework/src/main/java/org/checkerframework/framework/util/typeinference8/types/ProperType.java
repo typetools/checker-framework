@@ -38,8 +38,9 @@ public class ProperType extends AbstractType {
   private final AnnotationMirrorMap<QualifierVar> qualifierVars;
 
   /**
-   * The type that this type was made from by substituting instantiations, if at least one of them
-   * ignores annotations (see {@link AbstractType#ignoreAnnotations}); otherwise, null.
+   * The type that this type was made from by substituting instantiations, if at least one of those
+   * instantiations ignores annotations (see {@link AbstractType#ignoreAnnotations}); otherwise,
+   * null.
    *
    * <p>A position where such an instantiation was substituted is an ignored substitution: its
    * annotations say nothing about the variable's, so they are ignored. {@link #type} does not
@@ -761,7 +762,7 @@ public class ProperType extends AbstractType {
 
   /**
    * Returns the type that this type was made from by substituting instantiations, if at least one
-   * of them ignores annotations; otherwise, null. See {@link #origin}.
+   * of those instantiations ignores annotations; otherwise, null. See {@link #origin}.
    *
    * @return the type that this type was made from, or null
    */
