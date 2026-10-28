@@ -3330,32 +3330,32 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   @Override
   public Void visitInstanceOf(InstanceOfTree tree, Void p) {
-    // The "reference type" is the type after "instanceof".
+    // The "reference type" is the type after "instanceof".  An instanceof is unsafe, like a cast,
+    // if the run-time check does not establish the qualifiers of the reference type.
     Tree patternTree = tree.getPattern();
-    if (patternTree != null) {
-      if (patternTree instanceof BindingPatternTree bindingPatternTree) {
-        VariableTree variableTree = bindingPatternTree.getVariable();
-        validateTypeOf(variableTree);
-        if (variableTree.getModifiers() != null) {
-          AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
-          AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
-          if (!isTypeCastSafe(variableType, expType)) {
-            checker.reportWarning(tree, "instanceof.pattern.unsafe", expType, variableTree);
-          }
-        }
-      } else {
-        // TODO: implement deconstructed patterns.
-      }
-    } else {
+    if (patternTree == null) {
       Tree refTypeTree = tree.getType();
-      validateTypeOf(refTypeTree);
-      if (refTypeTree instanceof AnnotatedTypeTree) {
+      boolean valid = validateTypeOf(refTypeTree);
+      if (valid && refTypeTree instanceof AnnotatedTypeTree) {
+        AnnotatedTypeMirror refType = atypeFactory.getAnnotatedType(refTypeTree);
         AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
-        if (!atypeFactory.getInstanceOfRefinement(tree, expType).isEmpty()) {
-          AnnotatedTypeMirror refType = atypeFactory.getAnnotatedType(refTypeTree);
+        if (!isTypeCastSafe(refType, expType)) {
           checker.reportWarning(tree, "instanceof.unsafe", expType, refType);
         }
       }
+    } else if (patternTree instanceof BindingPatternTree bindingPatternTree) {
+      // For a binding pattern, the reference type is the declared type of the binding variable.
+      VariableTree variableTree = bindingPatternTree.getVariable();
+      boolean valid = validateTypeOf(variableTree);
+      if (valid) {
+        AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
+        AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
+        if (!isTypeCastSafe(variableType, expType)) {
+          checker.reportWarning(tree, "instanceof.pattern.unsafe", expType, variableTree);
+        }
+      }
+    } else {
+      // TODO: implement deconstructed patterns.
     }
 
     return super.visitInstanceOf(tree, p);
