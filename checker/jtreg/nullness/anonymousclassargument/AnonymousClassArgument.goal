@@ -1,0 +1,10 @@
+AnonymousClassArgument.java:25:13: compiler.err.proc.messager: [argument] incompatible argument for parameter fooParam of Foo constructor.
+found   : @Initialized @Nullable Object
+required: @Initialized @NonNull Object
+AnonymousClassArgument.java:26:10: compiler.err.proc.messager: [type.argument] incompatible type argument for type parameter T of Foo constructor.
+found   : @Initialized @Nullable String
+required: @Initialized @NonNull Object
+AnonymousClassArgument.java:27:21: compiler.err.proc.messager: [argument] incompatible argument for parameter innerParam of Inner constructor.
+found   : @Initialized @Nullable Object
+required: @Initialized @NonNull Object
+3 errors
