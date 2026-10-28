@@ -128,9 +128,8 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
         new AnnotatedTypeScanner<>() {
           @Override
           protected Void scan(AnnotatedTypeMirror type, Void p) {
-            if (type.hasPrimaryAnnotation(IntRangeFromPositive.class)
-                || type.hasPrimaryAnnotation(IntRangeFromNonNegative.class)
-                || type.hasPrimaryAnnotation(IntRangeFromGTENegativeOne.class)) {
+            AnnotationMirror anno = type.getPrimaryAnnotationInHierarchy(atypeFactory.UNKNOWNVAL);
+            if (anno != null && ValueAnnotatedTypeFactory.isSpecialIntRange(anno)) {
               type.replaceAnnotation(atypeFactory.UNKNOWNVAL);
             }
             return super.scan(type, p);
