@@ -9,6 +9,12 @@
 
 ### Changes for type system implementers
 
+New class `AbstractSetInclusionQualifierHierarchy` is the superclass of
+`SubtypeIsSubsetQualifierHierarchy` and `SubtypeIsSupersetQualifierHierarchy`.
+
+New method `QualifierHierarchy.canonicalize()` returns the canonical form of a
+qualifier.  `AnnotatedTypeFactory.canonicalAnnotation()` calls it.
+
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
 `PurityChecker.checkPurity()` takes two new arguments: the method declaration

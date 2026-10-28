@@ -3647,8 +3647,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * <p>This method {@code canonicalAnnotation} is called by {@link
    * AnnotatedTypeMirror#addAnnotation}, so it is called for every annotation added to a type.
    *
-   * <p>This implementation handles when the passed annotation is an alias of another annotation.
-   * Subclasses can do additional work.
+   * <p>This implementation handles when the passed annotation is an alias of another annotation,
+   * and it calls {@link QualifierHierarchy#canonicalize} on supported qualifiers. Subclasses can do
+   * additional work.
    *
    * @param a the qualifier to canonicalize
    * @return the canonical annotation, which may be the given annotation
@@ -3657,16 +3658,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     TypeElement elem = (TypeElement) a.getAnnotationType().asElement();
     String qualName = elem.getQualifiedName().toString();
     Alias alias = aliases.get(qualName);
+    AnnotationMirror result;
     if (alias == null) {
-      return a;
-    }
-    if (alias.copyElements) {
+      result = a;
+    } else if (alias.copyElements) {
       AnnotationBuilder builder = new AnnotationBuilder(processingEnv, alias.canonicalName);
       builder.copyElementValuesFromAnnotation(a, alias.ignorableElements);
-      return builder.build();
+      result = builder.build();
     } else {
-      return alias.canonical;
+      result = alias.canonical;
     }
+    if (isSupportedQualifier(result)) {
+      result = qualHierarchy.canonicalize(result);
+    }
+    return result;
   }
 
   /**
