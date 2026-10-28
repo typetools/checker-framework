@@ -68,44 +68,63 @@ public class ProperType extends AbstractType {
    */
   private long upToDateStamp;
 
-  /** A part of a type that {@link #partFromOrigin} or {@link #partsFromOrigin} computes. */
+  /**
+   * A part of a type that {@link #partFromOrigin} or {@link #partsFromOrigin} computes. Each part
+   * is cached in {@link #partCache} or {@link #partCacheForLists}, depending on whether it is a
+   * single type or a list of types.
+   */
   private enum Part {
-    /** {@link ProperType#getTypeArguments}. */
+    /** {@link ProperType#getTypeArguments}; cached in {@link ProperType#partCacheForLists}. */
     TYPE_ARGUMENTS,
-    /** {@link ProperType#getEnclosingType}. */
+    /** {@link ProperType#getEnclosingType}; cached in {@link ProperType#partCache}. */
     ENCLOSING_TYPE,
-    /** {@link ProperType#getComponentType}. */
+    /** {@link ProperType#getComponentType}; cached in {@link ProperType#partCache}. */
     COMPONENT_TYPE,
-    /** {@link ProperType#getFunctionTypeParameterTypes}. */
+    /**
+     * {@link ProperType#getFunctionTypeParameterTypes}; cached in {@link
+     * ProperType#partCacheForLists}.
+     */
     FUNCTION_TYPE_PARAMETER_TYPES,
-    /** {@link ProperType#getFunctionTypeReturnType}. */
+    /** {@link ProperType#getFunctionTypeReturnType}; cached in {@link ProperType#partCache}. */
     FUNCTION_TYPE_RETURN_TYPE,
-    /** {@link ProperType#getWildcardLowerBound}. */
+    /** {@link ProperType#getWildcardLowerBound}; cached in {@link ProperType#partCache}. */
     WILDCARD_LOWER_BOUND,
-    /** {@link ProperType#getWildcardUpperBound}. */
+    /** {@link ProperType#getWildcardUpperBound}; cached in {@link ProperType#partCache}. */
     WILDCARD_UPPER_BOUND,
-    /** {@link ProperType#getIntersectionBounds}. */
+    /** {@link ProperType#getIntersectionBounds}; cached in {@link ProperType#partCacheForLists}. */
     INTERSECTION_BOUNDS
   }
 
   /**
-   * The parts of this type that {@link #partFromOrigin} has computed, keyed by a {@link Part} or,
-   * for {@link #asSuper}, by the supertype; null if none has been computed since {@link
+   * The parts of this type that {@link #partFromOrigin} has computed: a map from a {@link Part} of
+   * this type to the type at that part. It is null if no part has been computed since {@link
    * #partCacheStamp} was set. Only a type with an {@link #origin} caches its parts, because
    * computing a part from the origin substitutes instantiations.
+   *
+   * <p>This map, {@link #partCacheForLists}, and {@link #asSuperCache} are conceptually a single
+   * cache from a part of this type to its content. They are separate only so that each map has
+   * precise key and value types.
    */
-  private @Nullable Map<Object, @Nullable AbstractType> partCache = null;
+  private @Nullable Map<Part, @Nullable AbstractType> partCache = null;
 
   /**
-   * The parts of this type that {@link #partsFromOrigin} has computed; null if none has been
-   * computed since {@link #partCacheStamp} was set. See {@link #partCache}.
+   * The parts of this type that {@link #partsFromOrigin} has computed and whose content is a list
+   * of types: a map from a {@link Part} of this type to the types at that part. It is null if no
+   * such part has been computed since {@link #partCacheStamp} was set. See {@link #partCache}.
    */
-  private @Nullable Map<Part, @Nullable List<AbstractType>> partsCache = null;
+  private @Nullable Map<Part, @Nullable List<AbstractType>> partCacheForLists = null;
 
   /**
-   * The value of {@link #instantiationStamp} for {@link #originVariables} when the parts in {@link
-   * #partCache} and {@link #partsCache} were computed. The parts depend on the instantiations of
-   * those variables.
+   * The results of {@link #asSuper} computed from {@link #origin}: a map from a supertype to this
+   * type viewed as that supertype. It is null if none has been computed since {@link
+   * #partCacheStamp} was set. See {@link #partCache}.
+   */
+  private @Nullable Map<TypeMirror, @Nullable AbstractType> asSuperCache = null;
+
+  /**
+   * The value of {@link #instantiationStamp} for {@link #originVariables} when the contents of
+   * {@link #partCache}, {@link #partCacheForLists}, and {@link #asSuperCache} were computed. The
+   * contents depend on the instantiations of those variables.
    */
   private long partCacheStamp = 0;
 
@@ -234,11 +253,10 @@ public class ProperType extends AbstractType {
    * primary annotations and {@link #ignoreAnnotations} of the part computed from {@link #type}; see
    * {@link #withPrimaryAnnotationsOf}.
    *
-   * <p>If this type has an origin, the part is cached until the instantiation of a variable that
-   * the origin mentions changes.
+   * <p>If this type has an origin, the part is cached in {@link #partCache} until the current
+   * instantiation of a variable that the origin mentions is set, replaced, or cleared.
    *
-   * @param key the key under which to cache the part: a {@link Part}, or the supertype for {@link
-   *     #asSuper}
+   * @param key the part
    * @param part computes the part of a type
    * @param plain computes the part of this type from {@link #type}
    * @param sharesPrimaryAnnotations true if the primary annotations of the part are determined by
@@ -246,7 +264,7 @@ public class ProperType extends AbstractType {
    * @return the part of this type
    */
   private @Nullable AbstractType partFromOrigin(
-      Object key,
+      Part key,
       Function<AbstractType, @Nullable AbstractType> part,
       Supplier<@Nullable AbstractType> plain,
       boolean sharesPrimaryAnnotations) {
@@ -255,15 +273,32 @@ public class ProperType extends AbstractType {
       return plain.get();
     }
     clearPartCachesIfStale();
-    Map<Object, @Nullable AbstractType> cache = partCache;
-    if (cache != null && cache.containsKey(key)) {
-      return cache.get(key);
-    }
+    Map<Part, @Nullable AbstractType> cache = partCache;
     if (cache == null) {
       cache = new HashMap<>();
       partCache = cache;
     }
-    AbstractType result = computePartFromOrigin(origin, part, plain, sharesPrimaryAnnotations);
+    return cached(
+        cache, key, () -> computePartFromOrigin(origin, part, plain, sharesPrimaryAnnotations));
+  }
+
+  /**
+   * Returns the value that {@code cache} maps {@code key} to. If {@code cache} has no mapping for
+   * {@code key}, first maps {@code key} to the result of {@code compute}.
+   *
+   * @param <K> the type of keys
+   * @param <V> the type of values
+   * @param cache a cache
+   * @param key a key
+   * @param compute computes the value for {@code key}
+   * @return the value that {@code cache} maps {@code key} to
+   */
+  private static <K, V> @Nullable V cached(
+      Map<K, @Nullable V> cache, K key, Supplier<@Nullable V> compute) {
+    if (cache.containsKey(key)) {
+      return cache.get(key);
+    }
+    V result = compute.get();
     cache.put(key, result);
     return result;
   }
@@ -299,15 +334,16 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Empties {@link #partCache} and {@link #partsCache} if the current instantiation of a variable
-   * that {@link #origin} mentions has been set, replaced, or cleared since their parts were
-   * computed.
+   * Empties {@link #partCache}, {@link #partCacheForLists}, and {@link #asSuperCache} if the
+   * current instantiation of a variable that {@link #origin} mentions has been set, replaced, or
+   * cleared since their contents were computed.
    */
   private void clearPartCachesIfStale() {
     long stamp = instantiationStamp(originVariables);
     if (stamp != partCacheStamp) {
       partCache = null;
-      partsCache = null;
+      partCacheForLists = null;
+      asSuperCache = null;
       partCacheStamp = stamp;
     }
   }
@@ -342,10 +378,10 @@ public class ProperType extends AbstractType {
    * <p>If {@code sharesPrimaryAnnotations} is true, then each part gets the primary annotations of
    * the corresponding part computed from {@link #type}, as in {@link #partFromOrigin}.
    *
-   * <p>If this type has an origin, the parts are cached as in {@link #partFromOrigin}. The result
-   * is a new list, which the caller may mutate.
+   * <p>If this type has an origin, the parts are cached in {@link #partCacheForLists}, as in {@link
+   * #partFromOrigin}. The result is a new list, which the caller may mutate.
    *
-   * @param key the key under which to cache the parts
+   * @param key the part
    * @param parts computes the parts of a type
    * @param plain computes the parts of this type from {@link #type}
    * @param sharesPrimaryAnnotations true if the primary annotations of each part are determined by
@@ -362,18 +398,16 @@ public class ProperType extends AbstractType {
       return plain.get();
     }
     clearPartCachesIfStale();
-    Map<Part, @Nullable List<AbstractType>> cache = partsCache;
-    List<AbstractType> result;
-    if (cache != null && cache.containsKey(key)) {
-      result = cache.get(key);
-    } else {
-      if (cache == null) {
-        cache = new HashMap<>();
-        partsCache = cache;
-      }
-      result = computePartsFromOrigin(origin, parts, plain, sharesPrimaryAnnotations);
-      cache.put(key, result);
+    Map<Part, @Nullable List<AbstractType>> cache = partCacheForLists;
+    if (cache == null) {
+      cache = new HashMap<>();
+      partCacheForLists = cache;
     }
+    List<AbstractType> result =
+        cached(
+            cache,
+            key,
+            () -> computePartsFromOrigin(origin, parts, plain, sharesPrimaryAnnotations));
     // The cached list must not be mutated.
     return result == null ? null : new ArrayList<>(result);
   }
@@ -449,8 +483,22 @@ public class ProperType extends AbstractType {
 
   @Override
   public @Nullable AbstractType asSuper(TypeMirror superType) {
-    return partFromOrigin(
-        superType, t -> t.asSuper(superType), () -> super.asSuper(superType), true);
+    InferenceType origin = this.origin;
+    if (origin == null) {
+      return super.asSuper(superType);
+    }
+    clearPartCachesIfStale();
+    Map<TypeMirror, @Nullable AbstractType> cache = asSuperCache;
+    if (cache == null) {
+      cache = new HashMap<>();
+      asSuperCache = cache;
+    }
+    return cached(
+        cache,
+        superType,
+        () ->
+            computePartFromOrigin(
+                origin, t -> t.asSuper(superType), () -> super.asSuper(superType), true));
   }
 
   @Override
