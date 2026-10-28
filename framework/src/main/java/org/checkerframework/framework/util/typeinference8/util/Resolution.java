@@ -58,13 +58,13 @@ public final class Resolution {
    */
   public static BoundSet resolve(
       Collection<Variable> as, BoundSet boundSet, Java8InferenceContext context) {
-    List<Variable> requested = new ArrayList<>(as);
+    List<Variable> originalAs = new ArrayList<>(as);
 
     // Remove any variables that already have instantiations
     List<Variable> resolvedVars = boundSet.getInstantiatedVariables();
     as.removeAll(resolvedVars);
     if (as.isEmpty()) {
-      return resolveIgnoredAnnotations(requested, boundSet, context);
+      return resolveIgnoredAnnotations(originalAs, boundSet, context);
     }
     // Calculate the dependencies between variables. (A variable depends on another if it is
     // included in one of its bounds.)
@@ -81,11 +81,11 @@ public final class Resolution {
     // Remove any variables that already have instantiations
     unresolvedVars.removeAll(resolvedVars);
     if (unresolvedVars.isEmpty()) {
-      return resolveIgnoredAnnotations(requested, boundSet, context);
+      return resolveIgnoredAnnotations(originalAs, boundSet, context);
     }
     // `resolution.resolve` empties `unresolvedVars`, and resolving them can give any of them an
     // instantiation that ignores annotations.
-    LinkedHashSet<Variable> resolved = new LinkedHashSet<>(requested);
+    LinkedHashSet<Variable> resolved = new LinkedHashSet<>(originalAs);
     resolved.addAll(unresolvedVars);
 
     // Resolve the variables
