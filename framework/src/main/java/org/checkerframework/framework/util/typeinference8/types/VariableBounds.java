@@ -47,8 +47,10 @@ public class VariableBounds {
   private final Java8InferenceContext context;
 
   /**
-   * The current instantiation of this variable, or null if it has none. It can be replaced during
-   * inference, for example by a later equal bound, or cleared by {@link #restore}.
+   * The current instantiation of this variable, or null if it has none. It is set from one of this
+   * variable's proper {@code EQUAL} bounds, or from the result of substituting instantiations into
+   * that bound. It can be replaced during inference, for example by a later equal bound, or cleared
+   * by {@link #restore}.
    */
   private @Nullable ProperType instantiation = null;
 
@@ -797,7 +799,9 @@ public class VariableBounds {
   @SuppressWarnings("interning:not.interned") // Checking for exact object.
   public boolean applyInstantiationsToBounds() {
     boolean changed = false;
-    // The new version of the bound that is this variable's instantiation, if that bound changes.
+    // The instantiation is set from one of this variable's proper EQUAL bounds, so applying
+    // instantiations to the bounds below may replace it.  This is the result of applying
+    // instantiations to that bound, or null if the bound is unchanged.
     AbstractType refreshedInstantiation = null;
     for (Set<AbstractType> boundList : bounds.values()) {
       if (boundList.isEmpty()) {
