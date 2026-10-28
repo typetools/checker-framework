@@ -32,6 +32,12 @@ import org.plumelib.util.CollectionsP;
 public abstract class AbstractSetInclusionQualifierHierarchy
     extends MostlyNoElementQualifierHierarchy {
 
+  /**
+   * The processing environment; used for creating annotations. It is non-null, unlike the result of
+   * {@code atypeFactory.getProcessingEnv()} under conservative defaults for unchecked code.
+   */
+  private final ProcessingEnvironment processingEnv;
+
   /** Whether a qualifier is a subtype when its elements are a subset of another qualifier's. */
   private final boolean subtypeIsSubset;
 
@@ -50,6 +56,7 @@ public abstract class AbstractSetInclusionQualifierHierarchy
       GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory,
       boolean subtypeIsSubset) {
     super(qualifierClasses, processingEnv.getElementUtils(), atypeFactory);
+    this.processingEnv = processingEnv;
     this.subtypeIsSubset = subtypeIsSubset;
   }
 
@@ -175,8 +182,7 @@ public abstract class AbstractSetInclusionQualifierHierarchy
    * @return an annotation of kind {@code kind} whose values are {@code values}
    */
   private AnnotationMirror createAnnotation(QualifierKind kind, Set<String> values) {
-    AnnotationBuilder builder =
-        new AnnotationBuilder(atypeFactory.getProcessingEnv(), kind.getAnnotationClass());
+    AnnotationBuilder builder = new AnnotationBuilder(processingEnv, kind.getAnnotationClass());
     builder.setValue("value", values.toArray());
     return builder.build();
   }
