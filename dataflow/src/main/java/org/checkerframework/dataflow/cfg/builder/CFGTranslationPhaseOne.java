@@ -1235,10 +1235,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * list of {@link Node}s representing the arguments converted for a call of the method. This
    * method applies to both method invocations and constructor calls.
    *
+   * <p>For {@code outer.new Inner(...) {...}}, the anonymous constructor's first parameter is the
+   * enclosing instance {@code outer}, which is not among {@code actualExprs}. This method skips
+   * that parameter and matches the remaining formal parameters with {@code actualExprs}; see {@link
+   * TreeUtils#parametersForArguments}.
+   *
    * @param tree the invocation tree for the call
    * @param method an ExecutableElement representing a method to be called
    * @param methodType an ExecutableType representing the type of the method call; the type must be
-   *     viewpoint-adapted to the call
+   *     viewpoint-adapted to the call. For an anonymous constructor with an explicit enclosing
+   *     expression, its first parameter type is that of the enclosing instance.
    * @param actualExprs a List of argument expressions to a call
    * @return a List of {@link Node}s representing arguments after conversions required by a call to
    *     this method
@@ -1252,7 +1258,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // next argument, since label binding expects nodes to be generated in execution order.
     // Therefore, this method first determines which conversions need to be applied and then
     // iterates over the actual arguments.
-    List<? extends TypeMirror> formals = methodType.getParameterTypes();
+    List<? extends TypeMirror> formals =
+        TreeUtils.parametersForArguments(method, tree, methodType.getParameterTypes());
     int numFormals = formals.size();
 
     ArrayList<Node> convertedNodes = new ArrayList<>(numFormals);
@@ -2293,6 +2300,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             new CaseNode(caseTree, selectorExprAssignment, exprs, guard, env.getTypeUtils());
         extendWithNode(test);
         extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+      } else if (!isDefaultCase) {
+        // The labels are not tested, but their patterns declare and bind variables.
+        for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
+          scan(exprTree, null);
+        }
       }
 
       // Handle the case body
@@ -3820,7 +3832,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         if (tree.toString().startsWith("<*nullchk*>")) {
           Node expr = scan(tree.getExpression(), p);
           result = new NullChkNode(tree, expr);
-          extendWithNode(result);
+          extendWithNodeWithException(result, nullPointerExceptionType);
           return result;
         }
 
