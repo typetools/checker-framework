@@ -222,7 +222,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   @Override
   protected void constructorFromUsePreSubstitution(
       NewClassTree tree, AnnotatedExecutableType type, boolean resolvePolyQuals) {
-    ExecutableElement declaration = TreeUtils.elementFromUse(tree);
+    // For an anonymous class, `type` is either the anonymous constructor or the superclass
+    // constructor that it invokes, so use `type`'s element rather than the element of `tree`.
+    ExecutableElement declaration = type.getElement();
     changeNonOwningParameterTypesToTop(declaration, type);
     super.constructorFromUsePreSubstitution(tree, type, resolvePolyQuals);
   }
@@ -247,8 +249,9 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         AnnotatedTypeMirror type, AnnotationMirrorMap<AnnotationMirror> replacements) {
       AnnotationMirrorMap<AnnotationMirror> realReplacements = replacements;
       TypeElement typeElement = TypesUtils.getTypeElement(type.getUnderlyingType());
-      // only customize replacement for type elements
-      if (typeElement != null) {
+      // Zero-arg polymorphic varargs calls such as Arrays.asList() can reach here with no
+      // computed replacement. The emptiness check avoids dereferencing replacements.get(POLY).
+      if (typeElement != null && !replacements.isEmpty()) {
         assert replacements.size() == 1 && replacements.containsKey(POLY);
         AnnotationMirror extantPolyAnnoReplacement = replacements.get(POLY);
         if (AnnotationUtils.areSameByName(
