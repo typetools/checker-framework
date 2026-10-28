@@ -1413,6 +1413,9 @@ public final class AnnotatedTypes {
    *   <li>Within their method declaration, both types have the same type parameter index.
    * </ul>
    *
+   * @param elements the element utilities
+   * @param type1 a type variable
+   * @param type2 a type variable
    * @return true if type1 and type2 are corresponding type variables (that is, either one
    *     "overrides" the other)
    * @deprecated To compare the signatures of an overriding method and an overridden method, express
