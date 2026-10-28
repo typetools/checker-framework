@@ -429,7 +429,9 @@ final class IgnoredAnnotations {
 
   /**
    * Gives each ignored substitution of {@code atm1} the annotations of the corresponding position
-   * of {@code atm2}, and vice versa. Positions correspond only where the two types have the same
+   * of {@code atm2}, and vice versa. If corresponding positions of both types are ignored
+   * substitutions, then the one in {@code atm1} gets the annotations of the one in {@code atm2}, so
+   * the two have the same annotations. Positions correspond only where the two types have the same
    * structure; elsewhere, nothing is replaced.
    *
    * @param atm1 a type; side-effected by this method
