@@ -102,10 +102,13 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * Map from a {@code MethodTree} to the {@link DisposalLoopInfo}s discovered in that method's
    * body.
    */
-  private final IdentityHashMap<MethodTree, Set<DisposalLoopInfo>>
-      preparedDisposalLoopInfosByMethod = new IdentityHashMap<>();
+  private final IdentityHashMap<MethodTree, Set<DisposalLoopInfo>> disposalLoopInfosByMethod =
+      new IdentityHashMap<>();
 
-  /** The {@code @}{@link NotOwningCollection} annotation. */
+  /**
+   * The {@code @}{@link NotOwningCollection} annotation. Used only as an argument to {@code
+   * getAnnotationInHierarchy} and {@code getPrimaryAnnotationInHierarchy}.
+   */
   public final AnnotationMirror TOP;
 
   /** The {@code @}{@link NotOwningCollection} annotation. Equals TOP. */
@@ -192,7 +195,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * exists.
    *
    * @param tree the condition tree
-   * @return the {@link DisposalLoopInfo} for condition {@code tree} if exists, otherwise {@code
+   * @return the {@link DisposalLoopInfo} for condition {@code tree} if one exists, otherwise {@code
    *     null}
    */
   public @Nullable DisposalLoopInfo getDisposalLoopInfoForConditionTree(Tree tree) {
@@ -239,8 +242,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * over that loop's body.
    *
    * @param disposalLoopInfo the {@link DisposalLoopInfo}
-   * @param calledMethods the called-methods on the iterated element over {@link DisposalLoopInfo}'s
-   *     body
+   * @param calledMethods the methods that {@link DisposalLoopInfo}'s body is guaranteed to call on
+   *     the iterated element
    */
   private void registerCalledMethods(DisposalLoopInfo disposalLoopInfo, Set<String> calledMethods) {
     conditionToDisposalLoopInfoMap.put(disposalLoopInfo.loopConditionTree(), disposalLoopInfo);
@@ -251,10 +254,10 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Scans a method CFG for {@link DisposalLoopInfo}'s and returns the discovered loops.
+   * Returns all the disposal loops in the given method CFG.
    *
    * @param cfg the CFG to scan
-   * @return the {@link DisposalLoopInfo}'s discovered in {@code cfg}
+   * @return the {@link DisposalLoopInfo}s discovered in {@code cfg}
    */
   private Set<DisposalLoopInfo> scanForDisposalLoopInfos(ControlFlowGraph cfg) {
     if (cfg.getUnderlyingAST().getKind() != UnderlyingAST.Kind.METHOD) {
@@ -266,7 +269,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Discovers and stores the {@link DisposalLoopInfo}'s for a method {@code cfg}. This discovery
+   * Discovers and stores the {@link DisposalLoopInfo}s for a method {@code cfg}. This discovery
    * must happen before {@link
    * org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsTransfer#initialStore(UnderlyingAST,
    * List)} runs, so that the called-methods initial stores are populated for the loop's iterated
@@ -279,46 +282,37 @@ public class CollectionOwnershipAnnotatedTypeFactory
     if (methodTree == null) {
       return;
     }
-    preparedDisposalLoopInfosByMethod.put(
-        methodTree, new LinkedHashSet<>(scanForDisposalLoopInfos(cfg)));
+    disposalLoopInfosByMethod.put(methodTree, new LinkedHashSet<>(scanForDisposalLoopInfos(cfg)));
   }
 
   /**
-   * Returns the {@link DisposalLoopInfo}'s for the given underlying AST.
+   * Returns the {@link DisposalLoopInfo}s for the given underlying AST.
    *
    * @param underlyingAST the underlying AST whose disposal loops should be returned
-   * @return the set of disposal loops for {@code underlyingAST}
+   * @return a copy of the disposal loops for {@code underlyingAST}
    */
   public Set<DisposalLoopInfo> getDisposalLoopInfos(UnderlyingAST underlyingAST) {
     MethodTree methodTree = getEnclosingMethodTree(underlyingAST);
     if (methodTree == null) {
       return Collections.emptySet();
     }
-    Set<DisposalLoopInfo> preparedDisposalLoopInfos =
-        preparedDisposalLoopInfosByMethod.get(methodTree);
-    if (preparedDisposalLoopInfos == null) {
+    Set<DisposalLoopInfo> disposalLoopInfos = disposalLoopInfosByMethod.get(methodTree);
+    if (disposalLoopInfos == null) {
       return Collections.emptySet();
     }
-    return Collections.unmodifiableSet(new LinkedHashSet<>(preparedDisposalLoopInfos));
+    return Collections.unmodifiableSet(new LinkedHashSet<>(disposalLoopInfos));
   }
 
   /**
-   * Removes and returns the {@link DisposalLoopInfo}'s for the given underlying AST.
+   * Removes the {@link DisposalLoopInfo}s for the given underlying AST.
    *
    * @param underlyingAST the underlying AST whose disposal loops should be removed
-   * @return the removed disposal loops for {@code underlyingAST}
    */
-  private Set<DisposalLoopInfo> removePreparedDisposalLoopInfos(UnderlyingAST underlyingAST) {
+  private void removeDisposalLoopInfos(UnderlyingAST underlyingAST) {
     MethodTree methodTree = getEnclosingMethodTree(underlyingAST);
-    if (methodTree == null) {
-      return Collections.emptySet();
+    if (methodTree != null) {
+      disposalLoopInfosByMethod.remove(methodTree);
     }
-    Set<DisposalLoopInfo> preparedDisposalLoopInfos =
-        preparedDisposalLoopInfosByMethod.remove(methodTree);
-    if (preparedDisposalLoopInfos == null) {
-      return Collections.emptySet();
-    }
-    return preparedDisposalLoopInfos;
   }
 
   /**
@@ -342,14 +336,15 @@ public class CollectionOwnershipAnnotatedTypeFactory
       return;
     }
 
-    Set<DisposalLoopInfo> preparedDisposalLoopInfos = removePreparedDisposalLoopInfos(ast);
-    if (preparedDisposalLoopInfos.isEmpty()) {
+    Set<DisposalLoopInfo> disposalLoopInfos = getDisposalLoopInfos(ast);
+    removeDisposalLoopInfos(ast);
+    if (disposalLoopInfos.isEmpty()) {
       return;
     }
 
     MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer =
         new MustCallConsistencyAnalyzer(ResourceLeakUtils.getResourceLeakChecker(this), true);
-    for (DisposalLoopInfo disposalLoopInfo : preparedDisposalLoopInfos) {
+    for (DisposalLoopInfo disposalLoopInfo : disposalLoopInfos) {
       Set<String> calledMethods =
           mustCallConsistencyAnalyzer.analyzeDisposalLoop(cfg, disposalLoopInfo);
       if (calledMethods != null) {

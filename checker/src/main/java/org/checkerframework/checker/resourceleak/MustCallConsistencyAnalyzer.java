@@ -2728,7 +2728,7 @@ public class MustCallConsistencyAnalyzer {
         // there are CFG nodes that have no incoming store. In the consistency analysis,
         // these are not explored. However, in the loop body analysis, such a node may be explicitly
         // explored
-        // (if a potentially fulfilling loop is in an unreachable block). Hence it is safe to return
+        // (if a potential disposal loop is in an unreachable block). Hence it is safe to return
         // here and
         // not propagate obligations, since the state is not reached by the analysis anyways.
         // Not just that, but note that if this state is reached, the entire loop is in an state
@@ -3484,15 +3484,13 @@ public class MustCallConsistencyAnalyzer {
     Objects.requireNonNull(
         disposalLoopInfo.iteratedElementTree(),
         "CollectionElementAccess tree provided to analyze loop body of an"
-            + " CFG-resolved potentially fulfilling collection loop is null.");
+            + " CFG-resolved potential disposal loop is null.");
     Objects.requireNonNull(
         disposalLoopInfo.loopBodyEntryBlock(),
-        "Block provided to analyze loop body of a CFG-resolved potentially fulfilling collection"
-            + " loop is null.");
+        "Block provided to analyze loop body of a CFG-resolved potential disposal loop is null.");
     Objects.requireNonNull(
         disposalLoopInfo.loopUpdateBlock(),
-        "Block provided to analyze loop body of a CFG-resolved potentially fulfilling collection"
-            + " loop is null.");
+        "Block provided to analyze loop body of a CFG-resolved potential disposal loop is null.");
 
     Block loopBodyEntryBlock = disposalLoopInfo.loopBodyEntryBlock();
     Block loopUpdateBlock = disposalLoopInfo.loopUpdateBlock();
@@ -3770,9 +3768,9 @@ public class MustCallConsistencyAnalyzer {
    * analysis should be aborted and immediately return. This happens if a {@code Block} is
    * encountered, which does not have an incoming store, meaning the analysis is not supposed to
    * reach it. However, in the loop body analysis, such a store may be explicitly explored (if a
-   * potentially fulfilling loop is in an unreachable {@code Block}). It is then impossible to
-   * proceed with the analysis, since stores for these {@code Block}s don't exist. Hence, the
-   * analysis should abort.
+   * potential disposal loop is in an unreachable {@code Block}). It is then impossible to proceed
+   * with the analysis, since stores for these {@code Block}s don't exist. Hence, the analysis
+   * should abort.
    */
   @SuppressWarnings("serial")
   private static class InvalidLoopBodyAnalysisException extends Exception {
