@@ -19,6 +19,7 @@ import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -93,21 +94,25 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    *
    * @param sideEffectsOnlyExpressions the arguments/values of the {@link SideEffectsOnly}
    *     annotation of the method being checked
-   * @param freshLocals the local variables that always hold an object that the method being checked
-   *     created
+   * @param checkedCode the code being checked: the body of the method, plus the instance
+   *     initializers if the method is a constructor
    * @param checker the checker to use
    * @param assumeSideEffectFree true if every method should be assumed to be side-effect-free
    * @param assumePureGetters true if every getter should be assumed to be side-effect-free
    */
   protected DisallowedSideEffects(
       List<JavaExpression> sideEffectsOnlyExpressions,
-      Set<VariableElement> freshLocals,
+      List<? extends Tree> checkedCode,
       BaseTypeChecker checker,
       boolean assumeSideEffectFree,
       boolean assumePureGetters) {
     this.sideEffectsOnlyExpressionsFromAnnotation = sideEffectsOnlyExpressions;
-    this.freshLocals = freshLocals;
     this.checker = checker;
+    LocalAssignmentScanner localAssignments = new LocalAssignmentScanner();
+    for (Tree tree : checkedCode) {
+      localAssignments.scan(tree, null);
+    }
+    this.freshLocals = freshLocals(localAssignments);
     this.assumeSideEffectFree = assumeSideEffectFree;
     this.assumePureGetters = assumePureGetters;
   }
@@ -198,11 +203,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     checkedCodeTrees.add(statement.getLeaf());
     DisallowedSideEffects scanner =
         new DisallowedSideEffects(
-            seOnlyExpressions,
-            freshLocals(checkedCodeTrees),
-            checker,
-            assumeSideEffectFree,
-            assumePureGetters);
+            seOnlyExpressions, checkedCodeTrees, checker, assumeSideEffectFree, assumePureGetters);
     if (explicitCall == null) {
       scanner.checkImplicitSuperCall(methodTree, constructorElt);
     }
@@ -274,7 +275,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     DisallowedSideEffects scanner =
         new DisallowedSideEffects(
             sideEffectsOnlyExpressions,
-            freshLocals(Collections.singletonList(statement.getLeaf())),
+            Collections.singletonList(statement.getLeaf()),
             checker,
             assumeSideEffectFree,
             assumePureGetters);
@@ -500,11 +501,10 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     }
     ExpressionTree iterableExpr = node.getExpression();
     TypeMirror iterableType = TreeUtils.typeOf(iterableExpr);
+    // A loop over an array calls no method.  A loop over an `Iterable` is compiled to
+    //   `Iterator<T> i = expr.iterator(); while (i.hasNext()) { T x = i.next(); ... }`
+    // so it calls `iterator()` on `expr`, then `hasNext()` and `next()` on the iterator.
     if (iterableType.getKind() != TypeKind.ARRAY) {
-      // The loop is compiled to
-      //   `Iterator<T> i = expr.iterator(); while (i.hasNext()) { T x = i.next(); ... }`.
-      // The loop creates the iterator, so no caller can observe a modification of it; only what
-      // `iterator()` modifies is visible outside the method.
       ExecutableElement iteratorMethod = noArgumentMethod(iterableType, "iterator");
       if (iteratorMethod == null) {
         checker.reportError(node, "purity.unknown.sideeffectsonly", "iterator");
@@ -516,6 +516,11 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
           node,
           iteratorMethod,
           isNewObjectTree(iterableExpr) ? null : expressionFromTree(iterableExpr));
+      // The receiver of `hasNext()` and `next()` is the iterator.  Only the compiler-generated
+      // variable `i` refers to the iterator, and `iterator()` is assumed to return a new object, so
+      // no caller can observe a modification of the iterator itself, such as advancing it.  A null
+      // receiver denotes such an object.  Anything else that `hasNext()` or `next()` modifies is
+      // still checked.
       TypeMirror iteratorType = iteratorMethod.getReturnType();
       for (String iteratorMethodName : new String[] {"hasNext", "next"}) {
         ExecutableElement iteratorElem = noArgumentMethod(iteratorType, iteratorMethodName);
@@ -981,22 +986,39 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * Returns the local variables that always hold an object that the given code created: those that
    * are assigned only {@code new} expressions.
    *
-   * @param trees the code being checked: the body of the method, plus the instance initializers if
-   *     the method is a constructor
-   * @return the local variables that always hold an object that {@code trees} created
+   * <p>Only a {@code new} expression is guaranteed to yield an object that did not exist before the
+   * method being checked was called. Any other value may be an object that the caller can also
+   * reach; for example, a string literal is interned, so {@code String s = "hello";} does not make
+   * {@code s} fresh. (That is of no consequence for a String, which cannot be modified.)
+   *
+   * @param localAssignments the assignments to local variables in the code being checked
+   * @return the local variables that always hold an object that the code being checked created
    */
-  protected static Set<VariableElement> freshLocals(List<? extends Tree> trees) {
-    FreshLocalScanner scanner = new FreshLocalScanner();
-    for (Tree tree : trees) {
-      scanner.scan(tree, null);
+  private static Set<VariableElement> freshLocals(LocalAssignmentScanner localAssignments) {
+    Set<VariableElement> result = new HashSet<>(2);
+    for (Map.Entry<VariableElement, List<ExpressionTree>> entry :
+        localAssignments.assignedValues.entrySet()) {
+      VariableElement local = entry.getKey();
+      if (localAssignments.otherwiseAssigned.contains(local)) {
+        continue;
+      }
+      boolean allNew = true;
+      for (ExpressionTree value : entry.getValue()) {
+        Tree.Kind valueKind = TreeUtils.withoutParens(value).getKind();
+        if (valueKind != Tree.Kind.NEW_CLASS && valueKind != Tree.Kind.NEW_ARRAY) {
+          allNew = false;
+          break;
+        }
+      }
+      if (allNew) {
+        result.add(local);
+      }
     }
-    scanner.freshlyAssigned.removeAll(scanner.otherwiseAssigned);
-    return scanner.freshlyAssigned;
+    return result;
   }
 
   /**
-   * Finds the local variables that are assigned only {@code new} expressions. The result is {@link
-   * #freshlyAssigned} minus {@link #otherwiseAssigned}.
+   * Collects the values that are assigned to each local variable.
    *
    * <p>This scanner descends into the body of a lambda and of a local or anonymous class, which
    * {@link DisallowedSideEffects} itself does not scan. That is harmless. Such a body can assign to
@@ -1006,16 +1028,23 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * finds in such a body are ones that the code being checked cannot refer to, and no assignment to
    * a local variable of the code being checked goes unseen.
    */
-  private static class FreshLocalScanner extends TreeScanner<Void, Void> {
+  private static class LocalAssignmentScanner extends TreeScanner<Void, Void> {
 
-    /** The local variables that are assigned a {@code new} expression. */
-    final Set<VariableElement> freshlyAssigned = new HashSet<>(2);
+    /**
+     * The values assigned to each local variable, by a declaration's initializer or by an
+     * assignment. A local variable that is never so assigned is absent.
+     */
+    final Map<VariableElement, List<ExpressionTree>> assignedValues = new HashMap<>(2);
 
-    /** The local variables that are assigned something other than a {@code new} expression. */
+    /**
+     * The local variables that are assigned a value that is not recorded in {@link
+     * #assignedValues}: the target of a compound assignment, and the variable of an enhanced {@code
+     * for} loop, which each iteration assigns.
+     */
     final Set<VariableElement> otherwiseAssigned = new HashSet<>(2);
 
-    /** Creates a FreshLocalScanner. */
-    FreshLocalScanner() {}
+    /** Creates a LocalAssignmentScanner. */
+    LocalAssignmentScanner() {}
 
     @Override
     public Void visitAnnotation(AnnotationTree node, Void aVoid) {
@@ -1031,6 +1060,22 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         record(TreeUtils.elementFromDeclaration(node), initializer);
       }
       return super.visitVariable(node, aVoid);
+    }
+
+    @Override
+    public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void aVoid) {
+      // Each iteration assigns the loop variable an element of the iterable or array, which might
+      // be an object that existed before the method was called.  That assignment does not appear
+      // in the source code, so neither `visitVariable` nor `visitAssignment` adds it to
+      // `assignedValues`.  Adding the variable to `otherwiseAssigned` prevents the variable from
+      // being treated as fresh.  For example, in `for (Object o : list) { o = new Object(); ... }`,
+      // `o` is not fresh, even though the only assignment in the source code assigns a `new`
+      // expression.
+      VariableElement local = localVariable(TreeUtils.elementFromDeclaration(node.getVariable()));
+      if (local != null) {
+        otherwiseAssigned.add(local);
+      }
+      return super.visitEnhancedForLoop(node, aVoid);
     }
 
     @Override
@@ -1064,16 +1109,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       if (local == null) {
         return;
       }
-      // Only a `new` expression is guaranteed to yield an object that did not exist before the
-      // method being checked was called.  Any other value may be an object that the caller can
-      // also reach; for example, a string literal is interned, so `String s = "hello";` does not
-      // make `s` fresh.  (That is of no consequence for a String, which cannot be modified.)
-      Tree.Kind valueKind = TreeUtils.withoutParens(value).getKind();
-      if (valueKind == Tree.Kind.NEW_CLASS || valueKind == Tree.Kind.NEW_ARRAY) {
-        freshlyAssigned.add(local);
-      } else {
-        otherwiseAssigned.add(local);
-      }
+      assignedValues.computeIfAbsent(local, k -> new ArrayList<>(1)).add(value);
     }
 
     /**

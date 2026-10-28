@@ -350,7 +350,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
       // Perform lambda polymorphic effect inference: @PolyUI lambda, calling @UIEffect => @UI
       // lambda
       if (targetEffect.isUI() && callerEffect.isPoly()) {
-        atypeFactory.constrainLambdaToUI((LambdaExpressionTree) callerTree);
+        atypeFactory.constrainLambdaToUI(ctLet);
         callerEffect = new Effect(UIEffect.class);
       }
     }

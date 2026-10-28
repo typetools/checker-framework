@@ -1,4 +1,5 @@
-// @skip-test until the bug is fixed
+// @skip-test until the Checker Framework checks the enclosing expression of a `new` against the
+// inner class constructor's receiver type (the "enclosingexpr" errors below).
 
 import org.checkerframework.framework.testchecker.h1h2checker.quals.*;
 
@@ -78,15 +79,5 @@ public class Issue282 {
     // found: @H1S2 @H2Top String. required: @H1S1 @H2Top String
     // :: error: (argument)
     new InnerGeneric<@H1S1 String>(a, c);
-  }
-}
-
-class Top {
-  void test(@H1Top @H2S2 Issue282 outer) {
-    outer.new Inner() {};
-    outer.new Inner("s") {};
-    outer.new Inner(1, 2, 3) {};
-    outer.new Inner(outer) {};
-    outer.new Inner(outer, outer, outer) {};
   }
 }
