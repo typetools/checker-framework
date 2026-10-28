@@ -1887,6 +1887,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       translateAssignment(indexVariable, new LocalVariableNode(indexVariable), zeroNode);
 
+      // The array variable is never reassigned, so only the first access to its length can throw
+      // NullPointerException.  Represent that first access before the loop, and the access in the
+      // loop condition without the exception.
+      if (mayBeNull(expression)) {
+        extendWithArrayLengthAccess(arrayVariable, true);
+      }
+
       // Compare index to array length
       addLabelForNextNode(conditionStart);
       IdentifierTree indexUse1 = treeBuilder.buildVariableUse(indexVariable);
@@ -1895,18 +1902,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       indexNode1.setInSource(false);
       extendWithNode(indexNode1);
 
-      IdentifierTree arrayUse1 = treeBuilder.buildVariableUse(arrayVariable);
-      handleArtificialTree(arrayUse1);
-      LocalVariableNode arrayNode1 = new LocalVariableNode(arrayUse1);
-      extendWithNode(arrayNode1);
-
-      MemberSelectTree lengthSelect = treeBuilder.buildArrayLengthAccess(arrayUse1);
-      handleArtificialTree(lengthSelect);
-      FieldAccessNode lengthAccessNode = new FieldAccessNode(lengthSelect, arrayNode1);
-      lengthAccessNode.setInSource(false);
-      // Attach NPE to length access; element access is safe due to prior bounds check and the
-      // synthetic array temp not being reassigned.
-      extendWithNodeWithException(lengthAccessNode, nullPointerExceptionType);
+      // This length access cannot throw NullPointerException; see above.  The element access below
+      // is safe due to the bounds check and the synthetic array temp not being reassigned.
+      FieldAccessNode lengthAccessNode = extendWithArrayLengthAccess(arrayVariable, false);
+      MemberSelectTree lengthSelect = (MemberSelectTree) lengthAccessNode.getTree();
 
       BinaryTree lessThan = treeBuilder.buildLessThan(indexUse1, lengthSelect);
       handleArtificialTree(lessThan);
@@ -2019,6 +2018,44 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         treeBuilder.buildVariableDecl(
             arrayType, uniqueName("array"), variableElement.getEnclosingElement(), expression);
     return arrayVariable;
+  }
+
+  /**
+   * Extends the CFG with an access to the length of the array variable of an enhanced for loop.
+   *
+   * @param arrayVariable the array variable
+   * @param mayThrowNullPointerException true if the access may throw a {@code NullPointerException}
+   * @return the node for the access
+   */
+  private FieldAccessNode extendWithArrayLengthAccess(
+      VariableTree arrayVariable, boolean mayThrowNullPointerException) {
+    IdentifierTree arrayUse = treeBuilder.buildVariableUse(arrayVariable);
+    handleArtificialTree(arrayUse);
+    LocalVariableNode arrayNode = new LocalVariableNode(arrayUse);
+    arrayNode.setInSource(false);
+    extendWithNode(arrayNode);
+
+    MemberSelectTree lengthSelect = treeBuilder.buildArrayLengthAccess(arrayUse);
+    handleArtificialTree(lengthSelect);
+    FieldAccessNode lengthAccessNode = new FieldAccessNode(lengthSelect, arrayNode);
+    lengthAccessNode.setInSource(false);
+    if (mayThrowNullPointerException) {
+      extendWithNodeWithException(lengthAccessNode, nullPointerExceptionType);
+    } else {
+      extendWithNode(lengthAccessNode);
+    }
+    return lengthAccessNode;
+  }
+
+  /**
+   * Returns false if the expression is never null, judging from its syntax.
+   *
+   * @param expression an expression of reference type
+   * @return false if the expression is never null; true if it may be null
+   */
+  private static boolean mayBeNull(ExpressionTree expression) {
+    expression = TreeUtils.withoutParens(expression);
+    return !(expression instanceof NewClassTree || expression instanceof NewArrayTree);
   }
 
   @Override
@@ -2275,9 +2312,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     private void buildCase(CaseTree caseTree, int index, boolean isLastCaseOfExhaustive) {
       boolean isDefaultCase = CaseUtils.isDefaultCaseTree(caseTree);
       // If true, no test of labels is necessary.
-      // Unfortunately, if isLastCaseOfExhaustive==TRUE, no CaseNode is created, so the selector
-      // expression is not refined by the case labels within the body.  In the future, that can be
-      // performed, but it requires addition of InfeasibleExitBlock, a new SpecialBlock in the CFG.
+      // Unfortunately, if isLastCaseOfExhaustive==TRUE, no flow-sensitive refinement occurs
+      // within the body of the CaseNode.  In the future, that can be performed, but it
+      // requires addition of InfeasibleExitBlock, a new SpecialBlock in the CFG.
       boolean isTerminalCase = isDefaultCase || isLastCaseOfExhaustive;
 
       Label thisBodyLabel = caseBodyLabels[index];
@@ -2300,13 +2337,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             new CaseNode(caseTree, selectorExprAssignment, exprs, guard, env.getTypeUtils());
         extendWithNode(test);
         extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
-      } else if (isLastCaseOfExhaustive) {
-        // No test is necessary, but a pattern still declares its binding variables.
-        for (Tree labelTree : CaseUtils.getLabels(caseTree)) {
-          if (labelTree instanceof BindingPatternTree
-              || TreeUtils.isDeconstructionPatternTree(labelTree)) {
-            scan(labelTree, null);
-          }
+      } else if (!isDefaultCase) {
+        // The labels are not tested, but their patterns declare and bind variables.
+        for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
+          scan(exprTree, null);
         }
       }
 
