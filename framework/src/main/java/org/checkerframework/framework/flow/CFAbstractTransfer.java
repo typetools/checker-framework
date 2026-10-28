@@ -82,6 +82,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
@@ -1158,9 +1159,26 @@ public abstract class CFAbstractTransfer<
 
     AnnotatedTypeMirror expType =
         analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
-    // The annotations to which the binding variable is refined.
-    AnnotationMirrorSet bindingVarAnnos =
-        bindingVar == null ? AnnotationMirrorSet.emptySet() : expType.getAnnotations();
+    // The annotations to which the binding variable is refined.  The binding variable has the
+    // expression's value, and it also has its own declared type.
+    AnnotationMirrorSet bindingVarAnnos = new AnnotationMirrorSet();
+    if (bindingVar != null) {
+      AnnotatedTypeMirror declaredType =
+          analysis.atypeFactory.getAnnotatedTypeLhs(bindingVar.getTree());
+      QualifierHierarchy qualHierarchy = analysis.atypeFactory.getQualifierHierarchy();
+      for (AnnotationMirror expAnno : expType.getAnnotations()) {
+        AnnotationMirror declaredAnno = declaredType.getPrimaryAnnotationInHierarchy(expAnno);
+        AnnotationMirror glb =
+            declaredAnno == null
+                ? expAnno
+                : qualHierarchy.greatestLowerBoundShallow(
+                    expAnno,
+                    expType.getUnderlyingType(),
+                    declaredAnno,
+                    declaredType.getUnderlyingType());
+        bindingVarAnnos.add(glb);
+      }
+    }
     // The annotations to which the expression is refined.
     AnnotationMirrorSet expAnnos =
         analysis.atypeFactory.getInstanceOfRefinement(node.getTree(), expType);
