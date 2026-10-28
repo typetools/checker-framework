@@ -129,7 +129,7 @@ public class UseOfVariable extends AbstractType {
   /**
    * {@inheritDoc}
    *
-   * <p>If the variable is instantiated, then the result is its instantiation, except that each
+   * <p>If the variable has an instantiation, then this use is replaced by it, except that each
    * primary annotation on this use, other than a polymorphic qualifier, replaces the
    * instantiation's annotation in the same hierarchy.
    *

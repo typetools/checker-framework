@@ -195,11 +195,10 @@ public abstract class AbstractType {
   public abstract Collection<Variable> getInferenceVariables();
 
   /**
-   * Returns a new type that is the same as this one except the variables in {@code instantiations}
-   * have been replaced by their instantiation.
+   * Returns this type with each use of an inference variable that has an instantiation replaced by
+   * that instantiation (see {@link Variable#getInstantiation}). The result may be this type itself.
    *
-   * @return a new type that is the same as this one except the variables in {@code instantiations}
-   *     have been replaced by their instantiation
+   * @return this type with the instantiations of its inference variables substituted
    */
   public abstract AbstractType applyInstantiations();
 
