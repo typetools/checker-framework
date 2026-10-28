@@ -12,7 +12,10 @@
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
 Removed classes `ByteMath`, `ShortMath`, `IntegerMath`, `LongMath`, `FloatMath`,
-and `DoubleMath`.  Use `NumberMath.getNumberMath()` instead.
+and `DoubleMath`.  Use `NumberMath.getNumberMath()` instead.  `NumberMath` is
+now a final, non-generic class.  `NumberMath.getNumberMath()` throws
+`UnsupportedOperationException`, rather than returning null, for an unsupported
+`Number` type.
 
 `PurityChecker.checkPurity()` takes two new arguments: the method declaration
 that lexically encloses the statement being checked (or null, as for an
