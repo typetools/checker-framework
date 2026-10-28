@@ -312,6 +312,7 @@ public class FormatterTreeUtil {
     /**
      * Returns the type of method invocation.
      *
+     * @return the type of method invocation
      * @see InvocationType
      */
     public final Result<InvocationType> getInvocationType() {
