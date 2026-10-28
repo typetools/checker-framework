@@ -55,7 +55,7 @@ public class ReplaceAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedTypeF
     if (type.getKind() != TypeKind.DECLARED) {
       return false;
     }
-    return types.isSameType(types.erasure(type), collectionErasure)
+    return TypesUtils.isErasedSameType(type, collectionErasure, types)
         || TypesUtils.isErasedSubtype(type, setErasure, types)
         || (TypesUtils.isErasedSubtype(type, queueErasure, types)
             && !TypesUtils.isErasedSubtype(type, listErasure, types))
