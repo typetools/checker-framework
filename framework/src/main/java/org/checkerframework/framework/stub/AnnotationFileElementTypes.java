@@ -298,13 +298,6 @@ public class AnnotationFileElementTypes {
    * @param annotationFiles list of files and directories to parse
    * @param fileType the file type of files to parse
    */
-  @SuppressWarnings("builder:required.method.not.called" // `allFiles` may contain multiple
-  // JarEntryAnnotationFileResource.  Each of those references a zip file entry resource, which
-  // itself references a ZipFile resource -- the same ZipFile for multiple zip file entries.
-  // Closing any one of the zip file entries will close the ZipFile, which invalidates the
-  // other zipfile entries.  Therefore, this code does not close any of them.  This code may
-  // leak resources.
-  )
   private void parseAnnotationFiles(List<String> annotationFiles, AnnotationFileType fileType) {
     if (annotationFiles.isEmpty()) {
       return;
@@ -317,39 +310,32 @@ public class AnnotationFileElementTypes {
           processingEnv, "AFET.parseAnnotationFiles(%s, %s)", annotationFiles, fileType);
     }
     for (String path : annotationFiles) {
-      // Special case when running in jtreg.
-      String base = System.getProperty("test.src");
-      String fullPath = (base == null) ? path : base + "/" + path;
-
-      List<AnnotationFileResource> allFiles =
-          AnnotationFileUtil.allAnnotationFiles(fullPath, fileType);
+      List<AnnotationFileResource> allFiles = AnnotationFileUtil.allAnnotationFiles(path, fileType);
       if (allFiles != null) {
         for (AnnotationFileResource resource : allFiles) {
-          BufferedInputStream annotationFileStream;
-          try {
-            annotationFileStream = new BufferedInputStream(resource.getInputStream());
+          try (BufferedInputStream annotationFileStream =
+              new BufferedInputStream(resource.getInputStream())) {
+            // Is it necessary to also skip files that consist only of Java comments?
+            Boolean isWhitespaceOnly = SystemUtil.isWhitespaceOnly(annotationFileStream, 100);
+            if (isWhitespaceOnly != null && (boolean) isWhitespaceOnly) {
+              continue;
+            }
+            // We use parseStubFile here even for ajava files because at this stage
+            // ajava files are parsed as stub files. The extra annotation data in an
+            // ajava file is parsed when type-checking the ajava file's corresponding
+            // Java file.
+            AnnotationFileParser.parseStubFile(
+                resource.getDescription(),
+                annotationFileStream,
+                factory,
+                processingEnv,
+                annotationFileAnnos,
+                fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
           } catch (IOException e) {
             checker.message(
                 Diagnostic.Kind.NOTE,
                 "Could not read annotation resource: " + resource.getDescription());
-            continue;
           }
-          // Is it necessary to also skip files that consist only of Java comments?
-          Boolean isWhitespaceOnly = SystemUtil.isWhitespaceOnly(annotationFileStream, 100);
-          if (isWhitespaceOnly != null && (boolean) isWhitespaceOnly) {
-            continue;
-          }
-          // We use parseStubFile here even for ajava files because at this stage
-          // ajava files are parsed as stub files. The extra annotation data in an
-          // ajava file is parsed when type-checking the ajava file's corresponding
-          // Java file.
-          AnnotationFileParser.parseStubFile(
-              resource.getDescription(),
-              annotationFileStream,
-              factory,
-              processingEnv,
-              annotationFileAnnos,
-              fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
         }
       } else {
         // We didn't find the files.
@@ -396,13 +382,16 @@ public class AnnotationFileElementTypes {
                   (parentPath == null
                       ? "current directory"
                       : "directory " + parentPath.getAbsolutePath());
+              String testSrc = System.getProperty("test.src");
               String msg =
                   checker.getClass().getSimpleName()
                       + " did not find annotation file or directory "
                       + path
                       + " on classpath or within "
                       + parentPathDescription
-                      + (fullPath.equals(path) ? "" : (" or at " + fullPath));
+                      + ((testSrc == null || new File(path).isAbsolute())
+                          ? ""
+                          : (" or within directory " + testSrc));
               StringJoiner sj = new StringJoiner(System.lineSeparator() + "  ");
               sj.add(msg);
               sj.add("Classpath:");
