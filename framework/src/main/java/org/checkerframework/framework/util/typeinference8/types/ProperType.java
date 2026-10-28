@@ -61,12 +61,12 @@ public class ProperType extends AbstractType {
   private final Collection<Variable> originVariables;
 
   /**
-   * If {@link #origin} is non-null, the value of {@link #instantiationStamp} for {@link
+   * If {@link #origin} is non-null, the value of {@link #instantiationVersion} for {@link
    * #originVariables} when this type was last found to be up to date; otherwise, 0. This type is up
    * to date if {@link #type} is what substituting the current instantiations into {@link #origin}
    * gives, apart from primary annotations. It is not used by {@link #equals} or {@link #hashCode}.
    */
-  private long upToDateStamp;
+  private long upToDateVersion;
 
   /**
    * A part of a type that {@link #partFromOrigin} or {@link #listPartFromOrigin} computes. Each
@@ -98,7 +98,7 @@ public class ProperType extends AbstractType {
   /**
    * The parts of this type that {@link #partFromOrigin} has computed: a map from a {@link Part} of
    * this type to the type at that part. It is null if no part has been computed since {@link
-   * #partCacheStamp} was set. Only a type with an {@link #origin} caches its parts, because
+   * #partCacheVersion} was set. Only a type with an {@link #origin} caches its parts, because
    * computing a part from the origin substitutes instantiations.
    *
    * <p>This map, {@link #partCacheForLists}, and {@link #asSuperCache} are conceptually a single
@@ -110,23 +110,23 @@ public class ProperType extends AbstractType {
   /**
    * The parts of this type that {@link #listPartFromOrigin} has computed and whose content is a
    * list of types: a map from a {@link Part} of this type to the types at that part. It is null if
-   * no such part has been computed since {@link #partCacheStamp} was set. See {@link #partCache}.
+   * no such part has been computed since {@link #partCacheVersion} was set. See {@link #partCache}.
    */
   private @Nullable Map<Part, @Nullable List<AbstractType>> partCacheForLists = null;
 
   /**
    * The results of {@link #asSuper} computed from {@link #origin}: a map from a supertype to this
    * type viewed as that supertype. It is null if none has been computed since {@link
-   * #partCacheStamp} was set. See {@link #partCache}.
+   * #partCacheVersion} was set. See {@link #partCache}.
    */
   private @Nullable Map<TypeMirror, @Nullable AbstractType> asSuperCache = null;
 
   /**
-   * The value of {@link #instantiationStamp} for {@link #originVariables} when the contents of
+   * The value of {@link #instantiationVersion} for {@link #originVariables} when the contents of
    * {@link #partCache}, {@link #partCacheForLists}, and {@link #asSuperCache} were computed. The
    * contents depend on the instantiations of those variables.
    */
-  private long partCacheStamp = 0;
+  private long partCacheVersion = 0;
 
   /**
    * Creates a proper type.
@@ -192,7 +192,7 @@ public class ProperType extends AbstractType {
     this.origin = origin;
     this.originVariables =
         origin == null ? Collections.emptyList() : origin.getInferenceVariables();
-    this.upToDateStamp = instantiationStamp(originVariables);
+    this.upToDateVersion = instantiationVersion(originVariables);
     verifyType(this.type);
   }
 
@@ -208,7 +208,7 @@ public class ProperType extends AbstractType {
     this.qualifierVars = AnnotationMirrorMap.emptyMap();
     this.origin = null;
     this.originVariables = Collections.emptyList();
-    this.upToDateStamp = 0;
+    this.upToDateVersion = 0;
     verifyType(this.type);
   }
 
@@ -224,7 +224,7 @@ public class ProperType extends AbstractType {
     this.qualifierVars = AnnotationMirrorMap.emptyMap();
     this.origin = null;
     this.originVariables = Collections.emptyList();
-    this.upToDateStamp = 0;
+    this.upToDateVersion = 0;
     verifyType(this.type);
   }
 
@@ -236,12 +236,12 @@ public class ProperType extends AbstractType {
    * @return a number that changes whenever the current instantiation of one of {@code variables} is
    *     set, replaced, or cleared
    */
-  private static long instantiationStamp(Collection<Variable> variables) {
-    long stamp = 0;
+  private static long instantiationVersion(Collection<Variable> variables) {
+    long version = 0;
     for (Variable variable : variables) {
-      stamp += variable.getBounds().getInstantiationChanges();
+      version += variable.getBounds().getInstantiationChanges();
     }
-    return stamp;
+    return version;
   }
 
   /**
@@ -339,12 +339,12 @@ public class ProperType extends AbstractType {
    * cleared since their contents were computed.
    */
   private void clearPartCachesIfStale() {
-    long stamp = instantiationStamp(originVariables);
-    if (stamp != partCacheStamp) {
+    long version = instantiationVersion(originVariables);
+    if (version != partCacheVersion) {
       partCache = null;
       partCacheForLists = null;
       asSuperCache = null;
-      partCacheStamp = stamp;
+      partCacheVersion = version;
     }
   }
 
@@ -796,7 +796,7 @@ public class ProperType extends AbstractType {
    */
   @Override
   public AbstractType applyInstantiations() {
-    if (origin == null || instantiationStamp(originVariables) == upToDateStamp) {
+    if (origin == null || instantiationVersion(originVariables) == upToDateVersion) {
       return this;
     }
     AbstractType result = origin.applyInstantiations();
@@ -813,7 +813,7 @@ public class ProperType extends AbstractType {
       // Nothing that this type depends on has changed.  Returning this type, rather than an
       // equal new one, tells the caller so; otherwise, two variables whose instantiations mention
       // each other would make each other change forever.
-      upToDateStamp = instantiationStamp(originVariables);
+      upToDateVersion = instantiationVersion(originVariables);
       return this;
     }
     return new ProperType(
@@ -853,7 +853,7 @@ public class ProperType extends AbstractType {
    *
    * <ul>
    *   <li>the same {@link #origin} (unlike {@link #create}),
-   *   <li>the same {@link #upToDateStamp},
+   *   <li>the same {@link #upToDateVersion},
    *   <li>an annotated type that is a deep copy of this type's, and
    *   <li>the same {@link #ignoreAnnotations}.
    * </ul>
@@ -872,7 +872,7 @@ public class ProperType extends AbstractType {
    *
    * <ul>
    *   <li>the same {@link #origin},
-   *   <li>the same {@link #upToDateStamp},
+   *   <li>the same {@link #upToDateVersion},
    *   <li>{@code atm} as its annotated type, and
    *   <li>{@code ignoreAnnotations} as its {@link #ignoreAnnotations}.
    * </ul>
@@ -887,7 +887,7 @@ public class ProperType extends AbstractType {
    */
   ProperType withAnnotatedType(AnnotatedTypeMirror atm, boolean ignoreAnnotations) {
     ProperType result = new ProperType(atm, qualifierVars, context, ignoreAnnotations, origin);
-    result.upToDateStamp = upToDateStamp;
+    result.upToDateVersion = upToDateVersion;
     return result;
   }
 

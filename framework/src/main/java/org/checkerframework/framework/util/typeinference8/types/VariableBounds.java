@@ -53,7 +53,15 @@ public class VariableBounds {
   private @Nullable ProperType instantiation = null;
 
   /**
-   * The number of times {@link #instantiation} has changed; see {@link #getInstantiationChanges}.
+   * The number of times {@link #instantiation} has been set, replaced, or cleared; see {@link
+   * #getInstantiationChanges}.
+   *
+   * <p>A {@link ProperType} with an origin sums this count over the variables that its origin
+   * mentions (see {@link ProperType#instantiationVersion}), and substitutes into its origin again
+   * only when the sum differs from the sum when it was last up to date; see {@link
+   * ProperType#applyInstantiations}. So the count is incremented only when the instantiation
+   * actually changes: setting an instantiation equal to the current one leaves the count unchanged,
+   * so that types whose origins mention this variable are not substituted again needlessly.
    */
   private int instantiationChanges = 0;
 
@@ -174,7 +182,6 @@ public class VariableBounds {
     }
     if (instantiation != null) {
       instantiation = null;
-      // A type whose origin mentions this variable must be substituted again.
       instantiationChanges++;
     }
     bounds.clear();
@@ -198,8 +205,7 @@ public class VariableBounds {
     assert !type.getTypeKind().isPrimitive()
         : "instantiation of " + variable + " is the primitive type " + type;
     if (type.equals(instantiation)) {
-      // Leave the stamp unchanged, so that types whose origins mention this variable are not
-      // substituted again.
+      // Leave instantiationChanges unchanged; see its Javadoc.
       return;
     }
     instantiation = type;
