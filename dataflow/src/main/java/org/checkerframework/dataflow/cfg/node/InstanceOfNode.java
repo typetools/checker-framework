@@ -99,6 +99,16 @@ public class InstanceOfNode extends Node {
   }
 
   /**
+   * Returns the variable of this instanceof's binding pattern, as in {@code e instanceof T v}.
+   * Returns null if this instanceof has no pattern or has a deconstruction pattern.
+   *
+   * @return the variable of this instanceof's binding pattern, or null
+   */
+  public @Nullable LocalVariableNode getBindingPatternVariable() {
+    return patternNode instanceof LocalVariableNode localVariableNode ? localVariableNode : null;
+  }
+
+  /**
    * Returns the pattern for this instanceof, or null if one does not exist.
    *
    * @return the pattern for this instanceof, or null if one does not exist
