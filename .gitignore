@@ -196,6 +196,8 @@ dataflow/tests/live-variable-switch/Out.txt
 dataflow/tests/live-variable-switch/*.class
 dataflow/tests/reachingdef/Out.txt
 dataflow/tests/reachingdef/*.class
+dataflow/tests/java21/record-pattern/Out.txt
+dataflow/tests/java21/record-pattern/*.class
 dataflow/tests/java22/unnamed-pattern/Out.txt
 dataflow/tests/java22/unnamed-pattern/*.class
 

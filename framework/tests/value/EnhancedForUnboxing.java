@@ -17,6 +17,27 @@ public class EnhancedForUnboxing {
     }
   }
 
+  void unboxWildcardList(List<? extends @IntVal(1) Integer> list) {
+    for (int x : list) {
+      @IntVal(1) int y = x;
+      // :: error: [assignment]
+      @IntVal(2) int z = x;
+    }
+    for (long x : list) {
+      @IntVal(1) long y = x;
+      // :: error: [assignment]
+      @IntVal(2) long z = x;
+    }
+  }
+
+  <T extends @IntVal(1) Integer> void unboxTypeVariableList(List<T> list) {
+    for (int x : list) {
+      @IntVal(1) int y = x;
+      // :: error: [assignment]
+      @IntVal(2) int z = x;
+    }
+  }
+
   void unboxArray(@IntVal(1) Integer[] array) {
     for (int x : array) {
       @IntVal(1) int y = x;
