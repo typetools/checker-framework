@@ -76,7 +76,7 @@ final class IgnoredAnnotations {
     AbstractType alignedSub = upToDateSub;
     if (mayHaveIgnoredSubstitutions) {
       // Compare the type arguments of the same class, so that corresponding positions line up.
-      alignedSub = alignedToClass(upToDateSub, upToDateSup.getJavaType(), types);
+      alignedSub = viewedAsClass(upToDateSub, upToDateSup.getJavaType(), types);
     }
     AnnotatedTypeMirror subATM = alignedSub.getAnnotatedType().deepCopy();
     AnnotatedTypeMirror supATM = upToDateSup.getAnnotatedType().deepCopy();
@@ -161,8 +161,8 @@ final class IgnoredAnnotations {
     if (!hasOrigin(upToDate1) && !hasOrigin(upToDate2)) {
       return new ReplacedTypes(upToDate1.getAnnotatedType(), upToDate2.getAnnotatedType());
     }
-    AbstractType aligned1 = alignedToClass(upToDate1, resultType, types);
-    AbstractType aligned2 = alignedToClass(upToDate2, resultType, types);
+    AbstractType aligned1 = viewedAsClass(upToDate1, resultType, types);
+    AbstractType aligned2 = viewedAsClass(upToDate2, resultType, types);
     if (!types.isSameType(
         types.erasure(aligned1.getJavaType()), types.erasure(aligned2.getJavaType()))) {
       return new ReplacedTypes(upToDate1.getAnnotatedType(), upToDate2.getAnnotatedType());
@@ -191,15 +191,17 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns {@code type} viewed as the class of {@code classType}, if both are declared types of
-   * different classes and that view exists; otherwise, returns {@code type}.
+   * Returns the supertype of {@code type} whose class is that of {@code classType} (see {@link
+   * AbstractType#asSuper}); for example, {@code ArrayList<String>} viewed as class {@code List} is
+   * {@code List<String>}. Returns {@code type} itself if either is not a declared type, if both are
+   * of the same class, or if {@code type} has no such supertype that is a proper type.
    *
    * @param type a type
-   * @param classType a supertype of {@code type}
+   * @param classType a type
    * @param types the type utilities
-   * @return {@code type} viewed as the class of {@code classType}, or {@code type}
+   * @return the supertype of {@code type} whose class is that of {@code classType}, or {@code type}
    */
-  private static AbstractType alignedToClass(AbstractType type, TypeMirror classType, Types types) {
+  private static AbstractType viewedAsClass(AbstractType type, TypeMirror classType, Types types) {
     if (type.getTypeKind() != TypeKind.DECLARED
         || classType.getKind() != TypeKind.DECLARED
         || types.isSameType(types.erasure(type.getJavaType()), types.erasure(classType))) {
