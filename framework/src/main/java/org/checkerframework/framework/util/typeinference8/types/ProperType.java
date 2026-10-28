@@ -831,15 +831,18 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns true if {@code a} and {@code b} are the same annotated type.
+   * Returns true if {@code a} and {@code b} have the same Java type and each is a subtype of the
+   * other. Unlike {@link AnnotatedTypeMirror#equals}, which {@link #equals} uses, this does not
+   * require the underlying Java types to be the same object, so it can compare types made by
+   * separate substitutions of instantiations. It compares only annotated types, not the other
+   * fields that {@link #equals} compares, such as {@link #origin}.
    *
    * @param a an annotated type
    * @param b an annotated type
-   * @return true if {@code a} and {@code b} are the same annotated type
+   * @return true if {@code a} and {@code b} have the same Java type and each is a subtype of the
+   *     other
    */
   private boolean isSameAnnotatedType(AnnotatedTypeMirror a, AnnotatedTypeMirror b) {
-    // AnnotatedTypeMirror#equals requires the underlying types to be the same object, and
-    // substituting instantiations makes new ones.
     return context.types.isSameType((Type) a.getUnderlyingType(), (Type) b.getUnderlyingType())
         && typeFactory.getTypeHierarchy().isSubtype(a, b)
         && typeFactory.getTypeHierarchy().isSubtype(b, a);
