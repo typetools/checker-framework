@@ -42,11 +42,9 @@ public class ProperType extends AbstractType {
    * instantiations ignores annotations (see {@link AbstractType#ignoreAnnotations}); otherwise,
    * null.
    *
-   * <p>A position where such an instantiation was substituted is an ignored substitution: its
-   * annotations say nothing about the variable's, so they are ignored. {@link #type} does not
-   * record which positions those are, but the origin does: it has a use of the variable at each
-   * one. So this type computes its parts from its origin (see {@link #partFromOrigin}), and {@link
-   * #applyInstantiations} substitutes again when the variable's instantiation changes.
+   * <p>The origin records which positions of {@link #type} are ignored substitutions (see {@link
+   * IgnoredAnnotations}): it has a use of a variable at each one. {@link #type} does not record
+   * them.
    */
   private final @Nullable InferenceType origin;
 
@@ -788,7 +786,7 @@ public class ProperType extends AbstractType {
   /**
    * Returns a copy of this type, with the same origin (unlike {@link #create}), whose annotated
    * type is a deep copy of this type's. Only the primary annotations of the copy's annotated type
-   * may be mutated; see {@link #origin}.
+   * may be mutated; see {@link #partFromOrigin}.
    *
    * @return a copy of this type
    */
@@ -800,7 +798,7 @@ public class ProperType extends AbstractType {
    * Returns a copy of this type, with the same origin and {@link #upToDateStamp}, whose annotated
    * type is {@code atm} and whose {@link #ignoreAnnotations} is {@code ignoreAnnotations}. {@code
    * atm} must be this type's annotated type, or a copy of it, with only its primary annotations
-   * changed; see {@link #origin}.
+   * changed; see {@link #partFromOrigin}.
    *
    * @param atm this type's annotated type, or a copy of it, with only its primary annotations
    *     changed
