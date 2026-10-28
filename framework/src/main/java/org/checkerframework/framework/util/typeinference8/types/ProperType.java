@@ -254,7 +254,7 @@ public class ProperType extends AbstractType {
     if (origin == null) {
       return plain.get();
     }
-    validatePartCaches();
+    clearPartCachesIfStale();
     Map<Object, @Nullable AbstractType> cache = partCache;
     if (cache != null && cache.containsKey(key)) {
       return cache.get(key);
@@ -299,10 +299,11 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Empties {@link #partCache} and {@link #partsCache} if the instantiation of a variable that
-   * {@link #origin} mentions has changed since their parts were computed.
+   * Empties {@link #partCache} and {@link #partsCache} if the current instantiation of a variable
+   * that {@link #origin} mentions has been set, replaced, or cleared since their parts were
+   * computed.
    */
-  private void validatePartCaches() {
+  private void clearPartCachesIfStale() {
     long stamp = instantiationStamp(originVariables);
     if (stamp != partCacheStamp) {
       partCache = null;
@@ -360,7 +361,7 @@ public class ProperType extends AbstractType {
     if (origin == null) {
       return plain.get();
     }
-    validatePartCaches();
+    clearPartCachesIfStale();
     Map<Part, @Nullable List<AbstractType>> cache = partsCache;
     List<AbstractType> result;
     if (cache != null && cache.containsKey(key)) {
