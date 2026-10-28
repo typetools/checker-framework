@@ -9,9 +9,6 @@ import org.checkerframework.framework.qual.AnnotatedFor;
  * A {@link org.checkerframework.framework.type.QualifierHierarchy} where, when a qualifier has
  * arguments, the subtype relation is determined by a subset test on the elements (arguments). The
  * elements must be strings.
- *
- * <p>This assumes that if the lub or glb of two qualifiers has elements, then both of the arguments
- * had the same kind as the result does.
  */
 @AnnotatedFor("nullness")
 public class SubtypeIsSubsetQualifierHierarchy extends AbstractSetInclusionQualifierHierarchy {
