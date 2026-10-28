@@ -506,9 +506,9 @@ public final class Resolution {
    * @param lowerBounds a nonempty set of proper types, each of which is a lower bound of {@code ai}
    *     or has the Java type of {@code ai}
    * @param includesEqualBounds if true, and the least upper bound ignores annotations (see {@link
-   *     AbstractType#ignoreAnnotations}) and is not a type variable, then its root annotations are
-   *     replaced by the least upper bound of the qualifier lower bounds of {@code ai}, rather than
-   *     lubbed with them
+   *     AbstractType#ignoreAnnotations}) and is not a type variable, then its primary annotations
+   *     are replaced by the least upper bound of the qualifier lower bounds of {@code ai}, rather
+   *     than lubbed with them
    * @param context the context
    * @return the least upper bound of {@code lowerBounds}, with the qualifier lower bounds of {@code
    *     ai} applied
@@ -526,24 +526,24 @@ public final class Resolution {
       // `lub` may return a type that shares its AnnotatedTypeMirror with one of `lowerBounds`,
       // which is still stored in a hash set of bounds.  Replacing annotations in place would
       // change that bound's hash code while it is in the set, so copy before mutating.  Only the
-      // root annotations are changed below, so the copy keeps the origin.
+      // primary annotations are changed below, so the copy keeps the origin.
       lubProperType = lubProperType.copy();
       QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
       AnnotationMirrorSet lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
       if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR
           && includesEqualBounds
           && lubProperType.ignoreAnnotations) {
-        // The root annotations of `lubProperType` say nothing about `ai`'s, so the qualifier lower
-        // bounds replace them rather than being lubbed with them.  Replacing them when only some
-        // hierarchies are ignored would discard the others, such as the H1 annotation of a lower
-        // bound from a use whose primary annotation is in H2 only.  A type variable's are lubbed
-        // into its lower bound, as below, because replacing its primary annotation would also fix
-        // its upper bound.
+        // The primary annotations of `lubProperType` say nothing about `ai`'s, so the qualifier
+        // lower bounds replace them rather than being lubbed with them.  Replacing them when only
+        // some hierarchies are ignored would discard the others, such as the H1 annotation of a
+        // lower bound from a use whose primary annotation is in H2 only.  A type variable's are
+        // lubbed into its lower bound, as below, because replacing its primary annotation would
+        // also fix its upper bound.
         lubProperType.getAnnotatedType().replaceAnnotations(lubAnnos);
       } else if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
-        // A proper lower bound's root annotations say nothing about `ai`'s only in the hierarchies
-        // of the use's explicit primary annotation, where UseOfVariable#addBound made them bottom,
-        // so lubbing them is already correct.
+        // A proper lower bound's primary annotations say nothing about `ai`'s only in the
+        // hierarchies of the use's explicit primary annotation, where UseOfVariable#addBound made
+        // them bottom, so lubbing them is already correct.
         Set<? extends AnnotationMirror> newLubAnnos =
             qh.leastUpperBoundsQualifiersOnly(
                 lubAnnos, lubProperType.getAnnotatedType().getPrimaryAnnotations());

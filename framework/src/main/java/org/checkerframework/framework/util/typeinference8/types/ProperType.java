@@ -219,9 +219,9 @@ public class ProperType extends AbstractType {
    * has no origin, or the part of the origin is not a proper type once instantiations are applied,
    * then the part is computed from {@link #type} instead.
    *
-   * <p>If {@code sharesRoot} is true, then a part computed from the origin gets the root
-   * annotations and {@link #ignoreAnnotations} of the part computed from {@link #type}; see {@link
-   * #withRootOf}.
+   * <p>If {@code sharesPrimaryAnnotations} is true, then a part computed from the origin gets the
+   * primary annotations and {@link #ignoreAnnotations} of the part computed from {@link #type}; see
+   * {@link #withPrimaryAnnotationsOf}.
    *
    * <p>If this type has an origin, the part is cached until the instantiation of a variable that
    * the origin mentions changes.
@@ -230,14 +230,15 @@ public class ProperType extends AbstractType {
    *     #asSuper}
    * @param part computes the part of a type
    * @param plain computes the part of this type from {@link #type}
-   * @param sharesRoot true if the root annotations of the part are determined by those of this type
+   * @param sharesPrimaryAnnotations true if the primary annotations of the part are determined by
+   *     those of this type
    * @return the part of this type
    */
   private @Nullable AbstractType partFromOrigin(
       Object key,
       Function<AbstractType, @Nullable AbstractType> part,
       Supplier<@Nullable AbstractType> plain,
-      boolean sharesRoot) {
+      boolean sharesPrimaryAnnotations) {
     InferenceType origin = this.origin;
     if (origin == null) {
       return plain.get();
@@ -251,7 +252,7 @@ public class ProperType extends AbstractType {
       cache = new HashMap<>();
       partCache = cache;
     }
-    AbstractType result = computePartFromOrigin(origin, part, plain, sharesRoot);
+    AbstractType result = computePartFromOrigin(origin, part, plain, sharesPrimaryAnnotations);
     cache.put(key, result);
     return result;
   }
@@ -264,20 +265,23 @@ public class ProperType extends AbstractType {
    * @param origin the origin of this type
    * @param part computes the part of a type
    * @param plain computes the part of this type from {@link #type}
-   * @param sharesRoot true if the root annotations of the part are determined by those of this type
+   * @param sharesPrimaryAnnotations true if the primary annotations of the part are determined by
+   *     those of this type
    * @return the part of this type
    */
   private @Nullable AbstractType computePartFromOrigin(
       InferenceType origin,
       Function<AbstractType, @Nullable AbstractType> part,
       Supplier<@Nullable AbstractType> plain,
-      boolean sharesRoot) {
+      boolean sharesPrimaryAnnotations) {
     // A part computed from the origin knows which of its positions are ignored substitutions.
     AbstractType derived = part.apply(origin);
     if (derived != null) {
       AbstractType result = derived.applyInstantiations();
       if (result.isProper()) {
-        return sharesRoot ? withRootOf((ProperType) result, plain.get()) : result;
+        return sharesPrimaryAnnotations
+            ? withPrimaryAnnotationsOf((ProperType) result, plain.get())
+            : result;
       }
     }
     return plain.get();
@@ -297,23 +301,24 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns {@code derived}, a part of this type computed from {@link #origin}, with the root
+   * Returns {@code derived}, a part of this type computed from {@link #origin}, with the primary
    * annotations and {@link #ignoreAnnotations} of {@code plainPart}, the same part computed from
    * {@link #type}.
    *
    * @param derived a part of this type computed from {@link #origin}
    * @param plainPart the same part of this type computed from {@link #type}, or null
-   * @return {@code derived}, with the root annotations of {@code plainPart}
+   * @return {@code derived}, with the primary annotations of {@code plainPart}
    */
-  private ProperType withRootOf(ProperType derived, @Nullable AbstractType plainPart) {
+  private ProperType withPrimaryAnnotationsOf(
+      ProperType derived, @Nullable AbstractType plainPart) {
     if (plainPart == null) {
       return derived;
     }
-    // The origin's root annotations are not this type's: they may have been changed since this
+    // The origin's primary annotations are not this type's: they may have been changed since this
     // type was made, for example by UseOfVariable#applyInstantiations or #withAnnotatedType.
     // `derived` may be an instantiation that is stored as a bound, so copy before mutating.
     AnnotatedTypeMirror atm = derived.getAnnotatedType().deepCopy();
-    IgnoredAnnotations.copyRootAnnotations(plainPart.getAnnotatedType(), atm);
+    IgnoredAnnotations.copyPrimaryAnnotations(plainPart.getAnnotatedType(), atm);
     return derived.withAnnotatedType(atm, plainPart.ignoreAnnotations);
   }
 
@@ -322,8 +327,8 @@ public class ProperType extends AbstractType {
    * #partFromOrigin}. If any part of the origin is not a proper type once instantiations are
    * applied, then all the parts are computed from {@link #type} instead.
    *
-   * <p>If {@code sharesRoot} is true, then each part gets the root annotations of the corresponding
-   * part computed from {@link #type}, as in {@link #partFromOrigin}.
+   * <p>If {@code sharesPrimaryAnnotations} is true, then each part gets the primary annotations of
+   * the corresponding part computed from {@link #type}, as in {@link #partFromOrigin}.
    *
    * <p>If this type has an origin, the parts are cached as in {@link #partFromOrigin}. The result
    * is a new list, which the caller may mutate.
@@ -331,15 +336,15 @@ public class ProperType extends AbstractType {
    * @param key the key under which to cache the parts
    * @param parts computes the parts of a type
    * @param plain computes the parts of this type from {@link #type}
-   * @param sharesRoot true if the root annotations of each part are determined by those of this
-   *     type
+   * @param sharesPrimaryAnnotations true if the primary annotations of each part are determined by
+   *     those of this type
    * @return the parts of this type
    */
   private @Nullable List<AbstractType> partsFromOrigin(
       Part key,
       Function<AbstractType, @Nullable List<AbstractType>> parts,
       Supplier<@Nullable List<AbstractType>> plain,
-      boolean sharesRoot) {
+      boolean sharesPrimaryAnnotations) {
     InferenceType origin = this.origin;
     if (origin == null) {
       return plain.get();
@@ -354,7 +359,7 @@ public class ProperType extends AbstractType {
         cache = new HashMap<>();
         partsCache = cache;
       }
-      result = computePartsFromOrigin(origin, parts, plain, sharesRoot);
+      result = computePartsFromOrigin(origin, parts, plain, sharesPrimaryAnnotations);
       cache.put(key, result);
     }
     // The cached list must not be mutated.
@@ -369,15 +374,15 @@ public class ProperType extends AbstractType {
    * @param origin the origin of this type
    * @param parts computes the parts of a type
    * @param plain computes the parts of this type from {@link #type}
-   * @param sharesRoot true if the root annotations of each part are determined by those of this
-   *     type
+   * @param sharesPrimaryAnnotations true if the primary annotations of each part are determined by
+   *     those of this type
    * @return the parts of this type
    */
   private @Nullable List<AbstractType> computePartsFromOrigin(
       InferenceType origin,
       Function<AbstractType, @Nullable List<AbstractType>> parts,
       Supplier<@Nullable List<AbstractType>> plain,
-      boolean sharesRoot) {
+      boolean sharesPrimaryAnnotations) {
     List<AbstractType> derived = parts.apply(origin);
     if (derived == null) {
       return plain.get();
@@ -390,11 +395,11 @@ public class ProperType extends AbstractType {
       }
       result.add(r);
     }
-    if (sharesRoot) {
+    if (sharesPrimaryAnnotations) {
       List<AbstractType> plainParts = plain.get();
       if (plainParts != null && plainParts.size() == result.size()) {
         for (int i = 0; i < result.size(); i++) {
-          result.set(i, withRootOf((ProperType) result.get(i), plainParts.get(i)));
+          result.set(i, withPrimaryAnnotationsOf((ProperType) result.get(i), plainParts.get(i)));
         }
       }
     }
@@ -406,7 +411,7 @@ public class ProperType extends AbstractType {
    *
    * @return true if this type has a primary annotation
    */
-  private boolean boundsShareRoot() {
+  private boolean boundsSharePrimaryAnnotations() {
     // If a wildcard or an intersection type has a primary annotation, then its bounds have it too,
     // as AnnotatedWildcardType and AnnotatedIntersectionType ensure.
     return !type.getPrimaryAnnotations().isEmpty();
@@ -461,7 +466,7 @@ public class ProperType extends AbstractType {
             Part.WILDCARD_LOWER_BOUND,
             AbstractType::getWildcardLowerBound,
             super::getWildcardLowerBound,
-            boundsShareRoot());
+            boundsSharePrimaryAnnotations());
     assert result != null : "@AssumeAssertion(nullness): getWildcardLowerBound is non-null";
     return result;
   }
@@ -473,7 +478,7 @@ public class ProperType extends AbstractType {
             Part.WILDCARD_UPPER_BOUND,
             AbstractType::getWildcardUpperBound,
             super::getWildcardUpperBound,
-            boundsShareRoot());
+            boundsSharePrimaryAnnotations());
     assert result != null : "@AssumeAssertion(nullness): getWildcardUpperBound is non-null";
     return result;
   }
@@ -485,7 +490,7 @@ public class ProperType extends AbstractType {
             Part.INTERSECTION_BOUNDS,
             AbstractType::getIntersectionBounds,
             super::getIntersectionBounds,
-            boundsShareRoot());
+            boundsSharePrimaryAnnotations());
     assert result != null : "@AssumeAssertion(nullness): getIntersectionBounds is non-null";
     return result;
   }
@@ -631,7 +636,7 @@ public class ProperType extends AbstractType {
    *     ConstraintSet#TRUE_ANNO_FAIL}
    */
   public ConstraintSet checkAnnotationEquality(ProperType other) {
-    if (IgnoredAnnotations.decidedByIgnoredRoot(this, other)) {
+    if (IgnoredAnnotations.decidedByIgnoredPrimaryAnnotations(this, other)) {
       return ConstraintSet.TRUE;
     }
     ReplacedTypes compared =
@@ -725,7 +730,7 @@ public class ProperType extends AbstractType {
    * <p>A proper type has no inference variables, so this returns this type, unless it has an {@link
    * #origin} and the instantiation of a variable that the origin mentions has changed since this
    * type was made. Then it returns the origin with the current instantiations applied and with this
-   * type's root annotations, or this type if that result is the same as this type.
+   * type's primary annotations, or this type if that result is the same as this type.
    */
   @Override
   public AbstractType applyInstantiations() {
@@ -737,11 +742,11 @@ public class ProperType extends AbstractType {
       return this;
     }
     ProperType properResult = (ProperType) result;
-    // `origin` has no ignored substitution at its root, so the root annotations of this type are
+    // No ignored substitution of `origin` affects the primary annotations of this type, so they are
     // still right, and they may differ from those of `origin` if resolution set them; see
     // Resolution#lubOfLowerBounds.  `result` is a new type, so its annotated type may be mutated.
     AnnotatedTypeMirror resultATM = properResult.getAnnotatedType();
-    IgnoredAnnotations.copyRootAnnotations(type, resultATM);
+    IgnoredAnnotations.copyPrimaryAnnotations(type, resultATM);
     if (properResult.origin != null && isSameAnnotatedType(resultATM, type)) {
       // Nothing that this type depends on has changed.  Returning this type, rather than an
       // equal new one, tells the caller so; otherwise, two variables whose instantiations mention
@@ -780,8 +785,8 @@ public class ProperType extends AbstractType {
 
   /**
    * Returns a copy of this type, with the same origin (unlike {@link #create}), whose annotated
-   * type is a deep copy of this type's. Only the root annotations of the copy's annotated type may
-   * be mutated; see {@link #origin}.
+   * type is a deep copy of this type's. Only the primary annotations of the copy's annotated type
+   * may be mutated; see {@link #origin}.
    *
    * @return a copy of this type
    */
@@ -792,11 +797,12 @@ public class ProperType extends AbstractType {
   /**
    * Returns a copy of this type, with the same origin and {@link #originStamp}, whose annotated
    * type is {@code atm} and whose {@link #ignoreAnnotations} is {@code ignoreAnnotations}. {@code
-   * atm} must be this type's annotated type, or a copy of it, with only its root annotations
+   * atm} must be this type's annotated type, or a copy of it, with only its primary annotations
    * changed; see {@link #origin}.
    *
-   * @param atm this type's annotated type, or a copy of it, with only its root annotations changed
-   * @param ignoreAnnotations true if the root annotations of {@code atm} should be ignored
+   * @param atm this type's annotated type, or a copy of it, with only its primary annotations
+   *     changed
+   * @param ignoreAnnotations true if the primary annotations of {@code atm} should be ignored
    * @return a copy of this type whose annotated type is {@code atm}
    */
   ProperType withAnnotatedType(AnnotatedTypeMirror atm, boolean ignoreAnnotations) {

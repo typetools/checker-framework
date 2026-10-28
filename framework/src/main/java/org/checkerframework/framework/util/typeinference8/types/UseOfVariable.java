@@ -164,7 +164,7 @@ public class UseOfVariable extends AbstractType {
     // Copy, because the instantiation is stored as a bound of `variable`.
     AnnotatedTypeMirror atm = instantiation.getAnnotatedType().deepCopy();
     atm.replaceAnnotations(annosToCopy);
-    // Only the root annotations change, so the result keeps the instantiation's record of its
+    // Only the primary annotations change, so the result keeps the instantiation's record of its
     // ignored substitutions; see ProperType#origin.
     return instantiation.withAnnotatedType(atm, ignore);
   }
@@ -200,14 +200,14 @@ public class UseOfVariable extends AbstractType {
   }
 
   /**
-   * Returns a copy of {@code bound} that ignores its root annotations, and whose annotated type is
-   * a deep copy that may be mutated. If {@code bound} is a proper type, the copy has its origin;
+   * Returns a copy of {@code bound} that ignores its primary annotations, and whose annotated type
+   * is a deep copy that may be mutated. If {@code bound} is a proper type, the copy has its origin;
    * see {@link ProperType#getOrigin}.
    *
    * @param bound a type
-   * @return a copy of {@code bound} that ignores its root annotations
+   * @return a copy of {@code bound} that ignores its primary annotations
    */
-  private static AbstractType copyIgnoringRoot(AbstractType bound) {
+  private static AbstractType copyIgnoringPrimaryAnnotations(AbstractType bound) {
     AnnotatedTypeMirror atm = bound.getAnnotatedType().deepCopy();
     if (bound instanceof ProperType properBound) {
       return properBound.withAnnotatedType(atm, true);
@@ -217,9 +217,9 @@ public class UseOfVariable extends AbstractType {
 
   /**
    * Adds a bound for this variable. If this use has a primary annotation, then the bound added is a
-   * copy of {@code bound} that ignores its root annotations; a lower bound's root annotations are
-   * bottom and an upper bound's are top, and an {@code EQUAL} bound that is not a type variable is
-   * added as both an upper and a lower bound instead.
+   * copy of {@code bound} that ignores its primary annotations; a lower bound's primary annotations
+   * are bottom and an upper bound's are top, and an {@code EQUAL} bound that is not a type variable
+   * is added as both an upper and a lower bound instead.
    *
    * @param parent the constraint whose reduction created this bound
    * @param kind the kind of bound
@@ -233,7 +233,7 @@ public class UseOfVariable extends AbstractType {
       // ignored. Also, set to bottom or top, unless the bound is a type variable. This way if all
       // the bounds of a variable have annotations to be ignored, the instantiation of that variable
       // is as flexible as possible.
-      AbstractType boundCopy = copyIgnoringRoot(bound);
+      AbstractType boundCopy = copyIgnoringPrimaryAnnotations(bound);
       // `create` may copy its argument rather than storing it (`UseOfVariable`'s constructor
       // deep-copies, and `InferenceType`'s calls `asUse()`), so mutate the annotated type that
       // `boundCopy` actually holds.  It is already a fresh copy, so mutating it is safe.
@@ -250,7 +250,7 @@ public class UseOfVariable extends AbstractType {
         boundCopyATM.replaceAnnotations(tops);
         variable.getBounds().addBound(parent, BoundKind.UPPER, boundCopy);
 
-        AbstractType boundCopy2 = copyIgnoringRoot(bound);
+        AbstractType boundCopy2 = copyIgnoringPrimaryAnnotations(bound);
         AnnotatedTypeMirror boundCopyATM2 = boundCopy2.getAnnotatedType();
         boundCopyATM2.replaceAnnotations(bots);
         variable.getBounds().addBound(parent, BoundKind.LOWER, boundCopy2);

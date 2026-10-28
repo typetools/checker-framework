@@ -28,9 +28,9 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
  * {@code @Nullable T}, and so say nothing about the variable's annotations:
  *
  * <ul>
- *   <li>the root of a type whose {@link AbstractType#ignoreAnnotations} is true: its primary
- *       annotations, including those of its bounds if it is a type variable or a wildcard, but not
- *       annotations nested in it, such as those of its type arguments; and
+ *   <li>the primary annotations of a type whose {@link AbstractType#ignoreAnnotations} is true,
+ *       including those of its bounds if it is a type variable or a wildcard, but not annotations
+ *       nested in it, such as those of its type arguments; and
  *   <li>an ignored substitution: a position in a {@link ProperType} where an instantiation that
  *       ignores annotations was substituted. The type's {@link ProperType#getOrigin() origin} has a
  *       use of the variable there.
@@ -47,8 +47,8 @@ final class IgnoredAnnotations {
 
   /**
    * Returns the annotated types of {@code sub} and {@code sup}, in that order, with their ignored
-   * positions replaced. The root of a type that ignores annotations has bottom annotations if it is
-   * {@code sub}, and top annotations if it is {@code sup}. An ignored substitution has the
+   * positions replaced. A type that ignores annotations has bottom primary annotations if it is
+   * {@code sub}, and top primary annotations if it is {@code sup}. An ignored substitution has the
    * annotations of the corresponding position of the other type. If neither type has an ignored
    * position, the result holds the types' own annotated types; otherwise it holds copies.
    *
@@ -122,9 +122,9 @@ final class IgnoredAnnotations {
           ignoredSubstitutions(current2, atm2, qh));
     }
     if (current1.ignoreAnnotations) {
-      copyRootAnnotations(atm2, atm1);
+      copyPrimaryAnnotations(atm2, atm1);
     } else if (current2.ignoreAnnotations) {
-      copyRootAnnotations(atm1, atm2);
+      copyPrimaryAnnotations(atm1, atm2);
     }
     return new ReplacedTypes(atm1, atm2);
   }
@@ -133,8 +133,8 @@ final class IgnoredAnnotations {
    * Returns the annotated types of {@code type1} and {@code type2}, in the order given, with their
    * ignored substitutions replaced. If either type has ignored substitutions, then both are viewed
    * as the class of {@code lubType}, and an ignored substitution of one has the annotations of the
-   * corresponding position of the other. The roots are not replaced. If nothing is replaced, the
-   * result holds the types' own annotated types; otherwise it holds copies.
+   * corresponding position of the other. The primary annotations are not replaced. If nothing is
+   * replaced, the result holds the types' own annotated types; otherwise it holds copies.
    *
    * @param type1 a type
    * @param type2 a type
@@ -204,37 +204,37 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns true if at least one of {@code type1} and {@code type2} ignores its root annotations,
-   * neither has an origin (see {@link ProperType#getOrigin}), and neither has an annotated position
-   * other than its root.
+   * Returns true if at least one of {@code type1} and {@code type2} ignores its primary
+   * annotations, neither has an origin (see {@link ProperType#getOrigin}), and neither has
+   * annotations other than its primary annotations.
    *
    * @param type1 a type
    * @param type2 a type
-   * @return true if one of {@code type1} and {@code type2} ignores its root annotations and neither
-   *     has an origin or an annotated position other than its root
+   * @return true if one of {@code type1} and {@code type2} ignores its primary annotations and
+   *     neither has an origin or annotations other than its primary annotations
    */
-  static boolean decidedByIgnoredRoot(AbstractType type1, AbstractType type2) {
+  static boolean decidedByIgnoredPrimaryAnnotations(AbstractType type1, AbstractType type2) {
     return (type1.ignoreAnnotations || type2.ignoreAnnotations)
         && !hasOrigin(type1)
         && !hasOrigin(type2)
-        && hasOnlyRoot(type1.getAnnotatedType())
-        && hasOnlyRoot(type2.getAnnotatedType());
+        && hasOnlyPrimaryAnnotations(type1.getAnnotatedType())
+        && hasOnlyPrimaryAnnotations(type2.getAnnotatedType());
   }
 
   /**
-   * Returns true if {@code type} has no annotated position other than its root. Returns false for a
-   * type variable.
+   * Returns true if {@code type} has no annotations other than its primary annotations. Returns
+   * false for a type variable.
    *
    * @param type an annotated type
-   * @return true if {@code type} has no annotated position other than its root
+   * @return true if {@code type} has no annotations other than its primary annotations
    */
-  private static boolean hasOnlyRoot(AnnotatedTypeMirror type) {
+  private static boolean hasOnlyPrimaryAnnotations(AnnotatedTypeMirror type) {
     switch (type.getKind()) {
       case DECLARED -> {
         AnnotatedDeclaredType declared = (AnnotatedDeclaredType) type;
         AnnotatedDeclaredType enclosing = declared.getEnclosingType();
         return declared.getTypeArguments().isEmpty()
-            && (enclosing == null || hasOnlyRoot(enclosing));
+            && (enclosing == null || hasOnlyPrimaryAnnotations(enclosing));
       }
       case NULL -> {
         return true;
@@ -435,11 +435,11 @@ final class IgnoredAnnotations {
       Set<AnnotatedTypeMirror> ignored1,
       Set<AnnotatedTypeMirror> ignored2) {
     if (ignored1.contains(atm1)) {
-      copyRootAnnotations(boundOf(atm2), atm1);
+      copyPrimaryAnnotations(boundOf(atm2), atm1);
       return;
     }
     if (ignored2.contains(atm2)) {
-      copyRootAnnotations(boundOf(atm1), atm2);
+      copyPrimaryAnnotations(boundOf(atm1), atm2);
       return;
     }
     if (atm1.getKind() != atm2.getKind()) {
@@ -502,14 +502,14 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Gives {@code target} the root annotations of {@code source}. If both are type variables and
+   * Gives {@code target} the primary annotations of {@code source}. If both are type variables and
    * {@code source} has no primary annotation, then {@code target}'s primary annotations are removed
    * and its bounds get the primary annotations of {@code source}'s bounds.
    *
-   * @param source the type whose root annotations to copy
-   * @param target the type whose root annotations to replace; side-effected by this method
+   * @param source the type whose primary annotations to copy
+   * @param target the type whose primary annotations to replace; side-effected by this method
    */
-  static void copyRootAnnotations(AnnotatedTypeMirror source, AnnotatedTypeMirror target) {
+  static void copyPrimaryAnnotations(AnnotatedTypeMirror source, AnnotatedTypeMirror target) {
     if (source.getPrimaryAnnotations().isEmpty()
         && source instanceof AnnotatedTypeVariable sourceTV
         && target instanceof AnnotatedTypeVariable targetTV) {

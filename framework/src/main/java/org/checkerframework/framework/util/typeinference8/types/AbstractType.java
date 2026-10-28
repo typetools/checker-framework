@@ -738,7 +738,7 @@ public abstract class AbstractType {
    *     ConstraintSet#TRUE_ANNO_FAIL}
    */
   protected final ConstraintSet checkAnnotationSubtype(ProperType superType) {
-    if (IgnoredAnnotations.decidedByIgnoredRoot(this, superType)) {
+    if (IgnoredAnnotations.decidedByIgnoredPrimaryAnnotations(this, superType)) {
       return ConstraintSet.TRUE;
     }
     ReplacedTypes compared =
