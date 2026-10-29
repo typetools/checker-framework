@@ -20,6 +20,8 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -1053,12 +1055,15 @@ public class InferenceFactory {
     }
     // If the result has the Java type of an input that records its ignored substitutions, and
     // differs from that input only in its primary annotations and at those ignored substitutions,
-    // then it keeps that record; see ProperType#origin.  Its ignored substitutions have the other
-    // inputs' annotations now, and they are substituted again when the instantiations that ignore
-    // annotations change.  A result that differs elsewhere cannot keep the record, because a type
-    // with an origin computes its parts from the origin.
+    // and those positions are still ignored, then it keeps that record; see ProperType#origin.
+    // Its ignored substitutions have the annotations of other inputs' ignored substitutions, and
+    // they are substituted again when the instantiations that ignore annotations change.  A result
+    // that differs
+    // elsewhere cannot keep the record, because a type with an origin computes its parts from the
+    // origin.
     for (ProperType properType : properTypes) {
-      ProperType withOrigin = withOriginOf(properType, lubTM, lubATM, ignoreAnnotations);
+      ProperType withOrigin =
+          withOriginOf(properType, properTypes, lubTM, lubATM, ignoreAnnotations);
       if (withOrigin != null) {
         return withOrigin;
       }
@@ -1067,26 +1072,59 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns a copy of {@code type} whose annotated type is {@code atm}, if {@code type} is a proper
-   * type with an origin (see {@link ProperType#getOrigin}), its Java type is {@code javaType}, and
-   * {@code atm} differs from it only in its primary annotations and at its ignored substitutions.
+   * Returns a copy of {@code type} whose annotated type is {@code atm}, if all of these hold:
+   *
+   * <ul>
+   *   <li>{@code type} is a proper type with an origin (see {@link ProperType#getOrigin}),
+   *   <li>its Java type is {@code javaType},
+   *   <li>{@code atm} differs from it only in its primary annotations and at its ignored
+   *       substitutions, and
+   *   <li>no ignored substitution of {@code type} corresponds to a position of another of {@code
+   *       inputs} that is not an ignored substitution (see {@link
+   *       IgnoredAnnotations#ignoredSubstitutionsStayIgnored}).
+   * </ul>
+   *
    * The copy keeps the origin. Otherwise, returns null.
    *
    * @param type an input to a least upper bound or greatest lower bound computation
+   * @param inputs all the inputs to that computation, including {@code type}
    * @param javaType the Java type of the result of that computation
    * @param atm the annotated type of the result of that computation
    * @param ignoreAnnotations true if the primary annotations of the result should be ignored
    * @return a copy of {@code type} whose annotated type is {@code atm}, or null
    */
   private @Nullable ProperType withOriginOf(
-      AbstractType type, TypeMirror javaType, AnnotatedTypeMirror atm, boolean ignoreAnnotations) {
-    if (type instanceof ProperType properType
-        && properType.getOrigin() != null
-        && context.types.isSameType((Type) properType.getJavaType(), (Type) javaType)
-        && differsOnlyInPrimaryOrIgnoredAnnotations(properType, atm)) {
-      return properType.withAnnotatedType(atm, ignoreAnnotations);
+      AbstractType type,
+      Collection<? extends AbstractType> inputs,
+      TypeMirror javaType,
+      AnnotatedTypeMirror atm,
+      boolean ignoreAnnotations) {
+    if (!(type instanceof ProperType properType)
+        || properType.getOrigin() == null
+        || !context.types.isSameType((Type) properType.getJavaType(), (Type) javaType)
+        || !differsOnlyInPrimaryOrIgnoredAnnotations(properType, atm)) {
+      return null;
     }
-    return null;
+    // At an ignored substitution of `type` where another input has annotations that are not
+    // ignored, the result has those annotations, so the position is no longer ignored.  Keeping the
+    // origin would make later comparisons ignore those annotations, and substituting
+    // instantiations again would overwrite them.  TODO: Keep the origin at the positions that are
+    // still ignored, rather than discarding it, when the ignored substitutions of each input
+    // include some that are not ignored substitutions of another input.
+    for (AbstractType other : inputs) {
+      @SuppressWarnings("interning:not.interned") // Skipping `type` itself.
+      boolean isType = other == type;
+      if (!isType
+          && !IgnoredAnnotations.ignoredSubstitutionsStayIgnored(
+              properType,
+              other,
+              javaType,
+              typeFactory.getQualifierHierarchy(),
+              context.modelTypes)) {
+        return null;
+      }
+    }
+    return properType.withAnnotatedType(atm, ignoreAnnotations);
   }
 
   /**
@@ -1179,9 +1217,10 @@ public class InferenceFactory {
     boolean ignoreAnnotations = a.ignoreAnnotations && b.ignoreAnnotations;
     // As in `lub`, the result keeps the record of ignored substitutions of an input that it differs
     // from only in its primary annotations and at those ignored substitutions.
-    ProperType withOrigin = withOriginOf(a, glb, glbATM, ignoreAnnotations);
+    List<AbstractType> inputs = Arrays.asList(a, b);
+    ProperType withOrigin = withOriginOf(a, inputs, glb, glbATM, ignoreAnnotations);
     if (withOrigin == null) {
-      withOrigin = withOriginOf(b, glb, glbATM, ignoreAnnotations);
+      withOrigin = withOriginOf(b, inputs, glb, glbATM, ignoreAnnotations);
     }
     if (withOrigin != null) {
       return withOrigin;
