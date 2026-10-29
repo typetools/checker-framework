@@ -125,8 +125,9 @@ public final class Resolution {
    * #lubOfLowerBounds} of the variable's proper lower bounds, viewed as the instantiation's Java
    * type (see {@link #viewAs}). If the variable has no proper lower bound, or that view cannot be
    * computed, then {@code t} is {@link #lubOfLowerBounds} of {@link
-   * org.checkerframework.framework.util.typeinference8.types.VariableBounds#findLowerBoundsForAnnotations}.
-   * Then incorporates the new bounds.
+   * org.checkerframework.framework.util.typeinference8.types.VariableBounds#findLowerBoundsForAnnotations},
+   * and no bound is added if the Java type of {@code t} is not that of the instantiation. Then
+   * incorporates the new bounds.
    *
    * <p>If {@code t} respects annotations, then it replaces the instantiation, and incorporation
    * substitutes {@code t} wherever the old instantiation was substituted.
@@ -159,6 +160,11 @@ public final class Resolution {
       if (t == null) {
         // The bounds include EQUAL bounds that ignore annotations.
         t = lubOfLowerBounds(var, var.getBounds().findLowerBoundsForAnnotations(), true, context);
+        if (!context.types.isSameType((Type) t.getJavaType(), (Type) instantiation.getJavaType())) {
+          // The bound `var = t` would contradict the instantiation, so incorporating it would
+          // derive false.
+          continue;
+        }
       }
       added |= var.getBounds().addBound(null, BoundKind.EQUAL, t);
     }
