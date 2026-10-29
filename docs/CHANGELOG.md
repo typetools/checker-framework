@@ -22,6 +22,9 @@ deterministic, such as one that calls `String.format`.  See the manual section
 
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
+New method `BaseTypeVisitor.shouldSkipClass()` lets a checker skip a class
+entirely, including dataflow analysis.
+
 `PurityChecker.checkPurity()` takes two new arguments: the method declaration
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
