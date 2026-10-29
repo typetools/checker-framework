@@ -8,6 +8,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
@@ -94,6 +95,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.PatternCaseLabelUtils;
 
 /**
  * The default analysis transfer function for the Checker Framework. It propagates information
@@ -1424,7 +1426,55 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitVariableDeclaration(
       VariableDeclarationNode n, TransferInput<V, S> p) {
     S store = p.getRegularStore();
+    // The last case of an exhaustive switch has no CaseNode, so refine here instead.
+    ExpressionTree selector = getSelectorOfCaseLabelBindingVariable(n.getTree());
+    if (selector != null) {
+      refineCaseLabelBindingVariable(store, n.getTree(), selector);
+    }
     return new RegularTransferResult<>(finishValue(null, store), store);
+  }
+
+  /**
+   * Refines, in {@code store}, the binding variable {@code varTree} of a type pattern that is a
+   * case label by the qualifiers of {@code selector}, the selector expression of the switch.
+   *
+   * @param store the store to refine; side-effected by this method
+   * @param varTree the binding variable of a type pattern that is a case label
+   * @param selector the selector expression of the switch whose case label declares {@code varTree}
+   */
+  protected void refineCaseLabelBindingVariable(
+      S store, VariableTree varTree, ExpressionTree selector) {
+    JavaExpression bindingExpr = JavaExpression.fromVariableTree(varTree);
+    AnnotatedTypeMirror selectorType = analysis.atypeFactory.getAnnotatedType(selector);
+    for (AnnotationMirror anno : selectorType.getAnnotations()) {
+      store.insertOrRefine(bindingExpr, anno);
+    }
+  }
+
+  /**
+   * If {@code varTree} is the binding variable of a type pattern that is a case label, returns the
+   * selector expression of the switch. Otherwise, returns null.
+   *
+   * @param varTree a variable declaration
+   * @return the selector expression of the switch whose case label declares {@code varTree}, or
+   *     null
+   */
+  private @Nullable ExpressionTree getSelectorOfCaseLabelBindingVariable(VariableTree varTree) {
+    VariableElement elt = TreeUtils.elementFromDeclaration(varTree);
+    if (elt == null || elt.getKind() != ElementKind.BINDING_VARIABLE) {
+      return null;
+    }
+    TreePath path = analysis.atypeFactory.getPath(varTree);
+    if (path == null) {
+      return null;
+    }
+    TreePath labelPath = path.getParentPath().getParentPath();
+    if (!PatternCaseLabelUtils.isPatternCaseLabelTree(labelPath.getLeaf())) {
+      return null;
+    }
+    // The parent of the case label is a case, whose parent is a switch.
+    Tree switchTree = labelPath.getParentPath().getParentPath().getLeaf();
+    return TreeUtils.switchSelector(switchTree);
   }
 
   @Override
