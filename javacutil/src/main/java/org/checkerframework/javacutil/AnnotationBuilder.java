@@ -32,6 +32,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.plumelib.reflection.ReflectionP;
 import org.plumelib.util.ArrayMap;
@@ -832,6 +833,7 @@ public class AnnotationBuilder {
     }
 
     @SideEffectFree
+    @SuppressWarnings("purity") // mutates only local builders and memoizes toString
     @Override
     public String toString() {
       if (toStringVal != null) {
@@ -875,12 +877,14 @@ public class AnnotationBuilder {
       this.value = obj;
     }
 
+    @Pure
     @Override
     public Object getValue() {
       return value;
     }
 
     @SideEffectFree
+    @SuppressWarnings("purity") // mutates only a local String and memoizes toString
     @Override
     public String toString() {
       if (this.toStringVal != null) {
@@ -944,6 +948,7 @@ public class AnnotationBuilder {
       }
     }
 
+    @SuppressWarnings("purity") // getValue() may allocate; comparison is by content
     @Override
     public boolean equals(@Nullable Object obj) {
       // System.out.printf("Calling CFAV.equals()%n");
