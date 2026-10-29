@@ -159,8 +159,13 @@ public class CFCFGBuilder extends CFGBuilder {
     @Override
     protected VariableTree createEnhancedForLoopIteratorVariable(
         MethodInvocationTree iteratorCall, VariableElement variableElement) {
+      // Omit the top-level annotations of the declared return type of iterator(), which may be
+      // polymorphic qualifiers such as @MustCallAlias.  The iterator variable is refined by the
+      // assignment of the iterator() call.  Keep the annotations on the type arguments, which are
+      // not refined.
+      TypeMirror iteratorType = withoutTopLevelAnnotations(TreeUtils.typeOf(iteratorCall));
       Tree annotatedIteratorTypeTree =
-          ((CFTreeBuilder) treeBuilder).buildAnnotatedType(TreeUtils.typeOf(iteratorCall));
+          ((CFTreeBuilder) treeBuilder).buildAnnotatedType(iteratorType);
       handleArtificialTree(annotatedIteratorTypeTree);
 
       // Declare and initialize a new, unique iterator variable
@@ -199,6 +204,10 @@ public class CFCFGBuilder extends CFGBuilder {
       }
 
       assert (type instanceof ArrayType) : "array types must be represented by ArrayType";
+      // Omit the top-level annotations, which may be polymorphic qualifiers.  The array variable is
+      // refined by the assignment of the array expression.  Keep the annotations on the
+      // component type, which are not refined.
+      type = withoutTopLevelAnnotations(type);
 
       Tree annotatedArrayTypeTree = ((CFTreeBuilder) treeBuilder).buildAnnotatedType(type);
       handleArtificialTree(annotatedArrayTypeTree);
