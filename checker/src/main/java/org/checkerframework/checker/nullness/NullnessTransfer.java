@@ -359,7 +359,7 @@ public class NullnessTransfer
       NullChkNode n, TransferInput<NullnessValue, NullnessStore> p) {
     TransferResult<NullnessValue, NullnessStore> result = super.visitNullChk(n, p);
     // A null check throws NullPointerException if its operand is null.
-    for (Node operand : splitAssignments(n.getOperand())) {
+    for (Node operand : splitAssignments(NodeUtils.removeCasts(n.getOperand()))) {
       makeNonNull(result, NodeUtils.removeCasts(operand));
     }
     refineToNonNull(result);
