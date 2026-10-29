@@ -36,6 +36,13 @@ scopes, rather than suppressing them.  Where both a registered default and a
 
 Removed `DefaultSet.EMPTY`.
 
+`QualifierDefaults.DefaultApplierElement.DefaultApplierElementImpl` now extends
+`AnnotatedTypeScanner<Void, Void>` rather than
+`AnnotatedTypeScanner<Void, AnnotationMirror>`, because one traversal of a type
+may now apply more than one default; its `scan()`, `visitTypeVariable()`,
+`visitWildcard()`, and `visitBounds()` methods take a `Void` parameter
+accordingly.
+
 A subclass of `CFAbstractValue` or `CFValue` that adds state must override
 `equals()` and `hashCode()` to account for that state.
 
