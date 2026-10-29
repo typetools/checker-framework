@@ -17,7 +17,15 @@ public class LubOfIgnoredSubstitution {
     throw new RuntimeException();
   }
 
+  static <B extends @Nullable Object> B[] arrOfN(Box<@Nullable B> b, B other) {
+    throw new RuntimeException();
+  }
+
   static <S extends @Nullable Object> S pick2(S a, S b) {
+    return a;
+  }
+
+  static <S extends @Nullable Object> S pick3(S a, S b, S c) {
     return a;
   }
 
@@ -54,5 +62,26 @@ public class LubOfIgnoredSubstitution {
     pick2(arrOf(nonNullU, nn), arrOf(nonNullU, nble))[0].toString();
     // :: error: (dereference.of.nullable)
     pick2(arrOf(nonNullU, nble), arrOf(nonNullU, nn))[0].toString();
+  }
+
+  // The least upper bound of three types does not depend on their order.
+  static <U extends @Nullable Object> void testOrder(
+      Box<@Nullable U> nullableU,
+      Box<@NonNull U> nonNullU,
+      @NonNull U nn,
+      @NonNull U[] nonNullArr,
+      @Nullable U[] nullableArr) {
+    // The ignored substitutions have the annotation @Nullable, and the real one is @NonNull.
+    pick3(arrOfN(nullableU, nn), arrOfN(nullableU, nn), nonNullArr)[0].toString();
+    pick3(arrOfN(nullableU, nn), nonNullArr, arrOfN(nullableU, nn))[0].toString();
+    pick3(nonNullArr, arrOfN(nullableU, nn), arrOfN(nullableU, nn))[0].toString();
+
+    // The ignored substitutions have the annotation @NonNull, and the real one is @Nullable.
+    // :: error: (dereference.of.nullable)
+    pick3(arrOf(nonNullU, nn), arrOf(nonNullU, nn), nullableArr)[0].toString();
+    // :: error: (dereference.of.nullable)
+    pick3(arrOf(nonNullU, nn), nullableArr, arrOf(nonNullU, nn))[0].toString();
+    // :: error: (dereference.of.nullable)
+    pick3(nullableArr, arrOf(nonNullU, nn), arrOf(nonNullU, nn))[0].toString();
   }
 }

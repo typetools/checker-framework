@@ -1021,8 +1021,8 @@ public class InferenceFactory {
     ProperType first = iter.next();
     TypeMirror lubTM = first.getJavaType();
     AnnotatedTypeMirror lubATM = first.getAnnotatedType();
-    // The least upper bound so far, as a type, so that its ignored substitutions, if it is still
-    // one of `properTypes`, can be found; see IgnoredAnnotations#replaceIgnoredForLubOrGlb.
+    // The least upper bound so far, as a type, so that its ignored substitutions can be found; see
+    // IgnoredAnnotations#replaceIgnoredForLubOrGlb.
     ProperType lubSoFar = first;
     boolean ignoreAnnotations = first.ignoreAnnotations;
     while (iter.hasNext()) {
@@ -1051,24 +1051,23 @@ public class InferenceFactory {
       // result, so the result ignores annotations only if every type does.  This is the same
       // rule as in `glb`.
       ignoreAnnotations = ignoreAnnotations && properType.ignoreAnnotations;
-      lubSoFar = new ProperType(lubATM, context, ignoreAnnotations);
-    }
-    // If the result has the Java type of an input that records its ignored substitutions, and
-    // differs from that input only in its primary annotations and at those ignored substitutions,
-    // and those positions are still ignored, then it keeps that record; see ProperType#origin.
-    // Its ignored substitutions have the annotations of other inputs' ignored substitutions, and
-    // they are substituted again when the instantiations that ignore annotations change.  A result
-    // that differs
-    // elsewhere cannot keep the record, because a type with an origin computes its parts from the
-    // origin.
-    for (ProperType properType : properTypes) {
-      ProperType withOrigin =
-          withOriginOf(properType, properTypes, lubTM, lubATM, ignoreAnnotations);
-      if (withOrigin != null) {
-        return withOrigin;
+      // If the result has the Java type of an input that records its ignored substitutions, and
+      // differs from that input only in its primary annotations and at those ignored
+      // substitutions, and those positions are still ignored, then it keeps that record; see
+      // ProperType#origin.  Its ignored substitutions have the annotations of the other input's
+      // ignored substitutions, and they are substituted again when the instantiations that ignore
+      // annotations change.  A result that differs elsewhere cannot keep the record, because a
+      // type with an origin computes its parts from the origin.  Keeping the record in `lubSoFar`
+      // lets the next input's annotations replace those of its ignored substitutions, as in `glb`.
+      List<ProperType> inputs = Arrays.asList(lubSoFar, properType);
+      ProperType withOrigin = withOriginOf(lubSoFar, inputs, lubTM, lubATM, ignoreAnnotations);
+      if (withOrigin == null) {
+        withOrigin = withOriginOf(properType, inputs, lubTM, lubATM, ignoreAnnotations);
       }
+      lubSoFar =
+          withOrigin != null ? withOrigin : new ProperType(lubATM, context, ignoreAnnotations);
     }
-    return new ProperType(lubATM, context, ignoreAnnotations);
+    return lubSoFar;
   }
 
   /**
