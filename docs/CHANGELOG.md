@@ -20,6 +20,9 @@ deterministic, such as one that calls `String.format`.  See the manual section
 
 ### Changes for type system implementers
 
+New class `AbstractSetInclusionQualifierHierarchy` is the superclass of
+`SubtypeIsSubsetQualifierHierarchy` and `SubtypeIsSupersetQualifierHierarchy`.
+
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
 A subclass of `CFAbstractValue` or `CFValue` that adds state must override
