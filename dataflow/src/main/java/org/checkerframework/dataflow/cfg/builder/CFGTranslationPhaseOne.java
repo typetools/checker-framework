@@ -2781,14 +2781,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     /** The receiver may be null, and then the call throws a {@code NullPointerException}. */
     THROWS,
     /** The receiver is never null. */
-    IMPOSSIBLE,
-    /**
-     * The receiver may be null, and then the call is skipped. The CFG represents the call as
-     * unconditional, so the call is treated as one that might not happen: it does not throw a
-     * {@code NullPointerException}, and it does not terminate execution even if it is annotated
-     * {@link TerminatesExecution}.
-     */
-    SKIPS_CALL
+    IMPOSSIBLE
   }
 
   /**
@@ -2813,8 +2806,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     MethodInvocationNode callNode =
         new MethodInvocationNode(call, accessNode, Collections.emptyList(), getCurrentPath());
     callNode.setInSource(false);
-    extendWithMethodInvocationNode(
-        TreeUtils.elementFromUse(call), callNode, nullReceiver != NullReceiver.SKIPS_CALL);
+    extendWithMethodInvocationNode(TreeUtils.elementFromUse(call), callNode);
     return callNode;
   }
 
@@ -3430,22 +3422,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     MethodInvocationNode node = new MethodInvocationNode(tree, target, arguments, getCurrentPath());
 
-    extendWithMethodInvocationNode(method, node, true);
+    extendWithMethodInvocationNode(method, node);
     return node;
   }
 
   /**
    * Extends the CFG with a MethodInvocationNode, accounting for potential exceptions thrown by the
-   * invocation.
+   * invocation. If the method is annotated {@link TerminatesExecution}, the invocation terminates
+   * execution.
    *
    * @param method the invoked method
    * @param node the invocation
-   * @param honorTerminatesExecution if true and the method is annotated {@link
-   *     TerminatesExecution}, the invocation terminates execution
    * @return an ExtendedNode representing the invocation and its possible thrown exceptions
    */
   private ExtendedNode extendWithMethodInvocationNode(
-      ExecutableElement method, MethodInvocationNode node, boolean honorTerminatesExecution) {
+      ExecutableElement method, MethodInvocationNode node) {
     List<? extends TypeMirror> thrownTypes = method.getThrownTypes();
     Set<TypeMirror> thrownSet =
         new LinkedHashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
@@ -3455,8 +3446,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     thrownSet.addAll(uncheckedExceptionTypes);
 
     ExtendedNode extendedNode = extendWithNodeWithExceptions(node, thrownSet);
-    if (honorTerminatesExecution
-        && annotationProvider.getDeclAnnotation(method, TerminatesExecution.class) != null) {
+    if (annotationProvider.getDeclAnnotation(method, TerminatesExecution.class) != null) {
       extendedNode.setTerminatesExecution(true);
     }
     return extendedNode;
