@@ -78,21 +78,21 @@ public final class Resolution {
       }
     }
 
+    // Any variable on which `originalAs` depends may have an instantiation that ignores
+    // annotations: one resolved below, or one that incorporation already gave an instantiation.
+    List<Variable> withDependencies = new ArrayList<>(dependencies.get(originalAs));
+
     // Remove any variables that already have instantiations
     unresolvedVars.removeAll(resolvedVars);
     if (unresolvedVars.isEmpty()) {
-      return resolveIgnoredAnnotations(originalAs, boundSet, context);
+      return resolveIgnoredAnnotations(withDependencies, boundSet, context);
     }
-    // `resolution.resolve` empties `unresolvedVars`, and resolving them can give any of them an
-    // instantiation that ignores annotations.
-    LinkedHashSet<Variable> resolved = new LinkedHashSet<>(originalAs);
-    resolved.addAll(unresolvedVars);
 
     // Resolve the variables
     Resolution resolution = new Resolution(context, dependencies);
     boundSet = resolution.resolve(boundSet, unresolvedVars);
     checkNoFalse(boundSet, "after resolving", as);
-    return resolveIgnoredAnnotations(new ArrayList<>(resolved), boundSet, context);
+    return resolveIgnoredAnnotations(withDependencies, boundSet, context);
   }
 
   /**
