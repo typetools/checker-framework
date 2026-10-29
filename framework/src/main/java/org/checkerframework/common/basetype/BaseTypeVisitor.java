@@ -570,8 +570,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Type-check tree and skips classes specified by the skipDef option. Subclasses should override
-   * {@link #processClassTree(ClassTree)} instead of this method.
+   * Type-check tree and skips classes specified by the skipDef option or by {@link
+   * #shouldSkipClass}. Subclasses should override {@link #processClassTree(ClassTree)} instead of
+   * this method.
    *
    * @param tree class to check
    * @param p null
@@ -579,7 +580,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   @Override
   public final Void visitClass(ClassTree tree, Void p) {
-    if (checker.shouldSkipDefs(tree) || checker.shouldSkipFiles(tree)) {
+    if (checker.shouldSkipDefs(tree) || checker.shouldSkipFiles(tree) || shouldSkipClass(tree)) {
       // Not "return super.visitClass(tree, p);" because that would recursively call
       // visitors on subtrees; we want to skip the class entirely.
       return null;
@@ -609,6 +610,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     checkSlowTypechecking(tree, startSlowTypeCheckingTree, startMillis);
 
     return null;
+  }
+
+  /**
+   * Returns true if the checker should skip the given class entirely, including its nested classes:
+   * it should neither type-check the class nor perform dataflow analysis on it. Then, the type
+   * factory still computes the types of trees in the class (for example, when another checker
+   * queries them), but the types are not refined by dataflow analysis.
+   *
+   * <p>This implementation returns false. A checker may override it, for example to skip a class in
+   * which the checker can never issue a warning nor refine a type.
+   *
+   * @param tree a class
+   * @return true if the checker should skip {@code tree}
+   */
+  protected boolean shouldSkipClass(ClassTree tree) {
+    return false;
   }
 
   /**
