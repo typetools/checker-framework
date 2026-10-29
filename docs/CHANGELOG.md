@@ -7,12 +7,26 @@
 
 ### User-visible changes
 
+A method with a purity annotation may call the functional method of one of its
+functional-interface parameters, such as `f.apply(x)` for a parameter
+`Function f`; the call is treated as having the method's purity.  In exchange,
+under `-AcheckPurityAnnotations`, each argument passed to such a parameter must
+have that purity, or the new error `purity.functional.argument` is issued.  This
+affects calls to JDK methods such as `Optional.map` and `Comparator.comparing`
+that are passed lambdas with side effects, and calls to `@Pure` methods such as
+`Objects.requireNonNull(T, Supplier)` that are passed a lambda that is not
+deterministic, such as one that calls `String.format`.  See the manual section
+"Lambdas, method references, and functional interfaces".
+
 ### Changes for type system implementers
 
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
 A subclass of `CFAbstractValue` or `CFValue` that adds state must override
 `equals()` and `hashCode()` to account for that state.
+
+New method `BaseTypeVisitor.shouldSkipClass()` lets a checker skip a class
+entirely, including dataflow analysis.
 
 `PurityChecker.checkPurity()` takes two new arguments: the method declaration
 that lexically encloses the statement being checked (or null, as for an
