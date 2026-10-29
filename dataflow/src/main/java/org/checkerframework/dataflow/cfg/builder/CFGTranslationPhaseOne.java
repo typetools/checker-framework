@@ -2730,18 +2730,50 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
     // TODO do we need to insert some kind of node representing a use of receiverNode
     // (which can be either a LocalVariableNode or a FieldAccessNode)?
+
     // A try-with-resources statement calls close() only if the resource is non-null (JLS
-    // 14.20.3.1).  The CFG omits that null test: it represents the call as unconditional, even on
-    // paths where the resource is null.  A resource variable is final, so it is non-null if its
-    // initializer is.
+    // 14.20.3.1).  A resource variable is final, so it is non-null if its initializer is.
     boolean resourceMayBeNull =
         !(resourceDeclarationTree instanceof VariableTree variableTree
             && variableTree.getInitializer() != null
             && !mayBeNull(variableTree.getInitializer()));
-    extendWithArtificialCall(
-        closeCall,
-        receiverNode,
-        resourceMayBeNull ? NullReceiver.SKIPS_CALL : NullReceiver.IMPOSSIBLE);
+    Label afterCloseLabel = new Label();
+    if (resourceMayBeNull) {
+      LiteralTree nullTree = treeBuilder.buildNullLiteral();
+      handleArtificialTree(nullTree);
+      BinaryTree nullTestTree =
+          treeBuilder.buildBinary(
+              types.getPrimitiveType(TypeKind.BOOLEAN),
+              Tree.Kind.NOT_EQUAL_TO,
+              (ExpressionTree) receiverTree,
+              nullTree);
+      handleArtificialTree(nullTestTree);
+
+      // For a variable declaration, receiverNode is the target of the assignment, which is an
+      // lvalue.  The null test reads the variable's value.
+      Node resourceValueNode = receiverNode;
+      if (resourceToCloseNode instanceof AssignmentNode) {
+        resourceValueNode = new LocalVariableNode(receiverTree);
+        resourceValueNode.setInSource(false);
+        extendWithNode(resourceValueNode);
+      }
+      NullLiteralNode nullNode = new NullLiteralNode(nullTree);
+      nullNode.setInSource(false);
+      extendWithNode(nullNode);
+      NotEqualNode nullTestNode = new NotEqualNode(nullTestTree, resourceValueNode, nullNode);
+      nullTestNode.setInSource(false);
+      extendWithNode(nullTestNode);
+
+      Label closeLabel = new Label();
+      extendWithExtendedNode(new ConditionalJump(closeLabel, afterCloseLabel));
+      addLabelForNextNode(closeLabel);
+    }
+
+    extendWithArtificialCall(closeCall, receiverNode, NullReceiver.IMPOSSIBLE);
+
+    if (resourceMayBeNull) {
+      addLabelForNextNode(afterCloseLabel);
+    }
   }
 
   /** What happens when the receiver of a call that desugars a statement is null. */
