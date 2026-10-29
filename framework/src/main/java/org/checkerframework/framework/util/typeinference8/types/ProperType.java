@@ -611,6 +611,13 @@ public class ProperType extends AbstractType {
    */
   @Override
   public AbstractType create(AnnotatedTypeMirror atm, boolean ignoreAnnotations) {
+    // TODO: The result has no origin, so the annotations at positions of `atm` that come from
+    // ignored substitutions of this type are compared as real annotations.  AbstractType#capture,
+    // #replaceTypeArgs, #getMostSpecificArrayType, and #getTypeVarUpperBound create their results
+    // with this method.  For capture conversion, this causes a false positive in
+    // checker/tests/nullness/CaptureOfIgnoredSubstitution.java.  Capture conversion replaces a
+    // wildcard by a captured type variable, so the origin would have to record ignored
+    // substitutions in the bounds of captured type variables.
     return new ProperType(atm, qualifierVars, context, ignoreAnnotations);
   }
 
