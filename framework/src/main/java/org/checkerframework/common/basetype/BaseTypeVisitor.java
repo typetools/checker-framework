@@ -5269,6 +5269,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
       boolean result = true;
       for (int i = 0; i < overrider.getTypeVariables().size(); i++) {
+        // Do not short-circuit, because `checkTypeParameter*Bound` issues warnings.
         result &= checkTypeParameterUpperBound(i);
         result &= checkTypeParameterLowerBound(i);
       }
