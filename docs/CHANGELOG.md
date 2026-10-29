@@ -34,6 +34,8 @@ A default that a type system registers through
 scopes, rather than suppressing them.  Where both a registered default and a
 `@DefaultQualifier` annotation apply, the registered default wins.
 
+Removed `DefaultSet.EMPTY`.
+
 A subclass of `CFAbstractValue` or `CFValue` that adds state must override
 `equals()` and `hashCode()` to account for that state.
 
