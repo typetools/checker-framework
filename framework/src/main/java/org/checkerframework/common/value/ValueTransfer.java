@@ -854,7 +854,7 @@ public class ValueTransfer extends CFTransfer {
     }
     List<Number> resultValues = new ArrayList<>(lefts.size() * rights.size());
     for (Number left : lefts) {
-      NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
+      NumberMath nmLeft = NumberMath.getNumberMath(left);
       for (Number right : rights) {
         switch (op) {
           case ADDITION -> resultValues.add(nmLeft.plus(right));
@@ -1077,7 +1077,7 @@ public class ValueTransfer extends CFTransfer {
     }
     List<Number> resultValues = new ArrayList<>(lefts.size());
     for (Number left : lefts) {
-      NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
+      NumberMath nmLeft = NumberMath.getNumberMath(left);
       switch (op) {
         case PLUS -> resultValues.add(nmLeft.unaryPlus());
         case MINUS -> resultValues.add(nmLeft.unaryMinus());
@@ -1184,7 +1184,7 @@ public class ValueTransfer extends CFTransfer {
     List<Number> elseRightVals = new ArrayList<>(numResultValues);
 
     for (Number left : lefts) {
-      NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
+      NumberMath nmLeft = NumberMath.getNumberMath(left);
       for (Number right : rights) {
         Boolean result =
             switch (op) {
