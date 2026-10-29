@@ -20,7 +20,13 @@ deterministic, such as one that calls `String.format`.  See the manual section
 
 ### Changes for type system implementers
 
+New class `AbstractSetInclusionQualifierHierarchy` is the superclass of
+`SubtypeIsSubsetQualifierHierarchy` and `SubtypeIsSupersetQualifierHierarchy`.
+
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
+
+A subclass of `CFAbstractValue` or `CFValue` that adds state must override
+`equals()` and `hashCode()` to account for that state.
 
 New method `BaseTypeVisitor.shouldSkipClass()` lets a checker skip a class
 entirely, including dataflow analysis.
