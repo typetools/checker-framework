@@ -324,7 +324,7 @@ public class ProperType extends AbstractType {
    * @param compute computes the value for {@code key}
    * @return the value that {@code cache} maps {@code key} to
    */
-  private static <K, V> @Nullable V cached(
+  private static <K extends Object, V> @Nullable V cached(
       Map<K, @Nullable V> cache, K key, Supplier<@Nullable V> compute) {
     if (cache.containsKey(key)) {
       return cache.get(key);
