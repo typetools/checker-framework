@@ -156,7 +156,7 @@ public class TreeBuilder {
    */
   public MemberSelectTree buildCloseMethodAccess(ExpressionTree autoCloseableExpr) {
     TypeMirror exprType = TreeUtils.typeOf(autoCloseableExpr);
-    ExecutableElement closeMethod = ElementUtils.getNoArgumentMethod(exprType, "close", env);
+    ExecutableElement closeMethod = ElementUtils.resolveNoArgumentCall(exprType, "close", env);
     if (closeMethod == null) {
       throw new BugInCF("no close method for %s of type %s", autoCloseableExpr, exprType);
     }
