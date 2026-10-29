@@ -64,7 +64,8 @@ public final class Resolution {
     List<Variable> resolvedVars = boundSet.getInstantiatedVariables();
     as.removeAll(resolvedVars);
     if (as.isEmpty()) {
-      return resolveIgnoredAnnotations(originalAs, boundSet, context);
+      return resolveIgnoredAnnotations(
+          withDependenciesIfIgnoring(originalAs, boundSet), boundSet, context);
     }
     // Calculate the dependencies between variables. (A variable depends on another if it is
     // included in one of its bounds.)
@@ -105,7 +106,8 @@ public final class Resolution {
    */
   public static BoundSet resolve(Variable a, BoundSet boundSet, Java8InferenceContext context) {
     if (a.getBounds().hasInstantiation()) {
-      return resolveIgnoredAnnotations(Collections.singletonList(a), boundSet, context);
+      return resolveIgnoredAnnotations(
+          withDependenciesIfIgnoring(Collections.singletonList(a), boundSet), boundSet, context);
     }
     Dependencies dependencies = boundSet.getDependencies();
 
@@ -117,6 +119,28 @@ public final class Resolution {
     // Resolving `a` can also resolve the variables on which it depends, and give any of them an
     // instantiation that ignores annotations.
     return resolveIgnoredAnnotations(new ArrayList<>(dependencies.get(a)), boundSet, context);
+  }
+
+  /**
+   * Returns {@code vars} and the variables on which they depend, if a variable of {@code boundSet}
+   * has an instantiation that ignores annotations (see {@link AbstractType#ignoreAnnotations});
+   * otherwise, returns {@code vars}. Computing the dependencies has the side effect described in
+   * {@link BoundSet#getDependencies(Collection)}.
+   *
+   * @param vars variables of {@code boundSet}
+   * @param boundSet a bound set
+   * @return {@code vars} and the variables on which they depend, or {@code vars}
+   */
+  private static List<Variable> withDependenciesIfIgnoring(List<Variable> vars, BoundSet boundSet) {
+    // Computing the dependencies is expensive, and resolveIgnoredAnnotations does nothing to a
+    // variable whose instantiation does not ignore annotations.
+    for (Variable var : boundSet.getInstantiatedVariables()) {
+      ProperType instantiation = var.getInstantiation();
+      if (instantiation != null && instantiation.ignoreAnnotations) {
+        return new ArrayList<>(boundSet.getDependencies().get(vars));
+      }
+    }
+    return vars;
   }
 
   /**
