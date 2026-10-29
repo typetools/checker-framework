@@ -76,6 +76,16 @@ public class SwitchSelectorNonNull {
     return o;
   }
 
+  @NonNull Object castOfAssignment(@Nullable Object s, @Nullable Object t) {
+    // :: error: [switching.nullable]
+    switch ((String) (s = t)) {
+      default:
+        break;
+    }
+    s.toString();
+    return t;
+  }
+
   // The NullPointerException is an exceptional exit from the switch, so the selector may be null in
   // the handler.
   void caught(@Nullable String s) {
