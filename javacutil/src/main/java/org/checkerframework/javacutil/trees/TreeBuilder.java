@@ -16,6 +16,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
@@ -369,6 +370,17 @@ public class TreeBuilder {
   /** Builds an AST Tree representing a literal value of primitive or String type. */
   public LiteralTree buildLiteral(Object value) {
     return maker.Literal(value);
+  }
+
+  /**
+   * Builds an AST Tree representing the null literal.
+   *
+   * @return a Tree representing {@code null}
+   */
+  public LiteralTree buildNullLiteral() {
+    JCTree.JCLiteral literal = maker.Literal(TypeTag.BOT, null);
+    literal.setType(symtab.botType);
+    return literal;
   }
 
   /**
