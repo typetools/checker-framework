@@ -43,6 +43,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
@@ -53,6 +54,7 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -74,7 +76,9 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.interning.qual.FindDistinct;
@@ -569,8 +573,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Type-check tree and skips classes specified by the skipDef option. Subclasses should override
-   * {@link #processClassTree(ClassTree)} instead of this method.
+   * Type-check tree and skips classes specified by the skipDef option or by {@link
+   * #shouldSkipClass}. Subclasses should override {@link #processClassTree(ClassTree)} instead of
+   * this method.
    *
    * @param tree class to check
    * @param p null
@@ -578,7 +583,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   @Override
   public final Void visitClass(ClassTree tree, Void p) {
-    if (checker.shouldSkipDefs(tree) || checker.shouldSkipFiles(tree)) {
+    if (checker.shouldSkipDefs(tree) || checker.shouldSkipFiles(tree) || shouldSkipClass(tree)) {
       // Not "return super.visitClass(tree, p);" because that would recursively call
       // visitors on subtrees; we want to skip the class entirely.
       return null;
@@ -608,6 +613,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     checkSlowTypechecking(tree, startSlowTypeCheckingTree, startMillis);
 
     return null;
+  }
+
+  /**
+   * Returns true if the checker should skip the given class entirely, including its nested classes:
+   * it should neither type-check the class nor perform dataflow analysis on it. Then, the type
+   * factory still computes the types of trees in the class (for example, when another checker
+   * queries them), but the types are not refined by dataflow analysis.
+   *
+   * <p>This implementation returns false. A checker may override it, for example to skip a class in
+   * which the checker can never issue a warning nor refine a type.
+   *
+   * @param tree a class
+   * @return true if the checker should skip {@code tree}
+   */
+  protected boolean shouldSkipClass(ClassTree tree) {
+    return false;
   }
 
   /**
@@ -1275,6 +1296,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (infer) {
         WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
         ExecutableElement methodElt = TreeUtils.elementFromDeclaration(tree);
+        if (wpi == null || methodElt == null) {
+          throw new BugInCF("No WPI or no element while inferring purity of " + tree);
+        }
+        // Do not infer a kind that would newly constrain the arguments at call sites.
+        additionalKinds = kindsSafeToInfer(methodElt, additionalKinds);
         inferPurityAnno(additionalKinds, wpi, methodElt);
         // The purity of overridden methods is impacted by the purity of this method. If
         // a superclass method is pure, but an implementation in a subclass is not, WPI
@@ -1285,7 +1311,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         Set<? extends ExecutableElement> overriddenMethods =
             ElementUtils.getOverriddenMethods(methodElt, types);
         for (ExecutableElement overriddenElt : overriddenMethods) {
-          inferPurityAnno(additionalKinds, wpi, overriddenElt);
+          // A call to the overridden method may pass an argument that a call to this method may
+          // not, so the kinds that are safe to infer depend on the method.
+          inferPurityAnno(kindsSafeToInfer(overriddenElt, additionalKinds), wpi, overriddenElt);
         }
       } else if (additionalKinds.isEmpty()) {
         // No need to suggest @Impure, since it is equivalent to no annotation.
@@ -1640,6 +1668,436 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       this.purityAdjective = purityAdjective;
       this.calleeAdjective = calleeAdjective;
     }
+  }
+
+  /**
+   * If the invoked method or constructor has a purity annotation, checks each argument that is
+   * passed to a functional-interface parameter: the code that the argument denotes must have the
+   * purity that the callee requires of it, because the callee's body is permitted to call it.
+   *
+   * <p>How the argument is checked depends on its form. The body of a lambda is checked directly. A
+   * method reference is checked against the declaration of the method it refers to. A lambda or
+   * method reference whose functional method does not override the parameter's, because its type is
+   * a functional subinterface that declares an unrelated functional method, is checked like any
+   * other argument, since the subinterface's implementation of the parameter's functional method is
+   * what runs. Each result expression of a conditional or switch expression is checked on its own,
+   * because the type of such an expression is the parameter's type and says nothing about the code
+   * that any result expression denotes. An effectively final functional-interface parameter of the
+   * enclosing method needs no check, since the caller of that method already performed one. Any
+   * other argument is checked against the functional method of its declared type. A cast of an
+   * argument that denotes code is ignored; see {@link #withoutCastsOfCode}.
+   *
+   * <p>This check is skipped for a requirement that the parameter's own functional method already
+   * makes, because {@link #checkLambdaPurity} and {@link
+   * BaseTypeVisitor.OverrideChecker#checkMethodReferencePurity} check that.
+   *
+   * <p>Only a parameter whose declared type is a functional interface is checked. No implementation
+   * of {@code callee} may assume anything about an argument to any other parameter, such as one
+   * whose type is a type variable or a varargs array; see {@link
+   * PurityChecker#functionalParameterPurity}.
+   *
+   * @param callee the invoked method or constructor
+   * @param args the arguments to {@code callee}
+   */
+  protected void checkFunctionalArguments(
+      ExecutableElement callee, List<? extends ExpressionTree> args) {
+    if (!checkPurityAnnotations || infer) {
+      return;
+    }
+    ProcessingEnvironment env = atypeFactory.getProcessingEnv();
+    List<? extends VariableElement> params = callee.getParameters();
+    // Computed only when a functional-interface parameter is found, because most callees have none.
+    EnumSet<PurityKind> calleeKinds = null;
+    // The expanded form of a varargs call passes any number of elements of its array.
+    int numToCheck = Math.min(params.size(), args.size());
+    for (int i = 0; i < numToCheck; i++) {
+      ExecutableElement paramFunction = PurityChecker.parameterFunctionalMethod(callee, i, env);
+      if (paramFunction == null) {
+        continue;
+      }
+      if (calleeKinds == null) {
+        calleeKinds = PurityChecker.functionalParameterKinds(atypeFactory, callee, env);
+      }
+      if (calleeKinds.isEmpty()) {
+        return;
+      }
+      EnumSet<PurityKind> required = purityRequiredOfArgument(paramFunction, calleeKinds, true);
+      if (required.isEmpty()) {
+        continue;
+      }
+      checkFunctionalArgument(args.get(i), required, paramFunction, params.get(i), callee);
+    }
+  }
+
+  /**
+   * Returns the purity that a method whose purity is {@code methodKinds} requires of the argument
+   * that is passed to a functional-interface parameter whose functional method is {@code
+   * paramFunction}: the kinds that {@code paramFunction} does not already promise, less determinism
+   * when the argument is a side-effect-free method that returns no value.
+   *
+   * @param paramFunction the functional method of a parameter's type
+   * @param methodKinds the purity that a method requires of its functional-interface arguments
+   * @param applyAssumptions whether to apply the {@code -AassumeSideEffectFree} and {@code
+   *     -AassumePure} command-line options
+   * @return the purity required of the argument, which may be empty
+   */
+  private EnumSet<PurityKind> purityRequiredOfArgument(
+      ExecutableElement paramFunction, EnumSet<PurityKind> methodKinds, boolean applyAssumptions) {
+    EnumSet<PurityKind> paramKinds = PurityUtils.getPurityKinds(atypeFactory, paramFunction);
+    EnumSet<PurityKind> required = EnumSet.copyOf(methodKinds);
+    required.removeAll(paramKinds);
+    if (PurityUtils.sideEffectFreeImpliesDeterministic(paramFunction.getReturnType())) {
+      // Without a guarantee that the argument is side-effect-free, the argument must still be
+      // checked for determinism, since its side effects can make a later call compute a different
+      // value.
+      if (paramKinds.contains(PurityKind.SIDE_EFFECT_FREE)
+          || methodKinds.contains(PurityKind.SIDE_EFFECT_FREE)) {
+        required.remove(PurityKind.DETERMINISTIC);
+      } else if (applyAssumptions
+          && assumeSideEffectFree
+          && required.remove(PurityKind.DETERMINISTIC)) {
+        // The assumption covers the methods that the argument calls, not the argument's own
+        // code, so check that the argument is side-effect-free instead.
+        required.add(PurityKind.SIDE_EFFECT_FREE);
+      }
+    }
+    return required;
+  }
+
+  /**
+   * Returns the purity kinds that whole-program inference may infer for {@code method}: the kinds
+   * that annotations written on {@code method} guarantee, plus those of {@code kinds} that no call
+   * to {@code method} would newly require of an argument that is passed to a functional-interface
+   * parameter. See {@link #checkFunctionalArguments}.
+   *
+   * <p>Inference cannot annotate a lambda expression or a method reference, so it cannot make an
+   * argument meet such a requirement; inferring the kind would introduce errors at call sites. A
+   * requirement that calls to {@code method} already impose is not new: one that {@code method}
+   * inherits from a method that it overrides, or that its {@code @SideEffectsOnly} annotation
+   * imposes, counts as well as one that its written annotations impose. The written kinds are
+   * always retained, so that inference neither weakens nor contradicts the written contract.
+   *
+   * <p>Discarding one kind can make another one required: determinism is required of an argument
+   * that returns no value only when the argument is known to be side-effect-free. The computation
+   * therefore repeats until what remains requires nothing new.
+   *
+   * @param method a method or constructor
+   * @param kinds the purity kinds that might be inferred for {@code method}
+   * @return the written kinds of {@code method}, plus the subset of {@code kinds} that calls to
+   *     {@code method} would not newly require of arguments
+   */
+  private EnumSet<PurityKind> kindsSafeToInfer(
+      ExecutableElement method, EnumSet<PurityKind> kinds) {
+    ProcessingEnvironment env = atypeFactory.getProcessingEnv();
+    EnumSet<PurityKind> written = writtenPurityKinds(method);
+    // A superset of `written`.
+    EnumSet<PurityKind> alreadyRequired =
+        PurityChecker.functionalParameterKinds(atypeFactory, method, env);
+    EnumSet<PurityKind> result = EnumSet.copyOf(kinds);
+    result.addAll(written);
+    while (!result.equals(written)) {
+      // Each kind in `newlyRequired` is in `result` but not in `written`, because a written kind
+      // that is required of an argument is required already by `alreadyRequired`.
+      EnumSet<PurityKind> newlyRequired = EnumSet.noneOf(PurityKind.class);
+      for (int i = 0; i < method.getParameters().size(); i++) {
+        ExecutableElement paramFunction = PurityChecker.parameterFunctionalMethod(method, i, env);
+        if (paramFunction != null) {
+          EnumSet<PurityKind> required = purityRequiredOfArgument(paramFunction, result, false);
+          required.removeAll(purityRequiredOfArgument(paramFunction, alreadyRequired, false));
+          newlyRequired.addAll(required);
+        }
+      }
+      if (newlyRequired.isEmpty()) {
+        break;
+      }
+      result.removeAll(newlyRequired);
+    }
+    return result;
+  }
+
+  /**
+   * Returns the purity kinds that the purity annotations written on {@code method} -- in source
+   * code or in an annotation file -- guarantee, ignoring those that {@code method} inherits.
+   *
+   * @param method a method or constructor
+   * @return the purity kinds that the annotations written on {@code method} guarantee
+   */
+  private EnumSet<PurityKind> writtenPurityKinds(ExecutableElement method) {
+    EnumSet<PurityKind> result = EnumSet.noneOf(PurityKind.class);
+    AnnotationMirror pure = atypeFactory.getDeclAnnotation(method, Pure.class);
+    if (pure != null && atypeFactory.isDeclAnnotationWrittenOn(method, pure)) {
+      result.add(PurityKind.SIDE_EFFECT_FREE);
+      result.add(PurityKind.DETERMINISTIC);
+    }
+    AnnotationMirror sideEffectFree = atypeFactory.getDeclAnnotation(method, SideEffectFree.class);
+    if (sideEffectFree != null && atypeFactory.isDeclAnnotationWrittenOn(method, sideEffectFree)) {
+      result.add(PurityKind.SIDE_EFFECT_FREE);
+    }
+    AnnotationMirror deterministic = atypeFactory.getDeclAnnotation(method, Deterministic.class);
+    if (deterministic != null && atypeFactory.isDeclAnnotationWrittenOn(method, deterministic)) {
+      result.add(PurityKind.DETERMINISTIC);
+    }
+    return result;
+  }
+
+  /**
+   * Returns {@code expr} without parentheses, and also without casts if what they wrap denotes
+   * code: a lambda, a method reference, a conditional expression, or a switch expression. A cast of
+   * such an expression does not change the code that the expression denotes, so the operand is what
+   * {@link #checkFunctionalArgument} checks.
+   *
+   * <p>A cast of any other expression is left in place, so that the argument is checked against the
+   * functional method of the cast's type. That is the type of the value that the call receives,
+   * just as for an argument that is not cast.
+   *
+   * @param expr an expression
+   * @return {@code expr} without parentheses, and without casts of an expression that denotes code
+   */
+  private static ExpressionTree withoutCastsOfCode(ExpressionTree expr) {
+    ExpressionTree withoutParens = TreeUtils.withoutParens(expr);
+    ExpressionTree operand = TreeUtils.withoutParensOrCasts(withoutParens);
+    return operand instanceof LambdaExpressionTree
+            || operand instanceof MemberReferenceTree
+            || operand instanceof ConditionalExpressionTree
+            || operand instanceof SwitchExpressionTree
+        ? operand
+        : withoutParens;
+  }
+
+  /**
+   * Checks that one argument to a functional-interface parameter has the given purity.
+   *
+   * @param arg the argument
+   * @param required the purity that the argument's functional method must have
+   * @param paramFunction the functional method of the parameter's type
+   * @param param the parameter that {@code arg} is passed to
+   * @param callee the invoked method or constructor
+   */
+  protected void checkFunctionalArgument(
+      ExpressionTree arg,
+      EnumSet<PurityKind> required,
+      ExecutableElement paramFunction,
+      VariableElement param,
+      ExecutableElement callee) {
+    ProcessingEnvironment env = atypeFactory.getProcessingEnv();
+    ExpressionTree argument = withoutCastsOfCode(arg);
+    // A lambda or method reference whose type is a functional subinterface may implement an
+    // abstract method that is unrelated to paramFunction; then the subinterface's implementation
+    // of paramFunction is what runs, so the argument is checked against that implementation.
+    boolean implementsParamFunction =
+        !(argument instanceof LambdaExpressionTree || argument instanceof MemberReferenceTree)
+            || implementsFunction(argument, paramFunction, env);
+
+    if (implementsParamFunction && argument instanceof LambdaExpressionTree lambda) {
+      TreePath body = atypeFactory.getPath(lambda.getBody());
+      if (body == null) {
+        // As in `checkLambdaPurity`, a body outside this compilation unit cannot be checked.
+        return;
+      }
+      PurityResult r =
+          PurityChecker.checkPurity(
+              body,
+              atypeFactory,
+              TreePathUtil.enclosingMethod(getCurrentPath()),
+              env,
+              assumeSideEffectFree,
+              assumeDeterministic,
+              assumePureGetters);
+      if (!r.isPure(required)) {
+        // The errors in the body say what violates the requirement, and the error at the argument
+        // says which callee and parameter impose it.
+        reportPurityErrors(r, required);
+        reportFunctionalArgumentError(arg, r.getKinds(), required, param, callee);
+      }
+      return;
+    }
+
+    if (argument instanceof ConditionalExpressionTree conditional) {
+      checkFunctionalArgument(
+          conditional.getTrueExpression(), required, paramFunction, param, callee);
+      checkFunctionalArgument(
+          conditional.getFalseExpression(), required, paramFunction, param, callee);
+      return;
+    }
+
+    if (argument instanceof SwitchExpressionTree switchExpression) {
+      SwitchExpressionScanner<Void, Void> scanner =
+          new FunctionalSwitchExpressionScanner<>(
+              (ExpressionTree resultExpression, Void unused) -> {
+                checkFunctionalArgument(resultExpression, required, paramFunction, param, callee);
+                return null;
+              },
+              (r1, r2) -> null);
+      scanner.scanSwitchExpression(switchExpression, null);
+      return;
+    }
+
+    EnumSet<PurityKind> argKinds;
+    MethodTree enclosingMethod = TreePathUtil.enclosingMethod(getCurrentPath());
+    if (implementsParamFunction && argument instanceof MemberReferenceTree memberReference) {
+      if (MemberReferenceKind.getMemberReferenceKind(memberReference)
+          == MemberReferenceKind.ARRAY_CTOR) {
+        // Creating an array modifies nothing that exists before the call.  It is not
+        // deterministic, like any object creation.
+        argKinds = EnumSet.of(PurityKind.SIDE_EFFECT_FREE);
+      } else {
+        ExecutableElement referenced = (ExecutableElement) TreeUtils.elementFromUse(argument);
+        argKinds = implementationPurityKinds(referenced);
+        // `f::apply`, where `f` is a functional-interface parameter of the enclosing method,
+        // denotes the code that the caller of that method was required to check.
+        argKinds.addAll(
+            PurityChecker.functionalParameterCallPurity(
+                atypeFactory,
+                memberReference.getQualifierExpression(),
+                referenced,
+                enclosingMethod,
+                env));
+      }
+    } else {
+      ExecutableElement argFunction =
+          functionalMethodOf(TreeUtils.typeOf(argument), paramFunction, env);
+      if (argFunction == null) {
+        // The argument is the null literal, or its type does not implement the parameter's
+        // functional method (which javac has already reported).  There is nothing to check.
+        return;
+      }
+      argKinds = implementationPurityKinds(argFunction);
+      // If the argument is a functional-interface parameter of the enclosing method, the caller
+      // of that method was required to check the code that argFunction runs.
+      argKinds.addAll(
+          PurityChecker.functionalParameterCallPurity(
+              atypeFactory, argument, argFunction, enclosingMethod, env));
+    }
+
+    if (!argKinds.containsAll(required)) {
+      reportFunctionalArgumentError(arg, argKinds, required, param, callee);
+    }
+  }
+
+  /**
+   * Reports that an argument to a functional-interface parameter lacks the purity that the callee
+   * requires of it.
+   *
+   * @param arg the argument
+   * @param argKinds the purity that the argument has
+   * @param required the purity that the argument is required to have
+   * @param param the parameter that {@code arg} is passed to
+   * @param callee the invoked method or constructor
+   */
+  private void reportFunctionalArgumentError(
+      ExpressionTree arg,
+      EnumSet<PurityKind> argKinds,
+      EnumSet<PurityKind> required,
+      VariableElement param,
+      ExecutableElement callee) {
+    reportErrorOnce(
+        arg,
+        "purity.functional.argument",
+        param.getSimpleName(),
+        ElementUtils.getSimpleDescription(callee),
+        purityKindsToString(argKinds),
+        purityKindsToString(required));
+  }
+
+  /**
+   * Returns true if the functional method that {@code code} implements is {@code paramFunction} or
+   * overrides it.
+   *
+   * @param code a lambda expression or method reference
+   * @param paramFunction the functional method of a parameter's type
+   * @param env the processing environment
+   * @return true if {@code code} implements {@code paramFunction}
+   */
+  private static boolean implementsFunction(
+      ExpressionTree code, ExecutableElement paramFunction, ProcessingEnvironment env) {
+    TypeMirror functionalType = PurityChecker.functionalInterfaceType(TreeUtils.typeOf(code), env);
+    return functionalType == null
+        || PurityChecker.isSameOrOverrides(
+            TypesUtils.findFunction(functionalType, env), paramFunction, env);
+  }
+
+  /**
+   * Returns the method that {@code type} supplies for the functional method {@code paramFunction},
+   * or null if it has none.
+   *
+   * <p>This is {@code paramFunction} itself when {@code type} is the functional interface, but an
+   * argument may also be of a class type, including an anonymous class, that implements the
+   * interface. The implementation is what will run, so its annotations are what matter. Likewise, a
+   * functional subinterface may implement {@code paramFunction} with a default method and declare
+   * an unrelated abstract method as its own functional method; the default method is what runs.
+   *
+   * @param type the type of an argument
+   * @param paramFunction the functional method of the parameter's type
+   * @param env the processing environment
+   * @return the method of {@code type} that implements {@code paramFunction}, or null
+   */
+  private @Nullable ExecutableElement functionalMethodOf(
+      TypeMirror type, ExecutableElement paramFunction, ProcessingEnvironment env) {
+    Elements elements = env.getElementUtils();
+    TypeMirror functionalType = PurityChecker.functionalInterfaceType(type, env);
+    if (functionalType != null) {
+      ExecutableElement function = TypesUtils.findFunction(functionalType, env);
+      if (PurityChecker.isSameOrOverrides(function, paramFunction, env)) {
+        return function;
+      }
+    }
+    if (type.getKind() == TypeKind.TYPEVAR) {
+      type = TypesUtils.upperBound(type);
+    }
+    if (type.getKind() != TypeKind.DECLARED && type.getKind() != TypeKind.INTERSECTION) {
+      // Only a class or interface type declares methods.  The null type, which is the type of
+      // the null literal, has an element whose members cannot be queried.
+      return null;
+    }
+    TypeElement typeElement = TypesUtils.getTypeElement(type);
+    if (typeElement == null) {
+      return null;
+    }
+    // The members of a class that inherits its implementation from a superclass include both
+    // that implementation and the interface's abstract method.  The implementation is what runs.
+    ExecutableElement abstractMatch = null;
+    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(typeElement))) {
+      if (method.equals(paramFunction) || elements.overrides(method, paramFunction, typeElement)) {
+        if (!method.getModifiers().contains(Modifier.ABSTRACT)) {
+          return method;
+        }
+        if (abstractMatch == null) {
+          abstractMatch = method;
+        }
+      }
+    }
+    return abstractMatch;
+  }
+
+  /**
+   * Returns the purity of a method that implements a functional method: its declared purity, plus
+   * whatever the command-line assumptions grant it, plus determinism if it is side-effect-free and
+   * returns no value.
+   *
+   * @param method a method or constructor
+   * @return the purity kinds of {@code method}
+   */
+  private EnumSet<PurityKind> implementationPurityKinds(ExecutableElement method) {
+    EnumSet<PurityKind> result = PurityUtils.getPurityKinds(atypeFactory, method);
+    // Like PurityChecker, apply each assumption to every method, including one with no purity
+    // annotation, so that a method reference is treated exactly like a lambda whose body calls
+    // the referenced method.
+    if (assumeSideEffectFree) {
+      result.add(PurityKind.SIDE_EFFECT_FREE);
+    }
+    if (assumeDeterministic) {
+      result.add(PurityKind.DETERMINISTIC);
+    }
+    if (assumePureGetters && ElementUtils.isGetter(method)) {
+      result.add(PurityKind.SIDE_EFFECT_FREE);
+      result.add(PurityKind.DETERMINISTIC);
+    }
+    if (method.getKind() != ElementKind.CONSTRUCTOR) {
+      // A constructor reference returns the new object, though the constructor's return type is
+      // void.
+      PurityUtils.addDeterminismOfVoidCall(result, method.getReturnType());
+    }
+    return result;
   }
 
   /**
@@ -2318,6 +2776,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedTypes.adaptParameters(atypeFactory, invokedMethod, tree.getArguments(), tree);
     checkArguments(params, tree.getArguments(), methodName, method.getParameters());
     checkVarargs(invokedMethod, tree);
+    checkFunctionalArguments(method, tree.getArguments());
 
     if (ElementUtils.isMethod(
         invokedMethod.getElement(), vectorCopyInto, atypeFactory.getProcessingEnv())) {
@@ -2665,6 +3124,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     checkArguments(params, passedArguments, constructorName, superConstructor.getParameters());
     checkVarargs(constructorType, tree);
+    if (checkPurityAnnotations && !infer) {
+      // An anonymous class's arguments are passed to its super constructor.
+      checkFunctionalArguments(TreeUtils.getSuperConstructor(tree), passedArguments);
+    }
 
     List<AnnotatedTypeParameterBounds> paramBounds =
         CollectionsP.mapList(AnnotatedTypeVariable::getBounds, constructorType.getTypeVariables());
@@ -2876,11 +3339,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (PurityUtils.sideEffectFreeImpliesDeterministic(functionalMethod.getReturnType())) {
         lambdaKinds.remove(PurityKind.DETERMINISTIC);
       }
+      // Do not infer a kind that would newly constrain the arguments at call sites.
+      lambdaKinds = kindsSafeToInfer(functionalMethod, lambdaKinds);
       WholeProgramInference wpi = atypeFactory.getWholeProgramInference();
+      if (wpi == null) {
+        throw new BugInCF("No WPI while inferring purity of " + tree);
+      }
       inferPurityAnno(lambdaKinds, wpi, functionalMethod);
       for (ExecutableElement overriddenElt :
           ElementUtils.getOverriddenMethods(functionalMethod, types)) {
-        inferPurityAnno(lambdaKinds, wpi, overriddenElt);
+        inferPurityAnno(kindsSafeToInfer(overriddenElt, lambdaKinds), wpi, overriddenElt);
       }
     }
   }
@@ -4420,7 +4888,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param inner the type that might be contained
    * @param outer the type that might contain {@code inner}
    * @return true if both types are type variables and outer contains inner
+   * @deprecated The override checks no longer use containment. They express the overriding method's
+   *     signature in terms of the overridden method's type variables, and they compare the type
+   *     variables' bounds separately; see {@link OverrideChecker#checkTypeParameterBounds}.
    */
+  @Deprecated(forRemoval = true, since = "4.3.2") // 2026-09-18
+  @SuppressWarnings("removal") // calls areCorrespondingTypeVariables, also deprecated for removal
   protected boolean testTypevarContainment(AnnotatedTypeMirror inner, AnnotatedTypeMirror outer) {
     if (inner.getKind() == TypeKind.TYPEVAR && outer.getKind() == TypeKind.TYPEVAR) {
 
@@ -4595,10 +5068,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     // The type of the compileTimeDeclaration if it were invoked with a receiver expression
     // of type {@code type}
-    AnnotatedExecutableType invocationType =
-        atypeFactory
-            .methodFromUse(memberReferenceTree, compileTimeDeclaration, enclosingType)
-            .executableType();
+    var parameterizedInvocationType =
+        atypeFactory.methodFromUse(memberReferenceTree, compileTimeDeclaration, enclosingType);
+    AnnotatedExecutableType invocationType = parameterizedInvocationType.executableType();
+
+    // The type arguments of the compile-time declaration must be within its type parameters'
+    // bounds.  OverrideChecker cannot compare the two methods' type parameter bounds, because the
+    // type parameters of the compile-time declaration do not correspond to those of the function
+    // type.
+    if (!shouldSkipUses(memberReferenceTree)) {
+      checkTypeArguments(
+          memberReferenceTree,
+          CollectionsP.mapList(AnnotatedTypeVariable::getBounds, invocationType.getTypeVariables()),
+          parameterizedInvocationType.typeArgs(),
+          memberReferenceTree.getTypeArguments(),
+          ElementUtils.getSimpleDescription(compileTimeDeclaration),
+          compileTimeDeclaration.getTypeParameters());
+    }
 
     // This needs to be done before invocationType.getReturnType() and
     // functionType.getReturnType()
@@ -4696,6 +5182,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected final AnnotatedTypeMirror overriderReturnType;
 
     /**
+     * A mapping from each type variable of the overriding method to the corresponding type variable
+     * of the overridden method; null if the two methods have no corresponding type variables, and
+     * also null for every method reference.
+     *
+     * <p>Substituting according to this mapping expresses a type from the overriding method's
+     * signature in terms of the overridden method's type variables, which is what makes the two
+     * signatures comparable. See {@link #adaptToOverridden}.
+     *
+     * <p>This mapping is null for a method reference. No mapping is possible: the overrider is the
+     * invocation type of the method reference's compile-time declaration, whose type variables,
+     * when any remain, do not correspond to the functional interface method's type variables.
+     */
+    protected final @Nullable Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping;
+
+    /**
      * Create an OverrideChecker.
      *
      * <p>Notice that the return types are passed in separately. This is to support some types of
@@ -4728,6 +5229,76 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       this.overriddenReturnType = overriddenReturnType;
 
       this.isMethodReference = overriderTree instanceof MemberReferenceTree;
+      this.typeVarMapping = createTypeVarMapping(isMethodReference, overrider, overridden);
+    }
+
+    /**
+     * Returns a mapping from each type variable of the overriding method to the corresponding type
+     * variable of the overridden method, or null if the two methods have no corresponding type
+     * variables. Always returns null for a method reference; see {@link #typeVarMapping}.
+     *
+     * @param isMethodReference true if the overrider is a method reference
+     * @param overrider the type of the overriding method
+     * @param overridden the type of the overridden method
+     * @return a mapping from the overriding method's type variables to the overridden method's, or
+     *     null
+     */
+    private static @Nullable Map<TypeVariable, AnnotatedTypeMirror> createTypeVarMapping(
+        boolean isMethodReference,
+        AnnotatedExecutableType overrider,
+        AnnotatedExecutableType overridden) {
+      if (isMethodReference) {
+        return null;
+      }
+      List<AnnotatedTypeVariable> overriderTypeVars = overrider.getTypeVariables();
+      List<AnnotatedTypeVariable> overriddenTypeVars = overridden.getTypeVariables();
+      if (overriderTypeVars.isEmpty() || overriderTypeVars.size() != overriddenTypeVars.size()) {
+        return null;
+      }
+      Map<TypeVariable, AnnotatedTypeMirror> result =
+          ArrayMap.newArrayMapOrHashMap(overriderTypeVars.size());
+      for (int i = 0; i < overriderTypeVars.size(); i++) {
+        result.put(overriderTypeVars.get(i).getUnderlyingType(), overriddenTypeVars.get(i).asUse());
+      }
+      return result;
+    }
+
+    /**
+     * Expresses a type from the overriding method's signature in terms of the overridden method's
+     * type variables, by replacing each use of a type variable of the overriding method by the
+     * corresponding type variable of the overridden method.
+     *
+     * <p>Both methods are instantiated with the same type arguments at every call site, so this
+     * substitution loses no information. It permits the ordinary subtyping rules for two uses of
+     * the same type variable to be applied to the two methods' signatures.
+     *
+     * @param type a type that may contain uses of the overriding method's type variables
+     * @return {@code type}, expressed in terms of the overridden method's type variables
+     */
+    protected AnnotatedTypeMirror adaptToOverridden(AnnotatedTypeMirror type) {
+      if (typeVarMapping == null || !containsAnyTypeVariable(type, typeVarMapping.keySet())) {
+        return type;
+      }
+      return atypeFactory.getTypeVarSubstitutor().substitute(typeVarMapping, type);
+    }
+
+    /**
+     * Returns true if the given type contains a use of any of the given type variables. This is
+     * cheaper than substitution, which copies the type even when it substitutes nothing.
+     *
+     * @param type a type
+     * @param typeVars type variables
+     * @return true if {@code type} contains a use of any of {@code typeVars}
+     */
+    private boolean containsAnyTypeVariable(
+        AnnotatedTypeMirror type, Collection<? extends TypeVariable> typeVars) {
+      Type underlying = (Type) type.getUnderlyingType();
+      for (TypeVariable typeVar : typeVars) {
+        if (underlying.contains((Type) typeVar)) {
+          return true;
+        }
+      }
+      return false;
     }
 
     /**
@@ -4740,7 +5311,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return true;
       }
 
-      boolean result = checkReturn();
+      boolean result = checkTypeParameterBounds();
+      result &= checkReturn();
       result &= checkParameters();
       if (isMethodReference) {
         result &= checkMemberReferenceReceivers();
@@ -5145,6 +5717,123 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
+     * Issue an error if a type parameter of the overriding method has bounds that do not contain
+     * the bounds of the corresponding type parameter of the overridden method.
+     *
+     * <p>Nothing is checked if the overridden method is unchecked code that receives conservative
+     * defaults (see {@code -AuseConservativeDefaultsForUncheckedCode}). Its type parameters then
+     * have the widest possible bounds, which are conservative for its clients, but which no
+     * overriding method could contain.
+     *
+     * @return true if the type parameter bounds are correct
+     */
+    protected boolean checkTypeParameterBounds() {
+      if (typeVarMapping == null
+          || atypeFactory.applyConservativeDefaults(overridden.getElement())) {
+        return true;
+      }
+      boolean result = true;
+      for (int i = 0; i < overrider.getTypeVariables().size(); i++) {
+        // Do not short-circuit, because `checkTypeParameter*Bound` issues warnings.
+        result &= checkTypeParameterUpperBound(i);
+        result &= checkTypeParameterLowerBound(i);
+      }
+      return result;
+    }
+
+    /**
+     * Issue an error if the upper bound of the overriding method's type parameter at the given
+     * index is not a supertype of the upper bound of the overridden method's type parameter.
+     *
+     * @param index the index of the type parameter
+     * @return true if the upper bound is correct
+     */
+    protected boolean checkTypeParameterUpperBound(int index) {
+      AnnotatedTypeMirror overriderUpper = overrider.getTypeVariables().get(index).getUpperBound();
+      AnnotatedTypeMirror overriddenUpper =
+          overridden.getTypeVariables().get(index).getUpperBound();
+      boolean success = typeHierarchy.isSubtype(overriddenUpper, adaptToOverridden(overriderUpper));
+      checkTypeParameterBoundMsg(
+          success, index, "override.type.parameter.upper", overriderUpper, overriddenUpper);
+      return success;
+    }
+
+    /**
+     * Issue an error if the lower bound of the overriding method's type parameter at the given
+     * index is not a subtype of the lower bound of the overridden method's type parameter.
+     *
+     * @param index the index of the type parameter
+     * @return true if the lower bound is correct
+     */
+    protected boolean checkTypeParameterLowerBound(int index) {
+      AnnotatedTypeMirror overriderLower = overrider.getTypeVariables().get(index).getLowerBound();
+      AnnotatedTypeMirror overriddenLower =
+          overridden.getTypeVariables().get(index).getLowerBound();
+      boolean success = typeHierarchy.isSubtype(adaptToOverridden(overriderLower), overriddenLower);
+      checkTypeParameterBoundMsg(
+          success, index, "override.type.parameter.lower", overriderLower, overriddenLower);
+      return success;
+    }
+
+    /**
+     * Issue an error, if the check of one bound of the overriding method's type parameter at the
+     * given index failed. Also print debugging output if {@code -Ashowchecks} was passed.
+     *
+     * @param success whether the check succeeded or failed
+     * @param index the index of the type parameter
+     * @param messageKey the message key, which names the bound that is checked
+     * @param overriderBound the bound of the overriding method's type parameter
+     * @param overriddenBound the bound of the overridden method's type parameter
+     */
+    private void checkTypeParameterBoundMsg(
+        boolean success,
+        int index,
+        @CompilerMessageKey String messageKey,
+        AnnotatedTypeMirror overriderBound,
+        AnnotatedTypeMirror overriddenBound) {
+      if (success && !showchecks) {
+        return;
+      }
+
+      // The overrider is never a method reference, because typeVarMapping is null for one.
+      Tree posTree = ((MethodTree) overriderTree).getTypeParameters().get(index);
+      // Print both bounds verbosely.  What is at issue is exactly the bounds' qualifiers, and the
+      // non-verbose rendering of a bound can omit the very qualifier that causes the error.  For
+      // example, the Nullness Checker prints a `@Nullable` lower bound as "null (NullType)".
+      String overriderBoundString = overriderBound.toString(true);
+      String overriddenBoundString = overriddenBound.toString(true);
+
+      if (showchecks) {
+        System.out.printf(
+            " %s (at %s):%n"
+                + "     overrider: %s %s (bound %s)%n"
+                + "    overridden: %s %s (bound %s)%n",
+            (success
+                ? "success: overriding type parameter bound contains overridden"
+                : "FAILURE: overriding type parameter bound does not contain overridden"),
+            fileAndLineNumber(posTree),
+            overrider,
+            overriderType,
+            overriderBoundString,
+            overridden,
+            overriddenType,
+            overriddenBoundString);
+      }
+      if (!success) {
+        checker.reportError(
+            posTree,
+            messageKey,
+            overrider.getElement().getTypeParameters().get(index).getSimpleName(),
+            overriderBoundString,
+            overriddenBoundString,
+            overriderType,
+            overrider,
+            overriddenType,
+            overridden);
+      }
+    }
+
+    /**
      * Returns true if each parameter type of the overridden method is a subtype of the
      * corresponding parameter type of the overriding method.
      *
@@ -5175,10 +5864,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       for (int i = 0; i < overriderParams.size(); ++i) {
         AnnotatedTypeMirror capturedParam =
             atypeFactory.applyCaptureConversion(overriddenParams.get(i));
-        boolean success = typeHierarchy.isSubtype(capturedParam, overriderParams.get(i));
-        if (!success) {
-          success = testTypevarContainment(overriddenParams.get(i), overriderParams.get(i));
-        }
+        // Express the overriding method's parameter type in terms of the overridden method's type
+        // variables, so that the two can be compared.  Diagnostics use the unadapted type, which
+        // names the type variables that the overriding method declares.
+        boolean success =
+            typeHierarchy.isSubtype(capturedParam, adaptToOverridden(overriderParams.get(i)));
 
         checkParametersMsg(success, i, overriderParams, overriddenParams);
         result &= success;
@@ -5247,13 +5937,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Nothing to check.
         return true;
       }
-      boolean success = typeHierarchy.isSubtype(overriderReturnType, overriddenReturnType);
-      if (!success) {
-        // If both the overridden method have type variables as return types and both
-        // types were defined in their respective methods then, they can be covariant or
-        // invariant use super/subtypes for the overrides locations
-        success = testTypevarContainment(overriderReturnType, overriddenReturnType);
-      }
+      // Express the overriding method's return type in terms of the overridden method's type
+      // variables, so that the two can be compared.
+      boolean success =
+          typeHierarchy.isSubtype(adaptToOverridden(overriderReturnType), overriddenReturnType);
 
       // Sometimes the overridden return type of a method reference becomes a captured
       // type variable.  This leads to defaulting that often makes the overriding return type
