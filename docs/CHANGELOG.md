@@ -31,6 +31,10 @@ A subclass of `CFAbstractValue` or `CFValue` that adds state must override
 New method `BaseTypeVisitor.shouldSkipClass()` lets a checker skip a class
 entirely, including dataflow analysis.
 
+In `CFGTranslationPhaseOne`, renamed `createEnhancedForLoopIteratorVariable()` to
+`createIteratorVariableForEnhancedForLoop()` and
+`createEnhancedForLoopArrayVariable()` to `createArrayVariableForEnhancedForLoop()`.
+
 Removed classes `ByteMath`, `ShortMath`, `IntegerMath`, `LongMath`, `FloatMath`,
 and `DoubleMath`.  Use `NumberMath.getNumberMath()` instead.  `NumberMath` is
 now a final, non-generic class.  `NumberMath.getNumberMath()` throws

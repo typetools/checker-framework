@@ -1757,7 +1757,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       handleArtificialTree(iteratorCall);
 
       VariableTree iteratorVariable =
-          createEnhancedForLoopIteratorVariable(iteratorCall, variableElement);
+          createIteratorVariableForEnhancedForLoop(iteratorCall, variableElement);
       handleArtificialTree(iteratorVariable);
 
       VariableDeclarationNode iteratorVariableDecl = new VariableDeclarationNode(iteratorVariable);
@@ -1791,9 +1791,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       MethodInvocationTree hasNextCall = treeBuilder.buildMethodInvocation(hasNextSelect);
       handleArtificialTree(hasNextCall);
 
-      // The iterator is null only if iterator() returned null.  Then the first call to hasNext()
-      // throws NullPointerException.  Later calls cannot, but the RuntimeException edge of every
-      // call subsumes that NullPointerException edge anyway.
+      // The iterator is null only if iterator() returned null, and then the first call to hasNext()
+      // throws NullPointerException.  Later calls cannot throw NullPointerException, but treating
+      // every call as possibly throwing it loses no precision:  every call already has a
+      // RuntimeException edge, which subsumes the NullPointerException edge.
       extendWithArtificialCall(hasNextCall, iteratorReceiverNode, NullReceiver.THROWS);
       extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
 
@@ -1824,7 +1825,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       nextCallNode.setEnhancedForLoop(tree);
 
       translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
-      setIterableExpressionOnConversions(nextCallNode, expression, tree);
+      setIterableExpressionOnBoxingCalls(nextCallNode, expression, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -1837,7 +1838,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // TODO: Shift any labels after the initialization of the
       // temporary array variable.
 
-      VariableTree arrayVariable = createEnhancedForLoopArrayVariable(expression, variableElement);
+      VariableTree arrayVariable =
+          createArrayVariableForEnhancedForLoop(expression, variableElement);
       handleArtificialTree(arrayVariable);
 
       VariableDeclarationNode arrayVariableNode = new VariableDeclarationNode(arrayVariable);
@@ -1867,8 +1869,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       translateAssignment(indexVariable, new LocalVariableNode(indexVariable), zeroNode);
 
       // The array variable is never reassigned, so only the first access to its length can throw
-      // NullPointerException.  Represent that first access before the loop, and the access in the
-      // loop condition without the exception.
+      // NullPointerException.  Represent that first access before the loop, and represent the
+      // access in the loop condition without the exception.
       if (mayBeNull(expression)) {
         extendWithArrayLengthAccess(arrayVariable, true);
       }
@@ -1918,7 +1920,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       arrayAccessNode.setInSource(false);
       extendWithNode(arrayAccessNode);
       translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
-      setIterableExpressionOnConversions(arrayAccessNode, expression, tree);
+      setIterableExpressionOnBoxingCalls(arrayAccessNode, expression, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -1963,16 +1965,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Marks the boxing or unboxing calls that assignment conversion applied to an element of an
-   * enhanced for loop, so that the type of each call is the element type of the iterable
-   * expression. Assignment conversion may box or unbox the element, for example in {@code for (int
-   * x : listOfInteger)} or {@code for (Integer x : arrayOfInt)}.
+   * Sets the iterable expression and the enhanced for loop of each boxing or unboxing call that
+   * assignment conversion applied to {@code element}, so that the type of each call is the element
+   * type of the iterable expression. Assignment conversion boxes or unboxes the element in, for
+   * example, {@code for (int x : listOfInteger)} and {@code for (Integer x : arrayOfInt)}.
    *
    * @param element the node for the element, before conversion
    * @param expression the iterable expression of the enhanced for loop
    * @param tree the enhanced for loop
    */
-  private void setIterableExpressionOnConversions(
+  private void setIterableExpressionOnBoxingCalls(
       Node element, ExpressionTree expression, EnhancedForLoopTree tree) {
     Set<Node> converted = treeToConvertedCfgNodes.get(element.getTree());
     if (converted == null) {
@@ -1987,16 +1989,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns the given type without its top-level annotations, but with the annotations on its type
+   * Returns the given type without its primary annotations, but with the annotations on its type
    * arguments and array components. A variable declared with the result is refined by its
-   * initializer, like a local variable whose declared type has no top-level annotations. Returns
-   * the type unchanged if it is neither an array type nor a declared type.
+   * initializer, like a local variable whose declared type has no primary annotations. Returns
+   * {@code type} itself if it is neither an array type nor a declared type. Does not side-effect
+   * {@code type}.
    *
    * @param type a type
-   * @return the type without its top-level annotations
+   * @return the type without its primary annotations; may be {@code type} itself
    */
-  protected TypeMirror withoutTopLevelAnnotations(TypeMirror type) {
+  protected TypeMirror withoutPrimaryAnnotations(TypeMirror type) {
     if (type instanceof ArrayType arrayType) {
+      // getArrayType always creates a new, unannotated type.
       return types.getArrayType(arrayType.getComponentType());
     } else if (type instanceof DeclaredType declaredType) {
       TypeElement typeElement = (TypeElement) declaredType.asElement();
@@ -2020,9 +2024,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param variableElement the element of the enhanced for loop's variable
    * @return a declaration of a fresh iterator variable
    */
-  protected VariableTree createEnhancedForLoopIteratorVariable(
+  protected VariableTree createIteratorVariableForEnhancedForLoop(
       MethodInvocationTree iteratorCall, VariableElement variableElement) {
-    TypeMirror iteratorType = withoutTopLevelAnnotations(TreeUtils.typeOf(iteratorCall));
+    TypeMirror iteratorType = withoutPrimaryAnnotations(TreeUtils.typeOf(iteratorCall));
 
     // Declare and initialize a new, unique iterator variable
     VariableTree iteratorVariable =
@@ -2042,9 +2046,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param variableElement the element of the enhanced for loop's variable
    * @return a declaration of a fresh array variable
    */
-  protected VariableTree createEnhancedForLoopArrayVariable(
+  protected VariableTree createArrayVariableForEnhancedForLoop(
       ExpressionTree expression, VariableElement variableElement) {
-    TypeMirror arrayType = withoutTopLevelAnnotations(TreeUtils.typeOf(expression));
+    TypeMirror arrayType = withoutPrimaryAnnotations(TreeUtils.typeOf(expression));
 
     // Declare and initialize a temporary array variable
     VariableTree arrayVariable =
