@@ -1793,9 +1793,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       MethodInvocationTree hasNextCall = treeBuilder.buildMethodInvocation(hasNextSelect);
       handleArtificialTree(hasNextCall);
 
-      // The iterator is null only if iterator() returned null, and then the first call to hasNext()
-      // throws NullPointerException.  Later calls cannot throw NullPointerException, but treating
-      // every call as possibly throwing it loses no precision:  every call already has a
+      // The iterator is null only if iterator() returned null, and in that case the first call to
+      // hasNext() throws NullPointerException.  Later calls cannot throw NullPointerException, but
+      // treating every call as possibly throwing it loses no precision:  every call already has a
       // RuntimeException edge, which subsumes the NullPointerException edge.
       extendWithArtificialCall(hasNextCall, iteratorReceiverNode, NullReceiver.THROWS);
       extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
