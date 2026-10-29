@@ -7,6 +7,8 @@
 
 ### User-visible changes
 
+New Confidential Checker to identify sensitive information exposure.
+
 A method with a purity annotation may call the functional method of one of its
 functional-interface parameters, such as `f.apply(x)` for a parameter
 `Function f`; the call is treated as having the method's purity.  In exchange,
