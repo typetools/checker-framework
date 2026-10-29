@@ -1,12 +1,7 @@
 package org.checkerframework.checker.modifiability.seqgrow;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -20,7 +15,6 @@ import org.checkerframework.checker.modifiability.qual.SeqUngrowable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TypesUtils;
 
 /** The annotated type factory for the {@link SeqGrowChecker}. */
@@ -35,18 +29,6 @@ public class SeqGrowAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedTypeF
   /** The erased {@code java.util.Deque} type. */
   private final TypeMirror dequeErasure;
 
-  /** The {@code @}{@link MaybeSeqGrowable} qualifier. */
-  private final AnnotationMirror MAYBE_SEQ_GROWABLE;
-
-  /** The {@code @}{@link SeqGrowable} qualifier. */
-  private final AnnotationMirror SEQ_GROWABLE;
-
-  /** The {@code @}{@link SeqUngrowable} qualifier. */
-  private final AnnotationMirror SEQ_UNGROWABLE;
-
-  /** The {@code @}{@link PolySeqGrowable} qualifier. */
-  private final AnnotationMirror POLY_SEQ_GROWABLE;
-
   /**
    * Creates a SeqGrowAnnotatedTypeFactory.
    *
@@ -54,14 +36,16 @@ public class SeqGrowAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedTypeF
    */
   @SuppressWarnings("this-escape")
   public SeqGrowAnnotatedTypeFactory(BaseTypeChecker checker) {
-    super(checker);
+    super(
+        checker,
+        MaybeSeqGrowable.class,
+        SeqGrowable.class,
+        SeqUngrowable.class,
+        BottomSeqGrowable.class,
+        PolySeqGrowable.class);
     this.sequencedCollectionErasure = optionalErasureOf("java.util.SequencedCollection");
     this.sequencedMapErasure = optionalErasureOf("java.util.SequencedMap");
     this.dequeErasure = erasureOf("java.util.Deque");
-    this.MAYBE_SEQ_GROWABLE = AnnotationBuilder.fromClass(elements, MaybeSeqGrowable.class);
-    this.SEQ_GROWABLE = AnnotationBuilder.fromClass(elements, SeqGrowable.class);
-    this.SEQ_UNGROWABLE = AnnotationBuilder.fromClass(elements, SeqUngrowable.class);
-    this.POLY_SEQ_GROWABLE = AnnotationBuilder.fromClass(elements, PolySeqGrowable.class);
     postInit();
   }
 
@@ -76,37 +60,6 @@ public class SeqGrowAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedTypeF
       @FullyQualifiedName String canonicalName) {
     TypeElement element = elements.getTypeElement(canonicalName);
     return element == null ? null : types.erasure(element.asType());
-  }
-
-  @Override
-  protected AnnotationMirror topAnnotation() {
-    return MAYBE_SEQ_GROWABLE;
-  }
-
-  @Override
-  protected AnnotationMirror positiveCapability() {
-    return SEQ_GROWABLE;
-  }
-
-  @Override
-  protected AnnotationMirror negativeCapability() {
-    return SEQ_UNGROWABLE;
-  }
-
-  @Override
-  protected AnnotationMirror polyCapability() {
-    return POLY_SEQ_GROWABLE;
-  }
-
-  @Override
-  protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    return new LinkedHashSet<>(
-        Arrays.asList(
-            MaybeSeqGrowable.class,
-            SeqGrowable.class,
-            SeqUngrowable.class,
-            BottomSeqGrowable.class,
-            PolySeqGrowable.class));
   }
 
   /**
