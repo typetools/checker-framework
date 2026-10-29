@@ -1007,10 +1007,9 @@ public final class ElementUtils {
    * {@code receiverType}: returns the no-argument instance method that the call invokes, or null if
    * there is no such method.
    *
-   * <p>This is compile-time resolution (JLS 15.12.3). It resolves overloading: methods that take
-   * arguments are ignored. It does not resolve overriding: the result is the most specific
-   * declaration among {@code receiverType} and its supertypes, but at run time the call may
-   * dispatch to an overriding method in a subtype of {@code receiverType}.
+   * <p>This is compile-time resolution (JLS 15.12.3). It resolves overloading, not overriding. The
+   * result is the most specific declaration among {@code receiverType} and its supertypes, but at
+   * run time the call may dispatch to an overriding method in a subtype of {@code receiverType}.
    *
    * @param receiverType the type of the receiver expression
    * @param methodName the name of the method
