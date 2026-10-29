@@ -43,6 +43,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
@@ -53,6 +54,7 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -74,6 +76,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
@@ -4885,7 +4888,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param inner the type that might be contained
    * @param outer the type that might contain {@code inner}
    * @return true if both types are type variables and outer contains inner
+   * @deprecated The override checks no longer use containment. They express the overriding method's
+   *     signature in terms of the overridden method's type variables, and they compare the type
+   *     variables' bounds separately; see {@link OverrideChecker#checkTypeParameterBounds}.
    */
+  @Deprecated(forRemoval = true, since = "4.3.2") // 2026-09-18
+  @SuppressWarnings("removal") // calls areCorrespondingTypeVariables, also deprecated for removal
   protected boolean testTypevarContainment(AnnotatedTypeMirror inner, AnnotatedTypeMirror outer) {
     if (inner.getKind() == TypeKind.TYPEVAR && outer.getKind() == TypeKind.TYPEVAR) {
 
@@ -5060,10 +5068,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     // The type of the compileTimeDeclaration if it were invoked with a receiver expression
     // of type {@code type}
-    AnnotatedExecutableType invocationType =
-        atypeFactory
-            .methodFromUse(memberReferenceTree, compileTimeDeclaration, enclosingType)
-            .executableType();
+    var parameterizedInvocationType =
+        atypeFactory.methodFromUse(memberReferenceTree, compileTimeDeclaration, enclosingType);
+    AnnotatedExecutableType invocationType = parameterizedInvocationType.executableType();
+
+    // The type arguments of the compile-time declaration must be within its type parameters'
+    // bounds.  OverrideChecker cannot compare the two methods' type parameter bounds, because the
+    // type parameters of the compile-time declaration do not correspond to those of the function
+    // type.
+    if (!shouldSkipUses(memberReferenceTree)) {
+      checkTypeArguments(
+          memberReferenceTree,
+          CollectionsP.mapList(AnnotatedTypeVariable::getBounds, invocationType.getTypeVariables()),
+          parameterizedInvocationType.typeArgs(),
+          memberReferenceTree.getTypeArguments(),
+          ElementUtils.getSimpleDescription(compileTimeDeclaration),
+          compileTimeDeclaration.getTypeParameters());
+    }
 
     // This needs to be done before invocationType.getReturnType() and
     // functionType.getReturnType()
@@ -5161,6 +5182,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected final AnnotatedTypeMirror overriderReturnType;
 
     /**
+     * A mapping from each type variable of the overriding method to the corresponding type variable
+     * of the overridden method; null if the two methods have no corresponding type variables, and
+     * also null for every method reference.
+     *
+     * <p>Substituting according to this mapping expresses a type from the overriding method's
+     * signature in terms of the overridden method's type variables, which is what makes the two
+     * signatures comparable. See {@link #adaptToOverridden}.
+     *
+     * <p>This mapping is null for a method reference. No mapping is possible: the overrider is the
+     * invocation type of the method reference's compile-time declaration, whose type variables,
+     * when any remain, do not correspond to the functional interface method's type variables.
+     */
+    protected final @Nullable Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping;
+
+    /**
      * Create an OverrideChecker.
      *
      * <p>Notice that the return types are passed in separately. This is to support some types of
@@ -5193,6 +5229,76 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       this.overriddenReturnType = overriddenReturnType;
 
       this.isMethodReference = overriderTree instanceof MemberReferenceTree;
+      this.typeVarMapping = createTypeVarMapping(isMethodReference, overrider, overridden);
+    }
+
+    /**
+     * Returns a mapping from each type variable of the overriding method to the corresponding type
+     * variable of the overridden method, or null if the two methods have no corresponding type
+     * variables. Always returns null for a method reference; see {@link #typeVarMapping}.
+     *
+     * @param isMethodReference true if the overrider is a method reference
+     * @param overrider the type of the overriding method
+     * @param overridden the type of the overridden method
+     * @return a mapping from the overriding method's type variables to the overridden method's, or
+     *     null
+     */
+    private static @Nullable Map<TypeVariable, AnnotatedTypeMirror> createTypeVarMapping(
+        boolean isMethodReference,
+        AnnotatedExecutableType overrider,
+        AnnotatedExecutableType overridden) {
+      if (isMethodReference) {
+        return null;
+      }
+      List<AnnotatedTypeVariable> overriderTypeVars = overrider.getTypeVariables();
+      List<AnnotatedTypeVariable> overriddenTypeVars = overridden.getTypeVariables();
+      if (overriderTypeVars.isEmpty() || overriderTypeVars.size() != overriddenTypeVars.size()) {
+        return null;
+      }
+      Map<TypeVariable, AnnotatedTypeMirror> result =
+          ArrayMap.newArrayMapOrHashMap(overriderTypeVars.size());
+      for (int i = 0; i < overriderTypeVars.size(); i++) {
+        result.put(overriderTypeVars.get(i).getUnderlyingType(), overriddenTypeVars.get(i).asUse());
+      }
+      return result;
+    }
+
+    /**
+     * Expresses a type from the overriding method's signature in terms of the overridden method's
+     * type variables, by replacing each use of a type variable of the overriding method by the
+     * corresponding type variable of the overridden method.
+     *
+     * <p>Both methods are instantiated with the same type arguments at every call site, so this
+     * substitution loses no information. It permits the ordinary subtyping rules for two uses of
+     * the same type variable to be applied to the two methods' signatures.
+     *
+     * @param type a type that may contain uses of the overriding method's type variables
+     * @return {@code type}, expressed in terms of the overridden method's type variables
+     */
+    protected AnnotatedTypeMirror adaptToOverridden(AnnotatedTypeMirror type) {
+      if (typeVarMapping == null || !containsAnyTypeVariable(type, typeVarMapping.keySet())) {
+        return type;
+      }
+      return atypeFactory.getTypeVarSubstitutor().substitute(typeVarMapping, type);
+    }
+
+    /**
+     * Returns true if the given type contains a use of any of the given type variables. This is
+     * cheaper than substitution, which copies the type even when it substitutes nothing.
+     *
+     * @param type a type
+     * @param typeVars type variables
+     * @return true if {@code type} contains a use of any of {@code typeVars}
+     */
+    private boolean containsAnyTypeVariable(
+        AnnotatedTypeMirror type, Collection<? extends TypeVariable> typeVars) {
+      Type underlying = (Type) type.getUnderlyingType();
+      for (TypeVariable typeVar : typeVars) {
+        if (underlying.contains((Type) typeVar)) {
+          return true;
+        }
+      }
+      return false;
     }
 
     /**
@@ -5205,7 +5311,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return true;
       }
 
-      boolean result = checkReturn();
+      boolean result = checkTypeParameterBounds();
+      result &= checkReturn();
       result &= checkParameters();
       if (isMethodReference) {
         result &= checkMemberReferenceReceivers();
@@ -5610,6 +5717,123 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
+     * Issue an error if a type parameter of the overriding method has bounds that do not contain
+     * the bounds of the corresponding type parameter of the overridden method.
+     *
+     * <p>Nothing is checked if the overridden method is unchecked code that receives conservative
+     * defaults (see {@code -AuseConservativeDefaultsForUncheckedCode}). Its type parameters then
+     * have the widest possible bounds, which are conservative for its clients, but which no
+     * overriding method could contain.
+     *
+     * @return true if the type parameter bounds are correct
+     */
+    protected boolean checkTypeParameterBounds() {
+      if (typeVarMapping == null
+          || atypeFactory.applyConservativeDefaults(overridden.getElement())) {
+        return true;
+      }
+      boolean result = true;
+      for (int i = 0; i < overrider.getTypeVariables().size(); i++) {
+        // Do not short-circuit, because `checkTypeParameter*Bound` issues warnings.
+        result &= checkTypeParameterUpperBound(i);
+        result &= checkTypeParameterLowerBound(i);
+      }
+      return result;
+    }
+
+    /**
+     * Issue an error if the upper bound of the overriding method's type parameter at the given
+     * index is not a supertype of the upper bound of the overridden method's type parameter.
+     *
+     * @param index the index of the type parameter
+     * @return true if the upper bound is correct
+     */
+    protected boolean checkTypeParameterUpperBound(int index) {
+      AnnotatedTypeMirror overriderUpper = overrider.getTypeVariables().get(index).getUpperBound();
+      AnnotatedTypeMirror overriddenUpper =
+          overridden.getTypeVariables().get(index).getUpperBound();
+      boolean success = typeHierarchy.isSubtype(overriddenUpper, adaptToOverridden(overriderUpper));
+      checkTypeParameterBoundMsg(
+          success, index, "override.type.parameter.upper", overriderUpper, overriddenUpper);
+      return success;
+    }
+
+    /**
+     * Issue an error if the lower bound of the overriding method's type parameter at the given
+     * index is not a subtype of the lower bound of the overridden method's type parameter.
+     *
+     * @param index the index of the type parameter
+     * @return true if the lower bound is correct
+     */
+    protected boolean checkTypeParameterLowerBound(int index) {
+      AnnotatedTypeMirror overriderLower = overrider.getTypeVariables().get(index).getLowerBound();
+      AnnotatedTypeMirror overriddenLower =
+          overridden.getTypeVariables().get(index).getLowerBound();
+      boolean success = typeHierarchy.isSubtype(adaptToOverridden(overriderLower), overriddenLower);
+      checkTypeParameterBoundMsg(
+          success, index, "override.type.parameter.lower", overriderLower, overriddenLower);
+      return success;
+    }
+
+    /**
+     * Issue an error, if the check of one bound of the overriding method's type parameter at the
+     * given index failed. Also print debugging output if {@code -Ashowchecks} was passed.
+     *
+     * @param success whether the check succeeded or failed
+     * @param index the index of the type parameter
+     * @param messageKey the message key, which names the bound that is checked
+     * @param overriderBound the bound of the overriding method's type parameter
+     * @param overriddenBound the bound of the overridden method's type parameter
+     */
+    private void checkTypeParameterBoundMsg(
+        boolean success,
+        int index,
+        @CompilerMessageKey String messageKey,
+        AnnotatedTypeMirror overriderBound,
+        AnnotatedTypeMirror overriddenBound) {
+      if (success && !showchecks) {
+        return;
+      }
+
+      // The overrider is never a method reference, because typeVarMapping is null for one.
+      Tree posTree = ((MethodTree) overriderTree).getTypeParameters().get(index);
+      // Print both bounds verbosely.  What is at issue is exactly the bounds' qualifiers, and the
+      // non-verbose rendering of a bound can omit the very qualifier that causes the error.  For
+      // example, the Nullness Checker prints a `@Nullable` lower bound as "null (NullType)".
+      String overriderBoundString = overriderBound.toString(true);
+      String overriddenBoundString = overriddenBound.toString(true);
+
+      if (showchecks) {
+        System.out.printf(
+            " %s (at %s):%n"
+                + "     overrider: %s %s (bound %s)%n"
+                + "    overridden: %s %s (bound %s)%n",
+            (success
+                ? "success: overriding type parameter bound contains overridden"
+                : "FAILURE: overriding type parameter bound does not contain overridden"),
+            fileAndLineNumber(posTree),
+            overrider,
+            overriderType,
+            overriderBoundString,
+            overridden,
+            overriddenType,
+            overriddenBoundString);
+      }
+      if (!success) {
+        checker.reportError(
+            posTree,
+            messageKey,
+            overrider.getElement().getTypeParameters().get(index).getSimpleName(),
+            overriderBoundString,
+            overriddenBoundString,
+            overriderType,
+            overrider,
+            overriddenType,
+            overridden);
+      }
+    }
+
+    /**
      * Returns true if each parameter type of the overridden method is a subtype of the
      * corresponding parameter type of the overriding method.
      *
@@ -5640,10 +5864,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       for (int i = 0; i < overriderParams.size(); ++i) {
         AnnotatedTypeMirror capturedParam =
             atypeFactory.applyCaptureConversion(overriddenParams.get(i));
-        boolean success = typeHierarchy.isSubtype(capturedParam, overriderParams.get(i));
-        if (!success) {
-          success = testTypevarContainment(overriddenParams.get(i), overriderParams.get(i));
-        }
+        // Express the overriding method's parameter type in terms of the overridden method's type
+        // variables, so that the two can be compared.  Diagnostics use the unadapted type, which
+        // names the type variables that the overriding method declares.
+        boolean success =
+            typeHierarchy.isSubtype(capturedParam, adaptToOverridden(overriderParams.get(i)));
 
         checkParametersMsg(success, i, overriderParams, overriddenParams);
         result &= success;
@@ -5712,13 +5937,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Nothing to check.
         return true;
       }
-      boolean success = typeHierarchy.isSubtype(overriderReturnType, overriddenReturnType);
-      if (!success) {
-        // If both the overridden method have type variables as return types and both
-        // types were defined in their respective methods then, they can be covariant or
-        // invariant use super/subtypes for the overrides locations
-        success = testTypevarContainment(overriderReturnType, overriddenReturnType);
-      }
+      // Express the overriding method's return type in terms of the overridden method's type
+      // variables, so that the two can be compared.
+      boolean success =
+          typeHierarchy.isSubtype(adaptToOverridden(overriderReturnType), overriddenReturnType);
 
       // Sometimes the overridden return type of a method reference becomes a captured
       // type variable.  This leads to defaulting that often makes the overriding return type
