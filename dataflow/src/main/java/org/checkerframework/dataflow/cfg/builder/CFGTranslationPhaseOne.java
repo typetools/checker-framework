@@ -2612,7 +2612,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // resource.  If any exception occurs due to code within the resource declaration, the
     // corresponding variable or field is *not* automatically closed (as it was never
     // assigned a value).
-    Node resourceCloseNode = scan(resourceDeclarationTree, p);
+    scan(resourceDeclarationTree, p);
 
     // Now, set things up for our synthetic finally block that closes the resource.
     Label doneLabel = new Label();
@@ -2650,7 +2650,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         doneLabel,
         finallyLabel,
         exceptionalFinallyLabel,
-        () -> addCloseCallForResource(resourceDeclarationTree, resourceCloseNode),
+        () -> addCloseCallForResource(resourceDeclarationTree, p),
         oldReturnTargetLC,
         oldBreakTargetLC,
         oldBreakLabels,
@@ -2664,15 +2664,23 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Adds a synthetic {@code close} call to the CFG to close some resource variable declared or used
    * in a try-with-resources.
    *
-   * @param resourceDeclarationTree the resource declaration
-   * @param resourceToCloseNode node represented the variable or field on which {@code close} should
-   *     be invoked
+   * @param resourceDeclarationTree the resource declaration, or the variable or field that is the
+   *     resource
+   * @param p the value to pass to calls to {@code scan}
    */
-  private void addCloseCallForResource(Tree resourceDeclarationTree, Node resourceToCloseNode) {
-    Tree receiverTree = resourceDeclarationTree;
-    if (receiverTree instanceof VariableTree) {
-      receiverTree = treeBuilder.buildVariableUse((VariableTree) receiverTree);
+  private void addCloseCallForResource(Tree resourceDeclarationTree, Void p) {
+    // The receiver of close() is a use of the resource variable or field.
+    Tree receiverTree;
+    Node receiverNode;
+    if (resourceDeclarationTree instanceof VariableTree variableTree) {
+      receiverTree = treeBuilder.buildVariableUse(variableTree);
       handleArtificialTree(receiverTree);
+      receiverNode = new LocalVariableNode(receiverTree);
+      receiverNode.setInSource(false);
+      extendWithNode(receiverNode);
+    } else {
+      receiverTree = resourceDeclarationTree;
+      receiverNode = scan(resourceDeclarationTree, p);
     }
 
     MemberSelectTree closeSelect =
@@ -2681,14 +2689,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     MethodInvocationTree closeCall = treeBuilder.buildMethodInvocation(closeSelect);
     handleArtificialTree(closeCall);
-
-    Node receiverNode = resourceToCloseNode;
-    if (receiverNode instanceof AssignmentNode) {
-      // variable declaration; use the LHS
-      receiverNode = ((AssignmentNode) resourceToCloseNode).getTarget();
-    }
-    // TODO do we need to insert some kind of node representing a use of receiverNode
-    // (which can be either a LocalVariableNode or a FieldAccessNode)?
 
     // A try-with-resources statement calls close() only if the resource is non-null (JLS
     // 14.20.3.1).  A resource variable is final, so it is non-null if its initializer is.
@@ -2708,18 +2708,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               nullTree);
       handleArtificialTree(nullTestTree);
 
-      // For a variable declaration, receiverNode is the target of the assignment, which is an
-      // lvalue.  The null test reads the variable's value.
-      Node resourceValueNode = receiverNode;
-      if (resourceToCloseNode instanceof AssignmentNode) {
-        resourceValueNode = new LocalVariableNode(receiverTree);
-        resourceValueNode.setInSource(false);
-        extendWithNode(resourceValueNode);
-      }
       NullLiteralNode nullNode = new NullLiteralNode(nullTree);
       nullNode.setInSource(false);
       extendWithNode(nullNode);
-      NotEqualNode nullTestNode = new NotEqualNode(nullTestTree, resourceValueNode, nullNode);
+      NotEqualNode nullTestNode = new NotEqualNode(nullTestTree, receiverNode, nullNode);
       nullTestNode.setInSource(false);
       extendWithNode(nullTestNode);
 
