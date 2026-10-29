@@ -1978,7 +1978,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private void setIterableExpressionOnBoxingCalls(
       Node element, ExpressionTree expression, EnhancedForLoopTree tree) {
-    Set<Node> converted = treeToConvertedCfgNodes.get(element.getTree());
+    Set<Node> converted = treeToImplicitlyConvertedCfgNodes.get(element.getTree());
     if (converted == null) {
       return;
     }
