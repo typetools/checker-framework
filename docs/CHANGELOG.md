@@ -36,7 +36,7 @@ arbitrary expression) and the processing environment.
 
 Deprecated methods:
 
-* `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.getNoArgumentMethod()`
+* `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.resolveNoArgumentCall()`
 
 ### Closed issues
 
