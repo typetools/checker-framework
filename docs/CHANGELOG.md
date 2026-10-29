@@ -23,6 +23,9 @@ deterministic, such as one that calls `String.format`.  See the manual section
 
 ### Changes for type system implementers
 
+New class `AbstractSetInclusionQualifierHierarchy` is the superclass of
+`SubtypeIsSubsetQualifierHierarchy` and `SubtypeIsSupersetQualifierHierarchy`.
+
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
 A default that a type system registers through
@@ -39,6 +42,17 @@ Removed `DefaultSet.EMPTY`.
 may now apply more than one default; its `scan()`, `visitTypeVariable()`,
 `visitWildcard()`, and `visitBounds()` methods take a `Void` parameter
 accordingly.
+
+A subclass of `CFAbstractValue` or `CFValue` that adds state must override
+`equals()` and `hashCode()` to account for that state.
+
+New method `BaseTypeVisitor.shouldSkipClass()` lets a checker skip a class
+entirely, including dataflow analysis.
+
+Removed classes `ByteMath`, `ShortMath`, `IntegerMath`, `LongMath`, `FloatMath`,
+and `DoubleMath`.  Use `NumberMath.getNumberMath()` instead.  `NumberMath` is
+now a final, non-generic class.  `NumberMath.getNumberMath()` throws
+`UnsupportedOperationException`, rather than returning null, for an unsupported
 
 `PurityChecker.checkPurity()` takes two new arguments: the method declaration
 that lexically encloses the statement being checked (or null, as for an

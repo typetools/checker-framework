@@ -2375,14 +2375,15 @@ public class MustCallConsistencyAnalyzer {
 
       if (cmValue != null) { // When store contains the lhs
         Set<String> accumulatedValues = cmValue.getAccumulatedValues();
-        if (accumulatedValues != null) { // type variable or wildcard type
+        if (cmValue.getAnnotations().contains(cmAtf.bottom)) {
+          // A bottom value may also have accumulated values; they are irrelevant.
+          cmAnno = cmAtf.bottom;
+        } else if (accumulatedValues != null) { // type variable or wildcard type
           cmAnno = cmAtf.createCalledMethods(accumulatedValues.toArray(new String[0]));
         } else {
           for (AnnotationMirror anno : cmValue.getAnnotations()) {
             if (AnnotationUtils.areSameByName(
-                    anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")
-                || AnnotationUtils.areSameByName(
-                    anno, "org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom")) {
+                anno, "org.checkerframework.checker.calledmethods.qual.CalledMethods")) {
               cmAnno = anno;
             }
           }

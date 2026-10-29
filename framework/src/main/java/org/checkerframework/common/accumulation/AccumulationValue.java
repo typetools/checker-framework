@@ -1,6 +1,7 @@
 package org.checkerframework.common.accumulation;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -34,8 +35,9 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
 
   /**
-   * If the underlying type is a type variable or a wildcard, then this is a set of accumulated
-   * values. Otherwise, it is null.
+   * If the underlying type is a type variable or a wildcard and the annotations include an
+   * accumulator annotation, then this is the set of accumulated values, which may be empty.
+   * Otherwise, it is null.
    */
   private @Nullable Set<String> accumulatedValues = null;
 
@@ -86,8 +88,9 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
   }
 
   /**
-   * If the underlying type is a type variable or a wildcard, then this is a set of accumulated
-   * values. Otherwise, it is null.
+   * If the underlying type is a type variable or a wildcard and the annotations include an
+   * accumulator annotation, then this is the set of accumulated values, which may be empty.
+   * Otherwise, it is null.
    *
    * @return the set (this is not a copy of the set, but an alias)
    */
@@ -96,20 +99,48 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
   }
 
   @Override
+  public boolean equals(@Nullable Object obj) {
+    return super.equals(obj)
+        && obj instanceof AccumulationValue other
+        && Objects.equals(accumulatedValues, other.accumulatedValues);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), accumulatedValues);
+  }
+
+  @Override
   protected AccumulationValue upperBound(
       @Nullable AccumulationValue other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {
     AccumulationValue lub = super.upperBound(other, upperBoundTypeMirror, shouldWiden);
 
-    if (other == null || other.accumulatedValues == null || this.accumulatedValues == null) {
+    if (other == null) {
+      return lub;
+    }
+    // A bottom value represents every value having been accumulated, so it is the identity for
+    // lub.  Its accumulatedValues, whether null or non-null (from mostSpecific), must not shrink
+    // the other's set.
+    AnnotationMirror bottom = ((AccumulationAnnotatedTypeFactory) analysis.getTypeFactory()).bottom;
+    boolean thisIsBottom = this.getAnnotations().contains(bottom);
+    boolean otherIsBottom = other.getAnnotations().contains(bottom);
+    Set<String> thisAccumulatedValues = this.accumulatedValues;
+    Set<String> otherAccumulatedValues = other.accumulatedValues;
+    if (thisIsBottom != otherIsBottom) {
+      Set<String> nonBottomAccumulatedValues =
+          thisIsBottom ? otherAccumulatedValues : thisAccumulatedValues;
+      if (nonBottomAccumulatedValues != null) {
+        lub.accumulatedValues = new HashSet<>(nonBottomAccumulatedValues);
+      }
+      return lub;
+    }
+    if (thisAccumulatedValues == null || otherAccumulatedValues == null) {
       return lub;
     }
     // Lub the accumulatedValues by intersecting the lists as if they were sets.
-    lub.accumulatedValues = new HashSet<>(this.accumulatedValues.size());
-    lub.accumulatedValues.addAll(this.accumulatedValues);
-    lub.accumulatedValues.retainAll(other.accumulatedValues);
-    if (lub.accumulatedValues.isEmpty()) {
-      lub.accumulatedValues = null;
-    }
+    Set<String> lubAccumulatedValues = new HashSet<>(thisAccumulatedValues);
+    lubAccumulatedValues.retainAll(otherAccumulatedValues);
+    lub.accumulatedValues = lubAccumulatedValues;
     return lub;
   }
 
