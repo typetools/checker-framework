@@ -2094,7 +2094,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private static boolean mayBeNull(ExpressionTree expression) {
     expression = TreeUtils.withoutParens(expression);
-    return !(expression instanceof NewClassTree || expression instanceof NewArrayTree);
+    return !(expression instanceof NewClassTree
+        || expression instanceof NewArrayTree
+        || TreeUtils.isExplicitThisDereference(expression));
   }
 
   @Override
@@ -2763,8 +2765,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *
    * @param call the call
    * @param receiver the receiver of the call
-   * @param nullReceiver what happens when the receiver is null. If the receiver is {@code this}, it
-   *     is never null, regardless of this argument.
+   * @param nullReceiver what happens when the receiver is null
    * @return the node for the call
    */
   private MethodInvocationNode extendWithArtificialCall(
@@ -2772,7 +2773,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     MethodAccessNode accessNode =
         new MethodAccessNode((MemberSelectTree) call.getMethodSelect(), receiver);
     accessNode.setInSource(false);
-    if (nullReceiver == NullReceiver.THROWS && !(receiver instanceof ThisNode)) {
+    if (nullReceiver == NullReceiver.THROWS) {
       extendWithNodeWithException(accessNode, nullPointerExceptionType);
     } else {
       extendWithNode(accessNode);
