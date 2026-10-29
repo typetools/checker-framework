@@ -1003,6 +1003,77 @@ public final class ElementUtils {
   }
 
   /**
+   * Returns the no-argument instance method with the given name that a call on an expression of the
+   * given type invokes, or null if there is no such method.
+   *
+   * @param receiverType the type of the receiver of the call
+   * @param methodName the name of the method
+   * @param env the processing environment
+   * @return the invoked method, or null if the type has no such method
+   */
+  public static @Nullable ExecutableElement getNoArgumentMethod(
+      TypeMirror receiverType, String methodName, ProcessingEnvironment env) {
+    TypeMirror upperBound = TypesUtils.upperBound(receiverType);
+    if (upperBound.getKind() != TypeKind.DECLARED
+        && upperBound.getKind() != TypeKind.INTERSECTION) {
+      return null;
+    }
+    Context ctx = InternalUtils.getJavacContext(env);
+    com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
+    Symbol.TypeSymbol origin = ((Type) upperBound).tsym;
+    com.sun.tools.javac.util.Name name =
+        com.sun.tools.javac.util.Names.instance(ctx).fromString(methodName);
+    // Elements.getAllMembers would find the candidates, but in rare cases it crashes with a
+    // Symbol$CompletionFailure exception.  See
+    // https://github.com/typetools/checker-framework/issues/6396.  Searching the members of every
+    // supertype avoids the crash.
+    MethodSymbol result = null;
+    for (Type supertype : javacTypes.closure((Type) upperBound)) {
+      for (Symbol member : supertype.tsym.members().getSymbolsByName(name)) {
+        // A static or private method is not invoked through the receiver, and neither is a method
+        // that the receiver's type does not inherit, such as a package-private method of a class in
+        // another package.  A synthetic method, such as a bridge method, carries none of the
+        // declaration annotations of the method that it forwards to.
+        if (member instanceof MethodSymbol method
+            && method.getParameters().isEmpty()
+            && (method.flags() & (Flags.STATIC | Flags.PRIVATE | Flags.SYNTHETIC)) == 0
+            && method.isInheritedIn(origin, javacTypes)
+            && (result == null || takesPrecedence(method, result, origin, javacTypes))) {
+          result = method;
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns true if a call on an expression of type {@code origin}, which inherits both {@code m1}
+   * and {@code m2}, invokes {@code m1} rather than {@code m2}. The two methods have the same
+   * signature. For an interface, a method of an interface takes precedence over a method of {@code
+   * Object}, the only class among its supertypes. For any other type, a method of a class takes
+   * precedence over a method of an interface. Otherwise, a method of a subtype takes precedence
+   * over a method of its supertype. These rules are those of javac's method resolution.
+   *
+   * @param m1 a method
+   * @param m2 a method with the same signature as {@code m1}
+   * @param origin the type of the receiver of the call
+   * @param javacTypes the javac type utilities
+   * @return true if {@code m1} takes precedence over {@code m2}
+   */
+  private static boolean takesPrecedence(
+      MethodSymbol m1,
+      MethodSymbol m2,
+      Symbol.TypeSymbol origin,
+      com.sun.tools.javac.code.Types javacTypes) {
+    Symbol owner1 = m1.owner;
+    Symbol owner2 = m2.owner;
+    if (owner1.isInterface() != owner2.isInterface()) {
+      return owner1.isInterface() == origin.isInterface();
+    }
+    return !owner1.equals(owner2) && owner1.isSubClass(owner2, javacTypes);
+  }
+
+  /**
    * Returns the methods that are overridden or implemented by a given method.
    *
    * @param m a method

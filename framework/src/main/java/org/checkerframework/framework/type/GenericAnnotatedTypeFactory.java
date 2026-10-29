@@ -789,6 +789,17 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
+   * Returns true if the conservative defaults for unchecked code apply to the given element. See
+   * {@link QualifierDefaults#applyConservativeDefaults}.
+   *
+   * @param elt an element
+   * @return true if the conservative defaults for unchecked code apply to {@code elt}
+   */
+  public boolean applyConservativeDefaults(Element elt) {
+    return defaults.applyConservativeDefaults(elt);
+  }
+
+  /**
    * Creates and returns a string containing the number of qualifiers and the canonical class names
    * of each qualifier that has been added to this checker's supported qualifier set. The names are
    * alphabetically sorted.

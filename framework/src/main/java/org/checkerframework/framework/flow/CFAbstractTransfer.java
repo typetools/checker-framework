@@ -95,6 +95,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.PatternCaseLabelUtils;
 
 /**
  * The default analysis transfer function for the Checker Framework. It propagates information
@@ -1164,16 +1165,19 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitInstanceOf(InstanceOfNode node, TransferInput<V, S> in) {
     TransferResult<V, S> result = super.visitInstanceOf(node, in);
+    // If `in` has a then-store and an else-store, each call to `in.getRegularStore()` returns a
+    // new store, so call it just once.
+    S store = in.getRegularStore();
+    AnnotatedTypeMirror expType =
+        analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
     // Only the variable of a binding pattern is refined by the expression's type.  The binding
     // variables of a deconstruction pattern hold record components, whose types may be unrelated
     // to the expression's type; visitDeconstructorPattern gives them the components' types.
     LocalVariableNode bindingVar = node.getBindingPatternVariable();
     if (bindingVar != null) {
       JavaExpression expr = JavaExpression.fromNode(bindingVar);
-      AnnotatedTypeMirror expType =
-          analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
       for (AnnotationMirror anno : expType.getAnnotations()) {
-        in.getRegularStore().insertOrRefine(expr, anno);
+        store.insertOrRefine(expr, anno);
       }
     }
 
@@ -1181,19 +1185,16 @@ public abstract class CFAbstractTransfer<
     Tree refTypeTree = node.getTree().getType();
     if (refTypeTree != null && refTypeTree instanceof AnnotatedTypeTree) {
       AnnotatedTypeMirror refType = analysis.atypeFactory.getAnnotatedType(refTypeTree);
-      AnnotatedTypeMirror expType =
-          analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
       if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
           && !refType.getPrimaryAnnotations().equals(expType.getPrimaryAnnotations())
           && !expType.getPrimaryAnnotations().isEmpty()) {
         JavaExpression expr = JavaExpression.fromTree(node.getTree().getExpression());
         for (AnnotationMirror anno : refType.getPrimaryAnnotations()) {
-          in.getRegularStore().insertOrRefine(expr, anno);
+          store.insertOrRefine(expr, anno);
         }
-        return new RegularTransferResult<>(result.getResultValue(), in.getRegularStore());
       }
     }
-    return result;
+    return new RegularTransferResult<>(result.getResultValue(), store);
   }
 
   /**
@@ -1440,7 +1441,55 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitVariableDeclaration(
       VariableDeclarationNode n, TransferInput<V, S> p) {
     S store = p.getRegularStore();
+    // The last case of an exhaustive switch has no CaseNode, so refine here instead.
+    ExpressionTree selector = getSelectorOfCaseLabelBindingVariable(n.getTree());
+    if (selector != null) {
+      refineCaseLabelBindingVariable(store, n.getTree(), selector);
+    }
     return new RegularTransferResult<>(finishValue(null, store), store);
+  }
+
+  /**
+   * Refines, in {@code store}, the binding variable {@code varTree} of a type pattern that is a
+   * case label by the qualifiers of {@code selector}, the selector expression of the switch.
+   *
+   * @param store the store to refine; side-effected by this method
+   * @param varTree the binding variable of a type pattern that is a case label
+   * @param selector the selector expression of the switch whose case label declares {@code varTree}
+   */
+  protected void refineCaseLabelBindingVariable(
+      S store, VariableTree varTree, ExpressionTree selector) {
+    JavaExpression bindingExpr = JavaExpression.fromVariableTree(varTree);
+    AnnotatedTypeMirror selectorType = analysis.atypeFactory.getAnnotatedType(selector);
+    for (AnnotationMirror anno : selectorType.getAnnotations()) {
+      store.insertOrRefine(bindingExpr, anno);
+    }
+  }
+
+  /**
+   * If {@code varTree} is the binding variable of a type pattern that is a case label, returns the
+   * selector expression of the switch. Otherwise, returns null.
+   *
+   * @param varTree a variable declaration
+   * @return the selector expression of the switch whose case label declares {@code varTree}, or
+   *     null
+   */
+  private @Nullable ExpressionTree getSelectorOfCaseLabelBindingVariable(VariableTree varTree) {
+    VariableElement elt = TreeUtils.elementFromDeclaration(varTree);
+    if (elt == null || elt.getKind() != ElementKind.BINDING_VARIABLE) {
+      return null;
+    }
+    TreePath path = analysis.atypeFactory.getPath(varTree);
+    if (path == null) {
+      return null;
+    }
+    TreePath labelPath = path.getParentPath().getParentPath();
+    if (!PatternCaseLabelUtils.isPatternCaseLabelTree(labelPath.getLeaf())) {
+      return null;
+    }
+    // The parent of the case label is a case, whose parent is a switch.
+    Tree switchTree = labelPath.getParentPath().getParentPath().getLeaf();
+    return TreeUtils.switchSelector(switchTree);
   }
 
   @Override
