@@ -245,10 +245,9 @@ public final class AnnotatedTypes {
     if (type.getKind() == TypeKind.DECLARED) {
       AnnotatedDeclaredType dt = (AnnotatedDeclaredType) type;
       AnnotatedDeclaredType enclosingType = dt;
-      TypeMirror superTypeMirror = types.erasure(superType.getUnderlyingType());
       while (enclosingType != null) {
-        TypeMirror enclosingTypeMirror = types.erasure(enclosingType.getUnderlyingType());
-        if (types.isSubtype(enclosingTypeMirror, superTypeMirror)) {
+        if (TypesUtils.isErasedSubtype(
+            enclosingType.getUnderlyingType(), superType.getUnderlyingType(), types)) {
           dt = enclosingType;
           break;
         }
