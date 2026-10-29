@@ -1044,7 +1044,8 @@ public final class ElementUtils {
             && method.getParameters().isEmpty()
             && (method.flags() & (Flags.STATIC | Flags.PRIVATE | Flags.SYNTHETIC)) == 0
             && method.isInheritedIn(origin, javacTypes)
-            && (result == null || takesPrecedence(method, result, origin, javacTypes))) {
+            && (result == null
+                || takesPrecedenceInMethodResolution(method, result, origin, javacTypes))) {
           result = method;
         }
       }
@@ -1066,7 +1067,7 @@ public final class ElementUtils {
    * @param javacTypes the javac type utilities
    * @return true if {@code m1} takes precedence over {@code m2}
    */
-  private static boolean takesPrecedence(
+  private static boolean takesPrecedenceInMethodResolution(
       MethodSymbol m1,
       MethodSymbol m2,
       Symbol.TypeSymbol origin,
