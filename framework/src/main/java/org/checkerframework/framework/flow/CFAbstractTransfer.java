@@ -23,6 +23,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -63,6 +64,7 @@ import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
+import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.expression.ArrayAccess;
@@ -96,6 +98,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.PatternCaseLabelUtils;
+import org.checkerframework.javacutil.TypeKindUtils;
 
 /**
  * The default analysis transfer function for the Checker Framework. It propagates information
@@ -963,23 +966,64 @@ public abstract class CFAbstractTransfer<
    * assignment. For example, the result for {@code n = n.next} is just {@code n}, because after the
    * assignment {@code n.next} is a field of a different object.
    *
-   * @param node possibly an assignment node
+   * <p>A cast that does not change the value of its operand (see {@link #isValuePreservingCast}) is
+   * treated like an assignment: the result contains both the cast and its operand, to which
+   * splitAssignments is applied recursively. For example, the result for {@code (String) (s = t)}
+   * contains the cast, {@code s}, and {@code t}.
+   *
+   * @param node possibly an assignment node or a cast
    * @return a list containing the right- and left-hand sides in the given assignment node that have
    *     the value of the assignment after it executes; it contains just the node itself if it is
-   *     not an assignment
+   *     neither an assignment nor a value-preserving cast
    */
   @SideEffectFree
   protected List<Node> splitAssignments(Node node) {
     List<Node> result = new ArrayList<>();
     List<JavaExpression> targets = new ArrayList<>();
-    while (node instanceof AssignmentNode a) {
-      result.add(a.getTarget());
-      targets.add(JavaExpression.fromNode(a.getTarget()));
-      node = a.getExpression();
+    while (true) {
+      if (node instanceof AssignmentNode a) {
+        result.add(a.getTarget());
+        targets.add(JavaExpression.fromNode(a.getTarget()));
+        node = a.getExpression();
+      } else if (node instanceof TypeCastNode cast && isValuePreservingCast(cast)) {
+        result.add(cast);
+        node = cast.getOperand();
+      } else {
+        break;
+      }
     }
     result.add(node);
     result.removeIf(part -> mayBeChangedByAssignment(JavaExpression.fromNode(part), targets));
     return result;
+  }
+
+  /**
+   * Returns true if the given cast does not change the value of its operand: it is a cast between
+   * reference types, or a primitive conversion that loses no information.
+   *
+   * @param cast a cast
+   * @return true if the value of {@code cast} is the value of its operand
+   */
+  @Pure
+  protected static boolean isValuePreservingCast(TypeCastNode cast) {
+    TypeKind to = cast.getType().getKind();
+    TypeKind from = cast.getOperand().getType().getKind();
+    if (!to.isPrimitive() && !from.isPrimitive()) {
+      return true;
+    }
+    if (!to.isPrimitive() || !from.isPrimitive()) {
+      // A boxing or unboxing conversion.
+      return false;
+    }
+    return switch (TypeKindUtils.getPrimitiveConversionKind(from, to)) {
+      case SAME -> true;
+      case NARROWING -> false;
+      // byte to char changes negative values, and these widening conversions can lose precision.
+      case WIDENING ->
+          !(from == TypeKind.BYTE && to == TypeKind.CHAR)
+              && !(to == TypeKind.FLOAT && (from == TypeKind.INT || from == TypeKind.LONG))
+              && !(to == TypeKind.DOUBLE && from == TypeKind.LONG);
+    };
   }
 
   /**
