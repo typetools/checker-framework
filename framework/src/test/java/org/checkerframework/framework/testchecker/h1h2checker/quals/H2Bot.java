@@ -12,6 +12,13 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf({H2S1.class, H2S2.class})
+@SubtypeOf({
+  H2S1.class,
+  H2S2.class,
+  H2OnlyOnLB.class,
+  H2OnlyOnConstructorResult.class,
+  H2OnlyOnReceiver.class,
+  H2OnlyOnReturn.class
+})
 @DefaultFor(TypeUseLocation.LOWER_BOUND)
 public @interface H2Bot {}

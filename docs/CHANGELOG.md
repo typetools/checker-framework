@@ -25,6 +25,9 @@ New class `AbstractSetInclusionQualifierHierarchy` is the superclass of
 
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
+The Checker Framework now enforces `@TargetLocations` restrictions on explicitly
+written type qualifiers.
+
 A subclass of `CFAbstractValue` or `CFValue` that adds state must override
 `equals()` and `hashCode()` to account for that state.
 

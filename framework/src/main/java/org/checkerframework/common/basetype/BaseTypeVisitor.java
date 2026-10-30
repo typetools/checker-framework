@@ -39,6 +39,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
@@ -116,6 +117,8 @@ import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.HasQualifierParameter;
+import org.checkerframework.framework.qual.TargetLocations;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.Unused;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceVisitor;
@@ -1074,6 +1077,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       visitAnnotatedType(modifiers.getAnnotations(), returnType);
       warnRedundantAnnotations(returnType, methodType.getReturnType());
     } else if (TreeUtils.isConstructor(tree)) {
+      checkTargetLocations(modifiers.getAnnotations(), TypeUseLocation.CONSTRUCTOR_RESULT);
       maybeReportAnnoOnIrrelevant(
           modifiers, methodType.getReturnType().getUnderlyingType(), modifiers.getAnnotations());
     }
@@ -3888,6 +3892,154 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   public void visitAnnotatedType(
       @Nullable List<? extends AnnotationTree> annoTrees, Tree typeTree) {
     warnAboutIrrelevantJavaTypes(annoTrees, typeTree);
+    if (annoTrees != null) {
+      checkTargetLocations(annoTrees, declarationAnnotationsTypeUseLocation(typeTree));
+    } else {
+      AnnotatedTypeTree annotatedTypeTree = (AnnotatedTypeTree) typeTree;
+      checkTargetLocations(
+          annotatedTypeTree.getAnnotations(), annotatedTypeUseLocation(annotatedTypeTree));
+    }
+  }
+
+  /**
+   * Checks that explicitly written qualifiers are permitted at {@code location}.
+   *
+   * @param annoTrees annotations written at {@code location}
+   * @param location the type-use location of {@code annoTrees}, or null if {@link TypeUseLocation}
+   *     has no constant for it, in which case no check is performed
+   */
+  private void checkTargetLocations(
+      List<? extends AnnotationTree> annoTrees, @Nullable TypeUseLocation location) {
+    if (location == null) {
+      return;
+    }
+    for (AnnotationTree annoTree : annoTrees) {
+      AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(annoTree);
+      if (!atypeFactory.isSupportedQualifier(anno)) {
+        continue;
+      }
+      TargetLocations targets =
+          anno.getAnnotationType().asElement().getAnnotation(TargetLocations.class);
+      if (targets != null && !targetLocationsContain(targets.value(), location)) {
+        checker.reportError(annoTree, "type.annotations.on.location", anno, location);
+      }
+    }
+  }
+
+  /** Returns true if {@code targets} permits {@code location}. */
+  private static boolean targetLocationsContain(
+      TypeUseLocation[] targets, TypeUseLocation location) {
+    for (TypeUseLocation target : targets) {
+      if (target == TypeUseLocation.ALL
+          || target == location
+          || (target == TypeUseLocation.LOWER_BOUND
+              && (location == TypeUseLocation.EXPLICIT_LOWER_BOUND
+                  || location == TypeUseLocation.IMPLICIT_LOWER_BOUND))
+          || (target == TypeUseLocation.UPPER_BOUND
+              && (location == TypeUseLocation.EXPLICIT_UPPER_BOUND
+                  || location == TypeUseLocation.IMPLICIT_UPPER_BOUND))) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns the type-use location of annotations written at the beginning of the variable or method
+   * declaration that is currently being visited.
+   *
+   * @param typeTree the declared type: the variable's type or the method's return type
+   * @return the type-use location of annotations written at the beginning of the declaration, or
+   *     null if {@link TypeUseLocation} has no constant for it
+   */
+  private @Nullable TypeUseLocation declarationAnnotationsTypeUseLocation(Tree typeTree) {
+    Tree unannotatedTypeTree =
+        typeTree instanceof AnnotatedTypeTree annotatedTypeTree
+            ? annotatedTypeTree.getUnderlyingType()
+            : typeTree;
+    if (unannotatedTypeTree instanceof ArrayTypeTree) {
+      // An annotation at the beginning of an array declaration applies to the array's innermost
+      // component type, not to the declared type.
+      return TypeUseLocation.OTHERWISE;
+    }
+    return declarationTypeUseLocation(getCurrentPath());
+  }
+
+  /**
+   * Returns the type-use location of the given annotated type, which is the tree currently being
+   * visited. Only the top-level type of a declaration, cast, instanceof, or explicit bound has a
+   * specific type-use location; any other type use, such as a type argument or an array component
+   * type, is {@link TypeUseLocation#OTHERWISE}. This is consistent with defaulting, which applies a
+   * location's default only to the top-level type at that location.
+   *
+   * @param tree the annotated type currently being visited
+   * @return the type-use location of {@code tree}, or null if {@link TypeUseLocation} has no
+   *     constant for it
+   */
+  @SuppressWarnings("interning:not.interned") // AST node comparison
+  private @Nullable TypeUseLocation annotatedTypeUseLocation(AnnotatedTypeTree tree) {
+    TreePath parentPath = getCurrentPath().getParentPath();
+    if (parentPath == null) {
+      return TypeUseLocation.OTHERWISE;
+    }
+    Tree parent = parentPath.getLeaf();
+    if (parent instanceof VariableTree variableTree && variableTree.getType() == tree) {
+      return declarationTypeUseLocation(parentPath);
+    } else if (parent instanceof MethodTree methodTree && methodTree.getReturnType() == tree) {
+      return TypeUseLocation.RETURN;
+    } else if ((parent instanceof TypeCastTree typeCastTree && typeCastTree.getType() == tree)
+        || (parent instanceof InstanceOfTree instanceOfTree && instanceOfTree.getType() == tree)) {
+      // TypeUseLocation.LOCAL_VARIABLE includes casts and instanceof.
+      return TypeUseLocation.LOCAL_VARIABLE;
+    } else if (parent instanceof WildcardTree wildcardTree && wildcardTree.getBound() == tree) {
+      return wildcardTree.getKind() == Tree.Kind.SUPER_WILDCARD
+          ? TypeUseLocation.EXPLICIT_LOWER_BOUND
+          : TypeUseLocation.EXPLICIT_UPPER_BOUND;
+    } else if (parent instanceof TypeParameterTree typeParameterTree
+        && typeParameterTree.getBounds().contains(tree)) {
+      return TypeUseLocation.EXPLICIT_UPPER_BOUND;
+    } else if (parent instanceof NewClassTree || parent instanceof NewArrayTree) {
+      // TypeUseLocation has no constant for an object or array creation expression.
+      return null;
+    } else {
+      return TypeUseLocation.OTHERWISE;
+    }
+  }
+
+  /**
+   * Returns the type-use location of the declared type of the given variable or method declaration.
+   *
+   * @param declarationPath the path to a variable or method declaration
+   * @return the type-use location of the declared type, or null if {@link TypeUseLocation} has no
+   *     constant for it
+   */
+  @SuppressWarnings("interning:not.interned") // AST node comparison
+  private @Nullable TypeUseLocation declarationTypeUseLocation(TreePath declarationPath) {
+    Tree declaration = declarationPath.getLeaf();
+    if (declaration instanceof MethodTree) {
+      return TypeUseLocation.RETURN;
+    }
+    if (!(declaration instanceof VariableTree variableTree)) {
+      return null;
+    }
+    TreePath parentPath = declarationPath.getParentPath();
+    if (parentPath != null
+        && parentPath.getLeaf() instanceof MethodTree enclosingMethod
+        && enclosingMethod.getReceiverParameter() == variableTree) {
+      return TypeUseLocation.RECEIVER;
+    }
+    VariableElement variableElt = TreeUtils.elementFromDeclaration(variableTree);
+    if (variableElt == null) {
+      return null;
+    }
+    return switch (variableElt.getKind()) {
+      case FIELD -> TypeUseLocation.FIELD;
+      case LOCAL_VARIABLE, BINDING_VARIABLE -> TypeUseLocation.LOCAL_VARIABLE;
+      case RESOURCE_VARIABLE -> TypeUseLocation.RESOURCE_VARIABLE;
+      case EXCEPTION_PARAMETER -> TypeUseLocation.EXCEPTION_PARAMETER;
+      case PARAMETER -> TypeUseLocation.PARAMETER;
+      default -> null;
+    };
   }
 
   /**
