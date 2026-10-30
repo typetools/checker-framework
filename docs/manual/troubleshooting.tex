@@ -135,6 +135,61 @@ time.  For example, maybe when you compiled the code, the \<@Nullable>
 annotation was available, but it was not available at run time.
 
 \item
+  \label{cannot-attach-type-annotations}
+If you get an error like
+
+\begin{smaller}
+\begin{Verbatim}
+mylibrary.jar(MyClass.class):
+  error: Cannot attach type annotations
+    @org.checkerframework.checker.mustcall.qual.MustCall({}), ...
+  to MyClass.myMethod:
+    class file for com.example.SomeType not found
+\end{Verbatim}
+\end{smaller}
+
+\noindent
+then the classpath is missing a class that is referenced by a library's
+signatures.  In this example, \<SomeType> appears in the signature of
+\<MyClass.myMethod>, but \<SomeType>'s class file is not on the classpath.
+
+Starting with JDK 22, when \<javac> reads a class file, it attaches the
+type annotations in the class file to the types in the signatures of the
+class's methods and fields (see
+\href{https://bugs.openjdk.org/browse/JDK-8225377}{JDK-8225377}).  Doing so
+requires the class files for those types, even if your code never uses the
+method or field.  If a class file is missing, \<javac> issues this error.
+(JDK 17 and JDK 21 behave the same way if you pass
+\<-XDaddTypeAnnotationsToSymbol=true>.)
+
+This error is not specific to the Checker Framework:  \<javac> issues it
+whenever a library contains type annotations, such as ones written
+explicitly in the library's source code.  However, the error is more
+common when a library is compiled with the Checker Framework, because the
+Checker Framework writes an annotation on every type in the library's
+signatures (see Section~\ref{faq-classfile-annotations}).  This is the case
+even if the library's source code contains no annotations.
+
+To fix the error, put the missing class on the classpath when compiling
+the code that uses the library.  Either:
+\begin{itemize}
+\item
+  The library can declare its dependency on the missing class as part of
+  its API, so that the dependency is passed on to the library's clients.
+  For example, in Maven, use \<compile> scope rather than \<provided> scope
+  or \code{<optional>true</optional>}; in Gradle, use an \<api> dependency
+  rather than an \<implementation> or \<compileOnly> dependency.
+\item
+  The code that uses the library can declare a dependency on the missing
+  class itself.  For example, in Maven, add a dependency with \<provided>
+  scope; in Gradle, add a \<compileOnly> dependency.
+\end{itemize}
+
+If you use Maven with \code{<fork>true</fork>}, then Maven may hide this error
+message and report only ``Compilation failure''
+(see \href{https://issues.apache.org/jira/browse/MCOMPILER-434}{MCOMPILER-434}).
+
+\item
 The Checker Framework sometimes runs out of memory when processing very
 large Java files, or files with very large methods.
 
