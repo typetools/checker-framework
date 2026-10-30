@@ -144,4 +144,26 @@ public class AssignmentInComparison {
       n.next.toString();
     }
   }
+
+  static void indexIncrementedInRhs(@Nullable Object[] a, int i, Object o) {
+    if ((a[i] = id2(i++, o)) != null) {
+      // After the assignment, `a[i]` is a different element of `a`.
+      // :: error: [dereference.of.nullable]
+      a[i].toString();
+    }
+  }
+
+  @Pure
+  static @Nullable Object id2(int i, @Nullable Object o) {
+    return o;
+  }
+
+  static <T> void arrayTargetTypeVariable(@Nullable T[] ts, @Nullable String[][] ss) {
+    if ((ts[0] = (T) ss[0][0]) != null) {
+      ts[0].toString();
+      // The assignment to `ts[0]` might change `ss[0]`, if `ts` and `ss` alias.
+      // :: error: [dereference.of.nullable]
+      ss[0][0].toString();
+    }
+  }
 }
