@@ -961,9 +961,9 @@ public abstract class CFAbstractTransfer<
    * lhs and rhs do). A null check is replaced by its operand, to which splitAssignments is applied
    * recursively.
    *
-   * @param node possibly an assignment node
+   * @param node possibly an assignment node or a null check
    * @return a list containing all the right- and left-hand sides in the given assignment node; it
-   *     contains just the node itself if it is not an assignment)
+   *     contains just the node itself if it is neither an assignment nor a null check
    */
   @SideEffectFree
   protected List<Node> splitAssignments(Node node) {

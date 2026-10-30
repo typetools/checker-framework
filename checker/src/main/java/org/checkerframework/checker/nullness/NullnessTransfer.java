@@ -20,6 +20,7 @@ import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
@@ -136,15 +137,24 @@ public class NullnessTransfer
   }
 
   /**
-   * Sets a given {@link Node} to non-null in the given {@code store}. Calls to this method
-   * implement case 2.
+   * Sets a given {@link Node} to non-null in the given {@code store}. Also sets to non-null,
+   * recursively, the operand of a cast or null check and both sides of an assignment, because they
+   * have the same value as the node. Calls to this method implement case 2.
    *
    * @param store the store to update
    * @param node the node that should be non-null
    */
   protected void makeNonNull(NullnessStore store, Node node) {
-    JavaExpression internalRepr = JavaExpression.fromNode(node);
-    store.insertValue(internalRepr, NONNULL);
+    node = NodeUtils.removeCasts(node);
+    if (node instanceof AssignmentNode assignment) {
+      makeNonNull(store, assignment.getTarget());
+      makeNonNull(store, assignment.getExpression());
+    } else if (node instanceof NullChkNode nullChk) {
+      makeNonNull(store, nullChk.getOperand());
+    } else {
+      JavaExpression internalRepr = JavaExpression.fromNode(node);
+      store.insertValue(internalRepr, NONNULL);
+    }
   }
 
   /** Sets a given {@link Node} {@code node} to non-null in the given {@link TransferResult}. */
@@ -359,9 +369,7 @@ public class NullnessTransfer
       NullChkNode n, TransferInput<NullnessValue, NullnessStore> p) {
     TransferResult<NullnessValue, NullnessStore> result = super.visitNullChk(n, p);
     // A null check throws NullPointerException if its operand is null.
-    for (Node operand : splitAssignments(NodeUtils.removeCasts(n.getOperand()))) {
-      makeNonNull(result, NodeUtils.removeCasts(operand));
-    }
+    makeNonNull(result, n.getOperand());
     refineToNonNull(result);
     return result;
   }

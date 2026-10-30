@@ -2247,8 +2247,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * bodies.
      *
      * <p>If the switch has no {@code case null} label, a null selector throws NullPointerException.
-     * For a boxed selector, the unboxing throws it. For any other reference selector, the assigned
-     * expression is a {@link NullChkNode} of the selector expression.
+     * For a boxed selector, the unboxing throws it. For any other reference selector that might be
+     * null, the assigned expression is a {@link NullChkNode} of the selector expression.
      */
     private void buildSelector() {
       // Create a synthetic variable to which the switch selector expression will be assigned
@@ -2278,7 +2278,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         if (TypesUtils.isBoxedPrimitive(selectorExprType)) {
           // Unboxing throws the NullPointerException.
           selectorExprNode = unbox(selectorExprNode);
-        } else {
+        } else if (!isNeverNull(selectorExprNode)) {
           UnaryTree nullCheckTree = treeBuilder.buildNullCheck(selectorExprTree);
           handleArtificialTree(nullCheckTree);
           NullChkNode nullCheckNode = new NullChkNode(nullCheckTree, selectorExprNode);
@@ -2294,6 +2294,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       selectorExprAssignment = new AssignmentNode(assign, selectorVarUseNode, selectorExprNode);
       selectorExprAssignment.setInSource(false);
       extendWithNode(selectorExprAssignment);
+    }
+
+    /**
+     * Returns true if the given expression's value is syntactically known to be non-null: a
+     * non-null literal, a string concatenation, an object or array creation, or {@code this}.
+     *
+     * @param node an expression
+     * @return true if the value of {@code node} is never null
+     */
+    private boolean isNeverNull(Node node) {
+      return (node instanceof ValueLiteralNode && !(node instanceof NullLiteralNode))
+          || node instanceof StringConcatenateNode
+          || node instanceof ObjectCreationNode
+          || node instanceof ArrayCreationNode
+          || node instanceof ThisNode;
     }
 
     /**
