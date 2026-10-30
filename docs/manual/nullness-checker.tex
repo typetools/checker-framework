@@ -384,8 +384,8 @@ implementation of \refclass{checker/nullness}{NullnessAnnotatedTypeFactory}.
 
 Unannotated references are treated as if they had a default annotation.
 All types default to
-\<@NonNull>, except that \<@Nullable> is used for casts, locals,
-instanceof, and implicit bounds (see Section~\ref{climb-to-top}).
+\<@NonNull>, except that \<@Nullable> is used for casts, locals (including
+pattern variables), instanceof, and implicit bounds (see Section~\ref{climb-to-top}).
 A user can choose a different defaulting
 rule by writing a \refqualclass{framework/qual}{DefaultQualifier} annotation on a
  package, class, or method.  In the example below, fields are defaulted to

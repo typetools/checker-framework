@@ -3,6 +3,7 @@ package org.checkerframework.checker.nullness;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -22,6 +23,7 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
+import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -359,7 +361,19 @@ public class NullnessTransfer
     NullnessStore thenStore = result.getThenStore();
     NullnessStore elseStore = result.getElseStore();
     makeNonNull(thenStore, n.getOperand());
+    // instanceof is false for null, so a binding variable is non-null.
+    if (n.getPatternNode() instanceof LocalVariableNode bindingVar) {
+      makeNonNull(thenStore, bindingVar);
+    }
     return new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
+  }
+
+  @Override
+  protected void refineCaseLabelBindingVariable(
+      NullnessStore store, VariableTree varTree, ExpressionTree selector) {
+    super.refineCaseLabelBindingVariable(store, varTree, selector);
+    // A type pattern that is a case label does not match null (JLS 14.11.1).
+    store.insertValue(JavaExpression.fromVariableTree(varTree), NONNULL);
   }
 
   @Override
