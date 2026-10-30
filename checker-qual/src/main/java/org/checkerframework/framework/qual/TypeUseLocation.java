@@ -15,8 +15,8 @@ public enum TypeUseLocation {
   FIELD,
 
   /**
-   * Apply default annotations to all unannotated raw types of local variables, casts, and
-   * instanceof.
+   * Apply default annotations to all unannotated raw types of local variables, pattern variables,
+   * casts, and instanceof.
    */
   LOCAL_VARIABLE,
 
