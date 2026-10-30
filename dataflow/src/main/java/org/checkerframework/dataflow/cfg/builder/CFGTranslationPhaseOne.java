@@ -2114,6 +2114,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private final ExpressionTree selectorExprTree;
 
+    /** The type of {@link #selectorExprTree}. */
+    private final TypeMirror selectorExprType;
+
+    /** True if {@link #switchTree} has a {@code case null}. */
+    private final boolean hasNullCaseLabel;
+
     /** The labels for the case bodies. */
     private final Label[] caseBodyLabels;
 
@@ -2144,6 +2150,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         this.caseTrees = switchExpressionTree.getCases();
         this.selectorExprTree = switchExpressionTree.getExpression();
       }
+      this.selectorExprType = TreeUtils.typeOf(selectorExprTree);
+      this.hasNullCaseLabel = TreeUtils.hasNullCaseLabel(switchTree);
       // "+ 1" for the default case.  If the switch has an explicit default case, then
       // the last element of the array is never used.
       this.caseBodyLabels = new Label[caseTrees.size() + 1];
@@ -2302,6 +2310,28 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
 
     /**
+     * Returns true if the label of {@code caseTree} matches every value of the selector expression
+     * that is tested against it. This is true of a type pattern whose type is a supertype of the
+     * selector expression's type, if the switch has no {@code case null}. (Without a {@code case
+     * null}, a null selector expression causes a NullPointerException before any case is tested.)
+     *
+     * @param caseTree a case of {@link #switchTree}
+     * @return true if the label of {@code caseTree} matches every value of the selector expression
+     *     that is tested against it
+     */
+    private boolean labelAlwaysMatches(CaseTree caseTree) {
+      List<? extends Tree> labels = CaseUtils.getLabels(caseTree);
+      if (labels.size() != 1 || !(labels.get(0) instanceof BindingPatternTree bindingPattern)) {
+        return false;
+      }
+      if (selectorExprType.getKind().isPrimitive() || hasNullCaseLabel) {
+        return false;
+      }
+      TypeMirror patternType = TreeUtils.typeOf(bindingPattern.getVariable());
+      return TypesUtils.isErasedSubtype(selectorExprType, patternType, types);
+    }
+
+    /**
      * Build the CFG for the given case tree.
      *
      * @param caseTree a case tree whose CFG to build
@@ -2311,10 +2341,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private void buildCase(CaseTree caseTree, int index, boolean isLastCaseOfExhaustive) {
       boolean isDefaultCase = CaseUtils.isDefaultCaseTree(caseTree);
-      // If true, no test of labels is necessary.
-      // Unfortunately, if isLastCaseOfExhaustive==TRUE, no flow-sensitive refinement occurs
-      // within the body of the CaseNode.  In the future, that can be performed, but it
-      // requires addition of InfeasibleExitBlock, a new SpecialBlock in the CFG.
       boolean isTerminalCase = isDefaultCase || isLastCaseOfExhaustive;
 
       Label thisBodyLabel = caseBodyLabels[index];
@@ -2329,8 +2355,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           exprs.add(scan(exprTree, null));
         }
 
-        if (!isLastCaseOfExhaustive) {
-          extendWithNode(new CaseNode(caseTree, selectorExprAssignment, exprs, env.getTypeUtils()));
+        // If true, the labels are not tested.
+        boolean alwaysMatches = isLastCaseOfExhaustive || labelAlwaysMatches(caseTree);
+        extendWithNode(
+            new CaseNode(
+                caseTree, selectorExprAssignment, exprs, alwaysMatches, env.getTypeUtils()));
+        if (!alwaysMatches) {
           Label labelsMatchLabel = new Label();
           extendWithExtendedNode(new ConditionalJump(labelsMatchLabel, nextCaseLabel));
           addLabelForNextNode(labelsMatchLabel);

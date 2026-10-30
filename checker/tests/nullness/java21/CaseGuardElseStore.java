@@ -110,6 +110,34 @@ public class CaseGuardElseStore {
     }
   }
 
+  void guardPostconditionPatternAlwaysMatches(String sel) {
+    switch (sel) {
+      case CharSequence s when init() -> {}
+      default -> {
+        f.hashCode();
+      }
+    }
+  }
+
+  void guardFalsePatternAlwaysMatches(String sel, @Nullable Object o) {
+    switch (sel) {
+      case String s when isNull(o) -> {}
+      default -> {
+        o.hashCode();
+      }
+    }
+  }
+
+  void guardFalsePatternAlwaysMatchesCaseNull(@Nullable String sel, @Nullable Object o) {
+    switch (sel) {
+      case String s when isNull(o) -> {}
+      case null, default -> {
+        // :: error: [dereference.of.nullable]
+        o.hashCode();
+      }
+    }
+  }
+
   int switchExpression(Object sel, @Nullable Object o) {
     return switch (sel) {
       case String s when isNN(o) -> o.hashCode();
@@ -172,6 +200,16 @@ public class CaseGuardElseStore {
         // :: error: [dereference.of.nullable]
         f.hashCode();
       }
+    }
+  }
+
+  void patternAlwaysMatchesRefinesSelector(@Nullable String sel) {
+    // :: error: [switching.nullable]
+    switch (sel) {
+      case String s when isNN(s) -> {
+        sel.hashCode();
+      }
+      default -> {}
     }
   }
 }
