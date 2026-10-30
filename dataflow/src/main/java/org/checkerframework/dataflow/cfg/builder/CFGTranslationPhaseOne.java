@@ -2403,11 +2403,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           exprs.add(scan(exprTree, null));
         }
 
+        boolean labelAlwaysMatches = labelAlwaysMatches(caseTree);
         // If true, the labels are not tested.
-        boolean alwaysMatches = isLastCaseOfExhaustive || labelAlwaysMatches(caseTree);
-        extendWithNode(
+        boolean alwaysMatches = isLastCaseOfExhaustive || labelAlwaysMatches;
+        CaseNode caseNode =
             new CaseNode(
-                caseTree, selectorExprAssignment, exprs, alwaysMatches, env.getTypeUtils()));
+                caseTree, selectorExprAssignment, exprs, alwaysMatches, env.getTypeUtils());
+        if (isLastCaseOfExhaustive && !labelAlwaysMatches) {
+          // A value that the labels do not match, such as a remainder of an exhaustive switch
+          // (JLS 14.11.1.1), matches no case, so the switch throws MatchException.
+          extendWithNodeWithException(
+              caseNode, matchExceptionType != null ? matchExceptionType : throwableType);
+        } else {
+          extendWithNode(caseNode);
+        }
         if (!alwaysMatches) {
           Label labelsMatchLabel = new Label();
           extendWithExtendedNode(new ConditionalJump(labelsMatchLabel, nextCaseLabel));

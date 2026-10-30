@@ -36,8 +36,10 @@ public class CaseNode extends Node {
   protected final List<Node> caseExprs;
 
   /**
-   * True if the case expressions match every value of the switch selector expression that is tested
-   * against them, so they are not tested at run time.
+   * True if the CFG does not test the case expressions. This is so if they match every value of the
+   * switch selector expression that is tested against them, or if this is the last case of an
+   * exhaustive switch. In the latter case, a value that they do not match causes the switch to
+   * throw an exception, which is an exceptional successor of this node.
    */
   protected final boolean alwaysMatches;
 
@@ -48,8 +50,8 @@ public class CaseNode extends Node {
    * @param selectorExprAssignment the Node for the assignment of the switch selector expression to
    *     a synthetic local variable
    * @param caseExprs the case expression(s) to match the switch expression against
-   * @param alwaysMatches true if the case expressions match every value of the switch selector
-   *     expression that is tested against them
+   * @param alwaysMatches true if the CFG does not test the case expressions; see {@link
+   *     #alwaysMatches()}
    * @param types a factory of utility methods for operating on types
    */
   public CaseNode(
@@ -86,12 +88,12 @@ public class CaseNode extends Node {
   }
 
   /**
-   * Returns true if the case expressions match every value of the switch selector expression that
-   * is tested against them, so they are not tested at run time. For example, this is true of the
-   * last case of an exhaustive switch.
+   * Returns true if the CFG does not test the case expressions. This is so if they match every
+   * value of the switch selector expression that is tested against them, or if this is the last
+   * case of an exhaustive switch. In the latter case, a value that they do not match causes the
+   * switch to throw an exception, which is an exceptional successor of this node.
    *
-   * @return true if the case expressions match every value of the switch selector expression that
-   *     is tested against them
+   * @return true if the CFG does not test the case expressions
    */
   public boolean alwaysMatches() {
     return alwaysMatches;
