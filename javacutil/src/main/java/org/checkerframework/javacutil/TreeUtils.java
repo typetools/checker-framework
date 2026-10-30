@@ -2397,6 +2397,19 @@ public final class TreeUtils {
   }
 
   /**
+   * Returns the selector expression of the switch statement or switch expression {@code
+   * switchTree}.
+   *
+   * @param switchTree a {@link SwitchTree} or a {@link SwitchExpressionTree}
+   * @return the selector expression of {@code switchTree}
+   */
+  public static ExpressionTree switchSelector(Tree switchTree) {
+    return switchTree instanceof SwitchTree switchStatement
+        ? switchStatement.getExpression()
+        : ((SwitchExpressionTree) switchTree).getExpression();
+  }
+
+  /**
    * Returns true if the given tree is a switch expression.
    *
    * @param tree a tree to check

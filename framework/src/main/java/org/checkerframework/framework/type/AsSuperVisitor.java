@@ -426,10 +426,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     List<AnnotatedTypeMirror> newDirectSupertypes = new ArrayList<>();
     for (AnnotatedTypeMirror superBound : superType.getBounds()) {
       AnnotatedTypeMirror found = null;
-      TypeMirror javaSupertype = types.erasure(superBound.getUnderlyingType());
       for (AnnotatedTypeMirror bound : type.getBounds()) {
-        TypeMirror javaSubtype = types.erasure(bound.getUnderlyingType());
-        if (types.isSubtype(javaSubtype, javaSupertype)) {
+        if (TypesUtils.isErasedSubtype(
+            bound.getUnderlyingType(), superBound.getUnderlyingType(), types)) {
           found = visit(bound, superBound, p);
           newDirectSupertypes.add(found);
           break;
@@ -480,10 +479,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
   @Override
   public AnnotatedTypeMirror visitIntersection_Union(
       AnnotatedIntersectionType type, AnnotatedUnionType superType, Void p) {
-    TypeMirror javaSupertype = types.erasure(type.getUnderlyingType());
     for (AnnotatedTypeMirror bound : type.getBounds()) {
-      TypeMirror javaSubtype = types.erasure(superType.getUnderlyingType());
-      if (types.isSubtype(javaSubtype, javaSupertype)) {
+      if (TypesUtils.isErasedSubtype(
+          bound.getUnderlyingType(), superType.getUnderlyingType(), types)) {
         AnnotatedTypeMirror asSuper = visit(bound, superType, p);
         return copyPrimaryAnnos(type, asSuper);
       }
