@@ -265,10 +265,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * <p>A subclass that adds state must override this method and {@link #hashCode} to account for
    * that state. The dataflow analysis uses {@code equals} to determine whether it has reached a
    * fixed point, so ignoring some state could stop the analysis before that state has stabilized.
+   * Furthermore, an upper bound of two equal values is the receiver, so ignoring some state would
+   * discard that state of the argument.
    */
   @SuppressWarnings({"interning:not.interned", "TypeEquals"}) // efficiency pre-test
   @Override
   public boolean equals(@Nullable Object obj) {
+    if (this == obj) {
+      return true;
+    }
     if (!(obj instanceof CFAbstractValue<?> other) || this.getClass() != other.getClass()) {
       return false;
     }
@@ -555,7 +560,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    * <ul>
    *   <li>Does not change {@code this}.
    *   <li>Does not change {@code previous}.
-   *   <li>Returns a fresh object which is not aliased yet.
+   *   <li>Returns {@code this}, {@code previous}, or a fresh object which is not aliased yet. A
+   *       caller must not side-effect the result, because the result might be aliased.
    *   <li>Returns an object of the same (dynamic) type as {@code this}, even if the signature is
    *       more permissive.
    *   <li>Is commutative.
@@ -580,6 +586,15 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
    */
   private V upperBound(@Nullable V other, boolean shouldWiden) {
     if (other == null) {
+      @SuppressWarnings("unchecked")
+      V v = (V) this;
+      return v;
+    }
+    // An upper bound of a value and itself is that value.  This improves efficiency when merging
+    // the stores at a control-flow join point.  The shortcut does not apply to a wildcard, not even
+    // when `this == other`:  TypesUtils.leastUpperBound replaces a wildcard by its upper bound, so
+    // the upper bound of a wildcard value and itself has a different underlying type.
+    if (underlyingType.getKind() != TypeKind.WILDCARD && this.equals(other)) {
       @SuppressWarnings("unchecked")
       V v = (V) this;
       return v;
