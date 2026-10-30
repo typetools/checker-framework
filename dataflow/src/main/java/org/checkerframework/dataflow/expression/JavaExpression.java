@@ -678,6 +678,13 @@ public abstract class JavaExpression {
         JavaExpression right = fromTree(binaryTree.getRightOperand());
         return new BinaryOperation(TreeUtils.typeOf(tree), tree.getKind(), left, right);
       }
+      case OTHER -> {
+        if (TreeUtils.isNullCheck(tree)) {
+          // ignore null check
+          return fromTree(((UnaryTree) tree).getExpression());
+        }
+        result = null;
+      }
       default -> result = null;
     }
 

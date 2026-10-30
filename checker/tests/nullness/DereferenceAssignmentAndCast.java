@@ -6,6 +6,8 @@ public class DereferenceAssignmentAndCast {
 
   String f;
 
+  @Nullable DereferenceAssignmentAndCast next;
+
   DereferenceAssignmentAndCast(String f) {
     this.f = f;
   }
@@ -35,6 +37,18 @@ public class DereferenceAssignmentAndCast {
     // :: error: [accessing.nullable]
     ((String[]) o)[0].toString();
     return o;
+  }
+
+  static void selfReferentialAssignment(@Nullable DereferenceAssignmentAndCast n) {
+    if (n == null) {
+      return;
+    }
+    // :: error: [dereference.of.nullable]
+    (n = n.next).toString();
+    n.toString();
+    // After the assignment, `n.next` is a field of a different object.
+    // :: error: [dereference.of.nullable]
+    n.next.toString();
   }
 
   void throwOfAssignment(@Nullable RuntimeException e, @Nullable RuntimeException f) {

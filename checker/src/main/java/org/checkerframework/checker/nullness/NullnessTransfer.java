@@ -3,6 +3,7 @@ package org.checkerframework.checker.nullness;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -139,21 +140,34 @@ public class NullnessTransfer
   /**
    * Sets a given {@link Node} to non-null in the given {@code store}. Also sets to non-null,
    * recursively, the operand of a cast or null check and both sides of an assignment, because they
-   * have the same value as the node. Calls to this method implement case 2.
+   * have the same value as the node. It omits each side that, after the assignment, might have a
+   * different value than the assignment, such as {@code n.next} in {@code n = n.next}. Calls to
+   * this method implement case 2.
    *
    * @param store the store to update
    * @param node the node that should be non-null
    */
   protected void makeNonNull(NullnessStore store, Node node) {
-    node = NodeUtils.removeCasts(node);
-    if (node instanceof AssignmentNode assignment) {
-      makeNonNull(store, assignment.getTarget());
-      makeNonNull(store, assignment.getExpression());
-    } else if (node instanceof NullChkNode nullChk) {
-      makeNonNull(store, nullChk.getOperand());
-    } else {
-      JavaExpression internalRepr = JavaExpression.fromNode(node);
-      store.insertValue(internalRepr, NONNULL);
+    List<JavaExpression> sides = new ArrayList<>();
+    List<JavaExpression> targets = new ArrayList<>();
+    while (true) {
+      node = NodeUtils.removeCasts(node);
+      if (node instanceof AssignmentNode assignment) {
+        JavaExpression target = JavaExpression.fromNode(assignment.getTarget());
+        sides.add(target);
+        targets.add(target);
+        node = assignment.getExpression();
+      } else if (node instanceof NullChkNode nullChk) {
+        node = nullChk.getOperand();
+      } else {
+        break;
+      }
+    }
+    sides.add(JavaExpression.fromNode(node));
+    for (JavaExpression side : sides) {
+      if (!mayBeChangedByAssignment(side, targets)) {
+        store.insertValue(side, NONNULL);
+      }
     }
   }
 

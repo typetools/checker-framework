@@ -974,10 +974,16 @@ public abstract class CFAbstractTransfer<
   protected List<Node> splitAssignments(Node node) {
     List<Node> result = new ArrayList<>();
     List<JavaExpression> targets = new ArrayList<>();
-    while (node instanceof AssignmentNode a) {
-      result.add(a.getTarget());
-      targets.add(JavaExpression.fromNode(a.getTarget()));
-      node = a.getExpression();
+    while (true) {
+      if (node instanceof AssignmentNode a) {
+        result.add(a.getTarget());
+        targets.add(JavaExpression.fromNode(a.getTarget()));
+        node = a.getExpression();
+      } else if (node instanceof NullChkNode nullChk) {
+        node = nullChk.getOperand();
+      } else {
+        break;
+      }
     }
     result.add(node);
     result.removeIf(part -> mayBeChangedByAssignment(JavaExpression.fromNode(part), targets));
