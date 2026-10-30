@@ -441,8 +441,9 @@ public class NullnessVisitor
       }
     }
     // Don't call super because it will issue an incorrect instanceof.unsafe warning.
-    // Instead, just scan the part before "instanceof".
+    // Instead, just scan the expression and the pattern.
     super.scan(tree.getExpression(), p);
+    super.scan(tree.getPattern(), p);
     return null;
   }
 
