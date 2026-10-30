@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -21,12 +23,14 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.typeinference8.types.ContainsInferenceVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
+import org.checkerframework.framework.util.typeinference8.util.FalseBoundException;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -110,47 +114,75 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
 
     assert pathToExpression != null : "@AssumeAssertion(nullness): the tree is being type-checked";
-    boolean pushedToInferenceStack = false;
     try {
       InvocationTypeInference java8Inference =
-          new InvocationTypeInference(typeFactory, pathToExpression);
-      java8InferenceStack.push(java8Inference);
-      pushedToInferenceStack = true;
+          new InvocationTypeInference(typeFactory, pathToExpression, true);
       if (outerTree instanceof MemberReferenceTree outerMemberRef) {
-        return java8Inference.infer(outerMemberRef);
-      } else {
-        assert outerMethodType != null
-            : "@AssumeAssertion(nullness): outerTree is not a member reference";
-        InferenceResult result = java8Inference.infer(outerTree, outerMethodType);
-        if (!result.getResults().containsKey(expressionTree)
-            && expressionTree instanceof MemberReferenceTree mrt) {
-          // The inference of the outer tree did not create any inference variables for the
-          // MemberReferenceTree,
-          // so its type arguments still need to be inferred. Reuse the same inference problem
-          // because the target type of the MemberReferenceTree
-          // was already inferred.
-          //
-          // This can happen in two cases:
-          //
-          //  1. By the time the constraint formula for expressionTree was reduced, its target
-          //     type had become a proper type, so JLS 18.2.1's rule for
-          //     <MethodReference -> T> (which requires that T mention an inference variable)
-          //     did not apply.  This happens when the target type's function type has a
-          //     parameter type that mentions one of the outer tree's inference variables: JLS
-          //     18.5.2.2 makes such a variable an input variable of the constraint, so it is
-          //     resolved and substituted into the constraint before the constraint is reduced.
-          //
-          //  2. The target type's function type has result void, in which case JLS 18.2.1 says
-          //     that <MethodReference -> T> reduces to true.
-
-          TreePath pathToMemberRef = typeFactory.getPath(expressionTree);
-          assert pathToMemberRef != null
-              : "@AssumeAssertion(nullness): the tree is being type-checked";
-          java8Inference.context.setPathToExpression(pathToMemberRef);
-          return java8Inference.infer(mrt);
-        }
-        return result.swapTypeVariables(executableType, expressionTree);
+        return inferOnStack(java8Inference, () -> java8Inference.infer(outerMemberRef));
       }
+      assert outerMethodType != null
+          : "@AssumeAssertion(nullness): outerTree is not a member reference";
+      InferenceResult result =
+          inferOnStack(java8Inference, () -> java8Inference.infer(outerTree, outerMethodType));
+      // The inference problem whose result is used.
+      InvocationTypeInference chosenInference = java8Inference;
+      if (result.failedAfterTargetTypeConstraints()) {
+        // Retry inference without the target type of outerTree, so that the errors reported to
+        // the user are easier to fix.  The conditions below ensure that the newly inferred type
+        // is not assignable to the target type, so an assignment error will be issued instead of
+        // "type.arguments.not.inferred".
+        //
+        // (If an assignment error is not issued, it is because the type used to check the
+        // assignment is more relaxed than the target type used here.  In that case, the
+        // "type.arguments.not.inferred" error was spurious.  See
+        // InferenceFactory#assignedToVariable.)
+        //
+        // The retry's result is used only if:
+        //  * The target type is not from AnnotatedTypeFactory#getDummyAssignedTo.
+        //  * The retry infers the same type arguments as the first attempt, ignoring qualifiers.
+        //  * The qualifiers of the type that the retry infers for outerTree are not assignable
+        //    to the target type (see ProperType#isAssignable).
+        InvocationTypeInference retry =
+            new InvocationTypeInference(typeFactory, pathToExpression, false);
+        InferenceResult retryResult = inferWithoutTargetType(retry, outerTree, outerMethodType);
+        if (retryResult != null
+            && retryResult.qualifiersIncompatibleWithTarget()
+            && haveSameJavaTypes(
+                result, retryResult, typeFactory.getProcessingEnv().getTypeUtils())) {
+          chosenInference = retry;
+          result = retryResult;
+        }
+      }
+      chosenInference.recordLambdaParameterTypes();
+      if (!result.getResults().containsKey(expressionTree)
+          && expressionTree instanceof MemberReferenceTree mrt) {
+        // The inference of the outer tree did not create any inference variables for the
+        // MemberReferenceTree,
+        // so its type arguments still need to be inferred. Reuse the same inference problem
+        // because the target type of the MemberReferenceTree
+        // was already inferred.
+        //
+        // This can happen in two cases:
+        //
+        //  1. By the time the constraint formula for expressionTree was reduced, its target
+        //     type had become a proper type, so JLS 18.2.1's rule for
+        //     <MethodReference -> T> (which requires that T mention an inference variable)
+        //     did not apply.  This happens when the target type's function type has a
+        //     parameter type that mentions one of the outer tree's inference variables: JLS
+        //     18.5.2.2 makes such a variable an input variable of the constraint, so it is
+        //     resolved and substituted into the constraint before the constraint is reduced.
+        //
+        //  2. The target type's function type has result void, in which case JLS 18.2.1 says
+        //     that <MethodReference -> T> reduces to true.
+
+        TreePath pathToMemberRef = typeFactory.getPath(expressionTree);
+        assert pathToMemberRef != null
+            : "@AssumeAssertion(nullness): the tree is being type-checked";
+        InvocationTypeInference mrtInference = chosenInference;
+        mrtInference.context.setPathToExpression(pathToMemberRef);
+        return inferOnStack(mrtInference, () -> mrtInference.infer(mrt));
+      }
+      return result.swapTypeVariables(executableType, expressionTree);
     } catch (Exception ex) {
       if (typeFactory
           .getChecker()
@@ -166,10 +198,87 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             "An exception occurred: " + ex.getLocalizedMessage());
       }
       throw BugInCF.addLocation(outerTree, ex);
-    } finally {
-      if (pushedToInferenceStack) {
-        java8InferenceStack.pop();
+    }
+  }
+
+  /**
+   * Returns true if the two inference results infer type arguments for the same trees and type
+   * variables, and the Java types of corresponding type arguments are the same, modulo captured
+   * type variables. Each inference problem may create its own captured type variables.
+   *
+   * @param result1 an inference result
+   * @param result2 an inference result
+   * @param types the type utilities
+   * @return true if the two results have the same Java types
+   */
+  private static boolean haveSameJavaTypes(
+      InferenceResult result1, InferenceResult result2, Types types) {
+    Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> results1 = result1.getResults();
+    Map<Tree, Map<TypeVariable, AnnotatedTypeMirror>> results2 = result2.getResults();
+    if (!results1.keySet().equals(results2.keySet())) {
+      return false;
+    }
+    for (Map.Entry<Tree, Map<TypeVariable, AnnotatedTypeMirror>> entry : results1.entrySet()) {
+      Map<TypeVariable, AnnotatedTypeMirror> typeArgs1 = entry.getValue();
+      Map<TypeVariable, AnnotatedTypeMirror> typeArgs2 = results2.get(entry.getKey());
+      assert typeArgs2 != null : "@AssumeAssertion(nullness): the key sets are equal";
+      if (!typeArgs1.keySet().equals(typeArgs2.keySet())) {
+        return false;
       }
+      for (Map.Entry<TypeVariable, AnnotatedTypeMirror> typeArg1 : typeArgs1.entrySet()) {
+        AnnotatedTypeMirror typeArg2 = typeArgs2.get(typeArg1.getKey());
+        assert typeArg2 != null : "@AssumeAssertion(nullness): the key sets are equal";
+        if (!TypesUtils.isSameTypeModuloCaptures(
+            typeArg1.getValue().getUnderlyingType(), typeArg2.getUnderlyingType(), types)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Performs the inference problem {@code retry}, which ignores the target type of {@code
+   * outerTree}.
+   *
+   * <p>Returns null if inference fails because of the Java types. That is an expected outcome: the
+   * problem is one that javac never solves, and without the target type the Java types might not be
+   * inferable, for example when the target type is the only source of the type of a lambda's return
+   * expression.
+   *
+   * <p>Any other exception indicates a bug, and it propagates to the caller.
+   *
+   * @param retry the inference problem to solve; it does not use the target type
+   * @param outerTree the invocation whose type arguments are inferred
+   * @param outerMethodType the type of {@code outerTree}'s method before type argument substitution
+   * @return the result of inference, or null if inference fails because of the Java types
+   */
+  private @Nullable InferenceResult inferWithoutTargetType(
+      InvocationTypeInference retry,
+      ExpressionTree outerTree,
+      AnnotatedExecutableType outerMethodType) {
+    try {
+      return inferOnStack(retry, () -> retry.infer(outerTree, outerMethodType));
+    } catch (FalseBoundException ex) {
+      return null;
+    }
+  }
+
+  /**
+   * Performs {@code inferenceAction} while {@code inference} is on the stack of inference problems
+   * being solved.
+   *
+   * @param inference the inference problem that {@code inferenceAction} solves
+   * @param inferenceAction the computation to perform
+   * @return the result of {@code inferenceAction}
+   */
+  private InferenceResult inferOnStack(
+      InvocationTypeInference inference, Supplier<InferenceResult> inferenceAction) {
+    java8InferenceStack.push(inference);
+    try {
+      return inferenceAction.get();
+    } finally {
+      java8InferenceStack.pop();
     }
   }
 

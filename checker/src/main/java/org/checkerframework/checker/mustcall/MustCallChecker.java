@@ -12,6 +12,7 @@ import javax.tools.Diagnostic;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SupportedOptions;
@@ -165,11 +166,6 @@ public class MustCallChecker extends BaseTypeChecker {
    *     only used for error reporting
    * @return the parsed set of types, or null if the value does not parse
    */
-  @SuppressWarnings({
-    // user input might not be a legal @CanonicalName, but it should be safe to pass to
-    // `SetOfTypes.anyOfTheseNames`
-    "signature:type.arguments.not.inferred",
-  })
   protected @Nullable SetOfTypes parseExceptionSpecifier(
       String exceptionSpecifier, String ignoredExceptionsOptionValue) {
     Matcher m = EXCEPTION_SPECIFIER.matcher(exceptionSpecifier);
@@ -196,7 +192,9 @@ public class MustCallChecker extends BaseTypeChecker {
             exceptionSpecifier,
             IGNORED_EXCEPTIONS,
             ignoredExceptionsOptionValue);
-        return SetOfTypes.anyOfTheseNames(ImmutableSet.of(qualifiedName));
+        @SuppressWarnings("signature:assignment") // user input; safe for `anyOfTheseNames`
+        @CanonicalName String canonicalName = qualifiedName;
+        return SetOfTypes.anyOfTheseNames(ImmutableSet.of(canonicalName));
       } else {
         return equalsSign == null ? SetOfTypes.allSubtypes(type) : SetOfTypes.singleton(type);
       }
