@@ -12,6 +12,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +25,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
@@ -67,11 +69,19 @@ import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.dataflow.expression.ArrayAccess;
+import org.checkerframework.dataflow.expression.BinaryOperation;
+import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
+import org.checkerframework.dataflow.expression.SuperReference;
+import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.expression.UnaryOperation;
+import org.checkerframework.dataflow.expression.Unknown;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.NodeUtils;
@@ -909,7 +919,9 @@ public abstract class CFAbstractTransfer<
    *
    * <p>Note that when overriding this method, when a new type is inserted into the store, {@link
    * #splitAssignments} should be called, and the new type should be inserted into the store for
-   * each of the resulting nodes.
+   * each of the resulting nodes. The result of {@link #splitAssignments} omits each side of an
+   * assignment that might not have the assignment's value; do not insert the new type for such a
+   * side.
    *
    * @param firstNode the node that might be more precise
    * @param secondNode the node whose type to possibly refine
@@ -956,14 +968,21 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Takes a node, and either returns the node itself again (as a singleton list), or if the node is
-   * an assignment node, returns the lhs and rhs (where splitAssignments is applied recursively to
+   * an assignment node, returns the sides of the assignment that have the assignment's value after
+   * it executes. The sides are the lhs and rhs, where splitAssignments is applied recursively to
    * the rhs -- that is, it is possible that the rhs does not appear in the result, but rather its
-   * lhs and rhs do). A null check is replaced by its operand, to which splitAssignments is applied
+   * lhs and rhs do. A null check is replaced by its operand, to which splitAssignments is applied
    * recursively.
    *
    * <p>The result omits each side that, after the assignment, might have a different value than the
    * assignment. For example, the result for {@code n = n.next} is just {@code n}, because after the
-   * assignment {@code n.next} is a field of a different object.
+   * assignment {@code n.next} is a field of a different object. The same holds for an assignment
+   * nested anywhere within {@code node}: the result for {@code n.next = (n = o).other} omits {@code
+   * n.next}.
+   *
+   * <p>A node that is not an assignment is returned even if it contains an assignment, as in {@code
+   * x + (x = 1)}. {@link JavaExpression#fromNode} converts such a node to an expression that
+   * contains {@link Unknown}, which no store holds a value for.
    *
    * @param node possibly an assignment node or a null check
    * @return a list containing the right- and left-hand sides in the given assignment node that have
@@ -972,12 +991,21 @@ public abstract class CFAbstractTransfer<
    */
   @SideEffectFree
   protected List<Node> splitAssignments(Node node) {
-    List<Node> result = new ArrayList<>();
+    if (!(node instanceof AssignmentNode assignment)) {
+      return Collections.singletonList(node);
+    }
+
     List<JavaExpression> targets = new ArrayList<>();
+    targets.add(JavaExpression.fromNode(assignment.getTarget()));
+    for (Node n : node.getTransitiveOperands()) {
+      if (n instanceof AssignmentNode a) {
+        targets.add(JavaExpression.fromNode(a.getTarget()));
+      }
+    }
+    List<Node> result = new ArrayList<>();
     while (true) {
       if (node instanceof AssignmentNode a) {
         result.add(a.getTarget());
-        targets.add(JavaExpression.fromNode(a.getTarget()));
         node = a.getExpression();
       } else if (node instanceof NullChkNode nullChk) {
         node = nullChk.getOperand();
@@ -991,34 +1019,97 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns true if an assignment to one of the given targets might change the value of the given
-   * expression, other than by the expression being that target.
+   * Returns true if an assignment to one of the given targets might make {@code expr} evaluate to a
+   * different value than the value of the assignment whose side {@code expr} is.
    *
-   * <p>An assignment to a local variable changes only expressions that contain the variable. An
-   * assignment to a field or an array element might change any expression that reads the heap.
+   * <p>If {@code expr} is a variable, field access, or array access, then an assignment to the
+   * location that {@code expr} denotes does not matter: an assignment in the same chain stores the
+   * same value, and a nested assignment executes before the location is written or read. Only an
+   * assignment that changes which location {@code expr} denotes (that is, its receiver or index)
+   * matters.
    *
-   * @param expr an expression
-   * @param targets the left-hand sides of assignments
+   * @param expr a side of an assignment
+   * @param targets the left-hand sides of all the assignments in an expression that contains {@code
+   *     expr}
    * @return true if an assignment to one of {@code targets} might change the value of {@code expr}
    */
   @Pure
-  protected static boolean mayBeChangedByAssignment(
-      JavaExpression expr, List<JavaExpression> targets) {
+  protected boolean mayBeChangedByAssignment(JavaExpression expr, List<JavaExpression> targets) {
     for (JavaExpression target : targets) {
-      if (expr.syntacticEquals(target)) {
-        continue;
+      boolean mayBeChanged;
+      if (expr instanceof LocalVariable) {
+        mayBeChanged = false;
+      } else if (expr instanceof FieldAccess fa) {
+        mayBeChanged = assignmentMayChange(target, fa.getReceiver());
+      } else if (expr instanceof ArrayAccess aa) {
+        mayBeChanged =
+            assignmentMayChange(target, aa.getArray())
+                || assignmentMayChange(target, aa.getIndex());
+      } else {
+        mayBeChanged = assignmentMayChange(target, expr);
       }
-      if (target instanceof LocalVariable) {
-        if (expr.containsSyntacticEqualJavaExpression(target)) {
-          return true;
-        }
-      } else if (expr.containsOfClass(FieldAccess.class)
-          || expr.containsOfClass(ArrayAccess.class)
-          || expr.containsOfClass(MethodCall.class)) {
+      if (mayBeChanged) {
         return true;
       }
     }
     return false;
+  }
+
+  /**
+   * Returns true if an assignment to {@code target} might change the value of {@code expr}.
+   *
+   * <p>An assignment to a local variable changes only expressions that contain the variable. An
+   * assignment to a field changes only accesses of the same field whose receiver might alias the
+   * target's receiver, and method calls. An assignment to an array element changes only accesses of
+   * arrays that might alias the target's array, and method calls. Aliasing is determined by {@link
+   * CFAbstractStore#canAlias(Types, JavaExpression, JavaExpression)}, as when the store handles an
+   * assignment.
+   *
+   * @param target the left-hand side of an assignment
+   * @param expr an expression
+   * @return true if an assignment to {@code target} might change the value of {@code expr}
+   */
+  @Pure
+  private boolean assignmentMayChange(JavaExpression target, JavaExpression expr) {
+    Types types = analysis.getTypes();
+    if (expr instanceof LocalVariable) {
+      return expr.syntacticEquals(target);
+    } else if (expr instanceof FieldAccess fa) {
+      // The receiver of a static field access is the class through which it is accessed, which
+      // does not determine the field's location.
+      return (target instanceof FieldAccess targetFa
+              && targetFa.getField().equals(fa.getField())
+              && (fa.isStatic()
+                  || CFAbstractStore.canAlias(types, targetFa.getReceiver(), fa.getReceiver())))
+          || assignmentMayChange(target, fa.getReceiver());
+    } else if (expr instanceof ArrayAccess aa) {
+      return (target instanceof ArrayAccess targetAa
+              && CFAbstractStore.canAlias(types, targetAa.getArray(), aa.getArray()))
+          || assignmentMayChange(target, aa.getArray())
+          || assignmentMayChange(target, aa.getIndex());
+    } else if (expr instanceof MethodCall mc) {
+      if (!(target instanceof LocalVariable) || assignmentMayChange(target, mc.getReceiver())) {
+        return true;
+      }
+      for (JavaExpression arg : mc.getArguments()) {
+        if (assignmentMayChange(target, arg)) {
+          return true;
+        }
+      }
+      return false;
+    } else if (expr instanceof UnaryOperation uo) {
+      return assignmentMayChange(target, uo.getOperand());
+    } else if (expr instanceof BinaryOperation bo) {
+      return assignmentMayChange(target, bo.getLeft())
+          || assignmentMayChange(target, bo.getRight());
+    } else {
+      // An Unknown or ArrayCreation might be changed.
+      return !(expr instanceof ClassName
+          || expr instanceof FormalParameter
+          || expr instanceof SuperReference
+          || expr instanceof ThisReference
+          || expr instanceof ValueLiteral);
+    }
   }
 
   @Override

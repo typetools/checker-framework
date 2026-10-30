@@ -1266,9 +1266,21 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   @Override
   public boolean canAlias(JavaExpression a, JavaExpression b) {
+    return canAlias(analysis.getTypes(), a, b);
+  }
+
+  /**
+   * Can the objects {@code a} and {@code b} be aliases? Returns a conservative answer (i.e.,
+   * returns {@code true} if not enough information is available to determine aliasing).
+   *
+   * @param types the type utilities
+   * @param a an expression
+   * @param b an expression
+   * @return true if {@code a} and {@code b} might be aliases
+   */
+  public static boolean canAlias(Types types, JavaExpression a, JavaExpression b) {
     TypeMirror tb = b.getType();
     TypeMirror ta = a.getType();
-    Types types = analysis.getTypes();
     return types.isSubtype(ta, tb) || types.isSubtype(tb, ta);
   }
 
