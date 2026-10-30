@@ -68,6 +68,26 @@ public class AssignmentInComparison {
     }
   }
 
+  static class Box<T> {
+    @Nullable Box<?> next;
+    @Nullable Box<?> other;
+  }
+
+  static void fieldTargetChangesRhsReceiverGeneric(
+      Box<? extends Number> a, Box<? super Integer> b) {
+    if (b.next == null) {
+      return;
+    }
+    if ((a.next = b.next.other) != null) {
+      a.next.toString();
+      // Neither receiver type is a subtype of the other, but a `Box<Integer>` can be both. The
+      // assignment to `a.next` might change `b.next`, if `a` and `b` alias.
+      // :: error: [dereference.of.nullable]
+      // :: error: [dereference.of.nullable]
+      b.next.other.toString();
+    }
+  }
+
   static void fieldTargetMethodCallRhs(AssignmentInComparison n, AssignmentInComparison o) {
     if ((n.next = o.getNext()) != null) {
       n.next.toString();
