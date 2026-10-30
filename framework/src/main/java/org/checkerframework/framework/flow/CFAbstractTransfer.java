@@ -1074,7 +1074,7 @@ public abstract class CFAbstractTransfer<
    * @return true if an assignment to one of {@code targets} might change the value of {@code expr}
    */
   @Pure
-  private static boolean mayBeChangedByAssignment(
+  protected static boolean mayBeChangedByAssignment(
       JavaExpression expr, List<JavaExpression> targets) {
     if (!CFAbstractStore.canInsertJavaExpression(expr)) {
       return false;
