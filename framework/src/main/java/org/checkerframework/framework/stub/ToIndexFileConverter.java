@@ -19,6 +19,7 @@ import com.github.javaparser.ast.body.InitializerDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
+import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
@@ -365,11 +366,20 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   public Void visit(EnumConstantDeclaration decl, AElement elem) {
     AField field = ((AClass) elem).fields.getVivify(decl.getNameAsString());
     visitDecl(decl, field);
-    return super.visit(decl, field);
+    // Do not visit the arguments or the class body.  A class body declares an anonymous class,
+    // whose members do not belong to the field.
+    return null;
   }
 
   @Override
   public Void visit(EnumDeclaration decl, AElement elem) {
+    AClass clazz = classFor(decl, elem);
+    visitDecl(decl, clazz);
+    return super.visit(decl, clazz);
+  }
+
+  @Override
+  public Void visit(RecordDeclaration decl, AElement elem) {
     AClass clazz = classFor(decl, elem);
     visitDecl(decl, clazz);
     return super.visit(decl, clazz);

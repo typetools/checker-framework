@@ -170,6 +170,47 @@ public class ToIndexFileConverterTest {
         jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/ToIndexFileConverter;)V");
   }
 
+  /**
+   * The members of a nested class, enum, or record belong to the nested type, not to the class that
+   * encloses it.
+   */
+  @Test
+  public void testNestedTypeMembers() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass {",
+            "  class MyNestedClass {",
+            "    void myNestedMethod() {}",
+            "  }",
+            "  enum MyEnum {",
+            "    A;",
+            "    void myEnumMethod() {}",
+            "  }",
+            "  record MyRecord(int x) {",
+            "    void myRecordMethod() {}",
+            "  }",
+            "}");
+    assertMethod(jaif, "MyClass$MyNestedClass", "myNestedMethod()V");
+    assertMethod(jaif, "MyClass$MyEnum", "myEnumMethod()V");
+    assertMethod(jaif, "MyClass$MyRecord", "myRecordMethod()V");
+  }
+
+  /** An enum constant with a class body does not crash the converter. */
+  @Test
+  public void testEnumConstantWithClassBody() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "enum MyEnum {",
+            "  A {",
+            "    void myConstantMethod() {}",
+            "  };",
+            "  void myEnumMethod() {}",
+            "}");
+    assertMethod(jaif, "MyEnum", "myEnumMethod()V");
+  }
+
   /** A single-type import that does not match a name does not prevent resolving the name. */
   @Test
   public void testResolveAfterNonMatchingImport() throws Exception {
