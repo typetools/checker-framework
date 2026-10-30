@@ -1347,6 +1347,9 @@ public abstract class CFAbstractTransfer<
     // the pattern does not match (and the guard is not evaluated) or the guard is false, so the
     // guard's else-store need not hold when the case does not match. Then, use the merge of the
     // guard's then-store and else-store.
+    // TODO: That merge still includes the guard's other effects, such as its unconditional
+    // postconditions, although the guard is not evaluated when the pattern does not match. See
+    // https://github.com/typetools/checker-framework/issues/8461 .
     boolean hasGuard = n.getGuard() != null;
     TransferResult<V, S> lubResult = null;
     // Case operands are the case constants. For example, A, B and C in case A, B, C:.
