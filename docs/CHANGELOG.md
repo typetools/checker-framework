@@ -3,6 +3,21 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
+## Version 4.3.3 (2026-12-01)
+
+### User-visible changes
+
+Pattern variables, such as `s` in `o instanceof String s` or `case String s`,
+are defaulted to the top qualifier, like other local variables (the
+CLIMB-to-top rule).  An unannotated pattern variable is refined to the type of
+the value that the pattern matches, rather than having the type system's
+default qualifier.  This does not yet apply to pattern variables nested in a
+record pattern.
+
+### Changes for type system implementers
+
+### Closed issues
+
 ## Version 4.3.2 (2026-11-01)
 
 ### User-visible changes
@@ -17,13 +32,6 @@ that are passed lambdas with side effects, and calls to `@Pure` methods such as
 `Objects.requireNonNull(T, Supplier)` that are passed a lambda that is not
 deterministic, such as one that calls `String.format`.  See the manual section
 "Lambdas, method references, and functional interfaces".
-
-Pattern variables, such as `s` in `o instanceof String s` or `case String s`,
-are defaulted to the top qualifier, like other local variables (the
-CLIMB-to-top rule).  An unannotated pattern variable is refined to the type of
-the value that the pattern matches, rather than having the type system's
-default qualifier.  This does not yet apply to pattern variables nested in a
-record pattern.
 
 ### Changes for type system implementers
 
