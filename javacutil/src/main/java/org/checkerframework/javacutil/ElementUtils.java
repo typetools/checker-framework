@@ -1007,6 +1007,10 @@ public final class ElementUtils {
    * {@code receiverType}: returns the no-argument instance method that the call invokes, or null if
    * there is no such method.
    *
+   * <p>This method considers only non-private methods that have no formal parameters. Therefore, it
+   * returns null for some legal calls: a call to a private method from within its class, and a call
+   * that invokes a variable-arity method such as {@code methodName(Object...)}.
+   *
    * <p>This is compile-time resolution (JLS 15.12.3). It resolves overloading, not overriding. The
    * result is the most specific declaration among {@code receiverType} and its supertypes, but at
    * run time the call may dispatch to an overriding method in a subtype of {@code receiverType}.
