@@ -991,6 +991,9 @@ public abstract class CFAbstractTransfer<
    */
   @SideEffectFree
   protected List<Node> splitAssignments(Node node) {
+    while (node instanceof NullChkNode nullChk) {
+      node = nullChk.getOperand();
+    }
     if (!(node instanceof AssignmentNode assignment)) {
       return Collections.singletonList(node);
     }
