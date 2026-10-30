@@ -16,4 +16,19 @@ public class EnhancedForIterableException {
       @Odd String l3 = l1;
     }
   }
+
+  // The CFG represents a possibly-null receiver of hasNext() by a NullPointerException edge, but
+  // only an invocation has an Error edge.
+  void laterIterationsError(@Odd String p1, String p2, Iterable<String> it) {
+    String l1 = p1;
+    try {
+      for (String s : it) {
+        l1 = p2;
+      }
+      l1 = p1;
+    } catch (Error e) {
+      // :: error: [assignment]
+      @Odd String l3 = l1;
+    }
+  }
 }
