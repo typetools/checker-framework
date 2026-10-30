@@ -286,15 +286,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
-   * have at least one corresponding Node. Trees that undergo conversions, such as boxing or
-   * unboxing, can map to two distinct Nodes. The Node for the pre-conversion value is stored in the
-   * treeToCfgNodes, while the Node for the post-conversion value is stored in the
-   * treeToConvertedCfgNodes.
+   * have at least one corresponding Node. Trees that undergo implicit conversions, such as boxing
+   * or unboxing, can map to two distinct Nodes. The Node for the value before implicit conversion
+   * is stored in the treeToCfgNodes, while the Node for the value after implicit conversion is
+   * stored in the treeToImplicitlyConvertedCfgNodes.
    */
   private final IdentityHashMap<Tree, Set<Node>> treeToCfgNodes;
 
-  /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
-  private final IdentityHashMap<Tree, Set<Node>> treeToConvertedCfgNodes;
+  /**
+   * Map from AST {@link Tree}s to sets of {@link Node}s for their values after implicit conversion.
+   */
+  private final IdentityHashMap<Tree, Set<Node>> treeToImplicitlyConvertedCfgNodes;
 
   /**
    * Map from postfix increment or decrement trees that are AST {@link UnaryTree}s to the synthetic
@@ -417,7 +419,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // initialize lists and maps
     treeToCfgNodes = new IdentityHashMap<>();
-    treeToConvertedCfgNodes = new IdentityHashMap<>();
+    treeToImplicitlyConvertedCfgNodes = new IdentityHashMap<>();
     postfixTreeToCfgNodes = new IdentityHashMap<>();
     nodeList = new ArrayList<>();
     bindings = new HashMap<>();
@@ -498,7 +500,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       return new PhaseOneResult(
           underlyingAST,
           treeToCfgNodes,
-          treeToConvertedCfgNodes,
+          treeToImplicitlyConvertedCfgNodes,
           postfixTreeToCfgNodes,
           nodeList,
           bindings,
@@ -615,33 +617,33 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Add a node in the post-conversion lookup map. The node should refer to a Tree and that Tree
-   * should already be in the pre-conversion lookup map. This method is used to update the Tree-Node
-   * mapping with conversion nodes.
+   * Adds a node to the lookup map for implicitly converted values. The node should refer to a Tree
+   * and that Tree should already be in the lookup map for values before implicit conversion. This
+   * method is used to update the Tree-Node mapping with implicit conversion nodes.
    *
    * @param node the node to add to the lookup map
    */
-  protected void addToConvertedLookupMap(Node node) {
+  protected void addToImplicitlyConvertedLookupMap(Node node) {
     Tree tree = node.getTree();
-    addToConvertedLookupMap(tree, node);
+    addToImplicitlyConvertedLookupMap(tree, node);
   }
 
   /**
-   * Add a node in the post-conversion lookup map. The tree argument should already be in the
-   * pre-conversion lookup map. This method is used to update the Tree-Node mapping with conversion
-   * nodes.
+   * Adds a node to the lookup map for implicitly converted values. The tree argument should already
+   * be in the lookup map for values before implicit conversion. This method is used to update the
+   * Tree-Node mapping with implicit conversion nodes.
    *
    * @param tree the tree used as a key in the map
    * @param node the node to add to the lookup map
    */
-  protected void addToConvertedLookupMap(Tree tree, Node node) {
+  protected void addToImplicitlyConvertedLookupMap(Tree tree, Node node) {
     assert tree != null;
     assert treeToCfgNodes.containsKey(tree);
-    Set<Node> existing = treeToConvertedCfgNodes.get(tree);
+    Set<Node> existing = treeToImplicitlyConvertedCfgNodes.get(tree);
     if (existing == null) {
       Set<Node> newSet = new IdentityArraySet<>(1);
       newSet.add(node);
-      treeToConvertedCfgNodes.put(tree, newSet);
+      treeToImplicitlyConvertedCfgNodes.put(tree, newSet);
     } else {
       existing.add(node);
     }
@@ -872,7 +874,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               valueOfCall, valueOfAccess, Collections.singletonList(node), getCurrentPath());
       boxed.setInSource(false);
       // Add Throwable to account for unchecked exceptions
-      addToConvertedLookupMap(node.getTree(), boxed);
+      addToImplicitlyConvertedLookupMap(node.getTree(), boxed);
       insertNodeWithExceptionsAfter(boxed, uncheckedExceptionTypes, valueOfAccess);
       return boxed;
     } else {
@@ -906,7 +908,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       unboxed.setInSource(false);
 
       // Add Throwable to account for unchecked exceptions
-      addToConvertedLookupMap(node.getTree(), unboxed);
+      addToImplicitlyConvertedLookupMap(node.getTree(), unboxed);
       insertNodeWithExceptionsAfter(unboxed, uncheckedExceptionTypes, primValueAccess);
       return unboxed;
     } else {
@@ -964,7 +966,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // For string conversion, see JLS 5.1.11
     if (!TypesUtils.isString(node.getType())) {
       Node converted = new StringConversionNode(node.getTree(), node, stringType);
-      addToConvertedLookupMap(converted);
+      addToImplicitlyConvertedLookupMap(converted);
       insertNodeAfter(converted, node);
       return converted;
     } else {
@@ -987,7 +989,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       case BYTE, CHAR, SHORT -> {
         TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
         Node widened = new WideningConversionNode(node.getTree(), node, intType);
-        addToConvertedLookupMap(widened);
+        addToImplicitlyConvertedLookupMap(widened);
         insertNodeAfter(widened, node);
         return widened;
       }
@@ -1054,7 +1056,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     if (!types.isSameType(node.getType(), exprType)) {
       Node widened = new WideningConversionNode(node.getTree(), node, exprType);
-      addToConvertedLookupMap(widened);
+      addToImplicitlyConvertedLookupMap(widened);
       insertNodeAfter(widened, node);
       return widened;
     } else {
@@ -1075,7 +1077,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         : "widening must be applied to primitive types";
     if (types.isSubtype(node.getType(), destType) && !types.isSameType(node.getType(), destType)) {
       Node widened = new WideningConversionNode(node.getTree(), node, destType);
-      addToConvertedLookupMap(widened);
+      addToImplicitlyConvertedLookupMap(widened);
       insertNodeAfter(widened, node);
       return widened;
     } else {
@@ -1096,7 +1098,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         : "narrowing must be applied to primitive types";
     if (types.isSubtype(destType, node.getType()) && !types.isSameType(destType, node.getType())) {
       Node narrowed = new NarrowingConversionNode(node.getTree(), node, destType);
-      addToConvertedLookupMap(narrowed);
+      addToImplicitlyConvertedLookupMap(narrowed);
       insertNodeAfter(narrowed, node);
       return narrowed;
     } else {
