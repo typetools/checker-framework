@@ -10,13 +10,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.checkerframework.afu.scenelib.el.AClass;
 import org.checkerframework.afu.scenelib.el.AElement;
 import org.checkerframework.afu.scenelib.el.AField;
 import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.afu.scenelib.el.AScene;
 import org.checkerframework.afu.scenelib.el.ATypeElement;
+import org.checkerframework.afu.scenelib.el.AnnotationDef;
 import org.checkerframework.afu.scenelib.el.TypePathEntry;
+import org.checkerframework.afu.scenelib.io.IndexFileParser;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -57,7 +60,7 @@ public class ToIndexFileConverterTest {
 
   /** The converter used by the {@code getJVML} tests. */
   private final ToIndexFileConverter converter =
-      new ToIndexFileConverter(null, Collections.emptyList(), new AScene());
+      new ToIndexFileConverter(null, Collections.emptyList(), new AScene(), Collections.emptyMap());
 
   /**
    * Converts a stub file to a JAIF.
@@ -77,10 +80,25 @@ public class ToIndexFileConverterTest {
    * @return the JAIF that {@link ToIndexFileConverter} produces for the stub file
    */
   private static String convert(AScene scene, String... stubFileLines) throws Exception {
+    return convert(scene, Collections.emptyMap(), stubFileLines);
+  }
+
+  /**
+   * Converts a stub file to a JAIF, adding the stub file's information to a scene.
+   *
+   * @param scene the scene to augment
+   * @param annotationDefs the annotation definitions in the JAIF file that {@code scene} was read
+   *     from
+   * @param stubFileLines the lines of the stub file
+   * @return the JAIF that {@link ToIndexFileConverter} produces for the stub file
+   */
+  private static String convert(
+      AScene scene, Map<String, AnnotationDef> annotationDefs, String... stubFileLines)
+      throws Exception {
     String stubFile = String.join(System.lineSeparator(), stubFileLines);
     ByteArrayInputStream in = new ByteArrayInputStream(stubFile.getBytes(StandardCharsets.UTF_8));
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    ToIndexFileConverter.convert(scene, in, out);
+    ToIndexFileConverter.convert(scene, annotationDefs, in, out);
     return out.toString(StandardCharsets.UTF_8.name());
   }
 
@@ -304,6 +322,46 @@ public class ToIndexFileConverterTest {
     Assert.assertNotNull(
         "@Nullable was not recorded on the component type",
         param.type.innerTypes.get(oneLevel).lookup("Nullable"));
+  }
+
+  /**
+   * The {@code @Target} of an annotation interface that cannot be loaded is read from the
+   * interface's definition in the input JAIF file.
+   */
+  @Test
+  public void testTargetsFromAnnotationDefinitions() throws Exception {
+    AScene scene = new AScene();
+    Map<String, AnnotationDef> annotationDefs =
+        IndexFileParser.parseString(
+            String.join(
+                System.lineSeparator(),
+                "package q:",
+                "annotation @TypeAnno: @java.lang.annotation.Target(value={TYPE_USE})",
+                "annotation @DeclAnno: @java.lang.annotation.Target(value={FIELD})",
+                ""),
+            "testTargetsFromAnnotationDefinitions",
+            scene);
+    convert(
+        scene,
+        annotationDefs,
+        "package p;",
+        "import q.DeclAnno;",
+        "import q.TypeAnno;",
+        "class C {",
+        "  @TypeAnno @DeclAnno String f;",
+        "  @TypeAnno String[] g;",
+        "}");
+    AClass clazz = scene.classes.get("p.C");
+    AField f = clazz.fields.get("f");
+    Assert.assertNull("@TypeAnno was recorded on the field", f.lookup("TypeAnno"));
+    Assert.assertNotNull("@TypeAnno was not recorded on the type", f.type.lookup("TypeAnno"));
+    Assert.assertNotNull("@DeclAnno was not recorded on the field", f.lookup("DeclAnno"));
+    Assert.assertNull("@DeclAnno was recorded on the type", f.type.lookup("DeclAnno"));
+    AField g = clazz.fields.get("g");
+    Assert.assertNull("@TypeAnno was recorded on the field", g.lookup("TypeAnno"));
+    Assert.assertNotNull(
+        "@TypeAnno was not recorded on the component type",
+        g.type.innerTypes.get(element(Collections.emptyList())).lookup("TypeAnno"));
   }
 
   /**
