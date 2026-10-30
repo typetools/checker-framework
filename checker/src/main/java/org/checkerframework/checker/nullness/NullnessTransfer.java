@@ -3,6 +3,7 @@ package org.checkerframework.checker.nullness;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -20,8 +21,10 @@ import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
+import org.checkerframework.dataflow.cfg.node.DeconstructorPatternNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
+import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -349,6 +352,22 @@ public class NullnessTransfer
       ArrayAccessNode n, TransferInput<NullnessValue, NullnessStore> p) {
     TransferResult<NullnessValue, NullnessStore> result = super.visitArrayAccess(n, p);
     makeNonNull(result, n.getArray());
+    return result;
+  }
+
+  @Override
+  public TransferResult<NullnessValue, NullnessStore> visitDeconstructorPattern(
+      DeconstructorPatternNode n, TransferInput<NullnessValue, NullnessStore> p) {
+    TransferResult<NullnessValue, NullnessStore> result = super.visitDeconstructorPattern(n, p);
+    // A nested pattern that is not unconditional for its record component, such as `String s`
+    // for a component of type Object, does not match null.
+    for (Node nestedPattern : n.getNestedPatterns()) {
+      if (nestedPattern instanceof LocalVariableNode bindingVar
+          && bindingVar.getTree() instanceof VariableTree bindingVarTree
+          && !analysis.getTypeFactory().isUnconditionalForComponent(bindingVarTree)) {
+        makeNonNull(result, bindingVar);
+      }
+    }
     return result;
   }
 

@@ -373,6 +373,32 @@ public class DependentTypesHelper {
   }
 
   /**
+   * Viewpoint-adapts the Java expressions in annotations written on a record component to an access
+   * of that component of {@code receiver}, as in a deconstruction pattern.
+   *
+   * @param type the type of the record component; is side-effected by this method
+   * @param accessor the accessor method of the record component
+   * @param receiver the record whose component is accessed
+   */
+  public void atRecordComponentAccess(
+      AnnotatedTypeMirror type, ExecutableElement accessor, JavaExpression receiver) {
+    if (!hasDependentType(type)) {
+      return;
+    }
+
+    StringToJavaExpression stringToJavaExpr =
+        stringExpr ->
+            StringToJavaExpression.atMethodDecl(stringExpr, accessor, factory.getChecker())
+                .atFieldAccess(receiver);
+    if (debugStringToJavaExpression) {
+      System.out.printf(
+          "atRecordComponentAccess(%s, %s, %s) created %s%n",
+          type, accessor, receiver, stringToJavaExpr);
+    }
+    convertAnnotatedTypeMirror(stringToJavaExpr, type);
+  }
+
+  /**
    * Viewpoint-adapts the Java expressions in annotations written on the signature of the method
    * declaration (for example, a return type) to the body of the method. This means the parameter
    * syntax, e.g. "#2", is converted to the names of the parameter.

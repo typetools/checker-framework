@@ -2531,12 +2531,38 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       // so only validate if commonAssignmentCheck wasn't called.
       validateTypeOf(tree);
     }
+    AnnotatedTypeMirror componentType = atypeFactory.getDeconstructedComponentType(tree);
+    if (componentType != null) {
+      checkDeconstructionBindingVariable(tree, variableType, componentType);
+    }
     warnRedundantAnnotations(tree, variableType);
     Void result = super.visitVariable(tree, p);
 
     checkSlowTypechecking(tree, startSlowTypeCheckingTree, startMillis);
 
     return result;
+  }
+
+  /**
+   * Checks that a binding variable of a deconstruction pattern can hold the record component that
+   * it is bound to.
+   *
+   * <p>If the variable's pattern is unconditional for the component (see {@link
+   * AnnotatedTypeFactory#isUnconditionalForComponent}), then binding is like an assignment.
+   * Otherwise, the pattern tests the component's Java type, as {@code instanceof} does, and the
+   * check is like the one for a type pattern in {@code instanceof}.
+   *
+   * @param tree a binding variable of a deconstruction pattern
+   * @param variableType the type of the binding variable
+   * @param componentType the type of the record component that the variable is bound to
+   */
+  protected void checkDeconstructionBindingVariable(
+      VariableTree tree, AnnotatedTypeMirror variableType, AnnotatedTypeMirror componentType) {
+    if (atypeFactory.isUnconditionalForComponent(tree)) {
+      commonAssignmentCheck(variableType, componentType, tree, "assignment");
+    } else if (!isTypeCastSafe(variableType, componentType)) {
+      checker.reportWarning(tree, "instanceof.pattern.unsafe", componentType, tree);
+    }
   }
 
   /**
@@ -3811,9 +3837,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             checker.reportWarning(tree, "instanceof.pattern.unsafe", expType, variableTree);
           }
         }
-      } else {
-        // TODO: implement deconstructed patterns.
       }
+      // The binding variables of a deconstruction pattern are checked by visitVariable.
     } else {
       Tree refTypeTree = tree.getType();
       validateTypeOf(refTypeTree);

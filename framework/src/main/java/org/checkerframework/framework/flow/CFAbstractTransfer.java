@@ -1135,6 +1135,23 @@ public abstract class CFAbstractTransfer<
       DeconstructorPatternNode n, TransferInput<V, S> in) {
     // TODO: Implement getting the type of a DeconstructorPatternTree.
     V value = null;
+    // Each binding variable is assigned a record component.
+    S store = in.getRegularStore();
+    for (Node nestedPattern : n.getNestedPatterns()) {
+      if (nestedPattern instanceof LocalVariableNode bindingVar
+          && bindingVar.getTree() instanceof VariableTree bindingVarTree) {
+        AnnotatedTypeMirror componentType =
+            analysis.atypeFactory.getDeconstructedComponentType(bindingVarTree);
+        V componentValue =
+            componentType == null
+                ? null
+                : analysis.createAbstractValue(
+                    componentType.getAnnotations(), bindingVar.getType());
+        if (componentValue != null) {
+          store.insertValue(JavaExpression.fromNode(bindingVar), componentValue);
+        }
+      }
+    }
     return createTransferResult(value, in);
   }
 
@@ -1153,7 +1170,11 @@ public abstract class CFAbstractTransfer<
     S store = in.getRegularStore();
     AnnotatedTypeMirror expType =
         analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
-    for (LocalVariableNode bindingVar : node.getBindingVariables()) {
+    // Only the variable of a binding pattern is refined by the expression's type.  The binding
+    // variables of a deconstruction pattern hold record components, whose types may be unrelated
+    // to the expression's type; visitDeconstructorPattern gives them the components' types.
+    LocalVariableNode bindingVar = node.getBindingPatternVariable();
+    if (bindingVar != null) {
       JavaExpression expr = JavaExpression.fromNode(bindingVar);
       for (AnnotationMirror anno : expType.getAnnotations()) {
         store.insertOrRefine(expr, anno);
