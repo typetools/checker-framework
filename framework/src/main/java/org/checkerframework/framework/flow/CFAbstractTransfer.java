@@ -798,8 +798,8 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * A literal merges the then-store and else-store of its input, as most nodes do; see {@link
-   * #createTransferResult}.
+   * A literal usually merges the then-store and else-store of its input, as most nodes do; see
+   * {@link #createTransferResult}.
    *
    * <p>The exception is a boolean literal that is the right operand of a boolean operator such as
    * {@code ==} or {@code &}, possibly within {@code !} operators and casts. The then-store and
@@ -1040,7 +1040,8 @@ public abstract class CFAbstractTransfer<
    * @param n a node for a binary operator
    * @param in the input to the transfer function for {@code n}
    * @param op the truth table of the operator
-   * @return a TransferResult with the value of {@code result} and refined stores
+   * @return a TransferResult with the value of {@code result} and refined stores; possibly {@code
+   *     result} itself
    */
   private TransferResult<V, S> refineStoresOfBooleanOperator(
       TransferResult<V, S> result,
