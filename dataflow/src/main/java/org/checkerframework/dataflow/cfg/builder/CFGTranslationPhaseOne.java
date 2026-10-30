@@ -344,6 +344,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** The Iterable type (erased). */
   protected final TypeMirror iterableType;
 
+  /** The MatchException type, or null if it is not present (it was added in Java 21). */
+  protected final @Nullable TypeMirror matchExceptionType;
+
   /** The NegativeArraySizeException type. */
   protected final TypeMirror negativeArraySizeExceptionType;
 
@@ -438,6 +441,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     assertionErrorType = getTypeMirror(AssertionError.class);
     classCastExceptionType = getTypeMirror(ClassCastException.class);
     iterableType = types.erasure(getTypeMirror(Iterable.class));
+    matchExceptionType = maybeGetTypeMirror("java.lang.MatchException");
     negativeArraySizeExceptionType = getTypeMirror(NegativeArraySizeException.class);
     nullPointerExceptionType = getTypeMirror(NullPointerException.class);
     outOfMemoryErrorType = maybeGetTypeMirror(OutOfMemoryError.class);
@@ -2340,7 +2344,22 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
-          extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+          if (isLastCaseOfExhaustive) {
+            // No case matches, so the switch throws MatchException.
+            Label guardFalseLabel = new Label();
+            extendWithExtendedNode(new ConditionalJump(thisBodyLabel, guardFalseLabel));
+            addLabelForNextNode(guardFalseLabel);
+            NodeWithExceptionsHolder throwing =
+                extendWithNodeWithException(
+                    new MarkerNode(
+                        caseTree,
+                        "no case matches in switch #" + TreeUtils.treeUids.get(switchTree),
+                        env.getTypeUtils()),
+                    matchExceptionType != null ? matchExceptionType : throwableType);
+            throwing.setTerminatesExecution(true);
+          } else {
+            extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+          }
         }
       }
 
@@ -4425,6 +4444,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected @Nullable TypeMirror maybeGetTypeMirror(Class<?> clazz) {
     String name = clazz.getCanonicalName();
     assert name != null : clazz + " does not have a canonical name";
+    return maybeGetTypeMirror(name);
+  }
+
+  /**
+   * Returns the TypeMirror for the class with the given canonical name, or {@code null} if the type
+   * is not present.
+   *
+   * @param name the canonical name of a class
+   * @return the TypeMirror for the class, or {@code null} if the type is not present
+   */
+  protected @Nullable TypeMirror maybeGetTypeMirror(String name) {
     TypeElement element = elements.getTypeElement(name);
     if (element == null) {
       return null;
