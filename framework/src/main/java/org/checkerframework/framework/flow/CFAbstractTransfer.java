@@ -679,22 +679,33 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Creates a TransferResult.
+   * Creates a TransferResult with the given value and the stores of the given input, merging the
+   * input's then-store and else-store if it has them.
    *
-   * <p>This default implementation returns the input information unchanged, or in the case of
-   * conditional input information, merged. The then-store and else-store of the input describe the
-   * node evaluated just before this one, such as an operand. They do not hold the facts that are
-   * true when this node is true or false. For example, the then-store of {@code isNonNull(x)} does
-   * not hold when {@code isNonNull(x) + ""} is true. A node whose input's then-store and else-store
-   * do describe the node calls {@link #createTransferResultKeepingStores} instead.
+   * <p>If the input has a regular store, the result has that store. If the input has a then-store
+   * and an else-store, the result also has a then-store and an else-store, but each is the least
+   * upper bound of the input's two stores. The result's then-store and else-store are distinct
+   * objects, so a caller can refine either one in place.
    *
-   * <p>If the input has a then-store and an else-store, the result does too, but they are equal
-   * copies of the merged store. A caller can then refine the result's then-store and else-store
-   * separately, in place.
+   * <p>There are two situations when creating a transfer result, depending on what the then-store
+   * and else-store of the input describe:
    *
-   * @param value the value; possibly null
+   * <ul>
+   *   <li>The input stores describe a node evaluated earlier, such as an operand. The facts in
+   *       their then-store and else-store need not be true when this node is true or false,
+   *       respectively. For example, the then-store of {@code isNonNull(x)} does not hold when
+   *       {@code Boolean.logicalXor(true, isNonNull(x))} is true. In that case, use this method,
+   *       which merges the input stores.
+   *   <li>The input stores describe this node, as for a cast, or this node passes them along
+   *       unchanged for a later node to use, as for a boolean literal that is the right operand of
+   *       {@code ==}. In that case, use {@link #createTransferResultKeepingStores}, which keeps the
+   *       input stores.
+   * </ul>
+   *
+   * @param value the abstract value of the result; possibly null
    * @param in the transfer input
-   * @return the input information, as a TransferResult
+   * @return a TransferResult with the given value, as modified by {@link #finishValue}, and the
+   *     merged stores of {@code in}
    */
   @SideEffectFree
   protected TransferResult<V, S> createTransferResult(@Nullable V value, TransferInput<V, S> in) {
@@ -715,16 +726,31 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Creates a TransferResult whose stores are those of the input, including its then-store and
-   * else-store if it has them. A node calls this method, instead of {@link #createTransferResult},
-   * when the then-store and else-store of its input hold the facts that are true when the node is
-   * true or false, respectively. One example is a node whose value is that of the node evaluated
-   * just before it, such as a cast. Another example is {@code a && b}, whose input merges the
-   * stores of the short-circuit edge from {@code a} and the stores of {@code b}.
+   * Creates a TransferResult with the given value and the stores of the given input, keeping the
+   * input's then-store and else-store if it has them.
    *
-   * @param value the value; possibly null
+   * <p>For example, the input of {@code a && b} merges the stores of the short-circuit edge from
+   * {@code a} and the stores of {@code b}, so its then-store and else-store describe {@code a &&
+   * b}.
+   *
+   * <p>There are two situations when creating a transfer result, depending on what the then-store
+   * and else-store of the input describe:
+   *
+   * <ul>
+   *   <li>The input stores describe a node evaluated earlier, such as an operand. The facts in
+   *       their then-store and else-store need not be true when this node is true or false,
+   *       respectively. For example, the then-store of {@code isNonNull(x)} does not hold when
+   *       {@code Boolean.logicalXor(true, isNonNull(x))} is true. In that case, use {@link
+   *       #createTransferResult}, which merges the input stores.
+   *   <li>The input stores describe this node, as for a cast, or this node passes them along
+   *       unchanged for a later node to use, as for a boolean literal that is the right operand of
+   *       {@code ==}. In that case, use this method, which keeps the input stores.
+   * </ul>
+   *
+   * @param value the abstract value of the result; possibly null
    * @param in the transfer input
-   * @return the input information, as a TransferResult
+   * @return a TransferResult with the given value, as modified by {@link #finishValue}, and the
+   *     stores of {@code in}
    */
   @SideEffectFree
   protected TransferResult<V, S> createTransferResultKeepingStores(
@@ -741,16 +767,15 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Creates a TransferResult just like the given one, but with the given annotation as its value.
-   *
-   * <p>This default implementation returns the input information unchanged, or in the case of
-   * conditional input information, merged.
+   * Creates a TransferResult whose value has the given annotation and type, and whose stores are
+   * those of the given input, merged as by {@link #createTransferResult(CFAbstractValue,
+   * TransferInput)}.
    *
    * @param anno the annotation for the result value
    * @param tm the type for the result value
    * @param in the transfer input
-   * @return the input information, as a TransferResult
-   * @see #createTransferResult(CFAbstractValue value, TransferInput in) {
+   * @return a TransferResult with a value built from {@code anno} and {@code tm}, as modified by
+   *     {@link #finishValue}, and the merged stores of {@code in}
    */
   @SideEffectFree
   protected TransferResult<V, S> createTransferResult(
@@ -1025,54 +1050,66 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns a TransferResult just like the given one, but whose then-store and else-store are
-   * derived from those of {@code in}, if {@code n} has boolean operands.
+   * derived from those of {@code in}, if {@code operatorNode} has boolean operands.
    *
-   * <p>The then-store and else-store of {@code in} describe one of the operands, x: the right
-   * operand, which is evaluated last, or the left operand if the right operand is a constant (see
-   * {@link #visitValueLiteral}). The result's then-store is the least upper bound of x's
-   * then-store, if x can be true when the operator is true, and x's else-store, if x can be false
-   * when the operator is true. The result's else-store is defined likewise. The other operand can
-   * be either true or false, unless it is a constant. For example, the then-store of {@code a & b}
-   * is the then-store of {@code b}, and the then-store of {@code a == false} is the else-store of
-   * {@code a}.
+   * <p>The then-store and else-store of {@code in} describe one of the operands, called the
+   * described operand: the right operand, which is evaluated last, or the left operand if the right
+   * operand is a constant (see {@link #visitValueLiteral}).
    *
-   * @param result the result of the transfer function for {@code n}, whose value is used
-   * @param n a node for a binary operator
-   * @param in the input to the transfer function for {@code n}
-   * @param op the truth table of the operator
+   * <p>The result's then-store is the least upper bound of whichever of the described operand's
+   * stores can hold when the operator is true. The described operand's then-store is included if
+   * the described operand can be true when the operator is true, and is omitted otherwise.
+   * Likewise, the described operand's else-store is included if the described operand can be false
+   * when the operator is true, and is omitted otherwise. In determining this, the other operand can
+   * be either true or false, unless it is a constant. The result's else-store is defined likewise,
+   * for when the operator is false. For example, the then-store of {@code a & b} is the then-store
+   * of {@code b}, and the then-store of {@code a == false} is the else-store of {@code a}.
+   *
+   * <p>If the operator cannot be true, as for {@code a & false}, then neither store is included,
+   * and the result's then-store is the least upper bound of both of the described operand's stores.
+   * Any store is sound there, because the operator is never true. The same holds for the result's
+   * else-store when the operator cannot be false.
+   *
+   * @param result the result of the transfer function for {@code operatorNode}, whose value is used
+   * @param operatorNode a node for a binary operator
+   * @param in the input to the transfer function for {@code operatorNode}
+   * @param truthTable the truth table of the operator
    * @return a TransferResult with the value of {@code result} and refined stores; possibly {@code
    *     result} itself
    */
   private TransferResult<V, S> refineStoresOfBooleanOperator(
       TransferResult<V, S> result,
-      BinaryOperationNode n,
+      BinaryOperationNode operatorNode,
       TransferInput<V, S> in,
-      BooleanOperator op) {
-    Node leftN = n.getLeftOperand();
-    Node rightN = n.getRightOperand();
+      BooleanOperator truthTable) {
+    Node leftN = operatorNode.getLeftOperand();
+    Node rightN = operatorNode.getRightOperand();
     if (!in.containsTwoStores()
         || !TypesUtils.isBooleanType(leftN.getType())
         || !TypesUtils.isBooleanType(rightN.getType())
-        // If x's then-store and else-store are equal, so are the result's.
+        // If the described operand's then-store and else-store are equal, so are the result's.
         || in.getThenStore().equals(in.getElseStore())) {
       return result;
     }
-    // The stores of `in` describe x; y is the other operand.
-    boolean xIsLeft = NodeUtils.isConstantBoolean(rightN);
-    Node y = xIsLeft ? rightN : leftN;
-    boolean[] yValues =
-        NodeUtils.isConstantBoolean(y)
-            ? new boolean[] {NodeUtils.isConstantBoolean(y, true)}
+    boolean describedIsLeft = NodeUtils.isConstantBoolean(rightN);
+    Node otherOperand = describedIsLeft ? rightN : leftN;
+    boolean[] otherValues =
+        NodeUtils.isConstantBoolean(otherOperand)
+            ? new boolean[] {NodeUtils.isConstantBoolean(otherOperand, true)}
             : new boolean[] {true, false};
     S thenStore = null;
     S elseStore = null;
-    for (boolean x : new boolean[] {true, false}) {
-      S xStore = x ? in.getThenStore() : in.getElseStore();
-      for (boolean yValue : yValues) {
-        if (xIsLeft ? op.apply(x, yValue) : op.apply(yValue, x)) {
-          thenStore = (thenStore == null ? xStore : thenStore.leastUpperBound(xStore));
+    for (boolean describedValue : new boolean[] {true, false}) {
+      S describedStore = describedValue ? in.getThenStore() : in.getElseStore();
+      for (boolean otherValue : otherValues) {
+        if (describedIsLeft
+            ? truthTable.apply(describedValue, otherValue)
+            : truthTable.apply(otherValue, describedValue)) {
+          thenStore =
+              (thenStore == null ? describedStore : thenStore.leastUpperBound(describedStore));
         } else {
-          elseStore = (elseStore == null ? xStore : elseStore.leastUpperBound(xStore));
+          elseStore =
+              (elseStore == null ? describedStore : elseStore.leastUpperBound(describedStore));
         }
       }
     }

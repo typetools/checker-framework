@@ -41,6 +41,14 @@ now a final, non-generic class.  `NumberMath.getNumberMath()` throws
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
 
+`CFAbstractTransfer.createTransferResult()` now merges the input's then-store
+and else-store:  the result's then-store and else-store are both their least
+upper bound.  Use it when the input's then-store and else-store describe an
+earlier node, such as an operand.  New method
+`CFAbstractTransfer.createTransferResultKeepingStores()` keeps the input's
+then-store and else-store; use it when they describe the current node, as for a
+cast.
+
 Deprecated methods:
 
 * `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.getNoArgumentMethod()`
