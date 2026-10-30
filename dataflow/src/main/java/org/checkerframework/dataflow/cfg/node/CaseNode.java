@@ -15,6 +15,10 @@ import org.plumelib.util.StringsP;
  * A node for a case in a switch statement. Although a case has no abstract value, it can imply
  * facts about the abstract values of its operands.
  *
+ * <p>A CaseNode tests only the labels of the case. If the case has a guard (a {@code when} clause),
+ * the guard is a separate test that follows the CaseNode in the CFG and that is evaluated only if a
+ * label matches.
+ *
  * <pre>
  *   case <em>constant</em>:
  * </pre>
@@ -35,9 +39,6 @@ public class CaseNode extends Node {
    */
   protected final List<Node> caseExprs;
 
-  /** The guard (the expression in the {@code when} clause) for this case. */
-  protected final @Nullable Node guard;
-
   /**
    * Create a new CaseNode.
    *
@@ -45,20 +46,14 @@ public class CaseNode extends Node {
    * @param selectorExprAssignment the Node for the assignment of the switch selector expression to
    *     a synthetic local variable
    * @param caseExprs the case expression(s) to match the switch expression against
-   * @param guard the guard expression or null
    * @param types a factory of utility methods for operating on types
    */
   public CaseNode(
-      CaseTree tree,
-      AssignmentNode selectorExprAssignment,
-      List<Node> caseExprs,
-      @Nullable Node guard,
-      Types types) {
+      CaseTree tree, AssignmentNode selectorExprAssignment, List<Node> caseExprs, Types types) {
     super(types.getNoType(TypeKind.NONE));
     this.tree = tree;
     this.selectorExprAssignment = selectorExprAssignment;
     this.caseExprs = caseExprs;
-    this.guard = guard;
   }
 
   /**
@@ -79,15 +74,6 @@ public class CaseNode extends Node {
    */
   public List<Node> getCaseOperands() {
     return caseExprs;
-  }
-
-  /**
-   * Gets the node for the guard (the expression in the {@code when} clause).
-   *
-   * @return the node for the guard
-   */
-  public @Nullable Node getGuard() {
-    return guard;
   }
 
   @Override

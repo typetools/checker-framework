@@ -2311,11 +2311,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private void buildCase(CaseTree caseTree, int index, boolean isLastCaseOfExhaustive) {
       boolean isDefaultCase = CaseUtils.isDefaultCaseTree(caseTree);
+      ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
       // If true, no test of labels is necessary.
       // Unfortunately, if isLastCaseOfExhaustive==TRUE, no flow-sensitive refinement occurs
       // within the body of the CaseNode.  In the future, that can be performed, but it
       // requires addition of InfeasibleExitBlock, a new SpecialBlock in the CFG.
-      boolean isTerminalCase = isDefaultCase || isLastCaseOfExhaustive;
+      // A guarded case is never terminal, because its guard must be evaluated and can be false.
+      boolean isTerminalCase = isDefaultCase || (isLastCaseOfExhaustive && guardTree == null);
 
       Label thisBodyLabel = caseBodyLabels[index];
       Label nextBodyLabel = caseBodyLabels[index + 1];
@@ -2330,13 +2332,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           exprs.add(scan(exprTree, null));
         }
 
-        ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
-        Node guard = (guardTree == null) ? null : unbox(scan(guardTree, null));
-
-        CaseNode test =
-            new CaseNode(caseTree, selectorExprAssignment, exprs, guard, env.getTypeUtils());
+        CaseNode test = new CaseNode(caseTree, selectorExprAssignment, exprs, env.getTypeUtils());
         extendWithNode(test);
-        extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+        if (guardTree == null) {
+          extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+        } else {
+          // The guard is evaluated only if a label matches.
+          Label guardLabel = new Label();
+          extendWithExtendedNode(new ConditionalJump(guardLabel, nextCaseLabel));
+          addLabelForNextNode(guardLabel);
+          unbox(scan(guardTree, null));
+          extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+        }
       } else if (!isDefaultCase) {
         // The labels are not tested, but their patterns declare and bind variables.
         for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
