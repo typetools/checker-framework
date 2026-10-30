@@ -32,7 +32,7 @@ public class AssignmentInComparison {
     }
   }
 
-  static void localTargetNull(@Nullable AssignmentInComparison m, AssignmentInComparison n) {
+  static void localTargetFieldRhs(@Nullable AssignmentInComparison m, AssignmentInComparison n) {
     if ((m = n.next) != null) {
       m.toString();
       n.next.toString();
