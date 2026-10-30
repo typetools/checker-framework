@@ -49,6 +49,13 @@ earlier node, such as an operand.  New method
 then-store and else-store; use it when they describe the current node, as for a
 cast.
 
+These methods of `CFAbstractTransfer` no longer call `visitNode()`:
+`visitConditionalAnd()`, `visitConditionalNot()`, `visitConditionalOr()`,
+`visitLambdaResultExpression()`, `visitMarker()`, `visitReturn()`,
+`visitTypeCast()`, and, for a boolean literal that is the right operand of a
+boolean operator, `visitValueLiteral()`.  A subclass that overrides
+`visitNode()` may need to override them too.
+
 Deprecated methods:
 
 * `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.getNoArgumentMethod()`

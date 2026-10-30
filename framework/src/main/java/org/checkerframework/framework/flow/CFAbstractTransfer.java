@@ -1066,9 +1066,9 @@ public abstract class CFAbstractTransfer<
    * of {@code b}, and the then-store of {@code a == false} is the else-store of {@code a}.
    *
    * <p>If the operator cannot be true, as for {@code a & false}, then neither store is included,
-   * and the result's then-store is the least upper bound of both of the described operand's stores.
-   * Any store is sound there, because the operator is never true. The same holds for the result's
-   * else-store when the operator cannot be false.
+   * and the result's then-store is the described operand's then-store. Any store is sound there,
+   * because the operator is never true. Likewise, if the operator cannot be false, the result's
+   * else-store is the described operand's else-store.
    *
    * @param result the result of the transfer function for {@code operatorNode}, whose value is used
    * @param operatorNode a node for a binary operator
@@ -1113,12 +1113,13 @@ public abstract class CFAbstractTransfer<
         }
       }
     }
-    // A store is null if the operator never has that value. Then, any store is sound.
+    // A store is null if the operator never has that value. Then, any store is sound, so use the
+    // corresponding store of the described operand, which is the most precise one at hand.
     if (thenStore == null) {
-      thenStore = in.getRegularStore();
+      thenStore = in.getThenStore();
     }
     if (elseStore == null) {
-      elseStore = in.getRegularStore();
+      elseStore = in.getElseStore();
     }
     return new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
   }

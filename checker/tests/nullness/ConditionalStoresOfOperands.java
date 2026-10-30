@@ -157,6 +157,19 @@ public class ConditionalStoresOfOperands {
     }
   }
 
+  // The then-branch is unreachable, so any store is sound there.
+  void andFalseUnreachable(@Nullable Object o) {
+    if (isNN(o) & false) {
+      o.hashCode();
+    }
+  }
+
+  void falseAndUnreachable(@Nullable Object o) {
+    if (false & isNN(o)) {
+      o.hashCode();
+    }
+  }
+
   void equalToCastTrue(@Nullable Object o) {
     if (isNN(o) == (boolean) true) {
       o.hashCode();
