@@ -2,9 +2,6 @@ package org.checkerframework.checker.i18nformatter;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeCastTree;
-import com.sun.source.util.SimpleTreeVisitor;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -12,15 +9,14 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.NullType;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.SimpleElementVisitor8;
 import javax.lang.model.util.SimpleTypeVisitor8;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+import org.checkerframework.checker.formatter.FormatterTreeUtil;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.InvocationType;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
 import org.checkerframework.checker.i18nformatter.qual.I18nChecksFormat;
@@ -422,65 +418,11 @@ public class I18nFormatterTreeUtil {
     /**
      * Returns the type of method invocation.
      *
+     * @return the type of method invocation
      * @see InvocationType
      */
     public final Result<InvocationType> getInvocationType() {
-      InvocationType type = InvocationType.VARARG;
-
-      if (args.size() == 1) {
-        ExpressionTree first = args.get(0);
-        TypeMirror argType = atypeFactory.getAnnotatedType(first).getUnderlyingType();
-        // figure out if argType is an array
-        type =
-            argType.accept(
-                new SimpleTypeVisitor8<>() {
-                  @Override
-                  protected InvocationType defaultAction(TypeMirror e, Class<Void> p) {
-                    // not an array
-                    return InvocationType.VARARG;
-                  }
-
-                  @Override
-                  public InvocationType visitArray(ArrayType t, Class<Void> p) {
-                    // it's an array, now figure out if it's a
-                    // (Object[])null array
-                    return first.accept(
-                        new SimpleTreeVisitor<InvocationType, Class<Void>>() {
-                          @Override
-                          protected InvocationType defaultAction(Tree tree, Class<Void> p) {
-                            // just a normal array
-                            return InvocationType.ARRAY;
-                          }
-
-                          @Override
-                          public InvocationType visitTypeCast(TypeCastTree tree, Class<Void> p) {
-                            // it's a (Object[])null
-                            return atypeFactory
-                                        .getAnnotatedType(tree.getExpression())
-                                        .getUnderlyingType()
-                                        .getKind()
-                                    == TypeKind.NULL
-                                ? InvocationType.NULLARRAY
-                                : InvocationType.ARRAY;
-                          }
-                        },
-                        p);
-                  }
-
-                  @Override
-                  public InvocationType visitNull(NullType t, Class<Void> p) {
-                    return InvocationType.NULLARRAY;
-                  }
-                },
-                Void.TYPE);
-      }
-
-      ExpressionTree loc;
-      loc = tree.getMethodSelect();
-      if (type != InvocationType.VARARG && !args.isEmpty()) {
-        loc = args.get(0);
-      }
-      return new Result<>(type, loc);
+      return FormatterTreeUtil.invocationType(tree, args);
     }
 
     public Result<FormatType> getInvalidInvocationType() {
