@@ -203,10 +203,11 @@ public class CaseGuardElseStore {
     }
   }
 
-  void patternAlwaysMatchesRefinesSelector(@Nullable String sel) {
+  // The refinement of the selector comes from the label, not from the guard.
+  void patternAlwaysMatchesRefinesSelector(@Nullable String sel, boolean b) {
     // :: error: [switching.nullable]
     switch (sel) {
-      case String s when isNN(s) -> {
+      case String s when b -> {
         sel.hashCode();
       }
       default -> {}
@@ -236,6 +237,61 @@ public class CaseGuardElseStore {
     } catch (MatchException e) {
       // :: error: [dereference.of.nullable]
       x.hashCode();
+    }
+  }
+
+  void recordPatternAlwaysMatches(R r) {
+    switch (r) {
+      case R(Shape s) when init() -> {}
+      default -> f.hashCode();
+    }
+  }
+
+  void recordPatternVarAlwaysMatches(R r) {
+    switch (r) {
+      case R(var s) when init() -> {}
+      default -> f.hashCode();
+    }
+  }
+
+  void recordPatternNarrowerComponent(R r) {
+    switch (r) {
+      case R(Circle c) when init() -> {}
+      default -> {
+        // :: error: [dereference.of.nullable]
+        f.hashCode();
+      }
+    }
+  }
+
+  record Box<T>(T t) {}
+
+  void genericRecordPatternAlwaysMatches(Box<String> b) {
+    switch (b) {
+      case Box<String>(String s) when init() -> {}
+      default -> f.hashCode();
+    }
+  }
+
+  record P(int x) {}
+
+  void primitiveComponentAlwaysMatches(P p) {
+    switch (p) {
+      case P(int x) when init() -> {}
+      default -> f.hashCode();
+    }
+  }
+
+  record RR(R r) {}
+
+  // RR(null) does not match RR(R(Shape s)).
+  void nestedRecordPatternDoesNotAlwaysMatch(RR rr) {
+    switch (rr) {
+      case RR(R(Shape s)) when init() -> {}
+      default -> {
+        // :: error: [dereference.of.nullable]
+        f.hashCode();
+      }
     }
   }
 }

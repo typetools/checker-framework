@@ -76,6 +76,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
@@ -2260,7 +2261,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private void buildSelector() {
       // Create a synthetic variable to which the switch selector expression will be assigned
-      TypeMirror selectorExprType = TreeUtils.typeOf(selectorExprTree);
       VariableTree selectorVarTree =
           treeBuilder.buildVariableDecl(
               selectorExprType,
@@ -2315,7 +2315,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     /**
      * Returns true if the label of {@code caseTree} matches every value of the selector expression
-     * that is tested against it. This is true of a type pattern whose type is a supertype of the
+     * that is tested against it. This is true of a pattern that matches every non-null value of the
      * selector expression's type, if the switch has no {@code case null}. (Without a {@code case
      * null}, a null selector expression causes a NullPointerException before any case is tested.)
      *
@@ -2325,14 +2325,58 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private boolean labelAlwaysMatches(CaseTree caseTree) {
       List<? extends Tree> labels = CaseUtils.getLabels(caseTree);
-      if (labels.size() != 1 || !(labels.get(0) instanceof BindingPatternTree bindingPattern)) {
+      if (labels.size() != 1 || selectorExprType.getKind().isPrimitive() || hasNullCaseLabel) {
         return false;
       }
-      if (selectorExprType.getKind().isPrimitive() || hasNullCaseLabel) {
+      return matchesEveryNonNullValue(labels.get(0), selectorExprType);
+    }
+
+    /**
+     * Returns true if {@code pattern} matches every non-null value of type {@code type}. This is
+     * true of a type pattern whose type is a supertype of {@code type}, and of a record pattern
+     * whose type is a supertype of {@code type} and whose nested patterns are unconditional for the
+     * types of the record components.
+     *
+     * @param pattern a pattern
+     * @param type the type of the values that are tested against {@code pattern}
+     * @return true if {@code pattern} matches every non-null value of type {@code type}
+     */
+    private boolean matchesEveryNonNullValue(Tree pattern, TypeMirror type) {
+      if (pattern instanceof BindingPatternTree bindingPattern) {
+        TypeMirror patternType = TreeUtils.typeOf(bindingPattern.getVariable());
+        if (type.getKind().isPrimitive()) {
+          // Avoid treating a primitive widening conversion, such as int to float, as a subtype.
+          return types.isSameType(type, patternType);
+        }
+        return TypesUtils.isErasedSubtype(type, patternType, types);
+      }
+      if (!TreeUtils.isDeconstructionPatternTree(pattern)) {
         return false;
       }
-      TypeMirror patternType = TreeUtils.typeOf(bindingPattern.getVariable());
-      return TypesUtils.isErasedSubtype(selectorExprType, patternType, types);
+      if (!(TreeUtils.typeOf(pattern) instanceof DeclaredType recordType)
+          || !TypesUtils.isErasedSubtype(type, recordType, types)) {
+        return false;
+      }
+      List<? extends RecordComponentElement> components =
+          ((TypeElement) recordType.asElement()).getRecordComponents();
+      List<? extends Tree> nestedPatterns = DeconstructionPatternUtils.getNestedPatterns(pattern);
+      if (components.size() != nestedPatterns.size()) {
+        return false;
+      }
+      for (int i = 0; i < components.size(); i++) {
+        TypeMirror componentType = types.asMemberOf(recordType, components.get(i));
+        Tree nestedPattern = nestedPatterns.get(i);
+        // A nested type pattern that matches every non-null value also matches null.  A nested
+        // record pattern does not match null.
+        boolean unconditional =
+            nestedPattern.getKind().name().equals("ANY_PATTERN")
+                || (nestedPattern instanceof BindingPatternTree
+                    && matchesEveryNonNullValue(nestedPattern, componentType));
+        if (!unconditional) {
+          return false;
+        }
+      }
+      return true;
     }
 
     /**

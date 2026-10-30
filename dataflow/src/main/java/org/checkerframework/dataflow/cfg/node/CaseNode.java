@@ -118,12 +118,13 @@ public class CaseNode extends Node {
       return false;
     }
     return getSwitchOperand().equals(other.getSwitchOperand())
-        && getCaseOperands().equals(other.getCaseOperands());
+        && getCaseOperands().equals(other.getCaseOperands())
+        && alwaysMatches == other.alwaysMatches;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getSwitchOperand(), getCaseOperands());
+    return Objects.hash(getSwitchOperand(), getCaseOperands(), alwaysMatches);
   }
 
   @Override
