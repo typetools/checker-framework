@@ -2331,7 +2331,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
 
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
-        Node guard = (guardTree == null) ? null : scan(guardTree, null);
+        Node guard = (guardTree == null) ? null : unbox(scan(guardTree, null));
 
         CaseNode test =
             new CaseNode(caseTree, selectorExprAssignment, exprs, guard, env.getTypeUtils());
