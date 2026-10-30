@@ -1,10 +1,13 @@
 2 -> 3 EACH_TO_EACH
 3 -> 4 EACH_TO_EACH
-4 -> 8 THEN_TO_BOTH
-4 -> 10 ELSE_TO_BOTH
-8 -> 13 EACH_TO_EACH
-10 -> 13 EACH_TO_EACH
-13 -> 0 EACH_TO_EACH
+4 -> 5 EACH_TO_EACH
+4 -> 1 NullPointerException
+5 -> 6 EACH_TO_EACH
+6 -> 10 THEN_TO_BOTH
+6 -> 12 ELSE_TO_BOTH
+10 -> 15 EACH_TO_EACH
+12 -> 15 EACH_TO_EACH
+15 -> 0 EACH_TO_EACH
 
 2:
 Process order: 1
@@ -24,7 +27,26 @@ size = 0   [ Assignment ]
 switch#num0   [ VariableDeclaration ]
 switch#num0   [ LocalVariable ]
 shape   [ LocalVariable ]
-switch#num0 = shape   [ Assignment ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { size = 0 }
+
+4:
+Process order: 3
+TransferInput#9
+Before:   reaching definitions = { size = 0 }
+~~~~~~~~~
+<*nullchk*>shape   [ NullChk ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { size = 0 }
+
+5:
+Process order: 4
+TransferInput#12
+Before:   reaching definitions = { size = 0 }
+~~~~~~~~~
+switch#num0 = <*nullchk*>shape   [ Assignment ]
 marker (start of switch statement #0)   [ Marker ]
 radius   [ VariableDeclaration ]
 radius   [ LocalVariable ]
@@ -32,19 +54,26 @@ Circle(int radius)   [ DeconstructorPattern ]
 case Circle(int radius):   [ Case ]
 ~~~~~~~~~
 AnalysisResult#0
-After:   reaching definitions = { size = 0, switch#num0 = shape }
+After:   reaching definitions = { size = 0, switch#num0 = <*nullchk*>shape }
 
-4:
-Process order: 3
-TransferInput#15
-Before:   reaching definitions = { size = 0, switch#num0 = shape }
+1:
+Process order: 10
+TransferInput#14
+Before:   reaching definitions = { size = 0 }
 ~~~~~~~~~
-ConditionalBlock: then: 8, else: 10
+<exceptional-exit>
 
-8:
-Process order: 4
-TransferInput#17
-Before:   reaching definitions = { size = 0, switch#num0 = shape }
+6:
+Process order: 5
+TransferInput#22
+Before:   reaching definitions = { size = 0, switch#num0 = <*nullchk*>shape }
+~~~~~~~~~
+ConditionalBlock: then: 10, else: 12
+
+10:
+Process order: 6
+TransferInput#24
+Before:   reaching definitions = { size = 0, switch#num0 = <*nullchk*>shape }
 ~~~~~~~~~
 size   [ LocalVariable ]
 radius   [ LocalVariable ]
@@ -52,12 +81,12 @@ size = radius   [ Assignment ]
 expression statement size = radius   [ ExpressionStatement ]
 ~~~~~~~~~
 AnalysisResult#0
-After:   reaching definitions = { switch#num0 = shape, size = radius }
+After:   reaching definitions = { switch#num0 = <*nullchk*>shape, size = radius }
 
-10:
-Process order: 5
-TransferInput#18
-Before:   reaching definitions = { size = 0, switch#num0 = shape }
+12:
+Process order: 7
+TransferInput#25
+Before:   reaching definitions = { size = 0, switch#num0 = <*nullchk*>shape }
 ~~~~~~~~~
 side   [ VariableDeclaration ]
 side   [ LocalVariable ]
@@ -68,23 +97,23 @@ size = side   [ Assignment ]
 expression statement size = side   [ ExpressionStatement ]
 ~~~~~~~~~
 AnalysisResult#0
-After:   reaching definitions = { switch#num0 = shape, size = side }
+After:   reaching definitions = { switch#num0 = <*nullchk*>shape, size = side }
 
-13:
-Process order: 6
-TransferInput#33
-Before:   reaching definitions = { switch#num0 = shape, size = side, size = radius }
+15:
+Process order: 8
+TransferInput#40
+Before:   reaching definitions = { switch#num0 = <*nullchk*>shape, size = side, size = radius }
 ~~~~~~~~~
 marker (end of switch statement #0)   [ Marker ]
 size   [ LocalVariable ]
 return size   [ Return ]
 ~~~~~~~~~
 AnalysisResult#0
-After:   reaching definitions = { switch#num0 = shape, size = side, size = radius }
+After:   reaching definitions = { switch#num0 = <*nullchk*>shape, size = side, size = radius }
 
 0:
-Process order: 7
-TransferInput#38
-Before:   reaching definitions = { switch#num0 = shape, size = side, size = radius }
+Process order: 9
+TransferInput#45
+Before:   reaching definitions = { switch#num0 = <*nullchk*>shape, size = side, size = radius }
 ~~~~~~~~~
 <exit>

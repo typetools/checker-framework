@@ -1,15 +1,19 @@
 package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +28,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -58,6 +63,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
+import org.checkerframework.dataflow.cfg.node.NullChkNode;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
@@ -66,11 +72,20 @@ import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
+import org.checkerframework.dataflow.expression.ArrayAccess;
+import org.checkerframework.dataflow.expression.BinaryOperation;
+import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
+import org.checkerframework.dataflow.expression.SuperReference;
+import org.checkerframework.dataflow.expression.ThisReference;
+import org.checkerframework.dataflow.expression.UnaryOperation;
+import org.checkerframework.dataflow.expression.Unknown;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.NodeUtils;
@@ -908,7 +923,9 @@ public abstract class CFAbstractTransfer<
    *
    * <p>Note that when overriding this method, when a new type is inserted into the store, {@link
    * #splitAssignments} should be called, and the new type should be inserted into the store for
-   * each of the resulting nodes.
+   * each of the resulting nodes. The result of {@link #splitAssignments} omits each side of an
+   * assignment that might not have the assignment's value; do not insert the new type for such a
+   * side.
    *
    * @param firstNode the node that might be more precise
    * @param secondNode the node whose type to possibly refine
@@ -955,24 +972,196 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Takes a node, and either returns the node itself again (as a singleton list), or if the node is
-   * an assignment node, returns the lhs and rhs (where splitAssignments is applied recursively to
+   * an assignment node, returns the sides of the assignment that have the assignment's value after
+   * it executes. The sides are the lhs and rhs, where splitAssignments is applied recursively to
    * the rhs -- that is, it is possible that the rhs does not appear in the result, but rather its
-   * lhs and rhs do).
+   * lhs and rhs do. A null check is replaced by its operand, to which splitAssignments is applied
+   * recursively.
    *
-   * @param node possibly an assignment node
-   * @return a list containing all the right- and left-hand sides in the given assignment node; it
-   *     contains just the node itself if it is not an assignment)
+   * <p>The result omits each side that a store can hold a value for (see {@link
+   * CFAbstractStore#canInsertJavaExpression}) and that, after the assignment, might have a
+   * different value than the assignment. For example, the result for {@code n = n.next} is just
+   * {@code n}, because after the assignment {@code n.next} is a field of a different object. The
+   * same holds for an assignment, compound assignment, increment, or decrement nested anywhere
+   * within {@code node}: the result for {@code n.next = (n = o).other} omits {@code n.next}.
+   *
+   * <p>A node that is not an assignment is returned even if it contains an assignment, as in {@code
+   * x + (x = 1)}. {@link JavaExpression#fromNode} converts such a node to an expression that
+   * contains {@link Unknown}, which no store holds a value for.
+   *
+   * @param node possibly an assignment node or a null check
+   * @return a list containing the right- and left-hand sides in the given assignment node that have
+   *     the value of the assignment after it executes; it contains just the node itself if it is
+   *     neither an assignment nor a null check
    */
   @SideEffectFree
   protected List<Node> splitAssignments(Node node) {
-    if (node instanceof AssignmentNode a) {
-      List<Node> result = new ArrayList<>(2);
-      result.add(a.getTarget());
-      result.addAll(splitAssignments(a.getExpression()));
-      return result;
-    } else {
+    while (node instanceof NullChkNode nullChk) {
+      node = nullChk.getOperand();
+    }
+    if (!(node instanceof AssignmentNode assignment)) {
       return Collections.singletonList(node);
     }
+
+    List<JavaExpression> targets = new ArrayList<>();
+    new AssignmentTargetScanner().scan(assignment.getTree(), targets);
+    List<Node> result = new ArrayList<>();
+    while (true) {
+      if (node instanceof AssignmentNode a) {
+        result.add(a.getTarget());
+        node = a.getExpression();
+      } else if (node instanceof NullChkNode nullChk) {
+        node = nullChk.getOperand();
+      } else {
+        break;
+      }
+    }
+    result.add(node);
+    result.removeIf(part -> mayBeChangedByAssignment(JavaExpression.fromNode(part), targets));
+    return result;
+  }
+
+  /**
+   * Collects the variables that a tree assigns: the left-hand sides of its assignments and compound
+   * assignments, and the operands of its increments and decrements. It does not descend into lambda
+   * bodies or class bodies, which do not execute when the tree is evaluated.
+   */
+  private static class AssignmentTargetScanner extends TreeScanner<Void, List<JavaExpression>> {
+
+    /** Creates an AssignmentTargetScanner. */
+    AssignmentTargetScanner() {}
+
+    @Override
+    public Void visitAssignment(AssignmentTree tree, List<JavaExpression> targets) {
+      targets.add(JavaExpression.fromTree(tree.getVariable()));
+      return super.visitAssignment(tree, targets);
+    }
+
+    @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, List<JavaExpression> targets) {
+      targets.add(JavaExpression.fromTree(tree.getVariable()));
+      return super.visitCompoundAssignment(tree, targets);
+    }
+
+    @Override
+    public Void visitUnary(UnaryTree tree, List<JavaExpression> targets) {
+      switch (tree.getKind()) {
+        case PREFIX_INCREMENT, PREFIX_DECREMENT, POSTFIX_INCREMENT, POSTFIX_DECREMENT ->
+            targets.add(JavaExpression.fromTree(tree.getExpression()));
+        default -> {}
+      }
+      return super.visitUnary(tree, targets);
+    }
+
+    @Override
+    public Void visitLambdaExpression(LambdaExpressionTree tree, List<JavaExpression> targets) {
+      return null;
+    }
+
+    @Override
+    public Void visitClass(ClassTree tree, List<JavaExpression> targets) {
+      return null;
+    }
+  }
+
+  /**
+   * Returns true if an assignment to one of the given targets might make {@code expr} evaluate to a
+   * different value than the value of the assignment whose side {@code expr} is. Returns false if
+   * no store can hold a value for {@code expr}.
+   *
+   * @param expr a side of an assignment
+   * @param targets the variables that an expression that contains {@code expr} assigns
+   * @return true if an assignment to one of {@code targets} might change the value of {@code expr}
+   */
+  @Pure
+  protected static boolean mayBeChangedByAssignment(
+      JavaExpression expr, List<JavaExpression> targets) {
+    if (!CFAbstractStore.canInsertJavaExpression(expr)) {
+      return false;
+    }
+    for (JavaExpression target : targets) {
+      if (assignmentMayChange(target, expr, true)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if an assignment to {@code target} might change the value of {@code expr}.
+   *
+   * <p>An assignment to a local variable changes only expressions that contain the variable. An
+   * assignment to a field changes only accesses of the same field, and method calls. An assignment
+   * to an array element changes only accesses of arrays that might alias the target's array, and
+   * method calls.
+   *
+   * <p>If {@code ignoreOwnLocation} is true and {@code expr} is a variable, field access, or array
+   * access, then an assignment to the location that {@code expr} denotes does not matter: an
+   * assignment in the same chain as {@code expr} stores the same value, and a nested assignment
+   * executes before the location is written or read. Only an assignment that changes which location
+   * {@code expr} denotes (that is, its receiver or index) matters.
+   *
+   * @param target the left-hand side of an assignment
+   * @param expr an expression
+   * @param ignoreOwnLocation if true, ignore an assignment to the location that {@code expr}
+   *     denotes
+   * @return true if an assignment to {@code target} might change the value of {@code expr}
+   */
+  @Pure
+  private static boolean assignmentMayChange(
+      JavaExpression target, JavaExpression expr, boolean ignoreOwnLocation) {
+    if (expr instanceof LocalVariable) {
+      return !ignoreOwnLocation && expr.syntacticEquals(target);
+    } else if (expr instanceof FieldAccess fa) {
+      return (!ignoreOwnLocation
+              && target instanceof FieldAccess targetFa
+              && targetFa.getField().equals(fa.getField()))
+          || assignmentMayChange(target, fa.getReceiver(), false);
+    } else if (expr instanceof ArrayAccess aa) {
+      return (!ignoreOwnLocation
+              && target instanceof ArrayAccess targetAa
+              && arraysMayAlias(targetAa, aa))
+          || assignmentMayChange(target, aa.getArray(), false)
+          || assignmentMayChange(target, aa.getIndex(), false);
+    } else if (expr instanceof MethodCall mc) {
+      if (!(target instanceof LocalVariable)
+          || assignmentMayChange(target, mc.getReceiver(), false)) {
+        return true;
+      }
+      for (JavaExpression arg : mc.getArguments()) {
+        if (assignmentMayChange(target, arg, false)) {
+          return true;
+        }
+      }
+      return false;
+    } else if (expr instanceof UnaryOperation uo) {
+      return assignmentMayChange(target, uo.getOperand(), false);
+    } else if (expr instanceof BinaryOperation bo) {
+      return assignmentMayChange(target, bo.getLeft(), false)
+          || assignmentMayChange(target, bo.getRight(), false);
+    } else {
+      // An Unknown or ArrayCreation might be changed.
+      return !(expr instanceof ClassName
+          || expr instanceof FormalParameter
+          || expr instanceof SuperReference
+          || expr instanceof ThisReference
+          || expr instanceof ValueLiteral);
+    }
+  }
+
+  /**
+   * Returns true if the arrays of the given array accesses might be the same array. They cannot be
+   * if their component types differ and at least one of the component types is primitive.
+   *
+   * @param a1 an array access
+   * @param a2 an array access
+   * @return true if the arrays of {@code a1} and {@code a2} might be the same array
+   */
+  @Pure
+  private static boolean arraysMayAlias(ArrayAccess a1, ArrayAccess a2) {
+    TypeKind kind1 = a1.getType().getKind();
+    TypeKind kind2 = a2.getType().getKind();
+    return kind1 == kind2 || !(kind1.isPrimitive() || kind2.isPrimitive());
   }
 
   @Override
@@ -1544,6 +1733,12 @@ public abstract class CFAbstractTransfer<
     TransferResult<V, S> result = super.visitStringConversion(n, p);
     result.setResultValue(p.getValueOfSubNode(n.getOperand()));
     return result;
+  }
+
+  @Override
+  public TransferResult<V, S> visitNullChk(NullChkNode n, TransferInput<V, S> p) {
+    // A null check evaluates to its operand.
+    return createTransferResult(p.getValueOfSubNode(n.getOperand()), p);
   }
 
   @Override

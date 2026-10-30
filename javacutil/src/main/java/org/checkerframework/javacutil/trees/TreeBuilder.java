@@ -12,6 +12,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
@@ -383,6 +384,19 @@ public class TreeBuilder {
         maker.Binary(JCTree.Tag.LT, (JCTree.JCExpression) left, (JCTree.JCExpression) right);
     binary.setType((Type) modelTypes.getPrimitiveType(TypeKind.BOOLEAN));
     return binary;
+  }
+
+  /**
+   * Builds an AST Tree for a null check of an expression. The null check throws
+   * NullPointerException if the expression is null, and otherwise evaluates to the expression.
+   *
+   * @param expr the expression to check
+   * @return a Tree representing "&lt;*nullchk*&gt;expr"
+   */
+  public UnaryTree buildNullCheck(ExpressionTree expr) {
+    JCTree.JCUnary nullCheck = maker.Unary(JCTree.Tag.NULLCHK, (JCTree.JCExpression) expr);
+    nullCheck.setType((Type) TreeUtils.typeOf(expr));
+    return nullCheck;
   }
 
   /**
