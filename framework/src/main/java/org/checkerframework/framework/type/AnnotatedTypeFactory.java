@@ -6,12 +6,14 @@ package org.checkerframework.framework.type;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -1580,6 +1582,48 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotatedTypeMirror type = fromTypeTree(tree);
     addComputedTypeAnnotations(tree, type);
     return type;
+  }
+
+  /**
+   * Returns the qualifiers to which an instanceof refines its expression where the instanceof is
+   * true. Each is a qualifier that is explicitly written on the reference type (the type after
+   * "instanceof") and that is strictly more specific than the expression's qualifier in the same
+   * hierarchy. For a binding pattern, the reference type is the declared type of the binding
+   * variable, as in {@code e instanceof @A T v}.
+   *
+   * <p>Defaulted qualifiers of the reference type play no role, so a qualifier written in one
+   * hierarchy refines the expression even if the reference type is not a subtype of the
+   * expression's type in another hierarchy.
+   *
+   * @param tree an instanceof tree
+   * @param expType the type of the expression that {@code tree} tests
+   * @return the qualifiers to which {@code tree} refines its expression where it is true
+   */
+  public AnnotationMirrorSet getInstanceOfRefinement(
+      InstanceOfTree tree, AnnotatedTypeMirror expType) {
+    // The reference type, with only its explicitly-written qualifiers.
+    AnnotatedTypeMirror refType;
+    Tree patternTree = tree.getPattern();
+    if (patternTree == null) {
+      refType = fromTypeTree(tree.getType());
+    } else if (patternTree instanceof BindingPatternTree bindingPatternTree) {
+      refType = fromElement(TreeUtils.variableElementFromTree(bindingPatternTree.getVariable()));
+    } else {
+      // TODO: Refine the expression by an annotated deconstruction pattern.
+      return AnnotationMirrorSet.emptySet();
+    }
+
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
+    for (AnnotationMirror refAnno : refType.getPrimaryAnnotations()) {
+      AnnotationMirror expAnno = expType.getPrimaryAnnotationInHierarchy(refAnno);
+      if (expAnno != null
+          && !AnnotationUtils.areSame(refAnno, expAnno)
+          && qualHierarchy.isSubtypeShallow(
+              refAnno, refType.getUnderlyingType(), expAnno, expType.getUnderlyingType())) {
+        result.add(refAnno);
+      }
+    }
+    return result;
   }
 
   /**
