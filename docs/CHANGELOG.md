@@ -47,7 +47,7 @@ and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
 
 Deprecated methods:
 
-* `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.getNoArgumentMethod()`
+* `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.resolveNoArgumentCall()`
 
 ### Closed issues
 
