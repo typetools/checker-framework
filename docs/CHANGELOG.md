@@ -44,6 +44,9 @@ arbitrary expression) and the processing environment.
 In the control-flow graph, the guard of a `case` is evaluated after the
 `CaseNode`, and only if the case's labels match.  Removed
 `CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
+The `CaseNode` constructor takes a new `alwaysMatches` argument, and the new
+method `CaseNode.alwaysMatches()` returns it; for such a `CaseNode`, the labels
+are not tested, and `CFAbstractTransfer.visitCase()` returns a regular store.
 
 Deprecated methods:
 

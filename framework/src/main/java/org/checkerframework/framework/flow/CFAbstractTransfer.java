@@ -1374,6 +1374,11 @@ public abstract class CFAbstractTransfer<
                 null, thenStore, elseStore, lubResult.storeChanged() || result.storeChanged());
       }
     }
+    if (lubResult != null && n.alwaysMatches()) {
+      // The case expressions are not tested, so the facts that hold when they match hold after
+      // this node.
+      return new RegularTransferResult<>(null, lubResult.getThenStore(), lubResult.storeChanged());
+    }
     return lubResult;
   }
 

@@ -2114,6 +2114,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private final ExpressionTree selectorExprTree;
 
+    /** The type of {@link #selectorExprTree}. */
+    private final TypeMirror selectorExprType;
+
+    /** True if {@link #switchTree} has a {@code case null}. */
+    private final boolean hasNullCaseLabel;
+
     /** The labels for the case bodies. */
     private final Label[] caseBodyLabels;
 
@@ -2144,6 +2150,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         this.caseTrees = switchExpressionTree.getCases();
         this.selectorExprTree = switchExpressionTree.getExpression();
       }
+      this.selectorExprType = TreeUtils.typeOf(selectorExprTree);
+      this.hasNullCaseLabel = TreeUtils.hasNullCaseLabel(switchTree);
       // "+ 1" for the default case.  If the switch has an explicit default case, then
       // the last element of the array is never used.
       this.caseBodyLabels = new Label[caseTrees.size() + 1];
@@ -2316,12 +2324,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       if (labels.size() != 1 || !(labels.get(0) instanceof BindingPatternTree bindingPattern)) {
         return false;
       }
-      TypeMirror selectorType = TreeUtils.typeOf(selectorExprTree);
-      if (selectorType.getKind().isPrimitive() || TreeUtils.hasNullCaseLabel(switchTree)) {
+      if (selectorExprType.getKind().isPrimitive() || hasNullCaseLabel) {
         return false;
       }
       TypeMirror patternType = TreeUtils.typeOf(bindingPattern.getVariable());
-      return types.isSubtype(types.erasure(selectorType), types.erasure(patternType));
+      return TypesUtils.isErasedSubtype(selectorExprType, patternType, types);
     }
 
     /**
@@ -2334,45 +2341,36 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private void buildCase(CaseTree caseTree, int index, boolean isLastCaseOfExhaustive) {
       boolean isDefaultCase = CaseUtils.isDefaultCaseTree(caseTree);
-      // If true, no test of labels is necessary.
-      // Unfortunately, if isLastCaseOfExhaustive==TRUE, no flow-sensitive refinement occurs
-      // within the body of the CaseNode.  In the future, that can be performed, but it
-      // requires addition of InfeasibleExitBlock, a new SpecialBlock in the CFG.
       boolean isTerminalCase = isDefaultCase || isLastCaseOfExhaustive;
 
       Label thisBodyLabel = caseBodyLabels[index];
       Label nextBodyLabel = caseBodyLabels[index + 1];
-      // `nextCaseLabel` is not used if isTerminalCase==FALSE.
+      // The target when the labels do not match or the guard is false.
       Label nextCaseLabel = new Label();
 
-      // Handle the case expressions
-      if (!isTerminalCase) {
-        // A case expression exists, and it needs to be tested.
+      // Handle the case labels and the guard.
+      if (!isDefaultCase) {
         ArrayList<Node> exprs = new ArrayList<>();
         for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
           exprs.add(scan(exprTree, null));
         }
 
-        ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
-        if (guardTree == null) {
-          extendWithNode(new CaseNode(caseTree, selectorExprAssignment, exprs, env.getTypeUtils()));
-          extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
-        } else {
-          // The guard is evaluated only if the case labels match.
-          if (!labelAlwaysMatches(caseTree)) {
-            extendWithNode(
-                new CaseNode(caseTree, selectorExprAssignment, exprs, env.getTypeUtils()));
-            Label guardLabel = new Label();
-            extendWithExtendedNode(new ConditionalJump(guardLabel, nextCaseLabel));
-            addLabelForNextNode(guardLabel);
-          }
-          scan(guardTree, null);
-          extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+        // If true, the labels are not tested.
+        boolean alwaysMatches = isLastCaseOfExhaustive || labelAlwaysMatches(caseTree);
+        extendWithNode(
+            new CaseNode(
+                caseTree, selectorExprAssignment, exprs, alwaysMatches, env.getTypeUtils()));
+        if (!alwaysMatches) {
+          Label labelsMatchLabel = new Label();
+          extendWithExtendedNode(new ConditionalJump(labelsMatchLabel, nextCaseLabel));
+          addLabelForNextNode(labelsMatchLabel);
         }
-      } else if (!isDefaultCase) {
-        // The labels are not tested, but their patterns declare and bind variables.
-        for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
-          scan(exprTree, null);
+
+        // The guard is evaluated only if the labels match.
+        ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
+        if (guardTree != null) {
+          unbox(scan(guardTree, null));
+          extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
         }
       }
 
@@ -2405,9 +2403,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
       }
 
-      if (!isTerminalCase) {
-        addLabelForNextNode(nextCaseLabel);
-      }
+      addLabelForNextNode(nextCaseLabel);
     }
 
     /**
