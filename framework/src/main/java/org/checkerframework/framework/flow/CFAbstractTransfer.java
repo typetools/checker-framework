@@ -13,7 +13,6 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -81,6 +80,7 @@ import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.cfg.node.ValueLiteralNode;
 import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
+import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
@@ -1238,22 +1238,64 @@ public abstract class CFAbstractTransfer<
    * lhs and rhs do). A null check is replaced by its operand, to which splitAssignments is applied
    * recursively.
    *
-   * @param node possibly an assignment node
-   * @return a list containing all the right- and left-hand sides in the given assignment node; it
-   *     contains just the node itself if it is not an assignment)
+   * <p>The result omits each side that, after the assignment, might have a different value than the
+   * assignment. For example, the result for {@code n = n.next} is just {@code n}, because after the
+   * assignment {@code n.next} is a field of a different object.
+   *
+   * @param node possibly an assignment node or a null check
+   * @return a list containing the right- and left-hand sides in the given assignment node that have
+   *     the value of the assignment after it executes; it contains just the node itself if it is
+   *     neither an assignment nor a null check
    */
   @SideEffectFree
   protected List<Node> splitAssignments(Node node) {
-    if (node instanceof AssignmentNode a) {
-      List<Node> result = new ArrayList<>(2);
-      result.add(a.getTarget());
-      result.addAll(splitAssignments(a.getExpression()));
-      return result;
-    } else if (node instanceof NullChkNode nullChk) {
-      return splitAssignments(nullChk.getOperand());
-    } else {
-      return Collections.singletonList(node);
+    List<Node> result = new ArrayList<>();
+    List<JavaExpression> targets = new ArrayList<>();
+    while (true) {
+      if (node instanceof AssignmentNode a) {
+        result.add(a.getTarget());
+        targets.add(JavaExpression.fromNode(a.getTarget()));
+        node = a.getExpression();
+      } else if (node instanceof NullChkNode nullChk) {
+        node = nullChk.getOperand();
+      } else {
+        break;
+      }
     }
+    result.add(node);
+    result.removeIf(part -> mayBeChangedByAssignment(JavaExpression.fromNode(part), targets));
+    return result;
+  }
+
+  /**
+   * Returns true if an assignment to one of the given targets might change the value of the given
+   * expression, other than by the expression being that target.
+   *
+   * <p>An assignment to a local variable changes only expressions that contain the variable. An
+   * assignment to a field or an array element might change any expression that reads the heap.
+   *
+   * @param expr an expression
+   * @param targets the left-hand sides of assignments
+   * @return true if an assignment to one of {@code targets} might change the value of {@code expr}
+   */
+  @Pure
+  protected static boolean mayBeChangedByAssignment(
+      JavaExpression expr, List<JavaExpression> targets) {
+    for (JavaExpression target : targets) {
+      if (expr.syntacticEquals(target)) {
+        continue;
+      }
+      if (target instanceof LocalVariable) {
+        if (expr.containsSyntacticEqualJavaExpression(target)) {
+          return true;
+        }
+      } else if (expr.containsOfClass(FieldAccess.class)
+          || expr.containsOfClass(ArrayAccess.class)
+          || expr.containsOfClass(MethodCall.class)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override
