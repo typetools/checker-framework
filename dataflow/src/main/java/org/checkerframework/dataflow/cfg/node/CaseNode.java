@@ -36,33 +36,20 @@ public class CaseNode extends Node {
   protected final List<Node> caseExprs;
 
   /**
-   * True if the case expressions match every value of the switch selector expression that is tested
-   * against them, so they are not tested at run time.
-   */
-  protected final boolean alwaysMatches;
-
-  /**
    * Create a new CaseNode.
    *
    * @param tree the tree for this node
    * @param selectorExprAssignment the Node for the assignment of the switch selector expression to
    *     a synthetic local variable
    * @param caseExprs the case expression(s) to match the switch expression against
-   * @param alwaysMatches true if the case expressions match every value of the switch selector
-   *     expression that is tested against them
    * @param types a factory of utility methods for operating on types
    */
   public CaseNode(
-      CaseTree tree,
-      AssignmentNode selectorExprAssignment,
-      List<Node> caseExprs,
-      boolean alwaysMatches,
-      Types types) {
+      CaseTree tree, AssignmentNode selectorExprAssignment, List<Node> caseExprs, Types types) {
     super(types.getNoType(TypeKind.NONE));
     this.tree = tree;
     this.selectorExprAssignment = selectorExprAssignment;
     this.caseExprs = caseExprs;
-    this.alwaysMatches = alwaysMatches;
   }
 
   /**
@@ -83,18 +70,6 @@ public class CaseNode extends Node {
    */
   public List<Node> getCaseOperands() {
     return caseExprs;
-  }
-
-  /**
-   * Returns true if the case expressions match every value of the switch selector expression that
-   * is tested against them, so they are not tested at run time. For example, this is true of the
-   * last case of an exhaustive switch.
-   *
-   * @return true if the case expressions match every value of the switch selector expression that
-   *     is tested against them
-   */
-  public boolean alwaysMatches() {
-    return alwaysMatches;
   }
 
   @Override
