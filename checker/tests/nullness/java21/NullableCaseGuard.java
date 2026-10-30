@@ -78,6 +78,28 @@ public class NullableCaseGuard {
     };
   }
 
+  // If the guard of the last case of an exhaustive switch is false, a MatchException is thrown;
+  // control does not exit the switch normally.
+  String guardedLastCaseSwitchExpression(Shape shape, boolean b) {
+    String r =
+        switch (shape) {
+          case Circle c -> "a";
+          case Square s -> "b";
+          case Shape s when b -> "c";
+        };
+    return r;
+  }
+
+  int guardedLastCaseSwitchStatement(Shape shape, boolean b) {
+    @Nullable String x = null;
+    switch (shape) {
+      case Circle c -> x = "a";
+      case Square s -> x = "b";
+      case Shape s when b -> x = "c";
+    }
+    return x.length();
+  }
+
   void guardElseStore(Object sel) {
     switch (sel) {
       case String s when f == null -> {}

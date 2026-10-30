@@ -350,6 +350,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** The NullPointerException type . */
   protected final TypeMirror nullPointerExceptionType;
 
+  /**
+   * The MatchException type, or its supertype RuntimeException if MatchException is not present
+   * (before Java 21).
+   */
+  protected final TypeMirror matchExceptionType;
+
   /** The OutOfMemoryError type. */
   protected final @Nullable TypeMirror outOfMemoryErrorType;
 
@@ -440,6 +446,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     iterableType = types.erasure(getTypeMirror(Iterable.class));
     negativeArraySizeExceptionType = getTypeMirror(NegativeArraySizeException.class);
     nullPointerExceptionType = getTypeMirror(NullPointerException.class);
+    TypeElement matchExceptionElement = elements.getTypeElement("java.lang.MatchException");
+    matchExceptionType =
+        (matchExceptionElement != null)
+            ? matchExceptionElement.asType()
+            : getTypeMirror(RuntimeException.class);
     outOfMemoryErrorType = maybeGetTypeMirror(OutOfMemoryError.class);
     classCircularityErrorType = maybeGetTypeMirror(ClassCircularityError.class);
     classFormatErrorType = maybeGetTypeMirror(ClassFormatError.class);
@@ -2307,7 +2318,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * @param caseTree a case tree whose CFG to build
      * @param index the index of the case tree in {@link #caseBodyLabels}
      * @param isLastCaseOfExhaustive true if this is the last case of an exhaustive switch
-     *     statement, with no fallthrough to it. In other words, no test of the labels is necessary.
+     *     statement, with no fallthrough to it. In other words, no test of the labels is necessary,
+     *     though the guard (if any) is still evaluated.
      */
     private void buildCase(CaseTree caseTree, int index, boolean isLastCaseOfExhaustive) {
       boolean isDefaultCase = CaseUtils.isDefaultCaseTree(caseTree);
@@ -2316,12 +2328,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       // Unfortunately, if isLastCaseOfExhaustive==TRUE, no flow-sensitive refinement occurs
       // within the body of the CaseNode.  In the future, that can be performed, but it
       // requires addition of InfeasibleExitBlock, a new SpecialBlock in the CFG.
-      // A guarded case is never terminal, because its guard must be evaluated and can be false.
-      boolean isTerminalCase = isDefaultCase || (isLastCaseOfExhaustive && guardTree == null);
+      boolean isTerminalCase = isDefaultCase || isLastCaseOfExhaustive;
 
       Label thisBodyLabel = caseBodyLabels[index];
       Label nextBodyLabel = caseBodyLabels[index + 1];
-      // `nextCaseLabel` is not used if isTerminalCase==FALSE.
+      // `nextCaseLabel` is not used if isTerminalCase==TRUE.
       Label nextCaseLabel = new Label();
 
       // Handle the case expressions
@@ -2348,6 +2359,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         // The labels are not tested, but their patterns declare and bind variables.
         for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
           scan(exprTree, null);
+        }
+        if (guardTree != null) {
+          // If the guard is false, then no case matches, so a MatchException is thrown.
+          Label guardFalseLabel = new Label();
+          unbox(scan(guardTree, null));
+          extendWithExtendedNode(new ConditionalJump(thisBodyLabel, guardFalseLabel));
+          addLabelForNextNode(guardFalseLabel);
+          NodeWithExceptionsHolder noMatch =
+              extendWithNodeWithException(
+                  new MarkerNode(
+                      caseTree,
+                      "no case matches in switch #" + TreeUtils.treeUids.get(switchTree),
+                      env.getTypeUtils()),
+                  matchExceptionType);
+          noMatch.setTerminatesExecution(true);
         }
       }
 
