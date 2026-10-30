@@ -1,15 +1,19 @@
 package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,8 +28,8 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
@@ -972,11 +976,12 @@ public abstract class CFAbstractTransfer<
    * the rhs -- that is, it is possible that the rhs does not appear in the result, but rather its
    * lhs and rhs do.
    *
-   * <p>The result omits each side that, after the assignment, might have a different value than the
-   * assignment. For example, the result for {@code n = n.next} is just {@code n}, because after the
-   * assignment {@code n.next} is a field of a different object. The same holds for an assignment
-   * nested anywhere within {@code node}: the result for {@code n.next = (n = o).other} omits {@code
-   * n.next}.
+   * <p>The result omits each side that a store can hold a value for (see {@link
+   * CFAbstractStore#canInsertJavaExpression}) and that, after the assignment, might have a
+   * different value than the assignment. For example, the result for {@code n = n.next} is just
+   * {@code n}, because after the assignment {@code n.next} is a field of a different object. The
+   * same holds for an assignment, compound assignment, increment, or decrement nested anywhere
+   * within {@code node}: the result for {@code n.next = (n = o).other} omits {@code n.next}.
    *
    * <p>A node that is not an assignment is returned even if it contains an assignment, as in {@code
    * x + (x = 1)}. {@link JavaExpression#fromNode} converts such a node to an expression that
@@ -994,12 +999,7 @@ public abstract class CFAbstractTransfer<
     }
 
     List<JavaExpression> targets = new ArrayList<>();
-    targets.add(JavaExpression.fromNode(assignment.getTarget()));
-    for (Node n : node.getTransitiveOperands()) {
-      if (n instanceof AssignmentNode a) {
-        targets.add(JavaExpression.fromNode(a.getTarget()));
-      }
-    }
+    new AssignmentTargetScanner().scan(assignment.getTree(), targets);
     List<Node> result = new ArrayList<>();
     while (node instanceof AssignmentNode a) {
       result.add(a.getTarget());
@@ -1011,36 +1011,65 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
+   * Collects the variables that a tree assigns: the left-hand sides of its assignments and compound
+   * assignments, and the operands of its increments and decrements. It does not descend into lambda
+   * bodies or class bodies, which do not execute when the tree is evaluated.
+   */
+  private static class AssignmentTargetScanner extends TreeScanner<Void, List<JavaExpression>> {
+
+    /** Creates an AssignmentTargetScanner. */
+    AssignmentTargetScanner() {}
+
+    @Override
+    public Void visitAssignment(AssignmentTree tree, List<JavaExpression> targets) {
+      targets.add(JavaExpression.fromTree(tree.getVariable()));
+      return super.visitAssignment(tree, targets);
+    }
+
+    @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, List<JavaExpression> targets) {
+      targets.add(JavaExpression.fromTree(tree.getVariable()));
+      return super.visitCompoundAssignment(tree, targets);
+    }
+
+    @Override
+    public Void visitUnary(UnaryTree tree, List<JavaExpression> targets) {
+      switch (tree.getKind()) {
+        case PREFIX_INCREMENT, PREFIX_DECREMENT, POSTFIX_INCREMENT, POSTFIX_DECREMENT ->
+            targets.add(JavaExpression.fromTree(tree.getExpression()));
+        default -> {}
+      }
+      return super.visitUnary(tree, targets);
+    }
+
+    @Override
+    public Void visitLambdaExpression(LambdaExpressionTree tree, List<JavaExpression> targets) {
+      return null;
+    }
+
+    @Override
+    public Void visitClass(ClassTree tree, List<JavaExpression> targets) {
+      return null;
+    }
+  }
+
+  /**
    * Returns true if an assignment to one of the given targets might make {@code expr} evaluate to a
-   * different value than the value of the assignment whose side {@code expr} is.
-   *
-   * <p>If {@code expr} is a variable, field access, or array access, then an assignment to the
-   * location that {@code expr} denotes does not matter: an assignment in the same chain stores the
-   * same value, and a nested assignment executes before the location is written or read. Only an
-   * assignment that changes which location {@code expr} denotes (that is, its receiver or index)
-   * matters.
+   * different value than the value of the assignment whose side {@code expr} is. Returns false if
+   * no store can hold a value for {@code expr}.
    *
    * @param expr a side of an assignment
-   * @param targets the left-hand sides of all the assignments in an expression that contains {@code
-   *     expr}
+   * @param targets the variables that an expression that contains {@code expr} assigns
    * @return true if an assignment to one of {@code targets} might change the value of {@code expr}
    */
   @Pure
-  protected boolean mayBeChangedByAssignment(JavaExpression expr, List<JavaExpression> targets) {
+  private static boolean mayBeChangedByAssignment(
+      JavaExpression expr, List<JavaExpression> targets) {
+    if (!CFAbstractStore.canInsertJavaExpression(expr)) {
+      return false;
+    }
     for (JavaExpression target : targets) {
-      boolean mayBeChanged;
-      if (expr instanceof LocalVariable) {
-        mayBeChanged = false;
-      } else if (expr instanceof FieldAccess fa) {
-        mayBeChanged = assignmentMayChange(target, fa.getReceiver());
-      } else if (expr instanceof ArrayAccess aa) {
-        mayBeChanged =
-            assignmentMayChange(target, aa.getArray())
-                || assignmentMayChange(target, aa.getIndex());
-      } else {
-        mayBeChanged = assignmentMayChange(target, expr);
-      }
-      if (mayBeChanged) {
+      if (assignmentMayChange(target, expr, true)) {
         return true;
       }
     }
@@ -1051,49 +1080,54 @@ public abstract class CFAbstractTransfer<
    * Returns true if an assignment to {@code target} might change the value of {@code expr}.
    *
    * <p>An assignment to a local variable changes only expressions that contain the variable. An
-   * assignment to a field changes only accesses of the same field whose receiver might alias the
-   * target's receiver, and method calls. An assignment to an array element changes only accesses of
-   * arrays that might alias the target's array, and method calls. Aliasing is determined by {@link
-   * CFAbstractStore#canAlias(Types, JavaExpression, JavaExpression)}, as when the store handles an
-   * assignment.
+   * assignment to a field changes only accesses of the same field, and method calls. An assignment
+   * to an array element changes only accesses of arrays that might alias the target's array, and
+   * method calls.
+   *
+   * <p>If {@code ignoreOwnLocation} is true and {@code expr} is a variable, field access, or array
+   * access, then an assignment to the location that {@code expr} denotes does not matter: an
+   * assignment in the same chain as {@code expr} stores the same value, and a nested assignment
+   * executes before the location is written or read. Only an assignment that changes which location
+   * {@code expr} denotes (that is, its receiver or index) matters.
    *
    * @param target the left-hand side of an assignment
    * @param expr an expression
+   * @param ignoreOwnLocation if true, ignore an assignment to the location that {@code expr}
+   *     denotes
    * @return true if an assignment to {@code target} might change the value of {@code expr}
    */
   @Pure
-  private boolean assignmentMayChange(JavaExpression target, JavaExpression expr) {
-    Types types = analysis.getTypes();
+  private static boolean assignmentMayChange(
+      JavaExpression target, JavaExpression expr, boolean ignoreOwnLocation) {
     if (expr instanceof LocalVariable) {
-      return expr.syntacticEquals(target);
+      return !ignoreOwnLocation && expr.syntacticEquals(target);
     } else if (expr instanceof FieldAccess fa) {
-      // The receiver of a static field access is the class through which it is accessed, which
-      // does not determine the field's location.
-      return (target instanceof FieldAccess targetFa
-              && targetFa.getField().equals(fa.getField())
-              && (fa.isStatic()
-                  || CFAbstractStore.canAlias(types, targetFa.getReceiver(), fa.getReceiver())))
-          || assignmentMayChange(target, fa.getReceiver());
+      return (!ignoreOwnLocation
+              && target instanceof FieldAccess targetFa
+              && targetFa.getField().equals(fa.getField()))
+          || assignmentMayChange(target, fa.getReceiver(), false);
     } else if (expr instanceof ArrayAccess aa) {
-      return (target instanceof ArrayAccess targetAa
-              && CFAbstractStore.canAlias(types, targetAa.getArray(), aa.getArray()))
-          || assignmentMayChange(target, aa.getArray())
-          || assignmentMayChange(target, aa.getIndex());
+      return (!ignoreOwnLocation
+              && target instanceof ArrayAccess targetAa
+              && arraysMayAlias(targetAa, aa))
+          || assignmentMayChange(target, aa.getArray(), false)
+          || assignmentMayChange(target, aa.getIndex(), false);
     } else if (expr instanceof MethodCall mc) {
-      if (!(target instanceof LocalVariable) || assignmentMayChange(target, mc.getReceiver())) {
+      if (!(target instanceof LocalVariable)
+          || assignmentMayChange(target, mc.getReceiver(), false)) {
         return true;
       }
       for (JavaExpression arg : mc.getArguments()) {
-        if (assignmentMayChange(target, arg)) {
+        if (assignmentMayChange(target, arg, false)) {
           return true;
         }
       }
       return false;
     } else if (expr instanceof UnaryOperation uo) {
-      return assignmentMayChange(target, uo.getOperand());
+      return assignmentMayChange(target, uo.getOperand(), false);
     } else if (expr instanceof BinaryOperation bo) {
-      return assignmentMayChange(target, bo.getLeft())
-          || assignmentMayChange(target, bo.getRight());
+      return assignmentMayChange(target, bo.getLeft(), false)
+          || assignmentMayChange(target, bo.getRight(), false);
     } else {
       // An Unknown or ArrayCreation might be changed.
       return !(expr instanceof ClassName
@@ -1102,6 +1136,21 @@ public abstract class CFAbstractTransfer<
           || expr instanceof ThisReference
           || expr instanceof ValueLiteral);
     }
+  }
+
+  /**
+   * Returns true if the arrays of the given array accesses might be the same array. They cannot be
+   * if their component types differ and at least one of the component types is primitive.
+   *
+   * @param a1 an array access
+   * @param a2 an array access
+   * @return true if the arrays of {@code a1} and {@code a2} might be the same array
+   */
+  @Pure
+  private static boolean arraysMayAlias(ArrayAccess a1, ArrayAccess a2) {
+    TypeKind kind1 = a1.getType().getKind();
+    TypeKind kind2 = a2.getType().getKind();
+    return kind1 == kind2 || !(kind1.isPrimitive() || kind2.isPrimitive());
   }
 
   @Override
