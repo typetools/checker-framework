@@ -212,4 +212,30 @@ public class CaseGuardElseStore {
       default -> {}
     }
   }
+
+  // If the guard of the last case is false, the switch throws MatchException.
+  void lastCaseOfExhaustiveGuardFalse(R r, boolean b) {
+    @Nullable Object x = null;
+    switch (r) {
+      case R(Circle c) -> x = "";
+      case R(Square q) -> x = "";
+      case R(Shape s) when b -> x = "";
+    }
+    x.hashCode();
+  }
+
+  void lastCaseOfExhaustiveGuardFalseCatch(R r, boolean b) {
+    @Nullable Object x = "";
+    try {
+      x = null;
+      switch (r) {
+        case R(Circle c) -> x = "";
+        case R(Square q) -> x = "";
+        case R(Shape s) when b -> x = "";
+      }
+    } catch (MatchException e) {
+      // :: error: [dereference.of.nullable]
+      x.hashCode();
+    }
+  }
 }
