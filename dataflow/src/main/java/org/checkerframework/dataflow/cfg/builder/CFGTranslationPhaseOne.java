@@ -2302,6 +2302,29 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
 
     /**
+     * Returns true if the label of {@code caseTree} matches every value of the selector expression
+     * that is tested against it. This is true of a type pattern whose type is a supertype of the
+     * selector expression's type, if the switch has no {@code case null}. (Without a {@code case
+     * null}, a null selector expression causes a NullPointerException before any case is tested.)
+     *
+     * @param caseTree a case of {@link #switchTree}
+     * @return true if the label of {@code caseTree} matches every value of the selector expression
+     *     that is tested against it
+     */
+    private boolean labelAlwaysMatches(CaseTree caseTree) {
+      List<? extends Tree> labels = CaseUtils.getLabels(caseTree);
+      if (labels.size() != 1 || !(labels.get(0) instanceof BindingPatternTree bindingPattern)) {
+        return false;
+      }
+      TypeMirror selectorType = TreeUtils.typeOf(selectorExprTree);
+      if (selectorType.getKind().isPrimitive() || TreeUtils.hasNullCaseLabel(switchTree)) {
+        return false;
+      }
+      TypeMirror patternType = TreeUtils.typeOf(bindingPattern.getVariable());
+      return types.isSubtype(types.erasure(selectorType), types.erasure(patternType));
+    }
+
+    /**
      * Build the CFG for the given case tree.
      *
      * @param caseTree a case tree whose CFG to build
@@ -2331,12 +2354,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
 
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
-        Node guard = (guardTree == null) ? null : scan(guardTree, null);
-
-        CaseNode test =
-            new CaseNode(caseTree, selectorExprAssignment, exprs, guard, env.getTypeUtils());
-        extendWithNode(test);
-        extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+        if (guardTree == null) {
+          extendWithNode(new CaseNode(caseTree, selectorExprAssignment, exprs, env.getTypeUtils()));
+          extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+        } else {
+          // The guard is evaluated only if the case labels match.
+          if (!labelAlwaysMatches(caseTree)) {
+            extendWithNode(
+                new CaseNode(caseTree, selectorExprAssignment, exprs, env.getTypeUtils()));
+            Label guardLabel = new Label();
+            extendWithExtendedNode(new ConditionalJump(guardLabel, nextCaseLabel));
+            addLabelForNextNode(guardLabel);
+          }
+          scan(guardTree, null);
+          extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+        }
       } else if (!isDefaultCase) {
         // The labels are not tested, but their patterns declare and bind variables.
         for (Tree exprTree : CaseUtils.getLabels(caseTree)) {

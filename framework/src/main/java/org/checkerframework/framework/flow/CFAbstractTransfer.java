@@ -1341,16 +1341,6 @@ public abstract class CFAbstractTransfer<
   @Override
   public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
     S store = in.getRegularStore();
-    // If the case has a guard, the input's then-store and else-store are those of the guard, which
-    // is evaluated just before this node. The case matches when the pattern matches and the guard
-    // is true, so the guard's then-store holds when the case matches. The case does not match when
-    // the pattern does not match (and the guard is not evaluated) or the guard is false, so the
-    // guard's else-store need not hold when the case does not match. Then, use the merge of the
-    // guard's then-store and else-store.
-    // TODO: That merge still includes the guard's other effects, such as its unconditional
-    // postconditions, although the guard is not evaluated when the pattern does not match. See
-    // https://github.com/typetools/checker-framework/issues/8461 .
-    boolean hasGuard = n.getGuard() != null;
     TransferResult<V, S> lubResult = null;
     // Case operands are the case constants. For example, A, B and C in case A, B, C:.
     // This method refines the type of the selector expression and the synthetic variable that
@@ -1361,10 +1351,7 @@ public abstract class CFAbstractTransfer<
     for (Node caseOperand : n.getCaseOperands()) {
       TransferResult<V, S> result =
           new ConditionalTransferResult<>(
-              finishValue(null, store),
-              in.getThenStore().copy(),
-              (hasGuard ? store : in.getElseStore()).copy(),
-              false);
+              finishValue(null, store), in.getThenStore().copy(), in.getElseStore().copy(), false);
       V caseValue = in.getValueOfSubNode(caseOperand);
       AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));

@@ -41,6 +41,10 @@ now a final, non-generic class.  `NumberMath.getNumberMath()` throws
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
 
+In the control-flow graph, the guard of a `case` is evaluated after the
+`CaseNode`, and only if the case's labels match.  Removed
+`CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
+
 Deprecated methods:
 
 * `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.getNoArgumentMethod()`
