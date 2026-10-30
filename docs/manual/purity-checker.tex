@@ -184,6 +184,15 @@ whose parameter at that position is not a functional interface (for example,
 its type is a type variable), guarantees nothing, and the assumption does not
 apply.
 
+Two other ways of running a method are not overriding, and each is checked
+against the same rule.  A method reference to a method that relies on its
+functional-interface argument being pure is an error if the functional method
+that the reference implements does not guarantee that purity
+(\<purity.methodref.functional.parameter>).  A class that inherits such a
+method from its superclass, and in doing so implements an interface method
+that does not guarantee that purity, is an error
+(\<purity.inherited.functional.parameter>).
+
 At each call to such a method, every argument passed to a functional-interface
 parameter must have the purity that the method promises (side-effect-free for
 a \<@SideEffectsOnly> method).  The requirement is the same for every
