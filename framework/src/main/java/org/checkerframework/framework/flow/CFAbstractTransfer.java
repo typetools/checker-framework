@@ -1420,7 +1420,8 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitVariableDeclaration(
       VariableDeclarationNode n, TransferInput<V, S> p) {
     S store = p.getRegularStore();
-    // The last case of an exhaustive switch has no CaseNode, so refine here instead.
+    // A case label's binding variable holds the selector's value wherever the variable is in scope,
+    // so refine it where it is declared.
     ExpressionTree selector = getSelectorOfCaseLabelBindingVariable(n.getTree());
     if (selector != null) {
       refineCaseLabelBindingVariable(store, n.getTree(), selector);

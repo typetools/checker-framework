@@ -3,8 +3,8 @@
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 
-// The last case of an exhaustive switch is not tested at run time, but its binding variable is
-// still refined by the qualifiers of the selector expression.
+// The binding variable of the last case of an exhaustive switch is refined by the qualifiers of the
+// selector expression.
 public class CaseTypePatternLastCase {
 
   sealed interface Shape permits Circle, Square {}

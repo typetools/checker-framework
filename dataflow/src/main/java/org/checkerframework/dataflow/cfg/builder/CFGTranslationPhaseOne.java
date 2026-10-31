@@ -2317,25 +2317,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * @param caseTree a case tree whose CFG to build
      * @param index the index of the case tree in {@link #caseBodyLabels}
      * @param isLastCaseOfExhaustive true if this is the last case of an exhaustive switch statement
-     *     or switch expression, with no fallthrough to it. In other words, no test of the labels is
-     *     necessary, though the guard (if any) is still evaluated.
+     *     or switch expression. If this case does not match, then no case matches, and a {@code
+     *     MatchException} is thrown.
      */
     private void buildCase(CaseTree caseTree, int index, boolean isLastCaseOfExhaustive) {
       boolean isDefaultCase = CaseUtils.isDefaultCaseTree(caseTree);
-      ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
-      // If true, no test of labels is necessary.
-      // Unfortunately, if isLastCaseOfExhaustive==TRUE, the labels cause no flow-sensitive
-      // refinement within the body of the case (though a guard does).  In the future, that can be
-      // performed, but it requires addition of InfeasibleExitBlock, a new SpecialBlock in the CFG.
-      boolean isTerminalCase = isDefaultCase || isLastCaseOfExhaustive;
 
       Label thisBodyLabel = caseBodyLabels[index];
       Label nextBodyLabel = caseBodyLabels[index + 1];
-      // `nextCaseLabel` is not used if isTerminalCase==TRUE.
+      // `nextCaseLabel` is not used if isDefaultCase==TRUE.
       Label nextCaseLabel = new Label();
 
       // Handle the case expressions
-      if (!isTerminalCase) {
+      if (!isDefaultCase) {
         // A case expression exists, and it needs to be tested.
         ArrayList<Node> exprs = new ArrayList<>();
         for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
@@ -2344,6 +2338,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
         CaseNode test = new CaseNode(caseTree, selectorExprAssignment, exprs, env.getTypeUtils());
         extendWithNode(test);
+        ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree == null) {
           extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
         } else {
@@ -2351,26 +2346,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           Label guardLabel = new Label();
           extendWithExtendedNode(new ConditionalJump(guardLabel, nextCaseLabel));
           addLabelForNextNode(guardLabel);
-          buildGuard(guardTree, thisBodyLabel, nextCaseLabel);
-        }
-      } else if (!isDefaultCase) {
-        // The labels are not tested, but their patterns declare and bind variables.
-        for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
-          scan(exprTree, null);
-        }
-        if (guardTree != null) {
-          // If the guard is false, then no case matches, so a MatchException is thrown.
-          Label guardFalseLabel = new Label();
-          buildGuard(guardTree, thisBodyLabel, guardFalseLabel);
-          addLabelForNextNode(guardFalseLabel);
-          NodeWithExceptionsHolder noMatch =
-              extendWithNodeWithException(
-                  new MarkerNode(
-                      caseTree,
-                      "no case matches in switch #" + TreeUtils.treeUids.get(switchTree),
-                      env.getTypeUtils()),
-                  matchExceptionType);
-          noMatch.setTerminatesExecution(true);
+          unbox(scan(guardTree, null));
+          extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
         }
       }
 
@@ -2384,7 +2361,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           scan(stmt, null);
         }
         // Handle possible fallthrough by adding jump to next body.
-        if (!isTerminalCase) {
+        if (!isDefaultCase) {
           extendWithExtendedNode(new UnconditionalJump(nextBodyLabel));
         }
       } else {
@@ -2403,22 +2380,20 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
       }
 
-      if (!isTerminalCase) {
+      if (!isDefaultCase) {
         addLabelForNextNode(nextCaseLabel);
+        if (isLastCaseOfExhaustive) {
+          // No case matches, so a MatchException is thrown.
+          NodeWithExceptionsHolder noMatch =
+              extendWithNodeWithException(
+                  new MarkerNode(
+                      caseTree,
+                      "no case matches in switch #" + TreeUtils.treeUids.get(switchTree),
+                      env.getTypeUtils()),
+                  matchExceptionType);
+          noMatch.setTerminatesExecution(true);
+        }
       }
-    }
-
-    /**
-     * Builds the CFG for the guard of a case (the expression in its {@code when} clause), followed
-     * by a conditional jump on the value of the guard.
-     *
-     * @param guardTree the guard of a case
-     * @param trueLabel the target of the jump if the guard is true
-     * @param falseLabel the target of the jump if the guard is false
-     */
-    private void buildGuard(ExpressionTree guardTree, Label trueLabel, Label falseLabel) {
-      unbox(scan(guardTree, null));
-      extendWithExtendedNode(new ConditionalJump(trueLabel, falseLabel));
     }
 
     /**
