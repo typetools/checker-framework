@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 import java.util.NavigableSet;
 import java.util.Set;
 import javax.tools.Diagnostic;
+import org.checkerframework.checker.collectionownership.CollectionOwnershipChecker;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.mustcall.MustCallChecker;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -15,16 +16,17 @@ import org.checkerframework.framework.source.SupportedOptions;
 /**
  * The entry point for the Resource Leak Checker. This checker only counts the number of {@link
  * org.checkerframework.checker.mustcall.qual.MustCall} annotations. This checker calls the {@link
- * RLCCalledMethodsChecker} as a direct subchecker, which then in turn calls the {@link
- * MustCallChecker} as a subchecker, and afterwards this checker traverses the CFG to check whether
- * all MustCall obligations are fulfilled.
+ * CollectionOwnershipChecker} as a direct subchecker, which then in turn calls the {@link
+ * RLCCalledMethodsChecker} as a subchecker, which calls the {@link MustCallChecker} as a
+ * subchecker. Afterwards, the consistency analyzer traverses the cfg to check whether all MustCall
+ * obligations are fulfilled.
  *
- * <p>The checker hierarchy is: this "empty" RLC &rarr; RLCCalledMethodsChecker &rarr;
- * MustCallChecker
+ * <p>The checker hierarchy is: this "empty" RLC &rarr; CollectionOwnershipChecker &rarr;
+ * RLCCalledMethodsChecker &rarr; MustCallChecker
  *
- * <p>The MustCallChecker is a subchecker of the RLCCm checker (instead of a sibling), since we want
- * them to operate on the same CFG (so we can get both a CM and MC store for a given CFG block),
- * which only works if one of them is a subchecker of the other.
+ * <p>The subchecker hierarchy is a line graph (instead of siblings), since we want them to operate
+ * on the same CFG (so we can get a CalledMethods, MustCall, and CollectionOwnership store for a
+ * given CFG block), which only works if they are in a linear subchecker hierarchy.
  */
 @SupportedOptions({
   "permitStaticOwning",
@@ -80,7 +82,7 @@ public class ResourceLeakChecker extends AggregateChecker {
   @Override
   protected Set<Class<? extends SourceChecker>> getSupportedCheckers() {
     Set<Class<? extends SourceChecker>> checkers = new LinkedHashSet<>(1);
-    checkers.add(RLCCalledMethodsChecker.class);
+    checkers.add(CollectionOwnershipChecker.class);
 
     return checkers;
   }

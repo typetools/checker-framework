@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.javacutil.TypesUtils;
@@ -108,7 +109,7 @@ public class Theta {
    * @param type a type; if it is not a type variable, then this method returns null
    * @return the inference variable for {@code type}, or null if there is none
    */
-  public @Nullable Variable get(TypeMirror type) {
+  public @NotOwning @Nullable Variable get(TypeMirror type) {
     if (type instanceof TypeVariable typeVariable) {
       return map.get(new Key(typeVariable));
     }

@@ -3,7 +3,9 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.ObjIntConsumer;
+import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
 import org.checkerframework.checker.index.qual.NonNegative;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.framework.qual.AnnotatedFor;
 
@@ -168,7 +170,7 @@ public final class EnumMultiset<E extends Enum<E>> implements Serializable {
     int index = 0;
     int toRemove = -1;
 
-    abstract T output(int index);
+    abstract T output(@NotOwningCollection Itr<T> this, int index);
 
     public boolean hasNext() {
       for (; index < enumConstants.length; index++) {
@@ -179,7 +181,7 @@ public final class EnumMultiset<E extends Enum<E>> implements Serializable {
       return false;
     }
 
-    public T next() {
+    public @NotOwning T next(@NotOwningCollection Itr<T> this) {
       if (!hasNext()) {
         throw new NoSuchElementException();
       }

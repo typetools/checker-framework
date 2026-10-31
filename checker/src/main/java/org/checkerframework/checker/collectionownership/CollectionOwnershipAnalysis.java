@@ -1,0 +1,83 @@
+package org.checkerframework.checker.collectionownership;
+
+import com.google.common.collect.ImmutableSet;
+import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.mustcall.SetOfTypes;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
+
+/**
+ * The analysis class for the collection ownership type system.
+ *
+ * <p>This class extends {@link CFAbstractAnalysis} so that {@link CollectionOwnershipStore} is used
+ * rather than {@link CFStore}.
+ */
+public class CollectionOwnershipAnalysis
+    extends CFAbstractAnalysis<CFValue, CollectionOwnershipStore, CollectionOwnershipTransfer> {
+
+  /** Ignored-exception policy used by collection-ownership dataflow. */
+  private final SetOfTypes ignoredExceptions;
+
+  /**
+   * Creates a new {@link CollectionOwnershipAnalysis}.
+   *
+   * @param checker the checker
+   * @param factory the collection-ownership type factory
+   */
+  public CollectionOwnershipAnalysis(
+      BaseTypeChecker checker, CollectionOwnershipAnnotatedTypeFactory factory) {
+    super(checker, factory);
+    ignoredExceptions = createIgnoredExceptionPolicy(checker);
+  }
+
+  /**
+   * Creates the ignored-exception policy used by collection-ownership dataflow.
+   *
+   * <p>The policy follows the Resource Leak Checker configuration, but keeps exact {@link
+   * Throwable} exceptional edges because broad catch/fallback paths affect collection-obligation
+   * reasoning.
+   *
+   * @param checker the enclosing checker
+   * @return the ignored-exception policy for collection-ownership dataflow
+   */
+  private static SetOfTypes createIgnoredExceptionPolicy(BaseTypeChecker checker) {
+    SetOfTypes baseIgnoredExceptions =
+        ResourceLeakUtils.getRLCCalledMethodsChecker(checker).getIgnoredExceptions();
+    SetOfTypes exactThrowableOnly =
+        SetOfTypes.anyOfTheseNames(ImmutableSet.of(Throwable.class.getCanonicalName()));
+    return (types, exceptionType) ->
+        !exactThrowableOnly.contains(types, exceptionType)
+            && baseIgnoredExceptions.contains(types, exceptionType);
+  }
+
+  @Override
+  public CollectionOwnershipTransfer createTransferFunction() {
+    return new CollectionOwnershipTransfer(this, (CollectionOwnershipChecker) checker);
+  }
+
+  @Override
+  public CollectionOwnershipStore createEmptyStore(boolean sequentialSemantics) {
+    return new CollectionOwnershipStore(this, sequentialSemantics);
+  }
+
+  @Override
+  public CollectionOwnershipStore createCopiedStore(CollectionOwnershipStore s) {
+    return new CollectionOwnershipStore(this, s);
+  }
+
+  @Override
+  public @Nullable CFValue createAbstractValue(
+      AnnotationMirrorSet annotations, TypeMirror underlyingType) {
+    return getCfValue(this, annotations, underlyingType);
+  }
+
+  @Override
+  public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
+    return ignoredExceptions.contains(getTypes(), exceptionType);
+  }
+}
