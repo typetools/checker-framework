@@ -6,6 +6,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -178,6 +179,48 @@ final class IgnoredAnnotations {
         ignoredSubstitutions(aligned1, atm1, qh),
         ignoredSubstitutions(aligned2, atm2, qh));
     return new ReplacedTypes(atm1, atm2);
+  }
+
+  /**
+   * Returns true if no ignored substitution of {@code type} corresponds to a position of {@code
+   * other} that is not an ignored substitution. Positions correspond as in {@link
+   * #replaceIgnoredForLubOrGlb}, which gives each such ignored substitution of {@code type} the
+   * annotations of that position of {@code other}.
+   *
+   * @param type a type
+   * @param other a type
+   * @param resultType the Java type of the least upper bound or greatest lower bound of {@code
+   *     type} and {@code other}
+   * @param qh the qualifier hierarchy
+   * @param types the type utilities
+   * @return true if every ignored substitution of {@code type} that corresponds to a position of
+   *     {@code other} corresponds to an ignored substitution of {@code other}
+   */
+  static boolean ignoredSubstitutionsStayIgnored(
+      AbstractType type,
+      AbstractType other,
+      TypeMirror resultType,
+      QualifierHierarchy qh,
+      Types types) {
+    AbstractType upToDate = upToDate(type);
+    if (upToDate.getOrigin() == null) {
+      return true;
+    }
+    AbstractType aligned = viewedAsClass(upToDate, resultType, types);
+    AbstractType alignedOther = viewedAsClass(upToDate(other), resultType, types);
+    if (!types.isSameType(
+        types.erasure(aligned.getJavaType()), types.erasure(alignedOther.getJavaType()))) {
+      return true;
+    }
+    AnnotatedTypeMirror atm = aligned.getAnnotatedType();
+    AnnotatedTypeMirror otherATM = alignedOther.getAnnotatedType();
+    Set<AnnotatedTypeMirror> ignored = ignoredSubstitutions(aligned, atm, qh);
+    Set<AnnotatedTypeMirror> otherIgnored = ignoredSubstitutions(alignedOther, otherATM, qh);
+    return allCorrespondingPositions(
+        atm,
+        otherATM,
+        (position, otherPosition) ->
+            !ignored.contains(position) || otherIgnored.contains(otherPosition));
   }
 
   /**
@@ -444,19 +487,47 @@ final class IgnoredAnnotations {
       AnnotatedTypeMirror atm2,
       Set<AnnotatedTypeMirror> ignored1,
       Set<AnnotatedTypeMirror> ignored2) {
-    if (ignored1.contains(atm1)) {
-      copyPrimaryAnnotations(boundOf(atm2), atm1);
-    } else if (ignored2.contains(atm2)) {
-      copyPrimaryAnnotations(boundOf(atm1), atm2);
+    allCorrespondingPositions(
+        atm1,
+        atm2,
+        (position1, position2) -> {
+          if (ignored1.contains(position1)) {
+            copyPrimaryAnnotations(boundOf(position2), position1);
+          } else if (ignored2.contains(position2)) {
+            copyPrimaryAnnotations(boundOf(position1), position2);
+          }
+          return true;
+        });
+  }
+
+  /**
+   * Returns true if {@code test} holds for each pair of corresponding positions of {@code atm1} and
+   * {@code atm2}, starting with {@code atm1} and {@code atm2} themselves. A position is tested
+   * before the positions nested in it, and no position is tested after {@code test} returns false.
+   * Positions correspond only where the two types have the same structure, except that a wildcard
+   * corresponds both to the type at the other position and, through its bound (see {@link
+   * #boundOf}), to the positions nested in that type.
+   *
+   * @param atm1 a type
+   * @param atm2 a type
+   * @param test the test to apply to each pair of corresponding positions; it may side-effect them
+   * @return true if {@code test} holds for each pair of corresponding positions
+   */
+  private static boolean allCorrespondingPositions(
+      AnnotatedTypeMirror atm1,
+      AnnotatedTypeMirror atm2,
+      BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test) {
+    if (!test.test(atm1, atm2)) {
+      return false;
     }
     if (atm1.getKind() != atm2.getKind()) {
       // A type argument is compared with a wildcard's bound; see #boundOf.
       if (atm1.getKind() == TypeKind.WILDCARD) {
-        replaceIgnoredSubstitutions(boundOf(atm1), atm2, ignored1, ignored2);
+        return allCorrespondingPositions(boundOf(atm1), atm2, test);
       } else if (atm2.getKind() == TypeKind.WILDCARD) {
-        replaceIgnoredSubstitutions(atm1, boundOf(atm2), ignored1, ignored2);
+        return allCorrespondingPositions(atm1, boundOf(atm2), test);
       }
-      return;
+      return true;
     }
     switch (atm1.getKind()) {
       case DECLARED -> {
@@ -466,29 +537,32 @@ final class IgnoredAnnotations {
         List<AnnotatedTypeMirror> args2 = dt2.getTypeArguments();
         if (args1.size() == args2.size()) {
           for (int i = 0; i < args1.size(); i++) {
-            replaceIgnoredSubstitutions(args1.get(i), args2.get(i), ignored1, ignored2);
+            if (!allCorrespondingPositions(args1.get(i), args2.get(i), test)) {
+              return false;
+            }
           }
         }
         AnnotatedDeclaredType enclosing1 = dt1.getEnclosingType();
         AnnotatedDeclaredType enclosing2 = dt2.getEnclosingType();
-        if (enclosing1 != null && enclosing2 != null) {
-          replaceIgnoredSubstitutions(enclosing1, enclosing2, ignored1, ignored2);
-        }
+        return enclosing1 == null
+            || enclosing2 == null
+            || allCorrespondingPositions(enclosing1, enclosing2, test);
       }
-      case ARRAY ->
-          replaceIgnoredSubstitutions(
-              ((AnnotatedArrayType) atm1).getComponentType(),
-              ((AnnotatedArrayType) atm2).getComponentType(),
-              ignored1,
-              ignored2);
+      case ARRAY -> {
+        return allCorrespondingPositions(
+            ((AnnotatedArrayType) atm1).getComponentType(),
+            ((AnnotatedArrayType) atm2).getComponentType(),
+            test);
+      }
       case WILDCARD -> {
         AnnotatedWildcardType wt1 = (AnnotatedWildcardType) atm1;
         AnnotatedWildcardType wt2 = (AnnotatedWildcardType) atm2;
-        replaceIgnoredSubstitutions(
-            wt1.getExtendsBound(), wt2.getExtendsBound(), ignored1, ignored2);
-        replaceIgnoredSubstitutions(wt1.getSuperBound(), wt2.getSuperBound(), ignored1, ignored2);
+        return allCorrespondingPositions(wt1.getExtendsBound(), wt2.getExtendsBound(), test)
+            && allCorrespondingPositions(wt1.getSuperBound(), wt2.getSuperBound(), test);
       }
-      default -> {}
+      default -> {
+        return true;
+      }
     }
   }
 
