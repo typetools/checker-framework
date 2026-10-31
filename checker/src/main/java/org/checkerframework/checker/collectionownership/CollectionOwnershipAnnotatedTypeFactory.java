@@ -281,7 +281,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @param cfg the method CFG whose disposal loops to be discovered
    */
   public void discoverDisposalLoopInfos(ControlFlowGraph cfg) {
-    MethodTree methodTree = getEnclosingMethodTree(cfg.getUnderlyingAST());
+    MethodTree methodTree = getMethodTree(cfg.getUnderlyingAST());
     if (methodTree == null) {
       return;
     }
@@ -292,10 +292,10 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * Returns the {@link DisposalLoopInfo}s for the given underlying AST.
    *
    * @param underlyingAST the underlying AST whose disposal loops should be returned
-   * @return a copy of the disposal loops for {@code underlyingAST}
+   * @return an unmodifiable view of the disposal loops for {@code underlyingAST}
    */
   public Set<DisposalLoopInfo> getDisposalLoopInfos(UnderlyingAST underlyingAST) {
-    MethodTree methodTree = getEnclosingMethodTree(underlyingAST);
+    MethodTree methodTree = getMethodTree(underlyingAST);
     if (methodTree == null) {
       return Collections.emptySet();
     }
@@ -303,7 +303,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
     if (disposalLoopInfos == null) {
       return Collections.emptySet();
     }
-    return Collections.unmodifiableSet(new LinkedHashSet<>(disposalLoopInfos));
+    return Collections.unmodifiableSet(disposalLoopInfos);
   }
 
   /**
@@ -312,19 +312,19 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * @param underlyingAST the underlying AST whose disposal loops should be removed
    */
   private void removeDisposalLoopInfos(UnderlyingAST underlyingAST) {
-    MethodTree methodTree = getEnclosingMethodTree(underlyingAST);
+    MethodTree methodTree = getMethodTree(underlyingAST);
     if (methodTree != null) {
       disposalLoopInfosByMethod.remove(methodTree);
     }
   }
 
   /**
-   * Returns the enclosing method tree for the given underlying AST, if it is a method CFG.
+   * Returns the method tree of the given underlying AST, if it is a method CFG.
    *
    * @param underlyingAST the underlying AST
-   * @return the enclosing method tree, or {@code null} if {@code underlyingAST} is not a method
+   * @return the method tree, or {@code null} if {@code underlyingAST} is not a method
    */
-  private @Nullable MethodTree getEnclosingMethodTree(UnderlyingAST underlyingAST) {
+  private @Nullable MethodTree getMethodTree(UnderlyingAST underlyingAST) {
     if (underlyingAST.getKind() != UnderlyingAST.Kind.METHOD) {
       return null;
     }
