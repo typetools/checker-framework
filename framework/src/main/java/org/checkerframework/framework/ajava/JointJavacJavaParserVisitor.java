@@ -1156,6 +1156,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       // JavaParser the type arguments will have the none Optional value.
       assert javacTree.getTypeArguments().isEmpty() != node.getTypeArguments().isPresent();
       if (!javacTree.getTypeArguments().isEmpty()) {
+        assert node.getTypeArguments().isPresent();
         visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
       }
 
@@ -1178,6 +1179,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
       processMethodInvocation(javacTree, node);
       assert javacTree.getTypeArguments().isEmpty() != node.getTypeArguments().isPresent();
       if (!javacTree.getTypeArguments().isEmpty()) {
+        assert node.getTypeArguments().isPresent();
         visitLists(javacTree.getTypeArguments(), node.getTypeArguments().get());
       }
 
@@ -1262,6 +1264,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     visitLists(javacArgs, node.getArguments());
     assert (javacTree.getClassBody() != null) == node.getAnonymousClassBody().isPresent();
     if (javacTree.getClassBody() != null) {
+      assert node.getAnonymousClassBody().isPresent();
       visitAnonymousClassBody(javacTree.getClassBody(), node.getAnonymousClassBody().get());
     }
 
@@ -1559,7 +1562,10 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     assert (javacTree.getKind() == Tree.Kind.SUPER_WILDCARD) == node.getSuperType().isPresent();
     switch (javacTree.getKind()) {
       case UNBOUNDED_WILDCARD -> {}
-      case EXTENDS_WILDCARD -> javacTree.getBound().accept(this, node.getExtendedType().get());
+      case EXTENDS_WILDCARD -> {
+        assert node.getExtendedType().isPresent();
+        javacTree.getBound().accept(this, node.getExtendedType().get());
+      }
       case SUPER_WILDCARD -> javacTree.getBound().accept(this, node.getSuperType().get());
       default -> throw new BugInCF("Unexpected wildcard kind: %s", javacTree);
     }
@@ -2335,6 +2341,7 @@ public abstract class JointJavacJavaParserVisitor extends SimpleTreeVisitor<Void
     assert javacTree != null == javaParserNode.isPresent()
         : String.format("visitOptional(%s, %s)", javacTree, javaParserNode);
     if (javacTree != null) {
+      assert javaParserNode.isPresent();
       javacTree.accept(this, javaParserNode.get());
     }
   }
