@@ -1,5 +1,6 @@
 package org.checkerframework.checker.collectionownership;
 
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -374,6 +375,17 @@ public class CollectionOwnershipAnnotatedTypeFactory
             OwningCollection.class,
             OwningCollectionWithoutObligation.class,
             OwningCollectionBottom.class));
+  }
+
+  @Override
+  public void setRoot(@Nullable CompilationUnitTree root) {
+    super.setRoot(root);
+    // postCFGConstruction removes each method's entry for disposalLoopInfosByMethod; clear the
+    // remaining fields at each compilation unit.
+    conditionToDisposalLoopInfoMap.clear();
+    conditionalBlockToDisposalLoopInfoMap.clear();
+    disposalLoopInfoToCalledMethodsMap.clear();
+    preLambdaPostAnalyzedMethods.clear();
   }
 
   @Override
