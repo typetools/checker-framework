@@ -25,11 +25,17 @@ New class `AbstractSetInclusionQualifierHierarchy` is the superclass of
 
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
+`CFGTranslationPhaseOne`: renamed `isNumericOrBoxed()` to `isNumericAfterUnboxing()`.
+
 A subclass of `CFAbstractValue` or `CFValue` that adds state must override
 `equals()` and `hashCode()` to account for that state.
 
 New method `BaseTypeVisitor.shouldSkipClass()` lets a checker skip a class
 entirely, including dataflow analysis.
+
+In `CFGTranslationPhaseOne`, renamed `createEnhancedForLoopIteratorVariable()` to
+`createIteratorVariableForEnhancedForLoop()` and
+`createEnhancedForLoopArrayVariable()` to `createArrayVariableForEnhancedForLoop()`.
 
 Removed classes `ByteMath`, `ShortMath`, `IntegerMath`, `LongMath`, `FloatMath`,
 and `DoubleMath`.  Use `NumberMath.getNumberMath()` instead.  `NumberMath` is
