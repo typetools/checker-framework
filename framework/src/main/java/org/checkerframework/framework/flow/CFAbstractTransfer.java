@@ -1153,7 +1153,13 @@ public abstract class CFAbstractTransfer<
     S store = in.getRegularStore();
     AnnotatedTypeMirror expType =
         analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
-    for (LocalVariableNode bindingVar : node.getBindingVariables()) {
+    // Only the variable of a binding pattern is refined by the expression's type.  The binding
+    // variables of a deconstruction pattern hold record components, whose types may be unrelated
+    // to the expression's type, so they are not refined here.
+    // TODO: Give the binding variables of a deconstruction pattern the types of the record
+    // components.
+    LocalVariableNode bindingVar = node.getBindingPatternVariable();
+    if (bindingVar != null) {
       JavaExpression expr = JavaExpression.fromNode(bindingVar);
       for (AnnotationMirror anno : expType.getAnnotations()) {
         store.insertOrRefine(expr, anno);
