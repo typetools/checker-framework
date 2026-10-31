@@ -791,7 +791,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     TypeMirror lockInterfaceTypeMirror =
         TypesUtils.typeFromClass(Lock.class, types, processingEnvironment.getElementUtils());
 
-    if (types.isSubtype(types.erasure(lockExpressionType), lockInterfaceTypeMirror)) {
+    if (TypesUtils.isErasedSubtype(lockExpressionType, lockInterfaceTypeMirror, types)) {
       ensureExpressionIsEffectivelyFinal(lockExpression);
     }
   }
@@ -826,9 +826,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     ensureExpressionIsEffectivelyFinal(synchronizedExpression);
 
     TypeMirror expressionType =
-        types.erasure(atypeFactory.getAnnotatedType(synchronizedExpression).getUnderlyingType());
+        atypeFactory.getAnnotatedType(synchronizedExpression).getUnderlyingType();
 
-    if (types.isSubtype(expressionType, lockInterfaceTypeMirror)) {
+    if (TypesUtils.isErasedSubtype(expressionType, lockInterfaceTypeMirror, types)) {
       checker.reportError(tree, "explicit.lock.synchronized");
     }
 
