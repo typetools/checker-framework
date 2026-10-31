@@ -2749,10 +2749,12 @@ public class MustCallConsistencyAnalyzer {
     // loop which fulfills the collections must-call obligation. If so, don't propagate the
     // collection obligations discharged inside the loop.
     boolean isElseEdgeOfDisposalLoop = false;
-    DisposalLoopInfo disposalLoopInfo = coAtf.getDisposalLoopInfoForConditionBlock(currentBlock);
     Set<String> disposalLoopCalledMethods = null;
-    if ((currentBlock instanceof ConditionalBlock conditionalBlock) && disposalLoopInfo != null) {
-      if (conditionalBlock.getElseSuccessor().equals(successor)) {
+    if (currentBlock instanceof ConditionalBlock conditionalBlock
+        && conditionalBlock.getElseSuccessor().equals(successor)) {
+      DisposalLoopInfo disposalLoopInfo =
+          coAtf.getDisposalLoopInfoForConditionalBlock(conditionalBlock);
+      if (disposalLoopInfo != null) {
         isElseEdgeOfDisposalLoop = true;
         disposalLoopCalledMethods = coAtf.getCalledMethods(disposalLoopInfo);
       }

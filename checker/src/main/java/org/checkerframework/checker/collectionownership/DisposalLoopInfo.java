@@ -31,7 +31,9 @@ import org.checkerframework.dataflow.cfg.node.Node;
  * @param iteratedElementTree The {@code Tree} for the iterated collection element by this loop.
  * @param iteratedElementNode The CFG {@code Node} for the iterated collection element by this loop.
  * @param loopConditionTree The condition {@code Tree} for this loop.
- * @param loopConditionalBlock The conditional {@code Block} corresponding to the loop condition.
+ * @param loopConditionalBlock The {@code ConditionalBlock} that branches on this loop's condition.
+ *     It contains no nodes; its only predecessor ends with the condition's value. Its
+ *     then-successor enters the loop body, and its else-successor exits the loop.
  * @param loopBodyEntryBlock The entry {@code Block} for this loop's body.
  * @param loopUpdateBlock The loop-update {@code Block}.
  */

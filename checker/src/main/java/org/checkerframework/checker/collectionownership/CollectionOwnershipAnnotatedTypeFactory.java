@@ -44,7 +44,7 @@ import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTy
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
-import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.FieldAccess;
@@ -87,9 +87,12 @@ public class CollectionOwnershipAnnotatedTypeFactory
   private final IdentityHashMap<Tree, DisposalLoopInfo> conditionToDisposalLoopInfoMap =
       new IdentityHashMap<>();
 
-  /** Map from a loop's conditional {@code Block} to its corresponding {@link DisposalLoopInfo}. */
-  private final IdentityHashMap<Block, DisposalLoopInfo> conditionalBlockToDisposalLoopInfoMap =
-      new IdentityHashMap<>();
+  /**
+   * Map from a loop's {@linkplain DisposalLoopInfo#loopConditionalBlock() conditional block} to its
+   * {@link DisposalLoopInfo}.
+   */
+  private final IdentityHashMap<ConditionalBlock, DisposalLoopInfo>
+      conditionalBlockToDisposalLoopInfoMap = new IdentityHashMap<>();
 
   /**
    * Map from a {@link DisposalLoopInfo} to the set of called-methods on the iterated element in its
@@ -203,14 +206,13 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Returns the {@link DisposalLoopInfo} corresponding to the loop conditional {@code block}, if
-   * one exists.
+   * Returns the {@link DisposalLoopInfo} whose {@linkplain DisposalLoopInfo#loopConditionalBlock()
+   * conditional block} is {@code block}, if there is one.
    *
-   * @param block the loop-condition block
-   * @return the {@link DisposalLoopInfo} for conditional {@code block} if exists, otherwise {@code
-   *     null}
+   * @param block a conditional block
+   * @return the {@link DisposalLoopInfo} for {@code block}, or {@code null} if there is none
    */
-  public @Nullable DisposalLoopInfo getDisposalLoopInfoForConditionBlock(Block block) {
+  public @Nullable DisposalLoopInfo getDisposalLoopInfoForConditionalBlock(ConditionalBlock block) {
     return conditionalBlockToDisposalLoopInfoMap.get(block);
   }
 
