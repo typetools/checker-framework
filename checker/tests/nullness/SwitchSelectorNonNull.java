@@ -49,6 +49,25 @@ public class SwitchSelectorNonNull {
     return i;
   }
 
+  @NonNull Integer boxedAssignment(@Nullable Integer i, @Nullable Integer j) {
+    // :: error: [switching.nullable]
+    switch (i = j) {
+      default:
+        break;
+    }
+    i.toString();
+    return j;
+  }
+
+  @NonNull Object boxedCast(@Nullable Object o) {
+    // :: error: [switching.nullable]
+    switch ((Integer) o) {
+      default:
+        break;
+    }
+    return o;
+  }
+
   @NonNull String assignment(@Nullable String s, @Nullable String t) {
     // :: error: [switching.nullable]
     switch (s = t) {
@@ -84,6 +103,25 @@ public class SwitchSelectorNonNull {
     }
     s.toString();
     return t;
+  }
+
+  @NonNull Object assignmentOfCastOfAssignment(
+      @Nullable String s, @Nullable Object u, @Nullable Object t) {
+    // :: error: [switching.nullable]
+    switch (s = (String) (u = t)) {
+      default:
+        break;
+    }
+    s.toString();
+    u.toString();
+    return t;
+  }
+
+  void concatenation(@Nullable String s) {
+    switch ("a" + s) {
+      default:
+        break;
+    }
   }
 
   // The NullPointerException is an exceptional exit from the switch, so the selector may be null in
