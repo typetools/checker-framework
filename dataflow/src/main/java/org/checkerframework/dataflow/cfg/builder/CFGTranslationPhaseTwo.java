@@ -223,7 +223,7 @@ public final class CFGTranslationPhaseTwo {
         exceptionalExitBlock,
         in.underlyingAST,
         in.treeToCfgNodes,
-        in.treeToConvertedCfgNodes,
+        in.treeToImplicitlyConvertedCfgNodes,
         in.postfixTreeToCfgNodes,
         in.returnNodes,
         in.declaredClasses,

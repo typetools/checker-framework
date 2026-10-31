@@ -41,9 +41,13 @@ now a final, non-generic class.  `NumberMath.getNumberMath()` throws
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
 
+Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
+and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
+`addToImplicitlyConvertedLookupMap()`.
+
 Deprecated methods:
 
-* `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.getNoArgumentMethod()`
+* `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.resolveNoArgumentCall()`
 
 ### Closed issues
 
