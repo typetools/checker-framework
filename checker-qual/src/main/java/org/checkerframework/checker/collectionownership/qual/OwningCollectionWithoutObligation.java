@@ -8,8 +8,8 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * An expression of type {@code @OwningCollectionWithoutObligation} is a resource collection/array,
- * which definitely owns the underlying collection/array. Furthermore, every element has already
+ * An expression of type {@code @OwningCollectionWithoutObligation} is a resource collection/array
+ * that definitely owns the underlying collection/array. Furthermore, every element has already
  * called all of the methods in its {@code @MustCall} type.
  *
  * <p>Consider a destructor method {@code d} of a class {@code C} with an {@code @OwningCollection}

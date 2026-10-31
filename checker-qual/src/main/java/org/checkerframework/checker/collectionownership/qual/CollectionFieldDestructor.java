@@ -12,6 +12,8 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
  * The annotated method destructs the given resource collection fields. That is, this method calls
  * all required methods on their elements.
  *
+ * <p>Here is an example of its use:
+ *
  * <pre><code>
  *  {@literal @}CollectionFieldDestructor("socketList")
  *  void close() {

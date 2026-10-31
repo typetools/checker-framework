@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /**
  * An expression of type {@code NotOwningCollection} is a non-owning reference to a resource
  * collection/array. Because it does not own the underlying collection/array, it cannot add or
- * remove elements from it.
+ * remove elements from the collection/array.
  *
  * @checker_framework.manual #resource-leak-checker Resource Leak Checker
  */
