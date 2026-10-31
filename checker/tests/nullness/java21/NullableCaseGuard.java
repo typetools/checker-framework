@@ -112,15 +112,6 @@ public class NullableCaseGuard {
     }
   }
 
-  void guardThenStore(Object sel) {
-    switch (sel) {
-      case String s when f != null -> {
-        f.hashCode();
-      }
-      default -> {}
-    }
-  }
-
   void nonNullBooleanGuard(Object sel, Boolean b) {
     switch (sel) {
       case String s when b -> {}
