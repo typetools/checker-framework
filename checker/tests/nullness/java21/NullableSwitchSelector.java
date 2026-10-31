@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 // @below-java21-jdk-skip-test
 
-// None of the WPI formats supports the new Java 21 languages features, so skip inference until they
+// None of the WPI formats supports the new Java 21 language features, so skip inference until they
 // do.
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
@@ -24,9 +24,8 @@ public class NullableSwitchSelector {
     return switch (obj) {
       case Integer i -> obj.toString();
       case String s -> String.format("String %s", s);
-      // TODO: If obj is null, this case isn't reachable, because a null pointer exception happens
-      // at the selector expression.
-      // :: error: [dereference.of.nullable]
+      // If obj is null, this case isn't reachable, because a null pointer exception happens at the
+      // selector expression.
       default -> obj.toString();
     };
   }
