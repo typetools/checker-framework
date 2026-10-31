@@ -35,6 +35,26 @@ public class TypeRefinement {
     isUnique(notUnique);
   }
 
+  void reassignment(String notUnique) {
+    String s = new String();
+    isUnique(s);
+
+    s = notUnique; // s loses its refinement.
+
+    // :: error: [argument]
+    isUnique(s);
+  }
+
+  void arrayAlias(String[] a, int i, int j, String notUnique) {
+    a[j] = new String();
+    isUnique(a[j]);
+
+    a[i] = notUnique; // a[j] loses its refinement, because i might equal j.
+
+    // :: error: [argument]
+    isUnique(a[j]);
+  }
+
   void rule2() {
     String unique = new String();
 

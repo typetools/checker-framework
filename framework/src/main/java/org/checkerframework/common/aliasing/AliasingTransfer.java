@@ -9,7 +9,6 @@ import javax.lang.model.element.VariableElement;
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.common.aliasing.qual.Unique;
-import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
@@ -59,23 +58,52 @@ public class AliasingTransfer extends CFTransfer {
 
   /**
    * Case 1: For every assignment, the LHS is refined if the RHS has type {@literal @}Unique and is
-   * a method invocation or a new class instance.
+   * a method invocation or a new class instance. Otherwise, neither the LHS nor the RHS keeps a
+   * refinement, and neither does any expression that depends on the LHS or might alias it; see
+   * {@link #processCommonAssignment}.
    */
   @Override
   public TransferResult<CFValue, CFStore> visitAssignment(
       AssignmentNode n, TransferInput<CFValue, CFStore> in) {
-    Node rhs = n.getExpression();
-    Tree treeRhs = rhs.getTree();
-    AnnotatedTypeMirror rhsType = factory.getAnnotatedType(treeRhs);
-
-    if (rhsType.hasPrimaryAnnotation(Unique.class)
-        && (rhs instanceof MethodInvocationNode || rhs instanceof ObjectCreationNode)) {
-      return super.visitAssignment(n, in); // Do normal refinement.
+    TransferResult<CFValue, CFStore> result = super.visitAssignment(n, in);
+    if (!isFreshUnique(n.getExpression())) {
+      // The value of the assignment expression is an alias of the RHS.
+      result.setResultValue(null);
     }
-    // Widen the type of the rhs if the RHS's declared type wasn't @Unique.
-    JavaExpression rhsExpr = JavaExpression.fromNode(rhs);
-    in.getRegularStore().clearValue(rhsExpr);
-    return new RegularTransferResult<>(null, in.getRegularStore());
+    return result;
+  }
+
+  /**
+   * If the RHS is not a fresh {@literal @}Unique expression, widens the LHS and the RHS, which are
+   * aliases of one another. Widening the LHS also removes the refinements of expressions that
+   * depend on the LHS or that might alias it, such as {@code x.f} after an assignment to {@code x}.
+   */
+  @Override
+  protected void processCommonAssignment(
+      TransferInput<CFValue, CFStore> in, Node lhs, Node rhs, CFStore store, CFValue rhsValue) {
+    if (isFreshUnique(rhs)) {
+      super.processCommonAssignment(in, lhs, rhs, store, rhsValue);
+      return;
+    }
+    store.updateForAssignment(lhs, null);
+    // updateForAssignment(lhs, null) does not remove the value of a local variable LHS.
+    store.clearValue(JavaExpression.fromNode(lhs));
+    store.clearValue(JavaExpression.fromNode(rhs));
+  }
+
+  /**
+   * Returns true if {@code rhs} is a fresh {@literal @}Unique expression: a method invocation or a
+   * new class instance whose type is {@literal @}Unique.
+   *
+   * @param rhs the right-hand side of an assignment
+   * @return true if {@code rhs} is a fresh {@literal @}Unique expression
+   */
+  private boolean isFreshUnique(Node rhs) {
+    if (!(rhs instanceof MethodInvocationNode || rhs instanceof ObjectCreationNode)) {
+      return false;
+    }
+    Tree rhsTree = rhs.getTree();
+    return rhsTree != null && factory.getAnnotatedType(rhsTree).hasPrimaryAnnotation(Unique.class);
   }
 
   /**
