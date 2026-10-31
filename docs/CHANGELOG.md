@@ -48,9 +48,13 @@ The `CaseNode` constructor takes a new `alwaysMatches` argument, and the new
 method `CaseNode.alwaysMatches()` returns it; for such a `CaseNode`, the labels
 are not tested, and `CFAbstractTransfer.visitCase()` returns a regular store.
 
+Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
+and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
+`addToImplicitlyConvertedLookupMap()`.
+
 Deprecated methods:
 
-* `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.getNoArgumentMethod()`
+* `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.resolveNoArgumentCall()`
 
 ### Closed issues
 

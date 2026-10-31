@@ -27,7 +27,10 @@ public class CalledMethodsAnalysis extends AccumulationAnalysis {
           // program could run out of memory -- but if they did, the checker's
           // results would be useless anyway.
           Error.class.getCanonicalName(),
-          RuntimeException.class.getCanonicalName());
+          RuntimeException.class.getCanonicalName(),
+          // An exhaustive switch throws this only if a class changed after compilation.
+          // MatchException.class is not available before Java 21.
+          "java.lang.MatchException");
 
   /**
    * Creates a new {@code CalledMethodsAnalysis}.

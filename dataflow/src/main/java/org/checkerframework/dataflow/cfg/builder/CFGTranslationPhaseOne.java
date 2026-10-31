@@ -69,6 +69,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -287,15 +288,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
-   * have at least one corresponding Node. Trees that undergo conversions, such as boxing or
-   * unboxing, can map to two distinct Nodes. The Node for the pre-conversion value is stored in the
-   * treeToCfgNodes, while the Node for the post-conversion value is stored in the
-   * treeToConvertedCfgNodes.
+   * have at least one corresponding Node. Trees that undergo implicit conversions, such as boxing
+   * or unboxing, can map to two distinct Nodes. The Node for the value before implicit conversion
+   * is stored in the treeToCfgNodes, while the Node for the value after implicit conversion is
+   * stored in the treeToImplicitlyConvertedCfgNodes.
    */
   private final IdentityHashMap<Tree, Set<Node>> treeToCfgNodes;
 
-  /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
-  private final IdentityHashMap<Tree, Set<Node>> treeToConvertedCfgNodes;
+  /**
+   * Map from AST {@link Tree}s to sets of {@link Node}s for their values after implicit conversion.
+   */
+  private final IdentityHashMap<Tree, Set<Node>> treeToImplicitlyConvertedCfgNodes;
 
   /**
    * Map from postfix increment or decrement trees that are AST {@link UnaryTree}s to the synthetic
@@ -345,8 +348,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** The Iterable type (erased). */
   protected final TypeMirror iterableType;
 
-  /** The MatchException type, or null if it is not present (it was added in Java 21). */
-  protected final @Nullable TypeMirror matchExceptionType;
+  /**
+   * The MatchException type, or its supertype RuntimeException if MatchException is not present
+   * (before Java 21).
+   */
+  protected final TypeMirror matchExceptionType;
 
   /** The NegativeArraySizeException type. */
   protected final TypeMirror negativeArraySizeExceptionType;
@@ -421,7 +427,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // initialize lists and maps
     treeToCfgNodes = new IdentityHashMap<>();
-    treeToConvertedCfgNodes = new IdentityHashMap<>();
+    treeToImplicitlyConvertedCfgNodes = new IdentityHashMap<>();
     postfixTreeToCfgNodes = new IdentityHashMap<>();
     nodeList = new ArrayList<>();
     bindings = new HashMap<>();
@@ -442,7 +448,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     assertionErrorType = getTypeMirror(AssertionError.class);
     classCastExceptionType = getTypeMirror(ClassCastException.class);
     iterableType = types.erasure(getTypeMirror(Iterable.class));
-    matchExceptionType = maybeGetTypeMirror("java.lang.MatchException");
+    matchExceptionType =
+        Objects.requireNonNullElse(
+            maybeGetTypeMirror("java.lang.MatchException"), getTypeMirror(RuntimeException.class));
     negativeArraySizeExceptionType = getTypeMirror(NegativeArraySizeException.class);
     nullPointerExceptionType = getTypeMirror(NullPointerException.class);
     outOfMemoryErrorType = maybeGetTypeMirror(OutOfMemoryError.class);
@@ -503,7 +511,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       return new PhaseOneResult(
           underlyingAST,
           treeToCfgNodes,
-          treeToConvertedCfgNodes,
+          treeToImplicitlyConvertedCfgNodes,
           postfixTreeToCfgNodes,
           nodeList,
           bindings,
@@ -620,33 +628,33 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Add a node in the post-conversion lookup map. The node should refer to a Tree and that Tree
-   * should already be in the pre-conversion lookup map. This method is used to update the Tree-Node
-   * mapping with conversion nodes.
+   * Adds a node to the lookup map for implicitly converted values. The node should refer to a Tree
+   * and that Tree should already be in the lookup map for values before implicit conversion. This
+   * method is used to update the Tree-Node mapping with implicit conversion nodes.
    *
    * @param node the node to add to the lookup map
    */
-  protected void addToConvertedLookupMap(Node node) {
+  protected void addToImplicitlyConvertedLookupMap(Node node) {
     Tree tree = node.getTree();
-    addToConvertedLookupMap(tree, node);
+    addToImplicitlyConvertedLookupMap(tree, node);
   }
 
   /**
-   * Add a node in the post-conversion lookup map. The tree argument should already be in the
-   * pre-conversion lookup map. This method is used to update the Tree-Node mapping with conversion
-   * nodes.
+   * Adds a node to the lookup map for implicitly converted values. The tree argument should already
+   * be in the lookup map for values before implicit conversion. This method is used to update the
+   * Tree-Node mapping with implicit conversion nodes.
    *
    * @param tree the tree used as a key in the map
    * @param node the node to add to the lookup map
    */
-  protected void addToConvertedLookupMap(Tree tree, Node node) {
+  protected void addToImplicitlyConvertedLookupMap(Tree tree, Node node) {
     assert tree != null;
     assert treeToCfgNodes.containsKey(tree);
-    Set<Node> existing = treeToConvertedCfgNodes.get(tree);
+    Set<Node> existing = treeToImplicitlyConvertedCfgNodes.get(tree);
     if (existing == null) {
       Set<Node> newSet = new IdentityArraySet<>(1);
       newSet.add(node);
-      treeToConvertedCfgNodes.put(tree, newSet);
+      treeToImplicitlyConvertedCfgNodes.put(tree, newSet);
     } else {
       existing.add(node);
     }
@@ -877,7 +885,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
               valueOfCall, valueOfAccess, Collections.singletonList(node), getCurrentPath());
       boxed.setInSource(false);
       // Add Throwable to account for unchecked exceptions
-      addToConvertedLookupMap(node.getTree(), boxed);
+      addToImplicitlyConvertedLookupMap(node.getTree(), boxed);
       insertNodeWithExceptionsAfter(boxed, uncheckedExceptionTypes, valueOfAccess);
       return boxed;
     } else {
@@ -911,7 +919,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       unboxed.setInSource(false);
 
       // Add Throwable to account for unchecked exceptions
-      addToConvertedLookupMap(node.getTree(), unboxed);
+      addToImplicitlyConvertedLookupMap(node.getTree(), unboxed);
       insertNodeWithExceptionsAfter(unboxed, uncheckedExceptionTypes, primValueAccess);
       return unboxed;
     } else {
@@ -969,7 +977,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // For string conversion, see JLS 5.1.11
     if (!TypesUtils.isString(node.getType())) {
       Node converted = new StringConversionNode(node.getTree(), node, stringType);
-      addToConvertedLookupMap(converted);
+      addToImplicitlyConvertedLookupMap(converted);
       insertNodeAfter(converted, node);
       return converted;
     } else {
@@ -992,7 +1000,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       case BYTE, CHAR, SHORT -> {
         TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
         Node widened = new WideningConversionNode(node.getTree(), node, intType);
-        addToConvertedLookupMap(widened);
+        addToImplicitlyConvertedLookupMap(widened);
         insertNodeAfter(widened, node);
         return widened;
       }
@@ -1059,7 +1067,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     if (!types.isSameType(node.getType(), exprType)) {
       Node widened = new WideningConversionNode(node.getTree(), node, exprType);
-      addToConvertedLookupMap(widened);
+      addToImplicitlyConvertedLookupMap(widened);
       insertNodeAfter(widened, node);
       return widened;
     } else {
@@ -1080,7 +1088,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         : "widening must be applied to primitive types";
     if (types.isSubtype(node.getType(), destType) && !types.isSameType(node.getType(), destType)) {
       Node widened = new WideningConversionNode(node.getTree(), node, destType);
-      addToConvertedLookupMap(widened);
+      addToImplicitlyConvertedLookupMap(widened);
       insertNodeAfter(widened, node);
       return widened;
     } else {
@@ -1101,7 +1109,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         : "narrowing must be applied to primitive types";
     if (types.isSubtype(destType, node.getType()) && !types.isSameType(destType, node.getType())) {
       Node narrowed = new NarrowingConversionNode(node.getTree(), node, destType);
-      addToConvertedLookupMap(narrowed);
+      addToImplicitlyConvertedLookupMap(narrowed);
       insertNodeAfter(narrowed, node);
       return narrowed;
     } else {
@@ -2429,7 +2437,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                         caseTree,
                         "no case matches in switch #" + TreeUtils.treeUids.get(switchTree),
                         env.getTypeUtils()),
-                    matchExceptionType != null ? matchExceptionType : throwableType);
+                    matchExceptionType);
             throwing.setTerminatesExecution(true);
           } else {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
@@ -2703,7 +2711,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     // resource.  If any exception occurs due to code within the resource declaration, the
     // corresponding variable or field is *not* automatically closed (as it was never
     // assigned a value).
-    Node resourceCloseNode = scan(resourceDeclarationTree, p);
+    scan(resourceDeclarationTree, p);
 
     // Now, set things up for our synthetic finally block that closes the resource.
     Label doneLabel = new Label();
@@ -2741,7 +2749,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         doneLabel,
         finallyLabel,
         exceptionalFinallyLabel,
-        () -> addCloseCallForResource(resourceDeclarationTree, resourceCloseNode),
+        () -> addCloseCallForResource(resourceDeclarationTree, p),
         oldReturnTargetLC,
         oldBreakTargetLC,
         oldBreakLabels,
@@ -2755,15 +2763,23 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Adds a synthetic {@code close} call to the CFG to close some resource variable declared or used
    * in a try-with-resources.
    *
-   * @param resourceDeclarationTree the resource declaration
-   * @param resourceToCloseNode node represented the variable or field on which {@code close} should
-   *     be invoked
+   * @param resourceDeclarationTree the resource declaration, or the variable or field that is the
+   *     resource
+   * @param p the value to pass to calls to {@code scan}
    */
-  private void addCloseCallForResource(Tree resourceDeclarationTree, Node resourceToCloseNode) {
-    Tree receiverTree = resourceDeclarationTree;
-    if (receiverTree instanceof VariableTree) {
-      receiverTree = treeBuilder.buildVariableUse((VariableTree) receiverTree);
+  private void addCloseCallForResource(Tree resourceDeclarationTree, Void p) {
+    // The receiver of close() is a use of the resource variable or field.
+    Tree receiverTree;
+    Node receiverNode;
+    if (resourceDeclarationTree instanceof VariableTree variableTree) {
+      receiverTree = treeBuilder.buildVariableUse(variableTree);
       handleArtificialTree(receiverTree);
+      receiverNode = new LocalVariableNode(receiverTree);
+      receiverNode.setInSource(false);
+      extendWithNode(receiverNode);
+    } else {
+      receiverTree = resourceDeclarationTree;
+      receiverNode = scan(resourceDeclarationTree, p);
     }
 
     MemberSelectTree closeSelect =
@@ -2773,13 +2789,36 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     MethodInvocationTree closeCall = treeBuilder.buildMethodInvocation(closeSelect);
     handleArtificialTree(closeCall);
 
-    Node receiverNode = resourceToCloseNode;
-    if (receiverNode instanceof AssignmentNode) {
-      // variable declaration; use the LHS
-      receiverNode = ((AssignmentNode) resourceToCloseNode).getTarget();
+    // A try-with-resources statement calls close() only if the resource is non-null (JLS
+    // 14.20.3.1).  A resource variable is final, so it is non-null if its initializer is.
+    boolean resourceMayBeNull =
+        !(resourceDeclarationTree instanceof VariableTree variableTree
+            && variableTree.getInitializer() != null
+            && !mayBeNull(variableTree.getInitializer()));
+    Label afterCloseLabel = new Label();
+    if (resourceMayBeNull) {
+      LiteralTree nullTree = treeBuilder.buildNullLiteral();
+      handleArtificialTree(nullTree);
+      BinaryTree nullTestTree =
+          treeBuilder.buildBinary(
+              types.getPrimitiveType(TypeKind.BOOLEAN),
+              Tree.Kind.NOT_EQUAL_TO,
+              (ExpressionTree) receiverTree,
+              nullTree);
+      handleArtificialTree(nullTestTree);
+
+      NullLiteralNode nullNode = new NullLiteralNode(nullTree);
+      nullNode.setInSource(false);
+      extendWithNode(nullNode);
+      NotEqualNode nullTestNode = new NotEqualNode(nullTestTree, receiverNode, nullNode);
+      nullTestNode.setInSource(false);
+      extendWithNode(nullTestNode);
+
+      Label closeLabel = new Label();
+      extendWithExtendedNode(new ConditionalJump(closeLabel, afterCloseLabel));
+      addLabelForNextNode(closeLabel);
     }
-    // TODO do we need to insert some kind of node representing a use of receiverNode
-    // (which can be either a LocalVariableNode or a FieldAccessNode)?
+
     MethodAccessNode closeAccessNode = new MethodAccessNode(closeSelect, receiverNode);
     closeAccessNode.setInSource(false);
     extendWithNode(closeAccessNode);
@@ -2788,6 +2827,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
             closeCall, closeAccessNode, Collections.emptyList(), getCurrentPath());
     closeCallNode.setInSource(false);
     extendWithMethodInvocationNode(TreeUtils.elementFromUse(closeCall), closeCallNode);
+
+    if (resourceMayBeNull) {
+      addLabelForNextNode(afterCloseLabel);
+    }
   }
 
   /**
