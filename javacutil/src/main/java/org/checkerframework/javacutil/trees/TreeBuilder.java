@@ -18,6 +18,7 @@ import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
@@ -168,7 +169,7 @@ public class TreeBuilder {
    */
   public MemberSelectTree buildCloseMethodAccess(ExpressionTree autoCloseableExpr) {
     TypeMirror exprType = TreeUtils.typeOf(autoCloseableExpr);
-    ExecutableElement closeMethod = ElementUtils.getNoArgumentMethod(exprType, "close", env);
+    ExecutableElement closeMethod = ElementUtils.resolveNoArgumentCall(exprType, "close", env);
     if (closeMethod == null) {
       throw new BugInCF("no close method for %s of type %s", autoCloseableExpr, exprType);
     }
@@ -381,6 +382,17 @@ public class TreeBuilder {
   /** Builds an AST Tree representing a literal value of primitive or String type. */
   public LiteralTree buildLiteral(Object value) {
     return maker.Literal(value);
+  }
+
+  /**
+   * Builds an AST Tree representing the null literal.
+   *
+   * @return a Tree representing {@code null}
+   */
+  public LiteralTree buildNullLiteral() {
+    JCTree.JCLiteral literal = maker.Literal(TypeTag.BOT, null);
+    literal.setType(symtab.botType);
+    return literal;
   }
 
   /**
