@@ -186,6 +186,16 @@ public class CaseGuardElseStore {
     x.hashCode();
   }
 
+  String lastCaseOfExhaustiveGuardFalseSwitchExpression(R r, boolean b) {
+    String x =
+        switch (r) {
+          case R(Circle c) -> "a";
+          case R(Square q) -> "b";
+          case R(Shape s) when b -> "c";
+        };
+    return x;
+  }
+
   void lastCaseOfExhaustiveGuardFalseCatch(R r, boolean b) {
     @Nullable Object x = "";
     try {
