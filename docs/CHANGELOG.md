@@ -45,9 +45,13 @@ In the control-flow graph, the guard of a `case` is evaluated after the
 `CaseNode`, and only if the case's labels match.  Removed
 `CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
 
+Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
+and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
+`addToImplicitlyConvertedLookupMap()`.
+
 Deprecated methods:
 
-* `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.getNoArgumentMethod()`
+* `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.resolveNoArgumentCall()`
 
 ### Closed issues
 
