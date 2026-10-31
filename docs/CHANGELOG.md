@@ -56,9 +56,13 @@ These methods of `CFAbstractTransfer` no longer call `visitNode()`:
 boolean operator, `visitValueLiteral()`.  A subclass that overrides
 `visitNode()` may need to override them too.
 
+Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
+and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
+`addToImplicitlyConvertedLookupMap()`.
+
 Deprecated methods:
 
-* `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.getNoArgumentMethod()`
+* `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.resolveNoArgumentCall()`
 
 ### Closed issues
 
