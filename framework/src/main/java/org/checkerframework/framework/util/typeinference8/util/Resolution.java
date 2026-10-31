@@ -64,7 +64,8 @@ public final class Resolution {
     List<Variable> resolvedVars = boundSet.getInstantiatedVariables();
     as.removeAll(resolvedVars);
     if (as.isEmpty()) {
-      return resolveIgnoredAnnotations(originalAs, boundSet, context);
+      return resolveIgnoredAnnotations(
+          withDependenciesIfIgnoring(originalAs, boundSet), boundSet, context);
     }
     // Calculate the dependencies between variables. (A variable depends on another if it is
     // included in one of its bounds.)
@@ -78,21 +79,21 @@ public final class Resolution {
       }
     }
 
+    // Any variable on which `originalAs` depends may have an instantiation that ignores
+    // annotations: one resolved below, or one that incorporation already gave an instantiation.
+    List<Variable> withDependencies = new ArrayList<>(dependencies.get(originalAs));
+
     // Remove any variables that already have instantiations
     unresolvedVars.removeAll(resolvedVars);
     if (unresolvedVars.isEmpty()) {
-      return resolveIgnoredAnnotations(originalAs, boundSet, context);
+      return resolveIgnoredAnnotations(withDependencies, boundSet, context);
     }
-    // `resolution.resolve` empties `unresolvedVars`, and resolving them can give any of them an
-    // instantiation that ignores annotations.
-    LinkedHashSet<Variable> resolved = new LinkedHashSet<>(originalAs);
-    resolved.addAll(unresolvedVars);
 
     // Resolve the variables
     Resolution resolution = new Resolution(context, dependencies);
     boundSet = resolution.resolve(boundSet, unresolvedVars);
     checkNoFalse(boundSet, "after resolving", as);
-    return resolveIgnoredAnnotations(new ArrayList<>(resolved), boundSet, context);
+    return resolveIgnoredAnnotations(withDependencies, boundSet, context);
   }
 
   /**
@@ -105,7 +106,8 @@ public final class Resolution {
    */
   public static BoundSet resolve(Variable a, BoundSet boundSet, Java8InferenceContext context) {
     if (a.getBounds().hasInstantiation()) {
-      return resolveIgnoredAnnotations(Collections.singletonList(a), boundSet, context);
+      return resolveIgnoredAnnotations(
+          withDependenciesIfIgnoring(Collections.singletonList(a), boundSet), boundSet, context);
     }
     Dependencies dependencies = boundSet.getDependencies();
 
@@ -120,13 +122,36 @@ public final class Resolution {
   }
 
   /**
+   * Returns {@code vars} and the variables on which they depend, if a variable of {@code boundSet}
+   * has an instantiation that ignores annotations (see {@link AbstractType#ignoreAnnotations});
+   * otherwise, returns {@code vars}. Computing the dependencies has the side effect described in
+   * {@link BoundSet#getDependencies(Collection)}.
+   *
+   * @param vars variables of {@code boundSet}
+   * @param boundSet a bound set
+   * @return {@code vars} and the variables on which they depend, or {@code vars}
+   */
+  private static List<Variable> withDependenciesIfIgnoring(List<Variable> vars, BoundSet boundSet) {
+    // Computing the dependencies is expensive, and resolveIgnoredAnnotations does nothing to a
+    // variable whose instantiation does not ignore annotations.
+    for (Variable var : boundSet.getInstantiatedVariables()) {
+      ProperType instantiation = var.getInstantiation();
+      if (instantiation != null && instantiation.ignoreAnnotations) {
+        return new ArrayList<>(boundSet.getDependencies().get(vars));
+      }
+    }
+    return vars;
+  }
+
+  /**
    * For each variable in {@code vars} whose instantiation ignores annotations (see {@link
    * AbstractType#ignoreAnnotations}), adds the bound {@code var = t}, where {@code t} is {@link
    * #lubOfLowerBounds} of the variable's proper lower bounds, viewed as the instantiation's Java
    * type (see {@link #viewAs}). If the variable has no proper lower bound, or that view cannot be
    * computed, then {@code t} is {@link #lubOfLowerBounds} of {@link
-   * org.checkerframework.framework.util.typeinference8.types.VariableBounds#findLowerBoundsForAnnotations}.
-   * Then incorporates the new bounds.
+   * org.checkerframework.framework.util.typeinference8.types.VariableBounds#findLowerBoundsForAnnotations},
+   * and no bound is added if the Java type of {@code t} is not that of the instantiation. Then
+   * incorporates the new bounds.
    *
    * <p>If {@code t} respects annotations, then it replaces the instantiation, and incorporation
    * substitutes {@code t} wherever the old instantiation was substituted.
@@ -159,6 +184,11 @@ public final class Resolution {
       if (t == null) {
         // The bounds include EQUAL bounds that ignore annotations.
         t = lubOfLowerBounds(var, var.getBounds().findLowerBoundsForAnnotations(), true, context);
+        if (!context.types.isSameType((Type) t.getJavaType(), (Type) instantiation.getJavaType())) {
+          // The bound `var = t` would contradict the instantiation, so incorporating it would
+          // derive false.
+          continue;
+        }
       }
       added |= var.getBounds().addBound(null, BoundKind.EQUAL, t);
     }
