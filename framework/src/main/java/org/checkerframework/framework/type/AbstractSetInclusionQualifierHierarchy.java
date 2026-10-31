@@ -1,6 +1,7 @@
 package org.checkerframework.framework.type;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -129,8 +130,9 @@ public abstract class AbstractSetInclusionQualifierHierarchy
   /**
    * Returns an annotation whose values are the union or intersection of the input values. If the
    * union or intersection is the set of values of {@code a1} or of {@code a2}, returns that
-   * argument. Otherwise, returns a new annotation whose values are sorted, so it does not depend on
-   * the order of the arguments or their values.
+   * argument; if it is the set of values of both, in different orders, returns the one whose values
+   * are sorted. Otherwise, returns a new annotation whose values are sorted. Thus, the result does
+   * not depend on the order of the arguments.
    *
    * @param a1 the first annotation
    * @param a2 the second annotation
@@ -141,8 +143,10 @@ public abstract class AbstractSetInclusionQualifierHierarchy
    */
   private AnnotationMirror combineAnnotationValues(
       AnnotationMirror a1, AnnotationMirror a2, QualifierKind resultKind, boolean union) {
-    Set<String> values1 = new HashSet<>(valuesStringList(a1));
-    Set<String> values2 = new HashSet<>(valuesStringList(a2));
+    List<String> list1 = valuesStringList(a1);
+    List<String> list2 = valuesStringList(a2);
+    Set<String> values1 = new HashSet<>(list1);
+    Set<String> values2 = new HashSet<>(list2);
     Set<String> values = new TreeSet<>(values1);
     if (union) {
       values.addAll(values2);
@@ -151,9 +155,20 @@ public abstract class AbstractSetInclusionQualifierHierarchy
     }
     // Returning an argument avoids creating an annotation that has the same values as the argument
     // but is not the same according to AnnotationUtils.areSame, which compares values in order.
-    if (values.equals(values1)) {
+    boolean isValues1 = values.equals(values1);
+    boolean isValues2 = values.equals(values2);
+    if (isValues1 && isValues2 && !list1.equals(list2)) {
+      // The arguments have the same values in different orders.  To make the result independent of
+      // the order of the arguments, return the argument whose values are sorted, if any.
+      List<String> sorted = new ArrayList<>(values);
+      if (list1.equals(sorted)) {
+        return a1;
+      } else if (list2.equals(sorted)) {
+        return a2;
+      }
+    } else if (isValues1) {
       return a1;
-    } else if (values.equals(values2)) {
+    } else if (isValues2) {
       return a2;
     }
     AnnotationBuilder builder =

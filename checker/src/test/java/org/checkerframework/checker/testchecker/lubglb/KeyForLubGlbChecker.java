@@ -69,6 +69,7 @@ public class KeyForLubGlbChecker extends KeyForSubchecker {
     AnnotationMirror ab = keyFor("a", "b");
     AnnotationMirror ba = keyFor("b", "a");
     AnnotationMirror abc = keyFor("a", "b", "c");
+    AnnotationMirror bac = keyFor("b", "a", "c");
     AnnotationMirror bc = keyFor("b", "c");
     AnnotationMirror cb = keyFor("c", "b");
     AnnotationMirror cba = keyFor("c", "b", "a");
@@ -90,6 +91,16 @@ public class KeyForLubGlbChecker extends KeyForSubchecker {
     glbAssert(cba, cb, cba);
     glbAssert(cb, cba, cba);
     lubAssert(cba, bc, bc);
-    glbAssert(cb, bc, cb);
+
+    // If both arguments have the same values in different orders, the result is the argument whose
+    // values are sorted, or else a new annotation whose values are sorted.
+    lubAssert(cb, bc, bc);
+    lubAssert(bc, cb, bc);
+    glbAssert(cb, bc, bc);
+    glbAssert(bc, cb, bc);
+    lubAssert(cba, bac, abc);
+    lubAssert(bac, cba, abc);
+    glbAssert(cba, bac, abc);
+    glbAssert(bac, cba, abc);
   }
 }
