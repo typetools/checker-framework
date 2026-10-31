@@ -69,6 +69,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -76,6 +77,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
@@ -346,6 +348,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** The Iterable type (erased). */
   protected final TypeMirror iterableType;
 
+  /**
+   * The MatchException type, or its supertype RuntimeException if MatchException is not present
+   * (before Java 21).
+   */
+  protected final TypeMirror matchExceptionType;
+
   /** The NegativeArraySizeException type. */
   protected final TypeMirror negativeArraySizeExceptionType;
 
@@ -440,6 +448,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     assertionErrorType = getTypeMirror(AssertionError.class);
     classCastExceptionType = getTypeMirror(ClassCastException.class);
     iterableType = types.erasure(getTypeMirror(Iterable.class));
+    matchExceptionType =
+        Objects.requireNonNullElse(
+            maybeGetTypeMirror("java.lang.MatchException"), getTypeMirror(RuntimeException.class));
     negativeArraySizeExceptionType = getTypeMirror(NegativeArraySizeException.class);
     nullPointerExceptionType = getTypeMirror(NullPointerException.class);
     outOfMemoryErrorType = maybeGetTypeMirror(OutOfMemoryError.class);
@@ -2116,6 +2127,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private final ExpressionTree selectorExprTree;
 
+    /** The type of {@link #selectorExprTree}. */
+    private final TypeMirror selectorExprType;
+
+    /** True if {@link #switchTree} has a {@code case null}. */
+    private final boolean hasNullCaseLabel;
+
     /** The labels for the case bodies. */
     private final Label[] caseBodyLabels;
 
@@ -2146,6 +2163,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         this.caseTrees = switchExpressionTree.getCases();
         this.selectorExprTree = switchExpressionTree.getExpression();
       }
+      this.selectorExprType = TreeUtils.typeOf(selectorExprTree);
+      this.hasNullCaseLabel = TreeUtils.hasNullCaseLabel(switchTree);
       // "+ 1" for the default case.  If the switch has an explicit default case, then
       // the last element of the array is never used.
       this.caseBodyLabels = new Label[caseTrees.size() + 1];
@@ -2250,7 +2269,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private void buildSelector() {
       // Create a synthetic variable to which the switch selector expression will be assigned
-      TypeMirror selectorExprType = TreeUtils.typeOf(selectorExprTree);
       VariableTree selectorVarTree =
           treeBuilder.buildVariableDecl(
               selectorExprType,
@@ -2304,6 +2322,72 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
 
     /**
+     * Returns true if the label of {@code caseTree} matches every value of the selector expression
+     * that is tested against it. This is true of a pattern that matches every non-null value of the
+     * selector expression's type, if the switch has no {@code case null}. (Without a {@code case
+     * null}, a null selector expression causes a NullPointerException before any case is tested.)
+     *
+     * @param caseTree a case of {@link #switchTree}
+     * @return true if the label of {@code caseTree} matches every value of the selector expression
+     *     that is tested against it
+     */
+    private boolean labelAlwaysMatches(CaseTree caseTree) {
+      List<? extends Tree> labels = CaseUtils.getLabels(caseTree);
+      if (labels.size() != 1 || selectorExprType.getKind().isPrimitive() || hasNullCaseLabel) {
+        return false;
+      }
+      return matchesEveryNonNullValue(labels.get(0), selectorExprType);
+    }
+
+    /**
+     * Returns true if {@code pattern} matches every non-null value of type {@code type}. This is
+     * true of a type pattern whose type is a supertype of {@code type}, and of a record pattern
+     * whose type is a supertype of {@code type} and whose nested patterns are unconditional for the
+     * types of the record components.
+     *
+     * @param pattern a pattern
+     * @param type the type of the values that are tested against {@code pattern}
+     * @return true if {@code pattern} matches every non-null value of type {@code type}
+     */
+    private boolean matchesEveryNonNullValue(Tree pattern, TypeMirror type) {
+      if (pattern instanceof BindingPatternTree bindingPattern) {
+        TypeMirror patternType = TreeUtils.typeOf(bindingPattern.getVariable());
+        if (type.getKind().isPrimitive()) {
+          // Avoid treating a primitive widening conversion, such as int to float, as a subtype.
+          return types.isSameType(type, patternType);
+        }
+        return TypesUtils.isErasedSubtype(type, patternType, types);
+      }
+      if (!TreeUtils.isDeconstructionPatternTree(pattern)) {
+        return false;
+      }
+      if (!(TreeUtils.typeOf(pattern) instanceof DeclaredType recordType)
+          || !TypesUtils.isErasedSubtype(type, recordType, types)) {
+        return false;
+      }
+      List<? extends RecordComponentElement> components =
+          ((TypeElement) recordType.asElement()).getRecordComponents();
+      List<? extends Tree> nestedPatterns = DeconstructionPatternUtils.getNestedPatterns(pattern);
+      if (components.size() != nestedPatterns.size()) {
+        return false;
+      }
+      for (int i = 0; i < components.size(); i++) {
+        TypeMirror componentType = types.asMemberOf(recordType, components.get(i));
+        Tree nestedPattern = nestedPatterns.get(i);
+        // A nested type pattern that matches every non-null value also matches null.  A nested
+        // record pattern does not match null.
+        boolean unconditional =
+            nestedPattern.getKind().name().equals("ANY_PATTERN")
+                || (nestedPattern instanceof BindingPatternTree
+                    && matchesEveryNonNullValue(nestedPattern, componentType));
+        if (!unconditional) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    /**
      * Build the CFG for the given case tree.
      *
      * @param caseTree a case tree whose CFG to build
@@ -2313,36 +2397,51 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private void buildCase(CaseTree caseTree, int index, boolean isLastCaseOfExhaustive) {
       boolean isDefaultCase = CaseUtils.isDefaultCaseTree(caseTree);
-      // If true, no test of labels is necessary.
-      // Unfortunately, if isLastCaseOfExhaustive==TRUE, no flow-sensitive refinement occurs
-      // within the body of the CaseNode.  In the future, that can be performed, but it
-      // requires addition of InfeasibleExitBlock, a new SpecialBlock in the CFG.
       boolean isTerminalCase = isDefaultCase || isLastCaseOfExhaustive;
 
       Label thisBodyLabel = caseBodyLabels[index];
       Label nextBodyLabel = caseBodyLabels[index + 1];
-      // `nextCaseLabel` is not used if isTerminalCase==FALSE.
+      // The target when the labels do not match or the guard is false.
       Label nextCaseLabel = new Label();
 
-      // Handle the case expressions
-      if (!isTerminalCase) {
-        // A case expression exists, and it needs to be tested.
+      // Handle the case labels and the guard.
+      if (!isDefaultCase) {
         ArrayList<Node> exprs = new ArrayList<>();
         for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
           exprs.add(scan(exprTree, null));
         }
 
-        ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
-        Node guard = (guardTree == null) ? null : scan(guardTree, null);
+        // If true, the labels are not tested.
+        boolean alwaysMatches = isLastCaseOfExhaustive || labelAlwaysMatches(caseTree);
+        extendWithNode(
+            new CaseNode(
+                caseTree, selectorExprAssignment, exprs, alwaysMatches, env.getTypeUtils()));
+        if (!alwaysMatches) {
+          Label labelsMatchLabel = new Label();
+          extendWithExtendedNode(new ConditionalJump(labelsMatchLabel, nextCaseLabel));
+          addLabelForNextNode(labelsMatchLabel);
+        }
 
-        CaseNode test =
-            new CaseNode(caseTree, selectorExprAssignment, exprs, guard, env.getTypeUtils());
-        extendWithNode(test);
-        extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
-      } else if (!isDefaultCase) {
-        // The labels are not tested, but their patterns declare and bind variables.
-        for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
-          scan(exprTree, null);
+        // The guard is evaluated only if the labels match.
+        ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
+        if (guardTree != null) {
+          unbox(scan(guardTree, null));
+          if (isLastCaseOfExhaustive) {
+            // No case matches, so the switch throws MatchException.
+            Label guardFalseLabel = new Label();
+            extendWithExtendedNode(new ConditionalJump(thisBodyLabel, guardFalseLabel));
+            addLabelForNextNode(guardFalseLabel);
+            NodeWithExceptionsHolder throwing =
+                extendWithNodeWithException(
+                    new MarkerNode(
+                        caseTree,
+                        "no case matches in switch #" + TreeUtils.treeUids.get(switchTree),
+                        env.getTypeUtils()),
+                    matchExceptionType);
+            throwing.setTerminatesExecution(true);
+          } else {
+            extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+          }
         }
       }
 
@@ -2375,9 +2474,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
       }
 
-      if (!isTerminalCase) {
-        addLabelForNextNode(nextCaseLabel);
-      }
+      addLabelForNextNode(nextCaseLabel);
     }
 
     /**
@@ -4464,6 +4561,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected @Nullable TypeMirror maybeGetTypeMirror(Class<?> clazz) {
     String name = clazz.getCanonicalName();
     assert name != null : clazz + " does not have a canonical name";
+    return maybeGetTypeMirror(name);
+  }
+
+  /**
+   * Returns the TypeMirror for the class with the given canonical name, or {@code null} if the type
+   * is not present.
+   *
+   * @param name the canonical name of a class
+   * @return the TypeMirror for the class, or {@code null} if the type is not present
+   */
+  protected @Nullable TypeMirror maybeGetTypeMirror(String name) {
     TypeElement element = elements.getTypeElement(name);
     if (element == null) {
       return null;

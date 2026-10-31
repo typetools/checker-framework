@@ -74,6 +74,9 @@ public class MustCallChecker extends BaseTypeChecker {
               ClassFormatError.class.getCanonicalName(),
               NoClassDefFoundError.class.getCanonicalName(),
               OutOfMemoryError.class.getCanonicalName(),
+              // An exhaustive switch throws this only if a class changed after compilation.
+              // MatchException.class is not available before Java 21.
+              "java.lang.MatchException",
               // It's not our problem if the Java type system is wrong.
               ClassCastException.class.getCanonicalName(),
               // It's not our problem if the code is going to divide by zero.
