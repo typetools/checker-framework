@@ -41,11 +41,6 @@ now a final, non-generic class.  `NumberMath.getNumberMath()` throws
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
 
-`CaseNode` no longer contains a case's guard (its `when` clause):  the
-`CaseNode` constructor no longer takes a guard argument, and
-`CaseNode.getGuard()` has been removed.  In the CFG, a guard is a separate test
-that follows the `CaseNode` and that is evaluated only if a label matches.
-
 Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
 and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
 `addToImplicitlyConvertedLookupMap()`.

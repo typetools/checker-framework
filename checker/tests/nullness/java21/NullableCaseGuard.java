@@ -6,14 +6,11 @@
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
 
-// Test that a case guard is checked for nullness, as the condition of an if statement is, and that
-// facts from the guard hold only where the guard was evaluated.
+// Test that a case guard is checked for nullness, as the condition of an if statement is.
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class NullableCaseGuard {
-
-  @Nullable String f;
 
   sealed interface Shape permits Circle, Square {}
 
@@ -24,25 +21,7 @@ public class NullableCaseGuard {
   void nullableBooleanGuard(Object sel, @Nullable Boolean b) {
     switch (sel) {
       // :: error: [condition.nullable]
-      case String s when b -> {
-        b.hashCode();
-      }
-      default -> {
-        // The guard is not evaluated if the pattern does not match.
-        // :: error: [dereference.of.nullable]
-        b.hashCode();
-      }
-    }
-  }
-
-  void nullableBooleanGuardNextCase(Object sel, @Nullable Boolean b) {
-    switch (sel) {
-      // :: error: [condition.nullable]
       case String s when b -> {}
-      case Integer i -> {
-        // :: error: [dereference.of.nullable]
-        b.hashCode();
-      }
       default -> {}
     }
   }
@@ -52,20 +31,16 @@ public class NullableCaseGuard {
       case String s
       // :: error: [condition.nullable]
       when b:
-        b.hashCode();
         break;
       default:
-        // :: error: [dereference.of.nullable]
-        b.hashCode();
     }
   }
 
   int nullableBooleanGuardSwitchExpression(Object sel, @Nullable Boolean b) {
     return switch (sel) {
       // :: error: [condition.nullable]
-      case String s when b -> b.hashCode();
-      // :: error: [dereference.of.nullable]
-      default -> b.hashCode();
+      case String s when b -> 1;
+      default -> 2;
     };
   }
 
@@ -74,42 +49,8 @@ public class NullableCaseGuard {
       case Circle c -> 1;
       case Square s -> 2;
       // :: error: [condition.nullable]
-      case Shape s when b -> b.hashCode();
+      case Shape s when b -> 3;
     };
-  }
-
-  // If the guard of the last case of an exhaustive switch is false, a MatchException is thrown;
-  // control does not exit the switch normally.
-  String guardedLastCaseSwitchExpression(Shape shape, boolean b) {
-    String r =
-        switch (shape) {
-          case Circle c -> "a";
-          case Square s -> "b";
-          case Shape s when b -> "c";
-        };
-    return r;
-  }
-
-  int guardedLastCaseSwitchStatement(Shape shape, boolean b) {
-    @Nullable String x = null;
-    switch (shape) {
-      case Circle c -> x = "a";
-      case Square s -> x = "b";
-      case Shape s when b -> x = "c";
-    }
-    return x.length();
-  }
-
-  void guardElseStore(Object sel) {
-    switch (sel) {
-      case String s when f == null -> {}
-      case Integer i -> {
-        // The guard is not evaluated if the pattern does not match.
-        // :: error: [dereference.of.nullable]
-        f.hashCode();
-      }
-      default -> {}
-    }
   }
 
   void nonNullBooleanGuard(Object sel, Boolean b) {
