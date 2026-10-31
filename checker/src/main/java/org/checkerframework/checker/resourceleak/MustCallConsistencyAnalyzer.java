@@ -2745,18 +2745,15 @@ public class MustCallConsistencyAnalyzer {
       }
     }
 
-    // Check whether this corresponds to the else CFG edge of a conditional block for a disposal
-    // loop which fulfills the collections must-call obligation. If so, don't propagate the
-    // collection obligations discharged inside the loop.
-    boolean isElseEdgeOfDisposalLoop = false;
-    Set<String> disposalLoopCalledMethods = null;
+    // If this is the else edge of a disposal loop's conditional block, that is, the edge that
+    // leaves the loop, find the loop and the methods its body calls on every element.
+    DisposalLoopInfo exitedDisposalLoop = null;
+    Set<String> exitedLoopCalledMethods = null;
     if (currentBlock instanceof ConditionalBlock conditionalBlock
         && conditionalBlock.getElseSuccessor().equals(successor)) {
-      DisposalLoopInfo disposalLoopInfo =
-          coAtf.getDisposalLoopInfoForConditionalBlock(conditionalBlock);
-      if (disposalLoopInfo != null) {
-        isElseEdgeOfDisposalLoop = true;
-        disposalLoopCalledMethods = coAtf.getCalledMethods(disposalLoopInfo);
+      exitedDisposalLoop = coAtf.getDisposalLoopInfoForConditionalBlock(conditionalBlock);
+      if (exitedDisposalLoop != null) {
+        exitedLoopCalledMethods = coAtf.getCalledMethods(exitedDisposalLoop);
       }
     }
 
@@ -2764,16 +2761,14 @@ public class MustCallConsistencyAnalyzer {
     AccumulationStore regularStoreOfSuccessor = input.getRegularStore();
 
     for (Obligation obligation : obligations) {
-
-      if (isElseEdgeOfDisposalLoop && disposalLoopCalledMethods != null) {
-        if (obligation instanceof CollectionObligation collectionObligation) {
-          String mustCallMethodOfCo = collectionObligation.mustCallMethod;
-          if (disposalLoopCalledMethods.contains(mustCallMethodOfCo)) {
-            // Don't propagate this obligation along this edge, as the called-methods for this
-            // disposal loop already fulfills it.
-            continue;
-          }
-        }
+      // Along the loop's exit edge, don't propagate a collection obligation of the collection the
+      // loop iterates over if the loop body calls its must-call method on every element.
+      if (exitedDisposalLoop != null
+          && exitedLoopCalledMethods != null
+          && obligation instanceof CollectionObligation collectionObligation
+          && exitedLoopCalledMethods.contains(collectionObligation.mustCallMethod)
+          && obligation.canBeSatisfiedThrough(exitedDisposalLoop.expressionTree())) {
+        continue;
       }
       // This boolean is true if there is no evidence that the Obligation does not go out
       // of scope - that is, if there is definitely a resource alias that is in scope in

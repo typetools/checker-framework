@@ -95,8 +95,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
       conditionalBlockToDisposalLoopInfoMap = new IdentityHashMap<>();
 
   /**
-   * Map from a {@link DisposalLoopInfo} to the set of called-methods on the iterated element in its
-   * loop body.
+   * Map from a {@link DisposalLoopInfo} to the set of methods that the loop body is guaranteed to
+   * call on the iterated element.
    */
   private final IdentityHashMap<DisposalLoopInfo, Set<String>> disposalLoopInfoToCalledMethodsMap =
       new IdentityHashMap<>();
@@ -198,8 +198,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * exists.
    *
    * @param tree the condition tree
-   * @return the {@link DisposalLoopInfo} for condition {@code tree} if one exists, otherwise {@code
-   *     null}
+   * @return the {@link DisposalLoopInfo} for condition {@code tree}, or {@code null} if {@link
+   *     #postCFGConstruction} has not recorded one
    */
   public @Nullable DisposalLoopInfo getDisposalLoopInfoForConditionTree(Tree tree) {
     return conditionToDisposalLoopInfoMap.get(tree);
@@ -210,7 +210,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * conditional block} is {@code block}, if there is one.
    *
    * @param block a conditional block
-   * @return the {@link DisposalLoopInfo} for {@code block}, or {@code null} if there is none
+   * @return the {@link DisposalLoopInfo} for {@code block}, or {@code null} if {@link
+   *     #postCFGConstruction} has not recorded one
    */
   public @Nullable DisposalLoopInfo getDisposalLoopInfoForConditionalBlock(ConditionalBlock block) {
     return conditionalBlockToDisposalLoopInfoMap.get(block);
@@ -220,8 +221,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * Returns the called-methods on the iterated element for a {@link DisposalLoopInfo}.
    *
    * @param disposalLoopInfo the {@link DisposalLoopInfo}
-   * @return the called-methods for {@link DisposalLoopInfo}, or {@code null} if no information
-   *     exits
+   * @return the methods that the loop body is guaranteed to call on the iterated element, or {@code
+   *     null} if {@link #postCFGConstruction} has not recorded the loop
    */
   public @Nullable Set<String> getCalledMethods(DisposalLoopInfo disposalLoopInfo) {
     return disposalLoopInfoToCalledMethodsMap.get(disposalLoopInfo);
@@ -240,14 +241,14 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Registers a {@link DisposalLoopInfo} together with the called-methods on the iterated element
-   * over that loop's body.
+   * Records a {@link DisposalLoopInfo} and the methods its loop body is guaranteed to call on the
+   * iterated element, indexed by the loop's condition tree and its conditional block.
    *
    * @param disposalLoopInfo the {@link DisposalLoopInfo}
-   * @param calledMethods the methods that {@link DisposalLoopInfo}'s body is guaranteed to call on
-   *     the iterated element
+   * @param calledMethods the methods that the loop body is guaranteed to call on the iterated
+   *     element
    */
-  private void registerCalledMethods(DisposalLoopInfo disposalLoopInfo, Set<String> calledMethods) {
+  private void recordDisposalLoop(DisposalLoopInfo disposalLoopInfo, Set<String> calledMethods) {
     conditionToDisposalLoopInfoMap.put(disposalLoopInfo.loopConditionTree(), disposalLoopInfo);
     conditionalBlockToDisposalLoopInfoMap.put(
         disposalLoopInfo.loopConditionalBlock(), disposalLoopInfo);
@@ -330,10 +331,19 @@ public class CollectionOwnershipAnnotatedTypeFactory
     return ((UnderlyingAST.CFGMethod) underlyingAST).getMethod();
   }
 
+  /**
+   * Computes the called methods of this method's potential disposal loops, which {@link
+   * RLCCalledMethodsAnnotatedTypeFactory#postCFGConstruction} discovered earlier. For each loop,
+   * {@link MustCallConsistencyAnalyzer#analyzeDisposalLoop} computes the methods that the loop body
+   * is guaranteed to call on the iterated element, and this method records them.
+   *
+   * <p>This runs before this checker's dataflow analysis of the method. During that analysis,
+   * {@link CollectionOwnershipTransfer} certifies a recorded loop if its called methods cover the
+   * iterated element's must-call methods. Later, the Resource Leak Checker's {@link
+   * MustCallConsistencyAnalyzer} uses the recorded loops when it checks collection obligations.
+   */
   @Override
   protected void postCFGConstruction(ControlFlowGraph cfg, UnderlyingAST ast) {
-    // Discovers disposal loops in method's CFG, and for each disposal loop store the called-methods
-    // on the iterated element by the  loop's body using MustCallConsistencyAnalyzer.
     if (ast.getKind() != UnderlyingAST.Kind.METHOD) {
       return;
     }
@@ -350,7 +360,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
       Set<String> calledMethods =
           mustCallConsistencyAnalyzer.analyzeDisposalLoop(cfg, disposalLoopInfo);
       if (calledMethods != null) {
-        registerCalledMethods(disposalLoopInfo, calledMethods);
+        recordDisposalLoop(disposalLoopInfo, calledMethods);
       }
     }
   }
