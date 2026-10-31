@@ -144,6 +144,8 @@ public class AnnotationFileElementTypes {
    *   <li>Stub files returned by {@link BaseTypeChecker#getExtraStubFiles} (treated like those
    *       listed in @StubFiles annotation)
    *   <li>Stub files provided via {@code -Astubs} compiler option
+   *   <li>IntelliJ IDEA external annotations provided via {@code -AintellijAnnotations} compiler
+   *       option
    * </ol>
    *
    * <p>If a type is annotated with a qualifier from the same hierarchy in more than one stub file,
@@ -202,6 +204,13 @@ public class AnnotationFileElementTypes {
             SystemUtil.pathSeparatorSplitter.splitToList(stubsOption),
             AnnotationFileType.COMMAND_LINE_STUB);
       }
+
+      // 6. Annotations provided via -AintellijAnnotations command-line option
+      String intellijAnnotationsOption = checker.getOption("intellijAnnotations");
+      if (intellijAnnotationsOption != null) {
+        parseIntellijAnnotations(
+            SystemUtil.pathSeparatorSplitter.splitToList(intellijAnnotationsOption));
+      }
     } finally {
       parsing = false;
     }
@@ -259,19 +268,20 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Parses the ajava file at {@code ajavaPath} assuming {@code root} represents the compilation
-   * unit of that file. Uses {@code root} to get information from javac on specific elements of
-   * {@code ajavaPath}, enabling storage of more detailed annotation information than with just the
-   * ajava file.
+   * Parses the ajava file {@code ajavaFile} assuming {@code root} represents the compilation unit
+   * of that file. Uses {@code root} to get information from javac on specific elements of {@code
+   * ajavaFile}, enabling storage of more detailed annotation information than with just the ajava
+   * file.
    *
-   * @param ajavaPath path to an ajava file
+   * @param ajavaFile an ajava file, which may be in the file system or an entry in an archive
    * @param root javac tree for the compilation unit stored in {@code ajavaFile}
    */
-  public void parseAjavaFileWithTree(String ajavaPath, CompilationUnitTree root) {
+  public void parseAjavaFileWithTree(AnnotationFileResource ajavaFile, CompilationUnitTree root) {
+    String ajavaPath = ajavaFile.getDescription();
     parsing = true;
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-    try (InputStream in = Files.newInputStream(Paths.get(ajavaPath))) {
+    try (InputStream in = ajavaFile.getInputStream()) {
       if (stubDebug) {
         AnnotationFileParser.stubDebugStatic(
             processingEnv,
@@ -287,6 +297,58 @@ public class AnnotationFileElementTypes {
       checker.message(Diagnostic.Kind.NOTE, "Could not read ajava file: " + ajavaPath);
     } finally {
       parsing = false;
+    }
+  }
+
+  /**
+   * Parses IntelliJ annotation files.
+   *
+   * @param intellijAnnotationPaths list of files, directories, or jars/zips to parse
+   */
+  public void parseIntellijAnnotations(List<String> intellijAnnotationPaths) {
+    if (intellijAnnotationPaths.isEmpty()) {
+      return;
+    }
+    boolean wasParsing = parsing;
+    parsing = true;
+    try {
+      ProcessingEnvironment processingEnv = factory.getProcessingEnv();
+      if (stubDebug) {
+        AnnotationFileParser.stubDebugStatic(
+            processingEnv, "AFET.parseIntellijAnnotations(%s)", intellijAnnotationPaths);
+      }
+      SourceChecker checker = factory.getChecker();
+      for (String path : intellijAnnotationPaths) {
+        List<AnnotationFileResource> allFiles =
+            AnnotationFileUtil.allAnnotationFiles(path, AnnotationFileType.INTELLIJ_ANNOTATIONS);
+        if (allFiles == null) {
+          checker.message(
+              Diagnostic.Kind.ERROR, "IntelliJ IDEA annotations file not found: " + path);
+        } else if (allFiles.isEmpty()) {
+          // The path exists but contains no annotations.xml file, so the user gets no
+          // annotations from it.  That is most likely a mistake, so warn rather than issuing a
+          // note, which javac does not display by default.
+          checker.message(Diagnostic.Kind.WARNING, "No annotations.xml file found within " + path);
+        } else {
+          for (AnnotationFileResource resource : allFiles) {
+            try (BufferedInputStream annotationFileStream =
+                new BufferedInputStream(resource.getInputStream())) {
+              IntelliJAnnotationParser.parseAnnotationsXml(
+                  resource.getDescription(),
+                  annotationFileStream,
+                  factory,
+                  processingEnv,
+                  annotationFileAnnos);
+            } catch (IOException e) {
+              checker.message(
+                  Diagnostic.Kind.ERROR,
+                  "Could not read IntelliJ IDEA annotations: " + resource.getDescription());
+            }
+          }
+        }
+      }
+    } finally {
+      parsing = wasParsing;
     }
   }
 
@@ -310,6 +372,23 @@ public class AnnotationFileElementTypes {
           processingEnv, "AFET.parseAnnotationFiles(%s, %s)", annotationFiles, fileType);
     }
     for (String path : annotationFiles) {
+      File namedFile = AnnotationFileUtil.findFileSystemLocation(path);
+      if (namedFile != null
+          && namedFile.isFile()
+          && !AnnotationFileUtil.isJarOrZip(namedFile.getName())
+          && !AnnotationFileUtil.isUsableNamedFile(namedFile.getPath(), fileType)) {
+        String reason;
+        if (fileType == AnnotationFileType.COMMAND_LINE_STUB) {
+          reason = ", which is an ajava file; supply it via -Aajava";
+        } else if (fileType.isStub()) {
+          reason = ": the name of a stub file must not end with .ajava";
+        } else {
+          reason = ": the name of an ajava file must end with .ajava";
+        }
+        checker.message(Diagnostic.Kind.WARNING, "Ignoring " + path + reason);
+        continue;
+      }
+
       List<AnnotationFileResource> allFiles = AnnotationFileUtil.allAnnotationFiles(path, fileType);
       if (allFiles != null) {
         for (AnnotationFileResource resource : allFiles) {

@@ -7,6 +7,17 @@
 
 ### User-visible changes
 
+Added support for IntelliJ IDEA annotation files (`annotations.xml`) via the
+`-AintellijAnnotations` command-line option.
+
+The `-Astubs` and `-Aajava` command-line options accept `.zip` archives, in
+addition to `.jar` archives and directories.  An archive is read only if it is
+named in the option; an archive within a directory that is named in the option
+is ignored.
+
+All ajava files must end with `.ajava`.  Stub files must not end with `.ajava`;
+they conventionally end `.astub`.
+
 A method with a purity annotation may call the functional method of one of its
 functional-interface parameters, such as `f.apply(x)` for a parameter
 `Function f`; the call is treated as having the method's purity.  In exchange,
@@ -40,6 +51,9 @@ now a final, non-generic class.  `NumberMath.getNumberMath()` throws
 `PurityChecker.checkPurity()` takes two new arguments: the method declaration
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
+
+`AnnotationFileElementTypes.parseAjavaFileWithTree()` takes an
+`AnnotationFileResource` rather than a path.
 
 Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
 and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
