@@ -199,9 +199,9 @@ Checker.  Then, \<File.toPath()> returns \<@UnknownPathShape>.
 
 A rule that refines a type argument can make the Path Shape Checker reject
 some correct code.  For example, \<Files.list(dir).findFirst()> has type
-\<Optional<@HasName Path>>, so the Path Shape Checker rejects
-\<Files.list(dir).findFirst().orElse(dir)> unless \<dir> is
-\<@HasName>.  The same is true if the result of \<findFirst()> is the
+\<Optional<@HasName Path>> or \<Optional<@HasParent Path>>, so the Path
+Shape Checker rejects \<Files.list(dir).findFirst().orElse(dir)> unless
+\<dir> is \<@HasParent>.  The same is true if the result of \<findFirst()> is the
 initializer of an effectively final local variable of type
 \<Optional<Path>>, because the variable takes the covariant type arguments of
 its initializer.  You can cast the result of \<findFirst()> to

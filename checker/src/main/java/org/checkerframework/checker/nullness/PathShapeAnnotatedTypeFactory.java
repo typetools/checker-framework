@@ -19,7 +19,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -113,9 +112,9 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /*package-private*/ final ExecutableElement fileIsFile =
       TreeUtils.getMethod(File.class, "isFile", 0, processingEnv);
 
-  /** The {@code Stream.toList()} method. */
-  private final ExecutableElement streamToList =
-      TreeUtils.getMethod(Stream.class, "toList", 0, processingEnv);
+  /** The {@code Stream.toList()} method, or null if it does not exist (before Java 16). */
+  private final @Nullable ExecutableElement streamToList =
+      TreeUtils.getMethodOrNull("java.util.stream.Stream", "toList", 0, processingEnv);
 
   /**
    * Creates a new PathShapeAnnotatedTypeFactory.
