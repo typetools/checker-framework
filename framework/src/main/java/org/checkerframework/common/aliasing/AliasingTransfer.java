@@ -99,8 +99,11 @@ public class AliasingTransfer extends CFTransfer {
    * @return true if {@code rhs} is a fresh {@literal @}Unique expression
    */
   private boolean isFreshUnique(Node rhs) {
-    return (rhs instanceof MethodInvocationNode || rhs instanceof ObjectCreationNode)
-        && factory.getAnnotatedType(rhs.getTree()).hasPrimaryAnnotation(Unique.class);
+    if (!(rhs instanceof MethodInvocationNode || rhs instanceof ObjectCreationNode)) {
+      return false;
+    }
+    Tree rhsTree = rhs.getTree();
+    return rhsTree != null && factory.getAnnotatedType(rhsTree).hasPrimaryAnnotation(Unique.class);
   }
 
   /**
