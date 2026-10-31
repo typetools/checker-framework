@@ -176,8 +176,12 @@ class's methods and fields (see
 \href{https://bugs.openjdk.org/browse/JDK-8225377}{JDK-8225377}).  Doing so
 requires the class files for those types, even if your code never uses the
 method or field.  If a class file is missing, \<javac> issues this error.
-(JDK 17 and JDK 21 behave the same way if you pass
-\<-XDaddTypeAnnotationsToSymbol=true>.)
+(JDK 22 and JDK 23 before 23.0.2 do not issue this error; instead,
+\<javac> crashes with a \<CompletionFailure> exception whose message is
+like ``class file for com.example.SomeType not found''.  See
+\href{https://bugs.openjdk.org/browse/JDK-8337998}{JDK-8337998}.)
+JDK 17 and JDK 21 also attach the type annotations, and so require the
+class files, if you pass \<-XDaddTypeAnnotationsToSymbol=true>.
 
 This error is not specific to the Checker Framework:  \<javac> issues it
 whenever a library contains type annotations, such as ones written
