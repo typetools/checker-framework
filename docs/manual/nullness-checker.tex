@@ -18,11 +18,12 @@ To run the Nullness Checker, supply the
 command-line option to javac.  For
 examples, see Section~\ref{nullness-example}.
 
-The NullnessChecker is actually an ensemble of three pluggable
+The NullnessChecker is actually an ensemble of four pluggable
 type-checkers that work together: the Nullness Checker proper (which is the
 main focus of this chapter), the Initialization Checker
-(Section~\ref{initialization-checker}), and the Map Key Checker
-(\chapterpageref{map-key-checker}).
+(Section~\ref{initialization-checker}), the Map Key Checker
+(\chapterpageref{map-key-checker}), and the Path Shape Checker
+(\chapterpageref{path-shape-checker}).
 Their type hierarchies are completely independent, but they work together
 to provide precise nullness checking.
 
@@ -80,8 +81,9 @@ Parameter passing and return values are checked analogously to assignments.
 
 The Nullness Checker also checks the correctness, and correct use, of
 initialization (see
-Section~\ref{initialization-checker}) and of map key annotations (see
-\chapterpageref{map-key-checker}).
+Section~\ref{initialization-checker}), of map key annotations (see
+\chapterpageref{map-key-checker}), and of path shape annotations (see
+\chapterpageref{path-shape-checker}).
 
 
 The checker performs additional checks if certain \code{-Alint}
@@ -128,6 +130,13 @@ command-line option.)
   checker will unsoundly assume that the argument to \<Map.get> is a key
   for the receiver map.  It will not do any checking of
   \refqualclass{checker/nullness/qual}{KeyFor} and related qualifiers.
+
+\item
+  \label{nullness-sound-file-topath}%
+  If you supply the \code{-Astubs=sound-file-topath.astub} command-line
+  option, then the checker does not assume that \<File.toPath()> preserves
+  the path shape.  That assumption is unsound on Windows.  See
+  Section~\ref{path-shape-limitations}.
 
 \item
   \label{nullness-invocationPreservesArgumentNullness}%
@@ -184,13 +193,13 @@ command-line option.)
 
 \sectionAndLabel{Nullness annotations}{nullness-annotations}
 
-The Nullness Checker uses three separate type hierarchies:  one for nullness,
+The Nullness Checker uses four separate type hierarchies:  one for nullness,
 one for initialization (Section~\ref{initialization-checker}),
-and one for map keys (\chapterpageref{map-key-checker}).
-The Nullness Checker has four varieties of annotations:  nullness
-type qualifiers, nullness method annotations, initialization type qualifiers, and
-map key type
-qualifiers.
+one for map keys (\chapterpageref{map-key-checker}),
+and one for path shapes (\chapterpageref{path-shape-checker}).
+The Nullness Checker has five varieties of annotations:  nullness
+type qualifiers, nullness method annotations, initialization type qualifiers,
+map key type qualifiers, and path shape type qualifiers.
 
 \subsectionAndLabel{Nullness qualifiers}{nullness-qualifiers}
 
@@ -271,9 +280,10 @@ multiple inheritance.)
 Java's \<Object> is expressed as \<@Nullable Object>.  Programmers can omit
 most type qualifiers, because the default annotation
 (Section~\ref{null-defaults}) is usually correct.
-The Nullness Checker verifies three type hierarchies:  this one for
+The Nullness Checker verifies four type hierarchies:  this one for
 nullness, one for initialization (Section~\ref{initialization-checker}),
-and one for map keys (\chapterpageref{map-key-checker}).}
+one for map keys (\chapterpageref{map-key-checker}),
+and one for path shapes (\chapterpageref{path-shape-checker}).}
 \label{fig-nullness-hierarchy}
 \end{figure}
 
@@ -363,6 +373,33 @@ The command-line argument \<-AassumeKeyFor> makes the Nullness Checker not
 run the Map Key Checker.  The Nullness Checker will unsoundly assume that
 the argument to \<Map.get> is a key for the receiver map.  That is, the
 second condition above is always considered to be \<true>.
+
+
+\subsectionAndLabel{Path shape qualifiers}{path-shape-qualifiers}
+
+\begin{description}
+\item[\refqualclass{checker/nullness/qual}{HasName}]
+    indicates that a \<Path> or \<File> has a name --- that is, that it is
+    neither a root nor the empty path.
+\item[\refqualclass{checker/nullness/qual}{HasParent}]
+    indicates that a \<Path> or \<File> has a parent --- that is, that
+    \<getParent()> would return a non-\<null> value.
+\end{description}
+
+These annotations are checked by a Path Shape Checker
+(\chapterpageref{path-shape-checker}) that the Nullness Checker
+invokes.  They enable the Nullness Checker to treat calls to
+\sunjavadoc{java.base/java/nio/file/Path.html\#getParent()}{Path.getParent},
+\<Path.getFileName>, \<File.getParent>, and \<File.getParentFile>
+precisely rather than assuming they may always return null.  For example,
+the Nullness Checker determines that \<p.toAbsolutePath().getParent()> is
+non-\<null> if \<p> is known to be neither a root nor the empty path.  You
+rarely need to write these annotations, because the Path Shape Checker
+infers them.
+
+The command-line argument \<-AnoPathShape> makes the Nullness Checker not
+run the Path Shape Checker.  Then, the Nullness Checker makes no refinement
+based on path shapes.
 
 
 \sectionAndLabel{Writing nullness annotations}{writing-nullness-annotations}
@@ -2269,4 +2306,5 @@ greater than the benefit from adopting the Freedom Before Commitment system.
 % LocalWords:  unclassified'' trustArrayLenZero ArrayLen toArray Java''
 % LocalWords:  ConcurrentHashMap permitClearProperty setProperties
 % LocalWords:  clearProperty AassumeKeyFor WeakReference checkers''
-% LocalWords:  AinvocationPreservesArgumentNullness SpotBugs's
+% LocalWords:  AinvocationPreservesArgumentNullness SpotBugs's HasName
+% LocalWords:  HasParent getFileName getParent getParentFile AnoPathShape

@@ -1,0 +1,216 @@
+\chapterAndLabel{Path Shape Checker}{path-shape-checker}
+
+The Path Shape Checker tracks which paths have a name and which have a
+parent.  It applies to
+\sunjavadoc{java.base/java/nio/file/Path.html}{Path} and
+\sunjavadoc{java.base/java/io/File.html}{File} objects.  For example, if
+variable \<p> has type \<@HasParent Path>, then \<p.getParent()> returns a
+non-\<null> value.
+
+Section~\ref{path-shape-nullness} describes how path shape annotations
+enable the Nullness Checker (\chapterpageref{nullness-checker}) to treat
+calls to methods such as
+\sunjavadoc{java.base/java/nio/file/Path.html\#getParent()}{Path.getParent}
+more precisely by refining their result to \<@NonNull> in some cases.
+For example, the Nullness Checker accepts this code:
+
+\begin{Verbatim}
+  Path parent = Path.of("myfile.txt").toAbsolutePath().getParent();
+  parent.toString();  // OK:  parent is non-null
+\end{Verbatim}
+
+
+\sectionAndLabel{Invoking the Path Shape Checker}{path-shape-invoking}
+
+You will not typically run the Path Shape Checker.  The Nullness Checker
+runs it automatically.
+
+You can unsoundly suppress warnings related to path shapes with
+\<@SuppressWarnings("pathshape")>, or everywhere by using command-line option
+\<-AsuppressWarnings=pathshape>; see \chapterpageref{suppressing-warnings}.
+
+The command-line argument \<-AnoPathShape> makes the Nullness Checker
+not run the Path Shape Checker.  Then, the Nullness Checker makes no
+refinement based on path shapes.
+
+
+\sectionAndLabel{Path shape annotations}{path-shape-annotations}
+
+These qualifiers are part of the Path Shape type system:
+
+\begin{description}
+
+\item[\refqualclass{checker/nullness/qual}{HasName}]
+  indicates that the path has at least one name element and is not the
+  empty path.  For a \<Path>, \<getFileName()> returns a non-\<null>,
+  non-empty path.  For a \<File>, \<getName()> returns a non-empty string.
+  Roots (such as \</> and, on Windows, \<C:\textbackslash{}>, \<C:>, and
+  \<\textbackslash{}\textbackslash{}server\textbackslash{}share\textbackslash{}>)
+  and the empty path \<""> are not \<@HasName>.
+
+\item[\refqualclass{checker/nullness/qual}{HasParent}]
+  indicates that the path has a parent:  \<Path.getParent()>,
+  \<File.getParent()>, and \<File.getParentFile()> return a non-\<null>
+  value.  A path with a parent has either 2 or more names (such as
+  \<a/b>), or a root and a name (such as \</a>).
+
+\item[\refqualclass{checker/nullness/qual}{UnknownPathShape}]
+  indicates that the path might be a root or the empty path.
+  It is the default type qualifier.
+
+\item[\refqualclass{checker/nullness/qual}{PathShapeBottom}]
+  is used internally by the type system but should never be written by a
+  programmer.  Its only value is \<null>.
+
+\item[\refqualclass{checker/nullness/qual}{PolyPathShape}]
+  is a polymorphic qualifier (Section~\ref{method-qualifier-polymorphism}).
+
+\end{description}
+
+The subtyping hierarchy is a chain:  \<@PathShapeBottom> is a subtype of
+\<@HasParent>, which is a subtype of \<@HasName>, which is a subtype of
+\<@UnknownPathShape>.
+
+A path's shape depends only on the characters of the path, not on the file
+system.  Therefore, once a path is known to have a name or a parent, that
+fact remains true even if the file system changes.
+
+
+\sectionAndLabel{How the Nullness Checker uses path shapes}{path-shape-nullness}
+
+The Nullness Checker refines the result of these methods to \<@NonNull>:
+
+\begin{itemize}
+\item
+  \<Path.getParent()>, \<File.getParent()>, and \<File.getParentFile()>,
+  when the receiver is \<@HasParent>.
+\item
+  \<Path.getFileName()>, when the receiver is \<@HasName>.
+\end{itemize}
+
+
+\sectionAndLabel{Inferring path shapes}{path-shape-inference}
+
+You rarely need to write path shape annotations, because the Path Shape
+Checker infers them.  It uses these rules:
+
+\begin{itemize}
+\item
+  \<p.toAbsolutePath()> and \<f.getAbsoluteFile()> are \<@HasParent> if
+  the receiver is \<@HasName>.  For example, if \<p> is \<a>, then
+  \<p.toAbsolutePath()> might be \</home/user/a>.  A path that might be
+  empty, such as an unannotated \<Path>, does not have this property, because
+  the absolute path of the empty path is the current directory, which might
+  be \</>.
+\item
+  \<p.getFileName()>, \<p.getName(i)>, and \<p.subpath(i, j)> are
+  \<@HasName> if the receiver is \<@HasName>.
+\item
+  \<a.resolve(b)> is \<@HasParent> if \<b> is \<@HasParent> or if both
+  \<a> and \<b> are \<@HasName>.  Otherwise, it is \<@HasName> if \<b> is
+  \<@HasName>.  \<a.resolveSibling(b)> is \<@HasParent> if \<b> is
+  \<@HasParent> or if \<a> is \<@HasParent> and \<b> is \<@HasName>.
+  Otherwise, it is \<@HasName> if \<b> is \<@HasName>.
+\item
+  \<p.toFile()> and \<f.toPath()> have the same path shape as the receiver.
+  (On Windows, \<f.toPath()> does not always preserve the path shape; see
+  Section~\ref{path-shape-limitations}.)
+\item
+  \<Path.of>, \<Paths.get>, and \<new File(String)>, and the \<String>
+  overloads of \<resolve> and \<resolveSibling>, have a path shape that is
+  determined from the string, if every string argument is a compile-time
+  constant.  The Path Shape Checker determines the path shape under both
+  Unix and Windows rules and uses the weaker result.  For example, \<"C:">
+  is a name on Unix but a root on Windows, so \<Path.of("C:")> is
+  \<@UnknownPathShape>.  The Path Shape Checker does not examine strings that
+  are not compile-time constants.
+\item
+  \<new File(parent, child)> is \<@HasParent> if \<child> is a compile-time
+  constant with a parent, such as \<"a/b">, and \<@HasName> if \<child> is a
+  compile-time constant with a name, such as \<"a">.
+\item
+  If \<Files.isRegularFile(p)> or \<f.isFile()> returns true, then \<p> or
+  \<f> is \<@HasName>, because a root and the empty path always denote a
+  directory.
+\item
+  Elements of \<Files.list(dir)>, \<Files.newDirectoryStream(dir)>, and
+  \<dir.listFiles()>, and the results of \<Files.createTempFile(dir, ...)>
+  and \<Files.createTempDirectory(dir, ...)>, are \<@HasParent> if \<dir>
+  is \<@HasName>, and \<@HasName> otherwise.  The results of
+  \<Files.createTempFile(prefix, suffix)> and
+  \<Files.createTempDirectory(prefix)> are \<@HasName>.
+\item
+  Elements of \<Files.walk(start)> and \<Files.find(start, ...)> have the
+  same path shape as \<start>, because the first element is \<start>
+  itself.
+\item
+  \<p.normalize()>, \<p.toRealPath()>, and \<f.getCanonicalFile()> are
+  \<@UnknownPathShape>.  For example, \<Path.of("a/..").normalize()> is the
+  empty path.
+\end{itemize}
+
+Some of these rules qualify type arguments, as in \<Stream<@HasName Path>>.
+Ordinarily, type arguments are invariant
+(Section~\ref{covariant-type-parameters}).  The Path Shape Checker treats the
+type argument of \<Iterable>, \<Iterator>, \<Spliterator>, \<Optional>,
+\<Stream>, and \<DirectoryStream> as covariant, so it accepts code such
+as \<Stream<Path> s = Files.list(dir);>.  This is sound, because these
+interfaces have no methods that insert elements.
+Likewise, \<Stream.toList()> returns an unmodifiable list, so the Path Shape
+Checker treats the type argument of its result as covariant.  It accepts
+code such as \<return Files.list(dir).toList();> in a method whose return
+type is \<List<Path>>.
+
+An effectively final local variable with an initializer takes the covariant
+type arguments of its initializer, as if the variable had been declared with
+\<var>.  This changes only a type argument whose qualifier is
+\<@UnknownPathShape>, whether that qualifier is written or defaulted.  For
+example, the Path Shape Checker accepts this code:
+
+\begin{Verbatim}
+  try (Stream<Path> s = Files.list(Path.of("mydir"))) {
+    s.forEach(p -> p.getParent().toString());   // OK:  p is @HasParent
+  }
+\end{Verbatim}
+
+\noindent
+The variable does not take other type arguments, such as that of \<List>,
+nor the component type of an array.  Doing so would make the Path Shape
+Checker reject correct code that uses the variable where its declared type
+is expected, such as passing a \<List<Path>> variable to a method whose
+formal parameter type is \<List<Path>>, or storing a \<File> whose path
+shape is unknown into a \<File[]> variable.  To make a variable take all
+the type arguments of its initializer, declare it with \<var>.
+
+
+\sectionAndLabel{Limitations}{path-shape-limitations}
+
+The Path Shape Checker assumes that implementations of \<Path> follow the
+specification of \<Path>.  \<Path> is an interface, so a third-party
+\sunjavadoc{java.base/java/nio/file/spi/FileSystemProvider.html}{FileSystemProvider}
+could violate that assumption.
+
+The Path Shape Checker assumes that \<File.toPath()> preserves the path
+shape.  That is not true on Windows:  \<new File("//server/share")> has a
+parent, \<\textbackslash{}\textbackslash{}server>, but its \<toPath()> is a
+root.  To make the Path Shape Checker sound for such paths, pass the
+command-line argument \<-Astubs=sound-file-topath.astub> to the Nullness
+Checker.  Then, \<File.toPath()> returns \<@UnknownPathShape>.
+
+A rule that refines a type argument can make the Path Shape Checker reject
+some correct code.  For example, \<Files.list(dir).findFirst()> has type
+\<Optional<@HasName Path>> or \<Optional<@HasParent Path>>, so the Path
+Shape Checker rejects \<Files.list(dir).findFirst().orElse(dir)> unless
+\<dir> is \<@HasParent>.  The same is true if the result of \<findFirst()> is the
+initializer of an effectively final local variable of type
+\<Optional<Path>>, because the variable takes the covariant type arguments of
+its initializer.  You can cast the result of \<findFirst()> to
+\<Optional<Path>>, or you can suppress the warning.
+
+%% LocalWords:  pathshape HasName HasParent UnknownPathShape PathShapeBottom
+%% LocalWords:  PolyPathShape AnoPathShape getParent getParentFile getName
+%% LocalWords:  getFileName toAbsolutePath getAbsoluteFile resolveSibling
+%% LocalWords:  toFile toPath isRegularFile isFile listFiles subpath dir
+%% LocalWords:  newDirectoryStream createTempFile createTempDirectory toList
+%% LocalWords:  toRealPath getCanonicalFile Spliterator DirectoryStream
+%% LocalWords:  FileSystemProvider AsuppressWarnings myfile
