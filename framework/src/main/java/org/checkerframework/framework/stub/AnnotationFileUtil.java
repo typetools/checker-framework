@@ -20,9 +20,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import javax.lang.model.element.Element;
@@ -393,8 +397,11 @@ public class AnnotationFileUtil {
   /**
    * Returns annotation files found at a given file system location (does not look on classpath).
    *
-   * @param location an annotation file (stub file or ajava file), a jarfile, or a directory. Look
-   *     for it as described in {@link #findFileSystemLocation}.
+   * @param location an annotation file (stub file or ajava file), a jar or zip archive, or a
+   *     directory. Look for it as described in {@link #findFileSystemLocation}. A file that is
+   *     named explicitly is used if {@link #isUsableNamedFile} returns true for it; within an
+   *     archive or directory, only files whose name indicates that they are of type {@code
+   *     fileType} are used.
    * @param fileType file type of files to collect
    * @return annotation files with the given file type found in the file system (does not look on
    *     classpath). Returns null if the file system location does not exist; the caller may wish to
@@ -407,35 +414,77 @@ public class AnnotationFileUtil {
       return null;
     }
     List<AnnotationFileResource> resources = new ArrayList<>();
-    addAnnotationFilesToList(file, resources, fileType);
+    addAnnotationFilesToList(file, resources, fileType, true);
     return resources;
   }
 
   /**
-   * Returns true if the given file is an annotation file of the given type.
+   * Returns the entries in an archive whose names end with the given string.
    *
-   * @param f the file to check
-   * @param fileType the type of file to check against
-   * @return true if {@code f} is a file with file type matching {@code fileType}, false otherwise
+   * @param archive a JAR or ZIP archive
+   * @param nameEnding the end of the name of each entry to return
+   * @return a map from the name of each entry in {@code archive} whose name ends with {@code
+   *     nameEnding} to that entry. Entry names use "/" as the separator. The map is empty if {@code
+   *     archive} cannot be read. An entry that cannot be read is in the map; see {@link
+   *     #archiveEntry}.
    */
-  private static boolean isAnnotationFile(File f, AnnotationFileType fileType) {
-    return f.isFile() && isAnnotationFile(f.getName(), fileType);
+  public static Map<String, AnnotationFileResource> archiveEntries(
+      File archive, String nameEnding) {
+    Map<String, AnnotationFileResource> result = new HashMap<>();
+    try (JarFile file = new JarFile(archive)) {
+      file.stream()
+          .filter(entry -> entry.getName().endsWith(nameEnding))
+          .forEach(entry -> result.put(entry.getName(), archiveEntry(archive, file, entry)));
+    } catch (IOException e) {
+      System.err.println("AnnotationFileUtil: could not process archive " + archive + ": " + e);
+      return Collections.emptyMap();
+    }
+    return result;
   }
 
   /**
-   * Returns true if the given file is an annotation file of the given kind.
+   * Returns true if the given file is an annotation file of the given kind. A hidden file (one
+   * whose name starts with ".") is not an annotation file; an example is the {@code ._Foo.astub}
+   * metadata file that macOS adds to archives and to non-Mac file systems.
    *
-   * @param path a file
+   * @param path a file name or path, or the name of an archive entry
    * @param fileType the type of file to check against
    * @return true if {@code path} represents a file with file type matching {@code fileType}, false
    *     otherwise
    */
-  private static boolean isAnnotationFile(String path, AnnotationFileType fileType) {
-    return path.endsWith(fileType.isStub() ? ".astub" : ".ajava");
+  static boolean isAnnotationFile(String path, AnnotationFileType fileType) {
+    // Archive entry names use "/" as the separator on every platform.
+    String name = path.substring(path.lastIndexOf('/') + 1);
+    return !name.startsWith(".") && name.endsWith(fileType.isStub() ? ".astub" : ".ajava");
   }
 
-  private static boolean isJar(File f) {
-    return f.isFile() && f.getName().endsWith(".jar");
+  /**
+   * Returns true if {@code name} is the name of a JAR or ZIP archive file. The file name extension
+   * is compared case-insensitively, so {@code STUBS.ZIP} is an archive.
+   *
+   * @param name a file name
+   * @return true if {@code name} is the name of a JAR or ZIP file
+   */
+  public static boolean isJarOrZip(String name) {
+    String lowerCaseName = name.toLowerCase(Locale.ROOT);
+    return lowerCaseName.endsWith(".jar") || lowerCaseName.endsWith(".zip");
+  }
+
+  /**
+   * Returns true if a file that the user named explicitly, and that is not an archive, should be
+   * used as an annotation file of type {@code fileType}. Every ajava file, and no stub file, must
+   * end with {@code .ajava}.
+   *
+   * @param path a file name or path
+   * @param fileType the type of annotation file that the user supplied
+   * @return true if the named file should be used
+   */
+  static boolean isUsableNamedFile(String path, AnnotationFileType fileType) {
+    if (fileType.isStub()) {
+      return !isAnnotationFile(path, AnnotationFileType.AJAVA);
+    } else {
+      return isAnnotationFile(path, fileType);
+    }
   }
 
   /**
@@ -456,52 +505,56 @@ public class AnnotationFileUtil {
   }
 
   /**
+   * Returns an annotation file resource for an entry in an archive. If the entry cannot be read,
+   * the resource's {@link AnnotationFileResource#getInputStream} throws the exception, so the
+   * client reports the error when it reads this entry and still processes the archive's other
+   * entries.
+   *
+   * @param archive a JAR or ZIP archive
+   * @param file {@code archive}, open
+   * @param entry an entry in {@code archive}
+   * @return an annotation file resource for {@code entry}
+   */
+  private static AnnotationFileResource archiveEntry(File archive, JarFile file, JarEntry entry) {
+    try {
+      return new JarEntryAnnotationFileResource(archive, entry.getName(), readEntry(file, entry));
+    } catch (IOException e) {
+      String description = archive.getPath() + "!" + entry.getName();
+      return new AnnotationFileResource() {
+        @Override
+        public String getDescription() {
+          return description;
+        }
+
+        @Override
+        public InputStream getInputStream() throws IOException {
+          throw e;
+        }
+      };
+    }
+  }
+
+  /**
    * Side-effects {@code resources} by adding annotation files of the given file type to it.
    *
-   * @param location an annotation file (a stub file or ajava file), a jarfile, or a directory. If a
-   *     stub file or ajava file, add it to the {@code resources} list. If a jarfile, use all
-   *     annotation files (of type {@code fileType}) contained in it. If a directory, recurse on all
-   *     files contained in it.
+   * @param location an annotation file (a stub file or ajava file), a jar or zip archive, or a
+   *     directory. If an annotation file, add it to the {@code resources} list. If an archive that
+   *     the user named, use all annotation files (of type {@code fileType}) contained in it. If a
+   *     directory, recurse on all files contained in it.
    * @param resources the list to add the found files to
    * @param fileType type of annotation files to add
+   * @param isUserSupplied true if {@code location} was named by the user (say, on the command line)
+   *     rather than being found by searching a directory or an archive. A file named by the user is
+   *     used if {@link #isUsableNamedFile} returns true for it; a file found by searching is used
+   *     only if its name indicates that it is an annotation file of type {@code fileType}. An
+   *     archive found by searching a directory is not opened.
    */
   private static void addAnnotationFilesToList(
-      File location, List<AnnotationFileResource> resources, AnnotationFileType fileType) {
-    if (isAnnotationFile(location, fileType)) {
-      resources.add(new FileAnnotationFileResource(location));
-    } else if (isJar(location)) {
-      try (JarFile file = new JarFile(location)) {
-        file.stream()
-            .filter(entry -> isAnnotationFile(entry.getName(), fileType))
-            .forEach(
-                entry -> {
-                  try {
-                    resources.add(
-                        new JarEntryAnnotationFileResource(
-                            location, entry.getName(), readEntry(file, entry)));
-                  } catch (IOException e) {
-                    // The client reports the error when it reads this entry, and it still
-                    // processes the archive's other entries.
-                    String description = location.getPath() + "!" + entry.getName();
-                    resources.add(
-                        new AnnotationFileResource() {
-                          @Override
-                          public String getDescription() {
-                            return description;
-                          }
-
-                          @Override
-                          public InputStream getInputStream() throws IOException {
-                            throw e;
-                          }
-                        });
-                  }
-                });
-      } catch (IOException e) {
-        System.err.println("AnnotationFileUtil: could not process archive " + location + ": " + e);
-      }
-
-    } else if (location.isDirectory()) {
+      File location,
+      List<AnnotationFileResource> resources,
+      AnnotationFileType fileType,
+      boolean isUserSupplied) {
+    if (location.isDirectory()) {
       File[] directoryContents = location.listFiles();
       if (directoryContents == null) {
         System.err.println("AnnotationFileUtil: could not list directory: " + location);
@@ -509,7 +562,23 @@ public class AnnotationFileUtil {
       }
       Arrays.sort(directoryContents, Comparator.comparing(File::getName));
       for (File enclosed : directoryContents) {
-        addAnnotationFilesToList(enclosed, resources, fileType);
+        addAnnotationFilesToList(enclosed, resources, fileType, false);
+      }
+    } else if (location.isFile()) {
+      String name = location.getName();
+      if (isUserSupplied && isJarOrZip(name)) {
+        try (JarFile file = new JarFile(location)) {
+          file.stream()
+              .filter(entry -> isAnnotationFile(entry.getName(), fileType))
+              .forEach(entry -> resources.add(archiveEntry(location, file, entry)));
+        } catch (IOException e) {
+          System.err.println(
+              "AnnotationFileUtil: could not process archive " + location + ": " + e);
+        }
+      } else if (isUserSupplied
+          ? isUsableNamedFile(name, fileType)
+          : isAnnotationFile(name, fileType)) {
+        resources.add(new FileAnnotationFileResource(location));
       }
     }
   }
