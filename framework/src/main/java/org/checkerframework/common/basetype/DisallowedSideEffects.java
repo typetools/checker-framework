@@ -514,7 +514,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     // so it calls `iterator()` on `expr`, then `hasNext()` and `next()` on the iterator.
     if (iterableType.getKind() != TypeKind.ARRAY) {
       ExecutableElement iteratorMethod =
-          ElementUtils.getNoArgumentMethod(
+          ElementUtils.resolveNoArgumentCall(
               iterableType, "iterator", checker.getProcessingEnvironment());
       if (iteratorMethod == null) {
         checker.reportError(node, "purity.unknown.sideeffectsonly", "iterator");
@@ -534,7 +534,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       TypeMirror iteratorType = iteratorMethod.getReturnType();
       for (String iteratorMethodName : new String[] {"hasNext", "next"}) {
         ExecutableElement iteratorElem =
-            ElementUtils.getNoArgumentMethod(
+            ElementUtils.resolveNoArgumentCall(
                 iteratorType, iteratorMethodName, checker.getProcessingEnvironment());
         if (iteratorElem == null) {
           checker.reportError(node, "purity.unknown.sideeffectsonly", iteratorMethodName);
@@ -561,7 +561,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         resourceExpr = expressionFromTree((ExpressionTree) resource);
       }
       ExecutableElement closeMethod =
-          ElementUtils.getNoArgumentMethod(
+          ElementUtils.resolveNoArgumentCall(
               TreeUtils.typeOf(resource), "close", checker.getProcessingEnvironment());
       if (closeMethod == null) {
         checker.reportError(resource, "purity.unknown.sideeffectsonly", "close");
@@ -679,12 +679,12 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * @param receiverType the type of the receiver of the call
    * @param methodName the name of the method
    * @return the invoked method, or null if the type has no such method
-   * @deprecated use {@link ElementUtils#getNoArgumentMethod}
+   * @deprecated use {@link ElementUtils#resolveNoArgumentCall}
    */
   @Deprecated // 2026-10-27
   protected @Nullable ExecutableElement noArgumentMethod(
       TypeMirror receiverType, String methodName) {
-    return ElementUtils.getNoArgumentMethod(
+    return ElementUtils.resolveNoArgumentCall(
         receiverType, methodName, checker.getProcessingEnvironment());
   }
 

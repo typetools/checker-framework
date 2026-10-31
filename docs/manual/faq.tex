@@ -1827,6 +1827,9 @@ Framework's annotations.
 
 A \<.class> file contains an annotation on every type, as computed by
 defaulting rules; see Section~\ref{effective-qualifier}.
+As a consequence, compiling against such a \<.class> file with JDK 22 or
+later requires every type in its signatures to be on the classpath; see
+Section~\ref{cannot-attach-type-annotations}.
 
 When an overridden method has a side effect annotation, the overriding
 method must have one too.  However, if the side effect annotation is
