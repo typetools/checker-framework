@@ -590,11 +590,13 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
       V v = (V) this;
       return v;
     }
-    // An upper bound of a value and itself is that value.  This improves efficiency when merging
-    // the stores at a control-flow join point.  The shortcut does not apply to a wildcard, not even
-    // when `this == other`:  TypesUtils.leastUpperBound replaces a wildcard by its upper bound, so
-    // the upper bound of a wildcard value and itself has a different underlying type.
-    if (underlyingType.getKind() != TypeKind.WILDCARD && this.equals(other)) {
+    // The least upper bound of a value and itself is that value.  This improves efficiency when
+    // merging the stores at a control-flow join point.  The shortcut does not apply to widening,
+    // because QualifierHierarchy.widenedUpperBound is permitted to return a strict supertype of the
+    // least upper bound.  The shortcut does not apply to a wildcard, not even when `this == other`:
+    // TypesUtils.leastUpperBound replaces a wildcard by its upper bound, so the upper bound of a
+    // wildcard value and itself has a different underlying type.
+    if (!shouldWiden && underlyingType.getKind() != TypeKind.WILDCARD && this.equals(other)) {
       @SuppressWarnings("unchecked")
       V v = (V) this;
       return v;
