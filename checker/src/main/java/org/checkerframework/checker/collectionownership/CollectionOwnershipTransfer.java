@@ -40,6 +40,7 @@ import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -266,7 +267,7 @@ public class CollectionOwnershipTransfer
       return false;
     }
     List<? extends AnnotationMirror> declaredType = declaredElement.asType().getAnnotationMirrors();
-    return atypeFactory.getCoType(declaredType) == CollectionOwnershipType.NotOwningCollection;
+    return AnnotationUtils.containsSame(declaredType, atypeFactory.NOTOWNINGCOLLECTION);
   }
 
   @Override

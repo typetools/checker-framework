@@ -142,9 +142,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
       Collections.newSetFromMap(new IdentityHashMap<>());
 
   /**
-   * Enum for the types in the hierarchy. Combined with a few utility methods to get the right enum
-   * value from various sources, this is a convenient interface to deal with annotations in this
-   * hierarchy.
+   * The qualifiers of the collection ownership hierarchy. The {@code getCoType} methods return the
+   * qualifier of a node in a store, of a tree, or in a set of annotations as one of these
+   * constants, so that callers can {@code switch} on it or compare it with {@code ==}.
    */
   public enum CollectionOwnershipType {
     /** The @NotOwningCollection type. */
@@ -171,9 +171,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
 
   /**
    * The method name used for CollectionObligations that represent an obligation of MustCallUnknown.
-   * The digit in the first character ensures this cannot coincide with an actual method name.
+   * The leading space ensures this cannot coincide with an actual method name.
    */
-  public static final String UNKNOWN_METHOD_NAME = "1UNKNOWN";
+  public static final String UNKNOWN_METHOD_NAME = " UNKNOWN";
 
   /**
    * Creates a CollectionOwnershipAnnotatedTypeFactory.
@@ -411,10 +411,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
             isStatic,
             capturedStore);
     if (cfg == null && ast.getKind() == UnderlyingAST.Kind.METHOD) {
-      // This uses the same workaround pattern for lambdas that originally lived in
-      // RLCCalledMethodsAnnotatedTypeFactory#analyze:
-      // run the resource-leak post-analysis immediately after the first method analysis, before
-      // containing lambdas are reanalyzed to fixpoint.
+      // Run the resource-leak post-analysis now, after the method's first analysis and before any
+      // lambdas in it are reanalyzed (see RLCCalledMethodsAnnotatedTypeFactory#analyze).
+      // postAnalyze skips the methods recorded here.
       runResourceLeakPostAnalyze(result);
       preLambdaPostAnalyzedMethods.add(result);
     }
@@ -455,8 +454,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Returns true if the given type is a resource collection: a type assignable from {@code
-   * Collection} whose single type var has non-empty MustCall type.
+   * Returns true if the given type is a resource collection: a collection (see {@link
+   * ResourceLeakUtils#isCollection}) with exactly one type argument, whose {@code @MustCall} type
+   * is non-empty.
    *
    * <p>This overload should be used only before computation of AnnotatedTypeMirrors is completed,
    * in particular in addComputedTypeAnnotations(AnnotatedTypeMirror).
@@ -483,16 +483,10 @@ public class CollectionOwnershipAnnotatedTypeFactory
       return false;
     }
     if (isResourceCollection(elt.asType())) {
-      AnnotatedTypeMirror atm = getAnnotatedType(elt);
-      CollectionOwnershipType fieldType =
-          getCoType(Collections.singletonList(atm.getPrimaryAnnotationInHierarchy(TOP)));
-      if (fieldType == null) {
-        return false;
-      }
-      return switch (fieldType) {
-        case OwningCollection, OwningCollectionWithoutObligation -> true;
-        default -> false;
-      };
+      AnnotationMirror anno = getAnnotatedType(elt).getPrimaryAnnotationInHierarchy(TOP);
+      return anno != null
+          && (AnnotationUtils.areSame(anno, OWNINGCOLLECTION)
+              || AnnotationUtils.areSame(anno, OWNINGCOLLECTIONWITHOUTOBLIGATION));
     }
     return false;
   }
@@ -523,25 +517,20 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *     {@code @OwningCollection} by declaration
    */
   public boolean isOwningCollectionParameter(Element elt) {
-    if (isResourceCollection(elt.asType())) {
-      if (elt.getKind() == ElementKind.PARAMETER) {
-        AnnotatedTypeMirror atm = getAnnotatedType(elt);
-        CollectionOwnershipType paramType =
-            getCoType(Collections.singletonList(atm.getPrimaryAnnotationInHierarchy(TOP)));
-        if (paramType == null) {
-          return false;
-        }
-        return paramType == CollectionOwnershipType.OwningCollection;
-      }
+    if (elt.getKind() != ElementKind.PARAMETER) {
+      throw new BugInCF("Not a parameter: " + elt);
     }
-    return false;
+    if (!isResourceCollection(elt.asType())) {
+      return false;
+    }
+    AnnotationMirror anno = getAnnotatedType(elt).getPrimaryAnnotationInHierarchy(TOP);
+    return anno != null && AnnotationUtils.areSame(anno, OWNINGCOLLECTION);
   }
 
   /**
-   * Returns true if the given AST tree is a resource collection.
-   *
-   * <p>That is, whether the given tree is of a type assignable from java.util.Collection, whose
-   * only type var has non-empty MustCall type.
+   * Returns true if the given AST tree is a resource collection: a collection (see {@link
+   * ResourceLeakUtils#isCollection}) with exactly one type argument, whose {@code @MustCall} type
+   * is non-empty.
    *
    * @param tree the tree
    * @return true if the tree is a resource collection
@@ -550,15 +539,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
     if (tree == null) {
       return false;
     }
-    AnnotatedTypeMirror treeMcType;
-    try {
-      treeMcType = mcAtf.getAnnotatedType(tree);
-    } catch (BugInCF e) {
-      // this happens if the tree is not of a supported format, thrown by
-      // AnnotatedTypeFactory#getAnnotatedType
-      treeMcType = null;
-    }
-    List<String> mcValues = getMustCallValuesOfResourceCollectionComponent(treeMcType);
+    List<String> mcValues = getMustCallValuesOfResourceCollectionComponent(tree);
     return mcValues != null && !mcValues.isEmpty();
   }
 
@@ -711,6 +692,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
    *     or null if there are none or if the given type is not a collection
    */
   public @Nullable List<String> getMustCallValuesOfResourceCollectionComponent(Tree tree) {
+    if (!(TreeUtils.isExpressionTree(tree) || tree instanceof VariableTree)) {
+      return null;
+    }
     return getMustCallValuesOfResourceCollectionComponent(mcAtf.getAnnotatedType(tree));
   }
 
