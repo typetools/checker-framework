@@ -1,6 +1,5 @@
 package org.checkerframework.framework.test.junit;
 
-import java.util.Objects;
 import org.checkerframework.common.value.util.NumberMath;
 import org.junit.Assert;
 import org.junit.Test;
@@ -14,8 +13,8 @@ public class NumberMathTest {
    * @param number the left operand
    * @return a NumberMath whose left operand is {@code number}
    */
-  private static NumberMath<?> math(Number number) {
-    return Objects.requireNonNull(NumberMath.getNumberMath(number));
+  private static NumberMath math(Number number) {
+    return NumberMath.getNumberMath(number);
   }
 
   /** Tests binary numeric promotion for arithmetic operations. */
