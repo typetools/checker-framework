@@ -1004,13 +1004,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
       }
     }
 
-    if (AnnotatedTypes.areCorrespondingTypeVariables(
-        checker.getProcessingEnvironment().getElementUtils(), subtype, supertype)) {
-      if (areEqualInHierarchy(subtype, supertype)) {
-        return true;
-      }
-    }
-
     if (TypesUtils.isCapturedTypeVariable(subTM) && TypesUtils.isCapturedTypeVariable(superTM)) {
       // This case happens when the captured type variables should be the same type, but
       // aren't because type argument inference isn't implemented correctly.
