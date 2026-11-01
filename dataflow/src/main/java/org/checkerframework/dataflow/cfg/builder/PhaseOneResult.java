@@ -24,15 +24,17 @@ public class PhaseOneResult {
 
   /**
    * Maps from AST {@link Tree}s to sets of {@link Node}s. Every Tree that produces a value will
-   * have at least one corresponding Node. Trees that undergo conversions, such as boxing or
-   * unboxing, can map to two distinct Nodes. The Node for the pre-conversion value is stored in the
-   * treeToCfgNodes, while the Node for the post-conversion value is stored in the
-   * treeToConvertedCfgNodes.
+   * have at least one corresponding Node. Trees that undergo implicit conversions, such as boxing
+   * or unboxing, can map to two distinct Nodes. The Node for the value before implicit conversion
+   * is stored in the treeToCfgNodes, while the Node for the value after implicit conversion is
+   * stored in the treeToImplicitlyConvertedCfgNodes.
    */
   /*package-private*/ final IdentityHashMap<Tree, Set<Node>> treeToCfgNodes;
 
-  /** Map from AST {@link Tree}s to post-conversion sets of {@link Node}s. */
-  /*package-private*/ final IdentityHashMap<Tree, Set<Node>> treeToConvertedCfgNodes;
+  /**
+   * Map from AST {@link Tree}s to sets of {@link Node}s for their values after implicit conversion.
+   */
+  /*package-private*/ final IdentityHashMap<Tree, Set<Node>> treeToImplicitlyConvertedCfgNodes;
 
   /**
    * Map from postfix increment or decrement trees that are AST {@link UnaryTree}s to the synthetic
@@ -81,7 +83,7 @@ public class PhaseOneResult {
    *
    * @param underlyingAST the underlying AST
    * @param treeToCfgNodes the tree to nodes mapping
-   * @param treeToConvertedCfgNodes the tree to converted nodes mapping
+   * @param treeToImplicitlyConvertedCfgNodes the tree to implicitly converted nodes mapping
    * @param postfixTreeToCfgNodes the postfix tree to nodes mapping
    * @param nodeList the list of nodes
    * @param bindings the label bindings
@@ -96,7 +98,7 @@ public class PhaseOneResult {
   public PhaseOneResult(
       UnderlyingAST underlyingAST,
       IdentityHashMap<Tree, Set<Node>> treeToCfgNodes,
-      IdentityHashMap<Tree, Set<Node>> treeToConvertedCfgNodes,
+      IdentityHashMap<Tree, Set<Node>> treeToImplicitlyConvertedCfgNodes,
       IdentityHashMap<UnaryTree, BinaryTree> postfixTreeToCfgNodes,
       List<ExtendedNode> nodeList,
       Map<Label, Integer> bindings,
@@ -109,7 +111,7 @@ public class PhaseOneResult {
       Types types) {
     this.underlyingAST = underlyingAST;
     this.treeToCfgNodes = treeToCfgNodes;
-    this.treeToConvertedCfgNodes = treeToConvertedCfgNodes;
+    this.treeToImplicitlyConvertedCfgNodes = treeToImplicitlyConvertedCfgNodes;
     this.postfixTreeToCfgNodes = postfixTreeToCfgNodes;
     this.nodeList = nodeList;
     this.bindings = bindings;
@@ -185,7 +187,8 @@ public class PhaseOneResult {
         new StringJoiner(
             String.format("%n  "), String.format("PhaseOneResult{%n  "), String.format("%n  }"));
     result.add("treeToCfgNodes=" + mapToString(treeToCfgNodes));
-    result.add("treeToConvertedCfgNodes=" + mapToString(treeToConvertedCfgNodes));
+    result.add(
+        "treeToImplicitlyConvertedCfgNodes=" + mapToString(treeToImplicitlyConvertedCfgNodes));
     result.add("postfixTreeToCfgNodes=" + mapToString(postfixTreeToCfgNodes));
     result.add("underlyingAST=" + underlyingAST);
     result.add("bindings=" + bindings);

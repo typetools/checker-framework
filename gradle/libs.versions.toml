@@ -16,7 +16,7 @@ jgit-version = "7.8.0.202609011348-r"
 # name itself changes (independently of the version number), such as from
 # org.apache.spark:spark-sql_2.12 to org.apache.spark:spark-sql_2.13.
 # See https://mvnrepository.com/artifact/org.apache.spark/spark-sql .
-spark-sql = "org.apache.spark:spark-sql_2.13:4.2.1"
+spark-sql = "org.apache.spark:spark-sql_2.13:4.3.0"
 
 asm = "org.ow2.asm:asm:9.11.1"
 
@@ -74,7 +74,7 @@ com-gradleup-shadow = { id = "com.gradleup.shadow", version = "9.6.1" }
 
 de-undercouch-download = { id = "de.undercouch.download", version = "5.7.0" }
 
-net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "5.1.1" }
+net-ltgt-errorprone = { id = "net.ltgt.errorprone", version = "5.2.0" }
 
 com-diffplug-spotless = { id = "com.diffplug.spotless", version = "8.10.4" }
 
