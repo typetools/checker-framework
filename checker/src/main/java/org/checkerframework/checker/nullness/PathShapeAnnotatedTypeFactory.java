@@ -507,7 +507,7 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @return true if {@code tree} is an invocation of {@code Stream.toList()}
    */
   /*package-private*/ boolean isStreamToList(MethodInvocationTree tree) {
-    return TreeUtils.elementFromUse(tree).equals(streamToList);
+    return streamToList != null && TreeUtils.elementFromUse(tree).equals(streamToList);
   }
 
   /**
