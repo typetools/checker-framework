@@ -1,7 +1,11 @@
 package org.checkerframework.checker.modifiability;
 
 import com.sun.source.tree.MethodInvocationTree;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -9,8 +13,8 @@ import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.modifiability.iterator.IteratorAnnotatedTypeFactory;
 import org.checkerframework.checker.modifiability.iterator.IteratorChecker;
-import org.checkerframework.checker.modifiability.qual.IteratorPolyMod;
 import org.checkerframework.checker.modifiability.qual.MaybeModifiable;
 import org.checkerframework.checker.modifiability.qual.Modifiable;
 import org.checkerframework.checker.modifiability.qual.PolyModifiable;
@@ -51,8 +55,20 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
   private static final String UNMODIFIABLE_PARAM_NAME =
       "org.checkerframework.checker.modifiability.qual.UnmodifiableParam";
 
-  /** The {@code @}{@link IteratorPolyMod} qualifier. */
-  protected final AnnotationMirror ITERATOR_POLY_MOD;
+  /** The top qualifier of this checker's hierarchy. */
+  private final AnnotationMirror topAnnotation;
+
+  /** The positive capability qualifier of this checker's hierarchy. */
+  private final AnnotationMirror positiveCapability;
+
+  /** The negative capability qualifier, or null if this checker has none. */
+  private final @Nullable AnnotationMirror negativeCapability;
+
+  /** The polymorphic qualifier of this checker's hierarchy. */
+  private final AnnotationMirror polyCapability;
+
+  /** The classes of the qualifiers supported by this checker. */
+  private final List<Class<? extends Annotation>> qualifierClasses;
 
   /** The erased {@code java.util.Collection} type. */
   protected final TypeMirror collectionErasure;
@@ -79,10 +95,36 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
    * Creates a ModifiabilityBaseAnnotatedTypeFactory.
    *
    * @param checker the associated type-checker
+   * @param topClass the top qualifier class
+   * @param positiveClass the positive capability qualifier class
+   * @param negativeClass the negative capability qualifier class, or null if there is none
+   * @param bottomClass the bottom qualifier class, or null if there is none
+   * @param polyClass the polymorphic qualifier class
    */
-  protected ModifiabilityBaseAnnotatedTypeFactory(BaseTypeChecker checker) {
+  protected ModifiabilityBaseAnnotatedTypeFactory(
+      BaseTypeChecker checker,
+      Class<? extends Annotation> topClass,
+      Class<? extends Annotation> positiveClass,
+      @Nullable Class<? extends Annotation> negativeClass,
+      @Nullable Class<? extends Annotation> bottomClass,
+      Class<? extends Annotation> polyClass) {
     super(checker);
-    this.ITERATOR_POLY_MOD = AnnotationBuilder.fromClass(elements, IteratorPolyMod.class);
+    this.topAnnotation = AnnotationBuilder.fromClass(elements, topClass);
+    this.positiveCapability = AnnotationBuilder.fromClass(elements, positiveClass);
+    this.negativeCapability =
+        negativeClass == null ? null : AnnotationBuilder.fromClass(elements, negativeClass);
+    this.polyCapability = AnnotationBuilder.fromClass(elements, polyClass);
+    List<Class<? extends Annotation>> qualifierClasses = new ArrayList<>(5);
+    qualifierClasses.add(topClass);
+    qualifierClasses.add(positiveClass);
+    if (negativeClass != null) {
+      qualifierClasses.add(negativeClass);
+    }
+    if (bottomClass != null) {
+      qualifierClasses.add(bottomClass);
+    }
+    qualifierClasses.add(polyClass);
+    this.qualifierClasses = List.copyOf(qualifierClasses);
     this.collectionErasure = erasureOf("java.util.Collection");
     this.mapErasure = erasureOf("java.util.Map");
     this.mapEntryErasure = erasureOf("java.util.Map.Entry");
@@ -119,14 +161,18 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
    *
    * @return the top qualifier of this checker's hierarchy
    */
-  protected abstract AnnotationMirror topAnnotation();
+  protected AnnotationMirror topAnnotation() {
+    return topAnnotation;
+  }
 
   /**
    * Returns the positive capability qualifier, such as {@code @Growable}.
    *
    * @return the positive capability qualifier
    */
-  protected abstract AnnotationMirror positiveCapability();
+  protected AnnotationMirror positiveCapability() {
+    return positiveCapability;
+  }
 
   /**
    * Returns the negative capability qualifier, such as {@code @Ungrowable}. Only call this method
@@ -134,14 +180,21 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
    *
    * @return the negative capability qualifier
    */
-  protected abstract AnnotationMirror negativeCapability();
+  protected AnnotationMirror negativeCapability() {
+    if (negativeCapability == null) {
+      throw new UnsupportedOperationException("This hierarchy has no negative qualifier.");
+    }
+    return negativeCapability;
+  }
 
   /**
    * Returns the polymorphic capability qualifier, such as {@code @PolyGrowable}.
    *
    * @return the polymorphic capability qualifier
    */
-  protected abstract AnnotationMirror polyCapability();
+  protected AnnotationMirror polyCapability() {
+    return polyCapability;
+  }
 
   /**
    * Returns true if this checker's hierarchy contains a negative qualifier, such as
@@ -150,7 +203,12 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
    * @return true if this checker's hierarchy contains a negative qualifier
    */
   protected boolean hasNegativeCapability() {
-    return true;
+    return negativeCapability != null;
+  }
+
+  @Override
+  protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+    return new LinkedHashSet<>(qualifierClasses);
   }
 
   // -- Expansion of the whole-modifiability aliases ----------
@@ -489,9 +547,11 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
 
     // The receiver has the capability; its iterator does too if the receiver is @IteratorPolyMod.
     if (receiverType.hasAnnotation(positiveCapability())) {
-      AnnotatedTypeMirror iteratorHierarchyType =
-          getTypeFactoryOfSubchecker(IteratorChecker.class).getReceiverType(tree);
-      if (iteratorHierarchyType != null && iteratorHierarchyType.hasAnnotation(ITERATOR_POLY_MOD)) {
+      IteratorAnnotatedTypeFactory iteratorFactory =
+          getTypeFactoryOfSubchecker(IteratorChecker.class);
+      AnnotatedTypeMirror iteratorHierarchyType = iteratorFactory.getReceiverType(tree);
+      if (iteratorHierarchyType != null
+          && iteratorHierarchyType.hasAnnotation(iteratorFactory.positiveCapability())) {
         returnType.replaceAnnotation(positiveCapability());
         return;
       }
