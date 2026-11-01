@@ -45,6 +45,16 @@ public class TypeRefinement {
     isUnique(s);
   }
 
+  void assignmentExpression() {
+    String unique = new String();
+    String other;
+    isUnique(unique);
+
+    // The value of the assignment expression is an alias of unique.
+    // :: error: [argument]
+    isUnique(other = unique);
+  }
+
   void arrayAlias(String[] a, int i, int j, String notUnique) {
     a[j] = new String();
     isUnique(a[j]);
