@@ -24,6 +24,7 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Matches indexed `for` {@link DisposalLoopInfo}s that iterate over a resource collection. */
@@ -95,8 +96,12 @@ final class IndexedForDisposalLoopMatcher {
       return null;
     }
 
-    Name collectionName =
-        resourceCollectionNameIfConditionMatches(binaryTreeCondition, indexVariableName);
+    ExpressionTree collectionExpression =
+        resourceCollectionIfConditionMatches(binaryTreeCondition, indexVariableName);
+    if (collectionExpression == null) {
+      return null;
+    }
+    Name collectionName = CollectionOwnershipUtils.getNameFromExpressionTree(collectionExpression);
     if (collectionName == null) {
       return null;
     }
@@ -108,10 +113,13 @@ final class IndexedForDisposalLoopMatcher {
     if (collectionElementTree == null) {
       return null;
     }
-
-    ExpressionTree collectionExpression =
+    // A local variable in the loop header can shadow a field of the same name in the body, so check
+    // that the header and the body use the same collection.
+    ExpressionTree bodyCollectionExpr =
         CollectionOwnershipUtils.referenceExpression(collectionElementTree);
-    if (collectionExpression == null) {
+    if (bodyCollectionExpr == null
+        || !JavaExpression.fromTree(bodyCollectionExpr)
+            .equals(JavaExpression.fromTree(collectionExpression))) {
       return null;
     }
 
@@ -203,14 +211,15 @@ final class IndexedForDisposalLoopMatcher {
   }
 
   /**
-   * Returns the collection name if the loop condition is of the form {@code i < collection.size()}
-   * for the given index variable and the receiver {@code collection} is a resource collection.
+   * Returns the collection expression if the loop condition is of the form {@code i <
+   * collection.size()} for the given index variable and the receiver {@code collection} is a
+   * resource collection.
    *
    * @param condition the loop condition
    * @param indexVariableName the validated loop index variable
-   * @return the collection name, or {@code null} if the condition does not match
+   * @return the collection expression, or {@code null} if the condition does not match
    */
-  private @Nullable Name resourceCollectionNameIfConditionMatches(
+  private @Nullable ExpressionTree resourceCollectionIfConditionMatches(
       BinaryTree condition, Name indexVariableName) {
     if (condition.getKind() != Tree.Kind.LESS_THAN) {
       return null;
@@ -234,7 +243,7 @@ final class IndexedForDisposalLoopMatcher {
     if (!coAtf.isResourceCollection(memberSelectTree.getExpression())) {
       return null;
     }
-    return CollectionOwnershipUtils.getNameFromExpressionTree(memberSelectTree.getExpression());
+    return memberSelectTree.getExpression();
   }
 
   /**
