@@ -243,8 +243,10 @@ and for the elements that it encloses, by calling
 \<QualifierDefaults.addElementDefault> (Section~\ref{creating-typesystem-defaults}).
 Such a default takes precedence over rule 6, that is, over a user-written
 \<@DefaultQualifier>, and over a default that is registered for an enclosing element.
-A default for \<OTHERWISE> applies only if no default for a more concrete location applies,
+A \<@DefaultQualifier> or registered default for \<OTHERWISE> applies only if no other
+\<@DefaultQualifier> or registered default for a more concrete location applies,
 whichever element each default is written or registered on.
+(\<ALL> is not a more concrete location.)
 
 % (Implementation detail:  setting defaults is implemented by the
 % \refclass{framework/util}{QualifierDefaults} class.)
