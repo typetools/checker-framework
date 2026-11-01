@@ -445,13 +445,11 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   }
 
   /**
-   * Returns the then or else store after {@code block} depending on the value of {@code then} is
-   * returned.
+   * Returns the store on the then or else edge out of {@code block}.
    *
    * @param block a conditional block
-   * @param then wether the then store should be returned
-   * @return the then or else store after {@code block} depending on the value of {@code then} is
-   *     returned
+   * @param then true for the then store, false for the else store
+   * @return the then store after {@code block} if {@code then} is true, otherwise the else store
    */
   public AccumulationStore getStoreAfterConditionalBlock(ConditionalBlock block, boolean then) {
     if (flowResult == null) {
