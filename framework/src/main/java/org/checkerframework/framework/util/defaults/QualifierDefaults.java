@@ -1035,13 +1035,13 @@ public class QualifierDefaults {
         impl.boundType = BoundType.UNBOUNDED;
       }
 
-      // are we currently defaulting the lower bound of a type variable or wildcard
+      /** True if the lower bound of a type variable or wildcard is currently being defaulted. */
       private boolean isLowerBound = false;
 
-      // are we currently defaulting the upper bound of a type variable or wildcard
+      /** True if the upper bound of a type variable or wildcard is currently being defaulted. */
       private boolean isUpperBound = false;
 
-      // the bound type of the current wildcard or type variable being defaulted
+      /** The bound type of the wildcard or type variable that is currently being defaulted. */
       private BoundType boundType = BoundType.UNBOUNDED;
 
       /** The declared types that enclose the type being scanned, innermost first. */
@@ -1227,6 +1227,22 @@ public class QualifierDefaults {
 
     elementToBoundType.put(typeParamElem, boundType);
     return boundType;
+  }
+
+  /**
+   * Returns the BoundType of annotatedWildcard. If it is unbounded, use the type parameter to which
+   * its an argument.
+   *
+   * <p>If the declared type of which {@code wildcardType} is a type argument is known, call {@link
+   * #getWildcardBoundType(AnnotatedWildcardType, AnnotatedDeclaredType)} instead, which determines
+   * the type parameter more reliably.
+   *
+   * @param wildcardType the annotated wildcard type
+   * @return the BoundType of annotatedWildcard. If it is unbounded, use the type parameter to which
+   *     its an argument
+   */
+  public BoundType getWildcardBoundType(AnnotatedWildcardType wildcardType) {
+    return getWildcardBoundType(wildcardType, null);
   }
 
   /**
