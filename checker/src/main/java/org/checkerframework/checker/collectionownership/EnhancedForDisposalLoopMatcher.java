@@ -84,7 +84,8 @@ final class EnhancedForDisposalLoopMatcher {
     while (!worklist.isEmpty()) {
       Block currentBlock = worklist.removeFirst();
       for (Node node : currentBlock.getNodes()) {
-        if (node instanceof MethodInvocationNode methodInvocationNode) {
+        if (node instanceof MethodInvocationNode methodInvocationNode
+            && isTargetEnhancedForInvocation(methodInvocationNode, tree)) {
           DisposalLoopInfo resolvedLoop = resolveEnhancedForLoop(methodInvocationNode, tree);
           if (resolvedLoop != null) {
             return resolvedLoop;
@@ -109,23 +110,19 @@ final class EnhancedForDisposalLoopMatcher {
   }
 
   /**
-   * Returns resolved disposal loop info if the given node is desugared from the target
-   * enhanced-for-loop {@code tree} over a resource collection.
+   * Returns the resolved disposal loop info for the target enhanced-for-loop {@code tree} over a
+   * resource collection.
    *
    * <p>Starting from the desugared iterator {@code hasNext()} node, this walks forward to recover
    * the loop-variable assignment and body-entry block, then walks backward to recover the loop
    * condition and update block.
    *
-   * @param methodInvocationNode the node to check
+   * @param methodInvocationNode the iterator {@code hasNext()} invocation of {@code tree}
    * @param tree the enhanced-for-loop being resolved
-   * @return the resolved loop info, or {@code null} if the node does not belong to {@code tree}
+   * @return the resolved loop info, or {@code null} if it cannot be resolved
    */
   private @Nullable DisposalLoopInfo resolveEnhancedForLoop(
       MethodInvocationNode methodInvocationNode, @FindDistinct EnhancedForLoopTree tree) {
-    if (!isTargetEnhancedForInvocation(methodInvocationNode, tree)) {
-      return null;
-    }
-
     VariableTree loopVariable = tree.getVariable();
 
     // Walk forward from the iterator `hasNext()` node to find the assignment that initializes the
