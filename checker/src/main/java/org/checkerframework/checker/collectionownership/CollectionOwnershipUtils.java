@@ -106,7 +106,12 @@ public final class CollectionOwnershipUtils {
         }
       }
       case METHOD_INVOCATION -> {
-        return getNameFromExpressionTree(((MethodInvocationTree) expr).getMethodSelect());
+        ExpressionTree methodSelect = ((MethodInvocationTree) expr).getMethodSelect();
+        // An unqualified call, such as getResources(), has no receiver to name.
+        if (!(methodSelect instanceof MemberSelectTree)) {
+          return null;
+        }
+        return getNameFromExpressionTree(methodSelect);
       }
       default -> {
         return null;
@@ -140,7 +145,12 @@ public final class CollectionOwnershipUtils {
         }
       }
       case METHOD_INVOCATION -> {
-        return referenceExpression(((MethodInvocationTree) expr).getMethodSelect());
+        ExpressionTree methodSelect = ((MethodInvocationTree) expr).getMethodSelect();
+        // An unqualified call, such as getResources(), has no receiver: the call is the value.
+        if (!(methodSelect instanceof MemberSelectTree)) {
+          return expr;
+        }
+        return referenceExpression(methodSelect);
       }
       default -> {
         return null;

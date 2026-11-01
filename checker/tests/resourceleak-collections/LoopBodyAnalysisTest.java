@@ -149,6 +149,21 @@ class LoopBodyAnalysisTest {
     }
   }
 
+  // An enhanced-for loop over the result of an unqualified call is a disposal loop.
+  void forEachOverUnqualifiedCall() {
+    for (Resource r : newList()) {
+      r.close();
+      r.flush();
+    }
+  }
+
+  @OwningCollection
+  List<Resource> newList() {
+    List<Resource> list = new ArrayList<>();
+    list.add(new Resource());
+    return list;
+  }
+
   // :: error: illegal.type.annotation
   void checkArgIsOCWO(@OwningCollectionWithoutObligation Iterable<Resource> arg) {}
 }

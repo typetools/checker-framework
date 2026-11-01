@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -155,6 +156,27 @@ class WhileLoopBodyAnalysisTest {
   }
 
   void log(Resource r) {}
+
+  // Two calls to newQueue() can return different queues, so this loop is not a disposal loop. The
+  // checker used to crash on it.
+  void whileOverUnqualifiedCall() {
+    // :: error: unfulfilled.collection.obligations
+    while (!newQueue().isEmpty()) {
+      // :: error: unfulfilled.collection.obligations
+      Resource r = newQueue().poll();
+      if (r != null) {
+        r.close();
+        r.flush();
+      }
+    }
+  }
+
+  @OwningCollection
+  Queue<Resource> newQueue() {
+    Queue<Resource> queue = new ArrayDeque<>();
+    queue.add(new Resource());
+    return queue;
+  }
 
   // :: error: illegal.type.annotation
   void checkArgIsOCWO(@OwningCollectionWithoutObligation Iterable<Resource> arg) {}
