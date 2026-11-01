@@ -89,10 +89,7 @@ public final class CollectionOwnershipUtils {
    * @param expr an expression
    * @return the name of the referenced identifier, or {@code null} if none
    */
-  static @Nullable Name getNameFromExpressionTree(@Nullable ExpressionTree expr) {
-    if (expr == null) {
-      return null;
-    }
+  static @Nullable Name getNameFromExpressionTree(ExpressionTree expr) {
     switch (expr.getKind()) {
       case IDENTIFIER -> {
         return ((com.sun.source.tree.IdentifierTree) expr).getName();

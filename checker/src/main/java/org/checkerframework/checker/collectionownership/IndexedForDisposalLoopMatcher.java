@@ -152,10 +152,10 @@ final class IndexedForDisposalLoopMatcher {
    * @return true if the tree is of the form {@code collection.get(i)}
    */
   private boolean isIthCollectionElement(Tree tree, Name indexVariableName) {
+    ExpressionTree index = TreeUtils.getIdxForGetCall(tree);
     if (tree instanceof MethodInvocationTree methodInvocationTree
-        && indexVariableName
-            == CollectionOwnershipUtils.getNameFromExpressionTree(
-                TreeUtils.getIdxForGetCall(tree))) {
+        && index != null
+        && indexVariableName == CollectionOwnershipUtils.getNameFromExpressionTree(index)) {
       ExpressionTree methodSelect = methodInvocationTree.getMethodSelect();
       if (methodSelect instanceof MemberSelectTree memberSelectTree) {
         return coAtf.isResourceCollection(memberSelectTree.getExpression());
