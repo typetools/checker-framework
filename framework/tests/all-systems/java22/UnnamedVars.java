@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 // https://docs.oracle.com/en/java/javase/24/language/unnamed-variables-and-patterns.html
 // @below-java22-jdk-skip-test
 
-// None of the WPI formats supports the new Java 22 languages features, so skip inference until they
+// None of the WPI formats supports the new Java 22 language features, so skip inference until they
 // do.
 // @infer-jaifs-skip-test
 // @infer-ajava-skip-test
