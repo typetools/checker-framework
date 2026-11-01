@@ -149,37 +149,51 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
       Node node, TransferResult<AccumulationValue, AccumulationStore> result, String... values) {
     super.accumulate(node, result, values);
 
+    JavaExpression target = JavaExpression.fromNode(node);
+    if (CFAbstractStore.canInsertJavaExpression(target)) {
+      accumulateInExceptionalStores(target, result, Arrays.asList(values));
+    }
+  }
+
+  /**
+   * Adds the called methods to {@code target} in the exceptional stores of {@code result}, if it
+   * has any, so that a method counts as called even on the paths where it throws an exception.
+   *
+   * @param target a JavaExpression that can be inserted into a store
+   * @param result the transfer result
+   * @param valuesAsList the newly called methods
+   */
+  protected void accumulateInExceptionalStores(
+      JavaExpression target,
+      TransferResult<AccumulationValue, AccumulationStore> result,
+      List<String> valuesAsList) {
     Map<TypeMirror, AccumulationStore> exceptionalStores = result.getExceptionalStores();
     if (exceptionalStores == null) {
       return;
     }
 
-    List<String> valuesAsList = Arrays.asList(values);
-    JavaExpression target = JavaExpression.fromNode(node);
-    if (CFAbstractStore.canInsertJavaExpression(target)) {
-      AccumulationValue flowValue = result.getRegularStore().getValue(target);
-      if (flowValue != null) {
-        // Dataflow has already recorded information about the target.  Integrate it into
-        // the list of values in the new annotation.
-        AnnotationMirrorSet flowAnnos = flowValue.getAnnotations();
-        assert flowAnnos.size() <= 1;
-        for (AnnotationMirror anno : flowAnnos) {
-          if (atypeFactory.isAccumulatorAnnotation(anno)) {
-            List<String> oldFlowValues =
-                AnnotationUtils.getElementValueArray(anno, calledMethodsValueElement, String.class);
-            // valuesAsList cannot have its length changed -- it is backed by an
-            // array.  getElementValueArray returns a new, modifiable list.
-            oldFlowValues.addAll(valuesAsList);
-            valuesAsList = oldFlowValues;
-          }
+    AccumulationValue flowValue = result.getRegularStore().getValue(target);
+    if (flowValue != null) {
+      // Dataflow has already recorded information about the target.  Integrate it into
+      // the list of values in the new annotation.
+      AnnotationMirrorSet flowAnnos = flowValue.getAnnotations();
+      assert flowAnnos.size() <= 1;
+      for (AnnotationMirror anno : flowAnnos) {
+        if (atypeFactory.isAccumulatorAnnotation(anno)) {
+          List<String> oldFlowValues =
+              AnnotationUtils.getElementValueArray(anno, calledMethodsValueElement, String.class);
+          // valuesAsList cannot have its length changed -- it is backed by an
+          // array.  getElementValueArray returns a new, modifiable list.
+          oldFlowValues.addAll(valuesAsList);
+          valuesAsList = oldFlowValues;
         }
       }
-      AnnotationMirror newAnno = atypeFactory.createAccumulatorAnnotation(valuesAsList);
-      exceptionalStores.forEach(
-          (tm, s) ->
-              s.replaceValue(
-                  target, analysis.createSingleAnnotationValue(newAnno, target.getType())));
     }
+    AnnotationMirror newAnno = atypeFactory.createAccumulatorAnnotation(valuesAsList);
+    exceptionalStores.forEach(
+        (tm, s) ->
+            s.replaceValue(
+                target, analysis.createSingleAnnotationValue(newAnno, target.getType())));
   }
 
   /**

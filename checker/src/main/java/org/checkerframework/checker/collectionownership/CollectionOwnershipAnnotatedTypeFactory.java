@@ -276,8 +276,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
    * Discovers and stores the {@link DisposalLoopInfo}s for a method {@code cfg}. This discovery
    * must happen before {@link
    * org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsTransfer#initialStore(UnderlyingAST,
-   * List)} runs, so that the called-methods initial stores are populated for the loop's iterated
-   * temp elements, e.g., col.get(i), col.pop().
+   * List)} runs, which adds an {@code IteratedCollectionElement} for the element of each loop.
    *
    * @param cfg the method CFG whose disposal loops to be discovered
    */

@@ -2,6 +2,7 @@ package org.checkerframework.checker.rlccalledmethods;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -24,6 +25,8 @@ import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsPredicate;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory;
+import org.checkerframework.checker.collectionownership.DisposalLoopInfo;
 import org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -148,6 +151,12 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   }
 
   @Override
+  public void setRoot(@Nullable CompilationUnitTree root) {
+    super.setRoot(root);
+    tempVarToTree.clear();
+  }
+
+  @Override
   protected ControlFlowGraph analyze(
       Queue<ClassAndStore<AccumulationStore>> classQueue,
       Queue<LambdaAndStore<AccumulationStore>> lambdaQueue,
@@ -160,10 +169,12 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
       @Nullable AccumulationStore capturedStore) {
     // This is a workaround for a bug that I tried and failed to fix.
     // See checker/tests/resourceleak/RLLambda.java.
-    // This code really belongs in postAnalyze, but this code only works correctly when called after
-    // a method is analyzed for the first time and before any containing lambdas are analyzed.
+    // The post-analysis in CollectionOwnershipAnnotatedTypeFactory#analyze really belongs in
+    // postAnalyze, but it only works correctly when called after
+    // a method is analyzed the first time and before any containing lambdas are analyzed.
     // This workaround means there could be false positives when the type of a method invocation
     // depends on dataflow in a lambda.
+
     if (cfg != null && ast.getKind() == UnderlyingAST.Kind.METHOD) {
       // The cfg is not null, so the analysis has been run before.  Don't rerun it.
       return cfg;
@@ -180,12 +191,17 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
         capturedStore);
   }
 
+  /**
+   * Before this checker's dataflow analysis of a method, discovers the method's {@linkplain
+   * DisposalLoopInfo potential disposal loops} and stores them in the Collection Ownership
+   * Checker's type factory. During the analysis, this checker tracks the methods called on each
+   * loop's iterated element (see {@link RLCCalledMethodsTransfer#initialStore}). Afterwards, {@code
+   * CollectionOwnershipTransfer} and {@code MustCallConsistencyAnalyzer} use those called methods
+   * to certify the loops and check collection obligations (see {@link
+   * CollectionOwnershipAnnotatedTypeFactory#postCFGConstruction}).
+   */
   @Override
   protected void postCFGConstruction(ControlFlowGraph cfg, UnderlyingAST ast) {
-    // Run the disposal loop discovery before called method analysis runs, as the called-method
-    // store needs to be initialized for the iterated loop elements temp-vars e.g., col.pop(),
-    // col.get(i) in order for the called-method analysis to properly track must-call obligations
-    // on them.
     if (ast.getKind() == UnderlyingAST.Kind.METHOD) {
       ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(this)
           .discoverDisposalLoopInfos(cfg);
@@ -442,7 +458,9 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
       throw new BugInCF("getStoreAfterConditionalBlock called before dataflow analysis ran");
     }
     TransferInput<AccumulationValue, AccumulationStore> transferInput = flowResult.getInput(block);
-    assert transferInput != null : "@AssumeAssertion(nullness): transferInput should be non-null";
+    if (transferInput == null) {
+      throw new BugInCF("getStoreAfterConditionalBlock: dataflow did not reach " + block);
+    }
     if (then) {
       return transferInput.getThenStore();
     }

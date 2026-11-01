@@ -3,11 +3,9 @@ package org.checkerframework.checker.rlccalledmethods;
 import com.sun.source.tree.MethodInvocationTree;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
 import org.checkerframework.checker.collectionownership.DisposalLoopInfo;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
@@ -28,8 +26,6 @@ import org.checkerframework.dataflow.cfg.node.SwitchExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.expression.IteratedCollectionElement;
 import org.checkerframework.dataflow.expression.JavaExpression;
-import org.checkerframework.javacutil.AnnotationMirrorSet;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -62,8 +58,18 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
   }
 
   /**
-   * Add the collection elements iterated over in {@link DisposalLoopInfo}'s to the store so that
-   * temp-vars. e.g., col.get(i), col.pop() are tracked.
+   * Returns the initial store, plus an {@link IteratedCollectionElement} entry for the element
+   * iterated over by each {@linkplain DisposalLoopInfo potential disposal loop} in the method, such
+   * as {@code r} in {@code for (Resource r : list)} or {@code list.get(i)} in an indexed loop.
+   *
+   * <p>These entries determine which iterated elements this analysis tracks: {@link #accumulate}
+   * adds called methods to an iterated element only if the store has an entry for it. After the
+   * analysis, {@link MustCallConsistencyAnalyzer#analyzeDisposalLoop} reads the entries to find the
+   * methods that a loop body calls on every iterated element.
+   *
+   * @param underlyingAST the code being analyzed
+   * @param parameters the parameters of the method being analyzed
+   * @return the initial store
    */
   @Override
   public AccumulationStore initialStore(
@@ -81,10 +87,10 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
   }
 
   /**
-   * Accumulates the called methods to this collection element if the given node is the element of a
-   * collection iterated over in a {@linkplain DisposalLoopInfo potential disposal loop}.
+   * If {@code node} is the element iterated over by a {@linkplain DisposalLoopInfo potential
+   * disposal loop}, adds the called methods to its {@link IteratedCollectionElement}.
    *
-   * @param valuesAsList the list of called methods
+   * @param valuesAsList the newly called methods
    * @param result the transfer result
    * @param node a cfg node
    */
@@ -94,40 +100,16 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
       Node node) {
     IteratedCollectionElement collectionElement =
         result.getRegularStore().getIteratedCollectionElement(node, node.getTree());
-    if (collectionElement != null) {
-      AccumulationValue flowValue = result.getRegularStore().getValue(collectionElement);
-      if (flowValue != null) {
-        // Dataflow has already recorded information about the target.  Integrate it into
-        // the list of values in the new annotation.
-        AnnotationMirrorSet flowAnnos = flowValue.getAnnotations();
-        assert flowAnnos.size() <= 1;
-        for (AnnotationMirror anno : flowAnnos) {
-          if (atypeFactory.isAccumulatorAnnotation(anno)) {
-            List<String> oldFlowValues =
-                AnnotationUtils.getElementValueArray(anno, calledMethodsValueElement, String.class);
-            // valuesAsList cannot have its length changed -- it is backed by an
-            // array.  getElementValueArray returns a new, modifiable list.
-            oldFlowValues.addAll(valuesAsList);
-            valuesAsList = oldFlowValues;
-          }
-        }
-      }
-      AnnotationMirror newAnno = atypeFactory.createAccumulatorAnnotation(valuesAsList);
-      if (result.containsTwoStores()) {
-        updateValueAndInsertIntoStore(result.getThenStore(), collectionElement, valuesAsList);
-        updateValueAndInsertIntoStore(result.getElseStore(), collectionElement, valuesAsList);
-      } else {
-        updateValueAndInsertIntoStore(result.getRegularStore(), collectionElement, valuesAsList);
-      }
-      Map<TypeMirror, AccumulationStore> exceptionalStores = result.getExceptionalStores();
-      if (exceptionalStores != null) {
-        exceptionalStores.forEach(
-            (tm, s) ->
-                s.replaceValue(
-                    collectionElement,
-                    analysis.createSingleAnnotationValue(newAnno, collectionElement.getType())));
-      }
+    if (collectionElement == null) {
+      return;
     }
+    if (result.containsTwoStores()) {
+      updateValueAndInsertIntoStore(result.getThenStore(), collectionElement, valuesAsList);
+      updateValueAndInsertIntoStore(result.getElseStore(), collectionElement, valuesAsList);
+    } else {
+      updateValueAndInsertIntoStore(result.getRegularStore(), collectionElement, valuesAsList);
+    }
+    accumulateInExceptionalStores(collectionElement, result, valuesAsList);
   }
 
   @Override
