@@ -1003,15 +1003,20 @@ public final class ElementUtils {
   }
 
   /**
-   * Returns the no-argument instance method with the given name that a call on an expression of the
-   * given type invokes, or null if there is no such method.
+   * Resolves a call {@code receiver.methodName()}, where {@code receiver} is an expression of type
+   * {@code receiverType}: returns the no-argument instance method that the call invokes, or null if
+   * there is no such method.
    *
-   * @param receiverType the type of the receiver of the call
+   * <p>This is compile-time resolution (JLS 15.12.3). It resolves overloading, not overriding. The
+   * result is the most specific declaration among {@code receiverType} and its supertypes, but at
+   * run time the call may dispatch to an overriding method in a subtype of {@code receiverType}.
+   *
+   * @param receiverType the type of the receiver expression
    * @param methodName the name of the method
    * @param env the processing environment
-   * @return the invoked method, or null if the type has no such method
+   * @return the method that the call invokes, or null if {@code receiverType} has no such method
    */
-  public static @Nullable ExecutableElement getNoArgumentMethod(
+  public static @Nullable ExecutableElement resolveNoArgumentCall(
       TypeMirror receiverType, String methodName, ProcessingEnvironment env) {
     TypeMirror upperBound = TypesUtils.upperBound(receiverType);
     if (upperBound.getKind() != TypeKind.DECLARED
