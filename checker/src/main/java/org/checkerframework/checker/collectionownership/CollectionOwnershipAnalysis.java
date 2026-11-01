@@ -1,10 +1,10 @@
 package org.checkerframework.checker.collectionownership;
 
-import com.google.common.collect.ImmutableSet;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.mustcall.SetOfTypes;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -20,7 +20,10 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 public class CollectionOwnershipAnalysis
     extends CFAbstractAnalysis<CFValue, CollectionOwnershipStore, CollectionOwnershipTransfer> {
 
-  /** Ignored-exception policy used by collection-ownership dataflow. */
+  /**
+   * The set of exceptions to ignore, cached from {@link
+   * RLCCalledMethodsChecker#getIgnoredExceptions()}.
+   */
   private final SetOfTypes ignoredExceptions;
 
   /**
@@ -32,27 +35,8 @@ public class CollectionOwnershipAnalysis
   public CollectionOwnershipAnalysis(
       BaseTypeChecker checker, CollectionOwnershipAnnotatedTypeFactory factory) {
     super(checker, factory);
-    ignoredExceptions = createIgnoredExceptionPolicy(checker);
-  }
-
-  /**
-   * Creates the ignored-exception policy used by collection-ownership dataflow.
-   *
-   * <p>The policy follows the Resource Leak Checker configuration, but keeps exact {@link
-   * Throwable} exceptional edges because broad catch/fallback paths affect collection-obligation
-   * reasoning.
-   *
-   * @param checker the enclosing checker
-   * @return the ignored-exception policy for collection-ownership dataflow
-   */
-  private static SetOfTypes createIgnoredExceptionPolicy(BaseTypeChecker checker) {
-    SetOfTypes baseIgnoredExceptions =
+    ignoredExceptions =
         ResourceLeakUtils.getRLCCalledMethodsChecker(checker).getIgnoredExceptions();
-    SetOfTypes exactThrowableOnly =
-        SetOfTypes.anyOfTheseNames(ImmutableSet.of(Throwable.class.getCanonicalName()));
-    return (types, exceptionType) ->
-        !exactThrowableOnly.contains(types, exceptionType)
-            && baseIgnoredExceptions.contains(types, exceptionType);
   }
 
   @Override
