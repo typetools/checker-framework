@@ -120,13 +120,12 @@ public class CollectionOwnershipVisitor
   }
 
   /**
-   * Returns the flow-sensitive collection-ownership qualifier for the given expression, if
-   * available.
+   * Returns the flow-sensitive collection-ownership qualifier for the given expression, or its
+   * declared qualifier if the store has no value for it.
    *
    * @param expr an expression tree
    * @param storeBefore the store before {@code expr}
-   * @return the flow-sensitive collection-ownership qualifier for {@code expr}, or {@code null} if
-   *     no such qualifier is available
+   * @return the collection-ownership qualifier for {@code expr}, or {@code null} if it has none
    */
   private CollectionOwnershipAnnotatedTypeFactory.@Nullable CollectionOwnershipType getCoTypeAtTree(
       ExpressionTree expr, @Nullable CollectionOwnershipStore storeBefore) {
@@ -137,7 +136,8 @@ public class CollectionOwnershipVisitor
         return atypeFactory.getCoType(v.getAnnotations());
       }
     }
-    return null;
+    // The store has no value, for example for a field after a method call: use its declared type.
+    return atypeFactory.getCoType(atypeFactory.getAnnotatedType(expr).getPrimaryAnnotations());
   }
 
   /**

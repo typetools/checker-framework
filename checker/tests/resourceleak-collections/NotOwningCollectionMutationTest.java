@@ -208,4 +208,22 @@ class NotOwningCollectionMutationTest {
       }
     }
   }
+
+  static class Part {
+    TrackedResource input;
+  }
+
+  private @NotOwningCollection List<TrackedResource> parts = new ArrayList<>();
+
+  void log() {}
+
+  /*
+   * A non-owning collection field is still checked after a method call, when the store no longer
+   * has a value for it.
+   */
+  void nocFieldAddAfterCall(Part part) {
+    log();
+    // :: error: illegal.collection.mutator.owning.insert.into.notowning
+    parts.add(part.input);
+  }
 }
