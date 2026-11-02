@@ -9,7 +9,7 @@ import org.checkerframework.checker.collectionownership.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
 
 // Tests constructor paths that transfer resource collections through List.addAll.
-// TODO: Fix arguemnt errors for List.addAll call.
+// TODO: Fix argument errors for List.addAll call.
 public class MultipleInputStream extends InputStream {
 
   private final List<InputStream> streams = new LinkedList<>();

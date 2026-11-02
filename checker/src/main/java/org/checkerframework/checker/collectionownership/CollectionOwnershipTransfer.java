@@ -419,8 +419,7 @@ public class CollectionOwnershipTransfer
     Node tempVarNode = getNodeOrTempVar(node);
     JavaExpression tempVarJE = JavaExpression.fromNode(tempVarNode);
 
-    CollectionOwnershipType resolvedType =
-        atypeFactory.getCoType(tempVarNode, atypeFactory.getStoreBefore(node));
+    CollectionOwnershipType resolvedType = atypeFactory.getCoType(tempVarNode, store);
     if (atypeFactory.isResourceCollection(node.getTree())) {
       if (TreeUtils.isDiamondTree(node.getTree())
           && resolvedType == CollectionOwnershipType.OwningCollectionBottom) {
