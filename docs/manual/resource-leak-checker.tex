@@ -650,9 +650,9 @@ feature that it is unable to reason about.
 \sectionAndLabel{Collections of resources}{resource-leak-collections}
 
 The Resource Leak Checker handles homogeneous collections of resources. In a homogeneous collection, every element
-has exactly the same must-call and called-methods properties. Instances of \texttt{java.util.Iterable} are supported;
+has exactly the same must-call and called-methods properties. Instances of \texttt{java.lang.Iterable} are supported;
 this section calls those ``collections''.
-% Usage of \texttt{java.util.Iterator}s over \texttt{java.util.Iterable}s are also supported, but they are not considered collections.
+% Usage of \texttt{java.util.Iterator}s over \texttt{java.lang.Iterable}s are also supported, but they are not considered collections.
 
 What the checker effectively verifies is that any resource collection is properly disposed of. That is, there is some loop that definitely calls the required methods on all elements of the collection.
 
@@ -666,7 +666,7 @@ Towards that end, the Resource Leak Checker tracks every allocated resource coll
 For the purposes of this checker, \textit{resource collections} are precisely defined, as the objects of interest for both the type system and obligation tracking. A Java expression is a \textit{resource collection} if it is:
 
 \begin{enumerate}
-  \item A \texttt{java.util.Iterable} or implementation thereof (which includes the entire Java Collections framework), and:%, or a \texttt{java.util.Iterator}
+  \item A \texttt{java.lang.Iterable} or implementation thereof (which includes the entire Java Collections framework), and:%, or a \texttt{java.util.Iterator}
   \item Its type parameter upper bound has non-empty \texttt{MustCall} type.
 \end{enumerate}
 
@@ -961,8 +961,7 @@ If the enclosing class is not intended to take responsibility for the resource c
 
 % Iterators over collections with obligations may also be returned, passed as method or constructor arguments and even be stored in fields.
 
-\subsectionAndLabel{JDK Method Signatures}{resource-leak-collections-jdk-methods}
-[[TODO: Add a table with a number of collection/iterable methods and their collection ownership annotations]]
+% TODO: Add a subsection with a table of JDK collection methods and their collection ownership annotations.
 
 \sectionAndLabel{Further reading}{resource-leak-checker-references}
 

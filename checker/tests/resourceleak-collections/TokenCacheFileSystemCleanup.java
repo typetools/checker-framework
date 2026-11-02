@@ -45,7 +45,7 @@ class TokenCacheFileSystemCleanup {
   private static final Log LOG = null;
 
   public static void obtainTokensForNamenodes(Path[] paths, String renewer) throws IOException {
-    @OwningCollection List<FileSystem> fsSet = new ArrayList<>();
+    @OwningCollection Set<FileSystem> fsSet = new HashSet<>();
     try {
       for (Path path : paths) {
         fsSet.add(path.getFileSystem());

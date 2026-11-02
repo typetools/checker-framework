@@ -265,10 +265,9 @@ public final class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>,
   }
 
   /**
-   * Advances the reader by reading a single line, updating the {@code nextLine} and {@code
-   * nextLineNumber} fields. If there is no remaining line, the reader is {@code close}d.
+   * Read the next line.
    *
-   * @throws IOException if reading from the underlying reader fails
+   * @throws IOException if there is trouble while reading
    */
   @RequiresNonNull("reader")
   /*package-private*/ void advance(

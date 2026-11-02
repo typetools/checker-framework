@@ -12,7 +12,7 @@ public class ResourceLeakCollectionsTest extends CheckerFrameworkPerDirectoryTes
     super(
         testFiles,
         ResourceLeakChecker.class,
-        "resourceleak",
+        "resourceleak-collections",
         "-AwarnUnneededSuppressions",
         "-encoding",
         "UTF-8");

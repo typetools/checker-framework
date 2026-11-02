@@ -162,9 +162,7 @@ public class AnnotationMirrorSet
     return shadowSet.toArray(a);
   }
 
-  @SuppressWarnings({
-    "keyfor:argument" // delegation
-  })
+  @SuppressWarnings("keyfor:argument") // delegation
   @Override
   @SideEffectsOnly("this")
   public boolean add(
