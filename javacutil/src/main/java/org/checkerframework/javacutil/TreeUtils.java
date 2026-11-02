@@ -1681,7 +1681,9 @@ public final class TreeUtils {
    * @return ExpressionTree of {@code idx} if tree is {@code Collection.get(idx)} and null else
    */
   public static @Nullable ExpressionTree getIdxForGetCall(Tree tree) {
-    if ((tree instanceof MethodInvocationTree mit) && isNamedMethodCall("get", mit)) {
+    if ((tree instanceof MethodInvocationTree mit)
+        && isNamedMethodCall("get", mit)
+        && mit.getArguments().size() == 1) {
       return mit.getArguments().get(0);
     }
     return null;

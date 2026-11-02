@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.collectionownership.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
@@ -146,6 +147,16 @@ class LoopBodyAnalysisTest {
     for (Resource r : resources) {
       r.close();
       r.flush();
+    }
+  }
+
+  // A zero-argument get() in the body of an indexed loop should not crash the checker.
+  void indexForLoopZeroArgumentGet(
+      @OwningCollection List<Resource> resources, Optional<String> name) {
+    for (int i = 0; i < resources.size(); i++) {
+      resources.get(i).close();
+      resources.get(i).flush();
+      name.get();
     }
   }
 
