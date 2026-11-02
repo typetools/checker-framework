@@ -356,7 +356,7 @@ public class CollectionOwnershipTransfer
       CollectionOwnershipType argType =
           atypeFactory.getCoType(arg, atypeFactory.getStoreBefore(node));
       CollectionOwnershipType paramType =
-          atypeFactory.getCoType(param.asType().getAnnotationMirrors());
+          atypeFactory.getCoType(atypeFactory.getAnnotatedType(param).getPrimaryAnnotations());
       if (argType == null || paramType == null) {
         continue;
       }

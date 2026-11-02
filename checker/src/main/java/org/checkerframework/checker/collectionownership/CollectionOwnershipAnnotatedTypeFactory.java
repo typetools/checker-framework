@@ -507,13 +507,13 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
-   * Returns true if the given element is a resource collection parameter that is declared as
-   * {@code @OwningCollection}. Since that is the default, this method also returns true if the
-   * parameter has no collection ownership annotation.
+   * Returns true if the given element is a resource collection parameter whose type is
+   * {@code @OwningCollection}, written on it or inherited from an overridden method. A parameter
+   * with no collection ownership annotation is {@code @NotOwningCollection}.
    *
    * @param elt an element
-   * @return true if the element is a resource collection parameter that is
-   *     {@code @OwningCollection} by declaration
+   * @return true if the element is a resource collection parameter whose type is
+   *     {@code @OwningCollection}
    */
   public boolean isOwningCollectionParameter(Element elt) {
     if (elt.getKind() != ElementKind.PARAMETER) {

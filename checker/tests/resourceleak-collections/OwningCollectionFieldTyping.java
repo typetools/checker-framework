@@ -126,6 +126,11 @@ class OwningCollectionFieldTyping {
     takeArgumentOwnership(ocField);
   }
 
+  void tryTransferringFieldOwnershipToInheritedParameter(InheritingCollectionTaker taker) {
+    // :: error: transfer.owningcollection.field.ownership
+    taker.take(ocField);
+  }
+
   void takeArgumentOwnership(@OwningCollection List<Resource> param) {
     // do scary things like adding new elements with calling obligations, or pass
     // it on into a class that stores it as an owning field.
@@ -429,6 +434,21 @@ class OwningFieldFilledBeforeThrow implements Closeable {
   @Override
   public void close() {
     for (Resource r : fieldList) {
+      r.close();
+      r.flush();
+    }
+  }
+}
+
+interface CollectionTaker {
+  void take(@OwningCollection List<Resource> list);
+}
+
+// take inherits @OwningCollection from CollectionTaker.
+class InheritingCollectionTaker implements CollectionTaker {
+  @Override
+  public void take(List<Resource> list) {
+    for (Resource r : list) {
       r.close();
       r.flush();
     }
