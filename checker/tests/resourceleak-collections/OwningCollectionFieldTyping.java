@@ -171,7 +171,6 @@ class OwningFieldWithOwningRHSInitializer implements Closeable {
   }
 }
 
-// here, the assignment to an @OwningCollection rhs is allowed
 class OwningFinalFieldWithOwningRHSInitializer implements Closeable {
   final List<Resource> fieldList = getList();
 
