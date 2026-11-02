@@ -27,9 +27,8 @@ public class ElementDefault {
   }
 
   // The parameter is @SubQual, from the @DefaultQualifier on this class.  If the element
-  // default suppressed the @DefaultQualifier, as it did before defaultsAt composed the two,
-  // the parameter would be @SuperQual instead, from @DefaultQualifierInHierarchy on SuperQual,
-  // and the second call below would type-check.
+  // default suppressed the @DefaultQualifier, then the parameter would be @SuperQual instead,
+  // from @DefaultQualifierInHierarchy on SuperQual, and the second call below would type-check.
   void takesSub(Object param) {}
 
   void useParam(@SubQual Object sub, @SuperQual Object sup) {

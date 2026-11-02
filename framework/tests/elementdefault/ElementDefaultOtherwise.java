@@ -54,3 +54,27 @@ class ElementDefaultRegisteredOtherwise {
     @ElementDefaultQual Object bad = returnsSub();
   }
 }
+
+// Tests that a nested default for OTHERWISE takes precedence over an enclosing default for ALL,
+// because ALL is not a more concrete location than OTHERWISE.  If the ALL default won, then the
+// return type of returnsSub would be @ElementDefaultQual rather than @SubQual.
+@DefaultQualifier(ElementDefaultQual.class)
+class ElementDefaultOtherwiseInAll {
+
+  // Without an explicit qualifier, the ALL default would make the constructor result
+  // @ElementDefaultQual, which is not the type of super().
+  @SuperQual ElementDefaultOtherwiseInAll() {}
+
+  static @SubQual Object sub;
+
+  @DefaultQualifier(value = SubQual.class, locations = TypeUseLocation.OTHERWISE)
+  static Object returnsSub() {
+    return sub;
+  }
+
+  static void useReturn() {
+    @SubQual Object ok = returnsSub();
+    // :: error: (assignment)
+    @ElementDefaultQual Object bad = returnsSub();
+  }
+}
