@@ -14,19 +14,18 @@ public class Issue6030 {
     @Owning I iterator;
 
     // :: error: missing.creates.mustcall.for
-    public boolean hasNext(@NotOwningCollection MyScanner<T, I> this) {
+    public boolean hasNext() {
       if (iterator == null) iterator = createIterator();
       return iterator.hasNext();
     }
 
-    // The @NotOwning annotation is required to be consistent with the superclass implementation.
-    // The return type of Iterator#next is @NotOwning. Soundness is ensured by the RLC for
-    // collections.
+    // Since #7602, Iterator#next returns @NotOwning.
     @SideEffectsOnly("this")
-    public @NotOwning T next(@NotOwningCollection MyScanner<T, I> this) {
+    public @NotOwning T next() {
       return null;
     }
 
+    // Since #7602, Iterator#hasNext has a @NotOwningCollection receiver, and hasNext() calls this.
     private I createIterator(@NotOwningCollection MyScanner<T, I> this) {
       return null;
     }

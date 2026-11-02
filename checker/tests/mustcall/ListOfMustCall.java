@@ -1,10 +1,10 @@
 // A test that checks that parameterized classes in the JDK don't cause false positives
 // when they are used with an @MustCall-annotated class.
-// Currently, two undesirable errors are issued on this test case, because it is not currently
-// possible to add an item with a non-empty must call type to a list without an error.
+// Before #7602, two undesirable errors were issued on this test case, because it was not
+// possible to add an item with a non-empty must call type to a list without an error. With
+// support for collections of resources, no errors are issued.
 // It is possible to call other List methods by using List<? extends ListOfMustCall>
 // (or equivalently List<? extends Socket>, etc.).
-// We should revisit this test if we ever revisit the idea of adding support for owning generics.
 
 import java.util.*;
 import org.checkerframework.checker.mustcall.qual.*;

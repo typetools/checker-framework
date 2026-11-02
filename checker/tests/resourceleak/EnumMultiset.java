@@ -181,7 +181,8 @@ public final class EnumMultiset<E extends Enum<E>> implements Serializable {
       return false;
     }
 
-    public @NotOwning T next(@NotOwningCollection Itr<T> this) {
+    // Since #7602, Iterator#next returns @NotOwning.
+    public @NotOwning T next() {
       if (!hasNext()) {
         throw new NoSuchElementException();
       }

@@ -4,7 +4,6 @@
 
 import java.net.*;
 import java.util.List;
-import org.checkerframework.checker.collectionownership.qual.OwningCollection;
 import org.checkerframework.checker.mustcall.qual.*;
 
 public class SocketIntoList {
@@ -14,30 +13,29 @@ public class SocketIntoList {
     l.add(s);
   }
 
-  public List<Socket> test2(@OwningCollection List<Socket> l) {
-    // s is unconnected, so no error is expected when it's stored into the list.
-    // However, l would be allowed to store even connected sockets.
+  public void test2(List<Socket> l) {
+    // s is unconnected, so it has no obligation. Before #7602, the unannotated list was a
+    // type.argument error (#5912). Now l is a @NotOwningCollection parameter, which accepts
+    // only values that are definitely not owning.
     Socket s = new Socket();
+    // :: error: illegal.collection.mutator.owning.insert.into.notowning
     l.add(s);
-    return l;
   }
 
+  // l is not owning collection, so the ownership of s is not transferred to l. So we get the
+  // required.method.not.called error for s.
   public void test3(List<@MustCall({}) Socket> l) throws Exception {
-    // Although s is illegally added to l, a required.method.not.called error
-    // is not additionally reported at this declaration site. List#add(@Owning E) takes on
-    // the obligation of its argument.
-    // After RLCC, now we get the expected required.method.not.called error.
     // :: error: required.method.not.called
     Socket s = new Socket();
     s.bind(new InetSocketAddress("192.168.0.1", 0));
-    // l cannot hold elements with non-empty @MustCall values
     l.add(s);
   }
 
   // This input list might have been produced by e.g., test1()
   public void test4(List<@MustCall({}) Socket> l) throws Exception {
-    // l.get(0) is not an error as List#get returns @NotOwning.  However, s.bind tries
-    // to reset the MustCall obligations of s, which is only permitted if s is owning.
+    // Before #7602, s was owning and never closed (required.method.not.called). Now List#get
+    // returns @NotOwning, so s is not owning even though it is a local variable, and s.bind
+    // cannot reset its obligations.
     Socket s = l.get(0);
     // :: error: reset.not.owning
     s.bind(new InetSocketAddress("192.168.0.1", 0));
