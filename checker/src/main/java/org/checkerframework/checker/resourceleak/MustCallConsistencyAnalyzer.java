@@ -542,7 +542,7 @@ public class MustCallConsistencyAnalyzer {
   static class CollectionObligation extends Obligation {
 
     /** The method that must be called on all elements of the collection. */
-    public String mustCallMethod;
+    public final String mustCallMethod;
 
     /**
      * Create a CollectionObligation from a set of resource aliases.
@@ -598,6 +598,11 @@ public class MustCallConsistencyAnalyzer {
         return false;
       }
       return super.equals(obj) && collectionObligation.mustCallMethod.equals(this.mustCallMethod);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(super.hashCode(), mustCallMethod);
     }
   }
 
@@ -1749,23 +1754,11 @@ public class MustCallConsistencyAnalyzer {
             && TreeUtils.sameTree(aliasExprTree, rhsExprTree)) {
           Set<ResourceAlias> newResourceAliasesForObligation =
               new LinkedHashSet<>(o.resourceAliases);
-          // It is possible to observe assignments to temporary variables, e.g.,
-          // synthetic assignments to ternary expression variables in the CFG.  For such
-          // cases, use the tree associated with the temp var for the resource alias,
-          // as that is the tree where errors should be reported.
-          Tree treeForAlias =
-              // I don't think we need a tempVar here, since the only case where we're interested
-              // in such an assignment in the loopBodyAnalysis is if the lhs is an actual variable
-              // to be used as an alias, so we don't care about the case where lhs is a temp-var.
-              // typeFactory.isTempVar(lhsVar)
-              //     ? typeFactory.getTreeForTempVar(lhsVar)
-              //     : node.getTree();
-              node.getTree();
           ResourceAlias aliasForAssignment =
-              new ResourceAlias(new LocalVariable(lhsVar), treeForAlias);
+              new ResourceAlias(new LocalVariable(lhsVar), node.getTree());
           newResourceAliasesForObligation.add(aliasForAssignment);
           oldObligation = o;
-          newObligation = new Obligation(newResourceAliasesForObligation, o.whenToEnforce);
+          newObligation = o.getReplacement(newResourceAliasesForObligation, o.whenToEnforce);
           break;
         }
       }
