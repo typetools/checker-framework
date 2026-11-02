@@ -1034,6 +1034,15 @@ public class QualifierDefaults {
       this.qualifierDefaults = qualifierDefaults;
       this.inApplicationOrder = inApplicationOrder;
     }
+
+    /**
+     * Returns true if there are no defaults.
+     *
+     * @return true if there are no defaults
+     */
+    public boolean isEmpty() {
+      return elementDefaults.isEmpty() && qualifierDefaults.isEmpty();
+    }
   }
 
   /**
