@@ -411,9 +411,9 @@ public class CollectionOwnershipTransfer
     // is a resource collection, as it runs before the type variable is inferred:
     //   List<Socket> = new ArrayList<>();
     // Thus, the following checks object creation expressions again on whether they are
-    // resource collections with no type variables, and if they are @Bottom, they are
-    // unrefined to @OwningCollection. Change the type of both the type var and the computed
-    // expression itself.
+    // resource collections created with a diamond, and if they are @OwningCollectionBottom, they
+    // are refined to @OwningCollectionWithoutObligation, like any new collection. Change the type
+    // of both the temporary variable and the computed expression itself.
     CollectionOwnershipStore store = result.getRegularStore();
     CFValue resultValue = result.getResultValue();
     Node tempVarNode = getNodeOrTempVar(node);
@@ -422,8 +422,8 @@ public class CollectionOwnershipTransfer
     CollectionOwnershipType resolvedType =
         atypeFactory.getCoType(tempVarNode, atypeFactory.getStoreBefore(node));
     if (atypeFactory.isResourceCollection(node.getTree())) {
-      boolean isDiamond = node.getTree().getTypeArguments().size() == 0;
-      if (isDiamond && resolvedType == CollectionOwnershipType.OwningCollectionBottom) {
+      if (TreeUtils.isDiamondTree(node.getTree())
+          && resolvedType == CollectionOwnershipType.OwningCollectionBottom) {
         store.clearValue(tempVarJE);
         store.insertValue(tempVarJE, atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION);
         resultValue =
