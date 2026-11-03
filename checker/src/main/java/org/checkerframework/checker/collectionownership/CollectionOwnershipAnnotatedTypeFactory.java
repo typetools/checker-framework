@@ -70,7 +70,11 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-/** The annotated type factory for the Collection Ownership Checker. */
+/**
+ * The annotated type factory for the Collection Ownership Checker. As the last checker in the
+ * Resource Leak Checker hierarchy, its {@link #postAnalyze(ControlFlowGraph)} method checks that
+ * must-call obligations are fulfilled.
+ */
 public class CollectionOwnershipAnnotatedTypeFactory
     extends GenericAnnotatedTypeFactory<
         CFValue,

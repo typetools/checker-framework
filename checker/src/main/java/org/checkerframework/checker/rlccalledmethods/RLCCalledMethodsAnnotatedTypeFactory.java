@@ -64,11 +64,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 
-/**
- * The type factory for the RLCCalledMethodsChecker. The main difference between this and the Called
- * Methods type factory from which it is derived is that this version's {@link
- * #postAnalyze(ControlFlowGraph)} method checks that must-call obligations are fulfilled.
- */
+/** The type factory for the RLCCalledMethodsChecker. */
 public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotatedTypeFactory
     implements CreatesMustCallForElementSupplier {
 

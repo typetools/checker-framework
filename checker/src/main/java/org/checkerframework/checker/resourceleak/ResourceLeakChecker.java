@@ -18,8 +18,8 @@ import org.checkerframework.framework.source.SupportedOptions;
  * org.checkerframework.checker.mustcall.qual.MustCall} annotations. This checker calls the {@link
  * CollectionOwnershipChecker} as a direct subchecker, which then in turn calls the {@link
  * RLCCalledMethodsChecker} as a subchecker, which calls the {@link MustCallChecker} as a
- * subchecker. Afterwards, the consistency analyzer traverses the cfg to check whether all MustCall
- * obligations are fulfilled.
+ * subchecker. Afterwards, the {@link CollectionOwnershipChecker} runs the consistency analyzer,
+ * which traverses the cfg to check whether all MustCall obligations are fulfilled.
  *
  * <p>The checker hierarchy is: this "empty" RLC &rarr; CollectionOwnershipChecker &rarr;
  * RLCCalledMethodsChecker &rarr; MustCallChecker

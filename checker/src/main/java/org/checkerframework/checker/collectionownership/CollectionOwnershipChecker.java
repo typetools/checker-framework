@@ -10,6 +10,10 @@ import org.checkerframework.framework.source.SourceChecker;
  * This typechecker tracks at most one owning variable per resource collection using an ownership
  * type system. The Resource Leak Checker verifies that (at least) the determined owner fulfills the
  * calling obligations of its elements.
+ *
+ * <p>This checker runs the {@link RLCCalledMethodsChecker} as a subchecker. As the last checker in
+ * the Resource Leak Checker hierarchy, it checks that must-call obligations are fulfilled (see
+ * {@link CollectionOwnershipAnnotatedTypeFactory#postAnalyze}).
  */
 public class CollectionOwnershipChecker extends BaseTypeChecker {
 
