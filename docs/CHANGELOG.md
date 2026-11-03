@@ -3,7 +3,15 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 4.3.2 (2026-11-01)
+## Version 4.4.1 (2026-12-01)
+
+### User-visible changes
+
+### Changes for type system implementers
+
+### Closed issues
+
+## Version 4.4.0 (2026-11-02)
 
 ### User-visible changes
 
@@ -71,6 +79,8 @@ Deprecated methods:
 * `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.resolveNoArgumentCall()`
 
 ### Closed issues
+
+\#6849, #6864, #6872, #8018, #8300, #8320, #8323, #8340, #8343.
 
 ## Version 4.3.1 (2026-10-08)
 
