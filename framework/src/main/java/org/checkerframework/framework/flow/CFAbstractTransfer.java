@@ -1033,13 +1033,13 @@ public abstract class CFAbstractTransfer<
 
     @Override
     public Void visitAssignment(AssignmentTree tree, List<JavaExpression> targets) {
-      targets.add(JavaExpression.fromTree(tree.getVariable()));
+      targets.add(JavaExpression.fromTree(TreeUtils.withoutParens(tree.getVariable())));
       return super.visitAssignment(tree, targets);
     }
 
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree tree, List<JavaExpression> targets) {
-      targets.add(JavaExpression.fromTree(tree.getVariable()));
+      targets.add(JavaExpression.fromTree(TreeUtils.withoutParens(tree.getVariable())));
       return super.visitCompoundAssignment(tree, targets);
     }
 
@@ -1047,7 +1047,7 @@ public abstract class CFAbstractTransfer<
     public Void visitUnary(UnaryTree tree, List<JavaExpression> targets) {
       switch (tree.getKind()) {
         case PREFIX_INCREMENT, PREFIX_DECREMENT, POSTFIX_INCREMENT, POSTFIX_DECREMENT ->
-            targets.add(JavaExpression.fromTree(tree.getExpression()));
+            targets.add(JavaExpression.fromTree(TreeUtils.withoutParens(tree.getExpression())));
         default -> {}
       }
       return super.visitUnary(tree, targets);
@@ -1080,7 +1080,8 @@ public abstract class CFAbstractTransfer<
       return false;
     }
     for (JavaExpression target : targets) {
-      if (assignmentMayChange(target, expr, true)) {
+      // A target that contains Unknown might denote any variable.
+      if (target.containsUnknown() || assignmentMayChange(target, expr, true)) {
         return true;
       }
     }
