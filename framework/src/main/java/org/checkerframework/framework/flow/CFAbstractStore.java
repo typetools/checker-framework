@@ -983,7 +983,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   public @Nullable IteratedCollectionElement getIteratedCollectionElement(
       Node node, @Nullable Tree tree) {
-    @Nullable IteratedCollectionElement treeMatch = null;
+    IteratedCollectionElement treeMatch = null;
     boolean treeMatchIsUnique = true;
     for (IteratedCollectionElement ice : iteratedCollectionElements.keySet()) {
       if (ice.node.equals(node)) {
