@@ -3,6 +3,7 @@ package org.checkerframework.framework.flow;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -256,9 +257,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       // TODO: Also remove if any element/argument to the annotation is not
       // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
 
-      // Update local variables.
+      // Update local variables and iterated collection elements.
       if (sideEffectsUnrefineAliases) {
         localVariableValues
+            .entrySet()
+            .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
+        iteratedCollectionElements
             .entrySet()
             .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
       }
@@ -970,19 +974,30 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /**
    * Returns the {@link IteratedCollectionElement} associated with the given node or tree.
    *
+   * <p>An element whose node matches is preferred. An element whose tree matches is returned only
+   * if no element's node matches and exactly one element's tree matches.
+   *
    * @param node CFG node for which the associated {@link IteratedCollectionElement} is sought
    * @param tree AST tree for which the associated {@link IteratedCollectionElement} is sought
    * @return the {@link IteratedCollectionElement} associated with the given node or tree
    */
-  @SuppressWarnings("interning:not.interned") // we want to check reference equality
   public @Nullable IteratedCollectionElement getIteratedCollectionElement(
       Node node, @Nullable Tree tree) {
+    IteratedCollectionElement treeMatch = null;
+    boolean treeMatchIsUnique = true;
     for (IteratedCollectionElement ice : iteratedCollectionElements.keySet()) {
-      if (ice.tree == tree || ice.node == node || ice.tree.equals(tree) || ice.node.equals(node)) {
+      if (ice.node.equals(node)) {
         return ice;
       }
+      if (tree != null && ice.tree.equals(tree)) {
+        if (treeMatch == null) {
+          treeMatch = ice;
+        } else {
+          treeMatchIsUnique = false;
+        }
+      }
     }
-    return null;
+    return treeMatchIsUnique ? treeMatch : null;
   }
 
   /**
@@ -1606,7 +1621,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
     List<Map.Entry<IteratedCollectionElement, V>> iceEntries =
         new ArrayList<>(iteratedCollectionElements.entrySet());
-    iceEntries.sort(Map.Entry.comparingByKey(ToStringComparator.instance));
+    // Break ties (elements with the same tree but different nodes) by node uid, for determinism.
+    iceEntries.sort(
+        Map.Entry.comparingByKey(
+            Comparator.comparing(
+                    (IteratedCollectionElement ice) -> ice, ToStringComparator.instance)
+                .thenComparingLong(ice -> ice.node.getUid())));
     for (Map.Entry<IteratedCollectionElement, V> iceEntry : iceEntries) {
       res.add(viz.visualizeStoreIteratedCollectionElt(iceEntry.getKey(), iceEntry.getValue()));
     }
