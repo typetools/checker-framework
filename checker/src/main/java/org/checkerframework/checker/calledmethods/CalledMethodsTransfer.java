@@ -32,7 +32,6 @@ import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.StringToJavaExpression;
-import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -110,8 +109,9 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   public TransferResult<AccumulationValue, AccumulationStore> visitMethodInvocation(
       MethodInvocationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
 
-    // The call to `super.visitMethodInvocation()` modifies the input store in-place.  So if we end
-    // up needing to create the exceptional stores, then we'll need this copy taken beforehand.
+    // The call to `super.visitMethodInvocation()` modifies the input store in-place, adding the
+    // invoked method's postconditions, which hold only on normal return.  So if we end up needing
+    // to create the exceptional stores, then we'll need this copy taken beforehand.
     AccumulationStore inputStore = input.getRegularStore().copy();
 
     TransferResult<AccumulationValue, AccumulationStore> superResult =
@@ -121,6 +121,9 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     // accumulate(), which will accumulate values into the result's exceptional stores as well.
     Map<TypeMirror, AccumulationStore> exceptionalStores = superResult.getExceptionalStores();
     if (exceptionalStores == null) {
+      // The invoked method might have side effects before it throws an exception.  The method call
+      // has no value on the exceptional paths.
+      inputStore.updateForMethodCall(node, null);
       exceptionalStores = makeExceptionalStores(node, inputStore);
       superResult = superResult.withExceptionalStores(exceptionalStores);
     }
@@ -149,6 +152,9 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
       Node node, TransferResult<AccumulationValue, AccumulationStore> result, String... values) {
     super.accumulate(node, result, values);
 
+    if (result.getExceptionalStores() == null) {
+      return;
+    }
     JavaExpression target = JavaExpression.fromNode(node);
     if (CFAbstractStore.canInsertJavaExpression(target)) {
       accumulateInExceptionalStores(target, result, Arrays.asList(values));
@@ -156,44 +162,29 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   }
 
   /**
-   * Adds the called methods to {@code target} in the exceptional stores of {@code result}, if it
-   * has any, so that a method counts as called even on the paths where it throws an exception.
+   * Adds the given method names to the estimate for {@code target} in each exceptional store of
+   * {@code result}, if it has any, so that a method counts as called even on the paths where it
+   * throws an exception. Each exceptional store's new estimate for {@code target} is its previous
+   * estimate plus {@code methodNames}.
    *
-   * @param target a JavaExpression that can be inserted into a store
-   * @param result the transfer result
-   * @param valuesAsList the newly called methods
+   * @param target a JavaExpression for which {@code CFAbstractStore.canInsertJavaExpression}
+   *     returns true
+   * @param result a transfer result
+   * @param methodNames names of newly called methods, such as "close"
    */
   protected void accumulateInExceptionalStores(
       JavaExpression target,
       TransferResult<AccumulationValue, AccumulationStore> result,
-      List<String> valuesAsList) {
+      List<String> methodNames) {
     Map<TypeMirror, AccumulationStore> exceptionalStores = result.getExceptionalStores();
     if (exceptionalStores == null) {
       return;
     }
-
-    AccumulationValue flowValue = result.getRegularStore().getValue(target);
-    if (flowValue != null) {
-      // Dataflow has already recorded information about the target.  Integrate it into
-      // the list of values in the new annotation.
-      AnnotationMirrorSet flowAnnos = flowValue.getAnnotations();
-      assert flowAnnos.size() <= 1;
-      for (AnnotationMirror anno : flowAnnos) {
-        if (atypeFactory.isAccumulatorAnnotation(anno)) {
-          List<String> oldFlowValues =
-              AnnotationUtils.getElementValueArray(anno, calledMethodsValueElement, String.class);
-          // valuesAsList cannot have its length changed -- it is backed by an
-          // array.  getElementValueArray returns a new, modifiable list.
-          oldFlowValues.addAll(valuesAsList);
-          valuesAsList = oldFlowValues;
-        }
-      }
+    // Do not use the estimate in the regular store:  it can contain facts that hold only on normal
+    // return, such as postconditions of the invoked method.
+    for (AccumulationStore exceptionalStore : exceptionalStores.values()) {
+      updateValueAndInsertIntoStore(exceptionalStore, target, methodNames);
     }
-    AnnotationMirror newAnno = atypeFactory.createAccumulatorAnnotation(valuesAsList);
-    exceptionalStores.forEach(
-        (tm, s) ->
-            s.replaceValue(
-                target, analysis.createSingleAnnotationValue(newAnno, target.getType())));
   }
 
   /**

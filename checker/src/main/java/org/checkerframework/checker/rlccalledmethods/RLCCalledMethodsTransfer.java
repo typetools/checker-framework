@@ -3,9 +3,11 @@ package org.checkerframework.checker.rlccalledmethods;
 import com.sun.source.tree.MethodInvocationTree;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsTransfer;
 import org.checkerframework.checker.collectionownership.DisposalLoopInfo;
 import org.checkerframework.checker.mustcall.CreatesMustCallForToJavaExpression;
@@ -163,8 +165,9 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
   }
 
   /**
-   * Clears the called-methods store of all information about the target if an @CreatesMustCallFor
-   * method is invoked and the type factory can create obligations. Otherwise, does nothing.
+   * Clears the called-methods stores, including the exceptional stores, of all information about
+   * the target if an @CreatesMustCallFor method is invoked and the type factory can create
+   * obligations. Otherwise, does nothing.
    *
    * @param n a method invocation
    * @param result the transfer result whose stores should be cleared of information
@@ -187,6 +190,13 @@ public class RLCCalledMethodsTransfer extends CalledMethodsTransfer {
         result.getElseStore().replaceValue(targetExpr, defaultTypeValue);
       } else {
         result.getRegularStore().replaceValue(targetExpr, defaultTypeValue);
+      }
+      // The invoked method might have created the obligation before throwing an exception.
+      Map<TypeMirror, AccumulationStore> exceptionalStores = result.getExceptionalStores();
+      if (exceptionalStores != null) {
+        for (AccumulationStore exceptionalStore : exceptionalStores.values()) {
+          exceptionalStore.replaceValue(targetExpr, defaultTypeValue);
+        }
       }
     }
   }

@@ -227,9 +227,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Furthermore, if the method is deterministic, we store its result {@code val} in the store.
    *
    * @param methodInvocationNode method whose information is being updated
-   * @param val abstract value of the method call
+   * @param val abstract value of the method call, or null to store no value for the method call
    */
-  public void updateForMethodCall(MethodInvocationNode methodInvocationNode, V val) {
+  public void updateForMethodCall(MethodInvocationNode methodInvocationNode, @Nullable V val) {
     ExecutableElement method = methodInvocationNode.getTarget().getMethod();
 
     @SuppressWarnings("unchecked")
