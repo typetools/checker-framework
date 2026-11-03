@@ -51,8 +51,14 @@ public class IteratedCollectionElement extends JavaExpression {
 
   /**
    * Returns true if the given node denotes this collection element: its tree is this element's
-   * tree, or it is a use of the local variable that this element's tree declares, such as {@code o}
-   * in {@code o.close()} in the body of {@code for (Object o : list)}.
+   * tree, or its expression equals this element's {@link #reference}. That reference is the local
+   * variable that this element's tree declares, such as {@code o} in {@code o.close()} in the body
+   * of {@code for (Object o : list)}, or a method call such as {@code list.get(i)} in {@code
+   * list.get(i).close()} in the body of {@code for (int i = 0; i < list.size(); i++)}.
+   *
+   * <p>This method is unsound for a reference that is a nondeterministic method call, such as
+   * {@code it.next()} in a while loop over an iterator {@code it}. It returns true for every call
+   * {@code it.next()} in the loop body, but each such call yields a different collection element.
    *
    * @param n a CFG node
    * @return true if {@code n} denotes this collection element
@@ -63,10 +69,12 @@ public class IteratedCollectionElement extends JavaExpression {
       return true;
     }
     // A local variable is a distinct element (VarSymbol) in each loop, so this is not confused by
-    // two loops that use the same variable name.
-    return reference instanceof LocalVariable
-        && n instanceof LocalVariableNode localVariableNode
-        && reference.equals(new LocalVariable(localVariableNode));
+    // two loops that use the same variable name.  Likewise for a method call such as
+    // `list.get(i)`, whose index variable is distinct in each loop.
+    // TODO: This is unsound for a nondeterministic method call such as `it.next()`, as documented
+    // above.  Matching only deterministic calls would require an AnnotationProvider.
+    return (reference instanceof LocalVariable || reference instanceof MethodCall)
+        && reference.equals(JavaExpression.fromNode(n));
   }
 
   @Override
