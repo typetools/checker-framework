@@ -3041,20 +3041,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         continue;
       }
       TypeElement annoType = (TypeElement) anno.getAnnotationType().asElement();
-      AnnotationMirror qualifier;
+      List<@Nullable AnnotationMirror> qualifiers = new ArrayList<>();
       if (frameworkContractAnnotationNames.contains(annoType.getQualifiedName().toString())) {
-        qualifier = contractsFromMethod.getQualifierEnforcedByContractAnnotation(anno);
+        qualifiers.add(contractsFromMethod.getQualifierEnforcedByContractAnnotation(anno));
       } else {
-        AnnotationMirror metaAnno = getContractMetaAnnotation(annoType);
-        if (metaAnno == null) {
-          continue;
+        // An annotation may have more than one contract meta-annotation, such as both
+        // @PreconditionAnnotation and @PostconditionAnnotation.  Check each of them.
+        for (AnnotationMirror metaAnno : getContractMetaAnnotations(annoType)) {
+          qualifiers.add(
+              contractsFromMethod.getQualifierEnforcedByContractAnnotation(metaAnno, anno));
         }
-        qualifier = contractsFromMethod.getQualifierEnforcedByContractAnnotation(metaAnno, anno);
       }
-      if (qualifier != null
-          && AnnotationUtils.areSame(qualifier, qualHierarchy.getTopAnnotation(qualifier))) {
-        Name qualifierName = qualifier.getAnnotationType().asElement().getSimpleName();
-        checker.reportWarning(annoTree, "contracts.toptype", qualifierName, annoTree);
+      for (AnnotationMirror qualifier : qualifiers) {
+        if (qualifier != null
+            && AnnotationUtils.areSame(qualifier, qualHierarchy.getTopAnnotation(qualifier))) {
+          Name qualifierName = qualifier.getAnnotationType().asElement().getSimpleName();
+          checker.reportWarning(annoTree, "contracts.toptype", qualifierName, annoTree);
+          // Issue at most one warning per annotation.
+          break;
+        }
       }
     }
   }
@@ -3084,22 +3089,23 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Returns the contract meta-annotation ({@code @PreconditionAnnotation},
-   * {@code @PostconditionAnnotation}, or {@code @ConditionalPostconditionAnnotation}) on the given
-   * annotation declaration, or null if there is none.
+   * Returns the contract meta-annotations ({@code @PreconditionAnnotation},
+   * {@code @PostconditionAnnotation}, and {@code @ConditionalPostconditionAnnotation}) on the given
+   * annotation declaration.
    *
    * @param annoType an annotation declaration
-   * @return the contract meta-annotation on {@code annoType}, or null
+   * @return the contract meta-annotations on {@code annoType}; empty if there are none
    */
-  private @Nullable AnnotationMirror getContractMetaAnnotation(TypeElement annoType) {
+  private List<AnnotationMirror> getContractMetaAnnotations(TypeElement annoType) {
+    List<AnnotationMirror> result = new ArrayList<>();
     for (AnnotationMirror metaAnno : annoType.getAnnotationMirrors()) {
       if (atypeFactory.areSameByClass(metaAnno, PreconditionAnnotation.class)
           || atypeFactory.areSameByClass(metaAnno, PostconditionAnnotation.class)
           || atypeFactory.areSameByClass(metaAnno, ConditionalPostconditionAnnotation.class)) {
-        return metaAnno;
+        result.add(metaAnno);
       }
     }
-    return null;
+    return result;
   }
 
   @Override
