@@ -70,6 +70,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -825,8 +826,18 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /* Utility Methods */
   /* --------------------------------------------------------- */
 
-  /** The UID for the next unique name. */
-  protected static long uid = 0;
+  /**
+   * The UID for the next unique name.
+   *
+   * <p>This is static so that names are unique across all CFGs, not just within one. The Resource
+   * Leak Checker stores the variables of ternary and switch expressions in {@code
+   * RLCCalledMethodsAnnotatedTypeFactory#tempVarToTree}, which compares its {@code
+   * LocalVariableNode} keys by name. When the {@code MustCallConsistencyAnalyzer} ran in the {@code
+   * RLCCalledMethodsChecker}, that map was cleared after each method. It now runs in the Collection
+   * Ownership Checker after the whole class has been analyzed, so the map holds the variables of a
+   * whole compilation unit. {@code MustCallTransfer#uid} is static for the same reason.
+   */
+  protected static AtomicLong uid = new AtomicLong();
 
   /**
    * Returns a unique name starting with {@code prefix}.
@@ -835,7 +846,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return a unique name starting with {@code prefix}
    */
   protected String uniqueName(String prefix) {
-    return prefix + "#num" + uid++;
+    return prefix + "#num" + uid.getAndIncrement();
   }
 
   /**

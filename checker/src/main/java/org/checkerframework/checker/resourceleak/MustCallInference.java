@@ -186,7 +186,7 @@ public class MustCallInference {
     WholeProgramInference wpi =
         ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(resourceLeakAtf)
             .getWholeProgramInference();
-    assert wpi != null : "MustCallInference is running without WPI.";
+    assert wpi != null : "@AssumeAssertion(nullness): MustCallInference runs only with WPI";
     this.wpi = wpi;
     this.mcca = mcca;
     this.cfg = cfg;
