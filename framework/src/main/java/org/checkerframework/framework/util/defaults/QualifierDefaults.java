@@ -902,9 +902,9 @@ public class QualifierDefaults {
             // A binding variable of a deconstruction pattern is defaulted like a local variable;
             // dataflow refines it to the type of the record component.
             if (scope != null
+                && isTopLevelType
                 && (scope.getKind() == ElementKind.LOCAL_VARIABLE
-                    || atypeFactory.isDeconstructionBindingVariable(scope))
-                && isTopLevelType) {
+                    || atypeFactory.isDeconstructionBindingVariable(scope))) {
               // TODO: how do we determine that we are in a cast or instanceof type?
               addAnnotation(t, qual);
             }
