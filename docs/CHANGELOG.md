@@ -3,7 +3,15 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 4.3.2 (2026-11-01)
+## Version 4.4.1 (2026-12-01)
+
+### User-visible changes
+
+### Changes for type system implementers
+
+### Closed issues
+
+## Version 4.4.0 (2026-11-02)
 
 ### User-visible changes
 
@@ -47,6 +55,21 @@ now a final, non-generic class.  `NumberMath.getNumberMath()` throws
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
 
+`CFAbstractTransfer.createTransferResult()` now merges the input's then-store
+and else-store:  the result's then-store and else-store are both their least
+upper bound.  Use it when the input's then-store and else-store describe an
+earlier node, such as an operand.  New method
+`CFAbstractTransfer.createTransferResultKeepingStores()` keeps the input's
+then-store and else-store; use it when they describe the current node, as for a
+cast.
+
+These methods of `CFAbstractTransfer` no longer call `visitNode()`:
+`visitConditionalAnd()`, `visitConditionalNot()`, `visitConditionalOr()`,
+`visitLambdaResultExpression()`, `visitMarker()`, `visitReturn()`,
+`visitTypeCast()`, and, for a boolean literal that is the right operand of a
+boolean operator, `visitValueLiteral()`.  A subclass that overrides
+`visitNode()` may need to override them too.
+
 Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
 and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
 `addToImplicitlyConvertedLookupMap()`.
@@ -56,6 +79,8 @@ Deprecated methods:
 * `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.resolveNoArgumentCall()`
 
 ### Closed issues
+
+\#6849, #6864, #6872, #8018, #8300, #8320, #8323, #8340, #8343.
 
 ## Version 4.3.1 (2026-10-08)
 

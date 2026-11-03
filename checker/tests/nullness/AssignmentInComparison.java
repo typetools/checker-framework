@@ -32,6 +32,18 @@ public class AssignmentInComparison {
     }
   }
 
+  static void parenthesizedLocalTarget(@Nullable AssignmentInComparison n) {
+    if (n == null) {
+      return;
+    }
+    if (((n) = n.next) != null) {
+      n.toString();
+      // After the assignment, `n.next` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      n.next.toString();
+    }
+  }
+
   static void localTargetFieldRhs(@Nullable AssignmentInComparison m, AssignmentInComparison n) {
     if ((m = n.next) != null) {
       m.toString();
@@ -141,6 +153,20 @@ public class AssignmentInComparison {
     }
   }
 
+  static void receiverReassignedParenthesized(
+      @Nullable AssignmentInComparison n, @Nullable AssignmentInComparison o) {
+    if (n == null) {
+      return;
+    }
+    if ((n.next = ((n) = o)) != null) {
+      n.toString();
+      o.toString();
+      // After the assignment, `n.next` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      n.next.toString();
+    }
+  }
+
   static void receiverReassignedInRhsReceiver(
       @Nullable AssignmentInComparison n, AssignmentInComparison o) {
     if (n == null) {
@@ -201,7 +227,7 @@ public class AssignmentInComparison {
     return o;
   }
 
-  @SuppressWarnings("unchecked") // javac warning for the cast to T
+  @SuppressWarnings("unchecked") // The cast to `T` is needed for the test.
   static <T> void arrayTargetTypeVariable(@Nullable T[] ts, @Nullable String[][] ss) {
     if ((ts[0] = (T) ss[0][0]) != null) {
       ts[0].toString();
