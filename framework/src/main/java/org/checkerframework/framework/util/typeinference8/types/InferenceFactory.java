@@ -1110,6 +1110,13 @@ public class InferenceFactory {
     // instantiations again would overwrite them.  TODO: Keep the origin at the positions that are
     // still ignored, rather than discarding it, when the ignored substitutions of each input
     // include some that are not ignored substitutions of another input.
+    //
+    // TODO: When another input also has an ignored substitution at a position, keeping the origin
+    // of `type` alone is unsound: substituting instantiations into that origin gives the position
+    // the instantiation from `type` only, discarding that from the other input.  For example, the
+    // lub of `arrOf(nonNullU, nn)` and `arrOf(nonNullU, nble)` gets component type `@NonNull U`
+    // rather than `@Nullable U`; see checker/tests/nullness/LubOfIgnoredSubstitution.java.  Fixing
+    // this requires an origin that combines the ignored substitutions of several inputs.
     for (AbstractType other : inputs) {
       @SuppressWarnings("interning:not.interned") // Skipping `type` itself.
       boolean isType = other == type;
