@@ -408,6 +408,23 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myOtherMethod([[Ljava/lang/CharSequence;)V");
   }
 
+  /** A varargs parameter whose element type is a stub-declared type uses that type's name. */
+  @Test
+  public void testStubDeclaredTypeVarargs() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Local {",
+            "  class Inner {}",
+            "}",
+            "class MyClass {",
+            "  void myMethod(Local... ls) {}",
+            "  void myOtherMethod(Local.Inner[]... is) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod([Lp/Local;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod([[Lp/Local$Inner;)V");
+  }
+
   /** A type that the stub file declares is qualified by the stub file's package. */
   @Test
   public void testStubDeclaredType() throws Exception {
