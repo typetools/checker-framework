@@ -2,8 +2,8 @@
 // through the interface checks its arguments against the interface method, so the class is an error
 // if the interface method does not guarantee what the inherited method assumes of its arguments.
 //
-// Each call site is in an unannotated method, so the only diagnostic a call site can produce is the
-// one under test.
+// Each call site is in an unannotated method, so every diagnostic at a call site is about the
+// argument, not about the enclosing method.
 
 import java.util.function.Supplier;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -38,7 +38,7 @@ public class PurityFunctionalInherited {
 
   void callsThroughBase(Base receiver) {
     receiver.apply(() -> 0);
-    // :: error: [purity.assign.field]
+    // :: error: [purity.assign.field] :: error: [purity.functional.argument]
     receiver.apply(() -> count++);
   }
 
@@ -53,7 +53,7 @@ public class PurityFunctionalInherited {
 
   void callsThroughAnnotatedInterface(Annotated receiver) {
     receiver.apply(() -> 0);
-    // :: error: [purity.assign.field]
+    // :: error: [purity.assign.field] :: error: [purity.functional.argument]
     receiver.apply(() -> count++);
   }
 
