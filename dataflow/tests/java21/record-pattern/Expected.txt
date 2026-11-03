@@ -1,0 +1,90 @@
+2 -> 3 EACH_TO_EACH
+3 -> 4 EACH_TO_EACH
+4 -> 8 THEN_TO_BOTH
+4 -> 10 ELSE_TO_BOTH
+8 -> 13 EACH_TO_EACH
+10 -> 13 EACH_TO_EACH
+13 -> 0 EACH_TO_EACH
+
+2:
+Process order: 1
+TransferInput#0
+Before:   reaching definitions = none
+~~~~~~~~~
+<entry>
+
+3:
+Process order: 2
+TransferInput#1
+Before:   reaching definitions = none
+~~~~~~~~~
+size   [ VariableDeclaration ]
+0   [ IntegerLiteral ]
+size = 0   [ Assignment ]
+switch#num0   [ VariableDeclaration ]
+switch#num0   [ LocalVariable ]
+shape   [ LocalVariable ]
+switch#num0 = shape   [ Assignment ]
+marker (start of switch statement #0)   [ Marker ]
+radius   [ VariableDeclaration ]
+radius   [ LocalVariable ]
+Circle(int radius)   [ DeconstructorPattern ]
+case Circle(int radius):   [ Case ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { size = 0, switch#num0 = shape }
+
+4:
+Process order: 3
+TransferInput#15
+Before:   reaching definitions = { size = 0, switch#num0 = shape }
+~~~~~~~~~
+ConditionalBlock: then: 8, else: 10
+
+8:
+Process order: 4
+TransferInput#17
+Before:   reaching definitions = { size = 0, switch#num0 = shape }
+~~~~~~~~~
+size   [ LocalVariable ]
+radius   [ LocalVariable ]
+size = radius   [ Assignment ]
+expression statement size = radius   [ ExpressionStatement ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { switch#num0 = shape, size = radius }
+
+10:
+Process order: 5
+TransferInput#18
+Before:   reaching definitions = { size = 0, switch#num0 = shape }
+~~~~~~~~~
+side   [ VariableDeclaration ]
+side   [ LocalVariable ]
+Square(int side)   [ DeconstructorPattern ]
+size   [ LocalVariable ]
+side   [ LocalVariable ]
+size = side   [ Assignment ]
+expression statement size = side   [ ExpressionStatement ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { switch#num0 = shape, size = side }
+
+13:
+Process order: 6
+TransferInput#33
+Before:   reaching definitions = { switch#num0 = shape, size = side, size = radius }
+~~~~~~~~~
+marker (end of switch statement #0)   [ Marker ]
+size   [ LocalVariable ]
+return size   [ Return ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { switch#num0 = shape, size = side, size = radius }
+
+0:
+Process order: 7
+TransferInput#38
+Before:   reaching definitions = { switch#num0 = shape, size = side, size = radius }
+~~~~~~~~~
+<exit>
