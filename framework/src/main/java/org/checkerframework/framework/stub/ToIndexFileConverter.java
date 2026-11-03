@@ -689,21 +689,66 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @return the definition of {@code name}, or null if the input JAIF file has none
    */
   private @Nullable AnnotationDef findAnnotationDef(@BinaryName String name) {
+    boolean isSimpleName = name.indexOf('.') == -1;
+    // A qualified name is most likely fully qualified, so try it as written before trying the
+    // names that a wildcard import could make of it.
+    if (!isSimpleName) {
+      AnnotationDef def = annotationDefs.get(name);
+      if (def != null) {
+        return def;
+      }
+    }
+    // Single-type imports shadow types in the same package, which shadow wildcard imports
+    // (JLS 6.4.1).
+    AnnotationDef def = findAnnotationDefViaImports(name, false);
+    if (def != null) {
+      return def;
+    }
+    if (pkgName != null) {
+      def = annotationDefs.get(pkgName + "." + name);
+      if (def != null) {
+        return def;
+      }
+    }
+    def = findAnnotationDefViaImports(name, true);
+    if (def != null) {
+      return def;
+    }
+    if (isSimpleName) {
+      // A single-type import of a type named `name` binds `name` to a type that the input JAIF file
+      // does not define, so the definition that is keyed by the simple name is of some other type.
+      for (String importName : imports) {
+        if (importName.endsWith("." + name)) {
+          return null;
+        }
+      }
+      // `name` may be a simple name that only one definition has.
+      return annotationDefs.get(name);
+    }
+    return null;
+  }
+
+  /**
+   * Returns the definition, in the input JAIF file, of the annotation interface that a name denotes
+   * by way of the stub file's single-type imports or its wildcard imports.
+   *
+   * @param name the name of an annotation interface, as written in the stub file
+   * @param wildcard if true, consult only wildcard imports; if false, only single-type imports
+   * @return the definition of {@code name}, or null if no such import yields a definition
+   */
+  private @Nullable AnnotationDef findAnnotationDefViaImports(
+      @BinaryName String name, boolean wildcard) {
     for (String importName : imports) {
+      if (importName.endsWith("*") != wildcard) {
+        continue;
+      }
       String qualifiedName = mergeImport(importName, name);
       AnnotationDef def = qualifiedName == null ? null : annotationDefs.get(qualifiedName);
       if (def != null) {
         return def;
       }
     }
-    if (pkgName != null) {
-      AnnotationDef def = annotationDefs.get(pkgName + "." + name);
-      if (def != null) {
-        return def;
-      }
-    }
-    // `name` is fully qualified, or it is a simple name that only one definition has.
-    return annotationDefs.get(name);
+    return null;
   }
 
   /**
