@@ -1456,6 +1456,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * argument {@link CFAbstractStore}. Note that we test the entry keys and values by Java equality,
    * not by any subtype relationship. This method is used primarily to simplify the equals
    * predicate.
+   *
+   * @param other a store
+   * @return true iff this store contains a superset of the map entries of {@code other}
    */
   protected boolean supersetOf(CFAbstractStore<V, S> other) {
     return mapSupersetOf(localVariableValues, other.localVariableValues)
