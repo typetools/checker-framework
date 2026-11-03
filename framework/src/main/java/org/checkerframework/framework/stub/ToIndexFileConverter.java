@@ -700,28 +700,22 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
     // Single-type imports shadow types in the same package, which shadow wildcard imports
     // (JLS 6.4.1).
-    AnnotationDef def = findAnnotationDefViaImports(name, false);
-    if (def != null) {
-      return def;
+    String imported = qualifyViaSingleTypeImport(name);
+    if (imported != null) {
+      // The import determines what `name` denotes, even if the input JAIF file does not define it.
+      return annotationDefs.get(imported);
     }
     if (pkgName != null) {
-      def = annotationDefs.get(pkgName + "." + name);
+      AnnotationDef def = annotationDefs.get(pkgName + "." + name);
       if (def != null) {
         return def;
       }
     }
-    def = findAnnotationDefViaImports(name, true);
+    AnnotationDef def = findAnnotationDefViaWildcardImports(name);
     if (def != null) {
       return def;
     }
     if (isSimpleName) {
-      // A single-type import of a type named `name` binds `name` to a type that the input JAIF file
-      // does not define, so the definition that is keyed by the simple name is of some other type.
-      for (String importName : imports) {
-        if (importName.endsWith("." + name)) {
-          return null;
-        }
-      }
       // `name` may be a simple name that only one definition has.
       return annotationDefs.get(name);
     }
@@ -729,17 +723,36 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
+   * Returns the qualified name that a name denotes by way of a single-type import of the stub file:
+   * that is, if a single-type import binds the first identifier of the name.
+   *
+   * @param name a possibly qualified name, as written in the stub file
+   * @return the qualified name that {@code name} denotes by way of a single-type import, or null if
+   *     no single-type import binds the first identifier of {@code name}
+   */
+  @SuppressWarnings("signature") // string manipulation of signature strings
+  private @Nullable @BinaryName String qualifyViaSingleTypeImport(@BinaryName String name) {
+    int dot = name.indexOf('.');
+    String first = dot == -1 ? name : name.substring(0, dot);
+    for (String importName : imports) {
+      if (!importName.endsWith("*")
+          && (importName.equals(first) || importName.endsWith("." + first))) {
+        return importName + name.substring(first.length());
+      }
+    }
+    return null;
+  }
+
+  /**
    * Returns the definition, in the input JAIF file, of the annotation interface that a name denotes
-   * by way of the stub file's single-type imports or its wildcard imports.
+   * by way of the stub file's wildcard imports.
    *
    * @param name the name of an annotation interface, as written in the stub file
-   * @param wildcard if true, consult only wildcard imports; if false, only single-type imports
-   * @return the definition of {@code name}, or null if no such import yields a definition
+   * @return the definition of {@code name}, or null if no wildcard import yields a definition
    */
-  private @Nullable AnnotationDef findAnnotationDefViaImports(
-      @BinaryName String name, boolean wildcard) {
+  private @Nullable AnnotationDef findAnnotationDefViaWildcardImports(@BinaryName String name) {
     for (String importName : imports) {
-      if (importName.endsWith("*") != wildcard) {
+      if (!importName.endsWith("*")) {
         continue;
       }
       String qualifiedName = mergeImport(importName, name);
@@ -946,6 +959,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *     or null if resolution fails
    */
   private @Nullable @BinaryName String resolveUncached(@BinaryName String className) {
+    // Single-type imports shadow types in the same package, which shadow types that are imported
+    // on demand, including those in java.lang (JLS 6.4.1).
+    String imported = qualifyViaSingleTypeImport(className);
+    if (imported != null) {
+      return loadClass(imported) != null ? imported : null;
+    }
+
     if (pkgName != null) {
       String qualifiedName = Signatures.addPackage(pkgName, className);
       if (loadClass(qualifiedName) != null) {
@@ -963,6 +983,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
 
     for (String declName : imports) {
+      if (!declName.endsWith("*")) {
+        continue;
+      }
       String qualifiedName = mergeImport(declName, className);
       if (qualifiedName != null && loadClass(qualifiedName) != null) {
         return qualifiedName;

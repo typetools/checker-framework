@@ -203,6 +203,19 @@ public class ToIndexFileConverterTest {
         jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/ToIndexFileConverter;)V");
   }
 
+  /** A single-type import shadows a class in the same package (JLS 6.4.1). */
+  @Test
+  public void testResolveSingleTypeImportBeforePackage() throws Exception {
+    String jaif =
+        convert(
+            "package java.util;",
+            "import java.sql.Date;",
+            "class MyClass {",
+            "  void myMethod(Date d) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/sql/Date;)V");
+  }
+
   /** Each top-level type of a compilation unit is converted. */
   @Test
   public void testSeveralTopLevelTypes() throws Exception {
@@ -397,6 +410,27 @@ public class ToIndexFileConverterTest {
         fieldOfStubWithDefs(
             new String[] {
               "package q:", "annotation @Anno: @java.lang.annotation.Target(value={TYPE_USE})"
+            },
+            "package p;",
+            "import r.Anno;",
+            "class C {",
+            "  @Anno String f;",
+            "}");
+    Assert.assertNotNull("@Anno was not recorded on the field", f.lookup("Anno"));
+    Assert.assertNull("@Anno was recorded on the type", f.type.lookup("Anno"));
+  }
+
+  /**
+   * A single-type import of an annotation interface that the input JAIF file does not define
+   * prevents the use of a definition, of another interface with the same simple name, in the stub
+   * file's package.
+   */
+  @Test
+  public void testSingleTypeImportShadowsPackageDefinition() throws Exception {
+    AField f =
+        fieldOfStubWithDefs(
+            new String[] {
+              "package p:", "annotation @Anno: @java.lang.annotation.Target(value={TYPE_USE})"
             },
             "package p;",
             "import r.Anno;",
