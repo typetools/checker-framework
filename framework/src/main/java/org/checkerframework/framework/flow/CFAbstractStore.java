@@ -321,6 +321,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * change. Concretely, the implementation evaluates to false if {@code expr} is strictly equal to
    * {@code notSideEffectedExpression}.
    *
+   * <p>An {@link IteratedCollectionElement} is side-effected exactly when its {@link
+   * IteratedCollectionElement#reference reference} is, such as the loop variable {@code o} in
+   * {@code for (Object o : list)}.
+   *
    * @param expr an expression
    * @param notSideEffectedExpression an expression that is never considered to be side-effected, or
    *     null
@@ -332,6 +336,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       JavaExpression expr,
       @Nullable JavaExpression notSideEffectedExpression,
       @Nullable List<JavaExpression> sideEffectsOnlyExpressions) {
+    if (expr instanceof IteratedCollectionElement ice) {
+      return isSideEffected(ice.reference, notSideEffectedExpression, sideEffectsOnlyExpressions);
+    }
     if (!expr.isModifiableByOtherCode()) {
       return false;
     }
@@ -657,9 +664,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         expr,
         newValue,
         (previousValue, value) -> {
-          assert value != null
-              : "@AssumeAssertion(nullness): shouldInsert ensures a non-null value";
-          return value.greatestLowerBound(previousValue);
+          assert previousValue != null
+              : "@AssumeAssertion(nullness): oldValue, checked above, is non-null";
+          return previousValue.greatestLowerBound(value);
         },
         permitNondeterministic);
   }
@@ -806,44 +813,24 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     if (expr instanceof LocalVariable localVar) {
-      @Nullable V oldValue = localVariableValues.get(localVar);
-      @Nullable V newValue = merger.apply(oldValue, value);
-      if (newValue != null) {
-        localVariableValues.put(localVar, newValue);
-      }
+      mergeIntoMap(localVariableValues, localVar, value, merger);
     } else if (expr instanceof IteratedCollectionElement collectionElt) {
-      @Nullable V oldValue = iteratedCollectionElements.get(collectionElt);
-      @Nullable V newValue = merger.apply(oldValue, value);
-      if (newValue != null) {
-        iteratedCollectionElements.put(collectionElt, newValue);
-      }
+      mergeIntoMap(iteratedCollectionElements, collectionElt, value, merger);
     } else if (expr instanceof FieldAccess fieldAcc) {
       // Only store information about final fields (where the receiver is
       // also fixed) if concurrent semantics are enabled.
       boolean isMonotonic = isMonotonicUpdate(fieldAcc, value);
       if (sequentialSemantics || isMonotonic || !fieldAcc.isAssignableByOtherCode()) {
-        @Nullable V oldValue = fieldValues.get(fieldAcc);
-        @Nullable V newValue = merger.apply(oldValue, value);
-        if (newValue != null) {
-          fieldValues.put(fieldAcc, newValue);
-        }
+        mergeIntoMap(fieldValues, fieldAcc, value, merger);
       }
     } else if (expr instanceof MethodCall method) {
       // Don't store any information if concurrent semantics are enabled.
       if (sequentialSemantics) {
-        @Nullable V oldValue = methodCallExpressions.get(method);
-        @Nullable V newValue = merger.apply(oldValue, value);
-        if (newValue != null) {
-          methodCallExpressions.put(method, newValue);
-        }
+        mergeIntoMap(methodCallExpressions, method, value, merger);
       }
     } else if (expr instanceof ArrayAccess arrayAccess) {
       if (sequentialSemantics) {
-        @Nullable V oldValue = arrayValues.get(arrayAccess);
-        @Nullable V newValue = merger.apply(oldValue, value);
-        if (newValue != null) {
-          arrayValues.put(arrayAccess, newValue);
-        }
+        mergeIntoMap(arrayValues, arrayAccess, value, merger);
       }
     } else if (expr instanceof ThisReference || expr instanceof SuperReference) {
       if (sequentialSemantics || !expr.isAssignableByOtherCode()) {
@@ -855,14 +842,30 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
     } else if (expr instanceof ClassName className) {
       if (sequentialSemantics || !className.isAssignableByOtherCode()) {
-        @Nullable V oldValue = classValues.get(className);
-        @Nullable V newValue = merger.apply(oldValue, value);
-        if (newValue != null) {
-          classValues.put(className, newValue);
-        }
+        mergeIntoMap(classValues, className, value, merger);
       }
     } else {
       // No other types of expressions need to be stored.
+    }
+  }
+
+  /**
+   * Puts into {@code map} the result of applying {@code merger} to the value that {@code map} gives
+   * {@code key} (or null) and {@code value}. Does nothing if the result is null.
+   *
+   * @param <K> the type of the keys, such as {@link LocalVariable}
+   * @param map a map in this store, such as {@link #localVariableValues}, which this method
+   *     side-effects
+   * @param key the key whose value to update
+   * @param value the value to merge with the value that {@code map} gives {@code key}
+   * @param merger the function that merges the value that {@code map} gives {@code key} and {@code
+   *     value}
+   */
+  private <K> void mergeIntoMap(
+      Map<K, V> map, K key, @Nullable V value, BinaryOperator<@Nullable V> merger) {
+    @Nullable V newValue = merger.apply(map.get(key), value);
+    if (newValue != null) {
+      map.put(key, newValue);
     }
   }
 
@@ -972,32 +975,28 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Returns the {@link IteratedCollectionElement} associated with the given node or tree.
+   * Returns the {@link IteratedCollectionElement} in this store that the given node or tree
+   * denotes, or null if this store has no such element.
    *
-   * <p>An element whose node matches is preferred. An element whose tree matches is returned only
-   * if no element's node matches and exactly one element's tree matches.
+   * <p>An element is denoted by its own tree (compared by reference) and by every node that {@link
+   * IteratedCollectionElement#isDenotedBy denotes} it, such as each use of {@code o} in the body of
+   * {@code for (Object o : list)}. Different loops have different trees and different loop
+   * variables, so at most one element matches.
    *
-   * @param node CFG node for which the associated {@link IteratedCollectionElement} is sought
-   * @param tree AST tree for which the associated {@link IteratedCollectionElement} is sought
-   * @return the {@link IteratedCollectionElement} associated with the given node or tree
+   * @param node a CFG node, such as the node for {@code o} in {@code o.close()}
+   * @param tree a tree that might be an element's tree, or null
+   * @return the {@link IteratedCollectionElement} that {@code node} or {@code tree} denotes, or
+   *     null if this store has no such element
    */
   public @Nullable IteratedCollectionElement getIteratedCollectionElement(
       Node node, @Nullable Tree tree) {
-    IteratedCollectionElement treeMatch = null;
-    boolean treeMatchIsUnique = true;
     for (IteratedCollectionElement ice : iteratedCollectionElements.keySet()) {
-      if (ice.node.equals(node)) {
+      // `Tree` does not override `equals`, so this compares trees by reference.
+      if (ice.isDenotedBy(node) || ice.tree.equals(tree)) {
         return ice;
       }
-      if (tree != null && ice.tree.equals(tree)) {
-        if (treeMatch == null) {
-          treeMatch = ice;
-        } else {
-          treeMatchIsUnique = false;
-        }
-      }
     }
-    return treeMatchIsUnique ? treeMatch : null;
+    return null;
   }
 
   /**
@@ -1393,32 +1392,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   private S upperBound(S other, boolean shouldWiden) {
     S newStore = analysis.createEmptyStore(sequentialSemantics);
 
-    for (Map.Entry<LocalVariable, V> e : other.localVariableValues.entrySet()) {
-      // local variables that are only part of one store, but not the other are discarded, as
-      // one of store implicitly contains 'top' for that variable.
-      LocalVariable localVar = e.getKey();
-      V thisVal = localVariableValues.get(localVar);
-      if (thisVal != null) {
-        V otherVal = e.getValue();
-        V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
-
-        if (mergedVal != null) {
-          newStore.localVariableValues.put(localVar, mergedVal);
-        }
-      }
-    }
-
-    for (Map.Entry<IteratedCollectionElement, V> e : other.iteratedCollectionElements.entrySet()) {
-      IteratedCollectionElement ice = e.getKey();
-      V thisVal = iteratedCollectionElements.get(ice);
-      if (thisVal != null) {
-        V otherVal = e.getValue();
-        V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
-        if (mergedVal != null) {
-          newStore.iteratedCollectionElements.put(ice, mergedVal);
-        }
-      }
-    }
+    upperBoundOfMaps(
+        localVariableValues, other.localVariableValues, newStore.localVariableValues, shouldWiden);
+    upperBoundOfMaps(
+        iteratedCollectionElements,
+        other.iteratedCollectionElements,
+        newStore.iteratedCollectionElements,
+        shouldWiden);
 
     // information about the current object
     {
@@ -1431,57 +1411,40 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
     }
 
-    for (Map.Entry<FieldAccess, V> e : other.fieldValues.entrySet()) {
-      // information about fields that are only part of one store, but not the other are
-      // discarded, as one store implicitly contains 'top' for that field.
-      FieldAccess el = e.getKey();
-      V thisVal = fieldValues.get(el);
-      if (thisVal != null) {
-        V otherVal = e.getValue();
-        V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
-        if (mergedVal != null) {
-          newStore.fieldValues.put(el, mergedVal);
-        }
-      }
-    }
-    for (Map.Entry<ArrayAccess, V> e : other.arrayValues.entrySet()) {
-      // information about arrays that are only part of one store, but not the other are
-      // discarded, as one store implicitly contains 'top' for that array access.
-      ArrayAccess el = e.getKey();
-      V thisVal = arrayValues.get(el);
-      if (thisVal != null) {
-        V otherVal = e.getValue();
-        V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
-        if (mergedVal != null) {
-          newStore.arrayValues.put(el, mergedVal);
-        }
-      }
-    }
-    for (Map.Entry<MethodCall, V> e : other.methodCallExpressions.entrySet()) {
-      // information about methods that are only part of one store, but not the other are
-      // discarded, as one store implicitly contains 'top' for that field.
-      MethodCall el = e.getKey();
-      V thisVal = methodCallExpressions.get(el);
-      if (thisVal != null) {
-        V otherVal = e.getValue();
-        V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
-        if (mergedVal != null) {
-          newStore.methodCallExpressions.put(el, mergedVal);
-        }
-      }
-    }
-    for (Map.Entry<ClassName, V> e : other.classValues.entrySet()) {
-      ClassName el = e.getKey();
-      V thisVal = classValues.get(el);
-      if (thisVal != null) {
-        V otherVal = e.getValue();
-        V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
-        if (mergedVal != null) {
-          newStore.classValues.put(el, mergedVal);
-        }
-      }
-    }
+    upperBoundOfMaps(fieldValues, other.fieldValues, newStore.fieldValues, shouldWiden);
+    upperBoundOfMaps(arrayValues, other.arrayValues, newStore.arrayValues, shouldWiden);
+    upperBoundOfMaps(
+        methodCallExpressions,
+        other.methodCallExpressions,
+        newStore.methodCallExpressions,
+        shouldWiden);
+    upperBoundOfMaps(classValues, other.classValues, newStore.classValues, shouldWiden);
     return newStore;
+  }
+
+  /**
+   * Puts into {@code result} the upper bound of the values that {@code thisMap} and {@code
+   * otherMap} give each key that both maps contain. A key that only one of the maps contains is
+   * discarded, because the other map implicitly gives it the value top.
+   *
+   * @param <K> the type of the keys, such as {@link LocalVariable}
+   * @param thisMap a map in this store, such as {@link #localVariableValues}
+   * @param otherMap the corresponding map in the other store
+   * @param result the corresponding map in the new store, which this method side-effects
+   * @param shouldWiden true if the values should be widened rather than joined
+   */
+  private <K> void upperBoundOfMaps(
+      Map<K, V> thisMap, Map<K, V> otherMap, Map<K, V> result, boolean shouldWiden) {
+    for (Map.Entry<K, V> e : otherMap.entrySet()) {
+      K key = e.getKey();
+      V thisVal = thisMap.get(key);
+      if (thisVal != null) {
+        V mergedVal = upperBoundOfValues(e.getValue(), thisVal, shouldWiden);
+        if (mergedVal != null) {
+          result.put(key, mergedVal);
+        }
+      }
+    }
   }
 
   private V upperBoundOfValues(V otherVal, V thisVal, boolean shouldWiden) {
@@ -1493,54 +1456,31 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * argument {@link CFAbstractStore}. Note that we test the entry keys and values by Java equality,
    * not by any subtype relationship. This method is used primarily to simplify the equals
    * predicate.
+   *
+   * @param other a store
+   * @return true iff this store contains a superset of the map entries of {@code other}
    */
   protected boolean supersetOf(CFAbstractStore<V, S> other) {
-    for (Map.Entry<LocalVariable, V> e : other.localVariableValues.entrySet()) {
-      LocalVariable key = e.getKey();
-      V value = localVariableValues.get(key);
-      if (value == null || !value.equals(e.getValue())) {
-        return false;
-      }
-    }
-    for (Map.Entry<IteratedCollectionElement, V> e : other.iteratedCollectionElements.entrySet()) {
-      IteratedCollectionElement key = e.getKey();
-      V value = iteratedCollectionElements.get(key);
-      if (value == null || !value.equals(e.getValue())) {
-        return false;
-      }
-    }
-    if (!Objects.equals(thisValue, other.thisValue)) {
-      return false;
-    }
-    for (Map.Entry<FieldAccess, V> e : other.fieldValues.entrySet()) {
-      FieldAccess key = e.getKey();
-      V value = fieldValues.get(key);
-      if (value == null || !value.equals(e.getValue())) {
-        return false;
-      }
-    }
-    for (Map.Entry<ArrayAccess, V> e : other.arrayValues.entrySet()) {
-      ArrayAccess key = e.getKey();
-      V value = arrayValues.get(key);
-      if (value == null || !value.equals(e.getValue())) {
-        return false;
-      }
-    }
-    for (Map.Entry<MethodCall, V> e : other.methodCallExpressions.entrySet()) {
-      MethodCall key = e.getKey();
-      V value = methodCallExpressions.get(key);
-      if (value == null || !value.equals(e.getValue())) {
-        return false;
-      }
-    }
-    for (Map.Entry<ClassName, V> e : other.classValues.entrySet()) {
-      ClassName key = e.getKey();
-      V value = classValues.get(key);
-      if (value == null || !value.equals(e.getValue())) {
-        return false;
-      }
-    }
-    return true;
+    return mapSupersetOf(localVariableValues, other.localVariableValues)
+        && mapSupersetOf(iteratedCollectionElements, other.iteratedCollectionElements)
+        && Objects.equals(thisValue, other.thisValue)
+        && mapSupersetOf(fieldValues, other.fieldValues)
+        && mapSupersetOf(arrayValues, other.arrayValues)
+        && mapSupersetOf(methodCallExpressions, other.methodCallExpressions)
+        && mapSupersetOf(classValues, other.classValues);
+  }
+
+  /**
+   * Returns true if {@code map} contains every entry of {@code otherMap}, comparing keys and values
+   * by {@code equals}.
+   *
+   * @param <K> the type of the keys, such as {@link LocalVariable}
+   * @param map a map in this store, such as {@link #localVariableValues}
+   * @param otherMap the corresponding map in another store
+   * @return true if {@code map} contains every entry of {@code otherMap}
+   */
+  private <K> boolean mapSupersetOf(Map<K, V> map, Map<K, V> otherMap) {
+    return map.entrySet().containsAll(otherMap.entrySet());
   }
 
   @Override
@@ -1556,7 +1496,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   @Override
   public int hashCode() {
-    // `equals` is mutual containment of the five maps, so equal stores have equal key sets --
+    // `equals` is mutual containment of the six maps, so equal stores have equal key sets --
     // except that a subclass may ignore some entries of `fieldValues`, which is why the keys of
     // `fieldValues` are hashed by the overridable `fieldValuesKeysHashCode`.  `Set.hashCode` does
     // not depend on iteration order.
@@ -1566,6 +1506,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     // identity hash codes of the javac `Type` and of each javac annotation mirror.
     return Objects.hash(
         localVariableValues.keySet(),
+        iteratedCollectionElements.keySet(),
         fieldValuesKeysHashCode(),
         arrayValues.keySet(),
         methodCallExpressions.keySet(),
@@ -1621,12 +1562,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
     List<Map.Entry<IteratedCollectionElement, V>> iceEntries =
         new ArrayList<>(iteratedCollectionElements.entrySet());
-    // Break ties (elements with the same tree but different nodes) by node uid, for determinism.
-    iceEntries.sort(
-        Map.Entry.comparingByKey(
-            Comparator.comparing(
-                    (IteratedCollectionElement ice) -> ice, ToStringComparator.instance)
-                .thenComparingLong(ice -> ice.node.getUid())));
+    // Sort by node uid, which is cheap and deterministic.  Elements of different loops can have the
+    // same `toString()`, so sorting by `toString()` would not be deterministic.
+    iceEntries.sort(Comparator.comparingLong(e -> e.getKey().node.getUid()));
     for (Map.Entry<IteratedCollectionElement, V> iceEntry : iceEntries) {
       res.add(viz.visualizeStoreIteratedCollectionElt(iceEntry.getKey(), iceEntry.getValue()));
     }

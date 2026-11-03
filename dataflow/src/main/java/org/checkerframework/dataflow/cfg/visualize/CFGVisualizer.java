@@ -107,11 +107,16 @@ public interface CFGVisualizer<
    * Called by {@code CFAbstractStore#internalVisualize()} to visualize an iterated collection
    * element.
    *
-   * @param ice the iterated collection element
+   * <p>The default implementation calls {@link #visualizeStoreKeyVal} with the string
+   * representation of {@code ice}.
+   *
+   * @param ice an iterated collection element, such as {@code o} in {@code for (Object o : list)}
    * @param value the value associated with {@code ice}
    * @return the String representation of this entry
    */
-  String visualizeStoreIteratedCollectionElt(IteratedCollectionElement ice, V value);
+  default String visualizeStoreIteratedCollectionElt(IteratedCollectionElement ice, V value) {
+    return visualizeStoreKeyVal(ice.toString(), value);
+  }
 
   /**
    * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of the current
