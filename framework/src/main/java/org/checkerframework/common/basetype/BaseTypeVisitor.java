@@ -4891,7 +4891,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *     signature in terms of the overridden method's type variables, and they compare the type
    *     variables' bounds separately; see {@link OverrideChecker#checkTypeParameterBounds}.
    */
-  @Deprecated(forRemoval = true, since = "4.3.2") // 2026-09-18
+  @Deprecated(forRemoval = true, since = "4.4.0") // 2026-09-18
   @SuppressWarnings("removal") // calls areCorrespondingTypeVariables, also deprecated for removal
   protected boolean testTypevarContainment(AnnotatedTypeMirror inner, AnnotatedTypeMirror outer) {
     if (inner.getKind() == TypeKind.TYPEVAR && outer.getKind() == TypeKind.TYPEVAR) {
