@@ -5,6 +5,7 @@ import java.util.Objects;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Represents a collection element that is iterated over in a potentially
@@ -81,7 +82,9 @@ public class IteratedCollectionElement extends JavaExpression {
 
   @Override
   public boolean isModifiableByOtherCode() {
-    return false;
+    // Like a local variable, the element cannot be reassigned by other code, but if its type is
+    // mutable, other code can mutate it via an alias.
+    return !TypesUtils.isImmutableTypeInJdk(type);
   }
 
   @Override

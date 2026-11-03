@@ -305,7 +305,7 @@ public class DOTCFGVisualizer<
 
   @Override
   public String visualizeStoreIteratedCollectionElt(IteratedCollectionElement ice, V value) {
-    return storeEntryIndent + ice + " > " + escapeString(value);
+    return storeEntryIndent + escapeString(ice.toString()) + " > " + escapeString(value);
   }
 
   @Override
