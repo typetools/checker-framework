@@ -160,7 +160,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
   }
 
   @Override
-  public void updateForMethodCall(MethodInvocationNode n, CFValue val) {
+  public void updateForMethodCall(MethodInvocationNode n, @Nullable CFValue val) {
     super.updateForMethodCall(n, val);
     ExecutableElement method = n.getTarget().getMethod();
     // The following behavior is similar to setting the sideEffectsUnrefineAliases field of
