@@ -120,7 +120,7 @@ public final class NodeUtils {
    * @return true if the node is equivalent to a literal with value {@code value}
    */
   public static boolean isConstantBoolean(Node n, boolean value) {
-    n = removeCasts(n);
+    n = removeCastsAndUnboxing(n);
     if (n instanceof BooleanLiteralNode bln) {
       return bln.getValue() == value;
     } else if (n instanceof ConditionalNotNode cnn) {
@@ -142,5 +142,24 @@ public final class NodeUtils {
       node = ((TypeCastNode) node).getOperand();
     }
     return node;
+  }
+
+  /**
+   * Remove any {@link TypeCastNode}s and unboxing calls wrapping a node, returning the operand
+   * nested within them.
+   *
+   * @param node a node
+   * @return node, but with any surrounding typecasts and unboxing calls removed
+   */
+  private static Node removeCastsAndUnboxing(Node node) {
+    while (true) {
+      if (node instanceof TypeCastNode tcn) {
+        node = tcn.getOperand();
+      } else if (node instanceof MethodInvocationNode min && min.getIsUnboxing()) {
+        node = min.getTarget().getReceiver();
+      } else {
+        return node;
+      }
+    }
   }
 }

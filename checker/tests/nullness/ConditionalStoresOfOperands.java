@@ -163,6 +163,14 @@ public class ConditionalStoresOfOperands {
     }
   }
 
+  void orNegatedBoxedTrue(@Nullable Object o) {
+    if (isNN(o) | !(Boolean) true) {
+    } else {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
   void falseNotEqualTo(@Nullable Object o) {
     if (false != isNN(o)) {
       o.hashCode();
