@@ -107,7 +107,7 @@ public interface CFGVisualizer<
    * Called by {@code CFAbstractStore#internalVisualize()} to visualize an iterated collection
    * element.
    *
-   * @param ice the iterated collection element
+   * @param ice an iterated collection element, such as {@code o} in {@code for (Object o : list)}
    * @param value the value associated with {@code ice}
    * @return the String representation of this entry
    */
