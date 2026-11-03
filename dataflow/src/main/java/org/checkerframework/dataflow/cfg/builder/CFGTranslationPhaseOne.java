@@ -832,10 +832,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * <p>This is static so that names are unique across all CFGs, not just within one. The Resource
    * Leak Checker stores the variables of ternary and switch expressions in {@code
    * RLCCalledMethodsAnnotatedTypeFactory#tempVarToTree}, which compares its {@code
-   * LocalVariableNode} keys by name. When the {@code MustCallConsistencyAnalyzer} ran in the {@code
-   * RLCCalledMethodsChecker}, that map was cleared after each method. It now runs in the Collection
-   * Ownership Checker after the whole class has been analyzed, so the map holds the variables of a
-   * whole compilation unit. {@code MustCallTransfer#uid} is static for the same reason.
+   * LocalVariableNode} keys by name. That map holds the variables of a whole compilation unit,
+   * because the {@code MustCallConsistencyAnalyzer} runs in the Collection Ownership Checker after
+   * the whole class has been analyzed. If two CFGs could produce the same name, then the map would
+   * confuse variables from different methods. {@code MustCallTransfer#uid} is static for the same
+   * reason.
    */
   protected static AtomicLong uid = new AtomicLong();
 
