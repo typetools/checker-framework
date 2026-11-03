@@ -104,13 +104,6 @@ public class OwningCollectionFieldTest {
       agg.add(r);
     }
     agg.close();
-
-    // this is not necessary, but the checker would issue a false positive
-    // without this closing loop.
-    for (Resource r : resources) {
-      r.close();
-      r.flush();
-    }
   }
 
   // Mainly test that accessing the owning resource collection field of another class is
@@ -127,13 +120,6 @@ public class OwningCollectionFieldTest {
     agg.close();
     // :: error: foreign.owningcollection.field.access
     agg.resList.add(new Resource());
-
-    // this is not necessary, but the checker would issue a false positive
-    // without this closing loop.
-    for (Resource r : resources) {
-      r.close();
-      r.flush();
-    }
   }
 
   void failToDestructAggregator(Resource @OwningCollection [] resources) {
@@ -141,13 +127,6 @@ public class OwningCollectionFieldTest {
     Aggregator agg = new Aggregator();
     for (Resource r : resources) {
       agg.add(r);
-    }
-
-    // this is not necessary, but the checker would issue a false positive
-    // without this closing loop.
-    for (Resource r : resources) {
-      r.close();
-      r.flush();
     }
   }
 
@@ -159,12 +138,5 @@ public class OwningCollectionFieldTest {
     }
     agg.close();
     agg.add(new Resource());
-
-    // this is not necessary, but the checker would issue a false positive
-    // without this closing loop.
-    for (Resource r : resources) {
-      r.close();
-      r.flush();
-    }
   }
 }
