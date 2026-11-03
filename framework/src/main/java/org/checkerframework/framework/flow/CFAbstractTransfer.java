@@ -899,6 +899,11 @@ public abstract class CFAbstractTransfer<
    */
   @SuppressWarnings("interning:not.interned") // CFG node identity
   private static boolean isTargetOfUnboxingCall(MethodAccessNode n) {
+    // Cheap filter: the receiver of an unboxing call is a boxed primitive.  This avoids scanning
+    // the block for most method accesses.
+    if (!TypesUtils.isBoxedPrimitive(n.getReceiver().getType())) {
+      return false;
+    }
     Block block = n.getBlock();
     if (block == null) {
       return false;
