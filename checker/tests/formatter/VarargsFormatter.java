@@ -37,6 +37,13 @@ public class VarargsFormatter {
     // :: error: [format.specifier.null] :: warning: [format.indirect.arguments]
     f.format("%d %<f", new Object[1]);
 
+    // A primitive array is a single varargs element, not the varargs array itself.
+    f.format("%s", new int[] {1, 2});
+    // :: error: [argument]
+    f.format("%d", new int[] {1, 2});
+    // :: error: [format.missing.arguments]
+    f.format("%s %s", new int[] {1, 2});
+
     // too many arguments
     // :: warning: [format.excess.arguments]
     f.format("", 213);
