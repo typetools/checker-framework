@@ -1031,15 +1031,28 @@ public abstract class CFAbstractTransfer<
     /** Creates an AssignmentTargetScanner. */
     AssignmentTargetScanner() {}
 
+    /**
+     * Returns the JavaExpression for the given assignment target. Javac retains parentheses around
+     * a target, as in {@code (n) = o}, but {@link JavaExpression#fromTree} does not handle them, so
+     * this method removes them.
+     *
+     * @param target the variable that an assignment, compound assignment, increment, or decrement
+     *     assigns
+     * @return the JavaExpression for {@code target}
+     */
+    private static JavaExpression targetExpression(ExpressionTree target) {
+      return JavaExpression.fromTree(TreeUtils.withoutParens(target));
+    }
+
     @Override
     public Void visitAssignment(AssignmentTree tree, List<JavaExpression> targets) {
-      targets.add(JavaExpression.fromTree(TreeUtils.withoutParens(tree.getVariable())));
+      targets.add(targetExpression(tree.getVariable()));
       return super.visitAssignment(tree, targets);
     }
 
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree tree, List<JavaExpression> targets) {
-      targets.add(JavaExpression.fromTree(TreeUtils.withoutParens(tree.getVariable())));
+      targets.add(targetExpression(tree.getVariable()));
       return super.visitCompoundAssignment(tree, targets);
     }
 
@@ -1047,7 +1060,7 @@ public abstract class CFAbstractTransfer<
     public Void visitUnary(UnaryTree tree, List<JavaExpression> targets) {
       switch (tree.getKind()) {
         case PREFIX_INCREMENT, PREFIX_DECREMENT, POSTFIX_INCREMENT, POSTFIX_DECREMENT ->
-            targets.add(JavaExpression.fromTree(TreeUtils.withoutParens(tree.getExpression())));
+            targets.add(targetExpression(tree.getExpression()));
         default -> {}
       }
       return super.visitUnary(tree, targets);
@@ -1111,6 +1124,10 @@ public abstract class CFAbstractTransfer<
   @Pure
   private static boolean assignmentMayChange(
       JavaExpression target, JavaExpression expr, boolean ignoreOwnLocation) {
+    if (target instanceof Unknown) {
+      // The target is not understood, so it might be any location.
+      return true;
+    }
     if (expr instanceof LocalVariable) {
       return !ignoreOwnLocation && expr.syntacticEquals(target);
     } else if (expr instanceof FieldAccess fa) {
