@@ -113,8 +113,9 @@ public class QualifierDefaults {
   /**
    * Defaults that a type system has explicitly declared for an Element, via {@link
    * #addElementDefault}. These compose with the defaults written as {@code @DefaultQualifier} on
-   * the element and with the defaults of the element's enclosing scopes, and they take precedence
-   * over both; see {@link #defaultsAt} and {@link #precedenceList}.
+   * the element and with the defaults of the element's enclosing scopes, and they generally take
+   * precedence over both; see {@link #defaultsAt}, {@link #applicationOrder}, and {@link
+   * #precedenceList}.
    */
   private final IdentityHashMap<Element, DefaultSet> elementDeclaredDefaults =
       new IdentityHashMap<>();
@@ -348,6 +349,8 @@ public class QualifierDefaults {
    * <p>The default applies within {@code elem} and within the elements that {@code elem} encloses.
    * It composes with the {@code @DefaultQualifier} annotations on those elements, and it takes
    * precedence over them and over a default registered for an element that encloses {@code elem}.
+   * The exception is a default for {@link TypeUseLocation#OTHERWISE}, which applies only where no
+   * default for a more concrete location applies; see {@link #applicationOrder}.
    *
    * @param elem the scope to set the default within
    * @param elementDefaultAnno the default to set
