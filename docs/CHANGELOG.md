@@ -3,21 +3,66 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 4.3.2 (2026-11-01)
+## Version 4.4.1 (2026-12-01)
 
 ### User-visible changes
+
+### Changes for type system implementers
+
+New method `QualifierHierarchy.canonicalize()` returns the canonical form of a
+qualifier.  `AnnotatedTypeFactory.canonicalAnnotation()` calls it.
+
+### Closed issues
+
+## Version 4.4.0 (2026-11-02)
+
+### User-visible changes
+
+A method with a purity annotation may call the functional method of one of its
+functional-interface parameters, such as `f.apply(x)` for a parameter
+`Function f`; the call is treated as having the method's purity.  In exchange,
+under `-AcheckPurityAnnotations`, each argument passed to such a parameter must
+have that purity, or the new error `purity.functional.argument` is issued.  This
+affects calls to JDK methods such as `Optional.map` and `Comparator.comparing`
+that are passed lambdas with side effects, and calls to `@Pure` methods such as
+`Objects.requireNonNull(T, Supplier)` that are passed a lambda that is not
+deterministic, such as one that calls `String.format`.  See the manual section
+"Lambdas, method references, and functional interfaces".
 
 ### Changes for type system implementers
 
 New class `AbstractSetInclusionQualifierHierarchy` is the superclass of
 `SubtypeIsSubsetQualifierHierarchy` and `SubtypeIsSupersetQualifierHierarchy`.
 
-New method `QualifierHierarchy.canonicalize()` returns the canonical form of a
-qualifier.  `AnnotatedTypeFactory.canonicalAnnotation()` calls it.
-
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
+A subclass of `CFAbstractValue` or `CFValue` that adds state must override
+`equals()` and `hashCode()` to account for that state.
+
+New method `BaseTypeVisitor.shouldSkipClass()` lets a checker skip a class
+entirely, including dataflow analysis.
+
+Removed classes `ByteMath`, `ShortMath`, `IntegerMath`, `LongMath`, `FloatMath`,
+and `DoubleMath`.  Use `NumberMath.getNumberMath()` instead.  `NumberMath` is
+now a final, non-generic class.  `NumberMath.getNumberMath()` throws
+`UnsupportedOperationException`, rather than returning null, for an unsupported
+`Number` subclass, such as `BigInteger`.
+
+`PurityChecker.checkPurity()` takes two new arguments: the method declaration
+that lexically encloses the statement being checked (or null, as for an
+arbitrary expression) and the processing environment.
+
+Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
+and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
+`addToImplicitlyConvertedLookupMap()`.
+
+Deprecated methods:
+
+* `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.resolveNoArgumentCall()`
+
 ### Closed issues
+
+\#6849, #6864, #6872, #8018, #8300, #8320, #8323, #8340, #8343.
 
 ## Version 4.3.1 (2026-10-08)
 
