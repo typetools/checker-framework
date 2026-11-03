@@ -985,9 +985,9 @@ public abstract class CFAbstractTransfer<
    * same holds for an assignment, compound assignment, increment, or decrement nested anywhere
    * within {@code node}: the result for {@code n.next = (n = o).other} omits {@code n.next}.
    *
-   * <p>A node that is not an assignment is returned even if it contains an assignment, as in {@code
-   * x + (x = 1)}. {@link JavaExpression#fromNode} converts such a node to an expression that
-   * contains {@link Unknown}, which no store holds a value for.
+   * <p>A node that is neither an assignment nor a value-preserving cast is returned even if it
+   * contains an assignment, as in {@code x + (x = 1)}. {@link JavaExpression#fromNode} converts
+   * such a node to an expression that contains {@link Unknown}, which no store holds a value for.
    *
    * <p>A cast that does not change the value of its operand (see {@link #isValuePreservingCast}) is
    * treated like an assignment: the result contains both the cast and its operand, to which
@@ -1001,12 +1001,17 @@ public abstract class CFAbstractTransfer<
    */
   @SideEffectFree
   protected List<Node> splitAssignments(Node node) {
-    if (!(node instanceof AssignmentNode assignment)) {
+    Tree tree;
+    if (node instanceof AssignmentNode assignment) {
+      tree = assignment.getTree();
+    } else if (node instanceof TypeCastNode cast && isValuePreservingCast(cast)) {
+      tree = cast.getTree();
+    } else {
       return Collections.singletonList(node);
     }
 
     List<JavaExpression> targets = new ArrayList<>();
-    new AssignmentTargetScanner().scan(assignment.getTree(), targets);
+    new AssignmentTargetScanner().scan(tree, targets);
     List<Node> result = new ArrayList<>();
     while (true) {
       if (node instanceof AssignmentNode a) {
