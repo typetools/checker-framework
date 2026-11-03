@@ -1110,6 +1110,14 @@ public class InferenceFactory {
     // instantiations again would overwrite them.  TODO: Keep the origin at the positions that are
     // still ignored, rather than discarding it, when the ignored substitutions of each input
     // include some that are not ignored substitutions of another input.
+    //
+    // TODO: If another input has a different origin with an ignored substitution at a
+    // corresponding position, the result keeps only the origin of `type`, so substituting
+    // instantiations into it again loses the other input's instantiation at that position.  See
+    // checker/tests/nullness/LubOfIgnoredSubstitution.java.  Discarding the origin in that case is
+    // wrong too: the ignored substitutions would become real annotations, and would not be updated
+    // when Resolution#resolveIgnoredAnnotations replaces the instantiations that ignore
+    // annotations.  A fix would merge the origins.
     for (AbstractType other : inputs) {
       @SuppressWarnings("interning:not.interned") // Skipping `type` itself.
       boolean isType = other == type;
