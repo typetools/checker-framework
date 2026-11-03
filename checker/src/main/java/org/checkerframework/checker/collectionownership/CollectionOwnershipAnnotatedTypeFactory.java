@@ -138,6 +138,20 @@ public class CollectionOwnershipAnnotatedTypeFactory
   private final ExecutableElement collectionFieldDestructorValueElement =
       TreeUtils.getMethod(CollectionFieldDestructor.class, "value", 0, processingEnv);
 
+  /** The {@code Iterator.hasNext()} method. */
+  private final ExecutableElement iteratorHasNext =
+      TreeUtils.getMethod("java.util.Iterator", "hasNext", 0, processingEnv);
+
+  /** The {@code List.get(int)} method. */
+  private final ExecutableElement listGet =
+      TreeUtils.getMethod("java.util.List", "get", 1, processingEnv);
+
+  /** The {@code Collection.size()} and {@code Map.size()} methods. */
+  private final List<ExecutableElement> sizeMethods =
+      List.of(
+          TreeUtils.getMethod("java.util.Collection", "size", 0, processingEnv),
+          TreeUtils.getMethod("java.util.Map", "size", 0, processingEnv));
+
   /**
    * Method CFGs whose resource-leak post-analysis already ran after the first method analysis and
    * before any contained lambdas were analyzed.
@@ -554,6 +568,44 @@ public class CollectionOwnershipAnnotatedTypeFactory
    */
   public boolean isCreatesCollectionObligationMethod(ExecutableElement methodElement) {
     return getDeclAnnotation(methodElement, CreatesCollectionObligation.class) != null;
+  }
+
+  /**
+   * Returns true if the given tree is an invocation of {@code Iterator.hasNext()} or of a method
+   * that overrides it.
+   *
+   * @param tree a tree
+   * @return true if {@code tree} is an invocation of {@code Iterator.hasNext()}
+   */
+  boolean isIteratorHasNextCall(Tree tree) {
+    return TreeUtils.isMethodInvocation(tree, iteratorHasNext, processingEnv);
+  }
+
+  /**
+   * Returns the argument of the given invocation of {@code List.get(int)} or of a method that
+   * overrides it, such as {@code i} for {@code list.get(i)}.
+   *
+   * @param tree a tree
+   * @return the index argument if {@code tree} is an invocation of {@code List.get(int)}, otherwise
+   *     null
+   */
+  @Nullable ExpressionTree getListGetIndex(Tree tree) {
+    if (TreeUtils.isMethodInvocation(tree, listGet, processingEnv)) {
+      return ((MethodInvocationTree) tree).getArguments().get(0);
+    }
+    return null;
+  }
+
+  /**
+   * Returns true if the given tree is an invocation of {@code Collection.size()}, {@code
+   * Map.size()}, or a method that overrides one of them.
+   *
+   * @param tree a tree
+   * @return true if {@code tree} is an invocation of {@code Collection.size()} or {@code
+   *     Map.size()}
+   */
+  boolean isSizeCall(Tree tree) {
+    return TreeUtils.isMethodInvocation(tree, sizeMethods, processingEnv);
   }
 
   /**

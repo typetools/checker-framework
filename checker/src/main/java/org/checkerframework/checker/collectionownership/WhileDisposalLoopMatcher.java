@@ -225,7 +225,7 @@ final class WhileDisposalLoopMatcher {
    */
   private @Nullable WhileHeaderInfo matchIteratorHeaderInfo(
       MethodInvocationTree invocation, WhileLoopTree loop) {
-    if (!TreeUtils.isHasNextCall(invocation)) {
+    if (!coAtf.isIteratorHasNextCall(invocation)) {
       return null;
     }
     ExpressionTree receiver = receiverOfInvocation(invocation);
@@ -311,7 +311,7 @@ final class WhileDisposalLoopMatcher {
     if (!(zeroValue instanceof Integer intZeroVal) || intZeroVal != 0) {
       return null;
     }
-    if (!TreeUtils.isSizeAccess(sizeCall)) {
+    if (!coAtf.isSizeCall(sizeCall)) {
       return null;
     }
 

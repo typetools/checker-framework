@@ -21,7 +21,6 @@ import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.IPair;
 
 /** Matches enhanced-`for` {@link DisposalLoopInfo} from CFG. */
@@ -178,7 +177,7 @@ final class EnhancedForDisposalLoopMatcher {
         MethodInvocationTree methodInvocationTree =
             ((MethodInvocationNode) loopConditionNode).getTree();
         isLoopCondition =
-            methodInvocationTree != null && TreeUtils.isHasNextCall(methodInvocationTree);
+            methodInvocationTree != null && coAtf.isIteratorHasNextCall(methodInvocationTree);
       }
     } while (!isLoopCondition);
 
