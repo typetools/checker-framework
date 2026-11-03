@@ -98,19 +98,14 @@ public class TreeBuilder {
     DeclaredType exprType = (DeclaredType) TypesUtils.upperBound(TreeUtils.typeOf(iterableExpr));
     assert exprType != null : "expression must be of declared type Iterable<>";
 
-    TypeElement exprElement = (TypeElement) exprType.asElement();
-
-    // Find the iterator() method of the iterable type
-    Symbol.MethodSymbol iteratorMethod = null;
-
-    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers(exprElement))) {
-      if (method.getParameters().isEmpty() && method.getSimpleName().contentEquals("iterator")) {
-        iteratorMethod = (Symbol.MethodSymbol) method;
-      }
+    // Find the iterator() method that the call invokes.  If the type inherits iterator() from
+    // several supertypes, javac's method resolution chooses among them.
+    ExecutableElement resolvedIteratorMethod =
+        ElementUtils.resolveNoArgumentCall(exprType, "iterator", env);
+    if (resolvedIteratorMethod == null) {
+      throw new BugInCF("no iterator method for %s of type %s", iterableExpr, exprType);
     }
-
-    assert iteratorMethod != null
-        : "@AssumeAssertion(nullness): no iterator method declared for expression type";
+    Symbol.MethodSymbol iteratorMethod = (Symbol.MethodSymbol) resolvedIteratorMethod;
 
     Type.MethodType methodType = (Type.MethodType) iteratorMethod.asType();
     Symbol.TypeSymbol methodClass = methodType.asElement();

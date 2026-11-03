@@ -178,6 +178,7 @@ public class AssignmentInComparison {
     return o;
   }
 
+  @SuppressWarnings("unchecked")
   static <T> void arrayTargetTypeVariable(@Nullable T[] ts, @Nullable String[][] ss) {
     if ((ts[0] = (T) ss[0][0]) != null) {
       ts[0].toString();
