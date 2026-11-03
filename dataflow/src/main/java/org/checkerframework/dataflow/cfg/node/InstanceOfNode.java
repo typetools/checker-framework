@@ -99,8 +99,9 @@ public class InstanceOfNode extends Node {
   }
 
   /**
-   * Returns the variable of this instanceof's binding pattern, as in {@code e instanceof T v}.
-   * Returns null if this instanceof has no pattern or has a deconstruction pattern.
+   * Returns the variable of this instanceof's binding pattern, such as {@code v} in {@code e
+   * instanceof T v}. Returns null if this instanceof has no pattern or has a deconstruction
+   * pattern.
    *
    * @return the variable of this instanceof's binding pattern, or null
    */

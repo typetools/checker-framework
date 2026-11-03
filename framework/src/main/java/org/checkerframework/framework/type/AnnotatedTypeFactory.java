@@ -1607,7 +1607,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     if (patternTree == null) {
       refType = fromTypeTree(tree.getType());
     } else if (patternTree instanceof BindingPatternTree bindingPatternTree) {
-      refType = fromElement(TreeUtils.variableElementFromTree(bindingPatternTree.getVariable()));
+      refType = fromMember(bindingPatternTree.getVariable());
     } else {
       // TODO: Refine the expression by an annotated deconstruction pattern.
       return AnnotationMirrorSet.emptySet();
