@@ -32,6 +32,13 @@ public class CustomContractTopQualifier {
     String[] value();
   }
 
+  // Only the postcondition's qualifier is the top qualifier.
+  @PreconditionAnnotation(qualifier = Odd.class)
+  @PostconditionAnnotation(qualifier = Unqualified.class)
+  @interface RequiresOddEnsuresUnqualified {
+    String[] value();
+  }
+
   String f;
 
   // :: warning: [contracts.toptype]
@@ -50,6 +57,10 @@ public class CustomContractTopQualifier {
 
   @RequiresOdd("f")
   void requiresOdd() {}
+
+  // :: warning: [contracts.toptype]
+  @RequiresOddEnsuresUnqualified("f")
+  void requiresOddEnsuresUnqualified() {}
 
   @RequiresQualifier.List({
     @RequiresQualifier(expression = "f", qualifier = Odd.class),
