@@ -980,8 +980,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * <p>An element is denoted by its own tree (compared by reference) and by every node that {@link
    * IteratedCollectionElement#isDenotedBy denotes} it, such as each use of {@code o} in the body of
-   * {@code for (Object o : list)}. Different loops have different trees and different loop
-   * variables, so at most one element matches.
+   * {@code for (Object o : list)}. An element whose tree is {@code tree} takes precedence, because
+   * more than one element might be denoted by {@code node}: for example, two loops that each call
+   * {@code it.next()} on the same iterator {@code it} have equal references.
    *
    * @param node a CFG node, such as the node for {@code o} in {@code o.close()}
    * @param tree a tree that might be an element's tree, or null
@@ -990,9 +991,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   public @Nullable IteratedCollectionElement getIteratedCollectionElement(
       Node node, @Nullable Tree tree) {
+    // Check for an exact tree match first, because `isDenotedBy` can match more than one element.
     for (IteratedCollectionElement ice : iteratedCollectionElements.keySet()) {
       // `Tree` does not override `equals`, so this compares trees by reference.
-      if (ice.isDenotedBy(node) || ice.tree.equals(tree)) {
+      if (ice.tree.equals(tree)) {
+        return ice;
+      }
+    }
+    for (IteratedCollectionElement ice : iteratedCollectionElements.keySet()) {
+      if (ice.isDenotedBy(node)) {
         return ice;
       }
     }
@@ -1178,7 +1185,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *                 <em>g</em> is not final.
    *   <li value="2">Remove any abstract values for field accesses <em>b.g</em> where {@code
    *                 fieldAccess} might alias any expression in the receiver <em>b</em>.
-   *   <li value="3">Remove any information about method calls.
+   *   <li value="3">Remove any information about method calls, including about iterated collection
+   *                 elements whose reference is a method call.
    *   <li value="4">Remove any abstract values an array access <em>b[i]</em> where {@code
    *                 fieldAccess} might alias any expression in the receiver <em>a</em> or index
    *                 <em>i</em>.
@@ -1225,6 +1233,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     // case 3:
     methodCallExpressions.clear();
+    removeIteratedCollectionElementsWithMethodCallReference();
+  }
+
+  /**
+   * Remove any information about iterated collection elements whose {@link
+   * IteratedCollectionElement#reference reference} is a method call, such as {@code list.get(i)}.
+   * This is called wherever all information about method calls is removed.
+   */
+  private void removeIteratedCollectionElementsWithMethodCallReference() {
+    iteratedCollectionElements.keySet().removeIf(ice -> ice.reference instanceof MethodCall);
   }
 
   /**
@@ -1240,7 +1258,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *   <li value="2">Remove any abstract values for field accesses <em>b.g</em> where <em>a[i]</em>
    *                 might alias any expression in the receiver <em>b</em> and there is an array
    *                 expression somewhere in the receiver.
-   *   <li value="3">Remove any information about method calls.
+   *   <li value="3">Remove any information about method calls, including about iterated collection
+   *                 elements whose reference is a method call.
    * </ol>
    *
    * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
@@ -1276,6 +1295,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     // case 3:
     methodCallExpressions.clear();
+    removeIteratedCollectionElementsWithMethodCallReference();
   }
 
   /**
@@ -1288,7 +1308,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *   <li value="2">Remove any abstract values for array accesses <em>a[i]</em> where {@code
    *                 localVar} might alias the receiver <em>a</em>.
    *   <li value="3">Remove any information about method calls where the receiver or any of the
-   *                 parameters contains {@code localVar}.
+   *                 parameters contains {@code localVar}, including about iterated collection
+   *                 elements whose reference is such a method call, such as {@code list.get(i)}.
    * </ol>
    */
   protected void removeConflicting(LocalVariable var) {
@@ -1322,6 +1343,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         methodCallExpressionsIterator.remove();
       }
     }
+
+    // case 3, for iterated collection elements such as `list.get(i)`:
+    iteratedCollectionElements
+        .keySet()
+        .removeIf(
+            ice ->
+                ice.reference instanceof MethodCall
+                    && ice.reference.containsSyntacticEqualJavaExpression(var));
   }
 
   /**
