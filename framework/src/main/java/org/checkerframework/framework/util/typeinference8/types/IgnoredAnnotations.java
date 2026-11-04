@@ -307,13 +307,14 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns the ignored substitutions of {@code atm}, which is {@code type}'s annotated type or a
-   * deep copy of it. The result is an identity set.
+   * Returns the ignored substitutions of {@code atm}.
    *
    * @param type a type
-   * @param atm the annotated type of {@code type}, or a deep copy of it
+   * @param atm an annotated type with the same structure as {@code type}'s annotated type, such as
+   *     a deep copy of it; not modified
    * @param qh the qualifier hierarchy
-   * @return the ignored substitutions of {@code atm}
+   * @return the types within {@code atm} that are at its ignored substitutions, as an identity set,
+   *     because distinct positions can hold equal types
    */
   private static Set<AnnotatedTypeMirror> ignoredSubstitutions(
       AbstractType type, AnnotatedTypeMirror atm, QualifierHierarchy qh) {
