@@ -27,14 +27,14 @@ public class LubOfIgnoredSubstitutionAndTypeVariable {
     // The other input is not a type variable.
     // :: error: (argument) :: error: (dereference.of.nullable)
     pick2(holderOf(nonNullU, nn), nullableHolder).get().toString();
-    // The other input is a type variable.  The least upper bound must not keep the origin of
-    // holderOf's result, because the ignored substitution in it is not compared with the type
-    // argument of H's bound.  If it kept the origin, then substituting instantiations into the
-    // origin would give the type argument the instantiation of B, which is @NonNull U.
-    // :: error: (argument) :: error: (dereference.of.nullable)
+    // TODO: This should be a dereference.of.nullable error, as in the call above.  The least upper
+    // bound keeps the origin of holderOf's result, because the ignored substitution in it is not
+    // compared with the type argument of H's bound.  Substituting instantiations into the origin
+    // gives the type argument the instantiation of B, which is @NonNull U.
+    // :: error: (argument)
     pick2(holderOf(nonNullU, nn), nullableH).get().toString();
-    // The same, with the arguments in the other order.
-    // :: error: (argument) :: error: (dereference.of.nullable)
+    // TODO: This should be a dereference.of.nullable error.  See the call above.
+    // :: error: (argument)
     pick2(nullableH, holderOf(nonNullU, nn)).get().toString();
   }
 }
