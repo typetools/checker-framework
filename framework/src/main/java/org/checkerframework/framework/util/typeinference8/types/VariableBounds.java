@@ -198,7 +198,8 @@ public class VariableBounds {
   }
 
   /**
-   * Sets {@code instantiation} to {@code type}, unless it is already equal to {@code type}.
+   * Sets {@code instantiation} to {@code type}, unless it is already equal to {@code type} and has
+   * the same {@link AbstractType#ignoreAnnotations}.
    *
    * @param type the proper type to which this variable is instantiated; it must be a reference
    *     type, because an inference variable can only be instantiated to a reference type
@@ -206,7 +207,12 @@ public class VariableBounds {
   private void setInstantiation(ProperType type) {
     assert !type.getTypeKind().isPrimitive()
         : "instantiation of " + variable + " is the primitive type " + type;
-    if (type.equals(instantiation)) {
+    // ProperType#equals does not compare ignoreAnnotations.  Without the second test, an
+    // instantiation that ignores annotations would not be replaced by an equal one that does not.
+    ProperType current = instantiation;
+    if (current != null
+        && type.ignoreAnnotations == current.ignoreAnnotations
+        && type.equals(current)) {
       // Leave instantiationChanges unchanged; see its Javadoc.
       return;
     }
