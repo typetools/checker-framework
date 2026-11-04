@@ -731,7 +731,10 @@ public abstract class CFAbstractTransfer<
       S thenStore = in.getThenStore();
       S elseStore = in.getElseStore();
       // Equal stores, such as those of most method invocations, need no merging.
-      if (!thenStore.equals(elseStore)) {
+      if (thenStore == elseStore) {
+        // The result's then-store and else-store must be distinct objects.
+        elseStore = thenStore.copy();
+      } else if (!thenStore.equals(elseStore)) {
         thenStore = thenStore.leastUpperBound(elseStore);
         elseStore = thenStore.copy();
       }

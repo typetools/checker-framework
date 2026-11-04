@@ -196,6 +196,8 @@ public class AssignmentInComparison {
     if (n == null || o.other == null) {
       return;
     }
+    // The guard on `o.other` does not refine `(n = o).other`, whose receiver is an assignment.
+    // :: error: [dereference.of.nullable]
     (n.next = (n = o).other).toString();
     // After the assignment, `n.next` is a field of a different object.
     // :: error: [dereference.of.nullable]
