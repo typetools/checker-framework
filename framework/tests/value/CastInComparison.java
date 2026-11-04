@@ -16,6 +16,14 @@ public class CastInComparison {
     }
   }
 
+  // Unlike in `narrowingCast`, there is no binary numeric promotion of the cast.
+  void narrowingCastNoPromotion(long l) {
+    if ((int) l == 5) {
+      // :: error: [assignment]
+      @IntVal(5) long m = l;
+    }
+  }
+
   void lossyWideningCast(long l) {
     if ((float) l == 5f) {
       // :: error: [assignment]

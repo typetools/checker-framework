@@ -104,6 +104,40 @@ public class AssignmentInComparison {
     }
   }
 
+  static void anonymousClassInitializerReassignsReceiver(AssignmentInComparison other) {
+    if (global == null) {
+      return;
+    }
+    if ((global.next =
+            id(
+                new AssignmentInComparison() {
+                  {
+                    global = other;
+                  }
+                }))
+        != null) {
+      // After the assignment, `global.next` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      global.next.toString();
+    }
+  }
+
+  static void anonymousClassFieldInitializerReassignsReceiver(AssignmentInComparison other) {
+    if (global == null) {
+      return;
+    }
+    if ((global.next =
+            id(
+                new AssignmentInComparison() {
+                  @Nullable Object f = (global = other);
+                }))
+        != null) {
+      // After the assignment, `global.next` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      global.next.toString();
+    }
+  }
+
   void chainOfFieldTargets(@Nullable AssignmentInComparison o) {
     if ((this.next = this.other = o) != null) {
       this.next.toString();
@@ -179,6 +213,7 @@ public class AssignmentInComparison {
   }
 
   static <T> void arrayTargetTypeVariable(@Nullable T[] ts, @Nullable String[][] ss) {
+    // :: warning: [unchecked] unchecked cast
     if ((ts[0] = (T) ss[0][0]) != null) {
       ts[0].toString();
       // The assignment to `ts[0]` might change `ss[0]`, if `ts` and `ss` alias.
