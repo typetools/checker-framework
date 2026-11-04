@@ -2082,7 +2082,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       for (TypeElement addedInterface : addedInterfaces) {
         for (ExecutableElement interfaceMethod :
             ElementFilter.methodsIn(addedInterface.getEnclosedElements())) {
-          if (elements.overrides(inherited, interfaceMethod, classElt)) {
+          // As in OverrideChecker.checkOverride, skip a method of an interface that -AskipUses
+          // matches.
+          if (!checker.shouldSkipUses(interfaceMethod)
+              && elements.overrides(inherited, interfaceMethod, classElt)) {
             checkImplementationFunctionalParameters(
                 classTree, inherited, interfaceMethod, 0, "purity.inherited.functional.parameter");
           }
