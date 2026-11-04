@@ -861,7 +861,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * @param merger the function that merges the value that {@code map} gives {@code key} and {@code
    *     value}
    */
-  private <K> void mergeIntoMap(
+  private <K extends Object> void mergeIntoMap(
       Map<K, V> map, K key, @Nullable V value, BinaryOperator<@Nullable V> merger) {
     @Nullable V newValue = merger.apply(map.get(key), value);
     if (newValue != null) {
@@ -1462,7 +1462,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * @param result the corresponding map in the new store, which this method side-effects
    * @param shouldWiden true if the values should be widened rather than joined
    */
-  private <K> void upperBoundOfMaps(
+  private <K extends Object> void upperBoundOfMaps(
       Map<K, V> thisMap, Map<K, V> otherMap, Map<K, V> result, boolean shouldWiden) {
     for (Map.Entry<K, V> e : otherMap.entrySet()) {
       K key = e.getKey();
