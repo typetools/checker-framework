@@ -746,16 +746,14 @@ public class ProperType extends AbstractType {
     AnnotatedTypeMirror otherATM = compared.type2();
     // Compare using the type hierarchy in both directions rather than AnnotatedTypeMirror#equals,
     // which requires the underlying types to be the same object.
-    if (typeFactory.getTypeHierarchy().isSubtype(thisATM, otherATM)
-        && typeFactory.getTypeHierarchy().isSubtype(otherATM, thisATM)) {
+    if (context.areMutualSubtypes(thisATM, otherATM)) {
       return ConstraintSet.TRUE;
     }
     // Scan for a polymorphic qualifier only now: when the annotations match, the result is the
     // same either way, and the scan is the more expensive of the two tests.
     if (context.hasPolymorphicQualifier(thisATM) || context.hasPolymorphicQualifier(otherATM)) {
       ReplacedTypes replaced = context.replacePolymorphicQualifiers(thisATM, otherATM);
-      if (typeFactory.getTypeHierarchy().isSubtype(replaced.type1(), replaced.type2())
-          && typeFactory.getTypeHierarchy().isSubtype(replaced.type2(), replaced.type1())) {
+      if (context.areMutualSubtypes(replaced.type1(), replaced.type2())) {
         return ConstraintSet.TRUE;
       }
     }
@@ -889,8 +887,7 @@ public class ProperType extends AbstractType {
    */
   private boolean isSameAnnotatedType(AnnotatedTypeMirror a, AnnotatedTypeMirror b) {
     return context.types.isSameType((Type) a.getUnderlyingType(), (Type) b.getUnderlyingType())
-        && typeFactory.getTypeHierarchy().isSubtype(a, b)
-        && typeFactory.getTypeHierarchy().isSubtype(b, a);
+        && context.areMutualSubtypes(a, b);
   }
 
   /**

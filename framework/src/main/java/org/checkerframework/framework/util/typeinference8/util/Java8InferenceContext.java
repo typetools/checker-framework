@@ -20,6 +20,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.visitor.DoubleAnnotatedTypeScanner;
 import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.typeinference8.InvocationTypeInference;
@@ -264,6 +265,20 @@ public class Java8InferenceContext {
   }
 
   /**
+   * Returns true if each of {@code type1} and {@code type2} is a subtype of the other. Unlike
+   * {@link AnnotatedTypeMirror#equals}, this does not require the underlying Java types to be the
+   * same object, so it can compare types made by separate substitutions.
+   *
+   * @param type1 an annotated type
+   * @param type2 an annotated type
+   * @return true if each of {@code type1} and {@code type2} is a subtype of the other
+   */
+  public boolean areMutualSubtypes(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+    TypeHierarchy typeHierarchy = typeFactory.getTypeHierarchy();
+    return typeHierarchy.isSubtype(type1, type2) && typeHierarchy.isSubtype(type2, type1);
+  }
+
+  /**
    * Returns copies of {@code type1} and {@code type2} in which each polymorphic primary annotation
    * has been replaced by the annotation at the same position and in the same qualifier hierarchy in
    * the other type. A comparison of the copies therefore succeeds wherever a polymorphic qualifier
@@ -286,10 +301,13 @@ public class Java8InferenceContext {
   }
 
   /**
-   * Copies of two types, as returned by {@link #replacePolymorphicQualifiers}.
+   * Two annotated types, each of which is a modified copy of a given type or, if the method that
+   * returns the pair did not modify it, the given type itself. For example, {@link
+   * #replacePolymorphicQualifiers} always returns copies. A type that is not a copy is still used
+   * elsewhere, so it must not be mutated.
    *
-   * @param type1 a copy of the first type
-   * @param type2 a copy of the second type
+   * @param type1 a modified copy of the first given type, or that type itself
+   * @param type2 a modified copy of the second given type, or that type itself
    */
   public record ReplacedTypes(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {}
 

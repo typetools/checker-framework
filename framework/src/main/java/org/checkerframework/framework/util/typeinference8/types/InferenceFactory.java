@@ -1145,8 +1145,7 @@ public class InferenceFactory {
             properType.withAnnotatedType(samePrimaryAnnotations, false),
             new ProperType(atm, context),
             typeFactory.getQualifierHierarchy());
-    return typeFactory.getTypeHierarchy().isSubtype(compared.type1(), compared.type2())
-        && typeFactory.getTypeHierarchy().isSubtype(compared.type2(), compared.type1());
+    return context.areMutualSubtypes(compared.type1(), compared.type2());
   }
 
   /**
