@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
+import org.checkerframework.checker.calledmethods.CalledMethodsAnalysis;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -75,8 +76,7 @@ public class MustCallChecker extends BaseTypeChecker {
               NoClassDefFoundError.class.getCanonicalName(),
               OutOfMemoryError.class.getCanonicalName(),
               // An exhaustive switch throws this only if a class changed after compilation.
-              // MatchException.class is not available before Java 21.
-              "java.lang.MatchException",
+              CalledMethodsAnalysis.MATCH_EXCEPTION_NAME,
               // It's not our problem if the Java type system is wrong.
               ClassCastException.class.getCanonicalName(),
               // It's not our problem if the code is going to divide by zero.

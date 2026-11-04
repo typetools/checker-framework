@@ -91,6 +91,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.analysis.Store.FlowRule;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.node.AnyPatternNode;
@@ -4571,7 +4572,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param name the canonical name of a class
    * @return the TypeMirror for the class, or {@code null} if the type is not present
    */
-  protected @Nullable TypeMirror maybeGetTypeMirror(String name) {
+  protected @Nullable TypeMirror maybeGetTypeMirror(@FullyQualifiedName String name) {
     TypeElement element = elements.getTypeElement(name);
     if (element == null) {
       return null;
