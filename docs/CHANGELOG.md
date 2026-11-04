@@ -42,7 +42,8 @@ that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
 
 In the control-flow graph, the guard of a `case` is evaluated after the
-`CaseNode`, and only if the case's labels match.  Removed
+`CaseNode`, and only if the case's labels match.  (The last case of an
+exhaustive switch has no `CaseNode`; its guard is evaluated unconditionally.)  Removed
 `CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
 
 Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
