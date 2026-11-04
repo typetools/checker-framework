@@ -22,7 +22,7 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 
 /**
- * Utility methods for operating on types whil ignoring some of their annotations.
+ * Utility methods for operating on types while ignoring some of their annotations.
  *
  * <p>A <em>position</em> in a type is the type itself or a type nested in it at any depth. Two
  * kinds of position in a type have annotations that are ignored, because they come from a formula
@@ -59,7 +59,7 @@ final class IgnoredAnnotations {
    * of the corresponding position of the other type. If neither type has an ignored position, the
    * result holds the types' own annotated types; otherwise it holds copies.
    *
-   * @param sub the potential subtype
+   * @param sub a potential subtype
    * @param sup the potential supertype
    * @param qh the qualifier hierarchy
    * @param types the type utilities
@@ -540,14 +540,9 @@ final class IgnoredAnnotations {
       case DECLARED -> {
         AnnotatedDeclaredType dt1 = (AnnotatedDeclaredType) atm1;
         AnnotatedDeclaredType dt2 = (AnnotatedDeclaredType) atm2;
-        List<AnnotatedTypeMirror> args1 = dt1.getTypeArguments();
-        List<AnnotatedTypeMirror> args2 = dt2.getTypeArguments();
-        if (args1.size() == args2.size()) {
-          for (int i = 0; i < args1.size(); i++) {
-            if (!allCorrespondingPositions(args1.get(i), args2.get(i), test)) {
-              return false;
-            }
-          }
+        if (!allCorrespondingPositionsPairwise(
+            dt1.getTypeArguments(), dt2.getTypeArguments(), test)) {
+          return false;
         }
         AnnotatedDeclaredType enclosing1 = dt1.getEnclosingType();
         AnnotatedDeclaredType enclosing2 = dt2.getEnclosingType();
@@ -567,10 +562,43 @@ final class IgnoredAnnotations {
         return allCorrespondingPositions(wt1.getExtendsBound(), wt2.getExtendsBound(), test)
             && allCorrespondingPositions(wt1.getSuperBound(), wt2.getSuperBound(), test);
       }
+      case INTERSECTION -> {
+        return allCorrespondingPositionsPairwise(
+            ((AnnotatedIntersectionType) atm1).getBounds(),
+            ((AnnotatedIntersectionType) atm2).getBounds(),
+            test);
+      }
       default -> {
         return true;
       }
     }
+  }
+
+  /**
+   * Returns true if {@link #allCorrespondingPositions} holds for each pair of corresponding
+   * elements of the two lists. If the lists have different lengths, no positions correspond, so
+   * returns true without testing any.
+   *
+   * @param types1 a list of types
+   * @param types2 a list of types
+   * @param test the test to apply to each pair of corresponding positions; it may side-effect them
+   * @return true if {@link #allCorrespondingPositions} holds for each pair of corresponding
+   *     elements
+   */
+  private static boolean allCorrespondingPositionsPairwise(
+      List<? extends AnnotatedTypeMirror> types1,
+      List<? extends AnnotatedTypeMirror> types2,
+      BiPredicate<AnnotatedTypeMirror, AnnotatedTypeMirror> test) {
+    if (types1.size() != types2.size()) {
+      return true;
+    }
+    Iterator<? extends AnnotatedTypeMirror> iter2 = types2.iterator();
+    for (AnnotatedTypeMirror type1 : types1) {
+      if (!allCorrespondingPositions(type1, iter2.next(), test)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -593,7 +621,7 @@ final class IgnoredAnnotations {
    * {@code source} has no primary annotation, then {@code target}'s primary annotations are removed
    * and its bounds get the primary annotations of {@code source}'s bounds.
    *
-   * @param source the type whose primary annotations to copy
+   * @param source a type whose primary annotations to copy
    * @param target the type whose primary annotations to replace; side-effected by this method
    */
   static void copyPrimaryAnnotations(AnnotatedTypeMirror source, AnnotatedTypeMirror target) {
