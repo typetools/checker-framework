@@ -185,7 +185,9 @@ final class IgnoredAnnotations {
    * Returns true if no ignored substitution of {@code type} corresponds to a position of {@code
    * other} that is not an ignored substitution. Positions correspond as in {@link
    * #replaceIgnoredForLubOrGlb}, which gives each such ignored substitution of {@code type} the
-   * annotations of that position of {@code other}.
+   * annotations of that position of {@code other}. If the two types cannot be viewed as the same
+   * class, so that no positions correspond, returns true only if {@code type} has no ignored
+   * substitutions.
    *
    * @param type a type
    * @param other a type
@@ -193,8 +195,8 @@ final class IgnoredAnnotations {
    *     type} and {@code other}
    * @param qh the qualifier hierarchy
    * @param types the type utilities
-   * @return true if every ignored substitution of {@code type} that corresponds to a position of
-   *     {@code other} corresponds to an ignored substitution of {@code other}
+   * @return true if every ignored substitution of {@code type} corresponds to an ignored
+   *     substitution of {@code other}
    */
   static boolean ignoredSubstitutionsStayIgnored(
       AbstractType type,
@@ -208,13 +210,17 @@ final class IgnoredAnnotations {
     }
     AbstractType aligned = viewedAsClass(upToDate, resultType, types);
     AbstractType alignedOther = viewedAsClass(upToDate(other), resultType, types);
+    AnnotatedTypeMirror atm = aligned.getAnnotatedType();
+    Set<AnnotatedTypeMirror> ignored = ignoredSubstitutions(aligned, atm, qh);
     if (!types.isSameType(
         types.erasure(aligned.getJavaType()), types.erasure(alignedOther.getJavaType()))) {
-      return true;
+      // The positions of the two types are not aligned, so they were not compared.  For example,
+      // `other` may be a type variable, whose bound's annotations then affect the result at
+      // positions that are ignored substitutions of `type`.  Conservatively, the ignored
+      // substitutions of `type` do not stay ignored unless there are none.
+      return ignored.isEmpty();
     }
-    AnnotatedTypeMirror atm = aligned.getAnnotatedType();
     AnnotatedTypeMirror otherATM = alignedOther.getAnnotatedType();
-    Set<AnnotatedTypeMirror> ignored = ignoredSubstitutions(aligned, atm, qh);
     Set<AnnotatedTypeMirror> otherIgnored = ignoredSubstitutions(alignedOther, otherATM, qh);
     return allCorrespondingPositions(
         atm,
