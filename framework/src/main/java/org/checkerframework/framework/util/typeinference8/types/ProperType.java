@@ -276,9 +276,9 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns a part of this type, computed from {@link #origin} if this type has one. If this type
+   * Calls the {@code part} function on the origin of this type and returns the result. If this type
    * has no origin, or the part of the origin is not a proper type once instantiations are applied,
-   * then the part is computed from {@link #type} instead.
+   * then the part is computed from field {@link #type} instead.
    *
    * <p>If {@code sharesPrimaryAnnotations} is true, then a part computed from the origin gets the
    * primary annotations and {@link #ignoreAnnotations} of the part computed from {@link #type}; see
@@ -827,10 +827,11 @@ public class ProperType extends AbstractType {
   /**
    * {@inheritDoc}
    *
-   * <p>A proper type has no inference variables, so this returns this type, unless it has an {@link
-   * #origin} and the instantiation of a variable that the origin mentions has changed since this
-   * type was made. Then it returns the origin with the current instantiations applied and with this
-   * type's primary annotations, or this type if that result is the same as this type.
+   * <p>A proper type has no inference variables, so this method returns this type. An exception is
+   * when this type has an {@link #origin} and the instantiation of a variable that the origin
+   * mentions has changed since this type was made. Then it returns the origin with the current
+   * instantiations applied and with this type's primary annotations, or this type if that result is
+   * the same as this type.
    */
   @Override
   public AbstractType applyInstantiations() {

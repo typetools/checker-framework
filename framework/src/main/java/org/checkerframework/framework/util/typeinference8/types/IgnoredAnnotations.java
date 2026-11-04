@@ -22,7 +22,7 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 
 /**
- * Utility methods for comparing types some of whose annotations are ignored.
+ * Utility methods for operating on types whil ignoring some of their annotations.
  *
  * <p>A <em>position</em> in a type is the type itself or a type nested in it at any depth. Two
  * kinds of position in a type have annotations that are ignored, because they come from a formula
@@ -63,7 +63,7 @@ final class IgnoredAnnotations {
    * @param sup the potential supertype
    * @param qh the qualifier hierarchy
    * @param types the type utilities
-   * @return the annotated types of {@code sub} and {@code sup}, with ignored positions replaced
+   * @return a pair of annotated types: {@code sub} and {@code sup}, with ignored positions replaced
    */
   static ReplacedTypes replaceIgnoredForSubtype(
       AbstractType sub, AbstractType sup, QualifierHierarchy qh, Types types) {
@@ -103,12 +103,13 @@ final class IgnoredAnnotations {
    * Returns the annotated types of {@code type1} and {@code type2}, which have the same Java type,
    * with their ignored positions replaced. An ignored position of one type has the annotations of
    * the corresponding position of the other type. If neither type has an ignored position, the
-   * result holds the types' own annotated types; otherwise it holds copies.
+   * result holds the types' own annotated types; otherwise it holds modified copies.
    *
    * @param type1 a type
    * @param type2 a type with the same Java type as {@code type1}
    * @param qh the qualifier hierarchy
-   * @return the annotated types of {@code type1} and {@code type2}, with ignored positions replaced
+   * @return a pair of annotated types: {@code type1} and {@code type2}, with ignored positions
+   *     replaced from the other type
    */
   static ReplacedTypes replaceIgnoredForEquality(
       AbstractType type1, AbstractType type2, QualifierHierarchy qh) {
@@ -151,7 +152,7 @@ final class IgnoredAnnotations {
    *     type1} and {@code type2}
    * @param qh the qualifier hierarchy
    * @param types the type utilities
-   * @return the annotated types of {@code type1} and {@code type2}, with ignored substitutions
+   * @return a pair of annotated types: {@code type1} and {@code type2}, with ignored substitutions
    *     replaced
    */
   static ReplacedTypes replaceIgnoredForLubOrGlb(
@@ -433,7 +434,7 @@ final class IgnoredAnnotations {
 
   /**
    * Calls {@link #collectIgnoredSubstitutions} on corresponding elements of the two lists, if they
-   * have the same length.
+   * have the same length. Otherwise, does nothing.
    *
    * @param origins types that mention inference variables
    * @param substitutedTypes {@code origins} with instantiations substituted

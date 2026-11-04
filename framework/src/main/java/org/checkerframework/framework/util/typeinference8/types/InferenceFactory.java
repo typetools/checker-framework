@@ -1127,9 +1127,9 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns true if {@code atm}, whose Java type is that of {@code properType}, has the same
-   * annotations as {@code properType} everywhere except in the primary annotations and at the
-   * ignored substitutions of {@code properType}; see {@link ProperType#getOrigin}.
+   * Returns true if {@code atm} has the same annotations as {@code properType} everywhere except in
+   * the primary annotations and at the ignored substitutions of {@code properType}; see {@link
+   * ProperType#getOrigin}.
    *
    * @param properType a type with an origin
    * @param atm an annotated type with the same Java type as {@code properType}
