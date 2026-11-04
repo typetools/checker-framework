@@ -60,6 +60,30 @@ public class InstanceOfDeconstruction {
     }
   }
 
+  // The binding variables of a deconstruction pattern are refined to the types of the record
+  // components.
+  record MixedPair(@Untainted String x, @Tainted String y) {}
+
+  void deconstructMixed(@Tainted Object o) {
+    if (o instanceof MixedPair(String a, String b)) {
+      isUntainted(a);
+      // :: error: [argument]
+      isUntainted(b);
+    }
+  }
+
+  record Nested(MixedPair mp, @Tainted String z) {}
+
+  void deconstructNestedMixed(@Tainted Object o) {
+    if (o instanceof Nested(MixedPair(String a, String b), String c)) {
+      isUntainted(a);
+      // :: error: [argument]
+      isUntainted(b);
+      // :: error: [argument]
+      isUntainted(c);
+    }
+  }
+
   // The variable of a binding pattern is still refined to the type of the expression.
   void bindingPattern(@Untainted Object o) {
     if (o instanceof String s) {
