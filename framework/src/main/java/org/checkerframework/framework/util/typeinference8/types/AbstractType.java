@@ -75,13 +75,13 @@ public abstract class AbstractType {
    *
    * <p>For example, this field is true for a bound that {@link UseOfVariable#addBound} creates from
    * a use of an inference variable that has a primary annotation, such as {@code @Nullable T}. That
-   * annotation overrides {@code T}'s, so the formula {@code @Nullable T <: @Nullable String}
+   * annotation overrides {@code T}'s, so the constraint {@code @Nullable T <: @Nullable String}
    * relates only the Java types of {@code T} and {@code String}. This field is also true for a type
    * derived from such a bound.
    *
    * <p>A proper {@code EQUAL} bound whose field is true, such as {@code T = @NonNull U} from the
-   * formula {@code @NonNull T = @NonNull U}, can become a variable's instantiation. It then gives
-   * only the variable's Java type; its annotations come from the variable's other bounds (see
+   * constraint {@code @NonNull T = @NonNull U}, can become a variable's instantiation. It then
+   * gives only the variable's Java type; its annotations come from the variable's other bounds (see
    * {@link
    * org.checkerframework.framework.util.typeinference8.util.Resolution#resolveIgnoredAnnotations}).
    * A position where such an instantiation was substituted is an ignored substitution; see {@link

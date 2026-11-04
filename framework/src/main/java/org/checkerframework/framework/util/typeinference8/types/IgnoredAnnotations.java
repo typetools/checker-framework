@@ -24,19 +24,22 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
 /**
  * Utility methods for operating on types while ignoring some of their annotations.
  *
+ * <p>In a constraint where one type is a use of an inference variable with an explicit primary
+ * annotation, the primary annotations in that constraint should not influence the primary
+ * annotations of the variable's instantiation. To ensure this, some types are marked as ignoring
+ * annotations (see {@link AbstractType#ignoreAnnotations}).
+ *
  * <p>A <em>position</em> in a type is the type itself or a type nested in it at any depth. Two
- * kinds of position in a type have annotations that are ignored, because they come from a formula
- * about a use of an inference variable that has an explicit primary annotation, such as
- * {@code @Nullable T}, and so say nothing about the variable's annotations:
+ * kinds of position have ignored annotations:
  *
  * <ul>
  *   <li>the primary annotations of a type whose {@link AbstractType#ignoreAnnotations} is true,
- *       including those of its bounds if it is a type variable or a wildcard, but not annotations
- *       nested in it, such as those of its type arguments; and
+ *       including those of its bounds if it is a type variable or a wildcard, and
  *   <li>an <em>ignored substitution</em>: a position in a {@link ProperType} where {@link
  *       AbstractType#applyInstantiations} replaced a use of an inference variable by the variable's
- *       instantiation, and that instantiation ignores annotations. The type's {@link
- *       ProperType#getOrigin() origin} still has the use of the variable there.
+ *       instantiation, and that instantiation ignores annotations. These positions are found by
+ *       comparing the type with its {@link ProperType#getOrigin() origin}, the type before the
+ *       substitution, which still has the use of the variable at each of them.
  * </ul>
  *
  * <p>Before two types are compared for subtyping or equality, or combined by a least upper bound or
