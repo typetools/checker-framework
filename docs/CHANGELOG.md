@@ -48,6 +48,8 @@ scopes, rather than suppressing them.  Where both a registered default and a
 a registered default for `TypeUseLocation.OTHERWISE` applies only where no
 `@DefaultQualifier` for a more concrete location applies.
 
+Removed `DefaultSet.EMPTY`.
+
 A subclass of `CFAbstractValue` or `CFValue` that adds state must override
 `equals()` and `hashCode()` to account for that state.
 
