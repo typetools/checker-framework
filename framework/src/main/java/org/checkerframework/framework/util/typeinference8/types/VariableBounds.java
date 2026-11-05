@@ -233,8 +233,8 @@ public class VariableBounds {
   }
 
   /**
-   * Makes {@code type}, a proper {@code EQUAL} bound of this variable, its instantiation, unless
-   * {@code type} ignores annotations and the current instantiation does not (see {@link
+   * Makes {@code type} this variable's instantiation, unless the primary annotations of {@code
+   * type} are ignored and those of {@link #instantiation} are not (see {@link
    * AbstractType#ignoreAnnotations}). Among bounds of the same kind, the later one is used.
    *
    * @param type a proper {@code EQUAL} bound of this variable
@@ -756,10 +756,11 @@ public class VariableBounds {
   }
 
   /**
-   * Returns all lower bounds that are proper types, and all proper {@code EQUAL} bounds that ignore
-   * annotations (see {@link AbstractType#ignoreAnnotations}).
+   * Returns all lower bounds that are proper types, and all proper {@code EQUAL} bounds whose
+   * primary annotations are ignored (see {@link AbstractType#ignoreAnnotations}).
    *
-   * @return all proper lower bounds and all proper {@code EQUAL} bounds that ignore annotations
+   * @return all proper lower bounds and all proper {@code EQUAL} bounds whose primary annotations
+   *     are ignored
    */
   public Set<ProperType> findLowerBoundsForAnnotations() {
     // An EQUAL bound that ignores annotations gives this variable's Java type, but it says no more
