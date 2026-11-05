@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <!-- The Nullness Checker ignores @Contract, so the annotated JDK's types for String.valueOf
+       apply, including its @Nullable parameter. -->
+  <item name="java.lang.String java.lang.String valueOf(java.lang.Object)">
+    <annotation name="org.jetbrains.annotations.Contract">
+      <val val="&quot;_ -&gt; !null&quot;" />
+      <val name="pure" val="true" />
+    </annotation>
+  </item>
+  <!-- The Nullness Checker ignores @Contract but uses @NotNull. -->
+  <item name="java.lang.System java.lang.String getProperty(java.lang.String)">
+    <annotation name="org.jetbrains.annotations.Contract">
+      <val name="pure" val="true" />
+    </annotation>
+    <annotation name="org.jetbrains.annotations.NotNull" />
+  </item>
+</root>
