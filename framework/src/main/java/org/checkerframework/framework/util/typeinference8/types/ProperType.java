@@ -70,8 +70,9 @@ public class ProperType extends AbstractType {
   private long upToDateVersion;
 
   /**
-   * A <em>part</em> of a type is a type directly nested in it. This enum names the parts that
-   * {@link #partFromOrigin} or {@link #listPartFromOrigin} computes. Each part is cached in {@link
+   * A <em>part</em> of a type is a type nested in it one level down: for example, {@code B<C>} is a
+   * part of {@code A<B<C>>}, but {@code C} is not. This enum names the parts that {@link
+   * #partFromOrigin} or {@link #listPartFromOrigin} computes. Each part is cached in {@link
    * #partCache} or {@link #partCacheForLists}, depending on whether it is a single type or a list
    * of types.
    */
@@ -280,7 +281,7 @@ public class ProperType extends AbstractType {
    * has no origin, or the part of the origin is not a proper type once instantiations are applied,
    * then the part is computed from field {@link #type} instead.
    *
-   * <p>If {@code sharesPrimaryAnnotations} is true, then a part computed from the origin gets the
+   * <p>If {@code primaryAnnotationsFromType} is true, then a part computed from the origin gets the
    * primary annotations and {@link #ignoreAnnotations} of the part computed from {@link #type}; see
    * {@link #withPrimaryAnnotationsOf}.
    *
@@ -290,15 +291,15 @@ public class ProperType extends AbstractType {
    * @param key the part
    * @param part computes the part of a type
    * @param fromType returns the part of this type computed from {@link #type}, ignoring the origin
-   * @param sharesPrimaryAnnotations true if the primary annotations of the part are determined by
-   *     those of this type
+   * @param primaryAnnotationsFromType true if the part's primary annotations are taken from the
+   *     part computed from {@link #type}
    * @return the part of this type
    */
   private @Nullable AbstractType partFromOrigin(
       Part key,
       Function<AbstractType, @Nullable AbstractType> part,
       Supplier<@Nullable AbstractType> fromType,
-      boolean sharesPrimaryAnnotations) {
+      boolean primaryAnnotationsFromType) {
     InferenceType origin = this.origin;
     if (origin == null) {
       return fromType.get();
@@ -310,7 +311,9 @@ public class ProperType extends AbstractType {
       partCache = cache;
     }
     return cached(
-        cache, key, () -> computePartFromOrigin(origin, part, fromType, sharesPrimaryAnnotations));
+        cache,
+        key,
+        () -> computePartFromOrigin(origin, part, fromType, primaryAnnotationsFromType));
   }
 
   /**
@@ -342,21 +345,22 @@ public class ProperType extends AbstractType {
    * @param origin the origin of this type
    * @param part computes the part of a type
    * @param fromType returns the part of this type computed from {@link #type}, ignoring the origin
-   * @param sharesPrimaryAnnotations true if the primary annotations of the part are determined by
-   *     those of this type
+   * @param primaryAnnotationsFromType true if the part's primary annotations are taken from the
+   *     part computed from {@link #type}
    * @return the part of this type
    */
   private @Nullable AbstractType computePartFromOrigin(
       InferenceType origin,
       Function<AbstractType, @Nullable AbstractType> part,
       Supplier<@Nullable AbstractType> fromType,
-      boolean sharesPrimaryAnnotations) {
-    // A part computed from the origin knows which of its positions are ignored positions.
+      boolean primaryAnnotationsFromType) {
+    // The part, computed from the origin, has an origin of its own, so its ignored positions can be
+    // found.
     AbstractType originPart = part.apply(origin);
     if (originPart != null) {
       AbstractType result = originPart.applyInstantiations();
       if (result.isProper()) {
-        return sharesPrimaryAnnotations
+        return primaryAnnotationsFromType
             ? withPrimaryAnnotationsOf((ProperType) result, fromType.get())
             : result;
       }
@@ -407,7 +411,7 @@ public class ProperType extends AbstractType {
    * origin is not a proper type once instantiations are applied, then the whole part is computed
    * from {@link #type} instead.
    *
-   * <p>If {@code sharesPrimaryAnnotations} is true, then each type in the part gets the primary
+   * <p>If {@code primaryAnnotationsFromType} is true, then each type in the part gets the primary
    * annotations of the corresponding type in the part computed from {@link #type}, as in {@link
    * #partFromOrigin}.
    *
@@ -417,15 +421,15 @@ public class ProperType extends AbstractType {
    * @param key the part
    * @param part computes the part of a type
    * @param fromType returns the part of this type computed from {@link #type}, ignoring the origin
-   * @param sharesPrimaryAnnotations true if the primary annotations of each type in the part are
-   *     determined by those of this type
+   * @param primaryAnnotationsFromType true if the primary annotations of each type in the part are
+   *     taken from the corresponding type in the part computed from {@link #type}
    * @return the part of this type
    */
   private @Nullable List<AbstractType> listPartFromOrigin(
       Part key,
       Function<AbstractType, @Nullable List<AbstractType>> part,
       Supplier<@Nullable List<AbstractType>> fromType,
-      boolean sharesPrimaryAnnotations) {
+      boolean primaryAnnotationsFromType) {
     InferenceType origin = this.origin;
     if (origin == null) {
       return fromType.get();
@@ -440,7 +444,7 @@ public class ProperType extends AbstractType {
         cached(
             cache,
             key,
-            () -> computeListPartFromOrigin(origin, part, fromType, sharesPrimaryAnnotations));
+            () -> computeListPartFromOrigin(origin, part, fromType, primaryAnnotationsFromType));
     // The cached list must not be mutated.
     return result == null ? null : new ArrayList<>(result);
   }
@@ -453,15 +457,15 @@ public class ProperType extends AbstractType {
    * @param origin the origin of this type
    * @param part computes the part of a type
    * @param fromType returns the part of this type computed from {@link #type}, ignoring the origin
-   * @param sharesPrimaryAnnotations true if the primary annotations of each type in the part are
-   *     determined by those of this type
+   * @param primaryAnnotationsFromType true if the primary annotations of each type in the part are
+   *     taken from the corresponding type in the part computed from {@link #type}
    * @return the part of this type
    */
   private @Nullable List<AbstractType> computeListPartFromOrigin(
       InferenceType origin,
       Function<AbstractType, @Nullable List<AbstractType>> part,
       Supplier<@Nullable List<AbstractType>> fromType,
-      boolean sharesPrimaryAnnotations) {
+      boolean primaryAnnotationsFromType) {
     List<AbstractType> originPart = part.apply(origin);
     if (originPart == null) {
       return fromType.get();
@@ -474,7 +478,7 @@ public class ProperType extends AbstractType {
       }
       result.add(r);
     }
-    if (sharesPrimaryAnnotations) {
+    if (primaryAnnotationsFromType) {
       List<AbstractType> partFromType = fromType.get();
       if (partFromType != null && partFromType.size() == result.size()) {
         for (int i = 0; i < result.size(); i++) {
