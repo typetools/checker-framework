@@ -144,7 +144,9 @@ final class IgnoredAnnotations {
    * Returns the annotated types of {@code type1} and {@code type2}, where the annotations at each
    * ignored position of one type are replaced by those at the corresponding position of the other.
    * If either type has ignored positions, then both are first replaced by their supertypes whose
-   * class is that of {@code resultType} (see {@link #asSuper}). Primary annotations are not
+   * class is that of {@code resultType} (see {@link #asSuper}). If they are still of different
+   * classes, then nothing is replaced. Otherwise, positions correspond only where the two types
+   * have the same structure (see {@link #replaceIgnoredPositions}). Primary annotations are not
    * replaced. If nothing is replaced, the result holds the types' own annotated types; otherwise it
    * holds copies.
    *
