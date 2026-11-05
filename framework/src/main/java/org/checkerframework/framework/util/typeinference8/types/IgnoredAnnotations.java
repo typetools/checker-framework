@@ -57,10 +57,11 @@ final class IgnoredAnnotations {
 
   /**
    * Returns the annotated types of {@code sub} and {@code sup} with their ignored annotations
-   * replaced. A type that ignores annotations has bottom primary annotations if it is {@code sub},
-   * and top primary annotations if it is {@code sup}. An ignored position has the annotations of
-   * the corresponding position of the other type. If neither type has ignored annotations, the
-   * result holds the types' own annotated types; otherwise it holds copies.
+   * replaced. If the primary annotations of {@code sub} are ignored, then they are replaced with
+   * bottom annotations. If the primary annotations of {@code sup} are ignored, then they are
+   * replaced with top annotations. Ignored annotations elsewhere in either type are replaced with
+   * the annotations at the corresponding position in the other type. If neither type has ignored
+   * annotations, the result holds the types' own annotated types; otherwise it holds copies.
    *
    * @param sub a potential subtype
    * @param sup the potential supertype
