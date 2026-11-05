@@ -1,8 +1,14 @@
 package org.checkerframework.dataflow.expression;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreeScanner;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -118,5 +124,50 @@ public final class JavaExpressionParseUtil {
       return Integer.parseInt(group1);
     }
     return -1;
+  }
+
+  /**
+   * Returns every simple name in {@code expression} that might denote a local variable. That is,
+   * every identifier other than a method name or a name selected from a qualifier: in {@code
+   * a.b.m(c)}, the result is {"a", "c"}. The result may include names that denote classes or
+   * fields; it is an over-approximation of the local variables that {@code expression} mentions.
+   * Formal parameter references in "#2" syntax are not included.
+   *
+   * @param expression a Java expression
+   * @return the simple names in {@code expression} that might denote a local variable, or null if
+   *     {@code expression} cannot be parsed
+   */
+  public static @Nullable Set<String> possibleLocalVariableNames(String expression) {
+    String expressionWithParameterNames =
+        StringsP.replaceAll(expression, PARAMETER_PATTERN, PARAMETER_REPLACEMENT);
+    ExpressionTree exprTree;
+    try {
+      exprTree = JavacParse.parseExpression(expressionWithParameterNames);
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+    Set<String> result = new HashSet<>();
+    new TreeScanner<Void, Void>() {
+      @Override
+      public Void visitIdentifier(IdentifierTree tree, Void p) {
+        String name = tree.getName().toString();
+        if (!name.startsWith(PARAMETER_PREFIX)) {
+          result.add(name);
+        }
+        return null;
+      }
+
+      @Override
+      public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
+        // Do not scan an unqualified method name, which is an IdentifierTree.
+        if (tree.getMethodSelect() instanceof MemberSelectTree methodSelect) {
+          scan(methodSelect.getExpression(), p);
+        }
+        scan(tree.getTypeArguments(), p);
+        scan(tree.getArguments(), p);
+        return null;
+      }
+    }.scan(exprTree, null);
+    return result;
   }
 }
