@@ -289,7 +289,7 @@ public class ProperType extends AbstractType {
    *
    * @param key the part
    * @param part computes the part of a type
-   * @param plain computes the part of this type from {@link #type}
+   * @param fromType returns the part of this type computed from {@link #type}, ignoring the origin
    * @param sharesPrimaryAnnotations true if the primary annotations of the part are determined by
    *     those of this type
    * @return the part of this type
@@ -297,11 +297,11 @@ public class ProperType extends AbstractType {
   private @Nullable AbstractType partFromOrigin(
       Part key,
       Function<AbstractType, @Nullable AbstractType> part,
-      Supplier<@Nullable AbstractType> plain,
+      Supplier<@Nullable AbstractType> fromType,
       boolean sharesPrimaryAnnotations) {
     InferenceType origin = this.origin;
     if (origin == null) {
-      return plain.get();
+      return fromType.get();
     }
     clearPartCachesIfStale();
     Map<Part, @Nullable AbstractType> cache = partCache;
@@ -310,7 +310,7 @@ public class ProperType extends AbstractType {
       partCache = cache;
     }
     return cached(
-        cache, key, () -> computePartFromOrigin(origin, part, plain, sharesPrimaryAnnotations));
+        cache, key, () -> computePartFromOrigin(origin, part, fromType, sharesPrimaryAnnotations));
   }
 
   /**
@@ -341,7 +341,7 @@ public class ProperType extends AbstractType {
    *
    * @param origin the origin of this type
    * @param part computes the part of a type
-   * @param plain computes the part of this type from {@link #type}
+   * @param fromType returns the part of this type computed from {@link #type}, ignoring the origin
    * @param sharesPrimaryAnnotations true if the primary annotations of the part are determined by
    *     those of this type
    * @return the part of this type
@@ -349,19 +349,19 @@ public class ProperType extends AbstractType {
   private @Nullable AbstractType computePartFromOrigin(
       InferenceType origin,
       Function<AbstractType, @Nullable AbstractType> part,
-      Supplier<@Nullable AbstractType> plain,
+      Supplier<@Nullable AbstractType> fromType,
       boolean sharesPrimaryAnnotations) {
     // A part computed from the origin knows which of its positions are ignored substitutions.
-    AbstractType derived = part.apply(origin);
-    if (derived != null) {
-      AbstractType result = derived.applyInstantiations();
+    AbstractType originPart = part.apply(origin);
+    if (originPart != null) {
+      AbstractType result = originPart.applyInstantiations();
       if (result.isProper()) {
         return sharesPrimaryAnnotations
-            ? withPrimaryAnnotationsOf((ProperType) result, plain.get())
+            ? withPrimaryAnnotationsOf((ProperType) result, fromType.get())
             : result;
       }
     }
-    return plain.get();
+    return fromType.get();
   }
 
   /**
@@ -380,25 +380,25 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns {@code derived}, a part of this type computed from {@link #origin}, with the primary
-   * annotations and {@link #ignoreAnnotations} of {@code plainPart}, the same part computed from
-   * {@link #type}.
+   * Returns {@code fromOrigin} with the primary annotations and {@link #ignoreAnnotations} of
+   * {@code fromType}.
    *
-   * @param derived a part of this type computed from {@link #origin}
-   * @param plainPart the same part of this type computed from {@link #type}, or null
-   * @return {@code derived}, with the primary annotations of {@code plainPart}
+   * @param fromOrigin a part of this type computed from {@link #origin}
+   * @param fromType the same part of this type computed from {@link #type}, or null
+   * @return {@code fromOrigin} with the primary annotations and {@link #ignoreAnnotations} of
+   *     {@code fromType}, or {@code fromOrigin} itself if {@code fromType} is null
    */
   private ProperType withPrimaryAnnotationsOf(
-      ProperType derived, @Nullable AbstractType plainPart) {
-    if (plainPart == null) {
-      return derived;
+      ProperType fromOrigin, @Nullable AbstractType fromType) {
+    if (fromType == null) {
+      return fromOrigin;
     }
     // The origin's primary annotations are not this type's: they may have been changed since this
     // type was made, for example by UseOfVariable#applyInstantiations or #withAnnotatedType.
-    // `derived` may be an instantiation that is stored as a bound, so copy before mutating.
-    AnnotatedTypeMirror atm = derived.getAnnotatedType().deepCopy();
-    IgnoredAnnotations.copyPrimaryAnnotations(plainPart.getAnnotatedType(), atm);
-    return derived.withAnnotatedType(atm, plainPart.ignoreAnnotations);
+    // `fromOrigin` may be an instantiation that is stored as a bound, so copy before mutating.
+    AnnotatedTypeMirror atm = fromOrigin.getAnnotatedType().deepCopy();
+    IgnoredAnnotations.copyPrimaryAnnotations(fromType.getAnnotatedType(), atm);
+    return fromOrigin.withAnnotatedType(atm, fromType.ignoreAnnotations);
   }
 
   /**
@@ -416,7 +416,7 @@ public class ProperType extends AbstractType {
    *
    * @param key the part
    * @param part computes the part of a type
-   * @param plain computes the part of this type from {@link #type}
+   * @param fromType returns the part of this type computed from {@link #type}, ignoring the origin
    * @param sharesPrimaryAnnotations true if the primary annotations of each type in the part are
    *     determined by those of this type
    * @return the part of this type
@@ -424,11 +424,11 @@ public class ProperType extends AbstractType {
   private @Nullable List<AbstractType> listPartFromOrigin(
       Part key,
       Function<AbstractType, @Nullable List<AbstractType>> part,
-      Supplier<@Nullable List<AbstractType>> plain,
+      Supplier<@Nullable List<AbstractType>> fromType,
       boolean sharesPrimaryAnnotations) {
     InferenceType origin = this.origin;
     if (origin == null) {
-      return plain.get();
+      return fromType.get();
     }
     clearPartCachesIfStale();
     Map<Part, @Nullable List<AbstractType>> cache = partCacheForLists;
@@ -440,7 +440,7 @@ public class ProperType extends AbstractType {
         cached(
             cache,
             key,
-            () -> computeListPartFromOrigin(origin, part, plain, sharesPrimaryAnnotations));
+            () -> computeListPartFromOrigin(origin, part, fromType, sharesPrimaryAnnotations));
     // The cached list must not be mutated.
     return result == null ? null : new ArrayList<>(result);
   }
@@ -452,7 +452,7 @@ public class ProperType extends AbstractType {
    *
    * @param origin the origin of this type
    * @param part computes the part of a type
-   * @param plain computes the part of this type from {@link #type}
+   * @param fromType returns the part of this type computed from {@link #type}, ignoring the origin
    * @param sharesPrimaryAnnotations true if the primary annotations of each type in the part are
    *     determined by those of this type
    * @return the part of this type
@@ -460,25 +460,25 @@ public class ProperType extends AbstractType {
   private @Nullable List<AbstractType> computeListPartFromOrigin(
       InferenceType origin,
       Function<AbstractType, @Nullable List<AbstractType>> part,
-      Supplier<@Nullable List<AbstractType>> plain,
+      Supplier<@Nullable List<AbstractType>> fromType,
       boolean sharesPrimaryAnnotations) {
-    List<AbstractType> derived = part.apply(origin);
-    if (derived == null) {
-      return plain.get();
+    List<AbstractType> originPart = part.apply(origin);
+    if (originPart == null) {
+      return fromType.get();
     }
-    List<AbstractType> result = new ArrayList<>(derived.size());
-    for (AbstractType t : derived) {
+    List<AbstractType> result = new ArrayList<>(originPart.size());
+    for (AbstractType t : originPart) {
       AbstractType r = t.applyInstantiations();
       if (!r.isProper()) {
-        return plain.get();
+        return fromType.get();
       }
       result.add(r);
     }
     if (sharesPrimaryAnnotations) {
-      List<AbstractType> plainPart = plain.get();
-      if (plainPart != null && plainPart.size() == result.size()) {
+      List<AbstractType> partFromType = fromType.get();
+      if (partFromType != null && partFromType.size() == result.size()) {
         for (int i = 0; i < result.size(); i++) {
-          result.set(i, withPrimaryAnnotationsOf((ProperType) result.get(i), plainPart.get(i)));
+          result.set(i, withPrimaryAnnotationsOf((ProperType) result.get(i), partFromType.get(i)));
         }
       }
     }
