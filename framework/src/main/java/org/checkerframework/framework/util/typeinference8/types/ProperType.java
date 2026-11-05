@@ -712,9 +712,8 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Checks whether the annotations of {@code this} are the same as those of {@code other}, assuming
-   * that their underlying Java types have already been found to be the same. The annotations of a
-   * position that ignores annotations are not compared; see {@link
+   * Checks whether {@code this} and {@code other} have the same annotations, except at positions
+   * where either type's annotations are ignored; see {@link
    * IgnoredAnnotations#replaceIgnoredForEquality}.
    *
    * <p>Neither type may be an uncaptured wildcard: the type hierarchy compares a wildcard's {@code
@@ -730,10 +729,10 @@ public class ProperType extends AbstractType {
    * and qualifier hierarchies that a polymorphic qualifier occupies, so a conflict at another type
    * argument, or one in another qualifier hierarchy, is still reported.
    *
-   * @param other the type to compare against
-   * @return {@link ConstraintSet#TRUE} if the annotations of {@code this} are the same as those of
-   *     {@code other}, apart from those that are ignored; otherwise {@link
-   *     ConstraintSet#TRUE_ANNO_FAIL}
+   * @param other the type to compare against; its Java type must be the same as that of {@code
+   *     this}
+   * @return {@link ConstraintSet#TRUE} if the non-ignored annotations of {@code this} and {@code
+   *     other} are the same; otherwise {@link ConstraintSet#TRUE_ANNO_FAIL}
    */
   public ConstraintSet checkAnnotationEquality(ProperType other) {
     if (IgnoredAnnotations.noAnnotationsToCompare(this, other)) {
