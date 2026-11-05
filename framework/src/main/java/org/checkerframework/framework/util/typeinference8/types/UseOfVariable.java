@@ -188,7 +188,8 @@ public class UseOfVariable extends AbstractType {
   }
 
   /**
-   * Adds a qualifier bound for this variable, if this use does not have a primary annotation.
+   * Adds a qualifier bound for the variable that this is a use of, if this use does not have a
+   * primary annotation.
    *
    * @param kind the kind of bound
    * @param annotations the qualifiers to add
@@ -216,10 +217,10 @@ public class UseOfVariable extends AbstractType {
   }
 
   /**
-   * Adds a bound for this variable. If this use has a primary annotation, then the bound added is a
-   * copy of {@code bound} that ignores its primary annotations; a lower bound's primary annotations
-   * are bottom and an upper bound's are top, and an {@code EQUAL} bound that is not a type variable
-   * is added as both an upper and a lower bound instead.
+   * Adds a bound for the variable that this is a use of. If this use has a primary annotation, then
+   * the bound added is a copy of {@code bound} that ignores its primary annotations; a lower
+   * bound's primary annotations are bottom and an upper bound's are top, and an {@code EQUAL} bound
+   * that is not a type variable is added as both an upper and a lower bound instead.
    *
    * @param parent the constraint whose reduction created this bound
    * @param kind the kind of bound
