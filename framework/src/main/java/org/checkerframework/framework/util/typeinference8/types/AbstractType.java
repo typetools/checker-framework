@@ -84,8 +84,8 @@ public abstract class AbstractType {
    * gives only the variable's Java type; its annotations come from the variable's other bounds (see
    * {@link
    * org.checkerframework.framework.util.typeinference8.util.Resolution#resolveIgnoredAnnotations}).
-   * A position where such an instantiation was substituted is an ignored substitution; see {@link
-   * ProperType#getOrigin}.
+   * A position where applying instantiations put such an instantiation is an ignored position; see
+   * {@link ProperType#getOrigin}.
    *
    * <p>This field applies to every qualifier hierarchy at once, even when it was set because of a
    * primary annotation that appears in only some of the hierarchies. TODO: Make this per-hierarchy,
@@ -198,14 +198,14 @@ public abstract class AbstractType {
    * Returns this type with each use of an inference variable that has an instantiation replaced by
    * that instantiation (see {@link Variable#getInstantiation}). The result may be this type itself.
    *
-   * @return this type with the instantiations of its inference variables substituted
+   * @return this type with the instantiations of its inference variables applied
    */
   public abstract AbstractType applyInstantiations();
 
   /**
-   * Returns the type that this type was made from by substituting instantiations, if this is a
-   * proper type made that way and at least one of those instantiations ignores annotations;
-   * otherwise, null. See {@link ProperType#getOrigin}.
+   * Returns the type that this type was made from by applying instantiations, if this is a proper
+   * type made that way and at least one of those instantiations ignores annotations; otherwise,
+   * null. See {@link ProperType#getOrigin}.
    *
    * @return the type that this type was made from, or null
    */

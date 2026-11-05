@@ -48,9 +48,9 @@ public class VariableBounds {
 
   /**
    * The current instantiation of this variable, or null if it has none. It is set from one of this
-   * variable's proper {@code EQUAL} bounds, or from the result of substituting instantiations into
-   * that bound. It can be replaced during inference, for example by a later equal bound, or cleared
-   * by {@link #restore}.
+   * variable's proper {@code EQUAL} bounds, or from the result of applying instantiations to that
+   * bound. It can be replaced during inference, for example by a later equal bound, or cleared by
+   * {@link #restore}.
    */
   private @Nullable ProperType instantiation = null;
 
@@ -59,11 +59,12 @@ public class VariableBounds {
    * #getInstantiationChanges}.
    *
    * <p>A {@link ProperType} with an origin sums this count over the variables that its origin
-   * mentions (see {@link ProperType#instantiationVersion}), and substitutes into its origin again
-   * only when the sum differs from the sum when it was last up to date; see {@link
+   * mentions (see {@link ProperType#instantiationVersion}), and applies instantiations to its
+   * origin again only when the sum differs from the sum when it was last up to date; see {@link
    * ProperType#applyInstantiations}. So the count is incremented only when the instantiation
    * actually changes: setting an instantiation equal to the current one leaves the count unchanged,
-   * so that types whose origins mention this variable are not substituted again needlessly.
+   * so that instantiations are not applied again needlessly to types whose origins mention this
+   * variable.
    */
   private int instantiationChanges = 0;
 
@@ -842,8 +843,8 @@ public class VariableBounds {
     }
     constraints.applyInstantiations();
 
-    // If this variable's instantiation was made by substituting another variable's instantiation
-    // that ignores annotations, then substitute again, in case that other instantiation has
+    // If this variable's instantiation was made by applying another variable's instantiation that
+    // ignores annotations, then apply instantiations again, in case that other instantiation has
     // changed; see ProperType#applyInstantiations.
     if (instantiation != null) {
       AbstractType refreshed =

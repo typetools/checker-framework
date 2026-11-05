@@ -43,11 +43,11 @@ public class ProperType extends AbstractType {
   private final AnnotationMirrorMap<QualifierVar> qualifierVars;
 
   /**
-   * The type that this type was made from by substituting instantiations, if at least one of those
+   * The type that this type was made from by applying instantiations, if at least one of those
    * instantiations ignores annotations (see {@link AbstractType#ignoreAnnotations}); otherwise,
    * null.
    *
-   * <p>The origin records which positions of {@link #type} are ignored substitutions (see {@link
+   * <p>The origin records which positions of {@link #type} are ignored (see {@link
    * IgnoredAnnotations}): it has a use of a variable at each one. {@link #type} does not record
    * them.
    */
@@ -64,8 +64,8 @@ public class ProperType extends AbstractType {
   /**
    * If {@link #origin} is non-null, the value of {@link #instantiationVersion} for {@link
    * #originVariables} when this type was last found to be up to date; otherwise, 0. This type is up
-   * to date if {@link #type} is what substituting the current instantiations into {@link #origin}
-   * gives, apart from primary annotations. It is not used by {@link #equals} or {@link #hashCode}.
+   * to date if {@link #type} is what applying the current instantiations to {@link #origin} gives,
+   * apart from primary annotations. It is not used by {@link #equals} or {@link #hashCode}.
    */
   private long upToDateVersion;
 
@@ -101,7 +101,7 @@ public class ProperType extends AbstractType {
    * The parts of this type that {@link #partFromOrigin} has computed: a map from a {@link Part} of
    * this type to the type at that part. It is null if no part has been computed since {@link
    * #partCacheVersion} was set. Only a type with an {@link #origin} caches its parts, because
-   * computing a part from the origin substitutes instantiations.
+   * computing a part from the origin applies instantiations.
    *
    * <p>This map, {@link #partCacheForLists}, and {@link #asSuperCache} are conceptually a single
    * cache from a part of this type to its content. They are separate only so that each map has
@@ -179,8 +179,8 @@ public class ProperType extends AbstractType {
    *     see {@link #qualifierVars}
    * @param context the context
    * @param ignoreAnnotations true if the annotations on this type should be ignored
-   * @param origin the type that {@code type} was made from by substituting instantiations, at least
-   *     one of which ignores annotations, or null; see {@link #origin}
+   * @param origin the type that {@code type} was made from by applying instantiations, at least one
+   *     of which ignores annotations, or null; see {@link #origin}
    */
   ProperType(
       AnnotatedTypeMirror type,
@@ -206,8 +206,8 @@ public class ProperType extends AbstractType {
    *     see {@link #qualifierVars}
    * @param context the context
    * @param ignoreAnnotations true if the annotations on this type should be ignored
-   * @param origin the type that {@code type} was made from by substituting instantiations, at least
-   *     one of which ignores annotations, or null; see {@link #origin}
+   * @param origin the type that {@code type} was made from by applying instantiations, at least one
+   *     of which ignores annotations, or null; see {@link #origin}
    * @param originVariables the inference variables that {@code origin} mentions, or the empty list
    *     if {@code origin} is null; see {@link #originVariables}
    */
@@ -351,7 +351,7 @@ public class ProperType extends AbstractType {
       Function<AbstractType, @Nullable AbstractType> part,
       Supplier<@Nullable AbstractType> fromType,
       boolean sharesPrimaryAnnotations) {
-    // A part computed from the origin knows which of its positions are ignored substitutions.
+    // A part computed from the origin knows which of its positions are ignored positions.
     AbstractType originPart = part.apply(origin);
     if (originPart != null) {
       AbstractType result = originPart.applyInstantiations();
@@ -612,12 +612,12 @@ public class ProperType extends AbstractType {
   @Override
   public AbstractType create(AnnotatedTypeMirror atm, boolean ignoreAnnotations) {
     // TODO: The result has no origin, so the annotations at positions of `atm` that come from
-    // ignored substitutions of this type are compared as real annotations.  AbstractType#capture,
+    // ignored positions of this type are compared as real annotations.  AbstractType#capture,
     // #replaceTypeArgs, #getMostSpecificArrayType, and #getTypeVarUpperBound create their results
     // with this method.  For capture conversion, this causes a false positive in
-    // checker/tests/nullness/CaptureOfIgnoredSubstitution.java.  Capture conversion replaces a
-    // wildcard by a captured type variable, so the origin would have to record ignored
-    // substitutions in the bounds of captured type variables.
+    // checker/tests/nullness/CaptureOfIgnoredPosition.java.  Capture conversion replaces a wildcard
+    // by a captured type variable, so the origin would have to record ignored positions in the
+    // bounds of captured type variables.
     return new ProperType(atm, qualifierVars, context, ignoreAnnotations);
   }
 
@@ -776,8 +776,8 @@ public class ProperType extends AbstractType {
     if (!qualifierVars.equals(that.qualifierVars)) {
       return false;
     }
-    // The origin determines which positions are ignored substitutions, so two types with the same
-    // annotations but different origins are not interchangeable.
+    // The origin determines which positions are ignored, so two types with the same annotations but
+    // different origins are not interchangeable.
     if (!Objects.equals(origin, that.origin)) {
       return false;
     }
@@ -840,7 +840,7 @@ public class ProperType extends AbstractType {
       return this;
     }
     ProperType properResult = (ProperType) result;
-    // No ignored substitution of `origin` affects the primary annotations of this type, so they are
+    // No ignored position of `origin` affects the primary annotations of this type, so they are
     // still right, and they may differ from those of `origin` if resolution set them; see
     // Resolution#lubOfLowerBounds.  `result` is a new type, so its annotated type may be mutated.
     AnnotatedTypeMirror resultATM = properResult.getAnnotatedType();
@@ -862,8 +862,8 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns the type that this type was made from by substituting instantiations, if at least one
-   * of those instantiations ignores annotations; otherwise, null. See {@link #origin}.
+   * Returns the type that this type was made from by applying instantiations, if at least one of
+   * those instantiations ignores annotations; otherwise, null. See {@link #origin}.
    *
    * @return the type that this type was made from, or null
    */
@@ -876,8 +876,8 @@ public class ProperType extends AbstractType {
    * Returns true if {@code a} and {@code b} have the same Java type and each is a subtype of the
    * other. Unlike {@link AnnotatedTypeMirror#equals}, which {@link #equals} uses, this does not
    * require the underlying Java types to be the same object, so it can compare types made by
-   * separate substitutions of instantiations. It compares only annotated types, not the other
-   * fields that {@link #equals} compares, such as {@link #origin}.
+   * separate applications of instantiations. It compares only annotated types, not the other fields
+   * that {@link #equals} compares, such as {@link #origin}.
    *
    * @param a an annotated type
    * @param b an annotated type

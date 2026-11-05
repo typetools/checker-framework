@@ -2,10 +2,10 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-// A wildcard with a primary annotation whose bound is an ignored substitution.  B = U comes from a
-// use with an explicit annotation, so it ignores annotations, and the bound of the wildcard in the
-// result of nnList or nbleList is an ignored substitution.  B's annotations come from `other`.
-public class AnnotatedWildcardOfIgnoredSubstitution {
+// A wildcard with a primary annotation whose bound is an ignored position.  B = U comes from a use
+// with an explicit annotation, so it ignores annotations, and the bound of the wildcard in the
+// result of nnList or nbleList is an ignored position.  B's annotations come from `other`.
+public class AnnotatedWildcardOfIgnoredPosition {
   static class Box<T> {}
 
   static <B extends @Nullable Object> List<@NonNull ? extends B> nnList(

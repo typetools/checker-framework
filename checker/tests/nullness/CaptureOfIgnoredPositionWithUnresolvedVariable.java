@@ -4,10 +4,10 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 // T's instantiation ignores annotations, because its EQUAL bound comes from a use with an explicit
-// annotation.  T is substituted into Map<T, R> while R is still unresolved, so the substitution is
-// deferred.  wl's result is wildcard-parameterized, so inferring a call that has it as an argument
-// or as its target uses capture variables.
-public class CaptureOfIgnoredSubstitutionWithUnresolvedVariable {
+// annotation.  Applying T's instantiation to Map<T, R> is deferred while R is still unresolved.
+// wl's result is wildcard-parameterized, so inferring a call that has it as an argument or as its
+// target uses capture variables.
+public class CaptureOfIgnoredPositionWithUnresolvedVariable {
   static class Box<T> {}
 
   static <S extends @Nullable Object> S id(S s) {

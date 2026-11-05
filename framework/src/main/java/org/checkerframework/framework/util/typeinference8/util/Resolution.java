@@ -154,7 +154,7 @@ public final class Resolution {
    * incorporates the new bounds.
    *
    * <p>If {@code t} respects annotations, then it replaces the instantiation, and incorporation
-   * substitutes {@code t} wherever the old instantiation was substituted.
+   * applies {@code t} wherever the old instantiation was applied.
    *
    * @param vars variables, each of which has an instantiation
    * @param boundSet the bound set that includes {@code vars}
@@ -671,9 +671,10 @@ public final class Resolution {
       Set<AbstractType> upperBounds = ai.getBounds().upperBounds();
       // Omit bounds that mention variables outside `as`, such as `alpha` in `ai <: alpha`.
       // TODO: This also omits a bound that mentions an instantiated variable outside `as` whose
-      // substitution InferenceType#applyInstantiations deferred because the substitution ignores
+      // instantiation InferenceType#applyInstantiations did not apply, because the instantiation
+      // ignores
       // annotations and the result would not be proper.  The fresh type variable then gets a
-      // weaker upper bound.  Retaining such a bound requires substituting that instantiation into
+      // weaker upper bound.  Retaining such a bound requires applying that instantiation to
       // the bound of the fresh type variable, which InferenceFactory#getSubsTypeArgs does not do.
       upperBounds.removeIf(u -> !as.containsAll(u.getInferenceVariables()));
       AbstractType upperBound = context.inferenceTypeFactory.glb(upperBounds);

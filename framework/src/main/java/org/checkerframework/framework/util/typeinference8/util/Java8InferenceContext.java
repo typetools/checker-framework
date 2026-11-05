@@ -267,7 +267,7 @@ public class Java8InferenceContext {
   /**
    * Returns true if each of {@code type1} and {@code type2} is a subtype of the other. Unlike
    * {@link AnnotatedTypeMirror#equals}, this does not require the underlying Java types to be the
-   * same object, so it can compare types made by separate substitutions.
+   * same object, so it can compare types made by applying instantiations separately.
    *
    * @param type1 an annotated type
    * @param type2 an annotated type

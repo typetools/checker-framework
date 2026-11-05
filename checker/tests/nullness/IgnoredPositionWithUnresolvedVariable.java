@@ -3,8 +3,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 // T's instantiation ignores annotations, because its EQUAL bound comes from a use with an explicit
-// annotation, and it is substituted into S's lower bound Map<T, R> while R is still unresolved.
-public class IgnoredSubstitutionWithUnresolvedVariable {
+// annotation, and it is applied to S's lower bound Map<T, R> while R is still unresolved.
+public class IgnoredPositionWithUnresolvedVariable {
   static class Box<T> {}
 
   static <S extends @Nullable Object> S id(S s) {

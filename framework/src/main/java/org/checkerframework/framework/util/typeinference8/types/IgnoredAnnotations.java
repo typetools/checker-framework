@@ -30,23 +30,23 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
  * annotations (see {@link AbstractType#ignoreAnnotations}).
  *
  * <p>A <em>position</em> in a type is the type itself or a type nested in it at any depth. Two
- * kinds of position have ignored annotations:
+ * kinds of annotations are ignored:
  *
  * <ul>
  *   <li>the primary annotations of a type whose {@link AbstractType#ignoreAnnotations} is true,
  *       including those of its bounds if it is a type variable or a wildcard, and
- *   <li>an <em>ignored substitution</em>: a position in a {@link ProperType} where {@link
- *       AbstractType#applyInstantiations} replaced a use of an inference variable by the variable's
- *       instantiation, and that instantiation ignores annotations. These positions are found by
- *       comparing the type with its {@link ProperType#getOrigin() origin}, the type before the
- *       substitution, which still has the use of the variable at each of them.
+ *   <li>the annotations at an <em>ignored position</em>: a position in a {@link ProperType} where
+ *       {@link AbstractType#applyInstantiations} replaced a use of an inference variable by the
+ *       variable's instantiation, and that instantiation ignores annotations. The type's {@link
+ *       ProperType#getOrigin() origin} is the type before instantiations were applied; it has a use
+ *       of an inference variable at each ignored position.
  * </ul>
  *
  * <p>Before two types are compared for subtyping or equality, or combined by a least upper bound or
- * greatest lower bound, the methods of this class replace the annotations at their ignored
- * positions with annotations that cannot affect the result: for example, bottom for a subtype and
- * top for a supertype, or the annotations at the corresponding position of the other type. The rest
- * of each type is then compared or combined as usual.
+ * greatest lower bound, the methods of this class replace their ignored annotations with
+ * annotations that cannot affect the result: for example, bottom for a subtype and top for a
+ * supertype, or the annotations at the corresponding position of the other type. The rest of each
+ * type is then compared or combined as usual.
  */
 final class IgnoredAnnotations {
 
@@ -56,42 +56,43 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns the annotated types of {@code sub} and {@code sup} with their ignored positions
+   * Returns the annotated types of {@code sub} and {@code sup} with their ignored annotations
    * replaced. A type that ignores annotations has bottom primary annotations if it is {@code sub},
-   * and top primary annotations if it is {@code sup}. An ignored substitution has the annotations
-   * of the corresponding position of the other type. If neither type has an ignored position, the
+   * and top primary annotations if it is {@code sup}. An ignored position has the annotations of
+   * the corresponding position of the other type. If neither type has ignored annotations, the
    * result holds the types' own annotated types; otherwise it holds copies.
    *
    * @param sub a potential subtype
    * @param sup the potential supertype
    * @param qh the qualifier hierarchy
    * @param types the type utilities
-   * @return a pair of annotated types: {@code sub} and {@code sup}, with ignored positions replaced
+   * @return a pair of annotated types: {@code sub} and {@code sup}, with ignored annotations
+   *     replaced
    */
   static ReplacedTypes replaceIgnoredForSubtype(
       AbstractType sub, AbstractType sup, QualifierHierarchy qh, Types types) {
     AbstractType upToDateSub = upToDate(sub);
     AbstractType upToDateSup = upToDate(sup);
-    boolean mayHaveIgnoredSubstitutions =
+    boolean mayHaveIgnoredPositions =
         upToDateSub.getOrigin() != null || upToDateSup.getOrigin() != null;
     if (!upToDateSub.ignoreAnnotations
         && !upToDateSup.ignoreAnnotations
-        && !mayHaveIgnoredSubstitutions) {
+        && !mayHaveIgnoredPositions) {
       return new ReplacedTypes(upToDateSub.getAnnotatedType(), upToDateSup.getAnnotatedType());
     }
     AbstractType alignedSub = upToDateSub;
-    if (mayHaveIgnoredSubstitutions) {
+    if (mayHaveIgnoredPositions) {
       // Compare the type arguments of the same class, so that corresponding positions line up.
       alignedSub = viewedAsClass(upToDateSub, upToDateSup.getJavaType(), types);
     }
     AnnotatedTypeMirror subATM = alignedSub.getAnnotatedType().deepCopy();
     AnnotatedTypeMirror supATM = upToDateSup.getAnnotatedType().deepCopy();
-    if (mayHaveIgnoredSubstitutions) {
-      replaceIgnoredSubstitutions(
+    if (mayHaveIgnoredPositions) {
+      replaceIgnoredPositions(
           subATM,
           supATM,
-          ignoredSubstitutions(alignedSub, subATM, qh),
-          ignoredSubstitutions(upToDateSup, supATM, qh));
+          ignoredPositions(alignedSub, subATM, qh),
+          ignoredPositions(upToDateSup, supATM, qh));
     }
     if (upToDateSub.ignoreAnnotations) {
       subATM.replaceAnnotations(qh.getBottomAnnotations());
@@ -104,35 +105,31 @@ final class IgnoredAnnotations {
 
   /**
    * Returns the annotated types of {@code type1} and {@code type2}, which have the same Java type,
-   * with their ignored positions replaced. An ignored position of one type has the annotations of
-   * the corresponding position of the other type. If neither type has an ignored position, the
-   * result holds the types' own annotated types; otherwise it holds modified copies.
+   * with their ignored annotations replaced. Each ignored annotation of one type is replaced by the
+   * annotation at the corresponding position of the other type. If neither type has ignored
+   * annotations, the result holds the types' own annotated types; otherwise it holds modified
+   * copies.
    *
    * @param type1 a type
    * @param type2 a type with the same Java type as {@code type1}
    * @param qh the qualifier hierarchy
-   * @return a pair of annotated types: {@code type1} and {@code type2}, with ignored positions
+   * @return a pair of annotated types: {@code type1} and {@code type2}, with ignored annotations
    *     replaced from the other type
    */
   static ReplacedTypes replaceIgnoredForEquality(
       AbstractType type1, AbstractType type2, QualifierHierarchy qh) {
     AbstractType upToDate1 = upToDate(type1);
     AbstractType upToDate2 = upToDate(type2);
-    boolean mayHaveIgnoredSubstitutions =
+    boolean mayHaveIgnoredPositions =
         upToDate1.getOrigin() != null || upToDate2.getOrigin() != null;
-    if (!upToDate1.ignoreAnnotations
-        && !upToDate2.ignoreAnnotations
-        && !mayHaveIgnoredSubstitutions) {
+    if (!upToDate1.ignoreAnnotations && !upToDate2.ignoreAnnotations && !mayHaveIgnoredPositions) {
       return new ReplacedTypes(upToDate1.getAnnotatedType(), upToDate2.getAnnotatedType());
     }
     AnnotatedTypeMirror atm1 = upToDate1.getAnnotatedType().deepCopy();
     AnnotatedTypeMirror atm2 = upToDate2.getAnnotatedType().deepCopy();
-    if (mayHaveIgnoredSubstitutions) {
-      replaceIgnoredSubstitutions(
-          atm1,
-          atm2,
-          ignoredSubstitutions(upToDate1, atm1, qh),
-          ignoredSubstitutions(upToDate2, atm2, qh));
+    if (mayHaveIgnoredPositions) {
+      replaceIgnoredPositions(
+          atm1, atm2, ignoredPositions(upToDate1, atm1, qh), ignoredPositions(upToDate2, atm2, qh));
     }
     if (upToDate1.ignoreAnnotations) {
       copyPrimaryAnnotations(atm2, atm1);
@@ -144,10 +141,10 @@ final class IgnoredAnnotations {
 
   /**
    * Returns the annotated types of {@code type1} and {@code type2}, where the annotations at each
-   * ignored substitution of one type are replaced by those at the corresponding position of the
-   * other. If either type has ignored substitutions, then both are first viewed as the class of
-   * {@code resultType}. Primary annotations are not replaced. If nothing is replaced, the result
-   * holds the types' own annotated types; otherwise it holds copies.
+   * ignored position of one type are replaced by those at the corresponding position of the other.
+   * If either type has ignored positions, then both are first viewed as the class of {@code
+   * resultType}. Primary annotations are not replaced. If nothing is replaced, the result holds the
+   * types' own annotated types; otherwise it holds copies.
    *
    * @param type1 a type
    * @param type2 a type
@@ -155,7 +152,7 @@ final class IgnoredAnnotations {
    *     type1} and {@code type2}
    * @param qh the qualifier hierarchy
    * @param types the type utilities
-   * @return a pair of annotated types: {@code type1} and {@code type2}, with ignored substitutions
+   * @return a pair of annotated types: {@code type1} and {@code type2}, with ignored positions
    *     replaced
    */
   static ReplacedTypes replaceIgnoredForLubOrGlb(
@@ -177,19 +174,16 @@ final class IgnoredAnnotations {
     }
     AnnotatedTypeMirror atm1 = aligned1.getAnnotatedType().deepCopy();
     AnnotatedTypeMirror atm2 = aligned2.getAnnotatedType().deepCopy();
-    replaceIgnoredSubstitutions(
-        atm1,
-        atm2,
-        ignoredSubstitutions(aligned1, atm1, qh),
-        ignoredSubstitutions(aligned2, atm2, qh));
+    replaceIgnoredPositions(
+        atm1, atm2, ignoredPositions(aligned1, atm1, qh), ignoredPositions(aligned2, atm2, qh));
     return new ReplacedTypes(atm1, atm2);
   }
 
   /**
-   * Returns true if no ignored substitution of {@code type} corresponds to a position of {@code
-   * other} that is not an ignored substitution. Positions correspond as in {@link
-   * #replaceIgnoredForLubOrGlb}, which gives each such ignored substitution of {@code type} the
-   * annotations of that position of {@code other}.
+   * Returns true if no ignored position of {@code type} corresponds to a position of {@code other}
+   * that is not an ignored position. Positions correspond as in {@link #replaceIgnoredForLubOrGlb},
+   * which gives each such ignored position of {@code type} the annotations of that position of
+   * {@code other}.
    *
    * @param type a type
    * @param other a type
@@ -197,10 +191,10 @@ final class IgnoredAnnotations {
    *     type} and {@code other}
    * @param qh the qualifier hierarchy
    * @param types the type utilities
-   * @return true if every ignored substitution of {@code type} that corresponds to a position of
-   *     {@code other} corresponds to an ignored substitution of {@code other}
+   * @return true if every ignored position of {@code type} that corresponds to a position of {@code
+   *     other} corresponds to an ignored position of {@code other}
    */
-  static boolean ignoredSubstitutionsStayIgnored(
+  static boolean ignoredPositionsStayIgnored(
       AbstractType type,
       AbstractType other,
       TypeMirror resultType,
@@ -218,8 +212,8 @@ final class IgnoredAnnotations {
     }
     AnnotatedTypeMirror atm = aligned.getAnnotatedType();
     AnnotatedTypeMirror otherATM = alignedOther.getAnnotatedType();
-    Set<AnnotatedTypeMirror> ignored = ignoredSubstitutions(aligned, atm, qh);
-    Set<AnnotatedTypeMirror> otherIgnored = ignoredSubstitutions(alignedOther, otherATM, qh);
+    Set<AnnotatedTypeMirror> ignored = ignoredPositions(aligned, atm, qh);
+    Set<AnnotatedTypeMirror> otherIgnored = ignoredPositions(alignedOther, otherATM, qh);
     return allCorrespondingPositions(
         atm,
         otherATM,
@@ -229,9 +223,9 @@ final class IgnoredAnnotations {
 
   /**
    * Returns {@code type} brought up to date: if it is a proper type with an origin (see {@link
-   * ProperType#getOrigin}), the result of substituting the current instantiations of the variables
-   * that its origin mentions; otherwise, {@code type} itself. The ignored substitutions of a type
-   * are found from those instantiations, so its annotated type must be made from them too.
+   * ProperType#getOrigin}), the result of applying the current instantiations of the variables that
+   * its origin mentions to its origin; otherwise, {@code type} itself. The ignored positions of a
+   * type are found from those instantiations, so its annotated type must be made from them too.
    *
    * @param type a type
    * @return {@code type} brought up to date
@@ -307,50 +301,49 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Returns the ignored substitutions of {@code atm}.
+   * Returns the ignored positions of {@code atm}.
    *
    * @param type a type
    * @param atm an annotated type with the same structure as {@code type}'s annotated type, such as
    *     a deep copy of it; not modified
    * @param qh the qualifier hierarchy
-   * @return the types within {@code atm} that are at its ignored substitutions, as an identity set,
+   * @return the types within {@code atm} that are at its ignored positions, as an identity set,
    *     because distinct positions can hold equal types
    */
-  private static Set<AnnotatedTypeMirror> ignoredSubstitutions(
+  private static Set<AnnotatedTypeMirror> ignoredPositions(
       AbstractType type, AnnotatedTypeMirror atm, QualifierHierarchy qh) {
     InferenceType origin = type.getOrigin();
     if (origin == null) {
       return Collections.emptySet();
     }
     Set<AnnotatedTypeMirror> result = Collections.newSetFromMap(new IdentityHashMap<>());
-    collectIgnoredSubstitutions(
+    collectIgnoredPositions(
         origin.getAnnotatedType(), atm, origin.getMap(), qh, new HashSet<>(), result);
     return result;
   }
 
   /**
-   * Adds to {@code result} each ignored substitution of {@code substituted}, which is {@code
-   * origin} with instantiations substituted. A position of {@code substituted} is an ignored
-   * substitution if the corresponding position of {@code origin} is a use of a variable such that
-   * either:
+   * Adds to {@code result} each ignored position of {@code applied}. A position of {@code applied}
+   * is an ignored position if the corresponding position of {@code origin} is a use of a variable
+   * such that either:
    *
    * <ul>
    *   <li>the variable's instantiation ignores annotations, and the use's non-polymorphic primary
    *       annotations do not cover every qualifier hierarchy (see {@link
    *       UseOfVariable#applyInstantiations}), or
-   *   <li>the position is an ignored substitution of the variable's instantiation.
+   *   <li>the position is an ignored position of the variable's instantiation.
    * </ul>
    *
    * @param origin a type that mentions inference variables
-   * @param substituted {@code origin} with instantiations substituted
+   * @param applied {@code origin} with instantiations applied
    * @param map the inference variables of {@code origin}
    * @param qh the qualifier hierarchy
    * @param visiting the variables whose instantiations are being scanned
-   * @param result the set to which to add ignored substitutions
+   * @param result the set to which to add ignored positions
    */
-  private static void collectIgnoredSubstitutions(
+  private static void collectIgnoredPositions(
       AnnotatedTypeMirror origin,
-      AnnotatedTypeMirror substituted,
+      AnnotatedTypeMirror applied,
       Theta map,
       QualifierHierarchy qh,
       Set<Variable> visiting,
@@ -364,14 +357,14 @@ final class IgnoredAnnotations {
         }
         if (instantiation.ignoreAnnotations
             && nonPolymorphicPrimaryAnnotationCount(origin, qh) < qh.getTopAnnotations().size()) {
-          result.add(substituted);
+          result.add(applied);
         }
         InferenceType instantiationOrigin = instantiation.getOrigin();
         // An F-bounded variable's instantiation can mention the variable itself.
         if (instantiationOrigin != null && visiting.add(variable)) {
-          collectIgnoredSubstitutions(
+          collectIgnoredPositions(
               instantiationOrigin.getAnnotatedType(),
-              substituted,
+              applied,
               instantiationOrigin.getMap(),
               qh,
               visiting,
@@ -381,47 +374,41 @@ final class IgnoredAnnotations {
       }
       return;
     }
-    if (origin.getKind() != substituted.getKind()) {
+    if (origin.getKind() != applied.getKind()) {
       return;
     }
     switch (origin.getKind()) {
       case DECLARED -> {
         AnnotatedDeclaredType originDT = (AnnotatedDeclaredType) origin;
-        AnnotatedDeclaredType substitutedDT = (AnnotatedDeclaredType) substituted;
+        AnnotatedDeclaredType appliedDT = (AnnotatedDeclaredType) applied;
         collectPairwise(
-            originDT.getTypeArguments(),
-            substitutedDT.getTypeArguments(),
-            map,
-            qh,
-            visiting,
-            result);
+            originDT.getTypeArguments(), appliedDT.getTypeArguments(), map, qh, visiting, result);
         AnnotatedDeclaredType originEnclosing = originDT.getEnclosingType();
-        AnnotatedDeclaredType substitutedEnclosing = substitutedDT.getEnclosingType();
-        if (originEnclosing != null && substitutedEnclosing != null) {
-          collectIgnoredSubstitutions(
-              originEnclosing, substitutedEnclosing, map, qh, visiting, result);
+        AnnotatedDeclaredType appliedEnclosing = appliedDT.getEnclosingType();
+        if (originEnclosing != null && appliedEnclosing != null) {
+          collectIgnoredPositions(originEnclosing, appliedEnclosing, map, qh, visiting, result);
         }
       }
       case ARRAY ->
-          collectIgnoredSubstitutions(
+          collectIgnoredPositions(
               ((AnnotatedArrayType) origin).getComponentType(),
-              ((AnnotatedArrayType) substituted).getComponentType(),
+              ((AnnotatedArrayType) applied).getComponentType(),
               map,
               qh,
               visiting,
               result);
       case WILDCARD -> {
         AnnotatedWildcardType originWT = (AnnotatedWildcardType) origin;
-        AnnotatedWildcardType substitutedWT = (AnnotatedWildcardType) substituted;
-        collectIgnoredSubstitutions(
-            originWT.getExtendsBound(), substitutedWT.getExtendsBound(), map, qh, visiting, result);
-        collectIgnoredSubstitutions(
-            originWT.getSuperBound(), substitutedWT.getSuperBound(), map, qh, visiting, result);
+        AnnotatedWildcardType appliedWT = (AnnotatedWildcardType) applied;
+        collectIgnoredPositions(
+            originWT.getExtendsBound(), appliedWT.getExtendsBound(), map, qh, visiting, result);
+        collectIgnoredPositions(
+            originWT.getSuperBound(), appliedWT.getSuperBound(), map, qh, visiting, result);
       }
       case INTERSECTION ->
           collectPairwise(
               ((AnnotatedIntersectionType) origin).getBounds(),
-              ((AnnotatedIntersectionType) substituted).getBounds(),
+              ((AnnotatedIntersectionType) applied).getBounds(),
               map,
               qh,
               visiting,
@@ -431,29 +418,29 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Calls {@link #collectIgnoredSubstitutions} on corresponding elements of the two lists, if they
-   * have the same length. Otherwise, does nothing.
+   * Calls {@link #collectIgnoredPositions} on corresponding elements of the two lists, if they have
+   * the same length. Otherwise, does nothing.
    *
    * @param origins types that mention inference variables
-   * @param substitutedTypes {@code origins} with instantiations substituted
+   * @param appliedTypes {@code origins} with instantiations applied
    * @param map the inference variables of {@code origins}
    * @param qh the qualifier hierarchy
    * @param visiting the variables whose instantiations are being scanned
-   * @param result the set to which to add ignored substitutions
+   * @param result the set to which to add ignored positions
    */
   private static void collectPairwise(
       List<? extends AnnotatedTypeMirror> origins,
-      List<? extends AnnotatedTypeMirror> substitutedTypes,
+      List<? extends AnnotatedTypeMirror> appliedTypes,
       Theta map,
       QualifierHierarchy qh,
       Set<Variable> visiting,
       Set<AnnotatedTypeMirror> result) {
-    if (origins.size() != substitutedTypes.size()) {
+    if (origins.size() != appliedTypes.size()) {
       return;
     }
-    Iterator<? extends AnnotatedTypeMirror> substitutedIter = substitutedTypes.iterator();
+    Iterator<? extends AnnotatedTypeMirror> appliedIter = appliedTypes.iterator();
     for (AnnotatedTypeMirror origin : origins) {
-      collectIgnoredSubstitutions(origin, substitutedIter.next(), map, qh, visiting, result);
+      collectIgnoredPositions(origin, appliedIter.next(), map, qh, visiting, result);
     }
   }
 
@@ -476,18 +463,18 @@ final class IgnoredAnnotations {
   }
 
   /**
-   * Gives each ignored substitution of {@code atm1} the annotations of the corresponding position
-   * of {@code atm2}, and vice versa. If corresponding positions of both types are ignored
-   * substitutions, then the one in {@code atm1} gets the annotations of the one in {@code atm2}, so
-   * the two have the same annotations. Positions correspond only where the two types have the same
-   * structure; elsewhere, nothing is replaced.
+   * Gives each ignored position of {@code atm1} the annotations of the corresponding position of
+   * {@code atm2}, and vice versa. If corresponding positions of both types are ignored positions,
+   * then the one in {@code atm1} gets the annotations of the one in {@code atm2}, so the two have
+   * the same annotations. Positions correspond only where the two types have the same structure;
+   * elsewhere, nothing is replaced.
    *
    * @param atm1 a type; side-effected by this method
    * @param atm2 a type; side-effected by this method
-   * @param ignored1 the ignored substitutions of {@code atm1}
-   * @param ignored2 the ignored substitutions of {@code atm2}
+   * @param ignored1 the ignored positions of {@code atm1}
+   * @param ignored2 the ignored positions of {@code atm2}
    */
-  private static void replaceIgnoredSubstitutions(
+  private static void replaceIgnoredPositions(
       AnnotatedTypeMirror atm1,
       AnnotatedTypeMirror atm2,
       Set<AnnotatedTypeMirror> ignored1,

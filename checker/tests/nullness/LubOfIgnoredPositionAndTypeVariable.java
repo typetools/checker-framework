@@ -1,11 +1,11 @@
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-// The least upper bound of a type with an ignored substitution and a type variable.  B = U comes
-// from a use with an explicit annotation, so it ignores annotations, and the type argument of
-// holderOf's result is an ignored substitution.  The type variable H cannot be viewed as class
-// Holder, so the positions of the two types are not aligned.
-public class LubOfIgnoredSubstitutionAndTypeVariable {
+// The least upper bound of a type with an ignored position and a type variable.  B = U comes from a
+// use with an explicit annotation, so it ignores annotations, and the type argument of holderOf's
+// result is an ignored position.  The type variable H cannot be viewed as class Holder, so the
+// positions of the two types are not aligned.
+public class LubOfIgnoredPositionAndTypeVariable {
   static class Box<T> {}
 
   static class Holder<E extends @Nullable Object> {
@@ -28,8 +28,9 @@ public class LubOfIgnoredSubstitutionAndTypeVariable {
     // :: error: (argument) :: error: (dereference.of.nullable)
     pick2(holderOf(nonNullU, nn), nullableHolder).get().toString();
     // TODO: This should be a dereference.of.nullable error, as in the call above.  The least upper
-    // bound keeps the origin of holderOf's result, because the ignored substitution in it is not
-    // compared with the type argument of H's bound.  Substituting instantiations into the origin
+    // bound keeps the origin of holderOf's result, because the ignored position in it
+    // is not
+    // compared with the type argument of H's bound.  Applying instantiations to the origin
     // gives the type argument the instantiation of B, which is @NonNull U.
     // :: error: (argument)
     pick2(holderOf(nonNullU, nn), nullableH).get().toString();
