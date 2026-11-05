@@ -263,8 +263,8 @@ final class IgnoredAnnotations {
   /**
    * Returns true if comparing the annotations of {@code type1} and {@code type2} would compare
    * nothing: neither has an origin (see {@link ProperType#getOrigin}), neither has type arguments
-   * at any depth (see {@link #hasNoTypeArguments}), and at least one of them ignores its primary
-   * annotations.
+   * at any depth (see {@link #hasNoTypeArguments}), and at least one of the types ignores its
+   * primary annotations.
    *
    * @param type1 a type
    * @param type2 a type
