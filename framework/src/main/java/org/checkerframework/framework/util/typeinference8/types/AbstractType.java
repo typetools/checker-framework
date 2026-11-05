@@ -68,10 +68,10 @@ public abstract class AbstractType {
   protected final AnnotatedTypeFactory typeFactory;
 
   /**
-   * True if the primary annotations of this type should be ignored, because they do not constrain
-   * any inference variable's annotations. For a type variable or a wildcard, this includes the
-   * primary annotations of its bounds. It does not include annotations nested in this type, such as
-   * those of its type arguments or its component type.
+   * True if the primary annotations of this type should be ignored during inference, because they
+   * do not constrain any inference variable's annotations. For a type variable or a wildcard, this
+   * includes the primary annotations of its bounds. It does not include annotations nested in this
+   * type, such as those of its type arguments or its component type.
    *
    * <p>For example, this field is true for a bound that {@link UseOfVariable#addBound} creates from
    * a use of an inference variable that has a primary annotation, such as {@code @Nullable T}. That
@@ -738,14 +738,13 @@ public abstract class AbstractType {
 
   /**
    * Checks whether the annotations of {@code this} are a subtype of those of {@code superType},
-   * assuming that their underlying Java types have already been found to be in the required
-   * relationship. The annotations of a position that ignores annotations are not compared; see
-   * {@link IgnoredAnnotations#replaceIgnoredForSubtype}.
+   * except at positions where either type's annotations are ignored; see {@link
+   * IgnoredAnnotations#replaceIgnoredForSubtype}.
    *
-   * @param superType the potential supertype
-   * @return {@link ConstraintSet#TRUE} if the annotations of {@code this} are a subtype of those of
-   *     {@code superType}, apart from those that are ignored; otherwise {@link
-   *     ConstraintSet#TRUE_ANNO_FAIL}
+   * @param superType the potential supertype; the caller must already have checked that the Java
+   *     type of {@code this} is a subtype of, or assignable to, that of {@code superType}
+   * @return {@link ConstraintSet#TRUE} if the non-ignored annotations of {@code this} are a subtype
+   *     of those of {@code superType}; otherwise {@link ConstraintSet#TRUE_ANNO_FAIL}
    */
   protected final ConstraintSet checkAnnotationSubtype(ProperType superType) {
     if (IgnoredAnnotations.noAnnotationsToCompare(this, superType)) {
