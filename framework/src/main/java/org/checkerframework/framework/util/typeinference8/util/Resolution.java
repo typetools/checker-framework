@@ -144,17 +144,17 @@ public final class Resolution {
   }
 
   /**
-   * For each variable in {@code vars} whose instantiation ignores annotations (see {@link
-   * AbstractType#ignoreAnnotations}), adds the bound {@code var = t}, where {@code t} is {@link
-   * #lubOfLowerBounds} of the variable's proper lower bounds, viewed as the instantiation's Java
-   * type (see {@link #viewAs}). If the variable has no proper lower bound, or that view cannot be
-   * computed, then {@code t} is {@link #lubOfLowerBounds} of {@link
+   * For each variable in {@code vars} whose instantiation's primary annotations are ignored (see
+   * {@link AbstractType#ignoreAnnotations}), adds the bound {@code var = t}, where {@code t} is the
+   * supertype, whose Java type is the instantiation's, of the {@link #lubOfLowerBounds} of the
+   * variable's proper lower bounds (see {@link #asSupertype}). If the variable has no proper lower
+   * bound, or there is no such supertype, then {@code t} is {@link #lubOfLowerBounds} of {@link
    * org.checkerframework.framework.util.typeinference8.types.VariableBounds#findLowerBoundsForAnnotations},
    * and no bound is added if the Java type of {@code t} is not that of the instantiation. Then
    * incorporates the new bounds.
    *
-   * <p>If {@code t} respects annotations, then it replaces the instantiation, and incorporation
-   * applies {@code t} wherever the old instantiation was applied.
+   * <p>If the primary annotations of {@code t} are not ignored, then it replaces the instantiation,
+   * and incorporation applies {@code t} wherever the old instantiation was applied.
    *
    * @param vars variables, each of which has an instantiation
    * @param boundSet the bound set that includes {@code vars}
@@ -176,7 +176,7 @@ public final class Resolution {
       Set<ProperType> lowerBounds = var.getBounds().findProperLowerBounds();
       if (!lowerBounds.isEmpty()) {
         t =
-            viewAs(
+            asSupertype(
                 lubOfLowerBounds(var, lowerBounds, false, context),
                 instantiation.getJavaType(),
                 context);
@@ -200,16 +200,17 @@ public final class Resolution {
   }
 
   /**
-   * Returns {@code type} viewed as {@code javaType}, a supertype of it, or null if that view cannot
-   * be computed. A type variable, including a captured one, is viewed through its upper bound;
-   * another type is viewed through {@link AbstractType#asSuper}.
+   * Returns the supertype of {@code type} whose Java type is {@code javaType}, or null if this
+   * method finds no such supertype that is a proper type. This method replaces a type variable,
+   * including a captured one, with its upper bound until it reaches a type that is not a type
+   * variable, and then calls {@link AbstractType#asSuper} on that type.
    *
    * @param type a proper type
    * @param javaType a supertype of the Java type of {@code type}
    * @param context the context
-   * @return {@code type} viewed as {@code javaType}, or null
+   * @return the supertype of {@code type} whose Java type is {@code javaType}, or null
    */
-  private static @Nullable ProperType viewAs(
+  private static @Nullable ProperType asSupertype(
       ProperType type, TypeMirror javaType, Java8InferenceContext context) {
     AbstractType current = type;
     while (current != null && current.isProper()) {
