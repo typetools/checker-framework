@@ -81,18 +81,18 @@ final class IgnoredAnnotations {
         && !mayHaveIgnoredPositions) {
       return new ReplacedTypes(upToDateSub.getAnnotatedType(), upToDateSup.getAnnotatedType());
     }
-    AbstractType alignedSub = upToDateSub;
+    AbstractType subAsSuper = upToDateSub;
     if (mayHaveIgnoredPositions) {
       // Compare the type arguments of the same class, so that corresponding positions line up.
-      alignedSub = viewedAsClass(upToDateSub, upToDateSup.getJavaType(), types);
+      subAsSuper = asSuper(upToDateSub, upToDateSup.getJavaType(), types);
     }
-    AnnotatedTypeMirror subATM = alignedSub.getAnnotatedType().deepCopy();
+    AnnotatedTypeMirror subATM = subAsSuper.getAnnotatedType().deepCopy();
     AnnotatedTypeMirror supATM = upToDateSup.getAnnotatedType().deepCopy();
     if (mayHaveIgnoredPositions) {
       replaceIgnoredPositions(
           subATM,
           supATM,
-          ignoredPositions(alignedSub, subATM, qh),
+          ignoredPositions(subAsSuper, subATM, qh),
           ignoredPositions(upToDateSup, supATM, qh));
     }
     if (upToDateSub.ignoreAnnotations) {
@@ -143,9 +143,10 @@ final class IgnoredAnnotations {
   /**
    * Returns the annotated types of {@code type1} and {@code type2}, where the annotations at each
    * ignored position of one type are replaced by those at the corresponding position of the other.
-   * If either type has ignored positions, then both are first viewed as the class of {@code
-   * resultType}. Primary annotations are not replaced. If nothing is replaced, the result holds the
-   * types' own annotated types; otherwise it holds copies.
+   * If either type has ignored positions, then both are first replaced by their supertypes whose
+   * class is that of {@code resultType} (see {@link #asSuper}). Primary annotations are not
+   * replaced. If nothing is replaced, the result holds the types' own annotated types; otherwise it
+   * holds copies.
    *
    * @param type1 a type
    * @param type2 a type
@@ -167,16 +168,16 @@ final class IgnoredAnnotations {
     if (upToDate1.getOrigin() == null && upToDate2.getOrigin() == null) {
       return new ReplacedTypes(upToDate1.getAnnotatedType(), upToDate2.getAnnotatedType());
     }
-    AbstractType aligned1 = viewedAsClass(upToDate1, resultType, types);
-    AbstractType aligned2 = viewedAsClass(upToDate2, resultType, types);
+    AbstractType asSuper1 = asSuper(upToDate1, resultType, types);
+    AbstractType asSuper2 = asSuper(upToDate2, resultType, types);
     if (!types.isSameType(
-        types.erasure(aligned1.getJavaType()), types.erasure(aligned2.getJavaType()))) {
+        types.erasure(asSuper1.getJavaType()), types.erasure(asSuper2.getJavaType()))) {
       return new ReplacedTypes(upToDate1.getAnnotatedType(), upToDate2.getAnnotatedType());
     }
-    AnnotatedTypeMirror atm1 = aligned1.getAnnotatedType().deepCopy();
-    AnnotatedTypeMirror atm2 = aligned2.getAnnotatedType().deepCopy();
+    AnnotatedTypeMirror atm1 = asSuper1.getAnnotatedType().deepCopy();
+    AnnotatedTypeMirror atm2 = asSuper2.getAnnotatedType().deepCopy();
     replaceIgnoredPositions(
-        atm1, atm2, ignoredPositions(aligned1, atm1, qh), ignoredPositions(aligned2, atm2, qh));
+        atm1, atm2, ignoredPositions(asSuper1, atm1, qh), ignoredPositions(asSuper2, atm2, qh));
     return new ReplacedTypes(atm1, atm2);
   }
 
@@ -205,16 +206,16 @@ final class IgnoredAnnotations {
     if (upToDate.getOrigin() == null) {
       return true;
     }
-    AbstractType aligned = viewedAsClass(upToDate, resultType, types);
-    AbstractType alignedOther = viewedAsClass(upToDate(other), resultType, types);
+    AbstractType typeAsSuper = asSuper(upToDate, resultType, types);
+    AbstractType otherAsSuper = asSuper(upToDate(other), resultType, types);
     if (!types.isSameType(
-        types.erasure(aligned.getJavaType()), types.erasure(alignedOther.getJavaType()))) {
+        types.erasure(typeAsSuper.getJavaType()), types.erasure(otherAsSuper.getJavaType()))) {
       return true;
     }
-    AnnotatedTypeMirror atm = aligned.getAnnotatedType();
-    AnnotatedTypeMirror otherATM = alignedOther.getAnnotatedType();
-    Set<AnnotatedTypeMirror> ignored = ignoredPositions(aligned, atm, qh);
-    Set<AnnotatedTypeMirror> otherIgnored = ignoredPositions(alignedOther, otherATM, qh);
+    AnnotatedTypeMirror atm = typeAsSuper.getAnnotatedType();
+    AnnotatedTypeMirror otherATM = otherAsSuper.getAnnotatedType();
+    Set<AnnotatedTypeMirror> ignored = ignoredPositions(typeAsSuper, atm, qh);
+    Set<AnnotatedTypeMirror> otherIgnored = ignoredPositions(otherAsSuper, otherATM, qh);
     return allCorrespondingPositions(
         atm,
         otherATM,
@@ -237,16 +238,17 @@ final class IgnoredAnnotations {
 
   /**
    * Returns the supertype of {@code type} whose class is that of {@code classType} (see {@link
-   * AbstractType#asSuper}); for example, {@code ArrayList<String>} viewed as class {@code List} is
-   * {@code List<String>}. Returns {@code type} itself if either is not a declared type, if both are
-   * of the same class, or if {@code type} has no such supertype that is a proper type.
+   * AbstractType#asSuper}); for example, the supertype of {@code ArrayList<String>} whose class is
+   * {@code List} is {@code List<String>}. Returns {@code type} itself if either is not a declared
+   * type, if both are of the same class, or if {@code type} has no such supertype that is a proper
+   * type.
    *
    * @param type a type
    * @param classType a type
    * @param types the type utilities
    * @return the supertype of {@code type} whose class is that of {@code classType}, or {@code type}
    */
-  private static AbstractType viewedAsClass(AbstractType type, TypeMirror classType, Types types) {
+  private static AbstractType asSuper(AbstractType type, TypeMirror classType, Types types) {
     if (type.getTypeKind() != TypeKind.DECLARED
         || classType.getKind() != TypeKind.DECLARED
         || types.isSameType(types.erasure(type.getJavaType()), types.erasure(classType))) {
