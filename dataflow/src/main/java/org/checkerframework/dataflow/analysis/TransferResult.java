@@ -64,7 +64,7 @@ public abstract class TransferResult<V extends AbstractValue<V>, S extends Store
    * @param resultValue the abstract value of the {@link
    *     org.checkerframework.dataflow.cfg.node.Node} associated with this {@link TransferResult}
    */
-  public void setResultValue(V resultValue) {
+  public void setResultValue(@Nullable V resultValue) {
     this.resultValue = resultValue;
   }
 
