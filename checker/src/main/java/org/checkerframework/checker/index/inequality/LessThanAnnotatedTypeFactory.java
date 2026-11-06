@@ -37,6 +37,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.CollectionsP;
 
@@ -159,8 +160,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    * @return is left less than right?
    */
   public boolean isLessThan(Tree left, String right) {
-    AnnotatedTypeMirror leftATM = getAnnotatedType(left);
-    return isLessThan(leftATM.getPrimaryAnnotationInHierarchy(LESS_THAN_UNKNOWN), right);
+    return isLessThan(getLessThanAnnotation(left), right);
   }
 
   /**
@@ -271,8 +271,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    * @return is left less than or equal to right?
    */
   public boolean isLessThanOrEqual(Tree left, String right) {
-    AnnotatedTypeMirror leftATM = getAnnotatedType(left);
-    return isLessThanOrEqual(leftATM.getPrimaryAnnotationInHierarchy(LESS_THAN_UNKNOWN), right);
+    return isLessThanOrEqual(getLessThanAnnotation(left), right);
   }
 
   /**
@@ -308,9 +307,23 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    * @return expressions that {@code expression} is less than
    */
   public @Nullable List<String> getLessThanExpressions(ExpressionTree expression) {
-    AnnotatedTypeMirror annotatedTypeMirror = getAnnotatedType(expression);
-    return getLessThanExpressions(
-        annotatedTypeMirror.getPrimaryAnnotationInHierarchy(LESS_THAN_UNKNOWN));
+    return getLessThanExpressions(getLessThanAnnotation(expression));
+  }
+
+  /**
+   * Returns the annotation in the LessThan hierarchy of the type of {@code tree}. If the type is a
+   * type variable or wildcard, returns the annotation on its upper bound.
+   *
+   * @param tree a tree
+   * @return the annotation in the LessThan hierarchy of the type of {@code tree}
+   */
+  private AnnotationMirror getLessThanAnnotation(Tree tree) {
+    AnnotatedTypeMirror annotatedTypeMirror = getAnnotatedType(tree);
+    AnnotationMirror anno = annotatedTypeMirror.getAnnotationInHierarchy(LESS_THAN_UNKNOWN);
+    if (anno == null) {
+      throw new BugInCF("no annotation: " + annotatedTypeMirror);
+    }
+    return anno;
   }
 
   /**

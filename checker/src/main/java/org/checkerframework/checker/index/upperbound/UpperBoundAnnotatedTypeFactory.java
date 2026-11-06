@@ -399,7 +399,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     return areSameByClass(
         getLowerBoundAnnotatedTypeFactory()
             .getAnnotatedType(node.getTree())
-            .getPrimaryAnnotationInHierarchy(getLowerBoundAnnotatedTypeFactory().UNKNOWN),
+            .getAnnotationInHierarchy(getLowerBoundAnnotatedTypeFactory().UNKNOWN),
         classOfType);
   }
 
@@ -503,14 +503,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
         type.replaceAnnotation(
             qualHierarchy.greatestLowerBoundShallow(
-                leftType.getPrimaryAnnotationInHierarchy(UNKNOWN),
+                leftType.getAnnotationInHierarchy(UNKNOWN),
                 leftType.getUnderlyingType(),
-                rightType.getPrimaryAnnotationInHierarchy(UNKNOWN),
+                rightType.getAnnotationInHierarchy(UNKNOWN),
                 rightType.getUnderlyingType()));
       }
       if (isRandomNextInt(tree)) {
         AnnotatedTypeMirror argType = getAnnotatedType(tree.getArguments().get(0));
-        AnnotationMirror anno = argType.getPrimaryAnnotationInHierarchy(UNKNOWN);
+        AnnotationMirror anno = argType.getAnnotationInHierarchy(UNKNOWN);
         UBQualifier qualifier = UBQualifier.createUBQualifier(anno, (IndexChecker) checker);
         qualifier = qualifier.plusOffset(1);
         type.replaceAnnotation(convertUBQualifierToAnnotation(qualifier));
@@ -599,6 +599,13 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       if (tree.getKind() == Tree.Kind.BITWISE_COMPLEMENT) {
         addAnnotationForBitwiseComplement(
             getSearchIndexAnnotatedTypeFactory().getAnnotatedType(tree.getExpression()), type);
+      } else if (tree.getKind() == Tree.Kind.POSTFIX_INCREMENT
+          || tree.getKind() == Tree.Kind.POSTFIX_DECREMENT
+          || tree.getKind() == Tree.Kind.PREFIX_DECREMENT) {
+        // The value of a postfix increment or decrement is the operand's value, and a decrement
+        // cannot make a value violate an upper-bound qualifier, so the result has the operand's
+        // type.
+        atypeFactory.replaceAnnotations(atypeFactory.getAnnotatedType(tree.getExpression()), type);
       } else {
         type.addAnnotation(UNKNOWN);
       }
@@ -682,8 +689,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
       LowerBoundAnnotatedTypeFactory lowerBoundATF = getLowerBoundAnnotatedTypeFactory();
       if (lowerBoundATF.isNonNegative(left)) {
-        AnnotationMirror annotation =
-            getAnnotatedType(left).getPrimaryAnnotationInHierarchy(UNKNOWN);
+        AnnotationMirror annotation = getAnnotatedType(left).getAnnotationInHierarchy(UNKNOWN);
         // For non-negative numbers, right shift is equivalent to division by a power of
         // two.
         // The range of the shift amount is limited to 0..30 to avoid overflows and int/long
@@ -714,13 +720,13 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
       AnnotatedTypeMirror leftType = getAnnotatedType(left);
       AnnotationMirror leftResultAnno = UNKNOWN;
       if (lowerBoundATF.isNonNegative(left)) {
-        leftResultAnno = leftType.getPrimaryAnnotationInHierarchy(UNKNOWN);
+        leftResultAnno = leftType.getAnnotationInHierarchy(UNKNOWN);
       }
 
       AnnotatedTypeMirror rightType = getAnnotatedType(right);
       AnnotationMirror rightResultAnno = UNKNOWN;
       if (lowerBoundATF.isNonNegative(right)) {
-        rightResultAnno = rightType.getPrimaryAnnotationInHierarchy(UNKNOWN);
+        rightResultAnno = rightType.getAnnotationInHierarchy(UNKNOWN);
       }
 
       type.addAnnotation(
