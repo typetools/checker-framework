@@ -19,11 +19,11 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -400,6 +400,9 @@ final class WhileDisposalLoopMatcher {
       return null;
     }
 
+    // Disposal loop matching runs during RLCCalledMethodsAnnotatedTypeFactory#postCFGConstruction,
+    // before the Collection Ownership type factory's root is set to the current compilation unit.
+    // So only the RLCC type factory can look up the declaration.
     Tree declaration = rlccAtf.declarationFromElement(iteratorElement);
     if (!(declaration instanceof VariableTree variableTreeDeclaration)) {
       return null;
@@ -792,8 +795,7 @@ final class WhileDisposalLoopMatcher {
     private WhileLoopResolutionCache(ControlFlowGraph cfg) {
       Block entryBlock = cfg.getEntryBlock();
       this.reachableBlocks = CollectionOwnershipUtils.reachableFrom(entryBlock);
-      Map<Block, Set<Block>> dominators = computeDominators(entryBlock, reachableBlocks);
-      this.backEdges = findBackEdges(reachableBlocks, dominators);
+      this.backEdges = findBackEdges(entryBlock);
     }
 
     /**
@@ -818,89 +820,44 @@ final class WhileDisposalLoopMatcher {
     }
 
     /**
-     * Computes dominators for the reachable blocks in the current CFG using the standard iterative
-     * dataflow equations:
-     *
-     * <pre>
-     *  Dom(entry) = {entry}
-     *  Dom(n) = {n} ∪ ⋂ Dom(p)    for each other reachable block n
-     * </pre>
+     * Returns the back edges in the current CFG. The edge A -> B is a back edge if a depth-first
+     * search from the entry block reaches it while B is still on the search path, that is, B is an
+     * ancestor of A.
      *
      * @param entryBlock the CFG entry block
-     * @param reachableBlocks reachable blocks in the CFG
-     * @return dominators for each reachable block
-     */
-    private static Map<Block, Set<Block>> computeDominators(
-        Block entryBlock, Set<Block> reachableBlocks) {
-      Map<Block, Set<Block>> dominators = new HashMap<>();
-
-      for (Block block : reachableBlocks) {
-        if (block.equals(entryBlock)) {
-          dominators.put(block, new HashSet<>(Set.of(entryBlock)));
-        } else {
-          dominators.put(block, new HashSet<>(reachableBlocks));
-        }
-      }
-
-      boolean changed;
-      do {
-        changed = false;
-        for (Block block : reachableBlocks) {
-          if (block.equals(entryBlock)) {
-            continue;
-          }
-
-          Set<Block> newDominators = null;
-          for (Block predecessor : block.getPredecessors()) {
-            if (predecessor == null || !reachableBlocks.contains(predecessor)) {
-              continue;
-            }
-            Set<Block> predecessorDominators = dominators.get(predecessor);
-            if (predecessorDominators == null) {
-              continue;
-            }
-            if (newDominators == null) {
-              newDominators = new HashSet<>(predecessorDominators);
-            } else {
-              newDominators.retainAll(predecessorDominators);
-            }
-          }
-
-          if (newDominators == null) {
-            newDominators = new HashSet<>();
-          }
-          newDominators.add(block);
-
-          if (!newDominators.equals(dominators.get(block))) {
-            dominators.put(block, newDominators);
-            changed = true;
-          }
-        }
-      } while (changed);
-
-      return dominators;
-    }
-
-    /**
-     * Returns the back edges among the reachable blocks in the current CFG. The edge A -> B is a
-     * back edge if B dominates A.
-     *
-     * @param reachableBlocks reachable blocks in the CFG
-     * @param dominators dominators for each reachable block
      * @return the CFG back edges
      */
-    private static List<BackEdge> findBackEdges(
-        Set<Block> reachableBlocks, Map<Block, Set<Block>> dominators) {
+    private static List<BackEdge> findBackEdges(Block entryBlock) {
       List<BackEdge> backEdges = new ArrayList<>();
-      for (Block sourceBlock : reachableBlocks) {
-        for (Block targetBlock : sourceBlock.getSuccessors()) {
-          if (targetBlock == null || !reachableBlocks.contains(targetBlock)) {
-            continue;
-          }
-          Set<Block> sourceDominators = dominators.get(sourceBlock);
-          if (sourceDominators != null && sourceDominators.contains(targetBlock)) {
-            backEdges.add(new BackEdge(sourceBlock, targetBlock));
-          }
+      Set<Block> visited = new HashSet<>();
+      // The current search path, and for each block on it, the successors not yet visited.
+      Set<Block> onPath = new HashSet<>();
+      Deque<Block> path = new ArrayDeque<>();
+      Deque<Iterator<Block>> successorsLeft = new ArrayDeque<>();
+
+      visited.add(entryBlock);
+      onPath.add(entryBlock);
+      path.push(entryBlock);
+      successorsLeft.push(entryBlock.getSuccessors().iterator());
+      while (!path.isEmpty()) {
+        Block block = path.peek();
+        Iterator<Block> successors = successorsLeft.peek();
+        if (!successors.hasNext()) {
+          onPath.remove(block);
+          path.pop();
+          successorsLeft.pop();
+          continue;
+        }
+        Block successor = successors.next();
+        if (successor == null) {
+          continue;
+        }
+        if (onPath.contains(successor)) {
+          backEdges.add(new BackEdge(block, successor));
+        } else if (visited.add(successor)) {
+          onPath.add(successor);
+          path.push(successor);
+          successorsLeft.push(successor.getSuccessors().iterator());
         }
       }
       return backEdges;
