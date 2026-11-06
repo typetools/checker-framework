@@ -1,0 +1,49 @@
+// Annotations for the Path Shape Checker.
+// Most of its rules are implemented in PathShapeTreeAnnotator, because they cannot be expressed as
+// annotations.
+
+import org.checkerframework.checker.nullness.qual.PolyPathShape;
+import org.checkerframework.framework.qual.Covariant;
+
+// The following interfaces are read-only:  they have no methods that insert elements.  Therefore,
+// it is sound to treat their type argument as covariant.  Doing so permits code such as
+// `Stream<Path> s = Files.list(dir);`, where `Files.list(dir)` has type `Stream<@HasName Path>`.
+
+package java.lang;
+
+@Covariant(0)
+interface Iterable<T> {}
+
+package java.util;
+
+@Covariant(0)
+interface Iterator<E> {}
+
+@Covariant(0)
+final class Optional<T> {}
+
+@Covariant(0)
+interface Spliterator<T> {}
+
+package java.util.stream;
+
+@Covariant(0)
+interface Stream<T> {}
+
+package java.io;
+
+class File {
+  // Not sound on Windows.  `new File("//server/share")` has a parent (`\\server`), but its
+  // toPath() is a root.  The stub file sound-file-topath.astub makes toPath() return
+  // @UnknownPathShape.
+  @PolyPathShape java.nio.file.Path toPath(@PolyPathShape File this);
+}
+
+package java.nio.file;
+
+@Covariant(0)
+interface DirectoryStream<T> {}
+
+interface Path {
+  @PolyPathShape java.io.File toFile(@PolyPathShape Path this);
+}

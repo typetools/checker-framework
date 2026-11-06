@@ -89,6 +89,12 @@ public class NullnessTransfer
   private final boolean assumeKeyFor;
 
   /**
+   * The type factory for the path shape analysis, or null if the Path Shape Checker should not be
+   * run.
+   */
+  protected final @Nullable PathShapeAnnotatedTypeFactory pathShapeTypeFactory;
+
+  /**
    * True if invocationPreservesArgumentNullness flag is turned on, meaning that after a method call
    * or constructor invocation, non-null arguments of the invocation (including the receiver) are
    * assumed to still be non-null.
@@ -113,6 +119,13 @@ public class NullnessTransfer
       // keyForTypeFactory is used only to call methods isMapGet() and isKeyForMap().
       this.keyForTypeFactory =
           nullnessTypeFactory.getTypeFactoryOfSubchecker(KeyForSubchecker.class);
+    }
+    if (checker.hasOption("noPathShape")) {
+      this.pathShapeTypeFactory = null;
+    } else {
+      // pathShapeTypeFactory is used only to call method returnsNonNullPathComponent().
+      this.pathShapeTypeFactory =
+          nullnessTypeFactory.getTypeFactoryOfSubchecker(PathShapeSubchecker.class);
     }
 
     NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
@@ -414,6 +427,11 @@ public class NullnessTransfer
    *   <li>Given a call m.get(k), if k is @KeyFor("m") and m's value type is @NonNull, then the
    *       result is @NonNull in the thenStore and elseStore of the transfer result.
    * </ul>
+   *
+   * <p>Given a call p.getParent() or p.getFileName() on a {@code Path}, or f.getParent() or
+   * f.getParentFile() on a {@code File}, if the Path Shape Checker determines that the receiver has
+   * a parent or a name, then the result is @NonNull in the thenStore and elseStore of the transfer
+   * result.
    */
   @Override
   public TransferResult<NullnessValue, NullnessStore> visitMethodInvocation(
@@ -468,6 +486,14 @@ public class NullnessTransfer
           refineToNonNull(result);
         }
       }
+    }
+
+    // Refine result to @NonNull if n is an invocation of Path.getParent() or a similar method,
+    // and the receiver's path shape guarantees a non-null result.
+    if (pathShapeTypeFactory != null
+        && pathShapeTypeFactory.returnsNonNullPathComponent(tree, method)) {
+      makeNonNull(result, n);
+      refineToNonNull(result);
     }
 
     return result;
