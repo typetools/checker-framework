@@ -840,8 +840,8 @@ final class WhileDisposalLoopMatcher {
       path.push(entryBlock);
       successorsLeft.push(entryBlock.getSuccessors().iterator());
       while (!path.isEmpty()) {
-        Block block = path.peek();
-        Iterator<Block> successors = successorsLeft.peek();
+        Block block = path.getFirst();
+        Iterator<Block> successors = successorsLeft.getFirst();
         if (!successors.hasNext()) {
           onPath.remove(block);
           path.pop();
