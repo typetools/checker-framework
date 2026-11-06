@@ -25,23 +25,23 @@ public class LocalTypeDeclarationOrder {
         class Foo implements CharSequence {
 
             @org.checkerframework.dataflow.qual.Pure
-            public  @org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom int length(@org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType Foo this) {
+            public  @org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom int length(Foo this) {
                 return 0;
             }
 
             @org.checkerframework.dataflow.qual.Pure
-            public char charAt(@org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType Foo this,  @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType int index) {
+            public char charAt(Foo this, int index) {
                 return ' ';
             }
 
             @org.checkerframework.dataflow.qual.Pure
-            public @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType CharSequence subSequence(@org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType Foo this,  @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType int start,  @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType int end) {
+            public CharSequence subSequence(Foo this, int start, int end) {
                 return this;
             }
         }
         class UseAfter {
 
-            @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType Foo field;
+            Foo field;
 
             @org.checkerframework.dataflow.qual.Impure
             void assignField() {

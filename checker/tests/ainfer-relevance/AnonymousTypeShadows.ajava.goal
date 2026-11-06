@@ -16,7 +16,7 @@ public class AnonymousTypeShadows {
     static class Foo {
     }
 
-    static @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType Object anonymous = new Object() {
+    static Object anonymous = new Object() {
 
         abstract class Foo implements CharSequence {
         }

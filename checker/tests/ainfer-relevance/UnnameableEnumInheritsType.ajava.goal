@@ -19,7 +19,7 @@ public class UnnameableEnumInheritsType {
 
                 EnumDesc enumDescField;
 
-                @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType CharSequence charSequenceField;
+                CharSequence charSequenceField;
 
                 @org.checkerframework.dataflow.qual.Impure
                 void assignFields(EnumDesc e, CharSequence c) {
