@@ -31,4 +31,18 @@ public class Issue8284 {
   static <T> void noTargetType(TypeDescriptor<T> td) {
     getGetters(td);
   }
+
+  interface Consumer<T> {
+    void apply(@NonNull T t);
+  }
+
+  static <X> X takeComparableConsumer(Consumer<? extends Comparable<X>> f, X x) {
+    return x;
+  }
+
+  // The lambda's parameter type gives the bound T = @NonNull U, whose annotations are ignored.  It
+  // still determines the Java type of the lambda's ground target type, Consumer<U>.
+  static <U extends Comparable<U>> void explicitlyTypedLambda(U u0) {
+    takeComparableConsumer((U u) -> {}, u0);
+  }
 }
