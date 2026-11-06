@@ -259,19 +259,20 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Parses the ajava file at {@code ajavaPath} assuming {@code root} represents the compilation
-   * unit of that file. Uses {@code root} to get information from javac on specific elements of
-   * {@code ajavaPath}, enabling storage of more detailed annotation information than with just the
-   * ajava file.
+   * Parses the ajava file {@code ajavaFile} assuming {@code root} represents the compilation unit
+   * of that file. Uses {@code root} to get information from javac on specific elements of {@code
+   * ajavaFile}, enabling storage of more detailed annotation information than with just the ajava
+   * file.
    *
-   * @param ajavaPath path to an ajava file
+   * @param ajavaFile an ajava file, which may be in the file system or an entry in an archive
    * @param root javac tree for the compilation unit stored in {@code ajavaFile}
    */
-  public void parseAjavaFileWithTree(String ajavaPath, CompilationUnitTree root) {
+  public void parseAjavaFileWithTree(AnnotationFileResource ajavaFile, CompilationUnitTree root) {
+    String ajavaPath = ajavaFile.getDescription();
     parsing = true;
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-    try (InputStream in = Files.newInputStream(Paths.get(ajavaPath))) {
+    try (InputStream in = ajavaFile.getInputStream()) {
       if (stubDebug) {
         AnnotationFileParser.stubDebugStatic(
             processingEnv,
@@ -310,6 +311,23 @@ public class AnnotationFileElementTypes {
           processingEnv, "AFET.parseAnnotationFiles(%s, %s)", annotationFiles, fileType);
     }
     for (String path : annotationFiles) {
+      File namedFile = AnnotationFileUtil.findFileSystemLocation(path);
+      if (namedFile != null
+          && namedFile.isFile()
+          && !AnnotationFileUtil.isJarOrZip(namedFile.getName())
+          && !AnnotationFileUtil.isUsableNamedFile(namedFile.getPath(), fileType)) {
+        String reason;
+        if (fileType == AnnotationFileType.COMMAND_LINE_STUB) {
+          reason = ", which is an ajava file; supply it via -Aajava";
+        } else if (fileType.isStub()) {
+          reason = ": the name of a stub file must not end with .ajava";
+        } else {
+          reason = ": the name of an ajava file must end with .ajava";
+        }
+        checker.message(Diagnostic.Kind.WARNING, "Ignoring " + path + reason);
+        continue;
+      }
+
       List<AnnotationFileResource> allFiles = AnnotationFileUtil.allAnnotationFiles(path, fileType);
       if (allFiles != null) {
         for (AnnotationFileResource resource : allFiles) {
