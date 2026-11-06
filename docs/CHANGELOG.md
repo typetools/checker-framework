@@ -9,6 +9,9 @@
 
 ### Changes for type system implementers
 
+New method `QualifierHierarchy.canonicalize()` returns the canonical form of a
+qualifier.  `AnnotatedTypeFactory.canonicalAnnotation()` calls it.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)

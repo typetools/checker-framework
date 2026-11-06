@@ -130,6 +130,19 @@ public abstract class QualifierHierarchy {
    */
   public abstract boolean isPolymorphicQualifier(AnnotationMirror qualifier);
 
+  /**
+   * Returns the canonical form of the given qualifier. Two qualifiers that represent the same type
+   * qualifier have canonical forms that are the same according to {@link AnnotationUtils#areSame}.
+   *
+   * <p>This implementation returns its argument.
+   *
+   * @param qualifier a qualifier in this hierarchy
+   * @return the canonical form of {@code qualifier}, which may be {@code qualifier} itself
+   */
+  public AnnotationMirror canonicalize(AnnotationMirror qualifier) {
+    return qualifier;
+  }
+
   // **********************************************************************
   // Qualifier Hierarchy Queries
   // **********************************************************************

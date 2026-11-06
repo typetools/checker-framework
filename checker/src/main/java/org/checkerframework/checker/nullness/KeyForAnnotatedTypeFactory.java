@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -138,15 +139,15 @@ public class KeyForAnnotatedTypeFactory
   }
 
   /**
-   * Given a string array 'values', returns an AnnotationMirror corresponding to @KeyFor(values)
+   * Given a set of strings 'values', returns an AnnotationMirror corresponding to @KeyFor(values).
+   * The values of the result are sorted.
    *
    * @param values the values for the {@code @KeyFor} annotation
    * @return a {@code @KeyFor} annotation with the given values
    */
   public AnnotationMirror createKeyForAnnotationMirrorWithValue(Set<String> values) {
-    // Create an AnnotationBuilder with the ArrayList
     AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), KeyFor.class);
-    builder.setValue("value", values.toArray());
+    builder.setValue("value", new TreeSet<>(values).toArray());
 
     // Return the resulting AnnotationMirror
     return builder.build();
