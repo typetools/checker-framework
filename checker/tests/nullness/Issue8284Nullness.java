@@ -163,7 +163,7 @@ public class Issue8284Nullness {
   }
 
   // A polymorphic qualifier on a use of an inference variable is not copied onto the variable's
-  // instantiation when the instantiation is substituted for the use.
+  // instantiation when the instantiation is applied to the use.
   static <U extends @Nullable Object> void polymorphicQualifierOnUse(
       Box<@Nullable String> bn, @Nullable String n, Box<U> bu, @NonNull U nnu) {
     String s1 = poly(make());
@@ -181,10 +181,10 @@ public class Issue8284Nullness {
     throw new RuntimeException();
   }
 
-  // T's Java-type-only instantiation, from the ignored bound on T, is substituted into S's lower
-  // bound Box<T> before T's annotations are known.  S's instantiation must still end up consistent
-  // with T's.
-  static <U extends @Nullable Object> void substitutedIntoAnotherBound(
+  // T's Java-type-only instantiation, from the ignored bound on T, is applied to S's lower bound
+  // Box<T> before T's annotations are known.  S's instantiation must still end up consistent with
+  // T's.
+  static <U extends @Nullable Object> void appliedToAnotherBound(
       Box<@Nullable U> nullableU, @NonNull U nn, Box<@NonNull U> nonNullU, @Nullable U nble) {
     id(nullableBox(nullableU, nn));
     Box<@NonNull U> b1 = id(nullableBox(nullableU, nn));
@@ -211,9 +211,9 @@ public class Issue8284Nullness {
     return a;
   }
 
-  // A Java-type-only instantiation substituted inside a wildcard bound, under a use with a primary
-  // annotation, and inside a type that is itself substituted into another type.
-  static <U extends @Nullable Object> void ignoredSubstitutionsInOtherTypes(
+  // A Java-type-only instantiation applied inside a wildcard bound, under a use with a primary
+  // annotation, and inside a type that is itself applied to another type.
+  static <U extends @Nullable Object> void ignoredPositionsInOtherTypes(
       Box<@NonNull U> nonNullU,
       @Nullable U nble,
       Box<? extends @Nullable U> ext,
