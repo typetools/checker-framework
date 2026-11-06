@@ -1127,8 +1127,11 @@ public class InferenceFactory {
     // `type` alone is unsound: applying instantiations to that origin gives the position the
     // instantiation from `type` only, discarding that from the other input.  For example, the lub
     // of `arrOf(nonNullU, nn)` and `arrOf(nonNullU, nble)` gets component type `@NonNull U` rather
-    // than `@Nullable U`; see checker/tests/nullness/LubOfIgnoredPosition.java.  Fixing this
-    // requires an origin that combines the ignored positions of several inputs.
+    // than `@Nullable U`; see checker/tests/nullness/LubOfIgnoredPosition.java.  Discarding the
+    // origin in that case is wrong too: the ignored positions would become real annotations, and
+    // would not be updated when Resolution#resolveIgnoredAnnotations replaces the instantiations
+    // that ignore annotations.  Fixing this requires an origin that combines the ignored positions
+    // of several inputs.
     for (AbstractType other : inputs) {
       @SuppressWarnings("interning:not.interned") // Skipping `type` itself.
       boolean isType = other == type;
