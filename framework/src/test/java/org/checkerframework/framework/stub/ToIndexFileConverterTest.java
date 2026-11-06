@@ -10,13 +10,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.checkerframework.afu.scenelib.el.AClass;
 import org.checkerframework.afu.scenelib.el.AElement;
 import org.checkerframework.afu.scenelib.el.AField;
 import org.checkerframework.afu.scenelib.el.AMethod;
 import org.checkerframework.afu.scenelib.el.AScene;
 import org.checkerframework.afu.scenelib.el.ATypeElement;
+import org.checkerframework.afu.scenelib.el.AnnotationDef;
 import org.checkerframework.afu.scenelib.el.TypePathEntry;
+import org.checkerframework.afu.scenelib.io.IndexFileParser;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -57,7 +60,7 @@ public class ToIndexFileConverterTest {
 
   /** The converter used by the {@code getJVML} tests. */
   private final ToIndexFileConverter converter =
-      new ToIndexFileConverter(null, Collections.emptyList(), new AScene());
+      new ToIndexFileConverter(null, Collections.emptyList(), new AScene(), Collections.emptyMap());
 
   /**
    * Converts a stub file to a JAIF.
@@ -77,10 +80,25 @@ public class ToIndexFileConverterTest {
    * @return the JAIF that {@link ToIndexFileConverter} produces for the stub file
    */
   private static String convert(AScene scene, String... stubFileLines) throws Exception {
+    return convert(scene, Collections.emptyMap(), stubFileLines);
+  }
+
+  /**
+   * Converts a stub file to a JAIF, adding the stub file's information to a scene.
+   *
+   * @param scene the scene to augment
+   * @param annotationDefs the annotation definitions in the JAIF file that {@code scene} was read
+   *     from
+   * @param stubFileLines the lines of the stub file
+   * @return the JAIF that {@link ToIndexFileConverter} produces for the stub file
+   */
+  private static String convert(
+      AScene scene, Map<String, AnnotationDef> annotationDefs, String... stubFileLines)
+      throws Exception {
     String stubFile = String.join(System.lineSeparator(), stubFileLines);
     ByteArrayInputStream in = new ByteArrayInputStream(stubFile.getBytes(StandardCharsets.UTF_8));
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    ToIndexFileConverter.convert(scene, in, out);
+    ToIndexFileConverter.convert(scene, annotationDefs, in, out);
     return out.toString(StandardCharsets.UTF_8.name());
   }
 
@@ -183,6 +201,19 @@ public class ToIndexFileConverterTest {
             "}");
     assertMethod(
         jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/ToIndexFileConverter;)V");
+  }
+
+  /** A single-type import shadows a class in the same package (JLS 6.4.1). */
+  @Test
+  public void testResolveSingleTypeImportBeforePackage() throws Exception {
+    String jaif =
+        convert(
+            "package java.util;",
+            "import java.sql.Date;",
+            "class MyClass {",
+            "  void myMethod(Date d) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/sql/Date;)V");
   }
 
   /** Each top-level type of a compilation unit is converted. */
@@ -304,6 +335,158 @@ public class ToIndexFileConverterTest {
     Assert.assertNotNull(
         "@Nullable was not recorded on the component type",
         param.type.innerTypes.get(oneLevel).lookup("Nullable"));
+  }
+
+  /**
+   * The {@code @Target} of an annotation interface that cannot be loaded is read from the
+   * interface's definition in the input JAIF file.
+   */
+  @Test
+  public void testTargetsFromAnnotationDefinitions() throws Exception {
+    AScene scene = new AScene();
+    Map<String, AnnotationDef> annotationDefs =
+        IndexFileParser.parseString(
+            String.join(
+                System.lineSeparator(),
+                "package q:",
+                "annotation @TypeAnno: @java.lang.annotation.Target(value={TYPE_USE})",
+                "annotation @DeclAnno: @java.lang.annotation.Target(value={FIELD})",
+                ""),
+            "testTargetsFromAnnotationDefinitions",
+            scene);
+    convert(
+        scene,
+        annotationDefs,
+        "package p;",
+        "import q.DeclAnno;",
+        "import q.TypeAnno;",
+        "class C {",
+        "  @TypeAnno @DeclAnno String f;",
+        "  @TypeAnno String[] g;",
+        "}");
+    AClass clazz = scene.classes.get("p.C");
+    AField f = clazz.fields.get("f");
+    Assert.assertNull("@TypeAnno was recorded on the field", f.lookup("TypeAnno"));
+    Assert.assertNotNull("@TypeAnno was not recorded on the type", f.type.lookup("TypeAnno"));
+    Assert.assertNotNull("@DeclAnno was not recorded on the field", f.lookup("DeclAnno"));
+    Assert.assertNull("@DeclAnno was recorded on the type", f.type.lookup("DeclAnno"));
+    AField g = clazz.fields.get("g");
+    Assert.assertNull("@TypeAnno was recorded on the field", g.lookup("TypeAnno"));
+    Assert.assertNotNull(
+        "@TypeAnno was not recorded on the component type",
+        g.type.innerTypes.get(element(Collections.emptyList())).lookup("TypeAnno"));
+  }
+
+  /**
+   * Converts a stub file that declares a class {@code p.C} with a field {@code f}, using annotation
+   * definitions from a JAIF file, and returns the field.
+   *
+   * @param jaifLines the lines of the JAIF file that holds the annotation definitions
+   * @param stubFileLines the lines of the stub file
+   * @return the scene element for field {@code f} of class {@code p.C}
+   */
+  private static AField fieldOfStubWithDefs(String[] jaifLines, String... stubFileLines)
+      throws Exception {
+    AScene scene = new AScene();
+    Map<String, AnnotationDef> annotationDefs =
+        IndexFileParser.parseString(
+            String.join(System.lineSeparator(), jaifLines) + System.lineSeparator(),
+            "fieldOfStubWithDefs",
+            scene);
+    convert(scene, annotationDefs, stubFileLines);
+    AField field = scene.classes.get("p.C").fields.get("f");
+    Assert.assertNotNull("no scene element for field f", field);
+    return field;
+  }
+
+  /**
+   * A single-type import of an annotation interface that the input JAIF file does not define
+   * prevents the use of a definition, of another interface with the same simple name, that is
+   * keyed by that simple name.
+   */
+  @Test
+  public void testSingleTypeImportOfUndefinedAnnotation() throws Exception {
+    AField f =
+        fieldOfStubWithDefs(
+            new String[] {
+              "package q:", "annotation @Anno: @java.lang.annotation.Target(value={TYPE_USE})"
+            },
+            "package p;",
+            "import r.Anno;",
+            "class C {",
+            "  @Anno String f;",
+            "}");
+    Assert.assertNotNull("@Anno was not recorded on the field", f.lookup("Anno"));
+    Assert.assertNull("@Anno was recorded on the type", f.type.lookup("Anno"));
+  }
+
+  /**
+   * A single-type import of an annotation interface that the input JAIF file does not define
+   * prevents the use of a definition, of another interface with the same simple name, in the stub
+   * file's package.
+   */
+  @Test
+  public void testSingleTypeImportShadowsPackageDefinition() throws Exception {
+    AField f =
+        fieldOfStubWithDefs(
+            new String[] {
+              "package p:", "annotation @Anno: @java.lang.annotation.Target(value={TYPE_USE})"
+            },
+            "package p;",
+            "import r.Anno;",
+            "class C {",
+            "  @Anno String f;",
+            "}");
+    Assert.assertNotNull("@Anno was not recorded on the field", f.lookup("Anno"));
+    Assert.assertNull("@Anno was recorded on the type", f.type.lookup("Anno"));
+  }
+
+  /** A qualified annotation name is resolved as written before it is resolved via a wildcard. */
+  @Test
+  public void testQualifiedNameBeforeWildcardImport() throws Exception {
+    AField f =
+        fieldOfStubWithDefs(
+            new String[] {
+              "package q:",
+              "annotation @Anno: @java.lang.annotation.Target(value={TYPE_USE})",
+              "package x.q:",
+              "annotation @Anno: @java.lang.annotation.Target(value={FIELD})"
+            },
+            "package p;",
+            "import x.*;",
+            "class C {",
+            "  @q.Anno String f;",
+            "}");
+    Assert.assertNull("@q.Anno was recorded on the field", f.lookup("q.Anno"));
+    Assert.assertNotNull("@q.Anno was not recorded on the type", f.type.lookup("q.Anno"));
+  }
+
+  /**
+   * A single-type import shadows a definition in the same package, which shadows a wildcard
+   * import.
+   */
+  @Test
+  public void testImportAndPackagePrecedence() throws Exception {
+    AField f =
+        fieldOfStubWithDefs(
+            new String[] {
+              "package p:",
+              "annotation @A: @java.lang.annotation.Target(value={TYPE_USE})",
+              "annotation @B: @java.lang.annotation.Target(value={TYPE_USE})",
+              "package q:",
+              "annotation @A: @java.lang.annotation.Target(value={FIELD})",
+              "annotation @B: @java.lang.annotation.Target(value={FIELD})"
+            },
+            "package p;",
+            "import q.*;",
+            "import q.B;",
+            "class C {",
+            "  @A @B String f;",
+            "}");
+    Assert.assertNull("@A was recorded on the field", f.lookup("A"));
+    Assert.assertNotNull("@A was not recorded on the type", f.type.lookup("A"));
+    Assert.assertNotNull("@B was not recorded on the field", f.lookup("B"));
+    Assert.assertNull("@B was recorded on the type", f.type.lookup("B"));
   }
 
   /**
