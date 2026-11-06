@@ -2,11 +2,11 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-// The least upper bound of a type with an ignored substitution and a type with real annotations at
-// that position.  B = U comes from a use with an explicit annotation, so it ignores annotations,
-// and the component type of arrOf's result is an ignored substitution.  In the least upper bound
-// with @Nullable U[], the component type is @Nullable U, which is no longer ignored.
-public class LubOfIgnoredSubstitution {
+// The least upper bound of a type with an ignored position and a type with real annotations at that
+// position.  B = U comes from a use with an explicit annotation, so it ignores annotations, and the
+// component type of arrOf's result is an ignored position.  In the least upper bound with @Nullable
+// U[], the component type is @Nullable U, which is no longer ignored.
+public class LubOfIgnoredPosition {
   static class Box<T> {}
 
   static <B extends @Nullable Object> B[] arrOf(Box<@NonNull B> b, B other) {
@@ -53,10 +53,10 @@ public class LubOfIgnoredSubstitution {
     // :: error: (dereference.of.nullable)
     pick2(nullableList, listOf(nonNullU, nn)).get(0).toString();
 
-    // Both inputs have an ignored substitution at the component type.
+    // Both inputs have an ignored position at the component type.
     pick2(arrOf(nonNullU, nn), arrOf(nonNullU, nn))[0].toString();
     // TODO: This should be a dereference.of.nullable error.  The least upper bound keeps the origin
-    // of only the first input, so substituting instantiations into it gives the component type the
+    // of only the first input, so applying instantiations to it gives the component type the
     // instantiation of only the first input's B, which is @NonNull U.  See the TODO in
     // InferenceFactory#withOriginOf.
     // :: error: (argument)
@@ -72,12 +72,13 @@ public class LubOfIgnoredSubstitution {
       @NonNull U nn,
       @NonNull U[] nonNullArr,
       @Nullable U[] nullableArr) {
-    // The ignored substitutions have the annotation @Nullable, and the real one is @NonNull.
+    // The ignored positions have the annotation @Nullable, and the real one is @NonNull.
     pick3(arrOfN(nullableU, nn), arrOfN(nullableU, nn), nonNullArr)[0].toString();
     pick3(arrOfN(nullableU, nn), nonNullArr, arrOfN(nullableU, nn))[0].toString();
     pick3(nonNullArr, arrOfN(nullableU, nn), arrOfN(nullableU, nn))[0].toString();
 
-    // The ignored substitutions have the annotation @NonNull, and the real one is @Nullable.
+    // The ignored positions have the annotation @NonNull, and the real one is
+    // @Nullable.
     // :: error: (dereference.of.nullable)
     pick3(arrOf(nonNullU, nn), arrOf(nonNullU, nn), nullableArr)[0].toString();
     // :: error: (dereference.of.nullable)

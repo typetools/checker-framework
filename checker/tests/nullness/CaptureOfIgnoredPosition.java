@@ -2,10 +2,10 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-// Capture conversion of a type with an ignored substitution in the bound of a wildcard.  B = U
-// comes from a use with an explicit annotation, so it ignores annotations, and the bound of the
-// wildcard in the result of listOf or listOfN is an ignored substitution.
-public class CaptureOfIgnoredSubstitution {
+// Capture conversion of a type with an ignored position in the bound of a wildcard.  B = U comes
+// from a use with an explicit annotation, so it ignores annotations, and the bound of the wildcard
+// in the result of listOf or listOfN is an ignored position.
+public class CaptureOfIgnoredPosition {
   static class Box<T> {}
 
   static <B extends @Nullable Object> List<? extends B> listOf(Box<@NonNull B> b, B other) {
@@ -24,9 +24,11 @@ public class CaptureOfIgnoredSubstitution {
       Box<@NonNull U> nonNullU, Box<@Nullable U> nullableU, @NonNull U nn, @Nullable U nble) {
     // :: error: (dereference.of.nullable)
     get0(listOf(nonNullU, nble)).toString();
-    // TODO: This is a false positive.  Capture conversion of the argument's type makes the ignored
-    // substitution the upper bound of a captured type variable, and the result of capture
-    // conversion does not record ignored substitutions, so the ignored annotation, @Nullable, is
+    // TODO: This is a false positive.  Capture conversion of the argument's type makes the
+    // ignored
+    // position the upper bound of a captured type variable, and the result of capture
+    // conversion does not record ignored positions, so the ignored annotation,
+    // @Nullable, is
     // compared as a real annotation.
     // :: error: (dereference.of.nullable)
     get0(listOfN(nullableU, nn)).toString();

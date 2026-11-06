@@ -1011,7 +1011,7 @@ public class InferenceFactory {
       return null;
     }
     if (properTypes.size() == 1) {
-      // Return the type itself, which keeps any record of its ignored substitutions; see
+      // Return the type itself, which keeps any record of its ignored positions; see
       // ProperType#origin.
       return properTypes.iterator().next();
     }
@@ -1021,7 +1021,7 @@ public class InferenceFactory {
     ProperType first = iter.next();
     TypeMirror lubTM = first.getJavaType();
     AnnotatedTypeMirror lubATM = first.getAnnotatedType();
-    // The least upper bound so far, as a type, so that its ignored substitutions can be found; see
+    // The least upper bound so far, as a type, so that its ignored positions can be found; see
     // IgnoredAnnotations#replaceIgnoredForLubOrGlb.
     ProperType lubSoFar = first;
     boolean ignoreAnnotations = first.ignoreAnnotations;
@@ -1051,14 +1051,14 @@ public class InferenceFactory {
       // result, so the result ignores annotations only if every type does.  This is the same
       // rule as in `glb`.
       ignoreAnnotations = ignoreAnnotations && properType.ignoreAnnotations;
-      // If the result has the Java type of an input that records its ignored substitutions, and
-      // differs from that input only in its primary annotations and at those ignored
-      // substitutions, and those positions are still ignored, then it keeps that record; see
-      // ProperType#origin.  Its ignored substitutions have the annotations of the other input's
-      // ignored substitutions, and they are substituted again when the instantiations that ignore
-      // annotations change.  A result that differs elsewhere cannot keep the record, because a
-      // type with an origin computes its parts from the origin.  Keeping the record in `lubSoFar`
-      // lets the next input's annotations replace those of its ignored substitutions, as in `glb`.
+      // If the result has the Java type of an input that records its ignored positions, and differs
+      // from that input only in its primary annotations and at those ignored positions, and those
+      // positions are still ignored, then it keeps that record; see ProperType#origin.  Its ignored
+      // positions have the annotations of the other input's ignored positions, and instantiations
+      // are applied to them again when the instantiations that ignore annotations change.  A result
+      // that differs elsewhere cannot keep the record, because a type with an origin computes its
+      // parts from the origin.  Keeping the record in `lubSoFar` lets the next input's annotations
+      // replace those of its ignored positions, as in `glb`.
       List<ProperType> inputs = Arrays.asList(lubSoFar, properType);
       ProperType withOrigin = withOriginOf(lubSoFar, inputs, lubTM, lubATM, ignoreAnnotations);
       if (withOrigin == null) {
@@ -1076,11 +1076,11 @@ public class InferenceFactory {
    * <ul>
    *   <li>{@code type} is a proper type with an origin (see {@link ProperType#getOrigin}),
    *   <li>its Java type is {@code javaType},
-   *   <li>{@code atm} differs from it only in its primary annotations and at its ignored
-   *       substitutions, and
-   *   <li>no ignored substitution of {@code type} corresponds to a position of another of {@code
-   *       inputs} that is not an ignored substitution (see {@link
-   *       IgnoredAnnotations#ignoredSubstitutionsStayIgnored}).
+   *   <li>{@code atm} differs from it only in its primary annotations and at its ignored positions,
+   *       and
+   *   <li>no ignored position of {@code type} corresponds to a position of another of {@code
+   *       inputs} that is not an ignored position (see {@link
+   *       IgnoredAnnotations#ignoredPositionsStayIgnored}).
    * </ul>
    *
    * The copy keeps the origin. Otherwise, returns null.
@@ -1104,24 +1104,24 @@ public class InferenceFactory {
         || !differsOnlyInPrimaryOrIgnoredAnnotations(properType, atm)) {
       return null;
     }
-    // At an ignored substitution of `type` where another input has annotations that are not
-    // ignored, the result has those annotations, so the position is no longer ignored.  Keeping the
-    // origin would make later comparisons ignore those annotations, and substituting
-    // instantiations again would overwrite them.  TODO: Keep the origin at the positions that are
-    // still ignored, rather than discarding it, when the ignored substitutions of each input
-    // include some that are not ignored substitutions of another input.
+    // At an ignored position of `type` where another input has annotations that are not ignored,
+    // the result has those annotations, so the position is no longer ignored.  Keeping the origin
+    // would make later comparisons ignore those annotations, and applying instantiations again
+    // would overwrite them.  TODO: Keep the origin at the positions that are still ignored, rather
+    // than discarding it, when the ignored positions of each input include some that are not
+    // ignored positions of another input.
     //
-    // TODO: When another input also has an ignored substitution at a position, keeping the origin
-    // of `type` alone is unsound: substituting instantiations into that origin gives the position
-    // the instantiation from `type` only, discarding that from the other input.  For example, the
-    // lub of `arrOf(nonNullU, nn)` and `arrOf(nonNullU, nble)` gets component type `@NonNull U`
-    // rather than `@Nullable U`; see checker/tests/nullness/LubOfIgnoredSubstitution.java.  Fixing
-    // this requires an origin that combines the ignored substitutions of several inputs.
+    // TODO: When a position is an ignored position of another input too, keeping the origin of
+    // `type` alone is unsound: applying instantiations to that origin gives the position the
+    // instantiation from `type` only, discarding that from the other input.  For example, the lub
+    // of `arrOf(nonNullU, nn)` and `arrOf(nonNullU, nble)` gets component type `@NonNull U` rather
+    // than `@Nullable U`; see checker/tests/nullness/LubOfIgnoredPosition.java.  Fixing this
+    // requires an origin that combines the ignored positions of several inputs.
     for (AbstractType other : inputs) {
       @SuppressWarnings("interning:not.interned") // Skipping `type` itself.
       boolean isType = other == type;
       if (!isType
-          && !IgnoredAnnotations.ignoredSubstitutionsStayIgnored(
+          && !IgnoredAnnotations.ignoredPositionsStayIgnored(
               properType,
               other,
               javaType,
@@ -1134,14 +1134,14 @@ public class InferenceFactory {
   }
 
   /**
-   * Returns true if {@code atm}, whose Java type is that of {@code properType}, has the same
-   * annotations as {@code properType} everywhere except in the primary annotations and at the
-   * ignored substitutions of {@code properType}; see {@link ProperType#getOrigin}.
+   * Returns true if {@code atm} has the same annotations as {@code properType} everywhere except in
+   * the primary annotations and at the ignored positions of {@code properType}; see {@link
+   * ProperType#getOrigin}.
    *
    * @param properType a type with an origin
    * @param atm an annotated type with the same Java type as {@code properType}
    * @return true if {@code atm} differs from {@code properType} only in the primary annotations and
-   *     at ignored substitutions
+   *     at ignored positions
    */
   private boolean differsOnlyInPrimaryOrIgnoredAnnotations(
       ProperType properType, AnnotatedTypeMirror atm) {
@@ -1152,8 +1152,7 @@ public class InferenceFactory {
             properType.withAnnotatedType(samePrimaryAnnotations, false),
             new ProperType(atm, context),
             typeFactory.getQualifierHierarchy());
-    return typeFactory.getTypeHierarchy().isSubtype(compared.type1(), compared.type2())
-        && typeFactory.getTypeHierarchy().isSubtype(compared.type2(), compared.type1());
+    return context.areMutualSubtypes(compared.type1(), compared.type2());
   }
 
   /**
@@ -1188,9 +1187,8 @@ public class InferenceFactory {
     Type bJavaType = (Type) b.getJavaType();
     TypeMirror glb = TypesUtils.greatestLowerBound(aJavaType, bJavaType, context.env);
 
-    // The annotations of an ignored substitution put no constraint on the result.  Positions
-    // correspond only if `a` and `b` are of the same class; see
-    // IgnoredAnnotations#replaceIgnoredForLubOrGlb.
+    // The annotations of an ignored position put no constraint on the result.  Positions correspond
+    // only if `a` and `b` are of the same class; see IgnoredAnnotations#replaceIgnoredForLubOrGlb.
     ReplacedTypes combined =
         IgnoredAnnotations.replaceIgnoredForLubOrGlb(
             a, b, glb, typeFactory.getQualifierHierarchy(), context.modelTypes);
@@ -1221,8 +1219,8 @@ public class InferenceFactory {
     // The annotations of a type that ignores annotations put no constraint on the result, so the
     // result ignores annotations only if both types do.  This is the same rule as in `lub`.
     boolean ignoreAnnotations = a.ignoreAnnotations && b.ignoreAnnotations;
-    // As in `lub`, the result keeps the record of ignored substitutions of an input that it differs
-    // from only in its primary annotations and at those ignored substitutions.
+    // As in `lub`, the result keeps the record of ignored positions of an input that it differs
+    // from only in its primary annotations and at those ignored positions.
     List<AbstractType> inputs = Arrays.asList(a, b);
     ProperType withOrigin = withOriginOf(a, inputs, glb, glbATM, ignoreAnnotations);
     if (withOrigin == null) {

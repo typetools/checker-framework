@@ -68,24 +68,24 @@ public abstract class AbstractType {
   protected final AnnotatedTypeFactory typeFactory;
 
   /**
-   * True if the primary annotations of this type should be ignored, because they do not constrain
-   * any inference variable's annotations. For a type variable or a wildcard, this includes the
-   * primary annotations of its bounds. It does not include annotations nested in this type, such as
-   * those of its type arguments or its component type.
+   * True if the primary annotations of this type should be ignored during inference, because they
+   * do not constrain any inference variable's annotations. For a type variable or a wildcard, this
+   * includes the primary annotations of its bounds. It does not include annotations nested in this
+   * type, such as those of its type arguments or its component type.
    *
    * <p>For example, this field is true for a bound that {@link UseOfVariable#addBound} creates from
    * a use of an inference variable that has a primary annotation, such as {@code @Nullable T}. That
-   * annotation overrides {@code T}'s, so the formula {@code @Nullable T <: @Nullable String}
+   * annotation overrides {@code T}'s, so the constraint {@code @Nullable T <: @Nullable String}
    * relates only the Java types of {@code T} and {@code String}. This field is also true for a type
    * derived from such a bound.
    *
    * <p>A proper {@code EQUAL} bound whose field is true, such as {@code T = @NonNull U} from the
-   * formula {@code @NonNull T = @NonNull U}, can become a variable's instantiation. It then gives
-   * only the variable's Java type; its annotations come from the variable's other bounds (see
+   * constraint {@code @NonNull T = @NonNull U}, can become a variable's instantiation. It then
+   * gives only the variable's Java type; its annotations come from the variable's other bounds (see
    * {@link
    * org.checkerframework.framework.util.typeinference8.util.Resolution#resolveIgnoredAnnotations}).
-   * A position where such an instantiation was substituted is an ignored substitution; see {@link
-   * ProperType#getOrigin}.
+   * A position where applying instantiations put such an instantiation is an ignored position; see
+   * {@link ProperType#getOrigin}.
    *
    * <p>This field applies to every qualifier hierarchy at once, even when it was set because of a
    * primary annotation that appears in only some of the hierarchies. TODO: Make this per-hierarchy,
@@ -198,14 +198,14 @@ public abstract class AbstractType {
    * Returns this type with each use of an inference variable that has an instantiation replaced by
    * that instantiation (see {@link Variable#getInstantiation}). The result may be this type itself.
    *
-   * @return this type with the instantiations of its inference variables substituted
+   * @return this type with the instantiations of its inference variables applied
    */
   public abstract AbstractType applyInstantiations();
 
   /**
-   * Returns the type that this type was made from by substituting instantiations, if this is a
-   * proper type made that way and at least one of those instantiations ignores annotations;
-   * otherwise, null. See {@link ProperType#getOrigin}.
+   * Returns the type that this type was made from by applying instantiations, if this is a proper
+   * type made that way and at least one of those instantiations ignores annotations; otherwise,
+   * null. See {@link ProperType#getOrigin}.
    *
    * @return the type that this type was made from, or null
    */
@@ -738,14 +738,13 @@ public abstract class AbstractType {
 
   /**
    * Checks whether the annotations of {@code this} are a subtype of those of {@code superType},
-   * assuming that their underlying Java types have already been found to be in the required
-   * relationship. The annotations of a position that ignores annotations are not compared; see
-   * {@link IgnoredAnnotations#replaceIgnoredForSubtype}.
+   * except at positions where either type's annotations are ignored; see {@link
+   * IgnoredAnnotations#replaceIgnoredForSubtype}.
    *
-   * @param superType the potential supertype
-   * @return {@link ConstraintSet#TRUE} if the annotations of {@code this} are a subtype of those of
-   *     {@code superType}, apart from those that are ignored; otherwise {@link
-   *     ConstraintSet#TRUE_ANNO_FAIL}
+   * @param superType the potential supertype; the caller must already have checked that the Java
+   *     type of {@code this} is a subtype of, or assignable to, that of {@code superType}
+   * @return {@link ConstraintSet#TRUE} if the non-ignored annotations of {@code this} are a subtype
+   *     of those of {@code superType}; otherwise {@link ConstraintSet#TRUE_ANNO_FAIL}
    */
   protected final ConstraintSet checkAnnotationSubtype(ProperType superType) {
     if (IgnoredAnnotations.noAnnotationsToCompare(this, superType)) {
