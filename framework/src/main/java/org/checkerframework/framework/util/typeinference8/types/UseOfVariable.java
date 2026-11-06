@@ -165,7 +165,7 @@ public class UseOfVariable extends AbstractType {
     AnnotatedTypeMirror atm = instantiation.getAnnotatedType().deepCopy();
     atm.replaceAnnotations(annosToCopy);
     // Only the primary annotations change, so the result keeps the instantiation's record of its
-    // ignored substitutions; see ProperType#origin.
+    // ignored positions; see ProperType#origin.
     return instantiation.withAnnotatedType(atm, ignore);
   }
 
@@ -188,8 +188,8 @@ public class UseOfVariable extends AbstractType {
   }
 
   /**
-   * Adds a qualifier bound for this variable, if this use's annotations are the variable's: that
-   * is, if this use has no primary annotation and does not ignore annotations.
+   * Adds a qualifier bound for the variable that this is a use of, if this use's annotations are
+   * the variable's: that is, if this use has no primary annotation and does not ignore annotations.
    *
    * @param kind the kind of bound
    * @param annotations the qualifiers to add
@@ -217,11 +217,11 @@ public class UseOfVariable extends AbstractType {
   }
 
   /**
-   * Adds a bound for this variable. If this use has a primary annotation, or ignores annotations,
-   * then the bound added is a copy of {@code bound} that ignores its primary annotations; a lower
-   * bound's primary annotations are bottom and an upper bound's are top. If this use has a primary
-   * annotation, then an {@code EQUAL} bound that is not a type variable is added as both an upper
-   * and a lower bound instead.
+   * Adds a bound for the variable that this is a use of. If this use has a primary annotation, or
+   * ignores annotations, then the bound added is a copy of {@code bound} that ignores its primary
+   * annotations; a lower bound's primary annotations are bottom and an upper bound's are top. If
+   * this use has a primary annotation, then an {@code EQUAL} bound that is not a type variable is
+   * added as both an upper and a lower bound instead.
    *
    * @param parent the constraint whose reduction created this bound
    * @param kind the kind of bound

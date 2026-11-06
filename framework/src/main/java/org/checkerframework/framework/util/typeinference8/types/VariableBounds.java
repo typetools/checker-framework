@@ -48,9 +48,9 @@ public class VariableBounds {
 
   /**
    * The current instantiation of this variable, or null if it has none. It is set from one of this
-   * variable's proper {@code EQUAL} bounds, or from the result of substituting instantiations into
-   * that bound. It can be replaced during inference, for example by a later equal bound, or cleared
-   * by {@link #restore}.
+   * variable's proper {@code EQUAL} bounds, or from the result of applying instantiations to that
+   * bound. It can be replaced during inference, for example by a later equal bound, or cleared by
+   * {@link #restore}.
    */
   private @Nullable ProperType instantiation = null;
 
@@ -59,11 +59,12 @@ public class VariableBounds {
    * #getInstantiationChanges}.
    *
    * <p>A {@link ProperType} with an origin sums this count over the variables that its origin
-   * mentions (see {@link ProperType#instantiationVersion}), and substitutes into its origin again
-   * only when the sum differs from the sum when it was last up to date; see {@link
+   * mentions (see {@link ProperType#instantiationVersion}), and applies instantiations to its
+   * origin again only when the sum differs from the sum when it was last up to date; see {@link
    * ProperType#applyInstantiations}. So the count is incremented only when the instantiation
    * actually changes: setting an instantiation equal to the current one leaves the count unchanged,
-   * so that types whose origins mention this variable are not substituted again needlessly.
+   * so that instantiations are not applied again needlessly to types whose origins mention this
+   * variable.
    */
   private int instantiationChanges = 0;
 
@@ -198,7 +199,8 @@ public class VariableBounds {
   }
 
   /**
-   * Sets {@code instantiation} to {@code type}, unless it is already equal to {@code type}.
+   * Sets {@code instantiation} to {@code type}, unless it is already equal to {@code type} and has
+   * the same {@link AbstractType#ignoreAnnotations}.
    *
    * @param type the proper type to which this variable is instantiated; it must be a reference
    *     type, because an inference variable can only be instantiated to a reference type
@@ -206,7 +208,12 @@ public class VariableBounds {
   private void setInstantiation(ProperType type) {
     assert !type.getTypeKind().isPrimitive()
         : "instantiation of " + variable + " is the primitive type " + type;
-    if (type.equals(instantiation)) {
+    // ProperType#equals does not compare ignoreAnnotations.  Without the second test, an
+    // instantiation that ignores annotations would not be replaced by an equal one that does not.
+    ProperType current = instantiation;
+    if (current != null
+        && type.ignoreAnnotations == current.ignoreAnnotations
+        && type.equals(current)) {
       // Leave instantiationChanges unchanged; see its Javadoc.
       return;
     }
@@ -226,8 +233,8 @@ public class VariableBounds {
   }
 
   /**
-   * Makes {@code type}, a proper {@code EQUAL} bound of this variable, its instantiation, unless
-   * {@code type} ignores annotations and the current instantiation does not (see {@link
+   * Makes {@code type} this variable's instantiation, unless the primary annotations of {@code
+   * type} are ignored and those of {@link #instantiation} are not (see {@link
    * AbstractType#ignoreAnnotations}). Among bounds of the same kind, the later one is used.
    *
    * @param type a proper {@code EQUAL} bound of this variable
@@ -749,10 +756,11 @@ public class VariableBounds {
   }
 
   /**
-   * Returns all lower bounds that are proper types, and all proper {@code EQUAL} bounds that ignore
-   * annotations (see {@link AbstractType#ignoreAnnotations}).
+   * Returns all lower bounds that are proper types, and all proper {@code EQUAL} bounds whose
+   * primary annotations are ignored (see {@link AbstractType#ignoreAnnotations}).
    *
-   * @return all proper lower bounds and all proper {@code EQUAL} bounds that ignore annotations
+   * @return all proper lower bounds and all proper {@code EQUAL} bounds whose primary annotations
+   *     are ignored
    */
   public Set<ProperType> findLowerBoundsForAnnotations() {
     // An EQUAL bound that ignores annotations gives this variable's Java type, but it says no more
@@ -836,8 +844,8 @@ public class VariableBounds {
     }
     constraints.applyInstantiations();
 
-    // If this variable's instantiation was made by substituting another variable's instantiation
-    // that ignores annotations, then substitute again, in case that other instantiation has
+    // If this variable's instantiation was made by applying another variable's instantiation that
+    // ignores annotations, then apply instantiations again, in case that other instantiation has
     // changed; see ProperType#applyInstantiations.
     if (instantiation != null) {
       AbstractType refreshed =

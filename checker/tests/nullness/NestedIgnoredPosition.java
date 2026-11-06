@@ -2,10 +2,10 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-// An ignored substitution nested inside another ignored substitution.  B = U comes from a use with
-// an explicit annotation, so it ignores annotations, and so does A's lower bound List<B>.  So in
+// An ignored position nested inside another ignored position.  B = U comes from a use with an
+// explicit annotation, so it ignores annotations, and so does A's lower bound List<B>.  So in
 // pick2's lower bound Box<List<B'>>, both the List position and B' within it are ignored.
-public class NestedIgnoredSubstitution {
+public class NestedIgnoredPosition {
   static class Box<T> {}
 
   static <B extends @Nullable Object> List<B> listOf(Box<@NonNull B> b, B other) {
