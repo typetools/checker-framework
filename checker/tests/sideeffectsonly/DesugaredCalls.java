@@ -105,6 +105,32 @@ public class DesugaredCalls {
     for (String s : r) {}
   }
 
+  // A type that inherits `iterator()` from two unrelated interfaces calls the one with the more
+  // specific return type, `StringIterable.iterator()`, regardless of the order of the interfaces.
+  interface StringIterable {
+    @SideEffectFree
+    StringIterator iterator();
+  }
+
+  interface UnannotatedIterableInterface extends Iterable<String> {
+    @Override
+    Iterator<String> iterator();
+  }
+
+  interface StringIterableFirst extends StringIterable, UnannotatedIterableInterface {}
+
+  interface StringIterableLast extends UnannotatedIterableInterface, StringIterable {}
+
+  @SideEffectsOnly("this")
+  void enhancedForOverStringIterableFirst(StringIterableFirst r) {
+    for (String s : r) {}
+  }
+
+  @SideEffectsOnly("this")
+  void enhancedForOverStringIterableLast(StringIterableLast r) {
+    for (String s : r) {}
+  }
+
   static class Resource implements AutoCloseable {
     @SideEffectsOnly("this")
     Resource() {}

@@ -37,6 +37,7 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.NullChkNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.SuperNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
@@ -442,6 +443,7 @@ public abstract class JavaExpression {
    * @param node the FieldAccessNode to convert to a JavaExpression
    * @return the {@link FieldAccess} or {@link ClassName} that corresponds to {@code node}
    */
+  @SideEffectFree
   public static JavaExpression fromNodeFieldAccess(FieldAccessNode node) {
     Node receiverNode = node.getReceiver();
     String fieldName = node.getFieldName();
@@ -470,6 +472,7 @@ public abstract class JavaExpression {
    * @return the internal representation (as an {@link ArrayAccess}) of a {@link ArrayAccessNode}.
    *     Can contain {@link Unknown} as receiver.
    */
+  @SideEffectFree
   public static ArrayAccess fromArrayAccess(ArrayAccessNode node) {
     JavaExpression array = fromNode(node.getArray());
     JavaExpression index = fromNode(node.getIndex());
@@ -482,6 +485,7 @@ public abstract class JavaExpression {
    * @param receiverNode a node to convert to a JavaExpression
    * @return the internal representation of the given node. Might contain {@link Unknown}.
    */
+  @SideEffectFree
   public static JavaExpression fromNode(Node receiverNode) {
     JavaExpression result = null;
     if (receiverNode instanceof FieldAccessNode fieldAccessNode) {
@@ -505,6 +509,9 @@ public abstract class JavaExpression {
     } else if (receiverNode instanceof NarrowingConversionNode narrowingConversionNode) {
       // ignore narrowing
       return fromNode(narrowingConversionNode.getOperand());
+    } else if (receiverNode instanceof NullChkNode nullChkNode) {
+      // ignore null check
+      return fromNode(nullChkNode.getOperand());
     } else if (receiverNode instanceof UnaryOperationNode uopn) {
       return new UnaryOperation(uopn, fromNode(uopn.getOperand()));
     } else if (receiverNode instanceof BinaryOperationNode bopn) {
@@ -673,6 +680,13 @@ public abstract class JavaExpression {
         JavaExpression left = fromTree(binaryTree.getLeftOperand());
         JavaExpression right = fromTree(binaryTree.getRightOperand());
         return new BinaryOperation(TreeUtils.typeOf(tree), tree.getKind(), left, right);
+      }
+      case OTHER -> {
+        if (TreeUtils.isNullCheck(tree)) {
+          // ignore null check
+          return fromTree(((UnaryTree) tree).getExpression());
+        }
+        result = null;
       }
       default -> result = null;
     }
