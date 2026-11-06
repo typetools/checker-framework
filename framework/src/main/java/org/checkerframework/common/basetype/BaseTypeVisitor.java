@@ -3818,10 +3818,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       Tree refTypeTree = tree.getType();
       validateTypeOf(refTypeTree);
       if (refTypeTree instanceof AnnotatedTypeTree) {
-        AnnotatedTypeMirror refType = atypeFactory.getAnnotatedType(refTypeTree);
         AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
-        if (typeHierarchy.isSubtype(refType, expType)
-            && !refType.getPrimaryAnnotations().equals(expType.getPrimaryAnnotations())) {
+        if (!atypeFactory.getInstanceOfRefinement(tree, expType).isEmpty()) {
+          AnnotatedTypeMirror refType = atypeFactory.getAnnotatedType(refTypeTree);
           checker.reportWarning(tree, "instanceof.unsafe", expType, refType);
         }
       }
