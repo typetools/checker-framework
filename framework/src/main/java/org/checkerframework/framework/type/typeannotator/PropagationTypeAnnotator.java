@@ -5,9 +5,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -16,7 +14,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.StringsP;
 
 /**
@@ -75,9 +72,8 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
   }
 
   /**
-   * Sometimes the underlying type parameters of AnnotatedWildcardTypes are not available on the
-   * wildcards themselves. Instead, record enclosing class to find the type parameter to use as a
-   * backup in visitWildcards.
+   * Records the enclosing declared type, so that {@link #visitWildcard} can find the type parameter
+   * that a wildcard type argument instantiates.
    *
    * @param declaredType type to record
    */
@@ -125,10 +121,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
     }
     visitedNodes.put(wildcard, null);
 
-    Element typeParamElement = TypesUtils.wildcardToTypeParam(wildcard.getUnderlyingType());
-    if (typeParamElement == null && !parents.isEmpty()) {
-      typeParamElement = getTypeParameterElement(wildcard, parents.peekFirst());
-    }
+    Element typeParamElement = AnnotatedTypes.wildcardToTypeParam(wildcard, parents.peekFirst());
 
     if (typeParamElement != null) {
       pause = true;
@@ -208,24 +201,5 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
         wildcardBound.addAnnotation(typeParamAnno);
       }
     }
-  }
-
-  /**
-   * Search {@code declaredType}'s type arguments for {@code typeArg}. Using the index of {@code
-   * typeArg}, find the corresponding type parameter element and return it.
-   *
-   * @param typeArg a typeArg of {@code declaredType}
-   * @param declaredType the type in which {@code typeArg} is a type argument
-   * @return the type parameter in {@code declaredType} that corresponds to {@code typeArg}
-   */
-  private Element getTypeParameterElement(
-      @FindDistinct AnnotatedTypeMirror typeArg, AnnotatedDeclaredType declaredType) {
-    for (int i = 0; i < declaredType.getTypeArguments().size(); i++) {
-      if (declaredType.getTypeArguments().get(i) == typeArg) {
-        TypeElement typeElement = TypesUtils.getTypeElement(declaredType.getUnderlyingType());
-        return typeElement.getTypeParameters().get(i);
-      }
-    }
-    throw new BugInCF("Wildcard %s is not a type argument of %s", typeArg, declaredType);
   }
 }
