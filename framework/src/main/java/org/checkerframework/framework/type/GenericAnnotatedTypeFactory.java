@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -712,6 +713,12 @@ public abstract class GenericAnnotatedTypeFactory<
    */
   public DependentTypesHelper getDependentTypesHelper() {
     return dependentTypesHelper;
+  }
+
+  @Override
+  protected void viewpointAdaptRecordComponent(
+      AnnotatedTypeMirror type, ExecutableElement accessor, JavaExpression receiver) {
+    dependentTypesHelper.atRecordComponentAccess(type, accessor, receiver);
   }
 
   /**

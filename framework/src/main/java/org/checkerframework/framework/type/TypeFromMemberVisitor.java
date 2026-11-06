@@ -1,6 +1,7 @@
 package org.checkerframework.framework.type;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -53,6 +54,21 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       // (variableTree.getType() does not include the annotation before the type, so those
       // are added to the type below).
       result = TypeFromTree.fromTypeTree(f, variableTree.getType());
+    }
+
+    // A binding variable of a deconstruction pattern is like a local variable that is assigned the
+    // record component.  If it is declared using var, it has the component's type, except that its
+    // primary annotations are defaulted.
+    CompilationUnitTree root = f.root;
+    if (f.isDeconstructionBindingVariable(variableTree)
+        && root != null
+        && TreeUtils.isVariableTreeDeclaredUsingVar(variableTree, root)) {
+      AnnotatedTypeMirror componentType = f.getDeconstructedComponentType(variableTree);
+      if (componentType != null
+          && f.types.isSameType(componentType.getUnderlyingType(), result.getUnderlyingType())) {
+        result = componentType.deepCopy();
+        result.clearPrimaryAnnotations();
+      }
     }
 
     // Handle any annotations in variableTree.getModifiers().
