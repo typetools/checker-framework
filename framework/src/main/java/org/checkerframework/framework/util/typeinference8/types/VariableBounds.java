@@ -209,8 +209,7 @@ public class VariableBounds {
         : "instantiation of " + variable + " is the primitive type " + type;
     // ProperType#equals compares ignoreAnnotations, so an instantiation that ignores annotations is
     // replaced by an otherwise-equal one that does not.
-    ProperType current = instantiation;
-    if (current != null && type.equals(current)) {
+    if (type.equals(instantiation)) {
       // Leave instantiationChanges unchanged; see its Javadoc.
       return;
     }
