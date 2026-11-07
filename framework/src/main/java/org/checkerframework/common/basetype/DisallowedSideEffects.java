@@ -12,6 +12,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TryTree;
+import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -970,7 +971,11 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
         }
         boolean allCovered = true;
         for (ExpressionTree value : entry.getValue()) {
-          if (!isCovered(expressionFromTree(value), seOnlyExpressions, result, atypeFactory)) {
+          if (!isCovered(
+              expressionFromTree(withoutParensOrReferenceCasts(value)),
+              seOnlyExpressions,
+              result,
+              atypeFactory)) {
             allCovered = false;
             break;
           }
@@ -980,6 +985,25 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
           changed = true;
         }
       }
+    }
+    return result;
+  }
+
+  /**
+   * Returns the given tree, with any enclosing parentheses and reference casts removed. A cast
+   * between reference types does not change the identity of its operand's value, so the result
+   * evaluates to the same object as the argument does. A cast that involves a primitive type, such
+   * as a boxing or unboxing conversion, is not removed.
+   *
+   * @param tree an expression tree
+   * @return the tree, without enclosing parentheses and reference casts
+   */
+  private static ExpressionTree withoutParensOrReferenceCasts(ExpressionTree tree) {
+    ExpressionTree result = TreeUtils.withoutParens(tree);
+    while (result instanceof TypeCastTree typeCast
+        && !TreeUtils.typeOf(typeCast).getKind().isPrimitive()
+        && !TreeUtils.typeOf(typeCast.getExpression()).getKind().isPrimitive()) {
+      result = TreeUtils.withoutParens(typeCast.getExpression());
     }
     return result;
   }

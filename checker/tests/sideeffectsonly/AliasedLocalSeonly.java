@@ -32,6 +32,28 @@ public class AliasedLocalSeonly {
   }
 
   @SideEffectsOnly("this")
+  void aliasOfParenthesized() {
+    List<Integer> alias = (this.covered);
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void aliasOfCast() {
+    Object obj = covered;
+    @SuppressWarnings("unchecked")
+    List<Integer> alias = ((List<Integer>) (obj));
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("this")
+  void aliasOfCastUncovered() {
+    @SuppressWarnings("unchecked")
+    List<Integer> alias = (List<Integer>) (Object) uncovered;
+    // :: error: (purity.incorrect.sideeffectsonly)
+    alias.add(1);
+  }
+
+  @SideEffectsOnly("this")
   void aliasOfUncovered() {
     List<Integer> alias = uncovered;
     // :: error: (purity.incorrect.sideeffectsonly)
