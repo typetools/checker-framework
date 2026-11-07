@@ -161,12 +161,18 @@ public class ToIndexFileConverterTest {
    * @return true if {@code jaif} declares {@code method} in {@code className}
    */
   private static boolean hasMethod(String jaif, String className, String method) {
+    // A class or method header may be followed by the declaration's annotations, as in
+    // "class C: @A" or "method m()V: @A".
+    String methodHeader = "method " + method + ":";
     String currentClass = null;
     for (String line : jaif.split("\\R")) {
-      if (line.startsWith("class ") && line.endsWith(":")) {
-        currentClass = line.substring("class ".length(), line.length() - 1);
-      } else if (line.strip().equals("method " + method + ":") && className.equals(currentClass)) {
-        return true;
+      if (line.startsWith("class ") && line.contains(":")) {
+        currentClass = line.substring("class ".length(), line.indexOf(':'));
+      } else if (className.equals(currentClass)) {
+        String stripped = line.strip();
+        if (stripped.equals(methodHeader) || stripped.startsWith(methodHeader + " ")) {
+          return true;
+        }
       }
     }
     return false;
@@ -244,9 +250,87 @@ public class ToIndexFileConverterTest {
     };
     AField field = fieldOfStub(stubFileLines);
     Assert.assertNotNull("@Deprecated was not recorded on the field", field.lookup("Deprecated"));
+    Assert.assertNull("@Nullable was recorded on the field", field.lookup("Nullable"));
     Assert.assertNotNull("@Nullable was not recorded on the type", field.type.lookup("Nullable"));
+    Assert.assertNull("@Deprecated was recorded on the type", field.type.lookup("Deprecated"));
     AMethod constructor = methodOfStub("<init>(ILjava/lang/String;)V", stubFileLines);
     Assert.assertNotNull("@A was not recorded on the compact constructor", constructor.lookup("A"));
+  }
+
+  /** An annotation interface that is applicable only to record components. */
+  @java.lang.annotation.Target(java.lang.annotation.ElementType.RECORD_COMPONENT)
+  public @interface RecordComponentOnly {}
+
+  /**
+   * The annotations of a record component propagate to the implicitly declared accessor and
+   * canonical-constructor parameter, if they are applicable to them, but not to explicitly
+   * declared ones. An annotation that is applicable only to record components is not recorded on
+   * the backing field.
+   */
+  @Test
+  public void testRecordComponentPropagation() throws Exception {
+    // The binary name of the annotation interface, so that the converter can load it.
+    String rco =
+        "org.checkerframework.framework.stub." + "ToIndexFileConverterTest$RecordComponentOnly";
+    String[] stubFileLines = {
+      "package p;",
+      "import org.checkerframework.checker.nullness.qual.Nullable;",
+      "record C(@Nullable @Deprecated @" + rco + " String f, @Deprecated int i, @A long l) {",
+      "  int i();",
+      "}"
+    };
+    AClass clazz = classOfStub(stubFileLines);
+    AField field = clazz.fields.get("f");
+    Assert.assertNotNull("@Deprecated was not recorded on the field", field.lookup("Deprecated"));
+    Assert.assertNull("@RecordComponentOnly was recorded on the field", field.lookup(rco));
+
+    // The implicitly declared accessor of `f`.
+    AMethod accessor = clazz.methods.get("f()Ljava/lang/String;");
+    Assert.assertNotNull("no scene element for the accessor f()", accessor);
+    Assert.assertNotNull(
+        "@Deprecated was not recorded on the accessor", accessor.lookup("Deprecated"));
+    Assert.assertNull("@Nullable was recorded on the accessor", accessor.lookup("Nullable"));
+    Assert.assertNotNull(
+        "@Nullable was not recorded on the accessor's return type",
+        accessor.returnType.lookup("Nullable"));
+    Assert.assertNull("@RecordComponentOnly was recorded on the accessor", accessor.lookup(rco));
+
+    // The explicitly declared accessor of `i` is not changed.
+    AMethod explicitAccessor = clazz.methods.get("i()I");
+    Assert.assertNotNull("no scene element for the accessor i()", explicitAccessor);
+    Assert.assertNull(
+        "@Deprecated was recorded on the explicit accessor", explicitAccessor.lookup("Deprecated"));
+
+    // An annotation whose @Target is unknown is recorded only on the field.
+    Assert.assertNotNull("@A was not recorded on the field", clazz.fields.get("l").lookup("A"));
+    AMethod lAccessor = clazz.methods.get("l()J");
+    Assert.assertTrue(
+        "@A was recorded on the accessor", lAccessor == null || lAccessor.lookup("A") == null);
+
+    // The parameters of the implicitly declared canonical constructor.
+    AMethod constructor = clazz.methods.get("<init>(Ljava/lang/String;IJ)V");
+    Assert.assertNotNull("no scene element for the canonical constructor", constructor);
+    AField param = constructor.parameters.get(0);
+    Assert.assertNotNull(
+        "@Deprecated was not recorded on the parameter", param.lookup("Deprecated"));
+    Assert.assertNotNull(
+        "@Nullable was not recorded on the parameter's type", param.type.lookup("Nullable"));
+    Assert.assertNull("@Nullable was recorded on the parameter", param.lookup("Nullable"));
+    Assert.assertNotNull(
+        "@Deprecated was not recorded on the second parameter",
+        constructor.parameters.get(1).lookup("Deprecated"));
+  }
+
+  /** The annotations of a record component do not propagate to an explicit canonical constructor. */
+  @Test
+  public void testRecordComponentExplicitCanonicalConstructor() throws Exception {
+    AClass clazz = classOfStub("package p;", "record C(@Deprecated int i) {", "  C(int i) {}", "}");
+    AMethod constructor = clazz.methods.get("<init>(I)V");
+    Assert.assertNotNull("no scene element for the canonical constructor", constructor);
+    AField param = constructor.parameters.get(0);
+    Assert.assertTrue(
+        "@Deprecated was recorded on the explicit constructor's parameter",
+        param == null || param.lookup("Deprecated") == null);
   }
 
   /** An enum constant with a class body does not crash the converter. */
@@ -262,7 +346,8 @@ public class ToIndexFileConverterTest {
             "  void myEnumMethod() {}",
             "}");
     assertMethod(jaif, "MyEnum", "myEnumMethod()V");
-    assertNoMethod(jaif, "MyEnum", "myConstantMethod()V");
+    // The method must not appear under any class, such as one for the constant's class body.
+    Assert.assertFalse(jaif, jaif.contains("myConstantMethod"));
   }
 
   /** A single-type import that does not match a name does not prevent resolving the name. */
