@@ -205,6 +205,20 @@ public class AnnotationFileUtilTest {
     Assert.assertEquals(Arrays.asList(), descriptions(ajava, AnnotationFileType.COMMAND_LINE_STUB));
   }
 
+  /** Tests that a hidden file named explicitly is used if its name indicates its file type. */
+  @Test
+  public void explicitHiddenFileIsUsed() throws IOException {
+    File ajava = write(new File(tmp.getRoot(), ".Foo-checker.ajava"), "package p;");
+    File stub = write(new File(tmp.getRoot(), ".Foo.astub"), "package p;");
+
+    Assert.assertEquals(
+        Arrays.asList(ajava.getAbsolutePath()), descriptions(ajava, AnnotationFileType.AJAVA));
+    Assert.assertEquals(Arrays.asList(), descriptions(ajava, AnnotationFileType.COMMAND_LINE_STUB));
+    Assert.assertEquals(
+        Arrays.asList(stub.getAbsolutePath()),
+        descriptions(stub, AnnotationFileType.COMMAND_LINE_STUB));
+  }
+
   /** Tests that the entries in a zip archive are looked up by the end of their names. */
   @Test
   public void archiveEntriesInZipArchive() throws IOException {

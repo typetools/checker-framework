@@ -481,18 +481,15 @@ public class AnnotationFileUtil {
   /**
    * Returns true if a file that the user named explicitly, and that is not an archive, should be
    * used as an annotation file of type {@code fileType}. Every ajava file, and no stub file, must
-   * end with {@code .ajava}.
+   * end with {@code .ajava}. Unlike a file found by searching, a named file is used even if it is
+   * hidden (its name starts with ".").
    *
    * @param path a file name or path
    * @param fileType the type of annotation file that the user supplied
    * @return true if the named file should be used
    */
   static boolean isUsableNamedFile(String path, AnnotationFileType fileType) {
-    if (fileType.isStub()) {
-      return !isAnnotationFile(path, AnnotationFileType.AJAVA);
-    } else {
-      return isAnnotationFile(path, fileType);
-    }
+    return path.endsWith(".ajava") != fileType.isStub();
   }
 
   /**
