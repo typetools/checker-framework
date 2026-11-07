@@ -398,13 +398,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   @Override
   public Void visit(CompactConstructorDeclaration decl, AElement elem) {
     Node parent = decl.getParentNode().orElse(null);
-    if (!(parent instanceof RecordDeclaration)) {
+    if (!(parent instanceof RecordDeclaration record)) {
       throw new BugInCF("compact constructor not in a record: " + decl);
     }
     // A compact constructor declares the canonical constructor, whose formal parameters are the
     // record components.
     StringBuilder sb = new StringBuilder("<init>(");
-    for (Parameter component : ((RecordDeclaration) parent).getParameters()) {
+    for (Parameter component : record.getParameters()) {
       sb.append(getJVML(parameterType(component)));
     }
     sb.append(")V");
