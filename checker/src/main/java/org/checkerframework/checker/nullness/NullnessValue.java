@@ -1,5 +1,6 @@
 package org.checkerframework.checker.nullness;
 
+import java.util.Objects;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -41,9 +42,26 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
   }
 
   @Override
+  public boolean equals(@Nullable Object obj) {
+    return super.equals(obj)
+        && obj instanceof NullnessValue other
+        && isPolyNullNonNull == other.isPolyNullNonNull
+        && isPolyNullNull == other.isPolyNullNull;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), isPolyNullNonNull, isPolyNullNull);
+  }
+
+  @Override
   protected NullnessValue upperBound(
       @Nullable NullnessValue other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {
     NullnessValue result = super.upperBound(other, upperBoundTypeMirror, shouldWiden);
+    if (other != null) {
+      result.isPolyNullNonNull = this.isPolyNullNonNull && other.isPolyNullNonNull;
+      result.isPolyNullNull = this.isPolyNullNull && other.isPolyNullNull;
+    }
 
     AnnotationMirror resultNullableAnno =
         analysis.getTypeFactory().getAnnotationByClass(result.annotations, Nullable.class);
