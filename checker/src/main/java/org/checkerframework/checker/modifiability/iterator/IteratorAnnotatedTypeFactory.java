@@ -1,27 +1,15 @@
 package org.checkerframework.checker.modifiability.iterator;
 
-import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.modifiability.ModifiabilityBaseAnnotatedTypeFactory;
 import org.checkerframework.checker.modifiability.qual.IteratorPolyMod;
 import org.checkerframework.checker.modifiability.qual.MaybeIteratorPolyMod;
 import org.checkerframework.checker.modifiability.qual.PolyIteratorPolyMod;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.javacutil.AnnotationBuilder;
 
 /** The annotated type factory for the {@link IteratorChecker}. */
 public class IteratorAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedTypeFactory {
-
-  /** The {@code @}{@link MaybeIteratorPolyMod} qualifier. */
-  private final AnnotationMirror MAYBE_ITERATOR_POLY_MOD;
-
-  /** The {@code @}{@link PolyIteratorPolyMod} qualifier. */
-  private final AnnotationMirror POLY_ITERATOR_POLY_MOD;
 
   /**
    * Creates an IteratorAnnotatedTypeFactory.
@@ -30,36 +18,14 @@ public class IteratorAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedType
    */
   @SuppressWarnings("this-escape")
   public IteratorAnnotatedTypeFactory(BaseTypeChecker checker) {
-    super(checker);
-    this.MAYBE_ITERATOR_POLY_MOD =
-        AnnotationBuilder.fromClass(elements, MaybeIteratorPolyMod.class);
-    this.POLY_ITERATOR_POLY_MOD = AnnotationBuilder.fromClass(elements, PolyIteratorPolyMod.class);
+    super(
+        checker,
+        MaybeIteratorPolyMod.class,
+        IteratorPolyMod.class,
+        null,
+        null,
+        PolyIteratorPolyMod.class);
     postInit();
-  }
-
-  @Override
-  protected AnnotationMirror topAnnotation() {
-    return MAYBE_ITERATOR_POLY_MOD;
-  }
-
-  @Override
-  protected AnnotationMirror positiveCapability() {
-    return ITERATOR_POLY_MOD;
-  }
-
-  @Override
-  protected AnnotationMirror negativeCapability() {
-    throw new UnsupportedOperationException("The iterator hierarchy has no negative qualifier.");
-  }
-
-  @Override
-  protected boolean hasNegativeCapability() {
-    return false;
-  }
-
-  @Override
-  protected AnnotationMirror polyCapability() {
-    return POLY_ITERATOR_POLY_MOD;
   }
 
   @Override
@@ -71,12 +37,5 @@ public class IteratorAnnotatedTypeFactory extends ModifiabilityBaseAnnotatedType
   protected List<TypeMirror> typesWithCapability() {
     // Never called, because the whole-modifiability aliases do not expand into this hierarchy.
     return List.of();
-  }
-
-  @Override
-  protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-    return new LinkedHashSet<>(
-        Arrays.asList(
-            MaybeIteratorPolyMod.class, IteratorPolyMod.class, PolyIteratorPolyMod.class));
   }
 }

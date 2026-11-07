@@ -184,6 +184,11 @@ public abstract class CFAbstractAnalysis<
    * @param fieldValues initial values of the fields
    */
   public void performAnalysis(ControlFlowGraph cfg, List<FieldInitialValue<V>> fieldValues) {
+    // Check before modifying any state that the running analysis uses.
+    if (isRunning) {
+      throw new BugInCF(
+          "CFAbstractAnalysis::performAnalysis() shouldn't be called when the analysis is running.");
+    }
     this.fieldValues.clear();
     this.fieldValues.addAll(fieldValues);
     // The cache's keys are nodes of the control flow graph that was analyzed previously.
