@@ -376,26 +376,49 @@ public class DependentTypesHelper {
    * Viewpoint-adapts the Java expressions in annotations written on a record component to an access
    * of that component of {@code receiver}, as in a deconstruction pattern.
    *
+   * <p>{@code type} is the type of the component as a member of the type of {@code receiver}, so it
+   * may contain annotations from the type arguments of {@code receiver}'s type. Those annotations
+   * are written in the scope of the deconstruction pattern, not of the record, so they are not
+   * viewpoint-adapted. Only annotations from the declaration of the record component are adapted.
+   *
+   * <p>If {@code receiver} is not deterministic, then an adapted expression could refer to a
+   * different record than the one that was deconstructed. Therefore, such expressions are removed
+   * from the annotations on the component's declared type.
+   *
    * @param type the type of the record component; is side-effected by this method
    * @param accessor the accessor method of the record component
    * @param receiver the record whose component is accessed
    */
   public void atRecordComponentAccess(
       AnnotatedTypeMirror type, ExecutableElement accessor, JavaExpression receiver) {
-    if (!hasDependentType(type)) {
+    if (!hasDependentAnnotations()) {
       return;
     }
 
-    StringToJavaExpression stringToJavaExpr =
-        stringExpr ->
-            StringToJavaExpression.atMethodDecl(stringExpr, accessor, factory.getChecker())
-                .atFieldAccess(receiver);
+    // As in atInvocation, adapt the declared type of the component, then copy the adapted
+    // annotations to `type`, except at locations where type variables have been substituted.
+    AnnotatedTypeMirror declaredType =
+        ((AnnotatedExecutableType) factory.getAnnotatedType(accessor)).getReturnType();
+    if (!hasDependentType(declaredType)) {
+      return;
+    }
+
+    StringToJavaExpression stringToJavaExpr;
+    if (receiver.isDeterministic(factory)) {
+      stringToJavaExpr =
+          stringExpr ->
+              StringToJavaExpression.atMethodDecl(stringExpr, accessor, factory.getChecker())
+                  .atFieldAccess(receiver);
+    } else {
+      stringToJavaExpr = stringExpr -> null;
+    }
     if (debugStringToJavaExpression) {
       System.out.printf(
           "atRecordComponentAccess(%s, %s, %s) created %s%n",
           type, accessor, receiver, stringToJavaExpr);
     }
-    convertAnnotatedTypeMirror(stringToJavaExpr, type);
+    convertAnnotatedTypeMirror(stringToJavaExpr, declaredType);
+    this.viewpointAdaptedCopier.visit(declaredType, type);
   }
 
   /**

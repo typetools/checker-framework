@@ -2466,7 +2466,12 @@ public final class TreeUtils {
     try {
       source = root.getSourceFile().getCharContent(true);
     } catch (IOException e) {
-      return false;
+      // The source was just compiled, so it should be readable.  Do not guess, because an
+      // incorrect answer would silently change the type of the variable.
+      throw new BugInCF(
+          variableTree,
+          "cannot read source file " + root.getSourceFile().getName() + ": " + e.getMessage(),
+          e);
     }
     int start = TreeInfo.getStartPos(type);
     int end = start + "var".length();
