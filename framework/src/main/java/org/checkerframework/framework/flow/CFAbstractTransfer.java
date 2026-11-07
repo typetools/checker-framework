@@ -1205,7 +1205,10 @@ public abstract class CFAbstractTransfer<
     // to the expression's type, so they are refined by the types of the record components.
     LocalVariableNode bindingVar = node.getBindingPatternVariable();
     if (bindingVar == null
-        && node.getPatternNode() instanceof DeconstructorPatternNode deconstructorPatternNode) {
+        && node.getPatternNode() instanceof DeconstructorPatternNode deconstructorPatternNode
+        // If there are no binding variables (e.g., `o instanceof R()` or `o instanceof R(_)`),
+        // there is nothing to refine, so avoid copying the store.
+        && !deconstructorPatternNode.getBindingVariables().isEmpty()) {
       // The binding variables are bound only when the instanceof is true.  Get the else store
       // before refining the then store, because for a RegularTransferResult the then store is the
       // regular store.
