@@ -3490,6 +3490,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           EnsuresQualifier.class.getCanonicalName(),
           EnsuresQualifierIf.class.getCanonicalName());
 
+  /** The names of the wrappers for repeated framework contract annotations. */
+  private static final Set<String> frameworkContractListAnnotationNames =
+      Set.of(
+          RequiresQualifier.List.class.getCanonicalName(),
+          EnsuresQualifier.List.class.getCanonicalName(),
+          EnsuresQualifierIf.List.class.getCanonicalName());
+
   /**
    * Issues a "contracts.toptype" warning for each contract annotation in {@code annoTrees} whose
    * qualifier is the top qualifier, because such a contract has no effect. This method handles
@@ -3504,13 +3511,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     ContractsFromMethod contractsFromMethod = atypeFactory.getContractsFromMethod();
     for (AnnotationTree annoTree : annoTrees) {
       AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(annoTree);
+      TypeElement annoType = (TypeElement) anno.getAnnotationType().asElement();
+      String annoName = annoType.getQualifiedName().toString();
       if (atypeFactory.isListForRepeatedAnnotation(anno)) {
-        checkContractQualifiersAreNotTop(getAnnotationTreeArguments(annoTree));
+        // Recurse only into wrappers whose elements are treated as contracts:  the framework
+        // wrappers, and wrappers that are meta-annotated with a contract meta-annotation (as in
+        // AnnotatedTypeFactory#getDeclAnnotationWithMetaAnnotation).
+        if (frameworkContractListAnnotationNames.contains(annoName)
+            || !getContractMetaAnnotations(annoType).isEmpty()) {
+          checkContractQualifiersAreNotTop(getAnnotationTreeArguments(annoTree));
+        }
         continue;
       }
-      TypeElement annoType = (TypeElement) anno.getAnnotationType().asElement();
       List<@Nullable AnnotationMirror> qualifiers = new ArrayList<>();
-      if (frameworkContractAnnotationNames.contains(annoType.getQualifiedName().toString())) {
+      if (frameworkContractAnnotationNames.contains(annoName)) {
         qualifiers.add(contractsFromMethod.getQualifierEnforcedByContractAnnotation(anno));
       } else {
         // An annotation may have more than one contract meta-annotation, such as both
