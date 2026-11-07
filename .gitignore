@@ -188,6 +188,7 @@ dataflow/tests/busyexpr/methods.txt
 dataflow/tests/cfgconstruction/*.class
 dataflow/tests/constant-propagation/Out.txt
 dataflow/tests/constant-propagation/*.class
+dataflow/tests/implicit-this/*.class
 dataflow/tests/issue3447/Out.txt
 dataflow/tests/issue3447/*.class
 dataflow/tests/live-variable/Out.txt
