@@ -2,7 +2,7 @@ package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
 import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -40,8 +40,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class KeyForValue extends CFAbstractValue<KeyForValue> {
   /**
-   * If the underlying type is a type variable or a wildcard, then this is a set of maps for which
-   * this value is a key. Otherwise, it's null.
+   * If the underlying type is a type variable or a wildcard, then this is the possibly-empty set of
+   * maps for which this value is a key. Otherwise, it's null.
    */
   private final @Nullable Set<String> keyForMaps;
 
@@ -59,15 +59,17 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
     super(analysis, annotations, underlyingType);
     KeyForAnnotatedTypeFactory atypeFactory =
         (KeyForAnnotatedTypeFactory) analysis.getTypeFactory();
-    AnnotationMirror keyfor = atypeFactory.getAnnotationByClass(annotations, KeyFor.class);
-    if (keyfor != null
-        && (underlyingType.getKind() == TypeKind.TYPEVAR
-            || underlyingType.getKind() == TypeKind.WILDCARD)) {
-      List<String> list =
-          AnnotationUtils.getElementValueArray(
-              keyfor, atypeFactory.keyForValueElement, String.class);
-      keyForMaps = new LinkedHashSet<>(list.size());
-      keyForMaps.addAll(list);
+    if (underlyingType.getKind() == TypeKind.TYPEVAR
+        || underlyingType.getKind() == TypeKind.WILDCARD) {
+      AnnotationMirror keyfor = atypeFactory.getAnnotationByClass(annotations, KeyFor.class);
+      if (keyfor == null) {
+        keyForMaps = new LinkedHashSet<>();
+      } else {
+        keyForMaps =
+            new LinkedHashSet<>(
+                AnnotationUtils.getElementValueArray(
+                    keyfor, atypeFactory.keyForValueElement, String.class));
+      }
     } else {
       keyForMaps = null;
     }
@@ -91,11 +93,25 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
   }
 
   /**
-   * If the underlying type is a type variable or a wildcard, then this is a set of maps for which
-   * this value is a key. Otherwise, it's null.
+   * Returns the maps for which this value is a key.
+   *
+   * @return if the underlying type is a type variable or a wildcard, then the possibly-empty set of
+   *     maps for which this value is a key; otherwise, null
    */
   public @Nullable Set<String> getKeyForMaps() {
     return keyForMaps;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    return super.equals(obj)
+        && obj instanceof KeyForValue other
+        && Objects.equals(keyForMaps, other.keyForMaps);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), keyForMaps);
   }
 
   @Override
@@ -110,10 +126,7 @@ public class KeyForValue extends CFAbstractValue<KeyForValue> {
     Set<String> lubKeyForMaps = new LinkedHashSet<>(this.keyForMaps);
     lubKeyForMaps.retainAll(other.keyForMaps);
     return new KeyForValue(
-        analysis,
-        upperBound.getAnnotations(),
-        upperBound.getUnderlyingType(),
-        lubKeyForMaps.isEmpty() ? null : lubKeyForMaps);
+        analysis, upperBound.getAnnotations(), upperBound.getUnderlyingType(), lubKeyForMaps);
   }
 
   @Override
