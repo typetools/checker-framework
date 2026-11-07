@@ -917,6 +917,11 @@ public abstract class CFAbstractTransfer<
    */
   @SuppressWarnings("interning:not.interned") // CFG node identity
   private static boolean isTargetOfUnboxingCall(MethodAccessNode n) {
+    // Cheap filter: the receiver of an unboxing call is a boxed primitive.  This avoids scanning
+    // the block for most method accesses.
+    if (!TypesUtils.isBoxedPrimitive(n.getReceiver().getType())) {
+      return false;
+    }
     Block block = n.getBlock();
     if (block == null) {
       return false;
@@ -1123,7 +1128,8 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns a TransferResult just like the given one, but whose then-store and else-store are
-   * derived from those of {@code in}, if {@code operatorNode} has boolean operands.
+   * derived from those of {@code in}, if {@code operatorNode} has boolean operands. Not for {@code
+   * ==} or {@code !=} with two boxed operands, which Java compares by reference.
    *
    * <p>The then-store and else-store of {@code in} describe one of the operands, called the
    * described operand: the right operand, which is evaluated last, or the left operand if the right
@@ -1160,6 +1166,11 @@ public abstract class CFAbstractTransfer<
     if (!in.containsTwoStores()
         || !TypesUtils.isBooleanType(leftN.getType())
         || !TypesUtils.isBooleanType(rightN.getType())
+        // The CFG does not unbox two boxed operands of == or !=, which Java compares by reference.
+        // Their references can differ even when their values are equal.
+        || ((operatorNode instanceof EqualToNode || operatorNode instanceof NotEqualNode)
+            && leftN.getType().getKind() != TypeKind.BOOLEAN
+            && rightN.getType().getKind() != TypeKind.BOOLEAN)
         // If the described operand's then-store and else-store are equal, so are the result's.
         || in.getThenStore().equals(in.getElseStore())) {
       return result;
