@@ -698,8 +698,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   /**
    * Copies the annotations of a record component to a member that corresponds to the component: its
-   * backing field, its implicitly declared accessor method, or the corresponding formal parameter of
-   * the implicitly declared or compact canonical constructor.
+   * backing field, its implicitly declared accessor method, or the corresponding formal parameter
+   * of the implicitly declared or compact canonical constructor.
    *
    * <p>Unlike {@link #visitDeclAndTypeAnnotations}, this omits an annotation whose {@code @Target}
    * is known and does not permit the member (JLS 8.10.3). Such an annotation may be applicable to
@@ -710,8 +710,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param decl the scene element for the member
    * @param type the type of the record component
    * @param typeElem the scene element for the member's type
-   * @param keepUnknown if true, an annotation whose {@code @Target} cannot be determined is recorded
-   *     as a declaration annotation of the member; if false, it is omitted
+   * @param keepUnknown if true, an annotation whose {@code @Target} cannot be determined is
+   *     recorded as a declaration annotation of the member; if false, it is omitted
    */
   private void visitRecordComponentAnnotations(
       List<AnnotationExpr> exprs,
