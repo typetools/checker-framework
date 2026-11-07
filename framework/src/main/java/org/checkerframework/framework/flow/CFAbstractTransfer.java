@@ -96,6 +96,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.DeconstructionPatternUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.PatternCaseLabelUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -1165,6 +1166,14 @@ public abstract class CFAbstractTransfer<
     if (components.size() != nestedPatterns.size()) {
       return;
     }
+    // The record type, as written in the pattern.  Its type arguments are substituted into the
+    // types of the record components.
+    Tree patternTree = deconstructorPatternNode.getTree();
+    @Nullable AnnotatedTypeMirror recordType =
+        patternTree == null
+            ? null
+            : analysis.atypeFactory.getAnnotatedTypeFromTypeTree(
+                DeconstructionPatternUtils.getDeconstructor(patternTree));
     for (int i = 0; i < nestedPatterns.size(); i++) {
       Node nestedPattern = nestedPatterns.get(i);
       if (nestedPattern instanceof LocalVariableNode nestedBindingVar) {
@@ -1173,7 +1182,11 @@ public abstract class CFAbstractTransfer<
           continue;
         }
         AnnotatedTypeMirror componentType =
-            analysis.atypeFactory.getAnnotatedType(accessor).getReturnType();
+            (recordType == null
+                    ? analysis.atypeFactory.getAnnotatedType(accessor)
+                    : AnnotatedTypes.asMemberOf(
+                        analysis.types, analysis.atypeFactory, recordType, accessor))
+                .getReturnType();
         JavaExpression expr = JavaExpression.fromNode(nestedBindingVar);
         for (AnnotationMirror anno : componentType.getPrimaryAnnotations()) {
           store.insertOrRefine(expr, anno);
@@ -1229,7 +1242,8 @@ public abstract class CFAbstractTransfer<
       }
     }
     if (!expAnnos.isEmpty()) {
-      JavaExpression expr = JavaExpression.fromTree(node.getTree().getExpression());
+      JavaExpression expr =
+          JavaExpression.fromTree(TreeUtils.withoutParens(node.getTree().getExpression()));
       for (AnnotationMirror anno : expAnnos) {
         thenStore.insertOrRefine(expr, anno);
       }

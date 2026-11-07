@@ -1587,8 +1587,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Returns the qualifiers to which an instanceof refines its expression where the instanceof is
    * true. Each is a qualifier that is explicitly written on the reference type (the type after
-   * "instanceof") and that is strictly more specific than the expression's qualifier in the same
-   * hierarchy. For a binding pattern, the reference type is the declared type of the binding
+   * "instanceof") and that is strictly more specific than the expression's effective qualifier in
+   * the same hierarchy. For a binding pattern, the reference type is the declared type of the binding
    * variable, as in {@code e instanceof @A T v}.
    *
    * <p>Defaulted qualifiers of the reference type play no role, so a qualifier written in one
@@ -1615,7 +1615,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     AnnotationMirrorSet result = new AnnotationMirrorSet();
     for (AnnotationMirror refAnno : refType.getPrimaryAnnotations()) {
-      AnnotationMirror expAnno = expType.getPrimaryAnnotationInHierarchy(refAnno);
+      // Use the effective qualifier, so that an expression whose type is a type variable or
+      // wildcard without a primary qualifier is compared via its upper bound.
+      AnnotationMirror expAnno = expType.getAnnotationInHierarchy(refAnno);
       if (expAnno != null
           && !AnnotationUtils.areSame(refAnno, expAnno)
           && qualHierarchy.isSubtypeShallow(

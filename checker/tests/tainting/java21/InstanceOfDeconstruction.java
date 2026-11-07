@@ -50,6 +50,22 @@ public class InstanceOfDeconstruction {
     }
   }
 
+  // The types of generic record components are those of the pattern's type arguments.
+  record Box<T>(T value) {}
+
+  void deconstructGeneric(@Untainted Object o) {
+    if (o instanceof Box<@Untainted String>(String a)) {
+      isUntainted(a);
+    }
+  }
+
+  void deconstructGenericTainted(@Untainted Object o) {
+    if (o instanceof Box<@Tainted String>(String a)) {
+      // :: error: [argument]
+      isUntainted(a);
+    }
+  }
+
   // The variable of a binding pattern is still refined to the type of the expression.
   void bindingPattern(@Untainted Object o) {
     if (o instanceof String s) {
