@@ -3,7 +3,15 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 4.3.2 (2026-11-01)
+## Version 4.4.1 (2026-12-01)
+
+### User-visible changes
+
+### Changes for type system implementers
+
+### Closed issues
+
+## Version 4.4.0 (2026-11-02)
 
 ### User-visible changes
 
@@ -42,7 +50,8 @@ that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
 
 In the control-flow graph, the guard of a `case` is evaluated after the
-`CaseNode`, and only if the case's labels match.  Removed
+`CaseNode`, and only if the case's labels match.  (The last case of an
+exhaustive switch has no `CaseNode`; its guard is evaluated unconditionally.)  Removed
 `CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
 The `CaseNode` constructor takes a new `alwaysMatches` argument, and the new
 method `CaseNode.alwaysMatches()` returns it; for such a `CaseNode`, the labels
@@ -57,6 +66,8 @@ Deprecated methods:
 * `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.resolveNoArgumentCall()`
 
 ### Closed issues
+
+\#6849, #6864, #6872, #8018, #8300, #8320, #8323, #8340, #8343.
 
 ## Version 4.3.1 (2026-10-08)
 

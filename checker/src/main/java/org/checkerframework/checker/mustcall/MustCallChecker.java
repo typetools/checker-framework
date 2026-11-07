@@ -9,10 +9,10 @@ import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
-import org.checkerframework.checker.calledmethods.CalledMethodsAnalysis;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SupportedOptions;
@@ -36,6 +36,9 @@ import org.checkerframework.framework.source.SupportedOptions;
 })
 public class MustCallChecker extends BaseTypeChecker {
 
+  /** Creates a MustCallChecker. */
+  public MustCallChecker() {}
+
   /**
    * Disables @CreatesMustCallFor support. Not of interest to most users. Not documented in the
    * manual.
@@ -52,6 +55,13 @@ public class MustCallChecker extends BaseTypeChecker {
    * Disables @MustCallAlias support. Not of interest to most users. Not documented in the manual.
    */
   public static final String NO_RESOURCE_ALIASES = "noResourceAliases";
+
+  /**
+   * The canonical name of {@code java.lang.MatchException}. {@code MatchException.class} is not
+   * available before Java 21.
+   */
+  @SuppressWarnings("signature:assignment") // the string literal is a canonical name
+  private static final @CanonicalName String MATCH_EXCEPTION_NAME = "java.lang.MatchException";
 
   /**
    * The exception types in this set are ignored in the CFG when determining if a resource leaks
@@ -76,7 +86,7 @@ public class MustCallChecker extends BaseTypeChecker {
               NoClassDefFoundError.class.getCanonicalName(),
               OutOfMemoryError.class.getCanonicalName(),
               // An exhaustive switch throws this only if a class changed after compilation.
-              CalledMethodsAnalysis.MATCH_EXCEPTION_NAME,
+              MATCH_EXCEPTION_NAME,
               // It's not our problem if the Java type system is wrong.
               ClassCastException.class.getCanonicalName(),
               // It's not our problem if the code is going to divide by zero.
