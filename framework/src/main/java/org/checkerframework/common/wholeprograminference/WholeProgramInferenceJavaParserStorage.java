@@ -70,6 +70,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -99,6 +100,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -990,7 +992,8 @@ public class WholeProgramInferenceJavaParserStorage
       @Nullable Collection<@BinaryName String> supertypes,
       @Nullable Collection<@BinaryName String> subtypes) {
     for (FieldAnnos fieldAnnos : classAnnos.fields.values()) {
-      if (!containsAliasForTypeQualifier(fieldAnnos.declarationAnnotations)) {
+      if (!containsAliasForTypeQualifier(fieldAnnos.declarationAnnotations)
+          && !isInScopeOfDefaultQualifier(fieldAnnos.declaration)) {
         removeDefaultPrimaryAnnotations(fieldAnnos.type, TypeUseLocation.FIELD);
       }
     }
@@ -1012,9 +1015,15 @@ public class WholeProgramInferenceJavaParserStorage
    * Removes, from the types in the signature of the given method or constructor, each primary
    * annotation that is the default for its location. Writing such an annotation would be redundant.
    *
+   * <p>Removes nothing if the method or constructor is in the scope of a {@code @DefaultQualifier}
+   * annotation, which might make a different qualifier the default.
+   *
    * @param methodAnnos the method or constructor annotations to modify
    */
   private void removeDefaultPrimaryAnnotations(CallableDeclarationAnnos methodAnnos) {
+    if (isInScopeOfDefaultQualifier(methodAnnos.declaration)) {
+      return;
+    }
     // A declaration annotation on a method that is an alias for a type qualifier applies to the
     // method's return type.
     if (!containsAliasForTypeQualifier(methodAnnos.declarationAnnotations)) {
@@ -1027,12 +1036,84 @@ public class WholeProgramInferenceJavaParserStorage
     removeDefaultPrimaryAnnotations(methodAnnos.receiverType, TypeUseLocation.RECEIVER);
     if (methodAnnos.parameterTypes != null) {
       for (int i = 0; i < methodAnnos.parameterTypes.size(); i++) {
-        if (!parameterHasAliasForTypeQualifier(methodAnnos, i + 1)) {
+        if (!parameterHasAliasForTypeQualifier(methodAnnos, i + 1)
+            && !hasDefaultQualifierAnnotation(methodAnnos.declaration.getParameter(i))) {
           removeDefaultPrimaryAnnotations(
               methodAnnos.parameterTypes.get(i), TypeUseLocation.PARAMETER);
         }
       }
     }
+  }
+
+  /**
+   * Returns true if {@code node} is in the scope of a {@code @DefaultQualifier} annotation: that
+   * is, if such an annotation is written on {@code node}, on a declaration that encloses it, or on
+   * its package. In that case, the qualifier that a location has when no qualifier is written there
+   * might differ from the default that {@link WholeProgramInferenceScenesStorage#isDefaultFor}
+   * computes, so removing an inferred qualifier might change the meaning of the output.
+   *
+   * <p>This is conservative: it does not check which hierarchies or locations the
+   * {@code @DefaultQualifier} annotations affect.
+   *
+   * @param node a JavaParser node for a declaration
+   * @return true if {@code node} is in the scope of a {@code @DefaultQualifier} annotation
+   */
+  private boolean isInScopeOfDefaultQualifier(Node node) {
+    for (Node n = node; n != null; n = n.getParentNode().orElse(null)) {
+      if (hasDefaultQualifierAnnotation(n)) {
+        return true;
+      }
+      if (n instanceof CompilationUnit cu) {
+        // A package's annotations are written in its package-info.java file, not in this
+        // compilation unit.
+        String packageName =
+            cu.getPackageDeclaration().map(PackageDeclaration::getNameAsString).orElse("");
+        PackageElement packageElt = elements.getPackageElement(packageName);
+        if (packageElt != null) {
+          for (AnnotationMirror anno : packageElt.getAnnotationMirrors()) {
+            if (isDefaultQualifierName(AnnotationUtils.annotationName(anno))) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if {@code node} is written with a {@code @DefaultQualifier} annotation (or the
+   * container annotation for repeated {@code @DefaultQualifier} annotations).
+   *
+   * @param node a JavaParser node
+   * @return true if {@code node} is written with a {@code @DefaultQualifier} annotation
+   */
+  private static boolean hasDefaultQualifierAnnotation(Node node) {
+    if (node instanceof NodeWithAnnotations<?> nodeWithAnnos) {
+      for (AnnotationExpr anno : nodeWithAnnos.getAnnotations()) {
+        if (isDefaultQualifierName(anno.getNameAsString())) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if {@code name} is the name of {@code @DefaultQualifier} or of its container
+   * annotation {@code @DefaultQualifier.List}. Because a name written in source code might be
+   * simple, partially qualified, or fully qualified, this is conservative: it matches any name that
+   * ends with {@code DefaultQualifier} or {@code DefaultQualifier.List}, and also the simple name
+   * {@code List}.
+   *
+   * @param name an annotation name, as written in source code or as a canonical name
+   * @return true if {@code name} might be the name of {@code @DefaultQualifier} or its container
+   */
+  private static boolean isDefaultQualifierName(String name) {
+    return name.equals("DefaultQualifier")
+        || name.endsWith(".DefaultQualifier")
+        || name.equals("List") // might be the simple name of DefaultQualifier.List
+        || name.endsWith("DefaultQualifier.List");
   }
 
   /**
