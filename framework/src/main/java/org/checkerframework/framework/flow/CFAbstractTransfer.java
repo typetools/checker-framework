@@ -2,6 +2,7 @@ package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
@@ -995,6 +996,12 @@ public abstract class CFAbstractTransfer<
    * splitAssignments is applied recursively. For example, the result for {@code (String) (s = t)}
    * contains the cast, {@code s}, and {@code t}.
    *
+   * <p>If {@code node} is the left operand of a binary operation, then the right operand is
+   * evaluated after {@code node}, but before the operation's result is known. The result omits each
+   * part whose value an assignment in the right operand might change. For example, the result for
+   * the left operand of {@code ((String) x) == nonNull(x = null)} is empty, because the comparison
+   * says nothing about the value of {@code x} after the assignment.
+   *
    * @param node possibly an assignment node or a cast
    * @return a list containing the right- and left-hand sides in the given assignment node that have
    *     the value of the assignment after it executes; it contains just the node itself if it is
@@ -1002,32 +1009,77 @@ public abstract class CFAbstractTransfer<
    */
   @SideEffectFree
   protected List<Node> splitAssignments(Node node) {
+    List<Node> result = new ArrayList<>();
     Tree tree;
     if (node instanceof AssignmentNode assignment) {
       tree = assignment.getTree();
     } else if (node instanceof TypeCastNode cast && isValuePreservingCast(cast)) {
       tree = cast.getTree();
     } else {
-      return Collections.singletonList(node);
+      tree = null;
     }
 
-    List<JavaExpression> targets = new ArrayList<>();
-    new AssignmentTargetScanner().scan(tree, targets);
-    List<Node> result = new ArrayList<>();
-    while (true) {
-      if (node instanceof AssignmentNode a) {
-        result.add(a.getTarget());
-        node = a.getExpression();
-      } else if (node instanceof TypeCastNode cast && isValuePreservingCast(cast)) {
-        result.add(cast);
-        node = cast.getOperand();
-      } else {
-        break;
+    if (tree == null) {
+      result.add(node);
+    } else {
+      List<JavaExpression> targets = new ArrayList<>();
+      new AssignmentTargetScanner().scan(tree, targets);
+      Node part = node;
+      while (true) {
+        if (part instanceof AssignmentNode a) {
+          result.add(a.getTarget());
+          part = a.getExpression();
+        } else if (part instanceof TypeCastNode cast && isValuePreservingCast(cast)) {
+          result.add(cast);
+          part = cast.getOperand();
+        } else {
+          break;
+        }
       }
+      result.add(part);
+      result.removeIf(p -> mayBeChangedByAssignment(JavaExpression.fromNode(p), targets, true));
     }
-    result.add(node);
-    result.removeIf(part -> mayBeChangedByAssignment(JavaExpression.fromNode(part), targets));
+
+    List<JavaExpression> laterTargets = assignmentTargetsOfLaterOperand(node);
+    if (!laterTargets.isEmpty()) {
+      result.removeIf(
+          p -> mayBeChangedByAssignment(JavaExpression.fromNode(p), laterTargets, false));
+    }
     return result;
+  }
+
+  /**
+   * If {@code node} is the left operand of a binary operation, returns the variables that the right
+   * operand assigns. The right operand is evaluated after {@code node}, so its assignments might
+   * change the value of {@code node}'s parts before the binary operation's result is known.
+   * Otherwise, returns the empty list.
+   *
+   * @param node a node
+   * @return the variables that the operand evaluated after {@code node} assigns, or the empty list
+   */
+  private List<JavaExpression> assignmentTargetsOfLaterOperand(Node node) {
+    Tree tree = node.getTree();
+    if (tree == null) {
+      return Collections.emptyList();
+    }
+    TreePath path = analysis.atypeFactory.getPath(tree);
+    if (path == null) {
+      return Collections.emptyList();
+    }
+    Tree child = path.getLeaf();
+    TreePath parentPath = path.getParentPath();
+    while (parentPath != null && parentPath.getLeaf().getKind() == Tree.Kind.PARENTHESIZED) {
+      child = parentPath.getLeaf();
+      parentPath = parentPath.getParentPath();
+    }
+    if (parentPath == null
+        || !(parentPath.getLeaf() instanceof BinaryTree binary)
+        || binary.getLeftOperand() != child) {
+      return Collections.emptyList();
+    }
+    List<JavaExpression> targets = new ArrayList<>();
+    new AssignmentTargetScanner().scan(binary.getRightOperand(), targets);
+    return targets;
   }
 
   /**
@@ -1132,21 +1184,23 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns true if an assignment to one of the given targets might make {@code expr} evaluate to a
-   * different value than the value of the assignment whose side {@code expr} is. Returns false if
-   * no store can hold a value for {@code expr}.
+   * different value than the value that {@code expr} had when it was evaluated. Returns false if no
+   * store can hold a value for {@code expr}.
    *
-   * @param expr a side of an assignment
-   * @param targets the variables that an expression that contains {@code expr} assigns
+   * @param expr a side of an assignment, or an operand of a binary operation
+   * @param targets the variables that an expression that contains or follows {@code expr} assigns
+   * @param ignoreOwnLocation if true, ignore an assignment to the location that {@code expr}
+   *     denotes; see {@link #assignmentMayChange}
    * @return true if an assignment to one of {@code targets} might change the value of {@code expr}
    */
   @Pure
   private static boolean mayBeChangedByAssignment(
-      JavaExpression expr, List<JavaExpression> targets) {
+      JavaExpression expr, List<JavaExpression> targets, boolean ignoreOwnLocation) {
     if (!CFAbstractStore.canInsertJavaExpression(expr)) {
       return false;
     }
     for (JavaExpression target : targets) {
-      if (assignmentMayChange(target, expr, true)) {
+      if (assignmentMayChange(target, expr, ignoreOwnLocation)) {
         return true;
       }
     }
