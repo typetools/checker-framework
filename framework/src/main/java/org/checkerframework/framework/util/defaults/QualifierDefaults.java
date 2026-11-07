@@ -350,7 +350,9 @@ public class QualifierDefaults {
    * It composes with the {@code @DefaultQualifier} annotations on those elements, and it takes
    * precedence over them and over a default registered for an element that encloses {@code elem}.
    * The exception is a default for {@link TypeUseLocation#OTHERWISE}, which applies only where no
-   * default for a more concrete location applies; see {@link #applicationOrder}.
+   * registered or {@code @DefaultQualifier} default for a more concrete location applies; see
+   * {@link #applicationOrder}. Like every registered default, it takes precedence over the
+   * conservative defaults and the checked code defaults; see {@link #applyDefaultsElement}.
    *
    * @param elem the scope to set the default within
    * @param elementDefaultAnno the default to set
