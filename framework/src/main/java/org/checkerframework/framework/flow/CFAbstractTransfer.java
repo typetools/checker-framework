@@ -11,6 +11,7 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
@@ -1068,7 +1069,7 @@ public abstract class CFAbstractTransfer<
     }
     Tree child = path.getLeaf();
     TreePath parentPath = path.getParentPath();
-    while (parentPath != null && parentPath.getLeaf().getKind() == Tree.Kind.PARENTHESIZED) {
+    while (parentPath != null && parentPath.getLeaf() instanceof ParenthesizedTree) {
       child = parentPath.getLeaf();
       parentPath = parentPath.getParentPath();
     }
