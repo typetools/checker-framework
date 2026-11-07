@@ -172,8 +172,8 @@ public final class PurityChecker {
    * @param method a method or constructor, or null
    * @param env the processing environment
    * @return the purity kinds that {@code method} requires of every argument to one of its
-   *     functional-interface parameters; empty if {@code method} is null or has no purity
-   *     annotation
+   *     functional-interface parameters; never contains {@link PurityKind#SIDE_EFFECTS_ONLY}; empty
+   *     if {@code method} is null or has no purity annotation
    */
   public static EnumSet<PurityKind> functionalParameterKinds(
       AnnotationProvider annoProvider,
@@ -183,6 +183,9 @@ public final class PurityChecker {
       return EnumSet.noneOf(PurityKind.class);
     }
     EnumSet<PurityKind> result = PurityUtils.getPurityKinds(annoProvider, method);
+    // An argument is required to be side-effect-free, not to satisfy the method's own
+    // @SideEffectsOnly annotation, which no purity analysis of the argument's code could establish.
+    result.remove(PurityKind.SIDE_EFFECTS_ONLY);
     if (!result.contains(PurityKind.SIDE_EFFECT_FREE)
         && hasOrInheritsSideEffectsOnly(annoProvider, method, env)) {
       result.add(PurityKind.SIDE_EFFECT_FREE);
