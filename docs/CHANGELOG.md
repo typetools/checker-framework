@@ -3,7 +3,15 @@
 <!-- markdownlint-disable no-duplicate-heading -->
 <!-- pyml disable no-duplicate-heading -->
 
-## Version 4.3.2 (2026-11-01)
+## Version 4.4.1 (2026-12-01)
+
+### User-visible changes
+
+### Changes for type system implementers
+
+### Closed issues
+
+## Version 4.4.0 (2026-11-02)
 
 ### User-visible changes
 
@@ -35,16 +43,23 @@ Removed classes `ByteMath`, `ShortMath`, `IntegerMath`, `LongMath`, `FloatMath`,
 and `DoubleMath`.  Use `NumberMath.getNumberMath()` instead.  `NumberMath` is
 now a final, non-generic class.  `NumberMath.getNumberMath()` throws
 `UnsupportedOperationException`, rather than returning null, for an unsupported
+`Number` subclass, such as `BigInteger`.
 
 `PurityChecker.checkPurity()` takes two new arguments: the method declaration
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
 
+Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
+and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
+`addToImplicitlyConvertedLookupMap()`.
+
 Deprecated methods:
 
-* `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.getNoArgumentMethod()`
+* `DisallowedSideEffects.noArgumentMethod()` => `ElementUtils.resolveNoArgumentCall()`
 
 ### Closed issues
+
+\#6849, #6864, #6872, #8018, #8300, #8320, #8323, #8340, #8343.
 
 ## Version 4.3.1 (2026-10-08)
 
