@@ -7,7 +7,7 @@ import org.checkerframework.checker.testchecker.ainfer.qual.AinferSibling1;
 public class RelevantSubtype implements CharSequence {
 
     @org.checkerframework.dataflow.qual.Pure
-    public  @org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom int length(@org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType RelevantSubtype this) {
+    public  @org.checkerframework.checker.testchecker.ainfer.qual.AinferBottom int length(RelevantSubtype this) {
         return 0;
     }
 
@@ -15,12 +15,12 @@ public class RelevantSubtype implements CharSequence {
     // related to a listed type by subtyping.  The goal file shows that inference omits the
     // `@AinferTop` that it infers for this return type.
     @org.checkerframework.dataflow.qual.Pure
-    public char charAt(@org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType RelevantSubtype this,  @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType int index) {
+    public char charAt(RelevantSubtype this, int index) {
         return 'a';
     }
 
     @org.checkerframework.dataflow.qual.Pure
-    public @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType CharSequence subSequence(@org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType RelevantSubtype this,  @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType int start,  @org.checkerframework.checker.testchecker.ainfer.qual.AinferDefaultType int end) {
+    public CharSequence subSequence(RelevantSubtype this, int start, int end) {
         return this;
     }
 

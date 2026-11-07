@@ -70,6 +70,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -99,6 +100,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -989,8 +991,11 @@ public class WholeProgramInferenceJavaParserStorage
       ClassOrInterfaceAnnos classAnnos,
       @Nullable Collection<@BinaryName String> supertypes,
       @Nullable Collection<@BinaryName String> subtypes) {
-    if (classAnnos.callableDeclarations.isEmpty()) {
-      return;
+    for (FieldAnnos fieldAnnos : classAnnos.fields.values()) {
+      if (!containsAliasForTypeQualifier(fieldAnnos.declarationAnnotations)
+          && !isInScopeOfDefaultQualifier(fieldAnnos.declaration)) {
+        removeDefaultPrimaryAnnotations(fieldAnnos.type, TypeUseLocation.FIELD);
+      }
     }
 
     for (Map.Entry<String, CallableDeclarationAnnos> methodEntry :
@@ -999,7 +1004,183 @@ public class WholeProgramInferenceJavaParserStorage
       List<CallableDeclarationAnnos> inSupertypes = findOverrides(jvmSignature, supertypes);
       List<CallableDeclarationAnnos> inSubtypes = findOverrides(jvmSignature, subtypes);
 
-      wpiPrepareMethodForWriting(methodEntry.getValue(), inSupertypes, inSubtypes);
+      CallableDeclarationAnnos methodAnnos = methodEntry.getValue();
+      wpiPrepareMethodForWriting(methodAnnos, inSupertypes, inSubtypes);
+      // This runs after wpiPrepareMethodForWriting, which may consult the method's annotations.
+      removeDefaultPrimaryAnnotations(methodAnnos);
+    }
+  }
+
+  /**
+   * Removes, from the types in the signature of the given method or constructor, each primary
+   * annotation that is the default for its location. Writing such an annotation would be redundant.
+   *
+   * <p>Removes nothing if the method or constructor is in the scope of a {@code @DefaultQualifier}
+   * annotation, which might make a different qualifier the default.
+   *
+   * @param methodAnnos the method or constructor annotations to modify
+   */
+  private void removeDefaultPrimaryAnnotations(CallableDeclarationAnnos methodAnnos) {
+    if (isInScopeOfDefaultQualifier(methodAnnos.declaration)) {
+      return;
+    }
+    // A declaration annotation on a method that is an alias for a type qualifier applies to the
+    // method's return type.
+    if (!containsAliasForTypeQualifier(methodAnnos.declarationAnnotations)) {
+      removeDefaultPrimaryAnnotations(
+          methodAnnos.returnType,
+          methodAnnos.declaration.isConstructorDeclaration()
+              ? TypeUseLocation.CONSTRUCTOR_RESULT
+              : TypeUseLocation.RETURN);
+    }
+    removeDefaultPrimaryAnnotations(methodAnnos.receiverType, TypeUseLocation.RECEIVER);
+    if (methodAnnos.parameterTypes != null) {
+      for (int i = 0; i < methodAnnos.parameterTypes.size(); i++) {
+        if (!parameterHasAliasForTypeQualifier(methodAnnos, i + 1)
+            && !hasDefaultQualifierAnnotation(methodAnnos.declaration.getParameter(i))) {
+          removeDefaultPrimaryAnnotations(
+              methodAnnos.parameterTypes.get(i), TypeUseLocation.PARAMETER);
+        }
+      }
+    }
+  }
+
+  /**
+   * Returns true if {@code node} is in the scope of a {@code @DefaultQualifier} annotation: that
+   * is, if such an annotation is written on {@code node}, on a declaration that encloses it, or on
+   * its package. In that case, the qualifier that a location has when no qualifier is written there
+   * might differ from the default that {@link WholeProgramInferenceScenesStorage#isDefaultFor}
+   * computes, so removing an inferred qualifier might change the meaning of the output.
+   *
+   * <p>This is conservative: it does not check which hierarchies or locations the
+   * {@code @DefaultQualifier} annotations affect.
+   *
+   * @param node a JavaParser node for a declaration
+   * @return true if {@code node} is in the scope of a {@code @DefaultQualifier} annotation
+   */
+  private boolean isInScopeOfDefaultQualifier(Node node) {
+    for (Node n = node; n != null; n = n.getParentNode().orElse(null)) {
+      if (hasDefaultQualifierAnnotation(n)) {
+        return true;
+      }
+      if (n instanceof CompilationUnit cu) {
+        // A package's annotations are written in its package-info.java file, not in this
+        // compilation unit.
+        String packageName =
+            cu.getPackageDeclaration().map(PackageDeclaration::getNameAsString).orElse("");
+        PackageElement packageElt = elements.getPackageElement(packageName);
+        if (packageElt != null) {
+          for (AnnotationMirror anno : packageElt.getAnnotationMirrors()) {
+            if (isDefaultQualifierName(AnnotationUtils.annotationName(anno))) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if {@code node} is written with a {@code @DefaultQualifier} annotation (or the
+   * container annotation for repeated {@code @DefaultQualifier} annotations).
+   *
+   * @param node a JavaParser node
+   * @return true if {@code node} is written with a {@code @DefaultQualifier} annotation
+   */
+  private static boolean hasDefaultQualifierAnnotation(Node node) {
+    if (node instanceof NodeWithAnnotations<?> nodeWithAnnos) {
+      for (AnnotationExpr anno : nodeWithAnnos.getAnnotations()) {
+        if (isDefaultQualifierName(anno.getNameAsString())) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if {@code name} is the name of {@code @DefaultQualifier} or of its container
+   * annotation {@code @DefaultQualifier.List}. Because a name written in source code might be
+   * simple, partially qualified, or fully qualified, this is conservative: it matches any name that
+   * ends with {@code DefaultQualifier} or {@code DefaultQualifier.List}, and also the simple name
+   * {@code List}.
+   *
+   * @param name an annotation name, as written in source code or as a canonical name
+   * @return true if {@code name} might be the name of {@code @DefaultQualifier} or its container
+   */
+  private static boolean isDefaultQualifierName(String name) {
+    return name.equals("DefaultQualifier")
+        || name.endsWith(".DefaultQualifier")
+        || name.equals("List") // might be the simple name of DefaultQualifier.List
+        || name.endsWith("DefaultQualifier.List");
+  }
+
+  /**
+   * Returns true if whole-program inference inferred, for the given formal parameter, a declaration
+   * annotation that is an alias for a type qualifier.
+   *
+   * @param methodAnnos the method or constructor annotations
+   * @param index1based the 1-based index of a formal parameter
+   * @return true if the formal parameter has a declaration annotation that is an alias for a type
+   *     qualifier
+   */
+  private boolean parameterHasAliasForTypeQualifier(
+      CallableDeclarationAnnos methodAnnos, int index1based) {
+    if (methodAnnos.paramsDeclAnnos == null) {
+      return false;
+    }
+    for (CallableDeclarationAnnos.ParamDeclAnno paramDeclAnno : methodAnnos.paramsDeclAnnos) {
+      if (paramDeclAnno.index1based() == index1based
+          && WholeProgramInferenceScenesStorage.isAliasForTypeQualifier(
+              paramDeclAnno.annotation(), atypeFactory)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if {@code declarationAnnotations} contains an alias for a type qualifier. Reading
+   * the output file gives the annotated element the aliased type qualifier, so none of the
+   * element's type annotations is redundant, even one that is the default.
+   *
+   * @param declarationAnnotations the declaration annotations that whole-program inference inferred
+   *     for an element, or null if there are none
+   * @return true if {@code declarationAnnotations} contains an alias for a type qualifier
+   */
+  private boolean containsAliasForTypeQualifier(
+      @Nullable Set<AnnotationMirror> declarationAnnotations) {
+    if (declarationAnnotations == null) {
+      return false;
+    }
+    for (AnnotationMirror anno : declarationAnnotations) {
+      if (WholeProgramInferenceScenesStorage.isAliasForTypeQualifier(anno, atypeFactory)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Removes from {@code atm} each primary annotation that is the default for {@code location}.
+   * Writing such an annotation would be redundant.
+   *
+   * <p>Does nothing if {@code atm} is a type variable or a wildcard. A primary annotation on a use
+   * of a type variable or wildcard overrides its bounds, so it is never redundant.
+   *
+   * @param atm a type to modify, or null
+   * @param location the location of {@code atm}
+   */
+  private void removeDefaultPrimaryAnnotations(
+      @Nullable AnnotatedTypeMirror atm, TypeUseLocation location) {
+    if (atm == null || atm.getKind() == TypeKind.TYPEVAR || atm.getKind() == TypeKind.WILDCARD) {
+      return;
+    }
+    for (AnnotationMirror anno : new ArrayList<>(atm.getPrimaryAnnotations())) {
+      if (WholeProgramInferenceScenesStorage.isDefaultFor(anno, location, atm, atypeFactory)) {
+        atm.removePrimaryAnnotation(anno);
+      }
     }
   }
 
