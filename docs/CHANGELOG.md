@@ -49,6 +49,14 @@ now a final, non-generic class.  `NumberMath.getNumberMath()` throws
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
 
+In the control-flow graph, the guard of a `case` is evaluated after the
+`CaseNode`, and only if the case's labels match.  (The last case of an
+exhaustive switch has no `CaseNode`; its guard is evaluated unconditionally.)  Removed
+`CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
+The `CaseNode` constructor takes a new `alwaysMatches` argument, and the new
+method `CaseNode.alwaysMatches()` returns it; for such a `CaseNode`, the labels
+are not tested, and `CFAbstractTransfer.visitCase()` returns a regular store.
+
 Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
 and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
 `addToImplicitlyConvertedLookupMap()`.

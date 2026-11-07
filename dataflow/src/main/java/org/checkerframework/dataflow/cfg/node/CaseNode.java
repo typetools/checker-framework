@@ -35,8 +35,11 @@ public class CaseNode extends Node {
    */
   protected final List<Node> caseExprs;
 
-  /** The guard (the expression in the {@code when} clause) for this case. */
-  protected final @Nullable Node guard;
+  /**
+   * True if the case expressions match every value of the switch selector expression that is tested
+   * against them, so they are not tested at run time.
+   */
+  protected final boolean alwaysMatches;
 
   /**
    * Create a new CaseNode.
@@ -45,20 +48,21 @@ public class CaseNode extends Node {
    * @param selectorExprAssignment the Node for the assignment of the switch selector expression to
    *     a synthetic local variable
    * @param caseExprs the case expression(s) to match the switch expression against
-   * @param guard the guard expression or null
+   * @param alwaysMatches true if the case expressions match every value of the switch selector
+   *     expression that is tested against them
    * @param types a factory of utility methods for operating on types
    */
   public CaseNode(
       CaseTree tree,
       AssignmentNode selectorExprAssignment,
       List<Node> caseExprs,
-      @Nullable Node guard,
+      boolean alwaysMatches,
       Types types) {
     super(types.getNoType(TypeKind.NONE));
     this.tree = tree;
     this.selectorExprAssignment = selectorExprAssignment;
     this.caseExprs = caseExprs;
-    this.guard = guard;
+    this.alwaysMatches = alwaysMatches;
   }
 
   /**
@@ -82,12 +86,15 @@ public class CaseNode extends Node {
   }
 
   /**
-   * Gets the node for the guard (the expression in the {@code when} clause).
+   * Returns true if the case expressions match every value of the switch selector expression that
+   * is tested against them, so they are not tested at run time. For example, this is true of the
+   * last case of an exhaustive switch.
    *
-   * @return the node for the guard
+   * @return true if the case expressions match every value of the switch selector expression that
+   *     is tested against them
    */
-  public @Nullable Node getGuard() {
-    return guard;
+  public boolean alwaysMatches() {
+    return alwaysMatches;
   }
 
   @Override
@@ -111,12 +118,13 @@ public class CaseNode extends Node {
       return false;
     }
     return getSwitchOperand().equals(other.getSwitchOperand())
-        && getCaseOperands().equals(other.getCaseOperands());
+        && getCaseOperands().equals(other.getCaseOperands())
+        && alwaysMatches == other.alwaysMatches;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getSwitchOperand(), getCaseOperands());
+    return Objects.hash(getSwitchOperand(), getCaseOperands(), alwaysMatches);
   }
 
   @Override

@@ -12,6 +12,7 @@ import javax.tools.Diagnostic;
 import org.checkerframework.checker.mustcall.qual.MustCall;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SupportedOptions;
@@ -56,6 +57,13 @@ public class MustCallChecker extends BaseTypeChecker {
   public static final String NO_RESOURCE_ALIASES = "noResourceAliases";
 
   /**
+   * The canonical name of {@code java.lang.MatchException}. {@code MatchException.class} is not
+   * available before Java 21.
+   */
+  @SuppressWarnings("signature:assignment") // the string literal is a canonical name
+  private static final @CanonicalName String MATCH_EXCEPTION_NAME = "java.lang.MatchException";
+
+  /**
    * The exception types in this set are ignored in the CFG when determining if a resource leaks
    * along an exceptional path. These kinds of errors fall into a few categories: runtime errors,
    * errors that the JVM can issue on any statement, and errors that can be prevented by running
@@ -77,6 +85,8 @@ public class MustCallChecker extends BaseTypeChecker {
               ClassFormatError.class.getCanonicalName(),
               NoClassDefFoundError.class.getCanonicalName(),
               OutOfMemoryError.class.getCanonicalName(),
+              // An exhaustive switch throws this only if a class changed after compilation.
+              MATCH_EXCEPTION_NAME,
               // It's not our problem if the Java type system is wrong.
               ClassCastException.class.getCanonicalName(),
               // It's not our problem if the code is going to divide by zero.
