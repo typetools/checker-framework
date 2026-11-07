@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.expression.ClassName;
@@ -103,7 +104,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
    * the 'invariant' annotation.
    */
   @Override
-  public void updateForMethodCall(MethodInvocationNode n, V val) {
+  public void updateForMethodCall(MethodInvocationNode n, @Nullable V val) {
     // Remove invariant annotated fields to avoid performance issue reported in #1438.
     for (FieldAccess invariantField : invariantFields.keySet()) {
       fieldValues.remove(invariantField);
