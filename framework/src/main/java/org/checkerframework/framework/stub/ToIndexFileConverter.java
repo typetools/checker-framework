@@ -4,6 +4,7 @@ import com.github.javaparser.ParseException;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
@@ -11,6 +12,7 @@ import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.CompactConstructorDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
@@ -382,7 +384,39 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   public Void visit(RecordDeclaration decl, AElement elem) {
     AClass clazz = classFor(decl, elem);
     visitDecl(decl, clazz);
+    // Each record component has a backing field of the same name and type.
+    for (Parameter component : decl.getParameters()) {
+      AField field = clazz.fields.getVivify(component.getNameAsString());
+      Type type = parameterType(component);
+      visitType(type, field.type);
+      visitDeclAndTypeAnnotations(
+          component.getAnnotations(), ElementType.FIELD, field, type, field.type);
+    }
     return super.visit(decl, clazz);
+  }
+
+  @Override
+  public Void visit(CompactConstructorDeclaration decl, AElement elem) {
+    Node parent = decl.getParentNode().orElse(null);
+    if (!(parent instanceof RecordDeclaration)) {
+      throw new BugInCF("compact constructor not in a record: " + decl);
+    }
+    // A compact constructor declares the canonical constructor, whose formal parameters are the
+    // record components.
+    StringBuilder sb = new StringBuilder("<init>(");
+    for (Parameter component : ((RecordDeclaration) parent).getParameters()) {
+      sb.append(getJVML(parameterType(component)));
+    }
+    sb.append(")V");
+    AMethod method = ((AClass) elem).methods.getVivify(sb.toString());
+    // A type annotation on a constructor declaration applies to the type of the constructed object.
+    visitDeclAndTypeAnnotations(
+        decl.getAnnotations(),
+        ElementType.CONSTRUCTOR,
+        method,
+        new ClassOrInterfaceType().setName(decl.getNameAsString()),
+        method.returnType);
+    return decl.getBody().accept(this, method);
   }
 
   @Override

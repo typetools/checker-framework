@@ -131,15 +131,45 @@ public class ToIndexFileConverterTest {
    * @param method the JVML representation of a method, such as {@code "myMethod(I)V"}
    */
   private static void assertMethod(String jaif, String className, String method) {
+    if (!hasMethod(jaif, className, method)) {
+      Assert.fail("no method " + method + " in class " + className + System.lineSeparator() + jaif);
+    }
+  }
+
+  /**
+   * Asserts that {@code jaif} does not declare {@code method} in {@code className}.
+   *
+   * @param jaif a JAIF
+   * @param className the name of a class, without its package; a {@code $} separates a nested class
+   *     from its enclosing class
+   * @param method the JVML representation of a method, such as {@code "myMethod(I)V"}
+   */
+  private static void assertNoMethod(String jaif, String className, String method) {
+    if (hasMethod(jaif, className, method)) {
+      Assert.fail(
+          "unexpected method " + method + " in class " + className + System.lineSeparator() + jaif);
+    }
+  }
+
+  /**
+   * Returns true if {@code jaif} declares {@code method} in {@code className}.
+   *
+   * @param jaif a JAIF
+   * @param className the name of a class, without its package; a {@code $} separates a nested class
+   *     from its enclosing class
+   * @param method the JVML representation of a method, such as {@code "myMethod(I)V"}
+   * @return true if {@code jaif} declares {@code method} in {@code className}
+   */
+  private static boolean hasMethod(String jaif, String className, String method) {
     String currentClass = null;
     for (String line : jaif.split("\\R")) {
       if (line.startsWith("class ") && line.endsWith(":")) {
         currentClass = line.substring("class ".length(), line.length() - 1);
       } else if (line.strip().equals("method " + method + ":") && className.equals(currentClass)) {
-        return;
+        return true;
       }
     }
-    Assert.fail("no method " + method + " in class " + className + System.lineSeparator() + jaif);
+    return false;
   }
 
   /**
@@ -194,6 +224,29 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass$MyNestedClass", "myNestedMethod()V");
     assertMethod(jaif, "MyClass$MyEnum", "myEnumMethod()V");
     assertMethod(jaif, "MyClass$MyRecord", "myRecordMethod()V");
+    assertNoMethod(jaif, "MyClass", "myNestedMethod()V");
+    assertNoMethod(jaif, "MyClass", "myEnumMethod()V");
+    assertNoMethod(jaif, "MyClass", "myRecordMethod()V");
+  }
+
+  /**
+   * The annotations of a record component are recorded on its backing field, and those of a compact
+   * constructor on the canonical constructor.
+   */
+  @Test
+  public void testRecordComponentsAndCompactConstructor() throws Exception {
+    String[] stubFileLines = {
+      "package p;",
+      "import org.checkerframework.checker.nullness.qual.Nullable;",
+      "record C(int i, @Nullable @Deprecated String f) {",
+      "  @A C {}",
+      "}"
+    };
+    AField field = fieldOfStub(stubFileLines);
+    Assert.assertNotNull("@Deprecated was not recorded on the field", field.lookup("Deprecated"));
+    Assert.assertNotNull("@Nullable was not recorded on the type", field.type.lookup("Nullable"));
+    AMethod constructor = methodOfStub("<init>(ILjava/lang/String;)V", stubFileLines);
+    Assert.assertNotNull("@A was not recorded on the compact constructor", constructor.lookup("A"));
   }
 
   /** An enum constant with a class body does not crash the converter. */
@@ -209,6 +262,7 @@ public class ToIndexFileConverterTest {
             "  void myEnumMethod() {}",
             "}");
     assertMethod(jaif, "MyEnum", "myEnumMethod()V");
+    assertNoMethod(jaif, "MyEnum", "myConstantMethod()V");
   }
 
   /** A single-type import that does not match a name does not prevent resolving the name. */
