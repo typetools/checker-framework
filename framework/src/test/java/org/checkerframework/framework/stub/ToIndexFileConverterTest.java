@@ -263,9 +263,9 @@ public class ToIndexFileConverterTest {
 
   /**
    * The annotations of a record component propagate to the implicitly declared accessor and
-   * canonical-constructor parameter, if they are applicable to them, but not to explicitly
-   * declared ones. An annotation that is applicable only to record components is not recorded on
-   * the backing field.
+   * canonical-constructor parameter, if they are applicable to them, but not to explicitly declared
+   * ones. An annotation that is applicable only to record components is not recorded on the backing
+   * field.
    */
   @Test
   public void testRecordComponentPropagation() throws Exception {
@@ -321,7 +321,9 @@ public class ToIndexFileConverterTest {
         constructor.parameters.get(1).lookup("Deprecated"));
   }
 
-  /** The annotations of a record component do not propagate to an explicit canonical constructor. */
+  /**
+   * The annotations of a record component do not propagate to an explicit canonical constructor.
+   */
   @Test
   public void testRecordComponentExplicitCanonicalConstructor() throws Exception {
     AClass clazz = classOfStub("package p;", "record C(@Deprecated int i) {", "  C(int i) {}", "}");
