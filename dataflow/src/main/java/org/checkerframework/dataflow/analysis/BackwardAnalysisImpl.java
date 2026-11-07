@@ -70,25 +70,6 @@ public class BackwardAnalysisImpl<
   }
 
   @Override
-  public void performAnalysis(ControlFlowGraph cfg) {
-    if (isRunning) {
-      throw new BugInCF("performAnalysis() shouldn't be called when the analysis is running.");
-    }
-    isRunning = true;
-    try {
-      init(cfg);
-      while (!worklist.isEmpty()) {
-        Block b = worklist.remove();
-        performAnalysisBlock(b);
-      }
-    } finally {
-      assert isRunning;
-      // In case performAnalysisBlock crashed, reset isRunning to false.
-      isRunning = false;
-    }
-  }
-
-  @Override
   public void performAnalysisBlock(Block b) {
     switch (b.getType()) {
       case REGULAR_BLOCK -> {
