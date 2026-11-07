@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -935,6 +936,27 @@ public class ProperType extends AbstractType {
         new ProperType(atm, qualifierVars, context, ignoreAnnotations, origin, originVariables);
     result.upToDateVersion = upToDateVersion;
     return result;
+  }
+
+  /**
+   * Returns a copy of this type (see {@link #copy}) in which {@code annos} replace the primary
+   * annotations in their hierarchies. The primary annotations in other hierarchies are unchanged.
+   *
+   * <p>The copy ignores annotations (see {@link AbstractType#ignoreAnnotations}) if this type does
+   * and {@code annos} do not cover every qualifier hierarchy, because then some of the copy's
+   * primary annotations are still ones that should be ignored. Otherwise, the copy's primary
+   * annotations are all from {@code annos}, so they are not ignored.
+   *
+   * @param annos the primary annotations to use, at most one per hierarchy
+   * @return a copy of this type in which {@code annos} replace the primary annotations in their
+   *     hierarchies
+   */
+  public ProperType withPrimaryAnnotationsReplaced(Set<? extends AnnotationMirror> annos) {
+    AnnotatedTypeMirror atm = type.deepCopy();
+    atm.replaceAnnotations(annos);
+    int numHierarchies = context.typeFactory.getQualifierHierarchy().getTopAnnotations().size();
+    boolean ignore = ignoreAnnotations && annos.size() < numHierarchies;
+    return withAnnotatedType(atm, ignore);
   }
 
   @Override
