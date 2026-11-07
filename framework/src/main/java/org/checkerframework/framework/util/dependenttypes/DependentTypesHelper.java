@@ -397,8 +397,7 @@ public class DependentTypesHelper {
 
     // As in atInvocation, adapt the declared type of the component, then copy the adapted
     // annotations to `type`, except at locations where type variables have been substituted.
-    AnnotatedTypeMirror declaredType =
-        ((AnnotatedExecutableType) factory.getAnnotatedType(accessor)).getReturnType();
+    AnnotatedTypeMirror declaredType = factory.getAnnotatedType(accessor).getReturnType();
     if (!hasDependentType(declaredType)) {
       return;
     }
