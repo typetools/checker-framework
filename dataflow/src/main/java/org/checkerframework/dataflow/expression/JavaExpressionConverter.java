@@ -92,6 +92,12 @@ public abstract class JavaExpressionConverter extends JavaExpressionVisitor<Java
   }
 
   @Override
+  protected JavaExpression visitIteratedCollectionElement(
+      IteratedCollectionElement iteratedCollectionElt, Void unused) {
+    return iteratedCollectionElt;
+  }
+
+  @Override
   protected JavaExpression visitMethodCall(MethodCall methodCallExpr, Void unused) {
     JavaExpression receiver = convert(methodCallExpr.getReceiver());
     List<JavaExpression> args = convert(methodCallExpr.getArguments());
