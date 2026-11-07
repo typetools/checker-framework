@@ -55,8 +55,8 @@ public class VariableBounds {
   private @Nullable ProperType instantiation = null;
 
   /**
-   * The number of times {@link #instantiation} has been set, replaced, or cleared; see {@link
-   * #getInstantiationChanges}.
+   * The number of times {@link #instantiation} has changed, by being set to a different type or
+   * cleared; see {@link #getInstantiationChanges}.
    *
    * <p>A {@link ProperType} with an origin sums this count over the variables that its origin
    * mentions (see {@link ProperType#instantiationVersion}), and applies instantiations to its
@@ -218,11 +218,11 @@ public class VariableBounds {
   }
 
   /**
-   * Returns a number that changes whenever the current instantiation of this variable is set,
-   * replaced, or cleared.
+   * Returns a number that changes whenever the current instantiation of this variable changes:
+   * when it is set to a type that differs from the current one, or cleared. Setting it to a type
+   * equal to the current one does not change this number.
    *
-   * @return a number that changes whenever the current instantiation of this variable is set,
-   *     replaced, or cleared
+   * @return a number that changes whenever the current instantiation of this variable changes
    */
   int getInstantiationChanges() {
     return instantiationChanges;
