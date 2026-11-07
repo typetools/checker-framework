@@ -32,6 +32,18 @@ public class AssignmentInComparison {
     }
   }
 
+  static void parenthesizedLocalTarget(@Nullable AssignmentInComparison n) {
+    if (n == null) {
+      return;
+    }
+    if (((n) = n.next) != null) {
+      n.toString();
+      // After the assignment, `n.next` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      n.next.toString();
+    }
+  }
+
   static void localTargetFieldRhs(@Nullable AssignmentInComparison m, AssignmentInComparison n) {
     if ((m = n.next) != null) {
       m.toString();
@@ -212,6 +224,7 @@ public class AssignmentInComparison {
     return o;
   }
 
+  @SuppressWarnings("unchecked") // cast to T
   static <T> void arrayTargetTypeVariable(@Nullable T[] ts, @Nullable String[][] ss) {
     // :: warning: [unchecked] unchecked cast
     if ((ts[0] = (T) ss[0][0]) != null) {
