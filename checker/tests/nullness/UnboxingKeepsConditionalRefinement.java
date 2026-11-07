@@ -109,4 +109,52 @@ public class UnboxingKeepsConditionalRefinement {
       o.hashCode();
     }
   }
+
+  // A boxed constant, which is unboxed because the other operand is primitive.
+
+  @EnsuresNonNullIf(expression = "#1", result = true)
+  static boolean isNNPrim(@Nullable Object o) {
+    return o != null;
+  }
+
+  void equalToBoxedConstant(@Nullable Object o) {
+    if (isNNPrim(o) == (Boolean) true) {
+      o.hashCode();
+    }
+  }
+
+  void notEqualBoxedConstant(@Nullable Object o) {
+    if (isNNPrim(o) != (Boolean) true) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    } else {
+      o.hashCode();
+    }
+  }
+
+  void notBoxedConstant(@Nullable Object o) {
+    if (isNNPrim(o) == !(Boolean) false) {
+      o.hashCode();
+    }
+  }
+
+  // Java compares two boxed operands of == and != by reference, so their values may be equal even
+  // when the comparison is false.  isNN might return a Boolean that is not Boolean.TRUE.
+
+  void equalToBothBoxed(@Nullable Object o) {
+    if (isNN(o) == (Boolean) false) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    } else {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
+  void notEqualBothBoxed(@Nullable Object o) {
+    if (isNN(o) != (Boolean) false) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
 }
