@@ -21,7 +21,8 @@ Added support for IntelliJ IDEA annotation files (`annotations.xml`) via the
 The `-Astubs` and `-Aajava` command-line options accept `.zip` archives, in
 addition to `.jar` archives and directories.  An archive is read only if it is
 named in the option; an archive within a directory that is named in the option
-is ignored.
+is ignored.  Within a directory or archive, hidden files (whose names start with
+`.`), such as the `._Foo.astub` files that macOS creates, are ignored.
 
 All ajava files must end with `.ajava`.  Stub files must not end with `.ajava`;
 they conventionally end `.astub`.
@@ -59,9 +60,6 @@ now a final, non-generic class.  `NumberMath.getNumberMath()` throws
 `PurityChecker.checkPurity()` takes two new arguments: the method declaration
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
-
-`AnnotationFileElementTypes.parseAjavaFileWithTree()` takes an
-`AnnotationFileResource` rather than a path.
 
 Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
 and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
