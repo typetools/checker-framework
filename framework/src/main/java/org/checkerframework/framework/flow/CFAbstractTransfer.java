@@ -22,7 +22,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -97,7 +96,6 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.PatternCaseLabelUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The default analysis transfer function for the Checker Framework. It propagates information
@@ -1147,43 +1145,6 @@ public abstract class CFAbstractTransfer<
     return createTransferResult(value, in);
   }
 
-  /**
-   * Refines each binding variable in a deconstruction pattern to the primary annotations of the
-   * corresponding record component. Recurses into nested deconstruction patterns.
-   *
-   * @param deconstructorPatternNode a deconstruction pattern
-   * @param store the store to update
-   */
-  protected void refineDeconstructorBindingVariables(
-      DeconstructorPatternNode deconstructorPatternNode, S store) {
-    TypeElement recordElement = TypesUtils.getTypeElement(deconstructorPatternNode.getType());
-    if (recordElement == null) {
-      return;
-    }
-    List<? extends RecordComponentElement> components = recordElement.getRecordComponents();
-    List<Node> nestedPatterns = deconstructorPatternNode.getNestedPatterns();
-    if (components.size() != nestedPatterns.size()) {
-      return;
-    }
-    for (int i = 0; i < nestedPatterns.size(); i++) {
-      Node nestedPattern = nestedPatterns.get(i);
-      if (nestedPattern instanceof LocalVariableNode nestedBindingVar) {
-        ExecutableElement accessor = components.get(i).getAccessor();
-        if (accessor == null) {
-          continue;
-        }
-        AnnotatedTypeMirror componentType =
-            analysis.atypeFactory.getAnnotatedType(accessor).getReturnType();
-        JavaExpression expr = JavaExpression.fromNode(nestedBindingVar);
-        for (AnnotationMirror anno : componentType.getPrimaryAnnotations()) {
-          store.insertOrRefine(expr, anno);
-        }
-      } else if (nestedPattern instanceof DeconstructorPatternNode nestedDeconstructorPatternNode) {
-        refineDeconstructorBindingVariables(nestedDeconstructorPatternNode, store);
-      }
-    }
-  }
-
   @Override
   public TransferResult<V, S> visitInstanceOf(InstanceOfNode node, TransferInput<V, S> in) {
     TransferResult<V, S> result = super.visitInstanceOf(node, in);
@@ -1194,15 +1155,13 @@ public abstract class CFAbstractTransfer<
         analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
     // Only the variable of a binding pattern is refined by the expression's type.  The binding
     // variables of a deconstruction pattern hold record components, whose types may be unrelated
-    // to the expression's type, so they are refined by the types of the record components.
+    // to the expression's type.
     LocalVariableNode bindingVar = node.getBindingPatternVariable();
     if (bindingVar != null) {
       JavaExpression expr = JavaExpression.fromNode(bindingVar);
       for (AnnotationMirror anno : expType.getAnnotations()) {
         store.insertOrRefine(expr, anno);
       }
-    } else if (node.getPatternNode() instanceof DeconstructorPatternNode deconstructorPatternNode) {
-      refineDeconstructorBindingVariables(deconstructorPatternNode, store);
     }
 
     // The "reference type" is the type after "instanceof".
