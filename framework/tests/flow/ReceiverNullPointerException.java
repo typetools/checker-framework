@@ -183,6 +183,20 @@ public class ReceiverNullPointerException extends ReceiverNullPointerExceptionSu
     }
   }
 
+  static Color favoriteColor;
+
+  void enumFieldMayBeNull(@Odd String p1, String p2) {
+    String l1 = p1;
+    try {
+      mayThrow();
+      l1 = p2;
+      favoriteColor.equals(l1 = p1);
+    } catch (NullPointerException e) {
+      // :: error: [assignment]
+      @Odd String l3 = l1;
+    }
+  }
+
   void switchExpression(@Odd String p1, String p2, int i) {
     String l1 = p1;
     try {
