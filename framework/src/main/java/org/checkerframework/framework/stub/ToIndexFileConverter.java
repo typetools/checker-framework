@@ -4,6 +4,7 @@ import com.github.javaparser.ParseException;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
@@ -11,6 +12,7 @@ import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.CompactConstructorDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.EnumConstantDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
@@ -382,7 +384,89 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   public Void visit(RecordDeclaration decl, AElement elem) {
     AClass clazz = classFor(decl, elem);
     visitDecl(decl, clazz);
+    NodeList<Parameter> components = decl.getParameters();
+    String canonicalDescriptor = canonicalConstructorDescriptor(decl);
+    // The canonical constructor is implicitly declared, or is a compact constructor, unless the
+    // record explicitly declares it in non-compact form.
+    boolean canonicalIsImplicit = true;
+    for (ConstructorDeclaration constructor : decl.getConstructors()) {
+      StringBuilder sb = new StringBuilder("<init>(");
+      for (Parameter param : constructor.getParameters()) {
+        sb.append(getJVML(parameterType(param)));
+      }
+      sb.append(")V");
+      if (sb.toString().equals(canonicalDescriptor)) {
+        canonicalIsImplicit = false;
+      }
+    }
+    // An annotation on a record component propagates to each implicitly declared member that
+    // corresponds to the component, if the annotation is applicable to that member (JLS 8.10.3).
+    for (int i = 0; i < components.size(); i++) {
+      Parameter component = components.get(i);
+      String name = component.getNameAsString();
+      Type type = parameterType(component);
+      List<AnnotationExpr> annos = component.getAnnotations();
+
+      // Each record component has a backing field of the same name and type.
+      AField field = clazz.fields.getVivify(name);
+      visitType(type, field.type);
+      visitRecordComponentAnnotations(annos, ElementType.FIELD, field, type, field.type, true);
+
+      // Create scene elements for implicitly declared members only if there is something to
+      // record on them, because the JAIF writer prints every method, even an unannotated one.
+      if (!component.findFirst(AnnotationExpr.class).isPresent()) {
+        continue;
+      }
+      if (decl.getMethodsBySignature(name).isEmpty()) {
+        AMethod accessor = clazz.methods.getVivify(name + "()" + getJVML(type));
+        visitType(type, accessor.returnType);
+        visitRecordComponentAnnotations(
+            annos, ElementType.METHOD, accessor, type, accessor.returnType, false);
+      }
+      if (canonicalIsImplicit) {
+        AField param = clazz.methods.getVivify(canonicalDescriptor).parameters.getVivify(i);
+        visitType(type, param.type);
+        visitRecordComponentAnnotations(
+            annos, ElementType.PARAMETER, param, type, param.type, false);
+      }
+    }
     return super.visit(decl, clazz);
+  }
+
+  /**
+   * Returns the JVML descriptor of a record's canonical constructor, whose formal parameters are
+   * the record components.
+   *
+   * @param record a record declaration
+   * @return the JVML descriptor of {@code record}'s canonical constructor, such as {@code
+   *     "<init>(ILjava/lang/String;)V"}
+   */
+  private String canonicalConstructorDescriptor(RecordDeclaration record) {
+    StringBuilder sb = new StringBuilder("<init>(");
+    for (Parameter component : record.getParameters()) {
+      sb.append(getJVML(parameterType(component)));
+    }
+    sb.append(")V");
+    return sb.toString();
+  }
+
+  @Override
+  public Void visit(CompactConstructorDeclaration decl, AElement elem) {
+    Node parent = decl.getParentNode().orElse(null);
+    if (!(parent instanceof RecordDeclaration record)) {
+      throw new BugInCF("compact constructor not in a record: " + decl);
+    }
+    // A compact constructor declares the canonical constructor.  `visit(RecordDeclaration)` records
+    // the annotations of its implicitly declared formal parameters.
+    AMethod method = ((AClass) elem).methods.getVivify(canonicalConstructorDescriptor(record));
+    // A type annotation on a constructor declaration applies to the type of the constructed object.
+    visitDeclAndTypeAnnotations(
+        decl.getAnnotations(),
+        ElementType.CONSTRUCTOR,
+        method,
+        new ClassOrInterfaceType().setName(decl.getNameAsString()),
+        method.returnType);
+    return decl.getBody().accept(this, method);
   }
 
   @Override
@@ -595,8 +679,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       ADeclaration decl,
       Type type,
       ATypeElement typeElem) {
-    List<TypePathEntry> elementLoc =
-        Collections.nCopies(type.getArrayLevel(), TypePathEntry.ARRAY_ELEMENT);
     for (AnnotationExpr expr : exprs) {
       Annotation anno = extractAnnotation(expr);
       if (anno == null) {
@@ -604,9 +686,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       }
       List<ElementType> targets = getTargets(expr);
       if (targets != null && targets.contains(ElementType.TYPE_USE) && !type.isVoidType()) {
-        ATypeElement elementType =
-            elementLoc.isEmpty() ? typeElem : typeElem.innerTypes.getVivify(elementLoc);
-        elementType.tlAnnotationsHere.add(anno);
+        innermostComponentType(type, typeElem).tlAnnotationsHere.add(anno);
         if (targets.contains(declTarget)) {
           decl.tlAnnotationsHere.add(anno);
         }
@@ -614,6 +694,69 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         decl.tlAnnotationsHere.add(anno);
       }
     }
+  }
+
+  /**
+   * Copies the annotations of a record component to a member that corresponds to the component: its
+   * backing field, its implicitly declared accessor method, or the corresponding formal parameter
+   * of the implicitly declared or compact canonical constructor.
+   *
+   * <p>Unlike {@link #visitDeclAndTypeAnnotations}, this omits an annotation whose {@code @Target}
+   * is known and does not permit the member (JLS 8.10.3). Such an annotation may be applicable to
+   * the record component itself, or to another member.
+   *
+   * @param exprs the annotations of the record component
+   * @param declTarget the kind of member, such as {@link ElementType#FIELD}
+   * @param decl the scene element for the member
+   * @param type the type of the record component
+   * @param typeElem the scene element for the member's type
+   * @param keepUnknown if true, an annotation whose {@code @Target} cannot be determined is
+   *     recorded as a declaration annotation of the member; if false, it is omitted
+   */
+  private void visitRecordComponentAnnotations(
+      List<AnnotationExpr> exprs,
+      ElementType declTarget,
+      ADeclaration decl,
+      Type type,
+      ATypeElement typeElem,
+      boolean keepUnknown) {
+    for (AnnotationExpr expr : exprs) {
+      Annotation anno = extractAnnotation(expr);
+      if (anno == null) {
+        continue;
+      }
+      List<ElementType> targets = getTargets(expr);
+      if (targets == null) {
+        if (keepUnknown) {
+          decl.tlAnnotationsHere.add(anno);
+        }
+        continue;
+      }
+      if (targets.contains(ElementType.TYPE_USE)) {
+        innermostComponentType(type, typeElem).tlAnnotationsHere.add(anno);
+      }
+      if (targets.contains(declTarget)) {
+        decl.tlAnnotationsHere.add(anno);
+      }
+    }
+  }
+
+  /**
+   * Returns the scene element for the innermost component type of a type: for {@code String[][]},
+   * the scene element for {@code String}. For a type that is not an array type, that is the scene
+   * element for the type itself.
+   *
+   * @param type a type
+   * @param typeElem the scene element for {@code type}
+   * @return the scene element for the innermost component type of {@code type}
+   */
+  private static ATypeElement innermostComponentType(Type type, ATypeElement typeElem) {
+    int arrayLevel = type.getArrayLevel();
+    if (arrayLevel == 0) {
+      return typeElem;
+    }
+    return typeElem.innerTypes.getVivify(
+        Collections.nCopies(arrayLevel, TypePathEntry.ARRAY_ELEMENT));
   }
 
   /**
