@@ -209,10 +209,6 @@ of a varargs array.  How the argument is checked depends on its form:
 \item
   A lambda is checked via its body, which must have the required purity.
 \item
-  A conditional expression (\<?:>) or a switch expression is checked branch
-  by branch:  each of its possible result expressions is checked according
-  to these rules.
-\item
   Any other argument is checked via the functional method of the argument's
   declared type, which must have the required purity annotations.
 \end{itemize}
