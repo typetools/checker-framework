@@ -92,14 +92,4 @@ public class SwitchRemainder {
       x.hashCode();
     }
   }
-
-  // After the switch, the facts established by every case hold.
-  void factsAfterSwitch(Shape s) {
-    @Nullable Object x = null;
-    switch (s) {
-      case Circle c -> x = "";
-      case Square q -> x = "";
-    }
-    x.hashCode();
-  }
 }

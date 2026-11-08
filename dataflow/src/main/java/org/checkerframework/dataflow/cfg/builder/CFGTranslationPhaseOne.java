@@ -2421,8 +2421,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         if (isLastCaseOfExhaustive && !labelAlwaysMatches) {
           // A value that the labels do not match, such as a remainder of an exhaustive switch
           // (JLS 14.11.1.1), matches no case, so the switch throws MatchException.
-          extendWithNodeWithException(
-              caseNode, matchExceptionType != null ? matchExceptionType : throwableType);
+          extendWithNodeWithException(caseNode, matchExceptionType);
         } else {
           extendWithNode(caseNode);
         }
