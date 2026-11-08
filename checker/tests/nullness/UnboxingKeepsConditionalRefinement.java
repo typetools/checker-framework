@@ -110,6 +110,30 @@ public class UnboxingKeepsConditionalRefinement {
     }
   }
 
+  // The facts that hold when an operand is true or false do not necessarily hold when the
+  // enclosing expression is true or false.
+
+  void unrefinedLeftOfBitwiseOr(@Nullable Object o, Boolean b) {
+    if (isNN(o) | b) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
+  void unrefinedLeftOfXor(@Nullable Object o, Boolean b) {
+    if (isNN(o) ^ b) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
+  void unrefinedLeftOfEqualTo(@Nullable Object o, boolean x) {
+    if (isNN(o) == x) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
   // A boxed constant, which is unboxed because the other operand is primitive.
 
   @EnsuresNonNullIf(expression = "#1", result = true)
@@ -141,26 +165,6 @@ public class UnboxingKeepsConditionalRefinement {
   void orNegatedBoxedTrue(@Nullable Object o) {
     if (isNNPrim(o) | !(Boolean) true) {
     } else {
-      // :: error: [dereference.of.nullable]
-      o.hashCode();
-    }
-  }
-
-  // Java compares two boxed operands of == and != by reference, so their values may be equal even
-  // when the comparison is false.  isNN might return a Boolean that is not Boolean.TRUE.
-
-  void equalToBothBoxed(@Nullable Object o) {
-    if (isNN(o) == (Boolean) false) {
-      // :: error: [dereference.of.nullable]
-      o.hashCode();
-    } else {
-      // :: error: [dereference.of.nullable]
-      o.hashCode();
-    }
-  }
-
-  void notEqualBothBoxed(@Nullable Object o) {
-    if (isNN(o) != (Boolean) false) {
       // :: error: [dereference.of.nullable]
       o.hashCode();
     }
