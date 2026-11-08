@@ -62,6 +62,7 @@ Before:   reaching definitions = { to_increment = 0, switch#num0 = i }
 ~~~~~~~~~
 _   [ AnyPattern ]
 WrappedBoolean(_)   [ DeconstructorPattern ]
+case WrappedBoolean(_):   [ Case ]
 to_increment   [ LocalVariable ]
 to_increment   [ LocalVariable ]
 2   [ IntegerLiteral ]
@@ -74,7 +75,7 @@ After:   reaching definitions = { switch#num0 = i, to_increment = (to_increment 
 
 13:
 Process order: 6
-TransferInput#35
+TransferInput#36
 Before:   reaching definitions = { switch#num0 = i, to_increment = (to_increment + 2), to_increment = (to_increment + 1) }
 ~~~~~~~~~
 marker (end of switch statement #0)   [ Marker ]
@@ -86,7 +87,7 @@ After:   reaching definitions = { switch#num0 = i, to_increment = (to_increment 
 
 0:
 Process order: 7
-TransferInput#40
+TransferInput#41
 Before:   reaching definitions = { switch#num0 = i, to_increment = (to_increment + 2), to_increment = (to_increment + 1) }
 ~~~~~~~~~
 <exit>

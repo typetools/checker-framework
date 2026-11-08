@@ -62,6 +62,7 @@ Before:   reaching definitions = { size = 0, switch#num0 = shape }
 side   [ VariableDeclaration ]
 side   [ LocalVariable ]
 Square(int side)   [ DeconstructorPattern ]
+case Square(int side):   [ Case ]
 size   [ LocalVariable ]
 side   [ LocalVariable ]
 size = side   [ Assignment ]
@@ -72,7 +73,7 @@ After:   reaching definitions = { switch#num0 = shape, size = side }
 
 13:
 Process order: 6
-TransferInput#33
+TransferInput#34
 Before:   reaching definitions = { switch#num0 = shape, size = side, size = radius }
 ~~~~~~~~~
 marker (end of switch statement #0)   [ Marker ]
@@ -84,7 +85,7 @@ After:   reaching definitions = { switch#num0 = shape, size = side, size = radiu
 
 0:
 Process order: 7
-TransferInput#38
+TransferInput#39
 Before:   reaching definitions = { switch#num0 = shape, size = side, size = radius }
 ~~~~~~~~~
 <exit>
