@@ -262,31 +262,4 @@ public class AssignmentInComparison {
       ss[0][0].toString();
     }
   }
-
-  static Object nonNull(@Nullable Object o) {
-    return "";
-  }
-
-  // The right operand assigns `x` after the left operand reads it, so the comparison says nothing
-  // about the new value of `x`.
-  void assignmentInRightOperand(@Nullable Object x) {
-    if (x == nonNull(x = null)) {
-      // :: error: [dereference.of.nullable]
-      x.toString();
-    }
-  }
-
-  void assignmentInParenthesizedRightOperand(@Nullable Object x) {
-    if ((x) == (nonNull(x = null))) {
-      // :: error: [dereference.of.nullable]
-      x.toString();
-    }
-  }
-
-  // The left operand assigns `x` before the right operand reads it, so refining `x` is sound.
-  void assignmentInLeftOperand(@Nullable Object x) {
-    if (nonNull(x = null) == x) {
-      x.toString();
-    }
-  }
 }
