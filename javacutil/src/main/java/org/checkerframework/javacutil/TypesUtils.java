@@ -425,6 +425,18 @@ public final class TypesUtils {
   }
 
   /**
+   * If the given type is a boxed primitive, returns the corresponding primitive type; otherwise
+   * returns the given type.
+   *
+   * @param type a type
+   * @param types the type utilities
+   * @return the unboxed version of the given type, or the given type itself
+   */
+  public static TypeMirror unboxedTypeOrSelf(TypeMirror type, Types types) {
+    return isBoxedPrimitive(type) ? types.unboxedType(type) : type;
+  }
+
+  /**
    * Returns true if this is an immutable type in the JDK.
    *
    * <p>This does not use immutability annotations and always returns false for user-defined
@@ -1732,8 +1744,7 @@ public final class TypesUtils {
    */
   public static boolean canBeNarrowingPrimitiveConversion(TypeMirror type, Types types) {
     // See CFGBuilder.CFGTranslationPhaseOne#conversionRequiresNarrowing()
-    TypeMirror unboxedType = isBoxedPrimitive(type) ? types.unboxedType(type) : type;
-    TypeKind unboxedKind = unboxedType.getKind();
+    TypeKind unboxedKind = unboxedTypeOrSelf(type, types).getKind();
     return unboxedKind == TypeKind.BYTE
         || unboxedKind == TypeKind.SHORT
         || unboxedKind == TypeKind.CHAR;

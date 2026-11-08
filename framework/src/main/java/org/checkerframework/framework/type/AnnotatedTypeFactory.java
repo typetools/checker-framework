@@ -3367,7 +3367,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   public BinaryArgTypes binaryTreeArgTypes(AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
     TypeKind resultTypeKind =
-        TypeKindUtils.widenedNumericType(left.getUnderlyingType(), right.getUnderlyingType());
+        TypeKindUtils.widenedNumericType(
+            TypesUtils.unboxedTypeOrSelf(left.getUnderlyingType(), types),
+            TypesUtils.unboxedTypeOrSelf(right.getUnderlyingType(), types));
     if (TypeKindUtils.isNumeric(resultTypeKind)) {
       TypeMirror resultTypeMirror = types.getPrimitiveType(resultTypeKind);
       AnnotatedPrimitiveType leftUnboxed = applyUnboxing(left);
