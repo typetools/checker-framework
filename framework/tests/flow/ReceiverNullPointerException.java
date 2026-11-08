@@ -168,6 +168,21 @@ public class ReceiverNullPointerException extends ReceiverNullPointerExceptionSu
     }
   }
 
+  enum Color {
+    RED
+  }
+
+  void enumConstant(@Odd String p1, String p2) {
+    String l1 = p1;
+    try {
+      mayThrow();
+      l1 = p2;
+      Color.RED.equals(l1 = p1);
+    } catch (NullPointerException e) {
+      @Odd String l3 = l1;
+    }
+  }
+
   void switchExpression(@Odd String p1, String p2, int i) {
     String l1 = p1;
     try {
