@@ -60,10 +60,10 @@ cast.
 These methods of `CFAbstractTransfer` no longer call `visitNode()`:
 `visitConditionalAnd()`, `visitConditionalNot()`, `visitConditionalOr()`,
 `visitLambdaResultExpression()`, `visitMarker()`, `visitReturn()`,
-`visitTypeCast()`, `visitMethodAccess()` (for the target of an unboxing call),
-and, for a boolean literal that is the right operand of a boolean operator,
-`visitValueLiteral()`.  A subclass that overrides
-`visitNode()` may need to override them too.
+`visitTernaryExpression()`, `visitTypeCast()`, `visitMethodAccess()` (for the
+target of an unboxing call), and, for a boolean literal that is the right
+operand of a boolean operator, `visitValueLiteral()`.  A subclass that
+overrides `visitNode()` may need to override them too.
 
 Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
 and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
