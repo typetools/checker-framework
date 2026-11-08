@@ -1113,11 +1113,6 @@ path-separated list of \code{annotations.xml} files, directories, jar files, or 
 containing \code{annotations.xml} files arranged in directory structures matching their package names.
 The path separator is colon on Unix and semicolon on Windows.
 
-The Checker Framework reads only marker annotations, which have no element
-values.  It ignores an annotation that has element values, such as
-\<@Contract(pure = true)>, and warns if the annotation is one that the
-checker supports.
-
 For example:
 \begin{Verbatim}
   javac -processor org.checkerframework.checker.nullness.NullnessChecker \
