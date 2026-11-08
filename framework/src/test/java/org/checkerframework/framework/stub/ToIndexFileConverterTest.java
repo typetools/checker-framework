@@ -607,6 +607,18 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyOtherClass$MyNestedClass;)V");
   }
 
+  /**
+   * A name that is qualified by the stub file's package does not name a type of the stub file if
+   * the rest of the name repeats the package.
+   */
+  @Test
+  public void testPackageQualifiedNameIsNotQualifiedTwice() throws Exception {
+    String jaif =
+        convert(
+            "package p;", "class MyClass {", "  void myMethod(p.p.Foo f) {}", "}", "class Foo {}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/p/Foo;)V");
+  }
+
   /** A single-type import of a type that the stub file declares is resolved. */
   @Test
   public void testSingleTypeImportOfStubFileType() throws Exception {

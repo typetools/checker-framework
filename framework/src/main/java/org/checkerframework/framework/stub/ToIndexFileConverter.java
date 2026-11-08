@@ -965,9 +965,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       // The name is in some other package, which `cu` does not declare.
       return null;
     }
-    // Because `relativeName` is qualified by the package name, it names a top-level type of `cu`
-    // or a member of one.
-    Node declaration = stubDeclaration(cu, relativeName, true);
+    // Because `fqName` is qualified by the package name, `relativeName` names a top-level type of
+    // `cu` or a member of one.
+    Node declaration = scopedStubDeclaration(cu, relativeName, true);
     return (declaration instanceof TypeDeclaration<?> typeDecl)
         ? qualifiedStubBinaryName(typeDecl)
         : null;
