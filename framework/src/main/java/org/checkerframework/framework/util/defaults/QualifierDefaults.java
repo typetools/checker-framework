@@ -122,7 +122,8 @@ public class QualifierDefaults {
 
   /**
    * Memoizes {@link #defaultsAt}: a mapping from an Element to all the defaults that apply to that
-   * Element, including the defaults contributed by the Element's enclosing scopes.
+   * Element, including the defaults contributed by the Element's enclosing scopes. It has an entry
+   * only for an Element to which at least one default applies.
    */
   private final IdentityHashMap<Element, ScopeDefaults> defaultsAtCache = new IdentityHashMap<>();
 
@@ -721,9 +722,7 @@ public class QualifierDefaults {
               applicationOrder(allElementDefaults, allQualifierDefaults));
     }
 
-    // While an annotation file is being parsed, the @DefaultQualifier annotations that it supplies
-    // might not have been recorded yet, so the result might be incomplete.
-    if (atypeFactory.shouldCache && !atypeFactory.isParsingAnnotationFiles()) {
+    if (!result.isEmpty()) {
       defaultsAtCache.put(elt, result);
     }
 
@@ -928,6 +927,15 @@ public class QualifierDefaults {
       this.elementDefaults = elementDefaults;
       this.qualifierDefaults = qualifierDefaults;
       this.inApplicationOrder = inApplicationOrder;
+    }
+
+    /**
+     * Returns true if there are no defaults.
+     *
+     * @return true if there are no defaults
+     */
+    public boolean isEmpty() {
+      return elementDefaults.isEmpty() && qualifierDefaults.isEmpty();
     }
   }
 
