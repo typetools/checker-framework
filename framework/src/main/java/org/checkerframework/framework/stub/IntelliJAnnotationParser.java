@@ -7,11 +7,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -20,7 +17,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -45,9 +41,6 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
-import org.plumelib.util.ArrayMap;
-import org.plumelib.util.ArraySet;
-import org.plumelib.util.StringsP;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -223,10 +216,26 @@ public final class IntelliJAnnotationParser {
         continue;
       }
 
+      if (!childElements(annoElement, "val").isEmpty()) {
+        // Annotation element values are not supported, so ignore the annotation.  Warn only if
+        // the checker supports the annotation, because annotations.xml files commonly contain
+        // annotations with element values, such as @Contract(pure = true), that are irrelevant
+        // to the checker.
+        if (atypeFactory.isSupportedQualifier(annoTypeElt.getQualifiedName().toString())) {
+          atypeFactory
+              .getChecker()
+              .message(
+                  Diagnostic.Kind.WARNING,
+                  String.format(
+                      "Ignoring annotation @%s on %s: annotation element values are not supported",
+                      annoTypeElt.getQualifiedName(), context));
+        }
+        continue;
+      }
+
       try {
         AnnotationMirror annoMirror =
-            buildAnnotationMirror(
-                annoElement, annoTypeElt, processingEnv, atypeFactory.getChecker(), context);
+            buildAnnotationMirror(annoTypeElt, processingEnv, atypeFactory.getChecker(), context);
         if (annoMirror != null) {
           AnnotationMirror canonical = atypeFactory.canonicalAnnotation(annoMirror);
           result.add(canonical != null ? canonical : annoMirror);
@@ -266,13 +275,12 @@ public final class IntelliJAnnotationParser {
   }
 
   /**
-   * Constructs an {@link AnnotationMirror} from an XML {@code <annotation>} element.
+   * Constructs an {@link AnnotationMirror} for a marker annotation (one with no element values)
+   * from an XML {@code <annotation>} element.
    *
-   * <p>If any {@code <val>} child cannot be parsed, or if some element that has no default value is
-   * not given a value, this issues a warning and returns null, rather than building an annotation
-   * that is missing a mandatory element.
+   * <p>If some element of the annotation type has no default value, this issues a warning and
+   * returns null, rather than building an annotation that is missing a mandatory element.
    *
-   * @param annoElement the XML element for the annotation
    * @param annoTypeElt the TypeElement corresponding to the annotation
    * @param processingEnv the processing environment
    * @param checker the source checker, for issuing diagnostics
@@ -280,238 +288,26 @@ public final class IntelliJAnnotationParser {
    * @return the constructed {@link AnnotationMirror}, or null if construction fails
    */
   private static @Nullable AnnotationMirror buildAnnotationMirror(
-      org.w3c.dom.Element annoElement,
       TypeElement annoTypeElt,
       ProcessingEnvironment processingEnv,
       SourceChecker checker,
       String context) {
     @SuppressWarnings("signature") // the qualified name of a TypeElement is a canonical name
     @CanonicalName String canonicalName = annoTypeElt.getQualifiedName().toString();
-    Elements elements = processingEnv.getElementUtils();
-
-    AnnotationBuilder builder = new AnnotationBuilder(processingEnv, canonicalName);
-    Set<String> writtenElements = new ArraySet<>(2); // most annotations have few elements
-    for (org.w3c.dom.Element valElem : childElements(annoElement, "val")) {
-      if (!valElem.hasAttribute("val")) {
-        continue;
-      }
-      String memberName =
-          valElem.hasAttribute("name") ? valElem.getAttribute("name").trim() : "value";
-      String valStr = valElem.getAttribute("val").trim();
-      String problem = setBuilderValue(builder, memberName, valStr, annoTypeElt, processingEnv);
-      if (problem != null) {
-        checker.message(
-            Diagnostic.Kind.WARNING,
-            String.format("Ignoring annotation @%s on %s: %s", canonicalName, context, problem));
-        return null;
-      }
-      writtenElements.add(memberName);
-    }
 
     for (ExecutableElement annoElt : ElementFilter.methodsIn(annoTypeElt.getEnclosedElements())) {
-      String elementName = annoElt.getSimpleName().toString();
-      if (annoElt.getDefaultValue() == null && !writtenElements.contains(elementName)) {
+      if (annoElt.getDefaultValue() == null) {
         checker.message(
             Diagnostic.Kind.WARNING,
             String.format(
                 "Ignoring annotation @%s on %s: no value for element '%s', which has no default",
-                canonicalName, context, elementName));
+                canonicalName, context, annoElt.getSimpleName()));
         return null;
       }
     }
 
-    // Index the values by element name, so that fromName can supply the default value of every
-    // element that the annotations.xml file does not mention.
-    Map<? extends ExecutableElement, ? extends AnnotationValue> builtValues =
-        builder.build().getElementValues();
-    Map<String, AnnotationValue> elementValues = new ArrayMap<>(builtValues.size());
-    for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
-        builtValues.entrySet()) {
-      elementValues.put(entry.getKey().getSimpleName().toString(), entry.getValue());
-    }
-    return AnnotationBuilder.fromName(elements, canonicalName, elementValues);
-  }
-
-  /**
-   * Sets a value on the {@link AnnotationBuilder} based on the expected element type.
-   *
-   * @param builder the annotation builder
-   * @param memberName the name of the annotation element
-   * @param valStr the raw string value from the XML
-   * @param annoTypeElt the TypeElement of the annotation
-   * @param processingEnv the processing environment
-   * @return null if the value was set, or a description of the problem if it was not
-   */
-  private static @Nullable String setBuilderValue(
-      AnnotationBuilder builder,
-      String memberName,
-      String valStr,
-      TypeElement annoTypeElt,
-      ProcessingEnvironment processingEnv) {
-    ExecutableElement memberMethod = null;
-    for (ExecutableElement m : ElementFilter.methodsIn(annoTypeElt.getEnclosedElements())) {
-      if (m.getSimpleName().contentEquals(memberName)) {
-        memberMethod = m;
-        break;
-      }
-    }
-    if (memberMethod == null) {
-      return String.format("the annotation has no element named '%s'", memberName);
-    }
-
-    TypeMirror returnType = memberMethod.getReturnType();
-    if (returnType.getKind() == TypeKind.ARRAY) {
-      ArrayType at = (ArrayType) returnType;
-      TypeMirror compType = at.getComponentType();
-      List<String> items = parseArrayLiteral(valStr);
-      List<Object> parsedItems = new ArrayList<>(items.size());
-      for (String item : items) {
-        Object val = parseElementValue(item, compType, processingEnv);
-        if (val == null) {
-          return String.format(
-              "cannot parse '%s' as a value of type %s, for element '%s'",
-              item, compType, memberName);
-        }
-        parsedItems.add(val);
-      }
-      builder.setValue(memberName, parsedItems);
-      return null;
-    }
-
-    Object val = parseElementValue(valStr, returnType, processingEnv);
-    if (val instanceof Boolean b) {
-      builder.setValue(memberName, b);
-    } else if (val instanceof Integer i) {
-      builder.setValue(memberName, i);
-    } else if (val instanceof Long l) {
-      builder.setValue(memberName, l);
-    } else if (val instanceof Float f) {
-      builder.setValue(memberName, f);
-    } else if (val instanceof Double d) {
-      builder.setValue(memberName, d);
-    } else if (val instanceof Short s) {
-      builder.setValue(memberName, s);
-    } else if (val instanceof Byte b) {
-      builder.setValue(memberName, b);
-    } else if (val instanceof Character c) {
-      builder.setValue(memberName, c);
-    } else if (val instanceof String s) {
-      builder.setValue(memberName, s);
-    } else if (val instanceof VariableElement ve) {
-      builder.setValue(memberName, ve);
-    } else if (val instanceof TypeMirror tm) {
-      builder.setValue(memberName, tm);
-    } else {
-      return String.format(
-          "cannot parse '%s' as a value of type %s, for element '%s'",
-          valStr, returnType, memberName);
-    }
-    return null;
-  }
-
-  /**
-   * Parses a single element value according to its expected type.
-   *
-   * @param rawVal the raw value string
-   * @param type the expected TypeMirror of the value
-   * @param processingEnv the processing environment
-   * @return the parsed object or null if it cannot be parsed
-   */
-  private static @Nullable Object parseElementValue(
-      String rawVal, TypeMirror type, ProcessingEnvironment processingEnv) {
-    String unquotedVal = stripQuotes(rawVal);
-    TypeKind kind = type.getKind();
-    try {
-      if (kind == TypeKind.BOOLEAN) {
-        return parseBoolean(unquotedVal);
-      } else if (kind == TypeKind.INT) {
-        return Integer.parseInt(unquotedVal);
-      } else if (kind == TypeKind.LONG) {
-        return Long.parseLong(unquotedVal.replaceAll("[lL]$", ""));
-      } else if (kind == TypeKind.FLOAT) {
-        return Float.parseFloat(unquotedVal.replaceAll("[fF]$", ""));
-      } else if (kind == TypeKind.DOUBLE) {
-        return Double.parseDouble(unquotedVal.replaceAll("[dD]$", ""));
-      } else if (kind == TypeKind.SHORT) {
-        return Short.parseShort(unquotedVal);
-      } else if (kind == TypeKind.BYTE) {
-        return Byte.parseByte(unquotedVal);
-      }
-    } catch (NumberFormatException e) {
-      return null;
-    }
-    if (kind == TypeKind.CHAR) {
-      return parseChar(unquotedVal);
-    } else if (kind == TypeKind.DECLARED) {
-      DeclaredType dt = (DeclaredType) type;
-      TypeElement dtElt = (TypeElement) dt.asElement();
-      if (dtElt.getQualifiedName().contentEquals("java.lang.String")) {
-        return unquotedVal;
-      } else if (dtElt.getKind() == ElementKind.ENUM) {
-        String enumConstName =
-            unquotedVal.substring(
-                Math.max(unquotedVal.lastIndexOf('.'), unquotedVal.lastIndexOf('$')) + 1);
-        for (VariableElement enumField : ElementFilter.fieldsIn(dtElt.getEnclosedElements())) {
-          if (enumField.getSimpleName().contentEquals(enumConstName)) {
-            return enumField;
-          }
-        }
-      } else if (dtElt.getQualifiedName().contentEquals("java.lang.Class")) {
-        String className = unquotedVal.replaceAll("\\.class$", "");
-        return classLiteralType(className, processingEnv);
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Returns the type represented by a class literal name.
-   *
-   * @param className a class literal name without the {@code .class} suffix
-   * @param processingEnv the processing environment
-   * @return the class literal's type, or null if {@code className} does not name a type
-   */
-  private static @Nullable TypeMirror classLiteralType(
-      String className, ProcessingEnvironment processingEnv) {
-    int dimensions = 0;
-    while (className.endsWith("[]")) {
-      dimensions++;
-      className = className.substring(0, className.length() - 2);
-    }
-
-    Types types = processingEnv.getTypeUtils();
-    TypeMirror result =
-        switch (className) {
-          case "boolean" -> types.getPrimitiveType(TypeKind.BOOLEAN);
-          case "byte" -> types.getPrimitiveType(TypeKind.BYTE);
-          case "short" -> types.getPrimitiveType(TypeKind.SHORT);
-          case "int" -> types.getPrimitiveType(TypeKind.INT);
-          case "long" -> types.getPrimitiveType(TypeKind.LONG);
-          case "char" -> types.getPrimitiveType(TypeKind.CHAR);
-          case "float" -> types.getPrimitiveType(TypeKind.FLOAT);
-          case "double" -> types.getPrimitiveType(TypeKind.DOUBLE);
-          case "void" -> types.getNoType(TypeKind.VOID);
-          default -> {
-            TypeElement classTypeElt = getTypeElement(className, processingEnv.getElementUtils());
-            // Erase, because that is what javac stores for a class literal and what
-            // AnnotationBuilder.setValue(CharSequence, TypeMirror) does.
-            yield classTypeElt == null ? null : types.erasure(classTypeElt.asType());
-          }
-        };
-    if (result == null || (dimensions > 0 && result.getKind() == TypeKind.VOID)) {
-      return null;
-    }
-    if (dimensions == 0 && result.getKind().isPrimitive()) {
-      // Box, because that is what AnnotationBuilder.setValue(CharSequence, TypeMirror) does, and
-      // an annotation read from an annotations.xml file should be indistinguishable from one that
-      // the Checker Framework builds itself.  Only a scalar is boxed:  `int[]` is a reference
-      // type, which AnnotationBuilder leaves alone.
-      result = types.boxedClass((PrimitiveType) result).asType();
-    }
-    for (int i = 0; i < dimensions; i++) {
-      result = types.getArrayType(result);
-    }
-    return result;
+    // fromName supplies the default value of every element.
+    return AnnotationBuilder.fromName(processingEnv.getElementUtils(), canonicalName);
   }
 
   /**
@@ -529,190 +325,6 @@ public final class IntelliJAnnotationParser {
       result = elements.getTypeElement(className);
     }
     return result;
-  }
-
-  /**
-   * Parses a boolean literal. Unlike {@link Boolean#parseBoolean}, which treats every string other
-   * than "true" as false, this returns null for a string that is not a boolean literal.
-   *
-   * @param s a string
-   * @return the boolean that {@code s} represents, or null if {@code s} is not a boolean literal
-   */
-  static @Nullable Boolean parseBoolean(String s) {
-    if (s.equalsIgnoreCase("true")) {
-      return true;
-    } else if (s.equalsIgnoreCase("false")) {
-      return false;
-    } else {
-      return null;
-    }
-  }
-
-  /**
-   * Parses a char literal value string, interpreting escape sequences. The argument has already had
-   * its enclosing quotation marks, if any, stripped by {@link #stripQuotes}, which also interprets
-   * escape sequences; this method interprets escape sequences in an unquoted value.
-   *
-   * @param s the unquoted string
-   * @return the char that {@code s} represents, or null if {@code s} is not a char literal
-   */
-  /*package*/ static @Nullable Character parseChar(String s) {
-    if (s.length() == 1) {
-      return s.charAt(0);
-    }
-    if (s.length() < 2 || s.charAt(0) != '\\') {
-      // The empty string, or more than one character with no escape sequence.
-      return null;
-    }
-    String escape = s.substring(1);
-    if (escape.length() == 1) {
-      Character simpleEscape =
-          switch (escape.charAt(0)) {
-            case 'n' -> '\n';
-            case 'r' -> '\r';
-            case 't' -> '\t';
-            case 'b' -> '\b';
-            case 'f' -> '\f';
-            case 's' -> ' ';
-            case '\'' -> '\'';
-            case '"' -> '"';
-            case '\\' -> '\\';
-            default -> null;
-          };
-      if (simpleEscape != null) {
-        return simpleEscape;
-      }
-    }
-    if (escape.charAt(0) == 'u') {
-      // A unicode escape may contain more than one 'u', as in a backslash followed by
-      // "uuu0041".
-      int hexStart = 1;
-      while (hexStart < escape.length() && escape.charAt(hexStart) == 'u') {
-        hexStart++;
-      }
-      String hex = escape.substring(hexStart);
-      if (hex.length() != 4 || !isHexDigits(hex)) {
-        return null;
-      }
-      return (char) Integer.parseInt(hex, 16);
-    }
-    // An octal escape is 1 to 3 octal digits, with value at most 0377.
-    if (escape.length() <= 3 && isOctalDigits(escape)) {
-      int value = Integer.parseInt(escape, 8);
-      if (value <= 0377) {
-        return (char) value;
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Returns true if every character of {@code s} is a hexadecimal digit.
-   *
-   * @param s a non-empty string
-   * @return true if every character of {@code s} is a hexadecimal digit
-   */
-  private static boolean isHexDigits(String s) {
-    for (int i = 0; i < s.length(); i++) {
-      if (Character.digit(s.charAt(i), 16) == -1) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /**
-   * Returns true if every character of {@code s} is an octal digit.
-   *
-   * @param s a non-empty string
-   * @return true if every character of {@code s} is an octal digit
-   */
-  private static boolean isOctalDigits(String s) {
-    for (int i = 0; i < s.length(); i++) {
-      char c = s.charAt(i);
-      if (c < '0' || c > '7') {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /**
-   * Strips surrounding single or double quotation marks from a string literal value, and interprets
-   * the Java escape sequences within it.
-   *
-   * @param s the string to strip quotes from
-   * @return the string without surrounding quotes and with escape sequences interpreted
-   */
-  /*package*/ static String stripQuotes(String s) {
-    s = s.trim();
-    if (s.length() >= 2
-        && ((s.startsWith("\"") && s.endsWith("\"")) || (s.startsWith("'") && s.endsWith("'")))
-        && !lastCharIsEscaped(s)) {
-      return StringsP.unescapeJava(s.substring(1, s.length() - 1));
-    }
-    return s;
-  }
-
-  /**
-   * Returns true if the last character of {@code s} is escaped by a preceding backslash; that is,
-   * the last character is preceded by an odd number of backslashes.
-   *
-   * @param s a string of length at least 2
-   * @return true if the last character of {@code s} is escaped
-   */
-  private static boolean lastCharIsEscaped(String s) {
-    int backslashes = 0;
-    for (int i = s.length() - 2; i >= 0 && s.charAt(i) == '\\'; i--) {
-      backslashes++;
-    }
-    return backslashes % 2 == 1;
-  }
-
-  /**
-   * Parses an array literal in IntelliJ IDEA external annotations file format (e.g., {@code {val1,
-   * val2}}).
-   *
-   * @param s the array literal string
-   * @return a list of parsed item strings
-   */
-  /*package*/ static List<String> parseArrayLiteral(String s) {
-    s = s.trim();
-    if (s.startsWith("{") && s.endsWith("}")) {
-      s = s.substring(1, s.length() - 1).trim();
-    }
-    if (s.isEmpty()) {
-      return Collections.emptyList();
-    }
-    List<String> items = new ArrayList<>();
-    char quoteChar = '\0';
-    boolean escaped = false;
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < s.length(); i++) {
-      char c = s.charAt(i);
-      if (escaped) {
-        sb.append(c);
-        escaped = false;
-      } else if (c == '\\') {
-        escaped = true;
-        sb.append(c);
-      } else if (quoteChar == '\0' && (c == '"' || c == '\'')) {
-        quoteChar = c;
-        sb.append(c);
-      } else if (quoteChar != '\0' && c == quoteChar) {
-        quoteChar = '\0';
-        sb.append(c);
-      } else if (c == ',' && quoteChar == '\0') {
-        items.add(sb.toString().trim());
-        sb.setLength(0);
-      } else {
-        sb.append(c);
-      }
-    }
-    if (sb.length() > 0) {
-      items.add(sb.toString().trim());
-    }
-    return items;
   }
 
   /** Represents a parsed IntelliJ item signature. */
