@@ -34,8 +34,7 @@ package java.io;
 
 class File {
   // Not sound on Windows.  `new File("//server/share")` has a parent (`\\server`), but its
-  // toPath() is a root.  The stub file sound-file-topath.astub makes toPath() return
-  // @UnknownPathShape.
+  // toPath() is a root.
   @PolyPathShape java.nio.file.Path toPath(@PolyPathShape File this);
 }
 

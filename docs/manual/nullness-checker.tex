@@ -132,13 +132,6 @@ command-line option.)
   \refqualclass{checker/nullness/qual}{KeyFor} and related qualifiers.
 
 \item
-  \label{nullness-sound-file-topath}%
-  If you supply the \code{-Astubs=sound-file-topath.astub} command-line
-  option, then the checker does not assume that \<File.toPath()> preserves
-  the path shape.  That assumption is unsound on Windows.  See
-  Section~\ref{path-shape-limitations}.
-
-\item
   \label{nullness-invocationPreservesArgumentNullness}%
   If you supply the \code{-AinvocationPreservesArgumentNullness} command-line
   option, the Nullness Checker unsoundly assumes that arguments passed to
