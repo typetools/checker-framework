@@ -2247,6 +2247,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      * the selector expression to the variable. This assignment node is stored in {@link
      * #selectorExprAssignment}. It can later be used to refine the selector expression in case
      * bodies.
+     *
+     * <p>A boxed selector is unboxed, unless the switch has a {@code case null} label. Such a
+     * switch does not throw NullPointerException if its selector is null.
      */
     private void buildSelector() {
       // Create a synthetic variable to which the switch selector expression will be assigned
@@ -2270,7 +2273,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       selectorVarUseNode.setInSource(false);
       extendWithNode(selectorVarUseNode);
 
-      Node selectorExprNode = unbox(scan(selectorExprTree, null));
+      Node selectorExprNode = scan(selectorExprTree, null);
+      if (!TreeUtils.hasNullCaseLabel(switchTree)) {
+        selectorExprNode = unbox(selectorExprNode);
+      }
 
       AssignmentTree assign = treeBuilder.buildAssignment(selectorVarUseTree, selectorExprTree);
       handleArtificialTree(assign);
