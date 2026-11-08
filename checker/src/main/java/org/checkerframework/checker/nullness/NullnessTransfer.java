@@ -379,7 +379,8 @@ public class NullnessTransfer
     NullnessStore elseStore = result.getElseStore();
     makeNonNull(thenStore, n.getOperand());
     // instanceof is false for null, so a binding variable is non-null.
-    if (n.getPatternNode() instanceof LocalVariableNode bindingVar) {
+    LocalVariableNode bindingVar = n.getBindingPatternVariable();
+    if (bindingVar != null) {
       makeNonNull(thenStore, bindingVar);
     }
     return new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
