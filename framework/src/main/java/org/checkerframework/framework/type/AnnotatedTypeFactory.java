@@ -101,6 +101,9 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJa
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage.InferredDeclared;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.MethodCall;
+import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -3941,8 +3944,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <p>The result is the type of the component's accessor method, as a member of the type of the
    * value that the deconstruction pattern matches. If that type does not determine the record's
-   * type arguments (for example, if it is {@code Object}), then the result might be a type
-   * variable.
+   * type arguments (for example, if it is {@code Object}), then the result may be a type variable.
    *
    * @param variableTree a variable declaration
    * @return the type of the record component that {@code variableTree} is bound to, or null if
@@ -3953,18 +3955,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     if (bindingPatternPath == null) {
       return null;
     }
-    return getMatchedValueType(bindingPatternPath);
+    MatchedValue component = getMatchedValue(bindingPatternPath);
+    return component == null ? null : component.type();
   }
 
   /**
-   * Returns the type of the value that the pattern at {@code patternPath} matches: the expression
-   * of an {@code instanceof}, the selector of a {@code switch}, or a component of an enclosing
-   * deconstruction pattern.
+   * A value that a pattern matches.
+   *
+   * @param type the type of the value
+   * @param expression an expression for the value; used to viewpoint-adapt dependent types
+   */
+  private record MatchedValue(AnnotatedTypeMirror type, JavaExpression expression) {}
+
+  /**
+   * Returns the value that the pattern at {@code patternPath} matches: the expression of an {@code
+   * instanceof}, the selector of a {@code switch}, or a component of an enclosing deconstruction
+   * pattern.
    *
    * @param patternPath the path to a pattern
-   * @return the type of the value that the pattern matches, or null if it cannot be determined
+   * @return the value that the pattern matches, or null if it cannot be determined
    */
-  private @Nullable AnnotatedTypeMirror getMatchedValueType(TreePath patternPath) {
+  private @Nullable MatchedValue getMatchedValue(TreePath patternPath) {
     TreePath parentPath = patternPath.getParentPath();
     if (parentPath == null) {
       return null;
@@ -3977,7 +3988,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       int index =
           TreeUtilsAfterJava17.DeconstructionPatternUtils.getNestedPatterns(parent)
               .indexOf(patternPath.getLeaf());
-      return getComponentType(parentPath, index);
+      return getComponent(parentPath, index);
     } else if (parent.getKind().name().equals("PATTERN_CASE_LABEL")) {
       // The path is: switch, case, case label, pattern.
       TreePath casePath = parentPath.getParentPath();
@@ -3993,34 +4004,51 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     } else {
       return null;
     }
-    return getAnnotatedType(matchedTree);
+    return new MatchedValue(getAnnotatedType(matchedTree), JavaExpression.fromTree(matchedTree));
   }
 
   /**
-   * Returns the type of the component of the value that the deconstruction pattern at {@code
+   * Returns the component of the value that the deconstruction pattern at {@code
    * deconstructionPatternPath} matches.
    *
    * @param deconstructionPatternPath the path to a deconstruction pattern
    * @param index the index of a record component
-   * @return the type of the component at {@code index} of the value that the deconstruction pattern
-   *     matches
+   * @return the component at {@code index} of the value that the deconstruction pattern matches
    */
-  private AnnotatedTypeMirror getComponentType(TreePath deconstructionPatternPath, int index) {
+  private MatchedValue getComponent(TreePath deconstructionPatternPath, int index) {
     DeclaredType recordType = (DeclaredType) TreeUtils.typeOf(deconstructionPatternPath.getLeaf());
     TypeElement recordElement = (TypeElement) recordType.asElement();
     ExecutableElement accessor = recordElement.getRecordComponents().get(index).getAccessor();
 
-    AnnotatedTypeMirror matchedType = getMatchedValueType(deconstructionPatternPath);
+    MatchedValue matched = getMatchedValue(deconstructionPatternPath);
     AnnotatedTypeMirror recordAType = getAnnotatedType(recordElement);
-    if (matchedType != null
+    if (matched != null
         && types.isSubtype(
-            types.erasure(matchedType.getUnderlyingType()), types.erasure(recordType))) {
-      recordAType = AnnotatedTypes.asSuper(this, matchedType, recordAType);
+            types.erasure(matched.type().getUnderlyingType()), types.erasure(recordType))) {
+      recordAType = AnnotatedTypes.asSuper(this, matched.type(), recordAType);
     }
     // Otherwise, the matched value's type does not determine the record's type arguments, and
     // the record's declared type (with type variables as type arguments) is used.
-    return AnnotatedTypes.asMemberOf(types, this, recordAType, accessor).getReturnType();
+    AnnotatedTypeMirror componentType =
+        AnnotatedTypes.asMemberOf(types, this, recordAType, accessor).getReturnType();
+    JavaExpression receiver = matched == null ? new Unknown(recordType) : matched.expression();
+    viewpointAdaptRecordComponent(componentType, accessor, receiver);
+    JavaExpression componentExpression =
+        new MethodCall(
+            componentType.getUnderlyingType(), accessor, receiver, Collections.emptyList());
+    return new MatchedValue(componentType, componentExpression);
   }
+
+  /**
+   * Viewpoint-adapts the type of a record component to an access of that component of {@code
+   * receiver}, as in a deconstruction pattern. This implementation does nothing.
+   *
+   * @param type the type of the record component; is side-effected by this method
+   * @param accessor the accessor method of the record component
+   * @param receiver the record whose component is accessed
+   */
+  protected void viewpointAdaptRecordComponent(
+      AnnotatedTypeMirror type, ExecutableElement accessor, JavaExpression receiver) {}
 
   /**
    * Gets the path for the given {@link Tree} under the current root by checking from the visitor's
