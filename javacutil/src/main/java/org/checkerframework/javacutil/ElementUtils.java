@@ -1007,6 +1007,10 @@ public final class ElementUtils {
    * {@code receiverType}: returns the no-argument instance method that the call invokes, or null if
    * there is no such method.
    *
+   * <p>This method considers only non-private methods that have no formal parameters. Therefore, it
+   * returns null for some legal calls: a call to a private method from within its class, and a call
+   * that invokes a variable-arity method such as {@code methodName(Object...)}.
+   *
    * <p>This is compile-time resolution (JLS 15.12.3). It resolves overloading, not overriding. The
    * result is the most specific declaration among {@code receiverType} and its supertypes, but at
    * run time the call may dispatch to an overriding method in a subtype of {@code receiverType}.
@@ -1043,7 +1047,9 @@ public final class ElementUtils {
             && method.getParameters().isEmpty()
             && (method.flags() & (Flags.STATIC | Flags.PRIVATE | Flags.SYNTHETIC)) == 0
             && method.isInheritedIn(origin, javacTypes)
-            && (result == null || takesPrecedence(method, result, origin, javacTypes))) {
+            && (result == null
+                || takesPrecedenceInMethodResolution(
+                    method, result, (Type) upperBound, javacTypes))) {
           result = method;
         }
       }
@@ -1052,30 +1058,38 @@ public final class ElementUtils {
   }
 
   /**
-   * Returns true if a call on an expression of type {@code origin}, which inherits both {@code m1}
+   * Returns true if a call on an expression of type {@code site}, which inherits both {@code m1}
    * and {@code m2}, invokes {@code m1} rather than {@code m2}. The two methods have the same
    * signature. For an interface, a method of an interface takes precedence over a method of {@code
    * Object}, the only class among its supertypes. For any other type, a method of a class takes
    * precedence over a method of an interface. Otherwise, a method of a subtype takes precedence
-   * over a method of its supertype. These rules are those of javac's method resolution.
+   * over a method of its supertype. If neither method's declaring type is a subtype of the other's,
+   * the method with the more specific return type (as a member of {@code site}) takes precedence.
+   * These rules are those of javac's method resolution (JLS 15.12.2.5).
    *
    * @param m1 a method
    * @param m2 a method with the same signature as {@code m1}
-   * @param origin the type of the receiver of the call
+   * @param site the type of the receiver of the call
    * @param javacTypes the javac type utilities
    * @return true if {@code m1} takes precedence over {@code m2}
    */
-  private static boolean takesPrecedence(
-      MethodSymbol m1,
-      MethodSymbol m2,
-      Symbol.TypeSymbol origin,
-      com.sun.tools.javac.code.Types javacTypes) {
+  private static boolean takesPrecedenceInMethodResolution(
+      MethodSymbol m1, MethodSymbol m2, Type site, com.sun.tools.javac.code.Types javacTypes) {
     Symbol owner1 = m1.owner;
     Symbol owner2 = m2.owner;
     if (owner1.isInterface() != owner2.isInterface()) {
-      return owner1.isInterface() == origin.isInterface();
+      return owner1.isInterface() == site.tsym.isInterface();
     }
-    return !owner1.equals(owner2) && owner1.isSubClass(owner2, javacTypes);
+    if (owner1.equals(owner2) || owner2.isSubClass(owner1, javacTypes)) {
+      return false;
+    }
+    if (owner1.isSubClass(owner2, javacTypes)) {
+      return true;
+    }
+    Type returnType1 = javacTypes.memberType(site, m1).getReturnType();
+    Type returnType2 = javacTypes.memberType(site, m2).getReturnType();
+    return javacTypes.isSubtype(returnType1, returnType2)
+        && !javacTypes.isSameType(returnType1, returnType2);
   }
 
   /**
