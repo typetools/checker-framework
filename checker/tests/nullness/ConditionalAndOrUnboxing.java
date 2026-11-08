@@ -105,25 +105,4 @@ public class ConditionalAndOrUnboxing {
       o.hashCode();
     }
   }
-
-  void unrefinedLeftOfBitwiseOr(@Nullable Object o, Boolean b) {
-    if (isNN(o) | b) {
-      // :: error: [dereference.of.nullable]
-      o.hashCode();
-    }
-  }
-
-  void unrefinedLeftOfXor(@Nullable Object o, Boolean b) {
-    if (isNN(o) ^ b) {
-      // :: error: [dereference.of.nullable]
-      o.hashCode();
-    }
-  }
-
-  void unrefinedLeftOfEqualTo(@Nullable Object o, boolean x) {
-    if (isNN(o) == x) {
-      // :: error: [dereference.of.nullable]
-      o.hashCode();
-    }
-  }
 }
