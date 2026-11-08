@@ -1420,10 +1420,8 @@ public abstract class CFAbstractTransfer<
       return false;
     }
     for (JavaExpression target : targets) {
-      // A target that is Unknown might denote any variable; assignmentMayChange handles that case.
-      // A target that merely contains Unknown, such as `a[i = 0]` or `(n = o).next`, still denotes
-      // an array element or field, which assignmentMayChange handles by its kind.
-      if (assignmentMayChange(target, expr, true)) {
+      // A target that contains Unknown might denote any variable.
+      if (target.containsUnknown() || assignmentMayChange(target, expr, true)) {
         return true;
       }
     }

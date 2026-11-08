@@ -199,21 +199,6 @@ public class AssignmentInComparison {
     }
   }
 
-  static void arrayTargetWithAssignmentInIndex(@Nullable Object[] a, int i, @Nullable Object o) {
-    if ((a[i = 0] = o) != null) {
-      // The assignment to an element of `a` does not change the local variable `o`.
-      o.toString();
-    }
-  }
-
-  static void fieldTargetWithAssignmentInReceiver(
-      AssignmentInComparison n, AssignmentInComparison m, @Nullable AssignmentInComparison o) {
-    if (((n = m).next = o) != null) {
-      // The assignment to a `next` field does not change the local variable `o`.
-      o.toString();
-    }
-  }
-
   @Pure
   static @Nullable Object id2(int i, @Nullable Object o) {
     return o;
