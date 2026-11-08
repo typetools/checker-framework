@@ -20,10 +20,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import javax.lang.model.element.Element;
@@ -413,6 +416,30 @@ public class AnnotationFileUtil {
     List<AnnotationFileResource> resources = new ArrayList<>();
     addAnnotationFilesToList(file, resources, fileType, true);
     return resources;
+  }
+
+  /**
+   * Returns the entries in an archive whose names end with the given string.
+   *
+   * @param archive a JAR or ZIP archive
+   * @param nameEnding the end of the name of each entry to return
+   * @return a map from the name of each entry in {@code archive} whose name ends with {@code
+   *     nameEnding} to that entry. Entry names use "/" as the separator. The map is empty if {@code
+   *     archive} cannot be read. An entry that cannot be read is in the map; see {@link
+   *     #archiveEntry}.
+   */
+  public static Map<String, AnnotationFileResource> archiveEntries(
+      File archive, String nameEnding) {
+    Map<String, AnnotationFileResource> result = new HashMap<>();
+    try (JarFile file = new JarFile(archive)) {
+      file.stream()
+          .filter(entry -> entry.getName().endsWith(nameEnding))
+          .forEach(entry -> result.put(entry.getName(), archiveEntry(archive, file, entry)));
+    } catch (IOException e) {
+      System.err.println("AnnotationFileUtil: could not process archive " + archive + ": " + e);
+      return Collections.emptyMap();
+    }
+    return result;
   }
 
   /**
