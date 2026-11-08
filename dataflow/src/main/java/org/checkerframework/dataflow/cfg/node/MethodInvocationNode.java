@@ -62,9 +62,10 @@ public class MethodInvocationNode extends Node {
   protected @Nullable EnhancedForLoopTree enhancedForLoop;
 
   /**
-   * True if this node is a call, such as {@code booleanValue()}, that unboxes a value of a boxed
-   * primitive type. The CFG inserts such a call wherever Java unboxes a value implicitly, and an
-   * explicit call such as {@code b.booleanValue()} is one too.
+   * True if this node is an unboxing call: a call to the method that unboxes a value of a boxed
+   * primitive type, such as {@code Boolean.booleanValue()} or {@code Integer.intValue()}. The CFG
+   * inserts such a call wherever Java unboxes a value implicitly, and the source code can contain
+   * one explicitly, as in {@code b.booleanValue()}.
    *
    * <p>Is set by {@link #setIsUnboxing}.
    */
@@ -155,8 +156,9 @@ public class MethodInvocationNode extends Node {
   }
 
   /**
-   * Returns true if this node is a call, such as {@code booleanValue()}, that unboxes a value of a
-   * boxed primitive type. Such a call is either inserted by the CFG or written explicitly in the
+   * Returns true if this node is a call to the method that unboxes a value of a boxed primitive
+   * type, such as {@code Boolean.booleanValue()} or {@code Integer.intValue()} (but not {@code
+   * Integer.longValue()}). Such a call is either inserted by the CFG or written explicitly in the
    * source code.
    *
    * @return true if this node is an unboxing call

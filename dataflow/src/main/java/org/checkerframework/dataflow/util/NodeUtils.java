@@ -126,8 +126,7 @@ public final class NodeUtils {
     } else if (n instanceof ConditionalNotNode cnn) {
       return isConstantBoolean(cnn.getOperand(), !value);
     } else if (n instanceof MethodInvocationNode min && min.getIsUnboxing()) {
-      // An unboxing call, whether the CFG inserts it or the source code contains it, has no side
-      // effects and equals its receiver.
+      // An unboxing call has no side effects and equals its receiver.
       return isConstantBoolean(min.getTarget().getReceiver(), value);
     } else {
       return false;
