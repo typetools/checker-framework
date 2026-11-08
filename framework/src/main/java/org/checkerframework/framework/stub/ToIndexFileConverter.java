@@ -589,7 +589,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * Returns a formal parameter's JVML representation. Unlike {@code getJVML(parameterType(param))},
    * this resolves the type in the context of the parameter's declaration. For a varargs parameter,
    * {@link #parameterType} returns a copy of the element type that is not part of the AST, so
-   * resolving that copy would not consider the enclosing type parameters.
+   * resolving that copy would not consider the declarations that enclose the parameter.
    *
    * @param param a formal parameter
    * @return the JVML representation of the type of {@code param}
