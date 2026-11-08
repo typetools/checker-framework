@@ -681,10 +681,9 @@ public final class Resolution {
       // Omit bounds that mention variables outside `as`, such as `alpha` in `ai <: alpha`.
       // TODO: This also omits a bound that mentions an instantiated variable outside `as` whose
       // instantiation InferenceType#applyInstantiations did not apply, because the instantiation
-      // ignores
-      // annotations and the result would not be proper.  The fresh type variable then gets a
-      // weaker upper bound.  Retaining such a bound requires applying that instantiation to
-      // the bound of the fresh type variable, which InferenceFactory#getSubsTypeArgs does not do.
+      // ignores annotations and the result would not be proper.  The fresh type variable then gets
+      // a weaker upper bound.  Retaining such a bound requires applying that instantiation to the
+      // bound of the fresh type variable, which InferenceFactory#getSubsTypeArgs does not do.
       upperBounds.removeIf(u -> !as.containsAll(u.getInferenceVariables()));
       AbstractType upperBound = context.inferenceTypeFactory.glb(upperBounds);
       if (upperBound != null) {
