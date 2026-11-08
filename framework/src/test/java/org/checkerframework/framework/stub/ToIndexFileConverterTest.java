@@ -463,6 +463,150 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myOtherMethod([[Ljava/lang/CharSequence;)V");
   }
 
+  /** A varargs parameter whose element type is a stub-declared type uses that type's name. */
+  @Test
+  public void testStubDeclaredTypeVarargs() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Local {",
+            "  class Inner {}",
+            "}",
+            "class MyClass {",
+            "  void myMethod(Local... ls) {}",
+            "  void myOtherMethod(Local.Inner[]... is) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod([Lp/Local;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod([[Lp/Local$Inner;)V");
+  }
+
+  /** A type that the stub file declares is qualified by the stub file's package. */
+  @Test
+  public void testStubDeclaredType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Local {}",
+            "class MyClass {",
+            "  void myMethod(Local l) {}",
+            "  <T extends Local> void myOtherMethod(T t) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/Local;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Lp/Local;)V");
+  }
+
+  /**
+   * A type that the stub file declares is qualified by the stub file's package, even where it is
+   * used before its declaration.
+   */
+  @Test
+  public void testStubDeclaredTypeUsedBeforeDeclaration() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass {",
+            "  void myMethod(MyOtherClass c) {}",
+            "}",
+            "class MyOtherClass {",
+            "  void myOtherMethod(MyClass c) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyOtherClass;)V");
+    assertMethod(jaif, "MyOtherClass", "myOtherMethod(Lmypackage/MyClass;)V");
+  }
+
+  /**
+   * A nested class that the stub file declares gets its binary name, qualified by the stub file's
+   * package.
+   */
+  @Test
+  public void testStubDeclaredNestedType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass {",
+            "  void myMethod(MyOtherClass.MyNestedClass c) {}",
+            "}",
+            "class MyOtherClass {",
+            "  class MyNestedClass {",
+            "    class MyDoublyNestedClass {}",
+            "    void myNestedMethod(MyDoublyNestedClass c, MyOtherClass o) {}",
+            "  }",
+            "  void myOtherMethod(MyNestedClass c) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyOtherClass$MyNestedClass;)V");
+    assertMethod(jaif, "MyOtherClass", "myOtherMethod(Lmypackage/MyOtherClass$MyNestedClass;)V");
+    assertMethod(
+        jaif,
+        "MyOtherClass$MyNestedClass",
+        "myNestedMethod(Lmypackage/MyOtherClass$MyNestedClass$MyDoublyNestedClass;"
+            + "Lmypackage/MyOtherClass;)V");
+  }
+
+  /** A class declared in the stub file shadows a class of the same name on the classpath. */
+  @Test
+  public void testStubFileDeclarationShadowsClasspath() throws Exception {
+    // org.checkerframework.dataflow.util.PurityChecker is on the classpath.
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import org.checkerframework.dataflow.util.PurityChecker;",
+            "class MyClass {",
+            "  class PurityChecker {}",
+            "  void myMethod(PurityChecker c) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyClass$PurityChecker;)V");
+  }
+
+  /** A nested class shadows a type parameter of an enclosing class. */
+  @Test
+  public void testNestedClassShadowsTypeParameter() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass<E> {",
+            "  void myMethod(E e) {}",
+            "  class MyNestedClass {",
+            "    class E {}",
+            "    void myNestedMethod(E e) {}",
+            "  }",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/lang/Object;)V");
+    assertMethod(
+        jaif, "MyClass$MyNestedClass", "myNestedMethod(Lmypackage/MyClass$MyNestedClass$E;)V");
+  }
+
+  /** The stub file may refer to one of its own types by the type's fully qualified name. */
+  @Test
+  public void testFullyQualifiedNameOfStubFileType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass {",
+            "  void myMethod(mypackage.MyOtherClass.MyNestedClass c) {}",
+            "}",
+            "class MyOtherClass {",
+            "  class MyNestedClass {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyOtherClass$MyNestedClass;)V");
+  }
+
+  /**
+   * Once the first identifier of a qualified name names a member type, the remaining identifiers
+   * are resolved within that member type, even if the stub file does not declare them.
+   */
+  @Test
+  public void testQualifiedNameIsResolvedWithinMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import java.util.Map;",
+            "class MyClass {",
+            "  static class Map {}",
+            "  void myMethod(Map.Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyClass$Map$Entry;)V");
+  }
+
   /** A cyclic bound, which is illegal, does not make the converter recurse forever. */
   @Test
   public void testCyclicTypeVariableBound() throws Exception {
