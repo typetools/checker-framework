@@ -31,7 +31,6 @@ import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.typeinference8.constraint.ConstraintSet;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
-import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext.ReplacedTypes;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -68,24 +67,7 @@ public abstract class AbstractType {
   protected final AnnotatedTypeFactory typeFactory;
 
   /**
-   * True if the primary annotations of this type should be ignored during inference, because they
-   * do not constrain any inference variable's annotations. For a type variable or a wildcard, this
-   * includes the primary annotations of its bounds. It does not include annotations nested in this
-   * type, such as those of its type arguments or its component type.
-   *
-   * <p>For example, this field is true for a bound that {@link UseOfVariable#addBound} creates from
-   * a use of an inference variable that has a primary annotation, such as {@code @Nullable T}. That
-   * annotation overrides {@code T}'s, so the constraint {@code @Nullable T <: @Nullable String}
-   * relates only the Java types of {@code T} and {@code String}. This field is also true for a type
-   * derived from such a bound.
-   *
-   * <p>A proper {@code EQUAL} bound whose field is true, such as {@code T = @NonNull U} from the
-   * constraint {@code @NonNull T = @NonNull U}, can become a variable's instantiation. It then
-   * gives only the variable's Java type; its annotations come from the variable's other bounds (see
-   * {@link
-   * org.checkerframework.framework.util.typeinference8.util.Resolution#resolveIgnoredAnnotations}).
-   * A position where applying instantiations put such an instantiation is an ignored position; see
-   * {@link ProperType#getOrigin}.
+   * True if the annotations on this type should be ignored.
    *
    * <p>This field applies to every qualifier hierarchy at once, even when it was set because of a
    * primary annotation that appears in only some of the hierarchies. TODO: Make this per-hierarchy,
@@ -195,23 +177,13 @@ public abstract class AbstractType {
   public abstract Collection<Variable> getInferenceVariables();
 
   /**
-   * Returns this type with each use of an inference variable that has an instantiation replaced by
-   * that instantiation (see {@link Variable#getInstantiation}). The result may be this type itself.
+   * Returns a new type that is the same as this one except the variables in {@code instantiations}
+   * have been replaced by their instantiation.
    *
-   * @return this type with the instantiations of its inference variables applied
+   * @return a new type that is the same as this one except the variables in {@code instantiations}
+   *     have been replaced by their instantiation
    */
   public abstract AbstractType applyInstantiations();
-
-  /**
-   * Returns the type that this type was made from by applying instantiations, if this is a proper
-   * type made that way and at least one of those instantiations ignores annotations; otherwise,
-   * null. See {@link ProperType#getOrigin}.
-   *
-   * @return the type that this type was made from, or null
-   */
-  @Nullable InferenceType getOrigin() {
-    return null;
-  }
 
   /**
    * Returns true if this type is java.lang.Object.
@@ -236,7 +208,7 @@ public abstract class AbstractType {
     List<AnnotatedTypeParameterBounds> typeVars =
         typeFactory.typeVariablesFromUse((AnnotatedDeclaredType) getAnnotatedType(), typeelem);
     for (AnnotatedTypeParameterBounds bound : typeVars) {
-      bounds.add(new ProperType(bound.getUpperBound(), context, false));
+      bounds.add(new ProperType(bound.getUpperBound(), context, ignoreAnnotations));
     }
     return bounds;
   }
@@ -379,7 +351,7 @@ public abstract class AbstractType {
       if (returnType.getKind() == TypeKind.VOID || returnType.getKind() == TypeKind.NONE) {
         return null;
       }
-      return create(returnType, false);
+      return create(returnType, ignoreAnnotations);
     } else {
       return null;
     }
@@ -400,7 +372,7 @@ public abstract class AbstractType {
       assert functionType != null : "@AssumeAssertion(nullness): this is a functional interface";
       List<AbstractType> params = new ArrayList<>();
       for (AnnotatedTypeMirror param : functionType.getParameterTypes()) {
-        params.add(create(param, false));
+        params.add(create(param, ignoreAnnotations));
       }
       return params;
     } else {
@@ -624,7 +596,7 @@ public abstract class AbstractType {
       if (annotatedDeclaredType.isUnderlyingTypeRaw()) {
         return Collections.emptyList();
       }
-      return create(annotatedDeclaredType.getTypeArguments(), false);
+      return create(annotatedDeclaredType.getTypeArguments(), ignoreAnnotations);
     } else {
       return null;
     }
@@ -645,7 +617,7 @@ public abstract class AbstractType {
     if (atm instanceof AnnotatedDeclaredType annotatedDeclaredType) {
       AnnotatedDeclaredType enclosing = annotatedDeclaredType.getEnclosingType();
       if (enclosing != null) {
-        return create(enclosing, false);
+        return create(enclosing, ignoreAnnotations);
       }
     }
     return null;
@@ -721,9 +693,10 @@ public abstract class AbstractType {
    *
    * @return the array component type of this type or null if one does not exist
    */
-  public @Nullable AbstractType getComponentType() {
+  public final @Nullable AbstractType getComponentType() {
     if (getJavaType().getKind() == TypeKind.ARRAY) {
-      return create(((AnnotatedArrayType) getAnnotatedType()).getComponentType(), false);
+      return create(
+          ((AnnotatedArrayType) getAnnotatedType()).getComponentType(), ignoreAnnotations);
     } else {
       return null;
     }
@@ -738,23 +711,21 @@ public abstract class AbstractType {
 
   /**
    * Checks whether the annotations of {@code this} are a subtype of those of {@code superType},
-   * except at positions where either type's annotations are ignored; see {@link
-   * IgnoredAnnotations#replaceIgnoredForSubtype}.
+   * assuming that their underlying Java types have already been found to be in the required
+   * relationship. If either type is marked as having annotations that should be ignored, then the
+   * annotations are not compared.
    *
-   * @param superType the potential supertype; the caller must already have checked that the Java
-   *     type of {@code this} is a subtype of, or assignable to, that of {@code superType}
-   * @return {@link ConstraintSet#TRUE} if the non-ignored annotations of {@code this} are a subtype
-   *     of those of {@code superType}; otherwise {@link ConstraintSet#TRUE_ANNO_FAIL}
+   * @param superType the potential supertype
+   * @return {@link ConstraintSet#TRUE} if the annotations are ignored or if the annotations of
+   *     {@code this} are a subtype of those of {@code superType}; otherwise {@link
+   *     ConstraintSet#TRUE_ANNO_FAIL}
    */
   protected final ConstraintSet checkAnnotationSubtype(ProperType superType) {
-    if (IgnoredAnnotations.noAnnotationsToCompare(this, superType)) {
+    if (ignoreAnnotations || superType.ignoreAnnotations) {
       return ConstraintSet.TRUE;
     }
-    ReplacedTypes compared =
-        IgnoredAnnotations.replaceIgnoredForSubtype(
-            this, superType, typeFactory.getQualifierHierarchy(), context.modelTypes);
-    AnnotatedTypeMirror subATM = compared.type1();
-    AnnotatedTypeMirror superATM = compared.type2();
+    AnnotatedTypeMirror subATM = getAnnotatedType();
+    AnnotatedTypeMirror superATM = superType.getAnnotatedType();
     if (typeFactory.getTypeHierarchy().isSubtype(subATM, superATM)) {
       return ConstraintSet.TRUE;
     } else {
