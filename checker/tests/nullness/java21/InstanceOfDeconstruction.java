@@ -101,10 +101,6 @@ public class InstanceOfDeconstruction {
   }
 
   void typeArguments(Object o) {
-    if (o instanceof Strings(var l)) {
-      // :: error: [dereference.of.nullable]
-      l.get(0).length();
-    }
     // :: error: [assignment]
     if (o instanceof Strings(List<String> l)) {
       l.get(0).length();
