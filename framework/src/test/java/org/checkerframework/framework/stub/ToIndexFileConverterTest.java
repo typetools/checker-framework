@@ -481,9 +481,29 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myOtherMethod(Lp/Local;)V");
   }
 
-  /** An unresolvable unqualified name is assumed to be in the stub file's own package. */
+  /** A type that another package of the stub file declares gets its binary name. */
   @Test
-  public void testUnresolvedTypeInOwnPackage() throws Exception {
+  public void testTypeDeclaredInOtherPackageOfStubFile() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import q.Outer;",
+            "class MyClass {",
+            "  void myMethod(Outer.Inner i, q.Outer.Inner j) {}",
+            "}",
+            "package q;",
+            "class Outer {",
+            "  class Inner {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lq/Outer$Inner;Lq/Outer$Inner;)V");
+  }
+
+  /**
+   * A type that the stub file declares is qualified by the stub file's package, even where it is
+   * used before its declaration.
+   */
+  @Test
+  public void testStubDeclaredTypeUsedBeforeDeclaration() throws Exception {
     String jaif =
         convert(
             "package mypackage;",
@@ -497,9 +517,12 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyOtherClass", "myOtherMethod(Lmypackage/MyClass;)V");
   }
 
-  /** A nested class declared in the stub file is qualified with the stub file's package. */
+  /**
+   * A nested class that the stub file declares gets its binary name, qualified by the stub file's
+   * package.
+   */
   @Test
-  public void testUnresolvedNestedTypeInOwnPackage() throws Exception {
+  public void testStubDeclaredNestedType() throws Exception {
     String jaif =
         convert(
             "package mypackage;",
