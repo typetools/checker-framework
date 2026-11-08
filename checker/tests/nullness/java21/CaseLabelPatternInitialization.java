@@ -33,7 +33,8 @@ public class CaseLabelPatternInitialization {
     }
   }
 
-  // A binding variable nested in a record pattern is not defaulted to top.
+  // A binding variable nested in a record pattern is refined to the type of the record component.
+  // A type pattern that is not unconditional for the component does not match null.
   void nested(Box b) {
     if (b instanceof Box(String s)) {
       s.length();

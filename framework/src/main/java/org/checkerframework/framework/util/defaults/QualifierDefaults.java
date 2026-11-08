@@ -486,25 +486,6 @@ public class QualifierDefaults {
   }
 
   /**
-   * Returns true if {@code elt} is the binding variable of a type pattern that is nested in a
-   * record pattern.
-   *
-   * @param elt a binding variable
-   * @return true if {@code elt} is the binding variable of a type pattern that is nested in a
-   *     record pattern
-   */
-  private boolean isNestedBindingVariable(Element elt) {
-    // TODO: Once dataflow refines a nested binding variable by its record component (follow-up
-    // pull request), default nested binding variables to top as well and remove this method.
-    Tree decl = atypeFactory.declarationFromElement(elt);
-    TreePath path = decl == null ? null : atypeFactory.getPath(decl);
-    // The parent of the variable is a binding pattern, whose parent might be a record pattern.
-    TreePath bindingPattern = path == null ? null : path.getParentPath();
-    TreePath enclosing = bindingPattern == null ? null : bindingPattern.getParentPath();
-    return enclosing != null && TreeUtils.isDeconstructionPatternTree(enclosing.getLeaf());
-  }
-
-  /**
    * Applies default annotations to a type. A {@link com.sun.source.tree.Tree} determines the
    * appropriate scope for defaults.
    *
@@ -918,14 +899,12 @@ public class QualifierDefaults {
             }
           }
           case LOCAL_VARIABLE -> {
-            // A binding variable of a deconstruction pattern is defaulted like a local variable;
-            // dataflow refines it to the type of the record component.
+            // A binding variable is defaulted like a local variable; dataflow refines it to the
+            // type of the value that its pattern matches, such as a record component.
             if (scope != null
                 && isTopLevelType
                 && (scope.getKind() == ElementKind.LOCAL_VARIABLE
-                    || (scope.getKind() == ElementKind.BINDING_VARIABLE
-                        && !isNestedBindingVariable(scope))
-                    || atypeFactory.isDeconstructionBindingVariable(scope))) {
+                    || scope.getKind() == ElementKind.BINDING_VARIABLE)) {
               // TODO: how do we determine that we are in a cast or instanceof type?
               addAnnotation(t, qual);
             }

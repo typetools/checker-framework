@@ -452,8 +452,7 @@ public class NullnessVisitor
       VariableTree tree, AnnotatedTypeMirror variableType, AnnotatedTypeMirror componentType) {
     // A pattern that tests the component's Java type does not match null.
     if (!atypeFactory.isUnconditionalForComponent(tree)) {
-      componentType = componentType.deepCopy();
-      componentType.replaceAnnotation(NONNULL);
+      componentType = withNonNull(componentType);
     }
     super.checkDeconstructionBindingVariable(tree, variableType, componentType);
   }
