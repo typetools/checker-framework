@@ -1,7 +1,7 @@
 // @below-java21-jdk-skip-test
 
-// Test that the MatchException thrown when the guard of the last case of an exhaustive switch is
-// false does not cause a false positive.
+// Test that a resource leaks along the MatchException path when the guard of the last case of an
+// exhaustive switch is false.
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -15,6 +15,7 @@ public class GuardedLastCaseMatchException {
   record Square() implements Shape {}
 
   int switchExpression(Shape shape, boolean b) throws IOException {
+    // :: error: [required.method.not.called]
     FileInputStream s = new FileInputStream("x");
     int r =
         switch (shape) {
@@ -27,6 +28,7 @@ public class GuardedLastCaseMatchException {
   }
 
   int switchStatement(Shape shape, boolean b) throws IOException {
+    // :: error: [required.method.not.called]
     FileInputStream s = new FileInputStream("x");
     int r = 0;
     switch (shape) {
