@@ -48,8 +48,6 @@ scopes, rather than suppressing them.  Where both a registered default and a
 a registered default for `TypeUseLocation.OTHERWISE` applies only where no
 `@DefaultQualifier` for a more concrete location applies.
 
-Removed `DefaultSet.EMPTY`.
-
 `QualifierDefaults.DefaultApplierElement.DefaultApplierElementImpl` now extends
 `AnnotatedTypeScanner<Void, Void>` rather than
 `AnnotatedTypeScanner<Void, AnnotationMirror>`, because one traversal of a type
