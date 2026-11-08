@@ -1151,10 +1151,9 @@ public abstract class CFAbstractTransfer<
     TransferResult<V, S> result = super.visitInstanceOf(node, in);
     // Only the variable of a binding pattern is refined by the expression's type.  The binding
     // variables of a deconstruction pattern hold record components, whose types may be unrelated
-    // to the expression's type, so they are not refined here.
-    // TODO: Give the binding variables of a deconstruction pattern the types of the record
-    // components.
+    // to the expression's type.
     LocalVariableNode bindingVar = node.getBindingPatternVariable();
+
     if (bindingVar == null && !(node.getTree().getType() instanceof AnnotatedTypeTree)) {
       return result;
     }
