@@ -38,7 +38,8 @@ public class CaseNode extends Node {
   /**
    * True if the CFG does not test the case expressions. This is so if they match every value of the
    * switch selector expression that is tested against them, or if this is the last case of an
-   * exhaustive switch.
+   * exhaustive switch. In the latter case, a value that they do not match causes the switch to
+   * throw an exception, which is an exceptional successor of this node.
    */
   protected final boolean alwaysMatches;
 
@@ -89,7 +90,8 @@ public class CaseNode extends Node {
   /**
    * Returns true if the CFG does not test the case expressions. This is so if they match every
    * value of the switch selector expression that is tested against them, or if this is the last
-   * case of an exhaustive switch.
+   * case of an exhaustive switch. In the latter case, a value that they do not match causes the
+   * switch to throw an exception, which is an exceptional successor of this node.
    *
    * @return true if the CFG does not test the case expressions
    */

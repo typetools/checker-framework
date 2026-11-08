@@ -2,9 +2,12 @@
 3 -> 4 EACH_TO_EACH
 4 -> 8 THEN_TO_BOTH
 4 -> 10 ELSE_TO_BOTH
-8 -> 13 EACH_TO_EACH
-10 -> 13 EACH_TO_EACH
-13 -> 0 EACH_TO_EACH
+8 -> 15 EACH_TO_EACH
+10 -> 11 EACH_TO_EACH
+15 -> 0 EACH_TO_EACH
+11 -> 13 EACH_TO_EACH
+11 -> 1 MatchException
+13 -> 15 EACH_TO_EACH
 
 2:
 Process order: 1
@@ -62,18 +65,13 @@ Before:   reaching definitions = { size = 0, switch#num0 = shape }
 side   [ VariableDeclaration ]
 side   [ LocalVariable ]
 Square(int side)   [ DeconstructorPattern ]
-case Square(int side):   [ Case ]
-size   [ LocalVariable ]
-side   [ LocalVariable ]
-size = side   [ Assignment ]
-expression statement size = side   [ ExpressionStatement ]
 ~~~~~~~~~
 AnalysisResult#0
-After:   reaching definitions = { switch#num0 = shape, size = side }
+After:   reaching definitions = { size = 0, switch#num0 = shape }
 
-13:
-Process order: 6
-TransferInput#34
+15:
+Process order: 8
+TransferInput#40
 Before:   reaching definitions = { switch#num0 = shape, size = side, size = radius }
 ~~~~~~~~~
 marker (end of switch statement #0)   [ Marker ]
@@ -83,9 +81,39 @@ return size   [ Return ]
 AnalysisResult#0
 After:   reaching definitions = { switch#num0 = shape, size = side, size = radius }
 
+11:
+Process order: 6
+TransferInput#29
+Before:   reaching definitions = { size = 0, switch#num0 = shape }
+~~~~~~~~~
+case Square(int side):   [ Case ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { size = 0, switch#num0 = shape }
+
 0:
-Process order: 7
-TransferInput#39
+Process order: 9
+TransferInput#45
 Before:   reaching definitions = { switch#num0 = shape, size = side, size = radius }
 ~~~~~~~~~
 <exit>
+
+13:
+Process order: 7
+TransferInput#32
+Before:   reaching definitions = { size = 0, switch#num0 = shape }
+~~~~~~~~~
+size   [ LocalVariable ]
+side   [ LocalVariable ]
+size = side   [ Assignment ]
+expression statement size = side   [ ExpressionStatement ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { switch#num0 = shape, size = side }
+
+1:
+Process order: 10
+TransferInput#34
+Before:   reaching definitions = { size = 0, switch#num0 = shape }
+~~~~~~~~~
+<exceptional-exit>

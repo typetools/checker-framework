@@ -69,6 +69,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -90,6 +91,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.analysis.Store.FlowRule;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.node.AnyPatternNode;
@@ -347,6 +349,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** The Iterable type (erased). */
   protected final TypeMirror iterableType;
 
+  /**
+   * The MatchException type, or its supertype RuntimeException if MatchException is not present
+   * (before Java 21).
+   */
+  protected final TypeMirror matchExceptionType;
+
   /** The NegativeArraySizeException type. */
   protected final TypeMirror negativeArraySizeExceptionType;
 
@@ -441,6 +449,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     assertionErrorType = getTypeMirror(AssertionError.class);
     classCastExceptionType = getTypeMirror(ClassCastException.class);
     iterableType = types.erasure(getTypeMirror(Iterable.class));
+    matchExceptionType =
+        Objects.requireNonNullElse(
+            maybeGetTypeMirror("java.lang.MatchException"), getTypeMirror(RuntimeException.class));
     negativeArraySizeExceptionType = getTypeMirror(NegativeArraySizeException.class);
     nullPointerExceptionType = getTypeMirror(NullPointerException.class);
     outOfMemoryErrorType = maybeGetTypeMirror(OutOfMemoryError.class);
@@ -2401,11 +2412,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           exprs.add(scan(exprTree, null));
         }
 
+        boolean labelAlwaysMatches = labelAlwaysMatches(caseTree);
         // If true, the labels are not tested.
-        boolean alwaysMatches = isLastCaseOfExhaustive || labelAlwaysMatches(caseTree);
-        extendWithNode(
+        boolean alwaysMatches = isLastCaseOfExhaustive || labelAlwaysMatches;
+        CaseNode caseNode =
             new CaseNode(
-                caseTree, selectorExprAssignment, exprs, alwaysMatches, env.getTypeUtils()));
+                caseTree, selectorExprAssignment, exprs, alwaysMatches, env.getTypeUtils());
+        if (isLastCaseOfExhaustive && !labelAlwaysMatches) {
+          // A value that the labels do not match, such as a remainder of an exhaustive switch
+          // (JLS 14.11.1.1), matches no case, so the switch throws MatchException.
+          extendWithNodeWithException(caseNode, matchExceptionType);
+        } else {
+          extendWithNode(caseNode);
+        }
         if (!alwaysMatches) {
           Label labelsMatchLabel = new Label();
           extendWithExtendedNode(new ConditionalJump(labelsMatchLabel, nextCaseLabel));
@@ -4541,6 +4560,17 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected @Nullable TypeMirror maybeGetTypeMirror(Class<?> clazz) {
     String name = clazz.getCanonicalName();
     assert name != null : clazz + " does not have a canonical name";
+    return maybeGetTypeMirror(name);
+  }
+
+  /**
+   * Returns the TypeMirror for the class with the given canonical name, or {@code null} if the type
+   * is not present.
+   *
+   * @param name the canonical name of a class
+   * @return the TypeMirror for the class, or {@code null} if the type is not present
+   */
+  protected @Nullable TypeMirror maybeGetTypeMirror(@FullyQualifiedName String name) {
     TypeElement element = elements.getTypeElement(name);
     if (element == null) {
       return null;

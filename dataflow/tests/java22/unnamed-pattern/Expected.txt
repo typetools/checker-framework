@@ -2,9 +2,12 @@
 3 -> 4 EACH_TO_EACH
 4 -> 8 THEN_TO_BOTH
 4 -> 10 ELSE_TO_BOTH
-8 -> 13 EACH_TO_EACH
-10 -> 13 EACH_TO_EACH
-13 -> 0 EACH_TO_EACH
+8 -> 15 EACH_TO_EACH
+10 -> 11 EACH_TO_EACH
+15 -> 0 EACH_TO_EACH
+11 -> 13 EACH_TO_EACH
+11 -> 1 MatchException
+13 -> 15 EACH_TO_EACH
 
 2:
 Process order: 1
@@ -62,7 +65,44 @@ Before:   reaching definitions = { to_increment = 0, switch#num0 = i }
 ~~~~~~~~~
 _   [ AnyPattern ]
 WrappedBoolean(_)   [ DeconstructorPattern ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { to_increment = 0, switch#num0 = i }
+
+15:
+Process order: 8
+TransferInput#42
+Before:   reaching definitions = { switch#num0 = i, to_increment = (to_increment + 2), to_increment = (to_increment + 1) }
+~~~~~~~~~
+marker (end of switch statement #0)   [ Marker ]
+to_increment   [ LocalVariable ]
+return to_increment   [ Return ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { switch#num0 = i, to_increment = (to_increment + 2), to_increment = (to_increment + 1) }
+
+11:
+Process order: 6
+TransferInput#29
+Before:   reaching definitions = { to_increment = 0, switch#num0 = i }
+~~~~~~~~~
 case WrappedBoolean(_):   [ Case ]
+~~~~~~~~~
+AnalysisResult#0
+After:   reaching definitions = { to_increment = 0, switch#num0 = i }
+
+0:
+Process order: 9
+TransferInput#47
+Before:   reaching definitions = { switch#num0 = i, to_increment = (to_increment + 2), to_increment = (to_increment + 1) }
+~~~~~~~~~
+<exit>
+
+13:
+Process order: 7
+TransferInput#32
+Before:   reaching definitions = { to_increment = 0, switch#num0 = i }
+~~~~~~~~~
 to_increment   [ LocalVariable ]
 to_increment   [ LocalVariable ]
 2   [ IntegerLiteral ]
@@ -73,21 +113,9 @@ expression statement to_increment = to_increment + 2   [ ExpressionStatement ]
 AnalysisResult#0
 After:   reaching definitions = { switch#num0 = i, to_increment = (to_increment + 2) }
 
-13:
-Process order: 6
-TransferInput#36
-Before:   reaching definitions = { switch#num0 = i, to_increment = (to_increment + 2), to_increment = (to_increment + 1) }
+1:
+Process order: 10
+TransferInput#34
+Before:   reaching definitions = { to_increment = 0, switch#num0 = i }
 ~~~~~~~~~
-marker (end of switch statement #0)   [ Marker ]
-to_increment   [ LocalVariable ]
-return to_increment   [ Return ]
-~~~~~~~~~
-AnalysisResult#0
-After:   reaching definitions = { switch#num0 = i, to_increment = (to_increment + 2), to_increment = (to_increment + 1) }
-
-0:
-Process order: 7
-TransferInput#41
-Before:   reaching definitions = { switch#num0 = i, to_increment = (to_increment + 2), to_increment = (to_increment + 1) }
-~~~~~~~~~
-<exit>
+<exceptional-exit>
