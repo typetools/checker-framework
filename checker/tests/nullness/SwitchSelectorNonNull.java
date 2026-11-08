@@ -49,13 +49,18 @@ public class SwitchSelectorNonNull {
     return i;
   }
 
+  // The Nullness Checker does not refine the sides of an assignment, or the operand of a cast,
+  // that is a switch selector.  It refines only the selector's value.
+
   @NonNull Integer boxedAssignment(@Nullable Integer i, @Nullable Integer j) {
     // :: error: [switching.nullable]
     switch (i = j) {
       default:
         break;
     }
+    // :: error: [dereference.of.nullable]
     i.toString();
+    // :: error: [return]
     return j;
   }
 
@@ -65,6 +70,7 @@ public class SwitchSelectorNonNull {
       default:
         break;
     }
+    // :: error: [return]
     return o;
   }
 
@@ -74,6 +80,7 @@ public class SwitchSelectorNonNull {
       default:
         break;
     }
+    // :: error: [return]
     return s;
   }
 
@@ -83,6 +90,7 @@ public class SwitchSelectorNonNull {
       default:
         break;
     }
+    // :: error: [return]
     return o;
   }
 
@@ -92,6 +100,7 @@ public class SwitchSelectorNonNull {
       default:
         break;
     }
+    // :: error: [return]
     return o;
   }
 
@@ -101,7 +110,9 @@ public class SwitchSelectorNonNull {
       default:
         break;
     }
+    // :: error: [dereference.of.nullable]
     s.toString();
+    // :: error: [return]
     return t;
   }
 
@@ -112,8 +123,11 @@ public class SwitchSelectorNonNull {
       default:
         break;
     }
+    // :: error: [dereference.of.nullable]
     s.toString();
+    // :: error: [dereference.of.nullable]
     u.toString();
+    // :: error: [return]
     return t;
   }
 
