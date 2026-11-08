@@ -144,6 +144,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private final AScene scene;
 
   /**
+   * All the compilation units of the stub file, including the one that this converter converts. A
+   * stub file has one compilation unit per {@code package} declaration, so other compilation units
+   * can declare types in other packages. Empty if they are not known.
+   */
+  private List<CompilationUnit> compilationUnits = Collections.emptyList();
+
+  /**
    * A cache for {@link #getTargets}. Maps an annotation name, as written in the stub file, to the
    * element types in the {@code @Target} meta-annotation of the annotation interface that the name
    * denotes, or to null if they cannot be determined.
@@ -275,6 +282,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         List<ImportDeclaration> impDecls = cu.getImports();
         PackageDeclaration pkgDecl = cu.getPackageDeclaration().get();
         ToIndexFileConverter converter = new ToIndexFileConverter(pkgDecl, impDecls, scene);
+        converter.compilationUnits = iu.getCompilationUnits();
         String pkgName = converter.pkgName;
         for (TypeDeclaration<?> typeDecl : typeDecls) {
           String name = typeDecl.getNameAsString();
@@ -875,40 +883,70 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Returns the binary name, qualified by the stub file's package, of a type that the stub file
-   * declares. For example, if the stub file's package is {@code p} and the stub file declares a
-   * top-level class {@code B} containing a nested class {@code C}, then this method maps the
-   * declaration of {@code C} to {@code "p.B$C"}.
+   * Returns the binary name, qualified by its package, of a type that the stub file declares. For
+   * example, if the stub file declares, in package {@code p}, a top-level class {@code B}
+   * containing a nested class {@code C}, then this method maps the declaration of {@code C} to
+   * {@code "p.B$C"}.
    *
    * @param declaration a type declaration in the stub file
    * @return the binary name of {@code declaration}
    */
   private String qualifiedStubBinaryName(TypeDeclaration<?> declaration) {
     String binaryName = stubBinaryName(declaration);
-    return pkgName == null ? binaryName : pkgName + "." + binaryName;
+    String pkg =
+        declaration
+            .findCompilationUnit()
+            .flatMap(CompilationUnit::getPackageDeclaration)
+            .map(PackageDeclaration::getNameAsString)
+            .orElse(null);
+    return pkg == null ? binaryName : pkg + "." + binaryName;
   }
 
   /**
-   * If the stub file declares the type whose fully qualified name is {@code fqName}, returns that
-   * type's binary name; otherwise returns null.
+   * If the stub file declares the type whose fully qualified name is {@code fqName}, in any of its
+   * compilation units, returns that type's binary name; otherwise returns null.
    *
-   * @param cu the stub file's compilation unit
+   * @param cu the stub file's compilation unit that is being converted
    * @param fqName a fully qualified type name, in which a {@code .} separates a nested class from
    *     its enclosing class
    * @return the binary name of {@code fqName}, or null if the stub file does not declare it
    */
   private @Nullable String declaredInStubFile(CompilationUnit cu, String fqName) {
+    String result = declaredInCompilationUnit(cu, fqName);
+    for (CompilationUnit other : compilationUnits) {
+      if (result != null) {
+        break;
+      }
+      // A type in the unnamed package cannot be referred to from another package.
+      if (other != cu && other.getPackageDeclaration().isPresent()) {
+        result = declaredInCompilationUnit(other, fqName);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * If {@code cu} declares the type whose fully qualified name is {@code fqName}, returns that
+   * type's binary name; otherwise returns null.
+   *
+   * @param cu a compilation unit of the stub file
+   * @param fqName a fully qualified type name, in which a {@code .} separates a nested class from
+   *     its enclosing class
+   * @return the binary name of {@code fqName}, or null if {@code cu} does not declare it
+   */
+  private @Nullable String declaredInCompilationUnit(CompilationUnit cu, String fqName) {
+    String pkg = cu.getPackageDeclaration().map(PackageDeclaration::getNameAsString).orElse(null);
     String relativeName;
-    if (pkgName == null) {
+    if (pkg == null) {
       relativeName = fqName;
-    } else if (fqName.startsWith(pkgName + ".")) {
-      relativeName = fqName.substring(pkgName.length() + 1);
+    } else if (fqName.startsWith(pkg + ".")) {
+      relativeName = fqName.substring(pkg.length() + 1);
     } else {
-      // The name is in some other package, which the stub file does not declare.
+      // The name is in some other package, which `cu` does not declare.
       return null;
     }
-    // Because `relativeName` is qualified by the package name, it names a top-level type of the
-    // stub file or a member of one.
+    // Because `relativeName` is qualified by the package name, it names a top-level type of `cu`
+    // or a member of one.
     Node declaration = stubDeclaration(cu, relativeName);
     return (declaration instanceof TypeDeclaration<?> typeDecl)
         ? qualifiedStubBinaryName(typeDecl)
