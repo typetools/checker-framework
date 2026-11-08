@@ -7,14 +7,6 @@
 
 ### User-visible changes
 
-### Changes for type system implementers
-
-### Closed issues
-
-## Version 4.4.0 (2026-11-02)
-
-### User-visible changes
-
 Added support for IntelliJ IDEA annotation files (`annotations.xml`) via the
 `-AintellijAnnotations` command-line option.
 
@@ -26,6 +18,14 @@ is ignored.  Within a directory or archive, hidden files (whose names start with
 
 All ajava files must end with `.ajava`.  Stub files must not end with `.ajava`;
 they conventionally end `.astub`.
+
+### Changes for type system implementers
+
+### Closed issues
+
+## Version 4.4.0 (2026-11-02)
+
+### User-visible changes
 
 A method with a purity annotation may call the functional method of one of its
 functional-interface parameters, such as `f.apply(x)` for a parameter
