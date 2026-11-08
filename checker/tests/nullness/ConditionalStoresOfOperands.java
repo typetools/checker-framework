@@ -243,6 +243,31 @@ public class ConditionalStoresOfOperands {
   }
 
   @EnsuresNonNullIf(expression = "#1", result = true)
+  static Boolean isNNBoxed(@Nullable Object o) {
+    return o != null;
+  }
+
+  // Java compares two boxed operands of == and != by reference, so their values might be equal
+  // even when the comparison is false.  isNNBoxed might return a Boolean that is not Boolean.TRUE.
+
+  void equalToBothBoxed(@Nullable Object o) {
+    if (isNNBoxed(o) == (Boolean) false) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    } else {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
+  void notEqualBothBoxed(@Nullable Object o) {
+    if (isNNBoxed(o) != (Boolean) false) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
+  @EnsuresNonNullIf(expression = "#1", result = true)
   static boolean returnsIsNN(@Nullable Object o) {
     return isNN(o);
   }

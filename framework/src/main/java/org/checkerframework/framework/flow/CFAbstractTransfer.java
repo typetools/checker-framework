@@ -25,6 +25,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -1054,7 +1055,8 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns a TransferResult just like the given one, but whose then-store and else-store are
-   * derived from those of {@code in}, if {@code operatorNode} has boolean operands.
+   * derived from those of {@code in}, if {@code operatorNode} has boolean operands. Not for {@code
+   * ==} or {@code !=} with two boxed operands, which Java compares by reference.
    *
    * <p>The then-store and else-store of {@code in} describe one of the operands, called the
    * described operand: the right operand, which is evaluated last, or the left operand if the right
@@ -1091,6 +1093,11 @@ public abstract class CFAbstractTransfer<
     if (!in.containsTwoStores()
         || !TypesUtils.isBooleanType(leftN.getType())
         || !TypesUtils.isBooleanType(rightN.getType())
+        // The CFG does not unbox two boxed operands of == or !=, which Java compares by reference.
+        // Their references can differ even when their values are equal.
+        || ((operatorNode instanceof EqualToNode || operatorNode instanceof NotEqualNode)
+            && leftN.getType().getKind() != TypeKind.BOOLEAN
+            && rightN.getType().getKind() != TypeKind.BOOLEAN)
         // If the described operand's then-store and else-store are equal, so are the result's.
         || in.getThenStore().equals(in.getElseStore())) {
       return result;
