@@ -255,7 +255,6 @@ public class AssignmentInComparison {
 
   @SuppressWarnings("unchecked") // cast to T
   static <T> void arrayTargetTypeVariable(@Nullable T[] ts, @Nullable String[][] ss) {
-    // :: warning: [unchecked] unchecked cast
     if ((ts[0] = (T) ss[0][0]) != null) {
       ts[0].toString();
       // The assignment to `ts[0]` might change `ss[0]`, if `ts` and `ss` alias.
