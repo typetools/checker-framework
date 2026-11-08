@@ -527,9 +527,11 @@ public final class Resolution {
    *
    * <p>The qualifier lower bounds of {@code ai} are lubbed into the primary annotations of the
    * least upper bound of {@code lowerBounds}, or replace them if {@code replaceIgnoredAnnotations}
-   * is true and that type ignores annotations and is not a type variable. If that type is a type
-   * variable, the primary annotations of its lower bound change instead, and its own primary
-   * annotations are unchanged.
+   * is true and that type ignores annotations and is not a type variable. In the latter case, the
+   * result ignores annotations only if the qualifier lower bounds do not cover every hierarchy (see
+   * {@link ProperType#withPrimaryAnnotationsReplaced}). If that type is a type variable, the
+   * primary annotations of its lower bound change instead, and its own primary annotations are
+   * unchanged.
    *
    * <p>The result may share its AnnotatedTypeMirror with an element of {@code lowerBounds}, which
    * is stored in a hash set of bounds. Callers must not mutate the result.
@@ -555,11 +557,6 @@ public final class Resolution {
     Set<AbstractQualifier> qualifierLowerBounds =
         ai.getBounds().getQualifierBoundsOfKind(BoundKind.LOWER);
     if (!qualifierLowerBounds.isEmpty()) {
-      // `lub` may return a type that shares its AnnotatedTypeMirror with one of `lowerBounds`,
-      // which is still stored in a hash set of bounds.  Replacing annotations in place would
-      // change that bound's hash code while it is in the set, so copy before mutating.  Only the
-      // primary annotations are changed below, so the copy keeps the origin.
-      lubProperType = lubProperType.copy();
       QualifierHierarchy qh = context.typeFactory.getQualifierHierarchy();
       AnnotationMirrorSet lubAnnos = AbstractQualifier.lub(qualifierLowerBounds, context);
       if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR
@@ -571,8 +568,19 @@ public final class Resolution {
         // lower bound from a use whose primary annotation is in H2 only.  A type variable's are
         // lubbed into its lower bound, as below, because replacing its primary annotation would
         // also fix its upper bound.
-        lubProperType.getAnnotatedType().replaceAnnotations(lubAnnos);
-      } else if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
+        //
+        // The replacement annotations are derived from `ai`'s bounds, so they are not ignored:
+        // if they cover every hierarchy, then the result does not ignore annotations, and its
+        // annotations are checked against `ai`'s other bounds.  In hierarchies that they do not
+        // cover, the ignored annotations remain.
+        return lubProperType.withPrimaryAnnotationsReplaced(lubAnnos, false);
+      }
+      // `lub` may return a type that shares its AnnotatedTypeMirror with one of `lowerBounds`,
+      // which is still stored in a hash set of bounds.  Replacing annotations in place would
+      // change that bound's hash code while it is in the set, so copy before mutating.  Only the
+      // primary annotations are changed below, so the copy keeps the origin.
+      lubProperType = lubProperType.copy();
+      if (lubProperType.getAnnotatedType().getKind() != TypeKind.TYPEVAR) {
         // A proper lower bound's primary annotations say nothing about `ai`'s only in the
         // hierarchies of the use's explicit primary annotation, where UseOfVariable#addBound made
         // them bottom, so lubbing them is already correct.
