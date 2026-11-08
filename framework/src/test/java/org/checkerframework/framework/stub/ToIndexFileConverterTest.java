@@ -349,6 +349,34 @@ public class ToIndexFileConverterTest {
         param == null || param.lookup("Deprecated") == null);
   }
 
+  /**
+   * The implicitly declared accessor and canonical constructor of a varargs record component have
+   * the same JVML representation of its type as an explicitly declared varargs parameter.
+   */
+  @Test
+  public void testVarargsRecordComponent() throws Exception {
+    AClass clazz =
+        classOfStub(
+            "package p;",
+            "record C<T extends Number>(@Deprecated T... values) {",
+            "  void myMethod(T... ts) {}",
+            "}");
+    String paramJVML = null;
+    for (String method : clazz.methods.keySet()) {
+      if (method.startsWith("myMethod(")) {
+        paramJVML = method.substring("myMethod(".length(), method.indexOf(')'));
+      }
+    }
+    Assert.assertNotNull("no scene element for myMethod", paramJVML);
+    Assert.assertTrue("not an array: " + paramJVML, paramJVML.startsWith("["));
+    Assert.assertNotNull(
+        "no accessor values()" + paramJVML + " in " + clazz.methods.keySet(),
+        clazz.methods.get("values()" + paramJVML));
+    Assert.assertNotNull(
+        "no canonical constructor <init>(" + paramJVML + ")V in " + clazz.methods.keySet(),
+        clazz.methods.get("<init>(" + paramJVML + ")V"));
+  }
+
   /** An enum constant with a class body does not crash the converter. */
   @Test
   public void testEnumConstantWithClassBody() throws Exception {

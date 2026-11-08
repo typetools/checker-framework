@@ -391,7 +391,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     for (ConstructorDeclaration constructor : decl.getConstructors()) {
       StringBuilder sb = new StringBuilder("<init>(");
       for (Parameter param : constructor.getParameters()) {
-        sb.append(getJVML(parameterType(param)));
+        sb.append(parameterJVML(param));
       }
       sb.append(")V");
       if (sb.toString().equals(canonicalDescriptor)) {
@@ -417,7 +417,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         continue;
       }
       if (decl.getMethodsBySignature(name).isEmpty()) {
-        AMethod accessor = clazz.methods.getVivify(name + "()" + getJVML(type));
+        AMethod accessor = clazz.methods.getVivify(name + "()" + parameterJVML(component));
         visitType(type, accessor.returnType);
         visitRecordComponentAnnotations(
             annos, ElementType.METHOD, accessor, type, accessor.returnType, false);
@@ -443,7 +443,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private String canonicalConstructorDescriptor(RecordDeclaration record) {
     StringBuilder sb = new StringBuilder("<init>(");
     for (Parameter component : record.getParameters()) {
-      sb.append(getJVML(parameterType(component)));
+      sb.append(parameterJVML(component));
     }
     sb.append(")V");
     return sb.toString();
