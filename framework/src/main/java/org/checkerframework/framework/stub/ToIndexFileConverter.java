@@ -1021,29 +1021,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       // The name is in some other package, which `cu` does not declare.
       return null;
     }
-    // Because `relativeName` is qualified by the package name, it names a top-level type of `cu`
-    // or a member of one.
-    Node declaration = stubDeclaration(cu, relativeName);
+    // Because `fqName` is qualified by the package name, `relativeName` names a top-level type of
+    // `cu` or a member of one.
+    Node declaration = scopedStubDeclaration(cu, relativeName);
     return (declaration instanceof TypeDeclaration<?> typeDecl)
         ? qualifiedStubBinaryName(typeDecl)
         : null;
-  }
-
-  /**
-   * Returns the declaration, in the stub file, that {@code typeName} names at {@code node}: either
-   * a {@link TypeParameter} or a {@link TypeDeclaration}. Returns null if the stub file declares no
-   * such type.
-   *
-   * @param node the node in the stub file's AST at which {@code typeName} appears
-   * @param typeName a type name, in which a {@code .} separates a nested class from its enclosing
-   *     class; it may be qualified by the stub file's package
-   * @return the declaration of {@code typeName}, or null
-   */
-  private static @Nullable Node stubDeclaration(Node node, String typeName) {
-    Node result = scopedStubDeclaration(node, typeName);
-    // A type in scope shadows a package, so try a package-qualified name only after the lookup
-    // above fails.
-    return result != null ? result : packageQualifiedStubDeclaration(node, typeName);
   }
 
   /**
