@@ -55,8 +55,9 @@ exhaustive switch has a `CaseNode` whose `alwaysMatches()` is true, so its guard
 is evaluated unconditionally after that node.)  Removed `CaseNode.getGuard()`
 and the `guard` parameter of the `CaseNode` constructor.
 The `CaseNode` constructor takes a new `alwaysMatches` argument, and the new
-method `CaseNode.alwaysMatches()` returns it; for such a `CaseNode`, the labels
-are not tested, and `CFAbstractTransfer.visitCase()` returns a regular store.
+method `CaseNode.alwaysMatches()` returns it; for such a `CaseNode`, the CFG
+does not test the labels, and `CFAbstractTransfer.visitCase()` returns a regular
+store.
 
 Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
 and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
