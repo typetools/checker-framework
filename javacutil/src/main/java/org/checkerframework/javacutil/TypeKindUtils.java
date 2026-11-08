@@ -1,8 +1,10 @@
 package org.checkerframework.javacutil;
 
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /** A utility class that helps with {@link TypeKind}s. */
@@ -70,15 +72,30 @@ public final class TypeKindUtils {
   // package must not depend on the framework package.
   /**
    * Given a primitive type, return its kind. Given a boxed primitive type, return the corresponding
-   * primitive type kind. Otherwise, return null.
+   * primitive type kind. Given a type variable or intersection type whose erasure is a boxed
+   * primitive type, such as {@code T extends Integer}, return the primitive type kind that unboxing
+   * conversion produces. Otherwise, return null.
    *
-   * @param type a primitive or boxed primitive type
+   * <p>For a type variable or intersection type, this agrees with {@link
+   * TypesUtils#boxedPrimitiveForUnboxing}, which requires a {@link javax.lang.model.util.Types}
+   * object.
+   *
+   * @param type a type
    * @return a primitive type kind, or null
    */
   public static @Nullable TypeKind primitiveOrBoxedToTypeKind(TypeMirror type) {
     TypeKind typeKind = type.getKind();
     if (typeKind.isPrimitive()) {
       return typeKind;
+    }
+
+    // These cases compute the erasure, which javacutil cannot do without a Types object. A boxed
+    // primitive is a final class, and a class bound precedes any interface bounds.
+    if (type instanceof TypeVariable tv) {
+      return primitiveOrBoxedToTypeKind(tv.getUpperBound());
+    }
+    if (type instanceof IntersectionType it) {
+      return primitiveOrBoxedToTypeKind(it.getBounds().get(0));
     }
 
     if (!(type instanceof DeclaredType dt)) {
