@@ -56,9 +56,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.afu.scenelib.Annotation;
@@ -762,6 +764,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   String getJVML(Type type) {
     return type.accept(
         new GenericVisitorAdapter<String, Void>() {
+          // The type parameters whose erasure is being computed.  It prevents infinite recursion
+          // on a malformed stub file whose bounds are cyclic, as in `<T extends U, U extends T>`.
+          private final Set<TypeParameter> visiting =
+              Collections.newSetFromMap(new IdentityHashMap<>());
+
           @Override
           public String visit(ClassOrInterfaceType type, Void v) {
             // Use the name together with its scope, so that a qualified name such as
@@ -781,7 +788,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
               // The JVML descriptor uses the erasure, which is the first bound, or Object if
               // the type parameter has no bound.
               NodeList<ClassOrInterfaceType> bounds = typeParam.getTypeBound();
-              return bounds.isEmpty() ? "Ljava/lang/Object;" : bounds.get(0).accept(this, null);
+              if (bounds.isEmpty() || !visiting.add(typeParam)) {
+                return "Ljava/lang/Object;";
+              }
+              String result = bounds.get(0).accept(this, null);
+              visiting.remove(typeParam);
+              return result;
             }
             String name = resolve(typeName);
             if (name == null) {

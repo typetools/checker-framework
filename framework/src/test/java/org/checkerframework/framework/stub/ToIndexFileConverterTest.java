@@ -449,6 +449,20 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myOtherMethod([[Ljava/lang/CharSequence;)V");
   }
 
+  /** A cyclic bound, which is illegal, does not make the converter recurse forever. */
+  @Test
+  public void testCyclicTypeVariableBound() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass {",
+            "  <T extends U, U extends T> void myMethod(T t, U u) {}",
+            "  <V extends V> void myOtherMethod(V v) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/lang/Object;Ljava/lang/Object;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Ljava/lang/Object;)V");
+  }
+
   /** A single-type import that does not match a name does not prevent resolving the name. */
   @Test
   public void testResolveAfterNonMatchingImport() throws Exception {
