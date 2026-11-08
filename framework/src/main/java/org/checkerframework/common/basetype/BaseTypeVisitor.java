@@ -1975,6 +1975,63 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
+   * Checks that a call through {@code functionalMethod} guarantees, of the code that it passes to
+   * each functional-interface parameter of {@code implementation}, the purity that {@code
+   * implementation}'s body assumes of it; see {@link
+   * PurityChecker#functionalParameterPurity(org.checkerframework.javacutil.AnnotationProvider,
+   * ExecutableElement, int, ProcessingEnvironment)}.
+   *
+   * <p>That method accounts for each declaration that {@code implementation} overrides. This one is
+   * for another way that a call through {@code functionalMethod} can run {@code implementation}: as
+   * a method reference.
+   *
+   * @param reportTree the tree at which to report an error
+   * @param implementation the method that a call through {@code functionalMethod} runs
+   * @param functionalMethod the method that {@code implementation} implements
+   * @param offset the index of {@code functionalMethod}'s parameter that corresponds to {@code
+   *     implementation}'s first parameter: 1 for an unbound method reference such as {@code C::m},
+   *     whose functional method's first parameter is the receiver, and 0 otherwise
+   * @param messageKey the key of the error message to report
+   */
+  private void checkImplementationFunctionalParameters(
+      Tree reportTree,
+      ExecutableElement implementation,
+      ExecutableElement functionalMethod,
+      int offset,
+      @CompilerMessageKey String messageKey) {
+    ProcessingEnvironment env = atypeFactory.getProcessingEnv();
+    List<? extends VariableElement> implementationParams = implementation.getParameters();
+    for (int i = 0; i < implementationParams.size(); i++) {
+      EnumSet<PurityKind> assumed =
+          PurityChecker.functionalParameterPurity(atypeFactory, implementation, i, env);
+      if (assumed.isEmpty()) {
+        continue;
+      }
+      ExecutableElement parameterFunction =
+          PurityChecker.parameterFunctionalMethod(implementation, i, env);
+      assert parameterFunction != null
+          : "@AssumeAssertion(nullness): functionalParameterPurity is empty for a parameter whose"
+              + " type is not a functional interface";
+      int j = i + offset;
+      EnumSet<PurityKind> provided =
+          j < functionalMethod.getParameters().size()
+              ? PurityChecker.guaranteedFunctionalArgumentPurity(
+                  atypeFactory, functionalMethod, j, parameterFunction, env)
+              : EnumSet.noneOf(PurityKind.class);
+      if (!provided.containsAll(assumed)) {
+        reportErrorOnce(
+            reportTree,
+            messageKey,
+            implementationParams.get(i).getSimpleName(),
+            implementation,
+            purityKindsToString(assumed),
+            functionalMethod,
+            purityKindsToString(provided));
+      }
+    }
+  }
+
+  /**
    * Reports that an argument to a functional-interface parameter lacks the purity that the callee
    * requires of it.
    *
@@ -5352,6 +5409,42 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             purityKindsToString(superPurity),
             overridden);
       }
+      if (!infer) {
+        checkMethodReferenceFunctionalParameters();
+      }
+    }
+
+    /**
+     * Check that a call through the functional method guarantees, of the code that it passes to
+     * each functional-interface parameter of the referenced method, the purity that the referenced
+     * method's body assumes of it.
+     */
+    private void checkMethodReferenceFunctionalParameters() {
+      ExecutableElement functionalMethod = overridden.getElement();
+      checkImplementationFunctionalParameters(
+          overriderTree,
+          overrider.getElement(),
+          functionalMethod,
+          methodRefParameterOffset(),
+          "purity.methodref.functional.parameter");
+    }
+
+    /**
+     * Returns the index of the functional interface method's parameter that corresponds to the
+     * referenced method's first parameter. It is 1 for an unbound method reference such as {@code
+     * Collection::clear}, whose functional interface method's first parameter is the referenced
+     * method's receiver; then the interface method's parameter {@code #(i+1)} is the referenced
+     * method's parameter {@code #i}. It is 0 for every other method reference.
+     *
+     * <p>This method requires that {@link #overriderTree} is a method reference.
+     *
+     * @return 1 if the method reference is unbound, and 0 otherwise
+     */
+    private int methodRefParameterOffset() {
+      return MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) overriderTree)
+              .isUnbound()
+          ? 1
+          : 0;
     }
 
     /**
