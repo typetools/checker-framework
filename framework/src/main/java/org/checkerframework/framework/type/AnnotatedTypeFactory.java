@@ -1588,8 +1588,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns the qualifiers to which an instanceof refines its expression where the instanceof is
    * true. Each is a qualifier that is explicitly written on the reference type (the type after
    * "instanceof") and that is strictly more specific than the expression's effective qualifier in
-   * the same hierarchy. For a binding pattern, the reference type is the declared type of the binding
-   * variable, as in {@code e instanceof @A T v}.
+   * the same hierarchy. For a binding pattern, the reference type is the declared type of the
+   * binding variable, as in {@code e instanceof @A T v}.
    *
    * <p>Defaulted qualifiers of the reference type play no role, so a qualifier written in one
    * hierarchy refines the expression even if the reference type is not a subtype of the
