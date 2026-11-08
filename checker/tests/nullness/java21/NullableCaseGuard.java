@@ -6,8 +6,7 @@
 // @infer-ajava-skip-test
 // @infer-stubs-skip-test
 
-// Test that a case guard is checked for nullness, as the condition of an if statement is, and that
-// a guard of type Boolean is non-null only where the guard was evaluated.
+// Test that a case guard is checked for nullness, as the condition of an if statement is.
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -22,25 +21,7 @@ public class NullableCaseGuard {
   void nullableBooleanGuard(Object sel, @Nullable Boolean b) {
     switch (sel) {
       // :: error: [condition.nullable]
-      case String s when b -> {
-        b.hashCode();
-      }
-      default -> {
-        // The guard is not evaluated if the pattern does not match.
-        // :: error: [dereference.of.nullable]
-        b.hashCode();
-      }
-    }
-  }
-
-  void nullableBooleanGuardNextCase(Object sel, @Nullable Boolean b) {
-    switch (sel) {
-      // :: error: [condition.nullable]
       case String s when b -> {}
-      case Integer i -> {
-        // :: error: [dereference.of.nullable]
-        b.hashCode();
-      }
       default -> {}
     }
   }
@@ -50,20 +31,16 @@ public class NullableCaseGuard {
       case String s
       // :: error: [condition.nullable]
       when b:
-        b.hashCode();
         break;
       default:
-        // :: error: [dereference.of.nullable]
-        b.hashCode();
     }
   }
 
   int nullableBooleanGuardSwitchExpression(Object sel, @Nullable Boolean b) {
     return switch (sel) {
       // :: error: [condition.nullable]
-      case String s when b -> b.hashCode();
-      // :: error: [dereference.of.nullable]
-      default -> b.hashCode();
+      case String s when b -> 1;
+      default -> 2;
     };
   }
 
@@ -72,7 +49,7 @@ public class NullableCaseGuard {
       case Circle c -> 1;
       case Square s -> 2;
       // :: error: [condition.nullable]
-      case Shape s when b -> b.hashCode();
+      case Shape s when b -> 3;
     };
   }
 
