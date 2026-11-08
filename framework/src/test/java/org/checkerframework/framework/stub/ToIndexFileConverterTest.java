@@ -203,19 +203,6 @@ public class ToIndexFileConverterTest {
         jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/ToIndexFileConverter;)V");
   }
 
-  /** A single-type import shadows a class in the same package (JLS 6.4.1). */
-  @Test
-  public void testResolveSingleTypeImportBeforePackage() throws Exception {
-    String jaif =
-        convert(
-            "package java.util;",
-            "import java.sql.Date;",
-            "class MyClass {",
-            "  void myMethod(Date d) {}",
-            "}");
-    assertMethod(jaif, "MyClass", "myMethod(Ljava/sql/Date;)V");
-  }
-
   /** Each top-level type of a compilation unit is converted. */
   @Test
   public void testSeveralTopLevelTypes() throws Exception {
@@ -401,8 +388,8 @@ public class ToIndexFileConverterTest {
 
   /**
    * A single-type import of an annotation interface that the input JAIF file does not define
-   * prevents the use of a definition, of another interface with the same simple name, that is
-   * keyed by that simple name.
+   * prevents the use of a definition, of another interface with the same simple name, that is keyed
+   * by that simple name.
    */
   @Test
   public void testSingleTypeImportOfUndefinedAnnotation() throws Exception {
@@ -462,8 +449,7 @@ public class ToIndexFileConverterTest {
   }
 
   /**
-   * A single-type import shadows a definition in the same package, which shadows a wildcard
-   * import.
+   * A single-type import shadows a definition in the same package, which shadows a wildcard import.
    */
   @Test
   public void testImportAndPackagePrecedence() throws Exception {

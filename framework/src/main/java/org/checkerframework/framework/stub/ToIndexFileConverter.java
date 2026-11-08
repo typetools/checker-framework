@@ -959,13 +959,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *     or null if resolution fails
    */
   private @Nullable @BinaryName String resolveUncached(@BinaryName String className) {
-    // Single-type imports shadow types in the same package, which shadow types that are imported
-    // on demand, including those in java.lang (JLS 6.4.1).
-    String imported = qualifyViaSingleTypeImport(className);
-    if (imported != null) {
-      return loadClass(imported) != null ? imported : null;
-    }
-
     if (pkgName != null) {
       String qualifiedName = Signatures.addPackage(pkgName, className);
       if (loadClass(qualifiedName) != null) {
@@ -983,9 +976,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
 
     for (String declName : imports) {
-      if (!declName.endsWith("*")) {
-        continue;
-      }
       String qualifiedName = mergeImport(declName, className);
       if (qualifiedName != null && loadClass(qualifiedName) != null) {
         return qualifiedName;
