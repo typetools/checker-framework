@@ -259,20 +259,19 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Parses the ajava file {@code ajavaFile} assuming {@code root} represents the compilation unit
-   * of that file. Uses {@code root} to get information from javac on specific elements of {@code
-   * ajavaFile}, enabling storage of more detailed annotation information than with just the ajava
-   * file.
+   * Parses the ajava file at {@code ajavaPath} assuming {@code root} represents the compilation
+   * unit of that file. Uses {@code root} to get information from javac on specific elements of
+   * {@code ajavaPath}, enabling storage of more detailed annotation information than with just the
+   * ajava file.
    *
-   * @param ajavaFile an ajava file, which may be in the file system or an entry in an archive
+   * @param ajavaPath path to an ajava file
    * @param root javac tree for the compilation unit stored in {@code ajavaFile}
    */
-  public void parseAjavaFileWithTree(AnnotationFileResource ajavaFile, CompilationUnitTree root) {
-    String ajavaPath = ajavaFile.getDescription();
+  public void parseAjavaFileWithTree(String ajavaPath, CompilationUnitTree root) {
     parsing = true;
     SourceChecker checker = factory.getChecker();
     ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-    try (InputStream in = ajavaFile.getInputStream()) {
+    try (InputStream in = Files.newInputStream(Paths.get(ajavaPath))) {
       if (stubDebug) {
         AnnotationFileParser.stubDebugStatic(
             processingEnv,
