@@ -141,24 +141,21 @@ public class NullnessTransfer
    * Sets a given {@link Node} to non-null in the given {@code store}. Also sets to non-null,
    * recursively, the operand of a cast or null check and both sides of an assignment, because they
    * have the same value as the node. It omits each side that, after the assignment, might have a
-   * different value than the assignment, such as {@code n.next} in {@code n = n.next} or in {@code
-   * n.next = (n = o).other}. Calls to this method implement case 2.
+   * different value than the assignment, such as {@code n.next} in {@code n = n.next}. Calls to
+   * this method implement case 2.
    *
    * @param store the store to update
    * @param node the node that should be non-null
    */
   protected void makeNonNull(NullnessStore store, Node node) {
     List<JavaExpression> sides = new ArrayList<>();
-    // The variables assigned anywhere within the outermost assignment, which contains every other
-    // assignment in the chain.
-    List<JavaExpression> targets = null;
+    List<JavaExpression> targets = new ArrayList<>();
     while (true) {
       node = NodeUtils.removeCasts(node);
       if (node instanceof AssignmentNode assignment) {
-        if (targets == null) {
-          targets = assignmentTargets(assignment);
-        }
-        sides.add(JavaExpression.fromNode(assignment.getTarget()));
+        JavaExpression target = JavaExpression.fromNode(assignment.getTarget());
+        sides.add(target);
+        targets.add(target);
         node = assignment.getExpression();
       } else if (node instanceof NullChkNode nullChk) {
         node = nullChk.getOperand();
@@ -168,7 +165,7 @@ public class NullnessTransfer
     }
     sides.add(JavaExpression.fromNode(node));
     for (JavaExpression side : sides) {
-      if (targets == null || !mayBeChangedByAssignment(side, targets)) {
+      if (!mayBeChangedByAssignment(side, targets)) {
         store.insertValue(side, NONNULL);
       }
     }

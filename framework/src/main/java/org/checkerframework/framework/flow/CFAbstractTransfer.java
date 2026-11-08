@@ -1330,7 +1330,8 @@ public abstract class CFAbstractTransfer<
       return Collections.singletonList(node);
     }
 
-    List<JavaExpression> targets = assignmentTargets(assignment);
+    List<JavaExpression> targets = new ArrayList<>();
+    new AssignmentTargetScanner().scan(assignment.getTree(), targets);
     List<Node> result = new ArrayList<>();
     while (true) {
       if (node instanceof AssignmentNode a) {
@@ -1345,20 +1346,6 @@ public abstract class CFAbstractTransfer<
     result.add(node);
     result.removeIf(part -> mayBeChangedByAssignment(JavaExpression.fromNode(part), targets));
     return result;
-  }
-
-  /**
-   * Returns the variables that an assignment assigns, including those assigned by assignments,
-   * compound assignments, increments, and decrements nested anywhere within it.
-   *
-   * @param assignment an assignment node
-   * @return the variables that {@code assignment} and its subexpressions assign
-   */
-  @SideEffectFree
-  protected static List<JavaExpression> assignmentTargets(AssignmentNode assignment) {
-    List<JavaExpression> targets = new ArrayList<>();
-    new AssignmentTargetScanner().scan(assignment.getTree(), targets);
-    return targets;
   }
 
   /**
