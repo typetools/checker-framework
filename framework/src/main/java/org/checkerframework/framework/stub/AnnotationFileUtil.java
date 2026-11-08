@@ -544,8 +544,8 @@ public class AnnotationFileUtil {
    *
    * @param location an annotation file (a stub file, ajava file, or IntelliJ IDEA annotation file),
    *     a jar or zip archive, or a directory. If an annotation file, add it to the {@code
-   *     resources} list. If an archive, use all annotation files (of type {@code fileType})
-   *     contained in it. If a directory, recurse on all files contained in it.
+   *     resources} list. If an archive that the user named, use all annotation files (of type
+   *     {@code fileType}) contained in it. If a directory, recurse on all files contained in it.
    * @param resources the list to add the found files to
    * @param fileType type of annotation files to add
    * @param isUserSupplied true if {@code location} was named by the user (say, on the command line)
