@@ -2094,9 +2094,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    */
   private static boolean mayBeNull(ExpressionTree expression) {
     expression = TreeUtils.withoutParens(expression);
-    return !(expression instanceof NewClassTree
-        || expression instanceof NewArrayTree
-        || TreeUtils.isExplicitThisDereference(expression));
+    return !(expression instanceof NewClassTree || expression instanceof NewArrayTree);
   }
 
   @Override
