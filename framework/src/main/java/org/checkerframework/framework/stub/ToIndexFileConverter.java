@@ -349,9 +349,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     List<Type> paramTypes = new ArrayList<>();
     if (params != null) {
       for (Parameter param : params) {
-        Type paramType = parameterType(param);
-        paramTypes.add(paramType);
-        sb.append(getJVML(paramType));
+        paramTypes.add(parameterType(param));
+        sb.append(parameterJVML(param));
       }
     }
     sb.append(")V");
@@ -428,9 +427,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     List<Type> paramTypes = new ArrayList<>();
     if (params != null) {
       for (Parameter param : params) {
-        Type paramType = parameterType(param);
-        paramTypes.add(paramType);
-        sb.append(getJVML(paramType));
+        paramTypes.add(parameterType(param));
+        sb.append(parameterJVML(param));
       }
     }
     sb.append(')').append(getJVML(type));
@@ -581,6 +579,20 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       annos.add(anno.clone());
     }
     return new ArrayType(param.getType().clone(), ArrayType.Origin.TYPE, annos);
+  }
+
+  /**
+   * Returns a formal parameter's JVML representation. Unlike {@code getJVML(parameterType(param))},
+   * this resolves the type in the context of the parameter's declaration. For a varargs parameter,
+   * {@link #parameterType} returns a copy of the element type that is not part of the AST, so
+   * resolving that copy would not consider the declarations that enclose the parameter.
+   *
+   * @param param a formal parameter
+   * @return the JVML representation of the type of {@code param}
+   */
+  private String parameterJVML(Parameter param) {
+    String elementJVML = getJVML(param.getType());
+    return param.isVarArgs() ? "[" + elementJVML : elementJVML;
   }
 
   /**
