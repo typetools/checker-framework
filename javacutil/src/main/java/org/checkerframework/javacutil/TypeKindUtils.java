@@ -76,7 +76,11 @@ public final class TypeKindUtils {
    * primitive type, such as {@code T extends Integer}, return the primitive type kind that unboxing
    * conversion produces. Otherwise, return null.
    *
-   * @param type a primitive or boxed primitive type
+   * <p>For a type variable or intersection type, this agrees with {@link
+   * TypesUtils#boxedPrimitiveForUnboxing}, which requires a {@link javax.lang.model.util.Types}
+   * object.
+   *
+   * @param type a type
    * @return a primitive type kind, or null
    */
   public static @Nullable TypeKind primitiveOrBoxedToTypeKind(TypeMirror type) {
