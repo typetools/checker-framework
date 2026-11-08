@@ -406,6 +406,23 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myMethod(Lutil/Map;)V");
   }
 
+  /**
+   * The first identifier of a qualified name is not a subpackage of a package that is imported on
+   * demand: with {@code import java.*;}, the name {@code util.List} does not refer to {@code
+   * java.util.List}.
+   */
+  @Test
+  public void testOnDemandImportDoesNotSupplySubpackage() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import java.*;",
+            "class MyClass {",
+            "  void myMethod(util.List l) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lutil/List;)V");
+  }
+
   /** A single-type import that does not match a name does not prevent resolving the name. */
   @Test
   public void testResolveAfterNonMatchingImport() throws Exception {
