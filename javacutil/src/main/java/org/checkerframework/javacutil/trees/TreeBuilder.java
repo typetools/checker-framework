@@ -12,9 +12,7 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
-import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
-import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
@@ -114,10 +112,7 @@ public class TreeBuilder {
 
     Type.MethodType methodType = (Type.MethodType) iteratorMethod.asType();
     Symbol.TypeSymbol methodClass = methodType.asElement();
-    // The return type of iterator() as a member of the iterable type, such as Iterator<T> for
-    // List<T>.
-    DeclaredType iteratorType =
-        (DeclaredType) javacTypes.memberType((Type) exprType, iteratorMethod).getReturnType();
+    DeclaredType iteratorType = (DeclaredType) methodType.getReturnType();
     iteratorType =
         (DeclaredType) javacTypes.asSuper((Type) iteratorType, symtab.iteratorType.asElement());
 
@@ -127,15 +122,8 @@ public class TreeBuilder {
     if (numIterTypeArgs == 1) {
       TypeMirror elementType = iteratorType.getTypeArguments().get(0);
       // Remove captured type variable from a wildcard.
-      if (elementType instanceof Type.CapturedType captured) {
-        elementType = captured.wildcard;
-        // The wildcard may lack a bound of the capture that unboxing conversion depends on. For
-        // example, given `class Box<T extends Integer>`, the capture of `Box<?>`'s type argument
-        // is bounded by Integer, but the wildcard is not.
-        TypeMirror boxed = TypesUtils.boxedPrimitiveForUnboxing(captured, modelTypes);
-        if (boxed != null && !TypesUtils.isUnboxable(elementType, modelTypes)) {
-          elementType = new Type.WildcardType((Type) boxed, BoundKind.EXTENDS, symtab.boundClass);
-        }
+      if (elementType instanceof Type.CapturedType) {
+        elementType = ((Type.CapturedType) elementType).wildcard;
         TypeElement iteratorElt = (TypeElement) modelTypes.asElement(iteratorType);
         assert iteratorElt != null
             : "@AssumeAssertion(nullness): the iterator type always has an element";
@@ -407,19 +395,6 @@ public class TreeBuilder {
         maker.Binary(JCTree.Tag.LT, (JCTree.JCExpression) left, (JCTree.JCExpression) right);
     binary.setType((Type) modelTypes.getPrimitiveType(TypeKind.BOOLEAN));
     return binary;
-  }
-
-  /**
-   * Builds an AST Tree for a null check of an expression. The null check throws
-   * NullPointerException if the expression is null, and otherwise evaluates to the expression.
-   *
-   * @param expr the expression to check
-   * @return a Tree representing "&lt;*nullchk*&gt;expr"
-   */
-  public UnaryTree buildNullCheck(ExpressionTree expr) {
-    JCTree.JCUnary nullCheck = maker.Unary(JCTree.Tag.NULLCHK, (JCTree.JCExpression) expr);
-    nullCheck.setType((Type) TreeUtils.typeOf(expr));
-    return nullCheck;
   }
 
   /**
