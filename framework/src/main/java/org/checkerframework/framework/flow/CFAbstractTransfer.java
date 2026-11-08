@@ -981,8 +981,8 @@ public abstract class CFAbstractTransfer<
    * #visitValueLiteral}.
    */
   @Override
-  public TransferResult<V, S> visitConditionalNot(ConditionalNotNode n, TransferInput<V, S> p) {
-    TransferResult<V, S> result = createTransferResultKeepingStores(getValueFromFactory(n), p);
+  public TransferResult<V, S> visitConditionalNot(ConditionalNotNode n, TransferInput<V, S> in) {
+    TransferResult<V, S> result = createTransferResultKeepingStores(getValueFromFactory(n), in);
     if (!result.containsTwoStores() || NodeUtils.isConstantBoolean(n.getOperand())) {
       return result;
     }
