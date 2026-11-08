@@ -311,23 +311,6 @@ public class AnnotationFileElementTypes {
           processingEnv, "AFET.parseAnnotationFiles(%s, %s)", annotationFiles, fileType);
     }
     for (String path : annotationFiles) {
-      File namedFile = AnnotationFileUtil.findFileSystemLocation(path);
-      if (namedFile != null
-          && namedFile.isFile()
-          && !AnnotationFileUtil.isJarOrZip(namedFile.getName())
-          && !AnnotationFileUtil.isUsableNamedFile(namedFile.getPath(), fileType)) {
-        String reason;
-        if (fileType == AnnotationFileType.COMMAND_LINE_STUB) {
-          reason = ", which is an ajava file; supply it via -Aajava";
-        } else if (fileType.isStub()) {
-          reason = ": the name of a stub file must not end with .ajava";
-        } else {
-          reason = ": the name of an ajava file must end with .ajava";
-        }
-        checker.message(Diagnostic.Kind.WARNING, "Ignoring " + path + reason);
-        continue;
-      }
-
       List<AnnotationFileResource> allFiles = AnnotationFileUtil.allAnnotationFiles(path, fileType);
       if (allFiles != null) {
         for (AnnotationFileResource resource : allFiles) {
