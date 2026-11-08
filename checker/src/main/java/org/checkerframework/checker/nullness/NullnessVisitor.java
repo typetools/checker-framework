@@ -6,6 +6,7 @@ import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssertTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
@@ -431,14 +432,18 @@ public class NullnessVisitor
         }
       }
     }
-    // Don't call super because it will issue an incorrect instanceof.unsafe warning.
-    // Instead, just scan the part before "instanceof" and any deconstruction pattern, whose
-    // binding variables are checked against the record components.
-    super.scan(tree.getExpression(), p);
-    Tree patternTree = tree.getPattern();
-    if (patternTree != null && TreeUtils.isDeconstructionPatternTree(patternTree)) {
-      super.scan(patternTree, p);
+    if (tree.getPattern() instanceof BindingPatternTree bindingPattern) {
+      VariableTree variableTree = bindingPattern.getVariable();
+      AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
+      AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(tree.getExpression());
+      if (!isTypeCastSafe(variableType, withNonNull(exprType))) {
+        checker.reportWarning(tree, "instanceof.pattern.unsafe", exprType, variableTree);
+      }
     }
+    // Don't call super because it will issue an incorrect instanceof.unsafe warning.
+    // Instead, just scan the expression and the pattern.
+    super.scan(tree.getExpression(), p);
+    super.scan(tree.getPattern(), p);
     return null;
   }
 
@@ -451,6 +456,20 @@ public class NullnessVisitor
       componentType.replaceAnnotation(NONNULL);
     }
     super.checkDeconstructionBindingVariable(tree, variableType, componentType);
+  }
+
+  /**
+   * Returns a copy of {@code type} whose primary nullness qualifier is {@code @NonNull}.
+   *
+   * @param type the type of a value that a type pattern is matched against
+   * @return a copy of {@code type} whose primary nullness qualifier is {@code @NonNull}
+   */
+  private AnnotatedTypeMirror withNonNull(AnnotatedTypeMirror type) {
+    // A type pattern that is not unconditional does not match null, so the nullness qualifier of
+    // the matched value does not restrict the binding variable.
+    AnnotatedTypeMirror copy = type.deepCopy();
+    copy.replaceAnnotation(NONNULL);
+    return copy;
   }
 
   /**

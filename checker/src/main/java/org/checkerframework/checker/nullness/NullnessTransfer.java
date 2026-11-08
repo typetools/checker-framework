@@ -378,7 +378,19 @@ public class NullnessTransfer
     NullnessStore thenStore = result.getThenStore();
     NullnessStore elseStore = result.getElseStore();
     makeNonNull(thenStore, n.getOperand());
+    // instanceof is false for null, so a binding variable is non-null.
+    if (n.getPatternNode() instanceof LocalVariableNode bindingVar) {
+      makeNonNull(thenStore, bindingVar);
+    }
     return new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
+  }
+
+  @Override
+  protected void refineCaseLabelBindingVariable(
+      NullnessStore store, VariableTree varTree, ExpressionTree selector) {
+    super.refineCaseLabelBindingVariable(store, varTree, selector);
+    // A type pattern that is a case label does not match null (JLS 14.11.1).
+    store.insertValue(JavaExpression.fromVariableTree(varTree), NONNULL);
   }
 
   @Override
