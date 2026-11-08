@@ -633,6 +633,24 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myOtherMethod(Ljava/lang/Object;)V");
   }
 
+  /**
+   * A single-type import shadows a type of the same package that another compilation unit of the
+   * stub file declares.
+   */
+  @Test
+  public void testSingleTypeImportShadowsStubFileTypeOfSamePackage() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class List {}",
+            "package p;",
+            "import java.util.List;",
+            "class MyClass {",
+            "  void m(List l) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "m(Ljava/util/List;)V");
+  }
+
   /** A single-type import that does not match a name does not prevent resolving the name. */
   @Test
   public void testResolveAfterNonMatchingImport() throws Exception {
