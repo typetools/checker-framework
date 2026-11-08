@@ -28,7 +28,6 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
-import com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -57,11 +56,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.afu.scenelib.Annotation;
@@ -151,40 +148,16 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private final Map<String, @Nullable @BinaryName String> resolveCache = new HashMap<>();
 
   /**
-   * The types declared in the stub file. Maps the fully qualified name of each type, such as {@code
-   * "p.Outer.Inner"}, to its binary name, such as {@code "p.Outer$Inner"}.
-   */
-  private final Map<String, String> declaredTypes;
-
-  /**
    * Creates a new ToIndexFileConverter.
    *
    * @param pkgDecl the AST node for package declaration
    * @param importDecls the AST nodes for import declarations
    * @param scene scene for visitor methods to fill in
-   */
-  public ToIndexFileConverter(
-      @Nullable PackageDeclaration pkgDecl, List<ImportDeclaration> importDecls, AScene scene) {
-    this(pkgDecl, importDecls, scene, Collections.emptyMap());
-  }
-
-  /**
-   * Creates a new ToIndexFileConverter.
-   *
-   * @param pkgDecl the AST node for package declaration
-   * @param importDecls the AST nodes for import declarations
-   * @param scene scene for visitor methods to fill in
-   * @param declaredTypes the types declared in the stub file: a map from the fully qualified name
-   *     of each type to its binary name
    */
   @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
-  private ToIndexFileConverter(
-      @Nullable PackageDeclaration pkgDecl,
-      List<ImportDeclaration> importDecls,
-      AScene scene,
-      Map<String, String> declaredTypes) {
+  public ToIndexFileConverter(
+      @Nullable PackageDeclaration pkgDecl, List<ImportDeclaration> importDecls, AScene scene) {
     this.scene = scene;
-    this.declaredTypes = declaredTypes;
     pkgName = pkgDecl == null ? null : pkgDecl.getNameAsString();
     if (importDecls == null) {
       imports = Collections.emptyList();
@@ -283,21 +256,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param iu {@link StubUnit} representing stubfile
    */
   private static void extractScene(StubUnit iu, AScene scene) {
-    Map<String, String> declaredTypes = new HashMap<>();
-    for (CompilationUnit cu : iu.getCompilationUnits()) {
-      String prefix = cu.getPackageDeclaration().map(pd -> pd.getNameAsString() + ".").orElse("");
-      for (TypeDeclaration<?> typeDecl : cu.getTypes()) {
-        String name = prefix + typeDecl.getNameAsString();
-        collectDeclaredTypes(typeDecl, name, name, declaredTypes);
-      }
-    }
     for (CompilationUnit cu : iu.getCompilationUnits()) {
       NodeList<TypeDeclaration<?>> typeDecls = cu.getTypes();
       if (typeDecls != null && cu.getPackageDeclaration().isPresent()) {
         List<ImportDeclaration> impDecls = cu.getImports();
         PackageDeclaration pkgDecl = cu.getPackageDeclaration().get();
-        ToIndexFileConverter converter =
-            new ToIndexFileConverter(pkgDecl, impDecls, scene, declaredTypes);
+        ToIndexFileConverter converter = new ToIndexFileConverter(pkgDecl, impDecls, scene);
         String pkgName = converter.pkgName;
         for (TypeDeclaration<?> typeDecl : typeDecls) {
           String name = typeDecl.getNameAsString();
@@ -306,29 +270,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
           }
           typeDecl.accept(converter, scene.classes.getVivify(name));
         }
-      }
-    }
-  }
-
-  /**
-   * Records a type declaration and its member type declarations, transitively.
-   *
-   * @param decl a type declaration
-   * @param qualifiedName the fully qualified name of {@code decl}, such as {@code "p.Outer.Inner"}
-   * @param binaryName the binary name of {@code decl}, such as {@code "p.Outer$Inner"}
-   * @param declaredTypes a map from fully qualified names to binary names, which this augments
-   */
-  private static void collectDeclaredTypes(
-      TypeDeclaration<?> decl,
-      String qualifiedName,
-      String binaryName,
-      Map<String, String> declaredTypes) {
-    declaredTypes.put(qualifiedName, binaryName);
-    for (BodyDeclaration<?> member : decl.getMembers()) {
-      if (member instanceof TypeDeclaration<?> nested) {
-        String name = nested.getNameAsString();
-        collectDeclaredTypes(
-            nested, qualifiedName + "." + name, binaryName + "$" + name, declaredTypes);
       }
     }
   }
@@ -401,7 +342,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       for (Parameter param : params) {
         Type paramType = parameterType(param);
         paramTypes.add(paramType);
-        sb.append(getJVML(paramType, param));
+        sb.append(getJVML(paramType));
       }
     }
     sb.append(")V");
@@ -451,7 +392,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     for (ConstructorDeclaration constructor : decl.getConstructors()) {
       StringBuilder sb = new StringBuilder("<init>(");
       for (Parameter param : constructor.getParameters()) {
-        sb.append(getJVML(parameterType(param), param));
+        sb.append(getJVML(parameterType(param)));
       }
       sb.append(")V");
       if (sb.toString().equals(canonicalDescriptor)) {
@@ -477,7 +418,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         continue;
       }
       if (decl.getMethodsBySignature(name).isEmpty()) {
-        AMethod accessor = clazz.methods.getVivify(name + "()" + getJVML(type, component));
+        AMethod accessor = clazz.methods.getVivify(name + "()" + getJVML(type));
         visitType(type, accessor.returnType);
         visitRecordComponentAnnotations(
             annos, ElementType.METHOD, accessor, type, accessor.returnType, false);
@@ -503,7 +444,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private String canonicalConstructorDescriptor(RecordDeclaration record) {
     StringBuilder sb = new StringBuilder("<init>(");
     for (Parameter component : record.getParameters()) {
-      sb.append(getJVML(parameterType(component), component));
+      sb.append(getJVML(parameterType(component)));
     }
     sb.append(")V");
     return sb.toString();
@@ -562,7 +503,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       for (Parameter param : params) {
         Type paramType = parameterType(param);
         paramTypes.add(paramType);
-        sb.append(getJVML(paramType, param));
+        sb.append(getJVML(paramType));
       }
     }
     sb.append(')').append(getJVML(type));
@@ -942,70 +883,27 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /**
    * Computes a type's JVML representation: its field descriptor, such as {@code I} for {@code int}
    * or {@code [[Ljava/lang/String;} for {@code String[][]}. For {@code void}, the result is {@code
-   * V}. A type variable is represented by its erasure.
+   * V}.
    *
-   * @param type the type, which must be part of the AST
+   * @param type the type
    * @return the type's JVML representation
    */
   // Not private, so that it can be tested.
   String getJVML(Type type) {
-    return getJVML(type, type);
-  }
-
-  /**
-   * Computes a type's JVML representation: its field descriptor, such as {@code I} for {@code int}
-   * or {@code [[Ljava/lang/String;} for {@code String[][]}. For {@code void}, the result is {@code
-   * V}. A type variable is represented by its erasure.
-   *
-   * @param type the type
-   * @param context a node of the AST, within whose scope {@code type} is interpreted. It is {@code
-   *     type} itself, unless {@code type} is not part of the AST, as for a varargs parameter.
-   * @return the type's JVML representation
-   */
-  private String getJVML(Type type, Node context) {
-    return getJVML(type, context, Collections.newSetFromMap(new IdentityHashMap<>()));
-  }
-
-  /**
-   * Computes a type's JVML representation.
-   *
-   * @param type the type
-   * @param context a node of the AST, within whose scope {@code type} is interpreted
-   * @param visiting the type parameters whose erasure is being computed; used to avoid infinite
-   *     recursion on a malformed stub file that contains a cyclic bound
-   * @return the type's JVML representation
-   * @see #getJVML(Type, Node)
-   */
-  private String getJVML(Type type, Node context, Set<TypeParameter> visiting) {
     return type.accept(
         new GenericVisitorAdapter<String, Void>() {
           @Override
           public String visit(ClassOrInterfaceType type, Void v) {
-            TypeParameter typeParam = findTypeParameter(type, context);
-            if (typeParam != null) {
-              // The erasure of a type variable is the erasure of its leftmost bound (JLS 4.6).
-              NodeList<ClassOrInterfaceType> bounds = typeParam.getTypeBound();
-              if (bounds.isEmpty() || !visiting.add(typeParam)) {
-                return "Ljava/lang/Object;";
-              }
-              String result = getJVML(bounds.get(0), bounds.get(0), visiting);
-              visiting.remove(typeParam);
-              return result;
-            }
-            String declared = findDeclaredType(type, context);
-            if (declared != null) {
-              return "L" + declared.replace('.', '/') + ";";
-            }
-            // The name with its qualification, if any, such as "java.util.Date".
-            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameWithScope
-            @FullyQualifiedName String typeName = type.getNameWithScope();
+            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
+            @FullyQualifiedName String typeName = type.getNameAsString();
             @SuppressWarnings("signature" // TODO:  bug in ToIndexFileConverter:
             // resolve requires a @BinaryName, but this passes a @FullyQualifiedName.
             // They differ for inner classes.
             )
             String name = resolve(typeName);
             if (name == null) {
-              return "L" + typeName.replace('.', '/') + ";";
+              // could be defined in the same stub file
+              return "L" + typeName + ";";
             }
             return "L" + String.join("/", name.split("\\.")) + ";";
           }
@@ -1055,127 +953,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Returns the type parameter that a type names, if the type is a type variable.
-   *
-   * <p>Declarations are searched in lexical scope order, so a type parameter is not returned if a
-   * nearer member type of the same name shadows it, as in {@code class Outer<T> { class Inner {
-   * class T {} void m(T x); } }}.
-   *
-   * @param type a type
-   * @param context a node of the AST, within whose scope {@code type} is interpreted
-   * @return the declaration of the type variable that {@code type} names, or null if {@code type}
-   *     is not a type variable
-   */
-  private static @Nullable TypeParameter findTypeParameter(
-      ClassOrInterfaceType type, Node context) {
-    if (type.getScope().isPresent() || type.getTypeArguments().isPresent()) {
-      return null;
-    }
-    String name = type.getNameAsString();
-    @Nullable Node child = null;
-    for (@Nullable Node n = context; n != null; child = n, n = n.getParentNode().orElse(null)) {
-      // Within the body of a type declaration, a member type shadows a type parameter of the same
-      // name.  Within the type declaration's header, such as a bound of a type parameter, the type
-      // parameter takes precedence.
-      if (n instanceof TypeDeclaration<?> enclosing
-          && child instanceof BodyDeclaration<?>
-          && hasMemberType(enclosing, name)) {
-        return null;
-      }
-      if (n instanceof NodeWithTypeParameters<?> generic) {
-        for (TypeParameter typeParam : generic.getTypeParameters()) {
-          if (typeParam.getNameAsString().equals(name)) {
-            return typeParam;
-          }
-        }
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Returns true if a type declaration declares a member type with the given name.
-   *
-   * @param decl a type declaration
-   * @param name a simple name
-   * @return true if {@code decl} declares a member type named {@code name}
-   */
-  private static boolean hasMemberType(TypeDeclaration<?> decl, String name) {
-    for (BodyDeclaration<?> member : decl.getMembers()) {
-      if (member instanceof TypeDeclaration<?> memberType
-          && memberType.getNameAsString().equals(name)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Returns the binary name of the type that a type names, if the stub file declares that type.
-   *
-   * @param type a type
-   * @param context a node of the AST, within whose scope {@code type} is interpreted
-   * @return the binary name of the type that {@code type} names, such as {@code "p.Outer$Inner"},
-   *     or null if the stub file does not declare it
-   */
-  private @Nullable String findDeclaredType(ClassOrInterfaceType type, Node context) {
-    if (declaredTypes.isEmpty()) {
-      return null;
-    }
-    String name = type.getNameWithScope();
-    // A member type of an enclosing type.
-    for (@Nullable Node n = context; n != null; n = n.getParentNode().orElse(null)) {
-      if (n instanceof TypeDeclaration<?> enclosing) {
-        String result = declaredTypes.get(qualifiedName(enclosing) + "." + name);
-        if (result != null) {
-          return result;
-        }
-      }
-    }
-    // A single-type import shadows the types that other compilation units of the current package
-    // declare (JLS 6.4.1).  If the imported type is not declared in the stub file, `resolve` finds
-    // it.
-    int dot = name.indexOf('.');
-    String firstIdentifier = dot == -1 ? name : name.substring(0, dot);
-    for (String importName : imports) {
-      if (!importName.endsWith(".*")
-          && importName.substring(importName.lastIndexOf('.') + 1).equals(firstIdentifier)) {
-        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameWithScope
-        String merged = mergeImport(importName, name);
-        return merged == null ? null : declaredTypes.get(merged);
-      }
-    }
-    // A top-level type of the current package.
-    if (pkgName != null) {
-      String result = declaredTypes.get(pkgName + "." + name);
-      if (result != null) {
-        return result;
-      }
-    }
-    // A fully qualified name.
-    return declaredTypes.get(name);
-  }
-
-  /**
-   * Returns the fully qualified name of a type declaration, such as {@code "p.Outer.Inner"}.
-   *
-   * @param decl a type declaration
-   * @return the fully qualified name of {@code decl}
-   */
-  private String qualifiedName(TypeDeclaration<?> decl) {
-    StringBuilder sb = new StringBuilder(decl.getNameAsString());
-    for (@Nullable Node n = decl.getParentNode().orElse(null);
-        n instanceof TypeDeclaration<?> enclosing;
-        n = n.getParentNode().orElse(null)) {
-      sb.insert(0, enclosing.getNameAsString() + ".");
-    }
-    if (pkgName != null) {
-      sb.insert(0, pkgName + ".");
-    }
-    return sb.toString();
-  }
-
-  /**
    * Finds the fully qualified name of the class with the given name.
    *
    * @param className possibly unqualified name of class
@@ -1199,16 +976,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *     or null if resolution fails
    */
   private @Nullable @BinaryName String resolveUncached(@BinaryName String className) {
-    // A single-type import shadows types of the current package and of java.lang (JLS 6.4.1).
-    for (String declName : imports) {
-      if (!declName.endsWith(".*")) {
-        String qualifiedName = mergeImport(declName, className);
-        if (qualifiedName != null && loadClass(qualifiedName) != null) {
-          return qualifiedName;
-        }
-      }
-    }
-
     if (pkgName != null) {
       String qualifiedName = Signatures.addPackage(pkgName, className);
       if (loadClass(qualifiedName) != null) {
@@ -1226,11 +993,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
 
     for (String declName : imports) {
-      if (declName.endsWith(".*")) {
-        String qualifiedName = mergeImport(declName, className);
-        if (qualifiedName != null && loadClass(qualifiedName) != null) {
-          return qualifiedName;
-        }
+      String qualifiedName = mergeImport(declName, className);
+      if (qualifiedName != null && loadClass(qualifiedName) != null) {
+        return qualifiedName;
       }
     }
 
