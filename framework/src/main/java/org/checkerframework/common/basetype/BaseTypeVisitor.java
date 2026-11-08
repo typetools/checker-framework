@@ -5488,11 +5488,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           overriderTree,
           overrider.getElement(),
           functionalMethod,
-          MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) overriderTree)
-                  .isUnbound()
-              ? 1
-              : 0,
+          methodRefParameterOffset(),
           "purity.methodref.functional.parameter");
+    }
+
+    /**
+     * Returns the index of the functional interface method's parameter that corresponds to the
+     * referenced method's first parameter. It is 1 for an unbound method reference such as {@code
+     * Collection::clear}, whose functional interface method's first parameter is the referenced
+     * method's receiver; then the interface method's parameter {@code #(i+1)} is the referenced
+     * method's parameter {@code #i}. It is 0 for every other method reference.
+     *
+     * <p>This method requires that {@link #overriderTree} is a method reference.
+     *
+     * @return 1 if the method reference is unbound, and 0 otherwise
+     */
+    private int methodRefParameterOffset() {
+      return MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) overriderTree)
+              .isUnbound()
+          ? 1
+          : 0;
     }
 
     /**
