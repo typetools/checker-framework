@@ -69,7 +69,6 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -91,7 +90,6 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.dataflow.analysis.Store.FlowRule;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.node.AnyPatternNode;
@@ -349,12 +347,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** The Iterable type (erased). */
   protected final TypeMirror iterableType;
 
-  /**
-   * The MatchException type, or its supertype RuntimeException if MatchException is not present
-   * (before Java 21).
-   */
-  protected final TypeMirror matchExceptionType;
-
   /** The NegativeArraySizeException type. */
   protected final TypeMirror negativeArraySizeExceptionType;
 
@@ -449,9 +441,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     assertionErrorType = getTypeMirror(AssertionError.class);
     classCastExceptionType = getTypeMirror(ClassCastException.class);
     iterableType = types.erasure(getTypeMirror(Iterable.class));
-    matchExceptionType =
-        Objects.requireNonNullElse(
-            maybeGetTypeMirror("java.lang.MatchException"), getTypeMirror(RuntimeException.class));
     negativeArraySizeExceptionType = getTypeMirror(NegativeArraySizeException.class);
     nullPointerExceptionType = getTypeMirror(NullPointerException.class);
     outOfMemoryErrorType = maybeGetTypeMirror(OutOfMemoryError.class);
@@ -2436,20 +2425,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
-          if (isLastCaseOfExhaustive) {
-            // No case matches, so the switch throws MatchException.
-            Label guardFalseLabel = new Label();
-            extendWithExtendedNode(new ConditionalJump(thisBodyLabel, guardFalseLabel));
-            addLabelForNextNode(guardFalseLabel);
-            NodeWithExceptionsHolder throwing =
-                extendWithNodeWithException(
-                    new MarkerNode(
-                        caseTree,
-                        "no case matches in switch #" + TreeUtils.treeUids.get(switchTree),
-                        env.getTypeUtils()),
-                    matchExceptionType);
-            throwing.setTerminatesExecution(true);
-          } else {
+          // If the guard of the last case of an exhaustive switch is false, no case matches and the
+          // switch throws an exception.  The CFG does not represent that exception, so the body
+          // follows the guard whatever the guard's value.
+          if (!isLastCaseOfExhaustive) {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
           }
         }
@@ -4571,17 +4550,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected @Nullable TypeMirror maybeGetTypeMirror(Class<?> clazz) {
     String name = clazz.getCanonicalName();
     assert name != null : clazz + " does not have a canonical name";
-    return maybeGetTypeMirror(name);
-  }
-
-  /**
-   * Returns the TypeMirror for the class with the given canonical name, or {@code null} if the type
-   * is not present.
-   *
-   * @param name the canonical name of a class
-   * @return the TypeMirror for the class, or {@code null} if the type is not present
-   */
-  protected @Nullable TypeMirror maybeGetTypeMirror(@FullyQualifiedName String name) {
     TypeElement element = elements.getTypeElement(name);
     if (element == null) {
       return null;
