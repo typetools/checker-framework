@@ -71,6 +71,23 @@ public class TypeVarPrimitivesNullness {
     t.toString();
   }
 
+  void enhancedForWildcard(java.util.List<? extends @Nullable Integer> l) {
+    // :: error: [unboxing.of.nullable]
+    for (int x : l) {}
+    // :: error: [unboxing.of.nullable]
+    for (long x : l) {}
+  }
+
+  void enhancedForWildcardNonNull(java.util.List<? extends Integer> l) {
+    for (int x : l) {}
+    for (long x : l) {}
+  }
+
+  <T extends @Nullable Integer> void enhancedForWildcardTypeVar(java.util.List<? extends T> l) {
+    // :: error: [unboxing.of.nullable]
+    for (int x : l) {}
+  }
+
   <T extends Short> T prefixIncrementDecrement(T t) {
     ++t;
     --t;

@@ -73,7 +73,78 @@ public class TypeVarPrimitives {
     return 0;
   }
 
+  <T extends Integer> int enhancedForArray(T[] ts) {
+    int sum = 0;
+    for (int x : ts) {
+      sum += x;
+    }
+    return sum;
+  }
+
+  <T extends Integer> int enhancedForIterable(java.util.List<T> ts) {
+    int sum = 0;
+    for (int x : ts) {
+      sum += x;
+    }
+    return sum;
+  }
+
+  long enhancedForWidening(java.util.List<Integer> integers) {
+    long sum = 0;
+    for (long x : integers) {
+      sum += x;
+    }
+    return sum;
+  }
+
+  <T extends Integer> long enhancedForWideningTypeVar(java.util.List<T> ts, T[] tArray) {
+    long sum = 0;
+    for (long x : ts) {
+      sum += x;
+    }
+    for (long x : tArray) {
+      sum += x;
+    }
+    return sum;
+  }
+
   long captured(java.util.List<? extends Integer> l) {
     return l.get(0) * 2L;
+  }
+
+  long enhancedForWildcard(java.util.List<? extends Integer> l) {
+    long sum = 0;
+    for (int x : l) {
+      sum += x;
+    }
+    for (long x : l) {
+      sum += x;
+    }
+    return sum;
+  }
+
+  <T extends Integer> long enhancedForWildcardTypeVar(java.util.List<? extends T> l) {
+    long sum = 0;
+    for (int x : l) {
+      sum += x;
+    }
+    for (long x : l) {
+      sum += x;
+    }
+    return sum;
+  }
+
+  abstract static class IntegerBox<T extends Integer> implements Iterable<T> {}
+
+  // The capture of the wildcard is bounded by Integer, the declared bound of T.
+  long enhancedForUnboundedWildcard(IntegerBox<?> box) {
+    long sum = 0;
+    for (int x : box) {
+      sum += x;
+    }
+    for (long x : box) {
+      sum += x;
+    }
+    return sum;
   }
 }
