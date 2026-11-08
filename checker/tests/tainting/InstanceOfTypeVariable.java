@@ -23,4 +23,12 @@ public class InstanceOfTypeVariable {
       @Untainted String u = s;
     }
   }
+
+  // The expression is refined even if its type is a type variable without a primary qualifier.
+  <T extends @Tainted Object> void refineTypeVariable(T t) {
+    // :: warning: [instanceof.unsafe]
+    if (t instanceof @Untainted String) {
+      @Untainted Object u = t;
+    }
+  }
 }
