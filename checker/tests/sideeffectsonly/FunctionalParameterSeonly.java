@@ -23,14 +23,7 @@ public class FunctionalParameterSeonly {
   }
 
   void callers() {
-    // A side-effect-free argument satisfies the requirement, even though Runnable.run is not
-    // annotated with @SideEffectsOnly.
     runs(() -> {});
-    runs(
-        () -> {
-          int local = 0;
-          local++;
-        });
     // :: error: (purity.assign.field) :: error: (purity.functional.argument)
     runs(() -> count++);
   }

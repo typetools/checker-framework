@@ -1608,7 +1608,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   private void inferPurityAnno(
       EnumSet<PurityKind> purityKinds, WholeProgramInference wpi, ExecutableElement elt) {
-    // Ignore PurityKind.SIDE_EFFECTS_ONLY if it is present.
     boolean sef = purityKinds.contains(PurityKind.SIDE_EFFECT_FREE);
     boolean det = purityKinds.contains(PurityKind.DETERMINISTIC);
 
@@ -3319,10 +3318,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected void checkLambdaPurity(
       LambdaExpressionTree tree, AnnotatedExecutableType functionType) {
     ExecutableElement functionalMethod = functionType.getElement();
-    EnumSet<PurityKind> purityKinds =
-        PurityUtils.getPurityKinds(atypeFactory, functionalMethod).clone();
-    // `checkLambdaSideEffectsOnly` checks `@SideEffectsOnly`, which `PurityChecker` does not track.
-    purityKinds.remove(PurityKind.SIDE_EFFECTS_ONLY);
+    EnumSet<PurityKind> purityKinds = PurityUtils.getPurityKinds(atypeFactory, functionalMethod);
     // Do not report errors while inferring.  The purity annotations on `functionalMethod` may
     // have been written by inference, which has not yet taken this lambda into account; the
     // code below does that.  The annotations are checked when the inference output is
@@ -5427,10 +5423,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Returns the purity kinds of {@code method}, including {@link PurityKind#SIDE_EFFECTS_ONLY} if
-     * {@code method} inherits a {@code @SideEffectsOnly} annotation.
+     * {@code method} is not side-effect-free and has or inherits a {@code @SideEffectsOnly}
+     * annotation.
      *
-     * <p>{@link PurityUtils#getPurityKinds} does not report an inherited {@code @SideEffectsOnly},
-     * because {@code @SideEffectsOnly} is not inherited as an annotation; see {@link
+     * <p>{@link PurityUtils#getPurityKinds} never reports {@link PurityKind#SIDE_EFFECTS_ONLY}.
+     * {@code @SideEffectsOnly} is not inherited as an annotation; see {@link
      * AnnotatedTypeFactory#getSideEffectsOnlyExpressionMap}.
      *
      * @param method a method
@@ -5439,10 +5436,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     private EnumSet<PurityKind> purityKinds(ExecutableElement method) {
       EnumSet<PurityKind> result = PurityUtils.getPurityKinds(atypeFactory, method);
       if (!result.contains(PurityKind.SIDE_EFFECT_FREE)
-          && !result.contains(PurityKind.SIDE_EFFECTS_ONLY)
           && atypeFactory.getSideEffectsOnlyExpressionMap(method) != null) {
-        // Do not side-effect the result of `getPurityKinds`, which may be a shared set.
-        result = result.clone();
         result.add(PurityKind.SIDE_EFFECTS_ONLY);
       }
       return result;
@@ -5487,8 +5481,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
 
       for (JavaExpression seOnlySubExpression : seOnlySubExpressions) {
-        if (seOnlySuperExpressions.stream()
-            .noneMatch(sup -> seOnlySubExpression.containsAsReceiver(atypeFactory, sup))) {
+        if (!isPermittedSideEffect(seOnlySubExpression, seOnlySuperExpressions)) {
           return false;
         }
       }
