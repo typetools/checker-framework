@@ -155,18 +155,13 @@ public class UseOfVariable extends AbstractType {
         annosToCopy.add(anno);
       }
     }
-    boolean someHierarchyIgnored =
-        instantiation.ignoreAnnotations && annosToCopy.size() < qh.getTopAnnotations().size();
-    boolean ignore = ignoreAnnotations || someHierarchyIgnored;
-    if (annosToCopy.isEmpty() && ignore == instantiation.ignoreAnnotations) {
+    if (annosToCopy.isEmpty() && (instantiation.ignoreAnnotations || !ignoreAnnotations)) {
+      // The result would be equal to `instantiation`.
       return instantiation;
     }
-    // Copy, because the instantiation is stored as a bound of `variable`.
-    AnnotatedTypeMirror atm = instantiation.getAnnotatedType().deepCopy();
-    atm.replaceAnnotations(annosToCopy);
     // Only the primary annotations change, so the result keeps the instantiation's record of its
     // ignored positions; see ProperType#origin.
-    return instantiation.withAnnotatedType(atm, ignore);
+    return instantiation.withPrimaryAnnotationsReplaced(annosToCopy, ignoreAnnotations);
   }
 
   /**
