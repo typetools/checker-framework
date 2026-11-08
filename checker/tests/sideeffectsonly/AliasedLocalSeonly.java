@@ -89,4 +89,13 @@ public class AliasedLocalSeonly {
       alias = covered;
     }
   }
+
+  @SideEffectsOnly("this")
+  void fieldReassignedAfterAliasing() {
+    // The alias holds the list that `this.covered` referred to on entry to the method.  That list
+    // was reachable from `this`, so modifying it is covered even after the field is reassigned.
+    List<Integer> alias = this.covered;
+    this.covered = new ArrayList<>();
+    alias.add(1);
+  }
 }
