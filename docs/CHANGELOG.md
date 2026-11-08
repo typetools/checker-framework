@@ -15,6 +15,9 @@ is ignored.  Within a directory or archive, hidden files (whose names start with
 
 ### Changes for type system implementers
 
+`AnnotationFileElementTypes.parseAjavaFileWithTree()` takes an
+`AnnotationFileResource` rather than a path.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
@@ -54,9 +57,6 @@ now a final, non-generic class.  `NumberMath.getNumberMath()` throws
 `PurityChecker.checkPurity()` takes two new arguments: the method declaration
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
-
-`AnnotationFileElementTypes.parseAjavaFileWithTree()` takes an
-`AnnotationFileResource` rather than a path.
 
 Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
 and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
