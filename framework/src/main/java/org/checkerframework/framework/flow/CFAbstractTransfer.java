@@ -716,7 +716,8 @@ public abstract class CFAbstractTransfer<
     if (in.containsTwoStores()) {
       S thenStore = in.getThenStore();
       S elseStore = in.getElseStore();
-      // Equal stores, such as those of most method invocations, need no merging.
+      // When the then-store and else-store are equal, as after most method invocations, their least
+      // upper bound equals each of them, so this skips computing it.
       if (!thenStore.equals(elseStore)) {
         thenStore = thenStore.leastUpperBound(elseStore);
         elseStore = thenStore.copy();
@@ -1042,8 +1043,8 @@ public abstract class CFAbstractTransfer<
    * #visitValueLiteral}.
    */
   @Override
-  public TransferResult<V, S> visitConditionalNot(ConditionalNotNode n, TransferInput<V, S> p) {
-    TransferResult<V, S> result = createTransferResultKeepingStores(getValueFromFactory(n), p);
+  public TransferResult<V, S> visitConditionalNot(ConditionalNotNode n, TransferInput<V, S> in) {
+    TransferResult<V, S> result = createTransferResultKeepingStores(getValueFromFactory(n), in);
     if (!result.containsTwoStores() || NodeUtils.isConstantBoolean(n.getOperand())) {
       return result;
     }
