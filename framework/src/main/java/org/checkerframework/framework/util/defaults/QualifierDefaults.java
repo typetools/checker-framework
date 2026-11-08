@@ -136,22 +136,22 @@ public class QualifierDefaults {
   /**
    * Memoizes {@link #precedenceList} for the scopes that have defaults of their own. A scope
    * without such defaults needs no entry, because its precedence list is one of the two shared
-   * arrays {@link #checkedCodeDefaultsArray} and {@link #uncheckedThenCheckedArray}. Like {@link
-   * #defaultsAtCache}, this is an LRU cache.
+   * precedence lists {@link #checkedCodePrecedenceList} and {@link
+   * #uncheckedThenCheckedPrecedenceList}. Like {@link #defaultsAtCache}, this is an LRU cache.
    */
   private final Map<Element, PrecedenceList> precedenceListCache = MapsP.createLruCache(CACHE_SIZE);
 
   /**
    * The precedence list for a scope that has no element defaults and to which conservative defaults
-   * do not apply. Computed on demand by {@link #getCheckedCodeDefaultsArray}.
+   * do not apply. Computed on demand by {@link #getCheckedCodePrecedenceList}.
    */
-  private @Nullable PrecedenceList checkedCodeDefaultsArray = null;
+  private @Nullable PrecedenceList checkedCodePrecedenceList = null;
 
   /**
    * The precedence list for a scope that has no element defaults and to which conservative defaults
-   * apply. Computed on demand by {@link #getUncheckedThenCheckedArray}.
+   * apply. Computed on demand by {@link #getUncheckedThenCheckedPrecedenceList}.
    */
-  private @Nullable PrecedenceList uncheckedThenCheckedArray = null;
+  private @Nullable PrecedenceList uncheckedThenCheckedPrecedenceList = null;
 
   /** A mapping of Element &rarr; Whether or not that element is AnnotatedFor this type system. */
   private final IdentityHashMap<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
@@ -385,8 +385,8 @@ public class QualifierDefaults {
   private void clearDefaultsCaches() {
     defaultsAtCache.clear();
     precedenceListCache.clear();
-    checkedCodeDefaultsArray = null;
-    uncheckedThenCheckedArray = null;
+    checkedCodePrecedenceList = null;
+    uncheckedThenCheckedPrecedenceList = null;
   }
 
   /**
@@ -925,7 +925,7 @@ public class QualifierDefaults {
    */
   protected PrecedenceList precedenceList(@Nullable Element annotationScope) {
     if (annotationScope == null) {
-      return getCheckedCodeDefaultsArray();
+      return getCheckedCodePrecedenceList();
     }
 
     PrecedenceList cached = precedenceListCache.get(annotationScope);
@@ -937,9 +937,11 @@ public class QualifierDefaults {
     boolean conservative = applyConservativeDefaults(annotationScope);
 
     if (scopeDefaults.isEmpty()) {
-      // The common case.  Return a shared array, so that the overwhelming majority of scopes
-      // need no per-scope storage at all.
-      return conservative ? getUncheckedThenCheckedArray() : getCheckedCodeDefaultsArray();
+      // The common case.  Return a shared precedence list, so that the overwhelming majority of
+      // scopes need no per-scope storage at all.
+      return conservative
+          ? getUncheckedThenCheckedPrecedenceList()
+          : getCheckedCodePrecedenceList();
     }
 
     List<Default> list = new ArrayList<>(scopeDefaults.inApplicationOrder);
@@ -961,11 +963,11 @@ public class QualifierDefaults {
    *
    * @return the precedence list consisting of just the checked code defaults
    */
-  private PrecedenceList getCheckedCodeDefaultsArray() {
-    if (checkedCodeDefaultsArray == null) {
-      checkedCodeDefaultsArray = makePrecedenceList(new ArrayList<>(checkedCodeDefaults));
+  private PrecedenceList getCheckedCodePrecedenceList() {
+    if (checkedCodePrecedenceList == null) {
+      checkedCodePrecedenceList = makePrecedenceList(new ArrayList<>(checkedCodeDefaults));
     }
-    return checkedCodeDefaultsArray;
+    return checkedCodePrecedenceList;
   }
 
   /**
@@ -975,13 +977,13 @@ public class QualifierDefaults {
    * @return the precedence list consisting of the unchecked code defaults then the checked code
    *     defaults
    */
-  private PrecedenceList getUncheckedThenCheckedArray() {
-    if (uncheckedThenCheckedArray == null) {
+  private PrecedenceList getUncheckedThenCheckedPrecedenceList() {
+    if (uncheckedThenCheckedPrecedenceList == null) {
       List<Default> list = new ArrayList<>(uncheckedCodeDefaults);
       list.addAll(checkedCodeDefaults);
-      uncheckedThenCheckedArray = makePrecedenceList(list);
+      uncheckedThenCheckedPrecedenceList = makePrecedenceList(list);
     }
-    return uncheckedThenCheckedArray;
+    return uncheckedThenCheckedPrecedenceList;
   }
 
   /**
