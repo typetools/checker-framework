@@ -25,4 +25,18 @@ public class InstanceOfDeconstructionDependentType {
       int i = m.get(k);
     }
   }
+
+  void adapted(KeyedMap km) {
+    if (km instanceof KeyedMap(var mm, var k)) {
+      int i = km.m.get(k);
+    }
+  }
+
+  void adaptedExplicitType(KeyedMap km) {
+    if (km instanceof KeyedMap(var mm, String k)) {
+      @KeyFor("km.m") String k2 = k;
+      // :: error: [assignment]
+      @KeyFor("m") String k3 = k;
+    }
+  }
 }
