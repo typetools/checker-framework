@@ -9,7 +9,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.BinaryOperationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.NullChkNode;
 import org.checkerframework.dataflow.cfg.visualize.CFGVisualizer;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.javacutil.BugInCF;
@@ -83,8 +82,6 @@ public class BusyExprStore implements Store<BusyExprStore> {
       // recursively add expressions
       addUseInExpression(binaryNode.getLeftOperand());
       addUseInExpression(binaryNode.getRightOperand());
-    } else if (e instanceof NullChkNode nullChkNode) {
-      addUseInExpression(nullChkNode.getOperand());
     }
   }
 
