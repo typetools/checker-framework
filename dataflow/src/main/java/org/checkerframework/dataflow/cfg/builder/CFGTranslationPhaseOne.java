@@ -1844,10 +1844,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       AssignmentNode assignNode =
           translateAssignment(variable, new LocalVariableNode(variable), nextCall);
-      // translateAssignment() scans variable and creates new nodes, so set the expression
-      // there, too.
-      ((MethodInvocationNode) assignNode.getExpression()).setIterableExpression(expression);
-      ((MethodInvocationNode) assignNode.getExpression()).setEnhancedForLoop(tree);
+      // translateAssignment() translates nextCall again and creates new nodes, so set the
+      // expression there, too:  on the new node for nextCall, when assignment conversion leaves it
+      // unchanged, and on each boxing or unboxing call that assignment conversion creates.
+      if (assignNode.getExpression() instanceof MethodInvocationNode assignedNextCall) {
+        assignedNextCall.setIterableExpression(expression);
+        assignedNextCall.setEnhancedForLoop(tree);
+      }
+      setIterableExpressionOnBoxingCalls(nextCallNode, expression, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -1940,20 +1944,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       arrayAccessNode.setEnhancedForLoop(tree);
       arrayAccessNode.setInSource(false);
       extendWithNode(arrayAccessNode);
-      AssignmentNode arrayAccessAssignNode =
-          translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
-      // translateAssignment() scans variable and creates new nodes, so set the expression
-      // there, too.
-      Node arrayAccessAssignNodeExpr = arrayAccessAssignNode.getExpression();
-      if (arrayAccessAssignNodeExpr instanceof ArrayAccessNode aan) {
-        aan.setArrayExpression(expression);
-        aan.setEnhancedForLoop(tree);
-      } else if (arrayAccessAssignNodeExpr instanceof MethodInvocationNode boxingNode) {
-        // If the array component type is a primitive, there may be a boxing or unboxing
-        // conversion. Treat that as an iterator.
-        boxingNode.setIterableExpression(expression);
-        boxingNode.setEnhancedForLoop(tree);
-      }
+      translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
+      setIterableExpressionOnBoxingCalls(arrayAccessNode, expression, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -1995,6 +1987,30 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     continueTargetLC = oldContinueTargetLC;
 
     return null;
+  }
+
+  /**
+   * Sets the iterable expression and the enhanced for loop of each boxing or unboxing call that
+   * assignment conversion applied to {@code element}, so that the type of each call is the element
+   * type of the iterable expression. Assignment conversion boxes or unboxes the element in, for
+   * example, {@code for (int x : listOfInteger)} and {@code for (Integer x : arrayOfInt)}.
+   *
+   * @param element the node for the element, before conversion
+   * @param expression the iterable expression of the enhanced for loop
+   * @param tree the enhanced for loop
+   */
+  private void setIterableExpressionOnBoxingCalls(
+      Node element, ExpressionTree expression, EnhancedForLoopTree tree) {
+    Set<Node> converted = treeToImplicitlyConvertedCfgNodes.get(element.getTree());
+    if (converted == null) {
+      return;
+    }
+    for (Node node : converted) {
+      if (node instanceof MethodInvocationNode conversion) {
+        conversion.setIterableExpression(expression);
+        conversion.setEnhancedForLoop(tree);
+      }
+    }
   }
 
   protected VariableTree createEnhancedForLoopIteratorVariable(
