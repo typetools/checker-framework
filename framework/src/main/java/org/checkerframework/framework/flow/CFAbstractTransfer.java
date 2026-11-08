@@ -1000,8 +1000,8 @@ public abstract class CFAbstractTransfer<
    * <p>If {@code node} is the left operand of a binary operation, then the right operand is
    * evaluated after {@code node}, but before the operation's result is known. The result omits each
    * part whose value an assignment in the right operand might change. For example, the result for
-   * the left operand of {@code ((String) x) == nonNull(x = null)} is empty, because the comparison
-   * says nothing about the value of {@code x} after the assignment.
+   * the left operand of {@code x == nonNull(x = null)} is empty, because the comparison says
+   * nothing about the value of {@code x} after the assignment.
    *
    * @param node possibly an assignment node or a cast
    * @return a list containing the right- and left-hand sides in the given assignment node that have

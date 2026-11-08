@@ -187,6 +187,20 @@ public class AssignmentInComparison {
     }
   }
 
+  static void receiverReassignedParenthesized(
+      @Nullable AssignmentInComparison n, @Nullable AssignmentInComparison o) {
+    if (n == null) {
+      return;
+    }
+    if ((n.next = ((n) = o)) != null) {
+      n.toString();
+      o.toString();
+      // After the assignment, `n.next` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      n.next.toString();
+    }
+  }
+
   static void receiverReassignedInRhsReceiver(
       @Nullable AssignmentInComparison n, AssignmentInComparison o) {
     if (n == null) {
@@ -219,6 +233,21 @@ public class AssignmentInComparison {
     }
   }
 
+  static void arrayTargetWithAssignmentInIndex(@Nullable Object[] a, int i, @Nullable Object o) {
+    if ((a[i = 0] = o) != null) {
+      // The assignment to an element of `a` does not change the local variable `o`.
+      o.toString();
+    }
+  }
+
+  static void fieldTargetWithAssignmentInReceiver(
+      AssignmentInComparison n, AssignmentInComparison m, @Nullable AssignmentInComparison o) {
+    if (((n = m).next = o) != null) {
+      // The assignment to a `next` field does not change the local variable `o`.
+      o.toString();
+    }
+  }
+
   @Pure
   static @Nullable Object id2(int i, @Nullable Object o) {
     return o;
@@ -232,6 +261,33 @@ public class AssignmentInComparison {
       // The assignment to `ts[0]` might change `ss[0]`, if `ts` and `ss` alias.
       // :: error: [dereference.of.nullable]
       ss[0][0].toString();
+    }
+  }
+
+  static Object nonNull(@Nullable Object o) {
+    return "";
+  }
+
+  // The right operand assigns `x` after the left operand reads it, so the comparison says nothing
+  // about the new value of `x`.
+  void assignmentInRightOperand(@Nullable Object x) {
+    if (x == nonNull(x = null)) {
+      // :: error: [dereference.of.nullable]
+      x.toString();
+    }
+  }
+
+  void assignmentInParenthesizedRightOperand(@Nullable Object x) {
+    if ((x) == (nonNull(x = null))) {
+      // :: error: [dereference.of.nullable]
+      x.toString();
+    }
+  }
+
+  // The left operand assigns `x` before the right operand reads it, so refining `x` is sound.
+  void assignmentInLeftOperand(@Nullable Object x) {
+    if (nonNull(x = null) == x) {
+      x.toString();
     }
   }
 }
