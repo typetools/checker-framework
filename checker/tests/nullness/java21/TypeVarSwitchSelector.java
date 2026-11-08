@@ -10,8 +10,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 // @infer-stubs-skip-test
 public class TypeVarSwitchSelector {
 
-  // A switch with a `case null` label does not unbox its selector, so the `case null` branch is
-  // reachable.
+  // In a switch with a `case null` label, the selector is null in the `case null` branch.
   <T extends @Nullable Integer> String patternSwitch(T t) {
     return switch (t) {
       // :: error: [dereference.of.nullable]
