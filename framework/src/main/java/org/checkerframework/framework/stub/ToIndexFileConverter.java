@@ -174,8 +174,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param pkgDecl the AST node for package declaration
    * @param importDecls the AST nodes for import declarations
    * @param scene scene for visitor methods to fill in
-   * @param declaredTypes the types declared in the stub file: a map from the fully qualified name of
-   *     each type to its binary name
+   * @param declaredTypes the types declared in the stub file: a map from the fully qualified name
+   *     of each type to its binary name
    */
   @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
   private ToIndexFileConverter(
@@ -958,8 +958,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * V}. A type variable is represented by its erasure.
    *
    * @param type the type
-   * @param context a node of the AST, within whose scope {@code type} is interpreted. It is
-   *     {@code type} itself, unless {@code type} is not part of the AST, as for a varargs parameter.
+   * @param context a node of the AST, within whose scope {@code type} is interpreted. It is {@code
+   *     type} itself, unless {@code type} is not part of the AST, as for a varargs parameter.
    * @return the type's JVML representation
    */
   private String getJVML(Type type, Node context) {
