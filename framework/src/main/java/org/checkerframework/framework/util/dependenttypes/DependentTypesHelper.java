@@ -377,7 +377,7 @@ public class DependentTypesHelper {
    * of that component of {@code receiver}, as in a deconstruction pattern.
    *
    * <p>{@code type} is the type of the component as a member of the type of {@code receiver}, so it
-   * may contain annotations from the type arguments of {@code receiver}'s type. Those annotations
+   * might contain annotations from the type arguments of {@code receiver}'s type. Those annotations
    * are written in the scope of the deconstruction pattern, not of the record, so they are not
    * viewpoint-adapted. Only annotations from the declaration of the record component are adapted.
    *

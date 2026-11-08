@@ -3944,7 +3944,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <p>The result is the type of the component's accessor method, as a member of the type of the
    * value that the deconstruction pattern matches. If that type does not determine the record's
-   * type arguments (for example, if it is {@code Object}), then the result may be a type variable.
+   * type arguments (for example, if it is {@code Object}), then the result might be a type
+   * variable.
    *
    * @param variableTree a variable declaration
    * @return the type of the record component that {@code variableTree} is bound to, or null if
