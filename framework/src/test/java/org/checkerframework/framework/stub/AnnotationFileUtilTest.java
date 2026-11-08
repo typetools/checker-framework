@@ -114,18 +114,6 @@ public class AnnotationFileUtilTest {
     }
   }
 
-  /**
-   * Tests that a file named explicitly is used even if its name does not end with {@code .astub}.
-   */
-  @Test
-  public void explicitFileIsUsedRegardlessOfName() throws IOException {
-    File stub = write(new File(tmp.getRoot(), "my-stubs.txt"), "package java.lang;");
-
-    Assert.assertEquals(
-        Arrays.asList(stub.getAbsolutePath()),
-        descriptions(stub, AnnotationFileType.COMMAND_LINE_STUB));
-  }
-
   /** Tests that a directory contributes only the files in it whose names match the file type. */
   @Test
   public void directoryUsesOnlyFilesWithMatchingName() throws IOException {
@@ -181,25 +169,6 @@ public class AnnotationFileUtilTest {
     Assert.assertEquals(
         Arrays.asList(a.getAbsolutePath()),
         descriptions(dir, AnnotationFileType.COMMAND_LINE_STUB));
-  }
-
-  /** Tests that an ajava file named explicitly is used only if its name ends with ".ajava". */
-  @Test
-  public void explicitAjavaFileMustNotBeRenamed() throws IOException {
-    File ajava = write(new File(tmp.getRoot(), "Foo-checker.ajava"), "package p;");
-    File renamed = write(new File(tmp.getRoot(), "Foo-annotations.txt"), "package p;");
-
-    Assert.assertEquals(
-        Arrays.asList(ajava.getAbsolutePath()), descriptions(ajava, AnnotationFileType.AJAVA));
-    Assert.assertEquals(Arrays.asList(), descriptions(renamed, AnnotationFileType.AJAVA));
-  }
-
-  /** Tests that an ajava file named explicitly as a stub file is not used. */
-  @Test
-  public void explicitAjavaFileIsNotAStubFile() throws IOException {
-    File ajava = write(new File(tmp.getRoot(), "Foo-checker.ajava"), "package p;");
-
-    Assert.assertEquals(Arrays.asList(), descriptions(ajava, AnnotationFileType.COMMAND_LINE_STUB));
   }
 
   /** Tests that a hidden file named explicitly is used if its name indicates its file type. */

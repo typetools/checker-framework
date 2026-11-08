@@ -13,9 +13,6 @@ named in the option; an archive within a directory that is named in the option
 is ignored.  Within a directory or archive, hidden files (whose names start with
 `.`), such as the `._Foo.astub` files that macOS creates, are ignored.
 
-All ajava files must end with `.ajava`.  Stub files must not end with `.ajava`;
-they conventionally end `.astub`.
-
 ### Changes for type system implementers
 
 ### Closed issues
