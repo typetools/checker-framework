@@ -1135,8 +1135,8 @@ public abstract class CFAbstractTransfer<
       DeconstructorPatternNode n, TransferInput<V, S> in) {
     // TODO: Implement getting the type of a DeconstructorPatternTree.
     V value = null;
+    TransferResult<V, S> result = createTransferResult(value, in);
     // Each binding variable is assigned a record component.
-    S store = in.getRegularStore();
     for (Node nestedPattern : n.getNestedPatterns()) {
       if (nestedPattern instanceof LocalVariableNode bindingVar
           && bindingVar.getTree() instanceof VariableTree bindingVarTree) {
@@ -1148,11 +1148,17 @@ public abstract class CFAbstractTransfer<
                 : analysis.createAbstractValue(
                     componentType.getAnnotations(), bindingVar.getType());
         if (componentValue != null) {
-          store.insertValue(JavaExpression.fromNode(bindingVar), componentValue);
+          JavaExpression bindingVarExpr = JavaExpression.fromNode(bindingVar);
+          if (result.containsTwoStores()) {
+            result.getThenStore().insertValue(bindingVarExpr, componentValue);
+            result.getElseStore().insertValue(bindingVarExpr, componentValue);
+          } else {
+            result.getRegularStore().insertValue(bindingVarExpr, componentValue);
+          }
         }
       }
     }
-    return createTransferResult(value, in);
+    return result;
   }
 
   @Override
