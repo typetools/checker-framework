@@ -932,7 +932,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       String qualifiedName = mergeImport(declName, className);
       if (qualifiedName != null) {
         String binaryName = loadClassBinaryName(qualifiedName);
-        if (binaryName != null) {
+        // An import on demand makes available the member types of a package or type, not its
+        // subpackages, so the first identifier of `className` names a type.  Therefore no `.`
+        // follows the part of `binaryName` that comes from the import, such as `x.` in `x.*`.
+        if (binaryName != null && binaryName.lastIndexOf('.') < declName.length() - 1) {
           return binaryName;
         }
       }
