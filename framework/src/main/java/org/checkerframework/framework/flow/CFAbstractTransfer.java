@@ -1183,7 +1183,7 @@ public abstract class CFAbstractTransfer<
     // the then store, because for a RegularTransferResult the then store is the regular store.
     S elseStore = result.getElseStore();
     S thenStore = result.getThenStore();
-    if (!bindingVarAnnos.isEmpty()) {
+    if (bindingVar != null && !bindingVarAnnos.isEmpty()) {
       JavaExpression expr = JavaExpression.fromNode(bindingVar);
       for (AnnotationMirror anno : bindingVarAnnos) {
         thenStore.insertOrRefine(expr, anno);
