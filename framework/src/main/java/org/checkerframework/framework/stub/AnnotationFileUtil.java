@@ -431,7 +431,7 @@ public class AnnotationFileUtil {
     if (fileType == AnnotationFileType.INTELLIJ_ANNOTATIONS) {
       // Within a directory or an archive, an IntelliJ IDEA annotation file is always named
       // "annotations.xml".  (A file named on the command line may have any name; see
-      // addAnnotationFilesToList.)
+      // isUsableNamedFile.)
       return "annotations.xml".equals(new File(path).getName());
     }
     // Archive entry names use "/" as the separator on every platform.
@@ -454,14 +454,17 @@ public class AnnotationFileUtil {
   /**
    * Returns true if a file that the user named explicitly, and that is not an archive, should be
    * used as an annotation file of type {@code fileType}. Every ajava file, and no stub file, must
-   * end with {@code .ajava}. Unlike a file found by searching, a named file is used even if it is
-   * hidden (its name starts with ".").
+   * end with {@code .ajava}. An IntelliJ IDEA annotation file is used whatever its name. Unlike a
+   * file found by searching, a named file is used even if it is hidden (its name starts with ".").
    *
    * @param path a file name or path
    * @param fileType the type of annotation file that the user supplied
    * @return true if the named file should be used
    */
   static boolean isUsableNamedFile(String path, AnnotationFileType fileType) {
+    if (fileType == AnnotationFileType.INTELLIJ_ANNOTATIONS) {
+      return true;
+    }
     return path.endsWith(".ajava") != fileType.isStub();
   }
 

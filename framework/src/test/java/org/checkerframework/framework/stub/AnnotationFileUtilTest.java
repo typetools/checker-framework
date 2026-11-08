@@ -216,6 +216,27 @@ public class AnnotationFileUtilTest {
         descriptions(stub, AnnotationFileType.COMMAND_LINE_STUB));
   }
 
+  /**
+   * Tests that an IntelliJ IDEA annotation file named explicitly is used, whatever its name, and
+   * that a directory contributes only the files in it named {@code annotations.xml}.
+   */
+  @Test
+  public void intellijAnnotationsFiles() throws IOException {
+    File dir = tmp.newFolder("intellijdir");
+    File xml = write(new File(dir, "java/lang/annotations.xml"), "<root/>");
+    File other = write(new File(dir, "java/lang/other.xml"), "<root/>");
+
+    Assert.assertEquals(
+        Arrays.asList(xml.getAbsolutePath()),
+        descriptions(xml, AnnotationFileType.INTELLIJ_ANNOTATIONS));
+    Assert.assertEquals(
+        Arrays.asList(other.getAbsolutePath()),
+        descriptions(other, AnnotationFileType.INTELLIJ_ANNOTATIONS));
+    Assert.assertEquals(
+        Arrays.asList(xml.getAbsolutePath()),
+        descriptions(dir, AnnotationFileType.INTELLIJ_ANNOTATIONS));
+  }
+
   /** Tests that a nonexistent location yields null. */
   @Test
   public void nonexistentLocation() {
