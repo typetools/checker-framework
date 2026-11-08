@@ -482,7 +482,10 @@ Each stub path entry is a stub file (ending with
 \<.astub>), a directory, or a \<.jar> or \<.zip> archive.
 Specifying a directory or archive is equivalent to
 specifying every file in it whose name ends with
-\code{.astub}.  An archive within a directory is not read.
+\code{.astub}.  An archive within a directory is not read.  A hidden file
+(one whose name starts with ``\<.>'') within a directory or archive is not
+read; an example is the \<.\_Foo.astub> metadata file that macOS adds to
+archives and to non-Mac file systems.
 The stub path entries are delimited by
 \<File.pathSeparator> (``\<:>'' for Linux and Mac, ``\<;>'' for Windows).
 
