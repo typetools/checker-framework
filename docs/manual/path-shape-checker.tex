@@ -193,7 +193,9 @@ could violate that assumption.
 The Path Shape Checker assumes that \<File.toPath()> preserves the path
 shape.  That is not true on Windows:  \<new File("//server/share")> has a
 parent, \<\textbackslash{}\textbackslash{}server>, but its \<toPath()> is a
-root.
+root.  To make the Path Shape Checker sound for such paths, pass the
+command-line argument \<-Astubs=sound-file-topath.astub> to the Nullness
+Checker.  Then, \<File.toPath()> returns \<@UnknownPathShape>.
 
 A rule that refines a type argument can make the Path Shape Checker reject
 some correct code.  For example, \<Files.list(dir).findFirst()> has type
