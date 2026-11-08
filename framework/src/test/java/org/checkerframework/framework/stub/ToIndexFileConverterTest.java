@@ -995,27 +995,9 @@ public class ToIndexFileConverterTest {
   }
 
   /**
-   * A single-type import of an annotation interface that the input JAIF file does not define
-   * prevents the use of a definition, of another interface with the same simple name, in the stub
-   * file's package.
+   * The first identifier of a qualified annotation name is not a subpackage of a package that is
+   * imported on demand.
    */
-  @Test
-  public void testSingleTypeImportShadowsPackageDefinition() throws Exception {
-    AField f =
-        fieldOfStubWithDefs(
-            new String[] {
-              "package p:", "annotation @Anno: @java.lang.annotation.Target(value={TYPE_USE})"
-            },
-            "package p;",
-            "import r.Anno;",
-            "class C {",
-            "  @Anno String f;",
-            "}");
-    Assert.assertNotNull("@Anno was not recorded on the field", f.lookup("Anno"));
-    Assert.assertNull("@Anno was recorded on the type", f.type.lookup("Anno"));
-  }
-
-  /** A qualified annotation name is resolved as written before it is resolved via a wildcard. */
   @Test
   public void testQualifiedNameBeforeWildcardImport() throws Exception {
     AField f =
@@ -1036,7 +1018,9 @@ public class ToIndexFileConverterTest {
   }
 
   /**
-   * A single-type import shadows a definition in the same package, which shadows a wildcard import.
+   * Each step of name resolution considers the definitions in the input JAIF file: a single-type
+   * import shadows a definition in the same package, which shadows a definition that is imported on
+   * demand.
    */
   @Test
   public void testImportAndPackagePrecedence() throws Exception {

@@ -688,9 +688,19 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (targetsCache.containsKey(name)) {
       return targetsCache.get(name);
     }
-    List<ElementType> result = getTargetsFromDefinition(name);
+    String qualifiedName = resolve(name, expr.findCompilationUnit().orElse(null));
+    AnnotationDef def;
+    if (qualifiedName != null) {
+      def = annotationDefs.get(qualifiedName);
+    } else if (isBoundBySingleTypeImport(name)) {
+      // The import determines what `name` denotes, even if the input JAIF file does not define it.
+      def = null;
+    } else {
+      // `name` might be a simple name that only one definition has.
+      def = annotationDefs.get(name);
+    }
+    List<ElementType> result = getTargetsFromDefinition(def);
     if (result == null) {
-      String qualifiedName = resolve(name, expr.findCompilationUnit().orElse(null));
       Class<?> annoClass = qualifiedName == null ? null : loadClass(qualifiedName);
       Target target = annoClass == null ? null : annoClass.getAnnotation(Target.class);
       result = target == null ? null : Arrays.asList(target.value());
@@ -703,12 +713,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * Returns the element types in the {@code @Target} meta-annotation of an annotation interface's
    * definition in the input JAIF file.
    *
-   * @param name the name of an annotation interface, as written in the stub file
-   * @return the element types in the {@code @Target} meta-annotation of the definition of {@code
-   *     name}, or null if there is no such definition or it has no {@code @Target}
+   * @param def an annotation interface's definition in the input JAIF file, or null
+   * @return the element types in the {@code @Target} meta-annotation of {@code def}, or null if
+   *     {@code def} is null or has no {@code @Target}
    */
-  private @Nullable List<ElementType> getTargetsFromDefinition(@BinaryName String name) {
-    AnnotationDef def = findAnnotationDef(name);
+  private static @Nullable List<ElementType> getTargetsFromDefinition(@Nullable AnnotationDef def) {
     List<String> targetNames = def == null ? null : def.targets();
     if (targetNames == null) {
       return null;
@@ -727,82 +736,18 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Returns the definition, in the input JAIF file, of the annotation interface that a name
-   * denotes.
-   *
-   * @param name the name of an annotation interface, as written in the stub file
-   * @return the definition of {@code name}, or null if the input JAIF file has none
-   */
-  private @Nullable AnnotationDef findAnnotationDef(@BinaryName String name) {
-    boolean isSimpleName = name.indexOf('.') == -1;
-    // A qualified name is most likely fully qualified, so try it as written before trying the
-    // names that a wildcard import could make of it.
-    if (!isSimpleName) {
-      AnnotationDef def = annotationDefs.get(name);
-      if (def != null) {
-        return def;
-      }
-    }
-    // Single-type imports shadow types in the same package, which shadow wildcard imports
-    // (JLS 6.4.1).
-    String imported = qualifyViaSingleTypeImport(name);
-    if (imported != null) {
-      // The import determines what `name` denotes, even if the input JAIF file does not define it.
-      return annotationDefs.get(imported);
-    }
-    if (pkgName != null) {
-      AnnotationDef def = annotationDefs.get(pkgName + "." + name);
-      if (def != null) {
-        return def;
-      }
-    }
-    AnnotationDef def = findAnnotationDefViaWildcardImports(name);
-    if (def != null) {
-      return def;
-    }
-    if (isSimpleName) {
-      // `name` may be a simple name that only one definition has.
-      return annotationDefs.get(name);
-    }
-    return null;
-  }
-
-  /**
-   * Returns the qualified name that a name denotes by way of a single-type import of the stub file:
-   * that is, if a single-type import binds the first identifier of the name.
+   * Returns true if a single-type import of the stub file binds the first identifier of a name.
    *
    * @param name a possibly qualified name, as written in the stub file
-   * @return the qualified name that {@code name} denotes by way of a single-type import, or null if
-   *     no single-type import binds the first identifier of {@code name}
+   * @return true if a single-type import binds the first identifier of {@code name}
    */
-  @SuppressWarnings("signature") // string manipulation of signature strings
-  private @Nullable @BinaryName String qualifyViaSingleTypeImport(@BinaryName String name) {
-    int dot = name.indexOf('.');
-    String first = dot == -1 ? name : name.substring(0, dot);
-    for (String importName : singleTypeImports) {
-      if (importName.equals(first) || importName.endsWith("." + first)) {
-        return importName + name.substring(first.length());
+  private boolean isBoundBySingleTypeImport(@FullyQualifiedName String name) {
+    for (String declName : singleTypeImports) {
+      if (mergeImport(declName, name) != null) {
+        return true;
       }
     }
-    return null;
-  }
-
-  /**
-   * Returns the definition, in the input JAIF file, of the annotation interface that a name denotes
-   * by way of the stub file's wildcard imports.
-   *
-   * @param name the name of an annotation interface, as written in the stub file
-   * @return the definition of {@code name}, or null if no wildcard import yields a definition
-   */
-  private @Nullable AnnotationDef findAnnotationDefViaWildcardImports(@BinaryName String name) {
-    for (String importName : onDemandImports) {
-      String qualifiedName = mergeImport(importName, name);
-      AnnotationDef def = qualifiedName == null ? null : annotationDefs.get(qualifiedName);
-      if (def != null) {
-        return def;
-      }
-    }
-    return null;
+    return false;
   }
 
   /**
@@ -1295,7 +1240,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       }
       @SuppressWarnings("signature") // a type in a package, followed by its member types
       @BinaryName String binaryName = pkgName + "." + className.replace('.', '$');
-      if (loadClass(binaryName) != null) {
+      if (classExists(binaryName)) {
         return binaryName;
       }
     }
@@ -1304,7 +1249,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       String qualifiedName = mergeImport(declName, className);
       if (qualifiedName != null) {
         String binaryName = classBinaryName(qualifiedName, cu);
-        if (binaryName != null) {
+        // An import on demand makes available the member types of a package or type, not its
+        // subpackages, so the first identifier of `className` names a type.  Therefore no `.`
+        // follows the part of `binaryName` that comes from the import, such as `x.` in `x.*`.
+        if (binaryName != null && binaryName.lastIndexOf('.') < declName.length() - 1) {
           return binaryName;
         }
       }
@@ -1449,19 +1397,20 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
   /**
    * Returns the binary name of the class that a fully qualified name refers to, or null if no such
-   * class can be loaded. A fully qualified name does not indicate which of its dot-separated
-   * components are packages and which are enclosing classes, so this method tries each possibility,
-   * starting with the one that has the fewest enclosing classes.
+   * class can be loaded and the input JAIF file defines no such annotation interface. A fully
+   * qualified name does not indicate which of its dot-separated components are packages and which
+   * are enclosing classes, so this method tries each possibility, starting with the one that has
+   * the fewest enclosing classes.
    *
    * @param fqName a fully qualified class name
    * @return the binary name of the class that {@code fqName} refers to, or null
    */
   @SuppressWarnings("signature") // string manipulation of signature strings
-  private static @Nullable @BinaryName String loadClassBinaryName(String fqName) {
+  private @Nullable @BinaryName String loadClassBinaryName(String fqName) {
     StringBuilder candidate = new StringBuilder(fqName);
     int dot = candidate.length();
     while (true) {
-      if (loadClass(candidate.toString()) != null) {
+      if (classExists(candidate.toString())) {
         return candidate.toString();
       }
       dot = candidate.lastIndexOf(".", dot - 1);
@@ -1470,6 +1419,22 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       }
       candidate.setCharAt(dot, '$');
     }
+  }
+
+  /**
+   * Returns true if a class can be loaded or is an annotation interface that the input JAIF file
+   * defines.
+   *
+   * @param binaryName a class's binary name
+   * @return true if {@code binaryName} can be loaded or the input JAIF file defines it
+   */
+  private boolean classExists(@BinaryName String binaryName) {
+    AnnotationDef def = annotationDefs.get(binaryName);
+    // `annotationDefs` also maps an unambiguous simple name to its definition.
+    if (def != null && def.name.equals(binaryName)) {
+      return true;
+    }
+    return loadClass(binaryName) != null;
   }
 
   /**
