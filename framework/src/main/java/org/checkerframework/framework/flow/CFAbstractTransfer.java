@@ -2,6 +2,7 @@ package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
@@ -1013,7 +1014,9 @@ public abstract class CFAbstractTransfer<
   /**
    * Collects the variables that a tree assigns: the left-hand sides of its assignments and compound
    * assignments, and the operands of its increments and decrements. It does not descend into lambda
-   * bodies or class bodies, which do not execute when the tree is evaluated.
+   * bodies, method bodies, or named class declarations, which do not execute when the tree is
+   * evaluated. It does descend into the initializer blocks and field initializers of an anonymous
+   * class body, which execute when the enclosing {@code new} expression is evaluated.
    */
   private static class AssignmentTargetScanner extends TreeScanner<Void, List<JavaExpression>> {
 
@@ -1062,6 +1065,19 @@ public abstract class CFAbstractTransfer<
 
     @Override
     public Void visitClass(ClassTree tree, List<JavaExpression> targets) {
+      if (!tree.getSimpleName().isEmpty()) {
+        // A named (local) class declaration does not execute.
+        return null;
+      }
+      // An anonymous class body: its initializers execute when the `new` expression is evaluated.
+      for (Tree member : tree.getMembers()) {
+        if (member instanceof BlockTree block) {
+          scan(block, targets);
+        } else if (member instanceof VariableTree field) {
+          scan(field.getInitializer(), targets);
+        }
+        // Skip methods and nested class declarations.
+      }
       return null;
     }
   }

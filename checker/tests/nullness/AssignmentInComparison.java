@@ -116,6 +116,40 @@ public class AssignmentInComparison {
     }
   }
 
+  static void anonymousClassInitializerReassignsReceiver(AssignmentInComparison other) {
+    if (global == null) {
+      return;
+    }
+    if ((global.next =
+            id(
+                new AssignmentInComparison() {
+                  {
+                    global = other;
+                  }
+                }))
+        != null) {
+      // After the assignment, `global.next` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      global.next.toString();
+    }
+  }
+
+  static void anonymousClassFieldInitializerReassignsReceiver(AssignmentInComparison other) {
+    if (global == null) {
+      return;
+    }
+    if ((global.next =
+            id(
+                new AssignmentInComparison() {
+                  @Nullable Object f = (global = other);
+                }))
+        != null) {
+      // After the assignment, `global.next` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      global.next.toString();
+    }
+  }
+
   void chainOfFieldTargets(@Nullable AssignmentInComparison o) {
     if ((this.next = this.other = o) != null) {
       this.next.toString();
@@ -153,6 +187,20 @@ public class AssignmentInComparison {
     }
   }
 
+  static void receiverReassignedParenthesized(
+      @Nullable AssignmentInComparison n, @Nullable AssignmentInComparison o) {
+    if (n == null) {
+      return;
+    }
+    if ((n.next = ((n) = o)) != null) {
+      n.toString();
+      o.toString();
+      // After the assignment, `n.next` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      n.next.toString();
+    }
+  }
+
   static void receiverReassignedInRhsReceiver(
       @Nullable AssignmentInComparison n, AssignmentInComparison o) {
     if (n == null) {
@@ -182,6 +230,21 @@ public class AssignmentInComparison {
       // After the assignment, `a[i]` is a different element of `a`.
       // :: error: [dereference.of.nullable]
       a[i].toString();
+    }
+  }
+
+  static void arrayTargetWithAssignmentInIndex(@Nullable Object[] a, int i, @Nullable Object o) {
+    if ((a[i = 0] = o) != null) {
+      // The assignment to an element of `a` does not change the local variable `o`.
+      o.toString();
+    }
+  }
+
+  static void fieldTargetWithAssignmentInReceiver(
+      AssignmentInComparison n, AssignmentInComparison m, @Nullable AssignmentInComparison o) {
+    if (((n = m).next = o) != null) {
+      // The assignment to a `next` field does not change the local variable `o`.
+      o.toString();
     }
   }
 
