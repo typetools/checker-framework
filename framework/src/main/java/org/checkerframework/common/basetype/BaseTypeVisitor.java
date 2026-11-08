@@ -5529,13 +5529,29 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
+     * Returns the index of the functional interface method's parameter that corresponds to the
+     * referenced method's first parameter. It is 1 for an unbound method reference such as {@code
+     * Collection::clear}, whose functional interface method's first parameter is the referenced
+     * method's receiver; then the interface method's parameter {@code #(i+1)} is the referenced
+     * method's parameter {@code #i}. It is 0 for every other method reference.
+     *
+     * <p>This method requires that {@link #overriderTree} is a method reference.
+     *
+     * @return 1 if the method reference is unbound, and 0 otherwise
+     */
+    private int methodRefParameterOffset() {
+      return MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) overriderTree)
+              .isUnbound()
+          ? 1
+          : 0;
+    }
+
+    /**
      * Translates expressions written at the declaration of the method that a method reference
      * refers to, into the frame of the functional interface method that the reference implements.
      *
-     * <p>The two methods' parameters do not necessarily correspond positionally. For an unbound
-     * reference such as {@code Collection::clear}, the interface method's first parameter is the
-     * referenced method's receiver, and the interface method's parameter {@code #(i+1)} is the
-     * referenced method's parameter {@code #i}.
+     * <p>The two methods' parameters do not necessarily correspond positionally; see {@link
+     * #methodRefParameterOffset}.
      *
      * <p>For a constructor reference, the expression {@code this} is dropped, because the object
      * under construction did not exist before the call. An expression that is reached through that
@@ -5557,9 +5573,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           MemberReferenceKind.getMemberReferenceKind((MemberReferenceTree) overriderTree);
       List<FormalParameter> superParameters =
           JavaExpression.getFormalParameters(overridden.getElement());
-      // For an unbound reference, the interface method has one extra leading parameter, which is
-      // the referenced method's receiver.
-      int shift = methodRefKind.isUnbound() ? 1 : 0;
+      int shift = methodRefParameterOffset();
       // The parameter correspondence matters only if some expression refers to a formal parameter.
       // It does not matter for `this`:  for an unbound reference, `this` is always the interface
       // method's first parameter, and otherwise `this` has no counterpart regardless of arity.
