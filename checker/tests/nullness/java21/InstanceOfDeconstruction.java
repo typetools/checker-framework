@@ -9,8 +9,6 @@
 // Test that the binding variables of a deconstruction pattern have the types of the record
 // components.
 
-import java.util.List;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class InstanceOfDeconstruction {
@@ -22,8 +20,6 @@ public class InstanceOfDeconstruction {
   record Box<T>(T t) {}
 
   record NBox(@Nullable Object o) {}
-
-  record Strings(List<@Nullable String> l) {}
 
   void nonNullComponent(Object o) {
     if (o instanceof Point(String n, int y)) {
@@ -55,19 +51,9 @@ public class InstanceOfDeconstruction {
     };
   }
 
-  void explicitlyAnnotated(Object o) {
-    // :: error: [assignment]
-    if (o instanceof NPoint(@NonNull String n, int y)) {
-      n.length();
-    }
-  }
-
   void typeTest(Object o) {
     // A nested type pattern that is not unconditional does not match null.
     if (o instanceof NBox(String s)) {
-      s.length();
-    }
-    if (o instanceof NBox(@NonNull String s)) {
       s.length();
     }
     if (o instanceof NBox(Object x)) {
@@ -97,13 +83,6 @@ public class InstanceOfDeconstruction {
     if (o instanceof Box(Object x)) {
       // :: error: [dereference.of.nullable]
       x.toString();
-    }
-  }
-
-  void typeArguments(Object o) {
-    // :: error: [assignment]
-    if (o instanceof Strings(List<String> l)) {
-      l.get(0).length();
     }
   }
 

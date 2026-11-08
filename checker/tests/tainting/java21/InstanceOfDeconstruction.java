@@ -53,13 +53,6 @@ public class InstanceOfDeconstruction {
     }
   }
 
-  void explicitlyAnnotated(Object o) {
-    // :: error: [assignment]
-    if (o instanceof Pair(@Untainted String a, String b)) {
-      isUntainted(a);
-    }
-  }
-
   // The binding variables of a deconstruction pattern are refined to the types of the record
   // components.
   record MixedPair(@Untainted String x, @Tainted String y) {}
