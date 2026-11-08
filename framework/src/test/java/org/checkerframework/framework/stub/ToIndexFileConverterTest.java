@@ -322,6 +322,64 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * The descriptors of a record's implicitly declared members use the erasure of a type variable
+   * and the binary name of a type declared in the stub file.
+   */
+  @Test
+  public void testRecordMemberDescriptorsErasure() throws Exception {
+    AClass clazz =
+        classOfStub(
+            "package p;",
+            "record C<T extends Number, U extends T, V>(",
+            "    @Deprecated T t, @Deprecated U u, @Deprecated V v, @Deprecated N n,",
+            "    @Deprecated T... ts) {",
+            "  static class N {}",
+            "}");
+    for (String accessor :
+        new String[] {
+          "t()Ljava/lang/Number;",
+          "u()Ljava/lang/Number;",
+          "v()Ljava/lang/Object;",
+          "n()Lp/C$N;",
+          "ts()[Ljava/lang/Number;"
+        }) {
+      AMethod m = clazz.methods.get(accessor);
+      Assert.assertNotNull("no scene element for the accessor " + accessor, m);
+      Assert.assertNotNull(
+          "@Deprecated was not recorded on the accessor " + accessor, m.lookup("Deprecated"));
+    }
+    AMethod constructor =
+        clazz.methods.get(
+            "<init>(Ljava/lang/Number;Ljava/lang/Number;Ljava/lang/Object;Lp/C$N;"
+                + "[Ljava/lang/Number;)V");
+    Assert.assertNotNull("no scene element for the canonical constructor", constructor);
+    Assert.assertNotNull(
+        "@Deprecated was not recorded on the parameter",
+        constructor.parameters.get(0).lookup("Deprecated"));
+  }
+
+  /**
+   * The descriptor of a method uses the erasure of a type variable and the binary name of a type
+   * declared in the stub file.
+   */
+  @Test
+  public void testMethodDescriptorErasure() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass<T extends CharSequence> {",
+            "  <U extends Number> T myMethod(U u, Inner i, MyClass.Inner j, MyOther o) {}",
+            "  class Inner {}",
+            "}",
+            "class MyOther {}");
+    assertMethod(
+        jaif,
+        "MyClass",
+        "myMethod(Ljava/lang/Number;Lp/MyClass$Inner;Lp/MyClass$Inner;Lp/MyOther;)"
+            + "Ljava/lang/CharSequence;");
+  }
+
+  /**
    * The annotations of a record component do not propagate to an explicit canonical constructor.
    */
   @Test
