@@ -996,16 +996,16 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             if (declared != null) {
               return "L" + declared.replace('.', '/') + ";";
             }
-            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
-            @FullyQualifiedName String typeName = type.getNameAsString();
+            // The name with its qualification, if any, such as "java.util.Date".
+            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameWithScope
+            @FullyQualifiedName String typeName = type.getNameWithScope();
             @SuppressWarnings("signature" // TODO:  bug in ToIndexFileConverter:
             // resolve requires a @BinaryName, but this passes a @FullyQualifiedName.
             // They differ for inner classes.
             )
             String name = resolve(typeName);
             if (name == null) {
-              // could be defined in the same stub file
-              return "L" + typeName + ";";
+              return "L" + typeName.replace('.', '/') + ";";
             }
             return "L" + String.join("/", name.split("\\.")) + ";";
           }
@@ -1057,6 +1057,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /**
    * Returns the type parameter that a type names, if the type is a type variable.
    *
+   * <p>Declarations are searched in lexical scope order, so a type parameter is not returned if a
+   * nearer member type of the same name shadows it, as in {@code class Outer<T> { class Inner {
+   * class T {} void m(T x); } }}.
+   *
    * @param type a type
    * @param context a node of the AST, within whose scope {@code type} is interpreted
    * @return the declaration of the type variable that {@code type} names, or null if {@code type}
@@ -1068,7 +1072,16 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       return null;
     }
     String name = type.getNameAsString();
-    for (@Nullable Node n = context; n != null; n = n.getParentNode().orElse(null)) {
+    @Nullable Node child = null;
+    for (@Nullable Node n = context; n != null; child = n, n = n.getParentNode().orElse(null)) {
+      // Within the body of a type declaration, a member type shadows a type parameter of the same
+      // name.  Within the type declaration's header, such as a bound of a type parameter, the type
+      // parameter takes precedence.
+      if (n instanceof TypeDeclaration<?> enclosing
+          && child instanceof BodyDeclaration<?>
+          && hasMemberType(enclosing, name)) {
+        return null;
+      }
       if (n instanceof NodeWithTypeParameters<?> generic) {
         for (TypeParameter typeParam : generic.getTypeParameters()) {
           if (typeParam.getNameAsString().equals(name)) {
@@ -1078,6 +1091,23 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       }
     }
     return null;
+  }
+
+  /**
+   * Returns true if a type declaration declares a member type with the given name.
+   *
+   * @param decl a type declaration
+   * @param name a simple name
+   * @return true if {@code decl} declares a member type named {@code name}
+   */
+  private static boolean hasMemberType(TypeDeclaration<?> decl, String name) {
+    for (BodyDeclaration<?> member : decl.getMembers()) {
+      if (member instanceof TypeDeclaration<?> memberType
+          && memberType.getNameAsString().equals(name)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -1100,6 +1130,19 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         if (result != null) {
           return result;
         }
+      }
+    }
+    // A single-type import shadows the types that other compilation units of the current package
+    // declare (JLS 6.4.1).  If the imported type is not declared in the stub file, `resolve` finds
+    // it.
+    int dot = name.indexOf('.');
+    String firstIdentifier = dot == -1 ? name : name.substring(0, dot);
+    for (String importName : imports) {
+      if (!importName.endsWith(".*")
+          && importName.substring(importName.lastIndexOf('.') + 1).equals(firstIdentifier)) {
+        @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameWithScope
+        String merged = mergeImport(importName, name);
+        return merged == null ? null : declaredTypes.get(merged);
       }
     }
     // A top-level type of the current package.
@@ -1156,6 +1199,16 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *     or null if resolution fails
    */
   private @Nullable @BinaryName String resolveUncached(@BinaryName String className) {
+    // A single-type import shadows types of the current package and of java.lang (JLS 6.4.1).
+    for (String declName : imports) {
+      if (!declName.endsWith(".*")) {
+        String qualifiedName = mergeImport(declName, className);
+        if (qualifiedName != null && loadClass(qualifiedName) != null) {
+          return qualifiedName;
+        }
+      }
+    }
+
     if (pkgName != null) {
       String qualifiedName = Signatures.addPackage(pkgName, className);
       if (loadClass(qualifiedName) != null) {
@@ -1173,9 +1226,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
 
     for (String declName : imports) {
-      String qualifiedName = mergeImport(declName, className);
-      if (qualifiedName != null && loadClass(qualifiedName) != null) {
-        return qualifiedName;
+      if (declName.endsWith(".*")) {
+        String qualifiedName = mergeImport(declName, className);
+        if (qualifiedName != null && loadClass(qualifiedName) != null) {
+          return qualifiedName;
+        }
       }
     }
 

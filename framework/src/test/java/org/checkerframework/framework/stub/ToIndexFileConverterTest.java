@@ -379,6 +379,52 @@ public class ToIndexFileConverterTest {
             + "Ljava/lang/CharSequence;");
   }
 
+  /** A member type shadows a type parameter of an enclosing type. */
+  @Test
+  public void testMemberTypeShadowsTypeParameter() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Outer<T extends Number> {",
+            "  class Inner {",
+            "    class T {}",
+            "    void m(T x) {}",
+            "  }",
+            "  void n(T x) {}",
+            "}");
+    assertMethod(jaif, "Outer$Inner", "m(Lp/Outer$Inner$T;)V");
+    assertMethod(jaif, "Outer", "n(Ljava/lang/Number;)V");
+  }
+
+  /** The erasure of a type variable whose bound is a qualified name uses that qualified name. */
+  @Test
+  public void testQualifiedTypeVariableBound() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass {",
+            "  <T extends java.util.Date> void m(T x, java.util.Date y) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "m(Ljava/util/Date;Ljava/util/Date;)V");
+  }
+
+  /**
+   * A single-type import shadows a type of the same package declared in another compilation unit.
+   */
+  @Test
+  public void testSingleTypeImportShadowsSamePackageType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class List {}",
+            "package p;",
+            "import java.util.List;",
+            "class MyClass {",
+            "  void m(List l) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "m(Ljava/util/List;)V");
+  }
+
   /**
    * The annotations of a record component do not propagate to an explicit canonical constructor.
    */
