@@ -20,7 +20,6 @@ public class InstanceOfRefinement {
   }
 
   void typeTree(@H1Top @H2S1 Object o) {
-    // :: warning: [instanceof.unsafe]
     if (o instanceof @H1S1 String) {
       @H1S1 @H2S1 Object x = o;
     }
