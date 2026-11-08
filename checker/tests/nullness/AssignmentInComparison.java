@@ -213,6 +213,30 @@ public class AssignmentInComparison {
     }
   }
 
+  static void receiverReassignedInRhsReceiverInstanceOf(
+      @Nullable AssignmentInComparison n, AssignmentInComparison o) {
+    if (n == null) {
+      return;
+    }
+    if ((n.next = (n = o).other) instanceof AssignmentInComparison) {
+      // After the assignment, `n.next` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      n.next.toString();
+    }
+  }
+
+  static void receiverReassignedInRhsReceiverDereference(
+      @Nullable AssignmentInComparison n, AssignmentInComparison o) {
+    if (n == null) {
+      return;
+    }
+    // :: error: [dereference.of.nullable]
+    (n.next = (n = o).other).toString();
+    // After the assignment, `n.next` is a field of a different object.
+    // :: error: [dereference.of.nullable]
+    n.next.toString();
+  }
+
   static void receiverReassignedInArgument(
       @Nullable AssignmentInComparison n, AssignmentInComparison o) {
     if (n == null) {
