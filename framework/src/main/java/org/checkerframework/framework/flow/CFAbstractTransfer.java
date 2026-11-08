@@ -1167,7 +1167,8 @@ public abstract class CFAbstractTransfer<
       if (analysis.atypeFactory.getTypeHierarchy().isSubtype(refType, expType)
           && !refType.getPrimaryAnnotations().equals(expType.getPrimaryAnnotations())
           && !expType.getPrimaryAnnotations().isEmpty()) {
-        JavaExpression expr = JavaExpression.fromTree(node.getTree().getExpression());
+        JavaExpression expr =
+            JavaExpression.fromTree(TreeUtils.withoutParens(node.getTree().getExpression()));
         for (AnnotationMirror anno : refType.getPrimaryAnnotations()) {
           store.insertOrRefine(expr, anno);
         }
