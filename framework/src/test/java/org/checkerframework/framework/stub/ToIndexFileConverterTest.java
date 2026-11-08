@@ -207,23 +207,25 @@ public class ToIndexFileConverterTest {
   }
 
   /**
-   * The members of a nested class, enum, or record belong to the nested type, not to the class that
-   * encloses it.
+   * The members and declaration annotations of a nested class, enum, or record belong to the nested
+   * type, not to the class that encloses it.
    */
   @Test
   public void testNestedTypeMembers() throws Exception {
+    AScene scene = new AScene();
     String jaif =
         convert(
+            scene,
             "package mypackage;",
             "class MyClass {",
-            "  class MyNestedClass {",
+            "  @A class MyNestedClass {",
             "    void myNestedMethod() {}",
             "  }",
-            "  enum MyEnum {",
+            "  @B enum MyEnum {",
             "    A;",
             "    void myEnumMethod() {}",
             "  }",
-            "  record MyRecord(int x) {",
+            "  @D record MyRecord(int x) {",
             "    void myRecordMethod() {}",
             "  }",
             "}");
@@ -233,6 +235,18 @@ public class ToIndexFileConverterTest {
     assertNoMethod(jaif, "MyClass", "myNestedMethod()V");
     assertNoMethod(jaif, "MyClass", "myEnumMethod()V");
     assertNoMethod(jaif, "MyClass", "myRecordMethod()V");
+
+    AClass myClass = scene.classes.get("mypackage.MyClass");
+    Assert.assertNotNull("no scene element for class MyClass", myClass);
+    String[][] nestedTypes = {{"MyNestedClass", "A"}, {"MyEnum", "B"}, {"MyRecord", "D"}};
+    for (String[] nestedType : nestedTypes) {
+      String name = nestedType[0];
+      String anno = nestedType[1];
+      AClass nested = scene.classes.get("mypackage.MyClass$" + name);
+      Assert.assertNotNull("no scene element for " + name, nested);
+      Assert.assertNotNull("@" + anno + " was not recorded on " + name, nested.lookup(anno));
+      Assert.assertNull("@" + anno + " was recorded on MyClass", myClass.lookup(anno));
+    }
   }
 
   /** An enum constant with a class body does not crash the converter. */
