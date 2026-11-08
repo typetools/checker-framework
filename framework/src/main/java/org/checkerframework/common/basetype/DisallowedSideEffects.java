@@ -12,7 +12,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TryTree;
-import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -79,14 +78,6 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    */
   protected final Set<VariableElement> freshLocals;
 
-  /**
-   * The local variables that always hold the value of an expression that the {@link
-   * SideEffectsOnly} annotation covers, such as {@code List<T> list = this.list;} when the
-   * annotation lists {@code this}. Modifying such a variable's value is covered by the annotation.
-   * Assignments are the only aliasing that checking of {@code @SideEffectsOnly} considers.
-   */
-  protected final Set<VariableElement> coveredLocals;
-
   /** The checker to use. */
   protected final BaseTypeChecker checker;
 
@@ -120,8 +111,6 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       localAssignments.scan(tree, null);
     }
     this.freshLocals = freshLocals(localAssignments);
-    this.coveredLocals =
-        coveredLocals(localAssignments, sideEffectsOnlyExpressions, checker.getTypeFactory());
     this.assumeSideEffectFree = assumeSideEffectFree;
     this.assumePureGetters = assumePureGetters;
   }
@@ -904,108 +893,18 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
 
   /**
    * Returns true if the given expression is listed in the {@link SideEffectsOnly} annotation or is
-   * reached through one of the listed expressions or through a local variable in {@link
-   * #coveredLocals}.
+   * reached through one of the listed expressions.
    *
    * @param expr the expression to look for
    * @return true if the given expression is covered by the {@link SideEffectsOnly} annotation
    */
   protected boolean isCoveredByAnnotation(JavaExpression expr) {
-    return isCovered(
-        expr, sideEffectsOnlyExpressionsFromAnnotation, coveredLocals, checker.getTypeFactory());
-  }
-
-  /**
-   * Returns true if the given expression is one of the given expressions or local variables, or is
-   * reached through one of them.
-   *
-   * @param expr the expression to look for
-   * @param seOnlyExpressions expressions from a {@link SideEffectsOnly} annotation
-   * @param coveredLocals local variables that hold the value of an expression that {@code
-   *     seOnlyExpressions} covers
-   * @param atypeFactory the type factory, for determining which methods are pure
-   * @return true if the given expression is covered by the given expressions or local variables
-   */
-  private static boolean isCovered(
-      JavaExpression expr,
-      List<JavaExpression> seOnlyExpressions,
-      Set<VariableElement> coveredLocals,
-      AnnotatedTypeFactory atypeFactory) {
-    for (JavaExpression seOnlyExpression : seOnlyExpressions) {
-      if (expr.containsAsReceiver(atypeFactory, seOnlyExpression)) {
-        return true;
-      }
-    }
-    for (VariableElement coveredLocal : coveredLocals) {
-      if (expr.containsAsReceiver(atypeFactory, new LocalVariable(coveredLocal))) {
+    for (JavaExpression seOnlyExpression : sideEffectsOnlyExpressionsFromAnnotation) {
+      if (expr.containsAsReceiver(checker.getTypeFactory(), seOnlyExpression)) {
         return true;
       }
     }
     return false;
-  }
-
-  /**
-   * Returns the local variables all of whose assigned values are covered by the given {@link
-   * SideEffectsOnly} expressions. A value may itself be such a local variable, so this iterates to
-   * a fixed point.
-   *
-   * @param localAssignments the assignments to local variables in the code being checked
-   * @param seOnlyExpressions expressions from a {@link SideEffectsOnly} annotation
-   * @param atypeFactory the type factory, for determining which methods are pure
-   * @return the local variables that always hold the value of an expression that {@code
-   *     seOnlyExpressions} covers
-   */
-  private static Set<VariableElement> coveredLocals(
-      LocalAssignmentScanner localAssignments,
-      List<JavaExpression> seOnlyExpressions,
-      AnnotatedTypeFactory atypeFactory) {
-    Set<VariableElement> result = new HashSet<>(2);
-    boolean changed = true;
-    while (changed) {
-      changed = false;
-      for (Map.Entry<VariableElement, List<ExpressionTree>> entry :
-          localAssignments.assignedValues.entrySet()) {
-        VariableElement local = entry.getKey();
-        if (result.contains(local) || localAssignments.otherwiseAssigned.contains(local)) {
-          continue;
-        }
-        boolean allCovered = true;
-        for (ExpressionTree value : entry.getValue()) {
-          if (!isCovered(
-              expressionFromTree(withoutParensOrReferenceCasts(value)),
-              seOnlyExpressions,
-              result,
-              atypeFactory)) {
-            allCovered = false;
-            break;
-          }
-        }
-        if (allCovered) {
-          result.add(local);
-          changed = true;
-        }
-      }
-    }
-    return result;
-  }
-
-  /**
-   * Returns the given tree, with any enclosing parentheses and reference casts removed. A cast
-   * between reference types does not change the identity of its operand's value, so the result
-   * evaluates to the same object as the argument does. A cast that involves a primitive type, such
-   * as a boxing or unboxing conversion, is not removed.
-   *
-   * @param tree an expression tree
-   * @return the tree, without enclosing parentheses and reference casts
-   */
-  private static ExpressionTree withoutParensOrReferenceCasts(ExpressionTree tree) {
-    ExpressionTree result = TreeUtils.withoutParens(tree);
-    while (result instanceof TypeCastTree typeCast
-        && !TreeUtils.typeOf(typeCast).getKind().isPrimitive()
-        && !TreeUtils.typeOf(typeCast.getExpression()).getKind().isPrimitive()) {
-      result = TreeUtils.withoutParens(typeCast.getExpression());
-    }
-    return result;
   }
 
   @Override
@@ -1153,9 +1052,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       // be an object that existed before the method was called.  That assignment does not appear
       // in the source code, so neither `visitVariable` nor `visitAssignment` adds it to
       // `assignedValues`.  Adding the variable to `otherwiseAssigned` prevents the variable from
-      // being treated as fresh or as covered.  For example, in
-      // `for (Object o : list) { o = new Object(); ... }`, `o` is not fresh, even though the only
-      // assignment in the source code assigns a `new` expression.
+      // being treated as fresh.  For example, in `for (Object o : list) { o = new Object(); ... }`,
+      // `o` is not fresh, even though the only assignment in the source code assigns a `new`
+      // expression.
       VariableElement local = localVariable(TreeUtils.elementFromDeclaration(node.getVariable()));
       if (local != null) {
         otherwiseAssigned.add(local);
@@ -1173,7 +1072,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void aVoid) {
       // The only compound assignment that applies to a reference type is `+=` on a String.  Its
       // result is a fresh String, but a String cannot be modified, so nothing is gained by
-      // treating the variable as fresh or as covered.
+      // treating the variable as fresh.
       VariableElement local = localVariable(TreeUtils.elementFromTree(node.getVariable()));
       if (local != null) {
         otherwiseAssigned.add(local);
