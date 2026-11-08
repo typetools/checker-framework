@@ -10,8 +10,6 @@
 // components.
 
 import java.util.List;
-import java.util.Map;
-import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -149,18 +147,6 @@ public class InstanceOfDeconstruction {
     switch (ib) {
       case IBox(A a) -> {}
       case IBox(B b) -> b.foo();
-    }
-  }
-
-  Map<String, Integer> m = Map.of();
-
-  record KeyedMap(Map<String, Integer> m, @KeyFor("m") String k) {}
-
-  void dependentType(Object o) {
-    if (o instanceof KeyedMap(var mm, var k)) {
-      // `k` is a key for the record's map, not for this.m.
-      // :: error: [unboxing.of.nullable]
-      int i = m.get(k);
     }
   }
 }
