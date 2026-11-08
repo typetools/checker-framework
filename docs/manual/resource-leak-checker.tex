@@ -550,7 +550,8 @@ unpredictably at most points in the program. For example, the JVM can throw
 an \<OutOfMemoryError> on any allocation.  Similarly,
 \<ClassCircularityError>, \<ClassFormatError>, and \<NoClassDefFoundError>
 may occur at any reference to a class, and an exhaustive \<switch> throws
-\<MatchException> if a class changed after the \<switch> was compiled.  Such
+\<MatchException> for a value that none of its cases matches, such as an
+instance of a class that was added after the \<switch> was compiled.  Such
 exceptions usually terminate
 the program, and in that case unclosed resources do not matter.
 Furthermore, any method can throw \<RuntimeException>, and the Checker

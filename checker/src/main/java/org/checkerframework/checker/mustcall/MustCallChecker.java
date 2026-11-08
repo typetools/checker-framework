@@ -59,6 +59,12 @@ public class MustCallChecker extends BaseTypeChecker {
   /**
    * The canonical name of {@code java.lang.MatchException}. {@code MatchException.class} is not
    * available before Java 21.
+   *
+   * <p>An exhaustive switch throws a {@code MatchException} for a value that none of its cases
+   * matches. Examples are an instance of a class that was added to a sealed hierarchy after the
+   * switch was compiled, and a record whose component is null where a nested pattern, such as
+   * {@code Circle c} in {@code case R(Circle c)}, does not match null. Pattern matching also throws
+   * a {@code MatchException} if a record component accessor throws an exception.
    */
   @SuppressWarnings("signature:assignment") // the string literal is a canonical name
   private static final @CanonicalName String MATCH_EXCEPTION_NAME = "java.lang.MatchException";
@@ -85,7 +91,7 @@ public class MustCallChecker extends BaseTypeChecker {
               ClassFormatError.class.getCanonicalName(),
               NoClassDefFoundError.class.getCanonicalName(),
               OutOfMemoryError.class.getCanonicalName(),
-              // An exhaustive switch throws this only if a class changed after compilation.
+              // An exhaustive switch throws this for a value that no case matches.
               MATCH_EXCEPTION_NAME,
               // It's not our problem if the Java type system is wrong.
               ClassCastException.class.getCanonicalName(),
