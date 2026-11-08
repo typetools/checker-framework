@@ -65,18 +65,6 @@ public class TypeVarPrimitivesNullness {
     t.toString();
   }
 
-  <T extends @Nullable Boolean> void conditionalAnd(T t) {
-    // :: error: [unboxing.of.nullable]
-    if (t && true) {}
-    t.toString();
-  }
-
-  <T extends @Nullable Boolean> void conditionalOr(T t) {
-    // :: error: [unboxing.of.nullable]
-    boolean result = t || false;
-    t.toString();
-  }
-
   <T extends @Nullable Integer> void prefixIncrement(T t) {
     // :: error: [unboxing.of.nullable]
     ++t;

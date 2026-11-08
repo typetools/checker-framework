@@ -44,10 +44,6 @@ public class TypeVarPrimitives {
     return (b & true) || b == false;
   }
 
-  <T extends Boolean> boolean conditionalOps(T b) {
-    return (b && true) || (b || false);
-  }
-
   <T extends Boolean> boolean compoundBoolean(T t) {
     boolean x = true;
     x &= t;

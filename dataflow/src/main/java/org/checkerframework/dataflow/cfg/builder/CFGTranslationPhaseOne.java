@@ -903,11 +903,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
       MethodInvocationTree primValueCall = treeBuilder.buildMethodInvocation(primValueSelect);
       handleArtificialTree(primValueCall);
-      MethodInvocationNode unboxed =
+      Node unboxed =
           new MethodInvocationNode(
               primValueCall, primValueAccess, Collections.emptyList(), getCurrentPath());
       unboxed.setInSource(false);
-      unboxed.setIsUnboxing(true);
 
       // Add Throwable to account for unchecked exceptions
       addToImplicitlyConvertedLookupMap(node.getTree(), unboxed);
@@ -4257,7 +4256,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         Label shortCircuitLabel = new Label();
 
         // left-hand side
-        Node left = unbox(scan(leftTree, p));
+        Node left = scan(leftTree, p);
 
         ConditionalJump cjump;
         if (kind == Tree.Kind.CONDITIONAL_AND) {
@@ -4271,7 +4270,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
         // right-hand side
         addLabelForNextNode(rightStartLabel);
-        Node right = unbox(scan(rightTree, p));
+        Node right = scan(rightTree, p);
 
         // conditional expression itself
         addLabelForNextNode(shortCircuitLabel);

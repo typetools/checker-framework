@@ -103,16 +103,6 @@ public final class NodeUtils {
   }
 
   /**
-   * Returns true if the given node statically evaluates to a boolean value and has no side effects.
-   *
-   * @param n a node
-   * @return true if the node is equivalent to a boolean literal
-   */
-  public static boolean isConstantBoolean(Node n) {
-    return isConstantBoolean(n, true) || isConstantBoolean(n, false);
-  }
-
-  /**
    * Returns true if the given node statically evaluates to {@code value} and has no side effects.
    *
    * @param n a node
@@ -120,14 +110,10 @@ public final class NodeUtils {
    * @return true if the node is equivalent to a literal with value {@code value}
    */
   public static boolean isConstantBoolean(Node n, boolean value) {
-    n = removeCasts(n);
     if (n instanceof BooleanLiteralNode bln) {
       return bln.getValue() == value;
     } else if (n instanceof ConditionalNotNode cnn) {
       return isConstantBoolean(cnn.getOperand(), !value);
-    } else if (n instanceof MethodInvocationNode min && min.getIsUnboxing()) {
-      // An unboxing call that the CFG inserts has no side effects and equals its receiver.
-      return isConstantBoolean(min.getTarget().getReceiver(), value);
     } else {
       return false;
     }
