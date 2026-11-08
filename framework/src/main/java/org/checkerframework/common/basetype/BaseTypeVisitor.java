@@ -2112,6 +2112,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @return the annotations corresponding to {@code purityKinds}, space-separated
    */
   protected static String purityKindsToString(EnumSet<PurityKind> purityKinds) {
+    return purityKindsToString(purityKinds, "@SideEffectsOnly");
+  }
+
+  /**
+   * Formats purity kinds for a diagnostic message, as {@link #purityKindsToString(EnumSet)} does,
+   * but represents {@link PurityKind#SIDE_EFFECTS_ONLY} by the given text.
+   *
+   * @param purityKinds a set of purity kinds
+   * @param sideEffectsOnly the text that represents {@link PurityKind#SIDE_EFFECTS_ONLY}, such as
+   *     {@code @SideEffectsOnly("this")}
+   * @return the annotations corresponding to {@code purityKinds}, space-separated
+   */
+  private static String purityKindsToString(
+      EnumSet<PurityKind> purityKinds, String sideEffectsOnly) {
     if (purityKinds.isEmpty()) {
       return "(no side effect annotation)";
     }
@@ -2119,7 +2133,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     for (PurityKind purityKind : purityKinds) {
       switch (purityKind) {
         case SIDE_EFFECT_FREE -> result.add("@SideEffectFree");
-        case SIDE_EFFECTS_ONLY -> result.add("@SideEffectsOnly");
+        case SIDE_EFFECTS_ONLY -> result.add(sideEffectsOnly);
         case DETERMINISTIC -> result.add("@Deterministic");
       }
     }
@@ -5607,8 +5621,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Formats purity kinds for a diagnostic message, as the annotations that a user writes rather
-     * than as the enum constant names that {@code EnumSet.toString} would produce.
+     * Formats purity kinds for a diagnostic message, as {@link
+     * BaseTypeVisitor#purityKindsToString(EnumSet)} does, but with the arguments of the method's
+     * {@link SideEffectsOnly} annotation.
      *
      * @param purityKinds a set of purity kinds
      * @param method the method that {@code purityKinds} are the purity kinds of, used to print the
@@ -5616,18 +5631,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @return the annotations corresponding to {@code purityKinds}, space-separated
      */
     private String purityKindsToString(EnumSet<PurityKind> purityKinds, ExecutableElement method) {
-      if (purityKinds.isEmpty()) {
-        return "(no side effect annotation)";
+      if (!purityKinds.contains(PurityKind.SIDE_EFFECTS_ONLY)) {
+        return BaseTypeVisitor.purityKindsToString(purityKinds);
       }
-      StringJoiner result = new StringJoiner(" ");
-      for (PurityKind purityKind : purityKinds) {
-        switch (purityKind) {
-          case SIDE_EFFECT_FREE -> result.add("@SideEffectFree");
-          case SIDE_EFFECTS_ONLY -> result.add(sideEffectsOnlyToString(method));
-          case DETERMINISTIC -> result.add("@Deterministic");
-        }
-      }
-      return result.toString();
+      return BaseTypeVisitor.purityKindsToString(purityKinds, sideEffectsOnlyToString(method));
     }
 
     /**
