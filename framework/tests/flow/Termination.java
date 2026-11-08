@@ -69,4 +69,17 @@ public class Termination {
     }
     @Odd String l3 = l1;
   }
+
+  static class SelfClosing extends TerminatingCloseable {
+    // The desugared call to close() terminates execution, because the resource is not null.
+    void t5(@Odd String p1, String p2, boolean b1) {
+      String l1 = p2;
+      if (b1) {
+        l1 = p1;
+      } else {
+        try (TerminatingCloseable c = this) {}
+      }
+      @Odd String l3 = l1;
+    }
+  }
 }
