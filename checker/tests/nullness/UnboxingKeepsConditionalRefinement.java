@@ -138,6 +138,14 @@ public class UnboxingKeepsConditionalRefinement {
     }
   }
 
+  void orNegatedBoxedTrue(@Nullable Object o) {
+    if (isNNPrim(o) | !(Boolean) true) {
+    } else {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    }
+  }
+
   // Java compares two boxed operands of == and != by reference, so their values may be equal even
   // when the comparison is false.  isNN might return a Boolean that is not Boolean.TRUE.
 
