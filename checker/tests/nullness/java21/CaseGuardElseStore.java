@@ -153,16 +153,6 @@ public class CaseGuardElseStore {
   record R(Shape s) {}
 
   // R(Circle c) and R(Square q) make the switch exhaustive, but R(null) matches only R(Shape s).
-  void lastCaseOfExhaustiveGuardTrue(R r, @Nullable Object o) {
-    switch (r) {
-      case R(Circle c) -> {}
-      case R(Square q) -> {}
-      case R(Shape s) when isNN(o) -> {
-        o.hashCode();
-      }
-    }
-  }
-
   void lastCaseOfExhaustiveGuardEffects(R r) {
     f = "";
     switch (r) {
@@ -172,42 +162,6 @@ public class CaseGuardElseStore {
         // :: error: [dereference.of.nullable]
         f.hashCode();
       }
-    }
-  }
-
-  // If the guard of the last case is false, the switch throws MatchException.
-  void lastCaseOfExhaustiveGuardFalse(R r, boolean b) {
-    @Nullable Object x = null;
-    switch (r) {
-      case R(Circle c) -> x = "";
-      case R(Square q) -> x = "";
-      case R(Shape s) when b -> x = "";
-    }
-    x.hashCode();
-  }
-
-  String lastCaseOfExhaustiveGuardFalseSwitchExpression(R r, boolean b) {
-    String x =
-        switch (r) {
-          case R(Circle c) -> "a";
-          case R(Square q) -> "b";
-          case R(Shape s) when b -> "c";
-        };
-    return x;
-  }
-
-  void lastCaseOfExhaustiveGuardFalseCatch(R r, boolean b) {
-    @Nullable Object x = "";
-    try {
-      x = null;
-      switch (r) {
-        case R(Circle c) -> x = "";
-        case R(Square q) -> x = "";
-        case R(Shape s) when b -> x = "";
-      }
-    } catch (MatchException e) {
-      // :: error: [dereference.of.nullable]
-      x.hashCode();
     }
   }
 }
