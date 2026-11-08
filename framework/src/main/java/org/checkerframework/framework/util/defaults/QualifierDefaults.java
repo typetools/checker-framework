@@ -123,8 +123,11 @@ public class QualifierDefaults {
   /**
    * Memoizes {@link #defaultsAt}: a mapping from an Element to all the defaults that apply to that
    * Element, including the defaults contributed by the Element's enclosing scopes.
+   *
+   * <p>This is an LRU cache, because most Elements map to {@link ScopeDefaults#EMPTY} and an
+   * unbounded map would retain an entry for every scope in the compilation.
    */
-  private final IdentityHashMap<Element, ScopeDefaults> defaultsAtCache = new IdentityHashMap<>();
+  private final Map<Element, ScopeDefaults> defaultsAtCache = MapsP.createLruCache(CACHE_SIZE);
 
   /** A mapping of Element &rarr; Whether or not that element is AnnotatedFor this type system. */
   private final IdentityHashMap<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
@@ -721,8 +724,11 @@ public class QualifierDefaults {
               applicationOrder(allElementDefaults, allQualifierDefaults));
     }
 
-    // While an annotation file is being parsed, the @DefaultQualifier annotations that it supplies
-    // might not have been recorded yet, so the result might be incomplete.
+    // Memoize the empty answer as well as a non-empty one: most elements have no applicable
+    // default, and recomputing that walks the whole chain of enclosing scopes every time.
+    // Do not memoize while an annotation file is being parsed, because the @DefaultQualifier
+    // annotations that it supplies might not have been recorded yet, so the result might be
+    // incomplete.
     if (atypeFactory.shouldCache && !atypeFactory.isParsingAnnotationFiles()) {
       defaultsAtCache.put(elt, result);
     }
