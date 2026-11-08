@@ -15,13 +15,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 public class CalledMethodsAnalysis extends AccumulationAnalysis {
 
   /**
-   * The canonical name of {@code java.lang.MatchException}. {@code MatchException.class} is not
-   * available before Java 21.
-   */
-  @SuppressWarnings("signature:assignment") // the string literal is a canonical name
-  private static final @CanonicalName String MATCH_EXCEPTION_NAME = "java.lang.MatchException";
-
-  /**
    * The fully-qualified names of the exception types that are ignored by this checker when
    * computing dataflow stores.
    */
@@ -34,9 +27,7 @@ public class CalledMethodsAnalysis extends AccumulationAnalysis {
           // program could run out of memory -- but if they did, the checker's
           // results would be useless anyway.
           Error.class.getCanonicalName(),
-          RuntimeException.class.getCanonicalName(),
-          // An exhaustive switch throws this only if a class changed after compilation.
-          MATCH_EXCEPTION_NAME);
+          RuntimeException.class.getCanonicalName());
 
   /**
    * Creates a new {@code CalledMethodsAnalysis}.
