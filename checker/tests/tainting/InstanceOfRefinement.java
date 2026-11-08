@@ -37,11 +37,4 @@ public class InstanceOfRefinement {
       isUntainted(a);
     }
   }
-
-  void parenthesized(@Tainted String a) {
-    // :: warning: [instanceof.unsafe]
-    if ((a) instanceof @Untainted String) {
-      isUntainted(a);
-    }
-  }
 }

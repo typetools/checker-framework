@@ -95,7 +95,6 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava17.DeconstructionPatternUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.PatternCaseLabelUtils;
 
 /**
@@ -1181,8 +1180,7 @@ public abstract class CFAbstractTransfer<
       }
     }
     if (!expAnnos.isEmpty()) {
-      JavaExpression expr =
-          JavaExpression.fromTree(TreeUtils.withoutParens(node.getTree().getExpression()));
+      JavaExpression expr = JavaExpression.fromTree(node.getTree().getExpression());
       for (AnnotationMirror anno : expAnnos) {
         thenStore.insertOrRefine(expr, anno);
       }
