@@ -7,14 +7,6 @@
 
 ### User-visible changes
 
-### Changes for type system implementers
-
-### Closed issues
-
-## Version 4.4.0 (2026-11-02)
-
-### User-visible changes
-
 The `-Astubs` and `-Aajava` command-line options accept `.zip` archives, in
 addition to `.jar` archives and directories.  An archive is read only if it is
 named in the option; an archive within a directory that is named in the option
@@ -23,6 +15,14 @@ is ignored.  Within a directory or archive, hidden files (whose names start with
 
 All ajava files must end with `.ajava`.  Stub files must not end with `.ajava`;
 they conventionally end `.astub`.
+
+### Changes for type system implementers
+
+### Closed issues
+
+## Version 4.4.0 (2026-11-02)
+
+### User-visible changes
 
 A method with a purity annotation may call the functional method of one of its
 functional-interface parameters, such as `f.apply(x)` for a parameter
