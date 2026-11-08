@@ -447,6 +447,16 @@ public class NullnessVisitor
     return null;
   }
 
+  @Override
+  protected void checkDeconstructionBindingVariable(
+      VariableTree tree, AnnotatedTypeMirror variableType, AnnotatedTypeMirror componentType) {
+    // A pattern that tests the component's Java type does not match null.
+    if (!atypeFactory.isUnconditionalForComponent(tree)) {
+      componentType = withNonNull(componentType);
+    }
+    super.checkDeconstructionBindingVariable(tree, variableType, componentType);
+  }
+
   /**
    * Returns a copy of {@code type} whose primary nullness qualifier is {@code @NonNull}.
    *
