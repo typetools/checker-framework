@@ -57,7 +57,8 @@ public class LubOfIgnoredPosition {
     pick2(arrOf(nonNullU, nn), arrOf(nonNullU, nn))[0].toString();
     // TODO: This should be a dereference.of.nullable error.  The least upper bound keeps the origin
     // of only the first input, so applying instantiations to it gives the component type the
-    // instantiation of only the first input's B, which is @NonNull U.
+    // instantiation of only the first input's B, which is @NonNull U.  See the TODO in
+    // InferenceFactory#withOriginOf.
     // :: error: (argument)
     pick2(arrOf(nonNullU, nn), arrOf(nonNullU, nble))[0].toString();
     // :: error: (dereference.of.nullable)
