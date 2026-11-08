@@ -4,6 +4,7 @@ import com.github.javaparser.ParseException;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
