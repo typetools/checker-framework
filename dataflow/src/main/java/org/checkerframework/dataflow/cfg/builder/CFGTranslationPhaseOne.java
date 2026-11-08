@@ -4300,7 +4300,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     Node node = new FieldAccessNode(tree, expr);
 
     Element element = TreeUtils.elementFromUse(tree);
-    if (ElementUtils.isStatic(element) || expr instanceof ThisNode) {
+    if (ElementUtils.isStatic(element)
+        || expr instanceof ImplicitThisNode
+        || expr instanceof ExplicitThisNode) {
       // No NullPointerException can be thrown, use normal node
       extendWithNode(node);
     } else {
