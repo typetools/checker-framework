@@ -617,7 +617,9 @@ Every Java file is a valid stub file.  However, you can omit information
 that is not relevant to pluggable type-checking, as explained below;
 this makes the stub file
 smaller and easier for people to read and write.
-The stub file's extension must be \<.astub>, not \<.java>.
+The stub file's extension should be \<.astub>, not \<.java>.  A stub file
+in a directory or archive is read only if its name ends with \<.astub>
+(see Section~\ref{stub-using}).
 
 As an illustration, a stub file for the Interning type system
 (Chapter~\ref{interning-checker}) could be:
@@ -1028,7 +1030,8 @@ due to mismatches.
 
 The ajava file must either (1) be found below one of the arguments to
 \code{-Aajava}, in a subdirectory matching its package name, or (2) be
-unambiguously specified directly with its full path. A pair of \<.ajava>
+unambiguously specified directly with its full path.  An ajava file name
+must end with \<.ajava>.  A pair of \<.ajava>
 files is specified ambiguously if one of their fully-qualified names
 is a substring of the other, and both are specified as \<.ajava> files (rather
 than being found under directories). For example, if the \<-Aajava> argument
