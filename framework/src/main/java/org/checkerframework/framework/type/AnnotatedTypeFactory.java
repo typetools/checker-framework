@@ -1629,6 +1629,44 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * Returns the qualifiers to which an instanceof refines the variable of its binding pattern, such
+   * as {@code v} in {@code e instanceof T v}, where the instanceof is true. The variable holds the
+   * value of the expression, and it also has the qualifiers that are explicitly written on its
+   * declared type. So, in each hierarchy, the result is the greatest lower bound of the
+   * expression's qualifier and the variable's written qualifier, or the expression's qualifier if
+   * no qualifier is written in that hierarchy.
+   *
+   * <p>Defaulted qualifiers of the variable play no role, because the default for a binding
+   * variable need not be a supertype of the expression's qualifier.
+   *
+   * @param tree an instanceof tree
+   * @param expType the type of the expression that {@code tree} tests
+   * @return the qualifiers to which {@code tree} refines the variable of its binding pattern where
+   *     it is true, or the empty set if {@code tree} has no binding pattern
+   */
+  public AnnotationMirrorSet getBindingVariableRefinement(
+      InstanceOfTree tree, AnnotatedTypeMirror expType) {
+    if (!(tree.getPattern() instanceof BindingPatternTree bindingPatternTree)) {
+      return AnnotationMirrorSet.emptySet();
+    }
+    // The declared type of the binding variable, with only its explicitly-written qualifiers.
+    AnnotatedTypeMirror declaredType = fromMember(bindingPatternTree.getVariable());
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
+    for (AnnotationMirror expAnno : expType.getAnnotations()) {
+      AnnotationMirror declaredAnno = declaredType.getPrimaryAnnotationInHierarchy(expAnno);
+      result.add(
+          declaredAnno == null
+              ? expAnno
+              : qualHierarchy.greatestLowerBoundShallow(
+                  expAnno,
+                  expType.getUnderlyingType(),
+                  declaredAnno,
+                  declaredType.getUnderlyingType()));
+    }
+    return result;
+  }
+
+  /**
    * Returns the set of qualifiers that are the upper bounds for a use of the type.
    *
    * @param type a type whose upper bounds to obtain
