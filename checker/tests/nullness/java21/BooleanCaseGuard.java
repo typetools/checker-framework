@@ -12,7 +12,9 @@
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 // This test is about the refinement of the guard, not about whether the guard might be null.
-@SuppressWarnings("nullness:condition.nullable")
+// Suppressing "unneeded.suppression" keeps this test independent of whether the Nullness Checker
+// checks a case guard for nullness:  without that check, "condition.nullable" is never issued.
+@SuppressWarnings({"nullness:condition.nullable", "nullness:unneeded.suppression"})
 public class BooleanCaseGuard {
 
   sealed interface Shape permits Circle, Square {}
