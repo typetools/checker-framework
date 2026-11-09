@@ -10,7 +10,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 // @infer-stubs-skip-test
 
 // A switch with a `case null` label does not throw NullPointerException if its selector is null, so
-// the selector may be null in the cases and after the switch.
+// the selector might be null in the cases and after the switch.
 public class SwitchSelectorCaseNull {
 
   void boxed(@Nullable Integer i) {
