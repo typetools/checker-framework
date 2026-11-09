@@ -115,21 +115,4 @@ public class PathShapeRules {
     }
     @HasName Path p4 = p;
   }
-
-  void tempFiles(Path top, @HasName Path name) throws IOException {
-    @HasName Path t1 = Files.createTempFile("p", "s");
-    // :: error: (assignment)
-    @HasParent Path t2 = Files.createTempFile("p", "s");
-    @HasName Path t3 = Files.createTempDirectory("p");
-    // :: error: (assignment)
-    @HasParent Path t4 = Files.createTempDirectory("p");
-    @HasParent Path t5 = Files.createTempFile(name, "p", "s");
-    @HasParent Path t6 = Files.createTempDirectory(name, "p");
-    @HasName Path t7 = Files.createTempFile(top, "p", "s");
-    // :: error: (assignment)
-    @HasParent Path t8 = Files.createTempFile(top, "p", "s");
-    @HasName Path t9 = Files.createTempDirectory(top, "p");
-    // :: error: (assignment)
-    @HasParent Path t10 = Files.createTempDirectory(top, "p");
-  }
 }

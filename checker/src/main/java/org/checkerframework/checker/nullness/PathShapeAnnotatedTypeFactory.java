@@ -3,14 +3,12 @@ package org.checkerframework.checker.nullness;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
 import java.io.File;
 import java.lang.annotation.Annotation;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,16 +18,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.IntersectionType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.UnionType;
@@ -48,10 +42,8 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -80,10 +72,6 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /*package-private*/ final TypeElement pathsElement =
       ElementUtils.getTypeElement(processingEnv, Paths.class);
 
-  /** The {@code java.nio.file.Files} class. */
-  /*package-private*/ final TypeElement filesElement =
-      ElementUtils.getTypeElement(processingEnv, Files.class);
-
   /** The {@code java.io.File} class. */
   /*package-private*/ final TypeElement fileElement =
       ElementUtils.getTypeElement(processingEnv, File.class);
@@ -111,10 +99,6 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The {@code File.isFile()} method. */
   /*package-private*/ final ExecutableElement fileIsFile =
       TreeUtils.getMethod(File.class, "isFile", 0, processingEnv);
-
-  /** The {@code Stream.toList()} method, or null if it does not exist (before Java 16). */
-  private final @Nullable ExecutableElement streamToList =
-      TreeUtils.getMethodOrNull("java.util.stream.Stream", "toList", 0, processingEnv);
 
   /**
    * Creates a new PathShapeAnnotatedTypeFactory.
@@ -379,136 +363,9 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
   }
 
-  /**
-   * For each effectively final local variable whose initializer has been examined by {@link
-   * #refineFromInitializer}, the path shapes of the type arguments of the initializer's type,
-   * viewed as the variable's declared type. A path shape is {@code UNKNOWN} if the type argument is
-   * not a declared type. The list is empty if the variable has no initializer, or if the
-   * initializer's type is not a declared type or is raw.
-   *
-   * <p>{@link PathShapeTransfer} removes a variable's entry whenever dataflow analysis processes
-   * the variable's declaration, because the type of the initializer can change as the analysis
-   * proceeds.
-   */
-  private final Map<VariableElement, List<PathShape>> initializerShapes = new HashMap<>();
-
-  /**
-   * If {@code variable} is an effectively final local variable that has an initializer, refines the
-   * covariant type arguments (see {@link org.checkerframework.framework.qual.Covariant}) of {@code
-   * type} from the type of the initializer. This is sound, because it has the same effect on those
-   * type arguments as declaring the variable with {@code var}. It refines only the type arguments
-   * that are {@code @UnknownPathShape}, so it does not override a more specific qualifier that the
-   * programmer wrote.
-   *
-   * <p>Because the refined type arguments are covariant, a use of the variable remains acceptable
-   * wherever the declared type is. This method does not refine invariant type arguments, such as
-   * that of {@code List}, nor array component types, because doing so would reject code such as
-   * passing the variable to a method whose formal parameter has the declared type, or storing an
-   * element whose path shape is unknown.
-   *
-   * @param variable a variable
-   * @param type the type of a use of {@code variable}; is side-effected by this method
-   */
-  /*package-private*/ void refineFromInitializer(Element variable, AnnotatedTypeMirror type) {
-    if (type.getKind() != TypeKind.DECLARED) {
-      return;
-    }
-    AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
-    List<AnnotatedTypeMirror> typeArgs = declaredType.getTypeArguments();
-    List<Integer> refinable = new ArrayList<>();
-    for (int i : getTypeHierarchy().getCovariantArgIndexes(declaredType)) {
-      if (i < typeArgs.size() && isRefinable(typeArgs.get(i))) {
-        refinable.add(i);
-      }
-    }
-    if (refinable.isEmpty()) {
-      return;
-    }
-    ElementKind kind = variable.getKind();
-    if (!((kind == ElementKind.LOCAL_VARIABLE || kind == ElementKind.RESOURCE_VARIABLE)
-        && ElementUtils.isEffectivelyFinal(variable))) {
-      return;
-    }
-    VariableElement localVariable = (VariableElement) variable;
-    List<PathShape> shapes = initializerShapes.get(localVariable);
-    if (shapes == null) {
-      shapes = computeInitializerShapes(localVariable, declaredType);
-      if (shouldCache) {
-        initializerShapes.put(localVariable, shapes);
-      }
-    }
-    if (shapes.size() != typeArgs.size()) {
-      return;
-    }
-    for (int i : refinable) {
-      refine(typeArgs.get(i), shapes.get(i));
-    }
-  }
-
-  /**
-   * Returns true if the given type argument may be refined by {@link #refineFromInitializer}: it is
-   * a declared type to which a path shape qualifier applies, and it is {@code @UnknownPathShape}.
-   *
-   * @param typeArg a type argument
-   * @return true if {@code typeArg} may be refined
-   */
-  private boolean isRefinable(AnnotatedTypeMirror typeArg) {
-    return typeArg.getKind() == TypeKind.DECLARED
-        && isRelevant(typeArg)
-        && typeArg.hasPrimaryAnnotation(UNKNOWN_PATH_SHAPE);
-  }
-
-  /**
-   * Returns the path shapes of the type arguments of the type of the initializer of the given
-   * variable, viewed as {@code declaredType}. See {@link #initializerShapes}.
-   *
-   * @param variable a local variable
-   * @param declaredType the type of a use of {@code variable}
-   * @return the path shapes of the type arguments of the initializer's type
-   */
-  private List<PathShape> computeInitializerShapes(
-      VariableElement variable, AnnotatedDeclaredType declaredType) {
-    Tree decl = declarationFromElement(variable);
-    if (!(decl instanceof VariableTree varTree) || varTree.getInitializer() == null) {
-      return Collections.emptyList();
-    }
-    AnnotatedTypeMirror initializerType = getAnnotatedType(varTree.getInitializer());
-    if (initializerType.getKind() != TypeKind.DECLARED) {
-      return Collections.emptyList();
-    }
-    AnnotatedDeclaredType initializerAsSuper =
-        AnnotatedTypes.castedAsSuper(this, (AnnotatedDeclaredType) initializerType, declaredType);
-    List<PathShape> result = new ArrayList<>();
-    for (AnnotatedTypeMirror typeArg : initializerAsSuper.getTypeArguments()) {
-      result.add(
-          typeArg.getKind() == TypeKind.DECLARED ? getPathShape(typeArg) : PathShape.UNKNOWN);
-    }
-    return result;
-  }
-
-  /**
-   * Discards the result of {@link #refineFromInitializer} for the given variable, because the type
-   * of its initializer might have changed.
-   *
-   * @param variable a variable
-   */
-  /*package-private*/ void forgetInitializerShapes(VariableElement variable) {
-    initializerShapes.remove(variable);
-  }
-
   // ///////////////////////////////////////////////////////////////////////////
   // Method identification
   //
-
-  /**
-   * Returns true if the given method invocation is an invocation of {@code Stream.toList()}.
-   *
-   * @param tree a method invocation
-   * @return true if {@code tree} is an invocation of {@code Stream.toList()}
-   */
-  /*package-private*/ boolean isStreamToList(MethodInvocationTree tree) {
-    return streamToList != null && TreeUtils.elementFromUse(tree).equals(streamToList);
-  }
 
   /**
    * Returns true if the given method invocation returns a non-null value because of the path shape
