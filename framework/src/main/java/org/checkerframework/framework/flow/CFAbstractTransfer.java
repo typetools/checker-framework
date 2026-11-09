@@ -1470,15 +1470,16 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * The transfer function for an unboxing call that the CFG inserts, such as {@code
-   * booleanValue()}. Such a call has no side effects, and its result equals its receiver.
-   * Therefore, the call keeps its receiver's stores, including any separate then-store and
-   * else-store. For a {@code Boolean} receiver, those hold the facts that are true when the
-   * receiver is true or false, respectively.
+   * The transfer function for an unboxing call, such as {@code booleanValue()}, that the CFG
+   * inserts or that is written explicitly. Such a call has no side effects, and its result equals
+   * its receiver. Therefore, the call keeps its receiver's stores, including any separate
+   * then-store and else-store. For a {@code Boolean} receiver, those hold the facts that are true
+   * when the receiver is true or false, respectively.
    *
-   * <p>There is no whole-program inference, because the unboxing method is not in source code.
+   * <p>There is no whole-program inference, because the unboxing method is a JDK method of a boxed
+   * primitive type.
    *
-   * @param n an unboxing call that the CFG inserts
+   * @param n an unboxing call
    * @param in the transfer input
    * @return the transfer result for {@code n}
    */
