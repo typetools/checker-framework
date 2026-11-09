@@ -33,6 +33,19 @@ public class CaseLabelPatternInitialization {
     }
   }
 
+  // An explicitly annotated binding variable is checked against the selector, as in
+  // InstanceOfPatternInitialization.initializedExplicit.  The name of the message key is a
+  // placeholder.
+  void initializedExplicit(@UnknownInitialization Object o) {
+    switch (o) {
+      // :: warning: (case.pattern.unsafe)
+      case @Initialized String s -> {
+        @Initialized String t = s;
+      }
+      default -> {}
+    }
+  }
+
   // A binding variable nested in a record pattern is refined to the type of the record component.
   // A type pattern that is not unconditional for the component does not match null.
   void nested(Box b) {
