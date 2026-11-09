@@ -443,17 +443,6 @@ public class NullnessVisitor
   }
 
   @Override
-  protected void checkConditionalNestedBindingPattern(
-      BindingPatternTree bindingPattern,
-      AnnotatedTypeMirror variableType,
-      AnnotatedTypeMirror componentType) {
-    if (!isTypeCastSafe(variableType, withNonNull(componentType))) {
-      checker.reportWarning(
-          bindingPattern, "instanceof.pattern.unsafe", componentType, bindingPattern.getVariable());
-    }
-  }
-
-  @Override
   protected AnnotatedTypeMirror instanceOfPatternMatchedType(AnnotatedTypeMirror expType) {
     return withNonNull(expType);
   }

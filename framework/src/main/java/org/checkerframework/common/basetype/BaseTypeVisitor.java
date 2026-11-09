@@ -496,8 +496,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Reports a warning if the type of the binding variable declared by {@code bindingPattern} is not
-   * a safe downcast from {@code componentType}. {@code bindingPattern} is nested in a record
-   * pattern and is not unconditional for the record component that it is matched against.
+   * a safe downcast from {@code componentType}, as adjusted by {@link
+   * #instanceOfPatternMatchedType}. {@code bindingPattern} is nested in a record pattern and is not
+   * unconditional for the record component that it is matched against.
    *
    * @param bindingPattern a type pattern nested in a record pattern
    * @param variableType the type of the binding variable declared by {@code bindingPattern}
@@ -508,7 +509,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       BindingPatternTree bindingPattern,
       AnnotatedTypeMirror variableType,
       AnnotatedTypeMirror componentType) {
-    if (!isTypeCastSafe(variableType, componentType)) {
+    if (!isTypeCastSafe(variableType, instanceOfPatternMatchedType(componentType))) {
       checker.reportWarning(
           bindingPattern, "instanceof.pattern.unsafe", componentType, bindingPattern.getVariable());
     }
@@ -3924,13 +3925,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Returns the type that {@link #checkInstanceOfPattern} uses for the left operand of an
-   * instanceof expression, given the operand's type. Returns {@code expType} itself. A subclass
-   * overrides this method if a pattern matches only some values of {@code expType}; for example, an
-   * instanceof expression is false when its left operand is null.
+   * Returns the type that a type pattern's binding variable is checked against, given the type of
+   * the value that the pattern is matched against: the left operand of an instanceof expression, or
+   * the record component that a type pattern nested in a record pattern is matched against. Returns
+   * {@code expType} itself. A subclass overrides this method if a type pattern matches only some
+   * values of {@code expType}; for example, a type pattern that is not unconditional does not match
+   * null.
    *
-   * @param expType the type of an instanceof expression's left operand
-   * @return the type that {@link #checkInstanceOfPattern} uses for the left operand
+   * @param expType the type of the value that a type pattern is matched against
+   * @return the type that a type pattern's binding variable is checked against
    */
   protected AnnotatedTypeMirror instanceOfPatternMatchedType(AnnotatedTypeMirror expType) {
     return expType;
