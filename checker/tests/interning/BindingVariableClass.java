@@ -25,6 +25,25 @@ public class BindingVariableClass {
     }
   }
 
+  record Box(Object value) {}
+
+  void recordPattern(Object o) {
+    if (o instanceof Box(Class<?> cls)) {
+      take(cls);
+    }
+    switch (o) {
+      case Box(Class<?> cls) -> take(cls);
+      default -> {}
+    }
+  }
+
+  void recordPatternNotInterned(Object o) {
+    if (o instanceof Box(String s)) {
+      // :: error: (argument)
+      takeString(s);
+    }
+  }
+
   void notInterned(Object value) {
     if (value instanceof String s) {
       // :: error: (argument)
