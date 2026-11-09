@@ -106,10 +106,6 @@ public class QualifierDefaults {
   /** Mapping from an Element to the bound type. */
   protected final Map<Element, BoundType> elementToBoundType = MapsP.createLruCache(CACHE_SIZE);
 
-  /** Mapping from a binding variable to the result of {@link #isNestedBindingVariable}. */
-  private final Map<Element, Boolean> isNestedBindingVariableCache =
-      MapsP.createLruCache(CACHE_SIZE);
-
   /**
    * Defaults that apply for a certain Element. On the one hand this is used for caching (an earlier
    * name for the field was "qualifierCache"). It can also be used by type systems to set defaults
@@ -497,29 +493,15 @@ public class QualifierDefaults {
    * @return true if {@code elt} is the binding variable of a type pattern that is nested in a
    *     record pattern
    */
-  // Results are cached in {@link #isNestedBindingVariableCache}.
   private boolean isNestedBindingVariable(Element elt) {
     // TODO: Once dataflow refines a nested binding variable by its record component (follow-up
     // pull request), default nested binding variables to top as well and remove this method.
-    Boolean cached = isNestedBindingVariableCache.get(elt);
-    if (cached != null) {
-      return cached;
-    }
     Tree decl = atypeFactory.declarationFromElement(elt);
     TreePath path = decl == null ? null : atypeFactory.getPath(decl);
-    if (path == null) {
-      // Do not cache this result:  a later call might find the path.
-      return false;
-    }
     // The parent of the variable is a binding pattern, whose parent might be a record pattern.
-    TreePath bindingPattern = path.getParentPath();
+    TreePath bindingPattern = path == null ? null : path.getParentPath();
     TreePath enclosing = bindingPattern == null ? null : bindingPattern.getParentPath();
-    boolean result =
-        enclosing != null && TreeUtils.isDeconstructionPatternTree(enclosing.getLeaf());
-    if (atypeFactory.shouldCache) {
-      isNestedBindingVariableCache.put(elt, result);
-    }
-    return result;
+    return enclosing != null && TreeUtils.isDeconstructionPatternTree(enclosing.getLeaf());
   }
 
   /**
