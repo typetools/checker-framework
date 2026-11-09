@@ -83,7 +83,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
@@ -1454,20 +1453,15 @@ public abstract class CFAbstractTransfer<
    */
   protected void refineBindingVariable(
       S store, JavaExpression bindingExpr, AnnotatedTypeMirror matchedType) {
-    // The binding variable gets the type that a cast of the matched value would:  see
-    // PropagationTreeAnnotator.visitTypeCast.  For example, in the Interning Checker every Class is
-    // @Interned, so the binding variable of `o instanceof Class<?> c` is @Interned.
-    TypeMirror bindingType = bindingExpr.getType();
-    QualifierHierarchy qualHierarchy = analysis.atypeFactory.getQualifierHierarchy();
-    AnnotationMirrorSet boundAnnos =
-        analysis.atypeFactory.getQualifierUpperBounds().getBoundQualifiers(bindingType);
-    for (AnnotationMirror anno : matchedType.getAnnotations()) {
-      AnnotationMirror bound = qualHierarchy.findAnnotationInSameHierarchy(boundAnnos, anno);
-      if (bound != null && !qualHierarchy.isSubtypeShallow(anno, bindingType, bound, bindingType)) {
-        store.insertOrRefine(bindingExpr, bound);
-      } else {
-        store.insertOrRefine(bindingExpr, anno);
-      }
+    // For example, in the Interning Checker every Class is @Interned, so the binding variable of
+    // `o instanceof Class<?> c` is @Interned.
+    AnnotationMirrorSet annos =
+        analysis
+            .atypeFactory
+            .getQualifierUpperBounds()
+            .limitToBound(bindingExpr.getType(), matchedType.getAnnotations());
+    for (AnnotationMirror anno : annos) {
+      store.insertOrRefine(bindingExpr, anno);
     }
   }
 
