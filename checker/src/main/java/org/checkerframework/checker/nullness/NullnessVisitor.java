@@ -433,12 +433,7 @@ public class NullnessVisitor
       }
     }
     if (tree.getPattern() instanceof BindingPatternTree bindingPattern) {
-      VariableTree variableTree = bindingPattern.getVariable();
-      AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
-      AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(tree.getExpression());
-      if (!isTypeCastSafe(variableType, withNonNull(exprType))) {
-        checker.reportWarning(tree, "instanceof.pattern.unsafe", exprType, variableTree);
-      }
+      checkInstanceOfPattern(tree, bindingPattern.getVariable());
     }
     // Don't call super because it will issue an incorrect instanceof.unsafe warning.
     // Instead, just scan the expression and the pattern.
@@ -455,6 +450,11 @@ public class NullnessVisitor
       componentType = withNonNull(componentType);
     }
     super.checkDeconstructionBindingVariable(tree, variableType, componentType);
+  }
+
+  @Override
+  protected AnnotatedTypeMirror instanceOfPatternMatchedType(AnnotatedTypeMirror expType) {
+    return withNonNull(expType);
   }
 
   /**
