@@ -1,5 +1,6 @@
 import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 // @below-java21-jdk-skip-test
@@ -31,6 +32,35 @@ public class CaseLabelPatternInitialization {
       }
       default -> {}
     }
+  }
+
+  // An explicitly annotated binding variable is checked against the selector, as in
+  // InstanceOfPatternInitialization.initializedExplicit.
+  void initializedExplicit(@UnknownInitialization Object o) {
+    switch (o) {
+      // :: warning: (case.pattern.unsafe)
+      case @Initialized String s -> {
+        @Initialized String t = s;
+      }
+      default -> {}
+    }
+  }
+
+  // A type pattern that is a case label does not match null, so an explicitly @NonNull binding
+  // variable is safe.
+  void nonNullExplicit(@Nullable Object o) {
+    switch (o) {
+      case @NonNull String s -> s.length();
+      case null, default -> {}
+    }
+  }
+
+  int switchExpression(@UnknownInitialization Object o) {
+    return switch (o) {
+      // :: warning: (case.pattern.unsafe)
+      case @Initialized String s -> s.length();
+      default -> 0;
+    };
   }
 
   // A binding variable nested in a record pattern is not defaulted to top.

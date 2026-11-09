@@ -443,8 +443,8 @@ public class NullnessVisitor
   }
 
   @Override
-  protected AnnotatedTypeMirror instanceOfPatternMatchedType(AnnotatedTypeMirror expType) {
-    return withNonNull(expType);
+  protected AnnotatedTypeMirror typePatternMatchedType(AnnotatedTypeMirror matchedType) {
+    return withNonNull(matchedType);
   }
 
   /**

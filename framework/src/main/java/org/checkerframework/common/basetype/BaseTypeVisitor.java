@@ -10,6 +10,7 @@ import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -33,6 +34,7 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.SwitchExpressionTree;
+import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
@@ -158,6 +160,7 @@ import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
@@ -3829,7 +3832,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Reports an {@code instanceof.pattern.unsafe} warning if the given binding variable's type is
    * not a safe downcast from the type of the given instanceof expression's left operand, as
-   * adjusted by {@link #instanceOfPatternMatchedType}.
+   * adjusted by {@link #typePatternMatchedType}.
    *
    * @param tree an instanceof expression whose pattern is a binding pattern
    * @param variableTree the binding variable of the pattern of {@code tree}
@@ -3837,22 +3840,59 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected void checkInstanceOfPattern(InstanceOfTree tree, VariableTree variableTree) {
     AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
     AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
-    if (!isTypeCastSafe(variableType, instanceOfPatternMatchedType(expType))) {
+    if (!isTypeCastSafe(variableType, typePatternMatchedType(expType))) {
       checker.reportWarning(tree, "instanceof.pattern.unsafe", expType, variableTree);
     }
   }
 
+  @Override
+  public Void visitCase(CaseTree tree, Void p) {
+    ExpressionTree selector = null;
+    // CaseUtils.getLabels returns the pattern of a pattern case label.
+    for (Tree label : CaseUtils.getLabels(tree)) {
+      if (label instanceof BindingPatternTree bindingPattern) {
+        if (selector == null) {
+          Tree switchTree = getCurrentPath().getParentPath().getLeaf();
+          selector =
+              switchTree instanceof SwitchExpressionTree switchExpressionTree
+                  ? switchExpressionTree.getExpression()
+                  : ((SwitchTree) switchTree).getExpression();
+        }
+        checkCaseLabelPattern(bindingPattern, selector);
+      }
+    }
+    return super.visitCase(tree, p);
+  }
+
   /**
-   * Returns the type that {@link #checkInstanceOfPattern} uses for the left operand of an
-   * instanceof expression, given the operand's type. Returns {@code expType} itself. A subclass
-   * overrides this method if a pattern matches only some values of {@code expType}; for example, an
-   * instanceof expression is false when its left operand is null.
+   * Reports a {@code case.pattern.unsafe} warning if the type of the binding variable of the given
+   * type pattern is not a safe downcast from the type of the given switch selector, as adjusted by
+   * {@link #typePatternMatchedType}.
    *
-   * @param expType the type of an instanceof expression's left operand
-   * @return the type that {@link #checkInstanceOfPattern} uses for the left operand
+   * @param bindingPattern a type pattern that is a case label
+   * @param selector the selector expression of the switch that contains {@code bindingPattern}
    */
-  protected AnnotatedTypeMirror instanceOfPatternMatchedType(AnnotatedTypeMirror expType) {
-    return expType;
+  protected void checkCaseLabelPattern(BindingPatternTree bindingPattern, ExpressionTree selector) {
+    VariableTree variableTree = bindingPattern.getVariable();
+    AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
+    AnnotatedTypeMirror selectorType = atypeFactory.getAnnotatedType(selector);
+    if (!isTypeCastSafe(variableType, typePatternMatchedType(selectorType))) {
+      checker.reportWarning(bindingPattern, "case.pattern.unsafe", selectorType, variableTree);
+    }
+  }
+
+  /**
+   * Returns the type that a type pattern's binding variable is checked against, given the type of
+   * the value that the pattern is matched against: the left operand of an instanceof expression or
+   * the selector of a switch. Returns {@code matchedType} itself. A subclass overrides this method
+   * if a type pattern matches only some values of {@code matchedType}; for example, a type pattern
+   * in an instanceof expression or a case label does not match null.
+   *
+   * @param matchedType the type of the value that a type pattern is matched against
+   * @return the type that a type pattern's binding variable is checked against
+   */
+  protected AnnotatedTypeMirror typePatternMatchedType(AnnotatedTypeMirror matchedType) {
+    return matchedType;
   }
 
   /**
