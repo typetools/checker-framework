@@ -131,15 +131,51 @@ public class ToIndexFileConverterTest {
    * @param method the JVML representation of a method, such as {@code "myMethod(I)V"}
    */
   private static void assertMethod(String jaif, String className, String method) {
+    if (!hasMethod(jaif, className, method)) {
+      Assert.fail("no method " + method + " in class " + className + System.lineSeparator() + jaif);
+    }
+  }
+
+  /**
+   * Asserts that {@code jaif} does not declare {@code method} in {@code className}.
+   *
+   * @param jaif a JAIF
+   * @param className the name of a class, without its package; a {@code $} separates a nested class
+   *     from its enclosing class
+   * @param method the JVML representation of a method, such as {@code "myMethod(I)V"}
+   */
+  private static void assertNoMethod(String jaif, String className, String method) {
+    if (hasMethod(jaif, className, method)) {
+      Assert.fail(
+          "unexpected method " + method + " in class " + className + System.lineSeparator() + jaif);
+    }
+  }
+
+  /**
+   * Returns true if {@code jaif} declares {@code method} in {@code className}.
+   *
+   * @param jaif a JAIF
+   * @param className the name of a class, without its package; a {@code $} separates a nested class
+   *     from its enclosing class
+   * @param method the JVML representation of a method, such as {@code "myMethod(I)V"}
+   * @return true if {@code jaif} declares {@code method} in {@code className}
+   */
+  private static boolean hasMethod(String jaif, String className, String method) {
+    // A class or method header may be followed by the declaration's annotations, as in
+    // "class C: @A" or "method m()V: @A".
+    String methodHeader = "method " + method + ":";
     String currentClass = null;
     for (String line : jaif.split("\\R")) {
-      if (line.startsWith("class ") && line.endsWith(":")) {
-        currentClass = line.substring("class ".length(), line.length() - 1);
-      } else if (line.strip().equals("method " + method + ":") && className.equals(currentClass)) {
-        return;
+      if (line.startsWith("class ") && line.contains(":")) {
+        currentClass = line.substring("class ".length(), line.indexOf(':'));
+      } else if (className.equals(currentClass)) {
+        String stripped = line.strip();
+        if (stripped.equals(methodHeader) || stripped.startsWith(methodHeader + " ")) {
+          return true;
+        }
       }
     }
-    Assert.fail("no method " + method + " in class " + className + System.lineSeparator() + jaif);
+    return false;
   }
 
   /**
@@ -168,6 +204,66 @@ public class ToIndexFileConverterTest {
             "}");
     assertMethod(
         jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/ToIndexFileConverter;)V");
+  }
+
+  /**
+   * The members and declaration annotations of a nested class, enum, or record belong to the nested
+   * type, not to the class that encloses it.
+   */
+  @Test
+  public void testNestedTypeMembers() throws Exception {
+    AScene scene = new AScene();
+    String jaif =
+        convert(
+            scene,
+            "package mypackage;",
+            "class MyClass {",
+            "  @A class MyNestedClass {",
+            "    void myNestedMethod() {}",
+            "  }",
+            "  @B enum MyEnum {",
+            "    A;",
+            "    void myEnumMethod() {}",
+            "  }",
+            "  @D record MyRecord(int x) {",
+            "    void myRecordMethod() {}",
+            "  }",
+            "}");
+    assertMethod(jaif, "MyClass$MyNestedClass", "myNestedMethod()V");
+    assertMethod(jaif, "MyClass$MyEnum", "myEnumMethod()V");
+    assertMethod(jaif, "MyClass$MyRecord", "myRecordMethod()V");
+    assertNoMethod(jaif, "MyClass", "myNestedMethod()V");
+    assertNoMethod(jaif, "MyClass", "myEnumMethod()V");
+    assertNoMethod(jaif, "MyClass", "myRecordMethod()V");
+
+    AClass myClass = scene.classes.get("mypackage.MyClass");
+    Assert.assertNotNull("no scene element for class MyClass", myClass);
+    String[][] nestedTypes = {{"MyNestedClass", "A"}, {"MyEnum", "B"}, {"MyRecord", "D"}};
+    for (String[] nestedType : nestedTypes) {
+      String name = nestedType[0];
+      String anno = nestedType[1];
+      AClass nested = scene.classes.get("mypackage.MyClass$" + name);
+      Assert.assertNotNull("no scene element for " + name, nested);
+      Assert.assertNotNull("@" + anno + " was not recorded on " + name, nested.lookup(anno));
+      Assert.assertNull("@" + anno + " was recorded on MyClass", myClass.lookup(anno));
+    }
+  }
+
+  /** An enum constant with a class body does not crash the converter. */
+  @Test
+  public void testEnumConstantWithClassBody() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "enum MyEnum {",
+            "  A {",
+            "    void myConstantMethod() {}",
+            "  };",
+            "  void myEnumMethod() {}",
+            "}");
+    assertMethod(jaif, "MyEnum", "myEnumMethod()V");
+    // The method must not appear under any class, such as one for the constant's class body.
+    Assert.assertFalse(jaif, jaif.contains("myConstantMethod"));
   }
 
   /** A single-type import that does not match a name does not prevent resolving the name. */

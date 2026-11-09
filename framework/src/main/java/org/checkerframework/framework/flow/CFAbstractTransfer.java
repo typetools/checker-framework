@@ -1154,10 +1154,7 @@ public abstract class CFAbstractTransfer<
     AnnotatedTypeMirror expType =
         analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
     for (LocalVariableNode bindingVar : node.getBindingVariables()) {
-      JavaExpression expr = JavaExpression.fromNode(bindingVar);
-      for (AnnotationMirror anno : expType.getAnnotations()) {
-        store.insertOrRefine(expr, anno);
-      }
+      refineBindingVariable(store, JavaExpression.fromNode(bindingVar), expType);
     }
 
     // The "reference type" is the type after "instanceof".
@@ -1440,7 +1437,30 @@ public abstract class CFAbstractTransfer<
       S store, VariableTree varTree, ExpressionTree selector) {
     JavaExpression bindingExpr = JavaExpression.fromVariableTree(varTree);
     AnnotatedTypeMirror selectorType = analysis.atypeFactory.getAnnotatedType(selector);
-    for (AnnotationMirror anno : selectorType.getAnnotations()) {
+    refineBindingVariable(store, bindingExpr, selectorType);
+  }
+
+  /**
+   * Refines, in {@code store}, the binding variable {@code bindingExpr} of a type pattern by the
+   * qualifiers of {@code matchedType}, the type of the value that the pattern is matched against. A
+   * qualifier of {@code matchedType} that is not a subtype of the qualifier upper bound of the
+   * binding variable's type is replaced by that bound, as for a cast to the binding variable's
+   * type.
+   *
+   * @param store the store to refine; side-effected by this method
+   * @param bindingExpr the binding variable of a type pattern
+   * @param matchedType the type of the value that the type pattern is matched against
+   */
+  protected void refineBindingVariable(
+      S store, JavaExpression bindingExpr, AnnotatedTypeMirror matchedType) {
+    // For example, in the Interning Checker every Class is @Interned, so the binding variable of
+    // `o instanceof Class<?> c` is @Interned.
+    AnnotationMirrorSet annos =
+        analysis
+            .atypeFactory
+            .getQualifierUpperBounds()
+            .limitToBound(bindingExpr.getType(), matchedType.getAnnotations());
+    for (AnnotationMirror anno : annos) {
       store.insertOrRefine(bindingExpr, anno);
     }
   }
