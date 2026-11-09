@@ -7,10 +7,11 @@
 
 ### User-visible changes
 
-Pattern variables, such as `s` in `o instanceof String s`, are defaulted to the
-top qualifier, like other local variables (the CLIMB-to-top rule).  An
-unannotated pattern variable is refined to the type of the value that the
-pattern matches, rather than having the type system's default qualifier.
+Pattern variables, such as `s` in `o instanceof String s` or `case String s`,
+are defaulted to the top qualifier, like other local variables (the
+CLIMB-to-top rule).  An unannotated pattern variable is refined to the type of
+the value that the pattern matches, rather than having the type system's
+default qualifier.
 
 ### Changes for type system implementers
 
