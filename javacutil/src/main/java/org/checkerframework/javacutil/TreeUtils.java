@@ -2445,9 +2445,9 @@ public final class TreeUtils {
   /**
    * Returns true if {@code variableTree} is declared using the {@code var} Java keyword. Unlike
    * {@link #isVariableTreeDeclaredUsingVar(VariableTree)}, this method also handles a binding
-   * variable of a record pattern, for which javac replaces {@code var} by a type tree for the
-   * inferred type, without recording that {@code var} was used. This method examines the source
-   * code of {@code root}.
+   * variable of a record pattern, for which javac does not record that {@code var} was used: javac
+   * gives such a variable no type tree, or (in some versions) a type tree for the inferred type.
+   * This method examines the source code of {@code root}.
    *
    * @param variableTree the variableTree to check
    * @param root the compilation unit that contains {@code variableTree}
@@ -2458,10 +2458,7 @@ public final class TreeUtils {
     if (isVariableTreeDeclaredUsingVar(variableTree)) {
       return true;
     }
-    JCExpression type = ((JCVariableDecl) variableTree).vartype;
-    if (type == null) {
-      return false;
-    }
+    JCVariableDecl variableDecl = (JCVariableDecl) variableTree;
     CharSequence source;
     try {
       source = root.getSourceFile().getCharContent(true);
@@ -2473,12 +2470,17 @@ public final class TreeUtils {
           "cannot read source file " + root.getSourceFile().getName() + ": " + e.getMessage(),
           e);
     }
-    int start = TreeInfo.getStartPos(type);
-    int end = start + "var".length();
-    return start >= 0
-        && end < source.length()
-        && source.subSequence(start, end).toString().equals("var")
-        && !Character.isJavaIdentifierPart(source.charAt(end));
+    // The position of the variable's name.
+    int namePos = variableDecl.pos;
+    int start = TreeInfo.getStartPos(variableDecl);
+    if (start < 0 || namePos <= start || namePos > source.length()) {
+      return false;
+    }
+    // The source code before the variable's name, such as "@A var" or "List<String>".
+    String beforeName = source.subSequence(start, namePos).toString().stripTrailing();
+    int varStart = beforeName.length() - "var".length();
+    return beforeName.endsWith("var")
+        && (varStart == 0 || !Character.isJavaIdentifierPart(beforeName.charAt(varStart - 1)));
   }
 
   /**
