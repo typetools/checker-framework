@@ -1,21 +1,31 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.PathShapeClassifier.PathShape;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Implements the type rules of the Path Shape Checker that depend on the types of the receiver and
  * arguments of a method or constructor invocation, or on the values of compile-time constants.
  * These rules map one qualifier to a different one, so they cannot be expressed as annotations.
+ *
+ * <p>This class also refines the covariant type arguments of each use of an effectively final local
+ * variable, from the type of the variable's initializer, as described in {@link
+ * PathShapeAnnotatedTypeFactory#refineFromInitializer}. For example, given {@code Stream<Path> s =
+ * Files.list(dir)}, the type of each use of {@code s} is {@code Stream<@HasName Path>}.
  *
  * @checker_framework.manual #path-shape-checker Path Shape Checker
  */
@@ -42,6 +52,8 @@ public class PathShapeTreeAnnotator extends TreeAnnotator {
       visitPathMethod(tree, method, type);
     } else if (clazz.equals(factory.fileElement)) {
       visitFileMethod(tree, method, type);
+    } else if (clazz.equals(factory.filesElement)) {
+      visitFilesMethod(tree, method, type);
     } else if (clazz.equals(factory.pathsElement)) {
       if (method.getSimpleName().contentEquals("get")) {
         factory.refine(type, pathOfShape(tree));
@@ -110,6 +122,40 @@ public class PathShapeTreeAnnotator extends TreeAnnotator {
           factory.refine(type, PathShape.HAS_PARENT);
         }
       }
+      case "listFiles" -> {
+        if (type.getKind() == TypeKind.ARRAY) {
+          factory.refine(
+              ((AnnotatedArrayType) type).getComponentType(), listingShape(receiverShape(tree)));
+        }
+      }
+      default -> {}
+    }
+  }
+
+  /**
+   * Refines the type of an invocation of a method in {@code java.nio.file.Files}.
+   *
+   * @param tree an invocation of a method in {@code Files}
+   * @param method the invoked method
+   * @param type the type of {@code tree}; is side-effected by this method
+   */
+  private void visitFilesMethod(
+      MethodInvocationTree tree, ExecutableElement method, AnnotatedTypeMirror type) {
+    List<? extends ExpressionTree> args = tree.getArguments();
+    switch (method.getSimpleName().toString()) {
+      case "createTempFile", "createTempDirectory" -> {
+        if (firstParameterIsPath(method)) {
+          factory.refine(type, listingShape(factory.getPathShape(args.get(0))));
+        } else {
+          // The result is relative to the java.io.tmpdir system property, which might be empty.
+          factory.refine(type, PathShape.HAS_NAME);
+        }
+      }
+      case "list", "newDirectoryStream" ->
+          refineTypeArgument(type, listingShape(factory.getPathShape(args.get(0))));
+      case "walk", "find" ->
+          // The first element is the start path itself.
+          refineTypeArgument(type, factory.getPathShape(args.get(0)));
       default -> {}
     }
   }
@@ -133,6 +179,12 @@ public class PathShapeTreeAnnotator extends TreeAnnotator {
     return super.visitNewClass(tree, type);
   }
 
+  @Override
+  public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
+    factory.refineFromInitializer(TreeUtils.elementFromUse(tree), type);
+    return super.visitIdentifier(tree, type);
+  }
+
   // ///////////////////////////////////////////////////////////////////////////
   // Helper methods
   //
@@ -146,6 +198,18 @@ public class PathShapeTreeAnnotator extends TreeAnnotator {
   private PathShape receiverShape(MethodInvocationTree tree) {
     AnnotatedTypeMirror receiverType = factory.getReceiverType(tree);
     return receiverType == null ? PathShape.UNKNOWN : factory.getPathShape(receiverType);
+  }
+
+  /**
+   * Returns true if the first formal parameter of the given method is a {@code Path}.
+   *
+   * @param method a method
+   * @return true if the first formal parameter of {@code method} is a {@code Path}
+   */
+  private boolean firstParameterIsPath(ExecutableElement method) {
+    return !method.getParameters().isEmpty()
+        && TypesUtils.isDeclaredOfName(
+            method.getParameters().get(0).asType(), "java.nio.file.Path");
   }
 
   /**
@@ -202,6 +266,34 @@ public class PathShapeTreeAnnotator extends TreeAnnotator {
       return PathShape.HAS_PARENT;
     } else {
       return b;
+    }
+  }
+
+  /**
+   * Returns the path shape of an entry in a directory listing, such as the result of {@code
+   * Files.list(dir)}, or of a temporary file that is created in a directory.
+   *
+   * @param dir the path shape of the directory
+   * @return the path shape of an entry in {@code dir}
+   */
+  private static PathShape listingShape(PathShape dir) {
+    // An entry is dir.resolve(name).  If dir is the empty path, the entry has no parent.
+    return dir == PathShape.UNKNOWN ? PathShape.HAS_NAME : PathShape.HAS_PARENT;
+  }
+
+  /**
+   * Refines the type argument of the given type, such as {@code Stream<Path>}, to the given path
+   * shape.
+   *
+   * @param type a type with one type argument; is side-effected by this method
+   * @param shape a path shape
+   */
+  private void refineTypeArgument(AnnotatedTypeMirror type, PathShape shape) {
+    if (type.getKind() == TypeKind.DECLARED) {
+      List<AnnotatedTypeMirror> typeArgs = ((AnnotatedDeclaredType) type).getTypeArguments();
+      if (typeArgs.size() == 1 && typeArgs.get(0).getKind() == TypeKind.DECLARED) {
+        factory.refine(typeArgs.get(0), shape);
+      }
     }
   }
 }
