@@ -18,7 +18,7 @@ import javax.tools.Diagnostic;
  * <p>Though each checker is run on a whole compilation unit before the next checker is run, error
  * and warning messages are collected and sorted based on the location in the source file before
  * being printed. (See {@link #printOrStoreMessage(Diagnostic.Kind, String, Tree,
- * CompilationUnitTree)}.)
+ * CompilationUnitTree, String)}.)
  *
  * <p>This class delegates {@code AbstractTypeProcessor} responsibilities to each component checker.
  *
