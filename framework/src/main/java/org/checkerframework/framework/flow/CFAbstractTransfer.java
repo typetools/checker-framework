@@ -83,6 +83,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.framework.util.Contract.ConditionalPostcondition;
@@ -1154,10 +1155,7 @@ public abstract class CFAbstractTransfer<
     AnnotatedTypeMirror expType =
         analysis.atypeFactory.getAnnotatedType(node.getTree().getExpression());
     for (LocalVariableNode bindingVar : node.getBindingVariables()) {
-      JavaExpression expr = JavaExpression.fromNode(bindingVar);
-      for (AnnotationMirror anno : expType.getAnnotations()) {
-        store.insertOrRefine(expr, anno);
-      }
+      refineBindingVariable(store, JavaExpression.fromNode(bindingVar), expType);
     }
 
     // The "reference type" is the type after "instanceof".
@@ -1440,8 +1438,36 @@ public abstract class CFAbstractTransfer<
       S store, VariableTree varTree, ExpressionTree selector) {
     JavaExpression bindingExpr = JavaExpression.fromVariableTree(varTree);
     AnnotatedTypeMirror selectorType = analysis.atypeFactory.getAnnotatedType(selector);
-    for (AnnotationMirror anno : selectorType.getAnnotations()) {
-      store.insertOrRefine(bindingExpr, anno);
+    refineBindingVariable(store, bindingExpr, selectorType);
+  }
+
+  /**
+   * Refines, in {@code store}, the binding variable {@code bindingExpr} of a type pattern by the
+   * qualifiers of {@code matchedType}, the type of the value that the pattern is matched against. A
+   * qualifier of {@code matchedType} that is not a subtype of the qualifier upper bound of the
+   * binding variable's type is replaced by that bound, as for a cast to the binding variable's
+   * type.
+   *
+   * @param store the store to refine; side-effected by this method
+   * @param bindingExpr the binding variable of a type pattern
+   * @param matchedType the type of the value that the type pattern is matched against
+   */
+  protected void refineBindingVariable(
+      S store, JavaExpression bindingExpr, AnnotatedTypeMirror matchedType) {
+    // The binding variable gets the type that a cast of the matched value would:  see
+    // PropagationTreeAnnotator.visitTypeCast.  For example, in the Interning Checker every Class is
+    // @Interned, so the binding variable of `o instanceof Class<?> c` is @Interned.
+    TypeMirror bindingType = bindingExpr.getType();
+    QualifierHierarchy qualHierarchy = analysis.atypeFactory.getQualifierHierarchy();
+    AnnotationMirrorSet boundAnnos =
+        analysis.atypeFactory.getQualifierUpperBounds().getBoundQualifiers(bindingType);
+    for (AnnotationMirror anno : matchedType.getAnnotations()) {
+      AnnotationMirror bound = qualHierarchy.findAnnotationInSameHierarchy(boundAnnos, anno);
+      if (bound != null && !qualHierarchy.isSubtypeShallow(anno, bindingType, bound, bindingType)) {
+        store.insertOrRefine(bindingExpr, bound);
+      } else {
+        store.insertOrRefine(bindingExpr, anno);
+      }
     }
   }
 
