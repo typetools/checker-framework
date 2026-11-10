@@ -2101,6 +2101,17 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
+   * Returns true if dataflow analysis is not running and has finished for the given class. Then,
+   * the types of the expressions in the class no longer change.
+   *
+   * @param classTree a class
+   * @return true if dataflow analysis is not running and has finished for {@code classTree}
+   */
+  public boolean isFlowAnalysisFinished(ClassTree classTree) {
+    return !analysis.isRunning() && scannedClasses.get(classTree) == ScanState.FINISHED;
+  }
+
+  /**
    * Returns the inferred value (by the org.checkerframework.dataflow analysis) for a given tree.
    *
    * @param tree the tree

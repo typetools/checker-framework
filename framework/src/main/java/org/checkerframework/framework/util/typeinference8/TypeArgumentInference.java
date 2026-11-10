@@ -60,4 +60,10 @@ public interface TypeArgumentInference {
   default @Nullable AnnotatedTypeMirror getLambdaParameterType(VariableElement param) {
     return null;
   }
+
+  /**
+   * Discards all inference results that this has cached. The type factory calls this when it starts
+   * to process a new compilation unit.
+   */
+  default void clearCache() {}
 }
