@@ -561,9 +561,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Mapping from a record pattern to the most recent result of inferring its type. The result is
    * valid only for the matched type that it records, which can differ at different points in the
-   * dataflow analysis.
+   * dataflow analysis. Created by the first inference if {@link #shouldCache} is true; null until
+   * then.
    */
-  private final Map<Tree, RecordPatternTypeInference.Result> recordPatternInferenceCache;
+  private @MonotonicNonNull Map<Tree, RecordPatternTypeInference.Result>
+      recordPatternInferenceCache;
 
   /**
    * Compares two types by their primary annotations and those of their component types, but not by
@@ -684,7 +686,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       this.classAndMethodTreeCache = MapsP.createLruCache(cacheSize);
       this.fromExpressionTreeCache = MapsP.createLruCache(cacheSize);
       this.fromMemberTreeCache = MapsP.createLruCache(cacheSize);
-      this.recordPatternInferenceCache = MapsP.createLruCache(cacheSize);
       this.fromTypeTreeCache = MapsP.createLruCache(cacheSize);
       this.elementCache = MapsP.createLruCache(cacheSize);
       this.elementToTreeCache = MapsP.createLruCache(cacheSize);
@@ -694,7 +695,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       this.classAndMethodTreeCache = null;
       this.fromExpressionTreeCache = null;
       this.fromMemberTreeCache = null;
-      this.recordPatternInferenceCache = null;
       this.fromTypeTreeCache = null;
       this.elementCache = null;
       this.elementToTreeCache = null;
@@ -1028,7 +1028,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       fromMemberTreeCache.clear();
       fromTypeTreeCache.clear();
       classAndMethodTreeCache.clear();
-      recordPatternInferenceCache.clear();
+      if (recordPatternInferenceCache != null) {
+        recordPatternInferenceCache.clear();
+      }
 
       // There is no need to clear the following cache, it is limited by cache size and it
       // contents won't change between compilation units.
@@ -5384,7 +5386,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   private RecordPatternTypeInference.Result inferRecordPatternType(TreePath path) {
     Tree recordPattern = path.getLeaf();
     AnnotatedTypeMirror matchedType = getTypeMatchedByPattern(path);
-    if (shouldCache) {
+    if (shouldCache && recordPatternInferenceCache != null) {
       RecordPatternTypeInference.Result cached = recordPatternInferenceCache.get(recordPattern);
       if (cached != null && isSameMatchedType(cached.matchedType(), matchedType)) {
         return cached;
@@ -5393,6 +5395,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     RecordPatternTypeInference.Result result =
         new RecordPatternTypeInference(this, path).infer(matchedType);
     if (shouldCache) {
+      if (recordPatternInferenceCache == null) {
+        recordPatternInferenceCache = MapsP.createLruCache(getCacheSize());
+      }
       recordPatternInferenceCache.put(recordPattern, result);
     }
     return result;
