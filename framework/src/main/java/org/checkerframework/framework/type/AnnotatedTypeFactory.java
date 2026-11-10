@@ -4055,7 +4055,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return recordDeclType;
     }
     List<? extends TypeMirror> recordTypeParams =
-        ((DeclaredType) recordDeclType.getUnderlyingType()).getTypeArguments();
+        recordDeclType.getUnderlyingType().getTypeArguments();
     Map<TypeVariable, AnnotatedTypeMirror> typeVarToTypeArg = new HashMap<>();
     for (int i = 0; i < superTypeArgs.size(); i++) {
       AnnotatedTypeMirror superTypeArg = superTypeArgs.get(i);
