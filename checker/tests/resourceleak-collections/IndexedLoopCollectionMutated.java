@@ -8,9 +8,7 @@ class IndexedLoopCollectionMutated {
 
   // Removing element i shifts the later elements down, so the loop skips every other element.  For
   // example, if `resources` is [a, b, c], then the loop disposes of a (twice) and c, but not b.
-  // TODO: This is a false negative.  The checker should report unfulfilled.collection.obligations
-  // on this method.  The indexed-loop matcher rejects assignments to the index and the collection,
-  // but not calls that add or remove elements.
+  // :: error: unfulfilled.collection.obligations
   void removeInLoop(@OwningCollection List<Resource> resources) {
     for (int i = 0; i < resources.size(); i++) {
       Resource r = resources.get(i);

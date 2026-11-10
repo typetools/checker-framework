@@ -16,9 +16,6 @@ class UnboundedTypeArgumentParameter {
   }
 
   void passToWildcard(@OwningCollection List<Resource> resources) {
-    // TODO: This is a false positive.  The Must Call Checker defaults the wildcard in `List<?>`
-    // to @MustCall({}), so `List<Resource>` is not a subtype of the parameter type.
-    // :: error: argument
     countWildcard(resources);
     for (Resource r : resources) {
       r.close();
@@ -27,11 +24,6 @@ class UnboundedTypeArgumentParameter {
   }
 
   void passToTypeVariable(@OwningCollection List<Resource> resources) {
-    // TODO: These are false positives.  The Must Call Checker defaults the type variable in
-    // `List<T>` to @MustCall({}), and the Collection Ownership Checker defaults the parameter to
-    // @OwningCollectionBottom.
-    // :: error: type.arguments.not.inferred
-    // :: error: argument
     countTypeVariable(resources);
     for (Resource r : resources) {
       r.close();
