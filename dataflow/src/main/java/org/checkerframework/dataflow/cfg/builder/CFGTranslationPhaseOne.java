@@ -2344,7 +2344,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           unbox(scan(guardTree, null));
           // If the guard of the last case of an exhaustive switch is false, no case matches and the
           // switch throws an exception.  The CFG does not represent that exception, so the body
-          // follows the guard whatever the guard's value.
+          // follows the guard whatever the guard's value.  This is sound but imprecise:  the body's
+          // store is the lub of the guard's then and else stores, so refinements from the guard
+          // being true are lost.  Modeling the exception would let the body use the then store.
           if (!isLastCaseOfExhaustive) {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
           }
