@@ -285,8 +285,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
     if (cfg.getUnderlyingAST().getKind() != UnderlyingAST.Kind.METHOD) {
       return Collections.emptySet();
     }
-    return new DisposalLoopScanner(
-            this, ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(this), cfg)
+    return new DisposalLoopScanner(this, cfg)
         .scanTree(((UnderlyingAST.CFGMethod) cfg.getUnderlyingAST()).getMethod());
   }
 

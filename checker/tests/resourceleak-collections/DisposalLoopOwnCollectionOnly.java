@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /*
@@ -96,20 +95,6 @@ class DisposalLoopOwnCollectionOnly {
     for (int i = 0; i < a.size(); i++) {
       a.get(i).close();
       a.get(i).flush();
-    }
-  }
-
-  void iteratorOnlyFirstDisposed() {
-    List<Resource> a = new ArrayList<>();
-    a.add(new Resource());
-    List<Resource> b = new ArrayList<>();
-    // :: error: unfulfilled.collection.obligations
-    b.add(new Resource());
-    Iterator<Resource> it = a.iterator();
-    while (it.hasNext()) {
-      Resource r = it.next();
-      r.close();
-      r.flush();
     }
   }
 }

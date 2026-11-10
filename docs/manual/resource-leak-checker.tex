@@ -777,7 +777,7 @@ Just like the ownership, the obligation is also transferred to the left-hand sid
 
 \subsectionAndLabel{Fulfilling collection obligations}{resource-leak-collections-fulfillment}
 
-To fulfill the obligation of a resource collection, the obligation can be passed on, but at some point it has to be fulfilled by calling the required methods on its elements. Recommended are enhanced \texttt{for} loops, but indexed \texttt{for} loops and \texttt{while} loops are also supported with some syntactic restrictions.
+To fulfill the obligation of a resource collection, the obligation can be passed on, but at some point it has to be fulfilled by calling the required methods on its elements. Recommended are enhanced \texttt{for} loops, but indexed \texttt{for} loops are also supported with some syntactic restrictions.
 
 Here is an example of such a loop:
 
@@ -822,30 +822,6 @@ Here is an example using an indexed \texttt{for} loop.
 for (int i = 0; i < socketList.size(); i++) {
   try {
     socketList.get(i).close();
-  } catch (Exception e) {}
-}
-\end{verbatim}
-
-Two forms of \texttt{while} loops are supported:
-
-\begin{itemize}
-  \item An iterator loop: the condition is \texttt{it.hasNext()}, where \texttt{it} is an iterator over the collection, and the loop body calls \texttt{it.next()} exactly once.
-  \item A loop that empties the collection: the condition is \texttt{!c.isEmpty()}, \texttt{c.size() > 0}, or \texttt{0 < c.size()}, and the loop body removes an element exactly once, with \texttt{poll()}, \texttt{pollFirst()}, \texttt{pollLast()}, \texttt{remove()}, \texttt{removeFirst()}, \texttt{removeLast()}, or \texttt{pop()}.
-\end{itemize}
-
-\begin{verbatim}
-Iterator<Socket> it = socketList.iterator();
-while (it.hasNext()) {
-  Socket s = it.next();
-  try {
-    s.close();
-  } catch (Exception e) {}
-}
-
-while (!socketQueue.isEmpty()) {
-  Socket s = socketQueue.poll();
-  try {
-    s.close();
   } catch (Exception e) {}
 }
 \end{verbatim}
@@ -926,7 +902,7 @@ If the enclosing class is not intended to take responsibility for the resource c
 
 \subsectionAndLabel{Iterators over resource collections}{resource-leak-collections-iterators}
 
-An iterator has the same collection ownership type as the collection it iterates over, because \texttt{Iterable.iterator()} is annotated \texttt{@PolyOwningCollection}. An iterator never has an obligation of its own: the collection keeps the obligation, and an iterator \texttt{while} loop can fulfill it (Section~\ref{resource-leak-collections-fulfillment}).
+An iterator has the same collection ownership type as the collection it iterates over, because \texttt{Iterable.iterator()} is annotated \texttt{@PolyOwningCollection}. An iterator never has an obligation of its own: the collection keeps the obligation.
 
 \texttt{Iterator.next()} returns a \texttt{@NotOwning} element. \texttt{Iterator.remove()} is permitted only if the collection has no obligation (\texttt{@OwningCollectionWithoutObligation}), because the checker does not track whether the removed element was disposed of.
 
