@@ -31,6 +31,34 @@ import org.checkerframework.javacutil.TypesUtils;
  * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.10.5">JLS 4.10.5</a>.
  * The restricted type variables are the captured type variables, including the fresh type variables
  * that type inference creates, except for any that are explicitly left unrestricted.
+ *
+ * <p>JLS 4.10.5 defines projection only for Java types. This class chooses the annotations of the
+ * result as follows:
+ *
+ * <ul>
+ *   <li>The projection of a restricted type variable that has primary annotations has those
+ *       annotations, not the annotations of the projection of its bound.
+ *   <li>A wildcard whose Java type is {@code ?} or {@code ? super L} has the upper bound {@code
+ *       Object}, with the primary annotations of the projection of the type argument or wildcard
+ *       bound that the wildcard replaces. Those annotations can be more precise than the
+ *       annotations of the declared bound of the type parameter.
+ *   <li>A wildcard with no lower bound has the null type, with the bottom annotations, as its lower
+ *       bound.
+ *   <li>The conditions of JLS 4.10.5 that compare types, such as whether a declared bound is a
+ *       subtype of U, compare Java types and ignore annotations.
+ * </ul>
+ *
+ * <p>This class also differs from JLS 4.10.5 in two ways:
+ *
+ * <ul>
+ *   <li>The upward projection of a restricted type variable is the upward projection of its upper
+ *       bound, which can mention the type variable itself, as in {@code T extends Comparable<T>}.
+ *       JLS 4.10.5 does not say how this recursion ends. In this class, the upward projection of a
+ *       type variable that is reached again while its own upward projection is being computed is
+ *       the erasure of its leftmost bound.
+ *   <li>Where JLS 4.10.5 gives {@code ? extends U} and U is an intersection type, this class gives
+ *       {@code ?}, because the bound of a wildcard cannot be an intersection type.
+ * </ul>
  */
 public final class AnnotatedTypeProjection {
 
@@ -302,7 +330,7 @@ public final class AnnotatedTypeProjection {
     if (isExtendsUpper) {
       wildcard.setExtendsBound(upper);
     } else {
-      // Keep the qualifiers of `upper`, which are more precise than the declared bound's.
+      // See the class Javadoc for why the Object bound has the qualifiers of `upper`.
       AnnotatedTypeMirror object =
           AnnotatedTypeMirror.createType(
               TypesUtils.getObjectTypeMirror(atypeFactory.getProcessingEnv()), atypeFactory, false);

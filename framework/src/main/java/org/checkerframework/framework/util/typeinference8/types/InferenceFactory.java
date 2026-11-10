@@ -787,16 +787,20 @@ public class InferenceFactory {
    * variable are the bounds of the captured type variable that it replaces (JLS 18.5.5, step 3).
    *
    * @param deconstructor the deconstructor of the record pattern
-   * @param capturedType the captured type that values matched against the record pattern have
+   * @param capturedType the capture of the matched type, or of a parameterized type that bounds it
+   *     (JLS 18.5.5, step 3)
    * @param map the mapping to add to
    */
   public void addVariablesForCapturedTypeArguments(
       ExpressionTree deconstructor, AnnotatedDeclaredType capturedType, Theta map) {
-    // Unlike JLS 18.5.5, this also replaces captured type variables that the matched type already
-    // mentions, such as CAP#1 in Box<CAP#1>, the type of a record component.  Resolution replaces
-    // the variable by a fresh type variable with the same bounds, which upward projection removes,
-    // so the pattern type is Box<? extends B> rather than Box<CAP#1>.  The types of binding
-    // variables are the same either way.
+    // This replaces every captured type variable that is a type argument of capturedType,
+    // including one that the matched type already mentions.  JLS 18.5.5 step 3 requires this:
+    // "This includes type variables produced by the capture conversion in this step, and type
+    // variables produced by capture conversion elsewhere."  For example, if a record component has
+    // the type Box<CAP#1>, where CAP#1 is the capture of ? extends B, then a record pattern nested
+    // in another one is matched against Box<CAP#1>.  Resolution instantiates the new variable for
+    // CAP#1 as a fresh type variable, and upward projection then removes that fresh type variable,
+    // so the type of the nested record pattern is Box<? extends B>.
     List<Variable> newVariables = new ArrayList<>();
     for (AnnotatedTypeMirror typeArg : capturedType.getTypeArguments()) {
       if (typeArg.getKind() != TypeKind.TYPEVAR
