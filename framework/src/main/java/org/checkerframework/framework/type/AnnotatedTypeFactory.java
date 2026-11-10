@@ -1021,6 +1021,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // is unbounded, so it must be cleared whether or not caching is enabled.
     lambdaParamTypes.clear();
 
+    // The previous compilation unit's ajava annotations do not apply to the new one.
+    boolean hadCurrentFileAjavaTypes = currentFileAjavaTypes != null;
+    currentFileAjavaTypes = null;
+
     if (newRoot != null && checker.hasOption("ajava")) {
       // Search for an ajava file with annotations for the current source file and the current
       // checker. It will be in a directory specified by the "ajava" option in a subdirectory
@@ -1073,10 +1077,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         } else if (ajavaLocationFile.isFile()
             && AnnotationFileUtil.isJarOrZip(ajavaLocationFile.getName())) {
           // Case (3): ajavaLocation is an archive, whose root is like a directory in case (1).
+          // Use the absolute path, so that an archive named twice (say, by a relative and an
+          // absolute path) yields one candidate rather than an ambiguity, as for a directory.
           AnnotationFileResource entry =
               ajavaArchiveEntries
                   .computeIfAbsent(
-                      ajavaLocationFile,
+                      ajavaLocationFile.getAbsoluteFile(),
                       archive -> AnnotationFileUtil.archiveEntries(archive, checkerAjavaEnding))
                   .get(ajavaEnding);
           if (entry != null) {
@@ -1093,7 +1099,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           // one match no file is parsed for this class and a warning is issued instead.
           // The user can disambiguate by supplying a root directory, instead of specific
           // files.
-          if (ajavaLocation.endsWith(File.separator + ajavaEnding)) {
+          // ajavaEnding uses "/", but ajavaLocation uses the file system's separator.
+          if (ajavaLocation.endsWith(
+              File.separator + ajavaEnding.replace('/', File.separatorChar))) {
             // This is a candidate ajava file. If it is the only candidate, then it
             // might be unambiguous. If not, issue a warning.
             AnnotationFileResource ajavaFile = new FileAnnotationFileResource(ajavaLocationFile);
@@ -1118,8 +1126,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         checker.reportWarning(
             newRoot, "ambiguous.ajava", String.join(", ", candidateAjavaFiles.keySet()));
       }
-    } else {
-      currentFileAjavaTypes = null;
+    }
+
+    // Cached types and declaration annotations may reflect the previous compilation unit's ajava
+    // annotations, or may lack the new compilation unit's ajava annotations.
+    if (hadCurrentFileAjavaTypes || currentFileAjavaTypes != null) {
+      if (shouldCache) {
+        elementCache.clear();
+      }
+      cacheDeclAnnos.clear();
     }
   }
 
