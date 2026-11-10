@@ -140,6 +140,33 @@ fields or re-opening resources:
 \end{description}
 
 
+\subsectionAndLabel{Resource Leak Checker annotations for collections}{resource-leak-annotations-collections}
+
+The Resource Leak Checker also supports collections of resources. The following annotations express ownership over resource collections.
+
+\begin{description}
+\item[\refqualclass{checker/collectionownership/qual}{OwningCollection}]
+\item[\refqualclass{checker/collectionownership/qual}{NotOwningCollection}]
+  expresses ownership over resource collections. Resource collection formal parameters default to \texttt{@NotOwningCollection}, while resource collection fields and return types default to \texttt{@OwningCollection}.
+  For more details, see Section~\ref{resource-leak-collections}.
+\item[\refqualclass{checker/collectionownership/qual}{PolyOwningCollection}]
+  is the polymorphic qualifier for collection ownership. For example, \texttt{Iterable.iterator()} returns an iterator with the same ownership as the collection.
+
+\end{description}
+
+These annotations are for methods.
+
+\begin{description}
+\item[\refqualclasswithparams{checker/collectionownership/qual}{CollectionFieldDestructor}{String[] value}]
+  expresses that the annotated method fulfills the obligations of the given resource collection fields.
+  For more details, see Section~\ref{resource-leak-collections-fields}.
+\item[\refqualclass{checker/collectionownership/qual}{CreatesCollectionObligation}]
+  expresses that the annotated method might insert an element into its receiver collection, as \texttt{Collection.add} does.
+  For more details, see Section~\ref{resource-leak-collections-types-in-action}.
+
+\end{description}
+
+
 \sectionAndLabel{Example of how safe resource usage is verified}{resource-leak-example}
 
 Consider the following example of safe use of a \<Socket>, in which the comments indicate the
@@ -627,47 +654,237 @@ feature that it is unable to reason about.
 
 \sectionAndLabel{Collections of resources}{resource-leak-collections}
 
-The Resource Leak Checker cannot verify code that stores a collection of
-resources in a generic collection (e.g., \<java.util.List>) and then
-resolves the obligations of each element of the collection at once (e.g.,
-by iterating over the \<List>).  In the future, the checker will support
-this.  The remainder of this section explains the implementation issues;
-most users can skip it.
+The Resource Leak Checker handles homogeneous collections of resources. In a homogeneous collection, every element
+has exactly the same must-call and called-methods properties. Instances of \texttt{java.lang.Iterable} are supported;
+this section calls those ``collections''. Iterators over collections are also supported (Section~\ref{resource-leak-collections-iterators}).
 
-The first implementation issue is that \<@Owning> and \<@NotOwning> are
-declaration annotations rather than type qualifiers, so they cannot be
-written on type arguments. It is possible under the current design to have
-an \code{@Owning List<Socket>}, but not a \code{List<@Owning Socket>}.
-It would be better to make \<@Owning> a type annotation, but this is a
-challenging design problem.
+What the checker effectively verifies is that any resource collection is properly disposed of. That is, there is some loop that definitely calls the required methods on all elements of the collection.
 
-The second implementation issue is the defaulting rule for \<@MustCall> on
-type variable upper bounds.  Currently, this default is \<@MustCall(\{\})>,
-which prevents many false positives in code with type variables that makes
-no use of resources --- an important design principle.
-However, this defaulting rule does have an unfortunate consequence: it is
-an error to write \code{List<Socket>} or any other type with a concrete
-type argument where the type argument itself isn't \<@MustCall(\{\})>. A programmer who
-needs to write such a type while using the Resource Leak Checker has a few
-choices, all of which have some downsides:
+Towards that end, the Resource Leak Checker tracks every allocated resource collection in two ways:
 
 \begin{itemize}
-\item Write \code{List<? extends Socket>}. This rejects calls to \<add()>
-or other methods that require an instance of the type variable, but it
-preserves some of the behavior (e.g., calls to \<remove()> are permitted).
-This is the best choice most of the time if the \<List> is not intended to
-be owning.
-\item Write \code{List<@MustCall Socket>}. This makes it an error to
-add a Socket to the list, since the type of the Socket is
-\<@MustCall("close")> but the list requires \<@MustCall(\{\})>.
-\item Suppress one or more warnings.
+  \item at most one owning reference for each underlying resource collection is tracked via an ownership type system. This owning reference is permitted to mutate the collection arbitrarily. All other references are considered not owning and are restricted - for example, they can't be used to add elements that might be owning or to discard elements from the collection.
+  \item a complementary dataflow analysis tracks an obligation for each allocated resource collection. The obligation can be passed on to method parameters, fields, or return values for example, just like the ownership. The difference is that while the type system tracks at most one owner per resource collection allowed to mutate it without restriction, the dataflow analysis tracks at least one obligation per resource collection to ensure it is definitely fulfilled.
 \end{itemize}
 
-The recommended way to use the Resource Leak Checker in this situation is
-to rewrite the code to avoid a \<List> of owning resources. If rewriting is
-not possible, the programmer will probably need to suppress a warning and
-then verify the code using a method other than the Resource Leak Checker.
+For the purposes of this checker, \textit{resource collections} are precisely defined, as the objects of interest for both the type system and obligation tracking. A Java expression is a \textit{resource collection} if it is:
 
+\begin{enumerate}
+  \item A \texttt{java.lang.Iterable} or implementation thereof (which includes every \texttt{java.util.Collection}) with exactly one type argument, and:
+  \item Its type argument's upper bound has a non-empty or unknown (\texttt{@MustCallUnknown}) \texttt{MustCall} type.
+\end{enumerate}
+
+For example, expressions of type \texttt{List<Socket>} or \texttt{Iterable<? extends @MustCallUnknown Object>} are both resource collections, but ones of type \texttt{Set<String>} or \texttt{Map<String, Socket>} are not.
+
+\subsectionAndLabel{Ownership type system for resource collections}{resource-leak-collections-ownership-types}
+Of the two tracking mechanisms described above, the ownership type system is more visible from the user perspective. The type hierarchy is the following:
+
+\begin{verbatim}
+                 @NotOwningCollection
+                          |
+                   @OwningCollection
+                          |
+           @OwningCollectionWithoutObligation
+                          |
+               @OwningCollectionBottom
+\end{verbatim}
+
+\begin{itemize}
+  \item \textbf{@NotOwningCollection} is the type of resource collection references that might not own the underlying resource collection.
+  \item \textbf{@OwningCollection} is the type of resource collection references that definitely own the underlying collection, but might have open calling obligations for their elements.
+  \item \textbf{@OwningCollectionWithoutObligation} is the type of \textit{resource collection} references that definitely own the underlying collection, but also definitely don't have any open calling obligations on their elements. For example, a freshly allocated resource collection that doesn't yet contain any resources is of this type.
+  \item \textbf{@OwningCollectionBottom} is the type of non-\textit{resource collections}. It is thus the type the vast majority of expressions have, because most expressions are not collections of resources.
+\end{itemize}
+
+Only \texttt{@OwningCollection} and \texttt{@NotOwningCollection} are permitted as user-written annotations. The other types are only used internally.
+
+\subsectionAndLabel{Ownership types in action: defaults and ownership transfer}{resource-leak-collections-types-in-action}
+
+A freshly allocated resource collection always defaults to \texttt{@OwningCollectionWithoutObligation}.
+
+\begin{Verbatim}
+List<Socket> sockets = new ArrayList<>();
+// `sockets` is now @OwningCollectionWithoutObligation
+\end{Verbatim}
+
+When you now add elements into this collection, its type unrefines to \texttt{@OwningCollection}.
+
+\begin{Verbatim}
+List<Socket> sockets = new ArrayList<>();
+// `sockets` is @OwningCollectionWithoutObligation
+for (int i = 0; i < n; i++) {
+  sockets.add(new Socket(myHost, myPort + i));
+  // `sockets` is @OwningCollection
+}
+// `sockets` is @OwningCollection
+\end{Verbatim}
+
+All methods called on a resource collection that potentially move an element with a calling obligation into the collection change the type of the receiving collection to \texttt{@OwningCollection} and create a tracked obligation for the collection in the dataflow analysis.
+
+For method parameters, the default type of resource collection references is \texttt{@NotOwningCollection}.
+
+\begin{Verbatim}
+void m(Iterable<Socket> sockets) {
+  // `sockets` is @NotOwningCollection
+  ...
+}
+\end{Verbatim}
+
+This means that by default, a resource collection parameter can only do certain 'safe' operations on the collection. It can only insert elements that are definitely not owning, such as the result of a method whose return type is \texttt{@NotOwning}. It cannot clear the collection or discard or overwrite elements, for example with \texttt{clear()}, \texttt{remove(Object)}, or \texttt{set()}. Some methods that remove and return an element, such as \texttt{Queue.poll()}, are permitted; the caller then owns the returned element and must dispose of it. But it also means that the parameter does not have any calling obligation for the elements of the collection, and it can accept both owning and not owning collection references due to normal subtyping rules. If an \texttt{OwningCollection} reference is passed to an unannotated parameter, the obligation stays at the call-site.
+
+Annotating the parameter with \texttt{@OwningCollection} overrides this behavior. In this case, the ownership is transferred from the call-site argument to the method parameter. Concretely, this means that the call-site obligation is removed and the parameter takes on the responsibility of disposing of the collection. The type of the argument at the call-site is changed to \texttt{@NotOwningCollection} to maintain the invariant that there's at most one owning reference for each resource collection.
+
+\begin{Verbatim}
+void m(@OwningCollection Iterable<Socket> sockets) {
+  // `sockets` is @OwningCollection
+  ...
+  // this loop disposes of the collection and fulfills the obligation
+  for (Socket s : sockets) {
+    try {
+      s.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+  // `sockets` is @OwningCollectionWithoutObligation
+}
+\end{Verbatim}
+
+Resource collection return types default to \texttt{@OwningCollection}. Returning a resource collection from a method with that return type fulfills the collection's obligation. The obligation and ownership are both transferred to the method invocation expression at the call-site.
+
+\begin{verbatim}
+List<Socket> returnSocketList() {
+  List<Socket> socketList = new ArrayList<>();
+  // `socketList` is @OwningCollectionWithoutObligation
+  socketList.add(new Socket(myHost, myPort));
+  // `socketList` is @OwningCollection
+  return socketList;
+  // the return transfers obligation and ownership to the call-site
+}
+\end{verbatim}
+
+Writing \texttt{@NotOwningCollection} on the return type overrides this default. In this case, ownership and obligation are not transferred to the call-site and the obligation must be fulfilled or passed on prior to the return.
+
+Ownership is also transferred through assignments. If the right-hand side of an assignment is of type \texttt{@OwningCollection} or \texttt{@OwningCollectionWithoutObligation}, the ownership is transferred to the left-hand side expression, and thus the right-hand side is unrefined to \texttt{@NotOwningCollection} to maintain the invariant of having at most one owning reference per resource collection.
+
+\begin{verbatim}
+// `r` is @OwningCollection
+l = r;
+// `l` is now @OwningCollection, `r` is @NotOwningCollection
+\end{verbatim}
+
+Just like the ownership, the obligation is also transferred to the left-hand side. If the left-hand side is declared \texttt{@NotOwningCollection}, neither is transferred, and the right-hand side remains the owner.
+
+\subsectionAndLabel{Fulfilling collection obligations}{resource-leak-collections-fulfillment}
+
+To fulfill the obligation of a resource collection, the obligation can be passed on, but at some point it has to be fulfilled by calling the required methods on its elements in an enhanced \texttt{for} loop.
+
+Here is an example of such a loop:
+
+\begin{verbatim}
+// `socketList` is @OwningCollection and has an obligation for calling `close` on its elements
+for (Socket s : socketList) {
+  try {
+    s.close();
+  } catch (Exception e) {
+    e.printStackTrace();
+  }
+}
+// `socketList` is @OwningCollectionWithoutObligation and has no obligation
+\end{verbatim}
+
+The main effect such a loop has is that the obligations corresponding to the methods it calls on all elements are removed. If the loop calls all required methods - which is almost always the case, since classes usually have at most one \texttt{MustCall} method - the type of the collection is additionally refined to \texttt{@OwningCollectionWithoutObligation}.
+
+To determine the methods such a loop calls, the checker does the following things:
+
+\begin{itemize}
+  \item It checks that the loop does not terminate early.
+  \item It leverages the \texttt{CalledMethods} analysis to determine the methods definitely called on the loop iterator variable. This means that anything that changes the \texttt{CalledMethods} type of the iterator variable is supported, for example passing it as an argument to a method annotated \texttt{@EnsuresCalledMethods(``m'')}, or using try-with constructs. Nullness checks are also supported: that is, it is sufficient to fulfill the obligation for every non-null element of the collection; note that this is a simple, syntactic check, not a full-fledged nullness analysis, and so it might fail to certify loops that use an unorthodox method for nullness checking.
+\end{itemize}
+
+\subsectionAndLabel{Resource collection fields}{resource-leak-collections-fields}
+By default, resource collection fields are owned by the enclosing class. Static fields are not supported and an error is reported for a declaration of a static resource collection field.
+Consider the following example:
+
+\begin{verbatim}
+class Aggregator implements Closeable {
+  List<Socket> socketList = new ArrayList<>();
+
+  public Aggregator() {}
+
+  public Aggregator(@OwningCollection List<Socket> l) {
+    // `this.socketList` is @OwningCollectionWithoutObligation
+    this.socketList = l;
+    // `this.socketList` is @OwningCollection
+    // the obligation of `l` has been resolved
+  }
+
+  @CreatesMustCallFor("this")
+  public void add(@Owning Socket s) {
+    // this call creates an obligation for the field.
+    // thus, the enclosing method must have a @CreatesMustCallFor("this") annotation.
+    socketList.add(s);
+  }
+
+  @Override
+  @CollectionFieldDestructor("socketList")
+  public void close() {
+    for (Socket s : socketList) {
+      try {
+        s.close();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+}
+\end{verbatim}
+
+To verify a resource collection field \textit{field}, the checker looks for the following:
+\begin{enumerate}
+  \item A \texttt{@MustCall} annotation on the enclosing class. In this case, the class is of type \texttt{@MustCall(``close'')} by subclassing Closeable.
+  \item Among the methods in the \texttt{@MustCall} type of the enclosing class (usually there's just one), the checker now looks for the post-condition annotation \texttt{@CollectionFieldDestructor(``field'')}.
+  \item The annotation \texttt{@CollectionFieldDestructor(``field'')} asserts that at the method exit, \textit{field} has type \texttt{@OwningCollectionWithoutObligation}, which the checker verifies.
+  \item Methods that call 'unsafe' methods creating obligations for the resource collection field, such as \texttt{socketList.add(Socket)} in this case, must have a \texttt{@CreatesMustCallFor(``this'')} annotation.
+\end{enumerate}
+
+This now shifts the burden to the client of the \texttt{Aggregator} class to call \texttt{close()} on instances before they leave scope.
+
+If a resource collection field is final, the checker doesn't have to verify assignments to it. If it is not final, the checker verifies assignments in the following way:
+\begin{itemize}
+  \item The checker analyzes the declaration initializer and the initializer blocks starting with the field unassigned (\texttt{@OwningCollectionBottom}), and each constructor starts with the field in the resulting state. So the first assignment to the field is permitted, whether it is in the declaration initializer, an initializer block, or a constructor.
+  \item A field inherited from a superclass is \texttt{@OwningCollection} at the beginning of a constructor, because the superclass constructor might already have added elements to it. In every other method, the field is \texttt{@OwningCollection} at the beginning of the method.
+  \item Any later assignment is permitted only if the field is \texttt{@OwningCollectionWithoutObligation} just before it, for example after a call to the method annotated \texttt{@CollectionFieldDestructor}.
+  \item Outside of constructors and initializers, a method that assigns a collection with an obligation to the field must be annotated \texttt{@CreatesMustCallFor(``this'')}.
+  \item In a constructor, the field takes ownership of the right-hand side only if the constructor returns normally, because if the constructor throws an exception, nothing can dispose of the field.
+\end{itemize}
+A legal assignment to an owning resource collection field resolves the obligation of the right-hand side.
+
+Resource collection fields owned by the enclosing class are special cases for ownership transfer, as the checker doesn't allow transferring the ownership away from such a field. If for example a member method were able to transfer the ownership of the field to an external method parameter, the checker would have to track that the field is no longer the owner and set its type to \texttt{@NotOwningCollection} for future method invocations on the class instance. For the sake of simplicity, the checker doesn't track this and thus doesn't allow ownership transfers for fields. In particular:
+
+\begin{itemize}
+  \item The field cannot be passed as an argument to an \texttt{@OwningCollection} parameter.
+  \item The field cannot be returned to an \texttt{@OwningCollection} return type.
+  \item If the field is on the right-hand side of an assignment, the left-hand side has type \texttt{@NotOwningCollection} after the assignment, so as to keep the at-most-one-owner invariant.
+  \item The field can only be accessed through \texttt{this} or \texttt{super}. Accessing it through any other receiver, even another instance of the same class, is not permitted.
+\end{itemize}
+
+If the enclosing class is not intended to take responsibility for the resource collection field, annotate it with \texttt{@NotOwningCollection}. It now behaves just like any other resource collection reference, except that it still cannot be static. In particular:
+
+\begin{itemize}
+  \item Assigning to such a field does not resolve the obligation of the right-hand side.
+  \item The enclosing class does not have to fulfill any obligations on the field.
+\end{itemize}
+
+\subsectionAndLabel{Iterators over resource collections}{resource-leak-collections-iterators}
+
+An iterator has the same collection ownership type as the collection it iterates over, because \texttt{Iterable.iterator()} is annotated \texttt{@PolyOwningCollection}. An iterator never has an obligation of its own: the collection keeps the obligation.
+
+\texttt{Iterator.next()} returns a \texttt{@NotOwning} element. \texttt{Iterator.remove()} is permitted only if the collection has no obligation (\texttt{@OwningCollectionWithoutObligation}), because the checker does not track whether the removed element was disposed of.
+
+A class that implements \texttt{Iterator} over resources must annotate the return type of its \texttt{next()} method as \texttt{@NotOwning}, to match \texttt{Iterator.next()}.
+
+% TODO: Add a subsection with a table of JDK collection methods and their collection ownership annotations.
 
 \sectionAndLabel{Further reading}{resource-leak-checker-references}
 

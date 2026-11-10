@@ -1,6 +1,8 @@
 // Test case for https://github.com/typetools/checker-framework/issues/6030
 
 import java.util.*;
+import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
+import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
@@ -17,12 +19,14 @@ public class Issue6030 {
       return iterator.hasNext();
     }
 
+    // Since #7602, Iterator#next returns @NotOwning.
     @SideEffectsOnly("this")
-    public T next() {
+    public @NotOwning T next() {
       return null;
     }
 
-    private I createIterator() {
+    // Since #7602, Iterator#hasNext has a @NotOwningCollection receiver, and hasNext() calls this.
+    private I createIterator(@NotOwningCollection MyScanner<T, I> this) {
       return null;
     }
 
