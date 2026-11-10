@@ -403,8 +403,8 @@ public class AnnotationFileElementTypes {
                 fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
           } catch (IOException e) {
             checker.message(
-                Diagnostic.Kind.NOTE,
-                "Could not read annotation resource: " + resource.getDescription());
+                Diagnostic.Kind.WARNING,
+                "Could not read annotation resource: " + resource.getDescription() + ": " + e);
           }
         }
       } else {
