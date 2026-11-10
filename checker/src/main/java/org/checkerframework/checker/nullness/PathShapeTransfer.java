@@ -57,7 +57,8 @@ public class PathShapeTransfer extends CFTransfer {
    * @return the path that the invocation tests, or null
    */
   private @Nullable Node regularFileTestSubject(MethodInvocationNode n) {
-    ExecutableElement method = n.getTarget().getMethod();
+    // An override is treated like the method in Path or File that it overrides.
+    ExecutableElement method = factory.getPathOrFileMethod(n.getTarget().getMethod());
     if (method.equals(factory.filesIsRegularFile)) {
       return n.getArgument(0);
     } else if (method.equals(factory.fileIsFile)) {

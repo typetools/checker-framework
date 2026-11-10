@@ -15,7 +15,8 @@ import org.junit.Test;
  * <p>The project does not run tests on Windows, so the expected Windows results are derived from
  * the JDK source code: {@code sun.nio.fs.WindowsPathParser} and {@code sun.nio.fs.WindowsPath} for
  * {@code Path}, and {@code java.io.WinNTFileSystem} and {@code java.io.File} for {@code File}. The
- * expected Unix results are checked against the running JDK when the tests run on Unix.
+ * expected results are checked against the running JDK: the Unix results when the tests run on
+ * Unix, and the Windows results when the tests run on Windows.
  */
 public class PathShapeClassifierTest {
 
@@ -56,6 +57,9 @@ public class PathShapeClassifierTest {
     if (File.separatorChar == '/') {
       Assert.assertEquals("actual Unix Path " + s, unixPath, actualPathShape(s));
       Assert.assertEquals("actual Unix File " + s, unixFile, actualFileShape(s));
+    } else if (File.separatorChar == '\\') {
+      Assert.assertEquals("actual Windows Path " + s, windowsPath, actualPathShape(s));
+      Assert.assertEquals("actual Windows File " + s, windowsFile, actualFileShape(s));
     }
   }
 

@@ -2,6 +2,8 @@ package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreeScanner;
 import java.io.File;
@@ -18,7 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -28,6 +32,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.UnionType;
 import javax.lang.model.type.WildcardType;
+import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nullness.PathShapeClassifier.PathShape;
 import org.checkerframework.checker.nullness.qual.HasName;
 import org.checkerframework.checker.nullness.qual.HasParent;
@@ -42,9 +47,14 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -63,6 +73,10 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The @{@link HasParent} annotation. */
   /*package-private*/ final AnnotationMirror HAS_PARENT =
       AnnotationBuilder.fromClass(elements, HasParent.class);
+
+  /** The @{@link PolyPathShape} annotation. */
+  private final AnnotationMirror POLY_PATH_SHAPE =
+      AnnotationBuilder.fromClass(elements, PolyPathShape.class);
 
   /** The {@code java.nio.file.Path} interface. */
   /*package-private*/ final TypeElement pathElement =
@@ -137,7 +151,8 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * Returns true if the given tree uses paths: some tree within it has a type that mentions a
-   * {@code Path} or a {@code File}, or is a path shape qualifier.
+   * {@code Path} or a {@code File}, or is a path shape qualifier, or overrides or refers to a
+   * declaration whose type contains a path shape qualifier.
    *
    * @param tree a tree
    * @return true if {@code tree} uses paths
@@ -157,7 +172,7 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           return null;
         }
         TypeMirror type = TreeUtils.typeOf(t);
-        if (type != null && mentionsPathOrFile(type, visited)) {
+        if ((type != null && mentionsPathOrFile(type, visited)) || usesPathShapeContract(t)) {
           found = true;
           return null;
         }
@@ -168,6 +183,82 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     scanner.scan(tree, null);
     return scanner.found;
   }
+
+  /**
+   * Returns true if the given tree overrides, or refers to, a declaration whose type contains a
+   * path shape qualifier, such as a method whose return type is {@code @HasName Object}. Such a
+   * tree must be checked even if it mentions no {@code Path} or {@code File} type and writes no
+   * path shape qualifier.
+   *
+   * @param tree a tree
+   * @return true if {@code tree} overrides, or refers to, a declaration with a path shape contract
+   */
+  private boolean usesPathShapeContract(Tree tree) {
+    switch (tree.getKind()) {
+      case METHOD -> {
+        ExecutableElement method = TreeUtils.elementFromDeclaration((MethodTree) tree);
+        for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> entry :
+            AnnotatedTypes.overriddenMethods(elements, this, method).entrySet()) {
+          AnnotatedExecutableType overriddenType =
+              AnnotatedTypes.asMemberOf(types, this, entry.getKey(), entry.getValue());
+          if (containsPathShapeQualifier(overriddenType)) {
+            return true;
+          }
+        }
+        return false;
+      }
+      case METHOD_INVOCATION -> {
+        return containsPathShapeQualifier(
+            fromElement(TreeUtils.elementFromUse((MethodInvocationTree) tree)));
+      }
+      case NEW_CLASS -> {
+        return containsPathShapeQualifier(
+            fromElement(TreeUtils.elementFromUse((NewClassTree) tree)));
+      }
+      case IDENTIFIER, MEMBER_SELECT -> {
+        ExpressionTree expr = (ExpressionTree) tree;
+        // javac represents `this`, `super`, class literals, and array lengths as fields.
+        if (TreeUtils.isExplicitThisDereference(expr)
+            || TreeUtils.isClassLiteral(expr)
+            || TreeUtils.isArrayLengthAccess(expr)) {
+          return false;
+        }
+        Element elt = TreeUtils.elementFromTree(expr);
+        return elt != null
+            && elt.getKind().isField()
+            && !elt.getSimpleName().contentEquals("super")
+            && containsPathShapeQualifier(fromElement(elt));
+      }
+      default -> {
+        return false;
+      }
+    }
+  }
+
+  /**
+   * Returns true if the given type contains a path shape qualifier other than {@code
+   * UnknownPathShape} and {@code PathShapeBottom}. {@code PathShapeBottom} is ignored because it is
+   * the default for implicit lower bounds, which appear in every generic type.
+   *
+   * @param type a type
+   * @return true if {@code type} contains a qualifier such as {@code @HasName}
+   */
+  private boolean containsPathShapeQualifier(AnnotatedTypeMirror type) {
+    return containsPathShapeQualifierScanner.visit(type);
+  }
+
+  /** The scanner used by {@link #containsPathShapeQualifier}. */
+  private final SimpleAnnotatedTypeScanner<Boolean, Void> containsPathShapeQualifierScanner =
+      new SimpleAnnotatedTypeScanner<>(
+          (type, p) -> {
+            AnnotationMirror qualifier = type.getPrimaryAnnotationInHierarchy(UNKNOWN_PATH_SHAPE);
+            return qualifier != null
+                && (AnnotationUtils.areSame(qualifier, HAS_NAME)
+                    || AnnotationUtils.areSame(qualifier, HAS_PARENT)
+                    || AnnotationUtils.areSame(qualifier, POLY_PATH_SHAPE));
+          },
+          Boolean::logicalOr,
+          false);
 
   /**
    * Returns true if the given type mentions a {@code Path} or a {@code File}: it is a subtype of
@@ -368,6 +459,38 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   //
 
   /**
+   * If the given method overrides a method in {@code Path} or {@code File}, returns the overridden
+   * method. Otherwise, returns the given method. Thus, an override is treated like the method that
+   * it overrides, whose specification it must satisfy.
+   *
+   * @param method a method
+   * @return the method in {@code Path} or {@code File} that {@code method} overrides, or {@code
+   *     method} itself
+   */
+  /*package-private*/ ExecutableElement getPathOrFileMethod(ExecutableElement method) {
+    if (method.getModifiers().contains(Modifier.STATIC)) {
+      return method;
+    }
+    TypeElement clazz = (TypeElement) method.getEnclosingElement();
+    if (clazz.equals(pathElement) || clazz.equals(fileElement)) {
+      return method;
+    }
+    TypeMirror erased = types.erasure(clazz.asType());
+    for (TypeElement jdkClass : Arrays.asList(pathElement, fileElement)) {
+      if (!types.isSubtype(erased, types.erasure(jdkClass.asType()))) {
+        continue;
+      }
+      for (ExecutableElement jdkMethod : ElementFilter.methodsIn(jdkClass.getEnclosedElements())) {
+        if (jdkMethod.getSimpleName().equals(method.getSimpleName())
+            && elements.overrides(method, jdkMethod, clazz)) {
+          return jdkMethod;
+        }
+      }
+    }
+    return method;
+  }
+
+  /**
    * Returns true if the given method invocation returns a non-null value because of the path shape
    * of its receiver. That is, it is an invocation of {@code Path.getParent()}, {@code
    * File.getParent()}, or {@code File.getParentFile()} on a {@code @HasParent} receiver, or of
@@ -378,6 +501,7 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @return true if {@code tree} returns a non-null value because of the path shape of its receiver
    */
   public boolean returnsNonNullPathComponent(MethodInvocationTree tree, ExecutableElement method) {
+    method = getPathOrFileMethod(method);
     PathShape required;
     if (method.equals(pathGetParent)
         || method.equals(fileGetParent)
