@@ -18,6 +18,8 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -62,8 +64,21 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     CompilationUnitTree root = f.root;
     if (f.isDeconstructionBindingVariable(variableTree)
         && root != null
-        && TreeUtils.isVariableTreeDeclaredUsingVar(variableTree, root)) {
+        && TreeUtils.isVariableTreeDeclaredUsingVar(variableTree, root, f.getProcessingEnv())) {
       AnnotatedTypeMirror componentType = f.getDeconstructedComponentType(variableTree);
+      // If the component's type is a wildcard or type variable, javac gives the binding variable
+      // a supertype of it (its upward projection).  Use the upper bound, which is a sound type for
+      // the binding variable and which keeps the component's qualifiers.
+      while (componentType != null
+          && !f.types.isSameType(componentType.getUnderlyingType(), result.getUnderlyingType())) {
+        if (componentType instanceof AnnotatedTypeVariable componentTypeVar) {
+          componentType = componentTypeVar.getUpperBound();
+        } else if (componentType instanceof AnnotatedWildcardType componentWildcard) {
+          componentType = componentWildcard.getExtendsBound();
+        } else {
+          break;
+        }
+      }
       if (componentType != null
           && f.types.isSameType(componentType.getUnderlyingType(), result.getUnderlyingType())) {
         result = componentType.deepCopy();

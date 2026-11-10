@@ -48,6 +48,10 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
+import com.sun.tools.javac.parser.Scanner;
+import com.sun.tools.javac.parser.ScannerFactory;
+import com.sun.tools.javac.parser.Tokens.Token;
+import com.sun.tools.javac.parser.Tokens.TokenKind;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotatedType;
@@ -2451,10 +2455,11 @@ public final class TreeUtils {
    *
    * @param variableTree the variableTree to check
    * @param root the compilation unit that contains {@code variableTree}
+   * @param env the processing environment
    * @return true if the variableTree is declared using the {@code var} Java keyword
    */
   public static boolean isVariableTreeDeclaredUsingVar(
-      VariableTree variableTree, CompilationUnitTree root) {
+      VariableTree variableTree, CompilationUnitTree root, ProcessingEnvironment env) {
     if (isVariableTreeDeclaredUsingVar(variableTree)) {
       return true;
     }
@@ -2476,11 +2481,18 @@ public final class TreeUtils {
     if (start < 0 || namePos <= start || namePos > source.length()) {
       return false;
     }
-    // The source code before the variable's name, such as "@A var" or "List<String>".
-    String beforeName = source.subSequence(start, namePos).toString().stripTrailing();
-    int varStart = beforeName.length() - "var".length();
-    return beforeName.endsWith("var")
-        && (varStart == 0 || !Character.isJavaIdentifierPart(beforeName.charAt(varStart - 1)));
+    // The source code before the variable's name, such as "@A var" or "List<String>".  Tokenize it,
+    // so that comments and Unicode escapes are handled, and test whether its last token is "var".
+    CharSequence beforeName = source.subSequence(start, namePos);
+    Context context = ((JavacProcessingEnvironment) env).getContext();
+    Scanner scanner = ScannerFactory.instance(context).newScanner(beforeName, false);
+    Token lastToken = null;
+    for (scanner.nextToken(); scanner.token().kind != TokenKind.EOF; scanner.nextToken()) {
+      lastToken = scanner.token();
+    }
+    return lastToken != null
+        && lastToken.kind == TokenKind.IDENTIFIER
+        && lastToken.name().contentEquals("var");
   }
 
   /**
