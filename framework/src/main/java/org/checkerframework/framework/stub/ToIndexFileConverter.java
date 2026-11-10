@@ -958,11 +958,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * If {@code typeName} is qualified by the stub file's package, and the identifier that follows the
-   * package names a top-level type of the stub file, returns the binary name of the type that
+   * If {@code typeName} is qualified by the stub file's package, and the identifier that follows
+   * the package names a top-level type of the stub file, returns the binary name of the type that
    * {@code typeName} names. Otherwise returns null. As for an unqualified name, a member type that
-   * the stub file does not declare is assumed to be a member of the innermost type found, so
-   * {@code p.B.Missing} and {@code B.Missing} have the same binary name.
+   * the stub file does not declare is assumed to be a member of the innermost type found, so {@code
+   * p.B.Missing} and {@code B.Missing} have the same binary name.
    *
    * @param node a node in the stub file's AST
    * @param typeName a type name, in which a {@code .} separates a nested class from its enclosing
