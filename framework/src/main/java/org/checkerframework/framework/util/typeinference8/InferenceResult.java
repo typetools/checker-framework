@@ -17,6 +17,7 @@ import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.MapsP;
 
 /** The result of type argument inference. */
 public class InferenceResult {
@@ -107,10 +108,11 @@ public class InferenceResult {
    * @param expressionTree the expression whose information to copy
    */
   private InferenceResult(InferenceResult other, ExpressionTree expressionTree) {
-    this.results = new HashMap<>(1);
+    this.results = new HashMap<>(4);
     Map<TypeVariable, AnnotatedTypeMirror> otherTypeArgs = other.results.get(expressionTree);
     if (otherTypeArgs != null) {
-      Map<TypeVariable, AnnotatedTypeMirror> typeArgs = new HashMap<>(otherTypeArgs.size());
+      Map<TypeVariable, AnnotatedTypeMirror> typeArgs =
+          new HashMap<>(MapsP.mapCapacity(otherTypeArgs.size()));
       otherTypeArgs.forEach((typeVar, typeArg) -> typeArgs.put(typeVar, typeArg.deepCopy()));
       this.results.put(expressionTree, typeArgs);
     }
