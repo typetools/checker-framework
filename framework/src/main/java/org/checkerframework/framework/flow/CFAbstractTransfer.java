@@ -986,7 +986,9 @@ public abstract class CFAbstractTransfer<
    * different value than the assignment. For example, the result for {@code n = n.next} is just
    * {@code n}, because after the assignment {@code n.next} is a field of a different object. The
    * same holds for an assignment, compound assignment, increment, or decrement nested anywhere
-   * within {@code node}: the result for {@code n.next = (n = o).other} omits {@code n.next}.
+   * within {@code node}: the result for {@code n.next = (n = o).other} omits {@code n.next}. Only
+   * an assignment that executes after a side is evaluated matters: the result for {@code a[i = 0] =
+   * b[i]} includes {@code b[i]}, because {@code i} is assigned before {@code b[i]} is evaluated.
    *
    * <p>A node that is neither an assignment nor a value-preserving cast is returned even if it
    * contains an assignment, as in {@code x + (x = 1)}. {@link JavaExpression#fromNode} converts
@@ -1026,22 +1028,76 @@ public abstract class CFAbstractTransfer<
     if (tree == null) {
       result.add(node);
     } else {
-      List<JavaExpression> targets = new ArrayList<>();
-      new AssignmentTargetScanner().scan(tree, targets);
+      // The assignments and value-preserving casts whose value is the value of `node`, outermost
+      // first.
+      List<Node> chain = new ArrayList<>();
       Node part = node;
       while (true) {
         if (part instanceof AssignmentNode a) {
-          result.add(a.getTarget());
+          chain.add(a);
           part = a.getExpression();
         } else if (part instanceof TypeCastNode cast && isValuePreservingCast(cast)) {
-          result.add(cast);
+          chain.add(cast);
           part = cast.getOperand();
         } else {
           break;
         }
       }
-      result.add(part);
-      result.removeIf(p -> mayBeChangedByAssignment(JavaExpression.fromNode(p), targets, true));
+      boolean allSimple = true;
+      for (Node n : chain) {
+        if (n instanceof AssignmentNode a && !(a.getTree() instanceof AssignmentTree)) {
+          allSimple = false;
+        }
+      }
+      AssignmentTargetScanner scanner = new AssignmentTargetScanner();
+      if (!allSimple) {
+        // A compound assignment, increment, or decrement.  Conservatively consider every
+        // assignment within the tree as executing after every part is evaluated.
+        List<JavaExpression> targets = new ArrayList<>();
+        scanner.scan(tree, targets);
+        for (Node n : chain) {
+          result.add(n instanceof AssignmentNode a ? a.getTarget() : n);
+        }
+        result.add(part);
+        result.removeIf(p -> mayBeChangedByAssignment(JavaExpression.fromNode(p), targets, true));
+      } else {
+        // Java evaluates the receivers and indices of the targets from left to right, then the
+        // final right-hand side, then stores into the targets from right to left.  So an
+        // assignment within a target's receiver or index executes before the later targets and
+        // the right-hand side are evaluated, and does not change their values.  A cast evaluates
+        // nothing but its operand.
+        // `laterTargets` holds the assignments that execute after the current part is evaluated.
+        List<JavaExpression> laterTargets = new ArrayList<>();
+        for (Node n : chain) {
+          if (n.getTree() instanceof AssignmentTree at) {
+            laterTargets.add(AssignmentTargetScanner.targetExpression(at.getVariable()));
+          }
+        }
+        Node innermost = chain.get(chain.size() - 1);
+        ExpressionTree rhsTree =
+            innermost.getTree() instanceof AssignmentTree at
+                ? at.getExpression()
+                : ((TypeCastNode) innermost).getTree().getExpression();
+        scanner.scan(rhsTree, laterTargets);
+        if (!mayBeChangedByAssignment(JavaExpression.fromNode(part), laterTargets, true)) {
+          result.add(part);
+        }
+        for (int i = chain.size() - 1; i >= 0; i--) {
+          Node n = chain.get(i);
+          Node element;
+          if (n instanceof AssignmentNode a && a.getTree() instanceof AssignmentTree at) {
+            // An assignment within the target's own receiver or index might execute after part of
+            // the target is evaluated, as in `a[i++] = o`, so consider it too.
+            scanner.scan(at.getVariable(), laterTargets);
+            element = a.getTarget();
+          } else {
+            element = n;
+          }
+          if (!mayBeChangedByAssignment(JavaExpression.fromNode(element), laterTargets, true)) {
+            result.add(0, element);
+          }
+        }
+      }
     }
 
     ExpressionTree laterOperand = laterOperand(node);
@@ -1450,7 +1506,37 @@ public abstract class CFAbstractTransfer<
       TransferInput<V, S> in, Node lhs, Node rhs, S store, V rhsValue) {
 
     // update information in the store
-    store.updateForAssignment(lhs, rhsValue);
+    if (rhsMayRelocateTarget(lhs, rhs)) {
+      // After the assignment, `lhs` denotes a different location than the one that was assigned.
+      // Remove information that the assignment might invalidate, but record no value for `lhs`.
+      store.updateForAssignment(lhs, null);
+    } else {
+      store.updateForAssignment(lhs, rhsValue);
+    }
+  }
+
+  /**
+   * Returns true if evaluating {@code rhs} might reassign a variable in the receiver or index of
+   * {@code lhs}, as in {@code n.next = (n = o)}. Java evaluates the receiver and index of {@code
+   * lhs} before {@code rhs}, so in that case the assignment stores into a location that {@code lhs}
+   * no longer denotes after the assignment.
+   *
+   * @param lhs the left-hand side of an assignment
+   * @param rhs the right-hand side of the assignment
+   * @return true if evaluating {@code rhs} might change the location that {@code lhs} denotes
+   */
+  private static boolean rhsMayRelocateTarget(Node lhs, Node rhs) {
+    if (lhs instanceof LocalVariableNode) {
+      return false;
+    }
+    Tree rhsTree = rhs.getTree();
+    if (rhsTree == null) {
+      return false;
+    }
+    List<JavaExpression> targets = new ArrayList<>();
+    new AssignmentTargetScanner().scan(rhsTree, targets);
+    return !targets.isEmpty()
+        && mayBeChangedByAssignment(JavaExpression.fromNode(lhs), targets, true);
   }
 
   @Override

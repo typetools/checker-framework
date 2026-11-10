@@ -324,8 +324,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     refineSubtrahendWithOffset(larger, smaller, true, in, store);
 
-    JavaExpression rightJe = JavaExpression.fromNode(smaller);
-    store.insertValue(rightJe, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
+    AnnotationMirror refinedRightAnno = atypeFactory.convertUBQualifierToAnnotation(refinedRight);
+    for (Node internal : splitAssignments(smaller)) {
+      store.insertValue(JavaExpression.fromNode(internal), refinedRightAnno);
+    }
   }
 
   /**
@@ -352,8 +354,10 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     refineSubtrahendWithOffset(left, right, false, in, store);
 
-    JavaExpression rightJe = JavaExpression.fromNode(right);
-    store.insertValue(rightJe, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
+    AnnotationMirror refinedRightAnno = atypeFactory.convertUBQualifierToAnnotation(refinedRight);
+    for (Node internal : splitAssignments(right)) {
+      store.insertValue(JavaExpression.fromNode(internal), refinedRightAnno);
+    }
   }
 
   /**

@@ -301,19 +301,16 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       return;
     }
 
-    JavaExpression leftJe = JavaExpression.fromNode(left);
-
+    AnnotationMirror newLBType;
     if (AnnotationUtils.areSame(rightAnno, GTEN1)) {
-      store.insertValue(leftJe, NN);
+      newLBType = NN;
+    } else if (AnnotationUtils.areSame(rightAnno, NN) || AnnotationUtils.areSame(rightAnno, POS)) {
+      newLBType = POS;
+    } else {
       return;
     }
-    if (AnnotationUtils.areSame(rightAnno, NN)) {
-      store.insertValue(leftJe, POS);
-      return;
-    }
-    if (AnnotationUtils.areSame(rightAnno, POS)) {
-      store.insertValue(leftJe, POS);
-      return;
+    for (Node internal : splitAssignments(left)) {
+      store.insertValue(JavaExpression.fromNode(internal), newLBType);
     }
   }
 
@@ -338,14 +335,14 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       return;
     }
 
-    JavaExpression leftJe = JavaExpression.fromNode(left);
-
     AnnotationMirror newLBType =
         atypeFactory
             .getQualifierHierarchy()
             .greatestLowerBoundShallow(rightAnno, left.getType(), leftAnno, right.getType());
 
-    store.insertValue(leftJe, newLBType);
+    for (Node internal : splitAssignments(left)) {
+      store.insertValue(JavaExpression.fromNode(internal), newLBType);
+    }
   }
 
   /**
