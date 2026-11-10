@@ -42,4 +42,38 @@ public class CastInComparison {
       x.toString();
     }
   }
+
+  @Nullable Object global = "";
+
+  Object clearGlobalAndReturnNonNull() {
+    global = null;
+    return "";
+  }
+
+  @org.checkerframework.dataflow.qual.Pure
+  Object pureNonNull() {
+    return "";
+  }
+
+  // The right operand calls a method that might change `global` after the left operand reads it.
+  void sideEffectingCallInRightOperand() {
+    if (((String) global) == clearGlobalAndReturnNonNull()) {
+      // :: error: (dereference.of.nullable)
+      global.toString();
+    }
+  }
+
+  // A call in the right operand cannot change a local variable.
+  void sideEffectingCallInRightOperandLocal(@Nullable Object x) {
+    if (((String) x) == clearGlobalAndReturnNonNull()) {
+      x.toString();
+    }
+  }
+
+  // A side-effect-free call in the right operand does not change `global`.
+  void pureCallInRightOperand() {
+    if (((String) global) == pureNonNull()) {
+      global.toString();
+    }
+  }
 }
