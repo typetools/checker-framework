@@ -1266,7 +1266,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       // Every Java program implicitly does "import java.lang.*",
       // so see whether this class is in that package.
       String binaryName = loadClassBinaryName("java.lang." + className);
-      if (binaryName != null) {
+      // As for any import on demand, the first identifier of `className` names a type, not a
+      // subpackage of java.lang.
+      if (binaryName != null && binaryName.lastIndexOf('.') == "java.lang".length()) {
         return binaryName;
       }
     }
