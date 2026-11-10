@@ -5,7 +5,6 @@ import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.util.TreePath;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
@@ -22,7 +21,6 @@ import org.checkerframework.framework.util.AnnotatedTypeProjection;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava17.DeconstructionPatternUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -53,6 +51,9 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       // DeconstructionPatternTree.
       if (elt != null && elt.getKind() == ElementKind.BINDING_VARIABLE) {
         result = varPatternType(variableTree, f);
+        // As for a local variable declared using var, let normal defaulting happen for the
+        // primary annotation.  Dataflow refines it by the qualifiers of the record component.
+        result.clearPrimaryAnnotations();
       } else {
         result = f.type(variableTree);
       }
@@ -124,12 +125,6 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       }
     }
 
-    if (elt != null
-        && elt.getKind() == ElementKind.BINDING_VARIABLE
-        && !TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)) {
-      addRecordComponentQualifiers(variableTree, result, f);
-    }
-
     AnnotatedTypeMirror lambdaParamType = inferLambdaParamAnnotations(f, result, elt);
     if (lambdaParamType != null) {
       return lambdaParamType;
@@ -159,50 +154,16 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       }
       // The inferred type of the record pattern can be more specific than the type written in the
       // source code, such as Box<String> for Box<? extends CharSequence>(var x).  A `var` pattern
-      // matches every value of the record component, so it takes the component's qualifiers,
-      // including those of its type arguments.
+      // matches every value of the record component, so it takes the qualifiers of the
+      // component's type arguments.
       AnnotatedTypeMirror type = f.type(bindingVariable);
       if (TypesUtils.isErasedSubtype(
           projectedType.getUnderlyingType(), type.getUnderlyingType(), f.types)) {
         return AnnotatedTypes.asSuper(f, projectedType, type);
       }
-      type.addMissingAnnotations(recordComponentType.getPrimaryAnnotations());
       return type;
     }
     return f.type(bindingVariable);
-  }
-
-  /**
-   * If {@code bindingVariable} is declared by a type pattern that is nested in a record pattern and
-   * is unconditional for the type of the record component that it is matched against (JLS 14.30.3),
-   * adds to {@code type} the qualifiers of that record component in each hierarchy in which {@code
-   * type} has no primary annotation.
-   *
-   * @param bindingVariable a binding variable
-   * @param type the type of {@code bindingVariable}; side-effected by this method
-   * @param f the annotated type factory
-   */
-  private static void addRecordComponentQualifiers(
-      VariableTree bindingVariable, AnnotatedTypeMirror type, AnnotatedTypeFactory f) {
-    AnnotatedTypeMirror recordComponentType =
-        f.getRecordComponentTypeOfBindingVariable(bindingVariable);
-    if (recordComponentType == null) {
-      return;
-    }
-    TreePath path = f.getPath(bindingVariable);
-    assert path != null : "@AssumeAssertion(nullness): the binding variable has a record component";
-    TreePath bindingPatternPath = path.getParentPath();
-    Tree recordPattern = bindingPatternPath.getParentPath().getLeaf();
-    int index =
-        DeconstructionPatternUtils.getNestedPatterns(recordPattern)
-            .indexOf(bindingPatternPath.getLeaf());
-    // An unconditional pattern matches null (JLS 14.30.2), so the binding variable can hold any
-    // value of the record component, including null.
-    if (f.isUnconditionalNestedTypePattern(recordPattern, index)) {
-      // Use the primary annotations: the effective annotations of a type variable are those of
-      // its upper bound, and copying them would prevent the type variable's local default.
-      type.addMissingAnnotations(recordComponentType.getPrimaryAnnotations());
-    }
   }
 
   // This method has no effect on the result of ((MethodSymbol) elt).getRawTypeAttributes().  That

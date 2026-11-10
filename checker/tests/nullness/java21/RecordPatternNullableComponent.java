@@ -40,6 +40,19 @@ public class RecordPatternNullableComponent {
     }
   }
 
+  // Like other local variables, an unannotated binding variable defaults to @Nullable, so it can be
+  // assigned null.  Dataflow refines it by the qualifier of the record component.
+  void assignNullToNonNullComponent(Box<String> box) {
+    if (box instanceof Box(var s)) {
+      s.length();
+      s = null;
+    }
+    if (box instanceof Box(String s)) {
+      s.length();
+      s = null;
+    }
+  }
+
   // `String s` is unconditional for the component type, so it matches null.
   void unconditionalTypePattern(Box<@Nullable String> box) {
     if (box instanceof Box(String s)) {
