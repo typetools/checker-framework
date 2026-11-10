@@ -29,6 +29,10 @@ public class TargetTypeOnlyInferenceFailure {
     throw new Error();
   }
 
+  static <T extends @Nullable Object, U extends T> U subWithObject(List<T> a, U u, Object o) {
+    throw new Error();
+  }
+
   static <T extends @Nullable Object> T apply(Function<String, T> f) {
     throw new Error();
   }
@@ -87,10 +91,28 @@ public class TargetTypeOnlyInferenceFailure {
     @Nullable String s = sub(a, n);
   }
 
+  void errorInArgumentOfFailedInference(
+      List<@NonNull String> a, @Nullable String n, @Nullable Object o) {
+    // The arguments of an invocation whose inference fails are checked too.
+    // :: error: [type.arguments.not.inferred] :: error: [dereference.of.nullable]
+    sub(a, o.hashCode() > 0 ? n : null);
+    // The failure of an inference problem is reported once, even though it has two invocations.
+    // :: error: [type.arguments.not.inferred]
+    id(sub(a, n));
+  }
+
+  void independentArgumentOfFailedInference(
+      List<@NonNull String> a, @Nullable String n, @Nullable Object o) {
+    // An argument whose parameter type does not mention an inferred type variable is checked.
+    // :: error: [type.arguments.not.inferred] :: error: [argument]
+    subWithObject(a, n, o);
+  }
+
   void javaTypeFromTarget() {
     // Without the target type, the Java type argument would be Object rather than String, so the
-    // target type is needed, and inference fails.
-    // :: error: [type.arguments.not.inferred]
+    // target type is needed, and inference fails.  The body of the lambda is checked against the
+    // function type that inference instantiated.
+    // :: error: [type.arguments.not.inferred] :: error: [return]
     @NonNull String r = apply(x -> null);
   }
 }
