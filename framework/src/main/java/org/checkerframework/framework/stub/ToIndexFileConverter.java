@@ -137,7 +137,18 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /** Single-type imports that appear in the stub file, such as {@code java.util.List}. */
   private final List<String> singleTypeImports;
 
-  /** Imports-on-demand that appear in the stub file, such as {@code java.util.*}. */
+  /**
+   * Single-static-imports that appear in the stub file, such as {@code java.util.Map.Entry} for
+   * {@code import static java.util.Map.Entry;}. Such an import makes available every static member
+   * with the given name, which might or might not include a member type.
+   */
+  private final List<String> singleStaticImports;
+
+  /**
+   * Imports-on-demand that appear in the stub file, such as {@code java.util.*}, including
+   * static-imports-on-demand, such as {@code java.util.Map.*} for {@code import static
+   * java.util.Map.*;}.
+   */
   private final List<String> onDemandImports;
 
   /** A scene read from the input JAIF file, and will be written to the output JAIF file. */
@@ -189,12 +200,21 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     pkgName = pkgDecl == null ? null : pkgDecl.getNameAsString();
     if (importDecls == null) {
       singleTypeImports = Collections.emptyList();
+      singleStaticImports = Collections.emptyList();
       onDemandImports = Collections.emptyList();
     } else {
       ArrayList<String> singles = new ArrayList<>(importDecls.size());
+      ArrayList<String> singleStatics = new ArrayList<>();
       ArrayList<String> onDemands = new ArrayList<>(importDecls.size());
       for (ImportDeclaration decl : importDecls) {
-        if (!decl.isStatic()) {
+        if (decl.isStatic()) {
+          // A static import can make a static member type available by its simple name.
+          if (decl.isAsterisk()) {
+            onDemands.add(decl.getNameAsString() + ".*");
+          } else {
+            singleStatics.add(decl.getNameAsString());
+          }
+        } else {
           Matcher m = importPattern.matcher(decl.toString());
           if (m.find()) {
             String s = m.group(1);
@@ -205,8 +225,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         }
       }
       singles.trimToSize();
+      singleStatics.trimToSize();
       onDemands.trimToSize();
       singleTypeImports = Collections.unmodifiableList(singles);
+      singleStaticImports = Collections.unmodifiableList(singleStatics);
       onDemandImports = Collections.unmodifiableList(onDemands);
     }
   }
@@ -692,8 +714,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     AnnotationDef def;
     if (qualifiedName != null) {
       def = annotationDefs.get(qualifiedName);
-    } else if (isBoundBySingleTypeImport(name)) {
+    } else if (isBoundBySingleImport(name)) {
       // The import determines what `name` denotes, even if the input JAIF file does not define it.
+      // A single-static-import might import only members that are not types, but an annotation
+      // interface with the same simple name as such a member is unlikely.
       def = null;
     } else {
       // `name` might be a simple name that only one definition has.
@@ -736,13 +760,20 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Returns true if a single-type import of the stub file binds the first identifier of a name.
+   * Returns true if a single-type import or a single-static-import of the stub file binds the first
+   * identifier of a name.
    *
    * @param name a possibly qualified name, as written in the stub file
-   * @return true if a single-type import binds the first identifier of {@code name}
+   * @return true if a single-type import or a single-static-import binds the first identifier of
+   *     {@code name}
    */
-  private boolean isBoundBySingleTypeImport(@FullyQualifiedName String name) {
+  private boolean isBoundBySingleImport(@FullyQualifiedName String name) {
     for (String declName : singleTypeImports) {
+      if (mergeImport(declName, name) != null) {
+        return true;
+      }
+    }
+    for (String declName : singleStaticImports) {
       if (mergeImport(declName, name) != null) {
         return true;
       }
@@ -1210,6 +1241,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         // loaded, so do not look further.  If it cannot be loaded, `unresolvedBinaryName` uses
         // the import.
         return classBinaryName(qualifiedName, cu);
+      }
+    }
+    for (String declName : singleStaticImports) {
+      // A single-static-import shadows the same declarations that a single-type import does.  It
+      // binds `className` only if it imports a member type, so continue if there is none.
+      String qualifiedName = mergeImport(declName, className);
+      if (qualifiedName != null) {
+        String binaryName = classBinaryName(qualifiedName, cu);
+        if (binaryName != null) {
+          return binaryName;
+        }
       }
     }
     if (pkgName != null) {

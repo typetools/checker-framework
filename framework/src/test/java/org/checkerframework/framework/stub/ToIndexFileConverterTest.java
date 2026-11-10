@@ -1037,6 +1037,72 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * A single-static-import, like a single-type import, prevents the use of a definition, of another
+   * interface with the same simple name, that is keyed by that simple name.
+   */
+  @Test
+  public void testSingleStaticImportOfUndefinedAnnotation() throws Exception {
+    AField f =
+        fieldOfStubWithDefs(
+            new String[] {
+              "package r:", "annotation @A: @java.lang.annotation.Target(value={TYPE_USE})"
+            },
+            "package p;",
+            "import static q.Holder.A;",
+            "class C {",
+            "  @A String f;",
+            "}");
+    Assert.assertNotNull("@A was not recorded on the field", f.lookup("A"));
+    Assert.assertNull("@A was recorded on the type", f.type.lookup("A"));
+  }
+
+  /** A static import makes a nested annotation interface available by its simple name. */
+  @Test
+  public void testStaticImportOfNestedAnnotation() throws Exception {
+    String holder = "org.checkerframework.framework.testchecker.defaulting.UpperBoundQual";
+    String[] importDecls = {
+      "import static " + holder + ".UbImplicit;", "import static " + holder + ".*;"
+    };
+    for (String importDecl : importDecls) {
+      AField f =
+          fieldOfStubWithDefs(
+              new String[] {
+                "package r:", "annotation @UbImplicit: @java.lang.annotation.Target(value={FIELD})"
+              },
+              "package p;",
+              importDecl,
+              "class C {",
+              "  @UbImplicit String f;",
+              "}");
+      Assert.assertNull("@UbImplicit was recorded on the field", f.lookup("UbImplicit"));
+      Assert.assertNotNull(
+          "@UbImplicit was not recorded on the type", f.type.lookup("UbImplicit"));
+    }
+  }
+
+  /**
+   * The {@code @Target} in the input JAIF file's definition of an annotation interface takes
+   * precedence over the {@code @Target} of the interface's class.
+   */
+  @Test
+  public void testAnnotationDefinitionTakesPrecedenceOverClass() throws Exception {
+    // The class's @Target includes TYPE_USE but not FIELD.
+    AField f =
+        fieldOfStubWithDefs(
+            new String[] {
+              "package org.checkerframework.checker.nullness.qual:",
+              "annotation @Nullable: @java.lang.annotation.Target(value={FIELD})"
+            },
+            "package p;",
+            "import org.checkerframework.checker.nullness.qual.Nullable;",
+            "class C {",
+            "  @Nullable String f;",
+            "}");
+    Assert.assertNotNull("@Nullable was not recorded on the field", f.lookup("Nullable"));
+    Assert.assertNull("@Nullable was recorded on the type", f.type.lookup("Nullable"));
+  }
+
+  /**
    * The first identifier of a qualified annotation name is not a subpackage of a package that is
    * imported on demand.
    */
