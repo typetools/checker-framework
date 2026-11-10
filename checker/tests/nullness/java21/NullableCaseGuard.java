@@ -53,6 +53,61 @@ public class NullableCaseGuard {
     };
   }
 
+  int refinedBooleanGuardLastCase(Shape shape, @Nullable Boolean b) {
+    if (b == null) {
+      return 0;
+    }
+    return switch (shape) {
+      case Circle c -> 1;
+      case Square s -> 2;
+      case Shape s when b -> 3;
+    };
+  }
+
+  int conjunctionGuardLastCase(Shape shape, @Nullable Boolean b) {
+    return switch (shape) {
+      case Circle c -> 1;
+      case Square s -> 2;
+      case Shape s when b != null && b -> 3;
+    };
+  }
+
+  int conditionalGuardLastCase(Shape shape, @Nullable Boolean b) {
+    return switch (shape) {
+      case Circle c -> 1;
+      case Square s -> 2;
+      case Shape s when (b != null ? b : false) -> 3;
+    };
+  }
+
+  void refinedBooleanGuard(Object sel, @Nullable Boolean b) {
+    if (b == null) {
+      return;
+    }
+    switch (sel) {
+      case String s when b -> {}
+      default -> {}
+    }
+  }
+
+  void conjunctionGuard(Object sel, @Nullable Boolean b) {
+    switch (sel) {
+      case String s when b != null && b -> {}
+      default -> {}
+    }
+  }
+
+  // After a guard is evaluated, it is non-null, as after the condition of an if statement.
+  void nullableBooleanGuardBody(Object sel, @Nullable Boolean b) {
+    switch (sel) {
+      // :: error: [condition.nullable]
+      case String s when b -> {
+        b.toString();
+      }
+      default -> {}
+    }
+  }
+
   void nonNullBooleanGuard(Object sel, Boolean b) {
     switch (sel) {
       case String s when b -> {}

@@ -2200,7 +2200,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         } else if (i == numCases - 1 && defaultIndex == -1) {
           // This is the last case, and there is no default case.
           // Switch expressions and enhanced switch statements are exhaustive.
-          buildCase(caseTree, i, switchExprOrEnhanced);
+          // A guarded case does not contribute to exhaustiveness, so its guard must be tested.
+          buildCase(caseTree, i, switchExprOrEnhanced && CaseUtils.getGuard(caseTree) == null);
         } else {
           buildCase(caseTree, i, false);
         }
@@ -2333,7 +2334,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
 
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
-        Node guard = (guardTree == null) ? null : scan(guardTree, null);
+        Node guard = (guardTree == null) ? null : unbox(scan(guardTree, null));
 
         CaseNode test =
             new CaseNode(caseTree, selectorExprAssignment, exprs, guard, env.getTypeUtils());
