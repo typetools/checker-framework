@@ -5,6 +5,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -819,9 +820,10 @@ public abstract class CFAbstractTransfer<
    * {@link #createTransferResult}.
    *
    * <p>The exception is a boolean literal that is the right operand of a boolean operator such as
-   * {@code ==} or {@code &}, possibly within {@code !} operators and casts. The then-store and
-   * else-store of its input describe the operator's left operand, so the literal passes them along
-   * for the operator to use; see {@link #createTransferResultOfBooleanOperator}.
+   * {@code ==} or {@code &}, possibly within {@code !} operators, casts, and explicit calls to
+   * {@code booleanValue()}. The then-store and else-store of its input describe the operator's left
+   * operand, so the literal passes them along for the operator to use; see {@link
+   * #createTransferResultOfBooleanOperator}.
    */
   @Override
   public TransferResult<V, S> visitValueLiteral(ValueLiteralNode n, TransferInput<V, S> in) {
@@ -835,7 +837,8 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns true if the given tree is the right operand of {@code ==}, {@code !=}, {@code &},
-   * {@code |}, or {@code ^}, possibly within parentheses, {@code !} operators, and casts.
+   * {@code |}, or {@code ^}, possibly within parentheses, {@code !} operators, casts, and explicit
+   * calls to {@code Boolean.booleanValue()}.
    *
    * @param tree a tree
    * @return true if the tree is the right operand of a boolean operator
@@ -853,6 +856,19 @@ public abstract class CFAbstractTransfer<
       Tree parent = parentPath.getLeaf();
       switch (parent.getKind()) {
         case PARENTHESIZED, TYPE_CAST, LOGICAL_COMPLEMENT -> operand = parent;
+        case MEMBER_SELECT -> {
+          // An explicit unboxing call, such as `((Boolean) true).booleanValue()`, has no side
+          // effects and equals its receiver.  Skip over both the method access and the call.
+          TreePath invocationPath = parentPath.getParentPath();
+          if (invocationPath == null
+              || !(invocationPath.getLeaf() instanceof MethodInvocationTree invocation)
+              || invocation.getMethodSelect() != parent
+              || !isBooleanValueMethod(TreeUtils.elementFromUse((MemberSelectTree) parent))) {
+            return false;
+          }
+          operand = invocation;
+          parentPath = invocationPath;
+        }
         case EQUAL_TO, NOT_EQUAL_TO, AND, OR, XOR -> {
           return ((BinaryTree) parent).getRightOperand() == operand;
         }
@@ -862,6 +878,22 @@ public abstract class CFAbstractTransfer<
       }
     }
     return false;
+  }
+
+  /**
+   * Returns true if the given element is the method {@code Boolean.booleanValue()}.
+   *
+   * @param elt an element
+   * @return true if the element is {@code Boolean.booleanValue()}
+   */
+  private static boolean isBooleanValueMethod(Element elt) {
+    return elt instanceof ExecutableElement method
+        && !ElementUtils.isStatic(method)
+        && method.getParameters().isEmpty()
+        && method.getSimpleName().contentEquals("booleanValue")
+        && ElementUtils.enclosingTypeElement(method)
+            .getQualifiedName()
+            .contentEquals("java.lang.Boolean");
   }
 
   /**
@@ -1501,15 +1533,15 @@ public abstract class CFAbstractTransfer<
    */
   private TransferResult<V, S> visitUnboxingCall(MethodInvocationNode n, TransferInput<V, S> in) {
     ExecutableElement method = n.getTarget().getMethod();
+    // The CFG builds a tree for each unboxing call, but a custom CFG might not.  Handle a missing
+    // tree as visitMethodInvocation does.
     ExpressionTree unboxingTree = n.getTree();
-    assert unboxingTree != null
-        : "@AssumeAssertion(nullness): the CFG builds a tree for each unboxing call";
 
     S thenStore = in.getThenStore();
     S elseStore = in.getElseStore();
 
     // Determine the abstract value for the method call.
-    V factoryValue = getValueFromFactory(unboxingTree, n);
+    V factoryValue = (unboxingTree == null) ? null : getValueFromFactory(unboxingTree, n);
     // look up the call's value in the stores (if possible)
     V thenStoreValue = thenStore.getValue(n);
     V elseStoreValue = elseStore.getValue(n);
