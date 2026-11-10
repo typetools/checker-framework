@@ -157,6 +157,29 @@ public class ReceiverNullPointerException extends ReceiverNullPointerExceptionSu
     }
   }
 
+  void boundMethodReferenceMayBeNull(@Odd String p1, String p2, Runnable r) {
+    String l1 = p1;
+    try {
+      mayThrow();
+      l1 = p2;
+      ((Runnable) r::run).equals(l1 = p1);
+    } catch (NullPointerException e) {
+      // :: error: [assignment]
+      @Odd String l3 = l1;
+    }
+  }
+
+  void unboundMethodReference(@Odd String p1, String p2) {
+    String l1 = p1;
+    try {
+      mayThrow();
+      l1 = p2;
+      ((java.util.function.Function<Object, String>) Object::toString).equals(l1 = p1);
+    } catch (NullPointerException e) {
+      @Odd String l3 = l1;
+    }
+  }
+
   void classLiteral(@Odd String p1, String p2) {
     String l1 = p1;
     try {
@@ -179,6 +202,8 @@ public class ReceiverNullPointerException extends ReceiverNullPointerExceptionSu
       l1 = p2;
       Color.RED.equals(l1 = p1);
     } catch (NullPointerException e) {
+      // An enum constant is null if it is read during class initialization before it is assigned.
+      // :: error: [assignment]
       @Odd String l3 = l1;
     }
   }
