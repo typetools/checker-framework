@@ -54,4 +54,13 @@ public class TypeVarSwitchSelector {
     // :: error: [return]
     return o;
   }
+
+  <T extends @Nullable Integer> @NonNull Integer typeVarWithNull(T t) {
+    switch (t) {
+      case null -> {}
+      default -> {}
+    }
+    // :: error: [return]
+    return t;
+  }
 }
