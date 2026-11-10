@@ -649,6 +649,24 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myMethod(Lp/p/Foo;)V");
   }
 
+  /**
+   * A missing member of a stub-declared type has the same binary name whether or not the name is
+   * qualified by the stub file's package.
+   */
+  @Test
+  public void testPackageQualifiedMissingMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class B {}",
+            "class MyClass {",
+            "  void myMethod(B.Missing x) {}",
+            "  void myOtherMethod(p.B.Missing x) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/B$Missing;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Lp/B$Missing;)V");
+  }
+
   /** A single-type import of a type that the stub file declares is resolved. */
   @Test
   public void testSingleTypeImportOfStubFileType() throws Exception {
@@ -1005,6 +1023,43 @@ public class ToIndexFileConverterTest {
     Assert.assertNotNull(
         "@UpperBoundQual.UbImplicit was not recorded on the type",
         param.type.lookup("UpperBoundQual.UbImplicit"));
+  }
+
+  /**
+   * An annotation interface that an enclosing declaration of the stub file declares shadows an
+   * imported one of the same name when its {@code @Target} is determined.
+   */
+  @Test
+  public void testNestedAnnotationShadowsImport() throws Exception {
+    // p.C$Nullable cannot be loaded, so its @Target is unknown and it is a declaration annotation.
+    AField param =
+        firstParameter(
+            "m(Ljava/lang/String;)V",
+            "package p;",
+            "import org.checkerframework.checker.nullness.qual.Nullable;",
+            "class C {",
+            "  @interface Nullable {}",
+            "  void m(@Nullable String s) {}",
+            "}");
+    Assert.assertNotNull("@Nullable was not recorded on the parameter", param.lookup("Nullable"));
+    Assert.assertNull("@Nullable was recorded on the type", param.type.lookup("Nullable"));
+
+    // UpperBoundQual.UbImplicit is on the classpath, and its @Target is TYPE_USE.
+    AMethod method =
+        sceneOfStub(
+                "package org.checkerframework.framework.testchecker.defaulting;",
+                "class UpperBoundQual {",
+                "  @interface UbImplicit {}",
+                "  void m(@UbImplicit String s) {}",
+                "}")
+            .classes
+            .get("org.checkerframework.framework.testchecker.defaulting.UpperBoundQual")
+            .methods
+            .get("m(Ljava/lang/String;)V");
+    param = method.parameters.get(0);
+    Assert.assertNull("@UbImplicit was recorded on the parameter", param.lookup("UbImplicit"));
+    Assert.assertNotNull(
+        "@UbImplicit was not recorded on the type", param.type.lookup("UbImplicit"));
   }
 
   /**
