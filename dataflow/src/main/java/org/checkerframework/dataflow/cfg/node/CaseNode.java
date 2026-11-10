@@ -38,9 +38,16 @@ public class CaseNode extends Node {
   /**
    * True if the CFG does not test the case expressions. This is so if they match every value of the
    * switch selector expression that is tested against them, or if this is the last case of an
-   * exhaustive switch.
+   * exhaustive switch. False does not mean that the case expressions can fail to match; see {@link
+   * #alwaysMatches()}.
    */
   protected final boolean alwaysMatches;
+
+  /**
+   * True if the guard of an earlier case is evaluated after the switch selector expression and
+   * before this case. See {@link #isPrecededByGuard()}.
+   */
+  protected final boolean precededByGuard;
 
   /**
    * Create a new CaseNode.
@@ -51,6 +58,8 @@ public class CaseNode extends Node {
    * @param caseExprs the case expression(s) to match the switch expression against
    * @param alwaysMatches true if the CFG does not test the case expressions; see {@link
    *     #alwaysMatches()}
+   * @param precededByGuard true if the guard of an earlier case is evaluated before this case; see
+   *     {@link #isPrecededByGuard()}
    * @param types a factory of utility methods for operating on types
    */
   public CaseNode(
@@ -58,12 +67,14 @@ public class CaseNode extends Node {
       AssignmentNode selectorExprAssignment,
       List<Node> caseExprs,
       boolean alwaysMatches,
+      boolean precededByGuard,
       Types types) {
     super(types.getNoType(TypeKind.NONE));
     this.tree = tree;
     this.selectorExprAssignment = selectorExprAssignment;
     this.caseExprs = caseExprs;
     this.alwaysMatches = alwaysMatches;
+    this.precededByGuard = precededByGuard;
   }
 
   /**
@@ -91,10 +102,31 @@ public class CaseNode extends Node {
    * value of the switch selector expression that is tested against them, or if this is the last
    * case of an exhaustive switch.
    *
+   * <p>A false result means only that the CFG tests the case expressions, not that they can fail to
+   * match. For example, given an enum with constants {@code A} and {@code B}, {@code case A, B}
+   * matches every value of the selector expression, but if a {@code default} case follows it, then
+   * the CFG tests it and this method returns false.
+   *
    * @return true if the CFG does not test the case expressions
    */
   public boolean alwaysMatches() {
     return alwaysMatches;
+  }
+
+  /**
+   * Returns true if the guard of an earlier case is evaluated after the switch selector expression
+   * and before this case.
+   *
+   * <p>If so, the guard might have changed the value of the switch selector expression (the
+   * expression of {@link #getSwitchOperand()}). For example, the guard might assign a field that is
+   * the selector expression, or might mutate the object that the selector expression evaluates to.
+   * Then, a fact about the value that was tested against the case expressions need not hold for the
+   * selector expression. It does hold for the synthetic variable to which that value is assigned.
+   *
+   * @return true if the guard of an earlier case is evaluated before this case
+   */
+  public boolean isPrecededByGuard() {
+    return precededByGuard;
   }
 
   @Override
@@ -119,12 +151,13 @@ public class CaseNode extends Node {
     }
     return getSwitchOperand().equals(other.getSwitchOperand())
         && getCaseOperands().equals(other.getCaseOperands())
-        && alwaysMatches == other.alwaysMatches;
+        && alwaysMatches == other.alwaysMatches
+        && precededByGuard == other.precededByGuard;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getSwitchOperand(), getCaseOperands(), alwaysMatches);
+    return Objects.hash(getSwitchOperand(), getCaseOperands(), alwaysMatches, precededByGuard);
   }
 
   @Override

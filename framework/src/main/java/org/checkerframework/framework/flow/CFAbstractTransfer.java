@@ -1362,9 +1362,11 @@ public abstract class CFAbstractTransfer<
       V caseValue = in.getValueOfSubNode(caseOperand);
       AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-      result =
-          strengthenAnnotationOfEqualTo(
-              result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      if (canRefineSwitchSelector(n)) {
+        result =
+            strengthenAnnotationOfEqualTo(
+                result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      }
       // Update value of switch temporary variable
       result =
           strengthenAnnotationOfEqualTo(
@@ -1390,6 +1392,27 @@ public abstract class CFAbstractTransfer<
       return new RegularTransferResult<>(null, lubResult.getThenStore(), lubResult.storeChanged());
     }
     return lubResult;
+  }
+
+  /**
+   * Returns true if a transfer function may refine the switch selector expression (the expression
+   * of {@link CaseNode#getSwitchOperand()}) at {@code n}. It may not if the guard of an earlier
+   * case might have changed the abstract value of the selector expression since it was evaluated.
+   * The synthetic variable to which the selector expression is assigned may always be refined.
+   *
+   * @param n a case node
+   * @return true if a transfer function may refine the switch selector expression at {@code n}
+   */
+  protected boolean canRefineSwitchSelector(CaseNode n) {
+    if (!n.isPrecededByGuard()) {
+      return true;
+    }
+    // This mirrors the unrefinement that CFAbstractStore performs at a side effect.  A guard
+    // cannot assign a local variable that is declared outside it.
+    JavaExpression selector = JavaExpression.fromNode(n.getSwitchOperand().getExpression());
+    return analysis.atypeFactory.sideEffectsUnrefineAliases
+        ? !selector.isModifiableByOtherCode()
+        : !selector.isAssignableByOtherCode();
   }
 
   // /**

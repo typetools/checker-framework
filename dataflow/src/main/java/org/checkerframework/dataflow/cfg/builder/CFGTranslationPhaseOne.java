@@ -2123,6 +2123,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     /** True if {@link #switchTree} has a {@code case null}. */
     private final boolean hasNullCaseLabel;
 
+    /** True if the CFG built so far evaluates the guard of some case of {@link #switchTree}. */
+    private boolean guardEvaluated = false;
+
     /** The labels for the case bodies. */
     private final Label[] caseBodyLabels;
 
@@ -2378,6 +2381,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
 
     /**
+     * Returns the type of the exception that a switch throws when no case matches: {@code
+     * java.lang.MatchException}, or {@code RuntimeException} if the JDK has no {@code
+     * MatchException}.
+     *
+     * @return the type of the exception that a switch throws when no case matches
+     */
+    private TypeMirror getMatchExceptionType() {
+      TypeElement matchException = elements.getTypeElement("java.lang.MatchException");
+      if (matchException != null) {
+        return matchException.asType();
+      }
+      return getTypeMirror(RuntimeException.class);
+    }
+
+    /**
      * Build the CFG for the given case tree.
      *
      * @param caseTree a case tree whose CFG to build
@@ -2405,7 +2423,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         boolean alwaysMatches = isLastCaseOfExhaustive || labelAlwaysMatches(caseTree);
         extendWithNode(
             new CaseNode(
-                caseTree, selectorExprAssignment, exprs, alwaysMatches, env.getTypeUtils()));
+                caseTree,
+                selectorExprAssignment,
+                exprs,
+                alwaysMatches,
+                guardEvaluated,
+                env.getTypeUtils()));
         if (!alwaysMatches) {
           Label labelsMatchLabel = new Label();
           extendWithExtendedNode(new ConditionalJump(labelsMatchLabel, nextCaseLabel));
@@ -2416,10 +2439,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
-          // If the guard of the last case of an exhaustive switch is false, no case matches and the
-          // switch throws an exception.  The CFG does not represent that exception, so the body
-          // follows the guard whatever the guard's value.
-          if (!isLastCaseOfExhaustive) {
+          guardEvaluated = true;
+          if (isLastCaseOfExhaustive) {
+            // If the guard of the last case of an exhaustive switch is false, no case matches and
+            // the switch throws a MatchException.
+            Label noMatchLabel = new Label();
+            extendWithExtendedNode(new ConditionalJump(thisBodyLabel, noMatchLabel));
+            addLabelForNextNode(noMatchLabel);
+            MarkerNode noMatchNode =
+                new MarkerNode(caseTree, "no case matches", env.getTypeUtils());
+            NodeWithExceptionsHolder exNode =
+                extendWithNodeWithException(noMatchNode, getMatchExceptionType());
+            exNode.setTerminatesExecution(true);
+          } else {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
           }
         }
