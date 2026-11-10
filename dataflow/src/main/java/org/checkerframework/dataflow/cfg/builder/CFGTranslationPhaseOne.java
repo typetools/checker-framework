@@ -2315,8 +2315,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       boolean isDefaultCase = CaseUtils.isDefaultCaseTree(caseTree);
       // If true, no test of labels is necessary.
       // Unfortunately, if isLastCaseOfExhaustive==TRUE, no flow-sensitive refinement from the
-      // labels occurs within the body of the CaseNode (but refinement from the guard does).  In the future, that can be performed, but it
-      // requires addition of InfeasibleExitBlock, a new SpecialBlock in the CFG.
+      // labels occurs within the body of the CaseNode (but refinement from the guard does).  In the
+      // future, that can be performed, but it requires addition of InfeasibleExitBlock, a new
+      // SpecialBlock in the CFG.
       boolean isTerminalCase = isDefaultCase || isLastCaseOfExhaustive;
 
       Label thisBodyLabel = caseBodyLabels[index];
@@ -4484,8 +4485,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Returns the type {@code java.lang.MatchException}, which a switch throws when no case matches.
-   * Returns {@code RuntimeException} if {@code MatchException} is not present (it was added in
-   * Java 21).
+   * Returns {@code RuntimeException} if {@code MatchException} is not present (it was added in Java
+   * 21).
    *
    * @return the type {@code java.lang.MatchException}, or {@code RuntimeException}
    */
