@@ -59,11 +59,36 @@ public class Wildcards {
   }
 
   /**
-   * A qualifier written on the wildcard itself, rather than on its bound. This exercises whether
-   * the qualifier of the wildcard survives capture conversion and the substitution [Z := beta].
+   * A qualifier written before {@code ?} annotates the wildcard's implicit bound: the upper bound
+   * of {@code ? super String} and both bounds of {@code ?}. This exercises whether that qualifier
+   * survives capture conversion and the substitution [Z := beta].
    */
-  static void qualifierOnWildcard(Box<@Untainted ? extends @Untainted String> b) {
+  static void qualifierOnSuperWildcard(Box<@Untainted ? super String> b) {
     if (b instanceof Box(var s)) {
+      @Untainted Object ss = s;
+    }
+  }
+
+  static void qualifierOnUnboundedWildcard(Box<@Untainted ?> b) {
+    if (b instanceof Box(var s)) {
+      @Untainted Object ss = s;
+    }
+  }
+
+  static void taintedQualifierOnUnboundedWildcard(Box<@Tainted ?> b) {
+    if (b instanceof Box(var s)) {
+      // :: error: (assignment)
+      @Untainted Object ss = s;
+    }
+  }
+
+  /**
+   * In {@code @Untainted ? extends String}, the qualifier before {@code ?} annotates the lower
+   * bound, so it does not affect {@code s}, whose upper bound is the unannotated {@code String}.
+   */
+  static void qualifierOnExtendsWildcardIsLowerBound(Box<@Untainted ? extends String> b) {
+    if (b instanceof Box(var s)) {
+      // :: error: (assignment)
       @Untainted String ss = s;
     }
   }
