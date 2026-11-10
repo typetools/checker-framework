@@ -140,6 +140,7 @@ fields or re-opening resources:
 \end{description}
 
 
+\iffalse % Enable this text when the Resource Leak Checker supports collections.
 \subsectionAndLabel{Resource Leak Checker annotations for collections}{resource-leak-annotations-collections}
 
 The Resource Leak Checker also supports collections of resources. The following annotations express ownership over resource collections.
@@ -165,6 +166,7 @@ These annotations are for methods.
   For more details, see Section~\ref{resource-leak-collections-types-in-action}.
 
 \end{description}
+\fi
 
 
 \sectionAndLabel{Example of how safe resource usage is verified}{resource-leak-example}
@@ -654,6 +656,7 @@ feature that it is unable to reason about.
 
 \sectionAndLabel{Collections of resources}{resource-leak-collections}
 
+\iffalse % Enable this text when the Resource Leak Checker supports collections.
 The Resource Leak Checker handles homogeneous collections of resources. In a homogeneous collection, every element
 has exactly the same must-call and called-methods properties. Instances of \texttt{java.lang.Iterable} are supported;
 this section calls those ``collections''. Iterators over collections are also supported (Section~\ref{resource-leak-collections-iterators}).
@@ -885,6 +888,7 @@ An iterator has the same collection ownership type as the collection it iterates
 A class that implements \texttt{Iterator} over resources must annotate the return type of its \texttt{next()} method as \texttt{@NotOwning}, to match \texttt{Iterator.next()}.
 
 % TODO: Add a subsection with a table of JDK collection methods and their collection ownership annotations.
+\fi
 
 \sectionAndLabel{Further reading}{resource-leak-checker-references}
 
