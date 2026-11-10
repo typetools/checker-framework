@@ -24,6 +24,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -101,7 +102,7 @@ public final class AnnotatedTypeProjection {
    * supertype of {@code type} that does not mention any captured type variable.
    *
    * @param atypeFactory the type factory
-   * @param type a type
+   * @param type the type to project; not a wildcard
    * @return the upward projection of {@code type}
    */
   public static AnnotatedTypeMirror upward(
@@ -115,7 +116,7 @@ public final class AnnotatedTypeProjection {
    * type variable other than those in {@code unrestricted}.
    *
    * @param atypeFactory the type factory
-   * @param type a type
+   * @param type the type to project; not a wildcard
    * @param unrestricted the captured type variables that are not restricted
    * @return the upward projection of {@code type}
    */
@@ -129,7 +130,7 @@ public final class AnnotatedTypeProjection {
   /**
    * Returns the upward projection of {@code type}.
    *
-   * @param type a type
+   * @param type the type to project; not a wildcard
    * @return the upward projection of {@code type}
    */
   private AnnotatedTypeMirror upward(AnnotatedTypeMirror type) {
@@ -181,6 +182,8 @@ public final class AnnotatedTypeProjection {
         }
         return withBounds((AnnotatedIntersectionType) type, bounds);
       }
+      // A wildcard is a type argument, not a type; upwardTypeArgument projects wildcards.
+      case WILDCARD -> throw new BugInCF("Upward projection of a wildcard: %s", type);
       default -> {
         return type.deepCopy();
       }
