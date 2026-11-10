@@ -2,6 +2,7 @@ package org.checkerframework.checker.rlccalledmethods;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -24,6 +25,8 @@ import org.checkerframework.checker.calledmethods.qual.CalledMethods;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsBottom;
 import org.checkerframework.checker.calledmethods.qual.CalledMethodsPredicate;
 import org.checkerframework.checker.calledmethods.qual.EnsuresCalledMethods;
+import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory;
+import org.checkerframework.checker.collectionownership.DisposalLoopInfo;
 import org.checkerframework.checker.mustcall.CreatesMustCallForElementSupplier;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.MustCallChecker;
@@ -34,8 +37,6 @@ import org.checkerframework.checker.mustcall.qual.MustCallAlias;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
 import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
-import org.checkerframework.checker.resourceleak.MustCallInference;
 import org.checkerframework.checker.resourceleak.ResourceLeakChecker;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.common.accumulation.AccumulationStore;
@@ -45,6 +46,7 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.block.Block;
+import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -57,15 +59,12 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory.ClassAndS
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory.LambdaAndStore;
 import org.checkerframework.framework.util.Contract;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 
-/**
- * The type factory for the RLCCalledMethodsChecker. The main difference between this and the Called
- * Methods type factory from which it is derived is that this version's {@link
- * #postAnalyze(ControlFlowGraph)} method checks that must-call obligations are fulfilled.
- */
+/** The type factory for the RLCCalledMethodsChecker. */
 public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotatedTypeFactory
     implements CreatesMustCallForElementSupplier {
 
@@ -148,6 +147,12 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   }
 
   @Override
+  public void setRoot(@Nullable CompilationUnitTree root) {
+    super.setRoot(root);
+    tempVarToTree.clear();
+  }
+
+  @Override
   protected ControlFlowGraph analyze(
       Queue<ClassAndStore<AccumulationStore>> classQueue,
       Queue<LambdaAndStore<AccumulationStore>> lambdaQueue,
@@ -160,41 +165,43 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
       @Nullable AccumulationStore capturedStore) {
     // This is a workaround for a bug that I tried and failed to fix.
     // See checker/tests/resourceleak/RLLambda.java.
-    // This code really belongs in postAnalyze, but this code only works correctly when called after
+    // The post-analysis in CollectionOwnershipAnnotatedTypeFactory#analyze really belongs in
+    // postAnalyze, but it only works correctly when called after
     // a method is analyzed the first time and before any containing lambdas are analyzed.
     // This workaround means there could be false positives when the type of a method invocation
     // depends on dataflow in a lambda.
 
-    if (cfg != null) {
+    if (cfg != null && ast.getKind() == UnderlyingAST.Kind.METHOD) {
       // The cfg is not null, so the analysis has been run before.  Don't rerun it.
       return cfg;
     }
-    cfg =
-        super.analyze(
-            classQueue,
-            lambdaQueue,
-            ast,
-            fieldValues,
-            cfg,
-            isInitializationCode,
-            updateInitializationStore,
-            isStatic,
-            capturedStore);
-    assert root != null : "@AssumeAssertion(nullness): at this point root is always nonnull";
-    rlc.setRoot(root);
-    MustCallConsistencyAnalyzer mustCallConsistencyAnalyzer = new MustCallConsistencyAnalyzer(rlc);
-    mustCallConsistencyAnalyzer.analyze(cfg);
+    return super.analyze(
+        classQueue,
+        lambdaQueue,
+        ast,
+        fieldValues,
+        cfg,
+        isInitializationCode,
+        updateInitializationStore,
+        isStatic,
+        capturedStore);
+  }
 
-    // Inferring owning annotations for @Owning fields/parameters, @EnsuresCalledMethods for
-    // finalizer methods and @InheritableMustCall annotations for the class declarations.
-    if (getWholeProgramInference() != null) {
-      if (cfg.getUnderlyingAST().getKind() == UnderlyingAST.Kind.METHOD) {
-        MustCallInference.runMustCallInference(this, cfg, mustCallConsistencyAnalyzer);
-      }
+  /**
+   * Before this checker's dataflow analysis of a method, discovers the method's {@linkplain
+   * DisposalLoopInfo potential disposal loops} and stores them in the Collection Ownership
+   * Checker's type factory. During the analysis, this checker tracks the methods called on each
+   * loop's iterated element (see {@link RLCCalledMethodsTransfer#initialStore}). Afterwards, {@code
+   * CollectionOwnershipTransfer} and {@code MustCallConsistencyAnalyzer} use those called methods
+   * to certify the loops and check collection obligations (see {@link
+   * CollectionOwnershipAnnotatedTypeFactory#postCFGConstruction}).
+   */
+  @Override
+  protected void postCFGConstruction(ControlFlowGraph cfg, UnderlyingAST ast) {
+    if (ast.getKind() == UnderlyingAST.Kind.METHOD) {
+      ResourceLeakUtils.getCollectionOwnershipAnnotatedTypeFactory(this)
+          .discoverDisposalLoopInfos(cfg);
     }
-
-    tempVarToTree.clear();
-    return cfg;
   }
 
   @Override
@@ -431,6 +438,27 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
   public boolean canCreateObligations() {
     // Precomputing this call to `hasOption` causes a NullPointerException, so leave it as is.
     return !rlc.hasOption(MustCallChecker.NO_CREATES_MUSTCALLFOR);
+  }
+
+  /**
+   * Returns the store on the then or else edge out of {@code block}.
+   *
+   * @param block a conditional block
+   * @param then true for the then store, false for the else store
+   * @return the then store after {@code block} if {@code then} is true, otherwise the else store
+   */
+  public AccumulationStore getStoreAfterConditionalBlock(ConditionalBlock block, boolean then) {
+    if (flowResult == null) {
+      throw new BugInCF("getStoreAfterConditionalBlock called before dataflow analysis ran");
+    }
+    TransferInput<AccumulationValue, AccumulationStore> transferInput = flowResult.getInput(block);
+    if (transferInput == null) {
+      throw new BugInCF("getStoreAfterConditionalBlock: dataflow did not reach " + block);
+    }
+    if (then) {
+      return transferInput.getThenStore();
+    }
+    return transferInput.getElseStore();
   }
 
   @Override

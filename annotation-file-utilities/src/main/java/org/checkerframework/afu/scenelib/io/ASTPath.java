@@ -61,6 +61,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.StringJoiner;
+import org.checkerframework.checker.collectionownership.qual.NotOwningCollection;
+import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.plumelib.util.ArraysP;
 
 /** A path through the AST. */
@@ -287,7 +289,7 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
 
   // TODO: replace w/ skip list?
   @Override
-  public Iterator<ASTEntry> iterator() {
+  public @PolyOwningCollection Iterator<ASTEntry> iterator(@PolyOwningCollection ASTPath this) {
     ImmutableStack<ASTEntry> s = this;
     int n = size();
     ASTEntry[] a = new ASTEntry[n];
@@ -1358,7 +1360,7 @@ class ImmutableStack<E> {
    *
    * @return true if the stack is empty
    */
-  public boolean isEmpty() {
+  public boolean isEmpty(@NotOwningCollection ImmutableStack<E> this) {
     return size == 0;
   }
 
@@ -1368,7 +1370,7 @@ class ImmutableStack<E> {
    * @return the top element of the stack
    * @throws IllegalStateException if the stack is empty
    */
-  public E peek() {
+  public E peek(@NotOwningCollection ImmutableStack<E> this) {
     if (isEmpty()) {
       throw new IllegalStateException("peek() on empty stack");
     }
@@ -1381,7 +1383,7 @@ class ImmutableStack<E> {
    * @return all of the stack except the top element
    * @throws IllegalStateException if the stack is empty
    */
-  public ImmutableStack<E> pop() {
+  public ImmutableStack<E> pop(@NotOwningCollection ImmutableStack<E> this) {
     if (isEmpty()) {
       throw new IllegalStateException("pop() on empty stack");
     }
@@ -1397,7 +1399,7 @@ class ImmutableStack<E> {
    *
    * @return the size of this stack
    */
-  public int size() {
+  public int size(@NotOwningCollection ImmutableStack<E> this) {
     return size;
   }
 

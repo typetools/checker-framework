@@ -4,6 +4,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnalysis;
 import org.checkerframework.checker.calledmethods.CalledMethodsAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.SetOfTypes;
+import org.checkerframework.common.accumulation.AccumulationStore;
 
 /**
  * This variant of CFAnalysis extends the set of ignored exception types.
@@ -33,5 +34,15 @@ public class RLCCalledMethodsAnalysis extends CalledMethodsAnalysis {
   @Override
   public boolean isIgnoredExceptionType(TypeMirror exceptionType) {
     return ignoredExceptions.contains(getTypes(), exceptionType);
+  }
+
+  @Override
+  public AccumulationStore createEmptyStore(boolean sequentialSemantics) {
+    return new RLCCalledMethodsStore(this, sequentialSemantics);
+  }
+
+  @Override
+  public AccumulationStore createCopiedStore(AccumulationStore store) {
+    return new RLCCalledMethodsStore(store);
   }
 }
