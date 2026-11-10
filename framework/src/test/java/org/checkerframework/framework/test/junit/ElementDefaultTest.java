@@ -6,8 +6,8 @@ import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * Tests that QualifierDefaults.addElementDefault composes with the other defaults and takes
- * precedence over them.
+ * Tests that QualifierDefaults.addElementDefault composes with the other defaults, with the
+ * precedence that QualifierDefaults.addElementDefault documents.
  */
 public class ElementDefaultTest extends CheckerFrameworkPerDirectoryTest {
 

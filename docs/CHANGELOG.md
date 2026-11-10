@@ -9,18 +9,25 @@
 
 ### Changes for type system implementers
 
+A default that a type system registers for an element through
+`QualifierDefaults.addElementDefault()` is now treated like a
+`@DefaultQualifier` annotation on that element, except that it takes precedence
+over a `@DefaultQualifier` annotation on that same element.  Formerly, it
+suppressed the `@DefaultQualifier` annotations on the element and on the
+element's enclosing elements.
+
+`QualifierDefaults.DefaultApplierElement.DefaultApplierElementImpl` now extends
+`AnnotatedTypeScanner<Void, Void>` rather than
+`AnnotatedTypeScanner<Void, AnnotationMirror>`, because one traversal of a type
+may now apply more than one default; its `scan()`, `visitTypeVariable()`,
+`visitWildcard()`, and `visitBounds()` methods take a `Void` parameter
+accordingly.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
 
 ### User-visible changes
-
-A `@DefaultQualifier` annotation on a nested element takes precedence over
-one on an enclosing element.  The exception is a default for
-`TypeUseLocation.OTHERWISE`, which applies only where no other
-`@DefaultQualifier` for a more concrete location applies, even if the
-`OTHERWISE` default is on the nested element.  (`TypeUseLocation.ALL` is not a
-more concrete location.)
 
 A method with a purity annotation may call the functional method of one of its
 functional-interface parameters, such as `f.apply(x)` for a parameter
@@ -39,21 +46,6 @@ New class `AbstractSetInclusionQualifierHierarchy` is the superclass of
 `SubtypeIsSubsetQualifierHierarchy` and `SubtypeIsSupersetQualifierHierarchy`.
 
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
-
-A default that a type system registers through
-`QualifierDefaults.addElementDefault()` now composes with the
-`@DefaultQualifier` annotations on the element and on the element's enclosing
-scopes, rather than suppressing them.  Where both a registered default and a
-`@DefaultQualifier` annotation apply, the registered default wins, except that
-a registered default for `TypeUseLocation.OTHERWISE` applies only where no
-`@DefaultQualifier` for a more concrete location applies.
-
-`QualifierDefaults.DefaultApplierElement.DefaultApplierElementImpl` now extends
-`AnnotatedTypeScanner<Void, Void>` rather than
-`AnnotatedTypeScanner<Void, AnnotationMirror>`, because one traversal of a type
-may now apply more than one default; its `scan()`, `visitTypeVariable()`,
-`visitWildcard()`, and `visitBounds()` methods take a `Void` parameter
-accordingly.
 
 A subclass of `CFAbstractValue` or `CFValue` that adds state must override
 `equals()` and `hashCode()` to account for that state.

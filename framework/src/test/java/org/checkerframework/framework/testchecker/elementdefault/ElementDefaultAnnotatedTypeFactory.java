@@ -27,8 +27,9 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <p>The test files then check that such a default composes with the {@code @DefaultQualifier}
  * annotations on the same element and on the element's enclosing scopes, rather than suppressing
- * them, and that it takes precedence over them at the same location but not over a more specific
- * location.
+ * them, and that it takes precedence over a {@code @DefaultQualifier} annotation on the same
+ * element or on an enclosing element, but not over one on a nested element nor, for an {@link
+ * TypeUseLocation#OTHERWISE} default, over one for a more concrete location.
  */
 public class ElementDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
