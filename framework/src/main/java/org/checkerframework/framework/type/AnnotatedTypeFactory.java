@@ -4008,7 +4008,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
     // Otherwise, the matched value's type does not determine the record's type arguments, and
     // the record's declared type (with type variables as type arguments) is used.
-    return AnnotatedTypes.asMemberOf(types, this, recordAType, accessor).getReturnType();
+    // As in methodFromUse, apply annotations on the record component (such as from a stub file)
+    // to the accessor.
+    AnnotatedExecutableType accessorType =
+        applyRecordTypesToAccessors(accessor, getAnnotatedType(accessor));
+    return AnnotatedTypes.asMemberOf(types, this, recordAType, accessor, accessorType)
+        .getReturnType();
   }
 
   /**

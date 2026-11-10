@@ -3721,7 +3721,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
       TypeMirror newExprTM = newExprType.getUnderlyingType();
 
-      if (!typeHierarchy.isSubtype(newExprType, newCastType)) {
+      if (!isSubtypeForCast(newExprType, newCastType)) {
         return false;
       }
       if (newCastType.getKind() == TypeKind.ARRAY && newExprType.getKind() != TypeKind.ARRAY) {
@@ -3765,6 +3765,40 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         exprTypeWidened.getUnderlyingType(),
         castAnnos,
         newCastTM);
+  }
+
+  /**
+   * Returns true if {@code exprType} is a subtype of {@code castType}, for the purpose of checking
+   * the safety of a cast, where the Java type of {@code exprType} need not be a subtype of the Java
+   * type of {@code castType}.
+   *
+   * <p>For a downcast between declared types, such as from {@code Object} to {@code Integer}, this
+   * compares {@code exprType} with {@code castType} viewed as a supertype with the Java type of
+   * {@code exprType}. If neither Java type is a subtype of the other, this compares only primary
+   * qualifiers.
+   *
+   * @param exprType annotated type of the casted expression
+   * @param castType annotated type of the cast
+   * @return true if {@code exprType} is a subtype of {@code castType}, for the purpose of checking
+   *     the safety of a cast
+   */
+  private boolean isSubtypeForCast(AnnotatedTypeMirror exprType, AnnotatedTypeMirror castType) {
+    if (exprType.getKind() == TypeKind.DECLARED && castType.getKind() == TypeKind.DECLARED) {
+      TypeMirror exprTM = exprType.getUnderlyingType();
+      TypeMirror castTM = castType.getUnderlyingType();
+      if (!TypesUtils.isErasedSubtype(exprTM, castTM, types)) {
+        if (TypesUtils.isErasedSubtype(castTM, exprTM, types)) {
+          // A downcast.  TypeHierarchy#isSubtype requires that the Java types be in the subtype
+          // relationship, so compare with the cast type viewed as the expression's Java type.
+          AnnotatedTypeMirror castAsExprType =
+              AnnotatedTypes.asSuper(atypeFactory, castType, exprType);
+          return typeHierarchy.isSubtype(exprType, castAsExprType);
+        } else {
+          return typeHierarchy.isSubtypeShallowEffective(exprType, castType);
+        }
+      }
+    }
+    return typeHierarchy.isSubtype(exprType, castType);
   }
 
   /**

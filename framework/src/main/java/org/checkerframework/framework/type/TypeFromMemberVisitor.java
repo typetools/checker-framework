@@ -39,13 +39,22 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     // Skip propagation of annotations when initializer can be null.
     // E.g.
     // for (var i : list) {}
-    if (TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)
-        && variableTree.getInitializer() != null) {
+    boolean declaredUsingVar = TreeUtils.isVariableTreeDeclaredUsingVar(variableTree);
+    AnnotatedTypeMirror varComponentType =
+        declaredUsingVar && variableTree.getInitializer() == null
+            ? varBindingComponentType(variableTree, f)
+            : null;
+    if (declaredUsingVar && variableTree.getInitializer() != null) {
       result = f.getAnnotatedType(variableTree.getInitializer());
       // Let normal defaulting happen for the primary annotation.
       result.clearPrimaryAnnotations();
-    } else if (TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)
-        || variableTree.getType() == null) {
+    } else if (varComponentType != null) {
+      // A binding variable of a deconstruction pattern that is declared using var has the type of
+      // its record component, including annotations on type arguments.
+      result = varComponentType;
+      // Let normal defaulting happen for the primary annotation.
+      result.clearPrimaryAnnotations();
+    } else if (declaredUsingVar || variableTree.getType() == null) {
       // VariableTree#getType returns null for binding variables from a
       // DeconstructionPatternTree.
       result = f.type(variableTree);
@@ -122,6 +131,29 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
       return lambdaParamType;
     }
     return result;
+  }
+
+  /**
+   * If {@code variableTree} is a binding variable of a deconstruction pattern, returns a copy of
+   * the type of the record component that it is bound to. Returns null if {@code variableTree} is
+   * not such a binding variable, or if the component type's Java type differs from the variable's
+   * Java type (for example, because the variable's type is a capture).
+   *
+   * @param variableTree a variable declared using {@code var}
+   * @param f the annotated type factory
+   * @return a copy of the type of the record component that {@code variableTree} is bound to, or
+   *     null
+   */
+  private static @Nullable AnnotatedTypeMirror varBindingComponentType(
+      VariableTree variableTree, AnnotatedTypeFactory f) {
+    AnnotatedTypeMirror componentType = f.getDeconstructedComponentType(variableTree);
+    if (componentType == null
+        || !f.getProcessingEnv()
+            .getTypeUtils()
+            .isSameType(componentType.getUnderlyingType(), TreeUtils.typeOf(variableTree))) {
+      return null;
+    }
+    return componentType.deepCopy();
   }
 
   // This method has no effect on the result of ((MethodSymbol) elt).getRawTypeAttributes().  That

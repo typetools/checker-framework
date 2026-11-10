@@ -42,4 +42,13 @@ public class InstanceOfDeconstructionAnnotated {
       l.get(0).length();
     }
   }
+
+  void varTypeArguments(Object o) {
+    // A binding variable declared using var has the type arguments of its record component.
+    if (o instanceof Strings(var l)) {
+      l.add(null);
+      // :: error: [dereference.of.nullable]
+      l.get(0).length();
+    }
+  }
 }

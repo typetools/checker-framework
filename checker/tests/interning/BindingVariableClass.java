@@ -18,6 +18,14 @@ public class BindingVariableClass {
     }
   }
 
+  record Box(Object value) {}
+
+  void deconstructionPattern(Object o) {
+    if (o instanceof Box(Class<?> cls)) {
+      take(cls);
+    }
+  }
+
   void caseLabelPattern(Object value) {
     switch (value) {
       case Class<?> cls -> take(cls);
