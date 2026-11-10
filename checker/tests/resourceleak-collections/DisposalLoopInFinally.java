@@ -21,20 +21,6 @@ class DisposalLoopInFinally {
     }
   }
 
-  void indexedFor(@OwningCollection List<Resource> list, boolean b) {
-    try {
-      if (b) {
-        return;
-      }
-      System.out.println();
-    } finally {
-      for (int i = 0; i < list.size(); i++) {
-        list.get(i).close();
-        list.get(i).flush();
-      }
-    }
-  }
-
   void local(boolean b) {
     List<Resource> list = new ArrayList<>();
     list.add(new Resource());

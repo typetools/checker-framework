@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import org.checkerframework.checker.calledmethods.qual.*;
 import org.checkerframework.checker.collectionownership.qual.*;
 import org.checkerframework.checker.mustcall.qual.*;
@@ -115,49 +114,6 @@ class LoopBodyAnalysisTest {
   void doCloseFlush(Resource r) {
     r.close();
     r.flush();
-  }
-
-  void indexForLoop(@OwningCollection List<Resource> resources) {
-    for (int i = 0; i < resources.size(); i++) {
-      resources.get(i).close();
-      resources.get(i).flush();
-    }
-  }
-
-  // :: error: unfulfilled.collection.obligations
-  void indexForLoopPartial(@OwningCollection List<Resource> resources) {
-    for (int i = 0; i < resources.size(); i++) {
-      resources.get(i).close();
-      // missing flush
-    }
-  }
-
-  void indexForLoopList(@OwningCollection List<Resource> resources) {
-    for (int i = 0; i < resources.size(); i++) {
-      Resource r = resources.get(i);
-      r.close();
-      r.flush();
-    }
-  }
-
-  // An indexed loop whose initializer is the null literal is not a disposal loop, and should not
-  // crash the checker.
-  void indexForLoopNullInitializer(@OwningCollection List<Resource> resources) {
-    for (Integer i = null; i < resources.size(); i++) {}
-    for (Resource r : resources) {
-      r.close();
-      r.flush();
-    }
-  }
-
-  // A zero-argument get() in the body of an indexed loop should not crash the checker.
-  void indexForLoopZeroArgumentGet(
-      @OwningCollection List<Resource> resources, Optional<String> name) {
-    for (int i = 0; i < resources.size(); i++) {
-      resources.get(i).close();
-      resources.get(i).flush();
-      name.get();
-    }
   }
 
   // An enhanced-for loop over the result of an unqualified call is a disposal loop.

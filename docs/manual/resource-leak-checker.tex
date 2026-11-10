@@ -777,7 +777,7 @@ Just like the ownership, the obligation is also transferred to the left-hand sid
 
 \subsectionAndLabel{Fulfilling collection obligations}{resource-leak-collections-fulfillment}
 
-To fulfill the obligation of a resource collection, the obligation can be passed on, but at some point it has to be fulfilled by calling the required methods on its elements. Recommended are enhanced \texttt{for} loops, but indexed \texttt{for} loops are also supported with some syntactic restrictions.
+To fulfill the obligation of a resource collection, the obligation can be passed on, but at some point it has to be fulfilled by calling the required methods on its elements in an enhanced \texttt{for} loop.
 
 Here is an example of such a loop:
 
@@ -801,30 +801,6 @@ To determine the methods such a loop calls, the checker does the following thing
   \item It checks that the loop does not terminate early.
   \item It leverages the \texttt{CalledMethods} analysis to determine the methods definitely called on the loop iterator variable. This means that anything that changes the \texttt{CalledMethods} type of the iterator variable is supported, for example passing it as an argument to a method annotated \texttt{@EnsuresCalledMethods(``m'')}, or using try-with constructs. Nullness checks are also supported: that is, it is sufficient to fulfill the obligation for every non-null element of the collection; note that this is a simple, syntactic check, not a full-fledged nullness analysis, and so it might fail to certify loops that use an unorthodox method for nullness checking.
 \end{itemize}
-
-If an indexed \texttt{for} loop is used, the checker must additionally check that the loop does in fact iterate over all elements of the collection, and that the loop doesn't write to the loop variable for example. The checks are the following:
-
-\begin{itemize}
-  \item Loop iteration bounds:
-    \begin{itemize}
-      \item The lower bound of iteration is 0, and
-      \item The upper bound of iteration is \texttt{c.size()}
-      \item The loop's increment expression is a pre- or post-increment of the loop variable.
-      \item The collection element is accessed using \texttt{collection.get(i)}, where \texttt{i} is the loop variable.
-    \end{itemize}
-  \item The loop does not assign to the collection variable.
-  \item The loop does not assign to collection elements.
-\end{itemize}
-
-Here is an example using an indexed \texttt{for} loop.
-
-\begin{verbatim}
-for (int i = 0; i < socketList.size(); i++) {
-  try {
-    socketList.get(i).close();
-  } catch (Exception e) {}
-}
-\end{verbatim}
 
 \subsectionAndLabel{Resource collection fields}{resource-leak-collections-fields}
 By default, resource collection fields are owned by the enclosing class. Static fields are not supported and an error is reported for a declaration of a static resource collection field.
