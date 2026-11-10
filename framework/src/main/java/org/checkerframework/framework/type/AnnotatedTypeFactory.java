@@ -3670,6 +3670,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * Returns the canonical annotation for an alias that is identified by name, or null if {@code
+   * aliasName} is not the name of an alias whose canonical annotation is independent of the alias's
+   * element values. Unlike {@link #canonicalAnnotation(AnnotationMirror)}, this works even if the
+   * alias annotation is not on the classpath.
+   *
+   * @param aliasName the canonical name of an annotation
+   * @return the canonical annotation for {@code aliasName}, or null
+   */
+  public @Nullable AnnotationMirror canonicalAnnotationForAliasName(String aliasName) {
+    Alias alias = aliases.get(aliasName);
+    if (alias == null || alias.copyElements) {
+      return null;
+    }
+    return alias.canonical;
+  }
+
+  /**
    * Returns the canonical annotation for the passed annotation, when applied to the given type. May
    * return its argument.
    *

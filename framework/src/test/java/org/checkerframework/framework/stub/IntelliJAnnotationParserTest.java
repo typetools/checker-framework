@@ -2,6 +2,7 @@ package org.checkerframework.framework.stub;
 
 import java.util.Arrays;
 import java.util.Collections;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.stub.IntelliJAnnotationParser.ParsedItemSignature;
 import org.junit.Assert;
 import org.junit.Test;
@@ -63,6 +64,76 @@ public class IntelliJAnnotationParserTest {
     ParsedItemSignature parsed =
         IntelliJAnnotationParser.parseSignature("java.lang.String substring int, int)");
     Assert.assertTrue(parsed.isMalformed());
+  }
+
+  @Test
+  public void testParseSignatureEmptyParameterType() {
+    // A trailing comma is not silently dropped, which would match concat(java.lang.String).
+    Assert.assertTrue(
+        IntelliJAnnotationParser.parseSignature(
+                "java.lang.String java.lang.String concat(java.lang.String,)")
+            .isMalformed());
+    Assert.assertTrue(
+        IntelliJAnnotationParser.parseSignature("java.lang.String java.lang.String(int,, int)")
+            .isMalformed());
+    Assert.assertTrue(
+        IntelliJAnnotationParser.parseSignature("java.lang.String java.lang.String(,)")
+            .isMalformed());
+    Assert.assertEquals(
+        Collections.emptyList(),
+        IntelliJAnnotationParser.parseSignature("java.lang.String java.lang.String length()")
+            .paramTypes);
+  }
+
+  /**
+   * Parses an int literal.
+   *
+   * @param s the literal
+   * @return the result of {@link IntelliJAnnotationParser#parseIntegralLiteral} for an int
+   */
+  private static @Nullable Long parseInt(String s) {
+    return IntelliJAnnotationParser.parseIntegralLiteral(s, false);
+  }
+
+  /**
+   * Parses a long literal.
+   *
+   * @param s the literal
+   * @return the result of {@link IntelliJAnnotationParser#parseIntegralLiteral} for a long
+   */
+  private static @Nullable Long parseLong(String s) {
+    return IntelliJAnnotationParser.parseIntegralLiteral(s, true);
+  }
+
+  @Test
+  public void testParseIntegralLiteral() {
+    Assert.assertEquals(Long.valueOf(10), parseInt("10"));
+    Assert.assertEquals(Long.valueOf(8), parseInt("010"));
+    Assert.assertEquals(Long.valueOf(0), parseInt("0"));
+    Assert.assertEquals(Long.valueOf(16), parseInt("0x10"));
+    Assert.assertEquals(Long.valueOf(16), parseLong("0x10L"));
+    Assert.assertEquals(Long.valueOf(5), parseInt("0b101"));
+    Assert.assertEquals(Long.valueOf(1000000), parseInt("1_000_000"));
+    Assert.assertEquals(Long.valueOf(-3), parseInt("-3"));
+    Assert.assertEquals(Long.valueOf(-1), parseInt("0xFFFFFFFF"));
+    Assert.assertEquals(Long.valueOf(Integer.MIN_VALUE), parseInt("-2147483648"));
+    Assert.assertEquals(Long.valueOf(Long.MIN_VALUE), parseLong("-9223372036854775808L"));
+    Assert.assertEquals(Long.valueOf(-1), parseLong("0xFFFFFFFFFFFFFFFFL"));
+  }
+
+  @Test
+  public void testParseIntegralLiteralMalformed() {
+    Assert.assertNull(parseInt(""));
+    Assert.assertNull(parseInt("09"));
+    Assert.assertNull(parseInt("0x"));
+    Assert.assertNull(parseInt("0x_1"));
+    Assert.assertNull(parseInt("1_"));
+    Assert.assertNull(parseInt("10L"));
+    Assert.assertNull(parseInt("2147483648"));
+    Assert.assertNull(parseInt("0x100000000"));
+    Assert.assertNull(parseInt("--1"));
+    Assert.assertNull(parseInt("1.5"));
+    Assert.assertNull(parseLong("java.lang.Long.MIN_VALUE"));
   }
 
   @Test

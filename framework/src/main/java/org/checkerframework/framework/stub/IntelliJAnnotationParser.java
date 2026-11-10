@@ -3,6 +3,7 @@ package org.checkerframework.framework.stub;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Target;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -116,7 +117,13 @@ public final class IntelliJAnnotationParser {
       DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
       doc = dBuilder.parse(inputStream);
       doc.getDocumentElement().normalize();
-    } catch (ParserConfigurationException | SAXException | IOException e) {
+    } catch (IOException e) {
+      // The file exists but could not be read, so all of its annotations would be lost.
+      checker.message(
+          Diagnostic.Kind.ERROR,
+          String.format("Could not read annotations XML %s: %s", filename, e.getMessage()));
+      return;
+    } catch (ParserConfigurationException | SAXException e) {
       checker.message(
           Diagnostic.Kind.WARNING,
           String.format("Could not parse annotations XML %s: %s", filename, e.getMessage()));
@@ -215,6 +222,14 @@ public final class IntelliJAnnotationParser {
 
       TypeElement annoTypeElt = getTypeElement(annoName, elements);
       if (annoTypeElt == null) {
+        // The annotation may be an alias that is not on the classpath, such as
+        // org.jetbrains.annotations.NotNull.  An alias that is identified by name does not depend
+        // on the alias's element values, so it can be resolved without the alias's class.
+        AnnotationMirror aliasCanonical = atypeFactory.canonicalAnnotationForAliasName(annoName);
+        if (aliasCanonical != null) {
+          result.add(aliasCanonical);
+          continue;
+        }
         warnNotFound(atypeFactory.getChecker(), "Unknown annotation: " + annoName);
         continue;
       }
@@ -421,38 +436,32 @@ public final class IntelliJAnnotationParser {
       String rawVal, TypeMirror type, ProcessingEnvironment processingEnv) {
     String unquotedVal = stripQuotes(rawVal);
     TypeKind kind = type.getKind();
-    try {
-      if (kind == TypeKind.BOOLEAN) {
-        return parseBoolean(unquotedVal);
-      } else if (kind == TypeKind.INT) {
-        return Integer.parseInt(unquotedVal);
-      } else if (kind == TypeKind.LONG) {
-        return Long.parseLong(unquotedVal.replaceAll("[lL]$", ""));
-      } else if (kind == TypeKind.FLOAT) {
-        return Float.parseFloat(unquotedVal.replaceAll("[fF]$", ""));
-      } else if (kind == TypeKind.DOUBLE) {
-        return Double.parseDouble(unquotedVal.replaceAll("[dD]$", ""));
-      } else if (kind == TypeKind.SHORT) {
-        return Short.parseShort(unquotedVal);
-      } else if (kind == TypeKind.BYTE) {
-        return Byte.parseByte(unquotedVal);
+    if (kind.isPrimitive()) {
+      Object literal = parsePrimitiveLiteral(unquotedVal, kind);
+      if (literal != null) {
+        return literal;
       }
-    } catch (NumberFormatException e) {
-      return null;
-    }
-    if (kind == TypeKind.CHAR) {
-      return parseChar(unquotedVal);
+      // The value may be a constant field, such as java.lang.Long.MIN_VALUE.
+      return constantFieldValue(unquotedVal, kind, processingEnv.getElementUtils());
     } else if (kind == TypeKind.DECLARED) {
       DeclaredType dt = (DeclaredType) type;
       TypeElement dtElt = (TypeElement) dt.asElement();
       if (dtElt.getQualifiedName().contentEquals("java.lang.String")) {
         return unquotedVal;
       } else if (dtElt.getKind() == ElementKind.ENUM) {
-        String enumConstName =
-            unquotedVal.substring(
-                Math.max(unquotedVal.lastIndexOf('.'), unquotedVal.lastIndexOf('$')) + 1);
+        int separator = Math.max(unquotedVal.lastIndexOf('.'), unquotedVal.lastIndexOf('$'));
+        if (separator != -1) {
+          // The constant is qualified by its enum type, which must be the expected enum type.
+          String owner = unquotedVal.substring(0, separator).replace('$', '.');
+          String expected = dtElt.getQualifiedName().toString();
+          if (!(expected.equals(owner) || expected.endsWith("." + owner))) {
+            return null;
+          }
+        }
+        String enumConstName = unquotedVal.substring(separator + 1);
         for (VariableElement enumField : ElementFilter.fieldsIn(dtElt.getEnclosedElements())) {
-          if (enumField.getSimpleName().contentEquals(enumConstName)) {
+          if (enumField.getKind() == ElementKind.ENUM_CONSTANT
+              && enumField.getSimpleName().contentEquals(enumConstName)) {
             return enumField;
           }
         }
@@ -462,6 +471,227 @@ public final class IntelliJAnnotationParser {
       }
     }
     return null;
+  }
+
+  /**
+   * Parses a literal of a primitive type.
+   *
+   * @param s the unquoted value string
+   * @param kind a primitive type kind
+   * @return the value that {@code s} represents, or null if {@code s} is not a literal of type
+   *     {@code kind}
+   */
+  private static @Nullable Object parsePrimitiveLiteral(String s, TypeKind kind) {
+    switch (kind) {
+      case BOOLEAN -> {
+        return parseBoolean(s);
+      }
+      case CHAR -> {
+        return parseChar(s);
+      }
+      case LONG -> {
+        return parseIntegralLiteral(s, true);
+      }
+      case INT, SHORT, BYTE -> {
+        Long value = parseIntegralLiteral(s, false);
+        if (value == null) {
+          return null;
+        }
+        long v = value;
+        if (kind == TypeKind.INT) {
+          return (int) v;
+        } else if (kind == TypeKind.SHORT) {
+          return (v >= Short.MIN_VALUE && v <= Short.MAX_VALUE) ? (Short) (short) v : null;
+        } else {
+          return (v >= Byte.MIN_VALUE && v <= Byte.MAX_VALUE) ? (Byte) (byte) v : null;
+        }
+      }
+      case FLOAT, DOUBLE -> {
+        // An integral literal, such as 0x1f or 10L, is assignable to a float or double element.
+        Long integralValue = parseIntegralLiteral(s, true);
+        if (integralValue != null) {
+          long v = integralValue;
+          return kind == TypeKind.FLOAT ? (Object) (float) v : (Object) (double) v;
+        }
+        String digits = s.replace("_", "").trim();
+        if (kind == TypeKind.FLOAT && (digits.endsWith("d") || digits.endsWith("D"))) {
+          // A double literal is not assignable to a float element.
+          return null;
+        }
+        try {
+          // These methods accept a trailing "f", "F", "d", or "D" and hexadecimal notation.
+          return kind == TypeKind.FLOAT
+              ? (Object) Float.parseFloat(digits)
+              : (Object) Double.parseDouble(digits);
+        } catch (NumberFormatException e) {
+          return null;
+        }
+      }
+      default -> {
+        return null;
+      }
+    }
+  }
+
+  /**
+   * Parses an integral literal according to the rules of Java: it may be decimal, hexadecimal
+   * ({@code 0x}), octal (leading {@code 0}), or binary ({@code 0b}), may contain underscores
+   * between digits, and may be preceded by a sign. A hexadecimal, octal, or binary literal may
+   * represent a negative number, as in {@code 0xFFFFFFFF}, which is -1 as an int.
+   *
+   * @param s the unquoted value string
+   * @param isLong true if the literal's type is long, in which case a trailing {@code L} or {@code
+   *     l} is permitted; false if its type is int
+   * @return the value of the literal, or null if {@code s} is not an integral literal of the given
+   *     type
+   */
+  /*package-private*/ static @Nullable Long parseIntegralLiteral(String s, boolean isLong) {
+    String t = s.trim();
+    boolean negative = false;
+    if (t.startsWith("-") || t.startsWith("+")) {
+      negative = t.startsWith("-");
+      t = t.substring(1).trim();
+    }
+    if (t.endsWith("l") || t.endsWith("L")) {
+      if (!isLong) {
+        return null;
+      }
+      t = t.substring(0, t.length() - 1);
+    }
+    if (t.isEmpty() || t.startsWith("_") || t.endsWith("_")) {
+      return null;
+    }
+
+    int radix;
+    String digits;
+    String lower = t.toLowerCase(Locale.ROOT);
+    if (lower.startsWith("0x") || lower.startsWith("0b")) {
+      radix = lower.startsWith("0x") ? 16 : 2;
+      digits = t.substring(2);
+      if (digits.startsWith("_")) {
+        return null;
+      }
+    } else if (t.length() > 1 && t.charAt(0) == '0') {
+      radix = 8;
+      digits = t.substring(1);
+    } else {
+      radix = 10;
+      digits = t;
+    }
+    digits = digits.replace("_", "");
+    if (digits.isEmpty() || digits.startsWith("+") || digits.startsWith("-")) {
+      return null;
+    }
+
+    BigInteger magnitude;
+    try {
+      magnitude = new BigInteger(digits, radix);
+    } catch (NumberFormatException e) {
+      return null;
+    }
+
+    int bits = isLong ? 64 : 32;
+    if (radix == 10) {
+      BigInteger value = negative ? magnitude.negate() : magnitude;
+      BigInteger min = BigInteger.ONE.shiftLeft(bits - 1).negate();
+      BigInteger max = BigInteger.ONE.shiftLeft(bits - 1).subtract(BigInteger.ONE);
+      if (value.compareTo(min) < 0 || value.compareTo(max) > 0) {
+        return null;
+      }
+      return value.longValue();
+    }
+    // A non-decimal literal denotes a two's-complement bit pattern of the given width.
+    if (magnitude.bitLength() > bits) {
+      return null;
+    }
+    if (isLong) {
+      long value = magnitude.longValue();
+      return negative ? -value : value;
+    } else {
+      int value = magnitude.intValue();
+      return (long) (negative ? -value : value);
+    }
+  }
+
+  /**
+   * Returns the value of a constant field, such as {@code java.lang.Long.MIN_VALUE}, converted to
+   * the given primitive type as Java's assignment conversion would.
+   *
+   * @param s a qualified field name
+   * @param kind a primitive type kind
+   * @param elements the element utilities
+   * @return the field's constant value converted to type {@code kind}, or null if {@code s} does
+   *     not name a constant field whose value is assignable to type {@code kind}
+   */
+  private static @Nullable Object constantFieldValue(String s, TypeKind kind, Elements elements) {
+    int lastDot = s.lastIndexOf('.');
+    if (lastDot <= 0) {
+      return null;
+    }
+    TypeElement owner = getTypeElement(s.substring(0, lastDot), elements);
+    if (owner == null) {
+      return null;
+    }
+    String fieldName = s.substring(lastDot + 1);
+    for (VariableElement field : ElementFilter.fieldsIn(owner.getEnclosedElements())) {
+      if (field.getSimpleName().contentEquals(fieldName)) {
+        Object constant = field.getConstantValue();
+        return constant == null ? null : convertConstant(constant, kind);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Converts a constant value to the given primitive type, as Java's assignment conversion of a
+   * constant expression would.
+   *
+   * @param c a constant value: a boxed primitive or a String
+   * @param kind a primitive type kind
+   * @return {@code c} converted to type {@code kind}, or null if it is not assignable to that type
+   */
+  private static @Nullable Object convertConstant(Object c, TypeKind kind) {
+    if (kind == TypeKind.BOOLEAN) {
+      return c instanceof Boolean ? c : null;
+    }
+    // True if the constant's type is int or narrower, so that it can be narrowed to byte, short,
+    // or char if its value is in range.
+    boolean isIntOrNarrower =
+        c instanceof Integer || c instanceof Short || c instanceof Byte || c instanceof Character;
+    boolean isIntegral = isIntOrNarrower || c instanceof Long;
+    // The constant's value, if its type is integral; otherwise 0.
+    long integral;
+    if (c instanceof Character ch) {
+      integral = ch.charValue();
+    } else if (isIntegral) {
+      integral = ((Number) c).longValue();
+    } else {
+      integral = 0;
+    }
+    return switch (kind) {
+      case CHAR ->
+          isIntOrNarrower && integral >= Character.MIN_VALUE && integral <= Character.MAX_VALUE
+              ? (Character) (char) integral
+              : null;
+      case BYTE ->
+          isIntOrNarrower && integral >= Byte.MIN_VALUE && integral <= Byte.MAX_VALUE
+              ? (Byte) (byte) integral
+              : null;
+      case SHORT ->
+          isIntOrNarrower && integral >= Short.MIN_VALUE && integral <= Short.MAX_VALUE
+              ? (Short) (short) integral
+              : null;
+      case INT -> isIntOrNarrower ? (Integer) (int) integral : null;
+      case LONG -> isIntegral ? (Long) integral : null;
+      case FLOAT -> isIntegral ? (Float) (float) integral : (c instanceof Float ? c : null);
+      case DOUBLE ->
+          isIntegral
+              ? (Double) (double) integral
+              : ((c instanceof Float || c instanceof Double)
+                  ? (Double) ((Number) c).doubleValue()
+                  : null);
+      default -> null;
+    };
   }
 
   /**
@@ -835,6 +1065,11 @@ public final class IntelliJAnnotationParser {
 
       String paramListStr = sig.substring(firstParen + 1, lastParen).trim();
       List<String> paramTypes = parseParameterTypes(paramListStr);
+      if (paramTypes == null) {
+        // The signature is malformed: some parameter type is empty.
+        return new ParsedItemSignature(
+            sig, null, Collections.emptyList(), -1, false, false, false, false);
+      }
 
       String beforeParen = sig.substring(0, firstParen).trim();
       String[] parts = beforeParen.split("\\s+");
@@ -887,9 +1122,10 @@ public final class IntelliJAnnotationParser {
    * Parses the comma-separated parameter type list from inside parentheses.
    *
    * @param paramContent the raw string of parameter types
-   * @return a list of trimmed parameter type strings
+   * @return a list of trimmed parameter type strings, or null if some parameter type is empty, as
+   *     in {@code "java.lang.String,"}
    */
-  private static List<String> parseParameterTypes(String paramContent) {
+  private static @Nullable List<String> parseParameterTypes(String paramContent) {
     if (paramContent.isEmpty()) {
       return Collections.emptyList();
     }
@@ -911,8 +1147,11 @@ public final class IntelliJAnnotationParser {
         current.append(c);
       }
     }
-    if (current.length() > 0) {
-      paramTypes.add(current.toString().trim());
+    paramTypes.add(current.toString().trim());
+    for (String paramType : paramTypes) {
+      if (paramType.isEmpty()) {
+        return null;
+      }
     }
     return paramTypes;
   }

@@ -550,7 +550,8 @@ public class AnnotationFileUtil {
       if (isUserSupplied && isJarOrZip(name)) {
         try (JarFile file = new JarFile(location)) {
           file.stream()
-              .filter(entry -> isAnnotationFile(entry.getName(), fileType))
+              // A directory entry, such as "p/annotations.xml/", is not an annotation file.
+              .filter(entry -> !entry.isDirectory() && isAnnotationFile(entry.getName(), fileType))
               .forEach(entry -> resources.add(archiveEntry(location, file, entry)));
         } catch (IOException e) {
           System.err.println(

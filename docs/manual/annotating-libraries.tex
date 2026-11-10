@@ -478,8 +478,10 @@ original library classes.  For example:
 \end{Verbatim}
 \end{myxsmall}
 
-Each stub path entry is a stub file (ending with
-\<.astub>), a directory, or a \<.jar> or \<.zip> archive.
+Each stub path entry is a stub file, a directory, or a \<.jar> or \<.zip>
+archive.  A stub file that is named directly conventionally ends with
+\<.astub>; it may have any other name, except that its name must not end
+with \<.ajava>.
 Specifying a directory or archive is equivalent to
 specifying every file in it whose name ends with
 \code{.astub}.  An archive within a directory is not read.  A hidden file
@@ -1004,9 +1006,11 @@ in stub files.)
 \subsectionAndLabel{Using an Ajava file}{ajava-using}
 
 The \code{-Aajava} command-line argument works like \code{-Astubs} (see
-Section~\ref{stub-using}). It takes a colon-separated list of
+Section~\ref{stub-using}). It takes a list of
 ajava files (which end in the \code{.ajava} extension) and directories and
-\<.jar> and \<.zip> archives containing ajava files.  Any non-ajava files
+\<.jar> and \<.zip> archives containing ajava files.  The list is delimited by
+\<File.pathSeparator> (``\<:>'' for Linux and Mac, ``\<;>'' for Windows).
+Any non-ajava files
 in the directory or archive, including archives within a directory, are ignored.
 
 For example:
@@ -1109,8 +1113,13 @@ using
 IDEA's user interface}.
 
 The \code{-AintellijAnnotations} command-line argument takes a
-path-separated list of \code{annotations.xml} files, directories, jar files, or zip files
-containing \code{annotations.xml} files arranged in directory structures matching their package names.
+path-separated list of IntelliJ IDEA annotation files, directories, and
+\<.jar> and \<.zip> archives.
+An annotation file that is named directly may have any name (but a name
+ending with \<.jar> or \<.zip>, in any case, denotes an archive).
+Within a directory or archive, only files named \code{annotations.xml} are
+read; they are arranged in directory structures matching their package names.
+An archive within a directory is not read; name each archive in the list.
 The path separator is colon on Unix and semicolon on Windows.
 
 For example:

@@ -235,6 +235,22 @@ public class AnnotationFileUtilTest {
     Assert.assertEquals(
         Arrays.asList(xml.getAbsolutePath()),
         descriptions(dir, AnnotationFileType.INTELLIJ_ANNOTATIONS));
+
+    File zip =
+        writeZip(
+            new File(tmp.getRoot(), "annotations.zip"),
+            "java/lang/annotations.xml",
+            "java/lang/other.xml");
+    Assert.assertEquals(
+        Arrays.asList(zip.getPath() + "!java/lang/annotations.xml"),
+        descriptions(zip, AnnotationFileType.INTELLIJ_ANNOTATIONS));
+  }
+
+  /** Tests that a directory entry in an archive is not an annotation file, whatever its name. */
+  @Test
+  public void directoryEntryInArchiveIsNotUsed() throws IOException {
+    File zip = writeZip(new File(tmp.getRoot(), "annotations.zip"), "p/annotations.xml/");
+    Assert.assertEquals(Arrays.asList(), descriptions(zip, AnnotationFileType.INTELLIJ_ANNOTATIONS));
   }
 
   /** Tests that a nonexistent location yields null. */
