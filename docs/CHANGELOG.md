@@ -9,9 +9,12 @@
 
 Pattern variables, such as `s` in `o instanceof String s` or `case String s`,
 are defaulted to the top qualifier, like other local variables (the
-CLIMB-to-top rule).  An unannotated pattern variable is refined to the
-qualifiers of the expression that the pattern is matched against.  This does
-not yet apply to pattern variables nested in a record pattern.
+CLIMB-to-top rule).  An unannotated pattern variable is refined as if it were
+assigned a cast of the expression that the pattern is matched against, as in
+`String s = (String) o;`.  A type system can refine it further; for example,
+the Nullness Checker refines it to `@NonNull`, because a type pattern in an
+`instanceof` or a case label does not match null.  This does not yet apply to
+pattern variables nested in a record pattern.
 
 ### Changes for type system implementers
 
