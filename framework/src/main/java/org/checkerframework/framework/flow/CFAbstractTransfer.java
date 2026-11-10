@@ -1137,15 +1137,16 @@ public abstract class CFAbstractTransfer<
     assert recordPattern != null : "@AssumeAssertion(nullness): a pattern node has a tree";
     List<AnnotatedTypeMirror> componentTypes =
         analysis.atypeFactory.getRecordPatternComponentTypes(recordPattern);
+    // If `in` has a then-store and an else-store, each call to `in.getRegularStore()` returns a
+    // new store, so call it just once and return a result that contains that store.
+    S store = in.getRegularStore();
     List<Node> nestedPatterns = n.getNestedPatterns();
     for (int i = 0; i < nestedPatterns.size(); i++) {
       if (nestedPatterns.get(i) instanceof LocalVariableNode bindingVar) {
-        refineBindingVariable(
-            in.getRegularStore(), JavaExpression.fromNode(bindingVar), componentTypes.get(i));
+        refineBindingVariable(store, JavaExpression.fromNode(bindingVar), componentTypes.get(i));
       }
     }
-    V value = null;
-    return createTransferResult(value, in);
+    return new RegularTransferResult<>(finishValue(null, store), store);
   }
 
   @Override
