@@ -2,6 +2,7 @@ package org.checkerframework.checker.collectionownership;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.util.TreeScanner;
@@ -24,6 +25,9 @@ public class DisposalLoopScanner extends TreeScanner<Void, Void> {
   /** Disposal loops discovered while scanning the current method tree. */
   private final Set<DisposalLoopInfo> disposalLoopInfos = new LinkedHashSet<>();
 
+  /** Matcher for indexed `for` disposal loops. */
+  private final IndexedForDisposalLoopMatcher indexedForDisposalLoopMatcher;
+
   /** Matcher for enhanced-`for` disposal loops. */
   private final EnhancedForDisposalLoopMatcher enhancedForDisposalLoopMatcher;
 
@@ -36,6 +40,7 @@ public class DisposalLoopScanner extends TreeScanner<Void, Void> {
   public DisposalLoopScanner(CollectionOwnershipAnnotatedTypeFactory coAtf, ControlFlowGraph cfg) {
     this.coAtf = coAtf;
     this.cfg = cfg;
+    this.indexedForDisposalLoopMatcher = new IndexedForDisposalLoopMatcher(this.coAtf, this.cfg);
     this.enhancedForDisposalLoopMatcher = new EnhancedForDisposalLoopMatcher(this.coAtf, this.cfg);
   }
 
@@ -72,6 +77,22 @@ public class DisposalLoopScanner extends TreeScanner<Void, Void> {
   @Override
   public Void visitClass(ClassTree tree, Void p) {
     return null;
+  }
+
+  /**
+   * Syntactically matches indexed for-loops that iterate over all elements of a collection.
+   *
+   * @param tree the for-loop to inspect
+   * @param p the scan parameter
+   * @return always {@code null}
+   */
+  @Override
+  public Void visitForLoop(ForLoopTree tree, Void p) {
+    DisposalLoopInfo disposalLoopInfo = indexedForDisposalLoopMatcher.match(tree);
+    if (disposalLoopInfo != null) {
+      disposalLoopInfos.add(disposalLoopInfo);
+    }
+    return super.visitForLoop(tree, p);
   }
 
   /**

@@ -142,6 +142,10 @@ public class CollectionOwnershipAnnotatedTypeFactory
   private final ExecutableElement iteratorHasNext =
       TreeUtils.getMethod("java.util.Iterator", "hasNext", 0, processingEnv);
 
+  /** The {@code List.get(int)} method. */
+  private final ExecutableElement listGet =
+      TreeUtils.getMethod("java.util.List", "get", 1, processingEnv);
+
   /** The {@code Collection.size()} and {@code Map.size()} methods. */
   private final List<ExecutableElement> sizeMethods =
       List.of(
@@ -574,6 +578,21 @@ public class CollectionOwnershipAnnotatedTypeFactory
    */
   boolean isIteratorHasNextCall(Tree tree) {
     return TreeUtils.isMethodInvocation(tree, iteratorHasNext, processingEnv);
+  }
+
+  /**
+   * Returns the argument of the given invocation of {@code List.get(int)} or of a method that
+   * overrides it, such as {@code i} for {@code list.get(i)}.
+   *
+   * @param tree a tree
+   * @return the index argument if {@code tree} is an invocation of {@code List.get(int)}, otherwise
+   *     null
+   */
+  @Nullable ExpressionTree getListGetIndex(Tree tree) {
+    if (TreeUtils.isMethodInvocation(tree, listGet, processingEnv)) {
+      return ((MethodInvocationTree) tree).getArguments().get(0);
+    }
+    return null;
   }
 
   /**

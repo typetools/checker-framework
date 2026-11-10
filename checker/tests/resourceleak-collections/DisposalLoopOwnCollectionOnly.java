@@ -85,4 +85,16 @@ class DisposalLoopOwnCollectionOnly {
       r.flush();
     }
   }
+
+  void indexedOnlyFirstDisposed() {
+    List<Resource> a = new ArrayList<>();
+    a.add(new Resource());
+    List<Resource> b = new ArrayList<>();
+    // :: error: unfulfilled.collection.obligations
+    b.add(new Resource());
+    for (int i = 0; i < a.size(); i++) {
+      a.get(i).close();
+      a.get(i).flush();
+    }
+  }
 }
