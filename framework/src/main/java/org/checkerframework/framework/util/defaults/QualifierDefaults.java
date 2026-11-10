@@ -328,6 +328,11 @@ public class QualifierDefaults {
    * {@code elem}; and the defaults on the elements that {@code elem} encloses take precedence over
    * it.
    *
+   * <p>As for a {@code @DefaultQualifier} annotation, a default for {@link
+   * TypeUseLocation#OTHERWISE} applies only where no registered or {@code @DefaultQualifier}
+   * default for a more concrete location applies, even one on an element that encloses {@code
+   * elem}; see {@link #applicationOrder}.
+   *
    * @param elem the scope to set the default within
    * @param elementDefaultAnno the default to set
    * @param location the location to apply the default to
@@ -653,6 +658,7 @@ public class QualifierDefaults {
       return cached;
     }
 
+    // Non-empty if non-null, because addElementDefault stores a set only when adding to it.
     DefaultSet elementDefaults = elementDeclaredDefaults.get(elt);
     DefaultSet qualifierDefaults = null;
 
@@ -698,8 +704,7 @@ public class QualifierDefaults {
 
     ScopeDefaults parentDefaults = defaultsAt(parent);
     ScopeDefaults result;
-    if ((elementDefaults == null || elementDefaults.isEmpty())
-        && (qualifierDefaults == null || qualifierDefaults.isEmpty())) {
+    if (elementDefaults == null && (qualifierDefaults == null || qualifierDefaults.isEmpty())) {
       result = parentDefaults;
     } else {
       // The scope's own defaults come first, so that they take precedence over the defaults of
@@ -711,9 +716,9 @@ public class QualifierDefaults {
         nearestFirst.addAll(elementDefaults);
       }
       if (qualifierDefaults != null) {
-        nearestFirst.addAll(qualifierDefaults);
+        addAllAbsent(nearestFirst, qualifierDefaults);
       }
-      nearestFirst.addAll(parentDefaults.nearestFirst());
+      addAllAbsent(nearestFirst, parentDefaults.nearestFirst());
       result = new ScopeDefaults(nearestFirst, applicationOrder(nearestFirst));
     }
 
@@ -727,6 +732,27 @@ public class QualifierDefaults {
     }
 
     return result;
+  }
+
+  /**
+   * Appends to {@code nearestFirst} each of the given defaults that it does not already contain.
+   * Omitting such a default does not change which defaults apply, because the earlier, equal
+   * default has already been applied wherever the omitted one would be; but it avoids a redundant
+   * pass over the type in {@link #applyDefaultsElement}.
+   *
+   * <p>This uses {@link List#contains} rather than a hash set, because {@link Default#hashCode}
+   * hashes an {@link AnnotationMirror}, whose {@code hashCode} is not consistent with {@link
+   * Default#equals}. The lists are short.
+   *
+   * @param nearestFirst a list of defaults, which this method side-effects
+   * @param defaults the defaults to append to {@code nearestFirst}
+   */
+  private static void addAllAbsent(List<Default> nearestFirst, Iterable<Default> defaults) {
+    for (Default def : defaults) {
+      if (!nearestFirst.contains(def)) {
+        nearestFirst.add(def);
+      }
+    }
   }
 
   /**
