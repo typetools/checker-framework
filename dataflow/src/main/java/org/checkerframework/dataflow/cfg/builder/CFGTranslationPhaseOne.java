@@ -2314,8 +2314,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     private void buildCase(CaseTree caseTree, int index, boolean isLastCaseOfExhaustive) {
       boolean isDefaultCase = CaseUtils.isDefaultCaseTree(caseTree);
       // If true, no test of labels is necessary.
-      // Unfortunately, if isLastCaseOfExhaustive==TRUE, no flow-sensitive refinement occurs
-      // within the body of the CaseNode.  In the future, that can be performed, but it
+      // Unfortunately, if isLastCaseOfExhaustive==TRUE, no flow-sensitive refinement from the
+      // labels occurs within the body of the CaseNode (but refinement from the guard does).  In the future, that can be performed, but it
       // requires addition of InfeasibleExitBlock, a new SpecialBlock in the CFG.
       boolean isTerminalCase = isDefaultCase || isLastCaseOfExhaustive;
 
@@ -2342,11 +2342,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
-          // If the guard of the last case of an exhaustive switch is false, no case matches and the
-          // switch throws an exception.  The CFG does not represent that exception, so the body
-          // follows the guard whatever the guard's value.
           if (!isLastCaseOfExhaustive) {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+          } else {
+            // If the guard of the last case of an exhaustive switch is false, no case matches and
+            // the switch throws a MatchException.
+            Label guardFalseLabel = new Label();
+            extendWithExtendedNode(new ConditionalJump(thisBodyLabel, guardFalseLabel));
+            addLabelForNextNode(guardFalseLabel);
+            NodeWithExceptionsHolder exNode =
+                extendWithNodeWithException(
+                    new MarkerNode(caseTree, "no case matches", env.getTypeUtils()),
+                    getMatchExceptionType());
+            exNode.setTerminatesExecution(true);
           }
         }
       }
@@ -4472,6 +4480,22 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       return null;
     }
     return element.asType();
+  }
+
+  /**
+   * Returns the type {@code java.lang.MatchException}, which a switch throws when no case matches.
+   * Returns {@code RuntimeException} if {@code MatchException} is not present (it was added in
+   * Java 21).
+   *
+   * @return the type {@code java.lang.MatchException}, or {@code RuntimeException}
+   */
+  private TypeMirror getMatchExceptionType() {
+    // Look up the type by name, because MatchException is not present in JDKs before 21.
+    TypeElement element = elements.getTypeElement("java.lang.MatchException");
+    if (element != null) {
+      return element.asType();
+    }
+    return getTypeMirror(RuntimeException.class);
   }
 
   /**
