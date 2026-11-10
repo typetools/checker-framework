@@ -258,7 +258,7 @@ final class IndexedForDisposalLoopMatcher {
     /** The index variable named in the loop header. */
     private final Name indexVariableName;
 
-    /** Whether the loop body mutates the collection or index variable. */
+    /** True if the loop body mutates the collection or index variable. */
     private boolean bodyIsIllegal = false;
 
     /** The last matching {@code collection.get(i)} access found in the body. */

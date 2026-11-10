@@ -2669,7 +2669,9 @@ public class MustCallConsistencyAnalyzer {
             visited,
             worklist);
       } catch (InvalidLoopBodyAnalysisException e) {
-        // this exception is only thrown from the loop body analysis, which has another entry point.
+        // propagateObligationsToSuccessorBlock throws this exception only during a loop body
+        // analysis, and a loop body analysis does not call this method.
+        throw new BugInCF("Unexpected exception outside a loop body analysis", e);
       }
     }
   }
