@@ -4,6 +4,7 @@
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.qual.SideEffectsOnly;
 
 public class AssumeSideEffectFree {
 
@@ -51,5 +52,30 @@ public class AssumeSideEffectFree {
     // :: error: [purity.assign.field]
     field++;
     return field;
+  }
+
+  interface SideEffectFreeSupplier {
+    @SideEffectFree
+    int get();
+  }
+
+  interface SideEffectsOnlySupplier {
+    @SideEffectsOnly("#1")
+    int get(AssumeSideEffectFree a);
+  }
+
+  interface DeterministicSupplier {
+    @Deterministic
+    int get();
+  }
+
+  /** A method reference is treated like a lambda whose body calls the referenced method. */
+  void methodReferences() {
+    SideEffectFreeSupplier s1 = this::unannotated;
+    SideEffectFreeSupplier l1 = () -> unannotated();
+    SideEffectsOnlySupplier s2 = AssumeSideEffectFree::unannotated;
+    SideEffectsOnlySupplier l2 = a -> a.unannotated();
+    // :: error: [purity.methodref]
+    DeterministicSupplier s3 = this::unannotated;
   }
 }

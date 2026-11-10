@@ -58,4 +58,16 @@ public class NotCheckedWithoutOption {
   void nondeterministicAnnotation(Collection<Integer> a) {
     a.add(1);
   }
+
+  interface Mutator {
+    @SideEffectsOnly("#1")
+    void apply(Collection<Integer> c);
+  }
+
+  static void unannotatedStatic(Collection<Integer> c) {}
+
+  void methodReference() {
+    // Would report `purity.methodref`:  the referenced method promises nothing.
+    Mutator m = NotCheckedWithoutOption::unannotatedStatic;
+  }
 }

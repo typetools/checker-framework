@@ -306,9 +306,16 @@ public final class PurityChecker {
    * {@code declaration}'s purity annotation, and the argument also has the purity that the
    * functional method of {@code declaration}'s parameter promises.
    *
+   * <p>The functional method of {@code declaration}'s parameter may override {@code
+   * parameterFunction}, rather than the other way around. That happens for a method reference whose
+   * functional method passes a subinterface, such as one that redeclares {@code Function.apply}, to
+   * a referenced method's parameter of the superinterface type. The argument's implementation of
+   * {@code parameterFunction} is then its implementation of the overriding method, which the call
+   * checked.
+   *
    * <p>The result is empty if {@code declaration}'s parameter at {@code index} is not a functional
-   * interface, or if {@code parameterFunction} does not override its functional method: then the
-   * call checks nothing about the code that {@code parameterFunction} runs.
+   * interface, or if neither {@code parameterFunction} nor its functional method overrides the
+   * other: then the call checks nothing about the code that {@code parameterFunction} runs.
    *
    * @param annoProvider the annotation provider
    * @param declaration a method through which a call may reach an implementation
@@ -326,7 +333,8 @@ public final class PurityChecker {
       ProcessingEnvironment env) {
     ExecutableElement declarationFunction = parameterFunctionalMethod(declaration, index, env);
     if (declarationFunction == null
-        || !isSameOrOverrides(parameterFunction, declarationFunction, env)) {
+        || !(isSameOrOverrides(parameterFunction, declarationFunction, env)
+            || isSameOrOverrides(declarationFunction, parameterFunction, env))) {
       return EnumSet.noneOf(PurityKind.class);
     }
     EnumSet<PurityKind> result = functionalParameterKinds(annoProvider, declaration, env);

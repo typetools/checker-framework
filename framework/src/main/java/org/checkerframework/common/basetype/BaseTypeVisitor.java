@@ -93,6 +93,7 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
@@ -101,6 +102,7 @@ import org.checkerframework.dataflow.expression.JavaExpressionScanner;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.Unknown;
+import org.checkerframework.dataflow.expression.ValueLiteral;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Impure;
 import org.checkerframework.dataflow.qual.Pure;
@@ -2139,25 +2141,36 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    */
   private EnumSet<PurityKind> implementationPurityKinds(ExecutableElement method) {
     EnumSet<PurityKind> result = PurityUtils.getPurityKinds(atypeFactory, method);
-    // Like PurityChecker, apply each assumption to every method, including one with no purity
-    // annotation, so that a method reference is treated exactly like a lambda whose body calls
-    // the referenced method.
-    if (assumeSideEffectFree) {
-      result.add(PurityKind.SIDE_EFFECT_FREE);
-    }
-    if (assumeDeterministic) {
-      result.add(PurityKind.DETERMINISTIC);
-    }
-    if (assumePureGetters && ElementUtils.isGetter(method)) {
-      result.add(PurityKind.SIDE_EFFECT_FREE);
-      result.add(PurityKind.DETERMINISTIC);
-    }
+    addAssumedPurity(result, method);
     if (method.getKind() != ElementKind.CONSTRUCTOR) {
       // A constructor reference returns the new object, though the constructor's return type is
       // void.
       PurityUtils.addDeterminismOfVoidCall(result, method.getReturnType());
     }
     return result;
+  }
+
+  /**
+   * Adds to {@code purityKinds} whatever the command-line assumptions grant {@code method}.
+   *
+   * <p>Like PurityChecker, this applies each assumption to every method, including one with no
+   * purity annotation, so that a method reference is treated exactly like a lambda whose body calls
+   * the referenced method.
+   *
+   * @param purityKinds the purity kinds of {@code method}; side-effected by this method
+   * @param method a method or constructor
+   */
+  private void addAssumedPurity(EnumSet<PurityKind> purityKinds, ExecutableElement method) {
+    if (assumeSideEffectFree) {
+      purityKinds.add(PurityKind.SIDE_EFFECT_FREE);
+    }
+    if (assumeDeterministic) {
+      purityKinds.add(PurityKind.DETERMINISTIC);
+    }
+    if (assumePureGetters && ElementUtils.isGetter(method)) {
+      purityKinds.add(PurityKind.SIDE_EFFECT_FREE);
+      purityKinds.add(PurityKind.DETERMINISTIC);
+    }
   }
 
   /**
@@ -5437,12 +5450,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       if (!checkPurityAnnotations) {
         return;
       }
-      EnumSet<PurityKind> superPurity = purityKinds(overridden.getElement());
-      EnumSet<PurityKind> subPurity = purityKinds(overrider.getElement());
+      EnumSet<PurityKind> superPurity = purityKinds(overridden.getElement(), false);
+      // Apply the command-line assumptions to the referenced method, so that a method reference is
+      // treated like a lambda whose body calls the referenced method.
+      EnumSet<PurityKind> subPurity = purityKinds(overrider.getElement(), true);
 
       boolean ok;
       if (superPurity.contains(PurityKind.SIDE_EFFECTS_ONLY)) {
-        if (subPurity.contains(PurityKind.SIDE_EFFECT_FREE)) {
+        if (!checkPurityAnnotationsOption) {
+          // A @SideEffectsOnly annotation is verified only when -AcheckPurityAnnotations itself was
+          // supplied, not merely -AsuggestPureMethods or -Ainfer; see
+          // checkSideEffectsOnlyAnnotation.
+          ok = true;
+        } else if (subPurity.contains(PurityKind.SIDE_EFFECT_FREE)) {
           ok = true;
         } else if (subPurity.contains(PurityKind.SIDE_EFFECTS_ONLY)) {
           // Both methods are annotated with @SideEffectsOnly, and the referenced method is
@@ -5524,10 +5544,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * AnnotatedTypeFactory#getSideEffectsOnlyExpressionMap}.
      *
      * @param method a method
+     * @param applyAssumptions whether to add what the command-line assumptions, such as {@code
+     *     -AassumeSideEffectFree}, grant {@code method}
      * @return the purity kinds of {@code method}
      */
-    private EnumSet<PurityKind> purityKinds(ExecutableElement method) {
+    private EnumSet<PurityKind> purityKinds(ExecutableElement method, boolean applyAssumptions) {
       EnumSet<PurityKind> result = PurityUtils.getPurityKinds(atypeFactory, method);
+      if (applyAssumptions) {
+        addAssumedPurity(result, method);
+      }
       if (!result.contains(PurityKind.SIDE_EFFECT_FREE)
           && atypeFactory.getSideEffectsOnlyExpressionMap(method) != null) {
         result.add(PurityKind.SIDE_EFFECTS_ONLY);
@@ -5626,7 +5651,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * refers to, into the frame of the functional interface method that the reference implements.
      *
      * <p>The two methods' parameters do not necessarily correspond positionally; see {@link
-     * #methodRefParameterOffset}.
+     * #methodRefParameterOffset}. When the referenced method is invoked with variable arity, an
+     * element {@code #n[k]} of its varargs parameter {@code #n} is the interface method's
+     * corresponding parameter; any other use of {@code #n} has no counterpart there, because the
+     * array is created for the call.
      *
      * <p>For a constructor reference, the expression {@code this} is dropped, because the object
      * under construction did not exist before the call. An expression that is reached through that
@@ -5649,29 +5677,54 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       List<FormalParameter> superParameters =
           JavaExpression.getFormalParameters(overridden.getElement());
       int shift = methodRefParameterOffset();
+      int subParameterCount = overrider.getElement().getParameters().size();
+      // True if the referenced method is invoked with variable arity:  the interface method's
+      // parameters from the varargs position onward become the elements of a new array, which is
+      // the referenced method's varargs parameter.  That is so even when the two methods have the
+      // same number of parameters.
+      boolean varargsAdapted = TreeUtils.hasVarargsParameter((MemberReferenceTree) overriderTree);
       // The parameter correspondence matters only if some expression refers to a formal parameter.
       // It does not matter for `this`:  for an unbound reference, `this` is always the interface
       // method's first parameter, and otherwise `this` has no counterpart regardless of arity.
       boolean needsCorrespondence =
           subExpressions.stream().anyMatch(e -> e.containsOfClass(FormalParameter.class));
       if (needsCorrespondence
-          && superParameters.size() != overrider.getElement().getParameters().size() + shift) {
-        // The parameters do not correspond one-to-one, as when a varargs method implements a
-        // fixed-arity interface method.  Do not guess at a correspondence.
-        checker.reportWarning(
-            overriderTree,
-            "purity.parameters.sideeffectsonly",
-            ElementUtils.getSimpleDescription(overrider.getElement()),
-            methodSignature(overrider.getElement()),
-            methodSignature(overridden.getElement()));
+          && !varargsAdapted
+          && superParameters.size() != subParameterCount + shift) {
+        // The parameters do not correspond one-to-one.  Do not guess at a correspondence.
+        reportParametersDoNotCorrespond();
         return null;
       }
 
+      // Set to true if an expression uses the varargs array other than through a constant index.
+      // That array is created for the call, so it has no counterpart at the interface method.
+      boolean[] usesVarargsArray = {false};
       JavaExpressionConverter converter =
           new JavaExpressionConverter() {
             @Override
             protected JavaExpression visitFormalParameter(FormalParameter parameter, Void unused) {
+              if (varargsAdapted && parameter.getIndex() == subParameterCount) {
+                usesVarargsArray[0] = true;
+                return new Unknown(parameter.getType());
+              }
               return superParameters.get(parameter.getIndex() - 1 + shift);
+            }
+
+            @Override
+            protected JavaExpression visitArrayAccess(ArrayAccess arrayAccess, Void unused) {
+              // Under variable-arity invocation, element `k` of the varargs array is the interface
+              // method's parameter at the varargs position plus `k`.
+              if (varargsAdapted
+                  && arrayAccess.getArray() instanceof FormalParameter array
+                  && array.getIndex() == subParameterCount
+                  && arrayAccess.getIndex() instanceof ValueLiteral indexLiteral
+                  && indexLiteral.getValue() instanceof Integer k) {
+                int superIndex = subParameterCount - 1 + shift + k;
+                if (k >= 0 && superIndex < superParameters.size()) {
+                  return superParameters.get(superIndex);
+                }
+              }
+              return super.visitArrayAccess(arrayAccess, unused);
             }
 
             @Override
@@ -5694,12 +5747,31 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           continue;
         }
         JavaExpression converted = converter.convert(subExpression);
+        if (usesVarargsArray[0]) {
+          reportParametersDoNotCorrespond();
+          return null;
+        }
         if (converted.containsOfClass(Unknown.class)) {
           return null;
         }
         result.add(converted);
       }
       return result;
+    }
+
+    /**
+     * Warns that the referenced method's {@code @SideEffectsOnly} annotation cannot be translated
+     * to the interface method's frame, because the two methods' parameters do not correspond. That
+     * is the case when the arities differ, or when the annotation mentions the varargs array that a
+     * variable-arity invocation creates.
+     */
+    private void reportParametersDoNotCorrespond() {
+      checker.reportWarning(
+          overriderTree,
+          "purity.parameters.sideeffectsonly",
+          ElementUtils.getSimpleDescription(overrider.getElement()),
+          methodSignature(overrider.getElement()),
+          methodSignature(overridden.getElement()));
     }
 
     /**

@@ -237,4 +237,42 @@ public class MethodRefSideEffectsOnly {
     // :: error: (purity.methodref)
     Mutator m = cell::mutatesOwnField;
   }
+
+  static class Node {
+    Collection<Integer> child = new java.util.ArrayList<>();
+  }
+
+  @SideEffectsOnly("#1[0].child")
+  static void mutatesFirstChild(Node... nodes) {
+    nodes[0].child.add(1);
+  }
+
+  @SideEffectsOnly("#1[1].child")
+  static void mutatesSecondChild(Node... nodes) {
+    nodes[1].child.add(1);
+  }
+
+  interface ChildMutator {
+    @SideEffectsOnly("#1.child")
+    void apply(Node node);
+  }
+
+  interface TwoChildMutator {
+    @SideEffectsOnly("#2.child")
+    void apply(Node node1, Node node2);
+  }
+
+  void varargsElementOk() {
+    // Under variable-arity invocation, `#1[0]` of the referenced method is the interface method's
+    // `#1`, even though the two methods have the same number of parameters.
+    ChildMutator m1 = MethodRefSideEffectsOnly::mutatesFirstChild;
+    TwoChildMutator m2 = MethodRefSideEffectsOnly::mutatesSecondChild;
+  }
+
+  void varargsElementNotOk() {
+    // `#1[0].child` is the interface method's `#1.child`, which its annotation does not permit
+    // modifying.
+    // :: error: (purity.methodref)
+    TwoChildMutator m = MethodRefSideEffectsOnly::mutatesFirstChild;
+  }
 }
