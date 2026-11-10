@@ -241,11 +241,15 @@ rules 6 and 7 apply. If rule 7 applies, it makes the type of local variables top
 A type system designer can also register a default for a particular element
 and for the elements that it encloses, by calling
 \<QualifierDefaults.addElementDefault> (Section~\ref{creating-typesystem-defaults}).
-Such a default takes precedence over rule 6, that is, over a user-written
-\<@DefaultQualifier>, and over a default that is registered for an enclosing element.
-A \<@DefaultQualifier> or registered default for \<OTHERWISE> applies only if no other
-\<@DefaultQualifier> or registered default for a more concrete location applies,
-whichever element each default is written or registered on.
+Such a default is treated like a \<@DefaultQualifier> annotation (rule 6)
+written on that element, except that it takes precedence over a
+\<@DefaultQualifier> annotation that is written on that same element.
+Therefore, a \<@DefaultQualifier> annotation on a nested element takes
+precedence over it.
+
+A default for \<OTHERWISE>, whether written as \<@DefaultQualifier> or
+registered, applies only if no default for a more concrete location applies,
+even a default on an element that encloses the \<OTHERWISE> default's element.
 (\<ALL> is not a more concrete location.)
 
 % (Implementation detail:  setting defaults is implemented by the
