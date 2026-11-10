@@ -3695,24 +3695,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
       TypeMirror newExprTM = newExprType.getUnderlyingType();
 
-      if (!typeHierarchy.isSubtype(newExprType, newCastType)) {
+      if (!isCastSafeIncludingTypeArguments(newCastType, newExprType)) {
         return false;
       }
       if (newCastType.getKind() == TypeKind.ARRAY && newExprType.getKind() != TypeKind.ARRAY) {
         // Always warn if the cast contains an array, but the expression
         // doesn't, as in "(Object[]) o" where o is of type Object
         return false;
-      } else if (newCastType.getKind() == TypeKind.DECLARED
-          && newExprType.getKind() == TypeKind.DECLARED) {
-        int castSize = ((AnnotatedDeclaredType) newCastType).getTypeArguments().size();
-        int exprSize = ((AnnotatedDeclaredType) newExprType).getTypeArguments().size();
-
-        if (castSize != exprSize) {
-          // Always warn if the cast and expression contain a different number of type
-          // arguments, e.g. to catch a cast from "Object" to "List<@NonNull Object>".
-          // TODO: the same number of arguments actually doesn't guarantee anything.
-          return false;
-        }
       } else if (castTypeKind == TypeKind.TYPEVAR && exprType.getKind() == TypeKind.TYPEVAR) {
         // If both the cast type and the casted expression are type variables, then check
         // the bounds.
@@ -3739,6 +3728,48 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         exprTypeWidened.getUnderlyingType(),
         castAnnos,
         newCastTM);
+  }
+
+  /**
+   * Returns true if the cast from {@code exprType} to {@code castType} is safe with respect to the
+   * qualifiers on type arguments and array components. Returns false if the Java cast is unchecked
+   * (JLS 5.1.6.2).
+   *
+   * <p>Otherwise, if the Java type of {@code exprType} is a subtype of the Java type of {@code
+   * castType} (an upcast), returns whether {@code exprType} is a subtype of {@code castType}. If
+   * the erased Java type of {@code castType} is a subtype of the erased Java type of {@code
+   * exprType} (a downcast), returns whether {@code exprType} is a subtype of {@code castType}
+   * viewed as an instance of the Java class of {@code exprType}. Otherwise, the Java types are
+   * unrelated (as in a cast between two unrelated interfaces), and this method returns true.
+   *
+   * @param castType annotated type of the cast; not a type variable
+   * @param exprType annotated type of the casted expression; not a type variable
+   * @return true if the cast from {@code exprType} to {@code castType} is safe with respect to the
+   *     qualifiers on type arguments and array components
+   */
+  private boolean isCastSafeIncludingTypeArguments(
+      AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
+    TypeMirror castTM = castType.getUnderlyingType();
+    TypeMirror exprTM = exprType.getUnderlyingType();
+    if (TypesUtils.isUncheckedCast(exprTM, castTM, atypeFactory.getProcessingEnv())) {
+      // Java does not verify the type arguments of castType, so their qualifiers cannot be
+      // verified either.
+      return false;
+    }
+    if (types.isSubtype(exprTM, castTM)) {
+      return typeHierarchy.isSubtype(exprType, castType);
+    }
+    if (TypesUtils.isErasedSubtype(castTM, exprTM, types)) {
+      // TypeHierarchy#isSubtype requires the Java type of its first argument to be a subtype of
+      // the Java type of its second argument, so compare exprType to the supertype of castType
+      // whose Java class is that of exprType.  For example, for a cast from
+      // Collection<@Nullable String> to List<@NonNull String>, compare
+      // Collection<@Nullable String> to Collection<@NonNull String>.
+      AnnotatedTypeMirror castTypeAsExprType =
+          AnnotatedTypes.castedAsSuper(atypeFactory, castType, exprType);
+      return typeHierarchy.isSubtype(exprType, castTypeAsExprType);
+    }
+    return true;
   }
 
   /**
