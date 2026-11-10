@@ -42,6 +42,12 @@ public class ExplicitUnboxingKeepsConditionalRefinement {
     return isNN(o).booleanValue() && o.hashCode() > 0;
   }
 
+  void equalToUnboxedConstant(@Nullable Object o) {
+    if (isNN(o) == ((Boolean) true).booleanValue()) {
+      o.hashCode();
+    }
+  }
+
   int intValue(Integer i) {
     return i.intValue() + i.intValue();
   }
