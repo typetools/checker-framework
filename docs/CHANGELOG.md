@@ -59,10 +59,15 @@ cast.
 
 These methods of `CFAbstractTransfer` no longer call `visitNode()`:
 `visitConditionalAnd()`, `visitConditionalNot()`, `visitConditionalOr()`,
-`visitLambdaResultExpression()`, `visitMarker()`, `visitReturn()`,
-`visitTernaryExpression()`, `visitTypeCast()`, and, for a boolean literal that
-is the right operand of a boolean operator, `visitValueLiteral()`.  A subclass
-that overrides `visitNode()` may need to override them too.
+`visitMarker()`, `visitReturn()`, `visitTernaryExpression()`,
+`visitTypeCast()`; for boolean operands, `visitBitwiseAnd()`,
+`visitBitwiseOr()`, `visitBitwiseXor()`, `visitEqualTo()`, and
+`visitNotEqual()`; and, for a boolean literal that is the right operand of a
+boolean operator, `visitValueLiteral()`.  A subclass that overrides
+`visitNode()` may need to override them too.
+`CFAbstractTransfer.visitLambdaResultExpression()` no longer calls the transfer
+function of the lambda's result node; it uses the value that the result node
+already computed.
 
 Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
 and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
