@@ -1,7 +1,6 @@
 package org.checkerframework.framework.util.typeinference8;
 
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
@@ -13,7 +12,6 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +35,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
+import org.plumelib.util.MapsP;
 
 /** Implementation of type argument inference. */
 public class DefaultTypeArgumentInference implements TypeArgumentInference {
@@ -47,16 +46,19 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
   /**
    * A cache from the outermost tree of an inference problem (a method invocation or class instance
    * creation) to the result of solving that problem, before {@link
-   * InferenceResult#swapTypeVariables} is applied. Each entry is for a tree of {@link #cacheRoot}.
-   * See {@link #canUseCache}.
+   * InferenceResult#swapTypeVariables} is applied. Its keys are trees of the compilation unit that
+   * the type factory is processing; see {@link #clearCache}. See {@link #canUseCache}.
    */
-  private final Map<ExpressionTree, InferenceResult> inferenceCache = new HashMap<>();
+  private final Map<ExpressionTree, InferenceResult> inferenceCache;
 
-  /** The compilation unit whose trees are the keys of {@link #inferenceCache}. */
-  private @Nullable CompilationUnitTree cacheRoot = null;
-
-  /** Creates a DefaultTypeArgumentInference. */
-  public DefaultTypeArgumentInference() {}
+  /**
+   * Creates a DefaultTypeArgumentInference.
+   *
+   * @param cacheSize the maximum number of inference results that this caches
+   */
+  public DefaultTypeArgumentInference(int cacheSize) {
+    inferenceCache = MapsP.createLruCache(cacheSize);
+  }
 
   @SuppressWarnings("interning:not.interned")
   @Override
@@ -104,28 +106,11 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             instantiated, new LinkedHashSet<>(i.context.needUncheckedConversion), false, "");
       }
     }
-    // Null if outerTree is a member reference.
-    AnnotatedExecutableType outerMethodType;
     if (outerTree != expressionTree) {
-      if (outerTree instanceof MethodInvocationTree mit) {
-        pathToExpression = typeFactory.getPath(outerTree);
-        outerMethodType = typeFactory.methodFromUseWithoutTypeArgInference(mit).executableType();
-      } else if (outerTree instanceof NewClassTree nct) {
-        pathToExpression = typeFactory.getPath(outerTree);
-        outerMethodType =
-            typeFactory.constructorFromUseWithoutTypeArgInference(nct).executableType();
-      } else if (outerTree instanceof MemberReferenceTree) {
-        pathToExpression = typeFactory.getPath(outerTree);
-        outerMethodType = null;
-      } else {
-        throw new BugInCF(
-            "Unexpected kind of outer expression to infer type arguments: %s", outerTree.getKind());
-      }
-    } else {
-      outerMethodType = executableType;
+      pathToExpression = typeFactory.getPath(outerTree);
     }
-
     assert pathToExpression != null : "@AssumeAssertion(nullness): the tree is being type-checked";
+
     boolean useCache =
         !(outerTree instanceof MemberReferenceTree) && canUseCache(typeFactory, pathToExpression);
     if (useCache) {
@@ -135,9 +120,27 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       if (cached != null
           && (cached.getResults().containsKey(expressionTree)
               || !(expressionTree instanceof MemberReferenceTree))) {
-        return cached.copy().swapTypeVariables(executableType, expressionTree);
+        return cached
+            .copyForExpression(expressionTree)
+            .swapTypeVariables(executableType, expressionTree);
       }
     }
+
+    // Null if outerTree is a member reference.
+    AnnotatedExecutableType outerMethodType;
+    if (outerTree == expressionTree) {
+      outerMethodType = executableType;
+    } else if (outerTree instanceof MethodInvocationTree mit) {
+      outerMethodType = typeFactory.methodFromUseWithoutTypeArgInference(mit).executableType();
+    } else if (outerTree instanceof NewClassTree nct) {
+      outerMethodType = typeFactory.constructorFromUseWithoutTypeArgInference(nct).executableType();
+    } else if (outerTree instanceof MemberReferenceTree) {
+      outerMethodType = null;
+    } else {
+      throw new BugInCF(
+          "Unexpected kind of outer expression to infer type arguments: %s", outerTree.getKind());
+    }
+
     boolean pushedToInferenceStack = false;
     try {
       InvocationTypeInference java8Inference =
@@ -151,7 +154,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             : "@AssumeAssertion(nullness): outerTree is not a member reference";
         InferenceResult result = java8Inference.infer(outerTree, outerMethodType);
         if (useCache) {
-          inferenceCache.put(outerTree, result.copy());
+          inferenceCache.put(outerTree, result);
         }
         if (!result.getResults().containsKey(expressionTree)
             && expressionTree instanceof MemberReferenceTree mrt) {
@@ -179,6 +182,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
               : "@AssumeAssertion(nullness): the tree is being type-checked";
           java8Inference.context.setPathToExpression(pathToMemberRef);
           return java8Inference.infer(mrt);
+        }
+        if (useCache) {
+          // Do not let swapTypeVariables or the caller modify the cached result.
+          result = result.copyForExpression(expressionTree);
         }
         return result.swapTypeVariables(executableType, expressionTree);
       }
@@ -212,9 +219,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * inference problem is being solved, because a problem that is being solved can provide the types
    * of lambda parameters.
    *
-   * <p>If this returns true, it first clears {@link #inferenceCache} if the cache is for another
-   * compilation unit.
-   *
    * @param typeFactory a type factory
    * @param pathToOuterTree the path to the outermost tree of an inference problem
    * @return true if {@link #inferenceCache} can be used for the inference problem
@@ -226,15 +230,12 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       return false;
     }
     ClassTree enclosingClass = TreePathUtil.enclosingClass(pathToOuterTree);
-    if (enclosingClass == null || !gatf.isFlowAnalysisFinished(enclosingClass)) {
-      return false;
-    }
-    CompilationUnitTree root = pathToOuterTree.getCompilationUnit();
-    if (root != cacheRoot) {
-      inferenceCache.clear();
-      cacheRoot = root;
-    }
-    return true;
+    return enclosingClass != null && gatf.isFlowAnalysisFinished(enclosingClass);
+  }
+
+  @Override
+  public void clearCache() {
+    inferenceCache.clear();
   }
 
   @Override

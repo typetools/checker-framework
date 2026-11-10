@@ -1000,6 +1000,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       fromMemberTreeCache.clear();
       fromTypeTreeCache.clear();
       classAndMethodTreeCache.clear();
+      typeArgumentInference.clearCache();
 
       // There is no need to clear the following cache, it is limited by cache size and it
       // contents won't change between compilation units.
@@ -1178,7 +1179,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the object that infers type arguments
    */
   protected TypeArgumentInference createTypeArgumentInference() {
-    return new DefaultTypeArgumentInference();
+    return new DefaultTypeArgumentInference(getCacheSize());
   }
 
   public TypeArgumentInference getTypeArgumentInference() {
