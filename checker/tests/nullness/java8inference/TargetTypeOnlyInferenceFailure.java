@@ -17,6 +17,10 @@ public class TargetTypeOnlyInferenceFailure {
     throw new Error();
   }
 
+  static <T extends @Nullable Object> List<? extends T> wildcardSingleton(T t) {
+    throw new Error();
+  }
+
   static <T extends @Nullable Object> T id(T t) {
     return t;
   }
@@ -44,6 +48,12 @@ public class TargetTypeOnlyInferenceFailure {
   void argument(@Nullable String s) {
     // :: error: [argument]
     takesNonNullList(singleton(s));
+  }
+
+  void wildcardReturnType(@Nullable String s) {
+    // The return type is captured, which creates inference variables for the capture.
+    // :: error: [assignment]
+    List<? extends @NonNull String> l = wildcardSingleton(s);
   }
 
   void nestedInvocation(@Nullable String s) {

@@ -13,6 +13,7 @@ import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.util.typeinference8.types.CaptureVariable;
 import org.checkerframework.framework.util.typeinference8.types.ProperType;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Java8InferenceContext;
@@ -154,6 +155,36 @@ public class InferenceResult {
   }
 
   /**
+   * Creates a copy of the given inference result. The copy does not share any mutable state with
+   * {@code other}: its maps are new, and its type arguments are deep copies.
+   *
+   * @param other an inference result
+   */
+  private InferenceResult(InferenceResult other) {
+    this.results = new HashMap<>(other.results.size());
+    for (Map.Entry<Tree, Map<TypeVariable, AnnotatedTypeMirror>> entry : other.results.entrySet()) {
+      Map<TypeVariable, AnnotatedTypeMirror> typeArgs = new HashMap<>(entry.getValue().size());
+      entry.getValue().forEach((typeVar, typeArg) -> typeArgs.put(typeVar, typeArg.deepCopy()));
+      this.results.put(entry.getKey(), typeArgs);
+    }
+    this.needUncheckedConversion = other.needUncheckedConversion;
+    this.annoInferenceFailed = other.annoInferenceFailed;
+    this.failedAfterTargetTypeConstraints = other.failedAfterTargetTypeConstraints;
+    this.qualifiersIncompatibleWithTarget = other.qualifiersIncompatibleWithTarget;
+    this.errorMsg = other.errorMsg;
+    this.inferenceCrashed = other.inferenceCrashed;
+  }
+
+  /**
+   * Returns a copy of this inference result that does not share any mutable state with it.
+   *
+   * @return a copy of this inference result
+   */
+  public InferenceResult copy() {
+    return new InferenceResult(this);
+  }
+
+  /**
    * A mapping from a tree that needs type argument inference to a map from type parameter to its
    * inferred annotated type argument. If inference crashed, this map is empty. If inference failed
    * because of qualifiers, this map contains the type arguments that inference instantiated, whose
@@ -226,6 +257,9 @@ public class InferenceResult {
    * Convert the instantiated variables to a map from expression tree to a map from type variable to
    * its type argument.
    *
+   * <p>A {@link CaptureVariable} is not a type argument of its invocation, so it does not appear in
+   * the inner maps. But its invocation is a key of the result, even if it has no other variables.
+   *
    * @param variables instantiated variables
    * @return a map from expression tree to a map from type variable to its type argument
    */
@@ -235,6 +269,9 @@ public class InferenceResult {
     for (Variable variable : variables) {
       Map<TypeVariable, AnnotatedTypeMirror> typeMap =
           map.computeIfAbsent(variable.getInvocation(), k -> new HashMap<>());
+      if (variable instanceof CaptureVariable) {
+        continue;
+      }
       ProperType instantiation = variable.getInstantiation();
       assert instantiation != null : "@AssumeAssertion(nullness): variables are instantiated";
       typeMap.put(variable.getJavaType(), instantiation.getAnnotatedType());

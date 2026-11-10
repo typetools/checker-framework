@@ -1,5 +1,7 @@
 package org.checkerframework.framework.util.typeinference8;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
@@ -11,6 +13,7 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,9 +31,9 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.typeinference8.types.ContainsInferenceVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
-import org.checkerframework.framework.util.typeinference8.util.FalseBoundException;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -42,6 +45,17 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
   /** Stack of all inference problems currently being solved. */
   private final ArrayDeque<InvocationTypeInference> java8InferenceStack = new ArrayDeque<>();
+
+  /**
+   * A cache from the outermost tree of an inference problem (a method invocation or class instance
+   * creation) to the result of solving that problem, before {@link
+   * InferenceResult#swapTypeVariables} is applied. Each entry is for a tree of {@link #cacheRoot}.
+   * See {@link #canUseCache}.
+   */
+  private final Map<ExpressionTree, InferenceResult> inferenceCache = new HashMap<>();
+
+  /** The compilation unit whose trees are the keys of {@link #inferenceCache}. */
+  private @Nullable CompilationUnitTree cacheRoot = null;
 
   /** Creates a DefaultTypeArgumentInference. */
   public DefaultTypeArgumentInference() {}
@@ -115,13 +129,26 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     assert pathToExpression != null : "@AssumeAssertion(nullness): the tree is being type-checked";
     try {
-      InvocationTypeInference java8Inference =
-          new InvocationTypeInference(typeFactory, pathToExpression, true);
       if (outerTree instanceof MemberReferenceTree outerMemberRef) {
+        InvocationTypeInference java8Inference =
+            new InvocationTypeInference(typeFactory, pathToExpression, true);
         return inferOnStack(java8Inference, () -> java8Inference.infer(outerMemberRef));
       }
       assert outerMethodType != null
           : "@AssumeAssertion(nullness): outerTree is not a member reference";
+      boolean useCache = canUseCache(typeFactory, pathToExpression);
+      if (useCache) {
+        InferenceResult cached = inferenceCache.get(outerTree);
+        // A member reference that the cached result has no type arguments for needs another
+        // inference, below, that reuses the inference problem.  Do not use the cache for it.
+        if (cached != null
+            && (cached.getResults().containsKey(expressionTree)
+                || !(expressionTree instanceof MemberReferenceTree))) {
+          return cached.copy().swapTypeVariables(executableType, expressionTree);
+        }
+      }
+      InvocationTypeInference java8Inference =
+          new InvocationTypeInference(typeFactory, pathToExpression, true);
       InferenceResult result =
           inferOnStack(java8Inference, () -> java8Inference.infer(outerTree, outerMethodType));
       // The inference problem whose result is used.
@@ -154,6 +181,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         }
       }
       chosenInference.recordLambdaParameterTypes();
+      if (useCache) {
+        inferenceCache.put(outerTree, result.copy());
+      }
       if (!result.getResults().containsKey(expressionTree)
           && expressionTree instanceof MemberReferenceTree mrt) {
         // The inference of the outer tree did not create any inference variables for the
@@ -238,20 +268,54 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
   }
 
   /**
-   * Performs the inference problem {@code retry}, which ignores the target type of {@code
-   * outerTree}.
+   * Returns true if {@link #inferenceCache} can be used for the inference problem whose outermost
+   * tree is the leaf of {@code pathToOuterTree}: the result of that problem does not change if it
+   * is solved again later. That is the case if dataflow analysis has finished for the enclosing
+   * class, because then the types of the expressions in the problem do not change, and if no other
+   * inference problem is being solved, because a problem that is being solved can provide the types
+   * of lambda parameters.
    *
-   * <p>Returns null if inference fails because of the Java types. That is an expected outcome: the
-   * problem is one that javac never solves, and without the target type the Java types might not be
-   * inferable, for example when the target type is the only source of the type of a lambda's return
+   * <p>If this returns true, it first clears {@link #inferenceCache} if the cache is for another
+   * compilation unit.
+   *
+   * @param typeFactory a type factory
+   * @param pathToOuterTree the path to the outermost tree of an inference problem
+   * @return true if {@link #inferenceCache} can be used for the inference problem
+   */
+  private boolean canUseCache(AnnotatedTypeFactory typeFactory, TreePath pathToOuterTree) {
+    if (!typeFactory.shouldCache
+        || !java8InferenceStack.isEmpty()
+        || !(typeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf)) {
+      return false;
+    }
+    ClassTree enclosingClass = TreePathUtil.enclosingClass(pathToOuterTree);
+    if (enclosingClass == null || !gatf.isFlowAnalysisFinished(enclosingClass)) {
+      return false;
+    }
+    CompilationUnitTree root = pathToOuterTree.getCompilationUnit();
+    if (root != cacheRoot) {
+      inferenceCache.clear();
+      cacheRoot = root;
+    }
+    return true;
+  }
+
+  /**
+   * Returns the result of the inference problem {@code retry}, which ignores the target type of
+   * {@code outerTree}, or null if {@code retry} fails or crashes.
+   *
+   * <p>Inference can fail because of the Java types. That is an expected outcome: the problem is
+   * one that javac never solves, and without the target type the Java types might not be inferable,
+   * for example when the target type is the only source of the type of a lambda's return
    * expression.
    *
-   * <p>Any other exception indicates a bug, and it propagates to the caller.
+   * <p>A crash is not reported, because the retry is optional: the caller uses the result of
+   * inference with the target type instead.
    *
-   * @param retry the inference problem to solve; it does not use the target type
-   * @param outerTree the invocation whose type arguments are inferred
+   * @param retry an inference problem that does not use the target type
+   * @param outerTree the invocation whose type arguments {@code retry} infers
    * @param outerMethodType the type of {@code outerTree}'s method before type argument substitution
-   * @return the result of inference, or null if inference fails because of the Java types
+   * @return the result of {@code retry}, or null if it fails because of the Java types or crashes
    */
   private @Nullable InferenceResult inferWithoutTargetType(
       InvocationTypeInference retry,
@@ -259,7 +323,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       AnnotatedExecutableType outerMethodType) {
     try {
       return inferOnStack(retry, () -> retry.infer(outerTree, outerMethodType));
-    } catch (FalseBoundException ex) {
+    } catch (RuntimeException | AssertionError ex) {
+      // A FalseBoundException means that inference failed because of the Java types.
       return null;
     }
   }
