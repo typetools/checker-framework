@@ -14,8 +14,6 @@
 // The `failToMatch` example is copied from JEP 440: Record Patterns
 // (https://openjdk.org/jeps/440), section "Record patterns".
 
-package recordpatinfer;
-
 import java.util.List;
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;

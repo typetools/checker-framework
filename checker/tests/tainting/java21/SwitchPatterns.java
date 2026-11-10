@@ -12,8 +12,6 @@
 // The `Pair` example is adapted from JEP 440: Record Patterns (https://openjdk.org/jeps/440),
 // section "Record patterns and exhaustive switch".
 
-package recordpatinfer;
-
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 

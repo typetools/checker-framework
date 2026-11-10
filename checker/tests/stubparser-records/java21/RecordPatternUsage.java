@@ -4,16 +4,16 @@
 // component's type from the stub file.
 
 class RecordPatternUsage {
-  void varPattern(PairRecord p) {
-    if (p instanceof PairRecord(var k, var v)) {
+  void varPattern(PatternPairRecord p) {
+    if (p instanceof PatternPairRecord(var k, var v)) {
       k.toString();
       // :: error: [dereference.of.nullable]
       v.toString();
     }
   }
 
-  void typePattern(PairRecord p) {
-    if (p instanceof PairRecord(String k, Object v)) {
+  void typePattern(PatternPairRecord p) {
+    if (p instanceof PatternPairRecord(String k, Object v)) {
       k.toString();
       // :: error: [dereference.of.nullable]
       v.toString();

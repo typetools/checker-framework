@@ -9,8 +9,6 @@
 // beta1..betak whose bounds come from the captures' bounds.  Also tests step 6, the upward
 // projection of R<A1,...,An> with respect to the fresh type variables introduced by resolution.
 
-package recordpatinfer;
-
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 

@@ -8,8 +8,6 @@
 // is unconditional for its record component always matches, so binding it is an assignment. One
 // that is not unconditional is checked like a type pattern in an instanceof.
 
-package recordpatinfer;
-
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 

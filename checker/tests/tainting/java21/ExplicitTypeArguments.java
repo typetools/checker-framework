@@ -7,8 +7,6 @@
 // Tests for record patterns whose type arguments are written explicitly. Their qualifiers are
 // still inferred, because a record pattern's type cannot be annotated (JLS 14.30.1).
 
-package recordpatinfer;
-
 import java.util.function.Supplier;
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;

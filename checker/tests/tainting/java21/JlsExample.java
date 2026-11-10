@@ -11,8 +11,6 @@
 // Java SE 26 Edition (JLS section 18.5.5).  The annotations and the additional test methods
 // are not part of the JLS example.
 
-package recordpatinfer;
-
 import java.util.function.UnaryOperator;
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;

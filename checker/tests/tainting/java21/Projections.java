@@ -7,8 +7,6 @@
 // Tests for step 6 of JLS 26 section 18.5.5, which takes the upward projection of the record
 // pattern's type with respect to the fresh type variables that resolution introduced (JLS 4.10.5).
 
-package recordpatinfer;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.function.Supplier;

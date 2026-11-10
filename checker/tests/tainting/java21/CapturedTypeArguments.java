@@ -7,8 +7,6 @@
 // Tests for record patterns whose matched type mentions captured type variables, such as a record
 // pattern nested in another one, whose record component has the type Box<CAP#1>.
 
-package recordpatinfer;
-
 import org.checkerframework.checker.tainting.qual.Untainted;
 
 public class CapturedTypeArguments {

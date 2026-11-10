@@ -13,8 +13,6 @@
 // When the scrutinee supplies no information, the annotations on the record's declared bounds are
 // the only source of qualifiers for the component types.
 
-package recordpatinfer;
-
 import java.util.List;
 import java.util.function.Supplier;
 import org.checkerframework.checker.tainting.qual.Tainted;

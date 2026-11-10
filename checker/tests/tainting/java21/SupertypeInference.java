@@ -9,8 +9,6 @@
 // formula <T' = R'> is reduced.  Here the matched type is a supertype of the record class, so the
 // type arguments have to be propagated through the `implements` clause.
 
-package recordpatinfer;
-
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;

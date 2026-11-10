@@ -12,8 +12,6 @@
 //      recursively.  All bounds produced in steps 3 and 4 are incorporated into a single bound
 //      set."
 
-package recordpatinfer;
-
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.checkerframework.checker.tainting.qual.Tainted;

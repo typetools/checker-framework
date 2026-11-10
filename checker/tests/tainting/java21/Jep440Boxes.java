@@ -8,8 +8,6 @@
 // (https://openjdk.org/jeps/440), section "Type argument inference".  The annotations and the
 // remaining methods are not part of JEP 440.
 
-package recordpatinfer;
-
 import org.checkerframework.checker.tainting.qual.Tainted;
 import org.checkerframework.checker.tainting.qual.Untainted;
 
