@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -989,7 +990,9 @@ public abstract class CFAbstractTransfer<
    * different value than the assignment. For example, the result for {@code n = n.next} is just
    * {@code n}, because after the assignment {@code n.next} is a field of a different object. The
    * same holds for an assignment, compound assignment, increment, or decrement nested anywhere
-   * within {@code node}: the result for {@code n.next = (n = o).other} omits {@code n.next}.
+   * within {@code node}: the result for {@code n.next = (n = o).other} omits {@code n.next}. Only
+   * an assignment that executes after a side is evaluated matters: the result for {@code a[i = 0] =
+   * b[i]} includes {@code b[i]}, because {@code i} is assigned before {@code b[i]} is evaluated.
    *
    * <p>A node that is neither an assignment nor a value-preserving cast is returned even if it
    * contains an assignment, as in {@code x + (x = 1)}. {@link JavaExpression#fromNode} converts
@@ -1012,7 +1015,9 @@ public abstract class CFAbstractTransfer<
    * in such a later expression might change. For example, the result for the left operand of {@code
    * x == nonNull(x = null)} is empty, because the comparison says nothing about the value of {@code
    * x} after the assignment. If such a later expression calls a method or constructor that is not
-   * side-effect-free, then the result also omits each part that other code can assign.
+   * side-effect-free, then the result also omits each part that other code can assign, such as a
+   * field: the result for the left operand of {@code ((String) f) == clearF()} is empty if {@code
+   * f} is a non-final field.
    *
    * @param node possibly an assignment node or a cast
    * @return a list containing the right- and left-hand sides in the given assignment node that have
@@ -1039,16 +1044,16 @@ public abstract class CFAbstractTransfer<
     if (tree == null) {
       result.add(node);
     } else {
-      AssignmentTargetScanner scanner = new AssignmentTargetScanner(analysis.atypeFactory);
-      scanner.scan(tree, null);
-      List<JavaExpression> targets = scanner.targets;
+      // The assignments and value-preserving casts whose value is the value of `node`, outermost
+      // first.
+      List<Node> chain = new ArrayList<>();
       Node part = unwrapped;
       while (true) {
         if (part instanceof AssignmentNode a) {
-          result.add(a.getTarget());
+          chain.add(a);
           part = a.getExpression();
         } else if (part instanceof TypeCastNode cast && isValuePreservingCast(cast)) {
-          result.add(cast);
+          chain.add(cast);
           part = cast.getOperand();
         } else if (part instanceof WideningConversionNode widening
             && isValuePreservingConversion(widening)) {
@@ -1058,8 +1063,61 @@ public abstract class CFAbstractTransfer<
           break;
         }
       }
-      result.add(part);
-      result.removeIf(p -> mayBeChangedByAssignment(JavaExpression.fromNode(p), targets, true));
+      boolean allSimple = true;
+      for (Node n : chain) {
+        if (n instanceof AssignmentNode a && !(a.getTree() instanceof AssignmentTree)) {
+          allSimple = false;
+        }
+      }
+      AssignmentTargetScanner scanner = new AssignmentTargetScanner();
+      if (!allSimple) {
+        // A compound assignment, increment, or decrement.  Conservatively consider every
+        // assignment within the tree as executing after every part is evaluated.
+        scanner.scan(tree, null);
+        List<JavaExpression> targets = scanner.targets;
+        for (Node n : chain) {
+          result.add(n instanceof AssignmentNode a ? a.getTarget() : n);
+        }
+        result.add(part);
+        result.removeIf(p -> mayBeChangedByAssignment(JavaExpression.fromNode(p), targets, true));
+      } else {
+        // Java evaluates the receivers and indices of the targets from left to right, then the
+        // final right-hand side, then stores into the targets from right to left.  So an
+        // assignment within a target's receiver or index executes before the later targets and
+        // the right-hand side are evaluated, and does not change their values.  A cast evaluates
+        // nothing but its operand.
+        // `laterTargets` holds the assignments that execute after the current part is evaluated.
+        List<JavaExpression> laterTargets = scanner.targets;
+        for (Node n : chain) {
+          if (n.getTree() instanceof AssignmentTree at) {
+            laterTargets.add(AssignmentTargetScanner.targetExpression(at.getVariable()));
+          }
+        }
+        Node innermost = chain.get(chain.size() - 1);
+        ExpressionTree rhsTree =
+            innermost.getTree() instanceof AssignmentTree at
+                ? at.getExpression()
+                : ((TypeCastNode) innermost).getTree().getExpression();
+        scanner.scan(rhsTree, null);
+        if (!mayBeChangedByAssignment(JavaExpression.fromNode(part), laterTargets, true)) {
+          result.add(part);
+        }
+        for (int i = chain.size() - 1; i >= 0; i--) {
+          Node n = chain.get(i);
+          Node element;
+          if (n instanceof AssignmentNode a && a.getTree() instanceof AssignmentTree at) {
+            // An assignment within the target's own receiver or index might execute after part of
+            // the target is evaluated, as in `a[i++] = o`, so consider it too.
+            scanner.scan(at.getVariable(), null);
+            element = a.getTarget();
+          } else {
+            element = n;
+          }
+          if (!mayBeChangedByAssignment(JavaExpression.fromNode(element), laterTargets, true)) {
+            result.add(0, element);
+          }
+        }
+      }
     }
 
     AssignmentTargetScanner later = scanLaterOperands(node);
@@ -1070,6 +1128,8 @@ public abstract class CFAbstractTransfer<
             p -> mayBeChangedByAssignment(JavaExpression.fromNode(p), laterTargets, false));
       }
       if (later.callsMethodWithSideEffects) {
+        // A method or constructor call might change any part that other code can assign, such as
+        // a field or an array element, but not a local variable.
         result.removeIf(
             p -> {
               JavaExpression expr = JavaExpression.fromNode(p);
@@ -1079,6 +1139,22 @@ public abstract class CFAbstractTransfer<
       }
     }
     return result;
+  }
+
+  /**
+   * Returns true if a call to the given method or constructor has no side effects, or is assumed to
+   * have none (see the {@code -AassumeSideEffectFree}, {@code -AassumePure}, and {@code
+   * -AassumePureGetters} command-line options).
+   *
+   * @param method a method or constructor
+   * @return true if a call to {@code method} is treated as having no side effects
+   */
+  private boolean isSideEffectFree(ExecutableElement method) {
+    return analysis.checker.hasOption("assumeSideEffectFree")
+        || analysis.checker.hasOption("assumePure")
+        || (analysis.checker.hasOption("assumePureGetters") && ElementUtils.isGetter(method))
+        || analysis.atypeFactory.isSideEffectFree(method)
+        || PurityUtils.isSideEffectFree(analysis.atypeFactory, method);
   }
 
   /**
@@ -1147,7 +1223,7 @@ public abstract class CFAbstractTransfer<
     if (laterTrees.isEmpty()) {
       return null;
     }
-    AssignmentTargetScanner scanner = new AssignmentTargetScanner(analysis.atypeFactory);
+    AssignmentTargetScanner scanner = new AssignmentTargetScanner(this::isSideEffectFree);
     scanner.scan(laterTrees, null);
     return scanner;
   }
@@ -1232,12 +1308,16 @@ public abstract class CFAbstractTransfer<
    * evaluated. It does descend into the initializer blocks and field initializers of an anonymous
    * class body, which execute when the enclosing {@code new} expression is evaluated.
    *
-   * <p>It also records whether the tree calls a method or constructor that is not side-effect-free.
+   * <p>If constructed with a side-effect-freedom predicate, it also records whether the tree calls
+   * a method or constructor that is not side-effect-free.
    */
   private static class AssignmentTargetScanner extends TreeScanner<Void, Void> {
 
-    /** The type factory, used to determine whether a method is side-effect-free. */
-    private final AnnotatedTypeFactory atypeFactory;
+    /**
+     * Returns true if a call to the given method or constructor has no side effects. If null, calls
+     * are not examined.
+     */
+    private final @Nullable Predicate<ExecutableElement> isSideEffectFree;
 
     /** The variables that the scanned trees assign. */
     final List<JavaExpression> targets = new ArrayList<>();
@@ -1245,13 +1325,19 @@ public abstract class CFAbstractTransfer<
     /** True if the scanned trees call a method or constructor that is not side-effect-free. */
     boolean callsMethodWithSideEffects = false;
 
+    /** Creates an AssignmentTargetScanner that does not examine calls. */
+    AssignmentTargetScanner() {
+      this(null);
+    }
+
     /**
      * Creates an AssignmentTargetScanner.
      *
-     * @param atypeFactory the type factory, used to determine whether a method is side-effect-free
+     * @param isSideEffectFree returns true if a call to the given method or constructor has no side
+     *     effects; if null, calls are not examined
      */
-    AssignmentTargetScanner(AnnotatedTypeFactory atypeFactory) {
-      this.atypeFactory = atypeFactory;
+    AssignmentTargetScanner(@Nullable Predicate<ExecutableElement> isSideEffectFree) {
+      this.isSideEffectFree = isSideEffectFree;
     }
 
     /**
@@ -1260,9 +1346,7 @@ public abstract class CFAbstractTransfer<
      * @param method a method or constructor that the scanned trees call
      */
     private void recordCall(@Nullable ExecutableElement method) {
-      if (method == null
-          || !(atypeFactory.isSideEffectFree(method)
-              || PurityUtils.isSideEffectFree(atypeFactory, method))) {
+      if (isSideEffectFree != null && (method == null || !isSideEffectFree.test(method))) {
         callsMethodWithSideEffects = true;
       }
     }
@@ -1535,7 +1619,38 @@ public abstract class CFAbstractTransfer<
       TransferInput<V, S> in, Node lhs, Node rhs, S store, V rhsValue) {
 
     // update information in the store
-    store.updateForAssignment(lhs, rhsValue);
+    if (rhsMayRelocateTarget(lhs, rhs)) {
+      // After the assignment, `lhs` denotes a different location than the one that was assigned.
+      // Remove information that the assignment might invalidate, but record no value for `lhs`.
+      store.updateForAssignment(lhs, null);
+    } else {
+      store.updateForAssignment(lhs, rhsValue);
+    }
+  }
+
+  /**
+   * Returns true if evaluating {@code rhs} might reassign a variable in the receiver or index of
+   * {@code lhs}, as in {@code n.next = (n = o)}. Java evaluates the receiver and index of {@code
+   * lhs} before {@code rhs}, so in that case the assignment stores into a location that {@code lhs}
+   * no longer denotes after the assignment.
+   *
+   * @param lhs the left-hand side of an assignment
+   * @param rhs the right-hand side of the assignment
+   * @return true if evaluating {@code rhs} might change the location that {@code lhs} denotes
+   */
+  private static boolean rhsMayRelocateTarget(Node lhs, Node rhs) {
+    if (lhs instanceof LocalVariableNode) {
+      return false;
+    }
+    Tree rhsTree = rhs.getTree();
+    if (rhsTree == null) {
+      return false;
+    }
+    AssignmentTargetScanner scanner = new AssignmentTargetScanner();
+    scanner.scan(rhsTree, null);
+    List<JavaExpression> targets = scanner.targets;
+    return !targets.isEmpty()
+        && mayBeChangedByAssignment(JavaExpression.fromNode(lhs), targets, true);
   }
 
   @Override
