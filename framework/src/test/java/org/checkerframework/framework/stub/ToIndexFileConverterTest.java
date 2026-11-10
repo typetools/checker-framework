@@ -266,6 +266,247 @@ public class ToIndexFileConverterTest {
     Assert.assertFalse(jaif, jaif.contains("myConstantMethod"));
   }
 
+  /**
+   * A single-type import shadows a class of the same name in the current package, which in turn
+   * shadows a class imported on demand.
+   */
+  @Test
+  public void testResolvePrecedence() throws Exception {
+    String jaif =
+        convert(
+            "package java.lang.reflect;",
+            "import java.sql.Array;",
+            "class MyClass {",
+            "  void myMethod(Array a) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/sql/Array;)V");
+    jaif =
+        convert(
+            "package java.lang.reflect;",
+            "import java.sql.*;",
+            "class MyClass {",
+            "  void myMethod(Array a) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/lang/reflect/Array;)V");
+  }
+
+  /** A single-type import shadows a type of the same name in the current package. */
+  @Test
+  public void testSingleTypeImportShadowsCurrentPackage() throws Exception {
+    String jaif =
+        convert(
+            "package java.util;",
+            "import java.awt.List;",
+            "class MyClass {",
+            "  void myMethod(List l) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/awt/List;)V");
+  }
+
+  /** A type in the current package shadows a type of the same name that is imported on demand. */
+  @Test
+  public void testCurrentPackageShadowsOnDemandImport() throws Exception {
+    String jaif =
+        convert(
+            "package java.util;",
+            "import java.awt.*;",
+            "class MyClass {",
+            "  void myMethod(List l) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/List;)V");
+  }
+
+  /** A single-type import shadows a class of the same name in the stub file's own package. */
+  @Test
+  public void testSingleTypeImportShadowsOwnPackage() throws Exception {
+    // Both org.checkerframework.framework.util.PurityChecker and
+    // org.checkerframework.dataflow.util.PurityChecker are on the classpath.
+    String jaif =
+        convert(
+            "package org.checkerframework.framework.util;",
+            "import org.checkerframework.dataflow.util.PurityChecker;",
+            "class MyClass {",
+            "  void myMethod(PurityChecker c) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lorg/checkerframework/dataflow/util/PurityChecker;)V");
+  }
+
+  /** A qualified type name refers to the type that it names, regardless of imports. */
+  @Test
+  public void testQualifiedTypeIgnoresImports() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import java.util.List;",
+            "class MyClass {",
+            "  void myMethod(java.awt.List l) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/awt/List;)V");
+  }
+
+  /** A method's JVML descriptor uses the binary name of an imported nested class. */
+  @Test
+  public void testImportedNestedClass() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import java.util.Map.Entry;",
+            "import java.lang.Character.*;",
+            "class MyClass {",
+            "  void myMethod(Entry e) {}",
+            "  void myOtherMethod(UnicodeBlock b) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Ljava/lang/Character$UnicodeBlock;)V");
+  }
+
+  /** A method's JVML descriptor uses a fully qualified name that appears in the stub file. */
+  @Test
+  public void testFullyQualifiedName() throws Exception {
+    String jaif =
+        convert("package p;", "class MyClass {", "  void myMethod(java.util.List<?> l) {}", "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/List;)V");
+  }
+
+  /** A method's JVML descriptor uses the binary name of a nested class. */
+  @Test
+  public void testNestedClass() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import java.util.Map;",
+            "class MyClass {",
+            "  void myMethod(java.util.Map.Entry<?, ?> e1, Map.Entry<?, ?> e2) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;Ljava/util/Map$Entry;)V");
+  }
+
+  /**
+   * The first identifier of a qualified name is not a subpackage of the stub file's package: in
+   * package {@code java}, the name {@code util.List} does not refer to {@code java.util.List}.
+   */
+  @Test
+  public void testQualifiedNameIsNotRelativeToPackage() throws Exception {
+    String jaif =
+        convert("package java;", "class MyClass {", "  void myMethod(util.List l) {}", "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lutil/List;)V");
+  }
+
+  /** A single-type import does not supply part of a package name. */
+  @Test
+  public void testImportDoesNotSupplyPartialPackage() throws Exception {
+    // `util.Map` does not refer to java.util.Map, so the name is unresolvable.
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import java.util.Map;",
+            "class MyClass {",
+            "  void myMethod(util.Map m) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lutil/Map;)V");
+  }
+
+  /**
+   * The first identifier of a qualified name is not a subpackage of a package that is imported on
+   * demand: with {@code import java.*;}, the name {@code util.List} does not refer to {@code
+   * java.util.List}.
+   */
+  @Test
+  public void testOnDemandImportDoesNotSupplySubpackage() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import java.*;",
+            "class MyClass {",
+            "  void myMethod(util.List l) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lutil/List;)V");
+  }
+
+  /**
+   * The first identifier of a qualified name is not a subpackage of {@code java.lang}, which every
+   * compilation unit imports on demand: the name {@code reflect.Array} does not refer to {@code
+   * java.lang.reflect.Array}.
+   */
+  @Test
+  public void testImplicitJavaLangImportDoesNotSupplySubpackage() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;", "class MyClass {", "  void myMethod(reflect.Array a) {}", "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lreflect/Array;)V");
+  }
+
+  /** A method's JVML descriptor uses the erasure of each type variable. */
+  @Test
+  public void testTypeVariableErasure() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import java.util.List;",
+            "class MyClass<S extends CharSequence> {",
+            "  <T extends Number, U> void myMethod(T t, U u, S s, Object o) {}",
+            "  <V extends List<?>> void myOtherMethod(V v) {}",
+            "}");
+    assertMethod(
+        jaif,
+        "MyClass",
+        "myMethod(Ljava/lang/Number;Ljava/lang/Object;Ljava/lang/CharSequence;Ljava/lang/Object;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Ljava/util/List;)V");
+  }
+
+  /** A type variable with multiple bounds erases to its first bound. */
+  @Test
+  public void testIntersectionBoundErasure() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass {",
+            "  <T extends Number & Comparable<T>> void myMethod(T t) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/lang/Number;)V");
+  }
+
+  /** A type variable whose bound is a fully qualified name erases to that name. */
+  @Test
+  public void testFullyQualifiedTypeVariableBound() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass {",
+            "  <T extends java.util.List<?>, U extends java.util.Map.Entry<?, ?>>",
+            "  void myMethod(T t, U u) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/List;Ljava/util/Map$Entry;)V");
+  }
+
+  /** A varargs parameter whose element type is a type variable has the erasure's array type. */
+  @Test
+  public void testTypeVariableVarargs() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass<S extends CharSequence> {",
+            "  <T extends Number> void myMethod(T... ts) {}",
+            "  void myOtherMethod(S[]... ss) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod([Ljava/lang/Number;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod([[Ljava/lang/CharSequence;)V");
+  }
+
+  /** A cyclic bound, which is illegal, does not make the converter recurse forever. */
+  @Test
+  public void testCyclicTypeVariableBound() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass {",
+            "  <T extends U, U extends T> void myMethod(T t, U u) {}",
+            "  <V extends V> void myOtherMethod(V v) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/lang/Object;Ljava/lang/Object;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Ljava/lang/Object;)V");
+  }
+
   /** A single-type import that does not match a name does not prevent resolving the name. */
   @Test
   public void testResolveAfterNonMatchingImport() throws Exception {
@@ -400,6 +641,25 @@ public class ToIndexFileConverterTest {
     Assert.assertNotNull(
         "@Nullable was not recorded on the component type",
         param.type.innerTypes.get(oneLevel).lookup("Nullable"));
+  }
+
+  /** The {@code @Target} of a nested annotation interface determines where it is recorded. */
+  @Test
+  public void testNestedAnnotationTargets() throws Exception {
+    AField param =
+        firstParameter(
+            "m(Ljava/lang/String;)V",
+            "package p;",
+            "import org.checkerframework.framework.testchecker.defaulting.UpperBoundQual;",
+            "class C {",
+            "  void m(@UpperBoundQual.UbImplicit String s) {}",
+            "}");
+    Assert.assertNull(
+        "@UpperBoundQual.UbImplicit was recorded on the parameter",
+        param.lookup("UpperBoundQual.UbImplicit"));
+    Assert.assertNotNull(
+        "@UpperBoundQual.UbImplicit was not recorded on the type",
+        param.type.lookup("UpperBoundQual.UbImplicit"));
   }
 
   /**
