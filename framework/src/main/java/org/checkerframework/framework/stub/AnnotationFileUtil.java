@@ -500,19 +500,31 @@ public class AnnotationFileUtil {
     try {
       return new JarEntryAnnotationFileResource(archive, entry.getName(), readEntry(file, entry));
     } catch (IOException e) {
-      String description = archive.getPath() + "!" + entry.getName();
-      return new AnnotationFileResource() {
-        @Override
-        public String getDescription() {
-          return description;
-        }
-
-        @Override
-        public InputStream getInputStream() throws IOException {
-          throw e;
-        }
-      };
+      return unreadableResource(archive.getPath() + "!" + entry.getName(), e);
     }
+  }
+
+  /**
+   * Returns an annotation file resource that could not be read. Its {@link
+   * AnnotationFileResource#getInputStream} throws {@code e}, so the client reports the error when
+   * it reads the resource.
+   *
+   * @param description a description of the resource
+   * @param e the exception that occurred when reading the resource
+   * @return an annotation file resource whose {@code getInputStream} method throws {@code e}
+   */
+  private static AnnotationFileResource unreadableResource(String description, IOException e) {
+    return new AnnotationFileResource() {
+      @Override
+      public String getDescription() {
+        return description;
+      }
+
+      @Override
+      public InputStream getInputStream() throws IOException {
+        throw e;
+      }
+    };
   }
 
   /**
@@ -553,8 +565,9 @@ public class AnnotationFileUtil {
               .filter(entry -> isAnnotationFile(entry.getName(), fileType))
               .forEach(entry -> resources.add(archiveEntry(location, file, entry)));
         } catch (IOException e) {
-          System.err.println(
-              "AnnotationFileUtil: could not process archive " + location + ": " + e);
+          // Report the error when the client reads the archive, rather than treating the archive
+          // as empty.
+          resources.add(unreadableResource(location.getPath(), e));
         }
       } else if (isUserSupplied
           ? isUsableNamedFile(name, fileType)
