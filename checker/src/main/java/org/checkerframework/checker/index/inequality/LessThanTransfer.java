@@ -63,8 +63,10 @@ public class LessThanTransfer extends IndexAbstractTransfer {
       String leftString = leftJe.toString();
       if (!lessThanExpressions.contains(leftString)) {
         lessThanExpressions = CollectionsP.append(lessThanExpressions, leftString);
-        JavaExpression rightJe = JavaExpression.fromNode(right);
-        store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
+        AnnotationMirror refinedRightAnno = factory.createLessThanQualifier(lessThanExpressions);
+        for (Node internal : splitAssignments(right)) {
+          store.insertValue(JavaExpression.fromNode(internal), refinedRightAnno);
+        }
       }
     }
   }
@@ -98,8 +100,10 @@ public class LessThanTransfer extends IndexAbstractTransfer {
       String leftIncremented = incrementedExpression(leftJe);
       if (!lessThanExpressions.contains(leftIncremented)) {
         lessThanExpressions = CollectionsP.append(lessThanExpressions, leftIncremented);
-        JavaExpression rightJe = JavaExpression.fromNode(right);
-        store.insertValue(rightJe, factory.createLessThanQualifier(lessThanExpressions));
+        AnnotationMirror refinedRightAnno = factory.createLessThanQualifier(lessThanExpressions);
+        for (Node internal : splitAssignments(right)) {
+          store.insertValue(JavaExpression.fromNode(internal), refinedRightAnno);
+        }
       }
     }
   }

@@ -26,6 +26,15 @@ public class AssignmentInComparison {
     }
   }
 
+  // The right operand assigns `i` after the left operand reads it, so the comparison says nothing
+  // about the new value of `i`.
+  static void assignmentInRightOperand(@NonNegative int i) {
+    if (i > (i = 0)) {
+      // :: error: [assignment]
+      @Positive int x = i;
+    }
+  }
+
   static void fieldTargetMethodCallRhs(AssignmentInComparison n) {
     if ((n.f = n.size()) > 0) {
       @Positive int x = n.f;

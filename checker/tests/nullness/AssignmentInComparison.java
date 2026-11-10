@@ -283,6 +283,50 @@ public class AssignmentInComparison {
     }
   }
 
+  void fieldAssignmentInRightOperand(AssignmentInComparison n) {
+    if (n.next == nonNull(n.next = null)) {
+      // :: error: [dereference.of.nullable]
+      n.next.toString();
+    }
+  }
+
+  void aliasedFieldAssignmentInRightOperand(AssignmentInComparison n, AssignmentInComparison o) {
+    // If `n` and `o` alias, the right operand assigns `n.next`.
+    if (n.next == nonNull(o.next = null)) {
+      // :: error: [dereference.of.nullable]
+      n.next.toString();
+    }
+  }
+
+  void aliasedArrayAssignmentInRightOperand(@Nullable Object[] a, @Nullable Object[] b) {
+    // If `a` and `b` alias, the right operand assigns `a[0]`.
+    if (a[0] == nonNull(b[0] = null)) {
+      // :: error: [dereference.of.nullable]
+      a[0].toString();
+    }
+  }
+
+  // The assignment to `i` in the target executes before `b[i]` is evaluated.
+  static void assignmentInTargetIndexBeforeRhs(@Nullable Object[] a, @Nullable Object[] b, int i) {
+    if ((a[i = 0] = b[i]) != null) {
+      b[i].toString();
+    }
+  }
+
+  // The assignment writes the `next` field of the original `n`, not of `o`.
+  static void receiverReassignedNonNullRhs(AssignmentInComparison n, AssignmentInComparison o) {
+    if ((n.next = (n = o)) != null) {
+      // :: error: [dereference.of.nullable]
+      n.next.toString();
+    }
+  }
+
+  static void receiverReassignedNoComparison(AssignmentInComparison n, AssignmentInComparison o) {
+    n.next = (n = o);
+    // :: error: [dereference.of.nullable]
+    n.next.toString();
+  }
+
   // The left operand assigns `x` before the right operand reads it, so refining `x` is sound.
   void assignmentInLeftOperand(@Nullable Object x) {
     if (nonNull(x = null) == x) {
