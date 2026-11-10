@@ -114,11 +114,17 @@ public class TreeBuilder {
     Type.MethodType methodType = (Type.MethodType) iteratorMethod.asType();
     Symbol.TypeSymbol methodClass = methodType.asElement();
     // The return type of iterator() as a member of the iterable type, such as Iterator<T> for
-    // List<T>.
-    DeclaredType iteratorType =
-        (DeclaredType) javacTypes.memberType((Type) exprType, iteratorMethod).getReturnType();
-    iteratorType =
-        (DeclaredType) javacTypes.asSuper((Type) iteratorType, symtab.iteratorType.asElement());
+    // List<T>.  It need not be a declared type:  it may be a type variable, as in
+    // `class C<I extends Iterator<String>> implements Iterable<String> { I iterator(); }`.
+    // asSuper() handles a type variable by using its upper bound.
+    Type iteratorReturnType =
+        javacTypes.memberType((Type) exprType, iteratorMethod).getReturnType();
+    Type iteratorSuper = javacTypes.asSuper(iteratorReturnType, symtab.iteratorType.asElement());
+    if (iteratorSuper == null) {
+      throw new BugInCF(
+          "return type %s of %s is not an Iterator", iteratorReturnType, iteratorMethod);
+    }
+    DeclaredType iteratorType = (DeclaredType) iteratorSuper;
 
     int numIterTypeArgs = iteratorType.getTypeArguments().size();
     assert numIterTypeArgs <= 1 : "expected at most one type argument for Iterator";

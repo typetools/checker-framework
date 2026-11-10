@@ -28,6 +28,15 @@ public class TypeVarPrimitives {
     return t == 1;
   }
 
+  // A reference comparison: neither operand is unboxed.
+  <T extends Integer> boolean referenceEquality(T t1, T t2) {
+    return t1 == t2;
+  }
+
+  <T extends Boolean> boolean referenceEqualityBoolean(T t1, T t2) {
+    return t1 != t2;
+  }
+
   <T extends Integer> int conditional(boolean b, T t) {
     return b ? t : 0;
   }
