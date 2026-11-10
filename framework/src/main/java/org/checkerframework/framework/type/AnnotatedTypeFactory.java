@@ -5429,12 +5429,23 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       ExecutableElement accessor = component.getAccessor();
       AnnotatedExecutableType accessorType =
           applyRecordTypesToAccessors(accessor, getAnnotatedType(accessor));
-      componentTypes.add(
-          AnnotatedTypes.asMemberOf(types, this, receiverType, accessor, accessorType)
-              .getReturnType());
+      AnnotatedExecutableType memberType =
+          AnnotatedTypes.asMemberOf(types, this, receiverType, accessor, accessorType);
+      resolvePolymorphicQualifiersWithReceiver(receiverType, memberType);
+      componentTypes.add(memberType.getReturnType());
     }
     return componentTypes;
   }
+
+  /**
+   * Resolves the polymorphic qualifiers of {@code type}, the type of a method that is invoked, with
+   * no arguments, on a receiver of type {@code receiverType}. This implementation does nothing.
+   *
+   * @param receiverType the type of the receiver of the invocation
+   * @param type the type of a method that has no parameters; is side-effected by this method
+   */
+  protected void resolvePolymorphicQualifiersWithReceiver(
+      AnnotatedTypeMirror receiverType, AnnotatedExecutableType type) {}
 
   /**
    * Returns true if the pattern at index {@code index} of the record pattern {@code recordPattern}

@@ -47,6 +47,11 @@ inferred types of the record components of a record pattern.  New class
 `AnnotatedTypeProjection` computes the upward projection of an annotated type
 (JLS 4.10.5).
 
+New method `QualifierPolymorphism.resolveWithReceiver()` resolves the
+polymorphic qualifiers of a method invoked with no arguments on a receiver of a
+given type; a class that implements `QualifierPolymorphism` directly, rather
+than by extending `AbstractQualifierPolymorphism`, must implement it.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)

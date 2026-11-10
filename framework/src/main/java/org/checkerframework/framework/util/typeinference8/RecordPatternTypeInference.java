@@ -126,17 +126,25 @@ public class RecordPatternTypeInference {
   }
 
   /**
-   * Returns the result of inference when the record pattern has type {@code patternType}.
+   * Returns the result of inference when the record pattern has type {@code patternType}. The
+   * primary qualifiers of {@code patternType} are replaced by those of {@code matchedType}, limited
+   * to the qualifier upper bound of the record type, as for a cast to the record type.
    *
    * @param matchedType the type of the values that are matched against the record pattern
    * @param failure why inference failed, or null if it did not fail
-   * @param patternType the annotated type of the record pattern
+   * @param patternType the annotated type of the record pattern; side-effected by this method
    * @return the result of inference
    */
   private Result createResult(
       AnnotatedTypeMirror matchedType,
       @Nullable Failure failure,
       AnnotatedDeclaredType patternType) {
+    // The primary qualifiers of the pattern type are those of the receiver of each accessor, which
+    // determine the accessor's polymorphic qualifiers.
+    patternType.replaceAnnotations(
+        typeFactory
+            .getQualifierUpperBounds()
+            .limitToBound(patternType.getUnderlyingType(), matchedType.getAnnotations()));
     return new Result(
         matchedType.deepCopy(), failure, typeFactory.getRecordComponentTypes(patternType));
   }

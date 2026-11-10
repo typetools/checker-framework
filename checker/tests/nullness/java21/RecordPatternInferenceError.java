@@ -11,11 +11,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 // @infer-stubs-skip-test
 public class RecordPatternInferenceError {
 
-  interface I<A> {}
+  interface First<A> {}
 
-  interface J<A> {}
+  interface Second<A> {}
 
-  record Both<T>(T t) implements I<T>, J<T> {}
+  record Both<T>(T t) implements First<T>, Second<T> {}
 
   record NonNullSupplier<T extends @NonNull Object>(T t) implements Supplier<T> {
     public T get() {
@@ -24,12 +24,12 @@ public class RecordPatternInferenceError {
   }
 
   // The two elements of the intersection give alpha = @Nullable String and alpha = @NonNull String.
-  <X extends I<@Nullable String> & J<String>> void conflictingBounds(X x) {
+  <X extends First<@Nullable String> & Second<String>> void conflictingBounds(X x) {
     // :: error: (type.arguments.not.inferred)
     if (x instanceof Both(var s)) {}
   }
 
-  <X extends I<@Nullable String> & J<String>> void conflictingBoundsSwitch(X x) {
+  <X extends First<@Nullable String> & Second<String>> void conflictingBoundsSwitch(X x) {
     switch (x) {
       // :: error: (type.arguments.not.inferred)
       case Both(var s) -> {}

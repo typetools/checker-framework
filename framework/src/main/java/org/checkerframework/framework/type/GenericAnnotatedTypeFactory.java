@@ -2308,6 +2308,13 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   @Override
+  protected void resolvePolymorphicQualifiersWithReceiver(
+      AnnotatedTypeMirror receiverType, AnnotatedExecutableType type) {
+    super.resolvePolymorphicQualifiersWithReceiver(receiverType, type);
+    poly.resolveWithReceiver(receiverType, type);
+  }
+
+  @Override
   public List<AnnotatedTypeParameterBounds> typeVariablesFromUse(
       AnnotatedDeclaredType type, TypeElement element) {
     List<AnnotatedTypeParameterBounds> f = super.typeVariablesFromUse(type, element);

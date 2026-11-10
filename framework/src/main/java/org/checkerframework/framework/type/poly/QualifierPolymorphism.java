@@ -57,4 +57,13 @@ public interface QualifierPolymorphism {
    * @param type type of the field which still has poly annotations
    */
   void resolve(VariableElement field, AnnotatedTypeMirror owner, AnnotatedTypeMirror type);
+
+  /**
+   * Resolves polymorphism annotations for the type of a method that is invoked, with no arguments,
+   * on a receiver of type {@code receiverType}.
+   *
+   * @param receiverType the type of the receiver of the invocation
+   * @param type the type of a method that has no parameters; is side-effected by this method
+   */
+  void resolveWithReceiver(AnnotatedTypeMirror receiverType, AnnotatedExecutableType type);
 }
