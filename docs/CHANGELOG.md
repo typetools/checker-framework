@@ -9,12 +9,20 @@
 
 Pattern variables, such as `s` in `o instanceof String s` or `case String s`,
 are defaulted to the top qualifier, like other local variables (the
-CLIMB-to-top rule).  An unannotated pattern variable is refined to the type of
-the value that the pattern matches, rather than having the type system's
-default qualifier.  For a pattern variable nested in a record pattern, such as
-`s` in `o instanceof Box(String s)`, that value is the record component.
+CLIMB-to-top rule).  An unannotated pattern variable is refined to the
+qualifiers of the expression that the pattern is matched against.  For a
+pattern variable nested in a record pattern, such as `s` in
+`o instanceof Box(String s)`, that expression is the record component.
 
 ### Changes for type system implementers
+
+`TypeUseLocation.LOCAL_VARIABLE` now applies to pattern variables.
+
+New overridable methods `BaseTypeVisitor.checkInstanceOfPattern()` and
+`BaseTypeVisitor.instanceOfPatternMatchedType()` check the binding variable of
+an `instanceof` type pattern.  New overridable methods
+`CFAbstractTransfer.refineBindingVariable()` and
+`CFAbstractTransfer.refineCaseLabelBindingVariable()` refine a binding variable.
 
 ### Closed issues
 
