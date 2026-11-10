@@ -164,4 +164,15 @@ public class CaseGuardElseStore {
       }
     }
   }
+
+  // The body of the last case of an exhaustive switch executes only if its guard is true.
+  void lastCaseOfExhaustiveGuardTrue(R r, @Nullable Object o) {
+    switch (r) {
+      case R(Circle c) -> {}
+      case R(Square q) -> {}
+      case R(Shape s) when isNN(o) -> {
+        o.hashCode();
+      }
+    }
+  }
 }

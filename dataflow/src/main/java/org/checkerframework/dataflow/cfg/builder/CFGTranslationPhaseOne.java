@@ -2342,13 +2342,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
-          // If the guard of the last case of an exhaustive switch is false, no case matches and the
-          // switch throws an exception.  The CFG does not represent that exception, so the body
-          // follows the guard whatever the guard's value.  This is sound but imprecise:  the body's
-          // store is the lub of the guard's then and else stores, so refinements from the guard
-          // being true are lost.  Modeling the exception would let the body use the then store.
           if (!isLastCaseOfExhaustive) {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+          } else {
+            // If the guard of the last case of an exhaustive switch is false, no case matches and
+            // the switch throws a MatchException.
+            Label guardFalseLabel = new Label();
+            extendWithExtendedNode(new ConditionalJump(thisBodyLabel, guardFalseLabel));
+            addLabelForNextNode(guardFalseLabel);
+            NodeWithExceptionsHolder exNode =
+                extendWithNodeWithException(
+                    new MarkerNode(caseTree, "no case matches", env.getTypeUtils()),
+                    getMatchExceptionType());
+            exNode.setTerminatesExecution(true);
           }
         }
       }
@@ -4474,6 +4480,22 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       return null;
     }
     return element.asType();
+  }
+
+  /**
+   * Returns the type {@code java.lang.MatchException}, which a switch throws when no case matches.
+   * Returns {@code RuntimeException} if {@code MatchException} is not present (it was added in Java
+   * 21).
+   *
+   * @return the type {@code java.lang.MatchException}, or {@code RuntimeException}
+   */
+  private TypeMirror getMatchExceptionType() {
+    // Look up the type by name, because MatchException is not present in JDKs before 21.
+    TypeElement element = elements.getTypeElement("java.lang.MatchException");
+    if (element != null) {
+      return element.asType();
+    }
+    return getTypeMirror(RuntimeException.class);
   }
 
   /**
