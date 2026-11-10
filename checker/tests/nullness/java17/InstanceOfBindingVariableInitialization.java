@@ -1,4 +1,5 @@
 // @below-java17-jdk-skip-test
+import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 
 // A binding variable is not refined to bottom, even if the variable's default qualifier
@@ -16,6 +17,10 @@ public class InstanceOfBindingVariableInitialization {
       // type of `q`; only bottom is.
       // :: error: [assignment]
       @UnderInitialization(Sub.class) Object q = s;
+      // `s` is the receiver, which is not yet initialized, so `s` is not @Initialized.  This also
+      // checks that `s` is not refined to bottom.
+      // :: error: [assignment]
+      @Initialized Object r = s;
     }
     f = "";
   }
