@@ -2314,9 +2314,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     private void buildCase(CaseTree caseTree, int index, boolean isLastCaseOfExhaustive) {
       boolean isDefaultCase = CaseUtils.isDefaultCaseTree(caseTree);
       // If true, no test of labels is necessary.
-      // Unfortunately, if isLastCaseOfExhaustive==TRUE, no CaseNode is created, so the selector
-      // expression is not refined by the case labels within the body.  In the future, that can be
-      // performed, but it requires addition of InfeasibleExitBlock, a new SpecialBlock in the CFG.
+      // Unfortunately, if isLastCaseOfExhaustive==TRUE, no flow-sensitive refinement occurs
+      // within the body of the CaseNode.  In the future, that can be performed, but it
+      // requires addition of InfeasibleExitBlock, a new SpecialBlock in the CFG.
       boolean isTerminalCase = isDefaultCase || isLastCaseOfExhaustive;
 
       Label thisBodyLabel = caseBodyLabels[index];
