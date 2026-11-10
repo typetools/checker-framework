@@ -1,6 +1,7 @@
 package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
@@ -8,6 +9,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -94,6 +96,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityKind;
+import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -997,11 +1000,19 @@ public abstract class CFAbstractTransfer<
    * splitAssignments is applied recursively. For example, the result for {@code (String) (s = t)}
    * contains the cast, {@code s}, and {@code t}.
    *
-   * <p>If {@code node} is the left operand of a binary operation, then the right operand is
-   * evaluated after {@code node}, but before the operation's result is known. The result omits each
-   * part whose value an assignment in the right operand might change. For example, the result for
-   * the left operand of {@code x == nonNull(x = null)} is empty, because the comparison says
-   * nothing about the value of {@code x} after the assignment.
+   * <p>A widening conversion that does not change the value of its operand (see {@link
+   * #isValuePreservingConversion}), such as the binary numeric promotion of {@code (int) s} in
+   * {@code (int) s == 5L}, is looked through.
+   *
+   * <p>Some expressions are evaluated after {@code node}, but before the result of the enclosing
+   * expression is known: the right operand of a binary operation whose left operand is {@code
+   * node}, the arguments of a method invocation or constructor invocation that follow {@code node}
+   * (or all of them, if {@code node} is the receiver or enclosing expression), and the index of an
+   * array access whose array is {@code node}. The result omits each part whose value an assignment
+   * in such a later expression might change. For example, the result for the left operand of {@code
+   * x == nonNull(x = null)} is empty, because the comparison says nothing about the value of {@code
+   * x} after the assignment. If such a later expression calls a method or constructor that is not
+   * side-effect-free, then the result also omits each part that other code can assign.
    *
    * @param node possibly an assignment node or a cast
    * @return a list containing the right- and left-hand sides in the given assignment node that have
@@ -1011,10 +1022,15 @@ public abstract class CFAbstractTransfer<
   @SideEffectFree
   protected List<Node> splitAssignments(Node node) {
     List<Node> result = new ArrayList<>();
+    Node unwrapped = node;
+    while (unwrapped instanceof WideningConversionNode widening
+        && isValuePreservingConversion(widening)) {
+      unwrapped = widening.getOperand();
+    }
     Tree tree;
-    if (node instanceof AssignmentNode assignment) {
+    if (unwrapped instanceof AssignmentNode assignment) {
       tree = assignment.getTree();
-    } else if (node instanceof TypeCastNode cast && isValuePreservingCast(cast)) {
+    } else if (unwrapped instanceof TypeCastNode cast && isValuePreservingCast(cast)) {
       tree = cast.getTree();
     } else {
       tree = null;
@@ -1023,9 +1039,10 @@ public abstract class CFAbstractTransfer<
     if (tree == null) {
       result.add(node);
     } else {
-      List<JavaExpression> targets = new ArrayList<>();
-      new AssignmentTargetScanner().scan(tree, targets);
-      Node part = node;
+      AssignmentTargetScanner scanner = new AssignmentTargetScanner(analysis.atypeFactory);
+      scanner.scan(tree, null);
+      List<JavaExpression> targets = scanner.targets;
+      Node part = unwrapped;
       while (true) {
         if (part instanceof AssignmentNode a) {
           result.add(a.getTarget());
@@ -1033,6 +1050,10 @@ public abstract class CFAbstractTransfer<
         } else if (part instanceof TypeCastNode cast && isValuePreservingCast(cast)) {
           result.add(cast);
           part = cast.getOperand();
+        } else if (part instanceof WideningConversionNode widening
+            && isValuePreservingConversion(widening)) {
+          // JavaExpression.fromNode ignores a widening conversion, so do not add it to the result.
+          part = widening.getOperand();
         } else {
           break;
         }
@@ -1041,31 +1062,47 @@ public abstract class CFAbstractTransfer<
       result.removeIf(p -> mayBeChangedByAssignment(JavaExpression.fromNode(p), targets, true));
     }
 
-    List<JavaExpression> laterTargets = assignmentTargetsOfLaterOperand(node);
-    if (!laterTargets.isEmpty()) {
-      result.removeIf(
-          p -> mayBeChangedByAssignment(JavaExpression.fromNode(p), laterTargets, false));
+    AssignmentTargetScanner later = scanLaterOperands(node);
+    if (later != null) {
+      List<JavaExpression> laterTargets = later.targets;
+      if (!laterTargets.isEmpty()) {
+        result.removeIf(
+            p -> mayBeChangedByAssignment(JavaExpression.fromNode(p), laterTargets, false));
+      }
+      if (later.callsMethodWithSideEffects) {
+        result.removeIf(
+            p -> {
+              JavaExpression expr = JavaExpression.fromNode(p);
+              return CFAbstractStore.canInsertJavaExpression(expr)
+                  && expr.isAssignableByOtherCode();
+            });
+      }
     }
     return result;
   }
 
   /**
-   * If {@code node} is the left operand of a binary operation, returns the variables that the right
-   * operand assigns. The right operand is evaluated after {@code node}, so its assignments might
-   * change the value of {@code node}'s parts before the binary operation's result is known.
-   * Otherwise, returns the empty list.
+   * Scans the expressions that are evaluated after {@code node}, but before the result of the
+   * expression that encloses {@code node} is known: the right operand of a binary operation whose
+   * left operand is {@code node}; the later arguments of a method invocation or constructor
+   * invocation whose argument is {@code node}; all the arguments of a method invocation whose
+   * receiver is {@code node} or of a constructor invocation whose enclosing expression is {@code
+   * node}; or the index of an array access whose array is {@code node}. Their assignments and calls
+   * might change the value of {@code node}'s parts.
    *
    * @param node a node
-   * @return the variables that the operand evaluated after {@code node} assigns, or the empty list
+   * @return a scanner that has scanned the expressions that are evaluated after {@code node}, or
+   *     null if there are none
    */
-  private List<JavaExpression> assignmentTargetsOfLaterOperand(Node node) {
+  @SuppressWarnings("interning:not.interned") // comparing AST nodes
+  private @Nullable AssignmentTargetScanner scanLaterOperands(Node node) {
     Tree tree = node.getTree();
     if (tree == null) {
-      return Collections.emptyList();
+      return null;
     }
     TreePath path = analysis.atypeFactory.getPath(tree);
     if (path == null) {
-      return Collections.emptyList();
+      return null;
     }
     Tree child = path.getLeaf();
     TreePath parentPath = path.getParentPath();
@@ -1073,14 +1110,77 @@ public abstract class CFAbstractTransfer<
       child = parentPath.getLeaf();
       parentPath = parentPath.getParentPath();
     }
-    if (parentPath == null
-        || !(parentPath.getLeaf() instanceof BinaryTree binary)
-        || binary.getLeftOperand() != child) {
-      return Collections.emptyList();
+    if (parentPath == null) {
+      return null;
     }
-    List<JavaExpression> targets = new ArrayList<>();
-    new AssignmentTargetScanner().scan(binary.getRightOperand(), targets);
-    return targets;
+    Tree parent = parentPath.getLeaf();
+
+    List<? extends Tree> laterTrees;
+    if (parent instanceof BinaryTree binary) {
+      laterTrees =
+          binary.getLeftOperand() == child
+              ? Collections.singletonList(binary.getRightOperand())
+              : Collections.emptyList();
+    } else if (parent instanceof ArrayAccessTree arrayAccess) {
+      laterTrees =
+          arrayAccess.getExpression() == child
+              ? Collections.singletonList(arrayAccess.getIndex())
+              : Collections.emptyList();
+    } else if (parent instanceof MethodInvocationTree invocation) {
+      laterTrees = argumentsAfter(invocation.getArguments(), child);
+    } else if (parent instanceof NewClassTree newClass) {
+      laterTrees =
+          newClass.getEnclosingExpression() == child
+              ? newClass.getArguments()
+              : argumentsAfter(newClass.getArguments(), child);
+    } else if (parent instanceof MemberSelectTree memberSelect
+        && memberSelect.getExpression() == child
+        && parentPath.getParentPath() != null
+        && parentPath.getParentPath().getLeaf() instanceof MethodInvocationTree invocation
+        && invocation.getMethodSelect() == memberSelect) {
+      // `child` is the receiver of a method invocation.
+      laterTrees = invocation.getArguments();
+    } else {
+      laterTrees = Collections.emptyList();
+    }
+
+    if (laterTrees.isEmpty()) {
+      return null;
+    }
+    AssignmentTargetScanner scanner = new AssignmentTargetScanner(analysis.atypeFactory);
+    scanner.scan(laterTrees, null);
+    return scanner;
+  }
+
+  /**
+   * Returns the arguments that follow {@code arg}, or the empty list if {@code arg} is not one of
+   * the arguments.
+   *
+   * @param args the arguments of a method invocation or constructor invocation
+   * @param arg a tree
+   * @return the arguments that follow {@code arg}
+   */
+  @SuppressWarnings("interning:not.interned") // comparing AST nodes
+  private static List<? extends ExpressionTree> argumentsAfter(
+      List<? extends ExpressionTree> args, Tree arg) {
+    for (int i = 0; i < args.size(); i++) {
+      if (args.get(i) == arg) {
+        return args.subList(i + 1, args.size());
+      }
+    }
+    return Collections.emptyList();
+  }
+
+  /**
+   * Returns true if the given widening conversion does not change the value of its operand.
+   *
+   * @param widening a widening conversion
+   * @return true if the value of {@code widening} is the value of its operand
+   */
+  @Pure
+  private static boolean isValuePreservingConversion(WideningConversionNode widening) {
+    return isValuePreservingConversion(
+        widening.getOperand().getType().getKind(), widening.getType().getKind());
   }
 
   /**
@@ -1092,8 +1192,21 @@ public abstract class CFAbstractTransfer<
    */
   @Pure
   protected static boolean isValuePreservingCast(TypeCastNode cast) {
-    TypeKind to = cast.getType().getKind();
-    TypeKind from = cast.getOperand().getType().getKind();
+    return isValuePreservingConversion(
+        cast.getOperand().getType().getKind(), cast.getType().getKind());
+  }
+
+  /**
+   * Returns true if a conversion from {@code from} to {@code to} does not change the value that is
+   * converted: it is a conversion between reference types, or a primitive conversion that loses no
+   * information.
+   *
+   * @param from the kind of the type that is converted
+   * @param to the kind of the type that results from the conversion
+   * @return true if the conversion preserves values
+   */
+  @Pure
+  private static boolean isValuePreservingConversion(TypeKind from, TypeKind to) {
     if (!to.isPrimitive() && !from.isPrimitive()) {
       return true;
     }
@@ -1118,11 +1231,53 @@ public abstract class CFAbstractTransfer<
    * bodies, method bodies, or named class declarations, which do not execute when the tree is
    * evaluated. It does descend into the initializer blocks and field initializers of an anonymous
    * class body, which execute when the enclosing {@code new} expression is evaluated.
+   *
+   * <p>It also records whether the tree calls a method or constructor that is not side-effect-free.
    */
-  private static class AssignmentTargetScanner extends TreeScanner<Void, List<JavaExpression>> {
+  private static class AssignmentTargetScanner extends TreeScanner<Void, Void> {
 
-    /** Creates an AssignmentTargetScanner. */
-    AssignmentTargetScanner() {}
+    /** The type factory, used to determine whether a method is side-effect-free. */
+    private final AnnotatedTypeFactory atypeFactory;
+
+    /** The variables that the scanned trees assign. */
+    final List<JavaExpression> targets = new ArrayList<>();
+
+    /** True if the scanned trees call a method or constructor that is not side-effect-free. */
+    boolean callsMethodWithSideEffects = false;
+
+    /**
+     * Creates an AssignmentTargetScanner.
+     *
+     * @param atypeFactory the type factory, used to determine whether a method is side-effect-free
+     */
+    AssignmentTargetScanner(AnnotatedTypeFactory atypeFactory) {
+      this.atypeFactory = atypeFactory;
+    }
+
+    /**
+     * Records that the scanned trees call {@code method}, if it is not side-effect-free.
+     *
+     * @param method a method or constructor that the scanned trees call
+     */
+    private void recordCall(@Nullable ExecutableElement method) {
+      if (method == null
+          || !(atypeFactory.isSideEffectFree(method)
+              || PurityUtils.isSideEffectFree(atypeFactory, method))) {
+        callsMethodWithSideEffects = true;
+      }
+    }
+
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
+      recordCall(TreeUtils.elementFromUse(tree));
+      return super.visitMethodInvocation(tree, p);
+    }
+
+    @Override
+    public Void visitNewClass(NewClassTree tree, Void p) {
+      recordCall(TreeUtils.elementFromUse(tree));
+      return super.visitNewClass(tree, p);
+    }
 
     /**
      * Returns the JavaExpression for the given assignment target. Javac retains parentheses around
@@ -1138,34 +1293,34 @@ public abstract class CFAbstractTransfer<
     }
 
     @Override
-    public Void visitAssignment(AssignmentTree tree, List<JavaExpression> targets) {
+    public Void visitAssignment(AssignmentTree tree, Void p) {
       targets.add(targetExpression(tree.getVariable()));
-      return super.visitAssignment(tree, targets);
+      return super.visitAssignment(tree, p);
     }
 
     @Override
-    public Void visitCompoundAssignment(CompoundAssignmentTree tree, List<JavaExpression> targets) {
+    public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
       targets.add(targetExpression(tree.getVariable()));
-      return super.visitCompoundAssignment(tree, targets);
+      return super.visitCompoundAssignment(tree, p);
     }
 
     @Override
-    public Void visitUnary(UnaryTree tree, List<JavaExpression> targets) {
+    public Void visitUnary(UnaryTree tree, Void p) {
       switch (tree.getKind()) {
         case PREFIX_INCREMENT, PREFIX_DECREMENT, POSTFIX_INCREMENT, POSTFIX_DECREMENT ->
             targets.add(targetExpression(tree.getExpression()));
         default -> {}
       }
-      return super.visitUnary(tree, targets);
+      return super.visitUnary(tree, p);
     }
 
     @Override
-    public Void visitLambdaExpression(LambdaExpressionTree tree, List<JavaExpression> targets) {
+    public Void visitLambdaExpression(LambdaExpressionTree tree, Void p) {
       return null;
     }
 
     @Override
-    public Void visitClass(ClassTree tree, List<JavaExpression> targets) {
+    public Void visitClass(ClassTree tree, Void p) {
       if (!tree.getSimpleName().isEmpty()) {
         // A named (local) class declaration does not execute.
         return null;
@@ -1173,9 +1328,9 @@ public abstract class CFAbstractTransfer<
       // An anonymous class body: its initializers execute when the `new` expression is evaluated.
       for (Tree member : tree.getMembers()) {
         if (member instanceof BlockTree block) {
-          scan(block, targets);
+          scan(block, p);
         } else if (member instanceof VariableTree field) {
-          scan(field.getInitializer(), targets);
+          scan(field.getInitializer(), p);
         }
         // Skip methods and nested class declarations.
       }

@@ -1,5 +1,6 @@
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.dataflow.qual.Pure;
 
 // Dereferencing an assignment or a cast refines the expressions that have the same value.
 public class DereferenceAssignmentAndCast {
@@ -49,6 +50,36 @@ public class DereferenceAssignmentAndCast {
     // After the assignment, `n.next` is a field of a different object.
     // :: error: [dereference.of.nullable]
     n.next.toString();
+  }
+
+  @Pure
+  static int consume(@NonNull Object o, @Nullable Object p) {
+    return 0;
+  }
+
+  void argumentOfAssignment(@Nullable Object x, @Nullable Object y) {
+    // :: error: [argument]
+    consume(x = y, null);
+    x.toString();
+    y.toString();
+  }
+
+  // A later argument reassigns `y`, so `y` is not non-null after the call.
+  void laterArgumentAssigns(@Nullable Object x, @Nullable Object y) {
+    // :: error: [argument]
+    consume(x = y, y = null);
+    x.toString();
+    // :: error: [dereference.of.nullable]
+    y.toString();
+  }
+
+  // The index reassigns `b`, so `b` is not non-null after the array access.
+  void arrayAccessIndexAssigns(String @Nullable [] a, String @Nullable [] b) {
+    // :: error: [accessing.nullable]
+    (a = b)[(b = null) == null ? 0 : 1].toString();
+    a.toString();
+    // :: error: [dereference.of.nullable]
+    b.toString();
   }
 
   void throwOfAssignment(@Nullable RuntimeException e, @Nullable RuntimeException f) {
