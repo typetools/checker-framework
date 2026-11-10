@@ -148,6 +148,12 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     if (recordComponentType != null) {
       AnnotatedTypeMirror projectedType = AnnotatedTypeProjection.upward(f, recordComponentType);
       // javac does not always project the type of a `var` pattern, so compare only erasures.
+      // TODO: When javac's type has the same erasure but a different shape, keep javac's shape and
+      // give it the qualifiers of the projected type.  For Box<? extends List<? extends
+      // CharSequence>>(var x) matched against a Supplier<List<@Nullable String>>, javac's type for
+      // x is List<? extends CharSequence>, but x gets the type List<@Nullable String>, so
+      // assigning an ArrayList<StringBuilder> to x is a false positive.  (AnnotatedTypes.asSuper
+      // cannot do this: for types with the same erasure, it returns the subtype unchanged.)
       if (TypesUtils.isErasedSameType(
           projectedType.getUnderlyingType(), TreeUtils.typeOf(bindingVariable), f.types)) {
         return projectedType;

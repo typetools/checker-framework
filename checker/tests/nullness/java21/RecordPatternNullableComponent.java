@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -37,6 +39,30 @@ public class RecordPatternNullableComponent {
   void varPatternNonNull(Box<String> box) {
     if (box instanceof Box(var s)) {
       s.length();
+    }
+  }
+
+  // The pattern's explicit type arguments give `x` javac's type List<? extends CharSequence>, which
+  // is wider than the inferred List<@Nullable String>.  `x` should have javac's shape with the
+  // inferred qualifiers, List<? extends @Nullable CharSequence>, but it has the type
+  // List<@Nullable String>.  See the TODO in TypeFromMemberVisitor.varPatternType.
+  void varPatternKeepsJavacWildcard(Supplier<List<@Nullable String>> s) {
+    if (s instanceof Box<? extends List<? extends CharSequence>>(var x)) {
+      // :: error: (dereference.of.nullable)
+      x.get(0).length();
+      // TODO: false positive.
+      // :: error: (assignment)
+      x = new ArrayList<StringBuilder>();
+    }
+  }
+
+  // javac gives `x` the type List<CAP#1>, which mentions a captured type variable.  `x` has the
+  // upward projection of the record component's type instead: List<? extends @Nullable String>.
+  void varPatternJavacCapture(Box<List<? extends @Nullable String>> box) {
+    if (box instanceof Box(var x)) {
+      // :: error: (dereference.of.nullable)
+      x.get(0).length();
+      List<? extends @Nullable String> y = x;
     }
   }
 
