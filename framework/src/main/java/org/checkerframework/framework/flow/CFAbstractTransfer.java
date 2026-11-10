@@ -715,7 +715,9 @@ public abstract class CFAbstractTransfer<
       S elseStore = in.getElseStore();
       // When the then-store and else-store are equal, as after most method invocations, their least
       // upper bound equals each of them, so this skips computing it.
-      if (thenStore == elseStore) {
+      @SuppressWarnings("interning:not.interned") // reference equality test
+      boolean sameStore = thenStore == elseStore;
+      if (sameStore) {
         // The result's then-store and else-store must be distinct objects.
         elseStore = thenStore.copy();
       } else if (!thenStore.equals(elseStore)) {
