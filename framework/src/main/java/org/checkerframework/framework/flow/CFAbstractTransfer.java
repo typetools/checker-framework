@@ -1339,6 +1339,7 @@ public abstract class CFAbstractTransfer<
 
   /** A case produces no value, but it may imply some facts about switch selector expression. */
   @Override
+  @SuppressWarnings("nullness:argument") // strengthenAnnotationOfEqualTo permits null values
   public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
     S store = in.getRegularStore();
     boolean alwaysMatches = n.alwaysMatches();
@@ -1386,7 +1387,8 @@ public abstract class CFAbstractTransfer<
         }
       }
     }
-    if (lubResult != null && alwaysMatches) {
+    assert lubResult != null : "@AssumeAssertion(nullness): a CaseNode has a case operand";
+    if (alwaysMatches) {
       // The case expressions are not tested, so the facts that hold when they match hold after
       // this node.  (strengthenAnnotationOfEqualTo returns a conditional result.)
       return new RegularTransferResult<>(null, lubResult.getThenStore(), lubResult.storeChanged());
