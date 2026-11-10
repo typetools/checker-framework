@@ -6,6 +6,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -17,6 +18,7 @@ import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnot
 import org.checkerframework.checker.collectionownership.qual.CollectionFieldDestructor;
 import org.checkerframework.checker.collectionownership.qual.CreatesCollectionObligation;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -172,15 +174,16 @@ public class CollectionOwnershipTransfer
   @Override
   public TransferResult<CFValue, CollectionOwnershipStore> visitAssignment(
       AssignmentNode node, TransferInput<CFValue, CollectionOwnershipStore> in) {
+    // The superclass transfer function updates the input store in place, so compute the rhs's type
+    // before calling it.
+    Node rhs = getNodeOrTempVar(node.getExpression());
+    CollectionOwnershipType rhsType = atypeFactory.getCoType(rhs, in.getRegularStore());
+
     // Transfer ownership from the rhs to the lhs.
     TransferResult<CFValue, CollectionOwnershipStore> res = super.visitAssignment(node, in);
 
     Node lhs = getNodeOrTempVar(node.getTarget());
     JavaExpression lhsJE = JavaExpression.fromNode(lhs);
-
-    Node rhs = getNodeOrTempVar(node.getExpression());
-    CollectionOwnershipType rhsType =
-        atypeFactory.getCoType(rhs, atypeFactory.getStoreBefore(node));
 
     // Ownership usually transfers from the rhs into the lhs.
     // Some assignments instead create a non-owning alias at the lhs:
@@ -280,13 +283,20 @@ public class CollectionOwnershipTransfer
   @Override
   public TransferResult<CFValue, CollectionOwnershipStore> visitMethodInvocation(
       MethodInvocationNode node, TransferInput<CFValue, CollectionOwnershipStore> in) {
+    // The superclass transfer function updates the input store in place, so compute the types of
+    // the receiver and the arguments before calling it.
+    CollectionOwnershipStore storeBefore = in.getRegularStore();
+    Node receiverNode = node.getTarget().getReceiver();
+    CollectionOwnershipType receiverType = atypeFactory.getCoType(receiverNode, storeBefore);
+    List<Node> args = node.getArguments();
+    List<@Nullable CollectionOwnershipType> argTypes = getCoTypes(args, storeBefore);
+
     TransferResult<CFValue, CollectionOwnershipStore> res = super.visitMethodInvocation(node, in);
 
     updateStoreWithTempVar(res, node);
 
     ExecutableElement method = node.getTarget().getMethod();
-    List<Node> args = node.getArguments();
-    res = transferOwnershipForMethodInvocation(method, node, args, res);
+    res = transferOwnershipForMethodInvocation(method, args, argTypes, res);
     Tree tree = node.getTree();
     if (tree != null) {
       // An invocation without a tree cannot be a disposal-loop condition.
@@ -299,10 +309,8 @@ public class CollectionOwnershipTransfer
     boolean hasCollectionFieldDestructor =
         atypeFactory.getDeclAnnotation(method, CollectionFieldDestructor.class) != null;
     if (hasCreatesCollectionObligation) {
-      Node receiverNode = node.getTarget().getReceiver();
       JavaExpression receiverJE = JavaExpression.fromNode(receiverNode);
-      if (atypeFactory.getCoType(receiverNode, atypeFactory.getStoreBefore(node))
-          == CollectionOwnershipType.OwningCollectionWithoutObligation) {
+      if (receiverType == CollectionOwnershipType.OwningCollectionWithoutObligation) {
         replaceInStores(res, receiverJE, atypeFactory.OWNINGCOLLECTION);
       }
     }
@@ -333,19 +341,37 @@ public class CollectionOwnershipTransfer
   }
 
   /**
+   * Returns the collection ownership type of each of the given arguments in the given store.
+   *
+   * @param args a method's or constructor's arguments
+   * @param store the store in which to look up the types of the arguments
+   * @return the collection ownership type of each element of {@code args} in {@code store}, with
+   *     {@code null} for an argument whose type is not known
+   */
+  private List<@Nullable CollectionOwnershipType> getCoTypes(
+      List<Node> args, CollectionOwnershipStore store) {
+    List<@Nullable CollectionOwnershipType> result = new ArrayList<>(args.size());
+    for (Node arg : args) {
+      result.add(atypeFactory.getCoType(getNodeOrTempVar(arg), store));
+    }
+    return result;
+  }
+
+  /**
    * Executes collection ownership transfer in method invocations. Owning arguments to an owning
    * parameter lose ownership.
    *
    * @param method the method whose parameters are checked
-   * @param node the node of the invocation
    * @param args the list of method arguments
+   * @param argTypes the collection ownership type of each element of {@code args} before the
+   *     invocation, as computed by {@link #getCoTypes}
    * @param res the transfer result so far
    * @return the updated transfer result
    */
   private TransferResult<CFValue, CollectionOwnershipStore> transferOwnershipForMethodInvocation(
       ExecutableElement method,
-      Node node,
       List<Node> args,
+      List<@Nullable CollectionOwnershipType> argTypes,
       TransferResult<CFValue, CollectionOwnershipStore> res) {
     List<? extends VariableElement> params = method.getParameters();
 
@@ -353,8 +379,7 @@ public class CollectionOwnershipTransfer
       VariableElement param = params.get(i);
       Node arg = getNodeOrTempVar(args.get(i));
       JavaExpression argJE = JavaExpression.fromNode(arg);
-      CollectionOwnershipType argType =
-          atypeFactory.getCoType(arg, atypeFactory.getStoreBefore(node));
+      CollectionOwnershipType argType = argTypes.get(i);
       CollectionOwnershipType paramType =
           atypeFactory.getCoType(atypeFactory.getAnnotatedType(param).getPrimaryAnnotations());
       if (argType == null || paramType == null) {
@@ -399,13 +424,17 @@ public class CollectionOwnershipTransfer
   @Override
   public TransferResult<CFValue, CollectionOwnershipStore> visitObjectCreation(
       ObjectCreationNode node, TransferInput<CFValue, CollectionOwnershipStore> input) {
+    // The superclass transfer function updates the input store in place, so compute the types of
+    // the arguments before calling it.
+    List<Node> args = node.getArguments();
+    List<@Nullable CollectionOwnershipType> argTypes = getCoTypes(args, input.getRegularStore());
+
     TransferResult<CFValue, CollectionOwnershipStore> result =
         super.visitObjectCreation(node, input);
     updateStoreWithTempVar(result, node);
 
     ExecutableElement constructor = TreeUtils.elementFromUse(node.getTree());
-    List<Node> args = node.getArguments();
-    result = transferOwnershipForMethodInvocation(constructor, node, args, result);
+    result = transferOwnershipForMethodInvocation(constructor, args, argTypes, result);
 
     // The return value defaulting logic cannot recognize that a diamond-constructed collection
     // is a resource collection, as it runs before the type variable is inferred:

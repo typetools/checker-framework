@@ -161,7 +161,7 @@ These annotations are for methods.
   expresses that the annotated method fulfills the obligations of the given resource collection fields.
   For more details, see Section~\ref{resource-leak-collections-fields}.
 \item[\refqualclass{checker/collectionownership/qual}{CreatesCollectionObligation}]
-  expresses that the annotated method may insert an element into its receiver collection, as \texttt{Collection.add} does.
+  expresses that the annotated method might insert an element into its receiver collection, as \texttt{Collection.add} does.
   For more details, see Section~\ref{resource-leak-collections-types-in-action}.
 
 \end{description}
@@ -663,7 +663,7 @@ What the checker effectively verifies is that any resource collection is properl
 Towards that end, the Resource Leak Checker tracks every allocated resource collection in two ways:
 
 \begin{itemize}
-  \item at most one owning reference for each underlying resource collection is tracked via an ownership type system. This owning reference may arbitrarily mutate the collection. All other references are considered not owning and are restricted - for example, they can't be used to add elements that might be owning or to discard elements from the collection.
+  \item at most one owning reference for each underlying resource collection is tracked via an ownership type system. This owning reference is permitted to mutate the collection arbitrarily. All other references are considered not owning and are restricted - for example, they can't be used to add elements that might be owning or to discard elements from the collection.
   \item a complementary dataflow analysis tracks an obligation for each allocated resource collection. The obligation can be passed on to method parameters, fields, or return values for example, just like the ownership. The difference is that while the type system tracks at most one owner per resource collection allowed to mutate it without restriction, the dataflow analysis tracks at least one obligation per resource collection to ensure it is definitely fulfilled.
 \end{itemize}
 
@@ -901,7 +901,7 @@ This now shifts the burden to the client of the \texttt{Aggregator} class to cal
 If a resource collection field is final, the checker doesn't have to verify assignments to it. If it is not final, the checker verifies assignments in the following way:
 \begin{itemize}
   \item The checker analyzes the declaration initializer and the initializer blocks starting with the field unassigned (\texttt{@OwningCollectionBottom}), and each constructor starts with the field in the resulting state. So the first assignment to the field is permitted, whether it is in the declaration initializer, an initializer block, or a constructor.
-  \item A field inherited from a superclass is \texttt{@OwningCollection} at the beginning of a constructor, because the superclass constructor may already have added elements to it. In every other method, the field is \texttt{@OwningCollection} at the beginning of the method.
+  \item A field inherited from a superclass is \texttt{@OwningCollection} at the beginning of a constructor, because the superclass constructor might already have added elements to it. In every other method, the field is \texttt{@OwningCollection} at the beginning of the method.
   \item Any later assignment is permitted only if the field is \texttt{@OwningCollectionWithoutObligation} just before it, for example after a call to the method annotated \texttt{@CollectionFieldDestructor}.
   \item Outside of constructors and initializers, a method that assigns a collection with an obligation to the field must be annotated \texttt{@CreatesMustCallFor(``this'')}.
   \item In a constructor, the field takes ownership of the right-hand side only if the constructor returns normally, because if the constructor throws an exception, nothing can dispose of the field.
