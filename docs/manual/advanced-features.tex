@@ -386,9 +386,10 @@ Variables defaulted to top include local variables, resource variables in the
 try-with-resources construct, variables in \<for> statements, pattern
 variables such as \<s> in \<o instanceof String s>, and \<catch>
 arguments (known as exception parameters in the Java Language Specification).
-An unannotated pattern variable is refined to the type of the value that the
-pattern matches.  (A pattern variable nested in a record pattern, such as
-\<s> in \<o instanceof Box(String s)>, is not defaulted to top.)
+An unannotated pattern variable is refined to the qualifiers of the expression
+that the pattern is matched against.  (A pattern variable nested in a record
+pattern, such as \<s> in \<o instanceof Box(String s)>, is not defaulted to
+top.)
 
 Exception parameters default to the top type because they might catch an
 exception thrown anywhere in the program.
