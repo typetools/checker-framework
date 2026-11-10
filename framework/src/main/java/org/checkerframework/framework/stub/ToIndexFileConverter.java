@@ -4,6 +4,7 @@ import com.github.javaparser.ParseException;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
@@ -26,6 +27,7 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -54,9 +56,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.afu.scenelib.Annotation;
@@ -772,12 +776,37 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   String getJVML(Type type) {
     return type.accept(
         new GenericVisitorAdapter<String, Void>() {
+          // The type parameters whose erasure is being computed.  It prevents infinite recursion
+          // on a malformed stub file whose bounds are cyclic, as in `<T extends U, U extends T>`.
+          private final Set<TypeParameter> visiting =
+              Collections.newSetFromMap(new IdentityHashMap<>());
+
           @Override
           public String visit(ClassOrInterfaceType type, Void v) {
             // Use the name together with its scope, so that a qualified name such as
             // `java.util.List` or `Map.Entry` is not truncated to its last identifier.
             @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameWithScope
             @FullyQualifiedName String typeName = type.getNameWithScope();
+            String[] identifiers = typeName.split("\\.", -1);
+            // Search each enclosing scope, innermost first.
+            Node declaration = null;
+            for (Node n = type; n != null; n = n.getParentNode().orElse(null)) {
+              declaration = firstDeclarationAt(n, identifiers);
+              if (declaration != null) {
+                break;
+              }
+            }
+            if (declaration instanceof TypeParameter typeParam) {
+              // The JVML descriptor uses the erasure, which is the first bound, or Object if
+              // the type parameter has no bound.
+              NodeList<ClassOrInterfaceType> bounds = typeParam.getTypeBound();
+              if (bounds.isEmpty() || !visiting.add(typeParam)) {
+                return "Ljava/lang/Object;";
+              }
+              String result = bounds.get(0).accept(this, null);
+              visiting.remove(typeParam);
+              return result;
+            }
             String name = resolve(typeName);
             if (name == null) {
               name = typeName;
@@ -827,6 +856,27 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
           }
         },
         null);
+  }
+
+  /**
+   * Returns the declaration, in the stub file, that the first element of {@code identifiers} names
+   * among the types that {@code n} itself puts in scope, which are its type parameters. A type
+   * parameter is considered only if {@code identifiers} has one element, because a type parameter
+   * has no member types.
+   *
+   * @param n a node in the stub file's AST
+   * @param identifiers a type name that has been split at its {@code .} separators
+   * @return the declaration of the first element of {@code identifiers}, or null
+   */
+  private static @Nullable Node firstDeclarationAt(Node n, String[] identifiers) {
+    if (identifiers.length == 1 && n instanceof NodeWithTypeParameters<?> nodeWithTypeParams) {
+      for (TypeParameter typeParam : nodeWithTypeParams.getTypeParameters()) {
+        if (typeParam.getNameAsString().equals(identifiers[0])) {
+          return typeParam;
+        }
+      }
+    }
+    return null;
   }
 
   /**
@@ -895,7 +945,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       // Every Java program implicitly does "import java.lang.*",
       // so see whether this class is in that package.
       String binaryName = loadClassBinaryName("java.lang." + className);
-      if (binaryName != null) {
+      // As for any import on demand, the first identifier of `className` names a type, not a
+      // subpackage of java.lang.
+      if (binaryName != null && binaryName.lastIndexOf('.') == "java.lang".length()) {
         return binaryName;
       }
     }
