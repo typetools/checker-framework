@@ -13,10 +13,4 @@ class DisposalLoopCloseThrows {
       s.close();
     }
   }
-
-  void indexedFor(@OwningCollection List<Socket> list) throws IOException {
-    for (int i = 0; i < list.size(); i++) {
-      list.get(i).close();
-    }
-  }
 }

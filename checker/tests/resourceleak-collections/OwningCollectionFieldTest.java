@@ -45,42 +45,6 @@ class Aggregator implements Closeable {
       r.flush();
     }
   }
-
-  @CollectionFieldDestructor("resList")
-  public void closeIndexed() {
-    for (int i = 0; i < resList.size(); i++) {
-      resList.get(i).close();
-      resList.get(i).flush();
-    }
-  }
-
-  @CollectionFieldDestructor("resList")
-  public void closeIndexedThis() {
-    for (int i = 0; i < this.resList.size(); i++) {
-      this.resList.get(i).close();
-      this.resList.get(i).flush();
-    }
-  }
-
-  @CollectionFieldDestructor("resList")
-  // :: error: contracts.postcondition
-  public void partialCloseIndexed() {
-    for (int i = 0; i < resList.size(); i++) {
-      resList.get(i).flush();
-    }
-  }
-
-  // The loop header uses a local variable that shadows the field, so the loop does not dispose
-  // the local collection's elements.
-  void indexedLoopOverShadowedField() {
-    List<Resource> resList = new ArrayList<>();
-    // :: error: unfulfilled.collection.obligations
-    resList.add(new Resource());
-    for (int i = 0; i < resList.size(); i++) {
-      this.resList.get(i).close();
-      this.resList.get(i).flush();
-    }
-  }
 }
 
 // has no @MustCall method
