@@ -1155,9 +1155,11 @@ public final class JavaParserUtil {
    * Type, Map)}, the result for a class or interface type is the type of its declaration, which may
    * contain the declaration's own type variables, as in {@code java.lang.Comparable<T>} for the
    * bound of {@code <U extends Comparable<U>>}. When a type variable's upper bound is an
-   * intersection type, this yields the intersection type's erasure -- that is, its leftmost bound
-   * -- because {@code types} has no method that creates an intersection type. A caller that
-   * compares the result to another type should therefore erase it first.
+   * intersection type, this yields the intersection type's leftmost bound, because {@code types}
+   * has no method that creates an intersection type. The leftmost bound is not erased: for {@code
+   * <T extends Comparable<T> & Serializable>}, the result is {@code java.lang.Comparable<T>}, not
+   * the raw type {@code java.lang.Comparable}. Erasing the result yields the intersection type's
+   * erasure. A caller that compares the result to another type should therefore erase it first.
    *
    * <p>Returns null if the TypeMirror cannot be determined: for the types for which {@link
    * #typeToTypeMirror(Elements, Types, Type, Map)} returns null, other than a use of a type
@@ -1229,17 +1231,18 @@ public final class JavaParserUtil {
    * Returns the TypeMirror for the upper bound of the given type variable declaration, or null if
    * the upper bound cannot be determined.
    *
-   * <p>When the upper bound is an intersection type, this returns the intersection type's erasure
-   * -- that is, its leftmost bound -- because {@code types} has no method that creates an
-   * intersection type.
+   * <p>When the upper bound is an intersection type, this returns the intersection type's leftmost
+   * bound, because {@code types} has no method that creates an intersection type. The leftmost
+   * bound is not erased; for example, a parameterized bound such as {@code Comparable<T>} is
+   * returned as is, rather than as the raw type {@code Comparable}.
    *
    * @param elements used for looking up names
    * @param types used for creating types
    * @param typeParameter the declaration of a type variable
    * @param cache maps a name to the type it names, or to null if it names no type; this method both
    *     reads and writes it
-   * @return the TypeMirror for the upper bound of {@code typeParameter}, erased if that bound is an
-   *     intersection type, or null
+   * @return the TypeMirror for the upper bound of {@code typeParameter} (or for its leftmost bound,
+   *     if that upper bound is an intersection type), or null
    */
   private static @Nullable TypeMirror typeVariableUpperBound(
       Elements elements,
@@ -1253,8 +1256,9 @@ public final class JavaParserUtil {
       return objectElt == null ? null : objectElt.asType();
     }
     // If there are multiple bounds, the upper bound is an intersection type, but `types` has no
-    // method that creates an intersection type.  Use its leftmost bound, which is its erasure; that
-    // is sufficient for the clients of this method, which erase the type anyway.
+    // method that creates an intersection type.  Use its leftmost bound, whose erasure is the
+    // intersection type's erasure; that is sufficient for the clients of this method, which erase
+    // the type anyway.
     // The bound may itself be a type variable, as in `<T extends U, U extends CharSequence>`; the
     // recursion terminates because Java forbids a cycle among type variable bounds.
     return typeToTypeMirror(elements, types, bounds.get(0), true, cache);
