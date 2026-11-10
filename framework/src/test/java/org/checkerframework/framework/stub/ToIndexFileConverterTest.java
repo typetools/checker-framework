@@ -441,6 +441,19 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myMethod(Lutil/List;)V");
   }
 
+  /**
+   * The first identifier of a qualified name is not a subpackage of {@code java.lang}, which every
+   * compilation unit imports on demand: the name {@code reflect.Array} does not refer to {@code
+   * java.lang.reflect.Array}.
+   */
+  @Test
+  public void testImplicitJavaLangImportDoesNotSupplySubpackage() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;", "class MyClass {", "  void myMethod(reflect.Array a) {}", "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lreflect/Array;)V");
+  }
+
   /** A method's JVML descriptor uses the erasure of each type variable. */
   @Test
   public void testTypeVariableErasure() throws Exception {
