@@ -175,6 +175,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.DeconstructionPatternUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
@@ -2030,6 +2031,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       return false;
     } else if (node instanceof FieldAccessNode fieldAccess) {
       // A class literal, a qualified `this`, or an enum constant.
+      // An enum constant is null while its enum class is being initialized, for example if the
+      // constructor of the enum calls a method that reads the constant.  Like the Nullness
+      // Checker, which treats enum constants as non-null, this code ignores that possibility.
       String fieldName = fieldAccess.getFieldName();
       return !(fieldName.equals("class")
           || fieldName.equals("this")
@@ -3466,12 +3470,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     List<? extends ExpressionTree> actualExprs = tree.getArguments();
 
-    // Look up method to invoke and possibly throw NullPointerException
+    // Look up the method to invoke.  The access does not throw a NullPointerException, because the
+    // receiver is tested for nullness only after the arguments are evaluated.  The
+    // MethodInvocationNode, which follows the arguments, may throw any RuntimeException, including
+    // a NullPointerException for a null receiver.
     Node receiver = getReceiver(methodSelect);
 
     MethodAccessNode target = new MethodAccessNode(methodSelect, method, receiver);
 
-    extendWithNode(target, accessMayThrowNullPointerException(method, receiver));
+    extendWithNode(target);
 
     List<Node> arguments;
     if (TreeUtils.isEnumSuperCall(tree)) {
@@ -4447,12 +4454,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   @Override
   public Node visitMemberReference(MemberReferenceTree tree, Void p) {
     Tree enclosingExpr = tree.getQualifierExpression();
+    Node qualifier = null;
     if (enclosingExpr != null) {
-      scan(enclosingExpr, p);
+      qualifier = scan(enclosingExpr, p);
     }
 
+    // Creating a bound method reference, such as `expr::method`, throws a NullPointerException if
+    // the qualifier is null (JLS 15.13.3).  Other kinds of member reference have a type or `super`
+    // as their qualifier.
+    boolean mayThrowNullPointerException =
+        qualifier != null
+            && MemberReferenceKind.getMemberReferenceKind(tree) == MemberReferenceKind.BOUND
+            && mayBeNull(qualifier);
+
     Node node = new FunctionalInterfaceNode(tree);
-    extendWithNode(node);
+    extendWithNode(node, mayThrowNullPointerException);
 
     return node;
   }

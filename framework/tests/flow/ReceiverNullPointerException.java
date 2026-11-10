@@ -2,8 +2,9 @@ import org.checkerframework.framework.testchecker.util.*;
 
 // Accessing a member of a receiver that is never null does not throw a NullPointerException.
 //
-// In each method that calls equals(), `l1` is p2 only between `l1 = p2` and the argument `l1 = p1`,
-// where the access of `equals` is the only node that could throw a NullPointerException.
+// In each method that creates a bound method reference, `l1` is p2 only between `l1 = p2` and
+// `l1 = p1`, where creating the method reference is the only node that could throw a
+// NullPointerException.
 public class ReceiverNullPointerException extends ReceiverNullPointerExceptionSuper {
   void mayThrow() {}
 
@@ -107,7 +108,8 @@ public class ReceiverNullPointerException extends ReceiverNullPointerExceptionSu
     try {
       mayThrow();
       l1 = p2;
-      "abc".equals(l1 = p1);
+      Runnable r = "abc"::length;
+      l1 = p1;
     } catch (NullPointerException e) {
       @Odd String l3 = l1;
     }
@@ -118,18 +120,20 @@ public class ReceiverNullPointerException extends ReceiverNullPointerExceptionSu
     try {
       mayThrow();
       l1 = p2;
-      (p2 + p2).equals(l1 = p1);
+      Runnable r = (p2 + p2)::length;
+      l1 = p1;
     } catch (NullPointerException e) {
       @Odd String l3 = l1;
     }
   }
 
-  void superCall(@Odd String p1, String p2) {
+  void superMethodReference(@Odd String p1, String p2) {
     String l1 = p1;
     try {
       mayThrow();
       l1 = p2;
-      super.equals(l1 = p1);
+      Runnable r = super::hashCode;
+      l1 = p1;
     } catch (NullPointerException e) {
       @Odd String l3 = l1;
     }
@@ -140,7 +144,8 @@ public class ReceiverNullPointerException extends ReceiverNullPointerExceptionSu
     try {
       mayThrow();
       l1 = p2;
-      ((Runnable) () -> {}).equals(l1 = p1);
+      Runnable r = ((Runnable) () -> {})::run;
+      l1 = p1;
     } catch (NullPointerException e) {
       @Odd String l3 = l1;
     }
@@ -151,7 +156,8 @@ public class ReceiverNullPointerException extends ReceiverNullPointerExceptionSu
     try {
       mayThrow();
       l1 = p2;
-      ((Runnable) this::mayThrow).equals(l1 = p1);
+      Runnable r = ((Runnable) this::mayThrow)::run;
+      l1 = p1;
     } catch (NullPointerException e) {
       @Odd String l3 = l1;
     }
@@ -162,7 +168,8 @@ public class ReceiverNullPointerException extends ReceiverNullPointerExceptionSu
     try {
       mayThrow();
       l1 = p2;
-      String.class.equals(l1 = p1);
+      Runnable r = String.class::getName;
+      l1 = p1;
     } catch (NullPointerException e) {
       @Odd String l3 = l1;
     }
@@ -177,7 +184,8 @@ public class ReceiverNullPointerException extends ReceiverNullPointerExceptionSu
     try {
       mayThrow();
       l1 = p2;
-      Color.RED.equals(l1 = p1);
+      Runnable r = Color.RED::name;
+      l1 = p1;
     } catch (NullPointerException e) {
       @Odd String l3 = l1;
     }
@@ -190,7 +198,8 @@ public class ReceiverNullPointerException extends ReceiverNullPointerExceptionSu
     try {
       mayThrow();
       l1 = p2;
-      favoriteColor.equals(l1 = p1);
+      Runnable r = favoriteColor::name;
+      l1 = p1;
     } catch (NullPointerException e) {
       // :: error: [assignment]
       @Odd String l3 = l1;
@@ -202,11 +211,13 @@ public class ReceiverNullPointerException extends ReceiverNullPointerExceptionSu
     try {
       mayThrow();
       l1 = p2;
-      (switch (i) {
-            case 1 -> "a";
-            default -> "b";
-          })
-          .equals(l1 = p1);
+      Runnable r =
+          (switch (i) {
+                case 1 -> "a";
+                default -> "b";
+              })
+              ::length;
+      l1 = p1;
     } catch (NullPointerException e) {
       @Odd String l3 = l1;
     }
@@ -217,17 +228,34 @@ public class ReceiverNullPointerException extends ReceiverNullPointerExceptionSu
     try {
       mayThrow();
       l1 = p2;
-      (switch (i) {
-            case 1 -> "a";
-            default -> s;
-          })
-          .equals(l1 = p1);
+      Runnable r =
+          (switch (i) {
+                case 1 -> "a";
+                default -> s;
+              })
+              ::length;
+      l1 = p1;
     } catch (NullPointerException e) {
       // :: error: [assignment]
       @Odd String l3 = l1;
     }
   }
 
+  void methodReferenceMayBeNull(@Odd String p1, String p2, String s) {
+    String l1 = p1;
+    try {
+      mayThrow();
+      l1 = p2;
+      Runnable r = s::length;
+      l1 = p1;
+    } catch (NullPointerException e) {
+      // :: error: [assignment]
+      @Odd String l3 = l1;
+    }
+  }
+
+  // A call tests its receiver for nullness only after evaluating its arguments (JLS 15.12.4.4), so
+  // `l1` is p1 when a null receiver causes a NullPointerException.
   void methodCallMayBeNull(@Odd String p1, String p2, String s) {
     String l1 = p1;
     try {
@@ -235,7 +263,6 @@ public class ReceiverNullPointerException extends ReceiverNullPointerExceptionSu
       l1 = p2;
       s.equals(l1 = p1);
     } catch (NullPointerException e) {
-      // :: error: [assignment]
       @Odd String l3 = l1;
     }
   }
@@ -246,7 +273,8 @@ public class ReceiverNullPointerException extends ReceiverNullPointerExceptionSu
       try {
         mayThrow();
         l1 = p2;
-        ReceiverNullPointerException.this.equals(l1 = p1);
+        Runnable r = ReceiverNullPointerException.this::hashCode;
+        l1 = p1;
       } catch (NullPointerException e) {
         @Odd String l3 = l1;
       }
