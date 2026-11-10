@@ -381,9 +381,10 @@ public class DependentTypesHelper {
    * are written in the scope of the deconstruction pattern, not of the record, so they are not
    * viewpoint-adapted. Only annotations from the declaration of the record component are adapted.
    *
-   * <p>If {@code receiver} is not deterministic, then an adapted expression could refer to a
-   * different record than the one that was deconstructed. Therefore, such expressions are removed
-   * from the annotations on the component's declared type.
+   * <p>If {@code receiver} is not deterministic, then an expression that depends on the receiver
+   * could refer to a different record than the one that was deconstructed. Therefore, such
+   * expressions are removed from the annotations on the component's declared type. Expressions
+   * that do not depend on the receiver, such as static fields, are retained.
    *
    * @param type the type of the record component; is side-effected by this method
    * @param accessor the accessor method of the record component
@@ -397,20 +398,23 @@ public class DependentTypesHelper {
 
     // As in atInvocation, adapt the declared type of the component, then copy the adapted
     // annotations to `type`, except at locations where type variables have been substituted.
-    AnnotatedTypeMirror declaredType = factory.getAnnotatedType(accessor).getReturnType();
+    AnnotatedTypeMirror declaredType = factory.getRecordAccessorType(accessor).getReturnType();
     if (!hasDependentType(declaredType)) {
       return;
     }
 
-    StringToJavaExpression stringToJavaExpr;
-    if (receiver.isDeterministic(factory)) {
-      stringToJavaExpr =
-          stringExpr ->
-              StringToJavaExpression.atMethodDecl(stringExpr, accessor, factory.getChecker())
-                  .atFieldAccess(receiver);
-    } else {
-      stringToJavaExpr = stringExpr -> null;
-    }
+    boolean isDeterministic = receiver.isDeterministic(factory);
+    StringToJavaExpression stringToJavaExpr =
+        stringExpr -> {
+          JavaExpression declExpr =
+              StringToJavaExpression.atMethodDecl(stringExpr, accessor, factory.getChecker());
+          if (!isDeterministic
+              && (declExpr.containsOfClass(ThisReference.class)
+                  || declExpr.containsOfClass(SuperReference.class))) {
+            return null;
+          }
+          return declExpr.atFieldAccess(receiver);
+        };
     if (debugStringToJavaExpression) {
       System.out.printf(
           "atRecordComponentAccess(%s, %s, %s) created %s%n",

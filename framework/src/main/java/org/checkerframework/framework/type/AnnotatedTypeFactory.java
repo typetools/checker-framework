@@ -2710,6 +2710,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
+   * Returns the declared type of the accessor method of a record component. If a stub file
+   * annotates the record component but not its accessor, then the result's return type has the
+   * component's annotations, as at an invocation of the accessor.
+   *
+   * @param accessor the accessor method of a record component
+   * @return the declared type of {@code accessor}; a new object that clients may side-effect
+   */
+  public AnnotatedExecutableType getRecordAccessorType(ExecutableElement accessor) {
+    return applyRecordTypesToAccessors(accessor, getAnnotatedType(accessor));
+  }
+
+  /**
    * A callback method for the AnnotatedTypeFactory subtypes to customize the handling of the
    * declared method type before type variable substitution.
    *
@@ -4020,7 +4032,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Otherwise, the matched value's type does not determine the record's type arguments, and
     // the record's declared type (with type variables as type arguments) is used.
     AnnotatedTypeMirror componentType =
-        AnnotatedTypes.asMemberOf(types, this, recordAType, accessor).getReturnType();
+        AnnotatedTypes.asMemberOf(
+                types, this, recordAType, accessor, getRecordAccessorType(accessor))
+            .getReturnType();
     JavaExpression receiver = matched == null ? new Unknown(recordType) : matched.expression();
     viewpointAdaptRecordComponent(componentType, accessor, receiver);
     JavaExpression componentExpression =

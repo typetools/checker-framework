@@ -20,9 +20,26 @@ public class InstanceOfDeconstructionDependentType {
 
   void dependentType(Object o) {
     if (o instanceof KeyedMap(var mm, var k)) {
-      // `k` is a key for the record's map, not for this.m.
+      // `k` is a key for the record's map, not for this.m.  Its type is @KeyFor("o.m"), which
+      // cannot be written in source code because `o` has type Object.  The `adapted` and
+      // `adaptedExplicitType` methods test the qualifier when the matched value is a KeyedMap.
       // :: error: [unboxing.of.nullable]
       int i = m.get(k);
+    }
+  }
+
+  static Map<String, Integer> staticMap = Map.of();
+
+  record StaticKey(@KeyFor("InstanceOfDeconstructionDependentType.staticMap") String k) {}
+
+  StaticKey getStaticKey() {
+    throw new Error();
+  }
+
+  void receiverIndependent() {
+    // getStaticKey() is not deterministic, but the qualifier does not depend on the record.
+    if (getStaticKey() instanceof StaticKey(var k)) {
+      int i = staticMap.get(k);
     }
   }
 
