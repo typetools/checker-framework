@@ -155,36 +155,6 @@ public class InferenceResult {
   }
 
   /**
-   * Creates a copy of the given inference result. The copy does not share any mutable state with
-   * {@code other}: its maps are new, and its type arguments are deep copies.
-   *
-   * @param other an inference result
-   */
-  private InferenceResult(InferenceResult other) {
-    this.results = new HashMap<>(other.results.size());
-    for (Map.Entry<Tree, Map<TypeVariable, AnnotatedTypeMirror>> entry : other.results.entrySet()) {
-      Map<TypeVariable, AnnotatedTypeMirror> typeArgs = new HashMap<>(entry.getValue().size());
-      entry.getValue().forEach((typeVar, typeArg) -> typeArgs.put(typeVar, typeArg.deepCopy()));
-      this.results.put(entry.getKey(), typeArgs);
-    }
-    this.needUncheckedConversion = other.needUncheckedConversion;
-    this.annoInferenceFailed = other.annoInferenceFailed;
-    this.failedAfterTargetTypeConstraints = other.failedAfterTargetTypeConstraints;
-    this.qualifiersIncompatibleWithTarget = other.qualifiersIncompatibleWithTarget;
-    this.errorMsg = other.errorMsg;
-    this.inferenceCrashed = other.inferenceCrashed;
-  }
-
-  /**
-   * Returns a copy of this inference result that does not share any mutable state with it.
-   *
-   * @return a copy of this inference result
-   */
-  public InferenceResult copy() {
-    return new InferenceResult(this);
-  }
-
-  /**
    * A mapping from a tree that needs type argument inference to a map from type parameter to its
    * inferred annotated type argument. If inference crashed, this map is empty. If inference failed
    * because of qualifiers, this map contains the type arguments that inference instantiated, whose

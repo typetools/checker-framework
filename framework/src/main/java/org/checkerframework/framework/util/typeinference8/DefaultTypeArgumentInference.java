@@ -1,7 +1,5 @@
 package org.checkerframework.framework.util.typeinference8;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
@@ -13,7 +11,6 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +28,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.typeinference8.types.ContainsInferenceVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
@@ -45,17 +41,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
   /** Stack of all inference problems currently being solved. */
   private final ArrayDeque<InvocationTypeInference> java8InferenceStack = new ArrayDeque<>();
-
-  /**
-   * A cache from the outermost tree of an inference problem (a method invocation or class instance
-   * creation) to the result of solving that problem, before {@link
-   * InferenceResult#swapTypeVariables} is applied. Each entry is for a tree of {@link #cacheRoot}.
-   * See {@link #canUseCache}.
-   */
-  private final Map<ExpressionTree, InferenceResult> inferenceCache = new HashMap<>();
-
-  /** The compilation unit whose trees are the keys of {@link #inferenceCache}. */
-  private @Nullable CompilationUnitTree cacheRoot = null;
 
   /** Creates a DefaultTypeArgumentInference. */
   public DefaultTypeArgumentInference() {}
@@ -136,17 +121,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       }
       assert outerMethodType != null
           : "@AssumeAssertion(nullness): outerTree is not a member reference";
-      boolean useCache = canUseCache(typeFactory, pathToExpression);
-      if (useCache) {
-        InferenceResult cached = inferenceCache.get(outerTree);
-        // A member reference that the cached result has no type arguments for needs another
-        // inference, below, that reuses the inference problem.  Do not use the cache for it.
-        if (cached != null
-            && (cached.getResults().containsKey(expressionTree)
-                || !(expressionTree instanceof MemberReferenceTree))) {
-          return cached.copy().swapTypeVariables(executableType, expressionTree);
-        }
-      }
       InvocationTypeInference java8Inference =
           new InvocationTypeInference(typeFactory, pathToExpression, true);
       InferenceResult result =
@@ -181,9 +155,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         }
       }
       chosenInference.recordLambdaParameterTypes();
-      if (useCache) {
-        inferenceCache.put(outerTree, result.copy());
-      }
       if (!result.getResults().containsKey(expressionTree)
           && expressionTree instanceof MemberReferenceTree mrt) {
         // The inference of the outer tree did not create any inference variables for the
@@ -263,39 +234,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           return false;
         }
       }
-    }
-    return true;
-  }
-
-  /**
-   * Returns true if {@link #inferenceCache} can be used for the inference problem whose outermost
-   * tree is the leaf of {@code pathToOuterTree}: the result of that problem does not change if it
-   * is solved again later. That is the case if dataflow analysis has finished for the enclosing
-   * class, because then the types of the expressions in the problem do not change, and if no other
-   * inference problem is being solved, because a problem that is being solved can provide the types
-   * of lambda parameters.
-   *
-   * <p>If this returns true, it first clears {@link #inferenceCache} if the cache is for another
-   * compilation unit.
-   *
-   * @param typeFactory a type factory
-   * @param pathToOuterTree the path to the outermost tree of an inference problem
-   * @return true if {@link #inferenceCache} can be used for the inference problem
-   */
-  private boolean canUseCache(AnnotatedTypeFactory typeFactory, TreePath pathToOuterTree) {
-    if (!typeFactory.shouldCache
-        || !java8InferenceStack.isEmpty()
-        || !(typeFactory instanceof GenericAnnotatedTypeFactory<?, ?, ?, ?> gatf)) {
-      return false;
-    }
-    ClassTree enclosingClass = TreePathUtil.enclosingClass(pathToOuterTree);
-    if (enclosingClass == null || !gatf.isFlowAnalysisFinished(enclosingClass)) {
-      return false;
-    }
-    CompilationUnitTree root = pathToOuterTree.getCompilationUnit();
-    if (root != cacheRoot) {
-      inferenceCache.clear();
-      cacheRoot = root;
     }
     return true;
   }
