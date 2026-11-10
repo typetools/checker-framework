@@ -92,4 +92,20 @@ public class SwitchRemainder {
       x.hashCode();
     }
   }
+
+  // The `case null` matches null, so the last case matches every value that is tested against it.
+  void noRemainderCaseNull(@Nullable Shape s) {
+    @Nullable Object x = "";
+    try {
+      x.toString();
+      x = null;
+      switch (s) {
+        case null -> {}
+        case Shape t -> {}
+      }
+      x = "";
+    } catch (MatchException e) {
+      x.hashCode();
+    }
+  }
 }
