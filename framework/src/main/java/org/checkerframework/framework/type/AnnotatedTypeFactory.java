@@ -4001,19 +4001,85 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     AnnotatedTypeMirror matchedType = getMatchedValueType(deconstructionPatternPath);
     AnnotatedTypeMirror recordAType = getAnnotatedType(recordElement);
-    if (matchedType != null
-        && types.isSubtype(
-            types.erasure(matchedType.getUnderlyingType()), types.erasure(recordType))) {
-      recordAType = AnnotatedTypes.asSuper(this, matchedType, recordAType);
+    if (matchedType != null) {
+      TypeMirror matchedErasure = types.erasure(matchedType.getUnderlyingType());
+      TypeMirror recordErasure = types.erasure(recordType);
+      if (types.isSubtype(matchedErasure, recordErasure)) {
+        recordAType = AnnotatedTypes.asSuper(this, matchedType, recordAType);
+      } else if (types.isSubtype(recordErasure, matchedErasure)) {
+        recordAType = recordTypeFromSupertype((AnnotatedDeclaredType) recordAType, matchedType);
+      }
     }
-    // Otherwise, the matched value's type does not determine the record's type arguments, and
-    // the record's declared type (with type variables as type arguments) is used.
-    // As in methodFromUse, apply annotations on the record component (such as from a stub file)
-    // to the accessor.
-    AnnotatedExecutableType accessorType =
-        applyRecordTypesToAccessors(accessor, getAnnotatedType(accessor));
+    // If the matched value's type does not determine some of the record's type arguments (for
+    // example, if it is Object), then those type arguments remain type variables.
+
+    // As in methodFromUse, apply annotations that a stub file writes on the record component (and
+    // not on its accessor) to the accessor's type.
+    AnnotatedExecutableType accessorType = getAnnotatedType(accessor);
+    accessorType = applyFakeOverrides(recordAType, accessor, accessorType);
+    accessorType = applyRecordTypesToAccessors(accessor, accessorType);
     return AnnotatedTypes.asMemberOf(types, this, recordAType, accessor, accessorType)
         .getReturnType();
+  }
+
+  /**
+   * Given the declared type of a record, such as {@code Box<T>}, and the type of a value that is
+   * matched against a deconstruction pattern for the record, such as {@code Container<@NonNull
+   * String>}, returns the record's type with each type variable that the matched type determines
+   * replaced by the corresponding type argument, such as {@code Box<@NonNull String>}.
+   *
+   * <p>A type variable of the record is determined if the record's supertype that corresponds to
+   * {@code matchedType} has the type variable itself as a type argument, and the corresponding type
+   * argument of {@code matchedType} is not a wildcard. Because type arguments are invariant, the
+   * type variable must equal that type argument. Other type variables are not replaced.
+   *
+   * @param recordDeclType the declared type of a record, with type variables as type arguments
+   * @param matchedType the type of the matched value, whose erasure is a supertype of the record's
+   *     erasure
+   * @return the record's type, with the type variables that {@code matchedType} determines replaced
+   */
+  private AnnotatedTypeMirror recordTypeFromSupertype(
+      AnnotatedDeclaredType recordDeclType, AnnotatedTypeMirror matchedType) {
+    if (!(matchedType instanceof AnnotatedDeclaredType matchedDeclType)
+        || matchedDeclType.isUnderlyingTypeRaw()) {
+      return recordDeclType;
+    }
+    List<AnnotatedTypeMirror> matchedTypeArgs = matchedDeclType.getTypeArguments();
+    if (matchedTypeArgs.isEmpty()) {
+      return recordDeclType;
+    }
+    AnnotatedDeclaredType recordAsSuper =
+        AnnotatedTypes.asSuper(this, recordDeclType, matchedDeclType);
+    List<AnnotatedTypeMirror> superTypeArgs = recordAsSuper.getTypeArguments();
+    if (superTypeArgs.size() != matchedTypeArgs.size()) {
+      return recordDeclType;
+    }
+    List<? extends TypeMirror> recordTypeParams =
+        recordDeclType.getUnderlyingType().getTypeArguments();
+    Map<TypeVariable, AnnotatedTypeMirror> typeVarToTypeArg = new HashMap<>();
+    for (int i = 0; i < superTypeArgs.size(); i++) {
+      AnnotatedTypeMirror superTypeArg = superTypeArgs.get(i);
+      AnnotatedTypeMirror matchedTypeArg = matchedTypeArgs.get(i);
+      if (superTypeArg instanceof AnnotatedTypeVariable superTypeVar
+          && matchedTypeArg.getKind() != TypeKind.WILDCARD) {
+        TypeVariable typeVar = superTypeVar.getUnderlyingType();
+        boolean isRecordTypeParam = false;
+        for (TypeMirror recordTypeParam : recordTypeParams) {
+          if (types.isSameType(recordTypeParam, typeVar)) {
+            typeVar = (TypeVariable) recordTypeParam;
+            isRecordTypeParam = true;
+            break;
+          }
+        }
+        if (isRecordTypeParam) {
+          typeVarToTypeArg.put(typeVar, matchedTypeArg);
+        }
+      }
+    }
+    if (typeVarToTypeArg.isEmpty()) {
+      return recordDeclType;
+    }
+    return typeVarSubstitutor.substitute(typeVarToTypeArg, recordDeclType);
   }
 
   /**
