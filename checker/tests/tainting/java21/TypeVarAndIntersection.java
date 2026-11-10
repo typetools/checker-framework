@@ -51,6 +51,27 @@ public class TypeVarAndIntersection {
     }
   }
 
+  interface UntaintedStringSupplier extends Supplier<@Untainted String> {}
+
+  record Holder<T>(T t) implements UntaintedStringSupplier {
+    @Override
+    public @Untainted String get() {
+      return "";
+    }
+  }
+
+  /**
+   * T is an interface type that is not parameterized, although its supertype {@code
+   * Supplier<@Untainted String>} is. T' is T, which is not a parameterization of a generic class,
+   * so step 4 adds no constraint, and alpha has only its declared bound.
+   */
+  static void matchedAgainstNonGenericInterface(UntaintedStringSupplier u) {
+    if (u instanceof Holder(var t)) {
+      // :: error: (assignment)
+      @Untainted Object bad = t;
+    }
+  }
+
   /** T is a type variable; its upper bound is a parameterization of the record's supertype. */
   static <Q extends Supplier<@Untainted String>> void typeVariable(Q q) {
     if (q instanceof Producer(var v)) {

@@ -114,7 +114,12 @@ public final class AnnotatedTypeProjection {
         TypeVariable javaType = typeVariable.getUnderlyingType();
         AnnotatedTypeMirror result;
         if (isInProgress(javaType)) {
-          result = typeVariable.getUpperBound().getErased();
+          // The erasure of a type variable is the erasure of its leftmost bound (JLS 4.6).
+          AnnotatedTypeMirror leftmostBound = typeVariable.getUpperBound();
+          if (leftmostBound.getKind() == TypeKind.INTERSECTION) {
+            leftmostBound = ((AnnotatedIntersectionType) leftmostBound).getBounds().get(0);
+          }
+          result = leftmostBound.getErased();
         } else {
           inProgress.add(javaType);
           result = upward(typeVariable.getUpperBound());
@@ -268,19 +273,21 @@ public final class AnnotatedTypeProjection {
 
   /**
    * Creates a wildcard. Its Java type is {@code ? super lower} if {@code lower} is non-null, {@code
-   * ? extends upper} if {@code extendsUpper} is true, and {@code ?} otherwise. Its annotated upper
-   * bound is {@code upper} if its Java type is {@code ? extends upper}, and otherwise {@code
-   * Object} with the qualifiers of {@code upper}.
+   * ? extends upper} if {@code extendsUpper} is true and {@code upper} is not an intersection type,
+   * and {@code ?} otherwise. Its annotated upper bound is {@code upper} if its Java type is {@code
+   * ? extends upper}, and otherwise {@code Object} with the qualifiers of {@code upper}.
    *
    * @param upper the upper bound of the wildcard
    * @param lower the lower bound of the wildcard, or null if it has none
-   * @param extendsUpper true if the Java type of the wildcard is {@code ? extends upper}; ignored
-   *     if {@code lower} is non-null
+   * @param extendsUpper true if the Java type of the wildcard should be {@code ? extends upper};
+   *     ignored if {@code lower} is non-null
    * @return a wildcard with the given bounds
    */
   private AnnotatedWildcardType createWildcard(
       AnnotatedTypeMirror upper, @Nullable AnnotatedTypeMirror lower, boolean extendsUpper) {
-    boolean isExtendsUpper = lower == null && extendsUpper;
+    // A wildcard's bound cannot be an intersection type, so `?` stands in for `? extends A & B`.
+    boolean isExtendsUpper =
+        lower == null && extendsUpper && upper.getKind() != TypeKind.INTERSECTION;
     TypeMirror javaType =
         TypesUtils.createWildcard(
             lower == null ? null : lower.getUnderlyingType(),
