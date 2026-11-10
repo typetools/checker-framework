@@ -166,7 +166,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
           projectedType.getUnderlyingType(), type.getUnderlyingType(), f.types)) {
         return AnnotatedTypes.asSuper(f, projectedType, type);
       }
-      type.addMissingAnnotations(recordComponentType.getAnnotations());
+      type.addMissingAnnotations(recordComponentType.getPrimaryAnnotations());
       return type;
     }
     return f.type(bindingVariable);
@@ -199,7 +199,9 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     // An unconditional pattern matches null (JLS 14.30.2), so the binding variable can hold any
     // value of the record component, including null.
     if (f.isUnconditionalNestedTypePattern(recordPattern, index)) {
-      type.addMissingAnnotations(recordComponentType.getAnnotations());
+      // Use the primary annotations: the effective annotations of a type variable are those of
+      // its upper bound, and copying them would prevent the type variable's local default.
+      type.addMissingAnnotations(recordComponentType.getPrimaryAnnotations());
     }
   }
 

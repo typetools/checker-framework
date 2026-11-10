@@ -118,6 +118,19 @@ public class RecordPatternNullableComponent {
     }
   }
 
+  // A binding variable whose type is a type variable can be assigned null, like a local variable of
+  // that type.
+  <T extends @NonNull Object> void typeVariableAssignNull(Box<T> box) {
+    if (box instanceof Box(var t)) {
+      t.toString();
+      t = null;
+    }
+    if (box instanceof Box(T t)) {
+      t.toString();
+      t = null;
+    }
+  }
+
   // The pattern matches null, so an explicit @NonNull is not justified.
   void explicitNonNullUnconditional(Box<@Nullable String> box) {
     // :: error: (assignment)
