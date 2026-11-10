@@ -49,11 +49,7 @@ now a final, non-generic class.  `NumberMath.getNumberMath()` throws
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
 
-In the control-flow graph, the guard of a `case` is evaluated after the
-`CaseNode`, and only if the case's labels match.  (The last case of an
-exhaustive switch has a `CaseNode` whose `alwaysMatches()` is true, so its guard
-is evaluated unconditionally after that node.)  Removed `CaseNode.getGuard()`
-and the `guard` parameter of the `CaseNode` constructor.
+Removed `CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
 The `CaseNode` constructor takes a new `alwaysMatches` argument, and the new
 method `CaseNode.alwaysMatches()` returns it; for such a `CaseNode`, the CFG
 does not test the labels, and `CFAbstractTransfer.visitCase()` returns a regular
