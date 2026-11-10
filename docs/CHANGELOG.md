@@ -9,11 +9,41 @@
 
 Pattern variables, such as `s` in `o instanceof String s` or `case String s`,
 are defaulted to the top qualifier, like other local variables (the
-CLIMB-to-top rule).  An unannotated pattern variable is refined to the type of
-the value that the pattern matches, rather than having the type system's
-default qualifier.
+CLIMB-to-top rule).  An unannotated pattern variable is refined to the
+qualifiers of the expression or record component that the pattern is matched
+against.
+
+The qualifiers of a record pattern's type are inferred from the type that the
+pattern is matched against, in the same way that javac infers its type
+arguments (JLS 18.5.5).  For example, given `record Box<T>(T t) {}` and
+`Box<@Untainted String> b`, in `b instanceof Box(var s)` the variable `s` has
+type `@Untainted String`.  If the qualifiers cannot be inferred, the Checker
+Framework issues a `type.arguments.not.inferred` error.
+
+A type pattern nested in a record pattern, such as `String s` in
+`Box(String s)`, is checked against the type of the record component: as an
+assignment if the pattern is unconditional for that type, and like an
+`instanceof` type pattern otherwise.  This can issue new `assignment` errors and
+`instanceof.pattern.unsafe` warnings.
 
 ### Changes for type system implementers
+
+`TypeUseLocation.LOCAL_VARIABLE` now applies to pattern variables.
+
+New overridable methods `BaseTypeVisitor.checkInstanceOfPattern()` and
+`BaseTypeVisitor.instanceOfPatternMatchedType()` check the binding variable of
+an `instanceof` type pattern.  New overridable methods
+`CFAbstractTransfer.refineBindingVariable()` and
+`CFAbstractTransfer.refineCaseLabelBindingVariable()` refine a binding variable.
+
+New overridable methods `BaseTypeVisitor.checkRecordPatternTypeInference()`,
+`BaseTypeVisitor.checkNestedBindingPatterns()`, and
+`BaseTypeVisitor.checkConditionalNestedBindingPattern()` check a record pattern.
+New method `AnnotatedTypeFactory.getRecordPatternComponentTypes()` returns the
+inferred types of the record components of a record pattern.  New class
+`RecordPatternTypeInference` infers the type of a record pattern, and new class
+`AnnotatedTypeProjection` computes the upward projection of an annotated type
+(JLS 4.10.5).
 
 ### Closed issues
 
