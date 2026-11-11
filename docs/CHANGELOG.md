@@ -61,12 +61,16 @@ cast.
 
 These methods of `CFAbstractTransfer` no longer call `visitNode()`:
 `visitConditionalAnd()`, `visitConditionalNot()`, `visitConditionalOr()`,
-`visitLambdaResultExpression()`, `visitMarker()`, `visitReturn()`,
-`visitTernaryExpression()`, `visitTypeCast()`, `visitMethodAccess()` (for the
-target of an unboxing call, when the input has a then-store and an else-store),
-and, for a boolean literal that is the right operand of a boolean operator,
-`visitValueLiteral()`.  A subclass that overrides `visitNode()` may need to
-override them too.
+`visitMarker()`, `visitReturn()`, `visitTernaryExpression()`,
+`visitTypeCast()`, `visitMethodAccess()` (for the target of an unboxing call,
+when the input has a then-store and an else-store); for boolean operands,
+`visitBitwiseAnd()`, `visitBitwiseOr()`, `visitBitwiseXor()`, `visitEqualTo()`,
+and `visitNotEqual()`; and, for a boolean literal that is the right operand of a
+boolean operator, `visitValueLiteral()`.  A subclass that overrides
+`visitNode()` may need to override them too.
+`CFAbstractTransfer.visitLambdaResultExpression()` no longer calls the transfer
+function of the lambda's result node; it uses the value that the result node
+already computed.
 
 Removed `CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
 
