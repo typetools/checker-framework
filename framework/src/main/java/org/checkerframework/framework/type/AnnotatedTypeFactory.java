@@ -3337,12 +3337,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns the types of the two arguments to the BinaryTree, accounting for widening and unboxing
    * if applicable.
    *
+   * <p>An {@code ==} or {@code !=} whose operands both have reference types compares references
+   * (JLS 15.21.3), so this method returns the operands' types unchanged for it.
+   *
    * @param tree a binary tree
    * @return the types of the two arguments
    */
   public BinaryArgTypes binaryTreeArgTypes(BinaryTree tree) {
-    return binaryTreeArgTypes(
-        getAnnotatedType(tree.getLeftOperand()), getAnnotatedType(tree.getRightOperand()));
+    AnnotatedTypeMirror left = getAnnotatedType(tree.getLeftOperand());
+    AnnotatedTypeMirror right = getAnnotatedType(tree.getRightOperand());
+    Tree.Kind kind = tree.getKind();
+    if ((kind == Tree.Kind.EQUAL_TO || kind == Tree.Kind.NOT_EQUAL_TO)
+        && !left.getKind().isPrimitive()
+        && !right.getKind().isPrimitive()) {
+      return new BinaryArgTypes(left, right);
+    }
+    return binaryTreeArgTypes(left, right);
   }
 
   /**
@@ -3361,13 +3371,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns the types of the two arguments to a binary operation, accounting for widening and
    * unboxing if applicable.
    *
+   * <p>Binary numeric promotion (JLS 5.6) unboxes a boxed operand, such as one of type {@code
+   * Character} or {@code Integer}, before it widens the operand.
+   *
    * @param left the type of the left argument of a binary operation
    * @param right the type of the right argument of a binary operation
    * @return the types of the two arguments
    */
   public BinaryArgTypes binaryTreeArgTypes(AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
     TypeKind resultTypeKind =
-        TypeKindUtils.widenedNumericType(left.getUnderlyingType(), right.getUnderlyingType());
+        TypeKindUtils.widenedNumericType(
+            unboxedTypeOrSelf(left.getUnderlyingType()),
+            unboxedTypeOrSelf(right.getUnderlyingType()));
     if (TypeKindUtils.isNumeric(resultTypeKind)) {
       TypeMirror resultTypeMirror = types.getPrimitiveType(resultTypeKind);
       AnnotatedPrimitiveType leftUnboxed = applyUnboxing(left);
@@ -3384,6 +3399,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     } else {
       return new BinaryArgTypes(left, right);
     }
+  }
+
+  /**
+   * Returns the primitive type to which unboxing conversion converts the given type, or the type
+   * itself if it is not a boxed primitive.
+   *
+   * @param type a type, such as {@code Integer} or {@code int}
+   * @return the unboxed type, such as {@code int}, or {@code type} if it is not a boxed primitive
+   */
+  private TypeMirror unboxedTypeOrSelf(TypeMirror type) {
+    return TypesUtils.isBoxedPrimitive(type) ? types.unboxedType(type) : type;
   }
 
   /**
