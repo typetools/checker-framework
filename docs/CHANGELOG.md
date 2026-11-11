@@ -9,12 +9,23 @@
 
 Pattern variables, such as `s` in `o instanceof String s` or `case String s`,
 are defaulted to the top qualifier, like other local variables (the
-CLIMB-to-top rule).  An unannotated pattern variable is refined to the type of
-the value that the pattern matches, rather than having the type system's
-default qualifier.  For a pattern variable nested in a record pattern, such as
-`s` in `o instanceof Box(String s)`, that value is the record component.
+CLIMB-to-top rule).  An unannotated pattern variable is refined as if it were
+assigned a cast of the expression that the pattern is matched against, as in
+`String s = (String) o;`.  A type system can refine it further; for example,
+the Nullness Checker refines it to `@NonNull`, because a type pattern in an
+`instanceof` or a case label does not match null.  For a pattern variable
+nested in a record pattern, such as `s` in `o instanceof Box(String s)`, that
+expression is the record component.
 
 ### Changes for type system implementers
+
+`TypeUseLocation.LOCAL_VARIABLE` now applies to pattern variables.
+
+New overridable methods `BaseTypeVisitor.checkInstanceOfPattern()` and
+`BaseTypeVisitor.instanceOfPatternMatchedType()` check the binding variable of
+an `instanceof` type pattern.  New overridable methods
+`CFAbstractTransfer.refineBindingVariable()` and
+`CFAbstractTransfer.refineCaseLabelBindingVariable()` refine a binding variable.
 
 ### Closed issues
 
@@ -55,6 +66,8 @@ now a final, non-generic class.  `NumberMath.getNumberMath()` throws
 `PurityChecker.checkPurity()` takes two new arguments: the method declaration
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
+
+Removed `CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
 
 Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
 and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to

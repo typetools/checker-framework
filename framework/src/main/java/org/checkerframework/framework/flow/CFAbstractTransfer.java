@@ -1142,8 +1142,8 @@ public abstract class CFAbstractTransfer<
           && bindingVar.getTree() instanceof VariableTree bindingVarTree) {
         AnnotatedTypeMirror componentType =
             analysis.atypeFactory.getDeconstructedComponentType(bindingVarTree);
-        // As for a cast, a qualifier that is not a subtype of the qualifier upper bound of the
-        // binding variable's type is replaced by that bound.
+        // As for a cast of the record component to the binding variable's type, limit the
+        // component's qualifiers to the qualifier upper bound of the binding variable's type.
         V componentValue =
             componentType == null
                 ? null

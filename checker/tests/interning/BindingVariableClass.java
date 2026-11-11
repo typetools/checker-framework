@@ -33,6 +33,21 @@ public class BindingVariableClass {
     }
   }
 
+  record Holder(Object o) {}
+
+  void deconstructionPattern(Object value) {
+    if (value instanceof Holder(Class<?> cls)) {
+      take(cls);
+    }
+  }
+
+  void deconstructionCaseLabel(Holder value) {
+    switch (value) {
+      case Holder(Class<?> cls) -> take(cls);
+      default -> {}
+    }
+  }
+
   void notInterned(Object value) {
     if (value instanceof String s) {
       // :: error: (argument)

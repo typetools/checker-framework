@@ -2,6 +2,7 @@
 
 import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class InstanceOfPatternInitialization {
@@ -13,7 +14,14 @@ public class InstanceOfPatternInitialization {
     }
   }
 
-  // An unannotated binding variable has the qualifiers of the expression.
+  // An explicitly @NonNull binding variable is safe even when the expression is @Nullable.
+  void nonNullExplicit(@Nullable Object o) {
+    if (o instanceof @NonNull String s) {
+      s.length();
+    }
+  }
+
+  // An unannotated binding variable has the qualifiers of the expression that instanceof tests.
   void unknownInitialization(@UnknownInitialization Object o) {
     if (o instanceof String s) {
       @UnknownInitialization String t = s;
