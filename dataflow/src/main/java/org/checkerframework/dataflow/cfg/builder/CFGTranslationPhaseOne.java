@@ -2330,19 +2330,51 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     /**
      * Returns true if the label of {@code caseTree} matches every value of the selector expression
      * that is tested against it. This is true of a pattern that matches every non-null value of the
-     * selector expression's type, if the switch has no {@code case null}. (Without a {@code case
-     * null}, a null selector expression causes a NullPointerException before any case is tested.)
+     * selector expression's type, if a null selector expression is not tested against it. (Without
+     * a {@code case null}, a null selector expression causes a NullPointerException before any case
+     * is tested. A {@code case null} that the CFG tests before {@code caseTree} matches a null
+     * selector expression.)
      *
      * @param caseTree a case of {@link #switchTree}
+     * @param index the index of {@code caseTree} in {@link #caseTrees}
      * @return true if the label of {@code caseTree} matches every value of the selector expression
      *     that is tested against it
      */
-    private boolean labelAlwaysMatches(CaseTree caseTree) {
+    private boolean labelAlwaysMatches(CaseTree caseTree, int index) {
       List<? extends Tree> labels = CaseUtils.getLabels(caseTree);
-      if (labels.size() != 1 || selectorExprType.getKind().isPrimitive() || hasNullCaseLabel) {
+      if (labels.size() != 1 || selectorExprType.getKind().isPrimitive()) {
         return false;
       }
-      return matchesEveryNonNullValue(labels.get(0), selectorExprType);
+      if (!matchesEveryNonNullValue(labels.get(0), selectorExprType)) {
+        return false;
+      }
+      if (!hasNullCaseLabel) {
+        return true;
+      }
+      // The CFG tests the cases in order, except that it tests the default case (which might be
+      // `case null, default`) last.
+      for (int i = 0; i < index; i++) {
+        CaseTree earlierCase = caseTrees.get(i);
+        if (!CaseUtils.isDefaultCaseTree(earlierCase) && hasNullLabel(earlierCase)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    /**
+     * Returns true if {@code caseTree} has a {@code null} label.
+     *
+     * @param caseTree a case tree
+     * @return true if {@code caseTree} has a {@code null} label
+     */
+    private boolean hasNullLabel(CaseTree caseTree) {
+      for (Tree label : CaseUtils.getLabels(caseTree)) {
+        if (label.getKind() == Tree.Kind.NULL_LITERAL) {
+          return true;
+        }
+      }
+      return false;
     }
 
     /**
@@ -2417,7 +2449,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           exprs.add(scan(exprTree, null));
         }
 
-        boolean labelAlwaysMatches = labelAlwaysMatches(caseTree);
+        boolean labelAlwaysMatches = labelAlwaysMatches(caseTree, index);
         // If true, the labels are not tested.
         boolean alwaysMatches = isLastCaseOfExhaustive || labelAlwaysMatches;
         CaseNode caseNode =

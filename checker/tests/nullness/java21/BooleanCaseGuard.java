@@ -36,6 +36,17 @@ public class BooleanCaseGuard {
     }
   }
 
+  // The pattern matches every value of the selector, so the default case is reached only when the
+  // guard is false, which means that the guard was evaluated.
+  void nullableBooleanGuardPatternAlwaysMatches(String sel, @Nullable Boolean b) {
+    switch (sel) {
+      case String s when b -> {}
+      default -> {
+        b.hashCode();
+      }
+    }
+  }
+
   void nullableBooleanGuardNextCase(Object sel, @Nullable Boolean b) {
     switch (sel) {
       case String s when b -> {}
