@@ -286,7 +286,7 @@ public class CollectionOwnershipTransfer
     // The superclass transfer function updates the input store in place, so compute the types of
     // the receiver and the arguments before calling it.
     CollectionOwnershipStore storeBefore = in.getRegularStore();
-    Node receiverNode = node.getTarget().getReceiver();
+    Node receiverNode = NodeUtils.removeCasts(node.getTarget().getReceiver());
     CollectionOwnershipType receiverType = atypeFactory.getCoType(receiverNode, storeBefore);
     List<Node> args = node.getArguments();
     List<@Nullable CollectionOwnershipType> argTypes = getCoTypes(args, storeBefore);
