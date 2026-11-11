@@ -48,9 +48,11 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
@@ -640,6 +642,18 @@ public class CollectionOwnershipAnnotatedTypeFactory
   }
 
   /**
+   * Returns true if the argument inserted by a {@code @CreatesCollectionObligation} call is the
+   * null literal, even if it is cast.
+   *
+   * @param node a method invocation node
+   * @return true if the inserted argument is {@code null}
+   */
+  public boolean insertsNull(MethodInvocationNode node) {
+    Node inserted = getInsertedArgumentNode(node);
+    return inserted != null && NodeUtils.removeCasts(inserted) instanceof NullLiteralNode;
+  }
+
+  /**
    * Classifies the argument inserted by a {@code @CreatesCollectionObligation} mutator call.
    *
    * <p>For resource collections, this returns {@link
@@ -692,6 +706,9 @@ public class CollectionOwnershipAnnotatedTypeFactory
     }
 
     TypeMirror typeMirror = TreeUtils.typeOf(insertedArgumentTree);
+    if (typeMirror.getKind() == TypeKind.NULL) {
+      return CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING;
+    }
     TypeElement typeElement = TypesUtils.getTypeElement(typeMirror);
     if (typeElement != null && rlAtf.hasEmptyMustCallValue(typeElement)) {
       return CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING;
