@@ -3167,7 +3167,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * <p>Subclasses should override {@link #getUnboxedType} rather than this method.
    *
-   * @param type a type: a primitive or boxed primitive
+   * @param type a type: a primitive, or a type to which unboxing conversion applies (see {@link
+   *     TypesUtils#boxedPrimitiveForUnboxing})
    * @return the unboxed variant of the type
    */
   public final AnnotatedPrimitiveType applyUnboxing(AnnotatedTypeMirror type) {
@@ -3176,6 +3177,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       return (AnnotatedPrimitiveType) type;
     } else if (TypesUtils.isBoxedPrimitive(underlying)) {
       return getUnboxedType((AnnotatedDeclaredType) type);
+    }
+    TypeMirror boxedUnderlying = TypesUtils.boxedPrimitiveForUnboxing(underlying, types);
+    if (boxedUnderlying != null) {
+      // A type variable, intersection type, or wildcard: unbox its boxed primitive, which has the
+      // type's effective annotations.
+      AnnotatedDeclaredType boxed =
+          (AnnotatedDeclaredType) AnnotatedTypeMirror.createType(boxedUnderlying, this, false);
+      boxed.addAnnotations(type.getAnnotations());
+      return getUnboxedType(boxed);
     } else {
       throw new BugInCF("Bad argument to applyUnboxing: " + type);
     }
@@ -3243,8 +3253,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotatedPrimitiveType exprPrimitiveType;
     if (TypeKindUtils.isNumeric(exprKind)) {
       exprPrimitiveType = (AnnotatedPrimitiveType) exprType;
-    } else if (TypesUtils.isNumericBoxed(exprType.getUnderlyingType())) {
-      exprPrimitiveType = getUnboxedType((AnnotatedDeclaredType) exprType);
+    } else if (TypesUtils.isNumericAfterUnboxing(exprType.getUnderlyingType(), types)) {
+      exprPrimitiveType = applyUnboxing(exprType);
     } else {
       return exprType;
     }
@@ -3371,8 +3381,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns the types of the two arguments to a binary operation, accounting for widening and
    * unboxing if applicable.
    *
-   * <p>Binary numeric promotion (JLS 5.6) unboxes a boxed operand, such as one of type {@code
-   * Character} or {@code Integer}, before it widens the operand.
+   * <p>Binary numeric promotion (JLS 5.6) unboxes an operand to which unboxing conversion applies,
+   * such as one of type {@code Character}, {@code Integer}, or {@code T extends Integer}, before it
+   * widens the operand.
    *
    * @param left the type of the left argument of a binary operation
    * @param right the type of the right argument of a binary operation
@@ -3381,8 +3392,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public BinaryArgTypes binaryTreeArgTypes(AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
     TypeKind resultTypeKind =
         TypeKindUtils.widenedNumericType(
-            unboxedTypeOrSelf(left.getUnderlyingType()),
-            unboxedTypeOrSelf(right.getUnderlyingType()));
+            TypesUtils.unboxedTypeOrSelf(left.getUnderlyingType(), types),
+            TypesUtils.unboxedTypeOrSelf(right.getUnderlyingType(), types));
     if (TypeKindUtils.isNumeric(resultTypeKind)) {
       TypeMirror resultTypeMirror = types.getPrimitiveType(resultTypeKind);
       AnnotatedPrimitiveType leftUnboxed = applyUnboxing(left);
@@ -3399,17 +3410,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     } else {
       return new BinaryArgTypes(left, right);
     }
-  }
-
-  /**
-   * Returns the primitive type to which unboxing conversion converts the given type, or the type
-   * itself if it is not a boxed primitive.
-   *
-   * @param type a type, such as {@code Integer} or {@code int}
-   * @return the unboxed type, such as {@code int}, or {@code type} if it is not a boxed primitive
-   */
-  private TypeMirror unboxedTypeOrSelf(TypeMirror type) {
-    return TypesUtils.isBoxedPrimitive(type) ? types.unboxedType(type) : type;
   }
 
   /**
