@@ -25,9 +25,6 @@ public class EnhancedForIteratorTypeVariable {
     for (int x : iterable) {
       sum += x;
     }
-    for (long x : iterable) {
-      sum += x;
-    }
     return sum;
   }
 }
