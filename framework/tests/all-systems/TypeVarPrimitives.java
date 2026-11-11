@@ -32,6 +32,11 @@ public class TypeVarPrimitives {
     return b ? t : 0;
   }
 
+  // The type of a conditional expression with a null operand is a reference type, here Integer.
+  <T extends Integer> void conditionalWithNull(boolean b, T t) {
+    Integer result = b ? t : null;
+  }
+
   <T extends Integer> long bitwise(T t) {
     return t & 1L;
   }
