@@ -3347,12 +3347,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns the types of the two arguments to the BinaryTree, accounting for widening and unboxing
    * if applicable.
    *
+   * <p>An {@code ==} or {@code !=} whose operands both have reference types compares references
+   * (JLS 15.21.3), so this method returns the operands' types unchanged for it.
+   *
    * @param tree a binary tree
    * @return the types of the two arguments
    */
   public BinaryArgTypes binaryTreeArgTypes(BinaryTree tree) {
-    return binaryTreeArgTypes(
-        getAnnotatedType(tree.getLeftOperand()), getAnnotatedType(tree.getRightOperand()));
+    AnnotatedTypeMirror left = getAnnotatedType(tree.getLeftOperand());
+    AnnotatedTypeMirror right = getAnnotatedType(tree.getRightOperand());
+    Tree.Kind kind = tree.getKind();
+    if ((kind == Tree.Kind.EQUAL_TO || kind == Tree.Kind.NOT_EQUAL_TO)
+        && !left.getKind().isPrimitive()
+        && !right.getKind().isPrimitive()) {
+      return new BinaryArgTypes(left, right);
+    }
+    return binaryTreeArgTypes(left, right);
   }
 
   /**
@@ -3370,6 +3380,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Returns the types of the two arguments to a binary operation, accounting for widening and
    * unboxing if applicable.
+   *
+   * <p>Binary numeric promotion (JLS 5.6) unboxes an operand to which unboxing conversion applies,
+   * such as one of type {@code Character}, {@code Integer}, or {@code T extends Integer}, before it
+   * widens the operand.
    *
    * @param left the type of the left argument of a binary operation
    * @param right the type of the right argument of a binary operation
