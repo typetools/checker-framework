@@ -33,6 +33,23 @@ class OwningCollectionFieldEscape implements Closeable {
     return b ? resList : resList;
   }
 
+  static void consume(@OwningCollection List<Resource> l) {
+    for (Resource r : l) {
+      r.close();
+      r.flush();
+    }
+  }
+
+  void passCast() {
+    // :: error: transfer.owningcollection.field.ownership
+    consume((List<Resource>) resList);
+  }
+
+  void passConditional() {
+    // :: error: transfer.owningcollection.field.ownership
+    consume(b ? resList : resList);
+  }
+
   @Override
   @CollectionFieldDestructor("resList")
   public void close() {

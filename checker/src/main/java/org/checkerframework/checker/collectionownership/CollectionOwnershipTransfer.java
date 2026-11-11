@@ -33,7 +33,6 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
-import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
@@ -203,8 +202,8 @@ public class CollectionOwnershipTransfer
         case OwningCollection, OwningCollectionWithoutObligation -> {
           JavaExpression rhsJE = JavaExpression.fromNode(rhs);
           if (node.isDesugaredFromEnhancedArrayForLoop()
-              || (node.getExpression() instanceof FieldAccessNode rhsFieldAccess
-                  && atypeFactory.isOwningCollectionField(rhsFieldAccess.getElement()))) {
+              || (node.getExpression().getTree() instanceof ExpressionTree rhsTree
+                  && atypeFactory.isOwningCollectionField(rhsTree))) {
             replaceInStores(res, lhsJE, atypeFactory.NOTOWNINGCOLLECTION);
           } else {
             // Make the RHS @NotOwningCollection to reflect the ownership transfer, unless there is
@@ -441,15 +440,16 @@ public class CollectionOwnershipTransfer
         }
         default -> {}
       }
-      if (transferOwnership) {
-        if (arg instanceof FieldAccessNode argFieldAccess) {
-          checker.reportError(
-              argFieldAccess.getTree(),
-              "transfer.owningcollection.field.ownership",
-              argFieldAccess.getTree().toString());
-        } else {
-          replaceInStores(res, argJE, atypeFactory.NOTOWNINGCOLLECTION);
-        }
+      Tree argTree = args.get(i).getTree();
+      if (paramType == CollectionOwnershipType.OwningCollection
+          && argTree instanceof ExpressionTree argExprTree
+          && atypeFactory.isOwningCollectionField(argExprTree)) {
+        // An owning collection field keeps its ownership, so it cannot be passed to an
+        // @OwningCollection parameter.
+        checker.reportError(
+            argTree, "transfer.owningcollection.field.ownership", argTree.toString());
+      } else if (transferOwnership) {
+        replaceInStores(res, argJE, atypeFactory.NOTOWNINGCOLLECTION);
       }
     }
     return res;

@@ -1625,13 +1625,13 @@ public class MustCallConsistencyAnalyzer {
         // return is @OwningCollection. Report error if @OwningCollection field.
         Node returnResult = node.getResult();
         if (returnResult != null
-            && returnResult.getTree() != null
-            && coAtf.isOwningCollectionField(TreeUtils.elementFromTree(returnResult.getTree()))) {
+            && returnResult.getTree() instanceof ExpressionTree returnTree
+            && coAtf.isOwningCollectionField(returnTree)) {
           checker.reportError(
               node.getTree(),
               "transfer.owningcollection.field.ownership",
               node.getTree().toString(),
-              (returnResult.getTree() != null ? returnResult.getTree().toString() : "null"));
+              returnTree.toString());
         }
       }
       return !cmAtf.hasNotOwning(executableElement);
