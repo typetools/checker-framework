@@ -987,6 +987,26 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns true if a cast from {@code exprType} to {@code castType} is an unchecked cast (JLS
+   * 5.1.6.2): that is, the run-time check that the cast performs does not verify all of {@code
+   * castType}. Ignores annotations. Returns false if the cast is not legal.
+   *
+   * @param exprType the type of the expression being cast
+   * @param castType the type that the expression is cast to
+   * @param processingEnv the processing environment
+   * @return true if a cast from {@code exprType} to {@code castType} is an unchecked cast
+   */
+  public static boolean isUncheckedCast(
+      TypeMirror exprType, TypeMirror castType, ProcessingEnvironment processingEnv) {
+    com.sun.tools.javac.code.Types javacTypes =
+        com.sun.tools.javac.code.Types.instance(InternalUtils.getJavacContext(processingEnv));
+    // isCastable records, in the javac Warner, any lint warnings that the cast would need.
+    Warner lintRecorder = new Warner();
+    return javacTypes.isCastable((Type) exprType, (Type) castType, lintRecorder)
+        && lintRecorder.hasNonSilentLint(LintCategory.UNCHECKED);
+  }
+
+  /**
    * Returns true if the erased type of {@code type1} is the same type as the erased type of {@code
    * type2}.
    *
