@@ -24,4 +24,20 @@ public class BoxedBinaryOperands {
     // :: error: [operation.unsignedlhs] :: error: [return]
     return i / 2;
   }
+
+  // An equality test of two boxed operands compares references and does not unbox them.
+  boolean referenceEquality(@Unsigned Integer u, Integer i) {
+    // :: error: [comparison.mixed.unsignedlhs]
+    return u == i;
+  }
+
+  boolean charReferenceEquality(Character c1, Character c2) {
+    return c1 == c2;
+  }
+
+  // An equality test of a boxed operand and a primitive operand unboxes the boxed operand.
+  boolean numericEquality(@Unsigned Integer u, int i) {
+    // :: error: [comparison.mixed.unsignedlhs]
+    return u == i;
+  }
 }
