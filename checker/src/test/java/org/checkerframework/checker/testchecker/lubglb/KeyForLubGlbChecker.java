@@ -1,12 +1,18 @@
 package org.checkerframework.checker.testchecker.lubglb;
 
+import com.sun.source.util.TreePath;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nullness.KeyForAnnotatedTypeFactory;
 import org.checkerframework.checker.nullness.KeyForSubchecker;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -139,6 +145,14 @@ public class KeyForLubGlbChecker extends KeyForSubchecker {
             new LinkedHashSet<>(Arrays.asList("b", "a"))),
         ab);
 
+    // AnnotatedTypeMirror.addAnnotation stores the canonical form.
+    TypeMirror stringType =
+        processingEnv.getElementUtils().getTypeElement("java.lang.String").asType();
+    AnnotatedTypeMirror atm = AnnotatedTypeMirror.createType(stringType, atypeFactory, false);
+    atm.addAnnotation(ba);
+    sameAssert(
+        "annotation after addAnnotation(" + ba + ")", atm.getPrimaryAnnotation(KeyFor.class), ab);
+
     // For canonical arguments, the result does not depend on the order of the arguments or their
     // values.
     AnnotationMirror canonicalBa = qualHierarchy.canonicalize(ba);
@@ -146,5 +160,25 @@ public class KeyForLubGlbChecker extends KeyForSubchecker {
     lubAssert(canonicalBa, ab, ab);
     glbAssert(ab, canonicalBa, ab);
     glbAssert(canonicalBa, ab, ab);
+  }
+
+  /**
+   * Checks that a noncanonical {@code @KeyFor} annotation written on a field in the test input is
+   * stored in canonical form.
+   */
+  @Override
+  public void typeProcess(TypeElement e, TreePath p) {
+    super.typeProcess(e, p);
+    if (!e.getSimpleName().contentEquals("Placeholder")) {
+      return;
+    }
+    KeyForAnnotatedTypeFactory atypeFactory =
+        (KeyForAnnotatedTypeFactory) ((BaseTypeVisitor<?>) visitor).getTypeFactory();
+    for (VariableElement field : ElementFilter.fieldsIn(e.getEnclosedElements())) {
+      sameAssert(
+          "annotation on field " + field,
+          atypeFactory.getAnnotatedType(field).getPrimaryAnnotation(KeyFor.class),
+          keyFor("a", "b"));
+    }
   }
 }

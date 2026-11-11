@@ -67,8 +67,11 @@ public abstract class AbstractSetInclusionQualifierHierarchy
     if (!kind.hasElements()) {
       return qualifier;
     }
-    List<String> values = valuesStringList(qualifier);
-    if (CollectionsP.isSortedNoDuplicates(values)) {
+    // canonicalize is called on every annotation added to a type, so do not crash on a malformed
+    // annotation that lacks a value element.
+    List<String> values =
+        AnnotationUtils.getElementValueArrayOrNull(qualifier, "value", String.class, true);
+    if (values == null || CollectionsP.isSortedNoDuplicates(values)) {
       return qualifier;
     }
     return createAnnotation(kind, new TreeSet<>(values));
