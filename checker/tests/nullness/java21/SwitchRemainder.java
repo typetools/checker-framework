@@ -77,6 +77,24 @@ public class SwitchRemainder {
     }
   }
 
+  // If the guard of the last case is false, no case matches.
+  void guardFalseInLastCase(Shape s, boolean b) {
+    @Nullable Object x = "";
+    try {
+      x.toString();
+      x = null;
+      switch (s) {
+        case Circle c -> {}
+        case Square q -> {}
+        case Shape t when b -> {}
+      }
+      x = "";
+    } catch (MatchException e) {
+      // :: error: [dereference.of.nullable]
+      x.hashCode();
+    }
+  }
+
   // The last case matches every non-null Shape, so the switch has no remainder.
   void noRemainder(Shape s) {
     @Nullable Object x = "";
