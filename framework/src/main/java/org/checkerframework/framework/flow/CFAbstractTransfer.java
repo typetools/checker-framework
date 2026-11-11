@@ -19,12 +19,12 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -93,6 +93,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityKind;
+import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -996,7 +997,10 @@ public abstract class CFAbstractTransfer<
    * evaluated after {@code node}, but before the operation's result is known. The result omits each
    * part whose value an assignment in the right operand might change. For example, the result for
    * the left operand of {@code x == nonNull(x = null)} is empty, because the comparison says
-   * nothing about the value of {@code x} after the assignment.
+   * nothing about the value of {@code x} after the assignment. Likewise, if the right operand calls
+   * a method or constructor that is not side-effect-free, then the result also omits each part that
+   * other code can assign, such as a field: the result for the left operand of {@code f ==
+   * clearF()} is empty if {@code f} is a non-final field.
    *
    * @param node possibly an assignment node
    * @return a list containing the right- and left-hand sides in the given assignment node that have
@@ -1058,31 +1062,62 @@ public abstract class CFAbstractTransfer<
       result.add(node);
     }
 
-    List<JavaExpression> laterTargets = assignmentTargetsOfLaterOperand(node);
-    if (!laterTargets.isEmpty()) {
-      result.removeIf(
-          p -> mayBeChangedByAssignment(JavaExpression.fromNode(p), laterTargets, false));
+    ExpressionTree laterOperand = laterOperand(node);
+    if (laterOperand != null) {
+      AssignmentTargetScanner laterScanner = new AssignmentTargetScanner(this::isSideEffectFree);
+      List<JavaExpression> laterTargets = new ArrayList<>();
+      laterScanner.scan(laterOperand, laterTargets);
+      if (!laterTargets.isEmpty()) {
+        result.removeIf(
+            p -> mayBeChangedByAssignment(JavaExpression.fromNode(p), laterTargets, false));
+      }
+      if (laterScanner.callsMethodWithSideEffects) {
+        // A method or constructor call might change any part that other code can assign, such as
+        // a field or an array element, but not a local variable.
+        result.removeIf(
+            p -> {
+              JavaExpression expr = JavaExpression.fromNode(p);
+              return CFAbstractStore.canInsertJavaExpression(expr)
+                  && expr.isAssignableByOtherCode();
+            });
+      }
     }
     return result;
   }
 
   /**
-   * If {@code node} is the left operand of a binary operation, returns the variables that the right
-   * operand assigns. The right operand is evaluated after {@code node}, so its assignments might
-   * change the value of {@code node}'s parts before the binary operation's result is known.
-   * Otherwise, returns the empty list.
+   * Returns true if a call to the given method or constructor has no side effects, or is assumed to
+   * have none (see the {@code -AassumeSideEffectFree}, {@code -AassumePure}, and {@code
+   * -AassumePureGetters} command-line options).
+   *
+   * @param method a method or constructor
+   * @return true if a call to {@code method} is treated as having no side effects
+   */
+  private boolean isSideEffectFree(ExecutableElement method) {
+    return analysis.checker.hasOption("assumeSideEffectFree")
+        || analysis.checker.hasOption("assumePure")
+        || (analysis.checker.hasOption("assumePureGetters") && ElementUtils.isGetter(method))
+        || analysis.atypeFactory.isSideEffectFree(method)
+        || PurityUtils.isSideEffectFree(analysis.atypeFactory, method);
+  }
+
+  /**
+   * If {@code node} is the left operand of a binary operation, returns the right operand. The right
+   * operand is evaluated after {@code node}, so its assignments and method calls might change the
+   * value of {@code node}'s parts before the binary operation's result is known. Otherwise, returns
+   * null.
    *
    * @param node a node
-   * @return the variables that the operand evaluated after {@code node} assigns, or the empty list
+   * @return the operand evaluated after {@code node}, or null
    */
-  private List<JavaExpression> assignmentTargetsOfLaterOperand(Node node) {
+  private @Nullable ExpressionTree laterOperand(Node node) {
     Tree tree = node.getTree();
     if (tree == null) {
-      return Collections.emptyList();
+      return null;
     }
     TreePath path = analysis.atypeFactory.getPath(tree);
     if (path == null) {
-      return Collections.emptyList();
+      return null;
     }
     Tree child = path.getLeaf();
     TreePath parentPath = path.getParentPath();
@@ -1093,11 +1128,9 @@ public abstract class CFAbstractTransfer<
     if (parentPath == null
         || !(parentPath.getLeaf() instanceof BinaryTree binary)
         || binary.getLeftOperand() != child) {
-      return Collections.emptyList();
+      return null;
     }
-    List<JavaExpression> targets = new ArrayList<>();
-    new AssignmentTargetScanner().scan(binary.getRightOperand(), targets);
-    return targets;
+    return binary.getRightOperand();
   }
 
   /**
@@ -1106,11 +1139,58 @@ public abstract class CFAbstractTransfer<
    * bodies, method bodies, or named class declarations, which do not execute when the tree is
    * evaluated. It does descend into the initializer blocks and field initializers of an anonymous
    * class body, which execute when the enclosing {@code new} expression is evaluated.
+   *
+   * <p>If constructed with a side-effect-freedom predicate, it also records whether the tree calls
+   * a method or constructor that is not side-effect-free.
    */
   private static class AssignmentTargetScanner extends TreeScanner<Void, List<JavaExpression>> {
 
-    /** Creates an AssignmentTargetScanner. */
-    AssignmentTargetScanner() {}
+    /**
+     * Returns true if a call to the given method or constructor has no side effects. If null, calls
+     * are not examined.
+     */
+    private final @Nullable Predicate<ExecutableElement> isSideEffectFree;
+
+    /** True if the scanned trees call a method or constructor that is not side-effect-free. */
+    boolean callsMethodWithSideEffects = false;
+
+    /** Creates an AssignmentTargetScanner that does not examine calls. */
+    AssignmentTargetScanner() {
+      this(null);
+    }
+
+    /**
+     * Creates an AssignmentTargetScanner.
+     *
+     * @param isSideEffectFree returns true if a call to the given method or constructor has no side
+     *     effects; if null, calls are not examined
+     */
+    AssignmentTargetScanner(@Nullable Predicate<ExecutableElement> isSideEffectFree) {
+      this.isSideEffectFree = isSideEffectFree;
+    }
+
+    /**
+     * Records that the scanned trees call {@code method}, if it is not side-effect-free.
+     *
+     * @param method a method or constructor that the scanned trees call
+     */
+    private void recordCall(ExecutableElement method) {
+      if (isSideEffectFree != null && !isSideEffectFree.test(method)) {
+        callsMethodWithSideEffects = true;
+      }
+    }
+
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree tree, List<JavaExpression> targets) {
+      recordCall(TreeUtils.elementFromUse(tree));
+      return super.visitMethodInvocation(tree, targets);
+    }
+
+    @Override
+    public Void visitNewClass(NewClassTree tree, List<JavaExpression> targets) {
+      recordCall(TreeUtils.elementFromUse(tree));
+      return super.visitNewClass(tree, targets);
+    }
 
     /**
      * Returns the JavaExpression for the given assignment target. Javac retains parentheses around
