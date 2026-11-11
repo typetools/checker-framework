@@ -478,8 +478,10 @@ original library classes.  For example:
 \end{Verbatim}
 \end{myxsmall}
 
-Each stub path entry is a stub file (ending with
-\<.astub>), a directory, or a \<.jar> or \<.zip> archive.
+Each stub path entry is a stub file, a directory, or a \<.jar> or \<.zip>
+archive.  A stub file that is named directly conventionally ends with
+\<.astub>; it may have any other name, except that its name must not end
+with \<.ajava>.
 Specifying a directory or archive is equivalent to
 specifying every file in it whose name ends with
 \code{.astub}.  An archive within a directory is not read.  A hidden file
