@@ -1016,8 +1016,8 @@ public abstract class CFAbstractTransfer<
    * x == nonNull(x = null)} is empty, because the comparison says nothing about the value of {@code
    * x} after the assignment. If such a later expression calls a method or constructor that is not
    * side-effect-free, then the result also omits each part that other code can assign, such as a
-   * field: the result for the left operand of {@code ((String) f) == clearF()} is empty if {@code
-   * f} is a non-final field.
+   * field: the result for the left operand of {@code f == clearF()} is empty if {@code f} is a
+   * non-final field.
    *
    * @param node possibly an assignment node or a cast
    * @return a list containing the right- and left-hand sides in the given assignment node that have
@@ -1345,8 +1345,8 @@ public abstract class CFAbstractTransfer<
      *
      * @param method a method or constructor that the scanned trees call
      */
-    private void recordCall(@Nullable ExecutableElement method) {
-      if (isSideEffectFree != null && (method == null || !isSideEffectFree.test(method))) {
+    private void recordCall(ExecutableElement method) {
+      if (isSideEffectFree != null && !isSideEffectFree.test(method)) {
         callsMethodWithSideEffects = true;
       }
     }

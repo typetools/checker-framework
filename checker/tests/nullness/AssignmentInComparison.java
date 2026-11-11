@@ -367,9 +367,14 @@ public class AssignmentInComparison {
     return result;
   }
 
+  @Pure
+  String constant() {
+    return "";
+  }
+
   // The right operand calls a method that might change `f` after the left operand reads it.
   void methodWithSideEffectsInRightOperand() {
-    if (((String) f) == reset()) {
+    if (f == reset()) {
       // :: error: [dereference.of.nullable]
       f.toString();
     }
@@ -377,8 +382,15 @@ public class AssignmentInComparison {
 
   // A method call cannot change a local variable.
   void methodWithSideEffectsInRightOperandLocal(@Nullable String s) {
-    if (((Object) s) == reset()) {
+    if (s == reset()) {
       s.toString();
+    }
+  }
+
+  // A side-effect-free call in the right operand does not change `f`.
+  void sideEffectFreeCallInRightOperand() {
+    if (f == constant()) {
+      f.toString();
     }
   }
 }
