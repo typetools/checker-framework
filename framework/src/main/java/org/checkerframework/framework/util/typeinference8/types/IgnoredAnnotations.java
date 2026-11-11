@@ -187,7 +187,8 @@ final class IgnoredAnnotations {
    * Returns true if no ignored position of {@code type} corresponds to a position of {@code other}
    * that is not an ignored position. Positions correspond as in {@link #replaceIgnoredForLubOrGlb},
    * which gives each such ignored position of {@code type} the annotations of that position of
-   * {@code other}.
+   * {@code other}, except that if {@code other} is a type variable, then the positions of its upper
+   * bound are used.
    *
    * @param type a type
    * @param other a type
@@ -209,7 +210,10 @@ final class IgnoredAnnotations {
       return true;
     }
     AbstractType typeAsSuper = asSuper(upToDate, resultType, types);
-    AbstractType otherAsSuper = asSuper(upToDate(other), resultType, types);
+    // The least upper bound or greatest lower bound of a type variable is computed from its upper
+    // bound, so compare the positions of that bound.
+    AbstractType otherAsSuper =
+        asSuper(upperBoundIfTypeVariable(upToDate(other)), resultType, types);
     if (!types.isSameType(
         types.erasure(typeAsSuper.getJavaType()), types.erasure(otherAsSuper.getJavaType()))) {
       return true;
@@ -223,6 +227,22 @@ final class IgnoredAnnotations {
         otherATM,
         (position, otherPosition) ->
             !ignored.contains(position) || otherIgnored.contains(otherPosition));
+  }
+
+  /**
+   * Returns the upper bound of {@code type} if it is a type variable, following the bounds of type
+   * variables whose upper bound is a type variable; otherwise, returns {@code type} itself.
+   *
+   * @param type a type
+   * @return the upper bound of {@code type} if it is a type variable, otherwise {@code type}
+   */
+  private static AbstractType upperBoundIfTypeVariable(AbstractType type) {
+    AbstractType result = type;
+    while (result.getTypeKind() == TypeKind.TYPEVAR
+        && result.getAnnotatedType() instanceof AnnotatedTypeVariable) {
+      result = result.getTypeVarUpperBound();
+    }
+    return result;
   }
 
   /**
