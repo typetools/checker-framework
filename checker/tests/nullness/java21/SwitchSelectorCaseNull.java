@@ -41,4 +41,25 @@ public class SwitchSelectorCaseNull {
     // :: error: [return]
     return i;
   }
+
+  // The selector's type is a type variable whose bound is a primitive wrapper.
+
+  <T extends @Nullable Integer> void typeVar(T t) {
+    switch (t) {
+      case null -> {
+        // :: error: [dereference.of.nullable]
+        t.toString();
+      }
+      default -> {}
+    }
+  }
+
+  <T extends @Nullable Integer> @NonNull T typeVarAfter(T t) {
+    switch (t) {
+      case null -> {}
+      default -> {}
+    }
+    // :: error: [return]
+    return t;
+  }
 }
