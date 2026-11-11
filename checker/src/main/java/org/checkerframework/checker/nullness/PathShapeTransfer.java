@@ -105,8 +105,8 @@ public class PathShapeTransfer extends CFTransfer {
 
   /**
    * Returns true if the given expression is syntactically free of side effects: it is a literal, a
-   * variable, or a field access, possibly parenthesized. This is conservative; it returns false
-   * for many expressions that have no side effects.
+   * variable, or a field access, possibly parenthesized. This is conservative; it returns false for
+   * many expressions that have no side effects.
    *
    * @param tree an expression
    * @return true if evaluating {@code tree} cannot reassign a variable

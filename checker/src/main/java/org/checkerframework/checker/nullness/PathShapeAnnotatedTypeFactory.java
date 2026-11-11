@@ -2,6 +2,8 @@ package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
@@ -49,10 +51,13 @@ import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -71,6 +76,10 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /** The @{@link HasParent} annotation. */
   /*package-private*/ final AnnotationMirror HAS_PARENT =
       AnnotationBuilder.fromClass(elements, HasParent.class);
+
+  /** The @{@link PolyPathShape} annotation. */
+  private final AnnotationMirror POLY_PATH_SHAPE =
+      AnnotationBuilder.fromClass(elements, PolyPathShape.class);
 
   /** The {@code java.nio.file.Path} interface. */
   /*package-private*/ final TypeElement pathElement =
@@ -153,7 +162,8 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * Returns true if the given tree uses paths: some tree within it has a type that mentions a
-   * {@code Path} or a {@code File}, or is a path shape qualifier.
+   * {@code Path} or a {@code File}, or is a path shape qualifier, or overrides or refers to a
+   * declaration whose type contains a path shape qualifier.
    *
    * @param tree a tree
    * @return true if {@code tree} uses paths
@@ -173,7 +183,7 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           return null;
         }
         TypeMirror type = TreeUtils.typeOf(t);
-        if (type != null && mentionsPathOrFile(type, visited)) {
+        if ((type != null && mentionsPathOrFile(type, visited)) || usesPathShapeContract(t)) {
           found = true;
           return null;
         }
@@ -184,6 +194,82 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     scanner.scan(tree, null);
     return scanner.found;
   }
+
+  /**
+   * Returns true if the given tree overrides, or refers to, a declaration whose type contains a
+   * path shape qualifier, such as a method whose return type is {@code @HasName Object}. Such a
+   * tree must be checked even if it mentions no {@code Path} or {@code File} type and writes no
+   * path shape qualifier.
+   *
+   * @param tree a tree
+   * @return true if {@code tree} overrides, or refers to, a declaration with a path shape contract
+   */
+  private boolean usesPathShapeContract(Tree tree) {
+    switch (tree.getKind()) {
+      case METHOD -> {
+        ExecutableElement method = TreeUtils.elementFromDeclaration((MethodTree) tree);
+        for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> entry :
+            AnnotatedTypes.overriddenMethods(elements, this, method).entrySet()) {
+          AnnotatedExecutableType overriddenType =
+              AnnotatedTypes.asMemberOf(types, this, entry.getKey(), entry.getValue());
+          if (containsPathShapeQualifier(overriddenType)) {
+            return true;
+          }
+        }
+        return false;
+      }
+      case METHOD_INVOCATION -> {
+        return containsPathShapeQualifier(
+            fromElement(TreeUtils.elementFromUse((MethodInvocationTree) tree)));
+      }
+      case NEW_CLASS -> {
+        return containsPathShapeQualifier(
+            fromElement(TreeUtils.elementFromUse((NewClassTree) tree)));
+      }
+      case IDENTIFIER, MEMBER_SELECT -> {
+        ExpressionTree expr = (ExpressionTree) tree;
+        // javac represents `this`, `super`, class literals, and array lengths as fields.
+        if (TreeUtils.isExplicitThisDereference(expr)
+            || TreeUtils.isClassLiteral(expr)
+            || TreeUtils.isArrayLengthAccess(expr)) {
+          return false;
+        }
+        Element elt = TreeUtils.elementFromTree(expr);
+        return elt != null
+            && elt.getKind().isField()
+            && !elt.getSimpleName().contentEquals("super")
+            && containsPathShapeQualifier(fromElement(elt));
+      }
+      default -> {
+        return false;
+      }
+    }
+  }
+
+  /**
+   * Returns true if the given type contains a path shape qualifier other than {@code
+   * UnknownPathShape} and {@code PathShapeBottom}. {@code PathShapeBottom} is ignored because it is
+   * the default for implicit lower bounds, which appear in every generic type.
+   *
+   * @param type a type
+   * @return true if {@code type} contains a qualifier such as {@code @HasName}
+   */
+  private boolean containsPathShapeQualifier(AnnotatedTypeMirror type) {
+    return containsPathShapeQualifierScanner.visit(type);
+  }
+
+  /** The scanner used by {@link #containsPathShapeQualifier}. */
+  private final SimpleAnnotatedTypeScanner<Boolean, Void> containsPathShapeQualifierScanner =
+      new SimpleAnnotatedTypeScanner<>(
+          (type, p) -> {
+            AnnotationMirror qualifier = type.getPrimaryAnnotationInHierarchy(UNKNOWN_PATH_SHAPE);
+            return qualifier != null
+                && (AnnotationUtils.areSame(qualifier, HAS_NAME)
+                    || AnnotationUtils.areSame(qualifier, HAS_PARENT)
+                    || AnnotationUtils.areSame(qualifier, POLY_PATH_SHAPE));
+          },
+          Boolean::logicalOr,
+          false);
 
   /**
    * Returns true if the given type mentions a {@code Path} or a {@code File}: it is a subtype of

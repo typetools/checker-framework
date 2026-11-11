@@ -88,11 +88,8 @@ public class NullnessTransfer
   /** True if -AassumeKeyFor was provided on the command line. */
   private final boolean assumeKeyFor;
 
-  /**
-   * The type factory for the path shape analysis, or null if the Path Shape Checker should not be
-   * run.
-   */
-  protected final @Nullable PathShapeAnnotatedTypeFactory pathShapeTypeFactory;
+  /** True if the Path Shape Checker is run, that is, -AnoPathShape was not provided. */
+  private final boolean usePathShape;
 
   /**
    * True if invocationPreservesArgumentNullness flag is turned on, meaning that after a method call
@@ -120,13 +117,7 @@ public class NullnessTransfer
       this.keyForTypeFactory =
           nullnessTypeFactory.getTypeFactoryOfSubchecker(KeyForSubchecker.class);
     }
-    if (checker.hasOption("noPathShape")) {
-      this.pathShapeTypeFactory = null;
-    } else {
-      // pathShapeTypeFactory is used only to call method returnsNonNullPathComponent().
-      this.pathShapeTypeFactory =
-          nullnessTypeFactory.getTypeFactoryOfSubchecker(PathShapeSubchecker.class);
-    }
+    usePathShape = !checker.hasOption("noPathShape");
 
     NONNULL = AnnotationBuilder.fromClass(elements, NonNull.class);
     NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);
@@ -490,8 +481,12 @@ public class NullnessTransfer
 
     // Refine result to @NonNull if n is an invocation of Path.getParent() or a similar method,
     // and the receiver's path shape guarantees a non-null result.
-    if (pathShapeTypeFactory != null
-        && pathShapeTypeFactory.returnsNonNullPathComponent(tree, method)) {
+    // The subfactory is retrieved at each use, rather than stored in a field, so that it has the
+    // current visitor path.
+    if (usePathShape
+        && nullnessTypeFactory
+            .<PathShapeAnnotatedTypeFactory>getTypeFactoryOfSubchecker(PathShapeSubchecker.class)
+            .returnsNonNullPathComponent(tree, method)) {
       makeNonNull(result, n);
       refineToNonNull(result);
     }
