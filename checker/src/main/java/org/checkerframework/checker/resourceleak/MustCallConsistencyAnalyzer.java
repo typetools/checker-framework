@@ -943,14 +943,17 @@ public class MustCallConsistencyAnalyzer {
     }
     ExecutableElement methodElement = node.getTarget().getMethod();
     if (coAtf.isCreatesCollectionObligationMethod(methodElement) && !coAtf.insertsNull(node)) {
-      Node receiverNode = node.getTarget().getReceiver();
-      receiverNode = removeCastsAndGetTmpVarIfPresent(receiverNode);
+      Node receiverExpr = NodeUtils.removeCasts(node.getTarget().getReceiver());
+      Node receiverNode = getTempVarOrNode(receiverExpr);
       Tree receiverTree = receiverNode.getTree();
+      Tree receiverExprTree = receiverExpr.getTree();
       // An implicit `this` receiver has no tree. It occurs only inside a collection class declared
       // in user code, which isResourceCollection does not recognize anyway (see
       // ResourceLeakUtils.isCollection).
       // TODO: Recognize collection classes declared in user code.
-      if (receiverTree == null || !coAtf.isResourceCollection(receiverTree)) {
+      if (receiverTree == null
+          || receiverExprTree == null
+          || !coAtf.isResourceCollection(receiverTree)) {
         return;
       }
       boolean receiverIsOwningField =
@@ -970,12 +973,22 @@ public class MustCallConsistencyAnalyzer {
                 coAtf.getMustCallValuesOfResourceCollectionComponent(receiverTree);
             assert mustCallValues != null
                 : "@AssumeAssertion(nullness): isResourceCollection(receiverTree) returned true";
+            Set<ResourceAlias> receiverAliases;
+            if (receiverNode != receiverExpr && receiverNode instanceof LocalVariableNode tmpVar) {
+              // The receiver is a temporary variable. For example, `make()` in `make().add(r)`.
+              // Report errors at the receiver expression, not at the temp variable.
+              receiverAliases =
+                  ImmutableSet.of(new ResourceAlias(new LocalVariable(tmpVar), receiverExprTree));
+            } else {
+              receiverAliases = Obligation.fromTree(receiverTree).resourceAliases;
+            }
             for (String mustCallMethod : mustCallValues) {
-              obligations.add(CollectionObligation.fromTree(receiverTree, mustCallMethod));
+              obligations.add(
+                  new CollectionObligation(mustCallMethod, receiverAliases, MethodExitKind.ALL));
             }
             if (!mustCallValues.isEmpty()) {
               reportNeverEnforcedCollectionObligationIfNeeded(
-                  node, mustCallValues.get(0), receiverTree);
+                  node, mustCallValues.get(0), receiverExprTree);
             }
           }
           Set<MethodExitKind> toClear = MethodExitKind.ALL;
