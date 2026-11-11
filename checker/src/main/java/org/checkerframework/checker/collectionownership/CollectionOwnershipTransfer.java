@@ -3,9 +3,11 @@ package org.checkerframework.checker.collectionownership;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -20,6 +22,8 @@ import org.checkerframework.checker.collectionownership.qual.CreatesCollectionOb
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.ResourceLeakUtils;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTypeFactory;
+import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsVisitor;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -36,6 +40,8 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
+import org.checkerframework.dataflow.cfg.node.SuperNode;
+import org.checkerframework.dataflow.cfg.node.ThisNode;
 import org.checkerframework.dataflow.expression.FieldAccess;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.ThisReference;
@@ -45,6 +51,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -297,7 +304,7 @@ public class CollectionOwnershipTransfer
 
     ExecutableElement method = node.getTarget().getMethod();
     res = transferOwnershipForMethodInvocation(method, args, argTypes, res);
-    Tree tree = node.getTree();
+    MethodInvocationTree tree = node.getTree();
     if (tree != null) {
       // An invocation without a tree cannot be a disposal-loop condition.
       res = updateStoreForDisposalLoop(res, tree);
@@ -321,6 +328,33 @@ public class CollectionOwnershipTransfer
         if (fieldExpr != null) {
           replaceInStores(res, fieldExpr, atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION);
         }
+      }
+    }
+    // A `this(...)` call, or a `@CreatesMustCallFor("this")` call on `this` or `super`, can insert
+    // into the owning collection fields, so assume that all of them are @OwningCollection.
+    RLCCalledMethodsAnnotatedTypeFactory rlAtf =
+        ResourceLeakUtils.getRLCCalledMethodsAnnotatedTypeFactory(atypeFactory);
+    boolean isThisConstructorCall = tree != null && TreeUtils.isThisConstructorCall(tree);
+    boolean createsMustCallForThis =
+        RLCCalledMethodsVisitor.getCreatesMustCallForValues(method, mcAtf, rlAtf).contains("this");
+    if (tree != null
+        && (isThisConstructorCall || createsMustCallForThis)
+        && (receiverNode instanceof ThisNode || receiverNode instanceof SuperNode)) {
+      // Get the fields from the enclosing class rather than from the receiver's type. For
+      // `super.m()`, the receiver's type is the superclass, but `m` can call an overriding method
+      // that inserts into a field declared in this class.
+      TreePath path = atypeFactory.getPath(tree);
+      ClassTree classTree = path == null ? null : TreePathUtil.enclosingClass(path);
+      TypeElement classElement =
+          classTree == null ? null : TreeUtils.elementFromDeclaration(classTree);
+      assert classElement != null : "@AssumeAssertion(nullness): the call is inside a class";
+      ThisReference thisReference = new ThisReference(classElement.asType());
+      for (VariableElement field :
+          ElementUtils.getAllFieldsIn(classElement, atypeFactory.getElementUtils())) {
+        if (ElementUtils.isStatic(field) || !atypeFactory.isOwningCollectionField(field)) {
+          continue;
+        }
+        replaceInStores(res, new FieldAccess(thisReference, field), atypeFactory.OWNINGCOLLECTION);
       }
     }
     return res;
