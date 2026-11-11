@@ -175,6 +175,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.DeconstructionPatternUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
@@ -2011,9 +2012,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /**
    * Returns true if the value of the given node may be null. Returns false only if the kind of the
    * node guarantees that its value is never null, whatever the values of variables. For example,
-   * {@code this}, the result of {@code new}, an enum constant, and a call to {@code
-   * Integer.valueOf} are never null. A type name, as in {@code String.valueOf(x)}, is never null
-   * because it has no value.
+   * {@code this}, the result of {@code new}, and a call to {@code Integer.valueOf} are never null.
+   * An enum constant may be null, because it can be read during class initialization before it is
+   * assigned. A type name, as in {@code String.valueOf(x)}, is never null because it has no value.
    *
    * @param node a node of reference type, or a type name
    * @return true if the value of the node may be null; false if it is never null
@@ -2029,11 +2030,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         || node instanceof FunctionalInterfaceNode) {
       return false;
     } else if (node instanceof FieldAccessNode fieldAccess) {
-      // A class literal, a qualified `this`, or an enum constant.
+      // A class literal or a qualified `this`.
       String fieldName = fieldAccess.getFieldName();
-      return !(fieldName.equals("class")
-          || fieldName.equals("this")
-          || fieldAccess.getElement().getKind() == ElementKind.ENUM_CONSTANT);
+      return !(fieldName.equals("class") || fieldName.equals("this"));
     } else if (node instanceof MethodInvocationNode invocation) {
       return !isBoxedPrimitiveValueOf(invocation.getTarget().getMethod());
     } else if (node instanceof TypeCastNode cast) {
@@ -2444,35 +2443,49 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     private void buildCase(CaseTree caseTree, int index, boolean isLastCaseOfExhaustive) {
       boolean isDefaultCase = CaseUtils.isDefaultCaseTree(caseTree);
       // If true, no test of labels is necessary.
-      // Unfortunately, if isLastCaseOfExhaustive==TRUE, no flow-sensitive refinement occurs
-      // within the body of the CaseNode.  In the future, that can be performed, but it
-      // requires addition of InfeasibleExitBlock, a new SpecialBlock in the CFG.
+      // Unfortunately, if isLastCaseOfExhaustive==TRUE, no flow-sensitive refinement from the
+      // labels occurs within the body of the CaseNode (but refinement from the guard does).  In the
+      // future, that can be performed, but it requires addition of InfeasibleExitBlock, a new
+      // SpecialBlock in the CFG.
       boolean isTerminalCase = isDefaultCase || isLastCaseOfExhaustive;
 
       Label thisBodyLabel = caseBodyLabels[index];
       Label nextBodyLabel = caseBodyLabels[index + 1];
-      // `nextCaseLabel` is not used if isTerminalCase==FALSE.
+      // The target when the labels do not match or the guard is false.
       Label nextCaseLabel = new Label();
 
-      // Handle the case expressions
-      if (!isTerminalCase) {
-        // A case expression exists, and it needs to be tested.
+      // Handle the case labels and the guard.
+      if (!isDefaultCase) {
         ArrayList<Node> exprs = new ArrayList<>();
         for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
           exprs.add(scan(exprTree, null));
         }
 
-        ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
-        Node guard = (guardTree == null) ? null : scan(guardTree, null);
+        if (!isLastCaseOfExhaustive) {
+          extendWithNode(new CaseNode(caseTree, selectorExprAssignment, exprs, env.getTypeUtils()));
+          Label labelsMatchLabel = new Label();
+          extendWithExtendedNode(new ConditionalJump(labelsMatchLabel, nextCaseLabel));
+          addLabelForNextNode(labelsMatchLabel);
+        }
 
-        CaseNode test =
-            new CaseNode(caseTree, selectorExprAssignment, exprs, guard, env.getTypeUtils());
-        extendWithNode(test);
-        extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
-      } else if (!isDefaultCase) {
-        // The labels are not tested, but their patterns declare and bind variables.
-        for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
-          scan(exprTree, null);
+        // The guard is evaluated only if the labels match.
+        ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
+        if (guardTree != null) {
+          unbox(scan(guardTree, null));
+          if (!isLastCaseOfExhaustive) {
+            extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
+          } else {
+            // If the guard of the last case of an exhaustive switch is false, no case matches and
+            // the switch throws a MatchException.
+            Label guardFalseLabel = new Label();
+            extendWithExtendedNode(new ConditionalJump(thisBodyLabel, guardFalseLabel));
+            addLabelForNextNode(guardFalseLabel);
+            NodeWithExceptionsHolder exNode =
+                extendWithNodeWithException(
+                    new MarkerNode(caseTree, "no case matches", env.getTypeUtils()),
+                    getMatchExceptionType());
+            exNode.setTerminatesExecution(true);
+          }
         }
       }
 
@@ -2505,9 +2518,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
       }
 
-      if (!isTerminalCase) {
-        addLabelForNextNode(nextCaseLabel);
-      }
+      addLabelForNextNode(nextCaseLabel);
     }
 
     /**
@@ -3484,12 +3495,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     List<? extends ExpressionTree> actualExprs = tree.getArguments();
 
-    // Look up method to invoke and possibly throw NullPointerException
+    // Look up the method to invoke.  The access does not throw a NullPointerException, because the
+    // receiver is tested for nullness only after the arguments are evaluated.  The
+    // MethodInvocationNode, which follows the arguments, may throw any RuntimeException, including
+    // a NullPointerException for a null receiver.
     Node receiver = getReceiver(methodSelect);
 
     MethodAccessNode target = new MethodAccessNode(methodSelect, method, receiver);
 
-    extendWithNode(target, accessMayThrowNullPointerException(method, receiver));
+    extendWithNode(target);
 
     List<Node> arguments;
     if (TreeUtils.isEnumSuperCall(tree)) {
@@ -4465,12 +4479,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   @Override
   public Node visitMemberReference(MemberReferenceTree tree, Void p) {
     Tree enclosingExpr = tree.getQualifierExpression();
+    Node qualifier = null;
     if (enclosingExpr != null) {
-      scan(enclosingExpr, p);
+      qualifier = scan(enclosingExpr, p);
     }
 
+    // Creating a bound method reference, such as `expr::method`, throws a NullPointerException if
+    // the qualifier is null (JLS 15.13.3).  Other kinds of member reference have a type or `super`
+    // as their qualifier.  On normal completion, the result is never null.
+    boolean mayThrowNullPointerException =
+        qualifier != null
+            && MemberReferenceKind.getMemberReferenceKind(tree) == MemberReferenceKind.BOUND
+            && mayBeNull(qualifier);
+
     Node node = new FunctionalInterfaceNode(tree);
-    extendWithNode(node);
+    extendWithNode(node, mayThrowNullPointerException);
 
     return node;
   }
@@ -4619,6 +4642,22 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       return null;
     }
     return element.asType();
+  }
+
+  /**
+   * Returns the type {@code java.lang.MatchException}, which a switch throws when no case matches.
+   * Returns {@code RuntimeException} if {@code MatchException} is not present (it was added in Java
+   * 21).
+   *
+   * @return the type {@code java.lang.MatchException}, or {@code RuntimeException}
+   */
+  private TypeMirror getMatchExceptionType() {
+    // Look up the type by name, because MatchException is not present in JDKs before 21.
+    TypeElement element = elements.getTypeElement("java.lang.MatchException");
+    if (element != null) {
+      return element.asType();
+    }
+    return getTypeMirror(RuntimeException.class);
   }
 
   /**

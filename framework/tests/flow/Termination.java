@@ -1,4 +1,3 @@
-import java.util.Iterator;
 import org.checkerframework.dataflow.qual.TerminatesExecution;
 import org.checkerframework.framework.test.*;
 import org.checkerframework.framework.testchecker.util.*;
@@ -15,25 +14,6 @@ public class Termination {
       l1 = p1;
     } else {
       exit();
-    }
-    @Odd String l3 = l1;
-  }
-
-  static class TerminatingIterable implements Iterable<String> {
-    @Override
-    @TerminatesExecution
-    public Iterator<String> iterator() {
-      throw new Error();
-    }
-  }
-
-  // The desugared call to iterator() terminates execution.
-  void t2(@Odd String p1, String p2, boolean b1, TerminatingIterable it) {
-    String l1 = p2;
-    if (b1) {
-      l1 = p1;
-    } else {
-      for (String s : it) {}
     }
     @Odd String l3 = l1;
   }
@@ -66,6 +46,42 @@ public class Termination {
       l1 = p1;
     } else {
       try (TerminatingCloseable c = new TerminatingCloseable()) {}
+    }
+    @Odd String l3 = l1;
+  }
+
+  static class ReturningCloseable implements AutoCloseable {
+    @Override
+    public void close() {}
+  }
+
+  // The desugared call to close() returns normally.
+  void t4Returning(@Odd String p1, String p2, boolean b1) {
+    String l1 = p2;
+    if (b1) {
+      l1 = p1;
+    } else {
+      try (ReturningCloseable c = new ReturningCloseable()) {}
+    }
+    // :: error: [assignment]
+    @Odd String l3 = l1;
+  }
+
+  static class TerminatingIterable implements Iterable<String> {
+    @Override
+    @TerminatesExecution
+    public java.util.Iterator<String> iterator() {
+      throw new Error();
+    }
+  }
+
+  // The desugared call to iterator() terminates execution.
+  void t6(@Odd String p1, String p2, boolean b1, TerminatingIterable it) {
+    String l1 = p2;
+    if (b1) {
+      l1 = p1;
+    } else {
+      for (String s : it) {}
     }
     @Odd String l3 = l1;
   }
