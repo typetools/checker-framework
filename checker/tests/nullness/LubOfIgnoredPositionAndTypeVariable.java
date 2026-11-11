@@ -3,8 +3,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 // The least upper bound of a type with an ignored position and a type variable.  B = U comes from a
 // use with an explicit annotation, so it ignores annotations, and the type argument of holderOf's
-// result is an ignored position.  The type variable H cannot be viewed as class Holder, so the
-// positions of the two types are not aligned.
+// result is an ignored position.  The positions of the type variable H are those of its upper
+// bound, Holder<@Nullable U>.
 public class LubOfIgnoredPositionAndTypeVariable {
   static class Box<T> {}
 
@@ -27,15 +27,10 @@ public class LubOfIgnoredPositionAndTypeVariable {
     // The other input is not a type variable.
     // :: error: (argument) :: error: (dereference.of.nullable)
     pick2(holderOf(nonNullU, nn), nullableHolder).get().toString();
-    // TODO: This should be a dereference.of.nullable error, as in the call above.  The least upper
-    // bound keeps the origin of holderOf's result, because the ignored position in it
-    // is not
-    // compared with the type argument of H's bound.  Applying instantiations to the origin
-    // gives the type argument the instantiation of B, which is @NonNull U.
-    // :: error: (argument)
+    // The other input is a type variable whose upper bound is Holder<@Nullable U>.
+    // :: error: (argument) :: error: (dereference.of.nullable)
     pick2(holderOf(nonNullU, nn), nullableH).get().toString();
-    // TODO: This should be a dereference.of.nullable error.  See the call above.
-    // :: error: (argument)
+    // :: error: (argument) :: error: (dereference.of.nullable)
     pick2(nullableH, holderOf(nonNullU, nn)).get().toString();
   }
 }
