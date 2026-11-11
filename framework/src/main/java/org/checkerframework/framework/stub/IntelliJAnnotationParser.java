@@ -109,7 +109,13 @@ public final class IntelliJAnnotationParser {
       DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
       doc = dBuilder.parse(inputStream);
       doc.getDocumentElement().normalize();
-    } catch (ParserConfigurationException | SAXException | IOException e) {
+    } catch (IOException e) {
+      // The file exists but could not be read, so all of its annotations would be lost.
+      checker.message(
+          Diagnostic.Kind.ERROR,
+          String.format("Could not read annotations XML %s: %s", filename, e.getMessage()));
+      return;
+    } catch (ParserConfigurationException | SAXException e) {
       checker.message(
           Diagnostic.Kind.WARNING,
           String.format("Could not parse annotations XML %s: %s", filename, e.getMessage()));
@@ -208,6 +214,14 @@ public final class IntelliJAnnotationParser {
 
       TypeElement annoTypeElt = getTypeElement(annoName, elements);
       if (annoTypeElt == null) {
+        // The annotation may be an alias that is not on the classpath, such as
+        // org.jetbrains.annotations.NotNull.  An alias that is identified by name does not depend
+        // on the alias's element values, so it can be resolved without the alias's class.
+        AnnotationMirror aliasCanonical = atypeFactory.canonicalAnnotationForAliasName(annoName);
+        if (aliasCanonical != null) {
+          result.add(aliasCanonical);
+          continue;
+        }
         warnNotFound(atypeFactory.getChecker(), "Unknown annotation: " + annoName);
         continue;
       }
@@ -447,6 +461,11 @@ public final class IntelliJAnnotationParser {
 
       String paramListStr = sig.substring(firstParen + 1, lastParen).trim();
       List<String> paramTypes = parseParameterTypes(paramListStr);
+      if (paramTypes == null) {
+        // The signature is malformed: some parameter type is empty.
+        return new ParsedItemSignature(
+            sig, null, Collections.emptyList(), -1, false, false, false, false);
+      }
 
       String beforeParen = sig.substring(0, firstParen).trim();
       String[] parts = beforeParen.split("\\s+");
@@ -499,9 +518,10 @@ public final class IntelliJAnnotationParser {
    * Parses the comma-separated parameter type list from inside parentheses.
    *
    * @param paramContent the raw string of parameter types
-   * @return a list of trimmed parameter type strings
+   * @return a list of trimmed parameter type strings, or null if some parameter type is empty, as
+   *     in {@code "java.lang.String,"}
    */
-  private static List<String> parseParameterTypes(String paramContent) {
+  private static @Nullable List<String> parseParameterTypes(String paramContent) {
     if (paramContent.isEmpty()) {
       return Collections.emptyList();
     }
@@ -523,8 +543,11 @@ public final class IntelliJAnnotationParser {
         current.append(c);
       }
     }
-    if (current.length() > 0) {
-      paramTypes.add(current.toString().trim());
+    paramTypes.add(current.toString().trim());
+    for (String paramType : paramTypes) {
+      if (paramType.isEmpty()) {
+        return null;
+      }
     }
     return paramTypes;
   }

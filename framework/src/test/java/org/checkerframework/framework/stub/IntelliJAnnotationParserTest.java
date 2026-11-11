@@ -1,6 +1,7 @@
 package org.checkerframework.framework.stub;
 
 import java.util.Arrays;
+import java.util.Collections;
 import org.checkerframework.framework.stub.IntelliJAnnotationParser.ParsedItemSignature;
 import org.junit.Assert;
 import org.junit.Test;
@@ -62,6 +63,25 @@ public class IntelliJAnnotationParserTest {
     ParsedItemSignature parsed =
         IntelliJAnnotationParser.parseSignature("java.lang.String substring int, int)");
     Assert.assertTrue(parsed.isMalformed());
+  }
+
+  @Test
+  public void testParseSignatureEmptyParameterType() {
+    // A trailing comma is not silently dropped, which would match concat(java.lang.String).
+    Assert.assertTrue(
+        IntelliJAnnotationParser.parseSignature(
+                "java.lang.String java.lang.String concat(java.lang.String,)")
+            .isMalformed());
+    Assert.assertTrue(
+        IntelliJAnnotationParser.parseSignature("java.lang.String java.lang.String(int,, int)")
+            .isMalformed());
+    Assert.assertTrue(
+        IntelliJAnnotationParser.parseSignature("java.lang.String java.lang.String(,)")
+            .isMalformed());
+    Assert.assertEquals(
+        Collections.emptyList(),
+        IntelliJAnnotationParser.parseSignature("java.lang.String java.lang.String length()")
+            .paramTypes);
   }
 
   @Test

@@ -1109,8 +1109,13 @@ using
 IDEA's user interface}.
 
 The \code{-AintellijAnnotations} command-line argument takes a
-path-separated list of \code{annotations.xml} files, directories, jar files, or zip files
-containing \code{annotations.xml} files arranged in directory structures matching their package names.
+path-separated list of IntelliJ IDEA annotation files, directories, and
+\<.jar> and \<.zip> archives.
+An annotation file that is named directly may have any name (but a name
+ending with \<.jar> or \<.zip>, in any case, denotes an archive).
+Within a directory or archive, only files named \code{annotations.xml} are
+read; they are arranged in directory structures matching their package names.
+An archive within a directory is not read; name each archive in the list.
 The path separator is colon on Unix and semicolon on Windows.
 
 The Checker Framework reads only marker annotations, which have no element
