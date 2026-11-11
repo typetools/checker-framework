@@ -101,6 +101,9 @@ import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJa
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceJavaParserStorage.InferredDeclared;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesStorage;
 import org.checkerframework.dataflow.analysis.Analysis;
+import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.expression.MethodCall;
+import org.checkerframework.dataflow.expression.Unknown;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
 import org.checkerframework.framework.qual.AnnotatedFor;
@@ -2730,6 +2733,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     stubTypes.injectRecordComponentType(types, member, memberType);
 
     return memberType;
+  }
+
+  /**
+   * Returns the declared type of the accessor method of a record component. If a stub file
+   * annotates the record component but not its accessor, then the result's return type has the
+   * component's annotations, as at an invocation of the accessor.
+   *
+   * @param accessor the accessor method of a record component
+   * @return the declared type of {@code accessor}; a new object that clients may side-effect
+   */
+  public AnnotatedExecutableType getRecordAccessorType(ExecutableElement accessor) {
+    return applyRecordTypesToAccessors(accessor, getAnnotatedType(accessor));
   }
 
   /**
@@ -5370,11 +5385,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   public List<AnnotatedTypeMirror> getRecordPatternComponentTypes(Tree recordPattern) {
     TreePath path = getPath(recordPattern);
-    List<AnnotatedTypeMirror> componentTypes =
-        path == null
-            ? getRecordComponentTypes(getDefaultRecordPatternType(recordPattern))
-            : inferRecordPatternType(path).componentTypes();
-    return CollectionsP.mapList(AnnotatedTypeMirror::deepCopy, componentTypes);
+    if (path == null) {
+      AnnotatedDeclaredType patternType = getDefaultRecordPatternType(recordPattern);
+      List<AnnotatedTypeMirror> componentTypes = getRecordComponentTypes(patternType);
+      viewpointAdaptRecordComponents(
+          recordPattern, componentTypes, new Unknown(patternType.getUnderlyingType()));
+      return componentTypes;
+    }
+    return CollectionsP.mapList(
+        AnnotatedTypeMirror::deepCopy, inferRecordPatternType(path).componentTypes());
   }
 
   /**
@@ -5394,6 +5413,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
     RecordPatternTypeInference.Result result =
         new RecordPatternTypeInference(this, path).infer(matchedType);
+    viewpointAdaptRecordComponents(
+        recordPattern, result.componentTypes(), getExpressionMatchedByPattern(path));
     if (shouldCache) {
       if (recordPatternInferenceCache == null) {
         recordPatternInferenceCache = MapsP.createLruCache(getCacheSize());
@@ -5523,6 +5544,72 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         DeconstructionPatternUtils.getNestedPatterns(recordPattern)
             .indexOf(bindingPatternPath.getLeaf());
     return inferRecordPatternType(recordPatternPath).componentTypes().get(index).deepCopy();
+  }
+
+  /**
+   * Viewpoint-adapts the types of the record components of the record pattern {@code recordPattern}
+   * to accesses of those components of {@code receiver}.
+   *
+   * @param recordPattern a {@code DeconstructionPatternTree}
+   * @param componentTypes the types of the record components of {@code recordPattern}, in
+   *     declaration order; side-effected by this method
+   * @param receiver the value that {@code recordPattern} is matched against
+   */
+  private void viewpointAdaptRecordComponents(
+      Tree recordPattern, List<AnnotatedTypeMirror> componentTypes, JavaExpression receiver) {
+    TypeElement record = TypesUtils.getTypeElement(TreeUtils.typeOf(recordPattern));
+    assert record != null : "@AssumeAssertion(nullness): a record pattern's type is a record";
+    List<? extends RecordComponentElement> components = record.getRecordComponents();
+    for (int i = 0; i < componentTypes.size(); i++) {
+      viewpointAdaptRecordComponent(
+          componentTypes.get(i), components.get(i).getAccessor(), receiver);
+    }
+  }
+
+  /**
+   * Viewpoint-adapts the type of a record component to an access of that component of {@code
+   * receiver}, as in a record pattern. This implementation does nothing.
+   *
+   * @param type the type of the record component; is side-effected by this method
+   * @param accessor the accessor method of the record component
+   * @param receiver the record whose component is accessed
+   */
+  protected void viewpointAdaptRecordComponent(
+      AnnotatedTypeMirror type, ExecutableElement accessor, JavaExpression receiver) {}
+
+  /**
+   * Returns an expression for the values that the pattern at {@code patternPath} is matched
+   * against: the expression of an {@code instanceof}, the selector of a {@code switch}, or an
+   * invocation of a record component's accessor for a pattern nested in a record pattern.
+   *
+   * @param patternPath the path to a pattern
+   * @return an expression for the values that the pattern is matched against
+   */
+  private JavaExpression getExpressionMatchedByPattern(TreePath patternPath) {
+    Tree pattern = patternPath.getLeaf();
+    TreePath parentPath = patternPath.getParentPath();
+    Tree parent = parentPath.getLeaf();
+    if (parent instanceof InstanceOfTree instanceOfTree) {
+      return JavaExpression.fromTree(TreeUtils.withoutParens(instanceOfTree.getExpression()));
+    } else if (TreeUtils.isDeconstructionPatternTree(parent)) {
+      int index = DeconstructionPatternUtils.getNestedPatterns(parent).indexOf(pattern);
+      DeclaredType parentType = (DeclaredType) types.capture(TreeUtils.typeOf(parent));
+      TypeElement record = TypesUtils.getTypeElement(parentType);
+      assert record != null : "@AssumeAssertion(nullness): a record pattern's type is a record";
+      ExecutableElement accessor = record.getRecordComponents().get(index).getAccessor();
+      TypeMirror componentType =
+          ((ExecutableType) types.asMemberOf(parentType, accessor)).getReturnType();
+      return new MethodCall(
+          componentType,
+          accessor,
+          getExpressionMatchedByPattern(parentPath),
+          Collections.emptyList());
+    } else if (PatternCaseLabelUtils.isPatternCaseLabelTree(parent)) {
+      // The parent of the case label is a case, whose parent is a switch.
+      Tree switchTree = parentPath.getParentPath().getParentPath().getLeaf();
+      return JavaExpression.fromTree(TreeUtils.withoutParens(TreeUtils.switchSelector(switchTree)));
+    }
+    throw new BugInCF("Unexpected parent of pattern %s: %s", pattern, parent);
   }
 
   /**
