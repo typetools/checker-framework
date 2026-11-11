@@ -31,4 +31,20 @@ public class TypeVarBinaryOperands {
     // :: error: [comparison.mixed.unsignedlhs]
     boolean b = u == i;
   }
+
+  // An equality test of two reference operands compares references and does not unbox them.
+  <T extends @Unsigned Integer> boolean referenceEquality(T u, @Signed Integer s) {
+    // :: error: [comparison.mixed.unsignedlhs]
+    return u == s;
+  }
+
+  <T extends @Unsigned Integer> boolean referenceEqualityRhs(@Signed Integer s, T u) {
+    // :: error: [comparison.mixed.unsignedrhs]
+    return s != u;
+  }
+
+  <T extends @Unsigned Integer> void compoundDivide(int x, T t) {
+    // :: error: [compound.assignment] :: error: [compound.assignment.unsigned.expression]
+    x /= t;
+  }
 }
