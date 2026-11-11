@@ -395,7 +395,8 @@ public final class NumberMath {
    */
   private static void requireIntegral(Number value) {
     if (!isIntegral(value)) {
-      throw new UnsupportedOperationException();
+      throw new UnsupportedOperationException(
+          "Not an integral number: " + value + " of type " + value.getClass().getName());
     }
   }
 

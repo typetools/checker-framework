@@ -79,6 +79,28 @@ public class InstanceOfDeconstruction {
     }
   }
 
+  interface Container<T> {}
+
+  record CBox<T>(T value) implements Container<T> {}
+
+  void genericComponentFromSuperinterface(
+      Container<String> c, Container<@Nullable String> nc, Container<?> wc) {
+    if (c instanceof CBox(var v)) {
+      v.length();
+    }
+    if (c instanceof CBox(String v)) {
+      v.length();
+    }
+    if (nc instanceof CBox(var v)) {
+      // :: error: [dereference.of.nullable]
+      v.length();
+    }
+    if (wc instanceof CBox(var v)) {
+      // :: error: [dereference.of.nullable]
+      v.toString();
+    }
+  }
+
   void genericComponentFromObject(Object o) {
     if (o instanceof Box(Object x)) {
       // :: error: [dereference.of.nullable]

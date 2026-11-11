@@ -383,8 +383,8 @@ public class DependentTypesHelper {
    *
    * <p>If {@code receiver} is not deterministic, then an expression that depends on the receiver
    * could refer to a different record than the one that was deconstructed. Therefore, such
-   * expressions are removed from the annotations on the component's declared type. Expressions
-   * that do not depend on the receiver, such as static fields, are retained.
+   * expressions are removed from the annotations on the component's declared type. Expressions that
+   * do not depend on the receiver, such as static fields, are retained.
    *
    * @param type the type of the record component; is side-effected by this method
    * @param accessor the accessor method of the record component
