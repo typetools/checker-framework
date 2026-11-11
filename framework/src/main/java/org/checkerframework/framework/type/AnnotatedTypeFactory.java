@@ -3175,20 +3175,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     TypeMirror underlying = type.getUnderlyingType();
     if (TypesUtils.isPrimitive(underlying)) {
       return (AnnotatedPrimitiveType) type;
-    } else if (TypesUtils.isBoxedPrimitive(underlying)) {
-      return getUnboxedType((AnnotatedDeclaredType) type);
     }
     TypeMirror boxedUnderlying = TypesUtils.boxedPrimitiveForUnboxing(underlying, types);
-    if (boxedUnderlying != null) {
-      // A type variable, intersection type, or wildcard: unbox its boxed primitive, which has the
-      // type's effective annotations.
-      AnnotatedDeclaredType boxed =
-          (AnnotatedDeclaredType) AnnotatedTypeMirror.createType(boxedUnderlying, this, false);
-      boxed.addAnnotations(type.getAnnotations());
-      return getUnboxedType(boxed);
-    } else {
+    if (boxedUnderlying == null) {
       throw new BugInCF("Bad argument to applyUnboxing: " + type);
     }
+    AnnotatedDeclaredType boxed;
+    if (type.getKind() == TypeKind.DECLARED) {
+      boxed = (AnnotatedDeclaredType) type;
+    } else {
+      // A type variable, intersection type, or wildcard: unbox its boxed primitive, which has the
+      // type's effective annotations.
+      boxed = (AnnotatedDeclaredType) AnnotatedTypeMirror.createType(boxedUnderlying, this, false);
+      boxed.addAnnotations(type.getAnnotations());
+    }
+    return getUnboxedType(boxed);
   }
 
   /**
@@ -3233,12 +3234,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Returns a widened type if applicable, otherwise returns its first argument.
    *
-   * <p>Subclasses should override {@link #getWidenedAnnotations} rather than this method.
+   * <p>If {@code widenedType} is a numeric primitive, this method first unboxes {@code exprType} if
+   * unboxing conversion applies to it (see {@link TypesUtils#boxedPrimitiveForUnboxing}), as for
+   * {@code Integer} or {@code T extends Integer}. Then it widens or narrows the primitive to the
+   * kind of {@code widenedType}.
+   *
+   * <p>Subclasses should override {@link #getWidenedAnnotations} and {@link #getUnboxedType} rather
+   * than this method.
    *
    * @param exprType type to possibly widen
    * @param widenedType type to possibly widen to; its annotations are ignored
-   * @return if widening is applicable, the result of converting {@code type} to the underlying type
-   *     of {@code widenedType}; otherwise {@code type}
+   * @return if {@code widenedType} is a numeric primitive and {@code exprType} is a numeric
+   *     primitive or unboxes to one, the result of converting {@code exprType} to the underlying
+   *     type of {@code widenedType}; otherwise {@code exprType}
    */
   public final AnnotatedTypeMirror getWidenedType(
       AnnotatedTypeMirror exprType, AnnotatedTypeMirror widenedType) {
@@ -3263,7 +3271,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         exprPrimitiveType.getKind(), widenedType.getKind())) {
       case WIDENING -> getWidenedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
       case NARROWING -> getNarrowedPrimitive(exprPrimitiveType, widenedType.getUnderlyingType());
-      case SAME -> exprType;
+      case SAME -> exprPrimitiveType;
       default -> throw new BugInCF("unhandled PrimitiveConversionKind");
     };
   }
@@ -3290,9 +3298,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * Returns an AnnotatedPrimitiveType with underlying type {@code widenedTypeMirror} and with
    * annotations copied or adapted from {@code type}.
    *
-   * @param type type to widen; a primitive or boxed primitive
-   * @param widenedTypeMirror underlying type for the returned type mirror; a primitive or boxed
-   *     primitive (same boxing as {@code type})
+   * @param type a primitive type to widen
+   * @param widenedTypeMirror underlying type for the returned type mirror; a primitive type
    * @return result of converting {@code type} to {@code widenedTypeMirror}
    */
   private AnnotatedPrimitiveType getWidenedPrimitive(
