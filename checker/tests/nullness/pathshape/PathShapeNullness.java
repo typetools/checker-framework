@@ -3,6 +3,7 @@
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import org.checkerframework.checker.nullness.qual.HasName;
 import org.checkerframework.checker.nullness.qual.HasParent;
@@ -50,6 +51,21 @@ public class PathShapeNullness {
     if (f.isFile()) {
       f.getAbsoluteFile().getParentFile().toString();
     }
+    if (Files.isRegularFile(p, LinkOption.NOFOLLOW_LINKS)) {
+      p.getFileName().toString();
+    }
+  }
+
+  // A later argument reassigns the tested variable, so the refinement must not apply.
+  void regularFileReassigned(Path p) {
+    if (Files.isRegularFile(p, reassign(p = Path.of("/")))) {
+      // :: error: (dereference.of.nullable)
+      p.getFileName().toString();
+    }
+  }
+
+  LinkOption reassign(Path p) {
+    return LinkOption.NOFOLLOW_LINKS;
   }
 
   void flow(Path p) {
