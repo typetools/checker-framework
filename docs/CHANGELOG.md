@@ -34,6 +34,8 @@ New class `AbstractSetInclusionQualifierHierarchy` is the superclass of
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
 `CFGTranslationPhaseOne`: renamed `isNumericOrBoxed()` to `isNumericAfterUnboxing()`.
+The new method also returns true for a type variable or intersection type whose
+upper bound unboxes to a numeric primitive, such as `T extends Integer`.
 
 A subclass of `CFAbstractValue` or `CFValue` that adds state must override
 `equals()` and `hashCode()` to account for that state.
@@ -54,6 +56,8 @@ now a final, non-generic class.  `NumberMath.getNumberMath()` throws
 `PurityChecker.checkPurity()` takes two new arguments: the method declaration
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
+
+Removed `CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
 
 Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
 and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to

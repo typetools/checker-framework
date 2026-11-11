@@ -76,6 +76,18 @@ public class TypeVarPrimitivesNullness {
     t2.toString();
   }
 
+  <T extends @Nullable Integer> void conditional(boolean b, T t) {
+    // :: error: [unboxing.of.nullable]
+    int result = b ? t : 0;
+    // `t` was unboxed only if `b` is true.
+    // :: error: [dereference.of.nullable]
+    t.toString();
+  }
+
+  <T extends @Nullable Integer> int conditionalNullCheck(T t) {
+    return t != null ? t : 0;
+  }
+
   <T extends @Nullable Integer> void bitwise(T t) {
     // :: error: [unboxing.of.nullable]
     long result = t & 1L;
