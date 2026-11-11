@@ -1000,6 +1000,10 @@ public abstract class CFAbstractTransfer<
    * splitAssignments is applied recursively. For example, the result for {@code (String) (s = t)}
    * contains the cast, {@code s}, and {@code t}.
    *
+   * <p>A widening conversion that does not change the value of its operand (see {@link
+   * #isValuePreservingConversion}), such as the binary numeric promotion of {@code (int) s} in
+   * {@code (int) s == 5L}, is looked through.
+   *
    * <p>If {@code node} is the left operand of a binary operation, then the right operand is
    * evaluated after {@code node}, but before the operation's result is known. The result omits each
    * part whose value an assignment in the right operand might change. For example, the result for
@@ -1017,10 +1021,15 @@ public abstract class CFAbstractTransfer<
   @SideEffectFree
   protected List<Node> splitAssignments(Node node) {
     List<Node> result = new ArrayList<>();
+    Node unwrapped = node;
+    while (unwrapped instanceof WideningConversionNode widening
+        && isValuePreservingConversion(widening)) {
+      unwrapped = widening.getOperand();
+    }
     Tree tree;
-    if (node instanceof AssignmentNode assignment) {
+    if (unwrapped instanceof AssignmentNode assignment) {
       tree = assignment.getTree();
-    } else if (node instanceof TypeCastNode cast && isValuePreservingCast(cast)) {
+    } else if (unwrapped instanceof TypeCastNode cast && isValuePreservingCast(cast)) {
       tree = cast.getTree();
     } else {
       tree = null;
@@ -1032,7 +1041,7 @@ public abstract class CFAbstractTransfer<
       // The assignments and value-preserving casts whose value is the value of `node`, outermost
       // first.
       List<Node> chain = new ArrayList<>();
-      Node part = node;
+      Node part = unwrapped;
       while (true) {
         if (part instanceof AssignmentNode a) {
           chain.add(a);
@@ -1040,6 +1049,10 @@ public abstract class CFAbstractTransfer<
         } else if (part instanceof TypeCastNode cast && isValuePreservingCast(cast)) {
           chain.add(cast);
           part = cast.getOperand();
+        } else if (part instanceof WideningConversionNode widening
+            && isValuePreservingConversion(widening)) {
+          // JavaExpression.fromNode ignores a widening conversion, so do not add it to the result.
+          part = widening.getOperand();
         } else {
           break;
         }
@@ -1173,6 +1186,18 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
+   * Returns true if the given widening conversion does not change the value of its operand.
+   *
+   * @param widening a widening conversion
+   * @return true if the value of {@code widening} is the value of its operand
+   */
+  @Pure
+  private static boolean isValuePreservingConversion(WideningConversionNode widening) {
+    return isValuePreservingConversion(
+        widening.getOperand().getType().getKind(), widening.getType().getKind());
+  }
+
+  /**
    * Returns true if the given cast does not change the value of its operand: it is a cast between
    * reference types, or a primitive conversion that loses no information.
    *
@@ -1181,8 +1206,21 @@ public abstract class CFAbstractTransfer<
    */
   @Pure
   protected static boolean isValuePreservingCast(TypeCastNode cast) {
-    TypeKind to = cast.getType().getKind();
-    TypeKind from = cast.getOperand().getType().getKind();
+    return isValuePreservingConversion(
+        cast.getOperand().getType().getKind(), cast.getType().getKind());
+  }
+
+  /**
+   * Returns true if a conversion from {@code from} to {@code to} does not change the value that is
+   * converted: it is a conversion between reference types, or a primitive conversion that loses no
+   * information.
+   *
+   * @param from the kind of the type that is converted
+   * @param to the kind of the type that results from the conversion
+   * @return true if the conversion preserves values
+   */
+  @Pure
+  private static boolean isValuePreservingConversion(TypeKind from, TypeKind to) {
     if (!to.isPrimitive() && !from.isPrimitive()) {
       return true;
     }
