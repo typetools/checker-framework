@@ -59,6 +59,35 @@ public class TypeVarPrimitivesNullness {
     t.toString();
   }
 
+  // A reference comparison does not unbox either operand, so neither operand becomes non-null.
+  <T extends @Nullable Integer> void referenceEquality(T t1, T t2) {
+    boolean result = t1 == t2;
+    // :: error: [dereference.of.nullable]
+    t1.toString();
+    // :: error: [dereference.of.nullable]
+    t2.toString();
+  }
+
+  <T extends @Nullable Boolean> void referenceEqualityBoolean(T t1, T t2) {
+    boolean result = t1 != t2;
+    // :: error: [dereference.of.nullable]
+    t1.toString();
+    // :: error: [dereference.of.nullable]
+    t2.toString();
+  }
+
+  <T extends @Nullable Integer> void conditional(boolean b, T t) {
+    // :: error: [unboxing.of.nullable]
+    int result = b ? t : 0;
+    // `t` was unboxed only if `b` is true.
+    // :: error: [dereference.of.nullable]
+    t.toString();
+  }
+
+  <T extends @Nullable Integer> int conditionalNullCheck(T t) {
+    return t != null ? t : 0;
+  }
+
   <T extends @Nullable Integer> void bitwise(T t) {
     // :: error: [unboxing.of.nullable]
     long result = t & 1L;

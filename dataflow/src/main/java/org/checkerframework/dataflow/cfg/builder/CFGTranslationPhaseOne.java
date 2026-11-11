@@ -988,7 +988,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /**
    * Perform unary numeric promotion on the input node.
    *
-   * @param node a node producing a value of numeric primitive or boxed type
+   * @param node a node producing a value of numeric primitive type, or of a type that unboxing
+   *     conversion converts to one (see {@link TypesUtils#boxedPrimitiveForUnboxing})
    * @return a Node with the value promoted to the int, long, float, or double; may return be the
    *     input node
    */
@@ -1013,27 +1014,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns true if the argument type is a numeric primitive, or if unboxing conversion converts it
-   * to a numeric primitive.
-   *
-   * @param type a type
-   * @return true if the argument type is a numeric primitive or can be unboxed to one
-   */
-  protected boolean isNumericAfterUnboxing(TypeMirror type) {
-    return TypesUtils.isNumericAfterUnboxing(type, types);
-  }
-
-  /**
-   * Returns true if the argument type is boolean, or if unboxing conversion converts it to boolean.
-   *
-   * @param type a type
-   * @return true if the argument type is boolean or can be unboxed to boolean
-   */
-  protected boolean isBooleanAfterUnboxing(TypeMirror type) {
-    return TypesUtils.isBooleanAfterUnboxing(type, types);
-  }
-
-  /**
    * Compute the type to which two numeric types must be promoted before performing a binary numeric
    * operation on them. The input types must both be convertible to numeric primitive types, and the
    * output type is primitive.
@@ -1053,7 +1033,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /**
    * Perform binary numeric promotion on the input node to make it match the expression type.
    *
-   * @param node a node producing a value of numeric primitive or boxed type
+   * @param node a node producing a value of numeric primitive type, or of a type that unboxing
+   *     conversion converts to one (see {@link TypesUtils#boxedPrimitiveForUnboxing})
    * @param exprType the type to promote the value to
    * @return a Node with the value promoted to the exprType, which may be the input node
    */
@@ -1118,7 +1099,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * match the destination type.
    *
    * @param node a node producing a value of numeric primitive type
-   * @param destType the type to narrow the value to (possibly boxed)
+   * @param destType the type to narrow the value to: a numeric primitive type, or a type that
+   *     unboxing conversion converts to one (see {@link TypesUtils#boxedPrimitiveForUnboxing})
    * @return a Node with the value narrowed and boxed to the destType, which may be the input node
    */
   protected Node narrowAndBox(Node node, TypeMirror destType) {
@@ -1411,10 +1393,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // If the operand is byte or Byte and the whole expression is
     // short, then convert to short.
+    // A conditional expression whose type is a reference type, such as `b ? t : null` where `t` has
+    // type `T extends Integer`, needs no numeric conversion of its operands.
     boolean isNodeUnboxable = TypesUtils.isUnboxable(nodeType, types);
     TypeMirror unboxedNodeType = TypesUtils.unboxedTypeOrSelf(nodeType, types);
-    TypeMirror unboxedDestType = TypesUtils.unboxedTypeOrSelf(destType, types);
-    if (TypesUtils.isNumeric(unboxedNodeType) && TypesUtils.isNumeric(unboxedDestType)) {
+    if (TypesUtils.isNumeric(unboxedNodeType) && TypesUtils.isNumeric(destType)) {
       if (unboxedNodeType.getKind() == TypeKind.BYTE && destType.getKind() == TypeKind.SHORT) {
         if (isNodeUnboxable) {
           node = unbox(node);
@@ -3808,11 +3791,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         TypeMirror rightType = TreeUtils.typeOf(tree.getExpression());
 
         Node targetRHS;
-        if (isNumericAfterUnboxing(leftType) && isNumericAfterUnboxing(rightType)) {
+        if (TypesUtils.isNumericAfterUnboxing(leftType, types)
+            && TypesUtils.isNumericAfterUnboxing(rightType, types)) {
           TypeMirror promotedType = binaryPromotedType(leftType, rightType);
           targetRHS = binaryNumericPromotion(targetLHS, promotedType);
           value = binaryNumericPromotion(value, promotedType);
-        } else if (isBooleanAfterUnboxing(leftType) && isBooleanAfterUnboxing(rightType)) {
+        } else if (TypesUtils.isBooleanAfterUnboxing(leftType, types)
+            && TypesUtils.isBooleanAfterUnboxing(rightType, types)) {
           targetRHS = unbox(targetLHS);
           value = unbox(value);
         } else {
@@ -4148,7 +4133,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         // see JLS 15.22
         TypeMirror leftType = TreeUtils.typeOf(leftTree);
         TypeMirror rightType = TreeUtils.typeOf(rightTree);
-        boolean isBooleanOp = isBooleanAfterUnboxing(leftType) && isBooleanAfterUnboxing(rightType);
+        boolean isBooleanOp =
+            TypesUtils.isBooleanAfterUnboxing(leftType, types)
+                && TypesUtils.isBooleanAfterUnboxing(rightType, types);
 
         Node left;
         Node right;
@@ -4156,7 +4143,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         if (isBooleanOp) {
           left = unbox(scan(leftTree, p));
           right = unbox(scan(rightTree, p));
-        } else if (isNumericAfterUnboxing(leftType) && isNumericAfterUnboxing(rightType)) {
+        } else if (TypesUtils.isNumericAfterUnboxing(leftType, types)
+            && TypesUtils.isNumericAfterUnboxing(rightType, types)) {
           TypeMirror promotedType = binaryPromotedType(leftType, rightType);
           left = binaryNumericPromotion(scan(leftTree, p), promotedType);
           right = binaryNumericPromotion(scan(rightTree, p), promotedType);
