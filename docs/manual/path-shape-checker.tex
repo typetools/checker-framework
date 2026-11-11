@@ -25,9 +25,12 @@ For example, the Nullness Checker accepts this code:
 You will not typically run the Path Shape Checker.  The Nullness Checker
 runs it automatically.
 
-You can unsoundly suppress warnings related to path shapes with
+You can unsoundly suppress warnings issued by the Path Shape Checker with
 \<@SuppressWarnings("pathshape")>, or everywhere by using command-line option
 \<-AsuppressWarnings=pathshape>; see \chapterpageref{suppressing-warnings}.
+Doing so does not suppress the Nullness Checker's warnings, such as a
+\<dereference.of.nullable> warning for \<p.getParent().toString()>.  To
+suppress such a warning, use \<@SuppressWarnings("nullness:dereference.of.nullable")>.
 
 The command-line argument \<-AnoPathShape> makes the Nullness Checker
 not run the Path Shape Checker.  Then, the Nullness Checker makes no

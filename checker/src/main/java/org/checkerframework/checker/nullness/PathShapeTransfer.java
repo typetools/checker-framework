@@ -1,5 +1,11 @@
 package org.checkerframework.checker.nullness;
 
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
@@ -12,6 +18,7 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * The transfer function for the Path Shape Checker. If {@code Files.isRegularFile(p)} or {@code
@@ -60,11 +67,38 @@ public class PathShapeTransfer extends CFTransfer {
     // An override is treated like the method in Path or File that it overrides.
     ExecutableElement method = factory.getPathOrFileMethod(n.getTarget().getMethod());
     if (method.equals(factory.filesIsRegularFile)) {
+      // A later argument might reassign the tested variable, in which case the refinement would
+      // apply to a value that was not tested.  Refine only if no later argument has side effects.
+      MethodInvocationTree tree = n.getTree();
+      if (tree == null) {
+        return null;
+      }
+      List<? extends ExpressionTree> args = tree.getArguments();
+      for (ExpressionTree arg : args.subList(1, args.size())) {
+        if (!isSideEffectFree(arg)) {
+          return null;
+        }
+      }
       return n.getArgument(0);
     } else if (method.equals(factory.fileIsFile)) {
       return n.getTarget().getReceiver();
     } else {
       return null;
     }
+  }
+
+  /**
+   * Returns true if the given expression is syntactically free of side effects: it is a literal, a
+   * variable, or a field access, possibly parenthesized. This is conservative; it returns false for
+   * many expressions that have no side effects.
+   *
+   * @param tree an expression
+   * @return true if evaluating {@code tree} cannot reassign a variable
+   */
+  private static boolean isSideEffectFree(ExpressionTree tree) {
+    ExpressionTree expr = TreeUtils.withoutParens(tree);
+    return expr instanceof LiteralTree
+        || expr instanceof IdentifierTree
+        || (expr instanceof MemberSelectTree mst && isSideEffectFree(mst.getExpression()));
   }
 }
