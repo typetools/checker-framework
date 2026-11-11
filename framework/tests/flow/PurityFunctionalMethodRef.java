@@ -69,4 +69,24 @@ public class PurityFunctionalMethodRef {
     runsUnannotated(PurityFunctionalMethodRef::applyStatic);
     runsAnnotated(PurityFunctionalMethodRef::applyStatic);
   }
+
+  /** A subinterface that redeclares {@code Function.apply}, with a stronger guarantee. */
+  @FunctionalInterface
+  interface PureFunction extends Function<String, Integer> {
+    @Override
+    @SideEffectFree
+    Integer apply(String s);
+  }
+
+  @FunctionalInterface
+  interface SubApplier {
+    @SideEffectFree
+    int apply(PureFunction f, String s);
+  }
+
+  void contravariantCallbackParameter() {
+    // A call through SubApplier passes a PureFunction, whose apply is what applyStatic's call to
+    // Function.apply runs.
+    SubApplier a = PurityFunctionalMethodRef::applyStatic;
+  }
 }
