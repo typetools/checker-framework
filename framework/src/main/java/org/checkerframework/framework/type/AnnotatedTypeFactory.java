@@ -3184,8 +3184,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     if (type.getKind() == TypeKind.DECLARED) {
       boxed = (AnnotatedDeclaredType) type;
     } else {
-      // A type variable or intersection type: unbox its boxed primitive, which has the type's
-      // effective annotations.
+      // A type variable, intersection type, or wildcard: unbox its boxed primitive, which has the
+      // type's effective annotations.
       boxed = (AnnotatedDeclaredType) AnnotatedTypeMirror.createType(boxedUnderlying, this, false);
       boxed.addAnnotations(type.getAnnotations());
     }
