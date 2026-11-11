@@ -1,7 +1,6 @@
 package org.checkerframework.checker.collectionownership;
 
 import com.sun.source.tree.EnhancedForLoopTree;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -52,12 +51,7 @@ final class EnhancedForDisposalLoopMatcher {
    * @return the matched disposal loop info, or {@code null} if the loop does not match
    */
   @Nullable DisposalLoopInfo match(EnhancedForLoopTree tree) {
-    ExpressionTree collectionTree =
-        CollectionOwnershipUtils.referenceExpression(tree.getExpression());
-    if (collectionTree == null) {
-      return null;
-    }
-    if (!coAtf.isResourceCollection(collectionTree)) {
+    if (!coAtf.isResourceCollection(tree.getExpression())) {
       return null;
     }
     return resolveEnhancedForLoop(tree);
