@@ -69,6 +69,8 @@ boolean operator, `visitValueLiteral()`.  A subclass that overrides
 function of the lambda's result node; it uses the value that the result node
 already computed.
 
+Removed `CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
+
 Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
 and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
 `addToImplicitlyConvertedLookupMap()`.
