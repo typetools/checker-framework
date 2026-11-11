@@ -49,6 +49,8 @@ now a final, non-generic class.  `NumberMath.getNumberMath()` throws
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
 
+Removed `CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
+
 Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
 and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
 `addToImplicitlyConvertedLookupMap()`.
