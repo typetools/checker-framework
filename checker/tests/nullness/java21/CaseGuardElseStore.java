@@ -128,6 +128,17 @@ public class CaseGuardElseStore {
     }
   }
 
+  // The `case null` matches null, so the pattern matches every value that is tested against it.
+  void guardFalsePatternAlwaysMatchesAfterCaseNull(@Nullable String sel, @Nullable Object o) {
+    switch (sel) {
+      case null -> {}
+      case String s when isNull(o) -> {}
+      default -> {
+        o.hashCode();
+      }
+    }
+  }
+
   void guardFalsePatternAlwaysMatchesCaseNull(@Nullable String sel, @Nullable Object o) {
     switch (sel) {
       case String s when isNull(o) -> {}
@@ -181,16 +192,6 @@ public class CaseGuardElseStore {
   record R(Shape s) {}
 
   // R(Circle c) and R(Square q) make the switch exhaustive, but R(null) matches only R(Shape s).
-  void lastCaseOfExhaustiveGuardTrue(R r, @Nullable Object o) {
-    switch (r) {
-      case R(Circle c) -> {}
-      case R(Square q) -> {}
-      case R(Shape s) when isNN(o) -> {
-        o.hashCode();
-      }
-    }
-  }
-
   void lastCaseOfExhaustiveGuardEffects(R r) {
     f = "";
     switch (r) {
@@ -250,16 +251,14 @@ public class CaseGuardElseStore {
     }
   }
 
-  // The catch block receives the effects of evaluating the false guard.  Neither the CaseNodes nor
-  // the guard can throw before the guard assigns null to f, so only the false guard's successor
-  // makes f nullable in the catch block.
+  // The catch block receives the effects of evaluating the guard, which sets f to null.
   void lastCaseOfExhaustiveGuardFalseEffectsCatch(R r, boolean b) {
     f = "";
     try {
       switch (r) {
         case R(Circle c) -> {}
         case R(Square q) -> {}
-        case R(Shape s) when (f = null) == null && b -> {}
+        case R(Shape s) when clear() && b -> {}
       }
     } catch (MatchException e) {
       // :: error: [dereference.of.nullable]
@@ -318,6 +317,17 @@ public class CaseGuardElseStore {
       default -> {
         // :: error: [dereference.of.nullable]
         f.hashCode();
+      }
+    }
+  }
+
+  // The body of the last case of an exhaustive switch executes only if its guard is true.
+  void lastCaseOfExhaustiveGuardTrue(R r, @Nullable Object o) {
+    switch (r) {
+      case R(Circle c) -> {}
+      case R(Square q) -> {}
+      case R(Shape s) when isNN(o) -> {
+        o.hashCode();
       }
     }
   }
