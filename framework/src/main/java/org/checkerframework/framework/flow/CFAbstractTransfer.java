@@ -82,6 +82,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.Contract;
@@ -217,6 +218,14 @@ public abstract class CFAbstractTransfer<
       if (node instanceof MethodInvocationNode min && min.getIterableExpression() != null) {
         ExpressionTree iter = min.getIterableExpression();
         at = factory.getIterableElementType(iter);
+        // The node is either the call that yields the element, or a boxing or unboxing call that
+        // converts the element, as in `for (int x : listOfInteger)` or `for (Integer x : ints)`.
+        boolean nodeIsPrimitive = node.getType().getKind().isPrimitive();
+        if (nodeIsPrimitive && !at.getKind().isPrimitive()) {
+          at = factory.applyUnboxing(at);
+        } else if (!nodeIsPrimitive && at.getKind().isPrimitive()) {
+          at = factory.getBoxedType((AnnotatedPrimitiveType) at);
+        }
       } else if (node instanceof ArrayAccessNode aan && aan.getArrayExpression() != null) {
         ExpressionTree array = aan.getArrayExpression();
         at = factory.getIterableElementType(array);
