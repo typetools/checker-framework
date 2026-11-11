@@ -144,9 +144,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private final AScene scene;
 
   /**
-   * A cache for {@link #getTargets}. Maps an annotation name, as written in the stub file, to the
-   * element types in the {@code @Target} meta-annotation of the annotation interface that the name
-   * denotes, or to null if they cannot be determined.
+   * A cache for {@link #getTargets}. Maps the binary name of an annotation interface to the element
+   * types in its {@code @Target} meta-annotation, or to null if they cannot be determined.
    */
   private final Map<String, @Nullable List<ElementType>> targetsCache = new HashMap<>();
 
@@ -654,14 +653,29 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private @Nullable List<ElementType> getTargets(AnnotationExpr expr) {
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
     @FullyQualifiedName String name = expr.getNameAsString();
-    if (targetsCache.containsKey(name)) {
-      return targetsCache.get(name);
+    // A type that the stub file declares in an enclosing scope shadows an imported type.
+    String[] identifiers = name.split("\\.", -1);
+    Node declaration = enclosingDeclaration(expr, identifiers);
+    String qualifiedName;
+    if (declaration instanceof TypeDeclaration<?> typeDecl) {
+      qualifiedName = memberBinaryName(typeDecl, identifiers, 1);
+    } else if (declaration != null) {
+      // A type parameter is not an annotation interface.
+      return null;
+    } else {
+      qualifiedName = resolve(name);
     }
-    String qualifiedName = resolve(name);
-    Class<?> annoClass = qualifiedName == null ? null : loadClass(qualifiedName);
+    if (qualifiedName == null) {
+      return null;
+    }
+    if (targetsCache.containsKey(qualifiedName)) {
+      return targetsCache.get(qualifiedName);
+    }
+    @SuppressWarnings("signature") // a binary name of a class
+    Class<?> annoClass = loadClass(qualifiedName);
     Target target = annoClass == null ? null : annoClass.getAnnotation(Target.class);
     List<ElementType> result = target == null ? null : Arrays.asList(target.value());
-    targetsCache.put(name, result);
+    targetsCache.put(qualifiedName, result);
     return result;
   }
 
@@ -788,23 +802,14 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameWithScope
             @FullyQualifiedName String typeName = type.getNameWithScope();
             String[] identifiers = typeName.split("\\.", -1);
-            // Search each enclosing scope, innermost first, as `scopedStubDeclaration` does.  A
-            // type found in any enclosing scope shadows an import and a type in the current
-            // package.  Once the first identifier names a type, the remaining identifiers are
-            // resolved within that type, and outer scopes are not searched.
-            Node declaration = null;
+            // Search each enclosing scope, innermost first.  A type found in any enclosing scope
+            // shadows an import and a type in the current package.  Once the first identifier
+            // names a type, the remaining identifiers are resolved within that type, and outer
+            // scopes are not searched.
+            Node declaration = enclosingDeclaration(type, identifiers);
             String name = null;
-            for (Node n = type; n != null; n = n.getParentNode().orElse(null)) {
-              declaration = firstDeclarationAt(n, identifiers);
-              if (declaration != null || n instanceof CompilationUnit) {
-                break;
-              }
-            }
             if (declaration == null) {
-              declaration = packageQualifiedStubDeclaration(type, typeName);
-              if (declaration instanceof TypeDeclaration<?> typeDecl) {
-                name = qualifiedStubBinaryName(typeDecl);
-              }
+              name = packageQualifiedStubBinaryName(type, typeName);
             } else if (declaration instanceof TypeDeclaration<?> typeDecl) {
               name = memberBinaryName(typeDecl, identifiers, 1);
             }
@@ -893,47 +898,47 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * If {@code typeName} is qualified by the stub file's package, returns the declaration, in the
-   * stub file, that it names. Otherwise returns null.
+   * If {@code typeName} is qualified by the stub file's package, and the identifier that follows
+   * the package names a top-level type of the stub file, returns the binary name of the type that
+   * {@code typeName} names. Otherwise returns null. As for an unqualified name, a member type that
+   * the stub file does not declare is assumed to be a member of the innermost type found, so {@code
+   * p.B.Missing} and {@code B.Missing} have the same binary name.
    *
    * @param node a node in the stub file's AST
    * @param typeName a type name, in which a {@code .} separates a nested class from its enclosing
    *     class
-   * @return the declaration of {@code typeName}, or null
+   * @return the binary name of {@code typeName}, or null
    */
-  private static @Nullable Node packageQualifiedStubDeclaration(Node node, String typeName) {
+  private @Nullable String packageQualifiedStubBinaryName(Node node, String typeName) {
     CompilationUnit cu = node.findCompilationUnit().orElse(null);
     if (cu == null) {
       return null;
     }
     String pkg = cu.getPackageDeclaration().map(PackageDeclaration::getNameAsString).orElse(null);
-    if (pkg != null && typeName.startsWith(pkg + ".")) {
-      return scopedStubDeclaration(cu, typeName.substring(pkg.length() + 1));
+    if (pkg == null || !typeName.startsWith(pkg + ".")) {
+      return null;
     }
-    return null;
+    String[] identifiers = typeName.substring(pkg.length() + 1).split("\\.", -1);
+    Node first = firstDeclarationAt(cu, identifiers);
+    return (first instanceof TypeDeclaration<?> typeDecl)
+        ? memberBinaryName(typeDecl, identifiers, 1)
+        : null;
   }
 
   /**
-   * Returns the declaration, in the stub file, that {@code typeName} names at {@code node}, where
-   * the first identifier of {@code typeName} is a type in scope at {@code node}.
+   * Returns the declaration, in the stub file, that the first element of {@code identifiers} names
+   * in the innermost scope, enclosing {@code node}, that declares it. The scopes searched are those
+   * of the declarations that enclose {@code node} and of its compilation unit's top-level types.
    *
-   * @param node the node in the stub file's AST at which {@code typeName} appears
-   * @param typeName a type name, in which a {@code .} separates a nested class from its enclosing
-   *     class
-   * @return the declaration of {@code typeName}, or null
+   * @param node a node in the stub file's AST
+   * @param identifiers a type name that has been split at its {@code .} separators
+   * @return the declaration of the first element of {@code identifiers}, or null
    */
-  private static @Nullable Node scopedStubDeclaration(Node node, String typeName) {
-    String[] identifiers = typeName.split("\\.", -1);
-    // Search each enclosing declaration, innermost first, and finally the stub file's top-level
-    // classes.  That is the order in which Java resolves a type name.  The first declaration that
-    // the first identifier names shadows any in an outer scope, even if the remaining identifiers
-    // are not its members.
+  private static @Nullable Node enclosingDeclaration(Node node, String[] identifiers) {
     for (Node n = node; n != null; n = n.getParentNode().orElse(null)) {
-      Node first = firstDeclarationAt(n, identifiers);
-      if (first instanceof TypeDeclaration<?> typeDecl) {
-        return nestedTypeDeclaration(typeDecl, identifiers);
-      } else if (first != null || n instanceof CompilationUnit) {
-        return first;
+      Node declaration = firstDeclarationAt(n, identifiers);
+      if (declaration != null || n instanceof CompilationUnit) {
+        return declaration;
       }
     }
     return null;
@@ -968,26 +973,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       }
     }
     return null;
-  }
-
-  /**
-   * Resolves {@code identifiers}, other than its first element which {@code declaration} names,
-   * against the member types of {@code declaration}.
-   *
-   * @param declaration the declaration that {@code identifiers[0]} names
-   * @param identifiers a type name that has been split at its {@code .} separators
-   * @return the declaration that {@code identifiers} names, or null if there is none
-   */
-  private static @Nullable TypeDeclaration<?> nestedTypeDeclaration(
-      TypeDeclaration<?> declaration, String[] identifiers) {
-    TypeDeclaration<?> result = declaration;
-    for (int i = 1; i < identifiers.length; i++) {
-      result = memberTypeDeclaration(result, identifiers[i]);
-      if (result == null) {
-        return null;
-      }
-    }
-    return result;
   }
 
   /**
