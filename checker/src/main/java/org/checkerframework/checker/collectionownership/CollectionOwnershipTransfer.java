@@ -308,7 +308,7 @@ public class CollectionOwnershipTransfer
         atypeFactory.getDeclAnnotation(method, CreatesCollectionObligation.class) != null;
     boolean hasCollectionFieldDestructor =
         atypeFactory.getDeclAnnotation(method, CollectionFieldDestructor.class) != null;
-    if (hasCreatesCollectionObligation) {
+    if (hasCreatesCollectionObligation && !atypeFactory.insertsNull(node)) {
       JavaExpression receiverJE = JavaExpression.fromNode(receiverNode);
       if (receiverType == CollectionOwnershipType.OwningCollectionWithoutObligation) {
         replaceInStores(res, receiverJE, atypeFactory.OWNINGCOLLECTION);

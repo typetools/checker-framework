@@ -942,7 +942,7 @@ public class MustCallConsistencyAnalyzer {
       return;
     }
     ExecutableElement methodElement = node.getTarget().getMethod();
-    if (coAtf.isCreatesCollectionObligationMethod(methodElement)) {
+    if (coAtf.isCreatesCollectionObligationMethod(methodElement) && !coAtf.insertsNull(node)) {
       Node receiverNode = node.getTarget().getReceiver();
       receiverNode = removeCastsAndGetTmpVarIfPresent(receiverNode);
       Tree receiverTree = receiverNode.getTree();
