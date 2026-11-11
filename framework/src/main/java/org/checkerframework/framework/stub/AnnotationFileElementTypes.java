@@ -482,8 +482,8 @@ public class AnnotationFileElementTypes {
   }
 
   /**
-   * Issues a warning that a file named by the user is being ignored, because its name does not
-   * suit its file type.
+   * Issues a warning that a file named by the user is being ignored, because its name does not suit
+   * its file type.
    *
    * @param path the file's name, as the user supplied it
    * @param fileType the type of annotation file that the user supplied

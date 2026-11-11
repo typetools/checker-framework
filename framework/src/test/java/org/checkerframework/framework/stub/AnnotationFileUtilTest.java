@@ -266,7 +266,8 @@ public class AnnotationFileUtilTest {
   @Test
   public void directoryEntryInArchiveIsNotUsed() throws IOException {
     File zip = writeZip(new File(tmp.getRoot(), "annotations.zip"), "p/annotations.xml/");
-    Assert.assertEquals(Arrays.asList(), descriptions(zip, AnnotationFileType.INTELLIJ_ANNOTATIONS));
+    Assert.assertEquals(
+        Arrays.asList(), descriptions(zip, AnnotationFileType.INTELLIJ_ANNOTATIONS));
   }
 
   /** Tests that a nonexistent location yields null. */
