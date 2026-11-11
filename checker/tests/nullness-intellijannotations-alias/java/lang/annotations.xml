@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <!-- androidx.annotation.NonNull is not on the classpath, but the Nullness Checker treats it as an
+       alias of @NonNull, so the Nullness Checker uses it. -->
+  <item name="java.lang.System java.lang.String getenv(java.lang.String)">
+    <annotation name="androidx.annotation.NonNull" />
+  </item>
+</root>
