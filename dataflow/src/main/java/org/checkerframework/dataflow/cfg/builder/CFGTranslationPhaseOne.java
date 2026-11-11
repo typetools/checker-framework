@@ -450,9 +450,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     classCastExceptionType = getTypeMirror(ClassCastException.class);
     iterableType = types.erasure(getTypeMirror(Iterable.class));
     // javac compiles a switch for source versions before 21 to throw IncompatibleClassChangeError,
-    // even if MatchException is present.  The ordinal of SourceVersion.RELEASE_N is N.
+    // even if MatchException is present.  The name of SourceVersion.RELEASE_N is "RELEASE_N".
     @Nullable TypeMirror matchException =
-        env.getSourceVersion().ordinal() >= 21
+        Integer.parseInt(env.getSourceVersion().name().substring("RELEASE_".length())) >= 21
             ? maybeGetTypeMirror("java.lang.MatchException")
             : null;
     matchExceptionType =
