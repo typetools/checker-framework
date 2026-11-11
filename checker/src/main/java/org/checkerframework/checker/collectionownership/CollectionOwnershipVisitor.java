@@ -19,6 +19,7 @@ import org.checkerframework.checker.rlccalledmethods.RLCCalledMethodsAnnotatedTy
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -131,9 +132,11 @@ public class CollectionOwnershipVisitor
       ExpressionTree expr, @Nullable CollectionOwnershipStore storeBefore) {
     if (storeBefore != null) {
       JavaExpression je = JavaExpression.fromTree(expr);
-      CFValue v = storeBefore.getValue(je);
-      if (v != null) {
-        return atypeFactory.getCoType(v.getAnnotations());
+      if (CFAbstractStore.canInsertJavaExpression(je)) {
+        CFValue v = storeBefore.getValue(je);
+        if (v != null) {
+          return atypeFactory.getCoType(v.getAnnotations());
+        }
       }
     }
     // The store has no value, for example for a field after a method call: use its declared type.
