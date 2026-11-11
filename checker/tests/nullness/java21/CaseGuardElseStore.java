@@ -128,6 +128,17 @@ public class CaseGuardElseStore {
     }
   }
 
+  // The `case null` matches null, so the pattern matches every value that is tested against it.
+  void guardFalsePatternAlwaysMatchesAfterCaseNull(@Nullable String sel, @Nullable Object o) {
+    switch (sel) {
+      case null -> {}
+      case String s when isNull(o) -> {}
+      default -> {
+        o.hashCode();
+      }
+    }
+  }
+
   void guardFalsePatternAlwaysMatchesCaseNull(@Nullable String sel, @Nullable Object o) {
     switch (sel) {
       case String s when isNull(o) -> {}
