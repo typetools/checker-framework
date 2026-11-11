@@ -33,9 +33,10 @@ New class `AbstractSetInclusionQualifierHierarchy` is the superclass of
 
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
-`CFGTranslationPhaseOne`: renamed `isNumericOrBoxed()` to `isNumericAfterUnboxing()`.
-The new method also returns true for a type variable or intersection type whose
-upper bound unboxes to a numeric primitive, such as `T extends Integer`.
+Removed `CFGTranslationPhaseOne.isNumericOrBoxed()`; use
+`TypesUtils.isNumericAfterUnboxing()`, which also returns true for a type
+variable or intersection type whose upper bound unboxes to a numeric primitive,
+such as `T extends Integer`.
 
 A subclass of `CFAbstractValue` or `CFValue` that adds state must override
 `equals()` and `hashCode()` to account for that state.
