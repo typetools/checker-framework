@@ -1,6 +1,6 @@
 // Test case for https://github.com/typetools/checker-framework/issues/3677
 
-@DefaultQualifier(value = NonNull.class, locations = TypeUseLocation.ALL)
+@DefaultQualifier(value = NonNull.class, locations = TypeUseLocation.FIELD)
 package issue3677;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
