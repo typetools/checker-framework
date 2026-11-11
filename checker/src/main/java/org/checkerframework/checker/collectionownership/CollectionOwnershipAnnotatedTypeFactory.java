@@ -1,6 +1,7 @@
 package org.checkerframework.checker.collectionownership;
 
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -507,6 +508,23 @@ public class CollectionOwnershipAnnotatedTypeFactory
               || AnnotationUtils.areSame(anno, OWNINGCOLLECTIONWITHOUTOBLIGATION));
     }
     return false;
+  }
+
+  /**
+   * Returns true if the given expression evaluates to an owning collection field, as defined by
+   * {@link #isOwningCollectionField(Element)}. The field may be in parentheses or cast, or it may
+   * be either branch of a conditional expression.
+   *
+   * @param expr an expression
+   * @return true if {@code expr} evaluates to an owning collection field
+   */
+  public boolean isOwningCollectionField(ExpressionTree expr) {
+    expr = TreeUtils.withoutParensOrCasts(expr);
+    if (expr instanceof ConditionalExpressionTree conditional) {
+      return isOwningCollectionField(conditional.getTrueExpression())
+          || isOwningCollectionField(conditional.getFalseExpression());
+    }
+    return isOwningCollectionField(TreeUtils.elementFromTree(expr));
   }
 
   /**
