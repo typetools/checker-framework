@@ -5368,11 +5368,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * such a method inherits the union of what the supertypes permit, which is more than either one
      * of them permits. See {@code AnnotatedTypeFactory.getSideEffectsOnlyExpressionMap}.
      *
-     * <p>Like {@link #checkMethodReferencePurity}, this runs only under {@code
-     * -AcheckPurityAnnotations}, {@code -AsuggestPureMethods}, or {@code -Ainfer}.
+     * <p>Like the check of a method body against its own {@code @SideEffectsOnly} annotation
+     * ({@link BaseTypeVisitor#checkSideEffectsOnlyAnnotation}), this runs only when {@code
+     * -AcheckPurityAnnotations} itself is supplied, not merely {@code -AsuggestPureMethods} or
+     * {@code -Ainfer}.
      */
     private void checkSideEffectsOnly() {
-      if (!checkPurityAnnotations) {
+      if (!checkPurityAnnotationsOption) {
         return;
       }
       if (isMethodReference) {

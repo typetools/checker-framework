@@ -7,8 +7,8 @@ import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * Tests that an overriding method is checked against the overridden method's {@code
- * SideEffectsOnly} annotation under {@code -Ainfer}, even without {@code -AcheckPurityAnnotations}.
+ * Tests that an overriding method is not checked against the overridden method's {@code
+ * SideEffectsOnly} annotation under {@code -Ainfer} without {@code -AcheckPurityAnnotations}.
  */
 public class SideEffectsOnlyInferTest extends CheckerFrameworkPerDirectoryTest {
 
@@ -23,7 +23,10 @@ public class SideEffectsOnlyInferTest extends CheckerFrameworkPerDirectoryTest {
         TaintingChecker.class,
         "sideeffectsonly-infer",
         "-Ainfer=ajava",
-        "-AinferOutputDirectory=build/sideeffectsonly-infer-output");
+        "-AinferOutputDirectory=build/sideeffectsonly-infer-output",
+        // -Ainfer requires -Awarns.  A diagnostic is then a warning, so the test still fails if
+        // the override is checked.
+        "-Awarns");
   }
 
   @Parameters
