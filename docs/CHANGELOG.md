@@ -68,6 +68,8 @@ and, for a boolean literal that is the right operand of a boolean operator,
 `visitValueLiteral()`.  A subclass that overrides `visitNode()` may need to
 override them too.
 
+Removed `CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
+
 Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
 and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
 `addToImplicitlyConvertedLookupMap()`.
