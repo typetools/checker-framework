@@ -32,8 +32,6 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGStatement;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
-import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
-import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -357,20 +355,6 @@ public class CollectionOwnershipTransfer
       }
     }
     return res;
-  }
-
-  @Override
-  public TransferResult<CFValue, CollectionOwnershipStore> visitConditionalNot(
-      ConditionalNotNode node, TransferInput<CFValue, CollectionOwnershipStore> in) {
-    TransferResult<CFValue, CollectionOwnershipStore> res = super.visitConditionalNot(node, in);
-    return updateStoreForDisposalLoop(res, node.getTree());
-  }
-
-  @Override
-  public TransferResult<CFValue, CollectionOwnershipStore> visitGreaterThan(
-      GreaterThanNode node, TransferInput<CFValue, CollectionOwnershipStore> in) {
-    TransferResult<CFValue, CollectionOwnershipStore> res = super.visitGreaterThan(node, in);
-    return updateStoreForDisposalLoop(res, node.getTree());
   }
 
   /**
