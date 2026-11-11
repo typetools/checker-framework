@@ -215,6 +215,59 @@ public class CaseGuardElseStore {
     }
   }
 
+  // If the guard of the last case is false, the switch throws MatchException.
+  void lastCaseOfExhaustiveGuardFalse(R r, boolean b) {
+    @Nullable Object x = null;
+    switch (r) {
+      case R(Circle c) -> x = "";
+      case R(Square q) -> x = "";
+      case R(Shape s) when b -> x = "";
+    }
+    x.hashCode();
+  }
+
+  String lastCaseOfExhaustiveGuardFalseSwitchExpression(R r, boolean b) {
+    String x =
+        switch (r) {
+          case R(Circle c) -> "a";
+          case R(Square q) -> "b";
+          case R(Shape s) when b -> "c";
+        };
+    return x;
+  }
+
+  void lastCaseOfExhaustiveGuardFalseCatch(R r, boolean b) {
+    @Nullable Object x = "";
+    try {
+      x = null;
+      switch (r) {
+        case R(Circle c) -> x = "";
+        case R(Square q) -> x = "";
+        case R(Shape s) when b -> x = "";
+      }
+    } catch (MatchException e) {
+      // :: error: [dereference.of.nullable]
+      x.hashCode();
+    }
+  }
+
+  // The catch block receives the effects of evaluating the false guard.  Neither the CaseNodes nor
+  // the guard can throw before the guard assigns null to f, so only the false guard's successor
+  // makes f nullable in the catch block.
+  void lastCaseOfExhaustiveGuardFalseEffectsCatch(R r, boolean b) {
+    f = "";
+    try {
+      switch (r) {
+        case R(Circle c) -> {}
+        case R(Square q) -> {}
+        case R(Shape s) when (f = null) == null && b -> {}
+      }
+    } catch (MatchException e) {
+      // :: error: [dereference.of.nullable]
+      f.hashCode();
+    }
+  }
+
   void recordPatternAlwaysMatches(R r) {
     switch (r) {
       case R(Shape s) when init() -> {}

@@ -350,9 +350,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected final TypeMirror iterableType;
 
   /**
-   * The type of the exception that a switch throws when no case matches: MatchException, or
-   * IncompatibleClassChangeError if MatchException is not present (before Java 21). Before Java 21,
-   * an exhaustive switch whose selector matches no case throws IncompatibleClassChangeError.
+   * The type of the exception that a switch throws when no case matches: MatchException if the
+   * source version is 21 or later, and IncompatibleClassChangeError otherwise.
    */
   protected final TypeMirror matchExceptionType;
 
@@ -450,10 +449,15 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     assertionErrorType = getTypeMirror(AssertionError.class);
     classCastExceptionType = getTypeMirror(ClassCastException.class);
     iterableType = types.erasure(getTypeMirror(Iterable.class));
+    // javac compiles a switch for source versions before 21 to throw IncompatibleClassChangeError,
+    // even if MatchException is present.  The name of SourceVersion.RELEASE_N is "RELEASE_N".
+    @Nullable TypeMirror matchException =
+        Integer.parseInt(env.getSourceVersion().name().substring("RELEASE_".length())) >= 21
+            ? maybeGetTypeMirror("java.lang.MatchException")
+            : null;
     matchExceptionType =
         Objects.requireNonNullElse(
-            maybeGetTypeMirror("java.lang.MatchException"),
-            getTypeMirror(IncompatibleClassChangeError.class));
+            matchException, getTypeMirror(IncompatibleClassChangeError.class));
     negativeArraySizeExceptionType = getTypeMirror(NegativeArraySizeException.class);
     nullPointerExceptionType = getTypeMirror(NullPointerException.class);
     outOfMemoryErrorType = maybeGetTypeMirror(OutOfMemoryError.class);
