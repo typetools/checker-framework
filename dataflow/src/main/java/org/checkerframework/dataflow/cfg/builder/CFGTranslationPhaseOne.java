@@ -1778,7 +1778,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           new MethodInvocationNode(
               iteratorCall, iteratorAccessNode, Collections.emptyList(), getCurrentPath());
       iteratorCallNode.setInSource(false);
-      extendWithNode(iteratorCallNode);
+      extendWithSyntheticMethodInvocationNode(iteratorCallNode);
 
       translateAssignment(
           iteratorVariable, new LocalVariableNode(iteratorVariable), iteratorCallNode);
@@ -1807,7 +1807,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           new MethodInvocationNode(
               hasNextCall, hasNextAccessNode, Collections.emptyList(), getCurrentPath());
       hasNextCallNode.setInSource(false);
-      extendWithNode(hasNextCallNode);
+      extendWithSyntheticMethodInvocationNode(hasNextCallNode);
       extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
 
       // Loop body, starting with declaration of the loop iteration variable
@@ -1840,7 +1840,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       nextCallNode.setIterableExpression(expression);
       nextCallNode.setEnhancedForLoop(tree);
       nextCallNode.setInSource(false);
-      extendWithNode(nextCallNode);
+      extendWithSyntheticMethodInvocationNode(nextCallNode);
 
       AssignmentNode assignNode =
           translateAssignment(variable, new LocalVariableNode(variable), nextCall);
@@ -3388,6 +3388,25 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       extendedNode.setTerminatesExecution(true);
     }
     return extendedNode;
+  }
+
+  /**
+   * Extends the CFG with a MethodInvocationNode for a call that the CFG builder synthesizes, such
+   * as the calls to {@code iterator()}, {@code hasNext()}, and {@code next()} in an enhanced for
+   * loop. Unlike {@link #extendWithMethodInvocationNode}, does not add exceptional edges. If the
+   * method is annotated {@link TerminatesExecution}, the invocation terminates execution.
+   *
+   * @param node the invocation
+   */
+  private void extendWithSyntheticMethodInvocationNode(MethodInvocationNode node) {
+    addToLookupMap(node);
+    NodeHolder holder = new NodeHolder(node);
+    if (annotationProvider.getDeclAnnotation(
+            node.getTarget().getMethod(), TerminatesExecution.class)
+        != null) {
+      holder.setTerminatesExecution(true);
+    }
+    extendWithExtendedNode(holder);
   }
 
   @Override
