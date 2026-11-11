@@ -2136,6 +2136,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     /** True if {@link #switchTree} has a {@code case null}. */
     private final boolean hasNullCaseLabel;
 
+    /** True if the CFG built so far evaluates the guard of some case of {@link #switchTree}. */
+    private boolean guardEvaluated = false;
+
     /** The labels for the case bodies. */
     private final Label[] caseBodyLabels;
 
@@ -2419,12 +2422,16 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         boolean alwaysMatches = isLastCaseOfExhaustive || labelAlwaysMatches;
         CaseNode caseNode =
             new CaseNode(
-                caseTree, selectorExprAssignment, exprs, alwaysMatches, env.getTypeUtils());
+                caseTree,
+                selectorExprAssignment,
+                exprs,
+                alwaysMatches,
+                guardEvaluated,
+                env.getTypeUtils());
         // A record pattern calls accessor methods, and the switch wraps any exception that an
         // accessor throws in a MatchException (JLS 14.30.2).
         boolean hasRecordPattern =
-            CaseUtils.getLabels(caseTree).stream()
-                .anyMatch(TreeUtils::isDeconstructionPatternTree);
+            CaseUtils.getLabels(caseTree).stream().anyMatch(TreeUtils::isDeconstructionPatternTree);
         if ((isLastCaseOfExhaustive && !labelAlwaysMatches) || hasRecordPattern) {
           // A value that the labels do not match, such as a remainder of an exhaustive switch
           // (JLS 14.11.1.1), matches no case, so the switch throws MatchException.
@@ -2442,6 +2449,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
+          guardEvaluated = true;
           if (!isLastCaseOfExhaustive) {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
           } else {

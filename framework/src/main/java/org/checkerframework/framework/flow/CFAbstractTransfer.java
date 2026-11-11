@@ -1,15 +1,12 @@
 package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.AnnotatedTypeTree;
-import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.SwitchExpressionTree;
-import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -98,7 +95,6 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.PatternCaseLabelUtils;
 
 /**
@@ -1348,7 +1344,7 @@ public abstract class CFAbstractTransfer<
     boolean alwaysMatches = n.alwaysMatches();
     // The case labels are tested against the value of the selector expression that was saved
     // before the switch.  If the selector expression may have changed since then, do not refine it.
-    boolean selectorMayHaveChanged = selectorMayHaveChanged(n);
+    boolean canRefineSelector = canRefineSwitchSelector(n);
     TransferResult<V, S> lubResult = null;
     // Case operands are the case constants. For example, A, B and C in case A, B, C:.
     // This method refines the type of the selector expression and the synthetic variable that
@@ -1369,7 +1365,7 @@ public abstract class CFAbstractTransfer<
       V caseValue = in.getValueOfSubNode(caseOperand);
       AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-      if (!selectorMayHaveChanged) {
+      if (canRefineSelector) {
         result =
             strengthenAnnotationOfEqualTo(
                 result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
@@ -1402,43 +1398,29 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns true if the switch selector expression may have a different value at {@code n} than
-   * when the switch evaluated it. This is so if a guard of an earlier case may have changed it. A
+   * Returns true if a transfer function may refine the switch selector expression (the expression
+   * of {@link CaseNode#getSwitchOperand()}) at {@code n}. It may not if the guard of an earlier
+   * case might have changed the abstract value of the selector expression since it was evaluated. A
    * guard cannot assign a local variable that it does not declare (JLS 14.11.1), but it can assign
-   * a field or change the result of a method call.
+   * a field or change the result of a method call. The synthetic variable to which the selector
+   * expression is assigned may always be refined.
    *
    * @param n a case node
-   * @return true if the switch selector expression may have a different value at {@code n} than
-   *     when the switch evaluated it
+   * @return true if a transfer function may refine the switch selector expression at {@code n}
    */
-  private boolean selectorMayHaveChanged(CaseNode n) {
+  protected boolean canRefineSwitchSelector(CaseNode n) {
+    if (!n.isPrecededByGuard()) {
+      return true;
+    }
     JavaExpression selector = JavaExpression.fromNode(n.getSwitchOperand().getExpression());
-    if (!selector.isAssignableByOtherCode() && !selector.containsOfClass(MethodCall.class)) {
+    if (selector.containsOfClass(MethodCall.class)) {
       return false;
     }
-    TreePath path = analysis.atypeFactory.getPath(n.getTree());
-    if (path == null) {
-      return true;
-    }
-    List<? extends CaseTree> cases;
-    Tree switchTree = path.getParentPath().getLeaf();
-    if (switchTree instanceof SwitchTree switchStatement) {
-      cases = switchStatement.getCases();
-    } else if (switchTree instanceof SwitchExpressionTree switchExpression) {
-      cases = switchExpression.getCases();
-    } else {
-      return true;
-    }
-    // A default case has no guard, so the order in which the cases are tested does not matter.
-    for (CaseTree caseTree : cases) {
-      if (caseTree == n.getTree()) {
-        return false;
-      }
-      if (CaseUtils.getGuard(caseTree) != null) {
-        return true;
-      }
-    }
-    return true;
+    // This mirrors the unrefinement that CFAbstractStore performs at a side effect.  A guard
+    // cannot assign a local variable that is declared outside it.
+    return analysis.atypeFactory.sideEffectsUnrefineAliases
+        ? !selector.isModifiableByOtherCode()
+        : !selector.isAssignableByOtherCode();
   }
 
   // /**
