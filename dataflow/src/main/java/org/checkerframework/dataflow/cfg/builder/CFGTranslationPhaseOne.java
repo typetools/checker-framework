@@ -2012,9 +2012,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /**
    * Returns true if the value of the given node may be null. Returns false only if the kind of the
    * node guarantees that its value is never null, whatever the values of variables. For example,
-   * {@code this}, the result of {@code new}, an enum constant, and a call to {@code
-   * Integer.valueOf} are never null. A type name, as in {@code String.valueOf(x)}, is never null
-   * because it has no value.
+   * {@code this}, the result of {@code new}, and a call to {@code Integer.valueOf} are never null.
+   * An enum constant may be null, because it can be read during class initialization before it is
+   * assigned. A type name, as in {@code String.valueOf(x)}, is never null because it has no value.
    *
    * @param node a node of reference type, or a type name
    * @return true if the value of the node may be null; false if it is never null
@@ -2030,14 +2030,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         || node instanceof FunctionalInterfaceNode) {
       return false;
     } else if (node instanceof FieldAccessNode fieldAccess) {
-      // A class literal, a qualified `this`, or an enum constant.
-      // An enum constant is null while its enum class is being initialized, for example if the
-      // constructor of the enum calls a method that reads the constant.  Like the Nullness
-      // Checker, which treats enum constants as non-null, this code ignores that possibility.
+      // A class literal or a qualified `this`.
       String fieldName = fieldAccess.getFieldName();
-      return !(fieldName.equals("class")
-          || fieldName.equals("this")
-          || fieldAccess.getElement().getKind() == ElementKind.ENUM_CONSTANT);
+      return !(fieldName.equals("class") || fieldName.equals("this"));
     } else if (node instanceof MethodInvocationNode invocation) {
       return !isBoxedPrimitiveValueOf(invocation.getTarget().getMethod());
     } else if (node instanceof TypeCastNode cast) {
@@ -4461,7 +4456,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     // Creating a bound method reference, such as `expr::method`, throws a NullPointerException if
     // the qualifier is null (JLS 15.13.3).  Other kinds of member reference have a type or `super`
-    // as their qualifier.
+    // as their qualifier.  On normal completion, the result is never null.
     boolean mayThrowNullPointerException =
         qualifier != null
             && MemberReferenceKind.getMemberReferenceKind(tree) == MemberReferenceKind.BOUND
