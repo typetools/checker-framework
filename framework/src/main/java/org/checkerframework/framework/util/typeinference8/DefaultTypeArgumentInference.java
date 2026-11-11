@@ -32,6 +32,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.typeinference8.types.ContainsInferenceVariable;
 import org.checkerframework.framework.util.typeinference8.types.Variable;
+import org.checkerframework.framework.util.typeinference8.util.FalseBoundException;
 import org.checkerframework.framework.util.typeinference8.util.Theta;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreePathUtil;
@@ -175,7 +176,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         //    to the target type (see ProperType#isAssignable).
         InvocationTypeInference retry =
             new InvocationTypeInference(typeFactory, pathToExpression, false);
-        InferenceResult retryResult = inferWithoutTargetType(retry, outerTree, outerMethodType);
+        InferenceResult retryResult =
+            inferWithoutTargetType(typeFactory, retry, outerTree, outerMethodType);
         if (retryResult != null
             && retryResult.qualifiersIncompatibleWithTarget()
             && haveSameJavaTypes(
@@ -284,23 +286,34 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * for example when the target type is the only source of the type of a lambda's return
    * expression.
    *
-   * <p>A crash is not reported, because the retry is optional: the caller uses the result of
-   * inference with the target type instead.
+   * <p>A crash is a bug in the Checker Framework. Because the retry is optional, a crash is
+   * ignored (and the caller uses the result of inference with the target type instead) unless
+   * {@code -AconvertTypeArgInferenceCrashToWarning=false} is passed, as the Checker Framework's
+   * tests do. In that case the crash propagates so that the bug is not hidden.
    *
+   * @param typeFactory the type factory
    * @param retry an inference problem that does not use the target type
    * @param outerTree the invocation whose type arguments {@code retry} infers
    * @param outerMethodType the type of {@code outerTree}'s method before type argument substitution
    * @return the result of {@code retry}, or null if it fails because of the Java types or crashes
    */
   private @Nullable InferenceResult inferWithoutTargetType(
+      AnnotatedTypeFactory typeFactory,
       InvocationTypeInference retry,
       ExpressionTree outerTree,
       AnnotatedExecutableType outerMethodType) {
     try {
       return inferOnStack(retry, () -> retry.infer(outerTree, outerMethodType));
-    } catch (RuntimeException | AssertionError ex) {
-      // A FalseBoundException means that inference failed because of the Java types.
+    } catch (FalseBoundException ex) {
+      // Inference failed because of the Java types.
       return null;
+    } catch (RuntimeException | AssertionError ex) {
+      if (typeFactory
+          .getChecker()
+          .getBooleanOption("convertTypeArgInferenceCrashToWarning", true)) {
+        return null;
+      }
+      throw ex;
     }
   }
 
