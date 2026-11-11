@@ -649,24 +649,6 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myMethod(Lp/p/Foo;)V");
   }
 
-  /**
-   * A missing member of a stub-declared type has the same binary name whether or not the name is
-   * qualified by the stub file's package.
-   */
-  @Test
-  public void testPackageQualifiedMissingMemberType() throws Exception {
-    String jaif =
-        convert(
-            "package p;",
-            "class B {}",
-            "class MyClass {",
-            "  void myMethod(B.Missing x) {}",
-            "  void myOtherMethod(p.B.Missing x) {}",
-            "}");
-    assertMethod(jaif, "MyClass", "myMethod(Lp/B$Missing;)V");
-    assertMethod(jaif, "MyClass", "myOtherMethod(Lp/B$Missing;)V");
-  }
-
   /** A single-type import of a type that the stub file declares is resolved. */
   @Test
   public void testSingleTypeImportOfStubFileType() throws Exception {
@@ -714,6 +696,24 @@ public class ToIndexFileConverterTest {
             "  void myMethod(Map.Entry e) {}",
             "}");
     assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyClass$Map$Entry;)V");
+  }
+
+  /**
+   * A missing member of a stub-declared type has the same binary name whether or not the name is
+   * qualified by the stub file's package.
+   */
+  @Test
+  public void testPackageQualifiedMissingMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class B {}",
+            "class MyClass {",
+            "  void myMethod(B.Missing x) {}",
+            "  void myOtherMethod(p.B.Missing x) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/B$Missing;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Lp/B$Missing;)V");
   }
 
   /** A cyclic bound, which is illegal, does not make the converter recurse forever. */

@@ -811,10 +811,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             @FullyQualifiedName String typeName = type.getNameWithScope();
             String[] identifiers = typeName.split("\\.", -1);
             CompilationUnit cu = type.findCompilationUnit().orElse(null);
-            // Search each enclosing scope, innermost first, as `scopedStubDeclaration` does.  A
-            // type found in any enclosing scope shadows an import and a type in the current
-            // package.  Once the first identifier names a type, the remaining identifiers are
-            // resolved within that type, and outer scopes are not searched.
+            // Search each enclosing scope, innermost first.  A type found in any enclosing scope
+            // shadows an import and a type in the current package.  Once the first identifier
+            // names a type, the remaining identifiers are resolved within that type, and outer
+            // scopes are not searched.
             Node declaration = enclosingDeclaration(type, identifiers);
             String name = null;
             if (declaration == null) {
