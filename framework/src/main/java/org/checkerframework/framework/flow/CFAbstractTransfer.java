@@ -94,6 +94,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityKind;
+import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -1003,10 +1004,10 @@ public abstract class CFAbstractTransfer<
    * evaluated after {@code node}, but before the operation's result is known. The result omits each
    * part whose value an assignment in the right operand might change. For example, the result for
    * the left operand of {@code x == nonNull(x = null)} is empty, because the comparison says
-   * nothing about the value of {@code x} after the assignment. Likewise, if the right operand
-   * contains a method or constructor call that might have side effects, the result omits each part
-   * that other code might assign, such as a field: the result for the left operand of {@code
-   * ((String) f) == clearF()} is empty if {@code f} is a non-final field.
+   * nothing about the value of {@code x} after the assignment. Likewise, if the right operand calls
+   * a method or constructor that is not side-effect-free, then the result also omits each part that
+   * other code can assign, such as a field: the result for the left operand of {@code f ==
+   * clearF()} is empty if {@code f} is a non-final field.
    *
    * @param node possibly an assignment node or a cast
    * @return a list containing the right- and left-hand sides in the given assignment node that have
@@ -1109,13 +1110,14 @@ public abstract class CFAbstractTransfer<
         result.removeIf(
             p -> mayBeChangedByAssignment(JavaExpression.fromNode(p), laterTargets, false));
       }
-      if (laterScanner.sawSideEffectingCall) {
+      if (laterScanner.callsMethodWithSideEffects) {
         // A method or constructor call might change any part that other code can assign, such as
         // a field or an array element, but not a local variable.
         result.removeIf(
             p -> {
-              JavaExpression je = JavaExpression.fromNode(p);
-              return CFAbstractStore.canInsertJavaExpression(je) && je.isAssignableByOtherCode();
+              JavaExpression expr = JavaExpression.fromNode(p);
+              return CFAbstractStore.canInsertJavaExpression(expr)
+                  && expr.isAssignableByOtherCode();
             });
       }
     }
@@ -1134,7 +1136,8 @@ public abstract class CFAbstractTransfer<
     return analysis.checker.hasOption("assumeSideEffectFree")
         || analysis.checker.hasOption("assumePure")
         || (analysis.checker.hasOption("assumePureGetters") && ElementUtils.isGetter(method))
-        || analysis.atypeFactory.isSideEffectFree(method);
+        || analysis.atypeFactory.isSideEffectFree(method)
+        || PurityUtils.isSideEffectFree(analysis.atypeFactory, method);
   }
 
   /**
@@ -1205,8 +1208,8 @@ public abstract class CFAbstractTransfer<
    * evaluated. It does descend into the initializer blocks and field initializers of an anonymous
    * class body, which execute when the enclosing {@code new} expression is evaluated.
    *
-   * <p>If constructed with a side-effect-freedom predicate, it also records whether the tree
-   * contains a method or constructor call that might have side effects.
+   * <p>If constructed with a side-effect-freedom predicate, it also records whether the tree calls
+   * a method or constructor that is not side-effect-free.
    */
   private static class AssignmentTargetScanner extends TreeScanner<Void, List<JavaExpression>> {
 
@@ -1216,8 +1219,8 @@ public abstract class CFAbstractTransfer<
      */
     private final @Nullable Predicate<ExecutableElement> isSideEffectFree;
 
-    /** True if a scanned tree contains a call that might have side effects. */
-    boolean sawSideEffectingCall = false;
+    /** True if the scanned trees call a method or constructor that is not side-effect-free. */
+    boolean callsMethodWithSideEffects = false;
 
     /** Creates an AssignmentTargetScanner that does not examine calls. */
     AssignmentTargetScanner() {
@@ -1234,19 +1237,26 @@ public abstract class CFAbstractTransfer<
       this.isSideEffectFree = isSideEffectFree;
     }
 
+    /**
+     * Records that the scanned trees call {@code method}, if it is not side-effect-free.
+     *
+     * @param method a method or constructor that the scanned trees call
+     */
+    private void recordCall(ExecutableElement method) {
+      if (isSideEffectFree != null && !isSideEffectFree.test(method)) {
+        callsMethodWithSideEffects = true;
+      }
+    }
+
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, List<JavaExpression> targets) {
-      if (isSideEffectFree != null && !isSideEffectFree.test(TreeUtils.elementFromUse(tree))) {
-        sawSideEffectingCall = true;
-      }
+      recordCall(TreeUtils.elementFromUse(tree));
       return super.visitMethodInvocation(tree, targets);
     }
 
     @Override
     public Void visitNewClass(NewClassTree tree, List<JavaExpression> targets) {
-      if (isSideEffectFree != null && !isSideEffectFree.test(TreeUtils.elementFromUse(tree))) {
-        sawSideEffectingCall = true;
-      }
+      recordCall(TreeUtils.elementFromUse(tree));
       return super.visitNewClass(tree, targets);
     }
 

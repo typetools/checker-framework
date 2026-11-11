@@ -333,4 +333,40 @@ public class AssignmentInComparison {
       x.toString();
     }
   }
+
+  @Nullable String f;
+
+  // Sets `f` to null and returns its old value, or a non-null value.
+  String reset() {
+    String result = (f == null) ? "" : f;
+    f = null;
+    return result;
+  }
+
+  @Pure
+  String constant() {
+    return "";
+  }
+
+  // The right operand calls a method that might change `f` after the left operand reads it.
+  void methodWithSideEffectsInRightOperand() {
+    if (f == reset()) {
+      // :: error: [dereference.of.nullable]
+      f.toString();
+    }
+  }
+
+  // A method call cannot change a local variable.
+  void methodWithSideEffectsInRightOperandLocal(@Nullable String s) {
+    if (s == reset()) {
+      s.toString();
+    }
+  }
+
+  // A side-effect-free call in the right operand does not change `f`.
+  void sideEffectFreeCallInRightOperand() {
+    if (f == constant()) {
+      f.toString();
+    }
+  }
 }
