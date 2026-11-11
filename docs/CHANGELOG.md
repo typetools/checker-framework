@@ -9,6 +9,15 @@
 
 ### Changes for type system implementers
 
+`AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
+takes an additional first argument, the operator, because the conversions of a
+binary operation's operands depend on the operator.
+
+Removed `CFGTranslationPhaseOne.isNumericOrBoxed()`; use
+`TypesUtils.isNumericAfterUnboxing()`, which also returns true for a type
+variable or intersection type whose upper bound unboxes to a numeric primitive,
+such as `T extends Integer`.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
@@ -33,8 +42,6 @@ New class `AbstractSetInclusionQualifierHierarchy` is the superclass of
 
 Removed `TreeUtils.hasSyntheticArgument()`, which always returned false.
 
-`CFGTranslationPhaseOne`: renamed `isNumericOrBoxed()` to `isNumericAfterUnboxing()`.
-
 A subclass of `CFAbstractValue` or `CFValue` that adds state must override
 `equals()` and `hashCode()` to account for that state.
 
@@ -50,6 +57,8 @@ now a final, non-generic class.  `NumberMath.getNumberMath()` throws
 `PurityChecker.checkPurity()` takes two new arguments: the method declaration
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
+
+Removed `CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
 
 Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
 and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
