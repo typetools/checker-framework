@@ -318,6 +318,7 @@ public class AssignmentInComparison {
 
   // The assignment writes the `next` field of the original `n`, not of `o`.
   static void receiverReassignedNonNullRhs(AssignmentInComparison n, AssignmentInComparison o) {
+    // :: warning: [nulltest.redundant]
     if ((n.next = (n = o)) != null) {
       // :: error: [dereference.of.nullable]
       n.next.toString();
