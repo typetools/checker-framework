@@ -5452,7 +5452,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
       EnumSet<PurityKind> superPurity = purityKinds(overridden.getElement(), false);
       // Apply the command-line assumptions to the referenced method, so that a method reference is
-      // treated like a lambda whose body calls the referenced method.
+      // treated like a lambda whose body calls the referenced method.  Like such a call, a
+      // side-effect-free referenced method that returns void is deterministic.
       EnumSet<PurityKind> subPurity = purityKinds(overrider.getElement(), true);
 
       boolean ok;
@@ -5544,15 +5545,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * AnnotatedTypeFactory#getSideEffectsOnlyExpressionMap}.
      *
      * @param method a method
-     * @param applyAssumptions whether to add what the command-line assumptions, such as {@code
-     *     -AassumeSideEffectFree}, grant {@code method}
+     * @param isImplementation true if {@code method} is the referenced method, which implements the
+     *     functional interface method. If so, the result also includes what the command-line
+     *     assumptions, such as {@code -AassumeSideEffectFree}, grant {@code method}, and it includes
+     *     {@link PurityKind#DETERMINISTIC} if {@code method} is side-effect-free and returns void;
+     *     see {@link #implementationPurityKinds}.
      * @return the purity kinds of {@code method}
      */
-    private EnumSet<PurityKind> purityKinds(ExecutableElement method, boolean applyAssumptions) {
-      EnumSet<PurityKind> result = PurityUtils.getPurityKinds(atypeFactory, method);
-      if (applyAssumptions) {
-        addAssumedPurity(result, method);
-      }
+    private EnumSet<PurityKind> purityKinds(ExecutableElement method, boolean isImplementation) {
+      EnumSet<PurityKind> result =
+          isImplementation
+              ? implementationPurityKinds(method)
+              : PurityUtils.getPurityKinds(atypeFactory, method);
       if (!result.contains(PurityKind.SIDE_EFFECT_FREE)
           && atypeFactory.getSideEffectsOnlyExpressionMap(method) != null) {
         result.add(PurityKind.SIDE_EFFECTS_ONLY);
