@@ -3,11 +3,13 @@ import java.util.Iterator;
 // The iterator() method of an Iterable may return a type variable.
 public class EnhancedForIteratorTypeVariable {
   abstract static class StringIterable<I extends Iterator<String>> implements Iterable<String> {
+    @SuppressWarnings("nonempty:override.return") // Iterable.iterator() returns @PolyNonEmpty.
     @Override
     public abstract I iterator();
   }
 
   abstract static class IntegerIterable<I extends Iterator<Integer>> implements Iterable<Integer> {
+    @SuppressWarnings("nonempty:override.return") // Iterable.iterator() returns @PolyNonEmpty.
     @Override
     public abstract I iterator();
   }
