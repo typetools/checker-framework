@@ -117,6 +117,22 @@ public class AnnotationFileUtilTest {
     }
   }
 
+  /**
+   * Tests that a named archive that cannot be opened yields a resource whose contents cannot be
+   * read, rather than being treated as empty.
+   */
+  @Test
+  public void corruptArchive() throws IOException {
+    File zip = write(new File(tmp.getRoot(), "stubs.zip"), "not a zip file");
+
+    List<AnnotationFileResource> resources =
+        AnnotationFileUtil.allAnnotationFiles(zip.getPath(), AnnotationFileType.COMMAND_LINE_STUB);
+    Assert.assertNotNull(resources);
+    Assert.assertEquals(1, resources.size());
+    Assert.assertEquals(zip.getPath(), resources.get(0).getDescription());
+    Assert.assertThrows(IOException.class, () -> resources.get(0).getInputStream());
+  }
+
   /** Tests that a directory contributes only the files in it whose names match the file type. */
   @Test
   public void directoryUsesOnlyFilesWithMatchingName() throws IOException {
