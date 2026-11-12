@@ -1824,12 +1824,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       nextCallNode.setInSource(false);
       extendWithNode(nextCallNode);
 
-      AssignmentNode assignNode =
-          translateAssignment(variable, new LocalVariableNode(variable), nextCall);
-      // translateAssignment() scans variable and creates new nodes, so set the expression
-      // there, too.
-      ((MethodInvocationNode) assignNode.getExpression()).setIterableExpression(expression);
-      ((MethodInvocationNode) assignNode.getExpression()).setEnhancedForLoop(tree);
+      // Scanning nextCall creates a new node, so set the expression there, too.  Do so before
+      // assignment conversion, which may wrap the node (for example, in an unboxing or a
+      // widening conversion).
+      MethodInvocationNode scannedNextCallNode = (MethodInvocationNode) scan(nextCall, p);
+      scannedNextCallNode.setIterableExpression(expression);
+      scannedNextCallNode.setEnhancedForLoop(tree);
+      translateAssignment(variable, new LocalVariableNode(variable), scannedNextCallNode);
 
       assert statement != null;
       scan(statement, p);
