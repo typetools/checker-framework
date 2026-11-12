@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.function.Supplier;
 import org.checkerframework.checker.nullness.qual.KeyFor;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 
@@ -12,6 +14,10 @@ public class AssignmentInComparison {
   @Nullable AssignmentInComparison other;
 
   static @Nullable AssignmentInComparison global;
+
+  @MonotonicNonNull AssignmentInComparison mono;
+
+  static @MonotonicNonNull AssignmentInComparison monoGlobal;
 
   @Pure
   @Nullable AssignmentInComparison getNext() {
@@ -43,6 +49,22 @@ public class AssignmentInComparison {
       n.toString();
       // After the assignment, `n.next` is a field of a different object.
       // :: error: [dereference.of.nullable]
+      n.next.toString();
+    }
+  }
+
+  static void otherOperandReassignsReceiver(AssignmentInComparison n, AssignmentInComparison o) {
+    if (n.next == (n = o)) {
+      // The left operand is the `next` field of the old `n`, but `n.next` is now `o.next`.
+      // :: error: [dereference.of.nullable]
+      n.next.toString();
+    }
+  }
+
+  static void assignmentInLeftOperand(
+      @Nullable AssignmentInComparison n, AssignmentInComparison o) {
+    if ((n = o) == n.next) {
+      // The right operand is evaluated after the assignment.
       n.next.toString();
     }
   }
@@ -159,7 +181,7 @@ public class AssignmentInComparison {
     return other;
   }
 
-  static void methodCallReassignsReceiver(AssignmentInComparison other) {
+  static void methodCallReassignsGlobalReceiver(AssignmentInComparison other) {
     if (global == null) {
       return;
     }
@@ -186,6 +208,65 @@ public class AssignmentInComparison {
     // :: warning: [nulltest.redundant]
     if ((n.next = reassignGlobal(other)) != null) {
       n.next.toString();
+    }
+  }
+
+  static void anonymousClassInitializerCallsMethod(AssignmentInComparison replacement) {
+    if (global == null) {
+      return;
+    }
+    if ((global.next =
+            id(
+                new AssignmentInComparison() {
+                  {
+                    helper(replacement);
+                  }
+
+                  static void helper(AssignmentInComparison r) {
+                    global = r;
+                  }
+                }))
+        != null) {
+      // After the assignment, `global.next` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      global.next.toString();
+    }
+  }
+
+  @Nullable AssignmentInComparison advance(AssignmentInComparison o) {
+    mono = new AssignmentInComparison();
+    return o;
+  }
+
+  void methodCallReassignsReceiver(AssignmentInComparison o) {
+    if (mono == null) {
+      return;
+    }
+    if ((mono.next = advance(o)) != null) {
+      // After the assignment, `mono.next` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      mono.next.toString();
+    }
+  }
+
+  static <T> @Nullable T call(Supplier<T> s) {
+    return s.get();
+  }
+
+  static void lambdaReassignsReceiver(AssignmentInComparison other, AssignmentInComparison o) {
+    if (monoGlobal == null) {
+      return;
+    }
+    if ((monoGlobal.next =
+            call(
+                () -> {
+                  monoGlobal = other;
+                  return o;
+                }))
+        != null) {
+      // After the assignment, `monoGlobal.next` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      monoGlobal.next.toString();
     }
   }
 
@@ -279,6 +360,13 @@ public class AssignmentInComparison {
     }
   }
 
+  static void assignmentInTargetIndexBeforeRhs(@Nullable Object[] a, @Nullable Object[] b, int i) {
+    if ((a[i = 0] = b[i]) != null) {
+      // `b[i]` is evaluated after `i = 0`, so it has the assigned value.
+      b[i].toString();
+    }
+  }
+
   static void fieldTargetWithAssignmentInReceiver(
       AssignmentInComparison n, AssignmentInComparison m, @Nullable AssignmentInComparison o) {
     if (((n = m).next = o) != null) {
@@ -345,13 +433,6 @@ public class AssignmentInComparison {
     }
   }
 
-  // The assignment to `i` in the target executes before `b[i]` is evaluated.
-  static void assignmentInTargetIndexBeforeRhs(@Nullable Object[] a, @Nullable Object[] b, int i) {
-    if ((a[i = 0] = b[i]) != null) {
-      b[i].toString();
-    }
-  }
-
   // The assignment writes the `next` field of the original `n`, not of `o`.
   static void receiverReassignedNonNullRhs(AssignmentInComparison n, AssignmentInComparison o) {
     // :: warning: [nulltest.redundant]
@@ -364,6 +445,36 @@ public class AssignmentInComparison {
   static void receiverReassignedNoComparison(AssignmentInComparison n, AssignmentInComparison o) {
     n.next = (n = o);
     // :: error: [dereference.of.nullable]
+    n.next.toString();
+  }
+
+  static AssignmentInComparison nonNullGlobal = new AssignmentInComparison();
+
+  // Sets `nonNullGlobal` to `n` and returns a non-null value.
+  static AssignmentInComparison reassignNonNullGlobal(AssignmentInComparison n) {
+    nonNullGlobal = n;
+    return new AssignmentInComparison();
+  }
+
+  // The call reassigns `nonNullGlobal` after the receiver of the target is evaluated, so the
+  // assignment writes the `next` field of the original `nonNullGlobal`.
+  static void receiverReassignedByCall(AssignmentInComparison o) {
+    nonNullGlobal.next = reassignNonNullGlobal(o);
+    // :: error: [dereference.of.nullable]
+    nonNullGlobal.next.toString();
+  }
+
+  static void receiverReassignedByCallInComparison(AssignmentInComparison o) {
+    // :: warning: [nulltest.redundant]
+    if ((nonNullGlobal.next = reassignNonNullGlobal(o)) != null) {
+      // :: error: [dereference.of.nullable]
+      nonNullGlobal.next.toString();
+    }
+  }
+
+  // A call cannot reassign a local variable, so it cannot change the location of `n.next`.
+  static void localReceiverWithCall(AssignmentInComparison n, AssignmentInComparison o) {
+    n.next = reassignNonNullGlobal(o);
     n.next.toString();
   }
 
@@ -407,6 +518,28 @@ public class AssignmentInComparison {
   void sideEffectFreeCallInRightOperand() {
     if (f == constant()) {
       f.toString();
+    }
+  }
+
+  // Java assigns `a[0]`, but after the assignment `a[i]` is `a[1]`.
+  static void indexPostfixIncrementedRhs(@Nullable Integer[] a) {
+    int i = 0;
+    a[i] = i++;
+    // :: error: [dereference.of.nullable]
+    a[i].intValue();
+  }
+
+  static class Holder {
+    @Nullable String value;
+    final String text = "";
+  }
+
+  // The assignment stores a non-null value, so it cannot make `p.value` null even if `p` aliases
+  // the original `n`.
+  static void receiverReassignedPreservesOtherRefinements(Holder p, Holder n, Holder o) {
+    if (p.value != null) {
+      n.value = (n = o).text;
+      p.value.length();
     }
   }
 

@@ -8,6 +8,7 @@ import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -95,6 +96,20 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
     // Refine the else branch.
     refineGTE(rfi.left, rfi.leftAnno, rfi.right, rfi.rightAnno, rfi.elseStore, in);
     return rfi.newResult;
+  }
+
+  /**
+   * Inserts the given annotation into the store for each expression that has the value of the given
+   * node when the comparison that contains the node completes (see {@link #splitAssignments}).
+   *
+   * @param store the store to modify
+   * @param node a node in an operand of a comparison
+   * @param anno the annotation to insert for each expression that has the value of {@code node}
+   */
+  protected void insertValueForComparedNode(CFStore store, Node node, AnnotationMirror anno) {
+    for (Node internal : splitAssignments(node)) {
+      store.insertValue(JavaExpression.fromNode(internal), anno);
+    }
   }
 
   protected abstract void refineGT(
