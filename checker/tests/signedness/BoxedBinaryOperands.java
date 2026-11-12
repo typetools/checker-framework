@@ -21,7 +21,8 @@ public class BoxedBinaryOperands {
     return i;
   }
 
-  // A shift result takes the signedness of its left operand, which is @Unsigned for char.
+  // A shift result takes the signedness of its left operand after unary numeric promotion, which
+  // widens a char to an int that is @SignedPositive, a subtype of @Unsigned.
   @Unsigned int primitiveCharShift(char c) {
     return c >> 2;
   }
