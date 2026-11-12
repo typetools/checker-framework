@@ -52,6 +52,14 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
   private final Map<ExpressionTree, InferenceResult> inferenceCache;
 
   /**
+   * Creates a DefaultTypeArgumentInference whose cache has the default size, {@link
+   * AnnotatedTypeFactory#DEFAULT_CACHE_SIZE}.
+   */
+  public DefaultTypeArgumentInference() {
+    this(AnnotatedTypeFactory.DEFAULT_CACHE_SIZE);
+  }
+
+  /**
    * Creates a DefaultTypeArgumentInference.
    *
    * @param cacheSize the maximum number of inference results that this caches
