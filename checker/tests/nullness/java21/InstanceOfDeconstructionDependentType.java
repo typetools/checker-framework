@@ -57,6 +57,26 @@ public class InstanceOfDeconstructionDependentType {
     }
   }
 
+  record Outer(KeyedMap km) {}
+
+  Outer getOuter() {
+    throw new Error();
+  }
+
+  void nestedDeterministic(Outer o) {
+    if (o instanceof Outer(KeyedMap(var mm, String k))) {
+      @KeyFor("o.km().m") String k2 = k;
+    }
+  }
+
+  void nestedNondeterministic() {
+    // getOuter() is not deterministic, so `k` is not a key for getOuter().km().m.
+    if (getOuter() instanceof Outer(KeyedMap(var mm, String k))) {
+      // :: error: [assignment]
+      @KeyFor("getOuter().km().m") String k2 = k;
+    }
+  }
+
   void adaptedSwitch(KeyedMap km) {
     switch (km) {
       case KeyedMap(var mm, String k) -> {

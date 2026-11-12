@@ -39,7 +39,9 @@ import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.dataflow.expression.JavaExpressionScanner;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.Unknown;
@@ -403,7 +405,7 @@ public class DependentTypesHelper {
       return;
     }
 
-    boolean isDeterministic = receiver.isDeterministic(factory);
+    boolean isDeterministic = isDeterministicIncludingReceivers(receiver);
     StringToJavaExpression stringToJavaExpr =
         stringExpr -> {
           JavaExpression declExpr =
@@ -422,6 +424,34 @@ public class DependentTypesHelper {
     }
     convertAnnotatedTypeMirror(stringToJavaExpr, declaredType);
     this.viewpointAdaptedCopier.visit(declaredType, type);
+  }
+
+  /**
+   * Returns true if {@code expr} and all of its subexpressions are deterministic.
+   *
+   * <p>{@link MethodCall#isDeterministic} does not check the receiver of the call. For a record
+   * pattern nested in another one, the receiver is an accessor call on the value matched by the
+   * enclosing pattern, as in {@code getOuter().inner()}. That value is the same on each evaluation
+   * only if every receiver in the chain is deterministic.
+   *
+   * @param expr an expression
+   * @return true if {@code expr} and all of its subexpressions are deterministic
+   */
+  private boolean isDeterministicIncludingReceivers(JavaExpression expr) {
+    if (!expr.isDeterministic(factory)) {
+      return false;
+    }
+    boolean[] result = {true};
+    new JavaExpressionScanner<Void>() {
+      @Override
+      protected Void visitMethodCall(MethodCall methodCallExpr, Void p) {
+        if (!methodCallExpr.isDeterministic(factory)) {
+          result[0] = false;
+        }
+        return super.visitMethodCall(methodCallExpr, p);
+      }
+    }.scan(expr, null);
+    return result[0];
   }
 
   /**

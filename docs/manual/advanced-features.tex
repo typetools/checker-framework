@@ -389,8 +389,12 @@ arguments (known as exception parameters in the Java Language Specification).
 An unannotated pattern variable is refined as if it were assigned a cast of the
 expression or record component that the pattern is matched against, as in
 \<String s = (String) o;>.  A type system can refine it further; for example,
-the Nullness Checker refines it to \<@NonNull>, because a type pattern in an
-\<instanceof> or a case label does not match \<null>.
+the Nullness Checker refines it to \<@NonNull> when the type pattern is the
+entire pattern of an \<instanceof> or a case label, because such a pattern does
+not match \<null>.  A pattern nested in a record pattern, such as \<var s> in
+\<Box(var s)> or \<String s> in \<Box(String s)>, can match a \<null> record
+component if it is unconditional for the component's type; then the variable
+retains the nullness of the record component.
 
 Exception parameters default to the top type because they might catch an
 exception thrown anywhere in the program.
