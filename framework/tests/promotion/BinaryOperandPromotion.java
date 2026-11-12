@@ -49,8 +49,10 @@ public class BinaryOperandPromotion {
     long r = (a + b) + c;
   }
 
+  // The inner addition promotes its left operand, b.  Its result is @Promoted, but the outer
+  // addition does not convert it.
   void nestedRightNotConverted(int a, byte b, int c) {
-    // :: error: [promoted.right]
+    // :: error: [promoted.left]
     int r = a + (b + c);
   }
 
@@ -73,32 +75,32 @@ public class BinaryOperandPromotion {
     boolean r = a != b;
   }
 
-  void booleanReferenceEquality(Boolean a, Boolean b) {
-    boolean r = a == b;
+  boolean booleanReferenceEquality(Boolean a, Boolean b) {
+    return a == b;
   }
 
-  void booleanSameKinds(boolean a, boolean b) {
-    boolean r = a == b;
+  boolean booleanSameKinds(boolean a, boolean b) {
+    return a == b;
   }
 
-  void booleanEquality(Boolean a, boolean b) {
-    // :: error: [promoted.left]
-    boolean r = a == b;
+  boolean booleanEquality(Boolean a, boolean b) {
+    // :: error: [return]
+    return a == b;
   }
 
-  void booleanAnd(Boolean a, boolean b) {
-    // :: error: [promoted.left]
-    boolean r = a & b;
+  boolean booleanAnd(Boolean a, boolean b) {
+    // :: error: [return]
+    return a & b;
   }
 
-  void booleanXorBoxed(Boolean a, Boolean b) {
-    // :: error: [promoted.left] :: error: [promoted.right]
-    boolean r = a ^ b;
+  boolean booleanXorBoxed(Boolean a, Boolean b) {
+    // :: error: [return]
+    return a ^ b;
   }
 
-  void conditionalOr(boolean a, Boolean b) {
-    // :: error: [promoted.right]
-    boolean r = a || b;
+  boolean conditionalOr(boolean a, Boolean b) {
+    // :: error: [return]
+    return a || b;
   }
 
   // A shift operation promotes each operand separately, so a long right operand does not widen the
