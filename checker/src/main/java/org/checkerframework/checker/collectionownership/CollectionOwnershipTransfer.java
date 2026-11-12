@@ -17,7 +17,6 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipAnnotatedTypeFactory.CollectionOwnershipType;
-import org.checkerframework.checker.collectionownership.qual.CollectionFieldDestructor;
 import org.checkerframework.checker.collectionownership.qual.CreatesCollectionObligation;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -310,23 +309,15 @@ public class CollectionOwnershipTransfer
     // Check whether the method is annotated @CreatesCollectionObligation.
     boolean hasCreatesCollectionObligation =
         atypeFactory.getDeclAnnotation(method, CreatesCollectionObligation.class) != null;
-    boolean hasCollectionFieldDestructor =
-        atypeFactory.getDeclAnnotation(method, CollectionFieldDestructor.class) != null;
     if (hasCreatesCollectionObligation && !atypeFactory.insertsNull(node)) {
       JavaExpression receiverJE = JavaExpression.fromNode(receiverNode);
       if (receiverType == CollectionOwnershipType.OwningCollectionWithoutObligation) {
         replaceInStores(res, receiverJE, atypeFactory.OWNINGCOLLECTION);
       }
     }
-    if (hasCollectionFieldDestructor) {
-      List<String> destructedFields = atypeFactory.getCollectionFieldDestructorAnnoFields(method);
-      for (String destructedFieldName : destructedFields) {
-        JavaExpression fieldExpr = atypeFactory.stringToJavaExpression(destructedFieldName, method);
-        if (fieldExpr != null) {
-          replaceInStores(res, fieldExpr, atypeFactory.OWNINGCOLLECTIONWITHOUTOBLIGATION);
-        }
-      }
-    }
+    // A @CollectionFieldDestructor postcondition needs no handling here:  it is a
+    // @PostconditionAnnotation, so the superclass refines the destructed fields, viewpoint-adapted
+    // to the call site.
     // A `this(...)` call, or a `@CreatesMustCallFor("this")` call on `this` or `super`, can insert
     // into the owning collection fields, so assume that all of them are @OwningCollection.
     RLCCalledMethodsAnnotatedTypeFactory rlAtf =
