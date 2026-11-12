@@ -22,6 +22,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -95,7 +96,10 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.DeconstructionPatternUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.PatternCaseLabelUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The default analysis transfer function for the Checker Framework. It propagates information
@@ -1391,6 +1395,16 @@ public abstract class CFAbstractTransfer<
       }
     }
     assert lubResult != null : "@AssumeAssertion(nullness): a CaseNode has a case operand";
+    if (!canRefineSelector && recordPatternMightHaveSideEffect(n)) {
+      // A record accessor that a record pattern of this case invokes might have changed the
+      // selector expression.  The CFG does not represent the accessor calls, so their effect on
+      // the selector expression is applied here.  (The stores of lubResult are fresh copies.)
+      JavaExpression selector = JavaExpression.fromNode(n.getSwitchOperand().getExpression());
+      lubResult.getThenStore().clearValue(selector);
+      if (!alwaysMatches) {
+        lubResult.getElseStore().clearValue(selector);
+      }
+    }
     if (alwaysMatches) {
       // The case expressions are not tested, so the facts that hold when they match hold after
       // this node.  (strengthenAnnotationOfEqualTo returns a conditional result.)
@@ -1400,26 +1414,74 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
+   * Returns true if matching a record pattern among the labels of the given case might have a side
+   * effect: that is, if a record accessor that the pattern invokes, directly or through a nested
+   * record pattern, is not side-effect-free.
+   *
+   * @param n a case node
+   * @return true if matching a record pattern among the labels of {@code n} might have a side
+   *     effect
+   */
+  private boolean recordPatternMightHaveSideEffect(CaseNode n) {
+    for (Tree label : CaseUtils.getLabels(n.getTree())) {
+      if (recordPatternMightHaveSideEffect(label)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if {@code pattern} is a record pattern, and a record accessor that it invokes,
+   * directly or through a nested record pattern, is not side-effect-free.
+   *
+   * @param pattern a case label or a pattern nested within a record pattern
+   * @return true if {@code pattern} is a record pattern whose matching might have a side effect
+   */
+  private boolean recordPatternMightHaveSideEffect(Tree pattern) {
+    if (!TreeUtils.isDeconstructionPatternTree(pattern)) {
+      return false;
+    }
+    TypeElement record = TypesUtils.getTypeElement(TreeUtils.typeOf(pattern));
+    if (record == null) {
+      return true;
+    }
+    for (RecordComponentElement component : record.getRecordComponents()) {
+      ExecutableElement accessor = component.getAccessor();
+      if (accessor == null || !analysis.atypeFactory.isSideEffectFree(accessor)) {
+        return true;
+      }
+    }
+    for (Tree nested : DeconstructionPatternUtils.getNestedPatterns(pattern)) {
+      if (recordPatternMightHaveSideEffect(nested)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Returns true if a transfer function may refine the switch selector expression (the expression
-   * of {@link CaseNode#getSwitchOperand()}) at {@code n}. It may not if the guard of an earlier
-   * case might have changed the abstract value of the selector expression since it was evaluated. A
-   * guard cannot assign a local variable that it does not declare (JLS 14.11.1), but it can assign
-   * a field or change the result of a method call. The synthetic variable to which the selector
-   * expression is assigned may always be refined.
+   * of {@link CaseNode#getSwitchOperand()}) at {@code n}. It may not if other code, such as the
+   * guard of an earlier case or a record accessor that a record pattern invokes, might have changed
+   * the abstract value of the selector expression since it was evaluated (see {@link
+   * CaseNode#isPrecededByOtherCode()}). That code cannot assign a local variable that it does not
+   * declare (JLS 14.11.1), but it can assign a field or change the result of a method call. The
+   * synthetic variable to which the selector expression is assigned may always be refined.
    *
    * @param n a case node
    * @return true if a transfer function may refine the switch selector expression at {@code n}
    */
   protected boolean canRefineSwitchSelector(CaseNode n) {
-    if (!n.isPrecededByGuard()) {
+    if (!n.isPrecededByOtherCode()) {
       return true;
     }
     JavaExpression selector = JavaExpression.fromNode(n.getSwitchOperand().getExpression());
     if (selector.containsOfClass(MethodCall.class)) {
       return false;
     }
-    // This mirrors the unrefinement that CFAbstractStore performs at a side effect.  A guard
-    // cannot assign a local variable that is declared outside it.
+    // This mirrors the unrefinement that CFAbstractStore performs at a side effect.  Neither a
+    // guard nor a record accessor can assign a local variable that is declared outside it.
     return analysis.atypeFactory.sideEffectsUnrefineAliases
         ? !selector.isModifiableByOtherCode()
         : !selector.isAssignableByOtherCode();
