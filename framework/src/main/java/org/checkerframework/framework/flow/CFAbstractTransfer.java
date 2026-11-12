@@ -1399,25 +1399,26 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns true if a transfer function may refine the switch selector expression (the expression
-   * of {@link CaseNode#getSwitchOperand()}) at {@code n}. It may not if the guard of an earlier
-   * case might have changed the abstract value of the selector expression since it was evaluated. A
-   * guard cannot assign a local variable that it does not declare (JLS 14.11.1), but it can assign
-   * a field or change the result of a method call. The synthetic variable to which the selector
-   * expression is assigned may always be refined.
+   * of {@link CaseNode#getSwitchOperand()}) at {@code n}. It may not if other code, such as the
+   * guard of an earlier case or a record accessor that a record pattern invokes, might have changed
+   * the abstract value of the selector expression since it was evaluated (see {@link
+   * CaseNode#isPrecededByOtherCode()}). That code cannot assign a local variable that it does not
+   * declare (JLS 14.11.1), but it can assign a field or change the result of a method call. The
+   * synthetic variable to which the selector expression is assigned may always be refined.
    *
    * @param n a case node
    * @return true if a transfer function may refine the switch selector expression at {@code n}
    */
   protected boolean canRefineSwitchSelector(CaseNode n) {
-    if (!n.isPrecededByGuard()) {
+    if (!n.isPrecededByOtherCode()) {
       return true;
     }
     JavaExpression selector = JavaExpression.fromNode(n.getSwitchOperand().getExpression());
     if (selector.containsOfClass(MethodCall.class)) {
       return false;
     }
-    // This mirrors the unrefinement that CFAbstractStore performs at a side effect.  A guard
-    // cannot assign a local variable that is declared outside it.
+    // This mirrors the unrefinement that CFAbstractStore performs at a side effect.  Neither a
+    // guard nor a record accessor can assign a local variable that is declared outside it.
     return analysis.atypeFactory.sideEffectsUnrefineAliases
         ? !selector.isModifiableByOtherCode()
         : !selector.isAssignableByOtherCode();

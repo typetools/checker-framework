@@ -43,10 +43,11 @@ public class CaseNode extends Node {
   protected final boolean alwaysMatches;
 
   /**
-   * True if the guard of an earlier case is evaluated after the switch selector expression and
-   * before this case. See {@link #isPrecededByGuard()}.
+   * True if code other than the switch selector expression, such as the guard of an earlier case,
+   * is evaluated after the switch selector expression and before this case's labels are tested. See
+   * {@link #isPrecededByOtherCode()}.
    */
-  protected final boolean precededByGuard;
+  protected final boolean precededByOtherCode;
 
   /**
    * Create a new CaseNode.
@@ -57,8 +58,9 @@ public class CaseNode extends Node {
    * @param caseExprs the case expression(s) to match the switch expression against
    * @param alwaysMatches true if the CFG does not test the case expressions; see {@link
    *     #alwaysMatches()}
-   * @param precededByGuard true if the guard of an earlier case is evaluated before this case; see
-   *     {@link #isPrecededByGuard()}
+   * @param precededByOtherCode true if code other than the switch selector expression, such as the
+   *     guard of an earlier case, is evaluated before this case's labels are tested; see {@link
+   *     #isPrecededByOtherCode()}
    * @param types a factory of utility methods for operating on types
    */
   public CaseNode(
@@ -66,14 +68,14 @@ public class CaseNode extends Node {
       AssignmentNode selectorExprAssignment,
       List<Node> caseExprs,
       boolean alwaysMatches,
-      boolean precededByGuard,
+      boolean precededByOtherCode,
       Types types) {
     super(types.getNoType(TypeKind.NONE));
     this.tree = tree;
     this.selectorExprAssignment = selectorExprAssignment;
     this.caseExprs = caseExprs;
     this.alwaysMatches = alwaysMatches;
-    this.precededByGuard = precededByGuard;
+    this.precededByOtherCode = precededByOtherCode;
   }
 
   /**
@@ -108,19 +110,22 @@ public class CaseNode extends Node {
   }
 
   /**
-   * Returns true if the guard of an earlier case is evaluated after the switch selector expression
-   * and before this case.
+   * Returns true if code other than the switch selector expression is evaluated after the switch
+   * selector expression and before this case's labels are tested, or while they are tested. Such
+   * code is the guard of an earlier case, or a record accessor that a record pattern of this case
+   * or an earlier case invokes. (The CFG does not represent the record accessor calls.)
    *
-   * <p>If so, the guard might have changed the value of the switch selector expression (the
-   * expression of {@link #getSwitchOperand()}). For example, the guard might assign a field that is
-   * the selector expression, or might mutate the object that the selector expression evaluates to.
+   * <p>If so, that code might have changed the value of the switch selector expression (the
+   * expression of {@link #getSwitchOperand()}). For example, it might assign a field that is the
+   * selector expression, or might mutate the object that the selector expression evaluates to.
    * Then, a fact about the value that was tested against the case expressions need not hold for the
    * selector expression. It does hold for the synthetic variable to which that value is assigned.
    *
-   * @return true if the guard of an earlier case is evaluated before this case
+   * @return true if code other than the switch selector expression is evaluated before this case's
+   *     labels are tested, or while they are tested
    */
-  public boolean isPrecededByGuard() {
-    return precededByGuard;
+  public boolean isPrecededByOtherCode() {
+    return precededByOtherCode;
   }
 
   @Override
@@ -146,12 +151,12 @@ public class CaseNode extends Node {
     return getSwitchOperand().equals(other.getSwitchOperand())
         && getCaseOperands().equals(other.getCaseOperands())
         && alwaysMatches == other.alwaysMatches
-        && precededByGuard == other.precededByGuard;
+        && precededByOtherCode == other.precededByOtherCode;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getSwitchOperand(), getCaseOperands(), alwaysMatches, precededByGuard);
+    return Objects.hash(getSwitchOperand(), getCaseOperands(), alwaysMatches, precededByOtherCode);
   }
 
   @Override

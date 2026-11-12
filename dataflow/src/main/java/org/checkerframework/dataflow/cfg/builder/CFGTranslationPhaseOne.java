@@ -2116,8 +2116,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private final ExpressionTree selectorExprTree;
 
-    /** True if the CFG built so far evaluates the guard of some case of {@link #switchTree}. */
-    private boolean guardEvaluated = false;
+    /**
+     * True if the CFG built so far evaluates code other than the selector expression: the guard of
+     * some case of {@link #switchTree}, or a record accessor that a record pattern invokes.
+     */
+    private boolean otherCodeEvaluated = false;
 
     /** The labels for the case bodies. */
     private final Label[] caseBodyLabels;
@@ -2328,6 +2331,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ArrayList<Node> exprs = new ArrayList<>();
         for (Tree exprTree : CaseUtils.getLabels(caseTree)) {
           exprs.add(scan(exprTree, null));
+          if (TreeUtils.isDeconstructionPatternTree(exprTree)) {
+            // Matching a record pattern invokes record accessors, which might have side effects,
+            // even if the match fails.  (Nested record patterns occur only within a record
+            // pattern.)
+            otherCodeEvaluated = true;
+          }
         }
 
         // If true, the labels are not tested.
@@ -2338,7 +2347,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 selectorExprAssignment,
                 exprs,
                 alwaysMatches,
-                guardEvaluated,
+                otherCodeEvaluated,
                 env.getTypeUtils()));
         if (!alwaysMatches) {
           Label labelsMatchLabel = new Label();
@@ -2350,7 +2359,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
-          guardEvaluated = true;
+          otherCodeEvaluated = true;
           if (!isLastCaseOfExhaustive) {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
           } else {
