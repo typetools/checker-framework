@@ -543,6 +543,39 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * In package {@code p}, the name {@code q.Outer} does not refer to a type in subpackage {@code
+   * p.q}, even if the stub file declares one.
+   */
+  @Test
+  public void testStubFileSubpackageIsNotInCurrentPackage() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass {",
+            "  void myMethod(q.Outer o) {}",
+            "}",
+            "package p.q;",
+            "class Outer {}",
+            "package q;",
+            "class Outer {}");
+    assertMethod(jaif, "MyClass", "myMethod(Lq/Outer;)V");
+  }
+
+  /** A type that the stub file declares in {@code java.lang} is implicitly imported. */
+  @Test
+  public void testStubFileJavaLangTypeIsImplicitlyImported() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass {",
+            "  void myMethod(StubOnlyType t) {}",
+            "}",
+            "package java.lang;",
+            "public class StubOnlyType {}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/lang/StubOnlyType;)V");
+  }
+
+  /**
    * A type that the stub file declares is qualified by the stub file's package, even where it is
    * used before its declaration.
    */

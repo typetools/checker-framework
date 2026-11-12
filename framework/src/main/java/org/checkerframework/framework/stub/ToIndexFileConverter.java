@@ -930,6 +930,36 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
+   * If the stub file declares, in package {@code pkg}, the type that {@code relativeName} names,
+   * returns that type's binary name; otherwise returns null. Unlike {@code declaredInStubFile(cu,
+   * pkg + "." + relativeName)}, this does not consider subpackages of {@code pkg}: the first
+   * identifier of {@code relativeName} names a top-level type of {@code pkg}.
+   *
+   * @param cu the stub file's compilation unit that is being converted
+   * @param pkg a package name
+   * @param relativeName a type name relative to {@code pkg}, in which a {@code .} separates a
+   *     nested class from its enclosing class
+   * @return the binary name of the type, or null if the stub file does not declare it in {@code
+   *     pkg}
+   */
+  private @Nullable String declaredInPackage(CompilationUnit cu, String pkg, String relativeName) {
+    List<CompilationUnit> units = new ArrayList<>(compilationUnits.size() + 1);
+    units.add(cu);
+    units.addAll(compilationUnits);
+    for (CompilationUnit unit : units) {
+      String unitPkg =
+          unit.getPackageDeclaration().map(PackageDeclaration::getNameAsString).orElse(null);
+      if (pkg.equals(unitPkg)) {
+        Node declaration = scopedStubDeclaration(unit, relativeName);
+        if (declaration instanceof TypeDeclaration<?> typeDecl) {
+          return qualifiedStubBinaryName(typeDecl);
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
    * If {@code cu} declares the type whose fully qualified name is {@code fqName}, returns that
    * type's binary name; otherwise returns null.
    *
@@ -1168,10 +1198,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
     if (pkgName != null) {
       // The first identifier of `className` names a type in the current package, not a
-      // subpackage, so every later identifier names a member type.
-      String qualifiedName = pkgName + "." + className;
+      // subpackage, so every later identifier names a member type.  Therefore, search only the
+      // stub file's declarations in the current package itself.
       @SuppressWarnings("signature") // the stub file's declarations determine the binary name
-      @BinaryName String declared = (cu == null) ? null : declaredInStubFile(cu, qualifiedName);
+      @BinaryName String declared = (cu == null) ? null : declaredInPackage(cu, pkgName, className);
       if (declared != null) {
         return declared;
       }
@@ -1198,7 +1228,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     {
       // Every Java program implicitly does "import java.lang.*",
       // so see whether this class is in that package.
-      String binaryName = loadClassBinaryName("java.lang." + className);
+      String binaryName = classBinaryName("java.lang." + className, cu);
       // As for any import on demand, the first identifier of `className` names a type, not a
       // subpackage of java.lang.
       if (binaryName != null && binaryName.lastIndexOf('.') == "java.lang".length()) {
