@@ -35,6 +35,18 @@ public class BoxedBinaryOperands {
     return c >> 2L;
   }
 
+  // A left shift can set the sign bit of the promoted int, as in '耀' << 16, so its result is
+  // not @SignedPositive.
+  @SignedPositive int primitiveCharLeftShift(char c) {
+    // :: error: [return]
+    return c << 16;
+  }
+
+  @SignedPositive int boxedCharLeftShift(Character c) {
+    // :: error: [return]
+    return c << 16;
+  }
+
   // An equality test of a boxed operand and a primitive operand unboxes the boxed operand.
   boolean numericEquality(Character c, int i) {
     return c == i;
