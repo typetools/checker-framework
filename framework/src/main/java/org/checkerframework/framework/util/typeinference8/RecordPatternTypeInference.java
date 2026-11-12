@@ -177,10 +177,8 @@ public class RecordPatternTypeInference {
     // captured type variables by the inference variables beta1, ..., betak.
     List<AnnotatedDeclaredType> capturedTypes = new ArrayList<>();
     addCapturedParameterizedTypes(matchedType, capturedTypes);
-    for (AnnotatedDeclaredType capturedType : capturedTypes) {
-      context.inferenceTypeFactory.addVariablesForCapturedTypeArguments(
-          deconstructor, capturedType, map);
-    }
+    context.inferenceTypeFactory.addVariablesForCapturedTypeArguments(
+        deconstructor, capturedTypes, map);
     BoundSet boundSet = BoundSet.initialBounds(map, context);
 
     // Step 4: reduce <T' = R'>, where R' is the supertype of R<alpha1, ..., alphan> that is a
