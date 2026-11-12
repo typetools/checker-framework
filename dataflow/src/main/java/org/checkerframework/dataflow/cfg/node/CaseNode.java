@@ -44,12 +44,6 @@ public class CaseNode extends Node {
   protected final boolean alwaysMatches;
 
   /**
-   * True if the guard of an earlier case is evaluated after the switch selector expression and
-   * before this case. See {@link #isPrecededByGuard()}.
-   */
-  protected final boolean precededByGuard;
-
-  /**
    * Create a new CaseNode.
    *
    * @param tree the tree for this node
@@ -58,8 +52,6 @@ public class CaseNode extends Node {
    * @param caseExprs the case expression(s) to match the switch expression against
    * @param alwaysMatches true if the CFG does not test the case expressions; see {@link
    *     #alwaysMatches()}
-   * @param precededByGuard true if the guard of an earlier case is evaluated before this case; see
-   *     {@link #isPrecededByGuard()}
    * @param types a factory of utility methods for operating on types
    */
   public CaseNode(
@@ -67,14 +59,12 @@ public class CaseNode extends Node {
       AssignmentNode selectorExprAssignment,
       List<Node> caseExprs,
       boolean alwaysMatches,
-      boolean precededByGuard,
       Types types) {
     super(types.getNoType(TypeKind.NONE));
     this.tree = tree;
     this.selectorExprAssignment = selectorExprAssignment;
     this.caseExprs = caseExprs;
     this.alwaysMatches = alwaysMatches;
-    this.precededByGuard = precededByGuard;
   }
 
   /**
@@ -113,22 +103,6 @@ public class CaseNode extends Node {
     return alwaysMatches;
   }
 
-  /**
-   * Returns true if the guard of an earlier case is evaluated after the switch selector expression
-   * and before this case.
-   *
-   * <p>If so, the guard might have changed the value of the switch selector expression (the
-   * expression of {@link #getSwitchOperand()}). For example, the guard might assign a field that is
-   * the selector expression, or might mutate the object that the selector expression evaluates to.
-   * Then, a fact about the value that was tested against the case expressions need not hold for the
-   * selector expression. It does hold for the synthetic variable to which that value is assigned.
-   *
-   * @return true if the guard of an earlier case is evaluated before this case
-   */
-  public boolean isPrecededByGuard() {
-    return precededByGuard;
-  }
-
   @Override
   public CaseTree getTree() {
     return tree;
@@ -151,13 +125,12 @@ public class CaseNode extends Node {
     }
     return getSwitchOperand().equals(other.getSwitchOperand())
         && getCaseOperands().equals(other.getCaseOperands())
-        && alwaysMatches == other.alwaysMatches
-        && precededByGuard == other.precededByGuard;
+        && alwaysMatches == other.alwaysMatches;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getSwitchOperand(), getCaseOperands(), alwaysMatches, precededByGuard);
+    return Objects.hash(getSwitchOperand(), getCaseOperands(), alwaysMatches);
   }
 
   @Override
