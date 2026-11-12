@@ -344,8 +344,9 @@ public class QualifierDefaults {
       prevset = new DefaultSet();
       elementDeclaredDefaults.put(elem, prevset);
     }
-    prevset.add(new Default(anno, location));
-    defaultsAtCache.clear();
+    if (prevset.add(new Default(anno, location))) {
+      defaultsAtCache.clear();
+    }
   }
 
   /**
@@ -656,54 +657,37 @@ public class QualifierDefaults {
       return cached;
     }
 
-    DefaultSet qualifiers = null;
+    DefaultSet qualifiers = new DefaultSet();
 
-    {
-      AnnotationMirror dqAnno = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.class);
+    AnnotationMirror dqAnno = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.class);
+    if (dqAnno != null) {
+      Set<Default> p = fromDefaultQualifier(dqAnno);
+      if (p != null) {
+        qualifiers.addAll(p);
+      }
+    }
 
-      if (dqAnno != null) {
-        qualifiers = new DefaultSet();
-        Set<Default> p = fromDefaultQualifier(dqAnno);
-
+    AnnotationMirror dqListAnno = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.List.class);
+    if (dqListAnno != null) {
+      List<AnnotationMirror> values =
+          AnnotationUtils.getElementValueArray(
+              dqListAnno, defaultQualifierListValueElement, AnnotationMirror.class);
+      for (AnnotationMirror listDqAnno : values) {
+        Set<Default> p = fromDefaultQualifier(listDqAnno);
         if (p != null) {
           qualifiers.addAll(p);
         }
       }
     }
 
-    {
-      AnnotationMirror dqListAnno =
-          atypeFactory.getDeclAnnotation(elt, DefaultQualifier.List.class);
-      if (dqListAnno != null) {
-        if (qualifiers == null) {
-          qualifiers = new DefaultSet();
-        }
-
-        List<AnnotationMirror> values =
-            AnnotationUtils.getElementValueArray(
-                dqListAnno, defaultQualifierListValueElement, AnnotationMirror.class);
-        for (AnnotationMirror dqAnno : values) {
-          Set<Default> p = fromDefaultQualifier(dqAnno);
-          if (p != null) {
-            qualifiers.addAll(p);
-          }
-        }
-      }
-    }
-
-    {
-      DefaultSet elementDefaults = elementDeclaredDefaults.get(elt);
-      if (elementDefaults != null) {
-        if (qualifiers == null) {
-          qualifiers = new DefaultSet();
-        }
-        // A @DefaultQualifier on elt takes precedence over a conflicting registered default.  The
-        // registered defaults never conflict with one another, so checking each one against the
-        // previously added registered defaults too does not change the result.
-        for (Default def : elementDefaults) {
-          if (!conflictsWithExistingDefaults(qualifiers, def.anno, def.location)) {
-            qualifiers.add(def);
-          }
+    DefaultSet elementDefaults = elementDeclaredDefaults.get(elt);
+    if (elementDefaults != null) {
+      // A @DefaultQualifier on elt takes precedence over a conflicting registered default.  The
+      // registered defaults never conflict with one another, so checking each one against the
+      // previously added registered defaults too does not change the result.
+      for (Default def : elementDefaults) {
+        if (!conflictsWithExistingDefaults(qualifiers, def.anno, def.location)) {
+          qualifiers.add(def);
         }
       }
     }
@@ -716,13 +700,13 @@ public class QualifierDefaults {
     }
 
     DefaultSet parentDefaults = defaultsAt(parent);
-    if (qualifiers == null || qualifiers.isEmpty()) {
+    if (qualifiers.isEmpty()) {
       qualifiers = parentDefaults;
     } else {
       qualifiers.addAll(parentDefaults);
     }
 
-    if (qualifiers != null && !qualifiers.isEmpty()) {
+    if (!qualifiers.isEmpty()) {
       defaultsAtCache.put(elt, qualifiers);
       return qualifiers;
     } else {
