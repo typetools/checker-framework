@@ -211,19 +211,11 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
     if (intLiteral == 0) {
       if (atypeFactory.areSameByClass(otherAnno, NonNegative.class)) {
-        List<Node> internals = splitAssignments(otherNode);
-        for (Node internal : internals) {
-          JavaExpression je = JavaExpression.fromNode(internal);
-          store.insertValue(je, POS);
-        }
+        insertValueForComparedNode(store, otherNode, POS);
       }
     } else if (intLiteral == -1) {
       if (atypeFactory.areSameByClass(otherAnno, GTENegativeOne.class)) {
-        List<Node> internals = splitAssignments(otherNode);
-        for (Node internal : internals) {
-          JavaExpression je = JavaExpression.fromNode(internal);
-          store.insertValue(je, NN);
-        }
+        insertValueForComparedNode(store, otherNode, NN);
       }
     }
   }
@@ -275,7 +267,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     if (atypeFactory
         .getLessThanAnnotatedTypeFactory()
         .isLessThanOrEqual(leftNode.getTree(), otherJe.toString())) {
-      store.insertValue(otherJe, POS);
+      insertValueForComparedNode(store, otherNode, POS);
     }
   }
 
@@ -309,9 +301,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     } else {
       return;
     }
-    for (Node internal : splitAssignments(left)) {
-      store.insertValue(JavaExpression.fromNode(internal), newLBType);
-    }
+    insertValueForComparedNode(store, left, newLBType);
   }
 
   /**
@@ -340,9 +330,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
             .getQualifierHierarchy()
             .greatestLowerBoundShallow(rightAnno, left.getType(), leftAnno, right.getType());
 
-    for (Node internal : splitAssignments(left)) {
-      store.insertValue(JavaExpression.fromNode(internal), newLBType);
-    }
+    insertValueForComparedNode(store, left, newLBType);
   }
 
   /**

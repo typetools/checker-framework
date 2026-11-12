@@ -2,19 +2,16 @@ package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.SwitchExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
@@ -28,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -98,7 +94,6 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.NodeUtils;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityKind;
-import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis.FieldInitialValue;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -120,6 +115,7 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.PatternCaseLabelUtils;
 import org.checkerframework.javacutil.TypeKindUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The default analysis transfer function for the Checker Framework. It propagates information
@@ -152,6 +148,9 @@ public abstract class CFAbstractTransfer<
   /** Indicates that the whole-program inference is on. */
   private final boolean infer;
 
+  /** The method {@code Object.toString()}, which a string conversion calls. */
+  private final ExecutableElement objectToString;
+
   /**
    * Create a CFAbstractTransfer.
    *
@@ -176,6 +175,7 @@ public abstract class CFAbstractTransfer<
     this.sequentialSemantics =
         !(forceConcurrentSemantics || analysis.checker.hasOption("concurrentSemantics"));
     this.infer = analysis.checker.hasOption("infer");
+    this.objectToString = TreeUtils.getMethod("java.lang.Object", "toString", 0, analysis.getEnv());
   }
 
   /**
@@ -932,9 +932,9 @@ public abstract class CFAbstractTransfer<
    *
    * <p>Note that when overriding this method, when a new type is inserted into the store, {@link
    * #splitAssignments} should be called, and the new type should be inserted into the store for
-   * each of the resulting nodes. The result of {@link #splitAssignments} omits each side of an
-   * assignment that might not have the assignment's value; do not insert the new type for such a
-   * side.
+   * each of the resulting nodes. The result of {@link #splitAssignments} omits each node that might
+   * not have the value of {@code secondNode} when the comparison completes; do not insert the new
+   * type for such a node.
    *
    * @param firstNode the node that might be more precise
    * @param secondNode the node whose type to possibly refine
@@ -981,19 +981,36 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Takes a node, and either returns the node itself again (as a singleton list), or if the node is
-   * an assignment node, returns the sides of the assignment that have the assignment's value after
-   * it executes. The sides are the lhs and rhs, where splitAssignments is applied recursively to
-   * the rhs -- that is, it is possible that the rhs does not appear in the result, but rather its
-   * lhs and rhs do.
+   * an assignment node, returns the sides of the assignment. The sides are the lhs and rhs, where
+   * splitAssignments is applied recursively to the rhs -- that is, it is possible that the rhs does
+   * not appear in the result, but rather its lhs and rhs do.
    *
-   * <p>The result omits each side that a store can hold a value for (see {@link
-   * CFAbstractStore#canInsertJavaExpression}) and that, after the assignment, might have a
-   * different value than the assignment. For example, the result for {@code n = n.next} is just
-   * {@code n}, because after the assignment {@code n.next} is a field of a different object. The
-   * same holds for an assignment, compound assignment, increment, or decrement nested anywhere
-   * within {@code node}: the result for {@code n.next = (n = o).other} omits {@code n.next}. Only
-   * an assignment that executes after a side is evaluated matters: the result for {@code a[i = 0] =
-   * b[i]} includes {@code b[i]}, because {@code i} is assigned before {@code b[i]} is evaluated.
+   * <p>{@code node} is an operand of a comparison, such as {@code ==} or {@code <}, and the caller
+   * refines each node in the result according to the outcome of the comparison. Therefore, the
+   * result omits each node that a store can hold a value for (see {@link
+   * CFAbstractStore#canInsertJavaExpression}) and that, when the comparison completes, might have a
+   * different value than {@code node} had when it was evaluated. A node's value can change when
+   * code that is evaluated after the node writes a variable, field, or array element that the node
+   * reads. That code is the rest of the assignment, and the code in the enclosing expressions that
+   * is evaluated after {@code node} and before the comparison completes, such as the right operand
+   * of the comparison if {@code node} is in its left operand. For example:
+   *
+   * <ul>
+   *   <li>The result for {@code n = n.next} is just {@code n}, because after the assignment {@code
+   *       n.next} is a field of a different object. Likewise, the result for {@code n.next = (n =
+   *       o).other} omits {@code n.next}.
+   *   <li>The result for the left operand of {@code n.next == (n = o)} is empty.
+   *   <li>The result for {@code a[i = 0] = b[i]} contains {@code b[i]}, because {@code i = 0} is
+   *       evaluated before {@code b[i]}.
+   * </ul>
+   *
+   * A method call, object creation, or string conversion (which calls {@code toString()}) might
+   * write any field or array element, unless the method or constructor is side-effect-free (see
+   * {@link CFAbstractAnalysis#isSideEffectFree}). The result omits a field that such a call might
+   * write even when the store would keep the field's refinement across the call, as it does for a
+   * refinement to the target of a monotonic qualifier (see {@link
+   * org.checkerframework.framework.qual.MonotonicQualifier}): whether the store keeps a refinement
+   * depends on the refined value, which this method does not know.
    *
    * <p>A node that is neither an assignment nor a value-preserving cast is returned even if it
    * contains an assignment, as in {@code x + (x = 1)}. {@link JavaExpression#fromNode} converts
@@ -1008,244 +1025,137 @@ public abstract class CFAbstractTransfer<
    * #isValuePreservingConversion}), such as the binary numeric promotion of {@code (int) s} in
    * {@code (int) s == 5L}, is looked through.
    *
-   * <p>Some expressions are evaluated after {@code node}, but before the result of the enclosing
-   * expression is known: the right operand of a binary operation whose left operand is {@code
-   * node}, the arguments of a method invocation or constructor invocation that follow {@code node}
-   * (or all of them, if {@code node} is the receiver or enclosing expression), and the index of an
-   * array access whose array is {@code node}. The result omits each part whose value an assignment
-   * in such a later expression might change. For example, the result for the left operand of {@code
-   * x == nonNull(x = null)} is empty, because the comparison says nothing about the value of {@code
-   * x} after the assignment. If such a later expression calls a method or constructor that is not
-   * side-effect-free, then the result also omits each part that other code can assign, such as a
-   * field: the result for the left operand of {@code f == clearF()} is empty if {@code f} is a
-   * non-final field.
+   * <p>Clients must not modify the result, which is cached.
    *
    * @param node possibly an assignment node or a cast
    * @return a list containing the right- and left-hand sides in the given assignment node that have
-   *     the value of the assignment after it executes; it contains just the node itself if it is
-   *     neither an assignment nor a value-preserving cast
+   *     the value of the assignment when the comparison completes; if {@code node} is neither an
+   *     assignment nor a value-preserving cast, a list containing just {@code node}, or an empty
+   *     list if {@code node} might have a different value when the comparison completes
    */
-  @SideEffectFree
   protected List<Node> splitAssignments(Node node) {
-    List<Node> result = new ArrayList<>();
-    Node unwrapped = node;
-    while (unwrapped instanceof WideningConversionNode widening
-        && isValuePreservingConversion(widening)) {
-      unwrapped = widening.getOperand();
-    }
-    Tree tree;
-    if (unwrapped instanceof AssignmentNode assignment) {
-      tree = assignment.getTree();
-    } else if (unwrapped instanceof TypeCastNode cast && isValuePreservingCast(cast)) {
-      tree = cast.getTree();
-    } else {
-      tree = null;
-    }
-
-    if (tree == null) {
-      result.add(node);
-    } else {
-      // The assignments and value-preserving casts whose value is the value of `node`, outermost
-      // first.
-      List<Node> chain = new ArrayList<>();
-      Node part = unwrapped;
-      while (true) {
-        if (part instanceof AssignmentNode a) {
-          chain.add(a);
-          part = a.getExpression();
-        } else if (part instanceof TypeCastNode cast && isValuePreservingCast(cast)) {
-          chain.add(cast);
-          part = cast.getOperand();
-        } else if (part instanceof WideningConversionNode widening
-            && isValuePreservingConversion(widening)) {
-          // JavaExpression.fromNode ignores a widening conversion, so do not add it to the result.
-          part = widening.getOperand();
-        } else {
-          break;
-        }
-      }
-      boolean allSimple = true;
-      for (Node n : chain) {
-        if (n instanceof AssignmentNode a && !(a.getTree() instanceof AssignmentTree)) {
-          allSimple = false;
-        }
-      }
-      AssignmentTargetScanner scanner = new AssignmentTargetScanner();
-      if (!allSimple) {
-        // A compound assignment, increment, or decrement.  Conservatively consider every
-        // assignment within the tree as executing after every part is evaluated.
-        scanner.scan(tree, null);
-        List<JavaExpression> targets = scanner.targets;
-        for (Node n : chain) {
-          result.add(n instanceof AssignmentNode a ? a.getTarget() : n);
-        }
-        result.add(part);
-        result.removeIf(p -> mayBeChangedByAssignment(JavaExpression.fromNode(p), targets, true));
-      } else {
-        // Java evaluates the receivers and indices of the targets from left to right, then the
-        // final right-hand side, then stores into the targets from right to left.  So an
-        // assignment within a target's receiver or index executes before the later targets and
-        // the right-hand side are evaluated, and does not change their values.  A cast evaluates
-        // nothing but its operand.
-        // `laterTargets` holds the assignments that execute after the current part is evaluated.
-        List<JavaExpression> laterTargets = scanner.targets;
-        for (Node n : chain) {
-          if (n.getTree() instanceof AssignmentTree at) {
-            laterTargets.add(AssignmentTargetScanner.targetExpression(at.getVariable()));
-          }
-        }
-        Node innermost = chain.get(chain.size() - 1);
-        ExpressionTree rhsTree =
-            innermost.getTree() instanceof AssignmentTree at
-                ? at.getExpression()
-                : ((TypeCastNode) innermost).getTree().getExpression();
-        scanner.scan(rhsTree, null);
-        if (!mayBeChangedByAssignment(JavaExpression.fromNode(part), laterTargets, true)) {
-          result.add(part);
-        }
-        for (int i = chain.size() - 1; i >= 0; i--) {
-          Node n = chain.get(i);
-          Node element;
-          if (n instanceof AssignmentNode a && a.getTree() instanceof AssignmentTree at) {
-            // An assignment within the target's own receiver or index might execute after part of
-            // the target is evaluated, as in `a[i++] = o`, so consider it too.
-            scanner.scan(at.getVariable(), null);
-            element = a.getTarget();
-          } else {
-            element = n;
-          }
-          if (!mayBeChangedByAssignment(JavaExpression.fromNode(element), laterTargets, true)) {
-            result.add(0, element);
-          }
-        }
-      }
-    }
-
-    AssignmentTargetScanner later = scanLaterOperands(node);
-    if (later != null) {
-      List<JavaExpression> laterTargets = later.targets;
-      if (!laterTargets.isEmpty()) {
-        result.removeIf(
-            p -> mayBeChangedByAssignment(JavaExpression.fromNode(p), laterTargets, false));
-      }
-      if (later.callsMethodWithSideEffects) {
-        // A method or constructor call might change any part that other code can assign, such as
-        // a field or an array element, but not a local variable.
-        result.removeIf(
-            p -> {
-              JavaExpression expr = JavaExpression.fromNode(p);
-              return CFAbstractStore.canInsertJavaExpression(expr)
-                  && expr.isAssignableByOtherCode();
-            });
-      }
+    List<Node> result = analysis.splitAssignmentsCache.get(node);
+    if (result == null) {
+      result = Collections.unmodifiableList(computeSplitAssignments(node));
+      analysis.splitAssignmentsCache.put(node, result);
     }
     return result;
   }
 
   /**
-   * Returns true if a call to the given method or constructor has no side effects, or is assumed to
-   * have none (see the {@code -AassumeSideEffectFree}, {@code -AassumePure}, and {@code
-   * -AassumePureGetters} command-line options).
+   * Returns the result of {@link #splitAssignments}, without using the cache.
    *
-   * @param method a method or constructor
-   * @return true if a call to {@code method} is treated as having no side effects
+   * @param node possibly an assignment node
+   * @return the result of {@link #splitAssignments} for {@code node}
    */
-  private boolean isSideEffectFree(ExecutableElement method) {
-    return analysis.checker.hasOption("assumeSideEffectFree")
-        || analysis.checker.hasOption("assumePure")
-        || (analysis.checker.hasOption("assumePureGetters") && ElementUtils.isGetter(method))
-        || analysis.atypeFactory.isSideEffectFree(method)
-        || PurityUtils.isSideEffectFree(analysis.atypeFactory, method);
+  private List<Node> computeSplitAssignments(Node node) {
+    Node unwrapped = node;
+    while (unwrapped instanceof WideningConversionNode widening
+        && isValuePreservingConversion(widening)) {
+      unwrapped = widening.getOperand();
+    }
+    List<Node> sides =
+        unwrapped instanceof AssignmentNode
+                || (unwrapped instanceof TypeCastNode cast && isValuePreservingCast(cast))
+            ? sidesOfAssignment(unwrapped)
+            : Collections.singletonList(node);
+    // Find the later writes only if a side might be omitted because of them, because finding them
+    // requires the path to the tree of `node`, which can be costly to compute.
+    Writes laterWrites = null;
+    List<Node> result = new ArrayList<>(sides.size());
+    for (Node side : sides) {
+      JavaExpression expr = JavaExpression.fromNode(side);
+      if (CFAbstractStore.canInsertJavaExpression(expr)) {
+        if (laterWrites == null) {
+          laterWrites = laterWrites(node);
+        }
+        if (laterWrites.mayChange(expr, false)) {
+          continue;
+        }
+      }
+      result.add(side);
+    }
+    return result;
   }
 
   /**
-   * Scans the expressions that are evaluated after {@code node}, but before the result of the
-   * expression that encloses {@code node} is known: the right operand of a binary operation whose
-   * left operand is {@code node}; the later arguments of a method invocation or constructor
-   * invocation whose argument is {@code node}; all the arguments of a method invocation whose
-   * receiver is {@code node} or of a constructor invocation whose enclosing expression is {@code
-   * node}; or the index of an array access whose array is {@code node}. Their assignments and calls
-   * might change the value of {@code node}'s parts.
+   * Returns the sides of the given assignment or value-preserving cast that have its value when it
+   * completes. The sides are the targets of the chain of assignments and value-preserving casts
+   * that starts with {@code assignment}, such as {@code a} and {@code b} in {@code a = b = c}; each
+   * value-preserving cast in the chain; and the operand of the last assignment or cast in the
+   * chain, such as {@code c}. The chain looks through value-preserving widening conversions. The
+   * result omits each side that a store can hold a value for and that the rest of the assignment
+   * might change.
    *
-   * @param node a node
-   * @return a scanner that has scanned the expressions that are evaluated after {@code node}, or
-   *     null if there are none
+   * @param assignment an assignment node or a value-preserving cast
+   * @return the sides of {@code assignment} that have its value when it completes, in source order
    */
-  @SuppressWarnings("interning:not.interned") // comparing AST nodes
-  private @Nullable AssignmentTargetScanner scanLaterOperands(Node node) {
-    Tree tree = node.getTree();
-    if (tree == null) {
-      return null;
-    }
-    TreePath path = analysis.atypeFactory.getPath(tree);
-    if (path == null) {
-      return null;
-    }
-    Tree child = path.getLeaf();
-    TreePath parentPath = path.getParentPath();
-    while (parentPath != null && parentPath.getLeaf() instanceof ParenthesizedTree) {
-      child = parentPath.getLeaf();
-      parentPath = parentPath.getParentPath();
-    }
-    if (parentPath == null) {
-      return null;
-    }
-    Tree parent = parentPath.getLeaf();
-
-    List<? extends Tree> laterTrees;
-    if (parent instanceof BinaryTree binary) {
-      laterTrees =
-          binary.getLeftOperand() == child
-              ? Collections.singletonList(binary.getRightOperand())
-              : Collections.emptyList();
-    } else if (parent instanceof ArrayAccessTree arrayAccess) {
-      laterTrees =
-          arrayAccess.getExpression() == child
-              ? Collections.singletonList(arrayAccess.getIndex())
-              : Collections.emptyList();
-    } else if (parent instanceof MethodInvocationTree invocation) {
-      laterTrees = argumentsAfter(invocation.getArguments(), child);
-    } else if (parent instanceof NewClassTree newClass) {
-      laterTrees =
-          newClass.getEnclosingExpression() == child
-              ? newClass.getArguments()
-              : argumentsAfter(newClass.getArguments(), child);
-    } else if (parent instanceof MemberSelectTree memberSelect
-        && memberSelect.getExpression() == child
-        && parentPath.getParentPath() != null
-        && parentPath.getParentPath().getLeaf() instanceof MethodInvocationTree invocation
-        && invocation.getMethodSelect() == memberSelect) {
-      // `child` is the receiver of a method invocation.
-      laterTrees = invocation.getArguments();
-    } else {
-      laterTrees = Collections.emptyList();
-    }
-
-    if (laterTrees.isEmpty()) {
-      return null;
-    }
-    AssignmentTargetScanner scanner = new AssignmentTargetScanner(this::isSideEffectFree);
-    scanner.scan(laterTrees, null);
-    return scanner;
-  }
-
-  /**
-   * Returns the arguments that follow {@code arg}, or the empty list if {@code arg} is not one of
-   * the arguments.
-   *
-   * @param args the arguments of a method invocation or constructor invocation
-   * @param arg a tree
-   * @return the arguments that follow {@code arg}
-   */
-  @SuppressWarnings("interning:not.interned") // comparing AST nodes
-  private static List<? extends ExpressionTree> argumentsAfter(
-      List<? extends ExpressionTree> args, Tree arg) {
-    for (int i = 0; i < args.size(); i++) {
-      if (args.get(i) == arg) {
-        return args.subList(i + 1, args.size());
+  private List<Node> sidesOfAssignment(Node assignment) {
+    // The assignments and value-preserving casts whose value is the value of `assignment`,
+    // outermost first.
+    List<Node> chain = new ArrayList<>();
+    Node rhs = assignment;
+    while (true) {
+      if (rhs instanceof AssignmentNode a) {
+        chain.add(a);
+        rhs = a.getExpression();
+      } else if (rhs instanceof TypeCastNode cast && isValuePreservingCast(cast)) {
+        chain.add(cast);
+        rhs = cast.getOperand();
+      } else if (rhs instanceof WideningConversionNode widening
+          && isValuePreservingConversion(widening)) {
+        // JavaExpression.fromNode ignores a widening conversion, so do not add it to the result.
+        rhs = widening.getOperand();
+      } else {
+        break;
       }
     }
-    return Collections.emptyList();
+
+    // Javac evaluates the receivers and indices of the targets from left to right, then the rhs,
+    // and then it stores into the targets from right to left. A cast evaluates nothing but its
+    // operand. Visit the sides in reverse order of evaluation, so that `writes` contains the
+    // writes that happen after the side is evaluated.
+    Writes writes = new Writes();
+    for (Node n : chain) {
+      if (n instanceof AssignmentNode a) {
+        writes.add(JavaExpression.fromNode(a.getTarget()));
+      }
+    }
+    Node innermost = chain.get(chain.size() - 1);
+    ExpressionTree rhsTree =
+        innermost instanceof AssignmentNode a
+            ? rhsTree(a)
+            : ((TypeCastNode) innermost).getTree().getExpression();
+    if (rhsTree != null) {
+      writes.scan(rhsTree, null);
+    }
+    Node[] sides = new Node[chain.size() + 1];
+    int numKept = 0;
+    if (!mayBeChanged(rhs, writes)) {
+      sides[chain.size()] = rhs;
+      numKept++;
+    }
+    for (int i = chain.size() - 1; i >= 0; i--) {
+      Node side;
+      if (chain.get(i) instanceof AssignmentNode a) {
+        side = a.getTarget();
+        writes.scan(side.getTree(), null);
+      } else {
+        side = chain.get(i);
+      }
+      if (!mayBeChanged(side, writes)) {
+        sides[i] = side;
+        numKept++;
+      }
+    }
+
+    List<Node> result = new ArrayList<>(numKept);
+    for (Node side : sides) {
+      if (side != null) {
+        result.add(side);
+      }
+    }
+    return result;
   }
 
   /**
@@ -1303,102 +1213,302 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Collects the variables that a tree assigns: the left-hand sides of its assignments and compound
-   * assignments, and the operands of its increments and decrements. It does not descend into
-   * annotations, lambda bodies, method bodies, or named class declarations, which do not execute
-   * when the tree is evaluated. (Javac represents an annotation argument as an assignment, as in
-   * {@code @IntVal(value = {0, 1})}, but it does not assign a variable.) It does descend into the
-   * initializer blocks and field initializers of an anonymous class body, which execute when the
-   * enclosing {@code new} expression is evaluated.
+   * Returns true if a store can hold a value for the given side of an assignment, and the side
+   * might be changed by the given writes.
    *
-   * <p>If constructed with a side-effect-freedom predicate, it also records whether the tree calls
-   * a method or constructor that is not side-effect-free.
+   * @param side a side of an assignment
+   * @param writes the writes that happen after {@code side} is evaluated and before the assignment
+   *     stores into its targets; they do not change the location that {@code side} denotes, because
+   *     the assignment stores the value of {@code side} into that location or reads it afterward
+   * @return true if a store can hold a value for {@code side} and the writes might change its value
    */
-  private static class AssignmentTargetScanner extends TreeScanner<Void, Void> {
+  private boolean mayBeChanged(Node side, Writes writes) {
+    JavaExpression expr = JavaExpression.fromNode(side);
+    return CFAbstractStore.canInsertJavaExpression(expr) && writes.mayChange(expr, true);
+  }
+
+  /**
+   * Returns the tree for the value that the given assignment node assigns: the rhs of an assignment
+   * or compound assignment, or the initializer of a variable declaration. Returns null for an
+   * increment or decrement.
+   *
+   * @param assignment an assignment node
+   * @return the tree for the value that {@code assignment} assigns, or null if there is none
+   */
+  private static @Nullable ExpressionTree rhsTree(AssignmentNode assignment) {
+    Tree tree = assignment.getTree();
+    if (tree instanceof AssignmentTree assignmentTree) {
+      return assignmentTree.getExpression();
+    } else if (tree instanceof CompoundAssignmentTree compoundAssignmentTree) {
+      return compoundAssignmentTree.getExpression();
+    } else if (tree instanceof VariableTree variableTree) {
+      return variableTree.getInitializer();
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Returns the writes that happen after the given node is evaluated and before the comparison
+   * (such as {@code ==} or {@code <}) that contains it completes. They are the writes of the code
+   * in the enclosing expressions that is evaluated after the node, and of those enclosing
+   * expressions themselves. For example, if {@code node} is {@code x} in {@code foo(x).f == y},
+   * they are the writes of the call to {@code foo} and of {@code y}.
+   *
+   * <p>If no comparison encloses the node, the result contains the writes up to the outermost
+   * enclosing expression, or up to an enclosing lambda or switch expression.
+   *
+   * @param node a node
+   * @return the writes that happen after {@code node} is evaluated and before the comparison that
+   *     contains it completes
+   */
+  private Writes laterWrites(Node node) {
+    Writes result = new Writes();
+    TreePath path = sourcePath(node);
+    if (path == null) {
+      return result;
+    }
+    TreePath parentPath = path.getParentPath();
+    while (parentPath != null) {
+      Tree parent = parentPath.getLeaf();
+      // The body of a lambda expression is not evaluated with the enclosing expression, and the
+      // cases of a switch expression are compared to its selector one at a time.
+      if (!(parent instanceof ExpressionTree)
+          || parent instanceof LambdaExpressionTree
+          || parent instanceof SwitchExpressionTree) {
+        break;
+      }
+      result.scanLaterSubtrees(parent, path.getLeaf());
+      if (parent instanceof BinaryTree binaryTree && TreeUtils.isBinaryComparison(binaryTree)) {
+        break;
+      }
+      result.addOwnWrites(parent);
+      path = parentPath;
+      parentPath = path.getParentPath();
+    }
+    return result;
+  }
+
+  /**
+   * Returns true if the code that is evaluated after {@code node} and before the comparison that
+   * contains it completes might change the value of {@code node}. For example, returns true for the
+   * left operand of {@code i > (i = 0)}, and for the left operand of {@code f == clearF()} if
+   * {@code f} is a non-final field. Unlike {@link #splitAssignments}, this method also considers
+   * expressions that no store can hold a value for, such as {@code i - 1}.
+   *
+   * <p>A client that refines one operand of a comparison with a fact that mentions the other
+   * operand can use this method to check that the fact holds after the comparison.
+   *
+   * @param node an operand of a comparison
+   * @return true if the code that is evaluated after {@code node} and before the comparison
+   *     completes might change the value of {@code node}
+   */
+  protected boolean mayBeChangedByLaterOperand(Node node) {
+    return laterWrites(node).mayChange(JavaExpression.fromNode(node), false);
+  }
+
+  /**
+   * Returns the path to the tree of the given node. If the node's tree is artificial, as for an
+   * unboxing conversion, returns the path to the tree of the node's first operand that has one,
+   * recursively.
+   *
+   * @param node a node
+   * @return the path to the source tree that {@code node} represents, or null if there is none
+   */
+  private @Nullable TreePath sourcePath(Node node) {
+    Tree tree = node.getTree();
+    if (tree != null) {
+      TreePath path = analysis.atypeFactory.getPath(tree);
+      if (path != null) {
+        return path;
+      }
+    }
+    for (Node operand : node.getOperands()) {
+      TreePath path = sourcePath(operand);
+      if (path != null) {
+        return path;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the direct subtrees of the given tree, in the order in which a {@link TreeScanner}
+   * visits them. For an expression, that is the order in which Java evaluates them; for example,
+   * the receiver and then the arguments of a method call.
+   *
+   * @param tree a tree
+   * @return the direct subtrees of {@code tree}
+   */
+  private static List<Tree> directSubtrees(Tree tree) {
+    List<Tree> result = new ArrayList<>();
+    tree.accept(
+        new TreeScanner<Void, Void>() {
+          @Override
+          public Void scan(@Nullable Tree subtree, Void p) {
+            if (subtree != null) {
+              result.add(subtree);
+            }
+            return null;
+          }
+        },
+        null);
+    return result;
+  }
+
+  /**
+   * The locations that the evaluation of some code might write. {@link #add} adds a write to a
+   * given location, and {@link #scan} adds the writes that evaluating a tree might perform: its
+   * assignments, compound assignments, increments, decrements, method calls, object creations, and
+   * string conversions. A method call, object creation, or string conversion (which calls {@code
+   * toString()}) might write any field or array element, unless the method or constructor is
+   * side-effect-free.
+   *
+   * <p>{@link #scan} does not descend into lambda bodies or class bodies, which do not execute when
+   * the tree is evaluated. A method call or object creation that might execute them is a write to
+   * any field or array element, and they cannot assign a local variable that is visible outside
+   * them. {@link #scan} does not descend into annotations either: javac represents an annotation
+   * argument as an assignment, as in {@code @IntVal(value = {0, 1})}, but it does not assign a
+   * variable.
+   *
+   * <p>{@link #mayChange} uses the analysis's rules for aliasing and purity (see {@link
+   * CFAbstractAnalysis#canAlias} and {@link CFAbstractAnalysis#isSideEffectFree}).
+   */
+  private final class Writes extends TreeScanner<Void, Void> {
+
+    /** The local variables that might be written. */
+    private final List<LocalVariable> locals = new ArrayList<>();
+
+    /** The fields that might be written. */
+    private final List<FieldAccess> fields = new ArrayList<>();
+
+    /** The array elements that might be written. */
+    private final List<ArrayAccess> arrayElements = new ArrayList<>();
+
+    /** True if any non-final field and any array element might be written. */
+    private boolean anyHeapLocation = false;
+
+    /** Creates an empty set of writes. */
+    Writes() {}
 
     /**
-     * Returns true if a call to the given method or constructor has no side effects. If null, calls
-     * are not examined.
+     * Adds a write to the given location.
+     *
+     * @param target a location that is written
      */
-    private final @Nullable Predicate<ExecutableElement> isSideEffectFree;
-
-    /** The variables that the scanned trees assign. */
-    final List<JavaExpression> targets = new ArrayList<>();
-
-    /** True if the scanned trees call a method or constructor that is not side-effect-free. */
-    boolean callsMethodWithSideEffects = false;
-
-    /** Creates an AssignmentTargetScanner that does not examine calls. */
-    AssignmentTargetScanner() {
-      this(null);
+    void add(JavaExpression target) {
+      if (target instanceof LocalVariable localVariable) {
+        locals.add(localVariable);
+      } else if (target instanceof FieldAccess fieldAccess) {
+        fields.add(fieldAccess);
+      } else if (target instanceof ArrayAccess arrayAccess) {
+        arrayElements.add(arrayAccess);
+      } else {
+        // Every local variable converts to a LocalVariable, so `target` is a field or an array
+        // element.
+        anyHeapLocation = true;
+      }
     }
 
     /**
-     * Creates an AssignmentTargetScanner.
+     * Adds the writes that the given tree performs itself, after its subtrees are evaluated: the
+     * write of an assignment, compound assignment, increment, or decrement, and the writes of a
+     * method call, object creation, or string conversion. Does not add the writes of the subtrees.
      *
-     * @param isSideEffectFree returns true if a call to the given method or constructor has no side
-     *     effects; if null, calls are not examined
+     * @param tree a tree
      */
-    AssignmentTargetScanner(@Nullable Predicate<ExecutableElement> isSideEffectFree) {
-      this.isSideEffectFree = isSideEffectFree;
+    void addOwnWrites(Tree tree) {
+      if (tree instanceof AssignmentTree assignmentTree) {
+        add(JavaExpression.fromTree(assignmentTree.getVariable()));
+      } else if (tree instanceof CompoundAssignmentTree compoundAssignmentTree) {
+        add(JavaExpression.fromTree(compoundAssignmentTree.getVariable()));
+        if (tree.getKind() == Tree.Kind.PLUS_ASSIGNMENT) {
+          addStringConversions(
+              compoundAssignmentTree.getVariable(), compoundAssignmentTree.getExpression());
+        }
+      } else if (tree instanceof UnaryTree unaryTree) {
+        switch (tree.getKind()) {
+          case PREFIX_INCREMENT, PREFIX_DECREMENT, POSTFIX_INCREMENT, POSTFIX_DECREMENT ->
+              add(JavaExpression.fromTree(unaryTree.getExpression()));
+          default -> {}
+        }
+      } else if (tree instanceof MethodInvocationTree methodInvocationTree) {
+        addCall(TreeUtils.elementFromUse(methodInvocationTree));
+      } else if (tree instanceof NewClassTree newClassTree) {
+        // For an anonymous class, this is the constructor of the anonymous class, which executes
+        // its initializers.
+        addCall(TreeUtils.elementFromUse(newClassTree));
+      } else if (tree instanceof BinaryTree binaryTree && tree.getKind() == Tree.Kind.PLUS) {
+        addStringConversions(binaryTree.getLeftOperand(), binaryTree.getRightOperand());
+      }
     }
 
     /**
-     * Records that the scanned trees call {@code method}, if it is not side-effect-free.
+     * Adds the writes of a call to the given method or constructor.
      *
-     * @param method a method or constructor that the scanned trees call
+     * @param method a method or constructor that is called
      */
-    private void recordCall(ExecutableElement method) {
-      if (isSideEffectFree != null && !isSideEffectFree.test(method)) {
-        callsMethodWithSideEffects = true;
+    private void addCall(ExecutableElement method) {
+      if (!analysis.isSideEffectFree(method)) {
+        anyHeapLocation = true;
+      }
+    }
+
+    /**
+     * Adds the writes of the string conversions of the given operands of a {@code +} or {@code +=}
+     * operator, if it is a string concatenation. A string conversion of a reference that is not a
+     * {@code String} calls its {@code toString()} method.
+     *
+     * @param left the left operand of a {@code +} or {@code +=} operator
+     * @param right the right operand of the operator
+     */
+    private void addStringConversions(ExpressionTree left, ExpressionTree right) {
+      TypeMirror leftType = TreeUtils.typeOf(left);
+      TypeMirror rightType = TreeUtils.typeOf(right);
+      if ((TypesUtils.isString(leftType) || TypesUtils.isString(rightType))
+          && (callsToString(leftType) || callsToString(rightType))) {
+        // Every override of `toString()` has the purity annotations of `Object.toString()`.
+        addCall(objectToString);
+      }
+    }
+
+    /**
+     * Returns true if a string conversion of a value of the given type calls {@code toString()}.
+     *
+     * @param type the type of an operand of a string concatenation
+     * @return true if a string conversion of a value of {@code type} calls {@code toString()}
+     */
+    private boolean callsToString(TypeMirror type) {
+      return !type.getKind().isPrimitive()
+          && type.getKind() != TypeKind.NULL
+          && !TypesUtils.isString(type);
+    }
+
+    /**
+     * Adds the writes of the direct subtrees of {@code parent} that are evaluated after {@code
+     * child}.
+     *
+     * @param parent an expression
+     * @param child a direct subtree of {@code parent}
+     */
+    @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
+    void scanLaterSubtrees(Tree parent, Tree child) {
+      boolean afterChild = false;
+      for (Tree subtree : directSubtrees(parent)) {
+        if (afterChild) {
+          scan(subtree, null);
+        } else if (subtree == child) {
+          afterChild = true;
+        }
       }
     }
 
     @Override
-    public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
-      recordCall(TreeUtils.elementFromUse(tree));
-      return super.visitMethodInvocation(tree, p);
-    }
-
-    @Override
-    public Void visitNewClass(NewClassTree tree, Void p) {
-      recordCall(TreeUtils.elementFromUse(tree));
-      return super.visitNewClass(tree, p);
-    }
-
-    /**
-     * Returns the JavaExpression for the given assignment target. Javac retains parentheses around
-     * a target, as in {@code (n) = o}, but {@link JavaExpression#fromTree} does not handle them, so
-     * this method removes them.
-     *
-     * @param target the variable that an assignment, compound assignment, increment, or decrement
-     *     assigns
-     * @return the JavaExpression for {@code target}
-     */
-    private static JavaExpression targetExpression(ExpressionTree target) {
-      return JavaExpression.fromTree(TreeUtils.withoutParens(target));
-    }
-
-    @Override
-    public Void visitAssignment(AssignmentTree tree, Void p) {
-      targets.add(targetExpression(tree.getVariable()));
-      return super.visitAssignment(tree, p);
-    }
-
-    @Override
-    public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
-      targets.add(targetExpression(tree.getVariable()));
-      return super.visitCompoundAssignment(tree, p);
-    }
-
-    @Override
-    public Void visitUnary(UnaryTree tree, Void p) {
-      switch (tree.getKind()) {
-        case PREFIX_INCREMENT, PREFIX_DECREMENT, POSTFIX_INCREMENT, POSTFIX_DECREMENT ->
-            targets.add(targetExpression(tree.getExpression()));
-        default -> {}
+    public Void scan(@Nullable Tree tree, Void p) {
+      if (tree != null) {
+        addOwnWrites(tree);
       }
-      return super.visitUnary(tree, p);
+      return super.scan(tree, p);
     }
 
     @Override
@@ -1413,133 +1523,112 @@ public abstract class CFAbstractTransfer<
 
     @Override
     public Void visitClass(ClassTree tree, Void p) {
-      if (!tree.getSimpleName().isEmpty()) {
-        // A named (local) class declaration does not execute.
-        return null;
-      }
-      // An anonymous class body: its initializers execute when the `new` expression is evaluated.
-      for (Tree member : tree.getMembers()) {
-        if (member instanceof BlockTree block) {
-          scan(block, p);
-        } else if (member instanceof VariableTree field) {
-          scan(field.getInitializer(), p);
-        }
-        // Skip methods and nested class declarations.
-      }
       return null;
     }
-  }
 
-  /**
-   * Returns true if an assignment to one of the given targets might make {@code expr} evaluate to a
-   * different value than the value that {@code expr} had when it was evaluated. Returns false if no
-   * store can hold a value for {@code expr}.
-   *
-   * @param expr a side of an assignment, or an operand of a binary operation
-   * @param targets the variables that an expression that contains or follows {@code expr} assigns
-   * @param ignoreOwnLocation if true, ignore an assignment to the location that {@code expr}
-   *     denotes; see {@link #assignmentMayChange}
-   * @return true if an assignment to one of {@code targets} might change the value of {@code expr}
-   */
-  @Pure
-  private static boolean mayBeChangedByAssignment(
-      JavaExpression expr, List<JavaExpression> targets, boolean ignoreOwnLocation) {
-    if (!CFAbstractStore.canInsertJavaExpression(expr)) {
-      return false;
-    }
-    for (JavaExpression target : targets) {
-      if (assignmentMayChange(target, expr, ignoreOwnLocation)) {
+    /**
+     * Returns true if these writes might change the value of {@code expr}.
+     *
+     * <p>A write to a local variable changes only expressions that contain the variable. A write to
+     * a field changes only accesses of the same field, and method calls. A write to an array
+     * element changes only accesses of arrays that might alias the written array, and method calls.
+     * If side effects unrefine aliases (see {@link
+     * GenericAnnotatedTypeFactory#sideEffectsUnrefineAliases}), then a write to any field or array
+     * element also changes every expression whose abstract value other code can modify (see {@link
+     * JavaExpression#isModifiableByOtherCode}).
+     *
+     * @param expr an expression
+     * @param ignoreOwnLocation true if a write to the location that {@code expr} denotes (if it is
+     *     a variable, field access, or array access) does not matter, but a write that changes
+     *     which location {@code expr} denotes (that is, a write to its receiver or index) does
+     * @return true if these writes might change the value of {@code expr}
+     */
+    boolean mayChange(JavaExpression expr, boolean ignoreOwnLocation) {
+      if (anyHeapLocation
+          && analysis.atypeFactory.sideEffectsUnrefineAliases
+          && expr.isModifiableByOtherCode()) {
+        // As in CFAbstractStore#updateForMethodCall, a write might change the abstract value of
+        // the object that `expr` denotes, even if `expr` still denotes the same object.
         return true;
       }
+      if (expr instanceof LocalVariable) {
+        return !ignoreOwnLocation && locals.contains(expr);
+      } else if (expr instanceof FieldAccess fa) {
+        return (!ignoreOwnLocation && mayWriteField(fa)) || mayChange(fa.getReceiver(), false);
+      } else if (expr instanceof ArrayAccess aa) {
+        return (!ignoreOwnLocation && mayWriteArrayElement(aa))
+            || mayChange(aa.getArray(), false)
+            || mayChange(aa.getIndex(), false);
+      } else if (expr instanceof MethodCall mc) {
+        if (anyHeapLocation
+            || !fields.isEmpty()
+            || !arrayElements.isEmpty()
+            || mayChange(mc.getReceiver(), false)) {
+          return true;
+        }
+        for (JavaExpression arg : mc.getArguments()) {
+          if (mayChange(arg, false)) {
+            return true;
+          }
+        }
+        return false;
+      } else if (expr instanceof UnaryOperation uo) {
+        return mayChange(uo.getOperand(), false);
+      } else if (expr instanceof BinaryOperation bo) {
+        return mayChange(bo.getLeft(), false) || mayChange(bo.getRight(), false);
+      } else {
+        // An Unknown or ArrayCreation might be changed.
+        return !(expr instanceof ClassName
+            || expr instanceof FormalParameter
+            || expr instanceof SuperReference
+            || expr instanceof ThisReference
+            || expr instanceof ValueLiteral);
+      }
     }
-    return false;
-  }
 
-  /**
-   * Returns true if an assignment to {@code target} might change the value of {@code expr}.
-   *
-   * <p>An assignment to a local variable changes only expressions that contain the variable. An
-   * assignment to a field changes only accesses of the same field, and method calls. An assignment
-   * to an array element changes only accesses of arrays that might alias the target's array, and
-   * method calls.
-   *
-   * <p>If {@code ignoreOwnLocation} is true and {@code expr} is a variable, field access, or array
-   * access, then an assignment to the location that {@code expr} denotes does not matter: an
-   * assignment in the same chain as {@code expr} stores the same value, and a nested assignment
-   * executes before the location is written or read. Only an assignment that changes which location
-   * {@code expr} denotes (that is, its receiver or index) matters.
-   *
-   * @param target the left-hand side of an assignment
-   * @param expr an expression
-   * @param ignoreOwnLocation if true, ignore an assignment to the location that {@code expr}
-   *     denotes
-   * @return true if an assignment to {@code target} might change the value of {@code expr}
-   */
-  @Pure
-  private static boolean assignmentMayChange(
-      JavaExpression target, JavaExpression expr, boolean ignoreOwnLocation) {
-    if (target instanceof Unknown) {
-      // The target is not understood, so it might be any location.
-      return true;
-    }
-    if (expr instanceof LocalVariable) {
-      return !ignoreOwnLocation && expr.syntacticEquals(target);
-    } else if (expr instanceof FieldAccess fa) {
-      return (!ignoreOwnLocation
-              && target instanceof FieldAccess targetFa
-              && targetFa.getField().equals(fa.getField()))
-          || assignmentMayChange(target, fa.getReceiver(), false);
-    } else if (expr instanceof ArrayAccess aa) {
-      return (!ignoreOwnLocation
-              && target instanceof ArrayAccess targetAa
-              && arraysMayAlias(targetAa, aa))
-          || assignmentMayChange(target, aa.getArray(), false)
-          || assignmentMayChange(target, aa.getIndex(), false);
-    } else if (expr instanceof MethodCall mc) {
-      if (!(target instanceof LocalVariable)
-          || assignmentMayChange(target, mc.getReceiver(), false)) {
+    /**
+     * Returns true if these writes might write the field that {@code fa} denotes.
+     *
+     * @param fa a field access
+     * @return true if these writes might write the field that {@code fa} denotes
+     */
+    private boolean mayWriteField(FieldAccess fa) {
+      if (anyHeapLocation && !fa.isFinal()) {
         return true;
       }
-      for (JavaExpression arg : mc.getArguments()) {
-        if (assignmentMayChange(target, arg, false)) {
+      for (FieldAccess field : fields) {
+        if (field.getField().equals(fa.getField())
+            && analysis.canAlias(field.getReceiver(), fa.getReceiver())) {
           return true;
         }
       }
       return false;
-    } else if (expr instanceof UnaryOperation uo) {
-      return assignmentMayChange(target, uo.getOperand(), false);
-    } else if (expr instanceof BinaryOperation bo) {
-      return assignmentMayChange(target, bo.getLeft(), false)
-          || assignmentMayChange(target, bo.getRight(), false);
-    } else {
-      // An Unknown or ArrayCreation might be changed.
-      return !(expr instanceof ClassName
-          || expr instanceof FormalParameter
-          || expr instanceof SuperReference
-          || expr instanceof ThisReference
-          || expr instanceof ValueLiteral);
     }
-  }
 
-  /**
-   * Returns true if the arrays of the given array accesses might be the same array. They cannot be
-   * if their component types differ and at least one of the component types is primitive.
-   *
-   * @param a1 an array access
-   * @param a2 an array access
-   * @return true if the arrays of {@code a1} and {@code a2} might be the same array
-   */
-  @Pure
-  private static boolean arraysMayAlias(ArrayAccess a1, ArrayAccess a2) {
-    TypeKind kind1 = a1.getType().getKind();
-    TypeKind kind2 = a2.getType().getKind();
-    return kind1 == kind2 || !(kind1.isPrimitive() || kind2.isPrimitive());
+    /**
+     * Returns true if these writes might write the array element that {@code aa} denotes.
+     *
+     * @param aa an array access
+     * @return true if these writes might write the array element that {@code aa} denotes
+     */
+    private boolean mayWriteArrayElement(ArrayAccess aa) {
+      if (anyHeapLocation) {
+        return true;
+      }
+      for (ArrayAccess arrayElement : arrayElements) {
+        if (analysis.canAlias(arrayElement.getArray(), aa.getArray())) {
+          return true;
+        }
+      }
+      return false;
+    }
   }
 
   @Override
   public TransferResult<V, S> visitAssignment(AssignmentNode n, TransferInput<V, S> in) {
     Node lhs = n.getTarget();
     Node rhs = n.getExpression();
+    Tree rhsTree = sourceRhsTree(n);
 
     V rhsValue = in.getValueOfSubNode(rhs);
 
@@ -1566,13 +1655,13 @@ public abstract class CFAbstractTransfer<
       // the `then` and `else` store are not merged.
       S thenStore = in.getThenStore();
       S elseStore = in.getElseStore();
-      processCommonAssignment(in, lhs, rhs, thenStore, rhsValue);
-      processCommonAssignment(in, lhs, rhs, elseStore, rhsValue);
+      processCommonAssignment(in, lhs, rhs, rhsTree, thenStore, rhsValue);
+      processCommonAssignment(in, lhs, rhs, rhsTree, elseStore, rhsValue);
       return new ConditionalTransferResult<>(
           finishValue(rhsValue, thenStore, elseStore), thenStore, elseStore);
     } else {
       S store = in.getRegularStore();
-      processCommonAssignment(in, lhs, rhs, store, rhsValue);
+      processCommonAssignment(in, lhs, rhs, rhsTree, store, rhsValue);
       return new RegularTransferResult<>(finishValue(rhsValue, store), store);
     }
   }
@@ -1615,72 +1704,74 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
+   * Returns the right-hand side of the given assignment, as written in source code. This differs
+   * from the tree of {@code n.getExpression()} when the CFG replaces the right-hand side by a
+   * synthetic expression. For example, the CFG translates the postfix increment in {@code a[i] =
+   * i++} into a read of a synthetic temporary variable, whose tree does not contain {@code i++}.
+   *
+   * @param n an assignment node
+   * @return the right-hand side of {@code n} as written in source code, or the tree of {@code
+   *     n.getExpression()} if {@code n} does not correspond to a source assignment or compound
+   *     assignment
+   */
+  private static @Nullable Tree sourceRhsTree(AssignmentNode n) {
+    Tree tree = n.getTree();
+    if (tree instanceof AssignmentTree assignmentTree) {
+      return assignmentTree.getExpression();
+    } else if (tree instanceof CompoundAssignmentTree compoundAssignmentTree) {
+      return compoundAssignmentTree.getExpression();
+    } else {
+      return n.getExpression().getTree();
+    }
+  }
+
+  /**
    * Determine abstract value of right-hand side and update the store accordingly.
    *
    * @param in the store(s) before the assignment
    * @param lhs the left-hand side of the assignment
    * @param rhs the right-hand side of the assignment
+   * @param rhsTree the right-hand side of the assignment as written in source code, or null if
+   *     there is none. This may differ from {@code rhs.getTree()}; for example, the CFG translates
+   *     a postfix increment into a read of a synthetic temporary variable.
    * @param store the regular input store (from {@code in})
    * @param rhsValue the value of the right-hand side of the assignment
    */
   protected void processCommonAssignment(
-      TransferInput<V, S> in, Node lhs, Node rhs, S store, V rhsValue) {
+      TransferInput<V, S> in, Node lhs, Node rhs, @Nullable Tree rhsTree, S store, V rhsValue) {
 
     // update information in the store
-    if (rhsMayRelocateTarget(lhs, rhs)) {
+    store.updateForAssignment(lhs, rhsValue);
+    if (rhsMayRelocateTarget(lhs, rhsTree)) {
       // After the assignment, `lhs` denotes a different location than the one that was assigned.
-      // Remove information that the assignment might invalidate, but record no value for `lhs`.
-      store.updateForAssignment(lhs, null);
-    } else {
-      store.updateForAssignment(lhs, rhsValue);
+      // The call above used `rhsValue` to update information about locations that might alias the
+      // assigned one.  Now remove the value it recorded for `lhs`.
+      store.clearValue(JavaExpression.fromNode(lhs));
     }
   }
 
   /**
-   * Returns true if evaluating {@code rhs} might reassign a variable in the receiver or index of
-   * {@code lhs}, as in {@code n.next = (n = o)}. Java evaluates the receiver and index of {@code
-   * lhs} before {@code rhs}, so in that case the assignment stores into a location that {@code lhs}
-   * no longer denotes after the assignment. Also returns true if {@code rhs} calls a method or
-   * constructor that is not side-effect-free and other code can assign the receiver or index of
-   * {@code lhs}, as in {@code this.n.next = reassignN()}.
+   * Returns true if evaluating {@code rhsTree} might change the receiver or index of {@code lhs},
+   * as in {@code n.next = (n = o)}. A method call that is not side-effect-free might change a field
+   * or array element in the receiver or index (see {@link Writes}), as in {@code global.next =
+   * reassignGlobal()}. Java evaluates the receiver and index of {@code lhs} before the right-hand
+   * side, so in that case the assignment stores into a location that {@code lhs} no longer denotes
+   * after the assignment.
    *
    * @param lhs the left-hand side of an assignment
-   * @param rhs the right-hand side of the assignment
-   * @return true if evaluating {@code rhs} might change the location that {@code lhs} denotes
+   * @param rhsTree the right-hand side of the assignment as written in source code, or null
+   * @return true if evaluating {@code rhsTree} might change the location that {@code lhs} denotes
    */
-  private boolean rhsMayRelocateTarget(Node lhs, Node rhs) {
+  private boolean rhsMayRelocateTarget(Node lhs, @Nullable Tree rhsTree) {
     if (lhs instanceof LocalVariableNode) {
       return false;
     }
-    Tree rhsTree = rhs.getTree();
     if (rhsTree == null) {
       return false;
     }
-    AssignmentTargetScanner scanner = new AssignmentTargetScanner(this::isSideEffectFree);
-    scanner.scan(rhsTree, null);
-    JavaExpression lhsExpr = JavaExpression.fromNode(lhs);
-    if (scanner.callsMethodWithSideEffects && receiverOrIndexIsAssignableByOtherCode(lhsExpr)) {
-      return true;
-    }
-    List<JavaExpression> targets = scanner.targets;
-    return !targets.isEmpty() && mayBeChangedByAssignment(lhsExpr, targets, true);
-  }
-
-  /**
-   * Returns true if other code, such as a method call, can assign the receiver of {@code expr} (if
-   * it is a field access) or the array or index of {@code expr} (if it is an array access).
-   *
-   * @param expr the left-hand side of an assignment
-   * @return true if other code can change the location that {@code expr} denotes
-   */
-  private static boolean receiverOrIndexIsAssignableByOtherCode(JavaExpression expr) {
-    if (expr instanceof FieldAccess fa) {
-      return fa.getReceiver().isAssignableByOtherCode();
-    } else if (expr instanceof ArrayAccess aa) {
-      return aa.getArray().isAssignableByOtherCode() || aa.getIndex().isAssignableByOtherCode();
-    } else {
-      return false;
-    }
+    Writes writes = new Writes();
+    writes.scan(rhsTree, null);
+    return writes.mayChange(JavaExpression.fromNode(lhs), true);
   }
 
   @Override
