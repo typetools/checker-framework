@@ -862,6 +862,43 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * An annotation name that denotes a nested annotation interface in one class and an imported one
+   * elsewhere gets the {@code @Target} of the interface that it denotes at each use.
+   */
+  @Test
+  public void testShadowingAnnotationTargetsAreNotShared() throws Exception {
+    AScene scene =
+        sceneOfStub(
+            "package p;",
+            "import org.checkerframework.checker.nullness.qual.Nullable;",
+            "class A {",
+            "  void m(@Nullable String s) {}",
+            "}",
+            "class B {",
+            "  @interface Nullable {}",
+            "  void m(@Nullable String s) {}",
+            "}",
+            "class C {",
+            "  void m(@Nullable String s) {}",
+            "}");
+    // The imported @Nullable is TYPE_USE.  p.B$Nullable cannot be loaded, so its @Target is
+    // unknown and it is a declaration annotation.
+    for (String className : new String[] {"p.A", "p.B", "p.C"}) {
+      AField param =
+          scene.classes.get(className).methods.get("m(Ljava/lang/String;)V").parameters.get(0);
+      boolean isTypeUse = !className.equals("p.B");
+      Assert.assertEquals(
+          "@Nullable on the parameter in " + className,
+          !isTypeUse,
+          param.lookup("Nullable") != null);
+      Assert.assertEquals(
+          "@Nullable on the type in " + className,
+          isTypeUse,
+          param.type.lookup("Nullable") != null);
+    }
+  }
+
+  /**
    * An annotation that precedes a field's type or a method's return type is recorded as a
    * declaration annotation or as a type annotation, according to its {@code @Target}. As a type
    * annotation, it applies to the innermost component type of an array type.
