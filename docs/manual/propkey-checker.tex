@@ -21,7 +21,7 @@ The Compiler Message Key Checker is an example of a simple specialization of
 the Property File Checker, and the Checker Framework source code shows how
 it is used.
 
-It is easy to customize the Property File Checker for other related purposes.
+It is easy to customize the Property Key Checker for other related purposes.
 Take a look at the source code of the Compiler Message Key Checker and adapt it for
 your purposes.
 
@@ -151,7 +151,7 @@ indicates that the
 qualified \code{CharSequence} or \code{Object} is a valid key found in the
 localization resource.
 This annotation is a specialization of the \code{@PropertyKey} annotation, which
-gets checked by the general Property File Checker.
+gets checked by the general Property Key Checker.
 It is a subtype of \refqualclass{checker/i18n/qual}{UnknownLocalizableKey},
 which is the default and which programmers do not need to write.
 \end{description}
@@ -172,7 +172,7 @@ command:
 \end{smaller}
 
 You must specify the localization resource, which maps keys to user-visible
-text.  Like the general Property File Checker, the Internationalization Checker
+text.  Like the general Property Key Checker, the Internationalization Checker
 supports two types of localization resource:
 \code{ResourceBundle}s using the
 \code{-Abundlenames=\emph{resource\_name}} option
@@ -211,7 +211,7 @@ command:
 \end{Verbatim}
 
 You must specify the resource, which maps compiler message keys to user-visible
-text.  The checker supports the same options as the general Property File Checker.
+text.  The checker supports the same options as the general Property Key Checker.
 Within the Checker Framework, we only use property files,
 so the \code{-Apropfiles=\emph{prop\_file}} option should be used.
 

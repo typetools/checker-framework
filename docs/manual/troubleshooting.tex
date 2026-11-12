@@ -66,7 +66,7 @@ This section describes some possible problems and solutions.
 \item
   \label{no-such-field-error-release}
   An error that includes \<java.lang.NoSuchFieldError: RELEASE> means that
-  you are not using the correct compiler (you are not using a Java 9+ compiler).
+  you are not using the correct compiler (you are not using a JDK 17+ compiler).
 
 \item
 If you get the error
@@ -78,9 +78,9 @@ com.sun.tools.javac.code.Symbol$CompletionFailure: class file for com.sun.source
 \end{smaller}
 
 \noindent
-then you are using the source installation and file \code{tools.jar} is not
-on your classpath.  See the installation instructions
-(Section~\ref{installation}).
+then you are running on a Java runtime that lacks the \<jdk.compiler>
+module, such as a JRE rather than a JDK.  Use a JDK, version 17 or later.
+See the installation instructions (Section~\ref{installation}).
 
 \item
 If you get an error like one of the following,
@@ -839,11 +839,11 @@ In a startup file, write:
 \begin{Verbatim}
 brew update
 brew install git graphviz ant maven librsvg poppler unzip make
-brew install --cask temurin17
+brew install --cask temurin@25
 brew install --cask mactex
 \end{Verbatim}
 
-Note: Running \<brew install --cask temurin17> is only necessary if you do not
+Note: Running \<brew install --cask temurin@25> is only necessary if you do not
 already have installed a JDK that is compatible with the Checker Framework.
 
 If \<echo \$JAVA\_HOME> outputs nothing (that is, if the \<JAVA\_HOME>
@@ -855,7 +855,7 @@ export JAVA_HOME=$(/usr/libexec/java_home -v XX)
 \end{Verbatim}
 or
 \begin{Verbatim}
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-XX.jdk/Contents/Home/
+export JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-XX.jdk/Contents/Home/
 \end{Verbatim}
 
 In the command, \emph{XX} is a JDK version such as 17, 21, 25, etc.
@@ -997,15 +997,15 @@ Install Docker on your local computer, then perform commands like the
 following to get a shell within Docker:
 
 \begin{Verbatim}
-docker pull mdernst/cf-ubuntu-jdk21
-docker run -it mdernst/cf-ubuntu-jdk21 /bin/bash
+docker pull mdernst/cf-ubuntu-jdk25
+docker run -it mdernst/cf-ubuntu-jdk25 /bin/bash
 \end{Verbatim}
 
 Then, you can run arbitrary commands, including those that appear in the
 CI configuration files.  For example:
 
 \begin{Verbatim}
-git clone --filter=blob:none -b docker-ubuntu-24-10 https://github.com/mernst/checker-framework.git
+git clone --filter=blob:none https://github.com/typetools/checker-framework.git
 cd checker-framework
 export CHECKERFRAMEWORK=$(pwd)
 alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'

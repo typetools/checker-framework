@@ -131,7 +131,8 @@ annotated types which are described later in this document.
 
 \code{checker} contains the type-system-specific checkers.
 
-The \code{dataflow} project depends only on \code{javacutil}.
+The \code{dataflow} project depends only on \code{javacutil} and
+\code{checker-qual}.
 
 
 \subsection{Classes}
@@ -240,8 +241,8 @@ The CFGBuilder classes visit an AST and produce a corresponding
 ControlFlowGraph as described in \autoref{sec:ast_to_cfg_translation}.
 
 \begin{verbatim}
-package org.checkerframework.dataflow.cfg;
-class CFGBuilder
+package org.checkerframework.dataflow.cfg.builder;
+abstract class CFGBuilder
 \end{verbatim}
 
 The Checker Framework derives from CFGBuilder in order to desugar
@@ -260,8 +261,8 @@ The CFGVisualizeLauncher generates a DOT or String representation of
 the control flow graph for a given method in a given class.
 
 \begin{verbatim}
-package org.checkerframework.dataflow.cfg;
-class CFGVisualizeLauncher
+package org.checkerframework.dataflow.cfg.visualize;
+final class CFGVisualizeLauncher
 \end{verbatim}
 
 \subsubsection{JavaExpressions}
@@ -273,8 +274,8 @@ array accesses, references to \code{this}, and pure method calls.
 JavaExpressions are keys in the store of abstract values.
 
 \begin{verbatim}
-package org.checkerframework.dataflow.analysis;
-class JavaExpressions
+package org.checkerframework.dataflow.expression;
+abstract class JavaExpression
 \end{verbatim}
 
 Java expressions that appear in method pre- and postconditions are
@@ -415,15 +416,15 @@ store, while most other Nodes produce a RegularTransferResult with a
 single store.
 
 \begin{verbatim}
-package class org.checkerframework.dataflow.analysis;
-abstract TransferResult<V extends AbstractValue<V>,
+package org.checkerframework.dataflow.analysis;
+abstract class TransferResult<V extends AbstractValue<V>,
         S extends Store<S>>
 class ConditionalTransferResult<V extends AbstractValue<V>,
         S extends Store<S>>
-    extends TransferResult<A, S>
+    extends TransferResult<V, S>
 class RegularTransferResult<V extends AbstractValue<V>,
         S extends Store<S>>
-    extends TransferResult<A, S>
+    extends TransferResult<V, S>
 \end{verbatim}
 
 \subsubsubsection{TransferFunction}
@@ -476,7 +477,7 @@ to special-case the \code{isRegex} and \code{asRegex} methods.
 
 \begin{verbatim}
 package org.checkerframework.checker.regex;
-class RegexTransfer extends CFAbstractTransfer<CFValue, CFStore, RegexTransfer>
+class RegexTransfer extends CFTransfer
 \end{verbatim}
 
 
@@ -522,20 +523,12 @@ class CFAnalysis extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer>
 \end{verbatim}
 
 The Nullness Checker's analysis overrides the factory methods for
-abstract values, stores, and the transfer function.
+abstract values and stores.
 
 \begin{verbatim}
 package org.checkerframework.checker.nullness;
 class NullnessAnalysis extends CFAbstractAnalysis<NullnessValue,
         NullnessStore, NullnessTransfer>
-\end{verbatim}
-
-The Regex Checker's analysis overrides the factory methods for abstract
-values, stores, and the transfer function.
-
-\begin{verbatim}
-package org.checkerframework.checker.regex;
-class RegexAnalysis extends CFAbstractAnalysis<CFValue, CFStore, RegexTransfer>
 \end{verbatim}
 
 
@@ -577,7 +570,7 @@ BaseAnnotatedTypeFactory.
 
 \begin{verbatim}
 package org.checkerframework.framework.type;
-abstract class GenericAnnotatedTypeFactory<Checker extends BaseTypeChecker<?>,
+abstract class GenericAnnotatedTypeFactory<
         Value extends CFAbstractValue<Value>,
         Store extends CFAbstractStore<Value, Store>,
         TransferFunction extends CFAbstractTransfer<Value, Store, TransferFunction>,
@@ -843,7 +836,6 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \nodetype{NumericalSubtractionNode} & & \code{x - y} \\
         \nodetype{SignedRightShiftNode} & & \code{x >> 3} \\
         \nodetype{StringConcatenateNode} & & \code{s + ".txt"} \\
-        \nodetype{SwitchExpressionNode} & & \\
         \nodetype{TernaryExpressionNode} & & \code{c ? t : f} \\
         \nodetype{UnsignedRightShiftNode} & & \code{x >>> 5} \\
         \midrule
@@ -857,7 +849,7 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         \nodetype{LessThanOrEqualNode} & & \code{x <= y} \\
         \midrule
 
-        \code{SwitchExpression} & A switch expression (not statement!) & \\
+        \nodetype{SwitchExpressionNode} & A switch expression (not statement!) & \\
 
         \nodetype{CaseNode} & Case of a switch.  Acts as an equality test. & \\
         \midrule
@@ -874,6 +866,11 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
 
         \nodetype{TypeCastNode} & & \code{(float) 42} \\
         \nodetype{InstanceOfNode} & & \code{x instanceof Float} \\
+        \midrule
+
+        & Patterns & \\
+        \nodetype{AnyPatternNode} & The any pattern \code{_} & \code{case MyType(_)} \\
+        \nodetype{DeconstructorPatternNode} & A record (deconstructor) pattern & \code{case Point(int x, int y)} \\
         \midrule
 
         & Conversion nodes & \\
@@ -910,6 +907,7 @@ All classes are in package \code{org.checkerframework.dataflow.cfg.node}.
         information about the underlying Java source code.  Mostly useful
         for debugging and visualization. An example is indicating the
         start/end of switch statements. & \\
+        \nodetype{CatchMarkerNode} & Marker for the start or end of a catch block & \\
         \midrule
 
         \nodetype{NullChkNode} & Null checks inserted by javac & \\
@@ -948,6 +946,7 @@ edges shown in \autoref{tab:nodesWithException}.
         \code{TypeCastNode} & \code{ClassCastException} \\
         \code{ThrowNode} & Type of \code{e} when \code{throw e} \\
         \code{AssertionErrorNode} & \code{AssertionError} \\
+        \code{NullChkNode} & \code{NullPointerException} \\
         \code{ClassNameNode} & \code{ClassCircularityError}, \code{ClassFormatError}, \\
         & \code{NoClassDefFoundError}, \code{OutOfMemoryError} \\
         \hline
@@ -1007,12 +1006,15 @@ which is properly handled by the translation.}
 Postfix and prefix increment and decrement have the side effect of
 updating the variable or field. To represent this side effect, the Dataflow
 Framework creates an artificial assignment node like \code{n = n + 1}
-for \code{++n} or \code{n++}. This artificial assignment node is stored
-in \code{unaryAssignNodeLookup} of \code{ControlFlowGraph}. The assignment
-node is also stored in \code{treeLookup} for prefix increment or decrement
-so that the result of it is after the assignment. However, the node before
-the assignment is stored in \code{treeLookup} for postfix increment or decrement
-because the result of it should be before the assignment. For further information
+for \code{++n} or \code{n++}. For a postfix increment or decrement,
+\code{postfixNodeLookup} of \code{ControlFlowGraph} maps the tree to the
+artificial tree \code{n + 1} or \code{n - 1}. The assignment
+node is stored in \code{treeLookup} for prefix increment or decrement
+so that the result of it is after the assignment. However, for postfix
+increment or decrement, \code{treeLookup} maps the tree to an artificial
+assignment that saves the value of \code{n} before the increment or decrement
+in a temporary variable, because the result of it should be before the
+assignment. For further information
 about node-tree mapping, see \autoref{sec:conversions}.
 
 \subsubsection{Conditional stores}
@@ -1392,16 +1394,16 @@ methods.
 
 A further complication is that these newly introduced AST trees are
 not part of the TreePath when visiting the AST.  We work around this
-problem by giving the AnnotatedTypeFactory a mapping, called the
-\code{pathHack}, from newly introduced trees to their containing
-MethodTree and ClassTree.
+problem by giving the AnnotatedTypeFactory a mapping, called
+\code{artificialTreeToEnclosingElementMap}, from newly introduced trees
+to the elements of their enclosing method or class.
 
 Possibly even worse, we needed to create fake symbols for variables
 created when desugaring enhanced for loops.  Javac does not expose the
 ability to create a symbol, so we created a new subclass of
-Symbol.VarSymbol called \code{javacutil.tree.DetachedVarSymbol} for
+Symbol.VarSymbol called \code{javacutil.trees.DetachedVarSymbol} for
 this purpose.  AnnotatedTypeFactory explicitly checks for
-DetachedVarSymbols in its DeclarationFromElement method.
+DetachedVarSymbols in its \code{declarationFromElement} method.
 
 
 
@@ -1432,11 +1434,12 @@ and almost all of them map to a single tree.  But we can't maintain a
 unique inverse mapping because some trees have both pre- and
 post-conversion nodes.  Instead, we remember two mappings, one from
 tree to pre-conversion node and, for those trees that were converted,
-one from tree to post-conversion node.  Both the CFGBuilder and the
-ControlFlowGraph store two separate mappings.  The Analysis class
+one from tree to post-conversion node.  Both the CFG builder
+(\code{CFGTranslationPhaseOne}) and the
+ControlFlowGraph store two separate mappings.  The AnalysisResult class
 explicitly stores the tree to pre-conversion node mapping as
-\code{treeLookup} and it indirectly uses the tree to post-conversion
-mapping in \code{Analysis.getValue(Tree)}.  This has effectively
+\code{treeLookup}, and \code{Analysis.getValue(Tree)} indirectly uses the
+tree to post-conversion mapping.  This has effectively
 hidden the distinction between pre- and post-conversion nodes from the
 Checker Framework, but in the long run it might be necessary to expose
 it.
@@ -1473,14 +1476,14 @@ values, taking as input the abstract values computed earlier for
 sub-expressions.  For instance, in a constant propagation analysis,
 the transfer function for addition (\code{+}) would look at the
 abstract values for the left and right operands, and determine that the
-\code{AdditionNode} is a constant if and only if both operands are
+\code{NumericalAdditionNode} is a constant if and only if both operands are
 constant.
 
 An analysis result contains two parts:
 
 \begin{enumerate}
 \item
-The \emph{node-value mapping} (\code{Analysis.nodeValues}) maps \code{Node}s to their abstract
+The \emph{node-value mapping} (\code{AnalysisResult.nodeValues}) maps \code{Node}s to their abstract
 values.  Only nodes that can take on an abstract value are
 used as keys.  For example, in the Checker Framework, the mapping is
 from expression nodes to annotated types.
@@ -1566,7 +1569,8 @@ the abstract value returned for a tree by
 \code{Analysis.getValue(Tree)} includes any implicit conversions
 because it uses the mapping from tree node to post-conversion CFG
 node.  To request the pre-conversion value, one currently uses the
-\code{ControlFlowGraph.treelookup} map directly.
+\code{ControlFlowGraph.treeLookup} map directly (via
+\code{ControlFlowGraph.getTreeLookup()}).
 
 To support questions of the second kind, every node has a reference to
 the basic block it is part of. Thus, for a given AST tree node, the
@@ -1581,21 +1585,28 @@ A transfer function is an object that has a transfer method for
 every \code{Node} type, and also a transfer method for procedure entry.
 
 \begin{itemize}
-\item A transfer method for a \code{Node} type takes a store
-  and the node, and produces an updated store. This is achieved by
-  implementing the \code{NodeVisitor<S, S>} interface for the store
-  type \code{S}.
+\item A transfer method for a \code{Node} type takes a transfer input
+  (which contains one or two stores) and the node, and produces a transfer
+  result (which contains an abstract value and one or two updated stores).
+  This is achieved by implementing the
+  \code{NodeVisitor<TransferResult<V, S>, TransferInput<V, S>>} interface
+  for the abstract value type \code{V} and the store type \code{S}.
 
   These transfer methods also get access to the abstract value of any
   sub-node of the node \code n under consideration.  This is not limited
   to immediate children, but the abstract value for any node contained
   in \code n can be queried.
 
-\item A transfer method for procedure entry returns the initial store, given the
+\item A transfer method for procedure entry (\code{ForwardTransferFunction.initialStore})
+  returns the initial store, given the
   list of parameters (as \code{LocalVariableNode}s that represent the formal
   parameters) and the
-  \code{MethodTree} (useful if the initial store depends on the procedure
-  signature, for instance).
+  \code{UnderlyingAST}, which gives access to the \code{MethodTree} (useful
+  if the initial store depends on the procedure
+  signature, for instance).  A backward transfer function instead provides
+  initial stores for the normal and exceptional exits
+  (\code{BackwardTransferFunction.initialNormalExitStore} and
+  \code{initialExceptionalExitStore}).
 
 \end{itemize}
 
@@ -1682,8 +1693,11 @@ another thread might change the field's value before the next use.
 Exceptions to this are monotonic type properties, such as the
 \code{@MonotonicNonNull} annotation of the nullness type system.  The
 meta-annotation \code{@MonotonicQualifier} declares that a qualifier
-behaves monotonically; however, it is not yet used to preserve dataflow
-information about fields under concurrent semantics.
+behaves monotonically.  Under concurrent semantics, \code{CFAbstractStore}
+retains information about a field whose declaration has a monotonic
+qualifier once the field's value has the qualifier's target (such as
+\code{@NonNull} for \code{@MonotonicNonNull}).  It also retains information
+about a \code{final} field whose receiver cannot be reassigned.
 
 
 \section{Example: Constant Propagation}
@@ -1740,15 +1754,15 @@ to show that the backward analysis works properly.
 To run live variable analysis and create a PDF of the CFG, run
 \code{java org.checkerframework.dataflow.cfg.playground.LiveVariablePdf MyFile.java}.
 
-\textbf{Abstract values.} The class \code{LiveVarValue} wraps a live
+\textbf{Abstract values.} The class \code{LiveVarNode} wraps a live
 variable (which is represented by a node), turning the node into an
 abstract value. The node can be a \code{LocalVariableNode} or a \code{FieldAccessNode}.
 
 \textbf{The store.} The live variable store \code{LiveVarStore} has a field
-\code{liveVarValueSet} which contains a set of \code{LiveVarValue}s. Only
+\code{liveVarNodeSet} which contains a set of \code{LiveVarNode}s. Only
 \code{LocalVariableNode} or \code{FieldAccessNode} will be considered as a
-live variable and added to \code{liveVarValueSet}. The store defines methods
-\code{putLiveVar(LiveVarValue)} and \code{killLiveVar(LiveVarValue)} to add
+live variable and added to \code{liveVarNodeSet}. The store defines methods
+\code{putLiveVar(LiveVarNode)} and \code{killLiveVar(LiveVarNode)} to add
 and kill live variables.
 
 \textbf{The transfer function.} The transfer function \code{LiveVarTransfer}
@@ -1801,7 +1815,7 @@ processes such values in the store.
 
 \textbf{The store.} The reaching definition store \code{ReachingDefinitionStore} has a field
 \code{reachingDefSet} which contains a set of \code{ReachingDefinitionNode}s. The store defines methods
-\code{putDef(ReachingDefinitionValue)} and \code{killDef(Node)} to add
+\code{putDef(ReachingDefinitionNode)} and \code{killDef(Node)} to add
 and kill reaching definitions.
 
 \textbf{The transfer function.} The transfer function visits \code{AssignmentNode}s to
@@ -1849,8 +1863,8 @@ A main purpose of a type factory is to create an \code{AnnotatedTypeMirror}
 based on an input tree node. Using the results of the dataflow analysis,
 the type factory can return a more refined type than otherwise possible.
 
-Type factories that extend from \code{GeneralAnnotatedTypeFactory}
-and set the constructor parameter \code{useFlow} to true will automatically
+Type factories that extend from \code{GenericAnnotatedTypeFactory}
+and set the constructor parameter \code{useFlow} to true (the default) will automatically
 run dataflow analysis and use the result of the analysis when creating an
 \code{AnnotatedTypeMirror}.  The first time that a \code{GenericAnnotatedTypeFactory}
 instance visits a \code{ClassTree}, the type factory runs the dataflow analysis
@@ -1882,11 +1896,11 @@ For a given node \code{n}:
 
     Note that the factory recursively uses information provided by the
     flow analysis to determine the types of sub-trees.  There is a
-    check in \code{Analysis.getValue} that the node whose type is
-    being requested is a sub-node of the node to which the transfer
-    function is currently being applied.  For other nodes, the
-    analysis will return \code{null} (i.e., no information) and the
-    factory will return the flow-insensitive annotated type.
+    check in \code{Analysis.getValue}:  if the node whose type is
+    being requested is the node (or has the tree) to which the transfer
+    function is currently being applied, then the
+    analysis returns \code{null} (i.e., no information) and the
+    factory returns the flow-insensitive annotated type.
 
 \end{itemize}
 
@@ -2068,8 +2082,8 @@ and $<:$ denotes standard Java subtyping.
 %  LocalWords: TernaryExpression UnsignedRightShift NotEqual GreaterThan GreaterThanOrEqual LessThan ArrayCreation ObjectCreation TypeCast cond
 %  LocalWords: InstanceOf NarrowingConversion StringConversion WideningConversion ArrayType ParameterizedType ClassName PrimitiveType PackageName AssertionError NullChk accessor
 %  LocalWords: VariableDeclaration FieldAssignment CFGFieldAssignment getRegularStore CFGConditionalOr fnc CFGConditionalOr2 ConditionalOrNode ConditionalOr2 valueOf
-%  LocalWords: IdentifierTree FieldAccessNode ImplicitThisNode unboxing TreePath pathHack MethodTree VarSymbol DetachedVarSymbols DeclarationFromElement BoxedClass treeLookup getValue
-%  LocalWords: nodeValues AdditionNode postconversion treelookup LocalVariableNode AconcurrentSemantics MonotonicNonNull MonotonicQualifier IntegerLiteralNode EqualToNode unshaded
+%  LocalWords: IdentifierTree FieldAccessNode ImplicitThisNode unboxing TreePath artificialTreeToEnclosingElementMap MethodTree VarSymbol DetachedVarSymbols declarationFromElement BoxedClass treeLookup getValue
+%  LocalWords: nodeValues CFGTranslationPhaseOne postconversion getTreeLookup LocalVariableNode AconcurrentSemantics MonotonicNonNull MonotonicQualifier IntegerLiteralNode EqualToNode unshaded
 %  LocalWords: ConstSimple SelfReference PureMethodCall javacutil stubparser TreeParser TreeBuilder DetachedVarSymbol LiveSimple
 % LocalWords:  Uber's Nullsafe CFGVisualizeLauncher intra boolean subparts ValueLiteralNode c' lang BooleanLiteralNode CharacterLiteralNode DoubleLiteralNode FloatLiteralNode ThisNode
 % LocalWords:  LongLiteralNode NullLiteralNode ShortLiteralNode StringLiteralNode ArrayAccessNode MethodAccessNode ExplicitThisNode SuperNode MethodInvocationNode BinaryOperationNode
@@ -2080,5 +2094,5 @@ and $<:$ denotes standard Java subtyping.
 % LocalWords:  TypeCastNode InstanceOfNode instanceof NarrowingConversionNode StringConversionNode WideningConversionNode ArrayTypeNode ParameterizedTypeNode PrimitiveTypeNode Varargs
 % LocalWords:  ClassNameNode PackageNameNode ReturnNode AssertionErrorNode SynchronizedNode varargs MarkerNode NullChkNode VariableDeclarationNode ClassDeclarationNode NoSuchFieldError
 % LocalWords:  LambdaResultExpressionNode ArrayIndexOutOfBoundsException Throwable ClassFormatError ArithmeticException NegativeArraySizeException ClassCircularityError CFGIfStatement
-% LocalWords:  NoClassDefFoundError unaryAssignNodeLookup assertionsEnabled CFGAssert CFGSwitch
-% LocalWords:  intValue
+% LocalWords:  NoClassDefFoundError postfixNodeLookup assertionsEnabled CFGAssert CFGSwitch
+% LocalWords:  intValue AnyPatternNode DeconstructorPatternNode CatchMarkerNode LiveVarNode

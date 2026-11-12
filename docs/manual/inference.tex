@@ -402,9 +402,6 @@ set, the WPI scripts will download this dependency automatically.)
   mvn,
   python3 (for dljc),
   wget.
-
-  Python 2.7 modules:
-  subprocess32.
 \end{itemize}
 
 
@@ -565,7 +562,7 @@ git clone https://github.com/mernst/plume-lib.git
 cd plume-lib
 make jar
 $CHECKERFRAMEWORK/checker/bin/infer-and-annotate.sh \
-    "LockChecker,NullnessChecker" java/plume.jar:java/lib/junit-4.12.jar:$JAVA_HOME/lib/tools.jar \
+    "LockChecker,NullnessChecker" java/plume.jar:java/lib/junit-4.12.jar \
     $(find java/src/plume/ -name "*.java")
 # View the results
 git diff
@@ -664,7 +661,7 @@ ignore such a field.
 You probably have an annotation such as
 \javaeejavadocanno{javax/inject/Inject.html}{Inject}
 or
-\href{https://types.cs.washington.edu/plume-lib/api/plume/Option.html}{\<@Option>}
+\href{https://plumelib.org/options/api/org/plumelib/options/Option.html}{\<@Option>}
 that indicates such fields.  Meta-annotate the declaration of the \<Inject>
 or \<Option> annotation with
 \refqualclass{framework/qual}{IgnoreInWholeProgramInference}.
@@ -770,5 +767,5 @@ some benefits:
 %%  LocalWords:  Ainfer java jaif plugin classpath m2 m1 multi javax CFI
 %%  LocalWords:  AsuggestPureMethods CHECKERFRAMEWORK GuardedByBottom dljc
 %%  LocalWords:  IgnoreInWholeProgramInference typechecking Inference'' m3
-% LocalWords:  PROJECTDIR awk gradle mvn python3 wget subprocess32 github
+% LocalWords:  PROJECTDIR awk gradle mvn python3 wget github
 % LocalWords:  securerandom astub typecheck

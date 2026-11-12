@@ -141,14 +141,14 @@ $ <strong>javacheck myqual/Encrypted.java myqual/PossiblyUnencrypted.java myqual
     classfiles to the processor classpath:</p>
     <pre>
 $ <strong>javacheck -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=myqual.Encrypted,myqual.PossiblyUnencrypted,myqual.PolyEncrypted encrypted/EncryptionDemo.java</strong>
-encrypted/EncryptionDemo.java:21: error: [assignment] incompatible types in assignment.
-        @Encrypted int encryptInt = (character + OFFSET) % Character.MAX_VALUE ;
-                                                         ^
+encrypted/EncryptionDemo.java:17: error: [assignment] incompatible types in assignment.
+    @Encrypted int encryptInt = (character + OFFSET) % Character.MAX_VALUE;
+                                                     ^
   found   : @PossiblyUnencrypted int
   required: @Encrypted int
-encrypted/EncryptionDemo.java:32: error: [argument] incompatible types in argument.
-        sendOverInternet(password);
-                         ^
+encrypted/EncryptionDemo.java:28: error: [argument] incompatible argument for parameter msg of EncryptionDemo.sendOverInternet.
+    sendOverInternet(password);
+                     ^
   found   : @PossiblyUnencrypted String
   required: @Encrypted String
 2 errors
@@ -164,8 +164,8 @@ encrypted/EncryptionDemo.java:32: error: [argument] incompatible types in argume
     suppressing the warning is the correct action. See the correction
     below.</p>
     <pre>
-<b>@SuppressWarnings("encrypted")  // this is the encryption algorithm</b>
-private @Encrypted char encryptCharacter(char character) {
+  <b>@SuppressWarnings("encrypted") // this is the encryption algorithm</b>
+  private @Encrypted char encryptCharacter(char character) {
 </pre>
   </div>
 
@@ -175,9 +175,9 @@ private @Encrypted char encryptCharacter(char character) {
     <p>You will see the following error:</p>
     <pre>
 $ <strong>javacheck -processor org.checkerframework.common.subtyping.SubtypingChecker -Aquals=myqual.Encrypted,myqual.PossiblyUnencrypted,myqual.PolyEncrypted encrypted/EncryptionDemo.java</strong>
-encrypted/EncryptionDemo.java:34: error: [argument] incompatible types in argument.
-        sendOverInternet(password);
-                         ^
+encrypted/EncryptionDemo.java:29: error: [argument] incompatible argument for parameter msg of EncryptionDemo.sendOverInternet.
+    sendOverInternet(password);
+                     ^
   found   : @PossiblyUnencrypted String
   required: @Encrypted String
 1 error
@@ -193,10 +193,10 @@ encrypted/EncryptionDemo.java:34: error: [argument] incompatible types in argume
     <p>The password should be encrypted before it is sent over the
     Internet. The correction is below.</p>
     <pre>
-void sendPassword() {
+  public void sendPassword() {
     String password = getUserPassword();
     sendOverInternet(<b>encrypt(</b>password<b>)</b>);
-}
+  }
 </pre>
   </div>
 

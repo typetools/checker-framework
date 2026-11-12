@@ -287,9 +287,9 @@ defining, e.g.:
 
 \begin{alltt}
 @UI
-public class UIRunnable extends Runnable \{...\}
+public class UIRunnable implements Runnable \{...\}
 @AlwaysSafe
-public class SafeRunnable extends Runnable \{...\}
+public class SafeRunnable implements Runnable \{...\}
 \end{alltt}
 The GUI Effect Checker will automatically apply the qualifier to all classes and interfaces the class
 being defined extends or implements.  (This means you cannot write a class that is a subtype of a

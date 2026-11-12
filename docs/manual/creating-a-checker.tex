@@ -956,7 +956,7 @@ class MyClass {
 }
 \end{Verbatim}
 and assuming that the variable \<myClass> is of type \<MyClass>, the type of
-\<myClass.field> is viewpoint-adapted to \<@Anno("myClass.field")>.
+\<myClass.field2> is viewpoint-adapted to \<@Anno("myClass.field")>.
 
 To use this built-in functionality, add a \refqualclass{framework/qual}{JavaExpression} annotation
 to any annotation element that should be interpreted as a Java expression.  The type of the
@@ -1048,8 +1048,8 @@ A checker can customize the default error messages through a
 The property file keys are the strings passed to \refmethodterse{framework/source}{SourceChecker}{reportError}{(java.lang.Object,java.lang.String,java.lang.Object...)}
 and
 \refmethodterse{framework/source}{SourceChecker}{reportWarning}{(java.lang.Object,java.lang.String,java.lang.Object...)}
-(like \code{"type.incompatible"}) and the values are the strings to be
-printed (\code{"cannot assign ..."}).
+(like \code{"assignment"}) and the values are the strings to be
+printed (like \code{"incompatible types in assignment ..."}).
 The \<messages.properties> file only needs to mention the new messages that
 the checker defines.
 It is also allowed to override messages defined in superclasses, but this
@@ -1284,10 +1284,10 @@ similar to Java subtype rules, but taking the type qualifiers into account.
 
 \begin{itemize}
 
-\item invalid assignment (type.incompatible) for an assignment from
-  an expression type to an incompatible type.  The assignment can be a
-  simple assignment or a pseudo-assignment, such as a return statement or
-  argument passing in a method invocation
+\item invalid assignment (assignment, return, argument, and others) for an
+  assignment from an expression type to an incompatible type.  The
+  assignment can be a simple assignment or a pseudo-assignment, such as a
+  return statement or argument passing in a method invocation.
 
   In particular, in every assignment and pseudo-assignment, the
   left-hand side of the assignment is a supertype of (or the same type
@@ -1959,7 +1959,7 @@ uses the JDK\@.  You have two options:
   \url{https://github.com/typetools/jdk}.
 
   If your checker is written in a fork of
-  \url{https://github.com/typetools/jdk}, then the checker and the JDK must
+  \url{https://github.com/typetools/checker-framework}, then the checker and the JDK must
   use the same fork name (GitHub organization) and branch name; this is
   necessary so that the CI jobs use the right annotated JDK.
 

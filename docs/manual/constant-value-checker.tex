@@ -354,11 +354,11 @@ and without the \code{-AignoreRangeOverflow} command-line option.
 \begin{Verbatim}
   ...
   if (i > 5) {
-    // i now has type:  @IntRange(from=5, to=Integer.MAX_VALUE)
+    // i now has type:  @IntRange(from=6, to=Integer.MAX_VALUE)
     i = i + 1;
     // If i started out as Integer.MAX_VALUE, then i is now Integer.MIN_VALUE.
     // i's type is now @IntRange(from=Integer.MIN_VALUE, to=Integer.MAX_VALUE).
-    // When ignoring overflow, i's type is now @IntRange(from=6, to=Integer.MAX_VALUE).
+    // When ignoring overflow, i's type is now @IntRange(from=7, to=Integer.MAX_VALUE).
   }
 \end{Verbatim}
 \caption{With the \code{-AignoreRangeOverflow} command-line option,

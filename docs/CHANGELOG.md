@@ -451,7 +451,7 @@ two new annotations:
 The Signature Checker no longer supports `@BinaryNameWithoutPackage` because
 it is equivalent to `@Identifier`; use `@Identifier` instead.
 
-The JavaStubifier implementation now appears in package `org.checkerframework.framework.stubifier.JavaStubifier`.
+The JavaStubifier implementation now appears in package `org.checkerframework.framework.stubifier`.
 
 ### Closed issues
 
@@ -568,7 +568,7 @@ Renamed fields:
 Deprecated methods:
 
 * `AbstractAnalysis.getContainingMethod()` => `getEnclosingMethod()`
-* `AbstractAnalysis.getContainingClass()` => `getEnclosingMethod()`
+* `AbstractAnalysis.getContainingClass()` => `getEnclosingClass()`
 * `ControlFlowGraph.getContainingMethod()` => `getEnclosingMethod()`
 * `ControlFlowGraph.getContainingClass()` => `getEnclosingClass()`
 * `JavaExpression.isUnassignableByOtherCode()` => `isAssignableByOtherCode()`
@@ -723,11 +723,11 @@ to be written on a non-integral type.
 
 * The constructor takes an `AnnotatedTypeFactory`.
 * Changes to `isSubtype()`:
-  * `isSubtype()` has been renamed to `isSubypeQualifiers()` and made protected.
+  * `isSubtype()` has been renamed to `isSubtypeQualifiers()` and made protected.
       Clients that are not in a qualifier hierarchy should call `isSubtypeShallow()`
       or, rarely, new method `isSubtypeQualifiersOnly()`.
   * New public method `isSubtypeShallow()` that takes two more arguments than
-      `isSubypeQualifiers()`.
+      `isSubtypeQualifiers()`.
 * Similar changes to `greatestLowerBound()` and `leastUpperBound()`.
 
 ### Closed issues
@@ -1102,8 +1102,8 @@ the standard rule for polymorphic qualifiers.)
 
 ### Implementation details
 
-When passed a NewClassTree that creates an anonymous constructor,
-AnnotatedTypeFactory#constructorFormUse now returns the type of the anonymous
+When passed a NewClassTree that creates an anonymous class,
+AnnotatedTypeFactory#constructorFromUse now returns the type of the anonymous
 constructor rather than the type of the super constructor invoked in the
 anonymous class's constructor.  If the super constructor has explicit
 annotations, they are copied to the anonymous class's constructor.
@@ -1307,7 +1307,7 @@ Method renamings (the old methods were removed):
 
 Method renamings in `DefaultTypeHierarchy` (the old methods were removed):
 
-* `visitIntersectionSupertype` => `visitIntersectionSupertype`
+* `visitIntersectionSupertype` => `visitType_Intersection`
 * `visitIntersectionSubtype` => `visitIntersection_Type`
 * `visitUnionSubtype` => `visitUnion_Type`
 * `visitTypevarSubtype` => `visitTypevar_Type`
@@ -1474,7 +1474,7 @@ Method renamings:
   * `standardizeVariable` => `atVariableDeclaration`
 
 Deprecated some overloads in `AnnotationUtils` that take a `CharSequence`
-(use an overload that takes an `ExecutablElement`):
+(use an overload that takes an `ExecutableElement`):
 
 * `getElementValueArray`
 * `getElementValueClassName`
@@ -1631,7 +1631,7 @@ Renamed methods:
 ### Implementation details
 
 Copied methods on `TreePath`s from class `TreeUtils` to new class `TreePathUtil`.
-(The methods in TreePath will be deleted in the next release.)
+(The methods in TreeUtils will be deleted in the next release.)
 
 * `TreeUtils.enclosingClass` => `TreePathUtil.enclosingClass`
 * `TreeUtils.enclosingMethod` => `TreePathUtil.enclosingMethod`
@@ -1826,7 +1826,7 @@ Renamed methods:
 * NumberUtils.isPrimitiveFloatingPoint => TypeKindUtils.isFloatingPoint
 * NumberUtils.isPrimitiveIntegral => TypeKindUtils.isIntegral
 * NumberUtils.unboxPrimitive => TypeKindUtils.primitiveOrBoxedToTypeKind
-* TypeKindUtils.widenedNumericType => TypeKindUtils.widenedNumericType
+* TypesUtils.widenedNumericType => TypeKindUtils.widenedNumericType
 * TypesUtils.isFloating => TypesUtils.isFloatingPrimitive
 * TypesUtils.isIntegral => TypesUtils.isIntegralPrimitive
 
@@ -3239,8 +3239,8 @@ Renamed method annotations used by the Nullness Checker:
 
 * @AssertNonNullAfter => @EnsuresNonNull
 * @NonNullOnEntry => @RequiresNonNull
-* @AssertNonNullIfTrue(...) => @IfMethodReturnsFalseEnsuresNonNull
-* @AssertNonNullIfFalse(...) => @IfMethodReturnsFalseEnsuresNonNull
+* @AssertNonNullIfTrue(...) => @EnsuresNonNullIf(result=true, ...)
+* @AssertNonNullIfFalse(...) => @EnsuresNonNullIf(result=false, ...)
 * @LazyNonNull => @MonotonicNonNull
 * @AssertParametersNonNull => [no replacement]
 
@@ -4130,7 +4130,7 @@ Checkers
 * Updated stub parser project to latest version (javaparser 1.0.8)
 * Fixed bugs related to iterable wildcards and type parameter types
 
-## Version 1.0.6 (24 Feb 2009)
+## Version 1.0.6 (24 Feb 2010)
 
 Nullness Checker
 
@@ -4149,7 +4149,7 @@ Javari Checker
     `this.field`)
   * apply default annotations to method parameters
 
-## Version 1.0.5 (12 Jan 2009)
+## Version 1.0.5 (12 Jan 2010)
 
 Checkers
 
@@ -5360,7 +5360,7 @@ Code Changes
 * checkers.types
   * AnnotatedTypeFactory.getClass(Element) and getMethod(Element) use the
       tree of the passed Element if one exists
-  * AnnotatedClassType.includeAt, .execludeAt, .getAnnotationData were
+  * AnnotatedClassType.includeAt, .excludeAt, .getAnnotationData were
       added and are public
   * added constructor() and skipParens() methods to InternalUtils
     renamed getTypeArgumentLocations() to getAnnotatedTypeArgumentLocations()
