@@ -1,6 +1,7 @@
 package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
@@ -1303,10 +1304,12 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Collects the variables that a tree assigns: the left-hand sides of its assignments and compound
-   * assignments, and the operands of its increments and decrements. It does not descend into lambda
-   * bodies, method bodies, or named class declarations, which do not execute when the tree is
-   * evaluated. It does descend into the initializer blocks and field initializers of an anonymous
-   * class body, which execute when the enclosing {@code new} expression is evaluated.
+   * assignments, and the operands of its increments and decrements. It does not descend into
+   * annotations, lambda bodies, method bodies, or named class declarations, which do not execute
+   * when the tree is evaluated. (Javac represents an annotation argument as an assignment, as in
+   * {@code @IntVal(value = {0, 1})}, but it does not assign a variable.) It does descend into the
+   * initializer blocks and field initializers of an anonymous class body, which execute when the
+   * enclosing {@code new} expression is evaluated.
    *
    * <p>If constructed with a side-effect-freedom predicate, it also records whether the tree calls
    * a method or constructor that is not side-effect-free.
@@ -1396,6 +1399,11 @@ public abstract class CFAbstractTransfer<
         default -> {}
       }
       return super.visitUnary(tree, p);
+    }
+
+    @Override
+    public Void visitAnnotation(AnnotationTree tree, Void p) {
+      return null;
     }
 
     @Override
