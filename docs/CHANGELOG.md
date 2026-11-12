@@ -14,10 +14,11 @@ assigned a cast of the expression or record component that the pattern is
 matched against, as in `String s = (String) o;`.  A type system can refine it
 further; for example, the Nullness Checker refines it to `@NonNull` when the
 type pattern is the entire pattern of an `instanceof` or a case label, because
-such a pattern does not match null.  A type pattern nested in a record pattern,
-such as `String s` in `Box(String s)`, can match a null record component if it
-is unconditional for the component's type; then the variable is not refined to
-`@NonNull`.
+such a pattern does not match null.  A pattern nested in a record pattern can
+match null if it is unconditional for the record component's type; for
+example, in `case Box(var s)` or `case Box(String s)`, `s` is null if the
+component is null, so `s` remains nullable if the component's type is
+`@Nullable`.
 
 The qualifiers of a record pattern's type are inferred from the type that the
 pattern is matched against, in the same way that javac infers its type
@@ -41,6 +42,10 @@ New overridable methods `BaseTypeVisitor.checkInstanceOfPattern()` and
 an `instanceof` type pattern.  New overridable methods
 `CFAbstractTransfer.refineBindingVariable()` and
 `CFAbstractTransfer.refineCaseLabelBindingVariable()` refine a binding variable.
+
+New method `QualifierPolymorphism.resolveWithReceiver()`.  A class that
+implements `QualifierPolymorphism` directly, rather than extending
+`AbstractQualifierPolymorphism`, must implement it.
 
 New overridable methods `BaseTypeVisitor.checkRecordPatternTypeInference()`,
 `BaseTypeVisitor.checkNestedBindingPatterns()`, and
