@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -930,11 +931,10 @@ public abstract class CFAbstractTransfer<
    * is tracked by the store (e.g., a local variable or a field). Clients usually call this twice
    * with {@code firstNode} and {@code secondNode} reversed, to refine each of them.
    *
-   * <p>Note that when overriding this method, when a new type is inserted into the store, {@link
-   * #splitAssignments} should be called, and the new type should be inserted into the store for
-   * each of the resulting nodes. The result of {@link #splitAssignments} omits each node that might
-   * not have the value of {@code secondNode} when the comparison completes; do not insert the new
-   * type for such a node.
+   * <p>Note that when overriding this method, insert a new type for {@code secondNode} into the
+   * store by calling {@link #insertValueForSplitAssignments}. It inserts the new type for each node
+   * that {@link #splitAssignments} returns, which omits each node that might not have the value of
+   * {@code secondNode} when the comparison completes.
    *
    * @param firstNode the node that might be more precise
    * @param secondNode the node whose type to possibly refine
@@ -954,26 +954,11 @@ public abstract class CFAbstractTransfer<
       boolean notEqualTo) {
     if (firstValue != null) {
       // Only need to insert if the second value is actually different.
-      if (!firstValue.equals(secondValue)) {
-        List<Node> secondParts = splitAssignments(secondNode);
-        for (Node secondPart : secondParts) {
-          JavaExpression secondInternal = JavaExpression.fromNode(secondPart);
-          if (!secondInternal.isDeterministic(analysis.atypeFactory)) {
-            continue;
-          }
-          if (CFAbstractStore.canInsertJavaExpression(secondInternal)) {
-            S thenStore = res.getThenStore();
-            S elseStore = res.getElseStore();
-            if (notEqualTo) {
-              elseStore.insertValue(secondInternal, firstValue);
-            } else {
-              thenStore.insertValue(secondInternal, firstValue);
-            }
-            // To handle `(a = b = c) == x`, repeat for all insertable receivers of
-            // split assignments instead of returning.
-            res = new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
-          }
-        }
+      if (!firstValue.equals(secondValue) && hasRefinableSide(secondNode)) {
+        S thenStore = res.getThenStore();
+        S elseStore = res.getElseStore();
+        insertValueForSplitAssignments(notEqualTo ? elseStore : thenStore, secondNode, firstValue);
+        res = new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
       }
     }
     return res;
@@ -1010,7 +995,8 @@ public abstract class CFAbstractTransfer<
    * write even when the store would keep the field's refinement across the call, as it does for a
    * refinement to the target of a monotonic qualifier (see {@link
    * org.checkerframework.framework.qual.MonotonicQualifier}): whether the store keeps a refinement
-   * depends on the refined value, which this method does not know.
+   * depends on the refined value, which this method does not know. {@link
+   * #insertValueForSplitAssignments} inserts such a refinement where the store would keep it.
    *
    * <p>A node that is neither an assignment nor a value-preserving cast is returned even if it
    * contains an assignment, as in {@code x + (x = 1)}. {@link JavaExpression#fromNode} converts
@@ -1034,21 +1020,126 @@ public abstract class CFAbstractTransfer<
    *     list if {@code node} might have a different value when the comparison completes
    */
   protected List<Node> splitAssignments(Node node) {
-    List<Node> result = analysis.splitAssignmentsCache.get(node);
+    return splitAssignmentsResult(node).sides();
+  }
+
+  /**
+   * The result of {@link #splitAssignments}, together with the fields that it omits only because a
+   * call might write them.
+   *
+   * @param sides the result of {@link #splitAssignments}
+   * @param fieldsWrittenByCalls the nodes that the result of {@link #splitAssignments} omits only
+   *     because a call that is not side-effect-free, and that is evaluated after the node and
+   *     before the comparison completes, might write the field that the node denotes; each converts
+   *     to a {@link FieldAccess}
+   */
+  record SplitAssignmentsResult(List<Node> sides, List<Node> fieldsWrittenByCalls) {}
+
+  /**
+   * Returns the result of {@link #splitAssignments}, together with the fields that it omits only
+   * because a call might write them.
+   *
+   * <p>Clients must not modify the result, which is cached.
+   *
+   * @param node possibly an assignment node or a cast
+   * @return the result of {@link #splitAssignments} for {@code node}, and the fields that it omits
+   *     only because a call might write them
+   */
+  private SplitAssignmentsResult splitAssignmentsResult(Node node) {
+    SplitAssignmentsResult result = analysis.splitAssignmentsCache.get(node);
     if (result == null) {
-      result = Collections.unmodifiableList(computeSplitAssignments(node));
+      result = computeSplitAssignments(node);
       analysis.splitAssignmentsCache.put(node, result);
     }
     return result;
   }
 
   /**
-   * Returns the result of {@link #splitAssignments}, without using the cache.
+   * Returns true if {@link #insertValueForSplitAssignments} might insert a value for the given
+   * node: if a store can hold a value for some node in the result of {@link #splitAssignments}, or
+   * for some field that it omits only because a call might write it, and that node is
+   * deterministic.
    *
-   * @param node possibly an assignment node
-   * @return the result of {@link #splitAssignments} for {@code node}
+   * @param node possibly an assignment node or a cast
+   * @return true if {@link #insertValueForSplitAssignments} might insert a value for {@code node}
    */
-  private List<Node> computeSplitAssignments(Node node) {
+  protected boolean hasRefinableSide(Node node) {
+    SplitAssignmentsResult split = splitAssignmentsResult(node);
+    for (List<Node> sides : List.of(split.sides(), split.fieldsWrittenByCalls())) {
+      for (Node side : sides) {
+        JavaExpression expr = JavaExpression.fromNode(side);
+        if (CFAbstractStore.canInsertJavaExpression(expr)
+            && expr.isDeterministic(analysis.atypeFactory)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Inserts the given value into the given store for each node that {@link #splitAssignments}
+   * returns for the given node. Also inserts a value for each field that {@link #splitAssignments}
+   * omits only because a call that is not side-effect-free might write it: the value that the store
+   * keeps for the field across such a call (see {@link
+   * CFAbstractStore#newFieldValueAfterMethodCall}), such as a refinement to the target of a
+   * monotonic qualifier.
+   *
+   * @param store the store to modify
+   * @param node possibly an assignment node or a cast
+   * @param value the value to insert for each expression that has the value of {@code node}
+   */
+  protected void insertValueForSplitAssignments(S store, Node node, V value) {
+    insertValueForSplitAssignments(store, node, expr -> value);
+  }
+
+  /**
+   * Inserts the given annotation into the given store for each node that {@link #splitAssignments}
+   * returns for the given node, and for each field that it omits only because a call might write
+   * it, as {@link #insertValueForSplitAssignments(CFAbstractStore, Node, CFAbstractValue)} does.
+   *
+   * @param store the store to modify
+   * @param node possibly an assignment node or a cast
+   * @param anno the annotation to insert for each expression that has the value of {@code node}
+   */
+  protected void insertValueForSplitAssignments(S store, Node node, AnnotationMirror anno) {
+    insertValueForSplitAssignments(
+        store, node, expr -> analysis.createSingleAnnotationValue(anno, expr.getType()));
+  }
+
+  /**
+   * Inserts a value into the given store for each node that {@link #splitAssignments} returns for
+   * the given node, and for each field that it omits only because a call might write it.
+   *
+   * @param store the store to modify
+   * @param node possibly an assignment node or a cast
+   * @param valueOf the value to insert for an expression that has the value of {@code node}
+   */
+  private void insertValueForSplitAssignments(
+      S store, Node node, Function<JavaExpression, V> valueOf) {
+    SplitAssignmentsResult split = splitAssignmentsResult(node);
+    for (Node side : split.sides()) {
+      JavaExpression expr = JavaExpression.fromNode(side);
+      store.insertValue(expr, valueOf.apply(expr));
+    }
+    for (Node field : split.fieldsWrittenByCalls()) {
+      FieldAccess fieldAccess = (FieldAccess) JavaExpression.fromNode(field);
+      @Nullable V keptValue =
+          store.newFieldValueAfterMethodCall(
+              fieldAccess, analysis.atypeFactory, valueOf.apply(fieldAccess));
+      if (keptValue != null) {
+        store.insertValue(fieldAccess, keptValue);
+      }
+    }
+  }
+
+  /**
+   * Returns the result of {@link #splitAssignmentsResult}, without using the cache.
+   *
+   * @param node possibly an assignment node or a cast
+   * @return the result of {@link #splitAssignmentsResult} for {@code node}
+   */
+  private SplitAssignmentsResult computeSplitAssignments(Node node) {
     Node unwrapped = node;
     while (unwrapped instanceof WideningConversionNode widening
         && isValuePreservingConversion(widening)) {
@@ -1063,6 +1154,7 @@ public abstract class CFAbstractTransfer<
     // requires the path to the tree of `node`, which can be costly to compute.
     Writes laterWrites = null;
     List<Node> result = new ArrayList<>(sides.size());
+    List<Node> fieldsWrittenByCalls = new ArrayList<>(0);
     for (Node side : sides) {
       JavaExpression expr = JavaExpression.fromNode(side);
       if (CFAbstractStore.canInsertJavaExpression(expr)) {
@@ -1070,12 +1162,17 @@ public abstract class CFAbstractTransfer<
           laterWrites = laterWrites(node);
         }
         if (laterWrites.mayChange(expr, false)) {
+          if (expr instanceof FieldAccess fieldAccess
+              && laterWrites.mayChangeOnlyByCalls(fieldAccess)) {
+            fieldsWrittenByCalls.add(side);
+          }
           continue;
         }
       }
       result.add(side);
     }
-    return result;
+    return new SplitAssignmentsResult(
+        Collections.unmodifiableList(result), Collections.unmodifiableList(fieldsWrittenByCalls));
   }
 
   /**
@@ -1388,6 +1485,18 @@ public abstract class CFAbstractTransfer<
     /** True if any non-final field and any array element might be written. */
     private boolean anyHeapLocation = false;
 
+    /**
+     * True if a call to a method or constructor that is not side-effect-free might write any
+     * non-final field and any array element.
+     */
+    private boolean anyHeapLocationByCall = false;
+
+    /**
+     * True if an assignment, compound assignment, increment, or decrement might write any non-final
+     * field and any array element.
+     */
+    private boolean anyHeapLocationByAssignment = false;
+
     /** Creates an empty set of writes. */
     Writes() {}
 
@@ -1407,6 +1516,7 @@ public abstract class CFAbstractTransfer<
         // Every local variable converts to a LocalVariable, so `target` is a field or an array
         // element.
         anyHeapLocation = true;
+        anyHeapLocationByAssignment = true;
       }
     }
 
@@ -1451,6 +1561,7 @@ public abstract class CFAbstractTransfer<
     private void addCall(ExecutableElement method) {
       if (!analysis.isSideEffectFree(method)) {
         anyHeapLocation = true;
+        anyHeapLocationByCall = true;
       }
     }
 
@@ -1584,6 +1695,34 @@ public abstract class CFAbstractTransfer<
             || expr instanceof ThisReference
             || expr instanceof ValueLiteral);
       }
+    }
+
+    /**
+     * Returns true if these writes might change the value of the given field access only because a
+     * call that is not side-effect-free might write the field that it denotes. The store keeps part
+     * of a refinement of such a field across such a call (see {@link
+     * CFAbstractStore#newFieldValueAfterMethodCall}). Returns false if side effects unrefine
+     * aliases (see {@link GenericAnnotatedTypeFactory#sideEffectsUnrefineAliases}), because then
+     * the store keeps no refinement of the field across the call.
+     *
+     * @param fa a field access
+     * @return true if these writes might change the value of {@code fa} only because a call might
+     *     write the field that it denotes
+     */
+    boolean mayChangeOnlyByCalls(FieldAccess fa) {
+      if (!anyHeapLocationByCall
+          || anyHeapLocationByAssignment
+          || fa.isFinal()
+          || analysis.atypeFactory.sideEffectsUnrefineAliases) {
+        return false;
+      }
+      for (FieldAccess field : fields) {
+        if (field.getField().equals(fa.getField())
+            && analysis.canAlias(field.getReceiver(), fa.getReceiver())) {
+          return false;
+        }
+      }
+      return !mayChange(fa.getReceiver(), false);
     }
 
     /**

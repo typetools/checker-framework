@@ -133,7 +133,8 @@ public abstract class CFAbstractAnalysis<
    * This is an {@link IdentityHashMap} because the result depends on the trees around the node, but
    * {@link Node#equals} can be true for nodes that represent different trees.
    */
-  final IdentityHashMap<Node, List<Node>> splitAssignmentsCache = new IdentityHashMap<>();
+  final IdentityHashMap<Node, CFAbstractTransfer.SplitAssignmentsResult> splitAssignmentsCache =
+      new IdentityHashMap<>();
 
   /**
    * Cache for {@link StringToJavaExpression#atMethodDecl}, as called by {@link

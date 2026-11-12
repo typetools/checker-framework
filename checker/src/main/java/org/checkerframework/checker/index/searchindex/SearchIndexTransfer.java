@@ -70,7 +70,7 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
             AnnotationUtils.getElementValueArray(
                 rightSIF, atypeFactory.searchIndexForValueElement, String.class);
         AnnotationMirror nif = atypeFactory.createNegativeIndexFor(arrays);
-        insertValueForComparedNode(store, right, nif);
+        insertValueForSplitAssignments(store, right, nif);
       }
     }
   }

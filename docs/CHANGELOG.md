@@ -12,6 +12,10 @@
 `CFAbstractTransfer.processCommonAssignment` takes a new parameter: the
 right-hand side of the assignment as written in source code.
 
+To refine an operand of a comparison, an override of
+`CFAbstractTransfer.strengthenAnnotationOfEqualTo` should call the new method
+`CFAbstractTransfer.insertValueForSplitAssignments`.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)

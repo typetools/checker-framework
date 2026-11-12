@@ -3,7 +3,6 @@ package org.checkerframework.checker.nullness;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
@@ -34,7 +33,6 @@ import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.util.PurityUtils;
-import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -149,12 +147,10 @@ public class NullnessTransfer
   protected void makeNonNull(NullnessStore store, Node node) {
     // For a node that is neither an assignment nor a cast, the result of splitAssignments contains
     // at most the node itself.  Not calling splitAssignments avoids its cost at every dereference.
-    List<Node> parts =
-        node instanceof AssignmentNode || node instanceof TypeCastNode
-            ? splitAssignments(node)
-            : Collections.singletonList(node);
-    for (Node part : parts) {
-      store.insertValue(JavaExpression.fromNode(part), NONNULL);
+    if (node instanceof AssignmentNode || node instanceof TypeCastNode) {
+      insertValueForSplitAssignments(store, node, NONNULL);
+    } else {
+      store.insertValue(JavaExpression.fromNode(node), NONNULL);
     }
   }
 
@@ -249,19 +245,7 @@ public class NullnessTransfer
       NullnessStore thenStore = res.getThenStore();
       NullnessStore elseStore = res.getElseStore();
 
-      List<Node> secondParts = splitAssignments(secondNode);
-      for (Node secondPart : secondParts) {
-        JavaExpression secondInternal = JavaExpression.fromNode(secondPart);
-        if (CFAbstractStore.canInsertJavaExpression(secondInternal)) {
-          thenStore = thenStore == null ? res.getThenStore() : thenStore;
-          elseStore = elseStore == null ? res.getElseStore() : elseStore;
-          if (notEqualTo) {
-            thenStore.insertValue(secondInternal, NONNULL);
-          } else {
-            elseStore.insertValue(secondInternal, NONNULL);
-          }
-        }
-      }
+      insertValueForSplitAssignments(notEqualTo ? thenStore : elseStore, secondNode, NONNULL);
 
       if (secondValue != null
           && nullnessTypeFactory.containsSameByClass(

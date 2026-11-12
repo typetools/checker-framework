@@ -628,4 +628,31 @@ public class AssignmentInComparison {
       p.toString();
     }
   }
+
+  // Not side-effect-free.
+  AssignmentInComparison sideEffectingCall() {
+    return this;
+  }
+
+  void monotonicFieldBeforeCall() {
+    if (mono == sideEffectingCall()) {
+      // The call cannot set the `@MonotonicNonNull` field `mono` back to null.
+      mono.toString();
+    }
+  }
+
+  void nullableFieldBeforeCall() {
+    if (next == sideEffectingCall()) {
+      // The call might set `next` to null.
+      // :: error: [dereference.of.nullable]
+      next.toString();
+    }
+  }
+
+  void monotonicFieldDereferencedBeforeCall(@Nullable AssignmentInComparison x) {
+    // :: error: [dereference.of.nullable]
+    (x = mono).sideEffectingCall();
+    // The call cannot set the `@MonotonicNonNull` field `mono` back to null.
+    mono.toString();
+  }
 }

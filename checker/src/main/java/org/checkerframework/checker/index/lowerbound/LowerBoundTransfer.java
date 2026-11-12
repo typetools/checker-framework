@@ -211,11 +211,11 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
     if (intLiteral == 0) {
       if (atypeFactory.areSameByClass(otherAnno, NonNegative.class)) {
-        insertValueForComparedNode(store, otherNode, POS);
+        insertValueForSplitAssignments(store, otherNode, POS);
       }
     } else if (intLiteral == -1) {
       if (atypeFactory.areSameByClass(otherAnno, GTENegativeOne.class)) {
-        insertValueForComparedNode(store, otherNode, NN);
+        insertValueForSplitAssignments(store, otherNode, NN);
       }
     }
   }
@@ -267,7 +267,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     if (atypeFactory
         .getLessThanAnnotatedTypeFactory()
         .isLessThanOrEqual(leftNode.getTree(), otherJe.toString())) {
-      insertValueForComparedNode(store, otherNode, POS);
+      insertValueForSplitAssignments(store, otherNode, POS);
     }
   }
 
@@ -301,7 +301,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     } else {
       return;
     }
-    insertValueForComparedNode(store, left, newLBType);
+    insertValueForSplitAssignments(store, left, newLBType);
   }
 
   /**
@@ -330,7 +330,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
             .getQualifierHierarchy()
             .greatestLowerBoundShallow(rightAnno, left.getType(), leftAnno, right.getType());
 
-    insertValueForComparedNode(store, left, newLBType);
+    insertValueForSplitAssignments(store, left, newLBType);
   }
 
   /**
