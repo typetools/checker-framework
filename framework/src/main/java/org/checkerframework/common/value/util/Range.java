@@ -25,13 +25,13 @@ public final class Range {
   public final long to;
 
   /**
-   * Should ranges take overflow into account or ignore it?
+   * True if ranges should ignore overflow; false if they should take overflow into account.
    *
    * <ul>
    *   <li>If {@code ignoreOverflow} is true, then operations that would result in more than the max
    *       value are clipped to the max value (and similarly for the min).
    *   <li>If {@code ignoreOverflow} is false, then operations that would result in more than the
-   *       max wrap around according to the rules of twos-complement arithmetic and produce a
+   *       max wrap around according to the rules of two's-complement arithmetic and produce a
    *       smaller value (and similarly for the min).
    * </ul>
    *
@@ -72,7 +72,7 @@ public final class Range {
   /** A range containing all possible char values. */
   public static final Range CHAR_EVERYTHING = create(Character.MIN_VALUE, Character.MAX_VALUE);
 
-  /** The number of values representable in char: */
+  /** The number of values representable in char. */
   private static final long CHAR_WIDTH = CHAR_EVERYTHING.width();
 
   /** A range containing all possible 8-bit values. */
@@ -118,7 +118,7 @@ public final class Range {
   }
 
   /**
-   * Create a Range from a collection of Numbers.
+   * Creates a Range from a collection of Numbers.
    *
    * @param values collection whose min and max values will be used as the range's from and to
    *     values
@@ -166,14 +166,14 @@ public final class Range {
   /**
    * Creates a range using BigInteger type bounds.
    *
-   * <p>If the BigInteger range is wider than the full range of the Long class, return EVERYTHING.
+   * <p>If the BigInteger range is wider than the full range of the Long class, returns EVERYTHING.
    *
    * <p>If one of the BigInteger bounds is out of Long's range and {@link #ignoreOverflow} is false,
-   * convert the bounds to Long type in accordance with Java twos-complement overflow rules, e.g.,
+   * converts the bounds to Long type in accordance with Java two's-complement overflow rules, e.g.,
    * Long.MAX_VALUE + 1 is converted to Long.MIN_VALUE.
    *
    * <p>If one of the BigInteger bounds is out of Long's range and {@link #ignoreOverflow} is true,
-   * convert the bound that is outside Long's range to max/min value of a Long.
+   * converts the bound that is outside Long's range to max/min value of a Long.
    *
    * @param bigFrom the lower bound of the BigInteger range
    * @param bigTo the upper bound of the BigInteger range
@@ -259,42 +259,42 @@ public final class Range {
   }
 
   /**
-   * Compare two ranges in a type safe manner for equality without incurring the cost of an
+   * Compares two ranges in a type-safe manner for equality without incurring the cost of an
    * instanceof check such as equals(Object) does.
    *
-   * @param range to compare against
+   * @param range the range to compare against
    * @return true for ranges that match from and to respectively
    */
   private boolean equalsRange(Range range) {
     return from == range.from && to == range.to;
   }
 
-  /** Return true if this range contains every {@code long} value. */
+  /** Returns true if this range contains every {@code long} value. */
   public boolean isLongEverything() {
     return equalsRange(LONG_EVERYTHING);
   }
 
-  /** Return true if this range contains every {@code int} value. */
+  /** Returns true if this range contains every {@code int} value. */
   public boolean isIntEverything() {
     return equalsRange(INT_EVERYTHING);
   }
 
-  /** Return true if this range contains every {@code short} value. */
+  /** Returns true if this range contains every {@code short} value. */
   public boolean isShortEverything() {
     return equalsRange(SHORT_EVERYTHING);
   }
 
-  /** Return true if this range contains every {@code char} value. */
+  /** Returns true if this range contains every {@code char} value. */
   public boolean isCharEverything() {
     return equalsRange(CHAR_EVERYTHING);
   }
 
-  /** Return true if this range contains every {@code byte} value. */
+  /** Returns true if this range contains every {@code byte} value. */
   public boolean isByteEverything() {
     return equalsRange(BYTE_EVERYTHING);
   }
 
-  /** Return true if this range contains no values. */
+  /** Returns true if this range contains no values. */
   public boolean isNothing() {
     return this == NOTHING;
   }
@@ -306,10 +306,10 @@ public final class Range {
    * that bound is set to the bound of the Integer range.
    *
    * <p>If {@link #ignoreOverflow} is false and this range is too wide, i.e., wider than the full
-   * range of the Integer class, return INT_EVERYTHING.
+   * range of the Integer class, returns INT_EVERYTHING.
    *
    * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
-   * 32-bit integers, convert the bounds to Integer type in accordance with Java twos-complement
+   * 32-bit integers, converts the bounds to Integer type in accordance with Java two's-complement
    * overflow rules, e.g., Integer.MAX_VALUE + 1 is converted to Integer.MIN_VALUE.
    *
    * @return this range, converted to a 32-bit integral range
@@ -332,16 +332,16 @@ public final class Range {
   }
 
   /**
-   * Converts a this range to a 16-bit short range.
+   * Converts this range to a 16-bit short range.
    *
    * <p>If {@link #ignoreOverflow} is true and one of the bounds is outside the Short range, then
    * that bound is set to the bound of the Short range.
    *
    * <p>If {@link #ignoreOverflow} is false and this range is too wide, i.e., wider than the full
-   * range of the Short class, return SHORT_EVERYTHING.
+   * range of the Short class, returns SHORT_EVERYTHING.
    *
    * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
-   * 16-bit integers, convert the bounds to Short type in accordance with Java twos-complement
+   * 16-bit integers, converts the bounds to Short type in accordance with Java two's-complement
    * overflow rules, e.g., Short.MAX_VALUE + 1 is converted to Short.MIN_VALUE.
    *
    * @return this range, converted to a 16-bit short range
@@ -370,11 +370,12 @@ public final class Range {
    * then that bound is set to the bound of the Character range.
    *
    * <p>If {@link #ignoreOverflow} is false and this range is too wide, i.e., wider than the full
-   * range of the Character class, return CHAR_EVERYTHING.
+   * range of the Character class, returns CHAR_EVERYTHING.
    *
    * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
-   * 8-bit integers, convert the bounds to Character type in accordance with Java overflow rules
-   * (twos-complement), e.g., Character.MAX_VALUE + 1 is converted to Character.MIN_VALUE.
+   * 16-bit unsigned integers, converts the bounds to Character type in accordance with Java
+   * overflow rules (two's-complement), e.g., Character.MAX_VALUE + 1 is converted to
+   * Character.MIN_VALUE.
    */
   public Range charRange() {
     if (this.isNothing()) {
@@ -400,10 +401,10 @@ public final class Range {
    * that bound is set to the bound of the Byte range.
    *
    * <p>If {@link #ignoreOverflow} is false and this range is too wide, i.e., wider than the full
-   * range of the Byte class, return BYTE_EVERYTHING.
+   * range of the Byte class, returns BYTE_EVERYTHING.
    *
    * <p>If {@link #ignoreOverflow} is false and the bounds of this range are not representable as
-   * 8-bit integers, convert the bounds to Byte type in accordance with Java twos-complement
+   * 8-bit integers, converts the bounds to Byte type in accordance with Java two's-complement
    * overflow rules, e.g., Byte.MAX_VALUE + 1 is converted to Byte.MIN_VALUE.
    *
    * @return this range, converted to an 8-bit byte range
@@ -928,7 +929,7 @@ public final class Range {
     return EVERYTHING;
   }
 
-  /** Return the argument, with its sign bit zeroed out. */
+  /** Returns the argument, with its sign bit zeroed out. */
   private long noSignBit(Long mask) {
     return mask & (-1L >>> 1);
   }
@@ -965,7 +966,7 @@ public final class Range {
    * Returns the range of a variable that falls within this range after applying the unary minus
    * operation.
    *
-   * @return the resulted range of applying unary minus on an arbitrary value in this range
+   * @return the resulting range of applying unary minus on an arbitrary value in this range
    */
   public Range unaryMinus() {
     if (this.isNothing()) {
@@ -1237,7 +1238,7 @@ public final class Range {
 
   /**
    * Returns true if this range is contained inclusively between Long.MIN_VALUE/2 and
-   * Long.MAX_VALUE/2. Note: Long.MIN_VALUE/2 != -Long.MAX_VALUE/2
+   * Long.MAX_VALUE/2. Note: Long.MIN_VALUE/2 != -Long.MAX_VALUE/2.
    */
   private boolean isWithinHalfLong() {
     return isWithin(Long.MIN_VALUE >> 1, Long.MAX_VALUE >> 1);

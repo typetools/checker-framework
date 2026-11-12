@@ -69,7 +69,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
           "char[]");
 
   /**
-   * Create a ValueTreeAnnotator.
+   * Creates a ValueTreeAnnotator.
    *
    * @param atypeFactory the ValueAnnotatedTypeFactory to use
    */
@@ -111,11 +111,11 @@ class ValueTreeAnnotator extends TreeAnnotator {
 
   /**
    * Recursive method to handle array initializations. Recursively descends the initializer to find
-   * each dimension's size and create the appropriate annotation for it.
+   * each dimension's size and creates the appropriate annotation for it.
    *
-   * <p>If the annotation of the dimension is {@code @IntVal}, create an {@code @ArrayLen} with the
-   * same set of possible values. If the annotation is {@code @IntRange}, create an
-   * {@code @ArrayLenRange}. If the annotation is {@code @BottomVal}, create an {@code @BottomVal}
+   * <p>If the annotation of the dimension is {@code @IntVal}, creates an {@code @ArrayLen} with the
+   * same set of possible values. If the annotation is {@code @IntRange}, creates an
+   * {@code @ArrayLenRange}. If the annotation is {@code @BottomVal}, creates an {@code @BottomVal}
    * instead. In other cases, no annotations are created.
    *
    * @param dimensions a list of ExpressionTrees where each ExpressionTree is a specifier of the
@@ -225,7 +225,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
     }
   }
 
-  /** Convert a char array to a String. Return null if unable to convert. */
+  /** Converts a char array to a String. Returns null if unable to convert. */
   private @Nullable String getCharArrayStringVal(List<? extends ExpressionTree> initializers) {
     boolean allLiterals = true;
     StringBuilder stringVal = new StringBuilder();
@@ -307,27 +307,27 @@ class ValueTreeAnnotator extends TreeAnnotator {
   }
 
   /**
-   * Returns the "value" element/field of the annotation on {@code type}, casted to the given type.
+   * Returns the "value" element/field of the annotation on {@code type}, cast to the given type.
    * Empty list means no value is possible (dead code). Null means no information is known -- any
    * value is possible.
    *
    * @param type the type with a Value Checker annotation
    * @param castTo the type to cast to
-   * @return the Value Checker annotation's value, casted to the given type
+   * @return the Value Checker annotation's value, cast to the given type
    */
   private @Nullable List<?> getValues(AnnotatedTypeMirror type, TypeMirror castTo) {
     return getValues(type, castTo, false);
   }
 
   /**
-   * Returns the "value" element/field of the annotation on {@code type}, casted to the given type.
+   * Returns the "value" element/field of the annotation on {@code type}, cast to the given type.
    * Empty list means no value is possible (dead code). Null means no information is known -- any
    * value is possible.
    *
    * @param type the type with a Value Checker annotation
    * @param castTo the type to cast to
    * @param isUnsigned if true, treat {@code castTo} as unsigned
-   * @return the Value Checker annotation's value, casted to the given type
+   * @return the Value Checker annotation's value, cast to the given type
    */
   private @Nullable List<?> getValues(
       AnnotatedTypeMirror type, TypeMirror castTo, boolean isUnsigned) {
@@ -380,8 +380,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
   }
 
   /**
-   * Given a MemberSelectTree representing a method call, return true if the method's declaration is
-   * annotated with {@code @StaticallyExecutable}.
+   * Returns true if the given method's declaration is annotated with {@code @StaticallyExecutable}.
    */
   private boolean methodIsStaticallyExecutable(Element method) {
     return atypeFactory.getDeclAnnotation(method, StaticallyExecutable.class) != null;
@@ -389,10 +388,10 @@ class ValueTreeAnnotator extends TreeAnnotator {
 
   /**
    * Returns the Range of the Math.min or Math.max method, or null if the argument is none of these
-   * methods or their arguments are not annotated in ValueChecker hierarchy.
+   * methods or their arguments are not annotated in the ValueChecker hierarchy.
    *
    * @return the Range of the Math.min or Math.max method, or null if the argument is none of these
-   *     methods or their arguments are not annotated in ValueChecker hierarchy
+   *     methods or their arguments are not annotated in the ValueChecker hierarchy
    */
   private @Nullable Range getRangeForMathMinMax(MethodInvocationTree tree) {
     if (atypeFactory.getMethodIdentifier().isMathMin(tree, atypeFactory.getProcessingEnv())) {
@@ -580,7 +579,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
   }
 
   /**
-   * Visit a tree that might be a field access.
+   * Visits a tree that might be a field access.
    *
    * @param tree a tree that might be a field access. It is either a MemberSelectTree or an
    *     IdentifierTree (if the programmer omitted the leading `this.`).
@@ -652,7 +651,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
   }
 
   /**
-   * Default the type of an enum constant {@code E.V} to {@code @StringVal("V")}. Does nothing if
+   * Defaults the type of an enum constant {@code E.V} to {@code @StringVal("V")}. Does nothing if
    * the argument is not an enum constant.
    *
    * @param tree an Identifier or MemberSelect tree that might be an enum

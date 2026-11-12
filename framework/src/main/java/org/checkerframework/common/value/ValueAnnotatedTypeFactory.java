@@ -189,7 +189,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected final ExecutableElement intRangeToElement =
       TreeUtils.getMethod(IntRange.class, "to", 0, processingEnv);
 
-  /** The value() element/field of a @IntVal annotation. */
+  /** The value() element/field of an @IntVal annotation. */
   protected final ExecutableElement intValValueElement =
       TreeUtils.getMethod(IntVal.class, "value", 0, processingEnv);
 
@@ -217,7 +217,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   public final ExecutableElement stringValValueElement =
       TreeUtils.getMethod(StringVal.class, "value", 0, processingEnv);
 
-  /** Should this type factory report warnings? */
+  /** True if this type factory should report warnings. */
   private final boolean reportEvalWarnings;
 
   /** Helper class that evaluates statically executable methods, constructors, and fields. */
@@ -483,7 +483,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param atm an annotated type mirror that contains an {@code IntRange} annotation
    * @return either the from value from the passed int range annotation, or the minimum value of the
-   *     domain of the underlying type (i.e. Integer.MIN_VALUE if the underlying type is int)
+   *     domain of the underlying type (e.g., Integer.MIN_VALUE if the underlying type is int)
    */
   public long getFromValueFromIntRange(AnnotatedTypeMirror atm) {
     TypeMirror type = atm.getUnderlyingType();
@@ -499,7 +499,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @param atm an annotated type mirror that contains an {@code IntRange} annotation
    * @return either the to value from the passed int range annotation, or the maximum value of the
-   *     domain of the underlying type (i.e. Integer.MAX_VALUE if the underlying type is int)
+   *     domain of the underlying type (e.g., Integer.MAX_VALUE if the underlying type is int)
    */
   public long getToValueFromIntRange(AnnotatedTypeMirror atm) {
     TypeMirror type = atm.getUnderlyingType();
@@ -586,7 +586,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Determine the primitive integral TypeKind for the given integral type.
+   * Determines the primitive integral TypeKind for the given integral type.
    *
    * @param type the type to convert, must be an integral type, boxed or primitive
    * @return one of INT, SHORT, BYTE, CHAR, or LONG
@@ -604,7 +604,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * annotation (longs), and casts the result to a long.
    *
    * @param anno annotation mirror from which to get values
-   * @return the values in {@code anno} casted to longs
+   * @return the values in {@code anno} cast to longs
    */
   /*package-private*/ List<Long> getArrayLenOrIntValue(AnnotationMirror anno) {
     if (AnnotationUtils.areSameByName(anno, ARRAYLEN_NAME)) {
@@ -776,10 +776,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * If {@code anno} is equivalent to UnknownVal, return UnknownVal; otherwise, return {@code anno}.
+   * If {@code anno} is equivalent to UnknownVal, returns UnknownVal; otherwise, returns {@code
+   * anno}.
    *
    * @param anno any annotation mirror
-   * @return UnknownVal if {@code anno} is equivalent to it; otherwise, return {@code anno}
+   * @return UnknownVal if {@code anno} is equivalent to it; otherwise, {@code anno}
    */
   /*package-private*/ AnnotationMirror convertToUnknown(AnnotationMirror anno) {
     if (AnnotationUtils.areSameByName(anno, ARRAYLENRANGE_NAME)) {
@@ -797,11 +798,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Returns the estimate for the length of a string or array with whose annotated type is {@code
+   * Returns the estimate for the length of a string or array whose annotated type is {@code
    * type}.
    *
-   * @param type annotated typed
-   * @return the estimate for the length of a string or array with whose annotated type is {@code
+   * @param type annotated type
+   * @return the estimate for the length of a string or array whose annotated type is {@code
    *     type}.
    */
   /*package-private*/ AnnotationMirror createArrayLengthResultAnnotation(AnnotatedTypeMirror type) {
@@ -924,13 +925,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Returns a {@link IntVal} or {@link IntRange} annotation using the values. If {@code values} is
+   * Returns an {@link IntVal} or {@link IntRange} annotation using the values. If {@code values} is
    * null, then UnknownVal is returned; if {@code values} is empty, then bottom is returned. If the
-   * number of {@code values} is greater than MAX_VALUES, return an {@link IntRange}. In other
+   * number of {@code values} is greater than MAX_VALUES, an {@link IntRange} is returned. In other
    * cases, the values are sorted and duplicates are removed before an {@link IntVal} is created.
    *
-   * @param values list of longs; duplicates are allowed and the values may be in any order
-   * @return an annotation depends on the values
+   * @param values list of longs; duplicates are allowed and the values can be in any order
+   * @return an annotation that depends on the values
    */
   public AnnotationMirror createIntValAnnotation(@Nullable List<Long> values) {
     if (values == null) {
@@ -952,7 +953,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Convert an {@code @IntRange} annotation to an {@code @IntVal} annotation, or to UNKNOWNVAL if
+   * Converts an {@code @IntRange} annotation to an {@code @IntVal} annotation, or to UNKNOWNVAL if
    * the input is too wide to be represented as an {@code @IntVal}.
    *
    * @param intRangeAnno an {@code @IntRange} annotation
@@ -969,7 +970,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
    * sorted and duplicates are removed before the annotation is created.
    *
-   * @param values list of doubles; duplicates are allowed and the values may be in any order
+   * @param values list of doubles; duplicates are allowed and the values can be in any order
    * @return a {@link DoubleVal} annotation using the values
    */
   public AnnotationMirror createDoubleValAnnotation(@Nullable List<Double> values) {
@@ -990,7 +991,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Convert an {@code @IntVal} annotation to a {@code @DoubleVal} annotation.
+   * Converts an {@code @IntVal} annotation to a {@code @DoubleVal} annotation.
    *
    * @param intValAnno an {@code @IntVal} annotation
    * @return a corresponding {@code @DoubleVal} annotation
@@ -1001,7 +1002,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Convert a {@code List<Long>} to a {@code List<Double>}.
+   * Converts a {@code List<Long>} to a {@code List<Double>}.
    *
    * @param intValues a list of long integers
    * @return a list of double floating-point values
@@ -1017,7 +1018,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * the max number of values allowed (10 by default), then an {@link ArrayLen} or an {@link
    * ArrayLenRange} annotation is returned.
    *
-   * @param values list of strings; duplicates are allowed and the values may be in any order
+   * @param values list of strings; duplicates are allowed and the values can be in any order
    * @return a {@link StringVal} annotation using the values
    */
   public AnnotationMirror createStringAnnotation(@Nullable List<String> values) {
@@ -1040,14 +1041,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Returns a {@link ArrayLen} annotation using the values. If {@code values} is null, then
+   * Returns an {@link ArrayLen} annotation using the values. If {@code values} is null, then
    * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
    * sorted and duplicates are removed before the annotation is created. If values is larger than
    * the max number of values allowed (10 by default), then an {@link ArrayLenRange} annotation is
    * returned.
    *
-   * @param values list of integers; duplicates are allowed and the values may be in any order
-   * @return a {@link ArrayLen} annotation using the values
+   * @param values list of integers; duplicates are allowed and the values can be in any order
+   * @return an {@link ArrayLen} annotation using the values
    */
   public AnnotationMirror createArrayLenAnnotation(@Nullable List<Integer> values) {
     if (values == null) {
@@ -1073,7 +1074,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
    * sorted and duplicates are removed before the annotation is created.
    *
-   * @param values list of booleans; duplicates are allowed and the values may be in any order
+   * @param values list of booleans; duplicates are allowed and the values can be in any order
    * @return a {@link BoolVal} annotation using the values
    */
   public AnnotationMirror createBooleanAnnotation(@Nullable List<Boolean> values) {
@@ -1098,12 +1099,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Returns a {@link IntVal} annotation using the values. If {@code values} is null, then
+   * Returns an {@link IntVal} annotation using the values. If {@code values} is null, then
    * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
    * sorted and duplicates are removed before the annotation is created.
    *
-   * @param values list of characters; duplicates are allowed and the values may be in any order
-   * @return a {@link IntVal} annotation using the values
+   * @param values list of characters; duplicates are allowed and the values can be in any order
+   * @return an {@link IntVal} annotation using the values
    */
   public AnnotationMirror createCharAnnotation(@Nullable List<Character> values) {
     if (values == null) {
@@ -1126,8 +1127,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * UnknownVal is returned; if {@code values} is empty, then bottom is returned. The values are
    * sorted and duplicates are removed before the annotation is created.
    *
-   * @param values list of doubleacters; duplicates are allowed and the values may be in any order
-   * @return a {@link IntVal} annotation using the values
+   * @param values list of doubles; duplicates are allowed and the values can be in any order
+   * @return a {@link DoubleVal} annotation using the values
    */
   public AnnotationMirror createDoubleAnnotation(@Nullable List<Double> values) {
     if (values == null) {
@@ -1173,7 +1174,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Create an {@code @IntRange} annotation from the two (inclusive) bounds. Does not return
+   * Creates an {@code @IntRange} annotation from the two (inclusive) bounds. Does not return
    * BOTTOMVAL or UNKNOWNVAL.
    *
    * @param from the lower bound
@@ -1189,8 +1190,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Create an {@code @IntRange} or {@code @IntVal} annotation from the range. May return BOTTOMVAL
-   * or UNKNOWNVAL.
+   * Creates an {@code @IntRange} or {@code @IntVal} annotation from the range. Might return
+   * BOTTOMVAL or UNKNOWNVAL.
    */
   public AnnotationMirror createIntRangeAnnotation(Range range) {
     if (range.isNothing()) {
@@ -1246,7 +1247,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Create an {@code @ArrayLenRange} annotation from the two (inclusive) bounds. Does not return
+   * Creates an {@code @ArrayLenRange} annotation from the two (inclusive) bounds. Does not return
    * BOTTOMVAL or UNKNOWNVAL.
    */
   public AnnotationMirror createArrayLenRangeAnnotation(int from, int to) {
@@ -1258,7 +1259,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Create an {@code @ArrayLenRange} annotation from the range. May return BOTTOMVAL or UNKNOWNVAL.
+   * Creates an {@code @ArrayLenRange} annotation from the range. Might return BOTTOMVAL or
+   * UNKNOWNVAL.
    */
   public AnnotationMirror createArrayLenRangeAnnotation(Range range) {
     if (range.isNothing()) {
@@ -1272,7 +1274,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Creates an {@code MatchesRegex} annotation for the given regular expressions.
+   * Creates a {@code MatchesRegex} annotation for the given regular expressions.
    *
    * @param regexes a list of Java regular expressions
    * @return a MatchesRegex annotation with those values
@@ -1290,7 +1292,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Creates an {@code DoesNotMatchRegex} annotation for the given regular expressions.
+   * Creates a {@code DoesNotMatchRegex} annotation for the given regular expressions.
    *
    * @param regexes a list of Java regular expressions
    * @return a DoesNotMatchRegex annotation with those values
@@ -1308,7 +1310,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Converts an {@code @StringVal} annotation to an {@code @ArrayLenRange} annotation.
+   * Converts a {@code @StringVal} annotation to an {@code @ArrayLenRange} annotation.
    *
    * @param stringValAnno a StringVal annotation
    * @return an ArrayLenRange annotation representing the possible lengths of the values of the
@@ -1324,7 +1326,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Converts a {@code @StringVal} annotation to an {@code @ArrayLen} annotation. If the
    * {@code @StringVal} annotation contains string values of more than MAX_VALUES distinct lengths,
-   * {@code @ArrayLenRange} annotation is returned instead.
+   * an {@code @ArrayLenRange} annotation is returned instead.
    *
    * @param stringValAnno a {@code @StringVal} annotation
    * @return a corresponding {@code @ArrayLen} annotation
@@ -1335,11 +1337,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Converts an {@code StringVal} annotation to an {@code MatchesRegex} annotation that matches
+   * Converts a {@code StringVal} annotation to a {@code MatchesRegex} annotation that matches
    * exactly the string values listed in the {@code StringVal}.
    *
    * @param stringValAnno a StringVal annotation
-   * @return an equivalent MatchesReges annotation
+   * @return an equivalent MatchesRegex annotation
    */
   /*package-private*/ AnnotationMirror convertStringValToMatchesRegex(
       AnnotationMirror stringValAnno) {
@@ -1480,7 +1482,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    *
    * @see #getBooleanValues
    * @param boolAnno a {@code @BoolVal} annotation, or null
-   * @return the single possible boolean value, on null if that is not the case
+   * @return the single possible boolean value, or null if that is not the case
    */
   public @Nullable Boolean getBooleanValue(@Nullable AnnotationMirror boolAnno) {
     if (boolAnno == null) {
@@ -1617,7 +1619,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Used to find the maximum length of an array. Returns null if there is no minimum length known,
+   * Used to find the maximum length of an array. Returns null if there is no maximum length known,
    * or if the passed annotation is null.
    */
   public @Nullable Integer getMaxLenValue(@Nullable AnnotationMirror annotation) {
@@ -1775,7 +1777,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Returns the annotation type mirror for the type of {@code expressionTree} with default
+   * Returns the annotated type mirror for the type of {@code expressionTree} with default
    * annotations applied.
    */
   @Override

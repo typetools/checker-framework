@@ -76,7 +76,7 @@ public abstract class AccumulationAnnotatedTypeFactory
   private final @MonotonicNonNull Class<? extends Annotation> predicate;
 
   /**
-   * Create an annotated type factory for an accumulation checker.
+   * Creates an annotated type factory for an accumulation checker.
    *
    * @param checker the checker
    * @param accumulator the accumulator type in the hierarchy. Must be an annotation with a single
@@ -142,7 +142,7 @@ public abstract class AccumulationAnnotatedTypeFactory
   }
 
   /**
-   * Create an annotated type factory for an accumulation checker.
+   * Creates an annotated type factory for an accumulation checker.
    *
    * @param checker the checker
    * @param accumulator the accumulator type in the hierarchy. Must be an annotation with a single
@@ -241,8 +241,8 @@ public abstract class AccumulationAnnotatedTypeFactory
   }
 
   /**
-   * Is the given annotation an accumulator annotation? Returns false if the argument is {@link
-   * #bottom}.
+   * Returns true if the given annotation is an accumulator annotation. Returns false if the
+   * argument is {@link #bottom}.
    *
    * @param anm an annotation mirror
    * @return true if the annotation mirror is an instance of this factory's accumulator annotation
@@ -280,11 +280,11 @@ public abstract class AccumulationAnnotatedTypeFactory
      * Implements rule RRA.
      *
      * <p>This implementation propagates types from the receiver to the return value, without
-     * change. Subclasses may override this method to also add additional properties, as
+     * change. Subclasses can override this method to add additional properties, as
      * appropriate.
      *
      * @param tree a method invocation tree
-     * @param type the type of {@code tree} (i.e. the return type of the invoked method). Is
+     * @param type the type of {@code tree} (i.e., the return type of the invoked method). Is
      *     (possibly) side-effected by this method.
      * @return nothing, works by side-effect on {@code type}
      */
@@ -348,7 +348,7 @@ public abstract class AccumulationAnnotatedTypeFactory
    * directly, due to the quirks of subtyping between type variables and its interactions with the
    * qualified type system).
    *
-   * <p>The returned collection may be either a list or a set.
+   * <p>The returned collection can be either a list or a set.
    *
    * @param tree a tree
    * @return the accumulated values for the given tree, including those stored on the value
@@ -407,7 +407,7 @@ public abstract class AccumulationAnnotatedTypeFactory
   protected class AccumulationQualifierHierarchy extends ElementQualifierHierarchy {
 
     /**
-     * Creates a ElementQualifierHierarchy from the given classes.
+     * Creates an AccumulationQualifierHierarchy from the given classes.
      *
      * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
      * @param elements element utils
@@ -581,7 +581,7 @@ public abstract class AccumulationAnnotatedTypeFactory
    *
    * <ul>
    *   <li>does not contain a predicate, or
-   *   <li>contains a parse-able predicate
+   *   <li>contains a parsable predicate
    * </ul>
    *
    * Used by the visitor to throw "predicate" errors; thus must be package-private.
@@ -670,7 +670,7 @@ public abstract class AccumulationAnnotatedTypeFactory
    * Converts the given annotation mirror to a predicate.
    *
    * @param anno an annotation
-   * @return the predicate, as a String, that is equivalent to that annotation. May return the empty
+   * @return the predicate, as a String, that is equivalent to that annotation. Can be the empty
    *     string.
    */
   protected String convertToPredicate(AnnotationMirror anno) {

@@ -59,7 +59,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       TreeUtils.getMethod(ClassVal.class, "value", 0, processingEnv);
 
   /**
-   * Create a new ClassValAnnotatedTypeFactory.
+   * Creates a new ClassValAnnotatedTypeFactory.
    *
    * @param checker the type-checker associated with this factory
    */
@@ -79,7 +79,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Create a {@code @ClassVal} annotation with the given values.
+   * Creates a {@code @ClassVal} annotation with the given values.
    *
    * @param values the "value" field of the resulting {@code @ClassVal} annotation
    * @return a {@code @ClassVal} annotation with the given values
@@ -91,7 +91,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Create a {@code @ClassBound} annotation with the given values.
+   * Creates a {@code @ClassBound} annotation with the given values.
    *
    * @param values the "value" field of the resulting {@code @ClassBound} annotation
    * @return a {@code @ClassBound} annotation with the given values
@@ -326,8 +326,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // TODO: This looks like it returns a @BinaryName. Verify that fact and add a type
     // qualifier.
     /**
-     * Returns String representation of class name. This will not return the correct name for
-     * anonymous classes.
+     * Returns the String representation of the class name. This will not return the correct name
+     * for anonymous classes.
      */
     private String getClassNameFromType(Type classType) {
       switch (classType.getKind()) {

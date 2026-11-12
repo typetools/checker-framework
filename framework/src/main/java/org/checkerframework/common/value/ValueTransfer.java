@@ -83,7 +83,7 @@ public class ValueTransfer extends CFTransfer {
   private final boolean nonNullStringsConcatenation;
 
   /**
-   * Create a new ValueTransfer.
+   * Creates a new ValueTransfer.
    *
    * @param analysis the corresponding analysis
    */
@@ -95,7 +95,7 @@ public class ValueTransfer extends CFTransfer {
         atypeFactory.getChecker().hasOption("nonNullStringsConcatenation");
   }
 
-  /** Returns a range of possible lengths for an integer from a range, as casted to a String. */
+  /** Returns a range of possible lengths for an integer from a range, as cast to a String. */
   private Range getIntRangeStringLengthRange(Node subNode, TransferInput<CFValue, CFStore> p) {
     Range valueRange = getIntRange(subNode, p);
 
@@ -115,11 +115,11 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Returns a range of possible lengths for {@code subNode}, as casted to a String.
+   * Returns a range of possible lengths for {@code subNode}, as cast to a String.
    *
    * @param subNode some subnode of {@code p}
    * @param p a TransferInput
-   * @return a range of possible lengths for {@code subNode}, as casted to a String
+   * @return a range of possible lengths for {@code subNode}, as cast to a String
    */
   private @Nullable Range getStringLengthRange(Node subNode, TransferInput<CFValue, CFStore> p) {
     CFValue value = p.getValueOfSubNode(subNode);
@@ -154,7 +154,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Returns a list of possible lengths for {@code subNode}, as casted to a String. Returns null if
+   * Returns a list of possible lengths for {@code subNode}, as cast to a String. Returns null if
    * {@code subNode}'s type is top/unknown. Returns an empty list if {@code subNode}'s type is
    * bottom.
    */
@@ -199,7 +199,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Returns a list of possible values for {@code subNode}, as casted to a String. Returns null if
+   * Returns a list of possible values for {@code subNode}, as cast to a String. Returns null if
    * {@code subNode}'s type is top/unknown. Returns an empty list if {@code subNode}'s type is
    * bottom.
    *
@@ -253,7 +253,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Create a @BoolVal CFValue for the given boolean value.
+   * Creates a @BoolVal CFValue for the given boolean value.
    *
    * @param value the value for the @BoolVal annotation
    * @return a @BoolVal CFValue for the given boolean value
@@ -269,7 +269,7 @@ public class ValueTransfer extends CFTransfer {
    * (including if the CFValue is not @BoolVal).
    *
    * @param value a CFValue
-   * @return theboolean if {@code value} represents a single boolean value; otherwise null
+   * @return the boolean if {@code value} represents a single boolean value; otherwise null
    */
   private @Nullable Boolean getBooleanValue(CFValue value) {
     AnnotationMirror boolAnno =
@@ -295,7 +295,7 @@ public class ValueTransfer extends CFTransfer {
     return atypeFactory.getBooleanValues(intAnno);
   }
 
-  /** Get possible char values from annotation @IntRange or @IntVal. */
+  /** Gets possible char values from annotation @IntRange or @IntVal. */
   private List<Character> getCharValues(Node subNode, TransferInput<CFValue, CFStore> p) {
     CFValue value = p.getValueOfSubNode(subNode);
     AnnotationMirror intAnno;
@@ -323,7 +323,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Extract the Value Checker annotation from a CFValue object.
+   * Extracts the Value Checker annotation from a CFValue object.
    *
    * @param cfValue a CFValue object
    * @return the Value Checker annotation within cfValue
@@ -353,11 +353,11 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Returns the numerical values in valueAnno casted to the type of subNode.
+   * Returns the numerical values in valueAnno cast to the type of subNode.
    *
    * @param subNode node
    * @param valueAnno annotation mirror
-   * @return the numerical values in valueAnno casted to the type of subNode
+   * @return the numerical values in valueAnno cast to the type of subNode
    */
   private @Nullable List<? extends Number> getNumericalValues(
       Node subNode, AnnotationMirror valueAnno) {
@@ -379,19 +379,19 @@ public class ValueTransfer extends CFTransfer {
     return NumberUtils.castNumbers(subNode.getType(), values);
   }
 
-  /** Get possible integer range from annotation. */
+  /** Gets possible integer range from annotation. */
   private Range getIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
     AnnotationMirror val = getValueAnnotation(subNode, p);
     return getIntRangeFromAnnotation(subNode, val);
   }
 
   /**
-   * Returns the {@link Range} object corresponding to the annotation {@code val} casted to the type
+   * Returns the {@link Range} object corresponding to the annotation {@code val} cast to the type
    * of {@code node}.
    *
    * @param node a node
    * @param val annotation mirror
-   * @return the {@link Range} object corresponding to the annotation {@code val} casted to the type
+   * @return the {@link Range} object corresponding to the annotation {@code val} cast to the type
    *     of {@code node}
    */
   private Range getIntRangeFromAnnotation(Node node, AnnotationMirror val) {
@@ -432,7 +432,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Returns true if {@code node} an integral type and is {@code anno} is {@code @UnknownVal}.
+   * Returns true if {@code node} has an integral type and {@code anno} is {@code @UnknownVal}.
    *
    * @param node a node
    * @param anno annotation mirror
@@ -463,7 +463,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Create a new boolean transfer result based on the original result and the new annotation.
+   * Creates a new boolean transfer result based on the original result and the new annotation.
    *
    * @param thenStore the then store for the result
    * @param elseStore the else store for the result
@@ -504,7 +504,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * If array.length is encountered, transform its @IntVal annotation into an @ArrayLen annotation
+   * If array.length is encountered, transforms its @IntVal annotation into an @ArrayLen annotation
    * for array.
    */
   private void refineArrayAtLengthAccess(FieldAccessNode arrayLengthNode, CFStore store) {
@@ -516,7 +516,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * If length method is invoked for a sequence, transform its @IntVal annotation into an @ArrayLen
+   * If length method is invoked for a sequence, transforms its @IntVal annotation into an @ArrayLen
    * annotation.
    *
    * @param lengthNode the length method invocation node
@@ -540,7 +540,7 @@ public class ValueTransfer extends CFTransfer {
    * Gets a value checker annotation relevant for an array or a string.
    *
    * @param arrayOrStringNode the node whose annotation to return
-   * @return the value checker annotation for the array or a string
+   * @return the value checker annotation for the array or string
    */
   private AnnotationMirror getArrayOrStringAnnotation(Node arrayOrStringNode) {
     AnnotationMirror arrayOrStringAnno =
@@ -558,7 +558,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Transform @IntVal or @IntRange annotations of an array or string length into an @ArrayLen
+   * Transforms @IntVal or @IntRange annotations of an array or string length into an @ArrayLen
    * or @ArrayLenRange annotation for the array or string.
    *
    * @param lengthNode an invocation of method {@code length} or an access of the {@code length}
@@ -657,8 +657,8 @@ public class ValueTransfer extends CFTransfer {
    * Returns true if the passed node is nullable. This superficial check assumes that every node is
    * nullable unless it is a primitive, String literal, or compile-time constant.
    *
-   * @return false if the node's run-time can't be null; true if the node's run-time value may be
-   *     null, or if this method is not precise enough
+   * @return false if the node's run-time value can't be null; true if the node's run-time value
+   *     might be null, or if this method is not precise enough
    */
   private boolean isNullable(Node node) {
     if (node instanceof StringConversionNode scn) {
@@ -811,7 +811,7 @@ public class ValueTransfer extends CFTransfer {
     }
   }
 
-  /** Calculate the result range after a binary operation between two numerical type nodes. */
+  /** Calculates the result range after a binary operation between two numerical type nodes. */
   private Range calculateRangeBinaryOp(
       Node leftNode, Node rightNode, NumericalBinaryOps op, TransferInput<CFValue, CFStore> p) {
     if (TypesUtils.isIntegralPrimitive(leftNode.getType())
@@ -844,7 +844,7 @@ public class ValueTransfer extends CFTransfer {
     }
   }
 
-  /** Calculate the possible values after a binary operation between two numerical type nodes. */
+  /** Calculates the possible values after a binary operation between two numerical type nodes. */
   private @Nullable List<Number> calculateValuesBinaryOp(
       Node leftNode, Node rightNode, NumericalBinaryOps op, TransferInput<CFValue, CFStore> p) {
     List<? extends Number> lefts = getNumericalValues(leftNode, p);
@@ -1042,12 +1042,12 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Calculate the result range after a unary operation of a numerical type node.
+   * Calculates the result range after a unary operation of a numerical type node.
    *
    * @param operand the node that represents the operand
    * @param op the operator type
    * @param p the transfer input
-   * @return the result annotation mirror
+   * @return the result range
    */
   private Range calculateRangeUnaryOp(
       Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
@@ -1068,7 +1068,7 @@ public class ValueTransfer extends CFTransfer {
     }
   }
 
-  /** Calculate the possible values after a unary operation of a numerical type node. */
+  /** Calculates the possible values after a unary operation of a numerical type node. */
   private @Nullable List<Number> calculateValuesUnaryOp(
       Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
     List<? extends Number> lefts = getNumericalValues(operand, p);
@@ -1327,7 +1327,7 @@ public class ValueTransfer extends CFTransfer {
   }
 
   /**
-   * Takes a list of result values (i.e. the values possible after the comparison) and creates the
+   * Takes a list of result values (i.e., the values possible after the comparison) and creates the
    * appropriate annotation from them, then combines that annotation with the existing annotation on
    * the node. The resulting annotation is inserted into the store.
    *

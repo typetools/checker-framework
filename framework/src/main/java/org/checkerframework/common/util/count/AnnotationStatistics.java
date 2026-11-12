@@ -43,7 +43,7 @@ import org.checkerframework.javacutil.AnnotationProvider;
  * themselves. Further, the output includes all annotations (including {@code @Override}, etc.),
  * which is not very useful.
  *
- * <p>The following options may be used to adjust the output:
+ * <p>The following options can be used to adjust the output:
  *
  * <ul>
  *   <li>{@code -Aannotations}: prints the annotation name, the file that contains it, and whether
@@ -117,7 +117,9 @@ public class AnnotationStatistics extends SourceChecker {
     super.typeProcessingOver();
   }
 
-  /** Increment the number of times annotation with name {@code annoName} has appeared. */
+  /**
+   * Increments the number of times the annotation with name {@code annoName} has appeared.
+   */
   protected void incrementCount(Name annoName) {
     String annoString = annoName.toString();
     if (!annotationCount.containsKey(annoString)) {
@@ -144,7 +146,7 @@ public class AnnotationStatistics extends SourceChecker {
     private final boolean annotationsummaryonly;
 
     /**
-     * Create a new Visitor.
+     * Creates a new Visitor.
      *
      * @param l the AnnotationStatistics object, used for obtaining command-line arguments
      */

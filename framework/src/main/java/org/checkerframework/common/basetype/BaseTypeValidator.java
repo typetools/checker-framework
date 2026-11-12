@@ -58,10 +58,13 @@ import org.plumelib.util.ArrayMap;
  * BaseTypeVisitor#visitVariable}.
  */
 public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implements TypeValidator {
-  /** Is the type valid? This is side-effected by the visitor, and read at the end of visiting. */
+  /**
+   * True if the type is valid. This is side-effected by the visitor, and read at the end of
+   * visiting.
+   */
   protected boolean isValid = true;
 
-  /** Should the primary annotation on the top level type be checked? */
+  /** True if the primary annotation on the top-level type should be checked. */
   protected boolean checkTopLevelDeclaredOrPrimitiveType = true;
 
   /** BaseTypeChecker. */
@@ -86,11 +89,11 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   }
 
   /**
-   * Validate the type against the given tree. This method both issues error messages and also
+   * Validates the type against the given tree. This method both issues error messages and also
    * returns a boolean value.
    *
    * <p>This is the entry point to the type validator. Neither this method nor visit should be
-   * called directly by a visitor, only use {@link BaseTypeVisitor#validateTypeOf(Tree)}.
+   * called directly by a visitor; instead, use {@link BaseTypeVisitor#validateTypeOf(Tree)}.
    *
    * <p>This method is only called on top-level types, but it validates the entire type including
    * components of a compound type. Subclasses should override this only if there is special-case
@@ -118,11 +121,11 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   }
 
   /**
-   * Should the top-level declared or primitive type be checked?
+   * Returns true if the top-level declared or primitive type should be checked.
    *
    * <p>If {@code type} is not a declared or primitive type, then this method returns true.
    *
-   * <p>Top-level type is not checked if tree is a local variable or an expression tree.
+   * <p>The top-level type is not checked if the tree is a local variable or an expression tree.
    *
    * @param type the AnnotatedTypeMirror being validated
    * @param tree a Tree whose type is {@code type}
@@ -276,7 +279,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   }
 
   /**
-   * Report an "annotations.on.use" error for the given type and tree.
+   * Reports an "annotations.on.use" error for the given type and tree.
    *
    * @param type the type with invalid annotations
    * @param p the tree where to report the error
@@ -421,7 +424,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
       AnnotatedDeclaredType type, @Nullable ParameterizedTypeTree typeTree) {}
 
   /**
-   * If {@code tree} has a {@link ParameterizedTypeTree}, then the tree and its type is returned.
+   * If {@code tree} has a {@link ParameterizedTypeTree}, then the tree and its type are returned.
    * Otherwise null and {@code type} are returned.
    *
    * @param tree tree to search
