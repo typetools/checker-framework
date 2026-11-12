@@ -9,8 +9,8 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 
 /**
- * The annotated method destructs the given fields, each of which is a resource collection. That is,
- * this method calls all required methods on their elements.
+ * The annotated method fulfills the obligations of the given fields, each of which is a resource
+ * collection. That is, the method calls all required methods on every element of each field.
  *
  * <p>Here is an example of its use:
  *
