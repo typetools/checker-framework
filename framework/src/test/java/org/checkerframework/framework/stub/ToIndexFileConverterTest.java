@@ -637,6 +637,72 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyClass$Map$Entry;)V");
   }
 
+  /** A member type that a stub-declared type inherits from a classpath supertype is found. */
+  @Test
+  public void testInheritedMemberTypeFromClasspath() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import java.util.Map;",
+            "class MyClass {",
+            "  abstract static class Map implements java.util.Map<String, String> {}",
+            "  void myMethod(Map.Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
+  }
+
+  /** A member type that a stub-declared type inherits from a stub-declared supertype is found. */
+  @Test
+  public void testInheritedMemberTypeFromStub() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Super {",
+            "  static class Inner {}",
+            "  private static class Hidden {}",
+            "}",
+            "class Sub extends Super {}",
+            "class MyClass {",
+            "  void myMethod(Sub.Inner x) {}",
+            "  void myOtherMethod(Sub.Hidden x) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/Super$Inner;)V");
+    // A private member type is not inherited.
+    assertMethod(jaif, "MyClass", "myOtherMethod(Lp/Sub$Hidden;)V");
+  }
+
+  /** Cyclic inheritance, which is illegal, does not make the converter recurse forever. */
+  @Test
+  public void testCyclicInheritance() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class A extends B {}",
+            "class B extends A {}",
+            "class MyClass {",
+            "  void myMethod(A.Missing x) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/A$Missing;)V");
+  }
+
+  /**
+   * A class's member types are not in scope in the class's header, such as in the bounds of its
+   * type parameters, but they are in scope in its body.
+   */
+  @Test
+  public void testMemberTypeNotInScopeInClassTypeParameterBound() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class C<T extends Number> {",
+            "  static class Number {}",
+            "  void m(T x) {}",
+            "  <U extends Number> void m2(U x) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/lang/Number;)V");
+    assertMethod(jaif, "C", "m2(Lp/C$Number;)V");
+  }
+
   /**
    * A missing member of a stub-declared type has the same binary name whether or not the name is
    * qualified by the stub file's package.

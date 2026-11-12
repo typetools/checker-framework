@@ -164,6 +164,14 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       memberTypesCache = new IdentityHashMap<>();
 
   /**
+   * The type declarations of the stub file whose inherited member types are being sought by {@link
+   * #inheritedMemberType}. It prevents infinite recursion on a malformed stub file whose
+   * inheritance is cyclic.
+   */
+  private final Set<TypeDeclaration<?>> inheritanceVisiting =
+      Collections.newSetFromMap(new IdentityHashMap<>());
+
+  /**
    * Creates a new ToIndexFileConverter.
    *
    * @param pkgDecl the AST node for package declaration
@@ -929,7 +937,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       return null;
     }
     String[] identifiers = typeName.substring(pkgName.length() + 1).split("\\.", -1);
-    Node first = firstDeclarationAt(cu, identifiers);
+    Node first = firstDeclarationAt(cu, identifiers, true);
     return (first instanceof TypeDeclaration<?> typeDecl)
         ? memberBinaryName(typeDecl, identifiers, 1)
         : null;
@@ -947,8 +955,14 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @return the declaration of the first element of {@code identifiers}, or null
    */
   private @Nullable Node enclosingDeclaration(Node node, String[] identifiers) {
-    for (Node n = node; n != null; n = n.getParentNode().orElse(null)) {
-      Node declaration = firstDeclarationAt(n, identifiers);
+    Node child = null;
+    for (Node n = node; n != null; child = n, n = n.getParentNode().orElse(null)) {
+      // The scope of a member type is the body of the type that declares it (JLS 6.3), so a
+      // member type is not in scope in its enclosing type's header: its annotations, type
+      // parameters, supertypes, and record components.  The members of a type's body, including
+      // its enum constants, are its BodyDeclaration children.
+      boolean inBody = child == null || child instanceof BodyDeclaration;
+      Node declaration = firstDeclarationAt(n, identifiers, inBody);
       if (declaration != null || n instanceof CompilationUnit) {
         return declaration;
       }
@@ -964,9 +978,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    *
    * @param n a node in the stub file's AST
    * @param identifiers a type name that has been split at its {@code .} separators
+   * @param memberTypesInScope whether the member types of {@code n}, if it is a type declaration,
+   *     are in scope; false if the name is written in the header of {@code n} rather than its body
    * @return the declaration of the first element of {@code identifiers}, or null
    */
-  private @Nullable Node firstDeclarationAt(Node n, String[] identifiers) {
+  private @Nullable Node firstDeclarationAt(
+      Node n, String[] identifiers, boolean memberTypesInScope) {
     // Within one declaration, a type parameter and a member type cannot have the same name.
     if (identifiers.length == 1 && n instanceof NodeWithTypeParameters<?> nodeWithTypeParams) {
       for (TypeParameter typeParam : nodeWithTypeParams.getTypeParameters()) {
@@ -976,7 +993,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       }
     }
     if (n instanceof TypeDeclaration<?> typeDecl) {
-      return memberTypeDeclaration(typeDecl, identifiers[0]);
+      return memberTypesInScope ? memberTypeDeclaration(typeDecl, identifiers[0]) : null;
     } else if (n instanceof CompilationUnit compilationUnit) {
       for (TypeDeclaration<?> topLevel : compilationUnit.getTypes()) {
         if (topLevel.getNameAsString().equals(identifiers[0])) {
@@ -1110,8 +1127,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /**
    * Returns the binary name of the type that {@code identifiers} names, where {@code declaration}
    * is the type that the elements of {@code identifiers} before index {@code start} name. Each
-   * remaining identifier names a member type that the stub file declares. If a member type cannot
-   * be found, the result is formed from the binary name of the innermost type found.
+   * remaining identifier names a member type that the stub file declares, or that a type inherits
+   * from a supertype. If a member type cannot be found, the result is formed from the binary name of
+   * the innermost type found.
    *
    * @param declaration a type declaration in the stub file
    * @param identifiers a type name that has been split at its {@code .} separators
@@ -1127,9 +1145,205 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     if (member != null) {
       return memberBinaryName(member, identifiers, start + 1);
     }
+    Object inherited = inheritedMemberType(declaration, identifiers[start]);
+    if (inherited instanceof TypeDeclaration<?> inheritedDecl) {
+      return memberBinaryName(inheritedDecl, identifiers, start + 1);
+    } else if (inherited instanceof Class<?> inheritedClass) {
+      return classMemberBinaryName(inheritedClass, identifiers, start + 1);
+    }
     return qualifiedStubBinaryName(declaration)
         + "$"
         + String.join("$", Arrays.copyOfRange(identifiers, start, identifiers.length));
+  }
+
+  /**
+   * Returns the binary name of the type that {@code identifiers} names, where {@code clazz} is the
+   * type that the elements of {@code identifiers} before index {@code start} name. Each remaining
+   * identifier names a member type, declared or inherited, of a class on the classpath. If a member
+   * type cannot be found, the result is formed from the binary name of the innermost type found.
+   *
+   * @param clazz a class on the classpath
+   * @param identifiers a type name that has been split at its {@code .} separators
+   * @param start the index of the first element of {@code identifiers} that is a member of {@code
+   *     clazz}
+   * @return the binary name of the type that {@code identifiers} names
+   */
+  private static String classMemberBinaryName(Class<?> clazz, String[] identifiers, int start) {
+    for (int i = start; i < identifiers.length; i++) {
+      Class<?> member = classMemberType(clazz, identifiers[i]);
+      if (member == null) {
+        return clazz.getName()
+            + "$"
+            + String.join("$", Arrays.copyOfRange(identifiers, i, identifiers.length));
+      }
+      clazz = member;
+    }
+    return clazz.getName();
+  }
+
+  /**
+   * Returns the non-private member type named {@code identifier} that a class on the classpath
+   * declares or inherits.
+   *
+   * @param clazz a class on the classpath
+   * @param identifier the simple name of a member type
+   * @return the member type named {@code identifier}, or null if there is none or it cannot be
+   *     determined
+   */
+  private static @Nullable Class<?> classMemberType(Class<?> clazz, String identifier) {
+    List<Class<?>> worklist = new ArrayList<>();
+    Set<Class<?>> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+    worklist.add(clazz);
+    for (int i = 0; i < worklist.size(); i++) {
+      Class<?> c = worklist.get(i);
+      if (!seen.add(c)) {
+        continue;
+      }
+      try {
+        for (Class<?> member : c.getDeclaredClasses()) {
+          // A private member type is not inherited.  A private member type that `clazz` itself
+          // declares is skipped too, but the caller's fallback yields the same binary name.
+          if (member.getSimpleName().equals(identifier)
+              && !java.lang.reflect.Modifier.isPrivate(member.getModifiers())) {
+            return member;
+          }
+        }
+        Class<?> superclass = c.getSuperclass();
+        if (superclass != null) {
+          worklist.add(superclass);
+        }
+        worklist.addAll(Arrays.asList(c.getInterfaces()));
+      } catch (NoClassDefFoundError | SecurityException e) {
+        // A class that `c` depends on is not on the classpath; skip `c`.
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the non-private member type named {@code identifier} that a type declaration of the
+   * stub file inherits from its supertypes.
+   *
+   * @param declaration a type declaration in the stub file
+   * @param identifier the simple name of a member type
+   * @return the inherited member type: a {@link TypeDeclaration} if the stub file declares it, a
+   *     {@link Class} if it is on the classpath, or null if there is none or it cannot be determined
+   */
+  private @Nullable Object inheritedMemberType(TypeDeclaration<?> declaration, String identifier) {
+    if (!inheritanceVisiting.add(declaration)) {
+      return null;
+    }
+    try {
+      for (ClassOrInterfaceType supertype : supertypes(declaration)) {
+        Object superDecl = resolveSupertype(supertype);
+        if (superDecl instanceof TypeDeclaration<?> superTypeDecl) {
+          TypeDeclaration<?> member = memberTypeDeclaration(superTypeDecl, identifier);
+          if (member != null && !member.isPrivate()) {
+            return member;
+          }
+          Object inherited = inheritedMemberType(superTypeDecl, identifier);
+          if (inherited != null) {
+            return inherited;
+          }
+        } else if (superDecl instanceof Class<?> superClass) {
+          Class<?> member = classMemberType(superClass, identifier);
+          if (member != null) {
+            return member;
+          }
+        }
+      }
+      if (declaration instanceof EnumDeclaration) {
+        // The implicit superclass of an enum declares the member type `Enum.EnumDesc`.
+        return classMemberType(Enum.class, identifier);
+      }
+      return null;
+    } finally {
+      inheritanceVisiting.remove(declaration);
+    }
+  }
+
+  /**
+   * Returns the supertypes that a type declaration of the stub file names in its {@code extends}
+   * and {@code implements} clauses. The result does not include implicit supertypes; {@link
+   * #inheritedMemberType} handles the implicit superclass {@code java.lang.Enum} of an enum.
+   *
+   * @param declaration a type declaration in the stub file
+   * @return the supertypes of {@code declaration}
+   */
+  private static List<ClassOrInterfaceType> supertypes(TypeDeclaration<?> declaration) {
+    if (declaration instanceof ClassOrInterfaceDeclaration classDecl) {
+      List<ClassOrInterfaceType> result = new ArrayList<>(classDecl.getExtendedTypes());
+      result.addAll(classDecl.getImplementedTypes());
+      return result;
+    } else if (declaration instanceof EnumDeclaration enumDecl) {
+      return enumDecl.getImplementedTypes();
+    } else if (declaration instanceof RecordDeclaration recordDecl) {
+      return recordDecl.getImplementedTypes();
+    }
+    return Collections.emptyList();
+  }
+
+  /**
+   * Returns the type that a supertype in the header of a type declaration of the stub file names.
+   *
+   * @param supertype a supertype in an {@code extends} or {@code implements} clause
+   * @return a {@link TypeDeclaration} if the stub file declares the supertype, a {@link Class} if it
+   *     is on the classpath, or null if it cannot be determined
+   */
+  private @Nullable Object resolveSupertype(ClassOrInterfaceType supertype) {
+    @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameWithScope
+    @FullyQualifiedName String typeName = supertype.getNameWithScope();
+    String[] identifiers = typeName.split("\\.", -1);
+    Node declaration = enclosingDeclaration(supertype, identifiers);
+    if (declaration instanceof TypeParameter) {
+      return null;
+    }
+    String binaryName = classBinaryName(supertype, declaration, typeName, identifiers);
+    if (binaryName == null) {
+      return null;
+    }
+    TypeDeclaration<?> stubDecl = stubDeclarationOfBinaryName(supertype, binaryName);
+    if (stubDecl != null) {
+      return stubDecl;
+    }
+    @SuppressWarnings("signature") // a binary name of a class
+    Class<?> result = loadClass(binaryName);
+    return result;
+  }
+
+  /**
+   * Returns the type declaration of the stub file that has the given binary name.
+   *
+   * @param node a node in the stub file's AST
+   * @param binaryName a binary name
+   * @return the type declaration, in {@code node}'s compilation unit, whose binary name is {@code
+   *     binaryName}, or null if there is none
+   */
+  private @Nullable TypeDeclaration<?> stubDeclarationOfBinaryName(Node node, String binaryName) {
+    String prefix = pkgName == null ? "" : pkgName + ".";
+    if (!binaryName.startsWith(prefix)) {
+      return null;
+    }
+    String rest = binaryName.substring(prefix.length());
+    if (rest.contains(".")) {
+      return null;
+    }
+    CompilationUnit cu = node.findCompilationUnit().orElse(null);
+    if (cu == null) {
+      return null;
+    }
+    String[] identifiers = rest.split("\\$", -1);
+    TypeDeclaration<?> result = null;
+    for (TypeDeclaration<?> topLevel : cu.getTypes()) {
+      if (topLevel.getNameAsString().equals(identifiers[0])) {
+        result = topLevel;
+        break;
+      }
+    }
+    for (int i = 1; i < identifiers.length && result != null; i++) {
+      result = memberTypeDeclaration(result, identifiers[i]);
+    }
+    return result;
   }
 
   /**
