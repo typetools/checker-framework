@@ -19,12 +19,18 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Registers defaults through {@code QualifierDefaults.addElementDefault}: a {@code @SubQual}
- * default for {@link TypeUseLocation#RETURN} on every class named {@code ElementDefault}.
+ * Registers defaults through {@code QualifierDefaults.addElementDefault}:
  *
- * <p>The test files then check that such a default composes with the {@code @DefaultQualifier}
- * annotations on the same element and on the element's enclosing scopes, rather than suppressing
- * them.
+ * <ul>
+ *   <li>on every class named {@code ElementDefault}, a {@code @SubQual} default for {@link
+ *       TypeUseLocation#RETURN}, and
+ *   <li>on every class named {@code ElementDefaultConflict}, a {@code @SubQual} default for {@link
+ *       TypeUseLocation#RETURN}, and an {@code @Odd} default followed by a {@code @SubQual} default
+ *       for {@link TypeUseLocation#PARAMETER}.
+ * </ul>
+ *
+ * <p>The test files then check how such a default combines with the {@code @DefaultQualifier}
+ * annotations on the same element.
  */
 public class ElementDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -67,9 +73,12 @@ public class ElementDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         Name className = classElt.getSimpleName();
         if (className.contentEquals("ElementDefault")) {
           defaults.addElementDefault(classElt, SUB_QUAL, TypeUseLocation.RETURN);
-          // A qualifier of some other type system is tolerated; it has no effect, and it does
-          // not prevent another default from applying at the same location.
+        } else if (className.contentEquals("ElementDefaultConflict")) {
+          defaults.addElementDefault(classElt, SUB_QUAL, TypeUseLocation.RETURN);
+          // This type system does not support @Odd, so the @Odd default is ignored.  In
+          // particular, it does not conflict with the @SubQual default for the same location.
           defaults.addElementDefault(classElt, ODD, TypeUseLocation.PARAMETER);
+          defaults.addElementDefault(classElt, SUB_QUAL, TypeUseLocation.PARAMETER);
         }
       }
     }
