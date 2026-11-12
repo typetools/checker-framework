@@ -2116,6 +2116,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      */
     private final ExpressionTree selectorExprTree;
 
+    /** True if the CFG built so far evaluates the guard of some case of {@link #switchTree}. */
+    private boolean guardEvaluated = false;
+
     /** The labels for the case bodies. */
     private final Label[] caseBodyLabels;
 
@@ -2331,7 +2334,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         boolean alwaysMatches = isLastCaseOfExhaustive;
         extendWithNode(
             new CaseNode(
-                caseTree, selectorExprAssignment, exprs, alwaysMatches, env.getTypeUtils()));
+                caseTree,
+                selectorExprAssignment,
+                exprs,
+                alwaysMatches,
+                guardEvaluated,
+                env.getTypeUtils()));
         if (!alwaysMatches) {
           Label labelsMatchLabel = new Label();
           extendWithExtendedNode(new ConditionalJump(labelsMatchLabel, nextCaseLabel));
@@ -2342,6 +2350,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         ExpressionTree guardTree = CaseUtils.getGuard(caseTree);
         if (guardTree != null) {
           unbox(scan(guardTree, null));
+          guardEvaluated = true;
           if (!isLastCaseOfExhaustive) {
             extendWithExtendedNode(new ConditionalJump(thisBodyLabel, nextCaseLabel));
           } else {
