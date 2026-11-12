@@ -288,7 +288,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * <ul>
    *   <li>boolean expressions are not given Unsigned or Signed annotations by {@link
    *       PropagationTreeAnnotator},
-   *   <li>shift results take on the type of their left operand, after unary numeric promotion,
+   *   <li>shift results take on the type of their left operand (after unary numeric promotion, for
+   *       a right shift),
    *   <li>the types of identifiers are refined based on the results of the Value Checker.
    *   <li>casts take types related to widening
    * </ul>
@@ -309,8 +310,13 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                   || SignednessShifts.isCastedShiftEitherSignedness(tree, path))) {
             type.replaceAnnotation(SIGNED_POSITIVE);
           } else {
-            AnnotatedTypeMirror lht =
-                unaryNumericPromotion(getAnnotatedType(tree.getLeftOperand()));
+            AnnotatedTypeMirror lht = getAnnotatedType(tree.getLeftOperand());
+            // Unary numeric promotion widens a char to an @SignedPositive int.  A right shift
+            // preserves that, but a left shift can set the sign bit:  '耀' << 16 is
+            // Integer.MIN_VALUE.  So, a left shift takes the qualifier of the unpromoted operand.
+            if (tree.getKind() != Tree.Kind.LEFT_SHIFT) {
+              lht = unaryNumericPromotion(lht);
+            }
             type.replaceAnnotations(lht.getPrimaryAnnotations());
           }
         }
