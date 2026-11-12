@@ -12,7 +12,10 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nullness.PathShapeClassifier.PathShape;
 import org.checkerframework.checker.nullness.qual.HasName;
 import org.checkerframework.checker.nullness.qual.HasParent;
@@ -223,6 +226,38 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   //
 
   /**
+   * If the given method overrides a method in {@code Path} or {@code File}, returns the overridden
+   * method. Otherwise, returns the given method. Thus, an override is treated like the method that
+   * it overrides, whose specification it must satisfy.
+   *
+   * @param method a method
+   * @return the method in {@code Path} or {@code File} that {@code method} overrides, or {@code
+   *     method} itself
+   */
+  /*package-private*/ ExecutableElement getPathOrFileMethod(ExecutableElement method) {
+    if (method.getModifiers().contains(Modifier.STATIC)) {
+      return method;
+    }
+    TypeElement clazz = (TypeElement) method.getEnclosingElement();
+    if (clazz.equals(pathElement) || clazz.equals(fileElement)) {
+      return method;
+    }
+    TypeMirror erased = types.erasure(clazz.asType());
+    for (TypeElement jdkClass : Arrays.asList(pathElement, fileElement)) {
+      if (!types.isSubtype(erased, types.erasure(jdkClass.asType()))) {
+        continue;
+      }
+      for (ExecutableElement jdkMethod : ElementFilter.methodsIn(jdkClass.getEnclosedElements())) {
+        if (jdkMethod.getSimpleName().equals(method.getSimpleName())
+            && elements.overrides(method, jdkMethod, clazz)) {
+          return jdkMethod;
+        }
+      }
+    }
+    return method;
+  }
+
+  /**
    * Returns true if the given method invocation returns a non-null value because of the path shape
    * of its receiver. That is, it is an invocation of {@code Path.getParent()}, {@code
    * File.getParent()}, or {@code File.getParentFile()} on a {@code @HasParent} receiver, or of
@@ -233,6 +268,7 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * @return true if {@code tree} returns a non-null value because of the path shape of its receiver
    */
   public boolean returnsNonNullPathComponent(MethodInvocationTree tree, ExecutableElement method) {
+    method = getPathOrFileMethod(method);
     PathShape required;
     if (method.equals(pathGetParent)
         || method.equals(fileGetParent)
