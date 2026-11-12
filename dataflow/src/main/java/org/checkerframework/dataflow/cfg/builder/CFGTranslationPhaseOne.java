@@ -2464,7 +2464,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
                 alwaysMatches,
                 guardEvaluated,
                 env.getTypeUtils());
-        if (isLastCaseOfExhaustive && !labelAlwaysMatches) {
+        // A record pattern calls accessor methods, and the switch wraps any exception that an
+        // accessor throws in a MatchException (JLS 14.30.2).
+        boolean hasRecordPattern =
+            CaseUtils.getLabels(caseTree).stream().anyMatch(TreeUtils::isDeconstructionPatternTree);
+        if ((isLastCaseOfExhaustive && !labelAlwaysMatches) || hasRecordPattern) {
           // A value that the labels do not match, such as a remainder of an exhaustive switch
           // (JLS 14.11.1.1), matches no case, so the switch throws MatchException.
           extendWithNodeWithException(caseNode, matchExceptionType);
