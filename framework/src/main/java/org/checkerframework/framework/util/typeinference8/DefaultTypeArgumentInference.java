@@ -49,10 +49,26 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
   /**
    * A cache from the outermost tree of an inference problem (a method invocation or class instance
    * creation) to the result of solving that problem, before {@link
-   * InferenceResult#swapTypeVariables} is applied. Its keys are trees of the compilation unit that
-   * the type factory is processing; see {@link #clearCache}. See {@link #canUseCache}.
+   * InferenceResult#swapTypeVariables} is applied. Its keys contain trees of the compilation unit
+   * that the type factory is processing; see {@link #clearCache}. See {@link #canUseCache}.
    */
-  private final Map<ExpressionTree, InferenceResult> inferenceCache;
+  private final Map<CacheKey, InferenceResult> inferenceCache;
+
+  /**
+   * A key of {@link #inferenceCache}.
+   *
+   * <p>The type of the outermost tree's method, which inference uses, depends on how inference was
+   * requested. If inference was requested for the outermost tree itself, then the polymorphic
+   * qualifiers in the method's type have already been resolved. If inference was requested for an
+   * expression nested within the outermost tree, then the method's type is obtained without
+   * resolving polymorphic qualifiers. The two inference problems can have different results, so
+   * they are cached separately.
+   *
+   * @param outerTree the outermost tree of an inference problem
+   * @param polyQualifiersResolved true if the polymorphic qualifiers of the type of {@code
+   *     outerTree}'s method were resolved before inference
+   */
+  private record CacheKey(ExpressionTree outerTree, boolean polyQualifiersResolved) {}
 
   /**
    * Creates a DefaultTypeArgumentInference.
@@ -116,8 +132,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     boolean useCache =
         !(outerTree instanceof MemberReferenceTree) && canUseCache(typeFactory, pathToExpression);
+    // The key is used only if useCache is true.
+    CacheKey cacheKey = new CacheKey(outerTree, outerTree == expressionTree);
     if (useCache) {
-      InferenceResult cached = inferenceCache.get(outerTree);
+      InferenceResult cached = inferenceCache.get(cacheKey);
       // A member reference that the cached result has no type arguments for needs another
       // inference, below, that reuses the inference problem.  Do not use the cache for it.
       if (cached != null
@@ -188,7 +206,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       }
       chosenInference.recordLambdaParameterTypes();
       if (useCache) {
-        inferenceCache.put(outerTree, result);
+        inferenceCache.put(cacheKey, result);
       }
       if (!result.getResults().containsKey(expressionTree)
           && expressionTree instanceof MemberReferenceTree mrt) {
