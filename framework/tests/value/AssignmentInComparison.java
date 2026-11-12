@@ -20,6 +20,22 @@ public class AssignmentInComparison {
     }
   }
 
+  static void otherOperandReassignsIndex(int[] a, int i) {
+    if (a[i] == (i = 5)) {
+      @IntVal(5) int x = i;
+      // The left operand is an element of `a` at the old index `i`.
+      // :: error: [assignment]
+      @IntVal(5) int y = a[i];
+    }
+  }
+
+  static void assignmentInTargetIndexBeforeRhs(int[] a, int[] b, int i) {
+    if ((a[i = 0] = b[i]) == 3) {
+      // `b[i]` is evaluated after `i = 0`, so it has the assigned value.
+      @IntVal(3) int x = b[i];
+    }
+  }
+
   static void arrayTargetOtherArrayType(int[] a, long[] b, int[] idx) {
     // An assignment to an element of `b` does not change `idx[0]`, because `b` and `idx` cannot
     // alias.

@@ -9,6 +9,9 @@
 
 ### Changes for type system implementers
 
+`CFAbstractTransfer.processCommonAssignment` takes a new parameter: the
+right-hand side of the assignment as written in source code.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
