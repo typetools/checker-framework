@@ -59,7 +59,12 @@ public class PathShapeClassifierTest {
       Assert.assertEquals("actual Unix File " + s, unixFile, actualFileShape(s));
     } else if (File.separatorChar == '\\') {
       Assert.assertEquals("actual Windows Path " + s, windowsPath, actualPathShape(s));
-      Assert.assertEquals("actual Windows File " + s, windowsFile, actualFileShape(s));
+      // windowsFile is conservative across JDK versions, which differ in whether they strip a
+      // long-path prefix.  It must be no more specific than the running JDK's result.
+      PathShape actual = actualFileShape(s);
+      Assert.assertTrue(
+          "actual Windows File " + s + ": expected at least " + windowsFile + ", got " + actual,
+          windowsFile.compareTo(actual) <= 0);
     }
   }
 
@@ -160,8 +165,10 @@ public class PathShapeClassifierTest {
         HAS_PARENT,
         HAS_NAME,
         HAS_NAME);
-    // The long-path prefix requires an absolute path.
-    check("\\\\?\\foo", HAS_NAME, null, HAS_NAME, HAS_PARENT, HAS_NAME, HAS_NAME);
+    // The long-path prefix requires an absolute path.  A File that strips the prefix is "foo".
+    check("\\\\?\\foo", HAS_NAME, null, HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
+    // A File that strips the long-path prefix is a root.
+    check("\\\\?\\C:\\", HAS_NAME, UNKNOWN, HAS_NAME, UNKNOWN, UNKNOWN, UNKNOWN);
   }
 
   @Test

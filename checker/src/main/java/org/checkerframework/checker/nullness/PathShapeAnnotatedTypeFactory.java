@@ -248,7 +248,7 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         continue;
       }
       for (ExecutableElement jdkMethod : ElementFilter.methodsIn(jdkClass.getEnclosedElements())) {
-        if (jdkMethod.getSimpleName().equals(method.getSimpleName())
+        if (jdkMethod.getSimpleName() == method.getSimpleName()
             && elements.overrides(method, jdkMethod, clazz)) {
           return jdkMethod;
         }
