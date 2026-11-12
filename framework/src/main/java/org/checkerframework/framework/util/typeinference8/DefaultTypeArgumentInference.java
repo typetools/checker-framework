@@ -339,9 +339,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * Returns true if {@link #inferenceCache} can be used for the inference problem whose outermost
    * tree is the leaf of {@code pathToOuterTree}: the result of that problem does not change if it
    * is solved again later. That is the case if dataflow analysis has finished for the enclosing
-   * class, because then the types of the expressions in the problem do not change, and if no other
-   * inference problem is being solved, because a problem that is being solved can provide the types
-   * of lambda parameters.
+   * class (because then the types of the expressions in the problem do not change) and if no other
+   * inference problem is being solved (because a problem that is being solved can provide the types
+   * of lambda parameters).
    *
    * @param typeFactory a type factory
    * @param pathToOuterTree the path to the outermost tree of an inference problem
