@@ -91,6 +91,16 @@ class LoopBodyAnalysisTest {
   //   }
   // }
 
+  // Removing an element shifts the next element into index `i`, so the loop skips it.
+  // :: error: unfulfilled.collection.obligations
+  void indexForLoopRemove(@OwningCollection List<Resource> resources) {
+    for (int i = 0; i < resources.size(); i++) {
+      resources.get(i).close();
+      resources.get(i).flush();
+      resources.remove(i);
+    }
+  }
+
   void nullableElementWithCheck(@OwningCollection List<Resource> resources) {
     for (Resource r : resources) {
       if (r != null) {

@@ -17,6 +17,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreeScanner;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
@@ -25,6 +27,7 @@ import org.checkerframework.dataflow.cfg.block.ConditionalBlock;
 import org.checkerframework.dataflow.cfg.block.SingleSuccessorBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.expression.JavaExpression;
+import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /** Matches indexed `for` {@link DisposalLoopInfo}s that iterate over a resource collection. */
@@ -58,6 +61,9 @@ final class IndexedForDisposalLoopMatcher {
    *   <li>condition must be of the form {@code i < collection.size()}
    *   <li>update must be prefix or postfix {@code ++}
    *   <li>no overwrite of the index variable or collection variable in the loop body
+   *   <li>no call in the loop body that might mutate the collection: that is, every method that is
+   *       invoked on the collection or passed the collection, other than {@code get} and {@code
+   *       size}, is side-effect-free
    *   <li>at least one access of the iterated collection element consistent with the loop header
    *       (e.g., {@code collection.get(i)}) in the loop body
    * </ul>
@@ -327,12 +333,73 @@ final class IndexedForDisposalLoopMatcher {
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
+      if (mayMutateCollection(tree)) {
+        // For example, `collection.remove(i)` shifts the next element into index `i`, so the loop
+        // skips it.
+        bodyIsIllegal = true;
+        return null;
+      }
       if (isIthCollectionElement(tree, indexVariableName)
           && collectionName == CollectionOwnershipUtils.getNameFromExpressionTree(tree)) {
         // The last matching access represents the iterated element for this loop.
         lastCollectionElementAccess = tree;
       }
       return super.visitMethodInvocation(tree, p);
+    }
+
+    /**
+     * Returns true if the given invocation might mutate the collection: that is, the collection is
+     * the receiver or an argument, and the invoked method is not known to be side-effect-free.
+     * {@code collection.get(i)} and {@code collection.size()} are always permitted.
+     *
+     * @param tree a method invocation in the loop body
+     * @return true if {@code tree} might mutate the collection
+     */
+    private boolean mayMutateCollection(MethodInvocationTree tree) {
+      if (coAtf.getListGetIndex(tree) != null || coAtf.isSizeCall(tree)) {
+        return false;
+      }
+      boolean collectionIsUsed = false;
+      ExpressionTree methodSelect = tree.getMethodSelect();
+      if (methodSelect instanceof MemberSelectTree memberSelectTree
+          && namesCollection(memberSelectTree.getExpression())) {
+        collectionIsUsed = true;
+      }
+      for (ExpressionTree argument : tree.getArguments()) {
+        if (namesCollection(argument)) {
+          collectionIsUsed = true;
+        }
+      }
+      if (!collectionIsUsed) {
+        return false;
+      }
+      ExecutableElement method = TreeUtils.elementFromUse(tree);
+      return !PurityUtils.isSideEffectFree(coAtf, method);
+    }
+
+    /**
+     * Returns true if {@code expr} is a variable or field access whose name is the collection name.
+     *
+     * @param expr an expression
+     * @return true if {@code expr} names the collection
+     */
+    private boolean namesCollection(ExpressionTree expr) {
+      expr = TreeUtils.withoutParensOrCasts(expr);
+      if (!(expr instanceof IdentifierTree || expr instanceof MemberSelectTree)) {
+        return false;
+      }
+      Element elt = TreeUtils.elementFromTree(expr);
+      if (elt == null) {
+        return false;
+      }
+      switch (elt.getKind()) {
+        case FIELD, LOCAL_VARIABLE, PARAMETER, RESOURCE_VARIABLE -> {
+          return elt.getSimpleName() == collectionName;
+        }
+        default -> {
+          return false;
+        }
+      }
     }
 
     @Override

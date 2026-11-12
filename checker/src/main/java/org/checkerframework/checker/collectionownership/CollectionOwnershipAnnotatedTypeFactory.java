@@ -36,7 +36,6 @@ import org.checkerframework.checker.collectionownership.qual.OwningCollectionWit
 import org.checkerframework.checker.collectionownership.qual.PolyOwningCollection;
 import org.checkerframework.checker.mustcall.MustCallAnnotatedTypeFactory;
 import org.checkerframework.checker.mustcall.qual.NotOwning;
-import org.checkerframework.checker.mustcall.qual.Owning;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.resourceleak.MustCallConsistencyAnalyzer;
 import org.checkerframework.checker.resourceleak.MustCallInference;
@@ -697,14 +696,14 @@ public class CollectionOwnershipAnnotatedTypeFactory
 
     // If the inserted element annotated as @NotOwning, then it's definitely not owning
     Element insertedElement = TreeUtils.elementFromTree(insertedArgumentTree);
-    if (insertedElement != null && insertedElement.getAnnotation(NotOwning.class) != null) {
+    if (insertedElement != null && rlAtf.hasNotOwning(insertedElement)) {
       return CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING;
     }
 
     // If the inserted element is a parameter, and it has no explicit @Owning annotation, then it's
     // definitely not owning.
     if (insertedElement != null && insertedElement.getKind() == ElementKind.PARAMETER) {
-      return insertedElement.getAnnotation(Owning.class) == null
+      return !rlAtf.hasOwning(insertedElement)
           ? CollectionMutatorArgumentKind.DEFINITELY_NON_OWNING
           : CollectionMutatorArgumentKind.MAY_BE_OWNING;
     }

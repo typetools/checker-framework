@@ -722,7 +722,7 @@ The type hierarchy of the ownership type system is:
     because most expressions are not collections of resources.
 \end{itemize}
 
-A \<@NotOwningCollection can only do certain ``safe'' operations on the
+A \<@NotOwningCollection> reference can only do certain ``safe'' operations on the
 collection. It can only insert elements that are definitely not owning, such as
 the result of a method whose return type is \<@NotOwning>. It cannot clear
 the collection or discard or overwrite elements, for example with
@@ -730,9 +730,10 @@ the collection or discard or overwrite elements, for example with
 remove and return an element, such as \<Queue.poll()>, are permitted; the
 caller then owns the returned element and must dispose of it. But it also means
 that the parameter does not have any calling obligation for the elements of the
-collection,
+collection.
 
-Only \<@OwningCollection> and \<@NotOwningCollection> are permitted as user-written annotations. The other types are only used internally.
+Only \<@OwningCollection>, \<@NotOwningCollection>, and the polymorphic qualifier
+\<@PolyOwningCollection> are permitted as user-written annotations. The other types are only used internally.
 
 \subsectionAndLabel{Fulfilling collection obligations}{resource-leak-collections-fulfillment}
 
@@ -741,7 +742,8 @@ To fulfill the obligation of a resource collection, the obligation can be passed
 Here is an example of such a loop:
 
 \begin{verbatim}
-// The type of `socketList` is @OwningCollection @MustCall("close").
+// The type of `socketList` is @OwningCollection: its elements, which are
+// @MustCall("close"), have an obligation.
 for (Socket s : socketList) {
   try {
     s.close();
@@ -749,7 +751,8 @@ for (Socket s : socketList) {
     e.printStackTrace();
   }
 }
-// The type of `socketList` is now @OwningCollectionWithoutObligation @MustCall().
+// The type of `socketList` is now @OwningCollectionWithoutObligation: the loop
+// called close() on each element.
 \end{verbatim}
 
 The main effect such a loop has is that the obligations corresponding to the methods it calls on all elements are removed. If the loop calls all required methods - which is almost always the case, since classes usually have at most one \<MustCall> method - the type of the collection is additionally refined to \<@OwningCollectionWithoutObligation>.
@@ -758,21 +761,30 @@ To determine the methods such a loop calls, the checker does the following thing
 
 \begin{itemize}
   \item It checks that the loop does not terminate early.
-  \item It leverages the \<CalledMethods> analysis to determine the methods definitely called on the loop iterator variable. This means that anything that changes the \<CalledMethods> type of the iterator variable is supported, for example passing it as an argument to a method annotated \<@EnsuresCalledMethods(``m'')>, or using try-with constructs. Nullness checks are also supported: that is, it is sufficient to fulfill the obligation for every non-null element of the collection; note that this is a simple, syntactic check, not a full-fledged nullness analysis, and so it might fail to certify loops that use an unorthodox method for nullness checking.
+  \item It leverages the \<CalledMethods> analysis to determine the methods definitely called on the loop iterator variable. This means that anything that changes the \<CalledMethods> type of the iterator variable is supported, for example passing it as an argument to a method annotated \<@EnsuresCalledMethods(value="\#1", methods="m")>. Nullness checks are also supported: that is, it is sufficient to fulfill the obligation for every non-null element of the collection; note that this is a simple, syntactic check, not a full-fledged nullness analysis, and so it might fail to certify loops that use an unorthodox method for nullness checking.
 \end{itemize}
 
-If an indexed \<for> loop is used, the checker must additionally check that the loop does in fact iterate over all elements of the collection, and that the loop doesn't write to the loop variable for example. The checks are the following:
+An enhanced \<for> loop must not assign to the variable that holds the collection.
+
+If an indexed \<for> loop is used, the checker must additionally check that the loop does in fact iterate over all elements of the collection. The checks are the following, where \<collection> is the collection and \<i> is the index variable:
 
 \begin{itemize}
-  \item Loop iteration bounds:
+  \item Loop header:
     \begin{itemize}
-      \item The lower bound of iteration is 0, and
-      \item The upper bound of iteration is \<c.size()>
-      \item The loop's increment expression is a pre- or post-increment of the loop variable.
-      \item The collection element is accessed using \<collection.get(i)>, where \<i> is the loop variable.
+      \item The loop has exactly one initializer, of the form \<int i = 0>.
+      \item The loop condition is \<i < collection.size()>.
+      \item The loop has exactly one update expression, which is a pre- or post-increment of \<i>.
     \end{itemize}
-  \item The loop does not assign to the collection variable.
-  \item The loop does not assign to collection elements.
+  \item Loop body:
+    \begin{itemize}
+      \item The body accesses the collection element using \<collection.get(i)>.
+      \item The body does not assign to, increment, or decrement \<i>.
+      \item The body does not assign to the collection variable.
+      \item The body does not call a method that might modify the collection, such as
+        \<collection.remove(i)>.  Specifically, every method that is invoked on
+        \<collection> or that is passed \<collection> as an argument, other than
+        \<get> and \<size>, must be side-effect-free (Section~\ref{type-refinement-purity}).
+    \end{itemize}
 \end{itemize}
 
 Here is an example using an indexed \<for> loop.
