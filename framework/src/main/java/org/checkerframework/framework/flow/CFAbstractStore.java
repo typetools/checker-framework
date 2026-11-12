@@ -207,6 +207,21 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /* --------------------------------------------------------- */
 
   /**
+   * Returns true if a call to the given method or constructor does not change any field or array
+   * element, according to the method's annotations (such as {@link
+   * org.checkerframework.dataflow.qual.SideEffectFree}) and the command-line options {@code
+   * -AassumeSideEffectFree}, {@code -AassumePure}, and {@code -AassumePureGetters}.
+   *
+   * @param method a method or constructor
+   * @return true if a call to {@code method} does not change any field or array element
+   */
+  public boolean isSideEffectFree(ExecutableElement method) {
+    return assumeSideEffectFree
+        || (assumePureGetters && ElementUtils.isGetter(method))
+        || analysis.atypeFactory.isSideEffectFree(method);
+  }
+
+  /**
    * Remove any information that might not be valid any more after a method call, and add
    * information guaranteed by the method.
    *
@@ -236,11 +251,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory = analysis.atypeFactory;
 
     // Case 1: The method is side-effect-free.
-    boolean hasSideEffect =
-        !(assumeSideEffectFree
-            || (assumePureGetters && ElementUtils.isGetter(method))
-            || atypeFactory.isSideEffectFree(method));
-    if (hasSideEffect) {
+    if (!isSideEffectFree(method)) {
 
       boolean sideEffectsUnrefineAliases = atypeFactory.sideEffectsUnrefineAliases;
       Node receiver = methodInvocationNode.getTarget().getReceiver();
@@ -1356,12 +1367,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /**
    * Can the objects {@code a} and {@code b} be aliases? Returns a conservative answer (i.e.,
    * returns {@code true} if not enough information is available to determine aliasing).
+   *
+   * <p>This compares the erasures of the types, because two parameterizations of a generic type can
+   * denote the same object even if neither is a subtype of the other. For example, a {@code
+   * Box<Integer>} is both a {@code Box<? extends Number>} and a {@code Box<? super Integer>}.
    */
   @Override
   public boolean canAlias(JavaExpression a, JavaExpression b) {
-    TypeMirror tb = b.getType();
-    TypeMirror ta = a.getType();
     Types types = analysis.getTypes();
+    TypeMirror ta = types.erasure(a.getType());
+    TypeMirror tb = types.erasure(b.getType());
     return types.isSubtype(ta, tb) || types.isSubtype(tb, ta);
   }
 
