@@ -28,6 +28,34 @@ public class BinaryOperandPromotion {
     return a == b;
   }
 
+  boolean booleanReferenceEquality(Boolean a, Boolean b) {
+    return a == b;
+  }
+
+  boolean booleanSameKinds(boolean a, boolean b) {
+    return a == b;
+  }
+
+  boolean booleanEquality(Boolean a, boolean b) {
+    // :: error: [return]
+    return a == b;
+  }
+
+  boolean booleanAnd(Boolean a, boolean b) {
+    // :: error: [return]
+    return a & b;
+  }
+
+  boolean booleanXorBoxed(Boolean a, Boolean b) {
+    // :: error: [return]
+    return a ^ b;
+  }
+
+  boolean conditionalOr(boolean a, Boolean b) {
+    // :: error: [return]
+    return a || b;
+  }
+
   // A shift operation promotes each operand separately, so a long right operand does not widen the
   // left operand.
   int shiftByLong(int a, long b) {
