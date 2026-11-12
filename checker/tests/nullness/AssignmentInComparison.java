@@ -266,6 +266,27 @@ public class AssignmentInComparison {
     }
   }
 
+  // The assignment to `i` in the target executes before `b[i]` is evaluated.
+  static void assignmentInTargetIndexBeforeRhs(@Nullable Object[] a, @Nullable Object[] b, int i) {
+    if ((a[i = 0] = b[i]) != null) {
+      b[i].toString();
+    }
+  }
+
+  // The assignment writes the `next` field of the original `n`, not of `o`.
+  static void receiverReassignedNonNullRhs(AssignmentInComparison n, AssignmentInComparison o) {
+    if ((n.next = (n = o)) != null) {
+      // :: error: [dereference.of.nullable]
+      n.next.toString();
+    }
+  }
+
+  static void receiverReassignedNoComparison(AssignmentInComparison n, AssignmentInComparison o) {
+    n.next = (n = o);
+    // :: error: [dereference.of.nullable]
+    n.next.toString();
+  }
+
   static void annotationArgumentInRhs(
       @Nullable Object o, @Nullable Object p, Map<String, Object> m) {
     // The annotation argument `"m"` is not an assignment to a variable.
