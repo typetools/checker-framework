@@ -908,13 +908,10 @@ public class MustCallConsistencyAnalyzer {
       if (coType == CollectionOwnershipType.OwningCollection) {
         ResourceAlias tmpVarAsResourceAlias = new ResourceAlias(new LocalVariable(tmpVar), tree);
         List<String> mustCallValues = coAtf.getMustCallValuesOfResourceCollectionComponent(tree);
-        if (mustCallValues == null) {
-          throw new BugInCF(
-              "List of MustCall values of component type is null for OwningCollection return value:"
-                  + " "
-                  + node);
-        }
-        if (!ResourceLeakUtils.isIterator(node.getType())) {
+        // mustCallValues is null if the type is not a collection with one type argument, such as
+        // a user-annotated `@OwningCollection Map<String, Socket>`. Such a value has no
+        // collection obligations.
+        if (mustCallValues != null && !ResourceLeakUtils.isIterator(node.getType())) {
           for (String mustCallMethod : mustCallValues) {
             obligations.add(
                 new CollectionObligation(
@@ -974,7 +971,7 @@ public class MustCallConsistencyAnalyzer {
             assert mustCallValues != null
                 : "@AssumeAssertion(nullness): isResourceCollection(receiverTree) returned true";
             Set<ResourceAlias> receiverAliases;
-            if (receiverNode != receiverExpr && receiverNode instanceof LocalVariableNode tmpVar) {
+            if (receiverNode instanceof LocalVariableNode tmpVar && cmAtf.isTempVar(tmpVar)) {
               // The receiver is a temporary variable. For example, `make()` in `make().add(r)`.
               // Report errors at the receiver expression, not at the temp variable.
               receiverAliases =
@@ -2059,6 +2056,11 @@ public class MustCallConsistencyAnalyzer {
         return;
       }
       case OwningCollection -> {
+        if (isLoopBodyAnalysis) {
+          // The collection ownership store is not yet available during loop body analysis, so
+          // the field's type is unknown. Do not report errors in loop body analysis.
+          break;
+        }
         List<String> mustCallValues =
             coAtf.getMustCallValuesOfResourceCollectionComponent(lhsField.getTree());
         if (mustCallValues == null || mustCallValues.isEmpty()) {
@@ -2076,7 +2078,7 @@ public class MustCallConsistencyAnalyzer {
       case OwningCollectionWithoutObligation, OwningCollectionBottom -> {
         // The field has no obligation, so it may be reassigned. A method that assigns an owning
         // collection to it must be annotated @CreatesMustCallFor("this").
-        if (rhsCoType == CollectionOwnershipType.OwningCollection) {
+        if (!isLoopBodyAnalysis && rhsCoType == CollectionOwnershipType.OwningCollection) {
           TreePath currentPath = cmAtf.getPath(node.getTree());
           if (currentPath == null) {
             throw new BugInCF("Assignment " + node + " has no tree path");

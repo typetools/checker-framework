@@ -1,14 +1,18 @@
 package org.checkerframework.checker.collectionownership;
 
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreeScanner;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -20,6 +24,7 @@ import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.IPair;
 
 /** Matches enhanced-`for` {@link DisposalLoopInfo} from CFG. */
@@ -45,7 +50,7 @@ final class EnhancedForDisposalLoopMatcher {
 
   /**
    * Returns the {@link DisposalLoopInfo} if the enhanced-for-loop iterates over a resource
-   * collection.
+   * collection and its body does not assign to the variable that holds the collection.
    *
    * @param tree the enhanced-for-loop to inspect
    * @return the matched disposal loop info, or {@code null} if the loop does not match
@@ -54,7 +59,41 @@ final class EnhancedForDisposalLoopMatcher {
     if (!coAtf.isResourceCollection(tree.getExpression())) {
       return null;
     }
+    // If the body reassigns the collection variable, the loop still iterates over the original
+    // collection, but after the loop the variable refers to a different collection.
+    Name collectionName =
+        CollectionOwnershipUtils.getNameFromExpressionTree(
+            TreeUtils.withoutParens(tree.getExpression()));
+    if (collectionName != null && assignsTo(tree.getStatement(), collectionName)) {
+      return null;
+    }
     return resolveEnhancedForLoop(tree);
+  }
+
+  /**
+   * Returns true if {@code body} contains an assignment to a variable or field named {@code name}.
+   *
+   * @param body a loop body
+   * @param name a variable or field name
+   * @return true if {@code body} assigns to {@code name}
+   */
+  private static boolean assignsTo(StatementTree body, Name name) {
+    @Nullable Boolean result =
+        new TreeScanner<Boolean, Void>() {
+          @Override
+          public Boolean visitAssignment(AssignmentTree tree, Void p) {
+            if (CollectionOwnershipUtils.getNameFromExpressionTree(tree.getVariable()) == name) {
+              return true;
+            }
+            return super.visitAssignment(tree, p);
+          }
+
+          @Override
+          public Boolean reduce(@Nullable Boolean r1, @Nullable Boolean r2) {
+            return Boolean.TRUE.equals(r1) || Boolean.TRUE.equals(r2);
+          }
+        }.scan(body, null);
+    return Boolean.TRUE.equals(result);
   }
 
   /**

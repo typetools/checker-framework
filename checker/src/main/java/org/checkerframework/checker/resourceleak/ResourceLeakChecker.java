@@ -2,6 +2,7 @@ package org.checkerframework.checker.resourceleak;
 
 import java.util.LinkedHashSet;
 import java.util.NavigableSet;
+import java.util.Properties;
 import java.util.Set;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.collectionownership.CollectionOwnershipChecker;
@@ -99,6 +100,28 @@ public class ResourceLeakChecker extends AggregateChecker {
       }
     }
     super.reportError(source, messageKey, args);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>The {@link MustCallConsistencyAnalyzer} reports errors through this checker, using message
+   * keys that are defined in the {@code messages.properties} files of the subcheckers. This method
+   * includes those files.
+   */
+  @Override
+  public Properties getMessagesProperties() {
+    if (messagesProperties == null) {
+      Properties result = new Properties();
+      result.putAll(getProperties(CollectionOwnershipChecker.class, MSGS_FILE, true));
+      // The RLCCalledMethodsChecker's messages take precedence. For example, the
+      // MustCallConsistencyAnalyzer reports `transfer.owningcollection.field.ownership` with the
+      // arguments expected by that file, not by the CollectionOwnershipChecker's file.
+      result.putAll(getProperties(RLCCalledMethodsChecker.class, MSGS_FILE, true));
+      result.putAll(super.getMessagesProperties());
+      messagesProperties = result;
+    }
+    return messagesProperties;
   }
 
   @Override
