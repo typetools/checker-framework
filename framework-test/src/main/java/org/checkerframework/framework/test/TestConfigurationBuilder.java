@@ -191,8 +191,9 @@ public class TestConfigurationBuilder {
   private boolean shouldEmitDebugInfo;
 
   /**
-   * Note: There are static helper methods named buildConfiguration and buildConfigurationBuilder
-   * that can be used to create the most common types of configurations.
+   * Note: There are static helper methods named {@link #buildDefaultConfiguration} and {@link
+   * #getDefaultConfigurationBuilder} that can be used to create the most common types of
+   * configurations.
    */
   public TestConfigurationBuilder() {
     diagnosticFiles = new ArrayList<>();

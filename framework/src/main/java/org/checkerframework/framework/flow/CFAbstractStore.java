@@ -215,11 +215,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *       org.checkerframework.dataflow.qual.SideEffectFree} or {@link
    *       org.checkerframework.dataflow.qual.Pure}), then no information needs to be removed.
    *   <li>Otherwise, all information about field accesses {@code a.f} needs to be removed, except
-   *       if the method {@code n} cannot modify {@code a.f}. This unmodifiability property holds if
-   *       {@code a} is a local variable or {@code this}, and {@code f} is final, or if {@code a.f}
-   *       has a {@link MonotonicQualifier} in the current store. Subclasses can change this
-   *       behavior by overriding {@link #newFieldValueAfterMethodCall(FieldAccess,
-   *       GenericAnnotatedTypeFactory, CFAbstractValue)}.
+   *       if the method cannot modify {@code a.f}. This unmodifiability property holds if {@code a}
+   *       is a local variable or {@code this}, and {@code f} is final, or if {@code a.f} has a
+   *       {@link MonotonicQualifier} in the current store. Subclasses can change this behavior by
+   *       overriding {@link #newFieldValueAfterMethodCall(FieldAccess, GenericAnnotatedTypeFactory,
+   *       CFAbstractValue)}.
    *   <li>Furthermore, if the field has a monotonic annotation, then its information can also be
    *       kept.
    * </ol>
@@ -1119,11 +1119,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Updates the information in the store by considering a field assignment with target {@code n},
-   * where the right-hand side has the abstract value {@code val}.
+   * Updates the information in the store by considering a field assignment with target {@code
+   * fieldAccess}, where the right-hand side has the abstract value {@code val}.
    *
-   * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
-   *     abstract value is not known)
+   * @param fieldAccess the target of the assignment
+   * @param val the abstract value of the value assigned to {@code fieldAccess} (or {@code null} if
+   *     the abstract value is not known)
    */
   protected void updateForFieldAccessAssignment(FieldAccess fieldAccess, @Nullable V val) {
     removeConflicting(fieldAccess, val);
@@ -1139,11 +1140,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Updates the information in the store by considering an assignment with target {@code n}, where
-   * the target is an array access.
+   * Updates the information in the store by considering an assignment with target {@code
+   * arrayAccess}, where the right-hand side has the abstract value {@code val}.
    *
    * <p>See {@link #removeConflicting(ArrayAccess,CFAbstractValue)}, as it is called first by this
    * method.
+   *
+   * @param arrayAccess the target of the assignment
+   * @param val the abstract value of the value assigned to {@code arrayAccess} (or {@code null} if
+   *     the abstract value is not known)
    */
   protected void updateForArrayAssignment(ArrayAccess arrayAccess, @Nullable V val) {
     removeConflicting(arrayAccess, val);
@@ -1160,7 +1165,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Sets the abstract value of a local variable in the store. Overwrites any value that might have
    * been available previously.
    *
-   * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
+   * @param receiver the local variable that is assigned
+   * @param val the abstract value of the value assigned to {@code receiver} (or {@code null} if the
    *     abstract value is not known)
    */
   protected void updateForLocalVariableAssignment(LocalVariable receiver, @Nullable V val) {
@@ -1192,8 +1198,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *                 <em>i</em>.
    * </ol>
    *
-   * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
-   *     abstract value is not known)
+   * @param fieldAccess the field access that is assigned
+   * @param val the abstract value of the value assigned to {@code fieldAccess} (or {@code null} if
+   *     the abstract value is not known)
    */
   protected void removeConflicting(FieldAccess fieldAccess, @Nullable V val) {
     Iterator<Map.Entry<FieldAccess, V>> fieldValuesIterator = fieldValues.entrySet().iterator();
@@ -1262,8 +1269,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *                 elements whose reference is a method call.
    * </ol>
    *
-   * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
-   *     abstract value is not known)
+   * @param arrayAccess the array access that is assigned
+   * @param val the abstract value of the value assigned to {@code arrayAccess} (or {@code null} if
+   *     the abstract value is not known)
    */
   protected void removeConflicting(ArrayAccess arrayAccess, @Nullable V val) {
     Iterator<Map.Entry<ArrayAccess, V>> arrayValuesIterator = arrayValues.entrySet().iterator();
@@ -1299,18 +1307,20 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Removes any information in this store that might not be true any more after {@code localVar}
-   * has been assigned a new value. This includes the following steps:
+   * Removes any information in this store that might not be true any more after {@code var} has
+   * been assigned a new value. This includes the following steps:
    *
    * <ol>
-   *   <li value="1">Remove any abstract values for field accesses <em>b.g</em> where {@code
-   *                 localVar} might alias any expression in the receiver <em>b</em>.
-   *   <li value="2">Remove any abstract values for array accesses <em>a[i]</em> where {@code
-   *                 localVar} might alias the receiver <em>a</em>.
+   *   <li value="1">Remove any abstract values for field accesses <em>b.g</em> where {@code var}
+   *                 might alias any expression in the receiver <em>b</em>.
+   *   <li value="2">Remove any abstract values for array accesses <em>a[i]</em> where {@code var}
+   *                 might alias the receiver <em>a</em>.
    *   <li value="3">Remove any information about method calls where the receiver or any of the
-   *                 parameters contains {@code localVar}, including about iterated collection
-   *                 elements whose reference is such a method call, such as {@code list.get(i)}.
+   *                 parameters contains {@code var}, including about iterated collection elements
+   *                 whose reference is such a method call, such as {@code list.get(i)}.
    * </ol>
+   *
+   * @param var the local variable that is assigned
    */
   protected void removeConflicting(LocalVariable var) {
     Iterator<Map.Entry<FieldAccess, V>> fieldValuesIterator = fieldValues.entrySet().iterator();

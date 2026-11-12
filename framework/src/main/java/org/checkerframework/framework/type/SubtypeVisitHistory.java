@@ -6,8 +6,7 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 
 /**
- * THIS CLASS IS DESIGNED FOR USE WITH DefaultTypeHierarchy, DefaultRawnessComparer, and
- * StructuralEqualityComparer ONLY.
+ * THIS CLASS IS DESIGNED FOR USE WITH DefaultTypeHierarchy and StructuralEqualityVisitHistory ONLY.
  *
  * <p>VisitHistory tracks triples of (type1, type2, top), where type1 is a subtype of type2. It does
  * not track when type1 is not a subtype of type2; such entries are missing from the history.

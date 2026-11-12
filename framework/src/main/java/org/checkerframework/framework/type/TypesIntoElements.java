@@ -38,7 +38,7 @@ import org.checkerframework.javacutil.TypeAnnotationUtils;
  * A helper class that puts the annotations from an AnnotatedTypeMirror back into the corresponding
  * Elements, so that they get stored in the bytecode by the compiler.
  *
- * <p>This class is roughly symmetric to {@code TypeFromElement}.
+ * <p>This class is roughly symmetric to {@link ElementAnnotationApplier}.
  *
  * <p>This class deals with javac internals and liberally imports such classes.
  */

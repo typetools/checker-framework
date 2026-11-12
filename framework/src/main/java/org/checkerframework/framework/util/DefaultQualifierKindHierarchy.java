@@ -381,10 +381,9 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
   }
 
   /**
-   * Iterates over all the qualifier kinds and adds all polymorphic qualifier kinds to
-   * polymorphicQualifiers. Also sets {@link DefaultQualifierKind#poly} and {@link
-   * DefaultQualifierKind#top} for the polymorphic qualifiers, and sets {@link
-   * DefaultQualifierKind#poly} for the top qualifiers.
+   * Iterates over all the qualifier kinds and sets {@link DefaultQualifierKind#poly}, {@link
+   * DefaultQualifierKind#top}, and {@link DefaultQualifierKind#strictSuperTypes} for the
+   * polymorphic qualifiers, and sets {@link DefaultQualifierKind#poly} for the top qualifiers.
    *
    * <p>Requires that tops has been initialized.
    */
@@ -425,7 +424,8 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
    * DefaultQualifierKind#strictSuperTypes}, {@link DefaultQualifierKind#top}, {@link
    * DefaultQualifierKind#bottom}, and {@link DefaultQualifierKind#poly}.
    *
-   * <p>Requires tops, bottoms, and polymorphicQualifiers to be initialized.
+   * <p>Requires tops and bottoms to be initialized, and requires that {@link
+   * #initializePolymorphicQualifiers} has been called.
    *
    * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
    *     qualifier kinds; created by {@link #createDirectSuperMap()}

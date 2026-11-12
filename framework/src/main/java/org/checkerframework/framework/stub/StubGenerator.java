@@ -92,9 +92,9 @@ public class StubGenerator {
   }
 
   /**
-   * Generates the stub file for all the classes within the provided package.
+   * Prints the stub declaration of the given field. Does nothing if {@code elt} is not a field.
    *
-   * @param elt an element whose package to use
+   * @param elt a field
    */
   public void stubFromField(Element elt) {
     if (elt.getKind() != ElementKind.FIELD) {
@@ -129,9 +129,10 @@ public class StubGenerator {
   }
 
   /**
-   * Generates the stub file for all the classes within the package that contains {@code elt}.
+   * Prints the stub declaration of the given method or constructor. Does nothing if {@code elt} is
+   * neither a method nor a constructor.
    *
-   * @param elt a method or constructor; generate stub files for its package
+   * @param elt a method or constructor
    */
   public void stubFromMethod(ExecutableElement elt) {
     if (!(elt.getKind() == ElementKind.CONSTRUCTOR || elt.getKind() == ElementKind.METHOD)) {
@@ -197,7 +198,11 @@ public class StubGenerator {
     }
   }
 
-  /** Helper method that outputs the index for the provided class. */
+  /**
+   * Helper method that prints the stub file for the provided top-level class.
+   *
+   * @param typeElement the class to output
+   */
   private void printClass(TypeElement typeElement) {
     printClass(typeElement, null);
   }
