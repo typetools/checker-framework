@@ -27,8 +27,9 @@ import org.checkerframework.javacutil.TreeUtils;
  * <ul>
  *   <li>{@code ElementDefault}: {@code @SubQual} for {@link TypeUseLocation#RETURN}, and
  *       {@code @Critical} for the same location.
- *   <li>{@code ElementDefaultEnclosing}: on its member class {@code Inner}, {@code @Critical} for
- *       {@link TypeUseLocation#RETURN}.
+ *   <li>{@code ElementDefaultEnclosing}: after computing the type of method {@code takesSub} of its
+ *       member class {@code Inner}, {@code @Critical} for {@link TypeUseLocation#RETURN} on {@code
+ *       Inner}.
  *   <li>{@code ElementDefaultLate}: {@code @SubQual} for {@link TypeUseLocation#RETURN}; then,
  *       after computing the type of its method {@code first}, {@code @SubQual} for {@link
  *       TypeUseLocation#PARAMETER}.
@@ -85,6 +86,15 @@ public class ElementDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         } else if (className.contentEquals("ElementDefaultEnclosing")) {
           for (TypeElement member : ElementFilter.typesIn(classElt.getEnclosedElements())) {
             if (member.getSimpleName().contentEquals("Inner")) {
+              for (ExecutableElement method :
+                  ElementFilter.methodsIn(member.getEnclosedElements())) {
+                if (method.getSimpleName().contentEquals("takesSub")) {
+                  // Computing this type computes the defaults that apply within Inner, which
+                  // are then the same as the defaults of the enclosing class.  Registering a
+                  // default for Inner must not change the defaults of the enclosing class.
+                  getAnnotatedType(method);
+                }
+              }
               defaults.addElementDefault(member, CRITICAL, TypeUseLocation.RETURN);
             }
           }
