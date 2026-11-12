@@ -7,7 +7,8 @@
 // Every method below would produce an error if its body were checked; the test expects none,
 // except for the one annotation that cannot be parsed.  Dataflow acts on a `@SideEffectsOnly`
 // annotation whether or not `-AcheckPurityAnnotations` was supplied, so an unparseable annotation
-// is an error in every configuration.
+// is an error in every configuration.  The test also expects the `purity.more.sideeffectfree`
+// warnings that `-AsuggestPureMethods` issues for methods that have no side effects.
 
 import java.util.Collection;
 import org.checkerframework.dataflow.qual.SideEffectsOnly;
@@ -61,11 +62,14 @@ public class NotCheckedWithoutOption {
 
   interface Mutator {
     @SideEffectsOnly("#1")
+    // :: warning: [purity.more.sideeffectfree]
     void apply(Collection<Integer> c);
   }
 
+  // :: warning: [purity.more.sideeffectfree]
   static void unannotatedStatic(Collection<Integer> c) {}
 
+  // :: warning: [purity.more.sideeffectfree]
   void methodReference() {
     // Would report `purity.methodref`:  the referenced method promises nothing.
     Mutator m = NotCheckedWithoutOption::unannotatedStatic;
