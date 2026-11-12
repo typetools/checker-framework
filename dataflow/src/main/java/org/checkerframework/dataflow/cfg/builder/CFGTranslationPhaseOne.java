@@ -829,16 +829,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /**
    * The UID for the next unique name.
    *
-   * <p>This is static so that names are unique across all CFGs, not just within one. The Resource
-   * Leak Checker stores the variables of ternary and switch expressions in {@code
-   * RLCCalledMethodsAnnotatedTypeFactory#tempVarToTree}, which compares its {@code
-   * LocalVariableNode} keys by name. That map holds the variables of a whole compilation unit,
-   * because the {@code MustCallConsistencyAnalyzer} runs in the Collection Ownership Checker after
-   * the whole class has been analyzed. If two CFGs could produce the same name, then the map would
-   * confuse variables from different methods. {@code MustCallTransfer#uid} is static for the same
-   * reason.
+   * <p>This is static so that names are unique across all CFGs, not just within one CFG. Therefore,
+   * a client can use the name of a temporary variable to identify it, even in a data structure that
+   * holds the temporary variables of more than one method.
    */
-  protected static AtomicLong uid = new AtomicLong();
+  protected static final AtomicLong uid = new AtomicLong();
 
   /**
    * Returns a unique name starting with {@code prefix}.

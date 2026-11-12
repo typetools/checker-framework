@@ -111,6 +111,11 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    * IdentityHashMap as a backing map for this reason). Therefore, we use a regular BiMap. Doing so
    * is safe iff 1) the LocalVariableNode keys all have different names, and 2) a standard Tree
    * implementation that uses reference equality for equality (e.g., JCTree in javac) is used.
+   *
+   * <p>This map holds the temporary variables of a whole compilation unit, because the {@code
+   * MustCallConsistencyAnalyzer} runs in the Collection Ownership Checker after the whole class has
+   * been analyzed. Condition 1) holds nonetheless, because the CFG builder gives temporary
+   * variables names that are unique across all CFGs, not just within one CFG.
    */
   private final BiMap<LocalVariableNode, Tree> tempVarToTree = HashBiMap.create();
 
