@@ -21,8 +21,15 @@ public class SwitchSelectorChangedByGuard {
 
   @Nullable Shape shape;
 
+  @Nullable Object g;
+
   boolean clearShape() {
     this.shape = null;
+    return false;
+  }
+
+  boolean clearG() {
+    g = null;
     return false;
   }
 
@@ -49,6 +56,19 @@ public class SwitchSelectorChangedByGuard {
     }
   }
 
+  int guardChangesFieldLaterCases() {
+    if (shape == null) {
+      return 0;
+    }
+    return switch (shape) {
+      case Circle c when clearShape() -> 1;
+      // :: error: [dereference.of.nullable]
+      case Square s -> shape.hashCode();
+      // :: error: [dereference.of.nullable]
+      case Circle c -> shape.hashCode();
+    };
+  }
+
   // Without a guard, the selector field is refined.
   void noGuard() {
     this.shape = new Circle();
@@ -58,5 +78,15 @@ public class SwitchSelectorChangedByGuard {
         this.shape.toString();
       }
     }
+  }
+
+  // A guard cannot change a local variable that is the selector expression.
+  String localSelectorAfterGuard(@Nullable Shape s) {
+    return switch (s) {
+      case null -> "";
+      case Circle c when clearG() -> "";
+      case Circle c -> s.toString();
+      case Square q -> s.toString();
+    };
   }
 }

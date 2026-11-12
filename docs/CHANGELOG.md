@@ -9,6 +9,17 @@
 
 ### Changes for type system implementers
 
+The `CaseNode` constructor takes a new `alwaysMatches` argument, and the new
+method `CaseNode.alwaysMatches()` returns it; for such a `CaseNode`, the CFG
+does not test the labels, and `CFAbstractTransfer.visitCase()` returns a regular
+store.
+
+The `CaseNode` constructor takes a new `precededByGuard` argument, and the new
+method `CaseNode.isPrecededByGuard()` returns it.  The new method
+`CFAbstractTransfer.canRefineSwitchSelector()` returns false if an earlier guard
+might have changed the selector expression; then, `visitCase()` refines only the
+synthetic variable that holds the selector's value.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
@@ -50,16 +61,6 @@ that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
 
 Removed `CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
-The `CaseNode` constructor takes a new `alwaysMatches` argument, and the new
-method `CaseNode.alwaysMatches()` returns it; for such a `CaseNode`, the CFG
-does not test the labels, and `CFAbstractTransfer.visitCase()` returns a regular
-store.  If the guard of the last case of an exhaustive switch is false, the CFG
-throws a `MatchException`, so only the guard's true store reaches the case body.
-The `CaseNode` constructor also takes a new `precededByGuard` argument, and the
-new method `CaseNode.isPrecededByGuard()` returns it.  The new method
-`CFAbstractTransfer.canRefineSwitchSelector()` returns false if an earlier guard
-might have changed the selector expression; then, `visitCase()` refines only the
-synthetic variable that holds the selector's value.
 
 Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
 and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
