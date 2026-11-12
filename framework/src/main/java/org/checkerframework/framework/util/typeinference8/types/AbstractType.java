@@ -737,9 +737,10 @@ public abstract class AbstractType {
   public abstract Set<AbstractQualifier> getQualifiers();
 
   /**
-   * Checks whether the annotations of {@code this} are a subtype of those of {@code superType},
-   * except at positions where either type's annotations are ignored; see {@link
-   * IgnoredAnnotations#replaceIgnoredForSubtype}.
+   * Returns {@link ConstraintSet#TRUE} if the annotations of {@code this} are a subtype of those of
+   * {@code superType}, except at positions where either type's annotations are ignored (see {@link
+   * IgnoredAnnotations#replaceIgnoredForSubtype}); otherwise, returns {@link
+   * ConstraintSet#TRUE_ANNO_FAIL}.
    *
    * @param superType the potential supertype; the Java type of {@code this} must be a subtype of,
    *     or assignable to, that of {@code superType}

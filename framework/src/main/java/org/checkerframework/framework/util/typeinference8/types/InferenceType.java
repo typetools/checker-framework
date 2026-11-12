@@ -256,9 +256,9 @@ public final class InferenceType extends AbstractType {
   }
 
   /**
-   * Returns all inference variables mentioned in this type.
+   * Returns all inference variables contained in this type.
    *
-   * @return all inference variables mentioned in this type
+   * @return all inference variables contained in this type
    */
   @Override
   public Collection<Variable> getInferenceVariables() {
@@ -275,24 +275,25 @@ public final class InferenceType extends AbstractType {
   }
 
   /**
-   * Returns true if this type mentions a variable in {@code instantiated} whose instantiation
+   * Returns true if this type contains a variable in {@code instantiated} whose instantiation
    * ignores annotations (see {@link AbstractType#ignoreAnnotations}) or has an origin (see {@link
    * ProperType#getOrigin}).
    *
    * @param instantiated variables, each of which has an instantiation
-   * @return true if this type mentions a variable in {@code instantiated} whose instantiation
+   * @return true if this type contains a variable in {@code instantiated} whose instantiation
    *     ignores annotations or has an origin
    */
   private boolean appliesIgnoredAnnotations(List<Variable> instantiated) {
-    Collection<Variable> mentioned = null;
+    // Computed only if needed, because computing it traverses this type.
+    Collection<Variable> variablesInThisType = null;
     for (Variable alpha : instantiated) {
       ProperType instantiation = alpha.getInstantiation();
       if (instantiation != null
           && (instantiation.ignoreAnnotations || instantiation.getOrigin() != null)) {
-        if (mentioned == null) {
-          mentioned = getInferenceVariables();
+        if (variablesInThisType == null) {
+          variablesInThisType = getInferenceVariables();
         }
-        if (mentioned.contains(alpha)) {
+        if (variablesInThisType.contains(alpha)) {
           return true;
         }
       }
@@ -303,7 +304,7 @@ public final class InferenceType extends AbstractType {
   /**
    * {@inheritDoc}
    *
-   * <p>If this type mentions an instantiated variable whose instantiation ignores annotations or
+   * <p>If this type contains an instantiated variable whose instantiation ignores annotations or
    * has an origin, then the result is either a proper type whose origin is this type (see {@link
    * ProperType#getOrigin}) or, if applying instantiations would not give a proper type, this type
    * itself.

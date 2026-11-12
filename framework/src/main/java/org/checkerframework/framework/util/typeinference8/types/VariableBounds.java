@@ -59,11 +59,11 @@ public class VariableBounds {
    * cleared; see {@link #getInstantiationChanges}.
    *
    * <p>A {@link ProperType} with an origin sums this count over the variables that its origin
-   * mentions (see {@link ProperType#instantiationVersion}), and applies instantiations to its
+   * contains (see {@link ProperType#instantiationVersion}), and applies instantiations to its
    * origin again only when the sum differs from the sum when it was last up to date; see {@link
    * ProperType#applyInstantiations}. So the count is incremented only when the instantiation
    * actually changes: setting an instantiation equal to the current one leaves the count unchanged,
-   * so that instantiations are not applied again needlessly to types whose origins mention this
+   * so that instantiations are not applied again needlessly to types whose origins contain this
    * variable.
    */
   private int instantiationChanges = 0;
