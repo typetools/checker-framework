@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.Map;
+import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 
@@ -260,6 +263,13 @@ public class AssignmentInComparison {
       // The assignment to `ts[0]` might change `ss[0]`, if `ts` and `ss` alias.
       // :: error: [dereference.of.nullable]
       ss[0][0].toString();
+    }
+  }
+
+  static void annotationArgumentInRhs(@Nullable Object o, Map<String, Object> m) {
+    // The annotation argument `"m"` is not an assignment to a variable.
+    if ((o = new ArrayList<@KeyFor("m") String>()) != null) {
+      o.toString();
     }
   }
 }

@@ -36,4 +36,11 @@ public class AssignmentInComparison {
       @IntVal(3) int y = a[idx[0]];
     }
   }
+
+  static void annotationArgumentInRhs(int[] a, int[] b) {
+    // The annotation argument `{0, 1}` is not an assignment to a variable.
+    if ((a = new @IntVal({0, 1}) int[] {0, 1}) != b) {
+      @IntVal({0, 1}) int x = a[0];
+    }
+  }
 }
