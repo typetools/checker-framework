@@ -5,7 +5,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.util.typeinference8.types.AbstractQualifier;
-import org.checkerframework.framework.util.typeinference8.types.AbstractType;
 import org.checkerframework.framework.util.typeinference8.types.Qualifier;
 import org.checkerframework.framework.util.typeinference8.types.QualifierVar;
 import org.checkerframework.framework.util.typeinference8.types.VariableBounds.BoundKind;

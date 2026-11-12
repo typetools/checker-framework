@@ -803,9 +803,9 @@ public abstract class UBQualifier {
      * <p>1. Create the intersection of the sets of arrays for this and other.
      *
      * <p>2. For each sequence in the intersection, get the offsets for this and other. If any
-     * offset in this is less than or equal to an offset in other, then that offset is an offset
-     * for the sequence in lub. If any offset in other is less than or equal to an offset in this,
-     * then that offset is an offset for the sequence in lub.
+     * offset in this is less than or equal to an offset in other, then that offset is an offset for
+     * the sequence in lub. If any offset in other is less than or equal to an offset in this, then
+     * that offset is an offset for the sequence in lub.
      *
      * @param other to lub with this
      * @return the lub

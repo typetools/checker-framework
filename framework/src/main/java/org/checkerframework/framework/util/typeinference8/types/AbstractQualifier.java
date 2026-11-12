@@ -128,8 +128,8 @@ public abstract class AbstractQualifier {
    *
    * @param quals a set of qualifiers; can contain multiple qualifiers for multiple hierarchies and
    *     multiple qualifiers for a hierarchy
-   * @param combine a function that combines two {@code AnnotationMirror}s in the same hierarchy
-   *     and returns a single {@code AnnotationMirror}
+   * @param combine a function that combines two {@code AnnotationMirror}s in the same hierarchy and
+   *     returns a single {@code AnnotationMirror}
    * @return the result of applying the {@code combine} function on {@code quals}
    */
   private static AnnotationMirrorSet combine(

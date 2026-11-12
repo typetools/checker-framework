@@ -1223,8 +1223,8 @@ public class MustCallConsistencyAnalyzer {
 
   /**
    * Add a new alias to all Obligations that have {@code var} in their resource-alias set. This
-   * method should be used when {@code var} and {@code newAlias} definitely point to the same
-   * object in memory.
+   * method should be used when {@code var} and {@code newAlias} definitely point to the same object
+   * in memory.
    *
    * @param obligations the set of Obligations to modify
    * @param var a variable

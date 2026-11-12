@@ -307,9 +307,9 @@ public class InferenceFactory {
    * }</pre>
    *
    * During type argument inference of {@code bar}, the assignment context is {@code local}. If the
-   * local variable default is used, then the assignment context type is {@code @Nullable T}
-   * and the type argument inferred for {@code bar()} is {@code @Nullable T}. And an incompatible
-   * types in return error is issued.
+   * local variable default is used, then the assignment context type is {@code @Nullable T} and the
+   * type argument inferred for {@code bar()} is {@code @Nullable T}. And an incompatible types in
+   * return error is issued.
    *
    * <p>If, instead, the local variable default is not applied, then the assignment context type is
    * {@code T} (with lower bound {@code @NonNull Void} and upper bound {@code @Nullable Object}) and

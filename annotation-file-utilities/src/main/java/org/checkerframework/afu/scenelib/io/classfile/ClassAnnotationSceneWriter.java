@@ -1078,8 +1078,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
     }
 
     /**
-     * Has this method visit the annotations in scene if and only if it has not visited them
-     * before.
+     * Has this method visit the annotations in scene if and only if it has not visited them before.
      */
     private void ensureVisitSceneMethodAnnotations() {
       if (!hasVisitedMethodAnnotations) {

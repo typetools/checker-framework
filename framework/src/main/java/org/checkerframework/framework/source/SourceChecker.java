@@ -3258,8 +3258,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Returns true if the file at the file path should not be checked because it matches the
-   * {@code checker.skipFiles} property.
+   * Returns true if the file at the file path should not be checked because it matches the {@code
+   * checker.skipFiles} property.
    *
    * @param path the path to the file to potentially skip
    * @return true iff the checker should not check the file at {@code path}

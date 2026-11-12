@@ -234,8 +234,8 @@ public enum AtmCombo {
 
   /**
    * Returns the AtmCombo corresponding to the pair of the classes for the given
-   * AnnotatedTypeMirrors. For example, {@literal (AnnotatedPrimitiveType, AnnotatedDeclaredType)
-   * => AtmCombo.PRIMITIVE_DECLARED}.
+   * AnnotatedTypeMirrors. For example, {@literal (AnnotatedPrimitiveType, AnnotatedDeclaredType) =>
+   * AtmCombo.PRIMITIVE_DECLARED}.
    *
    * @return the AtmCombo corresponding to the pair of the classes for the given
    *     AnnotatedTypeMirrors

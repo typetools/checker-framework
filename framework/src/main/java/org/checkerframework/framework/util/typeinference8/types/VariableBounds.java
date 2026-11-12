@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -473,10 +472,10 @@ public class VariableBounds {
   /**
    * Returns the constraints between the type arguments to {@code s} and {@code t}.
    *
-   * <p>If there exists a supertype of S of the form {@code G<S1, ..., Sn>} and a supertype of T
-   * of the form {@code G<T1,..., Tn>} (for some generic class or interface, G), then for all i
-   * ({@code 1 <= i <= n}), if Si and Ti are types (not wildcards), the constraint formula {@code
-   * <Si = Ti>} is implied.
+   * <p>If there exists a supertype of S of the form {@code G<S1, ..., Sn>} and a supertype of T of
+   * the form {@code G<T1,..., Tn>} (for some generic class or interface, G), then for all i ({@code
+   * 1 <= i <= n}), if Si and Ti are types (not wildcards), the constraint formula {@code <Si = Ti>}
+   * is implied.
    *
    * <p>If G is an inner class, then its enclosing types contribute type arguments as well, and the
    * same constraint formula is implied between each pair of them.

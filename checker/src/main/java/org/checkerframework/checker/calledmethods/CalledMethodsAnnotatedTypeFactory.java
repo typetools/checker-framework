@@ -181,8 +181,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    *
    * @param methodName the name of the method being explicitly called
    * @param tree the invocation of the method
-   * @return "withOwners" or "withImageIds" if the tree is an equivalent filter addition;
-   *     otherwise, {@code methodName}
+   * @return "withOwners" or "withImageIds" if the tree is an equivalent filter addition; otherwise,
+   *     {@code methodName}
    */
   // This cannot return a Name because filterTreeToMethodName cannot.
   public String adjustMethodNameUsingValueChecker(String methodName, MethodInvocationTree tree) {

@@ -46,8 +46,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * and is used as a subchecker by the Index Checker's components.
  *
  * <p>This type factory adds extra expressions to @SameLen annotations when necessary. For example,
- * the full version of the type {@code @SameLen({"a","b"})} should include "a", "b", and whatever
- * is in the @SameLen types for "a" and for "b".
+ * the full version of the type {@code @SameLen({"a","b"})} should include "a", "b", and whatever is
+ * in the @SameLen types for "a" and for "b".
  *
  * <p>Also, every sequence s should have type @SameLen("s"). However, sometimes the sequence has
  * no @SameLen annotation, and users might write the annotation without the variable itself, as in

@@ -180,8 +180,8 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
   }
 
   /**
-   * Takes the primary annotations from typeParamBound and places them as primary annotations on
-   * the wildcard bound.
+   * Takes the primary annotations from typeParamBound and places them as primary annotations on the
+   * wildcard bound.
    */
   private void applyAnnosFromBound(
       AnnotatedTypeMirror wildcardBound,

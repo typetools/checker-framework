@@ -1133,9 +1133,8 @@ public class ASTPath extends ImmutableStack<ASTPath.ASTEntry>
     }
 
     /**
-     * Returns true if the given kinds match. Two kinds match if they're exactly the
-     * same or if the two kinds are both compound assignments, unary operators, binary operators or
-     * wildcards.
+     * Returns true if the given kinds match. Two kinds match if they're exactly the same or if the
+     * two kinds are both compound assignments, unary operators, binary operators or wildcards.
      *
      * <p>This is necessary because in the JAIF file these kinds are represented by their general
      * types (e.g., BinaryOperator, CompoundOperator, etc.) rather than their kind (e.g., PLUS,

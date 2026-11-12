@@ -269,8 +269,7 @@ public final class NullnessUtil {
    * @param <T> the component type (five levels in) of the array
    * @param arr an array all of whose elements, and their elements recursively, are non-null at run
    *     time
-   * @param message text to include if there is a null value, or null to use uncustomized
-   *     message
+   * @param message text to include if there is a null value, or null to use uncustomized message
    * @return the argument, cast to have the type qualifier @NonNull at all levels
    */
   private static <T extends @Nullable Object> @NonNull T @NonNull [] castNonNullArray(
@@ -292,8 +291,7 @@ public final class NullnessUtil {
    *
    * @param ref a value; if an array, all of its elements, and their elements recursively, are
    *     non-null at run time
-   * @param message text to include if there is a null value, or null to use uncustomized
-   *     message
+   * @param message text to include if there is a null value, or null to use uncustomized message
    */
   private static void checkIfArray(@NonNull Object ref, @Nullable String message) {
     assert ref != null

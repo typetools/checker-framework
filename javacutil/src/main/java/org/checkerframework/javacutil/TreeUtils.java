@@ -320,9 +320,9 @@ public final class TreeUtils {
    *
    * <p>This method returns null for a local or anonymous class whose enclosing top-level class has
    * not yet been attributed. javac attributes one top-level class at a time, but the Checker
-   * Framework might visit an entire compilation unit (e.g., when processing an ajava file) after only
-   * its first class is attributed. An example is Ordering$1 in PolyCollectorTypeVars.java in the
-   * all-systems test suite.
+   * Framework might visit an entire compilation unit (e.g., when processing an ajava file) after
+   * only its first class is attributed. An example is Ordering$1 in PolyCollectorTypeVars.java in
+   * the all-systems test suite.
    *
    * @param tree class declaration
    * @return the element for the given class, or null if {@code tree} has not been attributed
@@ -1154,8 +1154,8 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns true if the given tree is an invocation of the method, or of any method that
-   * overrides that one.
+   * Returns true if the given tree is an invocation of the method, or of any method that overrides
+   * that one.
    */
   public static boolean isMethodInvocation(
       Tree tree, ExecutableElement method, ProcessingEnvironment env) {

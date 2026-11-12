@@ -127,8 +127,8 @@ public final class TestDiagnosticUtils {
   }
 
   /**
-   * Instantiates a diagnostic from output produced by the Java compiler. The resulting diagnostic is
-   * never fixable and always has square brackets.
+   * Instantiates a diagnostic from output produced by the Java compiler. The resulting diagnostic
+   * is never fixable and always has square brackets.
    *
    * @param diagnosticString a diagnostic produced by the Java compiler
    * @return a TestDiagnostic for the string

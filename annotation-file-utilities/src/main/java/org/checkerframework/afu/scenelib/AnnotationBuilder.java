@@ -232,9 +232,9 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Supplies a zero-element array field whose element type is unknown. The field type of this
-   * array is represented by an {@link ArrayAFT} with {@link ArrayAFT#elementType elementType} ==
-   * {@code null}.
+   * Supplies a zero-element array field whose element type is unknown. The field type of this array
+   * is represented by an {@link ArrayAFT} with {@link ArrayAFT#elementType elementType} == {@code
+   * null}.
    *
    * <p>This can sometimes happen due to a design flaw in the format of annotations in class files.
    * An array value does not specify a type itself; instead, each element carries a type. Thus, a

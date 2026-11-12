@@ -27,9 +27,9 @@ public class ReceiverInsertion extends TypedInsertion {
    * DeclaredType's name should be set to the type to insert. This can either be done before calling
    * this constructor, or by modifying the return value of {@link #getType()}.
    *
-   * <p>A comma will not be added to the end of the receiver. If there is a parameter
-   * following the inserted receiver, pass {@code true} to {@link #setAddComma(boolean)} to add a
-   * comma to the end of the receiver.
+   * <p>A comma will not be added to the end of the receiver. If there is a parameter following the
+   * inserted receiver, pass {@code true} to {@link #setAddComma(boolean)} to add a comma to the end
+   * of the receiver.
    *
    * @param type the type to use when inserting the receiver
    * @param criteria where to insert the text

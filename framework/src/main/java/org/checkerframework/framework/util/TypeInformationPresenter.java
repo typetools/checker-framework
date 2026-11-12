@@ -215,8 +215,8 @@ public class TypeInformationPresenter {
      *
      * <p>Note that the range sometimes doesn't cover the entire source code of the tree. For
      * example, in "int a = 0", we have a variable tree "int a", but we only want to report the
-     * range of the identifier "a". This customizes the positions where we want the type
-     * information to show.
+     * range of the identifier "a". This customizes the positions where we want the type information
+     * to show.
      *
      * @param tree the tree for which we want to compute the message range
      * @return a message range corresponding to the tree

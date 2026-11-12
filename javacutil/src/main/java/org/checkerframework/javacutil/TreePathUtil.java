@@ -165,8 +165,8 @@ public final class TreePathUtil {
   }
 
   /**
-   * Gets the first (innermost) enclosing tree in path, with any one of the given kinds. Might return
-   * the leaf of {@code path} itself.
+   * Gets the first (innermost) enclosing tree in path, with any one of the given kinds. Might
+   * return the leaf of {@code path} itself.
    *
    * @param path the path defining the tree node
    * @param kinds the set of kinds of the desired tree
@@ -201,8 +201,8 @@ public final class TreePathUtil {
   }
 
   /**
-   * Gets the path to the nearest enclosing declaration (class, method, or variable) of the tree node
-   * defined by the given {@link TreePath}. Might return the leaf of {@code path} itself.
+   * Gets the path to the nearest enclosing declaration (class, method, or variable) of the tree
+   * node defined by the given {@link TreePath}. Might return the leaf of {@code path} itself.
    *
    * @param path the path defining the tree node
    * @return path to the nearest enclosing class/method/variable in the path, or {@code null} if one
@@ -338,7 +338,8 @@ public final class TreePathUtil {
    * Implementation of {@link #getContextForPolyExpression(TreePath)}.
    *
    * @param treePath a path
-   * @param isLambdaOrMethodRef true if the call is getting the context of a lambda or method reference
+   * @param isLambdaOrMethodRef true if the call is getting the context of a lambda or method
+   *     reference
    * @return the assignment context as described, {@code null} otherwise
    */
   private static @Nullable Tree getContextForPolyExpression(

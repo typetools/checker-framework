@@ -11,8 +11,8 @@ import java.util.Map;
 public final class MemberReferenceScanner extends CommonScanner {
 
   /**
-   * Computes the index of the given member reference amongst all member reference trees inside
-   * its method, using 0-based indexing.
+   * Computes the index of the given member reference amongst all member reference trees inside its
+   * method, using 0-based indexing.
    *
    * @param origpath the path ending in the given member reference tree
    * @param tree the member reference tree to search for

@@ -62,8 +62,8 @@ public final class MethodCallScanner extends CommonScanner {
   private static Map<String, List<Integer>> methodNameToMethodCallOffsets = new HashMap<>();
 
   /**
-   * Adds a method call bytecode offset to the current list of offsets for methodName. This
-   * method must be called with monotonically increasing offsets for any one method.
+   * Adds a method call bytecode offset to the current list of offsets for methodName. This method
+   * must be called with monotonically increasing offsets for any one method.
    *
    * @param methodName the name of the method
    * @param offset the offset to add

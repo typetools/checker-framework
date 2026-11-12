@@ -127,8 +127,8 @@ public interface TypeHierarchy {
    * @param hierarchy an annotation whose hierarchy is used to compare {@code subtype} and {@code
    *     supertype}
    * @return true iff the effective annotation in the same hierarchy as {@code hierarchy} of {@code
-   *     subtype} is equal to or is a sub-qualifier of the effective annotation of {@code
-   *     supertype} in the same hierarchy as {@code hierarchy}
+   *     subtype} is equal to or is a sub-qualifier of the effective annotation of {@code supertype}
+   *     in the same hierarchy as {@code hierarchy}
    */
   boolean isSubtypeShallowEffective(
       AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror hierarchy);
@@ -180,10 +180,10 @@ public interface TypeHierarchy {
   boolean isSubtypeShallowEffective(AnnotatedTypeMirror subtype, AnnotationMirror superQualifier);
 
   /**
-   * Returns true if {@code subQualifier} is equal to or a sub-qualifier of the effective
-   * annotation of {@code supertype} in the same hierarchy as {@code subQualifier}, according to the
-   * type qualifier hierarchy. The underlying type of {@code supertype} is only used by this method
-   * for special cases when qualifier subtyping depends on the Java basetype. Other annotations in
+   * Returns true if {@code subQualifier} is equal to or a sub-qualifier of the effective annotation
+   * of {@code supertype} in the same hierarchy as {@code subQualifier}, according to the type
+   * qualifier hierarchy. The underlying type of {@code supertype} is only used by this method for
+   * special cases when qualifier subtyping depends on the Java basetype. Other annotations in
    * {@code supertype} are ignored.
    *
    * @param subQualifier possible subQualifier

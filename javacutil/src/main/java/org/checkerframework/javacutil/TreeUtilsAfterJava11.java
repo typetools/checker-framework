@@ -112,8 +112,8 @@ public final class TreeUtilsAfterJava11 {
     /**
      * Returns the list of labels from a case expression. For {@code default}, this is empty. For
      * {@code case null, default}, the list contains {@code null}. Otherwise, in JDK 11 and earlier,
-     * this is a list of a single expression tree. In JDK 12+, the list might have multiple expression
-     * trees. In JDK 21+, the list might contain a single pattern tree.
+     * this is a list of a single expression tree. In JDK 12+, the list might have multiple
+     * expression trees. In JDK 21+, the list might contain a single pattern tree.
      *
      * @param caseTree the case expression to get the labels from
      * @return the list of case labels in the case

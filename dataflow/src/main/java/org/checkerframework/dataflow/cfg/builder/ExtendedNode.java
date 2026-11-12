@@ -15,8 +15,8 @@ import org.checkerframework.javacutil.BugInCF;
  *       which can throw exceptions. It contains a label for every possible exception type the node
  *       might throw.
  *   <li><em>UNCONDITIONAL_JUMP</em>: {@link UnconditionalJump}. An unconditional jump to a label.
- *   <li><em>CONDITIONAL_JUMP</em>: {@link ConditionalJump}. A conditional jump with two
- *       targets for both the 'then' and 'else' branch.
+ *   <li><em>CONDITIONAL_JUMP</em>: {@link ConditionalJump}. A conditional jump with two targets for
+ *       both the 'then' and 'else' branch.
  * </ul>
  *
  * Note that this class is deliberately public, to enable users of the dataflow library to customize

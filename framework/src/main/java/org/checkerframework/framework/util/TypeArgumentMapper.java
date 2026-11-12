@@ -19,8 +19,8 @@ import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * Records any mapping from the type parameters of a subtype to the corresponding type parameters
- * of a supertype. For example, suppose we have the following classes:
+ * Records any mapping from the type parameters of a subtype to the corresponding type parameters of
+ * a supertype. For example, suppose we have the following classes:
  *
  * <pre>{@code
  * class Map<M1,M2>

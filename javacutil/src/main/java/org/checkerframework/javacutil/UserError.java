@@ -59,8 +59,8 @@ public class UserError extends RuntimeException {
   }
 
   /**
-   * Constructs a new UserError with the specified cause and with a detail message composed from
-   * the given arguments.
+   * Constructs a new UserError with the specified cause and with a detail message composed from the
+   * given arguments.
    *
    * @param cause the cause
    * @param fmt the format string

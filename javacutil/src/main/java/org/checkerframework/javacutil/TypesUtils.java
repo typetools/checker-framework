@@ -388,8 +388,8 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns true if the type represents a declared type whose fully-qualified name is any of the given
-   * names.
+   * Returns true if the type represents a declared type whose fully-qualified name is any of the
+   * given names.
    *
    * @param type the type
    * @param qualifiedNames fully-qualified type names to check for
@@ -868,9 +868,9 @@ public final class TypesUtils {
   }
 
   /**
-   * Given a bounded type (wildcard or typevar), returns the concrete type of its upper bound. If the
-   * bounded type extends other bounded types, this method will iterate through their bounds until a
-   * class, interface, or intersection is found.
+   * Given a bounded type (wildcard or typevar), returns the concrete type of its upper bound. If
+   * the bounded type extends other bounded types, this method will iterate through their bounds
+   * until a class, interface, or intersection is found.
    *
    * @return a type that is not a wildcard or typevar, or {@code null} if this type is an unbounded
    *     wildcard
@@ -1272,9 +1272,9 @@ public final class TypesUtils {
   }
 
   /**
-   * Returns the superclass of the given type. If there is no superclass, the first interface returned
-   * by {@link Types#directSupertypes(TypeMirror)} is returned. If the type has neither a superclass
-   * nor a superinterface, then null is returned.
+   * Returns the superclass of the given type. If there is no superclass, the first interface
+   * returned by {@link Types#directSupertypes(TypeMirror)} is returned. If the type has neither a
+   * superclass nor a superinterface, then null is returned.
    *
    * @param type a type
    * @param types type utilities
@@ -1932,8 +1932,8 @@ public final class TypesUtils {
 
   /**
    * Returns true if the two type variables are the same type variable, meaning that they have the
-   * same name and the same enclosing element. Unlike {@link Types#isSameType(TypeMirror, TypeMirror)},
-   * they do not have to be the same object.
+   * same name and the same enclosing element. Unlike {@link Types#isSameType(TypeMirror,
+   * TypeMirror)}, they do not have to be the same object.
    *
    * <p>This method is needed when a type has gone through type variable substitution, but only some
    * of the type variables were substituted. Also, a new {@link TypeVariable} object is created as

@@ -728,11 +728,11 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Updates a mapping from {@code key} to a set of AnnotationMirrors. If {@code key} is not
-   * already in the map, then puts it in the map with a value of a new set containing {@code
-   * qualifier}. If the map contains {@code key}, then adds {@code qualifier} to the set to which
-   * {@code key} maps. If that set contains a qualifier in the same hierarchy as {@code qualifier},
-   * then doesn't add it and returns false.
+   * Updates a mapping from {@code key} to a set of AnnotationMirrors. If {@code key} is not already
+   * in the map, then puts it in the map with a value of a new set containing {@code qualifier}. If
+   * the map contains {@code key}, then adds {@code qualifier} to the set to which {@code key} maps.
+   * If that set contains a qualifier in the same hierarchy as {@code qualifier}, then doesn't add
+   * it and returns false.
    *
    * @param map the mapping to modify
    * @param key the key to update or add

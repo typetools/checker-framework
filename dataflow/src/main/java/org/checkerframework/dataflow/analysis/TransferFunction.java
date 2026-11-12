@@ -21,9 +21,9 @@ import org.checkerframework.dataflow.cfg.node.NodeVisitor;
  * ForwardTransferFunction} and {@link BackwardTransferFunction} will create their own initial store
  * method(s).
  *
- * <p><em>Important</em>: The individual transfer functions ({@code visit*}) are allowed to use
- * (and modify) the stores contained in the argument passed; the ownership is transferred from the
- * caller to that function.
+ * <p><em>Important</em>: The individual transfer functions ({@code visit*}) are allowed to use (and
+ * modify) the stores contained in the argument passed; the ownership is transferred from the caller
+ * to that function.
  *
  * @param <V> type of the abstract value that is tracked
  * @param <S> the store type used in the analysis

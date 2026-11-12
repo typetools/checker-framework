@@ -163,8 +163,8 @@ public interface WholeProgramInference {
    * @param retNode the node that contains the expression returned
    * @param classSymbol the symbol of the class that contains the method
    * @param methodTree the tree of the method whose return type might be updated
-   * @param overriddenMethods the methods that the given method overrides, indexed by the
-   *     annotated type of the superclass in which each method is defined
+   * @param overriddenMethods the methods that the given method overrides, indexed by the annotated
+   *     type of the superclass in which each method is defined
    */
   void updateFromReturn(
       ReturnNode retNode,

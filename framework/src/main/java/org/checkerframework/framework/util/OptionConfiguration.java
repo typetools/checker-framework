@@ -41,8 +41,8 @@ public interface OptionConfiguration {
   @Nullable String getOption(String name);
 
   /**
-   * Determines the value of the option with the given name. Returns {@code defaultValue} if
-   * the option is not set.
+   * Determines the value of the option with the given name. Returns {@code defaultValue} if the
+   * option is not set.
    *
    * @param name the name of the option to check
    * @param defaultValue the default value to return if the option is not set

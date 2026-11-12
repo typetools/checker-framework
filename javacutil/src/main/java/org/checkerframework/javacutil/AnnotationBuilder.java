@@ -507,7 +507,8 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Removes the element/field with the given name. Does not err if no such element/field is present.
+   * Removes the element/field with the given name. Does not err if no such element/field is
+   * present.
    */
   public AnnotationBuilder removeElement(CharSequence elementName) {
     assertNotBuilt();

@@ -28,8 +28,8 @@ import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.CollectionsP;
 
 /**
- * An implementation of a forward analysis to solve an org.checkerframework.dataflow problem given
- * a control flow graph and a forward transfer function.
+ * An implementation of a forward analysis to solve an org.checkerframework.dataflow problem given a
+ * control flow graph and a forward transfer function.
  *
  * @param <V> the abstract value type to be tracked by the analysis
  * @param <S> the store type used in the analysis

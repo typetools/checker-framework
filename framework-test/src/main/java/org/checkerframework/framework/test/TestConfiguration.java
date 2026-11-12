@@ -66,8 +66,8 @@ public interface TestConfiguration {
 
   /**
    * Returns the map returned by {@link #getOptions}, flattened into a list. The entries will be
-   * added as follows: List(key1, value1, key2, value2, ..., keyN, valueN). If a value is NULL,
-   * then it will not appear in the list.
+   * added as follows: List(key1, value1, key2, value2, ..., keyN, valueN). If a value is NULL, then
+   * it will not appear in the list.
    *
    * @return the map returned by {@link #getOptions}, but flattened into a list
    */

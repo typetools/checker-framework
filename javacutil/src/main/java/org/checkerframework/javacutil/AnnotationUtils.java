@@ -140,8 +140,8 @@ public final class AnnotationUtils {
   }
 
   /**
-   * Returns -1, 0, or 1 depending on whether the name of a1 is less than, equal to, or greater than that
-   * of a2 (lexicographically).
+   * Returns -1, 0, or 1 depending on whether the name of a1 is less than, equal to, or greater than
+   * that of a2 (lexicographically).
    *
    * @param a1 the first AnnotationMirror to compare
    * @param a2 the second AnnotationMirror to compare
@@ -176,8 +176,8 @@ public final class AnnotationUtils {
 
   /**
    * Returns true iff a1 and a2 have the same annotation type. Does not check annotation
-   * element/field values. One reason that clients might call this is that it is slightly faster than
-   * {@link #areSame} when the annotation is known to have no elements/fields. (TODO: Is that
+   * element/field values. One reason that clients might call this is that it is slightly faster
+   * than {@link #areSame} when the annotation is known to have no elements/fields. (TODO: Is that
    * considered to be good style?)
    *
    * @param a1 the first AnnotationMirror to compare
@@ -718,8 +718,8 @@ public final class AnnotationUtils {
   }
 
   /**
-   * Returns the element with the name {@code elementName} of the annotation {@code anno}, or returns
-   * null if no such element exists.
+   * Returns the element with the name {@code elementName} of the annotation {@code anno}, or
+   * returns null if no such element exists.
    *
    * <p>This method is intended only for use by the framework. A checker implementation should use
    * {@link #getElementValue(AnnotationMirror, ExecutableElement, Class, Object)}.
@@ -743,8 +743,9 @@ public final class AnnotationUtils {
   }
 
   /**
-   * Returns the element with the name {@code elementName} of the annotation {@code anno}, or returns
-   * null if no such element exists. One element of the result has type {@code expectedType}.
+   * Returns the element with the name {@code elementName} of the annotation {@code anno}, or
+   * returns null if no such element exists. One element of the result has type {@code
+   * expectedType}.
    *
    * <p>This method is intended only for use by the framework. A checker implementation should use
    * {@link #getElementValue(AnnotationMirror, ExecutableElement, Class, Object)}.
@@ -1395,8 +1396,8 @@ public final class AnnotationUtils {
   // The Javadoc doesn't use `@link` because framework is a different project than this one
   // (javacutil).
   /**
-   * Updates a map, to add {@code newQual} to the set that {@code key} maps to. The mapped-to element
-   * is an unmodifiable set.
+   * Updates a map, to add {@code newQual} to the set that {@code key} maps to. The mapped-to
+   * element is an unmodifiable set.
    *
    * <p>See
    * org.checkerframework.framework.type.QualifierHierarchy#updateMappingToMutableSet(QualifierHierarchy,

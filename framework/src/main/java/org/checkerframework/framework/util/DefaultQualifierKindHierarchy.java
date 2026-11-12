@@ -236,8 +236,8 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
 
   /**
    * Creates all QualifierKind objects for the given qualifier classes and returns a map that
-   * contains them. This method does not initialize all fields in the {@link QualifierKind};
-   * that is done by {@link #initializeQualifierKindFields(Map)}.
+   * contains them. This method does not initialize all fields in the {@link QualifierKind}; that is
+   * done by {@link #initializeQualifierKindFields(Map)}.
    *
    * @param qualifierClasses classes of annotations that are type qualifiers
    * @return a mapping from the canonical name of an annotation class to {@link QualifierKind}

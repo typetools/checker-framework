@@ -299,9 +299,9 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
 
   /**
    * Returns true if {@code exp} has type {@code @Unique} and is neither a method invocation nor a
-   * new class expression. It checks whether the tree expression is unique by either checking for
-   * an explicit annotation or checking whether the class of the tree expression {@code exp} has
-   * type {@code @Unique}.
+   * new class expression. It checks whether the tree expression is unique by either checking for an
+   * explicit annotation or checking whether the class of the tree expression {@code exp} has type
+   * {@code @Unique}.
    *
    * @param exp the Tree to check
    * @return true if {@code exp} has type {@code @Unique} and is neither a method invocation nor a

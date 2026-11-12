@@ -117,9 +117,7 @@ public class AnnotationStatistics extends SourceChecker {
     super.typeProcessingOver();
   }
 
-  /**
-   * Increments the number of times the annotation with name {@code annoName} has appeared.
-   */
+  /** Increments the number of times the annotation with name {@code annoName} has appeared. */
   protected void incrementCount(Name annoName) {
     String annoString = annoName.toString();
     if (!annotationCount.containsKey(annoString)) {

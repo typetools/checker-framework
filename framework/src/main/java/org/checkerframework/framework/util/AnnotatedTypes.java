@@ -157,10 +157,10 @@ public final class AnnotatedTypes {
   }
 
   /**
-   * Sometimes we create type arguments for types that were raw. When we do an asSuper we lose
-   * these arguments. If the converted type (i.e., the subtype as super) is missing type arguments
-   * AND those type arguments should come from the original subtype's type arguments, then we copy
-   * the original type arguments to the converted type. For example, suppose we have a type W that
+   * Sometimes we create type arguments for types that were raw. When we do an asSuper we lose these
+   * arguments. If the converted type (i.e., the subtype as super) is missing type arguments AND
+   * those type arguments should come from the original subtype's type arguments, then we copy the
+   * original type arguments to the converted type. For example, suppose we have a type W that
    * "wasRaw": {@code ArrayList<? extends Object>}. When W is converted to type A, List, using
    * asSuper, it no longer has its type argument. But since the type argument to List should be the
    * same as that to ArrayList, we copy over the type argument of W to A. A becomes {@code List<?
@@ -1543,8 +1543,8 @@ public final class AnnotatedTypes {
   }
 
   /**
-   * Returns the effective annotations on the lower bound of a type, or on the type
-   * itself if the type has no lower bound (it is not a type variable, wildcard, or intersection).
+   * Returns the effective annotations on the lower bound of a type, or on the type itself if the
+   * type has no lower bound (it is not a type variable, wildcard, or intersection).
    *
    * @param qualHierarchy the qualifier hierarchy
    * @param toSearch the type whose lower bound to examine

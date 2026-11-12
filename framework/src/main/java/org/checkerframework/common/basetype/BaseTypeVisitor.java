@@ -1199,8 +1199,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Checks method purity if needed. The purity annotations of an overridden method are inherited,
-   * so this checks an overriding method against the purity annotations of the methods it
-   * overrides, even if it has no purity annotation of its own.
+   * so this checks an overriding method against the purity annotations of the methods it overrides,
+   * even if it has no purity annotation of its own.
    *
    * <p>If the method {@code tree} is annotated with {@link SideEffectsOnly}, checks that the method
    * side-effects only the specified expressions.
@@ -3751,8 +3751,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * invariant. Otherwise, the cast is legal if the qualifier on both types is bottom.
    *
    * @param castType a type with a qualifier parameter
-   * @param exprType type of the expression that is cast, which might or might not have a
-   *     qualifier parameter
+   * @param exprType type of the expression that is cast, which might or might not have a qualifier
+   *     parameter
    * @param top the top qualifier of the hierarchy to check
    * @return true if casting the {@code exprType} to {@code castType}, a type with a qualifier
    *     parameter, is legal
@@ -3946,8 +3946,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * If the given Java basetype is not relevant, reports an "anno.on.irrelevant" error if it is
-   * annotated.
-   * This method does not necessarily issue an error, but it might.
+   * annotated. This method does not necessarily issue an error, but it might.
    *
    * @param errorLocation where to report the error
    * @param type the Java basetype
@@ -4262,8 +4261,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Checks the validity of an assignment (or pseudo-assignment) from {@code valueType} to {@code
-   * varType} and emits an error message (through the compiler's messaging interface) if it is
-   * not valid.
+   * varType} and emits an error message (through the compiler's messaging interface) if it is not
+   * valid.
    *
    * <p>Subclasses should override this method unless the tree for the {@code varType} or {@code
    * valueType} is needed.
@@ -4693,8 +4692,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Returns true if subtype checks on the receiver should be skipped when checking method
    * invocability. A visitor can, for example, allow a method to be invoked even if the receivers
-   * are siblings in a hierarchy, provided that some other condition (implemented by the visitor)
-   * is satisfied.
+   * are siblings in a hierarchy, provided that some other condition (implemented by the visitor) is
+   * satisfied.
    *
    * @param tree the method invocation tree
    * @param methodDefinitionReceiver the ATM of the receiver of the method definition
@@ -6308,8 +6307,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * Tests that the qualifiers present on {@code useType} are valid qualifiers, given the qualifiers
    * on the declaration of the type, {@code declarationType}.
    *
-   * <p>The check is shallow, as it does not descend into generic or array types (i.e., it
-   * performs the validity check only on the raw type or outermost array dimension). {@link
+   * <p>The check is shallow, as it does not descend into generic or array types (i.e., it performs
+   * the validity check only on the raw type or outermost array dimension). {@link
    * BaseTypeVisitor#validateTypeOf(Tree)} would call this for each type argument or array dimension
    * separately.
    *

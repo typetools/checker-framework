@@ -617,8 +617,8 @@ public final class ElementUtils {
   }
 
   /**
-   * Returns all type elements for the supertypes of the given type element. This is the
-   * transitive closure of the extends and implements clauses.
+   * Returns all type elements for the supertypes of the given type element. This is the transitive
+   * closure of the extends and implements clauses.
    *
    * <p>TODO: can we learn from the implementation of
    * com.sun.tools.javac.model.JavacElements.getAllMembers(TypeElement)?

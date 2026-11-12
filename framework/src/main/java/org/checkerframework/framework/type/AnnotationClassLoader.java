@@ -453,8 +453,8 @@ public class AnnotationClassLoader implements Closeable {
   }
 
   /**
-   * Obtains the classloader used to load the checker class. If that isn't available, then it
-   * tries to obtain the system classloader.
+   * Obtains the classloader used to load the checker class. If that isn't available, then it tries
+   * to obtain the system classloader.
    *
    * @return the classloader used to load the checker class, or the system classloader, or null if
    *     both are unavailable

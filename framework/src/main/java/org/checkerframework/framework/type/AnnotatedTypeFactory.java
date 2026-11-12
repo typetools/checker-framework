@@ -527,9 +527,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public WholeProgramInference.OutputFormat wpiOutputFormat;
 
   /**
-   * True if results should be cached. This means that ATM.deepCopy() will be called.
-   * ATM.deepCopy() used to (and perhaps still does) side effect the ATM being copied. So setting
-   * this to false is not equivalent to setting shouldReadCache to false.
+   * True if results should be cached. This means that ATM.deepCopy() will be called. ATM.deepCopy()
+   * used to (and perhaps still does) side effect the ATM being copied. So setting this to false is
+   * not equivalent to setting shouldReadCache to false.
    */
   public boolean shouldCache;
 
@@ -2282,8 +2282,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * {@code tree} is in a location where {@code this} has no meaning, such as the body of a static
    * method.
    *
-   * <p>The parameter is an arbitrary tree and does not have to mention "this", either explicitly
-   * or implicitly. This method can be overridden for type-system-specific behavior.
+   * <p>The parameter is an arbitrary tree and does not have to mention "this", either explicitly or
+   * implicitly. This method can be overridden for type-system-specific behavior.
    *
    * @param tree location used to decide the type of {@code this}
    * @return the type of {@code this} at the location of {@code tree}, or null if there is none
@@ -3296,8 +3296,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns annotations applicable to type {@code narrowedTypeKind} that are copied or adapted
-   * from {@code annos}.
+   * Returns annotations applicable to type {@code narrowedTypeKind} that are copied or adapted from
+   * {@code annos}.
    *
    * @param annos annotations to narrow, from a primitive or boxed primitive
    * @param typeKind primitive type to narrow
@@ -3589,8 +3589,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param aliasClass the class of the aliased annotation
    * @param canonicalClass the class of the canonical annotation
-   * @param copyElements true if you want to copy the elements over when
-   *     getting the alias from the canonical annotation
+   * @param copyElements true if you want to copy the elements over when getting the alias from the
+   *     canonical annotation
    * @param ignorableElements a list of elements that can be safely dropped when the elements are
    *     being copied over
    */
@@ -3619,8 +3619,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    *
    * @param aliasName the canonical name of the aliased class
    * @param canonicalAnno the canonical annotation
-   * @param copyElements true if we want to copy the elements over when
-   *     getting the alias from the canonical annotation
+   * @param copyElements true if we want to copy the elements over when getting the alias from the
+   *     canonical annotation
    * @param ignorableElements a list of elements that can be safely dropped when the elements are
    *     being copied over
    */
@@ -3855,8 +3855,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns the path to the tree that an external "visitor" is visiting. The type factory does not
-   * update this value as it computes the types of any tree or element needed to compute the type
-   * of the tree being visited. Therefore, this path might not be the path to the tree whose type is
+   * update this value as it computes the types of any tree or element needed to compute the type of
+   * the tree being visited. Therefore, this path might not be the path to the tree whose type is
    * being computed. This method should not be used directly. Use {@link #getPath(Tree)} instead.
    *
    * <p>This method is used to save the previous tree path and to give a hint to {@link
@@ -4130,8 +4130,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   }
 
   /**
-   * Returns true if the element is from bytecode and if the element did not appear in a stub
-   * file. Currently only works for methods, constructors, and fields.
+   * Returns true if the element is from bytecode and if the element did not appear in a stub file.
+   * Currently only works for methods, constructors, and fields.
    */
   public boolean isFromByteCode(Element element) {
     if (isFromStubFile(element)) {
@@ -5003,8 +5003,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns the AnnotatedDeclaredType for the FunctionalInterface from the assignment context of
-   * the method reference or lambda expression, which might be a variable assignment, a method
-   * call, or a cast.
+   * the method reference or lambda expression, which might be a variable assignment, a method call,
+   * or a cast.
    *
    * <p>The assignment context is not always correct, so we must search up the AST. It will
    * recursively search for lambdas nested in lambdas.

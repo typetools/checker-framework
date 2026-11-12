@@ -124,9 +124,8 @@ public final class ValueCheckerUtils {
   }
 
   /**
-   * Returns all possible values from the given range, cast into a boxed primitive type.
-   * Returns null if the list would have length greater than {@link
-   * ValueAnnotatedTypeFactory#MAX_VALUES}.
+   * Returns all possible values from the given range, cast into a boxed primitive type. Returns
+   * null if the list would have length greater than {@link ValueAnnotatedTypeFactory#MAX_VALUES}.
    *
    * <p>{@code expectedType} must be a boxed type, not a primitive type, because primitive types
    * cannot be stored in a list.

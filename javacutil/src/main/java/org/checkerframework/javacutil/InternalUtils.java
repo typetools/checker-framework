@@ -30,8 +30,8 @@ public final class InternalUtils {
    * loader.
    *
    * @param clazz the class whose class loader to find
-   * @return the class loader used to load {@code clazz}, or the system class loader, or null if both are
-   *     unavailable
+   * @return the class loader used to load {@code clazz}, or the system class loader, or null if
+   *     both are unavailable
    */
   public static @Nullable ClassLoader getClassLoaderForClass(Class<? extends Object> clazz) {
     ClassLoader classLoader = clazz.getClassLoader();

@@ -88,9 +88,9 @@ public class I18nFormatterTreeUtil {
   }
 
   /**
-   * Takes an exception that describes an invalid formatter string and returns a syntax tree
-   * element that represents an {@link I18nInvalidFormat} annotation with the exception's error
-   * message as its value.
+   * Takes an exception that describes an invalid formatter string and returns a syntax tree element
+   * that represents an {@link I18nInvalidFormat} annotation with the exception's error message as
+   * its value.
    */
   public AnnotationMirror exceptionToInvalidFormatAnnotation(IllegalArgumentException ex) {
     return stringToInvalidFormatAnnotation(ex.getMessage());

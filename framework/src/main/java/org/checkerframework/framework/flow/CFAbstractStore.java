@@ -566,9 +566,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * changes to certain parts of the state.
    *
    * <p>If there is already a value {@code v} present for {@code expr}, then the stronger of the new
-   * and old value is taken (according to the lattice). Note that this happens per hierarchy, and
-   * if the store already contains information about a hierarchy other than {@code a}'s hierarchy,
-   * that information is preserved.
+   * and old value is taken (according to the lattice). Note that this happens per hierarchy, and if
+   * the store already contains information about a hierarchy other than {@code a}'s hierarchy, that
+   * information is preserved.
    *
    * <p>If {@code expr} is nondeterministic, this method does not insert {@code a} into the store.
    *
@@ -693,8 +693,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * changes to certain parts of the state.
    *
    * <p>If there is already a value {@code v} present for {@code expr}, then the stronger of the new
-   * and old value is taken (according to the lattice). Note that this happens per hierarchy, and
-   * if the store already contains information about a hierarchy for which {@code value} does not
+   * and old value is taken (according to the lattice). Note that this happens per hierarchy, and if
+   * the store already contains information about a hierarchy for which {@code value} does not
    * contain information, then that information is preserved.
    *
    * <p>If {@code expr} is nondeterministic, this method does not insert {@code value} into the

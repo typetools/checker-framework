@@ -46,8 +46,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * check, we also propagate the annotations to this constructor in constructorFromUse so that the
  * constructor call matches the type given to the NewClassTree.
  *
- * <p>Note that propagation only occurs between two AnnotatedDeclaredTypes. If either side is not
- * an AnnotatedDeclaredType, then this class does nothing.
+ * <p>Note that propagation only occurs between two AnnotatedDeclaredTypes. If either side is not an
+ * AnnotatedDeclaredType, then this class does nothing.
  *
  * @see KeyForAnnotatedTypeFactory#constructorFromUse(NewClassTree, boolean)
  */

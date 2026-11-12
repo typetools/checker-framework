@@ -798,12 +798,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Returns the estimate for the length of a string or array whose annotated type is {@code
-   * type}.
+   * Returns the estimate for the length of a string or array whose annotated type is {@code type}.
    *
    * @param type annotated type
-   * @return the estimate for the length of a string or array whose annotated type is {@code
-   *     type}.
+   * @return the estimate for the length of a string or array whose annotated type is {@code type}.
    */
   /*package-private*/ AnnotationMirror createArrayLengthResultAnnotation(AnnotatedTypeMirror type) {
     AnnotationMirror arrayAnno = type.getPrimaryAnnotationInHierarchy(UNKNOWNVAL);

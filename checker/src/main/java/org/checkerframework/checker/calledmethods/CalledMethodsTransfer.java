@@ -195,11 +195,9 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * @param <V> the type of abstract values
    * @param <S> the type of store
    * @param node a method invocation
-   * @param inputStore the regular store of the transfer input associated with the method
-   *     invocation
+   * @param inputStore the regular store of the transfer input associated with the method invocation
    * @return a map from types to stores. The keys are the same keys used by {@link
-   *     ExceptionBlock#getExceptionalSuccessors()}. The values are copies of {@code
-   *     inputStore}.
+   *     ExceptionBlock#getExceptionalSuccessors()}. The values are copies of {@code inputStore}.
    */
   public static <V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>>
       Map<TypeMirror, S> makeExceptionalStores(MethodInvocationNode node, S inputStore) {

@@ -472,8 +472,7 @@ public final class AnnotationFileParser {
 
   /**
    * Returns all annotations defined in the package (but not those nested within classes in the
-   * package).
-   * Keys are both fully-qualified and simple names.
+   * package). Keys are both fully-qualified and simple names.
    *
    * @param packageElement a package
    * @return a map from annotation name to TypeElement
@@ -3039,8 +3038,8 @@ public final class AnnotationFileParser {
   }
 
   /**
-   * Casts to non-array values so that the correct AnnotationBuilder#setValue method is
-   * called. (Different types of values are handled differently.)
+   * Casts to non-array values so that the correct AnnotationBuilder#setValue method is called.
+   * (Different types of values are handled differently.)
    *
    * @param builder the builder to side-effect
    * @param name the element name

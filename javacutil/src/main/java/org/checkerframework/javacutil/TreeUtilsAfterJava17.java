@@ -80,8 +80,8 @@ public final class TreeUtilsAfterJava17 {
     /**
      * Returns the list of labels from a case expression. For {@code default}, this is empty. For
      * {@code case null, default}, the list contains {@code null}. Otherwise, in JDK 11 and earlier,
-     * this is a list of a single expression tree. In JDK 12+, the list might have multiple expression
-     * trees. In JDK 21+, the list might contain a single pattern tree.
+     * this is a list of a single expression tree. In JDK 12+, the list might have multiple
+     * expression trees. In JDK 21+, the list might contain a single pattern tree.
      *
      * @param caseTree the case expression to get the labels from
      * @return the list of case labels in the case
@@ -100,9 +100,9 @@ public final class TreeUtilsAfterJava17 {
      * default case, then the returned list is empty, and if {@code caseTree} is {@code case null,
      * default}, then the returned list contains just the expression tree for {@code null}. If
      * {@code useDefaultCaseLabelTree} is true, then if {@code caseTree} is the default case the
-     * returned list contains just a {@code DefaultCaseLabelTree}. If {@code useDefaultCaseLabelTree}
-     * is true, then if {@code caseTree} is {@code case null, default} the returned list is a {@code
-     * DefaultCaseLabelTree} and the expression tree for {@code null}.
+     * returned list contains just a {@code DefaultCaseLabelTree}. If {@code
+     * useDefaultCaseLabelTree} is true, then if {@code caseTree} is {@code case null, default} the
+     * returned list is a {@code DefaultCaseLabelTree} and the expression tree for {@code null}.
      *
      * <p>Otherwise, in JDK 12+, the list might have multiple expression trees. In JDK 21+, the list
      * might contain a single pattern tree.

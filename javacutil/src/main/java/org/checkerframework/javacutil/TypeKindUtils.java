@@ -69,8 +69,8 @@ public final class TypeKindUtils {
   // Cannot create an overload that takes an AnnotatedTypeMirror because the javacutil
   // package must not depend on the framework package.
   /**
-   * Given a primitive type, returns its kind. Given a boxed primitive type, returns the corresponding
-   * primitive type kind. Otherwise, returns null.
+   * Given a primitive type, returns its kind. Given a boxed primitive type, returns the
+   * corresponding primitive type kind. Otherwise, returns null.
    *
    * @param type a primitive or boxed primitive type
    * @return a primitive type kind, or null
@@ -117,8 +117,8 @@ public final class TypeKindUtils {
   }
 
   /**
-   * Given two type kinds, returns the type kind they are widened to, when an arithmetic operation is
-   * performed on them. Defined in JLS 5.6.2.
+   * Given two type kinds, returns the type kind they are widened to, when an arithmetic operation
+   * is performed on them. Defined in JLS 5.6.2.
    *
    * @param a a type kind
    * @param b a type kind

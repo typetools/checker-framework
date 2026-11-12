@@ -1066,8 +1066,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Performs widening primitive conversion on the input node to make it match the destination
-   * type.
+   * Performs widening primitive conversion on the input node to make it match the destination type.
    *
    * @param node a node producing a value of numeric primitive type
    * @param destType the type to widen the value to
@@ -2103,8 +2102,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   private final class SwitchBuilder {
 
     /**
-     * The tree for the switch statement or switch expression. Its type is either {@link
-     * SwitchTree} (for a switch statement) or {@code SwitchExpressionTree}.
+     * The tree for the switch statement or switch expression. Its type is either {@link SwitchTree}
+     * (for a switch statement) or {@code SwitchExpressionTree}.
      */
     private final Tree switchTree;
 

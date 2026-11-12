@@ -156,8 +156,8 @@ public class MustCallInference {
    * This map is used to track must-alias relationships between the obligations that are
    * resource-aliased to the return nodes and method parameters. The keys are the obligations of
    * return nodes, and the values are the index of the current method's formal parameter (1-based)
-   * that is aliased with the return node. This map will be used to infer the {@link
-   * MustCallAlias} annotation for method parameters.
+   * that is aliased with the return node. This map will be used to infer the {@link MustCallAlias}
+   * annotation for method parameters.
    */
   private final Map<Obligation, Integer> returnObligationToParameter = new HashMap<>();
 

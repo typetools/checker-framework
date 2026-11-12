@@ -155,8 +155,8 @@ public abstract class GenericAnnotatedTypeFactory<
   private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
 
   /**
-   * Used to annotate types based on the given un-annotated types. The type might be for source
-   * code or bytecode.
+   * Used to annotate types based on the given un-annotated types. The type might be for source code
+   * or bytecode.
    */
   protected TypeAnnotator typeAnnotator;
 
@@ -250,8 +250,8 @@ public abstract class GenericAnnotatedTypeFactory<
   private final Map<Tree, AnnotatedTypeMirror> initializerCache;
 
   /**
-   * True if the analysis should assume that side effects to a value can change the type of
-   * aliased references.
+   * True if the analysis should assume that side effects to a value can change the type of aliased
+   * references.
    *
    * <p>For many type systems, once a local variable's type is refined, side effects to the
    * variable's value do not change the variable's type annotations. For some type systems, a side

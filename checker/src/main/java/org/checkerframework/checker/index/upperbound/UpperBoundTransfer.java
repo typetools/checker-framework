@@ -84,8 +84,8 @@ import org.checkerframework.javacutil.TreeUtils;
  *       with a constant offset subtracted) and the other node is less than or equal to that
  *       sequence length (minus the offset), then refine the other node's type to less than the
  *       sequence length (minus the offset).
- *   <li>13. If some Node a is known to be less than the length of some array, x, then the type of
- *       a + b is {@code @LTLengthOf(value="x", offset="-b")}. If b is known to be less than the
+ *   <li>13. If some Node a is known to be less than the length of some array, x, then the type of a
+ *       + b is {@code @LTLengthOf(value="x", offset="-b")}. If b is known to be less than the
  *       length of some other array, y, then the type of a + b is {@code @LTLengthOf(value={"x",
  *       "y"}, offset={"-b", "-a"})}.
  *   <li>14. If a is known to be less than the length of x when some offset, o, is added to a (the

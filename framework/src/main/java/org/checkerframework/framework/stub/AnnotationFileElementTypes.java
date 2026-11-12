@@ -414,8 +414,8 @@ public class AnnotationFileElementTypes {
    *
    * @param e an Element whose type is returned
    * @return an AnnotatedTypeMirror for {@code e} containing only annotations explicitly written in
-   *     the annotation file and in the element. Returns {@code null} if {@code e} does not
-   *     appear in an annotation file.
+   *     the annotation file and in the element. Returns {@code null} if {@code e} does not appear
+   *     in an annotation file.
    */
   public @Nullable AnnotatedTypeMirror getAnnotatedTypeMirror(Element e) {
     if (isParsing()) {

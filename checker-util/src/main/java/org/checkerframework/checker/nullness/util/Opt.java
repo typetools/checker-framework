@@ -94,8 +94,8 @@ public final class Opt {
   }
 
   /**
-   * If primary is non-null, and its value matches the given predicate, returns the value. If primary
-   * is null or its non-null value does not match the predicate, returns null.
+   * If primary is non-null, and its value matches the given predicate, returns the value. If
+   * primary is null or its non-null value does not match the predicate, returns null.
    *
    * @see java.util.Optional#filter(Predicate)
    */
@@ -135,8 +135,8 @@ public final class Opt {
   }
 
   /**
-   * Returns {@code primary} if it is non-null. If {@code primary} is null, invokes {@code other} and
-   * returns the result of that invocation.
+   * Returns {@code primary} if it is non-null. If {@code primary} is null, invokes {@code other}
+   * and returns the result of that invocation.
    *
    * @see java.util.Optional#orElseGet(Supplier)
    */

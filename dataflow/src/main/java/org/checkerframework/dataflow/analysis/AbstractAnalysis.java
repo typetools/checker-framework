@@ -504,8 +504,8 @@ public abstract class AbstractAnalysis<
   }
 
   /**
-   * Calls the transfer function for node {@code node}, after setting that node as the current
-   * node. This method requires a {@code transferInput} that the method can modify.
+   * Calls the transfer function for node {@code node}, after setting that node as the current node.
+   * This method requires a {@code transferInput} that the method can modify.
    *
    * @param node the given node
    * @param transferInput the transfer input

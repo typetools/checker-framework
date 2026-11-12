@@ -237,8 +237,8 @@ public interface StringToJavaExpression {
   }
 
   /**
-   * Parses a string as if it were written at the declaration of the field and then
-   * viewpoint-adapts the result to the use.
+   * Parses a string as if it were written at the declaration of the field and then viewpoint-adapts
+   * the result to the use.
    *
    * @param expression a Java expression to parse
    * @param fieldAccess the field access tree

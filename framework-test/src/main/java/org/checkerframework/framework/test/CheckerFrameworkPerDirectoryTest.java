@@ -26,8 +26,8 @@ import org.junit.runner.RunWith;
  *       <pre>{@code @Parameters public static String [] getTestDirs()}</pre>
  *       <p>getTestDirs must return an array of directories that exist in the test folder. The
  *       directories can contain more path information (e.g., "myTestDir/moreTests") but note, the
- *       test suite will find all of the Java test files that exist below the listed directories.
- *       It is unnecessary to list child directories of a directory you have already listed.
+ *       test suite will find all of the Java test files that exist below the listed directories. It
+ *       is unnecessary to list child directories of a directory you have already listed.
  * </ol>
  *
  * Here is an example:

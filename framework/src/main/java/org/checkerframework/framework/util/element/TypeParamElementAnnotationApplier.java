@@ -18,9 +18,9 @@ import org.checkerframework.framework.util.element.ElementAnnotationUtil.Unexpec
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * Applies Element annotations to a single AnnotatedTypeVariable representing a type parameter.
- * Note that the index of IndexedElementAnnotationApplier refers to the type parameter's index in
- * the list that encloses it.
+ * Applies Element annotations to a single AnnotatedTypeVariable representing a type parameter. Note
+ * that the index of IndexedElementAnnotationApplier refers to the type parameter's index in the
+ * list that encloses it.
  */
 abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotationApplier {
 

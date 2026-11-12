@@ -844,9 +844,8 @@ public abstract class InitializationAnnotatedTypeFactory<
    * <p>Type systems extending the Initialization Checker should call methods {@link
    * InitializationQualifierHierarchy#isSubtypeInitialization} and {@link
    * InitializationQualifierHierarchy#leastUpperBoundInitialization} for appropriate qualifiers. See
-   * protected subclass NullnessQualifierHierarchy within class {@link
-   * NullnessAnnotatedTypeFactory} for an
-   * example.
+   * protected subclass NullnessQualifierHierarchy within class {@link NullnessAnnotatedTypeFactory}
+   * for an example.
    */
   protected abstract class InitializationQualifierHierarchy
       extends MostlyNoElementQualifierHierarchy {

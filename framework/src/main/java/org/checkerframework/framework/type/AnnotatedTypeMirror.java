@@ -704,8 +704,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * {@link AnnotatedIntersectionType}s) added to all bounds. (The canonical version is found via
    * {@link AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)} or {@link
    * AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror,TypeMirror)}.) If the canonical
-   * version of {@code annotation} is not a supported qualifier, then that annotation is not
-   * added.
+   * version of {@code annotation} is not a supported qualifier, then that annotation is not added.
    *
    * @param annotation the annotation to add
    */
@@ -805,8 +804,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    *
    * @see <a
    *     href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.6">https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.6</a>
-   * @return the erasure of this AnnotatedTypeMirror; this is always a copy, even if the erasure
-   *     and the original type are equivalent
+   * @return the erasure of this AnnotatedTypeMirror; this is always a copy, even if the erasure and
+   *     the original type are equivalent
    */
   public AnnotatedTypeMirror getErased() {
     return deepCopy();
@@ -2374,8 +2373,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
     /**
      * This returns the bounds of the intersection type. Although only declared types can appear in
-     * explicitly written intersections, during capture conversion, intersections with other
-     * kinds of types are created.
+     * explicitly written intersections, during capture conversion, intersections with other kinds
+     * of types are created.
      *
      * <p>This returns the same types as {@link #directSupertypes()}.
      *

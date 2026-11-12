@@ -24,8 +24,8 @@ import org.plumelib.util.CollectionsP;
 // TODO: large parts of this file are the same as PerDirectorySuite.java.
 // Reduce duplication by moving common parts to an abstract class.
 /**
- * PerFileSuite runs a test class once for each set of parameters returned by its method marked
- * with {@code @Parameters}.
+ * PerFileSuite runs a test class once for each set of parameters returned by its method marked with
+ * {@code @Parameters}.
  *
  * <p>To use:<br>
  * Annotate your test class with {@code @RunWith(PerFileSuite.class)}<br>

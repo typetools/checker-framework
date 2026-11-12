@@ -138,7 +138,8 @@ public abstract class SwitchExpressionScanner<R, P> extends TreeScanner<R, P> {
    * constructor for {@link #visitSwitchResultExpression(ExpressionTree, Object)} and {@link
    * #combineResults(Object, Object)}.
    *
-   * @param <R1> the type of the result of {@link #visitSwitchResultExpression(ExpressionTree, Object)}
+   * @param <R1> the type of the result of {@link #visitSwitchResultExpression(ExpressionTree,
+   *     Object)}
    * @param <P1> the type of the parameter to pass to {@link
    *     #visitSwitchResultExpression(ExpressionTree, Object)}
    */

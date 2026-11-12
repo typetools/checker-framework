@@ -153,8 +153,8 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * Returns a list of class names for the given tree using the ClassVal Checker.
    *
    * @param tree an ExpressionTree whose class names are requested
-   * @param mustBeExact true if only @ClassVal can be read to produce the result; if false,
-   *     @ClassBound can also be read
+   * @param mustBeExact true if only @ClassVal can be read to produce the result; if
+   *     false, @ClassBound can also be read
    * @return list of class names or the empty list if no class names were found
    */
   private List<String> getClassNamesFromClassValChecker(ExpressionTree tree, boolean mustBeExact) {
@@ -412,8 +412,8 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * </ul>
      *
      * @param argument the single argument in a call to {@code getMethod} or {@code getConstructor}
-     * @return a list, each of whose elements is a possible number of parameters; it is often,
-     *     but not always, a singleton list
+     * @return a list, each of whose elements is a possible number of parameters; it is often, but
+     *     not always, a singleton list
      */
     private List<Integer> getNumberOfParameterOneArg(ExpressionTree argument) {
       AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(argument);

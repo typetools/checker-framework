@@ -147,9 +147,9 @@ public abstract class CloneOrUpdateRelatedTask extends GitTask {
   }
 
   /**
-   * Returns the org and branch of the remote tracking branch that is currently checked out in {@code
-   * gitDir}. If the branch checked out at {@code gitDir} does not have a remote tracking branch,
-   * returns {@code null}.
+   * Returns the org and branch of the remote tracking branch that is currently checked out in
+   * {@code gitDir}. If the branch checked out at {@code gitDir} does not have a remote tracking
+   * branch, returns {@code null}.
    *
    * @param gitDir a .git directory
    * @return the org and branch of {@code gitDir} or null if there is no remote branch

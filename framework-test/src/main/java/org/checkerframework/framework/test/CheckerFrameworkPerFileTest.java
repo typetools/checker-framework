@@ -23,15 +23,16 @@ import org.junit.runner.RunWith;
  *       exactly.
  *       <ul>
  *         <li>{@code @Parameters public static String [] getTestDirs()}
- *             <p>getTestDirs must return an array of directories that exist in the test folder, e.g.
+ *             <p>getTestDirs must return an array of directories that exist in the test folder,
+ *             e.g.
  *             <pre>  @Parameters
  *   public static String [] getTestDirs() {
  *      return new String[] {"all-systems", "flow"};
  *   }</pre>
  *             The directories can contain more path information (e.g., "myTestDir/moreTests") but
- *             note, the test suite will find all of the Java test files that exist below the
- *             listed directories. It is unnecessary to list child directories of a directory you
- *             have already listed.
+ *             note, the test suite will find all of the Java test files that exist below the listed
+ *             directories. It is unnecessary to list child directories of a directory you have
+ *             already listed.
  *         <li>{@code @Parameters public static List<File> getTestFiles() }
  *             <p>The method returns a List of Java files. There are methods like {@link
  *             TestUtilities#findNestedJavaTestFiles} to help you construct this List. The

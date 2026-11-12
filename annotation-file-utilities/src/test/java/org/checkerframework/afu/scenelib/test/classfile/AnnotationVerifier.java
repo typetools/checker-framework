@@ -601,9 +601,7 @@ public class AnnotationVerifier {
     }
   }
 
-  /**
-   * An AnnotationRecorder is an AnnotationVisitor that records all the information it visits.
-   */
+  /** An AnnotationRecorder is an AnnotationVisitor that records all the information it visits. */
   private class AnnotationRecorder extends AnnotationVisitor {
     private String description;
 
