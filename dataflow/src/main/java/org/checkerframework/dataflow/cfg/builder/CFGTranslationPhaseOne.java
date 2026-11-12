@@ -70,6 +70,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -825,8 +826,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /* Utility Methods */
   /* --------------------------------------------------------- */
 
-  /** The UID for the next unique name. */
-  protected long uid = 0;
+  /**
+   * The UID for the next unique name.
+   *
+   * <p>This is static so that names are unique across all CFGs, not just within one CFG. Therefore,
+   * a client can use the name of a temporary variable to identify it, even in a data structure that
+   * holds the temporary variables of more than one method.
+   */
+  protected static final AtomicLong uid = new AtomicLong();
 
   /**
    * Returns a unique name starting with {@code prefix}.
@@ -835,7 +842,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @return a unique name starting with {@code prefix}
    */
   protected String uniqueName(String prefix) {
-    return prefix + "#num" + uid++;
+    return prefix + "#num" + uid.getAndIncrement();
   }
 
   /**
