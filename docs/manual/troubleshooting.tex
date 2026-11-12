@@ -66,21 +66,7 @@ This section describes some possible problems and solutions.
 \item
   \label{no-such-field-error-release}
   An error that includes \<java.lang.NoSuchFieldError: RELEASE> means that
-  you are not using the correct compiler (you are not using a JDK 17+ compiler).
-
-\item
-If you get the error
-
-\begin{smaller}
-\begin{Verbatim}
-com.sun.tools.javac.code.Symbol$CompletionFailure: class file for com.sun.source.tree.Tree not found
-\end{Verbatim}
-\end{smaller}
-
-\noindent
-then you are running on a Java runtime that lacks the \<jdk.compiler>
-module, such as a JRE rather than a JDK.  Use a JDK, version 17 or later.
-See the installation instructions (Section~\ref{installation}).
+  you are not using the correct compiler (you are not using a Java 9+ compiler).
 
 \item
 If you get an error like one of the following,
@@ -264,7 +250,7 @@ error: scoping construct cannot be annotated with type-use annotation
   then you have probably written something like one of the following:
 \begin{description}
 \item[\<@Nullable java.util.List>]
-The correct Java syntax to write an annotation on a fully-qualified type
+The correct Java syntax to write an annotation on a fully qualified type
 name is to put the annotation on the simple name part, as in
 \<java.util.@Nullable List>.  But, it's usually
 better to add \<import java.util.List> to your source file, so that you can
@@ -459,7 +445,7 @@ typical way to address this is to call \<addStandardLiteralQualifiers> on the \<
 An error such as
 
 \begin{Verbatim}
-MyFile.java:123: error: incompatible types in argument.
+MyFile.java:123: error: [argument] incompatible argument for parameter element of DefaultListModel.addElement.
                         myModel.addElement("Scanning directories...");
                                            ^
   found   : String

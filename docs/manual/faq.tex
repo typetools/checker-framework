@@ -63,7 +63,7 @@ the answers, or other questions to include here.
 \\ \ref{faq-type-qualifier-on-bounds}: How are type qualifiers written on upper and lower bounds?
 \\ \ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations?
 \\ \ref{faq-annotate-fully-qualified-name}: How do I annotate a
-fully-qualified type name?
+fully qualified type name?
 \\ \ref{faq-type-vs-declaration-annotations}: What is the difference between type annotations and declaration annotations?
 \\ \ref{faq-type-annotation-formatting}: How should type annotations be formatted in source code?  Where should I write type annotations?
 \\ \ref{faq-declaration-annotations-moved}: How does the Checker Framework handle obsolete declaration annotations?
@@ -1236,16 +1236,16 @@ temporary measure, intended to be used until the tool supported Java 8
 should not be necessary any longer.
 
 
-\subsectionAndLabel{How do I annotate a fully-qualified type name?}{faq-annotate-fully-qualified-name}
+\subsectionAndLabel{How do I annotate a fully qualified type name?}{faq-annotate-fully-qualified-name}
 
-If you write a fully-qualified type name in your program, then the Java
+If you write a fully qualified type name in your program, then the Java
 language requires you to write a type annotation on the simple name part,
 such as
 \begin{Verbatim}
   entity.hibernate. @Nullable User x;
 \end{Verbatim}
 
-If you try to write the type annotation before the entire fully-qualified
+If you try to write the type annotation before the entire fully qualified
 name, such as
 \begin{Verbatim}
   @Nullable entity.hibernate.User x;  // illegal Java syntax

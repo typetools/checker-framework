@@ -289,7 +289,7 @@ For example, it can participate in division.
 
 To prevent local type refinement, use a cast:
 \begin{Verbatim}
-        @Unsigned int u1 = (@Unsigned int) 2147483646;
+        @Unsigned int u1 = (@Unsigned int) 0xFFFFFFFE;
 \end{Verbatim}
 
 Note that type-checking produces a different result for \<int x = u1 / u2;>

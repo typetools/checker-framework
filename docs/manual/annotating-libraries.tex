@@ -562,7 +562,7 @@ class \<Sub> in a stub file.  The Checker Framework will use that type for
 In a fake override of \<m>, the formal parameter Java types of the method
 must be identical to those where \<m> is defined, but you can change its
 annotations.  (The return type and the receiver type can be different.)
-You can write the name of a formal parameter type in fully-qualified,
+You can write the name of a formal parameter type in fully qualified,
 partially-qualified, or simple form, and you can omit its type arguments.
 If a fake override has no annotations on a given type use, that type use is
 defaulted according to the usual defaulting rules.
@@ -791,7 +791,7 @@ For a field, this is the type, field name, and ``\<;>'', without an initializer.
 %     org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
 % \end{Verbatim}
 %
-%   Supply it with the fully-qualified name of the class for which you wish to
+%   Supply it with the fully qualified name of the class for which you wish to
 %   generate a stub class.  The stub class generator prints the
 %   stub class to standard out, so you may wish to redirect its output to a
 %   file.
@@ -1023,7 +1023,7 @@ due to mismatches.
 The ajava file must either (1) be found below one of the arguments to
 \code{-Aajava}, in a subdirectory matching its package name, or (2) be
 unambiguously specified directly with its full path. A pair of \<.ajava>
-files is specified ambiguously if one of their fully-qualified names
+files is specified ambiguously if one of their fully qualified names
 is a substring of the other, and both are specified as \<.ajava> files (rather
 than being found under directories). For example, if the \<-Aajava> argument
 was \<-Aajava=~/foo/Bar.ajava:~/baz/foo/Bar.ajava>, the two \<.ajava> files
@@ -1034,7 +1034,7 @@ convert the specific files in the \<-Aajava> argument to directories.
 
 The ajava file must be named
 \code{ClassName-checker.qualified.name.ajava} where
-\code{checker.qualified.name} is the fully-qualified name of the checker that
+\code{checker.qualified.name} is the fully qualified name of the checker that
 the ajava file's annotations belong to.
 
 For example, an ajava file with

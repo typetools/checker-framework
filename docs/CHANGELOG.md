@@ -2786,7 +2786,7 @@ Tool changes:
 Documentation:
 
 * Clarified Maven documentation about use of annotations in comments.
-* Added FAQ about annotating fully-qualified type names.
+* Added FAQ about annotating fully qualified type names.
 
 ### Closed issues
 
@@ -3444,7 +3444,7 @@ User-visible framework improvements:
 
 Adapt to underlying jsr308-langtools changes.
 
-* The most visible change is the syntax for fully-qualified types,
+* The most visible change is the syntax for fully qualified types,
   from `@A java.lang.Object` to `java.lang.@A Object`.
 * JDK 7 is now required.  The Checker Framework does not build or run on JDK 6.
 

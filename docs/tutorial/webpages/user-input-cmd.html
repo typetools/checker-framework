@@ -200,7 +200,7 @@ import org.checkerframework.checker.regex.util.RegexUtil;
     if (!RegexUtil.isRegex(regex, 1)) {
       System.out.println(
           "Input is not a regular expression \"" + regex + "\": "
-              + RegexUtil.regexException(regex).getMessage());
+              + RegexUtil.regexException(regex, 1).getMessage());
       System.exit(1);
     }
 </pre>

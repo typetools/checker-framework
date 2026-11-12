@@ -562,10 +562,10 @@ command-line option; see Section~\ref{askipdefs}.)
 You can also use these options to affect entire packages or directories/folders.
 
 Set the \code{-AskipUses} command-line option to a
-regular expression that matches fully-qualified class names (not file names) for which warnings and errors
+regular expression that matches fully qualified class names (not file names) for which warnings and errors
 should be suppressed.
 Or, set the \code{-AonlyUses} command-line option to a
-regular expression that matches fully-qualified class names (not file names) for which warnings and errors
+regular expression that matches fully qualified class names (not file names) for which warnings and errors
 should be emitted; warnings about uses of all other classes will be suppressed.
 The regular expressions are unanchored, unless you anchor them yourself
 with ``\codesize\verb|^|'' and/or ``\codesize\verb|$|''.
@@ -574,7 +574,7 @@ For example, suppose that you use
 ``{\codesize\verb|-AskipUses=^java\.|}'' on the command line
 (with appropriate quoting) when invoking
 \code{javac}.  Then the checkers will suppress all warnings related to
-classes whose fully-qualified name starts with \codesize\verb|java.|, such
+classes whose fully qualified name starts with \codesize\verb|java.|, such
 as all warnings relating to invalid arguments and all warnings relating to
 incorrect use of the return value.
 
@@ -614,10 +614,10 @@ see Section~\ref{askipuses}.)
 You can also use these options to affect entire packages or directories/folders.
 
 Set the \code{-AskipDefs} command-line option to a
-regular expression that matches fully-qualified class names (not file names) in whose definition warnings and errors
+regular expression that matches fully qualified class names (not file names) in whose definition warnings and errors
 should be suppressed.
 Or, set the \code{-AonlyDefs} command-line option to a
-regular expression that matches fully-qualified class names (not file names) whose
+regular expression that matches fully qualified class names (not file names) whose
 definitions should be type-checked.
 (This is somewhat similar to NullAway's
 \<-XepOpt:NullAway:AnnotatedPackages> command-line argument.)
@@ -630,7 +630,7 @@ For example, if you use
 ``{\codesize\verb|-AskipDefs=^mypackage\.|}'' on the command line
 (with appropriate quoting) when invoking
 \code{javac}, then the definitions of
-classes whose fully-qualified name starts with \codesize\verb|mypackage.|
+classes whose fully qualified name starts with \codesize\verb|mypackage.|
 will not be checked.
 
 If you supply both \code{-AskipDefs} and \code{-AonlyDefs}, then
