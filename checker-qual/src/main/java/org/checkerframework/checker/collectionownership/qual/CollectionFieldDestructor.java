@@ -34,9 +34,9 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @InheritedAnnotation
 public @interface CollectionFieldDestructor {
   /**
-   * Returns the resource collection fields whose collection obligation the method fulfills.
+   * Returns the resource collection fields whose obligations the method fulfills.
    *
-   * @return the resource collection fields whose collection obligation the method fulfills
+   * @return the resource collection fields whose obligations the method fulfills
    */
   String[] value();
 }
