@@ -18,6 +18,10 @@ public class BoxedBinaryOperands {
     return i;
   }
 
+  int primitiveCharShift(char c) {
+    return c >> 2;
+  }
+
   int boxedCharShift(Character c) {
     return c >> 2;
   }
