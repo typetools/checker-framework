@@ -1,3 +1,4 @@
+import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.IntVal;
 
 // A comparison of an assignment refines only the sides that have the assigned value afterward.
@@ -39,8 +40,8 @@ public class AssignmentInComparison {
 
   static void annotationArgumentInRhs(int[] a, int[] b) {
     // The annotation argument `{0, 1}` is not an assignment to a variable.
-    if ((a = new @IntVal({0, 1}) int[] {0, 1}) != b) {
-      @IntVal({0, 1}) int x = a[0];
+    if ((a = new @IntVal({0, 1}) int[] {0, 1}) == b) {
+      int @ArrayLen(2) [] x = b;
     }
   }
 }

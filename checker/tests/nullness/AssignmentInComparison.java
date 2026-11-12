@@ -266,10 +266,11 @@ public class AssignmentInComparison {
     }
   }
 
-  static void annotationArgumentInRhs(@Nullable Object o, Map<String, Object> m) {
+  static void annotationArgumentInRhs(
+      @Nullable Object o, @Nullable Object p, Map<String, Object> m) {
     // The annotation argument `"m"` is not an assignment to a variable.
-    if ((o = new ArrayList<@KeyFor("m") String>()) != null) {
-      o.toString();
+    if ((o = new ArrayList<@KeyFor("m") String>()) == p) {
+      p.toString();
     }
   }
 }
