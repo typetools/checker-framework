@@ -780,6 +780,97 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * In a class body, a simple name resolves to a member type that the class inherits, which shadows
+   * a type of the same name in the package.
+   */
+  @Test
+  public void testSimpleNameOfInheritedMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Base {",
+            "  static class Inner {}",
+            "}",
+            "class Inner {}",
+            "class C extends Base {",
+            "  void m(Inner x) {}",
+            "  static class Nested {",
+            "    void n(Inner x) {}",
+            "  }",
+            "}",
+            "abstract class E implements java.util.Map<String, String> {",
+            "  void m(Entry e) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Lp/Base$Inner;)V");
+    // A member type that an enclosing class inherits is in scope in a nested class.
+    assertMethod(jaif, "C$Nested", "n(Lp/Base$Inner;)V");
+    // A member type inherited from a classpath supertype.
+    assertMethod(jaif, "E", "m(Ljava/util/Map$Entry;)V");
+  }
+
+  /** A type parameter shadows a member type that the class inherits. */
+  @Test
+  public void testTypeParameterShadowsInheritedMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Base {",
+            "  static class T {}",
+            "}",
+            "class C<T extends Number> extends Base {",
+            "  void m(T x) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/lang/Number;)V");
+  }
+
+  /** An import on demand from a stub-declared type makes available the types that it inherits. */
+  @Test
+  public void testOnDemandImportOfInheritedMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import p.Sub.*;",
+            "import p.OtherSub.*;",
+            "class Base {",
+            "  static class Inner {}",
+            "}",
+            "class Sub extends Base {}",
+            "class OtherSub extends some.other.pkg.OtherBase {}",
+            "class MyClass {",
+            "  void myMethod(Inner x) {}",
+            "  void myOtherMethod(OtherInner x) {}",
+            "}",
+            "package some.other.pkg;",
+            "public class OtherBase {",
+            "  public static class OtherInner {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/Base$Inner;)V");
+    // The supertype is in another compilation unit of the stub file, in a package whose name is
+    // longer than the import's.
+    assertMethod(jaif, "MyClass", "myOtherMethod(Lsome/other/pkg/OtherBase$OtherInner;)V");
+  }
+
+  /**
+   * A member type that a type inherits from a supertype in another compilation unit of the stub
+   * file is found.
+   */
+  @Test
+  public void testInheritedMemberTypeFromOtherCompilationUnit() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "class Sub extends p.Base {}",
+            "class MyClass {",
+            "  void myMethod(Sub.Inner x) {}",
+            "}",
+            "package p;",
+            "public class Base {",
+            "  public static class Inner {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/Base$Inner;)V");
+  }
+
+  /**
    * A class's member types are not in scope in the class's header, such as in the bounds of its
    * type parameters, but they are in scope in its body.
    */
