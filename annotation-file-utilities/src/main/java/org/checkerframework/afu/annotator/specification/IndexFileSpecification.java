@@ -72,7 +72,10 @@ public class IndexFileSpecification {
    */
   private @Nullable ConstructorInsertion constructorInsertion = null;
 
+  /** The scene that is parsed from the index file. */
   private final AScene scene;
+
+  /** The name of the index file. */
   private final String indexFileName;
 
   // If set, do not attempt to read class files with Asm.

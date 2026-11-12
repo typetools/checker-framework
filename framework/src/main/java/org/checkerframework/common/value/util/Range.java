@@ -314,7 +314,11 @@ public final class Range {
     return equalsRange(BYTE_EVERYTHING);
   }
 
-  /** Returns true if this range contains no values. */
+  /**
+   * Returns true if this range contains no values.
+   *
+   * @return true if this range contains no values
+   */
   public boolean isNothing() {
     return this == NOTHING;
   }
