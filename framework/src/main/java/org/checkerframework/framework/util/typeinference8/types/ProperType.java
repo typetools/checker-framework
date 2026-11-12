@@ -36,7 +36,7 @@ public class ProperType extends AbstractType {
   private final AnnotatedTypeMirror type;
 
   /**
-   * Maps each polymorphic qualifier in the type of the method or constructor being invoked to the
+   * Maps each polymorphic qualifier (in the type of the method or constructor being invoked) to the
    * qualifier variable that stands for it at this invocation. When this type's primary annotations
    * are used as qualifiers (see {@link #getQualifiers}), a polymorphic qualifier that is a key is
    * replaced by its variable.
@@ -66,18 +66,18 @@ public class ProperType extends AbstractType {
    * If {@link #origin} is non-null, the value of {@link #instantiationVersion} for {@link
    * #originVariables} when this type was last found to be up to date; otherwise, 0. This type is up
    * to date if {@link #type} is what applying the current instantiations to {@link #origin} gives,
-   * apart from primary annotations. It is not used by {@link #equals} or {@link #hashCode}.
+   * apart from primary annotations. This field is not used by {@link #equals} or {@link #hashCode}.
    */
   private long upToDateVersion;
 
   /**
    * A <em>part</em> of a type is a type nested in it one level down: for example, {@code B<C>} is a
-   * part of {@code A<B<C>>}, but {@code C} is not. This enum names the parts that {@link
-   * #partFromOrigin} or {@link #listPartFromOrigin} computes. Each part is cached in {@link
-   * #partCache} or {@link #partCacheForLists}, depending on whether it is a single type or a list
-   * of types.
+   * part of {@code A<B<C>>}, but {@code C} is not. This enum names the kinds of part that {@link
+   * #partFromOrigin} or {@link #listPartFromOrigin} computes, such as the type arguments or the
+   * enclosing type. Each part is cached in {@link #partCache} or {@link #partCacheForLists},
+   * depending on whether it is a single type or a list of types.
    */
-  private enum Part {
+  private enum PartKind {
     /** {@link ProperType#getTypeArguments}; cached in {@link ProperType#partCacheForLists}. */
     TYPE_ARGUMENTS,
     /** {@link ProperType#getEnclosingType}; cached in {@link ProperType#partCache}. */
@@ -100,23 +100,24 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * The parts of this type that {@link #partFromOrigin} has computed: a map from a {@link Part} of
-   * this type to the type at that part. It is null if no part has been computed since {@link
-   * #partCacheVersion} was set. Only a type with an {@link #origin} caches its parts, because
-   * computing a part from the origin applies instantiations.
+   * The parts of this type that {@link #partFromOrigin} has computed: a map from the {@link
+   * PartKind} of a part of this type to the type at that part. It is null if no part has been
+   * computed since {@link #partCacheVersion} was set. Only a type with an {@link #origin} caches
+   * its parts, because computing a part from the origin applies instantiations.
    *
    * <p>This map, {@link #partCacheForLists}, and {@link #asSuperCache} are conceptually a single
    * cache from a part of this type to its content. They are separate only so that each map has
    * precise key and value types.
    */
-  private @Nullable Map<Part, @Nullable AbstractType> partCache = null;
+  private @Nullable Map<PartKind, @Nullable AbstractType> partCache = null;
 
   /**
    * The parts of this type that {@link #listPartFromOrigin} has computed and whose content is a
-   * list of types: a map from a {@link Part} of this type to the types at that part. It is null if
-   * no such part has been computed since {@link #partCacheVersion} was set. See {@link #partCache}.
+   * list of types: a map from the {@link PartKind} of a part of this type to the types at that
+   * part. It is null if no such part has been computed since {@link #partCacheVersion} was set. See
+   * {@link #partCache}.
    */
-  private @Nullable Map<Part, @Nullable List<AbstractType>> partCacheForLists = null;
+  private @Nullable Map<PartKind, @Nullable List<AbstractType>> partCacheForLists = null;
 
   /**
    * The results of {@link #asSuper} computed from {@link #origin}: a map from a supertype to this
@@ -158,8 +159,8 @@ public class ProperType extends AbstractType {
    * Creates a proper type.
    *
    * @param type the annotated type
-   * @param qualifierVars a map from each polymorphic qualifier in the type of the method or
-   *     constructor being invoked to the qualifier variable that stands for it at this invocation;
+   * @param qualifierVars a map from each polymorphic qualifier (in the type of the method or
+   *     constructor being invoked) to the qualifier variable that stands for it at this invocation;
    *     see {@link #qualifierVars}
    * @param context the context
    * @param ignoreAnnotations true if the annotations on this type should be ignored
@@ -176,8 +177,8 @@ public class ProperType extends AbstractType {
    * Creates a proper type.
    *
    * @param type the annotated type
-   * @param qualifierVars a map from each polymorphic qualifier in the type of the method or
-   *     constructor being invoked to the qualifier variable that stands for it at this invocation;
+   * @param qualifierVars a map from each polymorphic qualifier (in the type of the method or
+   *     constructor being invoked) to the qualifier variable that stands for it at this invocation;
    *     see {@link #qualifierVars}
    * @param context the context
    * @param ignoreAnnotations true if the annotations on this type should be ignored
@@ -203,8 +204,8 @@ public class ProperType extends AbstractType {
    * Creates a proper type.
    *
    * @param type the annotated type
-   * @param qualifierVars a map from each polymorphic qualifier in the type of the method or
-   *     constructor being invoked to the qualifier variable that stands for it at this invocation;
+   * @param qualifierVars a map from each polymorphic qualifier (in the type of the method or
+   *     constructor being invoked) to the qualifier variable that stands for it at this invocation;
    *     see {@link #qualifierVars}
    * @param context the context
    * @param ignoreAnnotations true if the annotations on this type should be ignored
@@ -262,12 +263,11 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Returns a number that changes whenever the current instantiation of one of {@code variables} is
-   * set, replaced, or cleared.
+   * Returns a number that represents [[TODO]]. It that changes whenever the current instantiation
+   * of one of the given {@code variables} is set, replaced, or cleared.
    *
    * @param variables inference variables
-   * @return a number that changes whenever the current instantiation of one of {@code variables} is
-   *     set, replaced, or cleared
+   * @return a number that represents [[TODO]]
    */
   private static long instantiationVersion(Collection<Variable> variables) {
     long version = 0;
@@ -289,7 +289,7 @@ public class ProperType extends AbstractType {
    * <p>If this type has an origin, the part is cached in {@link #partCache} until the current
    * instantiation of a variable that the origin mentions is set, replaced, or cleared.
    *
-   * @param key the part
+   * @param key the kind of part
    * @param part computes the part of a type
    * @param fromType returns the part of this type computed from {@link #type}, ignoring the origin
    * @param primaryAnnotationsFromType true if the part's primary annotations are taken from the
@@ -297,7 +297,7 @@ public class ProperType extends AbstractType {
    * @return the part of this type
    */
   private @Nullable AbstractType partFromOrigin(
-      Part key,
+      PartKind key,
       Function<AbstractType, @Nullable AbstractType> part,
       Supplier<@Nullable AbstractType> fromType,
       boolean primaryAnnotationsFromType) {
@@ -306,7 +306,7 @@ public class ProperType extends AbstractType {
       return fromType.get();
     }
     clearPartCachesIfStale();
-    Map<Part, @Nullable AbstractType> cache = partCache;
+    Map<PartKind, @Nullable AbstractType> cache = partCache;
     if (cache == null) {
       cache = new HashMap<>();
       partCache = cache;
@@ -388,8 +388,8 @@ public class ProperType extends AbstractType {
    * Returns {@code fromOrigin} with the primary annotations and {@link #ignoreAnnotations} of
    * {@code fromType}.
    *
-   * @param fromOrigin a part of this type computed from {@link #origin}
-   * @param fromType the same part of this type computed from {@link #type}, or null
+   * @param fromOrigin a part of this type computed from this type's {@link #origin}
+   * @param fromType the same part of this type computed from this type's {@link #type}, or null
    * @return {@code fromOrigin} with the primary annotations and {@link #ignoreAnnotations} of
    *     {@code fromType}, or {@code fromOrigin} itself if {@code fromType} is null
    */
@@ -419,7 +419,7 @@ public class ProperType extends AbstractType {
    * <p>If this type has an origin, the part is cached in {@link #partCacheForLists}, as in {@link
    * #partFromOrigin}. The result is a new list, which the caller may mutate.
    *
-   * @param key the part
+   * @param key the kind of part
    * @param part computes the part of a type
    * @param fromType returns the part of this type computed from {@link #type}, ignoring the origin
    * @param primaryAnnotationsFromType true if the primary annotations of each type in the part are
@@ -427,7 +427,7 @@ public class ProperType extends AbstractType {
    * @return the part of this type
    */
   private @Nullable List<AbstractType> listPartFromOrigin(
-      Part key,
+      PartKind key,
       Function<AbstractType, @Nullable List<AbstractType>> part,
       Supplier<@Nullable List<AbstractType>> fromType,
       boolean primaryAnnotationsFromType) {
@@ -436,7 +436,7 @@ public class ProperType extends AbstractType {
       return fromType.get();
     }
     clearPartCachesIfStale();
-    Map<Part, @Nullable List<AbstractType>> cache = partCacheForLists;
+    Map<PartKind, @Nullable List<AbstractType>> cache = partCacheForLists;
     if (cache == null) {
       cache = new HashMap<>();
       partCacheForLists = cache;
@@ -504,19 +504,19 @@ public class ProperType extends AbstractType {
   @Override
   public @Nullable List<AbstractType> getTypeArguments() {
     return listPartFromOrigin(
-        Part.TYPE_ARGUMENTS, AbstractType::getTypeArguments, super::getTypeArguments, false);
+        PartKind.TYPE_ARGUMENTS, AbstractType::getTypeArguments, super::getTypeArguments, false);
   }
 
   @Override
   public @Nullable AbstractType getEnclosingType() {
     return partFromOrigin(
-        Part.ENCLOSING_TYPE, AbstractType::getEnclosingType, super::getEnclosingType, false);
+        PartKind.ENCLOSING_TYPE, AbstractType::getEnclosingType, super::getEnclosingType, false);
   }
 
   @Override
   public @Nullable AbstractType getComponentType() {
     return partFromOrigin(
-        Part.COMPONENT_TYPE, AbstractType::getComponentType, super::getComponentType, false);
+        PartKind.COMPONENT_TYPE, AbstractType::getComponentType, super::getComponentType, false);
   }
 
   @Override
@@ -542,7 +542,7 @@ public class ProperType extends AbstractType {
   @Override
   public @Nullable List<AbstractType> getFunctionTypeParameterTypes() {
     return listPartFromOrigin(
-        Part.FUNCTION_TYPE_PARAMETER_TYPES,
+        PartKind.FUNCTION_TYPE_PARAMETER_TYPES,
         AbstractType::getFunctionTypeParameterTypes,
         super::getFunctionTypeParameterTypes,
         false);
@@ -551,7 +551,7 @@ public class ProperType extends AbstractType {
   @Override
   public @Nullable AbstractType getFunctionTypeReturnType() {
     return partFromOrigin(
-        Part.FUNCTION_TYPE_RETURN_TYPE,
+        PartKind.FUNCTION_TYPE_RETURN_TYPE,
         AbstractType::getFunctionTypeReturnType,
         super::getFunctionTypeReturnType,
         false);
@@ -561,7 +561,7 @@ public class ProperType extends AbstractType {
   public AbstractType getWildcardLowerBound() {
     AbstractType result =
         partFromOrigin(
-            Part.WILDCARD_LOWER_BOUND,
+            PartKind.WILDCARD_LOWER_BOUND,
             AbstractType::getWildcardLowerBound,
             super::getWildcardLowerBound,
             boundsSharePrimaryAnnotations());
@@ -573,7 +573,7 @@ public class ProperType extends AbstractType {
   public AbstractType getWildcardUpperBound() {
     AbstractType result =
         partFromOrigin(
-            Part.WILDCARD_UPPER_BOUND,
+            PartKind.WILDCARD_UPPER_BOUND,
             AbstractType::getWildcardUpperBound,
             super::getWildcardUpperBound,
             boundsSharePrimaryAnnotations());
@@ -585,7 +585,7 @@ public class ProperType extends AbstractType {
   public List<AbstractType> getIntersectionBounds() {
     List<AbstractType> result =
         listPartFromOrigin(
-            Part.INTERSECTION_BOUNDS,
+            PartKind.INTERSECTION_BOUNDS,
             AbstractType::getIntersectionBounds,
             super::getIntersectionBounds,
             boundsSharePrimaryAnnotations());

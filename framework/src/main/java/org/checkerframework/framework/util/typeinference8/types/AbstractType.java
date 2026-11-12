@@ -741,8 +741,8 @@ public abstract class AbstractType {
    * except at positions where either type's annotations are ignored; see {@link
    * IgnoredAnnotations#replaceIgnoredForSubtype}.
    *
-   * @param superType the potential supertype; the caller must already have checked that the Java
-   *     type of {@code this} is a subtype of, or assignable to, that of {@code superType}
+   * @param superType the potential supertype; the Java type of {@code this} must be a subtype of,
+   *     or assignable to, that of {@code superType}
    * @return {@link ConstraintSet#TRUE} if the non-ignored annotations of {@code this} are a subtype
    *     of those of {@code superType}; otherwise {@link ConstraintSet#TRUE_ANNO_FAIL}
    */

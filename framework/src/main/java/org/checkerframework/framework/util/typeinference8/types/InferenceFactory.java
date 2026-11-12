@@ -39,6 +39,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -1020,7 +1021,6 @@ public class InferenceFactory {
     Iterator<ProperType> iter = properTypes.iterator();
     ProperType first = iter.next();
     TypeMirror lubTM = first.getJavaType();
-    AnnotatedTypeMirror lubATM = first.getAnnotatedType();
     // The least upper bound so far, as a type, so that its ignored positions can be found; see
     // IgnoredAnnotations#replaceIgnoredForLubOrGlb.
     ProperType lubSoFar = first;
@@ -1031,21 +1031,25 @@ public class InferenceFactory {
       ReplacedTypes combined =
           IgnoredAnnotations.replaceIgnoredForLubOrGlb(
               lubSoFar, properType, lubTM, qh, context.modelTypes);
-      lubATM = combined.type1();
+      AnnotatedTypeMirror lubSoFarATM = combined.type1();
       AnnotatedTypeMirror atm = combined.type2();
+      AnnotatedTypeMirror lubATM;
       if (properType.ignoreAnnotations == ignoreAnnotations) {
-        lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubATM, atm, lubTM);
+        lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubSoFarATM, atm, lubTM);
       } else if (properType.ignoreAnnotations) {
         // Only the primary annotations of `atm` are ignored.  Make them bottom, so that they don't
         // change the lub.
         AnnotatedTypeMirror atmWithBottomPrimary = atm.deepCopy();
         atmWithBottomPrimary.replaceAnnotations(qh.getBottomAnnotations());
-        lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubATM, atmWithBottomPrimary, lubTM);
-      } else { // ignoreAnnotations is true
-        // Only the primary annotations of `lubATM` are ignored; see the previous case.
-        AnnotatedTypeMirror lubATMWithBottomPrimary = lubATM.deepCopy();
-        lubATMWithBottomPrimary.replaceAnnotations(qh.getBottomAnnotations());
-        lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubATMWithBottomPrimary, atm, lubTM);
+        lubATM =
+            AnnotatedTypes.leastUpperBound(typeFactory, lubSoFarATM, atmWithBottomPrimary, lubTM);
+      } else {
+        assert ignoreAnnotations;
+        // Only the primary annotations of `lubSoFarATM` are ignored; see the previous case.
+        AnnotatedTypeMirror lubSoFarATMWithBottomPrimary = lubSoFarATM.deepCopy();
+        lubSoFarATMWithBottomPrimary.replaceAnnotations(qh.getBottomAnnotations());
+        lubATM =
+            AnnotatedTypes.leastUpperBound(typeFactory, lubSoFarATMWithBottomPrimary, atm, lubTM);
       }
       // The primary annotations of a type that ignores annotations put no constraint on the
       // result, so the result ignores annotations only if every type does.  This is the same
@@ -1093,7 +1097,7 @@ public class InferenceFactory {
    * @return a copy of {@code type} whose annotated type is {@code atm}, or null
    */
   private @Nullable ProperType withOriginOf(
-      AbstractType type,
+      @FindDistinct AbstractType type,
       Collection<? extends AbstractType> inputs,
       TypeMirror javaType,
       AnnotatedTypeMirror atm,
@@ -1121,15 +1125,12 @@ public class InferenceFactory {
     // that ignore annotations.  Fixing this requires an origin that combines the ignored positions
     // of several inputs.
     for (AbstractType other : inputs) {
-      @SuppressWarnings("interning:not.interned") // Skipping `type` itself.
       boolean isType = other == type;
-      if (!isType
-          && !IgnoredAnnotations.ignoredPositionsStayIgnored(
-              properType,
-              other,
-              javaType,
-              typeFactory.getQualifierHierarchy(),
-              context.modelTypes)) {
+      if (isType) {
+        continue;
+      }
+      if (!IgnoredAnnotations.ignoredPositionsStayIgnored(
+          properType, other, javaType, typeFactory.getQualifierHierarchy(), context.modelTypes)) {
         return null;
       }
     }
