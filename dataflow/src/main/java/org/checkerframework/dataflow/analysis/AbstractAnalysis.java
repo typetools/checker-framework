@@ -16,7 +16,6 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.interning.qual.InternedDistinct;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
-import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
@@ -703,8 +702,6 @@ public abstract class AbstractAnalysis<
      * @return true if this Worklist is empty
      */
     @Pure
-    @EnsuresNonNullIf(result = false, expression = "poll()")
-    @SuppressWarnings("nullness:contracts.conditional.postcondition") // forwarded
     public boolean isEmpty() {
       assert queue.isEmpty() == queueSet.isEmpty();
       return queue.isEmpty();
@@ -736,7 +733,6 @@ public abstract class AbstractAnalysis<
      * @see PriorityQueue#poll
      * @return the head of this Worklist
      */
-    @Pure
     public @Nullable Block poll() {
       Block result = queue.poll();
       if (result != null) {
@@ -751,7 +747,6 @@ public abstract class AbstractAnalysis<
      * @see PriorityQueue#remove
      * @return the head of this Worklist
      */
-    @Pure
     public Block remove() {
       Block result = queue.remove();
       queueSet.remove(result);

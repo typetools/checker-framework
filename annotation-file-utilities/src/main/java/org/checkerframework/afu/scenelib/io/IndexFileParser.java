@@ -282,7 +282,7 @@ public final class IndexFileParser {
    * @return the next token, so long as it is an identifier; otherwise, returns null
    * @throws IOException if there is trouble reading the index file
    */
-  private @Identifier String matchIdentifier() throws IOException {
+  private @Identifier @Nullable String matchIdentifier() throws IOException {
     String x = checkIdentifier();
     if (x != null) {
       st.nextToken();

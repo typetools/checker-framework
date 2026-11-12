@@ -213,7 +213,7 @@ public class RLCCalledMethodsAnnotatedTypeFactory extends CalledMethodsAnnotated
    * @return the {@code @MustCall} annotation if present, null otherwise
    * @throws IllegalArgumentException if the input object type is not supported
    */
-  public AnnotationMirror getMustCallAnnotation(Object obj) {
+  public @Nullable AnnotationMirror getMustCallAnnotation(Object obj) {
     MustCallAnnotatedTypeFactory mustCallAnnotatedTypeFactory =
         getTypeFactoryOfSubchecker(MustCallChecker.class);
     AnnotatedTypeMirror mustCallAnnotatedType;
