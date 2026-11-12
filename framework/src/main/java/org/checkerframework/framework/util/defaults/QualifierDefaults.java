@@ -644,10 +644,10 @@ public class QualifierDefaults {
    * Returns the defaults that apply to the given Element, considering defaults from enclosing
    * Elements.
    *
-   * @param elt the element
+   * @param elt the element, or null
    * @return the defaults
    */
-  private DefaultSet defaultsAt(Element elt) {
+  private DefaultSet defaultsAt(@Nullable Element elt) {
     if (elt == null) {
       return DefaultSet.EMPTY;
     }
