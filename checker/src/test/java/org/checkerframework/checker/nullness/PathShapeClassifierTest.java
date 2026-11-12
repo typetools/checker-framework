@@ -59,7 +59,13 @@ public class PathShapeClassifierTest {
       Assert.assertEquals("actual Unix File " + s, unixFile, actualFileShape(s));
     } else if (File.separatorChar == '\\') {
       Assert.assertEquals("actual Windows Path " + s, windowsPath, actualPathShape(s));
-      Assert.assertEquals("actual Windows File " + s, windowsFile, actualFileShape(s));
+      // The Windows File shape depends on the JDK version; see PathShapeClassifier.windowsFile.
+      PathShape actualFile = actualFileShape(s);
+      Assert.assertTrue(
+          "actual Windows File " + s + " is " + actualFile,
+          actualFile == PathShapeClassifier.windowsFileRetainingPrefix(s)
+              || actualFile == PathShapeClassifier.windowsFileStrippingPrefix(s));
+      Assert.assertEquals("actual Windows File " + s, windowsFile, windowsFile.lub(actualFile));
     }
   }
 
@@ -160,8 +166,12 @@ public class PathShapeClassifierTest {
         HAS_PARENT,
         HAS_NAME,
         HAS_NAME);
-    // The long-path prefix requires an absolute path.
-    check("\\\\?\\foo", HAS_NAME, null, HAS_NAME, HAS_PARENT, HAS_NAME, HAS_NAME);
+    // The long-path prefix requires an absolute path.  As a Windows File, the path is "foo" (no
+    // parent) on a JDK that removes the long-path prefix, and has parent "\\?" on one that does not.
+    check("\\\\?\\foo", HAS_NAME, null, HAS_NAME, HAS_NAME, HAS_NAME, HAS_NAME);
+    Assert.assertEquals(HAS_PARENT, PathShapeClassifier.windowsFileRetainingPrefix("\\\\?\\foo"));
+    Assert.assertEquals(HAS_NAME, PathShapeClassifier.windowsFileStrippingPrefix("\\\\?\\foo"));
+    Assert.assertEquals(UNKNOWN, PathShapeClassifier.windowsFile("\\\\?\\UNC"));
   }
 
   @Test

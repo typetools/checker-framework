@@ -339,15 +339,72 @@ public final class PathShapeClassifier {
   // Windows File:  java.io.WinNTFileSystem and java.io.File
   //
 
+  /** The Windows long-path prefix. */
+  private static final String LONG_PATH_PREFIX = "\\\\?\\";
+
+  /** The Windows long-path prefix for a UNC path. */
+  private static final String LONG_UNC_PREFIX = "\\\\?\\UNC\\";
+
   /**
-   * Returns the shape of {@code new File(s)} on Windows. This follows {@code File.getName} and
-   * {@code File.getParent}.
+   * Returns the shape of {@code new File(s)} on Windows, under every JDK version. Some JDK versions
+   * (such as JDK 25) remove a long-path prefix such as {@code \\?\} when normalizing a {@code File}
+   * path, and others (such as JDK 21) retain it. For example, {@code new File("\\\\?\\foo")} has a
+   * parent under the latter but not under the former. The result is the weaker of the two.
    *
    * @param s a path string
    * @return the shape of {@code new File(s)} on Windows
    */
   /*package-private*/ static PathShape windowsFile(String s) {
-    String path = windowsFileNormalize(s);
+    return windowsFileRetainingPrefix(s).lub(windowsFileStrippingPrefix(s));
+  }
+
+  /**
+   * Returns the shape of {@code new File(s)} on Windows, for a JDK that retains a long-path prefix.
+   *
+   * @param s a path string
+   * @return the shape of {@code new File(s)} on Windows, for a JDK that retains a long-path prefix
+   */
+  /*package-private*/ static PathShape windowsFileRetainingPrefix(String s) {
+    return windowsFileShape(windowsFileNormalize(s));
+  }
+
+  /**
+   * Returns the shape of {@code new File(s)} on Windows, for a JDK that removes a long-path prefix.
+   *
+   * @param s a path string
+   * @return the shape of {@code new File(s)} on Windows, for a JDK that removes a long-path prefix
+   */
+  /*package-private*/ static PathShape windowsFileStrippingPrefix(String s) {
+    return windowsFileShape(windowsFileNormalize(stripLongPathPrefix(s)));
+  }
+
+  /**
+   * Removes a long-path prefix, as {@code WinNTFileSystem.normalize} does in JDK versions that
+   * remove it.
+   *
+   * @param path a path string
+   * @return {@code path} without its long-path prefix, if any
+   */
+  private static String stripLongPathPrefix(String path) {
+    if (path.startsWith(LONG_UNC_PREFIX)) {
+      return "\\\\" + path.substring(LONG_UNC_PREFIX.length());
+    } else if (path.startsWith(LONG_PATH_PREFIX)) {
+      String result = path.substring(LONG_PATH_PREFIX.length());
+      // If only "UNC" remains, then a trailing backslash was likely removed.
+      return result.equals("UNC") ? "\\\\" : result;
+    } else {
+      return path;
+    }
+  }
+
+  /**
+   * Returns the shape of a normalized Windows {@code File} path string. This follows {@code
+   * File.getName} and {@code File.getParent}.
+   *
+   * @param path a normalized path string
+   * @return the shape of the {@code File}
+   */
+  private static PathShape windowsFileShape(String path) {
     int prefixLength = windowsFilePrefixLength(path);
     int index = path.lastIndexOf('\\');
     boolean hasName;
