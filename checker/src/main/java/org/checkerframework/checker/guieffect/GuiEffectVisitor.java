@@ -88,7 +88,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
   protected class GuiEffectOverrideChecker extends OverrideChecker {
     /**
-     * Extend the receiver part of the method override check. We extend the standard check, to
+     * Extends the receiver part of the method override check. We extend the standard check, to
      * additionally permit narrowing the receiver's permission to {@code @AlwaysSafe} in a safe
      * instantiation of a {@code @PolyUIType}. Returns true if the override is permitted.
      */
@@ -147,12 +147,12 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     }
 
     /**
-     * Create a GuiEffectOverrideChecker.
+     * Creates a GuiEffectOverrideChecker.
      *
      * @param overriderTree the AST node of the overriding method or method reference
      * @param overrider the type of the overriding method
      * @param overridingType the type enclosing the overrider method, usually an
-     *     AnnotatedDeclaredType; for Method References may be something else
+     *     AnnotatedDeclaredType; for method references, it can be something else
      * @param overridingReturnType the return type of the overriding method
      * @param overridden the type of the overridden method
      * @param overriddenType the declared type enclosing the overridden method
@@ -473,7 +473,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
   /**
    * This method is called to traverse the path back up from any anonymous inner class or lambda
    * which has been inferred to be UI affecting and re-run {@code commonAssignmentCheck()} as needed
-   * on places where the class declaration or lambda expression are being assigned to a variable,
+   * on places where the class declaration or lambda expression is being assigned to a variable,
    * passed as a parameter or returned from a method. This is necessary because the normal visitor
    * traversal only checks assignments on the way down the AST, before inference has had a chance to
    * run.

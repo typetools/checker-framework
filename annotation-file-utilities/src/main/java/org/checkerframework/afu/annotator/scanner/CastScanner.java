@@ -96,8 +96,8 @@ public final class CastScanner extends CommonScanner {
    * method.
    *
    * @param methodName the name of the method
-   * @param offset the offset of the instanceof check
-   * @return the index of the given offset, or a negative number if the given offset does not exists
+   * @param offset the offset of the cast
+   * @return the index of the given offset, or a negative number if the given offset does not exist
    *     inside the method
    */
   public static Integer getMethodCastIndex(String methodName, Integer offset) {

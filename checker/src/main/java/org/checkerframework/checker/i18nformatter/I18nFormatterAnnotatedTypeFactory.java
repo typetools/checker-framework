@@ -34,9 +34,9 @@ import org.checkerframework.javacutil.TypeSystemError;
  * that represents a satisfiable format. The annotation's value is set to be a list of appropriate
  * {@link I18nConversionCategory} values for every parameter of the format.
  *
- * <p>It also creates a map from the provided translation file if exists. This map will be used to
- * get the corresponding value of a key when {@link java.util.ResourceBundle#getString} method is
- * invoked.
+ * <p>It also creates a map from the provided translation file if it exists. This map will be used
+ * to get the corresponding value of a key when the {@link java.util.ResourceBundle#getString}
+ * method is invoked.
  *
  * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  */
@@ -68,7 +68,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
   /** Syntax tree utilities. */
   protected final I18nFormatterTreeUtil treeUtil = new I18nFormatterTreeUtil(checker);
 
-  /** Create a new I18nFormatterAnnotatedTypeFactory. */
+  /** Creates a new I18nFormatterAnnotatedTypeFactory. */
   @SuppressWarnings("this-escape")
   public I18nFormatterAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
@@ -147,7 +147,7 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
     /** Qualifier kind for the @{@link I18nInvalidFormat} annotation. */
     private final QualifierKind I18NINVALIDFORMAT_KIND;
 
-    /** Creates I18nFormatterQualifierHierarchy. */
+    /** Creates an I18nFormatterQualifierHierarchy. */
     public I18nFormatterQualifierHierarchy() {
       super(
           I18nFormatterAnnotatedTypeFactory.this.getSupportedTypeQualifiers(),

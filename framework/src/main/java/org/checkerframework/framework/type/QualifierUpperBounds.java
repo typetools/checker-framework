@@ -26,7 +26,7 @@ public class QualifierUpperBounds {
   /** Map from canonical class name strings to annotations. */
   private final Map<@CanonicalName String, AnnotationMirrorSet> types;
 
-  /** {@link QualifierHierarchy} */
+  /** The {@link QualifierHierarchy}. */
   private final QualifierHierarchy qualHierarchy;
 
   private final AnnotatedTypeFactory atypeFactory;
@@ -76,7 +76,7 @@ public class QualifierUpperBounds {
     return TypeKind.valueOf(typeKind.name());
   }
 
-  /** Add default qualifier, {@code theQual}, for the given TypeKind. */
+  /** Adds the default qualifier, {@code theQual}, for the given TypeKind. */
   public void addTypeKind(TypeKind typeKind, AnnotationMirror theQual) {
     boolean res = qualHierarchy.updateMappingToMutableSet(typeKinds, typeKind, theQual);
     if (!res) {
@@ -86,7 +86,7 @@ public class QualifierUpperBounds {
     }
   }
 
-  /** Add default qualifier, {@code theQual}, for the given class. */
+  /** Adds the default qualifier, {@code theQual}, for the given class. */
   public void addType(Class<?> type, AnnotationMirror theQual) {
     String typeNameString = type.getCanonicalName();
     boolean res = qualHierarchy.updateMappingToMutableSet(types, typeNameString, theQual);
@@ -132,7 +132,7 @@ public class QualifierUpperBounds {
   }
 
   /**
-   * Returns the explicit annotations on the element. Subclass can override this behavior to add
+   * Returns the explicit annotations on the element. Subclasses can override this behavior to add
    * annotations.
    *
    * @param element element whose annotations to return

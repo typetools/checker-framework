@@ -63,8 +63,8 @@ import org.plumelib.reflection.Signatures;
  * listed in a checker's annotated type factory by overriding {@link
  * AnnotatedTypeFactory#createSupportedTypeQualifiers()}.
  *
- * <p>Checker writers may wish to subclass this class if they wish to implement some custom rules to
- * filter or process loaded annotation classes, by providing an override implementation of {@link
+ * <p>Checker writers might wish to subclass this class if they want to implement some custom rules
+ * to filter or process loaded annotation classes, by providing an override implementation of {@link
  * #isSupportedAnnotationClass(Class)}. See {@code
  * org.checkerframework.checker.units.UnitsAnnotationClassLoader} for an example.
  */
@@ -105,8 +105,8 @@ public class AnnotationClassLoader implements Closeable {
   private static final char SLASH = '/';
 
   /**
-   * Processing Env used to create an {@link AnnotationBuilder}, which is in turn used to build the
-   * annotation mirror from the loaded class.
+   * The processing environment, used to create an {@link AnnotationBuilder}, which is in turn used
+   * to build the annotation mirror from the loaded class.
    */
   protected final ProcessingEnvironment processingEnv;
 
@@ -324,20 +324,20 @@ public class AnnotationClassLoader implements Closeable {
   }
 
   /**
-   * Checks to see if the current directory contains the qual package through recursion currentDir
-   * starts at the root directory (a directory passed in as part of the classpaths), the iterator
-   * goes through each segment of the fully qualified package name (each segment is separated by a
-   * dot).
+   * Checks to see if the current directory contains the qual package, through recursion. currentDir
+   * starts at the root directory (a directory passed in as part of the classpaths), and the
+   * iterator goes through each segment of the fully qualified package name (each segment is
+   * separated by a dot).
    *
    * <p>Each step of the recursion checks to see if there's a subdirectory in the current directory
-   * that has a name matching the package name segment, if so, it recursively descends into that
-   * subdirectory to check the next package name segment
+   * that has a name matching the package name segment. If so, it recursively descends into that
+   * subdirectory to check the next package name segment.
    *
-   * <p>If there's no more segments left, then we've found the qual directory of interest
+   * <p>If there are no more segments left, then we've found the qual directory of interest.
    *
    * <p>If we've checked every subdirectory and none of them match the current package name segment,
    * then the qual directory of interest does not exist in the given root directory (at the
-   * beginning of recursion)
+   * beginning of recursion).
    *
    * @param currentDir current directory
    * @param pkgNames an iterator which provides each segment of the fully qualified qual package
@@ -428,7 +428,7 @@ public class AnnotationClassLoader implements Closeable {
    * </ol>
    *
    * In each of these paths, the order of the paths as specified in the command line options or
-   * environment variables will be the order returned in the set
+   * environment variables will be the order returned in the set.
    *
    * @return an immutable linked hashset of the classpaths
    */
@@ -453,8 +453,8 @@ public class AnnotationClassLoader implements Closeable {
   }
 
   /**
-   * Obtains the classloader used to load the checker class, if that isn't available then it will
-   * try to obtain the system classloader.
+   * Obtains the classloader used to load the checker class. If that isn't available, then it
+   * tries to obtain the system classloader.
    *
    * @return the classloader used to load the checker class, or the system classloader, or null if
    *     both are unavailable
@@ -574,7 +574,7 @@ public class AnnotationClassLoader implements Closeable {
 
   /**
    * Gets the set of annotation classes in the qual directory of a checker shipped with the Checker
-   * Framework. Note that the returned set from this method is mutable, but is the same set on every
+   * Framework. Note that the set returned by this method is mutable, but is the same set on every
    * call. This method is intended to be called within {@link
    * AnnotatedTypeFactory#createSupportedTypeQualifiers() createSupportedTypeQualifiers()} (or its
    * helper methods) to help define the set of supported qualifiers.
@@ -657,11 +657,11 @@ public class AnnotationClassLoader implements Closeable {
    * @param packageName the name of the package that contains the qual package, or null
    * @param rootDirectory a {@link File} object representing the root directory of a set of
    *     annotations, which is subtracted from class names to retrieve each class's fully qualified
-   *     class names
+   *     class name
    * @param currentDirectory a {@link File} object representing the current sub-directory of the
    *     root directory
-   * @return a set fully qualified annotation class name, for annotations in the root directory or
-   *     its sub-directories
+   * @return a set of fully qualified annotation class names, for annotations in the root directory
+   *     or its sub-directories
    */
   @SuppressWarnings("signature") // TODO: reduce use of string manipulation
   private Set<@BinaryName String> getAnnotationNamesFromDirectory(
@@ -728,8 +728,8 @@ public class AnnotationClassLoader implements Closeable {
    * @param className the name of the class, in binary name format
    * @param issueError set to true to issue a warning when a loaded annotation is not a type
    *     annotation. It is useful to set this to true if a given annotation must be a well-defined
-   *     type annotation (eg for annotation class names given as command line arguments). It should
-   *     be set to false if the annotation is a meta-annotation or non-type annotation.
+   *     type annotation (e.g., for annotation class names given as command line arguments). It
+   *     should be set to false if the annotation is a meta-annotation or non-type annotation.
    * @return the loaded annotation class if it has a {@code @Target} meta-annotation with the
    *     required ElementType values, and is a supported annotation by a checker. If the annotation
    *     is not supported by a checker, null is returned.
@@ -792,7 +792,7 @@ public class AnnotationClassLoader implements Closeable {
   }
 
   /**
-   * Given annotation names, return the corresponding {@code Class}es.
+   * Given annotation names, returns the corresponding {@code Class}es.
    *
    * @param annoNames a set of binary names for annotation classes
    * @return a set of loaded annotation classes

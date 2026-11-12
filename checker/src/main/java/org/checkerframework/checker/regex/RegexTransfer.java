@@ -38,7 +38,7 @@ public class RegexTransfer extends CFTransfer {
   /** The MatchResult.groupCount() method. */
   private final ExecutableElement matchResultgroupCount;
 
-  /** Create the transfer function for the Regex Checker. */
+  /** Creates the transfer function for the Regex Checker. */
   public RegexTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     super(analysis);
     this.matchResultgroupCount =
@@ -165,9 +165,9 @@ public class RegexTransfer extends CFTransfer {
   }
 
   /**
-   * Handle one of {@code m.groupCount() > const}, {@code m.groupCount() >= const}, or {@code
-   * m.groupCount() == const}. Annotate the matcher as {@code @Regex(const)} or (if the operation is
-   * {@code >}) as {@code @Regex(const+1)}.
+   * Handles one of {@code m.groupCount() > const}, {@code m.groupCount() >= const}, or {@code
+   * m.groupCount() == const}. Annotates the matcher as {@code @Regex(const)} or (if the operation
+   * is {@code >}) as {@code @Regex(const+1)}.
    *
    * @param possibleMatcher the Node that might be a call of Matcher.groupCount()
    * @param possibleConstant the Node that might be a constant

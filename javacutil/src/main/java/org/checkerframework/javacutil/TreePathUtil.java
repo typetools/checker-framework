@@ -46,7 +46,7 @@ public final class TreePathUtil {
   //
 
   /**
-   * Gets path to the first (innermost) enclosing tree of the given kind. May return {@code path}
+   * Gets path to the first (innermost) enclosing tree of the given kind. Might return {@code path}
    * itself.
    *
    * @param path the path defining the tree node
@@ -58,7 +58,7 @@ public final class TreePathUtil {
   }
 
   /**
-   * Gets path to the first (innermost) enclosing tree with any one of the given kinds. May return
+   * Gets path to the first (innermost) enclosing tree with any one of the given kinds. Might return
    * {@code path} itself.
    *
    * @param path the path defining the tree node
@@ -76,7 +76,7 @@ public final class TreePathUtil {
 
   /**
    * Gets path to the first (innermost) enclosing class tree, where class is defined by the {@link
-   * TreeUtils#classTreeKinds()} method. May return {@code path} itself.
+   * TreeUtils#classTreeKinds()} method. Might return {@code path} itself.
    *
    * @param path the path defining the tree node
    * @return the path to the enclosing class tree, {@code null} otherwise
@@ -86,10 +86,10 @@ public final class TreePathUtil {
   }
 
   /**
-   * Gets path to the first (innermost) enclosing method tree. May return {@code path} itself.
+   * Gets path to the first (innermost) enclosing method tree. Might return {@code path} itself.
    *
    * @param path the path defining the tree node
-   * @return the path to the enclosing class tree, {@code null} otherwise
+   * @return the path to the enclosing method tree, {@code null} otherwise
    */
   public static @Nullable TreePath pathTillMethod(TreePath path) {
     return pathTillOfKind(path, Tree.Kind.METHOD);
@@ -153,7 +153,7 @@ public final class TreePathUtil {
   //
 
   /**
-   * Gets the first (innermost) enclosing tree in path, of the given kind. May return the leaf of
+   * Gets the first (innermost) enclosing tree in path, of the given kind. Might return the leaf of
    * {@code path} itself.
    *
    * @param path the path defining the tree node
@@ -165,7 +165,7 @@ public final class TreePathUtil {
   }
 
   /**
-   * Gets the first (innermost) enclosing tree in path, with any one of the given kinds. May return
+   * Gets the first (innermost) enclosing tree in path, with any one of the given kinds. Might return
    * the leaf of {@code path} itself.
    *
    * @param path the path defining the tree node
@@ -178,7 +178,7 @@ public final class TreePathUtil {
   }
 
   /**
-   * Gets the first (innermost) enclosing tree in path, of the given class. May return the leaf of
+   * Gets the first (innermost) enclosing tree in path, of the given class. Might return the leaf of
    * {@code path} itself.
    *
    * @param <T> the type of {@code treeClass}
@@ -201,8 +201,8 @@ public final class TreePathUtil {
   }
 
   /**
-   * Gets the path to nearest enclosing declaration (class, method, or variable) of the tree node
-   * defined by the given {@link TreePath}. May return the leaf of {@code path} itself.
+   * Gets the path to the nearest enclosing declaration (class, method, or variable) of the tree node
+   * defined by the given {@link TreePath}. Might return the leaf of {@code path} itself.
    *
    * @param path the path defining the tree node
    * @return path to the nearest enclosing class/method/variable in the path, or {@code null} if one
@@ -215,7 +215,7 @@ public final class TreePathUtil {
   /**
    * Gets the enclosing class of the tree node defined by the given {@link TreePath}. It returns a
    * {@link Tree}, from which {@code checkers.types.AnnotatedTypeMirror} or {@link Element} can be
-   * obtained. May return the leaf of {@code path} itself.
+   * obtained. Might return the leaf of {@code path} itself.
    *
    * @param path the path defining the tree node
    * @return the enclosing class (or interface) as given by the path, or {@code null} if one does
@@ -226,7 +226,7 @@ public final class TreePathUtil {
   }
 
   /**
-   * Gets the enclosing variable of a tree node defined by the given {@link TreePath}. May return
+   * Gets the enclosing variable of a tree node defined by the given {@link TreePath}. Might return
    * the leaf of {@code path} itself.
    *
    * @param path the path defining the tree node
@@ -239,7 +239,7 @@ public final class TreePathUtil {
   /**
    * Gets the enclosing method of the tree node defined by the given {@link TreePath}. It returns a
    * {@link Tree}, from which an {@code checkers.types.AnnotatedTypeMirror} or {@link Element} can
-   * be obtained. May return the leaf of {@code path} itself.
+   * be obtained. Might return the leaf of {@code path} itself.
    *
    * <p>Also see {@code AnnotatedTypeFactory#getEnclosingMethod} and {@code
    * AnnotatedTypeFactory#getEnclosingClassOrMethod}, which do not require a TreePath.
@@ -254,7 +254,7 @@ public final class TreePathUtil {
   /**
    * Gets the enclosing method or lambda expression of the tree node defined by the given {@link
    * TreePath}. It returns a {@link Tree}, from which an {@code checkers.types.AnnotatedTypeMirror}
-   * or {@link Element} can be obtained. May return the leaf of {@code path} itself.
+   * or {@link Element} can be obtained. Might return the leaf of {@code path} itself.
    *
    * @param path the path defining the tree node
    * @return the enclosing method or lambda as given by the path, or {@code null} if one does not
@@ -338,7 +338,7 @@ public final class TreePathUtil {
    * Implementation of {@link #getContextForPolyExpression(TreePath)}.
    *
    * @param treePath a path
-   * @param isLambdaOrMethodRef if the call is getting the context of a lambda or method reference
+   * @param isLambdaOrMethodRef true if the call is getting the context of a lambda or method reference
    * @return the assignment context as described, {@code null} otherwise
    */
   private static @Nullable Tree getContextForPolyExpression(
@@ -457,7 +457,7 @@ public final class TreePathUtil {
   /**
    * Returns true if the leaf of the tree path is in a static scope.
    *
-   * @param path a TreePath whose leaf may or may not be in static scope
+   * @param path a TreePath whose leaf might or might not be in static scope
    * @return true if the leaf of the tree path is in a static scope
    */
   public static boolean isTreeInStaticScope(TreePath path) {
@@ -548,7 +548,7 @@ public final class TreePathUtil {
    * @param path a path
    * @param length the maximum length for the result; must be at least 6
    * @return a one-line string representation of the leaf of the given path that is no longer than
-   *     {@code length} characters long
+   *     {@code length} characters
    */
   public static String leafToStringTruncated(@Nullable TreePath path, int length) {
     if (path == null) {

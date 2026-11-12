@@ -20,7 +20,7 @@ import org.checkerframework.checker.signature.qual.BinaryName;
  * been supplied one by one.
  *
  * <p>It is not possible to specify the type name or the retention policy. Either the {@link
- * AnnotationBuilder} expects a certain definition (and may throw exceptions if the fields deviate
+ * AnnotationBuilder} expects a certain definition (and might throw exceptions if the fields deviate
  * from it) or it determines the definition automatically from the supplied fields.
  *
  * <p>Each {@link AnnotationBuilder} is mutable and single-use; the purpose of an {@link
@@ -62,7 +62,7 @@ public class AnnotationBuilder {
   Map<String, Object> fieldValues = new LinkedHashMap<>();
 
   /**
-   * Create a new AnnotationBuilder.
+   * Creates a new AnnotationBuilder.
    *
    * @param def the definition of the annotation being built
    * @param source where the annotation came from, such as a filename
@@ -76,7 +76,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Create a new AnnotationBuilder.
+   * Creates a new AnnotationBuilder.
    *
    * @param typeName the name of the annotation being built
    * @param source where the annotation came from, such as a filename
@@ -90,7 +90,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Create a new AnnotationBuilder.
+   * Creates a new AnnotationBuilder.
    *
    * @param typeName the name of the annotation being built
    * @param tlAnnotationsHere the top-level meta-annotations that appear directly on the annotation
@@ -182,7 +182,7 @@ public class AnnotationBuilder {
    * Supplies a scalar field of the given name, type, and value for inclusion in the annotation
    * returned by {@link #finish}. See the rules for values on {@link Annotation#getFieldValue}.
    *
-   * <p>Each field may be supplied only once. This method may throw an exception if the {@link
+   * <p>Each field can be supplied only once. This method might throw an exception if the {@link
    * AnnotationBuilder} expects a certain definition for the built annotation and the given field
    * does not exist in that definition or has the wrong type.
    *
@@ -207,7 +207,7 @@ public class AnnotationBuilder {
    * finished before any other methods on this {@link AnnotationBuilder} are called. <code>
    * aft.{@link ArrayAFT#elementType elementType}</code> must be known (not {@code null}).
    *
-   * <p>Each field may be supplied only once. This method may throw an exception if the {@link
+   * <p>Each field can be supplied only once. This method might throw an exception if the {@link
    * AnnotationBuilder} expects a certain definition for the built annotation and the given field
    * does not exist in that definition or has the wrong type.
    *
@@ -232,12 +232,12 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Supplies an zero-element array field whose element type is unknown. The field type of this
+   * Supplies a zero-element array field whose element type is unknown. The field type of this
    * array is represented by an {@link ArrayAFT} with {@link ArrayAFT#elementType elementType} ==
    * {@code null}.
    *
    * <p>This can sometimes happen due to a design flaw in the format of annotations in class files.
-   * An array value does not specify an type itself; instead, each element carries a type. Thus, a
+   * An array value does not specify a type itself; instead, each element carries a type. Thus, a
    * zero-length array carries no indication of its element type.
    *
    * @param fieldName the name of the annotation element to set to an empty array
@@ -251,10 +251,10 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Returns the completed annotation. This method may throw an exception if the {@link
+   * Returns the completed annotation. This method might throw an exception if the {@link
    * AnnotationBuilder} expects a certain definition for the built annotation and one or more fields
    * in that definition were not supplied. Once this method has been called, no more method calls
-   * may be made on this {@link AnnotationBuilder}.
+   * can be made on this {@link AnnotationBuilder}.
    *
    * @return the completed annotation corresponding to this builder
    */

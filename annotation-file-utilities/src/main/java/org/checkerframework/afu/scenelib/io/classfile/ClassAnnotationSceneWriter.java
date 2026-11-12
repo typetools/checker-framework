@@ -46,7 +46,7 @@ import org.objectweb.asm.TypeReference;
  * AScene}. The "write" in {@code ClassAnnotationSceneWriter} refers to a class file being rewritten
  * with information from a scene. Also see {@link ClassAnnotationSceneReader}.
  *
- * <p>The proper usage of this class is to construct a {@code ClassAnnotationSceneWriter} with a
+ * <p>The proper usage of this class is to construct a {@code ClassAnnotationSceneWriter} with an
  * {@link AScene} that already contains all its annotations, pass this as a {@link
  * org.objectweb.asm.ClassVisitor} to {@link org.objectweb.asm.ClassReader#accept}, and then obtain
  * the resulting class, ready to be written to a file, with {@link #toByteArray}.
@@ -124,7 +124,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
    * @param classReader the reader for the class being modified
    * @param scene the annotation scene containing annotations to be inserted into the class this
    *     visits
-   * @param overwrite true if to overwrite existing annotations on the same element
+   * @param overwrite true to overwrite existing annotations on the same element
    */
   public ClassAnnotationSceneWriter(
       int api, ClassReader classReader, AScene scene, boolean overwrite) {
@@ -141,8 +141,8 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
 
   /**
    * Returns a byte array that represents the resulting class file from merging all the annotations
-   * in the scene into the class file this has visited. This method may only be called once this has
-   * already completely visited a class, which is done by calling {@link
+   * in the scene into the class file this has visited. This method can be called only after this
+   * has completely visited a class, which is done by calling {@link
    * org.objectweb.asm.ClassReader#accept}.
    *
    * @return a byte array of the merged class file
@@ -224,7 +224,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
   }
 
   /**
-   * Have this class visit the annotations in scene if and only if it has not already visited them.
+   * Has this class visit the annotations in scene if and only if it has not already visited them.
    */
   private void ensureVisitSceneClassAnnotations() {
     if (!hasVisitedClassAnnotationsInScene) {
@@ -341,7 +341,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
   }
 
   /**
-   * Returns an TypeAnnotationVisitor over the given top-level annotation.
+   * Returns a TypeAnnotationVisitor over the given top-level annotation.
    *
    * @param tla the Annotation to visit
    * @param typeReference the type of the annotation. Its sort should be CLASS_TYPE_PARAMETER,
@@ -359,7 +359,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
 
   /**
    * Has av visit the fields in the given annotation. This method is necessary even with
-   * visitFields(AnnotationVisitor, Annotation) because a Annotation cannot be created from the
+   * visitFields(AnnotationVisitor, Annotation) because an Annotation cannot be created from the
    * Annotation specified to be available from the Annotation object for subannotations.
    */
   private void visitFields(AnnotationVisitor av, Annotation a) {
@@ -536,7 +536,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
     /** The AMethod that represents this method in scene. */
     private final AMethod aMethod;
 
-    /** True if this has visit the method's annotations in scene. */
+    /** True if this has visited the method's annotations in scene. */
     private boolean hasVisitedMethodAnnotations;
 
     /** The existing annotations this method has visited. */
@@ -548,7 +548,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
      *
      * @param api the ASM API version to use
      * @param name the name of the method, as in "foo"
-     * @param descriptor the method signature minus the name, as in "(Ljava/lang/String)V"
+     * @param descriptor the method signature minus the name, as in "(Ljava/lang/String;)V"
      * @param mv the method visitor to wrap around
      */
     MethodAnnotationSceneWriter(int api, String name, String descriptor, MethodVisitor mv) {
@@ -731,7 +731,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
 
     /**
      * Has this visit the annotation in tla and returns the resulting visitor. The sort of the
-     * typeReference should be LOCAL_VARIABLE or RESOURCE_VARIABLE
+     * typeReference should be LOCAL_VARIABLE or RESOURCE_VARIABLE.
      *
      * @param tla the Annotation to visit
      * @param typeReference the type of the annotation
@@ -842,7 +842,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
           index, classNameToDesc(name(tla)), isRuntimeRetention(tla));
     }
 
-    /** Has this visit the declaration annotation and the type annotations on the return type. */
+    /** Has this visit the declaration annotations on this method. */
     private void ensureVisitMethodDeclarationAnnotations() {
       // Annotations on method declaration.
       for (Annotation tla : aMethod.tlAnnotationsHere) {
@@ -856,7 +856,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
       }
     }
 
-    /** Has this visit the declaration annotations and the type annotations on the return type. */
+    /** Has this visit the type annotations on the return type. */
     private void ensureVisitReturnTypeAnnotations() {
       // Standard annotations on return type.
       TypeReference typeReference = TypeReference.newTypeReference(TypeReference.METHOD_RETURN);
@@ -1078,7 +1078,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
     }
 
     /**
-     * Have this method visit the annotations in scene if and only if it has not visited them
+     * Has this method visit the annotations in scene if and only if it has not visited them
      * before.
      */
     private void ensureVisitSceneMethodAnnotations() {
@@ -1107,7 +1107,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
     }
 
     /**
-     * Search for TypeAnnotations on a TypeElement.
+     * Searches for TypeAnnotations on a TypeElement.
      *
      * @param typeReference the type of annotation to search for
      * @param aTypeElement the element to search for annotations
@@ -1140,7 +1140,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
     }
 
     /**
-     * Search for InsnAnnotations on a TypeElement.
+     * Searches for InsnAnnotations on a TypeElement.
      *
      * @param typeReference the type of annotation to search for
      * @param aTypeElement the element to search for annotations
@@ -1190,7 +1190,7 @@ public class ClassAnnotationSceneWriter extends CodeOffsetAdapter {
   }
 
   /**
-   * A MethodCodeIndexer is a MethodVisitor that is used to calculate the bytecode offsets to
+   * A MethodCodeIndexer is a ClassVisitor that is used to calculate the bytecode offsets to
    * constructor invocations and to lambda invocations.
    */
   class MethodCodeIndexer extends ClassVisitor {

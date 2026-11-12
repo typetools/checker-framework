@@ -30,7 +30,7 @@ public enum DiagnosticKind {
     }
   }
 
-  /** Convert a string as it would appear in error messages or source code into a DiagnosticKind. */
+  /** Converts a string as it would appear in error messages or source code into a DiagnosticKind. */
   public static @Nullable DiagnosticKind fromParseString(String parseStr) {
     return stringToCategory.get(parseStr);
   }

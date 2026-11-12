@@ -83,7 +83,7 @@ import org.plumelib.util.CollectionsP;
 public class LockAnnotatedTypeFactory
     extends GenericAnnotatedTypeFactory<CFValue, LockStore, LockTransfer, LockAnalysis> {
 
-  /** dependent type annotation error message for when the expression is not effectively final. */
+  /** Dependent type annotation error message for when the expression is not effectively final. */
   public static final String NOT_EFFECTIVELY_FINAL = "lock expression is not effectively final";
 
   /** The @{@link LockHeld} annotation. */
@@ -139,7 +139,7 @@ public class LockAnnotatedTypeFactory
   /** The javax.annotation.concurrent.GuardedBy annotation, or null if not on the classpath. */
   protected final @Nullable Class<? extends Annotation> javaxGuardedBy;
 
-  /** Create a new LockAnnotatedTypeFactory. */
+  /** Creates a new LockAnnotatedTypeFactory. */
   @SuppressWarnings("this-escape")
   public LockAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, true);
@@ -219,7 +219,7 @@ public class LockAnnotatedTypeFactory
    * <p>3. a deterministic method call whose arguments and receiver expression are effectively final
    * as specified by this method.
    *
-   * <p>4. a this reference or a class literal
+   * <p>4. a this reference or a class literal.
    *
    * @param expr expression
    * @return true if the expression is effectively final
@@ -679,9 +679,9 @@ public class LockAnnotatedTypeFactory
    *
    * @param methodReturnAtm the AnnotatedTypeMirror for the return type of a method that will
    *     potentially have its annotation in the {@code @GuardedBy} hierarchy replaced
-   * @param atm an AnnotatedTypeMirror that may contain a {@code @GuardSatisfied} annotation. May be
-   *     null.
-   * @param matchingGuardSatisfiedIndex the {code @GuardSatisfied} index that the
+   * @param atm an AnnotatedTypeMirror that might contain a {@code @GuardSatisfied} annotation. Can
+   *     be null.
+   * @param matchingGuardSatisfiedIndex the {@code @GuardSatisfied} index that the
    *     {@code @GuardSatisfied} annotation in {@code atm} must have in order for the replacement to
    *     occur
    * @param annotationInGuardedByHierarchy if the replacement occurs, the annotation in the

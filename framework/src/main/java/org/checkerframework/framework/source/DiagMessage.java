@@ -30,7 +30,7 @@ public class DiagMessage {
   private final Object[] args;
 
   /**
-   * Create a DiagMessage.
+   * Creates a DiagMessage.
    *
    * @param kind the kind of message
    * @param messageKey the message key
@@ -56,7 +56,7 @@ public class DiagMessage {
   }
 
   /**
-   * Create a DiagMessage with kind ERROR.
+   * Creates a DiagMessage with kind ERROR.
    *
    * @param messageKey the message key
    * @param args the arguments that will be interpolated into the localized message

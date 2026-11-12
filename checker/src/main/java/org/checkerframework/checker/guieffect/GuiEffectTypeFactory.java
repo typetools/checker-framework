@@ -184,7 +184,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
    *       annotated @AlwaysSafe
    *   <li>A method is UI if the corresponding method in the super-class/interface is UI, and this
    *       method is not annotated @AlwaysSafe, and this method resides in an anonymous inner class
-   *       (named classes still require a package/class/method annotation to make it UI, only anon
+   *       (named classes still require a package/class/method annotation to make it UI; only anon
    *       inner classes have this inheritance-by-default)
    *       <ul>
    *         <li>A method must be *annotated* UI if the method it overrides is *annotated* UI
@@ -194,7 +194,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
    *   <li>It is an error if a method is UI but the same method in a super-type is not UI
    *   <li>It is an error if two super-types specify the same method, where one type says it's UI
    *       and one says it's not (it's possible to simply enforce the weaker (safe) effect, but this
-   *       seems more principled, it's easier --- backwards-compatible --- to change our minds about
+   *       seems more principled; it's easier --- backwards-compatible --- to change our minds about
    *       this later)
    * </ol>
    */
@@ -337,10 +337,10 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Test if this tree corresponds to a lambda expression or new class marked as UI affecting by
-   * either {@link #constrainLambdaToUI(LambdaExpressionTree) constrainLambdaToUI}} or {@link
-   * #constrainAnonymousClassToUI(TypeElement)}. Only explicit markings due to inference are
-   * considered here, for the properly computed type of the expression, use {@link
+   * Returns true if this tree corresponds to a lambda expression or new class marked as UI
+   * affecting by either {@link #constrainLambdaToUI(LambdaExpressionTree) constrainLambdaToUI} or
+   * {@link #constrainAnonymousClassToUI(TypeElement)}. Only explicit markings due to inference are
+   * considered here; for the properly computed type of the expression, use {@link
    * #getAnnotatedType(Tree)} instead.
    *
    * @param tree the tree to check
@@ -393,7 +393,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Find the greatest and least effects of methods the specified definition overrides. This method
+   * Finds the greatest and least effects of methods the specified definition overrides. This method
    * is used for two reasons:
    *
    * <p>1. {@link GuiEffectVisitor#visitMethod(MethodTree,Void) GuiEffectVisitor.visitMethod} calls
@@ -555,7 +555,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Force the given lambda expression to have UIEffect.
+   * Forces the given lambda expression to have UIEffect.
    *
    * <p>Used by GuiEffectVisitor to mark as UIEffect all lambdas that perform UIEffect calls inside
    * their bodies.
@@ -567,21 +567,21 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Force the given anonymous inner class to be an @UI instantiation of its base class.
+   * Forces the given anonymous inner class to be an @UI instantiation of its base class.
    *
    * <p>Used by GuiEffectVisitor to mark as @UI all anonymous inner classes which: inherit from a
    * PolyUIType annotated superclass, override a PolyUIEffect method from said superclass, and
    * perform UIEffect calls inside the body of this method.
    *
    * @param classElt the TypeElement corresponding to the anonymous inner class to mark as an @UI
-   *     instantiation of an UI-polymorphic superclass.
+   *     instantiation of a UI-polymorphic superclass.
    */
   public void constrainAnonymousClassToUI(TypeElement classElt) {
     assert TypesUtils.isAnonymous(classElt.asType());
     uiAnonClasses.add(classElt);
   }
 
-  /** A class for adding annotations based on tree. */
+  /** A class for adding annotations based on a tree. */
   private class GuiEffectTreeAnnotator extends TreeAnnotator {
 
     GuiEffectTreeAnnotator() {

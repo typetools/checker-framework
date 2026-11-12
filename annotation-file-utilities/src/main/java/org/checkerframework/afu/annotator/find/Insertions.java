@@ -57,17 +57,17 @@ import org.objectweb.asm.TypePath;
  * local classes ({@link #forOuterClass}). When a single JAIF stores annotations for many source
  * files, this class reduces the number of insertions to be considered for any AST node.
  *
- * <p>The class now serves a second purpose, which should probably be separated out: It attaches
+ * <p>The class now serves a second purpose, which should probably be separated out: it attaches
  * {@link ASTPath}-based inner type {@link Insertion}s to a {@link TypedInsertion} on the outer type
- * if one exists (see {@link #organizeTypedInsertions(CompilationUnitTree, String, Collection)}.
+ * if one exists (see {@link #organizeTypedInsertions(CompilationUnitTree, String, Collection)}).
  * Since getting these insertions right depends on this organization, this class is now essential
  * for correctness, not merely for performance.
  */
 public class Insertions implements Iterable<Insertion> {
 
   /**
-   * First index is (qualified) outer class name, second index is inner class path (or "" if not
-   * within a nested class).
+   * The first index is the (qualified) outer class name; the second index is the inner class path
+   * (or "" if not within a nested class).
    */
   // TODO: Inner class name might itself contain "$"; this probably doesn't handle that case.
   private Map<String, Map<String, Set<Insertion>>> store;
@@ -142,7 +142,7 @@ public class Insertions implements Iterable<Insertion> {
     }
   }
 
-  /** Add an {@link Insertion} to this collection. */
+  /** Adds an {@link Insertion} to this collection. */
   public void add(Insertion ins) {
     InClassCriterion icc = ins.getCriteria().getInClass();
 
@@ -166,7 +166,7 @@ public class Insertions implements Iterable<Insertion> {
     size += set.size();
   }
 
-  /** Add all the given {@link Insertion}s to this collection. */
+  /** Adds all the given {@link Insertion}s to this collection. */
   public void addAll(Collection<? extends Insertion> c) {
     for (Insertion ins : c) {
       add(ins);
@@ -807,7 +807,7 @@ public class Insertions implements Iterable<Insertion> {
   }
 
   /**
-   * Find an {@link ASTRecord} for the tree corresponding to a nested type of the type (use) to
+   * Returns an {@link ASTRecord} for the tree corresponding to a nested type of the type (use) to
    * which the given tree and record correspond.
    *
    * @param rec record that locates {@code node} in the source
@@ -941,14 +941,14 @@ public class Insertions implements Iterable<Insertion> {
   }
 
   /**
-   * Merge annotations, assuming types are structurally identical. Side-effects the first argument.
+   * Merges annotations, assuming types are structurally identical. Side-effects the first argument.
    */
   private void mergeTypedInsertions(TypedInsertion ins1, TypedInsertion ins2) {
     mergeTypes(ins1.getType(), ins2.getType());
   }
 
   /**
-   * Merge annotations, assuming types are structurally identical. Side-effects the first argument.
+   * Merges annotations, assuming types are structurally identical. Side-effects the first argument.
    */
   private void mergeTypes(Type t1, Type t2) {
     // TODO: should this test for .equals too?
@@ -1037,7 +1037,7 @@ public class Insertions implements Iterable<Insertion> {
     };
   }
 
-  /** Compare by AstRecord, then by kind, then by string representation. */
+  /** Compares by ASTRecord, then by kind, then by string representation. */
   private static final Comparator<Insertion> byASTRecord =
       (Insertion i1, Insertion i2) -> {
         Criteria crit1 = i1.getCriteria();
@@ -1073,8 +1073,8 @@ public class Insertions implements Iterable<Insertion> {
       };
 
   /**
-   * Returns the outer class part of the argument; that is, the part before '$'. Return the argument
-   * if it contains no '$'.
+   * Returns the outer class part of the argument; that is, the part before '$'. Returns the
+   * argument if it contains no '$'.
    */
   private static String outerClassName(String className) {
     int i = className.indexOf('$'); // FIXME: don't split on '$' in source
@@ -1086,7 +1086,7 @@ public class Insertions implements Iterable<Insertion> {
   }
 
   /**
-   * Returns the inner class part of the argument; that is, the part after '$'. Return the empty
+   * Returns the inner class part of the argument; that is, the part after '$'. Returns the empty
    * string if there is no '$'.
    */
   private static String innerClassName(String className) {
@@ -1153,7 +1153,7 @@ public class Insertions implements Iterable<Insertion> {
       return null;
     }
 
-    /** Create a TypeTree from a scene-lib Type. */
+    /** Creates a TypeTree from a scene-lib Type. */
     static TypeTree fromType(final Type type) {
       switch (type.getKind()) {
         case ARRAY -> {
@@ -1198,12 +1198,12 @@ public class Insertions implements Iterable<Insertion> {
       }
     }
 
-    /** Create a TypeTree from a javac Type. */
+    /** Creates a TypeTree from a javac Type. */
     static TypeTree fromJavacType(final com.sun.tools.javac.code.Type type) {
       return fromType(javacTypeToType(type));
     }
 
-    /** Create a javac Type from a scene-lib Type. */
+    /** Creates a scene-lib Type from a javac Type. */
     static Type javacTypeToType(final com.sun.tools.javac.code.Type jtype) {
       switch (jtype.getKind()) {
         case ARRAY -> {
@@ -1280,8 +1280,8 @@ public class Insertions implements Iterable<Insertion> {
     }
 
     /**
-     * Use prefix as a prefix for identifiers in t. For example, prefix may be a package or an outer
-     * type.
+     * Uses prefix as a prefix for identifiers in t. For example, prefix can be a package or an
+     * outer type.
      */
     private static TypeTree addPrefix(final TypeTree t, final TypeTree prefix) {
       return switch (t.getKind()) {

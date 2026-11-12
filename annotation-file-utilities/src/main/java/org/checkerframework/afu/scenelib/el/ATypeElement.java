@@ -14,7 +14,7 @@ import org.checkerframework.checker.modifiability.qual.Modifiable;
  * and @B is an annotation on an inner type.
  *
  * <p>Any element that can have an inner type postpended to it extends {@link ATypeElement} so that
- * their annotated inner types can be accessed in a uniform fashion. In the example above, "Map" is
+ * its annotated inner types can be accessed in a uniform fashion. In the example above, "Map" is
  * an ATypeElement rather than just an AElement. (I think!)
  *
  * <p>An {@link AElement} holds the annotations on one inner type; {@link #innerTypes} maps
@@ -27,7 +27,7 @@ public class ATypeElement extends AElement {
       newVivifyingLHMap_ATE();
 
   /**
-   * Construct a new ATypeElement from its description.
+   * Constructs a new ATypeElement from its description.
    *
    * @param description the description of the type element
    */
@@ -36,7 +36,7 @@ public class ATypeElement extends AElement {
   }
 
   /**
-   * Construct a new ATypeElement from another.
+   * Constructs a new ATypeElement from another.
    *
    * @param elem the ATypeElement to copy
    */

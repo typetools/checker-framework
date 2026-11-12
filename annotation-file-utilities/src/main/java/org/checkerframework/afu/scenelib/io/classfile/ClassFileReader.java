@@ -13,7 +13,7 @@ import org.plumelib.options.Option;
 import org.plumelib.options.Options;
 
 /**
- * A {@code ClassFileReader } provides methods for reading in annotations from a class file into an
+ * A {@code ClassFileReader} provides methods for reading in annotations from a class file into an
  * {@link AScene}.
  */
 public final class ClassFileReader {
@@ -57,16 +57,14 @@ public final class ClassFileReader {
           "Options that are always available:");
 
   /**
-   * From the command line, read annotations from a class file and write them to an index file. Also
-   * see the Anncat tool, which is more versatile (and which calls this as a subroutine).
+   * From the command line, reads annotations from a class file and writes them to an index file.
+   * Also see the Anncat tool, which is more versatile (and which calls this as a subroutine).
    *
    * <p>For usage information, supply the {@code -h} or {@code --help} option.
    *
    * <p>For programmatic access to this tool, use the read() methods instead.
    *
-   * <p>
-   *
-   * @param args options and classes to analyze;
+   * @param args options and classes to analyze
    * @throws IOException if a class file cannot be found
    */
   public static void main(String[] args) throws IOException {
@@ -141,7 +139,10 @@ public final class ClassFileReader {
     }
   }
 
-  /** If s is not a valid representation of a class, print a warning message and return false. */
+  /**
+   * If {@code arg} is not a valid representation of a class, prints a warning message and returns
+   * false.
+   */
   public static boolean checkClass(String arg) {
     // check for invalid class file paths with '.'
     if (!arg.contains(".class") && arg.contains("/")) {
@@ -186,7 +187,7 @@ public final class ClassFileReader {
    *
    * @param scene the scene into which the annotations should be inserted
    * @param input an input stream containing the class that the annotations should be read from
-   * @throws IOException if there is a problem reading from {@code in}
+   * @throws IOException if there is a problem reading from {@code input}
    */
   public static void read(AScene scene, InputStream input) throws IOException {
     read(scene, new ClassReader(input));

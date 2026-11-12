@@ -59,11 +59,11 @@ import org.plumelib.util.UniqueId;
  * <p>When adding a new field to track values for a code construct (similar to {@code
  * localVariableValues} and {@code thisValue}), it is important to review all constructors and
  * methods in this class for locations where the new field must be handled (such as the copy
- * constructor and {@code clearValue}), as well as all constructors/methods in subclasses of {code
+ * constructor and {@code clearValue}), as well as all constructors/methods in subclasses of {@code
  * CFAbstractStore}. Note that this includes not only overridden methods in the subclasses, but new
  * methods in the subclasses as well. Also check if
- * BaseTypeVisitor#getJavaExpressionContextFromNode(Node) needs to be updated. Failing to do so may
- * result in silent failures that are time consuming to debug.
+ * BaseTypeVisitor#getJavaExpressionContextFromNode(Node) needs to be updated. Failing to do so
+ * might result in silent failures that are time-consuming to debug.
  */
 // TODO: Split this class into two parts: one that is reusable generally and
 // one that is specific to the Checker Framework.
@@ -114,8 +114,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected final Map<ClassName, V> classValues;
 
   /**
-   * Should the analysis use sequential Java semantics (i.e., assume that only one thread is running
-   * at all times)?
+   * True if the analysis should use sequential Java semantics (i.e., assume that only one thread is
+   * running at all times).
    */
   protected final boolean sequentialSemantics;
 
@@ -144,7 +144,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Creates a new CFAbstractStore.
    *
    * @param analysis the analysis class this store belongs to
-   * @param sequentialSemantics should the analysis use sequential Java semantics?
+   * @param sequentialSemantics true if the analysis should use sequential Java semantics
    */
   protected CFAbstractStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
     this.analysis = analysis;
@@ -182,7 +182,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Set the abstract value of a method parameter (only adds the information to the store, does not
+   * Sets the abstract value of a method parameter (only adds the information to the store, does not
    * remove any other knowledge). Any previous information is erased; this method should only be
    * used to initialize the abstract value.
    */
@@ -193,7 +193,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Set the value of the current object. Any previous information is erased; this method should
+   * Sets the value of the current object. Any previous information is erased; this method should
    * only be used to initialize the value.
    */
   public void initializeThisValue(AnnotationMirror a, TypeMirror underlyingType) {
@@ -207,7 +207,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /* --------------------------------------------------------- */
 
   /**
-   * Remove any information that might not be valid any more after a method call, and add
+   * Removes any information that might not be valid any more after a method call, and adds
    * information guaranteed by the method.
    *
    * <ol>
@@ -329,7 +329,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * @param notSideEffectedExpression an expression that is never considered to be side-effected, or
    *     null
    * @param sideEffectsOnlyExpressions if non-null, only these expressions (and expressions whose
-   *     value they may change) are considered to be side-effected
+   *     value they might change) are considered to be side-effected
    * @return true if the abstract value of the expression might have changed
    */
   private boolean isSideEffected(
@@ -361,14 +361,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * <p>It is also the case when {@code expr} contains a method call through which {@code
    * seOnlyExpr} is reached; see {@link #callMayChangeValue}.
    *
-   * <p>This method is unsound for two array accesses that may denote the same element without
+   * <p>This method is unsound for two array accesses that might denote the same element without
    * containing one another. It returns false for {@code a[i]} and {@code a[0]}, so the refinement
    * of {@code a[i]} survives a call to a {@code @SideEffectsOnly("a[0]")} method even when {@code
-   * i} is 0. TODO: return true when both expressions are array accesses on arrays that may be the
+   * i} is 0. TODO: return true when both expressions are array accesses on arrays that might be the
    * same, unless the two index expressions are known to differ.
    *
    * @param expr an expression whose value is stored in this store
-   * @param seOnlyExpr an expression that may be modified
+   * @param seOnlyExpr an expression that might be modified
    * @return true if modifying {@code seOnlyExpr} might change the value of {@code expr}
    */
   private static boolean mayChangeValue(JavaExpression expr, JavaExpression seOnlyExpr) {
@@ -403,7 +403,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * compared against {@code seOnlyExpr} but is descended into here.
    *
    * @param expr an expression whose value is stored in this store
-   * @param seOnlyExpr an expression that may be modified
+   * @param seOnlyExpr an expression that might be modified
    * @return true if modifying {@code seOnlyExpr} might change the value of expr, by changing the
    *     value of a call within {@code expr}
    */
@@ -429,11 +429,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Returns true if {@code seOnlyExpr} may be reached through {@code input}.
+   * Returns true if {@code seOnlyExpr} might be reached through {@code input}.
    *
    * @param input the receiver or an argument of a stored method call
-   * @param seOnlyExpr an expression that may be modified
-   * @return true if {@code seOnlyExpr} may be reached through {@code input}
+   * @param seOnlyExpr an expression that might be modified
+   * @return true if {@code seOnlyExpr} might be reached through {@code input}
    */
   private static boolean mayReach(JavaExpression input, JavaExpression seOnlyExpr) {
     // The recursive call handles a nested call such as `x.getA().getB()`, whose receiver is
@@ -518,15 +518,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Helper for {@link #updateForMethodCall(MethodInvocationNode, CFAbstractValue)}. Remove any
-   * information about field values that might not be valid any more after a method call, and add
+   * Helper for {@link #updateForMethodCall(MethodInvocationNode, CFAbstractValue)}. Removes any
+   * information about field values that might not be valid any more after a method call, and adds
    * information guaranteed by the method.
    *
-   * <p>More specifically, remove all information about fields except for unassignable fields and
+   * <p>More specifically, removes all information about fields except for unassignable fields and
    * fields that have a monotonic annotation.
    *
    * <p>A non-null {@code sideEffectsOnlyExpressions} indicates that the invoked method has limited
-   * side effects. In this case, remove information for fields that appear in the list of
+   * side effects. In this case, removes information for fields that appear in the list of
    * side-effected expressions.
    *
    * @param atypeFactory AnnotatedTypeFactory of the associated checker
@@ -559,19 +559,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Add the annotation {@code a} for the expression {@code expr} (correctly deciding where to store
-   * the information depending on the type of the expression {@code expr}).
+   * Adds the annotation {@code a} for the expression {@code expr} (correctly deciding where to
+   * store the information depending on the type of the expression {@code expr}).
    *
    * <p>This method does not take care of removing other information that might be influenced by
    * changes to certain parts of the state.
    *
    * <p>If there is already a value {@code v} present for {@code expr}, then the stronger of the new
-   * and old value are taken (according to the lattice). Note that this happens per hierarchy, and
-   * if the store already contains information about a hierarchy other than {@code a}s hierarchy,
+   * and old value is taken (according to the lattice). Note that this happens per hierarchy, and
+   * if the store already contains information about a hierarchy other than {@code a}'s hierarchy,
    * that information is preserved.
    *
-   * <p>If {@code expr} is nondeterministic, this method does not insert {@code value} into the
-   * store.
+   * <p>If {@code expr} is nondeterministic, this method does not insert {@code a} into the store.
    *
    * @param expr an expression
    * @param a an annotation for the expression
@@ -596,8 +595,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Add the annotation {@code newAnno} for the expression {@code expr} (correctly deciding where to
-   * store the information depending on the type of the expression {@code expr}).
+   * Adds the annotation {@code newAnno} for the expression {@code expr} (correctly deciding where
+   * to store the information depending on the type of the expression {@code expr}).
    *
    * <p>This method does not take care of removing other information that might be influenced by
    * changes to certain parts of the state.
@@ -608,7 +607,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * <p>Note that this happens per hierarchy, and if the store already contains information about a
    * hierarchy other than {@code newAnno}'s hierarchy, that information is preserved.
    *
-   * <p>If {@code expr} is nondeterministic, this method does not insert {@code value} into the
+   * <p>If {@code expr} is nondeterministic, this method does not insert {@code newAnno} into the
    * store.
    *
    * @param expr an expression
@@ -639,7 +638,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * @param expr an expression
    * @param newAnno the expression's annotation
-   * @param permitNondeterministic true if nondeterministic expressions may be inserted into the
+   * @param permitNondeterministic true if nondeterministic expressions can be inserted into the
    *     store
    */
   protected void insertOrRefine(
@@ -687,14 +686,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Add the abstract value {@code value} for the expression {@code expr} (correctly deciding where
+   * Adds the abstract value {@code value} for the expression {@code expr} (correctly deciding where
    * to store the information depending on the type of the expression {@code expr}).
    *
    * <p>This method does not take care of removing other information that might be influenced by
    * changes to certain parts of the state.
    *
    * <p>If there is already a value {@code v} present for {@code expr}, then the stronger of the new
-   * and old value are taken (according to the lattice). Note that this happens per hierarchy, and
+   * and old value is taken (according to the lattice). Note that this happens per hierarchy, and
    * if the store already contains information about a hierarchy for which {@code value} does not
    * contain information, then that information is preserved.
    *
@@ -718,7 +717,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * <p>However, contracts can mention a nondeterministic JavaExpression. For example, a contract
    * might have a postcondition that {@code nondet()} is odd. This means that the next call to
-   * {@code nondet()} will return odd. Such a postcondition may be evicted from the store by calling
+   * {@code nondet()} will return odd. Such a postcondition can be evicted from the store by calling
    * a side-effecting method.
    *
    * @param expr the expression to insert in the store
@@ -730,10 +729,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   /**
    * Returns true if the given (expression, value) pair can be inserted in the store, namely if the
-   * value is non-null and the expression does not contain unknown or a nondeterministic expression.
+   * value is non-null and the expression does not contain an unknown or a nondeterministic
+   * expression.
    *
    * <p>This method returning true does not guarantee that the value will be inserted; the
-   * implementation of {@link #insertValue( JavaExpression, CFAbstractValue, boolean)} might still
+   * implementation of {@link #insertValue(JavaExpression, CFAbstractValue, boolean)} might still
    * not insert it.
    *
    * @param expr the expression to insert in the store
@@ -870,9 +870,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Returns true if fieldAcc is an update of a monotonic qualifier to its target qualifier.
-   * (e.g. @MonotonicNonNull to @NonNull). Always returns false if {@code sequentialSemantics} is
-   * true.
+   * Returns true if fieldAcc is an update of a monotonic qualifier to its target qualifier (e.g.,
+   * {@code @MonotonicNonNull} to {@code @NonNull}). Always returns false if {@code
+   * sequentialSemantics} is true.
    *
    * @return true if fieldAcc is an update of a monotonic qualifier to its target qualifier
    *     (e.g. @MonotonicNonNull to @NonNull)
@@ -947,7 +947,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Remove any knowledge about the expression {@code expr} (correctly deciding where to remove the
+   * Removes any knowledge about the expression {@code expr} (correctly deciding where to remove the
    * information depending on the type of the expression {@code expr}).
    */
   public void clearValue(JavaExpression expr) {
@@ -1087,11 +1087,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Returns the current abstract value of a field access, or {@code null} if no information is
+   * Returns the current abstract value of an array access, or {@code null} if no information is
    * available.
    *
    * @param n the node whose abstract value to return
-   * @return the current abstract value of a field access, or {@code null} if no information is
+   * @return the current abstract value of an array access, or {@code null} if no information is
    *     available
    */
   public @Nullable V getValue(ArrayAccessNode n) {
@@ -1100,7 +1100,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Update the information in the store by considering an assignment with target {@code n}.
+   * Updates the information in the store by considering an assignment with target {@code n}.
    *
    * @param n the left-hand side of an assignment
    * @param val the right-hand value of an assignment
@@ -1119,7 +1119,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Update the information in the store by considering a field assignment with target {@code n},
+   * Updates the information in the store by considering a field assignment with target {@code n},
    * where the right-hand side has the abstract value {@code val}.
    *
    * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
@@ -1139,7 +1139,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Update the information in the store by considering an assignment with target {@code n}, where
+   * Updates the information in the store by considering an assignment with target {@code n}, where
    * the target is an array access.
    *
    * <p>See {@link #removeConflicting(ArrayAccess,CFAbstractValue)}, as it is called first by this
@@ -1157,7 +1157,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Set the abstract value of a local variable in the store. Overwrites any value that might have
+   * Sets the abstract value of a local variable in the store. Overwrites any value that might have
    * been available previously.
    *
    * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
@@ -1171,10 +1171,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Remove any information in this store that might not be true any more after {@code fieldAccess}
+   * Removes any information in this store that might not be true any more after {@code fieldAccess}
    * has been assigned a new value (with the abstract value {@code val}). This includes the
    * following steps (assume that {@code fieldAccess} is of the form <em>a.f</em> for some
-   * <em>a</em>.
+   * <em>a</em>).
    *
    * <ol>
    *   <li value="1">Update the abstract value of other field accesses <em>b.g</em> where the field
@@ -1187,7 +1187,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *                 fieldAccess} might alias any expression in the receiver <em>b</em>.
    *   <li value="3">Remove any information about method calls, including about iterated collection
    *                 elements whose reference is a method call.
-   *   <li value="4">Remove any abstract values an array access <em>b[i]</em> where {@code
+   *   <li value="4">Remove any abstract values for an array access <em>b[i]</em> where {@code
    *                 fieldAccess} might alias any expression in the receiver <em>a</em> or index
    *                 <em>i</em>.
    * </ol>
@@ -1237,7 +1237,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Remove any information about iterated collection elements whose {@link
+   * Removes any information about iterated collection elements whose {@link
    * IteratedCollectionElement#reference reference} is a method call, such as {@code list.get(i)}.
    * This is called wherever all information about method calls is removed.
    */
@@ -1246,10 +1246,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Remove any information in the store that might not be true any more after {@code arrayAccess}
+   * Removes any information in the store that might not be true any more after {@code arrayAccess}
    * has been assigned a new value (with the abstract value {@code val}). This includes the
    * following steps (assume that {@code arrayAccess} is of the form <em>a[i]</em> for some
-   * <em>a</em>.
+   * <em>a</em>).
    *
    * <ol>
    *   <li value="1">Remove any abstract value for other array access <em>b[j]</em> where <em>a</em>
@@ -1299,8 +1299,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Remove any information in this store that might not be true any more after {@code localVar} has
-   * been assigned a new value. This includes the following steps:
+   * Removes any information in this store that might not be true any more after {@code localVar}
+   * has been assigned a new value. This includes the following steps:
    *
    * <ol>
    *   <li value="1">Remove any abstract values for field accesses <em>b.g</em> where {@code
@@ -1354,8 +1354,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Can the objects {@code a} and {@code b} be aliases? Returns a conservative answer (i.e.,
-   * returns {@code true} if not enough information is available to determine aliasing).
+   * Returns true if the objects {@code a} and {@code b} can be aliases. Returns a conservative
+   * answer (i.e., returns {@code true} if not enough information is available to determine
+   * aliasing).
    */
   @Override
   public boolean canAlias(JavaExpression a, JavaExpression b) {

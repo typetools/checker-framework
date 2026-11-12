@@ -44,8 +44,8 @@ public class TypecheckExecutor {
   }
 
   /**
-   * Using the settings from the input configuration, compile all source files in the configuration,
-   * and return the result in a CompilationResult.
+   * Using the settings from the input configuration, compiles all source files in the configuration,
+   * and returns the result in a CompilationResult.
    */
   public CompilationResult compile(TestConfiguration configuration) {
     String dOption = configuration.getOptions().get("-d");

@@ -39,7 +39,7 @@ public class CFCFGBuilder extends CFGBuilder {
   /** This class should never be instantiated. Protected to still allow subclasses. */
   protected CFCFGBuilder() {}
 
-  /** Build the control flow graph of some code. */
+  /** Builds the control flow graph of some code. */
   public static ControlFlowGraph build(
       CompilationUnitTree root,
       UnderlyingAST underlyingAST,
@@ -80,7 +80,7 @@ public class CFCFGBuilder extends CFGBuilder {
   }
 
   /**
-   * Given a SourceChecker and an AssertTree, returns whether the AssertTree uses
+   * Given a SourceChecker and an AssertTree, returns true if the AssertTree uses
    * an @AssumeAssertion string that is relevant to the SourceChecker.
    *
    * @param checker the checker

@@ -31,7 +31,7 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
    * Represents an action to perform on every type.
    *
    * @param <R> the type of the result of the action
-   * @param <P> the type of the parameter of action
+   * @param <P> the type of the parameter of the action
    */
   @FunctionalInterface
   public interface DefaultAction<R, P> {
@@ -61,7 +61,7 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
   }
 
   /**
-   * Creates a scanner that performs {@code defaultAction} on every type and use {@code reduce} to
+   * Creates a scanner that performs {@code defaultAction} on every type and uses {@code reduce} to
    * combine the results.
    *
    * <p>Use this constructor if the default action returns a result.
@@ -77,16 +77,16 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
   }
 
   /**
-   * Creates a scanner without specifying the default action. Subclasses may only use this
-   * constructor if they also override {@link #defaultAction(AnnotatedTypeMirror, Object)}.
+   * Creates a scanner without specifying the default action. Subclasses can use this
+   * constructor only if they also override {@link #defaultAction(AnnotatedTypeMirror, Object)}.
    */
   protected SimpleAnnotatedTypeScanner() {
     this(null, null, null);
   }
 
   /**
-   * Creates a scanner without specifying the default action. Subclasses may only use this
-   * constructor if they also override {@link #defaultAction(AnnotatedTypeMirror, Object)}.
+   * Creates a scanner without specifying the default action. Subclasses can use this
+   * constructor only if they also override {@link #defaultAction(AnnotatedTypeMirror, Object)}.
    *
    * @param reduce function used to combine results
    * @param defaultResult result to use by default

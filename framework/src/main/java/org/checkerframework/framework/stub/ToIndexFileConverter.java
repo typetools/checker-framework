@@ -87,7 +87,7 @@ import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * Convert a JAIF file plus a stub file into index files (JAIFs). Note that the resulting index
+ * Converts a JAIF file plus a stub file into index files (JAIFs). Note that the resulting index
  * files will not include annotation definitions, for which stubfiles do not generally provide
  * complete information.
  *
@@ -140,7 +140,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /** Imports-on-demand that appear in the stub file, such as {@code java.util.*}. */
   private final List<String> onDemandImports;
 
-  /** A scene read from the input JAIF file, and will be written to the output JAIF file. */
+  /**
+   * A scene that is read from the input JAIF file and that will be written to the output JAIF file.
+   */
   private final AScene scene;
 
   /**
@@ -159,7 +161,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /**
    * Creates a new ToIndexFileConverter.
    *
-   * @param pkgDecl the AST node for package declaration
+   * @param pkgDecl the AST node for the package declaration
    * @param importDecls the AST nodes for import declarations
    * @param scene scene for visitor methods to fill in
    */
@@ -193,7 +195,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Parse stub files and write out equivalent JAIFs. Note that the results do not include
+   * Parses stub files and writes out equivalent JAIFs. Note that the results do not include
    * annotation definitions, for which stubfiles do not generally provide complete information.
    *
    * @param args name of JAIF with annotation definition, followed by names of stub files to be
@@ -231,8 +233,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Augment given scene with information from stubfile, reading stubs from input stream and writing
-   * JAIF to output stream.
+   * Augments the given scene with information from a stub file, reading stubs from an input stream
+   * and writing a JAIF to an output stream.
    *
    * @param scene the initial scene
    * @param in stubfile contents
@@ -288,8 +290,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Builds simplified annotation from its declaration. Only the name is included, because stubfiles
-   * do not generally have access to the full definitions of annotations.
+   * Builds a simplified annotation from its declaration. Only the name is included, because
+   * stubfiles do not generally have access to the full definitions of annotations.
    */
   private static @Nullable Annotation extractAnnotation(AnnotationExpr expr) {
     String exprName = expr.toString().substring(1); // leave off leading '@'

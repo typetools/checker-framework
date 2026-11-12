@@ -2,7 +2,7 @@ package org.checkerframework.framework.test.diagnostics;
 
 import java.util.List;
 
-/** Represents a list of TestDiagnostics, which was read from a one line of a file. */
+/** Represents a list of TestDiagnostics, which were read from one line of a file. */
 public class TestDiagnosticLine {
   private final String filename;
   private final long lineNumber;

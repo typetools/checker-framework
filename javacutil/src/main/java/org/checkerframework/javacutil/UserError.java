@@ -14,7 +14,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class UserError extends RuntimeException {
 
   /**
-   * Constructs a new CheckerError with the specified detail message.
+   * Constructs a new UserError with the specified detail message.
    *
    * @param message the detail message
    */
@@ -26,7 +26,7 @@ public class UserError extends RuntimeException {
   }
 
   /**
-   * Constructs a new CheckerError with a detail message composed from the given arguments.
+   * Constructs a new UserError with a detail message composed from the given arguments.
    *
    * <p>Beware: if the only argument is a {@code Throwable}, then Java instead selects {@link
    * #UserError(String, Throwable)}, which uses {@code fmt} literally rather than as a format
@@ -43,7 +43,7 @@ public class UserError extends RuntimeException {
   }
 
   /**
-   * Constructs a new CheckerError with the specified detail message and cause.
+   * Constructs a new UserError with the specified detail message and cause.
    *
    * @param message the detail message
    * @param cause the cause
@@ -59,7 +59,7 @@ public class UserError extends RuntimeException {
   }
 
   /**
-   * Constructs a new CheckerError with the specified cause and with a detail message composed from
+   * Constructs a new UserError with the specified cause and with a detail message composed from
    * the given arguments.
    *
    * @param cause the cause

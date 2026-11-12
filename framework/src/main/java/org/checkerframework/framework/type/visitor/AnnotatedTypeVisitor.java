@@ -19,11 +19,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * unknown at compile time. When a visitor is passed to a type's accept method, the visitXYZ method
  * most applicable to that type is invoked.
  *
- * <p>Classes implementing this interface may or may not throw a NullPointerException if the
+ * <p>Classes implementing this interface might or might not throw a NullPointerException if the
  * additional parameter p is {@code null}; see documentation of the implementing class for details.
  *
  * <p>This visitor visits every type that is written in the source code. It is not sufficient
- * appropriate if you want to ensure that no expression of a given type ever exists.
+ * if you want to ensure that no expression of a given type ever exists.
  *
  * @param <R> the return type of this visitor's methods. Use Void for visitors that do not need to
  *     return results.
@@ -77,7 +77,7 @@ public interface AnnotatedTypeVisitor<R, P> {
   public R visitIntersection(AnnotatedIntersectionType type, P p);
 
   /**
-   * Visits an union type.
+   * Visits a union type.
    *
    * @param type the type to visit
    * @param p a visitor-specified parameter

@@ -65,7 +65,7 @@ public class FormatterTreeUtil {
      */
   }
 
-  /** Describes the ways a format method may be invoked. */
+  /** Describes the ways a format method can be invoked. */
   public enum InvocationType {
     /**
      * The parameters are passed as varargs. For example:
@@ -81,7 +81,7 @@ public class FormatterTreeUtil {
     VARARG,
 
     /**
-     * The parameters are passed as array. For example:
+     * The parameters are passed as an array. For example:
      *
      * <blockquote>
      *
@@ -269,7 +269,7 @@ public class FormatterTreeUtil {
     private final AnnotatedTypeFactory atypeFactory;
 
     /**
-     * Create a new FormatCall object.
+     * Creates a new FormatCall object.
      *
      * @param invocationTree the call itself
      * @param formatStringTree the format string argument
@@ -354,7 +354,7 @@ public class FormatterTreeUtil {
     }
 
     /**
-     * Checks if the type of an argument returned from {@link #getArgTypes()} is valid for the
+     * Returns true if the type of an argument returned from {@link #getArgTypes()} is valid for the
      * passed ConversionCategory.
      *
      * @param formatCat a format specifier
@@ -370,7 +370,8 @@ public class FormatterTreeUtil {
     }
 
     /**
-     * Checks if the argument returned from {@link #getArgTypes()} is a {@code null} expression.
+     * Returns true if the argument returned from {@link #getArgTypes()} is a {@code null}
+     * expression.
      *
      * @param type a type
      * @return true if the argument is a {@code null} expression
@@ -422,9 +423,9 @@ public class FormatterTreeUtil {
   }
 
   /**
-   * Takes an exception that describes an invalid formatter string and, returns a syntax trees
-   * element that represents a {@link InvalidFormat} annotation with the exception's error message
-   * as value.
+   * Takes an exception that describes an invalid formatter string, and returns a syntax tree
+   * element that represents an {@link InvalidFormat} annotation with the exception's error message
+   * as its value.
    */
   public AnnotationMirror exceptionToInvalidFormatAnnotation(IllegalFormatException ex) {
     return stringToInvalidFormatAnnotation(ex.getMessage());
@@ -453,8 +454,8 @@ public class FormatterTreeUtil {
   }
 
   /**
-   * Takes a syntax tree element that represents a {@link InvalidFormat} annotation, and returns its
-   * value.
+   * Takes a syntax tree element that represents an {@link InvalidFormat} annotation, and returns
+   * its value.
    *
    * @param anno an InvalidFormat annotation
    * @return its value() element/field

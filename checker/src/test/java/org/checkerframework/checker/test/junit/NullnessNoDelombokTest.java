@@ -38,8 +38,8 @@ public class NullnessNoDelombokTest extends CheckerFrameworkPerDirectoryTest {
   }
 
   /**
-   * copy-pasted code from {@link CheckerFrameworkPerDirectoryTest#run()}, except that we change the
-   * annotation processors to {@link #ANNOTATION_PROCS}
+   * Copy-pasted code from {@link CheckerFrameworkPerDirectoryTest#run()}, except that we change the
+   * annotation processors to {@link #ANNOTATION_PROCS}.
    */
   @Override
   public void run() {

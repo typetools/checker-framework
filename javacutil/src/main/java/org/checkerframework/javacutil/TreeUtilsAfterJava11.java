@@ -112,7 +112,7 @@ public final class TreeUtilsAfterJava11 {
     /**
      * Returns the list of labels from a case expression. For {@code default}, this is empty. For
      * {@code case null, default}, the list contains {@code null}. Otherwise, in JDK 11 and earlier,
-     * this is a list of a single expression tree. In JDK 12+, the list may have multiple expression
+     * this is a list of a single expression tree. In JDK 12+, the list might have multiple expression
      * trees. In JDK 21+, the list might contain a single pattern tree.
      *
      * @param caseTree the case expression to get the labels from
@@ -338,7 +338,7 @@ public final class TreeUtilsAfterJava11 {
      * returns false.
      *
      * <p>Use {@link TreeUtils#isVariableTreeDeclaredUsingVar(VariableTree)} for a method that works
-     * on all versions of java.
+     * on all versions of Java.
      *
      * @param variableTree a variable tree
      * @return true if {@code variableTree} was declared using {@code var} and using Java 17+

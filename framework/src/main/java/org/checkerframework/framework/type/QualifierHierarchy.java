@@ -58,7 +58,8 @@ public abstract class QualifierHierarchy {
   // **********************************************************************
 
   /**
-   * Returns the width of this hierarchy, i.e. the expected number of annotations on any valid type.
+   * Returns the width of this hierarchy, i.e., the expected number of annotations on any valid
+   * type.
    *
    * @return the width of this QualifierHierarchy
    */
@@ -86,7 +87,7 @@ public abstract class QualifierHierarchy {
 
   /**
    * Returns the top qualifier for the given qualifier, that is, the qualifier that is a supertype
-   * of {@code qualifier} but no further supertypes exist.
+   * of {@code qualifier} but for which no further supertypes exist.
    *
    * @param qualifier any qualifier from one of the qualifier hierarchies represented by this
    * @return the top qualifier of {@code qualifier}'s hierarchy
@@ -103,7 +104,7 @@ public abstract class QualifierHierarchy {
 
   /**
    * Returns the bottom for the given qualifier, that is, the qualifier that is a subtype of {@code
-   * qualifier} but no further subtypes exist.
+   * qualifier} but for which no further subtypes exist.
    *
    * @param qualifier any qualifier from one of the qualifier hierarchies represented by this
    * @return the bottom qualifier of {@code qualifier}'s hierarchy
@@ -225,7 +226,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Returns true if all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+   * Returns true if all qualifiers in {@code subQualifiers} are a subqualifier of or equal to the
    * qualifier in the same hierarchy in {@code superQualifiers}. The types {@code subType} and
    * {@code superType} are not necessarily in a Java subtyping relationship with one another and are
    * only used by this method for special cases when qualifier subtyping depends on the Java
@@ -239,7 +240,7 @@ public abstract class QualifierHierarchy {
    * @param subType the type associated with {@code subQualifiers}
    * @param superQualifiers a set of qualifiers; exactly one per hierarchy
    * @param superType the type associated with {@code superQualifiers}
-   * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+   * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier of or equal to the
    *     qualifier in the same hierarchy in {@code superQualifiers}
    */
   public final boolean isSubtypeShallow(
@@ -263,7 +264,7 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Returns true if all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+   * Returns true if all qualifiers in {@code subQualifiers} are a subqualifier of or equal to the
    * qualifier in the same hierarchy in {@code superQualifiers}. The types {@code subType} and
    * {@code superType} are not necessarily in a Java subtyping relationship with one another and are
    * only used by this method for special cases when qualifier subtyping depends on the Java
@@ -275,7 +276,7 @@ public abstract class QualifierHierarchy {
    *
    * @param subQualifiers a set of qualifiers; exactly one per hierarchy
    * @param superQualifiers a set of qualifiers; exactly one per hierarchy
-   * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+   * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier of or equal to the
    *     qualifier in the same hierarchy in {@code superQualifiers}
    */
   public boolean isSubtypeQualifiersOnly(
@@ -308,7 +309,7 @@ public abstract class QualifierHierarchy {
    * @param subQualifiers a set of qualifiers; exactly one per hierarchy
    * @param superQualifiers a set of qualifiers; exactly one per hierarchy
    * @param typeMirror the type associated with both sets of qualifiers
-   * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier or equal to the
+   * @return true iff all qualifiers in {@code subQualifiers} are a subqualifier of or equal to the
    *     qualifier in the same hierarchy in {@code superQualifiers}
    */
   public final boolean isSubtypeShallow(
@@ -329,8 +330,9 @@ public abstract class QualifierHierarchy {
    *   <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rArr; Nullable
    * </ul>
    *
-   * @param qualifier1 the first qualifier; may not be in the same hierarchy as {@code qualifier2}
-   * @param qualifier2 the second qualifier; may not be in the same hierarchy as {@code qualifier1}
+   * @param qualifier1 the first qualifier; might not be in the same hierarchy as {@code qualifier2}
+   * @param qualifier2 the second qualifier; might not be in the same hierarchy as {@code
+   *     qualifier1}
    * @return the least upper bound of the qualifiers, or {@code null} if the qualifiers are from
    *     different hierarchies
    */
@@ -372,8 +374,9 @@ public abstract class QualifierHierarchy {
    *   <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rArr; Nullable
    * </ul>
    *
-   * @param qualifier1 the first qualifier; may not be in the same hierarchy as {@code qualifier2}
-   * @param qualifier2 the second qualifier; may not be in the same hierarchy as {@code qualifier1}
+   * @param qualifier1 the first qualifier; might not be in the same hierarchy as {@code qualifier2}
+   * @param qualifier2 the second qualifier; might not be in the same hierarchy as {@code
+   *     qualifier1}
    * @return the least upper bound of the qualifiers, or {@code null} if the qualifiers are from
    *     different hierarchies
    */
@@ -425,9 +428,10 @@ public abstract class QualifierHierarchy {
    *   <li>leastUpperBound('Nullable', 'NonNull') &rArr; Nullable
    * </ul>
    *
-   * @param qualifier1 the first qualifier; may not be in the same hierarchy as {@code qualifier2}
+   * @param qualifier1 the first qualifier; might not be in the same hierarchy as {@code qualifier2}
    * @param tm1 the type on which qualifier1 appears
-   * @param qualifier2 the second qualifier; may not be in the same hierarchy as {@code qualifier1}
+   * @param qualifier2 the second qualifier; might not be in the same hierarchy as {@code
+   *     qualifier1}
    * @param tm2 the type on which qualifier2 appears
    * @return the least upper bound of the qualifiers, or {@code null} if the qualifiers are from
    *     different hierarchies
@@ -485,11 +489,11 @@ public abstract class QualifierHierarchy {
 
   /**
    * Returns the number of iterations dataflow should perform before {@link
-   * #widenedUpperBound(AnnotationMirror, AnnotationMirror)} is called or -1 if it should never be
+   * #widenedUpperBound(AnnotationMirror, AnnotationMirror)} is called, or -1 if it should never be
    * called.
    *
    * @return the number of iterations dataflow should perform before {@link
-   *     #widenedUpperBound(AnnotationMirror, AnnotationMirror)} is called or -1 if it should never
+   *     #widenedUpperBound(AnnotationMirror, AnnotationMirror)} is called, or -1 if it should never
    *     be called.
    */
   public int numberOfIterationsBeforeWidening() {
@@ -499,12 +503,12 @@ public abstract class QualifierHierarchy {
   /**
    * If the qualifier hierarchy has an infinite ascending chain, then the dataflow analysis might
    * never reach a fixed point. To prevent this, implement this method such that it returns an upper
-   * bound for the two qualifiers that is a strict super type of the least upper bound. If this
+   * bound for the two qualifiers that is a strict supertype of the least upper bound. If this
    * method is implemented, also override {@link #numberOfIterationsBeforeWidening()} to return a
    * positive number.
    *
-   * <p>{@code newQualifier} is newest qualifier dataflow computed for some expression and {@code
-   * previousQualifier} is the qualifier dataflow computed on the last iteration.
+   * <p>{@code newQualifier} is the newest qualifier dataflow computed for some expression, and
+   * {@code previousQualifier} is the qualifier dataflow computed on the last iteration.
    *
    * <p>If the qualifier hierarchy has no infinite ascending chain, returns the least upper bound of
    * the two annotations.
@@ -617,9 +621,9 @@ public abstract class QualifierHierarchy {
    * qualifier for the same hierarchy in each set.
    *
    * @param qualifiers1 a set of qualifiers; exactly one per hierarchy
-   * @param tm1 the type that is annotated by qualifier1
+   * @param tm1 the type that is annotated by qualifiers1
    * @param qualifiers2 a set of qualifiers; exactly one per hierarchy
-   * @param tm2 the type that is annotated by qualifier2
+   * @param tm2 the type that is annotated by qualifiers2
    * @return the greatest lower bound of the two sets of qualifiers
    */
   public final Set<? extends AnnotationMirror> greatestLowerBoundsShallow(
@@ -692,7 +696,7 @@ public abstract class QualifierHierarchy {
    *
    * <p>The default implementation calls {@link #getTopAnnotation(AnnotationMirror)} and then calls
    * {@link #findAnnotationInHierarchy(Collection, AnnotationMirror)}. So, if {@code qualifier} is a
-   * top qualifier, then call {@link #findAnnotationInHierarchy(Collection, AnnotationMirror)}
+   * top qualifier, then calling {@link #findAnnotationInHierarchy(Collection, AnnotationMirror)}
    * directly is faster.
    *
    * @param qualifiers the set of annotations to search
@@ -711,7 +715,7 @@ public abstract class QualifierHierarchy {
    *
    * @param qualifiers the set of annotations to search
    * @param top the top annotation in the hierarchy to which the returned annotation belongs
-   * @return annotation in the same hierarchy as annotationMirror, or null if one is not found
+   * @return annotation in the hierarchy whose top is {@code top}, or null if one is not found
    */
   public @Nullable AnnotationMirror findAnnotationInHierarchy(
       Collection<? extends AnnotationMirror> qualifiers, AnnotationMirror top) {
@@ -724,11 +728,11 @@ public abstract class QualifierHierarchy {
   }
 
   /**
-   * Update a mapping from {@code key} to a set of AnnotationMirrors. If {@code key} is not already
-   * in the map, then put it in the map with a value of a new set containing {@code qualifier}. If
-   * the map contains {@code key}, then add {@code qualifier} to the set to which {@code key} maps.
-   * If that set contains a qualifier in the same hierarchy as {@code qualifier}, then don't add it
-   * and return false.
+   * Updates a mapping from {@code key} to a set of AnnotationMirrors. If {@code key} is not
+   * already in the map, then puts it in the map with a value of a new set containing {@code
+   * qualifier}. If the map contains {@code key}, then adds {@code qualifier} to the set to which
+   * {@code key} maps. If that set contains a qualifier in the same hierarchy as {@code qualifier},
+   * then doesn't add it and returns false.
    *
    * @param map the mapping to modify
    * @param key the key to update or add

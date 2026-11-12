@@ -50,7 +50,7 @@ public class StubGenerator {
   /** The output stream. */
   private final PrintStream out;
 
-  /** the current indentation for the line being processed. */
+  /** The current indentation for the line being processed. */
   private String currentIndentation = "";
 
   /**
@@ -92,7 +92,7 @@ public class StubGenerator {
   }
 
   /**
-   * Generate the stub file for all the classes within the provided package.
+   * Generates the stub file for all the classes within the provided package.
    *
    * @param elt an element whose package to use
    */
@@ -111,7 +111,7 @@ public class StubGenerator {
     printFieldDecl(field);
   }
 
-  /** Generate the stub file for all the classes within the provided package. */
+  /** Generates the stub file for all the classes within the provided package. */
   public void stubFromPackage(PackageElement packageElement) {
     currentPackage = packageElement.getQualifiedName().toString();
 
@@ -129,7 +129,7 @@ public class StubGenerator {
   }
 
   /**
-   * Generate the stub file for all the classes within the package that contains {@code elt}.
+   * Generates the stub file for all the classes within the package that contains {@code elt}.
    *
    * @param elt a method or constructor; generate stub files for its package
    */
@@ -149,7 +149,7 @@ public class StubGenerator {
   }
 
   /**
-   * Generate the stub file for provided class. The generated file includes the package name.
+   * Generates the stub file for the provided class. The generated file includes the package name.
    *
    * @param typeElement the class to generate a stub file for
    */
@@ -197,7 +197,7 @@ public class StubGenerator {
     }
   }
 
-  /** helper method that outputs the index for the provided class. */
+  /** Helper method that outputs the index for the provided class. */
   private void printClass(TypeElement typeElement) {
     printClass(typeElement, null);
   }
@@ -403,7 +403,7 @@ public class StubGenerator {
   /**
    * Helper method that outputs the method declaration for the given method.
    *
-   * <p>IT indicates whether the field is {@code protected}.
+   * <p>It indicates whether the method is {@code protected}.
    */
   private void printMethodDecl(ExecutableElement method) {
     indent();
@@ -457,7 +457,7 @@ public class StubGenerator {
     out.println(';');
   }
 
-  /** Indent the current line. */
+  /** Indents the current line. */
   private void indent() {
     out.print(currentIndentation);
   }
@@ -473,7 +473,7 @@ public class StubGenerator {
     return StringsP.join(", ", lst);
   }
 
-  /** Returns true if the element is public or protected element. */
+  /** Returns true if the element is public or protected. */
   private boolean isPublicOrProtected(Element element) {
     return element.getModifiers().contains(Modifier.PUBLIC)
         || element.getModifiers().contains(Modifier.PROTECTED);

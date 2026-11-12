@@ -20,7 +20,7 @@ public class UnitsAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {
   protected final Elements elements;
 
   /**
-   * Create a UnitsAnnotatedTypeFormatter.
+   * Creates a UnitsAnnotatedTypeFormatter.
    *
    * @param checker the checker
    */
@@ -56,7 +56,7 @@ public class UnitsAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {
     }
   }
 
-  /** Format the error printout of any units qualifier that uses Prefix.one. */
+  /** Formats the error printout of any units qualifier that uses Prefix.one. */
   protected static class UnitsAnnotationFormatter extends DefaultAnnotationFormatter {
     protected final BaseTypeChecker checker;
     protected final Elements elements;

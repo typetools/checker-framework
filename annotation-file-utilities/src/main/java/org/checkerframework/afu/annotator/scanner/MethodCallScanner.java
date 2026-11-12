@@ -34,7 +34,7 @@ public final class MethodCallScanner extends CommonScanner {
   private final Tree tree;
 
   /**
-   * Creates an InstanceOfScanner that will scan the source tree for the given node representing the
+   * Creates a MethodCallScanner that will scan the source tree for the given node representing the
    * method invocation to find.
    *
    * @param tree the given method invocation to search for
@@ -62,7 +62,7 @@ public final class MethodCallScanner extends CommonScanner {
   private static Map<String, List<Integer>> methodNameToMethodCallOffsets = new HashMap<>();
 
   /**
-   * Adds a lambda expression bytecode offset to the current list of offsets for methodName. This
+   * Adds a method call bytecode offset to the current list of offsets for methodName. This
    * method must be called with monotonically increasing offsets for any one method.
    *
    * @param methodName the name of the method
@@ -80,7 +80,7 @@ public final class MethodCallScanner extends CommonScanner {
    * context.
    *
    * @param methodName the name of the method
-   * @param offset the offset of the lambda expression
+   * @param offset the offset of the method call
    * @return the index of the given offset, or a negative number if the offset does not exist inside
    *     the context
    */

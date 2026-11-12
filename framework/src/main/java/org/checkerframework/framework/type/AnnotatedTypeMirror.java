@@ -264,8 +264,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   /**
    * Returns the primary annotation on this type that is in the same hierarchy as {@code
    * annotation}. For {@link AnnotatedTypeVariable}s and {@link AnnotatedWildcardType}s, {@code
-   * null} may be returned when the upper bound may have an annotation with that class, so {@link
-   * #getAnnotationInHierarchy(AnnotationMirror)} should be called instead.
+   * null} might be returned even when the upper bound has an annotation in that hierarchy, so
+   * {@link #getAnnotationInHierarchy(AnnotationMirror)} should be called instead.
    *
    * @param annotation an annotation in the qualifier hierarchy to check for
    * @return the annotation in the same hierarchy as {@code annotation}, or null
@@ -315,10 +315,10 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
   /**
    * Returns the primary annotations on this type. For {@link AnnotatedTypeVariable}s and {@link
-   * AnnotatedWildcardType}s, the returned annotations may be empty or missing annotations in
+   * AnnotatedWildcardType}s, the returned annotations might be empty or missing annotations in
    * hierarchies, so {@link #getAnnotations()} should be called instead.
    *
-   * <p>It does not include annotations in deep types (type arguments, array components, etc).
+   * <p>It does not include annotations in deep types (type arguments, array components, etc.).
    *
    * <p>To get the single primary annotation in a particular hierarchy, use {@link
    * #getPrimaryAnnotationInHierarchy}. If there is only one hierarchy, you can use {@link
@@ -331,9 +331,9 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Returns the annotations on this type; mutations affect this object, because the return type is
+   * Returns the annotations on this type; mutations affect this object, because the return value is
    * an alias of the {@code annotations} field. It does not include annotations in deep types (type
-   * arguments, array components, etc).
+   * arguments, array components, etc.).
    *
    * <p>The returned set should not be modified, but for efficiency reasons modification is not
    * prevented. Modifications might break invariants.
@@ -345,9 +345,9 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Returns the single primary annotations on this type. For {@link AnnotatedTypeVariable}s and
-   * {@link AnnotatedWildcardType}s, the returned annotations may be empty or missing annotations in
-   * hierarchies, so {@link #getAnnotation()} should be called instead.
+   * Returns the single primary annotation on this type. For {@link AnnotatedTypeVariable}s and
+   * {@link AnnotatedWildcardType}s, the returned annotation might be missing, so {@link
+   * #getAnnotation()} should be called instead.
    *
    * <p>This method requires that there is only a single hierarchy. Therefore, it is equivalent to
    * {@link #getPrimaryAnnotationInHierarchy}.
@@ -368,7 +368,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Returns the "effective" annotations on this type, i.e. the annotations on the type itself, or
+   * Returns the "effective" annotations on this type, i.e., the annotations on the type itself, or
    * on the upper/extends bound of a type variable/wildcard (recursively, until a class type is
    * reached). If this is fully-annotated, the returned set will contain one annotation per
    * hierarchy.
@@ -386,9 +386,9 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Returns the single "effective" annotation on this type, i.e. the annotations on the type
+   * Returns the single "effective" annotation on this type, i.e., the annotation on the type
    * itself, or on the upper/extends bound of a type variable/wildcard (recursively, until a class
-   * type is reached). If this is fully-annotated, this method will not return {@code null}
+   * type is reached). If this is fully-annotated, this method will not return {@code null}.
    *
    * <p>This method requires that there is only a single hierarchy. Therefore, it is equivalent to
    * {@link #getAnnotationInHierarchy(AnnotationMirror)}.
@@ -409,8 +409,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
   /**
    * Returns the primary annotation on this type whose class is {@code annoClass}. For {@link
-   * AnnotatedTypeVariable}s and {@link AnnotatedWildcardType}s, {@code null} may be returned when
-   * the upper bound may have an annotation with that class, so {@link #getAnnotation(Class)} should
+   * AnnotatedTypeVariable}s and {@link AnnotatedWildcardType}s, {@code null} might be returned even
+   * when the upper bound has an annotation with that class, so {@link #getAnnotation(Class)} should
    * be called instead.
    *
    * @param annoClass annotation class
@@ -426,10 +426,10 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Returns the primary annotations on this type whose annotation class name {@code annoName}. For
-   * {@link AnnotatedTypeVariable}s and {@link AnnotatedWildcardType}s, {@code null} may be returned
-   * when the upper bound may have an annotation with that class, so {@link #getAnnotation(Class)}
-   * should be called instead.
+   * Returns the primary annotation on this type whose annotation class is named {@code annoName}.
+   * For {@link AnnotatedTypeVariable}s and {@link AnnotatedWildcardType}s, {@code null} might be
+   * returned even when the upper bound has an annotation with that class, so {@link
+   * #getAnnotation(Class)} should be called instead.
    *
    * @param annoName annotation class name
    * @return the annotation mirror whose class is named {@code annoName} or null
@@ -483,7 +483,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * then a call with {@code @A("t")} or {@code @A} will return false, whereas a call with
    * {@code @B(3)} will return true.
    *
-   * <p>In contrast to {@link #hasPrimaryAnnotationRelaxed(AnnotationMirror)} this method also
+   * <p>In contrast to {@link #hasPrimaryAnnotationRelaxed(AnnotationMirror)}, this method also
    * compares annotation values.
    *
    * @param a the annotation to check for
@@ -540,7 +540,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * A version of {@link #hasPrimaryAnnotation(AnnotationMirror)} that considers annotations on the
    * upper bound of wildcards and type variables.
    *
-   * @param a an annotation class
+   * @param a an annotation
    * @return true if this has an annotation that is the same as the given annotation
    */
   public boolean hasAnnotation(AnnotationMirror a) {
@@ -553,7 +553,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * with {@code @A("t")} or {@code @A} will return false, whereas a call with {@code @B(3)} will
    * return true.
    *
-   * <p>In contrast to {@link #hasExplicitAnnotationRelaxed(AnnotationMirror)} this method also
+   * <p>In contrast to {@link #hasExplicitAnnotationRelaxed(AnnotationMirror)}, this method also
    * compares annotation values.
    *
    * <p>See the documentation for {@link #getExplicitAnnotations()} for details on which explicit
@@ -587,7 +587,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * A version of {@link #hasPrimaryAnnotationRelaxed(AnnotationMirror)} that considers annotations
    * on the upper bound of wildcards and type variables.
    *
-   * @param a an annotation class
+   * @param a an annotation
    * @return true if this has an annotation that is the same as the given annotation
    */
   public boolean hasAnnotationRelaxed(AnnotationMirror a) {
@@ -632,8 +632,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)} or {@link
    * AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror,TypeMirror)}.) If the canonical
    * version of {@code annotation} is not a supported qualifier, then no annotation is added. If
-   * this type already has annotation in the same hierarchy as {@code annotation}, the behavior of
-   * this method is undefined.
+   * this type already has an annotation in the same hierarchy as {@code annotation}, the behavior
+   * of this method is undefined.
    *
    * @param annotation the annotation to add
    */
@@ -665,8 +665,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * {@link AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)} or {@link
    * AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror,TypeMirror)}.) If the canonical
    * version of an annotation is not a supported qualifier, then that annotation is not added. If
-   * this type already has annotation in the same hierarchy as any of the {@code annotations}, the
-   * behavior of this method is undefined.
+   * this type already has an annotation in the same hierarchy as any of the {@code annotations},
+   * the behavior of this method is undefined.
    *
    * @param annotations the annotations to add
    */
@@ -677,12 +677,12 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Adds only the annotations in {@code annotations} that the type does not already have a primary
-   * annotation in the same hierarchy.
+   * Adds only those annotations in {@code annotations} for which the type does not already have a
+   * primary annotation in the same hierarchy.
    *
-   * <p>The canonical version of the {@code annotations} are added as primary annotations of this
+   * <p>The canonical versions of the {@code annotations} are added as primary annotations of this
    * type and, in the case of {@link AnnotatedTypeVariable}s, {@link AnnotatedWildcardType}s, and
-   * {@link AnnotatedIntersectionType}s, adds them to all bounds. (The canonical version is found
+   * {@link AnnotatedIntersectionType}s, are added to all bounds. (The canonical version is found
    * via {@link AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)} or {@link
    * AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror,TypeMirror)}.) If the canonical
    * version of an annotation is not a supported qualifier, then that annotation is not added.
@@ -696,7 +696,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Add {@code annotation} if the type does not already have a primary annotation in the same
+   * Adds {@code annotation} if the type does not already have a primary annotation in the same
    * hierarchy.
    *
    * <p>The canonical version of the {@code annotation} is added as a primary annotation of this
@@ -704,10 +704,10 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * {@link AnnotatedIntersectionType}s) added to all bounds. (The canonical version is found via
    * {@link AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror)} or {@link
    * AnnotatedTypeFactory#canonicalAnnotation(AnnotationMirror,TypeMirror)}.) If the canonical
-   * version of an {@code annotation} is not a supported qualifier, then that annotation is not
+   * version of {@code annotation} is not a supported qualifier, then that annotation is not
    * added.
    *
-   * @param annotation the annotations to add
+   * @param annotation the annotation to add
    */
   public void addMissingAnnotation(AnnotationMirror annotation) {
     if (!this.hasPrimaryAnnotationInHierarchy(annotation)) {
@@ -719,7 +719,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * Adds multiple annotations to this type, removing any existing primary annotations from the same
    * qualifier hierarchy first.
    *
-   * @param replAnnos the annotations to replace
+   * @param replAnnos the replacement annotations
    */
   public void replaceAnnotations(Iterable<? extends AnnotationMirror> replAnnos) {
     for (AnnotationMirror a : replAnnos) {
@@ -756,10 +756,10 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Remove any primary annotation that is in the same qualifier hierarchy as the parameter.
+   * Removes any primary annotation that is in the same qualifier hierarchy as the parameter.
    *
    * @param a an annotation from the same qualifier hierarchy
-   * @return if an annotation was removed
+   * @return true if an annotation was removed
    */
   public boolean removePrimaryAnnotationInHierarchy(AnnotationMirror a) {
     AnnotationMirror prev = this.getPrimaryAnnotationInHierarchy(a);
@@ -801,12 +801,12 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Returns the erasure type of this type, according to JLS specifications.
+   * Returns the erasure of this type, according to the JLS.
    *
    * @see <a
    *     href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.6">https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.6</a>
-   * @return the erasure of this AnnotatedTypeMirror, this is always a copy even if the erasure and
-   *     the original type are equivalent
+   * @return the erasure of this AnnotatedTypeMirror; this is always a copy, even if the erasure
+   *     and the original type are equivalent
    */
   public AnnotatedTypeMirror getErased() {
     return deepCopy();
@@ -826,8 +826,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * </ol>
    *
    * If copyAnnotations is set to false, the second property, Annotation preservation, is removed.
-   * This is useful for cases in which the user may want to copy the structure of a type exactly but
-   * NOT its annotations.
+   * This is useful for cases in which the user might want to copy the structure of a type exactly
+   * but NOT its annotations.
    *
    * @return a deep copy
    */
@@ -849,8 +849,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * Returns a shallow copy of this type. A shallow copy implies that each component type in the
    * output copy refers to the same object as the object being copied.
    *
-   * @param copyAnnotations true if copy should have annotations, i.e., field {@code annotations}
-   *     should be copied
+   * @param copyAnnotations true if the copy should have annotations, i.e., field {@code
+   *     annotations} should be copied
    */
   public abstract AnnotatedTypeMirror shallowCopy(boolean copyAnnotations);
 
@@ -868,15 +868,15 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   /**
    * Returns true if this contains any captured type variables.
    *
-   * @return true if the {@code type} contains any captured type variables
+   * @return true if this type contains any captured type variables
    */
   public boolean containsCapturedTypes() {
     return atypeFactory.containsCapturedTypes(this);
   }
 
   /**
-   * Create an {@link AnnotatedDeclaredType} with the underlying type of {@link Object}. It includes
-   * any annotations placed by {@link AnnotatedTypeFactory#fromElement(Element)}.
+   * Creates an {@link AnnotatedDeclaredType} with the underlying type of {@link Object}. It
+   * includes any annotations placed by {@link AnnotatedTypeFactory#fromElement(Element)}.
    *
    * @param atypeFactory type factory to use
    * @return AnnotatedDeclaredType for Object
@@ -890,7 +890,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Create an {@link AnnotatedDeclaredType} with the underlying type of {@code java.lang.Record}.
+   * Creates an {@link AnnotatedDeclaredType} with the underlying type of {@code java.lang.Record}.
    * It includes any annotations placed by {@link AnnotatedTypeFactory#fromElement(Element)}.
    *
    * @param atypeFactory type factory to use
@@ -906,11 +906,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   /** Represents a declared type (whether class or interface). */
   public static class AnnotatedDeclaredType extends AnnotatedTypeMirror {
 
-    /** Parametrized Type Arguments. */
+    /** The type arguments. */
     protected @MonotonicNonNull List<AnnotatedTypeMirror> typeArgs;
 
     /**
-     * True if the type was initially raw, i.e. the user did not provide the type arguments.
+     * True if the type was initially raw, i.e., the user did not provide the type arguments.
      * typeArgs will contain inferred type arguments, which might be too conservative at the moment.
      *
      * <p>Ideally, the field would be final. However, when we determine the supertype of a raw type,
@@ -918,7 +918,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      */
     private boolean isUnderlyingTypeRaw;
 
-    /** The enclosing type. May be null. May be changed. */
+    /** The enclosing type. Might be null. Can be changed. */
     protected @Nullable AnnotatedDeclaredType enclosingType;
 
     /** True if this represents a declaration, rather than a use, of a type. */
@@ -927,7 +927,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     /**
      * Constructor for this type. The result contains no annotations.
      *
-     * @param type underlying kind of this type
+     * @param type the underlying type of this type
      * @param atypeFactory the AnnotatedTypeFactory used to create this type
      */
     private AnnotatedDeclaredType(
@@ -1101,7 +1101,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * Set the isUnderlyingTypeRaw flag to true. This should only be necessary when determining the
+     * Sets the isUnderlyingTypeRaw flag to true. This should only be necessary when determining the
      * supertypes of a raw type.
      */
     protected void setIsUnderlyingTypeRaw() {
@@ -1167,10 +1167,10 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * Returns the enclosing type, as in the type of {@code A} in the type {@code A.B}. May return
+     * Returns the enclosing type, as in the type of {@code A} in the type {@code A.B}. Might return
      * null.
      *
-     * @return enclosingType the enclosing type, or null if this is a top-level type
+     * @return the enclosing type, or null if this is a top-level type
      */
     public @Nullable AnnotatedDeclaredType getEnclosingType() {
       return enclosingType;
@@ -1205,7 +1205,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     /**
      * Constructor for this type. The result contains no annotations.
      *
-     * @param type underlying kind of this type
+     * @param type the underlying type of this type
      * @param atypeFactory the AnnotatedTypeFactory used to create this type
      */
     private AnnotatedDeclaredTypeNoHierarchy(DeclaredType type, AnnotatedTypeFactory atypeFactory) {
@@ -1561,7 +1561,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Represents Array types in java. A multidimensional array type is represented as an array type
+   * Represents array types in Java. A multidimensional array type is represented as an array type
    * whose component type is also an array type.
    */
   public static final class AnnotatedArrayType extends AnnotatedTypeMirror {
@@ -1650,7 +1650,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Throw an exception if the boundType is null or a declaration.
+   * Throws an exception if the boundType is null or a declaration.
    *
    * @param boundDescription the variety of bound: "Lower", "Super", or "Extends"
    * @param boundType the type being tested
@@ -1666,8 +1666,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   }
 
   /**
-   * Represents a type variable. A type variable may be explicitly declared by a type parameter of a
-   * type, method, or constructor. A type variable may also be declared implicitly, as by the
+   * Represents a type variable. A type variable can be explicitly declared by a type parameter of a
+   * type, method, or constructor. A type variable can also be declared implicitly, as by the
    * capture conversion of a wildcard type argument (see chapter 5 of The Java Language
    * Specification, Third Edition).
    */
@@ -1707,7 +1707,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * Change whether this {@code AnnotatedTypeVariable} is considered a use or a declaration (use
+     * Changes whether this {@code AnnotatedTypeVariable} is considered a use or a declaration (use
      * this method with caution).
      *
      * @param declaration true if this type variable should be considered a declaration
@@ -1746,7 +1746,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * Set the lower bound of this variable type.
+     * Sets the lower bound of this type variable.
      *
      * <p>While a type parameter cannot include an explicit lower bound declaration, capture
      * conversion can produce a type variable with a non-trivial lower bound. Type variables
@@ -1816,7 +1816,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * Set the upper bound of this variable type.
+     * Sets the upper bound of this type variable.
      *
      * @param type the upper bound type
      */
@@ -1887,11 +1887,11 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
     /**
      * This method will traverse the upper bound of this type variable calling getErased until it
-     * finds the concrete upper bound. e.g.
+     * finds the concrete upper bound. For example, given
      *
-     * <pre>{@code  <E extends T>, T extends S, S extends List<String>>}</pre>
+     * <pre>{@code  <E extends T, T extends S, S extends List<String>>}</pre>
      *
-     * A call to getErased will return the type List
+     * a call to getErased will return the type List.
      *
      * @return the erasure of the upper bound of this type
      *     <p>IMPORTANT NOTE: getErased should always return a FRESH object. This will occur for
@@ -1918,7 +1918,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   public static final class AnnotatedNoType extends AnnotatedTypeMirror {
 
     /**
-     * Creates a new AnnotatedNoType
+     * Creates a new AnnotatedNoType.
      *
      * @param type the underlying {@code NoType}
      * @param factory the annotated type factory
@@ -2069,22 +2069,22 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
   /**
    * Represents a wildcard type argument. Examples include:
    *
-   * <p>? ? extends Number ? super T
+   * <p>{@code ?}, {@code ? extends Number}, and {@code ? super T}
    *
-   * <p>A wildcard may have its upper bound explicitly set by an extends clause, its lower bound
+   * <p>A wildcard can have its upper bound explicitly set by an extends clause, its lower bound
    * explicitly set by a super clause, or neither (but not both).
    */
   public static final class AnnotatedWildcardType extends AnnotatedTypeMirror {
     /** Lower ({@code super}) bound. */
     private AnnotatedTypeMirror superBound;
 
-    /** Upper ({@code extends} bound. */
+    /** Upper ({@code extends}) bound. */
     private AnnotatedTypeMirror extendsBound;
 
     /**
      * True if this is a type argument for a type whose {@code #underlyingType} is raw. The Checker
      * Framework gives raw types wildcard type arguments so that the annotated type can be used as
-     * if the annotated type was not raw.
+     * if the annotated type were not raw.
      */
     private boolean typeArgOfRawType = false;
 
@@ -2177,8 +2177,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * Sets type variable to which this wildcard is an argument. This method should only be called
-     * during initialization of the type.
+     * Sets the type variable to which this wildcard is an argument. This method should only be
+     * called during initialization of the type.
      *
      * @param typeParameterElement the type variable to which this wildcard is an argument
      */
@@ -2187,8 +2187,8 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * Sets type variable to which this wildcard is an argument. This method should only be called
-     * during initialization of the type.
+     * Sets the type variable to which this wildcard is an argument. This method should only be
+     * called during initialization of the type.
      *
      * @param typeVariable the type variable to which this wildcard is an argument
      */
@@ -2252,7 +2252,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
       return getExtendsBound().getErased();
     }
 
-    /** Set that this wildcard is a type argument of a raw type. */
+    /** Records that this wildcard is a type argument of a raw type. */
     public void setTypeArgOfRawType() {
       typeArgOfRawType = true;
     }
@@ -2260,7 +2260,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     /**
      * Returns true if this is a type argument to a type whose {@code #underlyingType} is raw. The
      * Checker Framework gives raw types wildcard type arguments so that the annotated type can be
-     * used as if the annotated type was not raw.
+     * used as if the annotated type were not raw.
      *
      * @return true if this is a type argument to a type whose {@code #underlyingType} is raw
      */
@@ -2287,7 +2287,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
      * Creates an {@code AnnotatedIntersectionType} with the underlying type {@code type}. The
      * result contains no annotations.
      *
-     * @param type underlying kind of this type
+     * @param type the underlying type of this type
      * @param atypeFactory the factory used to construct this intersection type
      */
     private AnnotatedIntersectionType(IntersectionType type, AnnotatedTypeFactory atypeFactory) {
@@ -2297,7 +2297,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     /**
      * {@inheritDoc}
      *
-     * <p>Also, copies {@code a} to all the bounds.
+     * <p>Also, copies {@code annotation} to all the bounds.
      *
      * @param annotation the annotation to add
      */
@@ -2374,7 +2374,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
 
     /**
      * This returns the bounds of the intersection type. Although only declared types can appear in
-     * an explicitly written intersections, during capture conversion, intersections with other
+     * explicitly written intersections, during capture conversion, intersections with other
      * kinds of types are created.
      *
      * <p>This returns the same types as {@link #directSupertypes()}.
@@ -2402,7 +2402,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     }
 
     /**
-     * Copy the first annotation (in each hierarchy) on a bound to the primary annotation location
+     * Copies the first annotation (in each hierarchy) on a bound to the primary annotation location
      * of the intersection type.
      *
      * <p>For example, in the type {@code @NonNull Object & @Initialized @Nullable Serializable},
@@ -2430,7 +2430,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
     /**
      * Creates a new AnnotatedUnionType.
      *
-     * @param type underlying kind of this type
+     * @param type the underlying type of this type
      * @param atypeFactory type factory
      */
     private AnnotatedUnionType(UnionType type, AnnotatedTypeFactory atypeFactory) {
@@ -2518,7 +2518,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * </pre>
    *
    * The direct supertype of the ATM {@code @Nullable A<@NonNull String, @NonNull Object>} is
-   * {@code @Nullable B<@NonNull Object, @NonNull String>}.
+   * {@code @Nullable D<@NonNull Object, @NonNull String>}.
    *
    * <p>An example with more than one direct supertype:
    *
@@ -2528,7 +2528,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    * {@code @Nullable A a;}
    * </pre>
    *
-   * The direct supertypes of the ATM {@code @Nullable A} are {@code @Nullable B <@NonNull String>}
+   * The direct supertypes of the ATM {@code @Nullable A} are {@code @Nullable B<@NonNull String>}
    * and {@code @Nullable List<@NonNull Integer>}.
    *
    * @return the immediate supertypes of this

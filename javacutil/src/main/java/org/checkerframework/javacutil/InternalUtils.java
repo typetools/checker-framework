@@ -26,11 +26,11 @@ public final class InternalUtils {
   }
 
   /**
-   * Obtain the class loader for {@code clazz}. If that is not available, return the system class
+   * Returns the class loader for {@code clazz}. If that is not available, returns the system class
    * loader.
    *
    * @param clazz the class whose class loader to find
-   * @return the class loader used to {@code clazz}, or the system class loader, or null if both are
+   * @return the class loader used to load {@code clazz}, or the system class loader, or null if both are
    *     unavailable
    */
   public static @Nullable ClassLoader getClassLoaderForClass(Class<? extends Object> clazz) {
