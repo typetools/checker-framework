@@ -355,6 +355,60 @@ public class AssignmentInComparison {
     n.next.toString();
   }
 
+  static class Holder {
+    AssignmentInComparison field = new AssignmentInComparison();
+
+    int index;
+
+    @Nullable Object[] array = new Object[10];
+
+    AssignmentInComparison reassignField() {
+      field = new AssignmentInComparison();
+      return field;
+    }
+
+    @Nullable AssignmentInComparison reassignFieldNullable() {
+      field = new AssignmentInComparison();
+      return field;
+    }
+
+    Object reassignIndex() {
+      index++;
+      return "";
+    }
+
+    // The call in the right-hand side reassigns the receiver of the left-hand side, after Java has
+    // evaluated the receiver.
+    void receiverReassignedByCall() {
+      field.next = reassignField();
+      // After the assignment, `field.next` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      field.next.toString();
+    }
+
+    void receiverReassignedByCallInComparison() {
+      if ((field.next = reassignFieldNullable()) != null) {
+        // After the assignment, `field.next` is a field of a different object.
+        // :: error: [dereference.of.nullable]
+        field.next.toString();
+      }
+    }
+
+    // A call cannot reassign a local receiver, so refining `n.next` is sound.
+    void localReceiverWithCall(AssignmentInComparison n) {
+      n.next = reassignField();
+      n.next.toString();
+    }
+
+    // The call in the right-hand side changes the index of the left-hand side.
+    void indexReassignedByCall() {
+      array[index] = reassignIndex();
+      // After the assignment, `array[index]` is a different element of `array`.
+      // :: error: [dereference.of.nullable]
+      array[index].toString();
+    }
+  }
+
   // The left operand assigns `x` before the right operand reads it, so refining `x` is sound.
   void assignmentInLeftOperand(@Nullable Object x) {
     if (nonNull(x = null) == x) {

@@ -1640,13 +1640,15 @@ public abstract class CFAbstractTransfer<
    * Returns true if evaluating {@code rhs} might reassign a variable in the receiver or index of
    * {@code lhs}, as in {@code n.next = (n = o)}. Java evaluates the receiver and index of {@code
    * lhs} before {@code rhs}, so in that case the assignment stores into a location that {@code lhs}
-   * no longer denotes after the assignment.
+   * no longer denotes after the assignment. Also returns true if {@code rhs} calls a method or
+   * constructor that is not side-effect-free and other code can assign the receiver or index of
+   * {@code lhs}, as in {@code this.n.next = reassignN()}.
    *
    * @param lhs the left-hand side of an assignment
    * @param rhs the right-hand side of the assignment
    * @return true if evaluating {@code rhs} might change the location that {@code lhs} denotes
    */
-  private static boolean rhsMayRelocateTarget(Node lhs, Node rhs) {
+  private boolean rhsMayRelocateTarget(Node lhs, Node rhs) {
     if (lhs instanceof LocalVariableNode) {
       return false;
     }
@@ -1654,11 +1656,31 @@ public abstract class CFAbstractTransfer<
     if (rhsTree == null) {
       return false;
     }
-    AssignmentTargetScanner scanner = new AssignmentTargetScanner();
+    AssignmentTargetScanner scanner = new AssignmentTargetScanner(this::isSideEffectFree);
     scanner.scan(rhsTree, null);
+    JavaExpression lhsExpr = JavaExpression.fromNode(lhs);
+    if (scanner.callsMethodWithSideEffects && receiverOrIndexIsAssignableByOtherCode(lhsExpr)) {
+      return true;
+    }
     List<JavaExpression> targets = scanner.targets;
-    return !targets.isEmpty()
-        && mayBeChangedByAssignment(JavaExpression.fromNode(lhs), targets, true);
+    return !targets.isEmpty() && mayBeChangedByAssignment(lhsExpr, targets, true);
+  }
+
+  /**
+   * Returns true if other code, such as a method call, can assign the receiver of {@code expr} (if
+   * it is a field access) or the array or index of {@code expr} (if it is an array access).
+   *
+   * @param expr the left-hand side of an assignment
+   * @return true if other code can change the location that {@code expr} denotes
+   */
+  private static boolean receiverOrIndexIsAssignableByOtherCode(JavaExpression expr) {
+    if (expr instanceof FieldAccess fa) {
+      return fa.getReceiver().isAssignableByOtherCode();
+    } else if (expr instanceof ArrayAccess aa) {
+      return aa.getArray().isAssignableByOtherCode() || aa.getIndex().isAssignableByOtherCode();
+    } else {
+      return false;
+    }
   }
 
   @Override
