@@ -8,5 +8,6 @@ import org.checkerframework.checker.nullness.qual.KeyFor;
 public class Placeholder {
   Map<String, String> a;
   Map<String, String> b;
+
   @KeyFor({"b", "a"}) String noncanonicalKeyFor;
 }
