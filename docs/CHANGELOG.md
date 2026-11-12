@@ -14,11 +14,12 @@ method `CaseNode.alwaysMatches()` returns it; for such a `CaseNode`, the CFG
 does not test the labels, and `CFAbstractTransfer.visitCase()` returns a regular
 store.
 
-The `CaseNode` constructor takes a new `precededByGuard` argument, and the new
-method `CaseNode.isPrecededByGuard()` returns it.  The new method
+The `CaseNode` constructor takes a new `precededByOtherCode` argument, and the
+new method `CaseNode.isPrecededByOtherCode()` returns it.  The new method
 `CFAbstractTransfer.canRefineSwitchSelector()` returns false if an earlier guard
-might have changed the selector expression; then, `visitCase()` refines only the
-synthetic variable that holds the selector's value.
+or a record accessor might have changed the selector expression; then,
+`visitCase()` refines only the synthetic variable that holds the selector's
+value.
 
 ### Closed issues
 
