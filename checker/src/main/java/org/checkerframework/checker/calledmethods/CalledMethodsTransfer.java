@@ -74,9 +74,9 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
 
   /**
    * @param tree a tree
-   * @return false if Resource Leak Checker is running as one of the upstream checkers and the
+   * @return false if the Resource Leak Checker is running as one of the upstream checkers and the
    *     -AenableWpiForRlc flag (see {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}) is not passed
-   *     as a command line argument, otherwise returns the result of the super call
+   *     as a command-line argument; otherwise, the result of the super call
    */
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree tree) {
@@ -91,10 +91,10 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * See {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
    *
    * @param expressionTree a tree
-   * @param lhsTree its element
-   * @return false if Resource Leak Checker is running as one of the upstream checkers and the
-   *     -AenableWpiForRlc flag is not passed as a command line argument, otherwise returns the
-   *     result of the super call
+   * @param lhsTree the left-hand side of an assignment
+   * @return false if the Resource Leak Checker is running as one of the upstream checkers and the
+   *     -AenableWpiForRlc flag is not passed as a command-line argument; otherwise, the result of
+   *     the super call
    */
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
@@ -195,10 +195,11 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * @param <V> the type of abstract values
    * @param <S> the type of store
    * @param node a method invocation
-   * @param inputStore the transfer input associated with the method invocation
+   * @param inputStore the regular store of the transfer input associated with the method
+   *     invocation
    * @return a map from types to stores. The keys are the same keys used by {@link
-   *     ExceptionBlock#getExceptionalSuccessors()}. The values are copies of the regular store from
-   *     {@code input}.
+   *     ExceptionBlock#getExceptionalSuccessors()}. The values are copies of {@code
+   *     inputStore}.
    */
   public static <V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>>
       Map<TypeMirror, S> makeExceptionalStores(MethodInvocationNode node, S inputStore) {
@@ -314,7 +315,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   /**
    * Extract the current called-methods type from {@code currentType}, and then add each element of
    * {@code methodNames} to it, and return the result. This method is similar to GLB, but should be
-   * used when the new methods come from a source other than an {@code CalledMethods} annotation.
+   * used when the new methods come from a source other than a {@code CalledMethods} annotation.
    *
    * @param currentType the current type in the called-methods hierarchy
    * @param methodNames the names of the new methods to add to the type
@@ -352,7 +353,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * Checks if WPI is enabled for the Resource Leak Checker inference. See {@link
    * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
    *
-   * @return returns true if WPI is enabled for the Resource Leak Checker
+   * @return true if WPI is enabled for the Resource Leak Checker
    */
   protected boolean isWpiEnabledForRLC() {
     return enableWpiForRlc;

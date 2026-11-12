@@ -64,21 +64,21 @@ import org.checkerframework.javacutil.TreeUtils;
  *  pos ("Positive")
  *  </pre>
  *
- * In general, check whether the constant Value Checker can determine the value of a variable; if it
+ * In general, check whether the Constant Value Checker can determine the value of a variable; if it
  * can, use that; if not, use more specific rules based on expression type. This class implements
  * the following type rules:
  *
  * <ul>
- *   <li>1. If the value checker type for any expression is &ge; 1, refine that expression's type to
+ *   <li>1. If the Value Checker type for any expression is &ge; 1, refine that expression's type to
  *       positive.
- *   <li>2. If the value checker type for any expression is &ge; 0 and case 1 did not apply, then
+ *   <li>2. If the Value Checker type for any expression is &ge; 0 and case 1 did not apply, then
  *       refine that expression's type to non-negative.
- *   <li>3. If the value checker type for any expression is &ge; -1 and cases 1 and 2 did not apply,
+ *   <li>3. If the Value Checker type for any expression is &ge; -1 and cases 1 and 2 did not apply,
  *       then refine that expression's type to GTEN1.
- *   <li>4. A unary prefix decrement shifts the type "down" in the hierarchy (i.e. {@code --i} when
+ *   <li>4. A unary prefix decrement shifts the type "down" in the hierarchy (i.e., {@code --i} when
  *       {@code i} is non-negative implies that {@code i} will be GTEN1 afterwards). Should this be
  *       3 rules?
- *   <li>5. A unary prefix increment shifts the type "up" in the hierarchy (i.e. {@code ++i} when
+ *   <li>5. A unary prefix increment shifts the type "up" in the hierarchy (i.e., {@code ++i} when
  *       {@code i} is non-negative implies that {@code i} will be positive afterwards). Should this
  *       be 3 rules?
  *   <li>6. Unary negation on a NegativeIndexFor from the SearchIndex type system results in a
@@ -326,7 +326,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
     /**
      * Bitwise complement converts between {@code @NegativeIndexFor} and {@code @IndexOrHigh}. This
-     * handles the lowerbound part of that type, so the result is converted to {@code @NonNegative}.
+     * handles the lower bound part of that type, so the result is converted to
+     * {@code @NonNegative}.
      *
      * @param searchIndexType the type of an expression in a bitwise complement. For instance, in
      *     {@code ~x}, this is the type of {@code x}.
@@ -393,7 +394,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
   }
 
   /**
-   * Looks up the minlen of a method invocation tree. Returns null if the tree doesn't represent an
+   * Looks up the minlen of a method invocation tree. Returns null if the tree doesn't represent a
    * string length method.
    */
   @Nullable Integer getMinLenFromMethodInvocationTree(MethodInvocationTree tree) {
@@ -409,7 +410,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    * <p>The LBC special-cases {@code Math.random() * array.length} and {@code Random.nextDouble() *
    * array.length}.
    *
-   * @param node a multiplication node that may need special casing
+   * @param node a multiplication node that might need special casing
    * @return an AnnotationMirror representing the result if the special case is valid, or null if
    *     not
    */
@@ -455,7 +456,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     return null;
   }
 
-  /** Checks if the expression is non-negative, i.e. it has Positive on NonNegative annotation. */
+  /**
+   * Checks if the expression is non-negative, i.e., it has a Positive or NonNegative annotation.
+   */
   public boolean isNonNegative(Tree tree) {
     // TODO: consolidate with the isNonNegative method in LowerBoundTransfer
     AnnotatedTypeMirror treeType = getAnnotatedType(tree);

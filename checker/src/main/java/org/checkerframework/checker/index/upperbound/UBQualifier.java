@@ -51,7 +51,7 @@ public abstract class UBQualifier {
    * Create a UBQualifier from the given annotation, with an extra offset.
    *
    * @param am the annotation to turn into a UBQualifier
-   * @param offset the extra offset; may be null
+   * @param offset the extra offset; might be null
    * @param ubChecker used to obtain the fields of {@code am}
    * @return a UBQualifier that represents the same information as the given annotation (plus an
    *     optional offset)
@@ -83,7 +83,7 @@ public abstract class UBQualifier {
     };
   }
 
-  /** A cache for the {@link #nCopiesEmptyStringCache} method. */
+  /** A cache for the {@link #nCopiesEmptyString} method. */
   private static final List<List<String>> nCopiesEmptyStringCache = new ArrayList<>(10);
 
   static {
@@ -118,7 +118,7 @@ public abstract class UBQualifier {
    *
    * @param ltLengthOfAnno a @LTLengthOf annotation
    * @param extraOffset the extra offset
-   * @param ubChecker used to obtain the fields of {@code am}
+   * @param ubChecker used to obtain the fields of {@code ltLengthOfAnno}
    * @return a UBQualifier created from the @LTLengthOf annotation
    */
   private static UBQualifier parseLTLengthOf(
@@ -192,7 +192,7 @@ public abstract class UBQualifier {
    * Create a UBQualifier from a @LTOMLengthOf annotation.
    *
    * @param am a @LTOMLengthOf annotation
-   * @param extraOffset offset to add to each element of offsets; may be null
+   * @param extraOffset offset to add to each element of offsets; might be null
    * @param ubChecker used for obtaining fields from {@code am}
    * @return a UBQualifier created from the @LTOMLengthOf annotation
    */
@@ -219,7 +219,7 @@ public abstract class UBQualifier {
    *
    * @param type the type from which to obtain an annotation
    * @param top the top annotation in a hierarchy; the annotation in this hierarchy will be used
-   * @param ubChecker used to obtain the fields of {@code am}
+   * @param ubChecker used to obtain the fields of the annotation
    * @return a new upper bound qualifier
    */
   public static UBQualifier createUBQualifier(
@@ -232,12 +232,12 @@ public abstract class UBQualifier {
   }
 
   /**
-   * Creates an {@link UBQualifier} from the given sequences and offsets. The list of sequences may
+   * Creates an {@link UBQualifier} from the given sequences and offsets. The list of sequences must
    * not be empty. If the offsets list is empty, then an offset of 0 is used for each sequence. If
-   * the offsets list is not empty, then it must be the same size as sequence.
+   * the offsets list is not empty, then it must be the same size as sequences.
    *
    * @param sequences non-empty list of sequences
-   * @param offsets list of offset, if empty, an offset of 0 is used
+   * @param offsets list of offsets; if empty, an offset of 0 is used
    * @return an {@link UBQualifier} for the sequences with the given offsets
    */
   public static UBQualifier createUBQualifier(List<String> sequences, List<String> offsets) {
@@ -246,13 +246,13 @@ public abstract class UBQualifier {
 
   /**
    * Creates an {@link UBQualifier} from the given sequences and offsets, with the given additional
-   * offset. The list of sequences may not be empty. If the offsets list is empty, then an offset of
-   * 0 is used for each sequence. If the offsets list is not empty, then it must be the same size as
-   * sequence.
+   * offset. The list of sequences must not be empty. If the offsets list is empty, then an offset
+   * of 0 is used for each sequence. If the offsets list is not empty, then it must be the same size
+   * as sequences.
    *
    * @param sequences non-empty list of sequences
-   * @param offsets list of offset, if empty, an offset of 0 is used
-   * @param extraOffset offset to add to each element of offsets; may be null
+   * @param offsets list of offsets; if empty, an offset of 0 is used
+   * @param extraOffset offset to add to each element of offsets; might be null
    * @return an {@link UBQualifier} for the sequences with the given offsets
    */
   public static UBQualifier createUBQualifier(
@@ -457,8 +457,8 @@ public abstract class UBQualifier {
      * Convert the parallel array representation to the map representation.
      *
      * @param sequences non-empty list of sequences
-     * @param offsets list of offset, if empty, an offset of 0 is used
-     * @param extraEq offset to add to each element of offsets; may be null
+     * @param offsets list of offsets; if empty, an offset of 0 is used
+     * @param extraEq offset to add to each element of offsets; might be null
      * @return the map representation of a {@link UBQualifier}, or null if there is an error
      */
     private static @Nullable Map<String, Set<OffsetEquation>> sequencesAndOffsetsToMap(
@@ -500,11 +500,11 @@ public abstract class UBQualifier {
         List<String> sequences, List<String> offsets, Class<? extends Annotation> annoClass) {}
 
     /**
-     * Given the map representation, returns parallel-arrays representation.
+     * Given the map representation, returns the parallel-arrays representation.
      *
      * @param map the internal representation of LessThanLengthOf
      * @param buildSubstringIndexAnnotation if true, the annoClass in the result is
-     *     ubstringIndexFor.class
+     *     SubstringIndexFor.class
      * @return the external representation
      */
     private static SequencesOffsetsAndClass mapToSequencesAndOffsets(
@@ -547,7 +547,7 @@ public abstract class UBQualifier {
     /**
      * Create a new LessThanLengthOf, from the internal representation.
      *
-     * @param map a map from sequence name to offse
+     * @param map a map from sequence name to offsets
      */
     private LessThanLengthOf(Map<String, Set<OffsetEquation>> map) {
       assert !map.isEmpty();
@@ -558,8 +558,8 @@ public abstract class UBQualifier {
      * Create a new LessThanLengthOf from the parallel array representation.
      *
      * @param sequences non-empty list of sequences
-     * @param offsets list of offset, if empty, an offset of 0 is used
-     * @param extraEq offset to add to each element of offsets; may be null
+     * @param offsets list of offsets; if empty, an offset of 0 is used
+     * @param extraEq offset to add to each element of offsets; might be null
      */
     private LessThanLengthOf(
         List<String> sequences, List<String> offsets, @Nullable OffsetEquation extraEq) {
@@ -654,7 +654,7 @@ public abstract class UBQualifier {
     /**
      * Returns the @{@link SubstringIndexFor} AnnotationMirror from the Substring Index hierarchy
      * that imposes the same upper bounds on the annotated expression as this qualifier. However,
-     * the upper bounds represented by this qualifier do not apply to the value -1 which is always
+     * the upper bounds represented by this qualifier do not apply to the value -1, which is always
      * allowed by the returned annotation.
      *
      * @param env a processing environment used to build the returned annotation
@@ -667,7 +667,7 @@ public abstract class UBQualifier {
 
     /**
      * Helper method called by {@link #convertToAnnotation} and {@link
-     * convertToSubstringIndexAnnotation} that does the real work.
+     * #convertToSubstringIndexAnnotation} that does the real work.
      *
      * @param env a processing environment used to build the returned annotation
      * @param buildSubstringIndexAnnotation if true, act like {@link
@@ -775,7 +775,7 @@ public abstract class UBQualifier {
     }
 
     /**
-     * One set of offsets is a subtype of another if for every superOffsets, at least one suboffset
+     * One set of offsets is a subtype of another if for every superOffset, at least one subOffset
      * is greater than or equal to the superOffset.
      */
     private boolean isSubtypeOffset(
@@ -803,8 +803,8 @@ public abstract class UBQualifier {
      * <p>1. Create the intersection of the sets of arrays for this and other.
      *
      * <p>2. For each sequence in the intersection, get the offsets for this and other. If any
-     * offset in this is a less than or equal to an offset in other, then that offset is an offset
-     * for the sequence in lub. If any offset in other is a less than or equal to an offset in this,
+     * offset in this is less than or equal to an offset in other, then that offset is an offset
+     * for the sequence in lub. If any offset in other is less than or equal to an offset in this,
      * then that offset is an offset for the sequence in lub.
      *
      * @param other to lub with this
@@ -971,7 +971,7 @@ public abstract class UBQualifier {
     /**
      * Returns a copy of the argument, but it contains just one offset equation that is an int value
      * -- the largest one in the argument. Any non-int offset equations appear in the result. Does
-     * not side effect its argument.
+     * not side-effect its argument.
      *
      * @param offsets a set of offset equations
      * @return a copy of the argument with just one int value (the largest in the input) and
@@ -1004,7 +1004,7 @@ public abstract class UBQualifier {
      *
      * @param node a Node
      * @param factory an AnnotatedTypeFactory
-     * @return a copy of this qualifier with node add as an offset
+     * @return a copy of this qualifier with node added as an offset
      */
     @Override
     public UBQualifier plusOffset(Node node, UpperBoundAnnotatedTypeFactory factory) {
@@ -1018,7 +1018,7 @@ public abstract class UBQualifier {
      *
      * @param node a Node
      * @param factory an AnnotatedTypeFactory
-     * @return a copy of this qualifier with node add as an offset
+     * @return a copy of this qualifier with node added as an offset
      */
     @Override
     public UBQualifier minusOffset(Node node, UpperBoundAnnotatedTypeFactory factory) {
@@ -1033,7 +1033,7 @@ public abstract class UBQualifier {
      * @param node a Node
      * @param factory an AnnotatedTypeFactory
      * @param op either '-' or '+'
-     * @return a copy of this qualifier with node add as an offset
+     * @return a copy of this qualifier with node added as an offset
      */
     private UBQualifier plusOrMinusOffset(
         Node node, UpperBoundAnnotatedTypeFactory factory, char op) {
@@ -1082,7 +1082,7 @@ public abstract class UBQualifier {
      * offset equation in a copy of this object.
      *
      * @param value int value to add
-     * @return a copy of this qualifier with value add as an offset
+     * @return a copy of this qualifier with value added as an offset
      */
     @Override
     public UBQualifier plusOffset(int value) {
@@ -1095,7 +1095,7 @@ public abstract class UBQualifier {
      * the negation of {@code value} to every offset equation in a copy of this object.
      *
      * @param value int value to add
-     * @return a copy of this qualifier with value add as an offset
+     * @return a copy of this qualifier with value added as an offset
      */
     @Override
     public UBQualifier minusOffset(int value) {
@@ -1105,11 +1105,11 @@ public abstract class UBQualifier {
 
     /**
      * Returns a copy of this qualifier with sequence-offset pairs where in the original the offset
-     * contains an access of an sequence length in {@code sequences}. The sequence length access has
+     * contains an access of a sequence length in {@code sequences}. The sequence length access has
      * been removed from the offset. If the original qualifier has no sequence length offsets, then
      * UNKNOWN is returned.
      *
-     * @param sequences access of the length of these sequences are removed
+     * @param sequences accesses of the length of these sequences are removed
      * @return a copy of this qualifier with some offsets removed
      */
     public UBQualifier removeSequenceLengthAccess(List<String> sequences) {
@@ -1122,10 +1122,10 @@ public abstract class UBQualifier {
 
     /**
      * Returns a copy of this qualifier with sequence-offset pairs where in the original the offset
-     * contains an access of an sequence length in {@code sequences}. The sequence length access has
+     * contains an access of a sequence length in {@code sequences}. The sequence length access has
      * been removed from the offset. If the offset also has -1 then -1 is also removed.
      *
-     * @param sequences access of the length of these sequences are removed
+     * @param sequences accesses of the length of these sequences are removed
      * @return a copy of this qualifier with some offsets removed
      */
     public UBQualifier removeSequenceLengthAccessAndNeg1(List<String> sequences) {
@@ -1160,7 +1160,7 @@ public abstract class UBQualifier {
     /**
      * If divisor == 1, return this object.
      *
-     * <p>If divisor greater than 1, then return a copy of this object keeping only sequences and
+     * <p>If divisor is greater than 1, then return a copy of this object keeping only sequences and
      * offsets where the offset is less than or equal to zero.
      *
      * <p>Otherwise, return UNKNOWN.
@@ -1220,7 +1220,7 @@ public abstract class UBQualifier {
 
     /**
      * Generates a new UBQualifier without the given (sequence, offset) pair. Other occurrences of
-     * the sequence and the offset may remain in the result, but not together.
+     * the sequence and the offset might remain in the result, but not together.
      *
      * @param sequence a Java expression representing a string
      * @param offset an integral offset
@@ -1260,7 +1260,7 @@ public abstract class UBQualifier {
      * applied to each offset.
      *
      * <p>If the {@link OffsetEquationFunction} returns null, it's not added as an offset. If after
-     * all functions have been applied, an sequence has no offsets, then that sequence is not added
+     * all functions have been applied, a sequence has no offsets, then that sequence is not added
      * to the returned qualifier. If no sequences are added to the returned qualifier, then UNKNOWN
      * is returned.
      *
@@ -1417,9 +1417,9 @@ public abstract class UBQualifier {
     }
   }
 
-  /** The bottom qualifier for the upperbound type system. */
+  /** The bottom qualifier for the upper bound type system. */
   private static final class UpperBoundBottomQualifier extends UBQualifier {
-    /** The canonical bottom qualifier for the upperbound type system. */
+    /** The canonical bottom qualifier for the upper bound type system. */
     public static final UBQualifier BOTTOM = new UpperBoundBottomQualifier();
 
     /** This class is a singleton. */
