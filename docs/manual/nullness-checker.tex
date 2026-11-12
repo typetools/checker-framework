@@ -1487,9 +1487,11 @@ The initialization hierarchy contains these qualifiers:
 \end{description}
 
   A partially-initialized object (\code{this} in a constructor) can be
-  passed to a helper method or stored in a field; if so, the method
-  receiver, or the field, would have to be annotated as
-  \<@UnknownInitialization> or as \<@UnderInitialization>.
+  passed to a helper method or stored in a field.  If so, the method
+  receiver would have to be annotated as \<@UnknownInitialization> or as
+  \<@UnderInitialization>, and the field would have to be annotated as
+  \<@UnknownInitialization>.  (A field may not be annotated as
+  \<@UnderInitialization>.)
 
 % However, if the constructor makes
 % a method call (passing \code{this} as a parameter or the receiver), then
