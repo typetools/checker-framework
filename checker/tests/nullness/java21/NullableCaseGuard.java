@@ -108,6 +108,29 @@ public class NullableCaseGuard {
     }
   }
 
+  // The guard is evaluated only if the pattern matches, so it is not non-null after the switch.
+  void nullableBooleanGuardAfterSwitch(Object sel, @Nullable Boolean b) {
+    switch (sel) {
+      // :: error: [condition.nullable]
+      case String s when b -> {}
+      default -> {}
+    }
+    // :: error: [dereference.of.nullable]
+    b.toString();
+  }
+
+  // If the guard of the last case of an exhaustive switch is false, the switch throws a
+  // MatchException rather than completing normally.
+  void exhaustiveSwitchGuardedLastCase(Shape shape, boolean flag) {
+    @Nullable Object o = null;
+    switch (shape) {
+      case Circle c -> o = "circle";
+      case Square s -> o = "square";
+      case Shape s when flag -> o = "shape";
+    }
+    o.toString();
+  }
+
   void nonNullBooleanGuard(Object sel, Boolean b) {
     switch (sel) {
       case String s when b -> {}
