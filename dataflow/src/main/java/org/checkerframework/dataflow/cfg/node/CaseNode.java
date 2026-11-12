@@ -46,8 +46,8 @@ public class CaseNode extends Node {
 
   /**
    * True if code other than the switch selector expression, such as the guard of an earlier case,
-   * is evaluated after the switch selector expression and before this case's labels are tested.
-   * See {@link #isPrecededByOtherCode()}.
+   * is evaluated after the switch selector expression and before this case's labels are tested. See
+   * {@link #isPrecededByOtherCode()}.
    */
   protected final boolean precededByOtherCode;
 

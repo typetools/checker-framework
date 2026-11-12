@@ -125,6 +125,24 @@ public class SwitchSelectorChangedByGuard {
     };
   }
 
+  sealed interface Tree permits Branch, Tip {}
+
+  // The accessor is auto-generated, so it is side-effect-free.
+  record Branch(Tree child) implements Tree {}
+
+  record Tip() implements Tree {}
+
+  static @Nullable Tree staticTree;
+
+  // A side-effect-free record accessor does not change the selector.
+  String pureAccessor() {
+    return switch (staticTree) {
+      case null -> "";
+      case Branch(Tip t) -> staticTree.toString();
+      case Tree t -> staticTree.toString();
+    };
+  }
+
   // A guard cannot change a local variable that is the selector expression.
   String localSelectorAfterGuard(@Nullable Shape s) {
     return switch (s) {
