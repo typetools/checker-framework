@@ -50,15 +50,15 @@ public abstract class Node implements UniqueId {
   protected @Nullable Block block;
 
   /**
-   * Is this node an l-value?
+   * True if this node is an l-value.
    *
    * <p>Is set by {@link #setLValue}.
    */
   protected boolean lvalue = false;
 
   /**
-   * Does this node represent a tree that appears in the source code (true) or one that the CFG
-   * builder added while desugaring (false).
+   * True if this node represents a tree that appears in the source code, and false if it represents
+   * one that the CFG builder added while desugaring.
    *
    * <p>Is set by {@link #setInSource}.
    */
@@ -73,7 +73,7 @@ public abstract class Node implements UniqueId {
 
   /**
    * The type of this node. For {@link Node}s with {@link Tree}s, this type is the type of the
-   * {@link Tree}. Otherwise, it is the type is set by the {@link CFGBuilder}.
+   * {@link Tree}. Otherwise, the type is set by the {@link CFGBuilder}.
    */
   protected final TypeMirror type;
 
@@ -111,7 +111,7 @@ public abstract class Node implements UniqueId {
     return block;
   }
 
-  /** Set the basic block this node belongs to. */
+  /** Sets the basic block this node belongs to. */
   public void setBlock(Block b) {
     block = b;
   }
@@ -146,20 +146,20 @@ public abstract class Node implements UniqueId {
    */
   public abstract <R, P> R accept(NodeVisitor<R, P> visitor, P p);
 
-  /** Is the node an lvalue or not? */
+  /** Returns true if the node is an lvalue. */
   @Pure
   public boolean isLValue() {
     return lvalue;
   }
 
-  /** Make this node an l-value. */
+  /** Makes this node an l-value. */
   public void setLValue() {
     lvalue = true;
   }
 
   /**
-   * Returns true if this node represents a tree that appears in the source code (true) or one that
-   * the CFG or builder added while desugaring (false).
+   * Returns true if this node represents a tree that appears in the source code, and false if it
+   * represents one that the CFG builder added while desugaring.
    *
    * @return true if this node represents a tree that appears in the source code
    */
@@ -240,7 +240,7 @@ public abstract class Node implements UniqueId {
   }
 
   /**
-   * Returns a verbose string representation of a collection of nodes, useful for debugging..
+   * Returns a verbose string representation of a collection of nodes, useful for debugging.
    *
    * @param nodes a collection of nodes to format
    * @return a printed representation of the given collection

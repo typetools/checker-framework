@@ -15,7 +15,7 @@ import org.checkerframework.javacutil.BugInCF;
  *       which can throw exceptions. It contains a label for every possible exception type the node
  *       might throw.
  *   <li><em>UNCONDITIONAL_JUMP</em>: {@link UnconditionalJump}. An unconditional jump to a label.
- *   <li><em>TWO_TARGET_CONDITIONAL_JUMP</em>: {@link ConditionalJump}. A conditional jump with two
+ *   <li><em>CONDITIONAL_JUMP</em>: {@link ConditionalJump}. A conditional jump with two
  *       targets for both the 'then' and 'else' branch.
  * </ul>
  *
@@ -31,11 +31,11 @@ public abstract class ExtendedNode {
   /** Type of this node. */
   protected final ExtendedNodeType type;
 
-  /** Does this node terminate the execution? (e.g., "System.exit()") */
+  /** True if this node terminates the execution (e.g., "System.exit()"). */
   protected boolean terminatesExecution = false;
 
   /**
-   * Create a new ExtendedNode.
+   * Creates a new ExtendedNode.
    *
    * @param type the type of this node
    */
@@ -43,7 +43,7 @@ public abstract class ExtendedNode {
     this.type = type;
   }
 
-  /** Extended node types (description see above). */
+  /** Extended node types (see the description above). */
   public enum ExtendedNodeType {
     NODE,
     EXCEPTION_NODE,

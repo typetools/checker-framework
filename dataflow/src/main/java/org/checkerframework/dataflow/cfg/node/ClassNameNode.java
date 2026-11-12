@@ -48,7 +48,7 @@ public class ClassNameNode extends Node {
   }
 
   /**
-   * Create a new ClassNameNode.
+   * Creates a new ClassNameNode.
    *
    * @param tree the class tree for this node
    */
@@ -85,7 +85,7 @@ public class ClassNameNode extends Node {
     return element;
   }
 
-  /** The parent node of the current node. */
+  /** Returns the parent node of the current node. */
   public @Nullable Node getParent() {
     return parent;
   }

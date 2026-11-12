@@ -31,20 +31,20 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
   protected FlowRule elseFlowRule = FlowRule.ELSE_TO_BOTH;
 
   /**
-   * Initialize an empty conditional basic block to be filled with contents and linked to other
+   * Initializes an empty conditional basic block to be filled with contents and linked to other
    * basic blocks later.
    */
   public ConditionalBlockImpl() {
     super(BlockType.CONDITIONAL_BLOCK);
   }
 
-  /** Set the then branch successor. */
+  /** Sets the then branch successor. */
   public void setThenSuccessor(BlockImpl b) {
     thenSuccessor = b;
     b.addPredecessor(this);
   }
 
-  /** Set the else branch successor. */
+  /** Sets the else branch successor. */
   public void setElseSuccessor(BlockImpl b) {
     elseSuccessor = b;
     b.addPredecessor(this);

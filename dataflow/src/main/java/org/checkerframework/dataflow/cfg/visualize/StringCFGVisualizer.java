@@ -25,7 +25,7 @@ import org.checkerframework.dataflow.expression.IteratedCollectionElement;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 
-/** Generate the String representation of a control flow graph. */
+/** Generates the String representation of a control flow graph. */
 public class StringCFGVisualizer<
         V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
     extends AbstractCFGVisualizer<V, S, T> {
@@ -33,7 +33,7 @@ public class StringCFGVisualizer<
   /** Stream to output String representation to. */
   protected PrintStream out;
 
-  /** Create a StringCFGVisualizer. */
+  /** Creates a StringCFGVisualizer. */
   public StringCFGVisualizer() {
     out = System.out;
   }
@@ -169,7 +169,7 @@ public class StringCFGVisualizer<
   /**
    * {@inheritDoc}
    *
-   * <p>StringCFGVisualizer does not write into file, so left intentionally blank.
+   * <p>StringCFGVisualizer does not write into a file, so this method is intentionally blank.
    */
   @Override
   public void shutdown() {}
@@ -177,7 +177,8 @@ public class StringCFGVisualizer<
   /**
    * {@inheritDoc}
    *
-   * <p>StringCFGVisualizer does not need a specific header, so just return an empty string.
+   * <p>StringCFGVisualizer does not need a specific header, so this method just returns an empty
+   * string.
    */
   @Override
   protected String visualizeGraphHeader() {
@@ -187,7 +188,8 @@ public class StringCFGVisualizer<
   /**
    * {@inheritDoc}
    *
-   * <p>StringCFGVisualizer does not need a specific footer, so just return an empty string.
+   * <p>StringCFGVisualizer does not need a specific footer, so this method just returns an empty
+   * string.
    */
   @Override
   protected String visualizeGraphFooter() {

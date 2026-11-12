@@ -25,13 +25,13 @@ public class LiveVarStore implements Store<LiveVarStore> {
   /** The set of live variables in this store. */
   private final Set<LiveVarNode> liveVarNodeSet;
 
-  /** Create a new LiveVarStore. */
+  /** Creates a new LiveVarStore. */
   public LiveVarStore() {
     liveVarNodeSet = new LinkedHashSet<>();
   }
 
   /**
-   * Create a new LiveVarStore.
+   * Creates a new LiveVarStore.
    *
    * @param liveVarNodeSet the set of live variable nodes. The parameter is captured and the caller
    *     should not retain an alias.
@@ -41,7 +41,7 @@ public class LiveVarStore implements Store<LiveVarStore> {
   }
 
   /**
-   * Add the information of a live variable into the live variable set.
+   * Adds the information of a live variable into the live variable set.
    *
    * @param variable a live variable
    */
@@ -50,7 +50,7 @@ public class LiveVarStore implements Store<LiveVarStore> {
   }
 
   /**
-   * Remove the information of a live variable from the live variable set.
+   * Removes the information of a live variable from the live variable set.
    *
    * @param variable a live variable
    */
@@ -59,7 +59,7 @@ public class LiveVarStore implements Store<LiveVarStore> {
   }
 
   /**
-   * Add the information of live variables in an expression to the live variable set.
+   * Adds the information of live variables in an expression to the live variable set.
    *
    * @param expression a node
    */
@@ -112,7 +112,7 @@ public class LiveVarStore implements Store<LiveVarStore> {
     return new LiveVarStore(liveVarNodeSetLub);
   }
 
-  /** It should not be called since it is not used by the backward analysis. */
+  /** This method should not be called, since it is not used by the backward analysis. */
   @Override
   public LiveVarStore widenedUpperBound(LiveVarStore previous) {
     throw new BugInCF("wub of LiveVarStore get called!");

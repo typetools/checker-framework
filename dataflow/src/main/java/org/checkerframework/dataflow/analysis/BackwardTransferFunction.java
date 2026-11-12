@@ -9,7 +9,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  * Interface of a backward transfer function for the abstract interpretation used for the backward
  * flow analysis.
  *
- * <p><em>Important</em>: The individual transfer functions ( {@code visit*}) are allowed to use
+ * <p><em>Important</em>: The individual transfer functions ({@code visit*}) are allowed to use
  * (and modify) the stores contained in the argument passed; the ownership is transferred from the
  * caller to that function.
  *
@@ -31,7 +31,7 @@ public interface BackwardTransferFunction<V extends AbstractValue<V>, S extends 
   S initialNormalExitStore(UnderlyingAST underlyingAST, List<ReturnNode> returnNodes);
 
   /**
-   * Returns the initial store that should be used at the exceptional exit block or given the
+   * Returns the initial store that should be used at the exceptional exit block, given the
    * underlying AST of a control flow graph.
    *
    * @param underlyingAST the underlying AST of the given control flow graph

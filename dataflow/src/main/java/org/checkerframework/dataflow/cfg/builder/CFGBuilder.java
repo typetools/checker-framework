@@ -50,12 +50,12 @@ public abstract class CFGBuilder {
   protected CFGBuilder() {}
 
   /**
-   * Build the control flow graph of some code.
+   * Builds the control flow graph of some code.
    *
    * @param root the compilation unit
-   * @param underlyingAST the AST that underlies the control frow graph
-   * @param assumeAssertionsDisabled can assertions be assumed to be disabled?
-   * @param assumeAssertionsEnabled can assertions be assumed to be enabled?
+   * @param underlyingAST the AST that underlies the control flow graph
+   * @param assumeAssertionsDisabled true if assertions can be assumed to be disabled
+   * @param assumeAssertionsEnabled true if assertions can be assumed to be enabled
    * @param env annotation processing environment containing type utilities
    * @return a control flow graph
    */
@@ -77,7 +77,7 @@ public abstract class CFGBuilder {
   }
 
   /**
-   * Build the control flow graph of some code (method, initializer block, ...). bodyPath is the
+   * Builds the control flow graph of some code (method, initializer block, ...). bodyPath is the
    * TreePath to the body of that code.
    */
   public static ControlFlowGraph build(
@@ -97,13 +97,13 @@ public abstract class CFGBuilder {
     return phase3result;
   }
 
-  /** Build the control flow graph of some code. */
+  /** Builds the control flow graph of some code. */
   public static ControlFlowGraph build(
       CompilationUnitTree root, UnderlyingAST underlyingAST, ProcessingEnvironment env) {
     return build(root, underlyingAST, false, false, env);
   }
 
-  /** Build the control flow graph of a method. */
+  /** Builds the control flow graph of a method. */
   public static ControlFlowGraph build(
       CompilationUnitTree root, MethodTree tree, ClassTree classTree, ProcessingEnvironment env) {
     UnderlyingAST underlyingAST = new CFGMethod(tree, classTree);
@@ -130,7 +130,7 @@ public abstract class CFGBuilder {
   /* --------------------------------------------------------- */
 
   /**
-   * Print a set of {@link Block}s and the edges between them. This is useful for examining the
+   * Prints a set of {@link Block}s and the edges between them. This is useful for examining the
    * results of phase two.
    *
    * @param blocks the blocks to print

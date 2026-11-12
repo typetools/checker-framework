@@ -8,7 +8,7 @@ import org.checkerframework.javacutil.BugInCF;
 
 public class Constant implements AbstractValue<Constant> {
 
-  /** What kind of abstract value is this? */
+  /** The kind of this abstract value. */
   protected final Type type;
 
   /** The value of this abstract value (or null). */
@@ -20,13 +20,13 @@ public class Constant implements AbstractValue<Constant> {
     BOTTOM,
   }
 
-  /** Create a constant for {@code type}. */
+  /** Creates a constant for {@code type}. */
   public Constant(Type type) {
     assert type != Type.CONSTANT;
     this.type = type;
   }
 
-  /** Create a constant for {@code value}. */
+  /** Creates a constant for {@code value}. */
   public Constant(Integer value) {
     this.type = Type.CONSTANT;
     this.value = value;
