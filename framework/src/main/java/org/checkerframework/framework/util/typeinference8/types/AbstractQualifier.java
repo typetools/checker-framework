@@ -15,9 +15,9 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * This is the super class for a qualifier, {@link Qualifier} or a qualifier variable, {@link
+ * This is the superclass for a qualifier, {@link Qualifier} or a qualifier variable, {@link
  * QualifierVar}. A {@link Qualifier} is a wrapper around {@code AnnotationMirror}. A {@code
- * QualifierVar} is a variable for a polymorphic qualifier that needs to be viewpoint adapted at a
+ * QualifierVar} is a variable for a polymorphic qualifier that needs to be viewpoint-adapted at a
  * call site.
  */
 public abstract class AbstractQualifier {
@@ -128,7 +128,7 @@ public abstract class AbstractQualifier {
    *
    * @param quals a set of qualifiers; can contain multiple qualifiers for multiple hierarchies and
    *     multiple qualifiers for a hierarchy
-   * @param combine a functions that combines two {@code AnnotationMirror}s in the same hierarchy
+   * @param combine a function that combines two {@code AnnotationMirror}s in the same hierarchy
    *     and returns a single {@code AnnotationMirror}
    * @return the result of applying the {@code combine} function on {@code quals}
    */

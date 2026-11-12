@@ -23,7 +23,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.element.ElementAnnotationUtil.UnexpectedAnnotationLocationException;
 import org.checkerframework.javacutil.BugInCF;
 
-/** Apply annotations to the use of a type parameter declaration. */
+/** Applies annotations to the use of a type parameter declaration. */
 public class TypeVarUseApplier {
 
   public static void apply(
@@ -82,7 +82,7 @@ public class TypeVarUseApplier {
   private final AnnotatedTypeFactory typeFactory;
 
   /**
-   * Create a new TypeVarUseApplier.
+   * Creates a new TypeVarUseApplier.
    *
    * @param type the type of the variable use
    * @param element the element for the variable use
@@ -119,7 +119,8 @@ public class TypeVarUseApplier {
    * Applies the bound annotations from the declaration of the type parameter and then applies the
    * explicit annotations written on the type variable.
    *
-   * @throws UnexpectedAnnotationLocationException if invalid location for an annotation was found
+   * @throws UnexpectedAnnotationLocationException if an invalid location for an annotation was
+   *     found
    */
   public void extractAndApply() throws UnexpectedAnnotationLocationException {
     ElementAnnotationUtil.addDeclarationAnnotationsFromElement(
@@ -178,7 +179,7 @@ public class TypeVarUseApplier {
 
   /**
    * Depending on what element type the annotations are stored on, the relevant annotations might be
-   * stored with different annotation positions. getPrimaryAnnotations finds the correct annotations
+   * stored with different annotation positions. getAnnotations finds the correct annotations
    * by annotation position and element kind and returns them.
    */
   private static List<Attribute.TypeCompound> getAnnotations(
@@ -227,13 +228,13 @@ public class TypeVarUseApplier {
   }
 
   /**
-   * Currently, the metadata for storing annotations (i.e. the Attribute.TypeCompounds) is null for
-   * binary-only parameters and type parameters. However, it is present on the method. So in order
-   * to ensure that we correctly retrieve the annotations we need to index from the method and
+   * Currently, the metadata for storing annotations (i.e., the Attribute.TypeCompounds) is null for
+   * binary-only parameters and type parameters. However, it is present on the method. So, in order
+   * to ensure that we correctly retrieve the annotations, we need to index from the method and
    * retrieve the annotations from its metadata.
    *
    * @return a list of annotations that were found on METHOD_FORMAL_PARAMETERS that match the
-   *     parameter index of the input element in the parent methods formal parameter list
+   *     parameter index of the input element in the parent method's formal parameter list
    */
   private static List<Attribute.TypeCompound> getParameterAnnos(Element paramElem) {
     Element enclosingElement = paramElem.getEnclosingElement();

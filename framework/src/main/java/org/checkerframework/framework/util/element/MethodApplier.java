@@ -25,7 +25,7 @@ import org.plumelib.util.StringsP;
  */
 public class MethodApplier extends TargetedElementAnnotationApplier {
 
-  /** Apply annotations from {@code element} to {@code type}. */
+  /** Applies annotations from {@code element} to {@code type}. */
   public static void apply(
       AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory)
       throws UnexpectedAnnotationLocationException {
@@ -38,7 +38,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
 
   private final AnnotatedTypeFactory typeFactory;
 
-  /** Method being annotated, this symbol contains all relevant annotations. */
+  /** Method being annotated; this symbol contains all relevant annotations. */
   private final Symbol.MethodSymbol methodSymbol;
 
   private final AnnotatedExecutableType methodType;
@@ -55,7 +55,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
       new TargetType[] {TargetType.METHOD_RECEIVER, TargetType.METHOD_RETURN, TargetType.THROWS};
 
   /**
-   * Returns receiver, returns, and throws. See extract and apply as we also annotate type params.
+   * Returns receiver, returns, and throws. See extractAndApply, as we also annotate type params.
    *
    * @return receiver, returns, and throws
    */
@@ -184,7 +184,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     }
   }
 
-  /** For each thrown type, collect all the annotations for that type and apply them. */
+  /** For each thrown type, collects all the annotations for that type and applies them. */
   private void applyThrowsAnnotations(List<Attribute.TypeCompound> annos)
       throws UnexpectedAnnotationLocationException {
     List<AnnotatedTypeMirror> thrown = methodType.getThrownTypes();
@@ -221,8 +221,8 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
   }
 
   /**
-   * If the return type is a use of a type variable, first apply the bound annotations from the type
-   * variable's declaration.
+   * If the return type is a use of a type variable, first applies the bound annotations from the
+   * type variable's declaration.
    *
    * @throws UnexpectedAnnotationLocationException if a location is invalid
    */

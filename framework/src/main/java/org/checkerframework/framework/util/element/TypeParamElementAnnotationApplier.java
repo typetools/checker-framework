@@ -19,8 +19,8 @@ import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Applies Element annotations to a single AnnotatedTypeVariable representing a type parameter.
- * Note, the index of IndexedElementAnnotationApplier refers to the type parameter's index in the
- * list that encloses it.
+ * Note that the index of IndexedElementAnnotationApplier refers to the type parameter's index in
+ * the list that encloses it.
  */
 abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotationApplier {
 
@@ -123,7 +123,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
 
   /**
    * Applies a list of annotations to the upperBound of the type parameter. If the type of the upper
-   * bound is an intersection we must first find the correct location for each annotation.
+   * bound is an intersection, we must first find the correct location for each annotation.
    */
   private void applyUpperBounds(List<TypeCompound> upperBounds) {
     if (!upperBounds.isEmpty()) {
@@ -164,7 +164,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
   }
 
   /**
-   * In the event of multiple annotations on an AnnotatedNullType lower bound we want to preserve
+   * In the event of multiple annotations on an AnnotatedNullType lower bound, we want to preserve
    * the multiple annotations so that a type.invalid error is issued later.
    *
    * @param annos the annotations to add to the lower bound

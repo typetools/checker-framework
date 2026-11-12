@@ -57,7 +57,7 @@ public class VariableBounds {
 
   /**
    * Qualifier bounds on this variable. Stored as a map from kind of bound (upper, lower, equal) to
-   * a set of {@link AnnotationMirror}s. A qualifier bound is a bound on the primary annotation of
+   * a set of {@link AbstractQualifier}s. A qualifier bound is a bound on the primary annotation of
    * this variable.
    */
   public final EnumMap<BoundKind, Set<AbstractQualifier>> qualifierBounds =
@@ -140,7 +140,7 @@ public class VariableBounds {
     return getOfKind(qualifierBounds, kind);
   }
 
-  /** Save the current bounds in case the first attempt at resolution fails. */
+  /** Saves the current bounds, in case the first attempt at resolution fails. */
   public void save() {
     EnumMap<BoundKind, LinkedHashSet<AbstractType>> newSavedBounds = new EnumMap<>(BoundKind.class);
     EnumMap<BoundKind, LinkedHashSet<AbstractQualifier>> newSavedQualifierBounds =
@@ -154,8 +154,8 @@ public class VariableBounds {
   }
 
   /**
-   * Restore the bounds to the state previously saved. This method is called if the first attempt at
-   * resolution fails.
+   * Restores the bounds to the state previously saved. This method is called if the first attempt
+   * at resolution fails.
    */
   public void restore() {
     EnumMap<BoundKind, LinkedHashSet<AbstractType>> savedBounds = this.savedBounds;
@@ -229,22 +229,22 @@ public class VariableBounds {
   }
 
   /**
-   * Set has throws bound.
+   * Sets whether this has a throws bound.
    *
-   * @param b has thrown bound
+   * @param b true if this has a throws bound
    */
   public void setHasThrowsBound(boolean b) {
     hasThrowsBound = b;
   }
 
   /**
-   * Adds {@code otherType} as bound against this variable. A proper {@code EQUAL} bound is boxed
+   * Adds {@code otherType} as a bound against this variable. A proper {@code EQUAL} bound is boxed
    * before it is added.
    *
    * @param parent the constraint whose reduction created this bound, or null if no constraint did
    * @param kind the kind of bound
    * @param otherType the bound type
-   * @return if a new bound was added
+   * @return true if a new bound was added
    */
   public boolean addBound(@Nullable Constraint parent, BoundKind kind, AbstractType otherType) {
     if (otherType.isUseOfVariable() && ((UseOfVariable) otherType).getVariable() == variable) {
@@ -284,7 +284,7 @@ public class VariableBounds {
   }
 
   /**
-   * Add constraints created via incorporation of the bound. See JLS 18.3.1.
+   * Adds constraints created via incorporation of the bound. See JLS 18.3.1.
    *
    * @param kind the kind of bound
    * @param qualifiers the qualifiers
@@ -314,7 +314,7 @@ public class VariableBounds {
   }
 
   /**
-   * Add a {@link QualifierTyping} constraint for a qualifier in {@code setT} and the qualifier in
+   * Adds a {@link QualifierTyping} constraint for a qualifier in {@code setT} and the qualifier in
    * {@code setS} in the same hierarchy.
    *
    * @param setT a set of abstract qualifiers on the left side of the constraint
@@ -327,7 +327,7 @@ public class VariableBounds {
   }
 
   /**
-   * Add constraints created via incorporation of the bound. See JLS 18.3.1.
+   * Adds constraints created via incorporation of the bound. See JLS 18.3.1.
    *
    * @param parent the constraint whose reduction created this bound, or null if no constraint did
    * @param kind the kind of bound
@@ -473,7 +473,7 @@ public class VariableBounds {
   /**
    * Returns the constraints between the type arguments to {@code s} and {@code t}.
    *
-   * <p>If the there exists a supertype of S of the form {@code G<S1, ..., Sn>} and a supertype of T
+   * <p>If there exists a supertype of S of the form {@code G<S1, ..., Sn>} and a supertype of T
    * of the form {@code G<T1,..., Tn>} (for some generic class or interface, G), then for all i
    * ({@code 1 <= i <= n}), if Si and Ti are types (not wildcards), the constraint formula {@code
    * <Si = Ti>} is implied.
@@ -743,7 +743,7 @@ public class VariableBounds {
   }
 
   /**
-   * Apply instantiations to all bounds and constraints of this variable.
+   * Applies instantiations to all bounds and constraints of this variable.
    *
    * @return true if any of the bounds changed
    */
@@ -859,11 +859,11 @@ public class VariableBounds {
   }
 
   /**
-   * Does this bound set contain two bounds of the forms {@code S1 <: var} and {@code S2 <: var},
-   * where S1 and S2 have supertypes that are two different parameterizations of the same generic
-   * class or interface?
+   * Returns true if this bound set contains two bounds of the forms {@code S1 <: var} and {@code S2
+   * <: var}, where S1 and S2 have supertypes that are two different parameterizations of the same
+   * generic class or interface.
    *
-   * @return true if this bound set contain two bounds of the forms {@code S1 <: var} and {@code S2
+   * @return true if this bound set contains two bounds of the forms {@code S1 <: var} and {@code S2
    *     <: var}, where S1 and S2 have supertypes that are two different parameterizations of the
    *     same generic class or interface
    */
@@ -913,14 +913,14 @@ public class VariableBounds {
   /**
    * Returns true if there exists an equal or lower bound against a type, S, such that S is not a
    * subtype of {@code G<...>}, but S is a subtype of the raw type {@code |G<...>|}, where {@code G}
-   * a generic class or interface for which the parameter of this method, {@code t}, is a
+   * is a generic class or interface for which the parameter of this method, {@code t}, is a
    * parameterization.
    *
    * @param t a parameterization of a generic class or interface, {@code G}
    * @return true if there exists an equal or lower bound against a type, S, such that S is not a
    *     subtype of {@code G<...>}, but S is a subtype of the raw type {@code |G<...>|}, where
-   *     {@code G} a generic class or interface for which the parameter of this method, {@code t},
-   *     is a parameterization
+   *     {@code G} is a generic class or interface for which the parameter of this method, {@code
+   *     t}, is a parameterization
    */
   public boolean hasRawTypeLowerOrEqualBound(AbstractType t) {
     for (AbstractType type : getBoundsOfKind(BoundKind.LOWER)) {

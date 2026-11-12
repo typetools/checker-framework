@@ -33,7 +33,7 @@ import org.plumelib.util.StringsP;
 /**
  * This is the default implementation of {@link QualifierKindHierarchy}.
  *
- * <p>By default, the subtyping information and information about polymorphic qualifiers is read
+ * <p>By default, the subtyping information and information about polymorphic qualifiers are read
  * from meta-annotations on the annotation classes. This information is used to infer further
  * information such as top and bottom qualifiers. Subclasses can override the following methods to
  * change this behavior:
@@ -138,7 +138,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
    * Creates a {@link DefaultQualifierKindHierarchy}. Also, creates and initializes all its
    * qualifier kinds.
    *
-   * <p>For some type systems, qualifiers may be added at run time, so the {@link SubtypeOf}
+   * <p>For some type systems, qualifiers can be added at run time, so the {@link SubtypeOf}
    * meta-annotation on the bottom qualifier class cannot specify all other qualifiers. For those
    * type systems, use this constructor. Otherwise, use {@link
    * #DefaultQualifierKindHierarchy(Collection)}.
@@ -157,8 +157,8 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
    * Private constructor that sets the bottom qualifier if {@code bottom} is nonnull.
    *
    * @param qualifierClasses all the classes of qualifiers supported by this hierarchy
-   * @param bottom the bottom qualifier of this hierarchy or null if bottom can be inferred from the
-   *     meta-annotations
+   * @param bottom the bottom qualifier of this hierarchy, or null if bottom can be inferred from
+   *     the meta-annotations
    * @param voidParam void parameter to differentiate from {@link
    *     #DefaultQualifierKindHierarchy(Collection, Class)}
    */
@@ -235,8 +235,8 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
   }
 
   /**
-   * Creates all QualifierKind objects for the given qualifier classes and adds them to
-   * qualifierClassMap. This method does not initialize all fields in the {@link QualifierKind};
+   * Creates all QualifierKind objects for the given qualifier classes and returns a map that
+   * contains them. This method does not initialize all fields in the {@link QualifierKind};
    * that is done by {@link #initializeQualifierKindFields(Map)}.
    *
    * @param qualifierClasses classes of annotations that are type qualifiers
@@ -265,7 +265,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
    * create the bottom set, to create the top set, and by {@link
    * #initializeQualifierKindFields(Map)}.
    *
-   * <p>This implementation uses the {@link SubtypeOf} meta-annotation. Subclasses may override this
+   * <p>This implementation uses the {@link SubtypeOf} meta-annotation. Subclasses can override this
    * method to create the direct super map some other way.
    *
    * <p>Note that this method is called from the constructor when {@link #nameToQualifierKind} and
@@ -485,7 +485,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
   /**
    * Returns the set of all qualifier kinds that are a strict supertype of {@code qualifierKind}.
    *
-   * @param qualifierKind the qualifier kind whose super types should be returned
+   * @param qualifierKind the qualifier kind whose supertypes should be returned
    * @param directSuperMap a mapping from a {@link QualifierKind} to a set of its direct super
    *     qualifier kinds; created by {@link #createDirectSuperMap()}
    * @return the set of all qualifier kinds that are a strict supertype of {@code qualifierKind}
@@ -597,7 +597,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
    * Creates the glb of qualifier kinds. {@code glbs.get(kind1).get(kind2)} returns the glb of kind1
    * and kind2.
    *
-   * @return a mapping of glb
+   * @return a mapping of glbs
    */
   @RequiresNonNull("this.qualifierKinds")
   protected Map<QualifierKind, Map<QualifierKind, QualifierKind>> createGlbsMap(
@@ -668,7 +668,7 @@ public class DefaultQualifierKindHierarchy implements QualifierKindHierarchy {
   }
 
   /**
-   * Add Key: qual1, Value: (Key: qual2, Value: value) to {@code map}. If already in map, throw an
+   * Adds Key: qual1, Value: (Key: qual2, Value: value) to {@code map}. If already in map, throws an
    * exception if value is different.
    *
    * @param map mapping to side-effect

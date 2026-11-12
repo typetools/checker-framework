@@ -30,7 +30,7 @@ import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * This interface is both a functional interface, see {@link #toJavaExpression(String)}, and also a
+ * This interface is both a functional interface (see {@link #toJavaExpression(String)}) and also a
  * collection of static methods that convert a string to a JavaExpression at common locations.
  *
  * <p>Some conversion routines merely do parsing. Other conversion routines parse and then transform
@@ -44,14 +44,14 @@ import org.checkerframework.javacutil.TreeUtils;
 public interface StringToJavaExpression {
 
   /**
-   * Convert a string to a {@link JavaExpression}. Returns {@code null} if no conversion exists.
+   * Converts a string to a {@link JavaExpression}. Returns {@code null} if no conversion exists.
    *
    * <p>Conversion includes parsing {@code stringExpr} to a {@code JavaExpression} and optionally
    * transforming the result of parsing into another {@code JavaExpression}. An example of
    * transformation is viewpoint adaptation.
    *
    * @param stringExpr a Java expression
-   * @return a {@code JavaExpression} or {@code null} if no conversion from {@code stringExpr}
+   * @return a {@code JavaExpression}, or {@code null} if no conversion from {@code stringExpr}
    *     exists
    * @throws JavaExpressionParseException if {@code stringExpr} cannot be parsed to a {@code
    *     JavaExpression}
@@ -237,7 +237,7 @@ public interface StringToJavaExpression {
   }
 
   /**
-   * uf found Parses a string as if it were written at the declaration of the field and then
+   * Parses a string as if it were written at the declaration of the field and then
    * viewpoint-adapts the result to the use.
    *
    * @param expression a Java expression to parse

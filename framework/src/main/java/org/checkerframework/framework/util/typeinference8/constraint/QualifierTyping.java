@@ -13,7 +13,7 @@ import org.checkerframework.framework.util.typeinference8.util.Java8InferenceCon
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * Represents a constraint between two {@link AbstractType}. One of:
+ * Represents a constraint between two {@link AbstractQualifier}s. One of:
  *
  * <ul>
  *   <li>{@link Kind#QUALIFIER_SUBTYPE} {@code < Q <: R >}: A qualifier Q is a subtype of a
@@ -93,7 +93,7 @@ public class QualifierTyping implements Constraint {
   }
 
   /**
-   * Reduce this constraint.
+   * Reduces this constraint.
    *
    * @param context the context
    * @return the result of reducing this constraint
@@ -121,7 +121,7 @@ public class QualifierTyping implements Constraint {
   }
 
   /**
-   * Reduce this constraint.
+   * Reduces this constraint.
    *
    * @param context the context
    * @return the result of reducing this constraint
