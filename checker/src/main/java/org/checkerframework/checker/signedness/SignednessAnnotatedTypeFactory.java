@@ -309,7 +309,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                   || SignednessShifts.isCastedShiftEitherSignedness(tree, path))) {
             type.replaceAnnotation(SIGNED_POSITIVE);
           } else {
-            AnnotatedTypeMirror lht = binaryTreeArgTypes(tree).left();
+            AnnotatedTypeMirror lht =
+                unaryNumericPromotion(getAnnotatedType(tree.getLeftOperand()));
             type.replaceAnnotations(lht.getPrimaryAnnotations());
           }
         }

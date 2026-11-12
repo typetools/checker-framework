@@ -3430,6 +3430,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns the type of the given operand after unary numeric promotion (JLS 5.6), or the operand's
+   * type unchanged if unary numeric promotion does not apply to it. For example, unary numeric
+   * promotion unboxes a {@code Character} operand and widens it to {@code int}.
+   *
+   * @param type the type of an operand, such as the left operand of a shift
+   * @return the type of the operand after unary numeric promotion
+   */
+  public AnnotatedTypeMirror unaryNumericPromotion(AnnotatedTypeMirror type) {
+    return unaryNumericPromotion(type, numericTypeKind(type));
+  }
+
+  /**
+   * Returns the type of the given operand after unary numeric promotion (JLS 5.6), or the operand's
    * type unchanged if unary numeric promotion does not apply to it.
    *
    * @param type the type of an operand
@@ -3438,11 +3450,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the type of the operand after unary numeric promotion
    */
   private AnnotatedTypeMirror unaryNumericPromotion(AnnotatedTypeMirror type, TypeKind kind) {
-    return switch (kind) {
-      case BYTE, SHORT, CHAR -> promoteNumeric(type, TypeKind.INT);
-      case INT, LONG, FLOAT, DOUBLE -> promoteNumeric(type, kind);
-      default -> type;
-    };
+    // Unary numeric promotion is binary numeric promotion with an int operand.
+    TypeKind promotedKind = TypeKindUtils.widenedNumericType(kind, TypeKind.INT);
+    return TypeKindUtils.isNumeric(promotedKind) ? promoteNumeric(type, promotedKind) : type;
   }
 
   /**
@@ -3454,10 +3464,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the type of the operand after unboxing and widening
    */
   private AnnotatedPrimitiveType promoteNumeric(AnnotatedTypeMirror type, TypeKind promotedKind) {
-    AnnotatedPrimitiveType unboxed =
-        type.getKind().isPrimitive()
-            ? (AnnotatedPrimitiveType) type
-            : getUnboxedType((AnnotatedDeclaredType) type);
+    AnnotatedPrimitiveType unboxed = applyUnboxing(type);
     return unboxed.getKind() == promotedKind
         ? unboxed
         : getWidenedPrimitive(unboxed, types.getPrimitiveType(promotedKind));
