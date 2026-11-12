@@ -1,3 +1,4 @@
+import org.checkerframework.checker.index.qual.LessThan;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.checkerframework.checker.index.qual.Positive;
 import org.checkerframework.dataflow.qual.Pure;
@@ -32,6 +33,22 @@ public class AssignmentInComparison {
     if (i > (i = 0)) {
       // :: error: [assignment]
       @Positive int x = i;
+    }
+  }
+
+  // The right operand assigns `i` after the left operand reads it, so the comparison does not
+  // imply that the new value of `i` is less than `i`.
+  static void assignmentInRightOperandLessThan(@NonNegative int i) {
+    if (i > (i = 0)) {
+      // :: error: [assignment]
+      @Positive int z = i - i;
+    }
+  }
+
+  static void assignmentInRightOperandLessThanGTE(@NonNegative int i) {
+    if (i - 1 >= (i = 0)) {
+      // :: error: [assignment]
+      @LessThan("i") int z = i;
     }
   }
 

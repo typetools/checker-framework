@@ -989,6 +989,9 @@ public abstract class CFAbstractTransfer<
    * within {@code node}: the result for {@code n.next = (n = o).other} omits {@code n.next}. Only
    * an assignment that executes after a side is evaluated matters: the result for {@code a[i = 0] =
    * b[i]} includes {@code b[i]}, because {@code i} is assigned before {@code b[i]} is evaluated.
+   * Likewise, a call that is not side-effect-free might reassign a field: the result for {@code
+   * global.next = reassignGlobal()} omits {@code global.next} if {@code global} is a non-final
+   * field.
    *
    * <p>A node that is not an assignment is returned even if it contains an assignment, as in {@code
    * x + (x = 1)}. {@link JavaExpression#fromNode} converts such a node to an expression that
@@ -1024,37 +1027,49 @@ public abstract class CFAbstractTransfer<
           chainTrees.add(at);
         }
       }
-      AssignmentTargetScanner scanner = new AssignmentTargetScanner();
+      AssignmentTargetScanner scanner = new AssignmentTargetScanner(this::isSideEffectFree);
       if (chainTrees.size() != chain.size()) {
         // A compound assignment, increment, or decrement.  Conservatively consider every
-        // assignment within the tree as executing after every part is evaluated.
+        // assignment and call within the tree as executing after every part is evaluated.
         List<JavaExpression> targets = new ArrayList<>();
         scanner.scan(assignment.getTree(), targets);
         for (AssignmentNode a : chain) {
           result.add(a.getTarget());
         }
         result.add(part);
-        result.removeIf(p -> mayBeChangedByAssignment(JavaExpression.fromNode(p), targets, true));
+        boolean callsMethodWithSideEffects = scanner.callsMethodWithSideEffects;
+        result.removeIf(
+            p -> {
+              JavaExpression expr = JavaExpression.fromNode(p);
+              return mayBeChangedByAssignment(expr, targets, true)
+                  || (callsMethodWithSideEffects && callMayRelocate(expr));
+            });
       } else {
         // Java evaluates the receivers and indices of the targets from left to right, then the
         // final right-hand side, then stores into the targets from right to left.  So an
         // assignment within a target's receiver or index executes before the later targets and
         // the right-hand side are evaluated, and does not change their values.
         // `laterTargets` holds the assignments that execute after the current part is evaluated.
+        // Likewise, `scanner.callsMethodWithSideEffects` indicates whether a call that is not
+        // side-effect-free executes after the current part is evaluated.
         List<JavaExpression> laterTargets = new ArrayList<>();
         for (AssignmentTree at : chainTrees) {
           laterTargets.add(AssignmentTargetScanner.targetExpression(at.getVariable()));
         }
         scanner.scan(chainTrees.get(chainTrees.size() - 1).getExpression(), laterTargets);
-        if (!mayBeChangedByAssignment(JavaExpression.fromNode(part), laterTargets, true)) {
+        JavaExpression partJe = JavaExpression.fromNode(part);
+        if (!mayBeChangedByAssignment(partJe, laterTargets, true)
+            && !(scanner.callsMethodWithSideEffects && callMayRelocate(partJe))) {
           result.add(part);
         }
         for (int i = chain.size() - 1; i >= 0; i--) {
-          // An assignment within the target's own receiver or index might execute after part of
-          // the target is evaluated, as in `a[i++] = o`, so consider it too.
+          // An assignment or call within the target's own receiver or index might execute after
+          // part of the target is evaluated, as in `a[i++] = o`, so consider it too.
           scanner.scan(chainTrees.get(i).getVariable(), laterTargets);
           Node target = chain.get(i).getTarget();
-          if (!mayBeChangedByAssignment(JavaExpression.fromNode(target), laterTargets, true)) {
+          JavaExpression targetJe = JavaExpression.fromNode(target);
+          if (!mayBeChangedByAssignment(targetJe, laterTargets, true)
+              && !(scanner.callsMethodWithSideEffects && callMayRelocate(targetJe))) {
             result.add(0, target);
           }
         }
@@ -1084,6 +1099,62 @@ public abstract class CFAbstractTransfer<
       }
     }
     return result;
+  }
+
+  /**
+   * Returns true if a method or constructor call might change which location {@code expr} denotes:
+   * that is, if {@code expr} is a field access whose receiver, or an array access whose array or
+   * index, other code can assign. For example, a call that reassigns the field {@code global}
+   * changes the location that {@code global.next} denotes. Returns false if no store can hold a
+   * value for {@code expr}.
+   *
+   * @param expr a side of an assignment
+   * @return true if a call that is not side-effect-free might change the location that {@code
+   *     expr} denotes
+   */
+  @Pure
+  private static boolean callMayRelocate(JavaExpression expr) {
+    if (!CFAbstractStore.canInsertJavaExpression(expr)) {
+      return false;
+    }
+    if (expr instanceof FieldAccess fa) {
+      return fa.getReceiver().isAssignableByOtherCode();
+    } else if (expr instanceof ArrayAccess aa) {
+      return aa.getArray().isAssignableByOtherCode() || aa.getIndex().isAssignableByOtherCode();
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Returns true if {@code node} is the left operand of a binary operation, and evaluating the
+   * right operand might change the value of {@code node}. For example, returns true for the left
+   * operand of {@code i > (i = 0)}, and for the left operand of {@code f == clearF()} if {@code f}
+   * is a non-final field. Unlike {@link #splitAssignments}, this method also considers expressions
+   * that no store can hold a value for, such as {@code i - 1}.
+   *
+   * <p>A client that refines one operand of a comparison with a fact that mentions the other
+   * operand can use this method to check that the fact holds after the comparison.
+   *
+   * @param node a node
+   * @return true if the operand evaluated after {@code node} might change the value of {@code
+   *     node}
+   */
+  protected boolean mayBeChangedByLaterOperand(Node node) {
+    ExpressionTree laterOperand = laterOperand(node);
+    if (laterOperand == null) {
+      return false;
+    }
+    AssignmentTargetScanner laterScanner = new AssignmentTargetScanner(this::isSideEffectFree);
+    List<JavaExpression> laterTargets = new ArrayList<>();
+    laterScanner.scan(laterOperand, laterTargets);
+    JavaExpression expr = JavaExpression.fromNode(node);
+    for (JavaExpression target : laterTargets) {
+      if (assignmentMayChange(target, expr, false)) {
+        return true;
+      }
+    }
+    return laterScanner.callsMethodWithSideEffects && expr.isAssignableByOtherCode();
   }
 
   /**
@@ -1469,13 +1540,14 @@ public abstract class CFAbstractTransfer<
    * Returns true if evaluating {@code rhs} might reassign a variable in the receiver or index of
    * {@code lhs}, as in {@code n.next = (n = o)}. Java evaluates the receiver and index of {@code
    * lhs} before {@code rhs}, so in that case the assignment stores into a location that {@code lhs}
-   * no longer denotes after the assignment.
+   * no longer denotes after the assignment. A call in {@code rhs} that is not side-effect-free can
+   * also do so, as in {@code global.next = reassignGlobal()}.
    *
    * @param lhs the left-hand side of an assignment
    * @param rhs the right-hand side of the assignment
    * @return true if evaluating {@code rhs} might change the location that {@code lhs} denotes
    */
-  private static boolean rhsMayRelocateTarget(Node lhs, Node rhs) {
+  private boolean rhsMayRelocateTarget(Node lhs, Node rhs) {
     if (lhs instanceof LocalVariableNode) {
       return false;
     }
@@ -1484,9 +1556,11 @@ public abstract class CFAbstractTransfer<
       return false;
     }
     List<JavaExpression> targets = new ArrayList<>();
-    new AssignmentTargetScanner().scan(rhsTree, targets);
-    return !targets.isEmpty()
-        && mayBeChangedByAssignment(JavaExpression.fromNode(lhs), targets, true);
+    AssignmentTargetScanner scanner = new AssignmentTargetScanner(this::isSideEffectFree);
+    scanner.scan(rhsTree, targets);
+    JavaExpression lhsJe = JavaExpression.fromNode(lhs);
+    return (!targets.isEmpty() && mayBeChangedByAssignment(lhsJe, targets, true))
+        || (scanner.callsMethodWithSideEffects && callMayRelocate(lhsJe));
   }
 
   @Override
