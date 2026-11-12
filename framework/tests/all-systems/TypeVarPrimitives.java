@@ -117,6 +117,15 @@ public class TypeVarPrimitives {
     return sum;
   }
 
+  // Assignment conversion unboxes and widens the result of the desugared next() call.
+  <T extends Integer> long enhancedForWidening(Iterable<T> iterable) {
+    long sum = 0;
+    for (long l : iterable) {
+      sum += l;
+    }
+    return sum;
+  }
+
   long captured(java.util.List<? extends Integer> l) {
     return l.get(0) * 2L;
   }
