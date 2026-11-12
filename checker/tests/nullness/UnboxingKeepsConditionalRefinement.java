@@ -34,6 +34,24 @@ public class UnboxingKeepsConditionalRefinement {
     }
   }
 
+  // The unboxed expression has a type-variable type whose bound is Boolean.
+  @SuppressWarnings("unchecked")
+  <T extends Boolean> void castToTypeVariable(@Nullable Object o) {
+    if ((T) isNN(o)) {
+      o.hashCode();
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  <T extends Boolean> void castToTypeVariableElse(@Nullable Object o) {
+    if ((T) isNull(o)) {
+      // :: error: [dereference.of.nullable]
+      o.hashCode();
+    } else {
+      o.hashCode();
+    }
+  }
+
   void whileLoop(@Nullable Object o) {
     while (isNN(o)) {
       o.hashCode();

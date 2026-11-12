@@ -919,10 +919,11 @@ public abstract class CFAbstractTransfer<
    * @return true if the method access is the target of an unboxing call
    */
   @SuppressWarnings("interning:not.interned") // CFG node identity
-  private static boolean isTargetOfUnboxingCall(MethodAccessNode n) {
-    // Cheap filter: the receiver of an unboxing call is a boxed primitive.  This avoids scanning
-    // the block for most method accesses.
-    if (!TypesUtils.isBoxedPrimitive(n.getReceiver().getType())) {
+  private boolean isTargetOfUnboxingCall(MethodAccessNode n) {
+    // Cheap filter: unboxing conversion applies to the receiver of an unboxing call.  The receiver
+    // is a boxed primitive, or a type variable or intersection type whose erasure is one.  This
+    // avoids scanning the block for most method accesses.
+    if (!TypesUtils.isUnboxable(n.getReceiver().getType(), analysis.getTypes())) {
       return false;
     }
     Block block = n.getBlock();
