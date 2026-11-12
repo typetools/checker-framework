@@ -850,6 +850,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    *
    * @param copyAnnotations true if the copy should have annotations, i.e., field {@code
    *     annotations} should be copied
+   * @return a shallow copy of this type
    */
   public abstract AnnotatedTypeMirror shallowCopy(boolean copyAnnotations);
 

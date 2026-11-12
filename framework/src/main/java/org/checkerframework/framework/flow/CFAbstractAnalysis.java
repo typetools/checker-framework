@@ -51,6 +51,10 @@ import org.checkerframework.javacutil.TypesUtils;
  * <p>The purpose of this class is twofold: Firstly, it serves as a factory for abstract values,
  * stores, and the transfer function. Furthermore, it makes it easy for the transfer function and
  * the stores to access the {@link AnnotatedTypeFactory}, the qualifier hierarchy, etc.
+ *
+ * @param <V> the abstract value type to be tracked by the analysis
+ * @param <S> the store type used in the analysis
+ * @param <T> the transfer function type that is used to approximate run-time behavior
  */
 public abstract class CFAbstractAnalysis<
         V extends CFAbstractValue<V>,

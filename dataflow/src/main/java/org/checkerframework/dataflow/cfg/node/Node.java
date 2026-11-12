@@ -111,7 +111,11 @@ public abstract class Node implements UniqueId {
     return block;
   }
 
-  /** Sets the basic block this node belongs to. */
+  /**
+   * Sets the basic block this node belongs to.
+   *
+   * @param b the basic block this node belongs to
+   */
   public void setBlock(Block b) {
     block = b;
   }
@@ -143,10 +147,15 @@ public abstract class Node implements UniqueId {
    * @param <P> parameter type
    * @param visitor the visitor to be applied to this node
    * @param p the parameter for this operation
+   * @return the result of visiting this node
    */
   public abstract <R, P> R accept(NodeVisitor<R, P> visitor, P p);
 
-  /** Returns true if the node is an lvalue. */
+  /**
+   * Returns true if the node is an lvalue.
+   *
+   * @return true if the node is an lvalue
+   */
   @Pure
   public boolean isLValue() {
     return lvalue;

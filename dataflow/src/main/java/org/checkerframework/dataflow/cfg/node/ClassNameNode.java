@@ -85,7 +85,11 @@ public class ClassNameNode extends Node {
     return element;
   }
 
-  /** Returns the parent node of the current node. */
+  /**
+   * Returns the parent node of the current node.
+   *
+   * @return the parent node of the current node, or {@code null} if none
+   */
   public @Nullable Node getParent() {
     return parent;
   }

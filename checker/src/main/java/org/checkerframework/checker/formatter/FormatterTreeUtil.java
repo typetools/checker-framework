@@ -426,6 +426,9 @@ public class FormatterTreeUtil {
    * Takes an exception that describes an invalid formatter string, and returns a syntax tree
    * element that represents an {@link InvalidFormat} annotation with the exception's error message
    * as its value.
+   *
+   * @param ex an exception that describes an invalid formatter string
+   * @return an {@link InvalidFormat} annotation whose value is the exception's error message
    */
   public AnnotationMirror exceptionToInvalidFormatAnnotation(IllegalFormatException ex) {
     return stringToInvalidFormatAnnotation(ex.getMessage());

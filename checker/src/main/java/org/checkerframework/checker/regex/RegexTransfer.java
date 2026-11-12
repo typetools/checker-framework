@@ -38,7 +38,11 @@ public class RegexTransfer extends CFTransfer {
   /** The MatchResult.groupCount() method. */
   private final ExecutableElement matchResultgroupCount;
 
-  /** Creates the transfer function for the Regex Checker. */
+  /**
+   * Creates the transfer function for the Regex Checker.
+   *
+   * @param analysis the analysis that uses this transfer function
+   */
   public RegexTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
     super(analysis);
     this.matchResultgroupCount =

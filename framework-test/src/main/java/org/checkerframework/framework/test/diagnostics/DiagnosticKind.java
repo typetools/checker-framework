@@ -32,6 +32,9 @@ public enum DiagnosticKind {
 
   /**
    * Converts a string as it would appear in error messages or source code into a DiagnosticKind.
+   *
+   * @param parseStr a string as it would appear in error messages or source code
+   * @return the corresponding DiagnosticKind, or null if there is none
    */
   public static @Nullable DiagnosticKind fromParseString(String parseStr) {
     return stringToCategory.get(parseStr);

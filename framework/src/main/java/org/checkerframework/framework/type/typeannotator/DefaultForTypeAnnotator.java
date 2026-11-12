@@ -112,7 +112,12 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
     return TypeKind.valueOf(typeKind.name());
   }
 
-  /** Adds the default qualifier, {@code theQual}, for the given TypeKind. */
+  /**
+   * Adds the default qualifier, {@code theQual}, for the given TypeKind.
+   *
+   * @param typeKind the TypeKind
+   * @param theQual the default qualifier for {@code typeKind}
+   */
   public void addTypeKind(TypeKind typeKind, AnnotationMirror theQual) {
     boolean res = qualHierarchy.updateMappingToMutableSet(typeKinds, typeKind, theQual);
     if (!res) {
@@ -128,6 +133,9 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
 
   /**
    * Adds the default qualifier, {@code theQual}, for the given {@link AnnotatedTypeMirror} class.
+   *
+   * @param typeClass the AnnotatedTypeMirror class
+   * @param theQual the default qualifier for {@code typeClass}
    */
   public void addAtmClass(
       Class<? extends AnnotatedTypeMirror> typeClass, AnnotationMirror theQual) {
@@ -143,7 +151,12 @@ public class DefaultForTypeAnnotator extends TypeAnnotator {
     }
   }
 
-  /** Adds the default qualifier, {@code theQual}, for the given type. */
+  /**
+   * Adds the default qualifier, {@code theQual}, for the given type.
+   *
+   * @param clazz the type
+   * @param theQual the default qualifier for {@code clazz}
+   */
   public void addTypes(Class<?> clazz, AnnotationMirror theQual) {
     String typeNameString = clazz.getCanonicalName();
     boolean res = qualHierarchy.updateMappingToMutableSet(types, typeNameString, theQual);

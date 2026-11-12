@@ -486,7 +486,15 @@ public class Resolver {
     f.set(receiver, value);
   }
 
-  /** Reflectively gets the value of a field. */
+  /**
+   * Reflectively gets the value of a field.
+   *
+   * @param receiver the object whose field is read
+   * @param fieldName the name of the field to read
+   * @return the value of the field
+   * @throws NoSuchFieldException if the receiver's class has no field with the given name
+   * @throws IllegalAccessException if the field is inaccessible
+   */
   private @Nullable Object getField(Object receiver, String fieldName)
       throws NoSuchFieldException, IllegalAccessException {
     Field f = receiver.getClass().getDeclaredField(fieldName);

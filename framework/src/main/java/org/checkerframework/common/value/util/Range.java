@@ -269,27 +269,47 @@ public final class Range {
     return from == range.from && to == range.to;
   }
 
-  /** Returns true if this range contains every {@code long} value. */
+  /**
+   * Returns true if this range contains every {@code long} value.
+   *
+   * @return true if this range contains every {@code long} value
+   */
   public boolean isLongEverything() {
     return equalsRange(LONG_EVERYTHING);
   }
 
-  /** Returns true if this range contains every {@code int} value. */
+  /**
+   * Returns true if this range contains every {@code int} value.
+   *
+   * @return true if this range contains every {@code int} value
+   */
   public boolean isIntEverything() {
     return equalsRange(INT_EVERYTHING);
   }
 
-  /** Returns true if this range contains every {@code short} value. */
+  /**
+   * Returns true if this range contains every {@code short} value.
+   *
+   * @return true if this range contains every {@code short} value
+   */
   public boolean isShortEverything() {
     return equalsRange(SHORT_EVERYTHING);
   }
 
-  /** Returns true if this range contains every {@code char} value. */
+  /**
+   * Returns true if this range contains every {@code char} value.
+   *
+   * @return true if this range contains every {@code char} value
+   */
   public boolean isCharEverything() {
     return equalsRange(CHAR_EVERYTHING);
   }
 
-  /** Returns true if this range contains every {@code byte} value. */
+  /**
+   * Returns true if this range contains every {@code byte} value.
+   *
+   * @return true if this range contains every {@code byte} value
+   */
   public boolean isByteEverything() {
     return equalsRange(BYTE_EVERYTHING);
   }
@@ -376,6 +396,8 @@ public final class Range {
    * 16-bit unsigned integers, converts the bounds to Character type in accordance with Java
    * overflow rules (two's-complement), e.g., Character.MAX_VALUE + 1 is converted to
    * Character.MIN_VALUE.
+   *
+   * @return this range converted to the Character type
    */
   public Range charRange() {
     if (this.isNothing()) {
@@ -929,7 +951,12 @@ public final class Range {
     return EVERYTHING;
   }
 
-  /** Returns the argument, with its sign bit zeroed out. */
+  /**
+   * Returns the argument, with its sign bit zeroed out.
+   *
+   * @param mask the value whose sign bit is zeroed
+   * @return the argument, with its sign bit zeroed out
+   */
   private long noSignBit(Long mask) {
     return mask & (-1L >>> 1);
   }
@@ -1239,6 +1266,9 @@ public final class Range {
   /**
    * Returns true if this range is contained inclusively between Long.MIN_VALUE/2 and
    * Long.MAX_VALUE/2. Note: Long.MIN_VALUE/2 != -Long.MAX_VALUE/2.
+   *
+   * @return true if this range is contained inclusively between Long.MIN_VALUE/2 and
+   *     Long.MAX_VALUE/2
    */
   private boolean isWithinHalfLong() {
     return isWithin(Long.MIN_VALUE >> 1, Long.MAX_VALUE >> 1);

@@ -144,6 +144,9 @@ public class TypeArgumentMapper {
    *
    * results in a {@code Map(B1 => [A1,A2], B2 => [], B3 => [A3], B4 => [])}.
    *
+   * @param subtype the subtype whose type parameters are the keys of the result
+   * @param supertype a supertype of {@code subtype}
+   * @param types the Types utility
    * @return a mapping from the type parameters of subtype to the supertype type parameters for
    *     which they are type arguments
    */

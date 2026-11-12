@@ -225,7 +225,12 @@ class ValueTreeAnnotator extends TreeAnnotator {
     }
   }
 
-  /** Converts a char array to a String. Returns null if unable to convert. */
+  /**
+   * Converts a char array to a String. Returns null if unable to convert.
+   *
+   * @param initializers the elements of the char array
+   * @return the String whose characters are the elements, or null if unable to convert
+   */
   private @Nullable String getCharArrayStringVal(List<? extends ExpressionTree> initializers) {
     boolean allLiterals = true;
     StringBuilder stringVal = new StringBuilder();
@@ -381,6 +386,9 @@ class ValueTreeAnnotator extends TreeAnnotator {
 
   /**
    * Returns true if the given method's declaration is annotated with {@code @StaticallyExecutable}.
+   *
+   * @param method a method
+   * @return true if the method's declaration is annotated with {@code @StaticallyExecutable}
    */
   private boolean methodIsStaticallyExecutable(Element method) {
     return atypeFactory.getDeclAnnotation(method, StaticallyExecutable.class) != null;
@@ -390,6 +398,7 @@ class ValueTreeAnnotator extends TreeAnnotator {
    * Returns the Range of the Math.min or Math.max method, or null if the argument is none of these
    * methods or their arguments are not annotated in the ValueChecker hierarchy.
    *
+   * @param tree a method invocation
    * @return the Range of the Math.min or Math.max method, or null if the argument is none of these
    *     methods or their arguments are not annotated in the ValueChecker hierarchy
    */

@@ -181,6 +181,10 @@ public class TypeVarUseApplier {
    * Depending on what element type the annotations are stored on, the relevant annotations might be
    * stored with different annotation positions. getAnnotations finds the correct annotations by
    * annotation position and element kind and returns them.
+   *
+   * @param useElem the element (method, parameter, or variable) that uses the type variable
+   * @param declarationElem the declaration of the type variable; used for diagnostics.
+   * @return the annotations on {@code useElem} that apply to its use of the type variable
    */
   private static List<Attribute.TypeCompound> getAnnotations(
       Element useElem, Element declarationElem) {
@@ -233,6 +237,7 @@ public class TypeVarUseApplier {
    * to ensure that we correctly retrieve the annotations, we need to index from the method and
    * retrieve the annotations from its metadata.
    *
+   * @param paramElem a formal parameter of a method
    * @return a list of annotations that were found on METHOD_FORMAL_PARAMETERS that match the
    *     parameter index of the input element in the parent method's formal parameter list
    */

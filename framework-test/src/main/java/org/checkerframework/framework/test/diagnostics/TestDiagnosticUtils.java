@@ -404,7 +404,12 @@ public final class TestDiagnosticUtils {
     }
   }
 
-  /** Returns true if this line in a Java file continues an expected diagnostic. */
+  /**
+   * Returns true if this line in a Java file continues an expected diagnostic.
+   *
+   * @param originalLine a line in a Java file; can be null
+   * @return true if {@code originalLine} continues an expected diagnostic
+   */
   @EnsuresNonNullIf(result = true, expression = "#1")
   public static boolean isJavaDiagnosticLineContinuation(@Nullable String originalLine) {
     if (originalLine == null) {
@@ -474,7 +479,12 @@ public final class TestDiagnosticUtils {
     }
   }
 
-  /** Converts a line in a DiagnosticFile to a TestDiagnosticLine. */
+  /**
+   * Converts a line in a DiagnosticFile to a TestDiagnosticLine.
+   *
+   * @param diagnosticLine a line in a DiagnosticFile
+   * @return the corresponding TestDiagnosticLine
+   */
   public static TestDiagnosticLine fromDiagnosticFileLine(String diagnosticLine) {
     String trimmedLine = diagnosticLine.trim();
     if (trimmedLine.startsWith("#") || trimmedLine.isEmpty()) {

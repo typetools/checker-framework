@@ -4124,6 +4124,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Returns true if the element appears in a stub file. (This currently works only for methods,
    * constructors, and fields.)
+   *
+   * @param element the element to test
+   * @return true if the element appears in a stub file
    */
   public boolean isFromStubFile(Element element) {
     return this.getDeclAnnotation(element, FromStubFile.class) != null;
@@ -4132,6 +4135,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   /**
    * Returns true if the element is from bytecode and if the element did not appear in a stub file.
    * Currently only works for methods, constructors, and fields.
+   *
+   * @param element the element to test
+   * @return true if the element is from bytecode and did not appear in a stub file
    */
   public boolean isFromByteCode(Element element) {
     if (isFromStubFile(element)) {

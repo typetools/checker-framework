@@ -208,6 +208,7 @@ public abstract class UnderlyingAST implements UniqueId {
    */
   public static class CFGStatement extends UnderlyingAST {
 
+    /** The statement or expression: a field definition or an initializer block. */
     protected final Tree code;
 
     /** The class tree this statement belongs to. */

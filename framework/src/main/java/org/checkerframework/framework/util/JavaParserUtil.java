@@ -1311,6 +1311,10 @@ public final class JavaParserUtil {
 
   /** Visitor that combines added String literals; see {@link #concatenateAddedStringLiterals}. */
   public static class StringLiteralConcatenateVisitor extends VoidVisitorAdapter<Void> {
+
+    /** Creates a StringLiteralConcatenateVisitor. */
+    public StringLiteralConcatenateVisitor() {}
+
     @Override
     public void visit(BinaryExpr node, Void p) {
       super.visit(node, p);

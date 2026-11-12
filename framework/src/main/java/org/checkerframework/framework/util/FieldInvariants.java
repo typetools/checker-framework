@@ -77,7 +77,11 @@ public class FieldInvariants {
     this.factory = factory;
   }
 
-  /** The simple names of the fields that have a qualifier. Can contain duplicates. */
+  /**
+   * Returns the simple names of the fields that have a qualifier. Can contain duplicates.
+   *
+   * @return the simple names of the fields that have a qualifier
+   */
   public List<String> getFields() {
     return fields;
   }

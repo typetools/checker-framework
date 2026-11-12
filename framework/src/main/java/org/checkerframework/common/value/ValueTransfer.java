@@ -95,7 +95,13 @@ public class ValueTransfer extends CFTransfer {
         atypeFactory.getChecker().hasOption("nonNullStringsConcatenation");
   }
 
-  /** Returns a range of possible lengths for an integer from a range, as cast to a String. */
+  /**
+   * Returns a range of possible lengths for an integer from a range, as cast to a String.
+   *
+   * @param subNode the node whose integer range is converted to a String
+   * @param p the transfer input
+   * @return the range of possible lengths of the String
+   */
   private Range getIntRangeStringLengthRange(Node subNode, TransferInput<CFValue, CFStore> p) {
     Range valueRange = getIntRange(subNode, p);
 
@@ -295,7 +301,13 @@ public class ValueTransfer extends CFTransfer {
     return atypeFactory.getBooleanValues(intAnno);
   }
 
-  /** Gets possible char values from annotation @IntRange or @IntVal. */
+  /**
+   * Gets possible char values from annotation @IntRange or @IntVal.
+   *
+   * @param subNode the node whose possible values are returned
+   * @param p the transfer input
+   * @return the possible char values of the node, or null if they are not known
+   */
   private List<Character> getCharValues(Node subNode, TransferInput<CFValue, CFStore> p) {
     CFValue value = p.getValueOfSubNode(subNode);
     AnnotationMirror intAnno;
@@ -379,7 +391,13 @@ public class ValueTransfer extends CFTransfer {
     return NumberUtils.castNumbers(subNode.getType(), values);
   }
 
-  /** Gets possible integer range from annotation. */
+  /**
+   * Gets possible integer range from annotation.
+   *
+   * @param subNode the node whose range is returned
+   * @param p the transfer input
+   * @return the possible integer range of the node
+   */
   private Range getIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
     AnnotationMirror val = getValueAnnotation(subNode, p);
     return getIntRangeFromAnnotation(subNode, val);
@@ -657,6 +675,7 @@ public class ValueTransfer extends CFTransfer {
    * Returns true if the passed node is nullable. This superficial check assumes that every node is
    * nullable unless it is a primitive, String literal, or compile-time constant.
    *
+   * @param node the node to test
    * @return false if the node's run-time value can't be null; true if the node's run-time value
    *     might be null, or if this method is not precise enough
    */
@@ -811,7 +830,15 @@ public class ValueTransfer extends CFTransfer {
     }
   }
 
-  /** Calculates the result range after a binary operation between two numerical type nodes. */
+  /**
+   * Calculates the result range after a binary operation between two numerical type nodes.
+   *
+   * @param leftNode the left operand
+   * @param rightNode the right operand
+   * @param op the binary operation
+   * @param p the transfer input
+   * @return the range of the result of the operation
+   */
   private Range calculateRangeBinaryOp(
       Node leftNode, Node rightNode, NumericalBinaryOps op, TransferInput<CFValue, CFStore> p) {
     if (TypesUtils.isIntegralPrimitive(leftNode.getType())
@@ -844,7 +871,15 @@ public class ValueTransfer extends CFTransfer {
     }
   }
 
-  /** Calculates the possible values after a binary operation between two numerical type nodes. */
+  /**
+   * Calculates the possible values after a binary operation between two numerical type nodes.
+   *
+   * @param leftNode the left operand
+   * @param rightNode the right operand
+   * @param op the binary operation
+   * @param p the transfer input
+   * @return the possible values of the result of the operation, or null if they are not known
+   */
   private @Nullable List<Number> calculateValuesBinaryOp(
       Node leftNode, Node rightNode, NumericalBinaryOps op, TransferInput<CFValue, CFStore> p) {
     List<? extends Number> lefts = getNumericalValues(leftNode, p);
@@ -1068,7 +1103,14 @@ public class ValueTransfer extends CFTransfer {
     }
   }
 
-  /** Calculates the possible values after a unary operation of a numerical type node. */
+  /**
+   * Calculates the possible values after a unary operation of a numerical type node.
+   *
+   * @param operand the operand
+   * @param op the unary operation
+   * @param p the transfer input
+   * @return the possible values of the result of the operation, or null if they are not known
+   */
   private @Nullable List<Number> calculateValuesUnaryOp(
       Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
     List<? extends Number> lefts = getNumericalValues(operand, p);

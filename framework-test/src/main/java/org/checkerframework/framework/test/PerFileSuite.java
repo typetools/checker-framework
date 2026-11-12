@@ -95,7 +95,12 @@ public class PerFileSuite extends RootedSuite {
     return argumentLists;
   }
 
-  /** Returns the method annotated @Parameters, typically the getTestDirs or getTestFiles method. */
+  /**
+   * Returns the method annotated @Parameters, typically the getTestDirs or getTestFiles method.
+   *
+   * @param testClass the test class
+   * @return the method annotated @Parameters
+   */
   private FrameworkMethod getParametersMethod(TestClass testClass) {
     List<FrameworkMethod> parameterMethods = testClass.getAnnotatedMethods(Parameters.class);
     if (parameterMethods.size() != 1) {

@@ -55,8 +55,14 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
   /** Prints the types of the class and all of its enclosed fields, methods, and inner classes. */
   public static class Visitor extends BaseTypeVisitor<GenericAnnotatedTypeFactory<?, ?, ?, ?>> {
+    /** The name of the class currently being visited. */
     String currentClass;
 
+    /**
+     * Creates a Visitor.
+     *
+     * @param checker the checker that creates this visitor
+     */
     public Visitor(BaseTypeChecker checker) {
       super(checker);
     }
@@ -124,7 +130,12 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
     }
   }
 
-  /** Prints the types of the class and all of its enclosed fields, methods, and inner classes. */
+  /**
+   * Prints the types of the class and all of its enclosed fields, methods, and inner classes.
+   *
+   * @param typeElt the class whose types are printed
+   * @param atypeFactory the type factory used to compute the types
+   */
   protected static void printClassType(TypeElement typeElt, AnnotatedTypeFactory atypeFactory) {
     assert typeElt != null;
 

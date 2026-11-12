@@ -70,7 +70,7 @@ public class IndexFileSpecification {
   /**
    * An insertion for the default constructor, or null. If non-null, it is a member of insertions.
    */
-  private ConstructorInsertion constructorInsertion = null;
+  private @Nullable ConstructorInsertion constructorInsertion = null;
 
   private final AScene scene;
   private final String indexFileName;
@@ -304,7 +304,13 @@ public class IndexFileSpecification {
     debug("parseClass(%s):  done%n", className);
   }
 
-  /** Fills in this.insertions with insertion pairs. */
+  /**
+   * Fills in this.insertions with insertion pairs.
+   *
+   * @param clist the criteria that the field must satisfy, such as being in a given class
+   * @param fieldName the name of the field
+   * @param field the scene-lib representation of the field and its annotations
+   */
   private void parseField(CriterionList clist, String fieldName, AField field) {
     // parse declaration annotations
     parseElement(clist.add(Criteria.field(fieldName, true)), field);

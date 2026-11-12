@@ -723,6 +723,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Inserts {@code node} after {@code pred} in the list of extended nodes, or appends to the list
    * if {@code pred} is not present.
    *
+   * @param <T> the type of the node
    * @param node the node to add
    * @param pred the desired predecessor of node
    * @return {@code node}
@@ -3226,6 +3227,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /**
    * Returns true if assertions should be assumed to be executed for a given {@link AssertTree}.
    * False by default.
+   *
+   * @param tree an assert tree
+   * @return true if assertions should be assumed to be executed for {@code tree}
    */
   protected boolean assumeAssertionsEnabledFor(AssertTree tree) {
     return false;
@@ -3236,6 +3240,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
   /**
    * Returns a synthetic {@link VariableTree} that indicates whether assertions are enabled or not.
+   *
+   * @return a synthetic variable that indicates whether assertions are enabled or not
    */
   protected VariableTree getAssertionsEnabledVariable() {
     if (ea == null) {
@@ -3549,13 +3555,27 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return assignmentNode;
   }
 
-  /** Translates an assignment. */
+  /**
+   * Translates an assignment.
+   *
+   * @param tree the assignment or variable declaration tree
+   * @param target the target of the assignment
+   * @param rhs the right-hand side of the assignment, which is not yet scanned
+   * @return the node for the assignment
+   */
   protected AssignmentNode translateAssignment(Tree tree, Node target, ExpressionTree rhs) {
     Node expression = scan(rhs, null);
     return translateAssignment(tree, target, expression);
   }
 
-  /** Translates an assignment where the RHS has already been scanned. */
+  /**
+   * Translates an assignment where the RHS has already been scanned.
+   *
+   * @param tree the assignment or variable declaration tree
+   * @param target the target of the assignment
+   * @param expression the node for the right-hand side, which has already been scanned
+   * @return the node for the assignment
+   */
   protected AssignmentNode translateAssignment(Tree tree, Node target, Node expression) {
     assert tree instanceof AssignmentTree || tree instanceof VariableTree;
     target.setLValue();

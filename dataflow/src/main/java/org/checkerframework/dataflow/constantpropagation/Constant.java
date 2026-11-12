@@ -6,6 +6,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.javacutil.BugInCF;
 
+/** An abstract value for constant propagation: a known integer constant, top, or bottom. */
 public class Constant implements AbstractValue<Constant> {
 
   /** The kind of this abstract value. */
@@ -20,13 +21,21 @@ public class Constant implements AbstractValue<Constant> {
     BOTTOM,
   }
 
-  /** Creates a constant for {@code type}. */
+  /**
+   * Creates a constant for {@code type}.
+   *
+   * @param type the kind of this abstract value; must not be {@code CONSTANT}
+   */
   public Constant(Type type) {
     assert type != Type.CONSTANT;
     this.type = type;
   }
 
-  /** Creates a constant for {@code value}. */
+  /**
+   * Creates a constant for {@code value}.
+   *
+   * @param value the integer value of this constant
+   */
   public Constant(Integer value) {
     this.type = Type.CONSTANT;
     this.value = value;

@@ -45,9 +45,13 @@ public abstract class ExtendedNode {
 
   /** Extended node types (see the description above). */
   public enum ExtendedNodeType {
+    /** A node holding a regular {@link Node}. */
     NODE,
+    /** A node holding a {@link Node} that might throw an exception. */
     EXCEPTION_NODE,
+    /** An unconditional jump to a label. */
     UNCONDITIONAL_JUMP,
+    /** A conditional jump to a label. */
     CONDITIONAL_JUMP
   }
 

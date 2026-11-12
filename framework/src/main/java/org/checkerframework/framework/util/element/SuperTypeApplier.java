@@ -21,6 +21,7 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
    *
    * @param supertypes supertypes to annotate
    * @param subtypeElement element that might have annotations to apply to supertypes
+   * @throws UnexpectedAnnotationLocationException if an annotation has an unexpected location
    */
   public static void annotateSupers(
       List<AnnotatedTypeMirror.AnnotatedDeclaredType> supertypes, TypeElement subtypeElement)

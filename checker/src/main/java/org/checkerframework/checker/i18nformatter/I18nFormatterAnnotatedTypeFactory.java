@@ -68,7 +68,11 @@ public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory 
   /** Syntax tree utilities. */
   protected final I18nFormatterTreeUtil treeUtil = new I18nFormatterTreeUtil(checker);
 
-  /** Creates a new I18nFormatterAnnotatedTypeFactory. */
+  /**
+   * Creates a new I18nFormatterAnnotatedTypeFactory.
+   *
+   * @param checker the checker that uses this factory
+   */
   @SuppressWarnings("this-escape")
   public I18nFormatterAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);

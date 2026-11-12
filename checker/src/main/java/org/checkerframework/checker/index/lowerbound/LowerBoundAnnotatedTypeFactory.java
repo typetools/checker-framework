@@ -458,6 +458,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
   /**
    * Checks if the expression is non-negative, i.e., it has a Positive or NonNegative annotation.
+   *
+   * @param tree an expression tree
+   * @return true if the expression is non-negative
    */
   public boolean isNonNegative(Tree tree) {
     // TODO: consolidate with the isNonNegative method in LowerBoundTransfer

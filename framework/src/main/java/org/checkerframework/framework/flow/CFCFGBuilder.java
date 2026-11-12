@@ -39,7 +39,17 @@ public class CFCFGBuilder extends CFGBuilder {
   /** This class should never be instantiated. Protected to still allow subclasses. */
   protected CFCFGBuilder() {}
 
-  /** Builds the control flow graph of some code. */
+  /**
+   * Builds the control flow graph of some code.
+   *
+   * @param root the compilation unit that contains the code
+   * @param underlyingAST the AST of the code (a method, lambda, or initializer) for which to build
+   *     the CFG
+   * @param checker the checker whose options and type factory guide CFG construction
+   * @param factory the type factory
+   * @param env the processing environment
+   * @return the control flow graph of the given code
+   */
   public static ControlFlowGraph build(
       CompilationUnitTree root,
       UnderlyingAST underlyingAST,

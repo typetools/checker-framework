@@ -509,6 +509,9 @@ public class AnnotationBuilder {
   /**
    * Removes the element/field with the given name. Does not err if no such element/field is
    * present.
+   *
+   * @param elementName the name of the element/field to remove
+   * @return this
    */
   public AnnotationBuilder removeElement(CharSequence elementName) {
     assertNotBuilt();
@@ -690,7 +693,12 @@ public class AnnotationBuilder {
     return this;
   }
 
-  /** Returns the VariableElement for the given enum constant. */
+  /**
+   * Returns the VariableElement for the given enum constant.
+   *
+   * @param value an enum constant
+   * @return the VariableElement for the enum constant
+   */
   private VariableElement findEnumElement(Enum<?> value) {
     String enumClass = value.getDeclaringClass().getCanonicalName();
     assert enumClass != null : "@AssumeAssertion(nullness): assumption";
@@ -872,7 +880,11 @@ public class AnnotationBuilder {
     /** The interned value of toString. */
     private @Nullable @Interned String toStringVal;
 
-    /** Creates an annotation value. */
+    /**
+     * Creates an annotation value.
+     *
+     * @param obj the value
+     */
     CheckerFrameworkAnnotationValue(Object obj) {
       this.value = obj;
     }

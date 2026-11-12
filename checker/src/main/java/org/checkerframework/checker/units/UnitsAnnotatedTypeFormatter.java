@@ -58,9 +58,17 @@ public class UnitsAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {
 
   /** Formats the error printout of any units qualifier that uses Prefix.one. */
   protected static class UnitsAnnotationFormatter extends DefaultAnnotationFormatter {
+    /** The checker that uses this formatter. */
     protected final BaseTypeChecker checker;
+
+    /** The element utilities. */
     protected final Elements elements;
 
+    /**
+     * Creates a UnitsAnnotationFormatter.
+     *
+     * @param checker the checker that uses this formatter
+     */
     public UnitsAnnotationFormatter(BaseTypeChecker checker) {
       this.checker = checker;
       this.elements = checker.getElementUtils();

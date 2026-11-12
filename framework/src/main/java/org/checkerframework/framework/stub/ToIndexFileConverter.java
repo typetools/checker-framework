@@ -292,6 +292,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /**
    * Builds a simplified annotation from its declaration. Only the name is included, because
    * stubfiles do not generally have access to the full definitions of annotations.
+   *
+   * @param expr an annotation expression, such as {@code @Nullable}
+   * @return a simplified annotation with only the name, or null if the annotation is synthetic
    */
   private static @Nullable Annotation extractAnnotation(AnnotationExpr expr) {
     String exprName = expr.toString().substring(1); // leave off leading '@'

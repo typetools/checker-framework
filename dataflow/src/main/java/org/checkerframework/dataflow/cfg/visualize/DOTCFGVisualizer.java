@@ -44,7 +44,13 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 
-/** Generates a graph description in the DOT language of a control flow graph. */
+/**
+ * Generates a graph description in the DOT language of a control flow graph.
+ *
+ * @param <V> the abstract value type
+ * @param <S> the store type
+ * @param <T> the transfer function type
+ */
 public class DOTCFGVisualizer<
         V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
     extends AbstractCFGVisualizer<V, S, T> {

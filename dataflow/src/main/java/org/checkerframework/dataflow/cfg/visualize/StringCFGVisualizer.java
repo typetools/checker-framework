@@ -25,7 +25,13 @@ import org.checkerframework.dataflow.expression.IteratedCollectionElement;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
 
-/** Generates the String representation of a control flow graph. */
+/**
+ * Generates the String representation of a control flow graph.
+ *
+ * @param <V> the abstract value type
+ * @param <S> the store type
+ * @param <T> the transfer function type
+ */
 public class StringCFGVisualizer<
         V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
     extends AbstractCFGVisualizer<V, S, T> {

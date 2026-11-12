@@ -161,6 +161,8 @@ public class QualifierDefaults {
    * Returns an array of locations that are valid for the unchecked value defaults. These are
    * determined simply by syntax: since an entire file is type-checked, it is not possible for local
    * variables to be unchecked.
+   *
+   * @return the locations that are valid for the unchecked value defaults
    */
   public static List<TypeUseLocation> validLocationsForUncheckedCodeDefaults() {
     return validUncheckedCodeDefaultLocations;
@@ -1068,6 +1070,11 @@ public class QualifierDefaults {
       /**
        * Visits the bounds of a type variable or a wildcard and potentially applies qual to those
        * bounds. This method will also update the boundType, isLowerBound, and isUpperBound fields.
+       *
+       * @param boundedType the type variable or wildcard whose bounds to visit
+       * @param upperBound the upper bound of {@code boundedType}
+       * @param lowerBound the lower bound of {@code boundedType}
+       * @param qual the qualifier to apply to the bounds
        */
       protected void visitBounds(
           AnnotatedTypeMirror boundedType,

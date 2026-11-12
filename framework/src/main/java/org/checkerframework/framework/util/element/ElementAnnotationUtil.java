@@ -543,6 +543,12 @@ public class ElementAnnotationUtil {
    * will NOT have TypePathEntryKind.ARRAY at the end of its position. The position of the component
    * type (@Odd) is considered deeper in the type and therefore has the TypePathEntryKind.ARRAY in
    * its position.
+   *
+   * @param type an array type
+   * @param location the type path of the annotation, relative to {@code type}
+   * @param anno the annotation whose location is being sought
+   * @return the type within {@code type} at the given location
+   * @throws UnexpectedAnnotationLocationException if the location is not valid for {@code type}
    */
   private static AnnotatedTypeMirror getLocationTypeAAT(
       AnnotatedArrayType type,

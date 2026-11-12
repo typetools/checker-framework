@@ -139,7 +139,11 @@ public class LockAnnotatedTypeFactory
   /** The javax.annotation.concurrent.GuardedBy annotation, or null if not on the classpath. */
   protected final @Nullable Class<? extends Annotation> javaxGuardedBy;
 
-  /** Creates a new LockAnnotatedTypeFactory. */
+  /**
+   * Creates a new LockAnnotatedTypeFactory.
+   *
+   * @param checker the checker that uses this factory
+   */
   @SuppressWarnings("this-escape")
   public LockAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker, true);

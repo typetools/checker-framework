@@ -74,6 +74,9 @@ public class AnnotatedTypeCopier
    * If copyAnnotations is set to false, the second property, annotation preservation, is removed.
    * This is useful for cases in which the user might want to copy the structure of a type exactly
    * but NOT its annotations.
+   *
+   * @param copyAnnotations true if annotations should be copied, false if only the structure should
+   *     be copied
    */
   public AnnotatedTypeCopier(boolean copyAnnotations) {
     this.copyAnnotations = copyAnnotations;

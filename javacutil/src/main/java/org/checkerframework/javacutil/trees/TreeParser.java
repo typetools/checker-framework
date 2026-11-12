@@ -44,7 +44,11 @@ public class TreeParser {
   /** The names instance. */
   private final Names names;
 
-  /** Creates a TreeParser. */
+  /**
+   * Creates a TreeParser.
+   *
+   * @param env the processing environment
+   */
   public TreeParser(ProcessingEnvironment env) {
     Context context = ((JavacProcessingEnvironment) env).getContext();
     maker = TreeMaker.instance(context);
@@ -68,12 +72,22 @@ public class TreeParser {
     }
   }
 
-  /** Returns the next token from the tokenizer, or the {@code SENTINEL} if none is available. */
+  /**
+   * Returns the next token from the tokenizer, or the {@code SENTINEL} if none is available.
+   *
+   * @param tokenizer the tokenizer to read from
+   * @return the next token, or {@code SENTINEL}
+   */
   private String nextToken(StringTokenizer tokenizer) {
     return tokenizer.hasMoreTokens() ? tokenizer.nextToken() : SENTINEL;
   }
 
-  /** Returns the parsed expression tree for the given token. */
+  /**
+   * Returns the parsed expression tree for the given token.
+   *
+   * @param token a token that is a literal or an identifier
+   * @return the parsed expression tree for the token
+   */
   private JCExpression fromToken(String token) {
     // Optimization
     if ("true".equals(token)) {
@@ -159,7 +173,11 @@ public class TreeParser {
     /** The serial version UID. */
     private static final long serialVersionUID = 1887754619522101929L;
 
-    /** Creates a ParseError. */
+    /**
+     * Creates a ParseError.
+     *
+     * @param cause the underlying exception
+     */
     ParseError(Throwable cause) {
       super(cause);
     }

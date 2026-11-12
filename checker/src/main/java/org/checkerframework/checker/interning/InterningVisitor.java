@@ -88,7 +88,11 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
       TreeUtils.getMethod(
           "java.lang.Comparable", "compareTo", 1, checker.getProcessingEnvironment());
 
-  /** Creates an InterningVisitor. */
+  /**
+   * Creates an InterningVisitor.
+   *
+   * @param checker the checker that uses this visitor
+   */
   public InterningVisitor(BaseTypeChecker checker) {
     super(checker);
   }

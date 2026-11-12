@@ -41,6 +41,10 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
+/**
+ * A visitor that reports the tree kinds, modifiers, and other program constructs that the user
+ * requested.
+ */
 public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
 
   /** The tree kinds that should be reported; can be null. */

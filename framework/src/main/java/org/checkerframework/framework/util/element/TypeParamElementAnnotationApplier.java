@@ -124,6 +124,8 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
   /**
    * Applies a list of annotations to the upperBound of the type parameter. If the type of the upper
    * bound is an intersection, we must first find the correct location for each annotation.
+   *
+   * @param upperBounds the annotations that target the upper bound of the type parameter
    */
   private void applyUpperBounds(List<TypeCompound> upperBounds) {
     if (!upperBounds.isEmpty()) {

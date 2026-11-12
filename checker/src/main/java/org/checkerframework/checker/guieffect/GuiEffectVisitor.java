@@ -86,6 +86,9 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     // TODO: Undo this hack!
   }
 
+  /**
+   * Checks method overrides, permitting the receiver permission to be narrowed as described below.
+   */
   protected class GuiEffectOverrideChecker extends OverrideChecker {
     /**
      * Extends the receiver part of the method override check. We extend the standard check, to

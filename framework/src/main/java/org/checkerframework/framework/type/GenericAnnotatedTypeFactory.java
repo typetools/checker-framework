@@ -776,6 +776,8 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Creates {@link QualifierDefaults}, which handles checker-specified defaults. Subclasses
    * override this method to provide a different {@code QualifierDefaults} implementation.
+   *
+   * @return a new QualifierDefaults
    */
   protected QualifierDefaults createQualifierDefaults() {
     return new QualifierDefaults(elements, this);
@@ -2484,7 +2486,11 @@ public abstract class GenericAnnotatedTypeFactory<
     return res;
   }
 
-  /** Returns the CFGVisualizer to be used by all CFAbstractAnalysis instances. */
+  /**
+   * Returns the CFGVisualizer to be used by all CFAbstractAnalysis instances.
+   *
+   * @return the CFGVisualizer
+   */
   public CFGVisualizer<Value, Store, TransferFunction> getCFGVisualizer() {
     return cfgVisualizer;
   }

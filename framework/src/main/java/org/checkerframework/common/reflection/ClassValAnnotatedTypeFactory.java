@@ -328,6 +328,9 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Returns the String representation of the class name. This will not return the correct name
      * for anonymous classes.
+     *
+     * @param classType a class type
+     * @return the String representation of the name of the given class type
      */
     private String getClassNameFromType(Type classType) {
       switch (classType.getKind()) {

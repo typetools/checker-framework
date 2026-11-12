@@ -83,7 +83,13 @@ public final class ValueCheckerUtils {
     return values;
   }
 
-  /** Gets the minimum and maximum of a list and returns a range bounded by them. */
+  /**
+   * Gets the minimum and maximum of a list and returns a range bounded by them.
+   *
+   * @param values the values whose minimum and maximum bound the result; might be null
+   * @return the range bounded by the minimum and maximum of the values, or null if {@code values}
+   *     is null
+   */
   public static @Nullable Range getRangeFromValues(List<? extends Number> values) {
     if (values == null) {
       return null;

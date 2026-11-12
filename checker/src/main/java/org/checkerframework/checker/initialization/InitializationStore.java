@@ -148,7 +148,12 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     initializedFields.add(f);
   }
 
-  /** Returns true if the field identified by the element {@code f} is initialized. */
+  /**
+   * Returns true if the field identified by the element {@code f} is initialized.
+   *
+   * @param f a field
+   * @return true if the field {@code f} is initialized
+   */
   public boolean isFieldInitialized(Element f) {
     return initializedFields.contains(f);
   }

@@ -344,7 +344,12 @@ public class CheckerMain {
     return args;
   }
 
-  /** Given a list of paths, concatenates them to form a single path. Also expands wildcards. */
+  /**
+   * Given a list of paths, concatenates them to form a single path. Also expands wildcards.
+   *
+   * @param paths a list of paths, each of which can itself be a path-separator-separated list
+   * @return the concatenation of the paths, as a single path
+   */
   private String concatenatePaths(List<String> paths) {
     List<String> elements = new ArrayList<>();
     for (String path : paths) {
@@ -602,6 +607,8 @@ public class CheckerMain {
   /**
    * For every "-processor" argument in args, replaces its immediate successor argument using
    * unshorthandProcessorNames.
+   *
+   * @param args command-line arguments; modified by this method
    */
   protected void replaceShorthandProcessor(List<String> args) {
     for (int i = 0; i < args.size(); i++) {

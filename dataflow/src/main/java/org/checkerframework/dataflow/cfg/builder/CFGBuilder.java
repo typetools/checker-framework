@@ -97,13 +97,28 @@ public abstract class CFGBuilder {
     return phase3result;
   }
 
-  /** Builds the control flow graph of some code. */
+  /**
+   * Builds the control flow graph of some code.
+   *
+   * @param root the compilation unit that contains the code
+   * @param underlyingAST the AST of the code
+   * @param env the processing environment
+   * @return the control flow graph of the code
+   */
   public static ControlFlowGraph build(
       CompilationUnitTree root, UnderlyingAST underlyingAST, ProcessingEnvironment env) {
     return build(root, underlyingAST, false, false, env);
   }
 
-  /** Builds the control flow graph of a method. */
+  /**
+   * Builds the control flow graph of a method.
+   *
+   * @param root the compilation unit that contains the method
+   * @param tree the method
+   * @param classTree the class that contains the method
+   * @param env the processing environment
+   * @return the control flow graph of the method
+   */
   public static ControlFlowGraph build(
       CompilationUnitTree root, MethodTree tree, ClassTree classTree, ProcessingEnvironment env) {
     UnderlyingAST underlyingAST = new CFGMethod(tree, classTree);

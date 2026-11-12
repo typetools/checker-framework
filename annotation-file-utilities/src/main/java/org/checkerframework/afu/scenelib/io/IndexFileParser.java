@@ -115,19 +115,33 @@ public final class IndexFileParser {
     }
   }
 
-  /** Returns true if the next thing from st is the given character. */
+  /**
+   * Returns true if the next thing from st is the given character.
+   *
+   * @param c the character to look for
+   * @return true if the next thing from st is {@code c}
+   */
   private boolean checkChar(char c) {
     return st.ttype == c;
   }
 
-  /** Returns true if the next thing from st is the given string token. */
+  /**
+   * Returns true if the next thing from st is the given string token.
+   *
+   * @param s the keyword to look for
+   * @return true if the next thing from st is the word {@code s}
+   */
   private boolean checkKeyword(String s) {
-    return st.ttype == StreamTokenizer.TT_WORD && st.sval.equals(s);
+    return st.ttype == StreamTokenizer.TT_WORD && s.equals(st.sval);
   }
 
   /**
    * Returns true if the next thing to be read from st is the given character. In that case, also
    * reads past the given character. If the result is false, reads nothing from st.
+   *
+   * @param c the character to look for
+   * @return true if the next thing to be read from st is {@code c}
+   * @throws IOException if there is a problem reading from st
    */
   private boolean matchChar(char c) throws IOException {
     if (checkChar(c)) {
@@ -427,7 +441,14 @@ public final class IndexFileParser {
     return result;
   }
 
-  /** Parses a scalar annotation value. */
+  /**
+   * Parses a scalar annotation value.
+   *
+   * @param aft the type of the scalar annotation value
+   * @return the parsed value
+   * @throws IOException if there is a problem reading from st
+   * @throws ParseException if the input is not a valid value of the given type
+   */
   // HMMM can a (readonly) Integer be casted to a writable Object?
   private Object parseScalarAFV(ScalarAFT aft) throws IOException, ParseException {
     if (aft instanceof BasicAFT baft) {
@@ -692,6 +713,8 @@ public final class IndexFileParser {
    * @param annotationFullyQualifiedName the fully-qualified name of the annotation currently being
    *     parsed
    * @return the {@link ScalarAFT} of the annotation currently being parsed
+   * @throws IOException if there is a problem reading from st
+   * @throws ParseException if the input is not a valid annotation field type
    */
   private ScalarAFT parseScalarAFT(String annotationFullyQualifiedName)
       throws IOException, ParseException {

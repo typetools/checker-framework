@@ -66,6 +66,7 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
   /**
    * Returns true iff expression is a call to java.util.Map.keySet.
    *
+   * @param expression an expression
    * @return true iff expression is a call to java.util.Map.keySet
    */
   public boolean isCallToKeyset(ExpressionTree expression) {

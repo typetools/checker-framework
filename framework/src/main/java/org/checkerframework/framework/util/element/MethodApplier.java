@@ -25,7 +25,14 @@ import org.plumelib.util.StringsP;
  */
 public class MethodApplier extends TargetedElementAnnotationApplier {
 
-  /** Applies annotations from {@code element} to {@code type}. */
+  /**
+   * Applies annotations from {@code element} to {@code type}.
+   *
+   * @param type the type to annotate; must be an AnnotatedExecutableType
+   * @param element the method element whose annotations to apply; must be a method symbol
+   * @param typeFactory the type factory
+   * @throws UnexpectedAnnotationLocationException if an annotation has an unexpected location
+   */
   public static void apply(
       AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory)
       throws UnexpectedAnnotationLocationException {
@@ -36,6 +43,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     return element instanceof Symbol.MethodSymbol && typeMirror instanceof AnnotatedExecutableType;
   }
 
+  /** The type factory. */
   private final AnnotatedTypeFactory typeFactory;
 
   /** Method being annotated; this symbol contains all relevant annotations. */
@@ -184,7 +192,12 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     }
   }
 
-  /** For each thrown type, collects all the annotations for that type and applies them. */
+  /**
+   * For each thrown type, collects all the annotations for that type and applies them.
+   *
+   * @param annos the annotations that target the thrown types of the method
+   * @throws UnexpectedAnnotationLocationException if an annotation has an unexpected location
+   */
   private void applyThrowsAnnotations(List<Attribute.TypeCompound> annos)
       throws UnexpectedAnnotationLocationException {
     List<AnnotatedTypeMirror> thrown = methodType.getThrownTypes();

@@ -91,6 +91,10 @@ public interface Store<S extends Store<S>> {
    * Returns true if the objects {@code a} and {@code b} can be aliases. Returns a conservative
    * answer (i.e., returns {@code true} if not enough information is available to determine
    * aliasing).
+   *
+   * @param a a Java expression
+   * @param b a Java expression
+   * @return true if {@code a} and {@code b} can be aliases
    */
   boolean canAlias(JavaExpression a, JavaExpression b);
 

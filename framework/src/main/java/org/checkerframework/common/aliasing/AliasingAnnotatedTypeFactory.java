@@ -41,7 +41,11 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected final AnnotationMirror MAYBE_LEAKED =
       AnnotationBuilder.fromClass(elements, MaybeLeaked.class);
 
-  /** Creates the type factory. */
+  /**
+   * Creates the type factory.
+   *
+   * @param checker the checker that uses this type factory
+   */
   @SuppressWarnings("this-escape")
   public AliasingAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);

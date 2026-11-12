@@ -142,7 +142,11 @@ public class Insertions implements Iterable<Insertion> {
     }
   }
 
-  /** Adds an {@link Insertion} to this collection. */
+  /**
+   * Adds an {@link Insertion} to this collection.
+   *
+   * @param ins the insertion to add
+   */
   public void add(Insertion ins) {
     InClassCriterion icc = ins.getCriteria().getInClass();
 
@@ -166,7 +170,11 @@ public class Insertions implements Iterable<Insertion> {
     size += set.size();
   }
 
-  /** Adds all the given {@link Insertion}s to this collection. */
+  /**
+   * Adds all the given {@link Insertion}s to this collection.
+   *
+   * @param c the insertions to add
+   */
   public void addAll(Collection<? extends Insertion> c) {
     for (Insertion ins : c) {
       add(ins);
@@ -942,6 +950,9 @@ public class Insertions implements Iterable<Insertion> {
 
   /**
    * Merges annotations, assuming types are structurally identical. Side-effects the first argument.
+   *
+   * @param ins1 the insertion whose type is side-effected
+   * @param ins2 the insertion whose type's annotations are merged into those of {@code ins1}
    */
   private void mergeTypedInsertions(TypedInsertion ins1, TypedInsertion ins2) {
     mergeTypes(ins1.getType(), ins2.getType());
@@ -949,6 +960,9 @@ public class Insertions implements Iterable<Insertion> {
 
   /**
    * Merges annotations, assuming types are structurally identical. Side-effects the first argument.
+   *
+   * @param t1 the type that is side-effected
+   * @param t2 the type whose annotations are merged into those of {@code t1}
    */
   private void mergeTypes(Type t1, Type t2) {
     // TODO: should this test for .equals too?
@@ -1075,6 +1089,9 @@ public class Insertions implements Iterable<Insertion> {
   /**
    * Returns the outer class part of the argument; that is, the part before '$'. Returns the
    * argument if it contains no '$'.
+   *
+   * @param className a possibly-nested class name, such as {@code Outer$Inner}
+   * @return the part of the class name before the first '$'
    */
   private static String outerClassName(String className) {
     int i = className.indexOf('$'); // FIXME: don't split on '$' in source
@@ -1153,7 +1170,12 @@ public class Insertions implements Iterable<Insertion> {
       return null;
     }
 
-    /** Creates a TypeTree from a scene-lib Type. */
+    /**
+     * Creates a TypeTree from a scene-lib Type.
+     *
+     * @param type a scene-lib type
+     * @return a TypeTree that represents the type
+     */
     static TypeTree fromType(final Type type) {
       switch (type.getKind()) {
         case ARRAY -> {
@@ -1198,12 +1220,22 @@ public class Insertions implements Iterable<Insertion> {
       }
     }
 
-    /** Creates a TypeTree from a javac Type. */
+    /**
+     * Creates a TypeTree from a javac Type.
+     *
+     * @param type a javac type
+     * @return a TypeTree that represents the type
+     */
     static TypeTree fromJavacType(final com.sun.tools.javac.code.Type type) {
       return fromType(javacTypeToType(type));
     }
 
-    /** Creates a scene-lib Type from a javac Type. */
+    /**
+     * Creates a scene-lib Type from a javac Type.
+     *
+     * @param jtype a javac type
+     * @return a scene-lib type that represents the javac type
+     */
     static Type javacTypeToType(final com.sun.tools.javac.code.Type jtype) {
       switch (jtype.getKind()) {
         case ARRAY -> {
@@ -1282,6 +1314,10 @@ public class Insertions implements Iterable<Insertion> {
     /**
      * Uses prefix as a prefix for identifiers in t. For example, prefix can be a package or an
      * outer type.
+     *
+     * @param t the type whose identifiers are prefixed
+     * @param prefix the prefix to add
+     * @return a TypeTree like {@code t}, but with identifiers prefixed by {@code prefix}
      */
     private static TypeTree addPrefix(final TypeTree t, final TypeTree prefix) {
       return switch (t.getKind()) {

@@ -63,7 +63,11 @@ public class PackageNameNode extends Node {
     return element;
   }
 
-  /** Returns the package name node for the parent package, or {@code null} if none. */
+  /**
+   * Returns the package name node for the parent package, or {@code null} if none.
+   *
+   * @return the package name node for the parent package, or {@code null} if none
+   */
   public @Nullable PackageNameNode getParent() {
     return parent;
   }

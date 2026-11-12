@@ -111,7 +111,11 @@ public class StubGenerator {
     printFieldDecl(field);
   }
 
-  /** Generates the stub file for all the classes within the provided package. */
+  /**
+   * Generates the stub file for all the classes within the provided package.
+   *
+   * @param packageElement the package whose classes are written to the stub file
+   */
   public void stubFromPackage(PackageElement packageElement) {
     currentPackage = packageElement.getQualifiedName().toString();
 
@@ -409,6 +413,8 @@ public class StubGenerator {
    * Helper method that outputs the method declaration for the given method.
    *
    * <p>It indicates whether the method is {@code protected}.
+   *
+   * @param method the method to print
    */
   private void printMethodDecl(ExecutableElement method) {
     indent();
@@ -478,7 +484,12 @@ public class StubGenerator {
     return StringsP.join(", ", lst);
   }
 
-  /** Returns true if the element is public or protected. */
+  /**
+   * Returns true if the element is public or protected.
+   *
+   * @param element an element
+   * @return true if the element is public or protected
+   */
   private boolean isPublicOrProtected(Element element) {
     return element.getModifiers().contains(Modifier.PUBLIC)
         || element.getModifiers().contains(Modifier.PROTECTED);

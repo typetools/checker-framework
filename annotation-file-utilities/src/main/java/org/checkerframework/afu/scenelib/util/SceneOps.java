@@ -88,7 +88,11 @@ public final class SceneOps {
     return diff;
   }
 
-  /** Prints a stack trace (for debugging) and exits with return code 1. */
+  /**
+   * Prints a stack trace (for debugging) and exits with return code 1.
+   *
+   * @param e the exception whose stack trace is printed
+   */
   private static void exitWithException(Exception e) {
     e.printStackTrace();
     System.exit(1);

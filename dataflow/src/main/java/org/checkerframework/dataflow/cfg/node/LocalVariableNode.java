@@ -72,7 +72,11 @@ public class LocalVariableNode extends Node {
     return el;
   }
 
-  /** Returns the receiver node for the local variable, or {@code null} if none. */
+  /**
+   * Returns the receiver node for the local variable, or {@code null} if none.
+   *
+   * @return the receiver node for the local variable, or {@code null} if none
+   */
   public @Nullable Node getReceiver() {
     return receiver;
   }

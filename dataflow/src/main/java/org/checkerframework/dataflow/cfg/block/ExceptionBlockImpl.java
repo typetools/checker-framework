@@ -27,7 +27,11 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements Exce
     exceptionalSuccessors = new ArrayMap<>(2);
   }
 
-  /** Sets the node. */
+  /**
+   * Sets the node.
+   *
+   * @param c the node that this block contains
+   */
   public void setNode(Node c) {
     node = c;
     c.setBlock(this);

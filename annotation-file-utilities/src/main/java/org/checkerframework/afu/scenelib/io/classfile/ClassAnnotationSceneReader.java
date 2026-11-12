@@ -1464,7 +1464,7 @@ public class ClassAnnotationSceneReader extends CodeOffsetAdapter {
      * The name of a local variable being visited. Used to capture the local variable name seen in
      * visitLocalVariable so that it can be used in visitLocalVariableTypeAnnotation.
      */
-    private String localVariableName;
+    private @Nullable String localVariableName;
 
     /**
      * Constructs a new MethodAnnotationSceneReader.

@@ -142,6 +142,10 @@ public final class ClassFileReader {
   /**
    * If {@code arg} is not a valid representation of a class, prints a warning message and returns
    * false.
+   *
+   * @param arg a class name such as {@code java.lang.Object} or a file name such as {@code
+   *     path/to/MyClass.class}
+   * @return true if {@code arg} is a valid representation of a class
    */
   public static boolean checkClass(String arg) {
     // check for invalid class file paths with '.'

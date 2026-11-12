@@ -1190,6 +1190,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Creates an {@code @IntRange} or {@code @IntVal} annotation from the range. Might return
    * BOTTOMVAL or UNKNOWNVAL.
+   *
+   * @param range the range to convert to an annotation
+   * @return an {@code @IntRange} or {@code @IntVal} annotation for the range, or BOTTOMVAL or
+   *     UNKNOWNVAL
    */
   public AnnotationMirror createIntRangeAnnotation(Range range) {
     if (range.isNothing()) {
@@ -1259,6 +1263,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Creates an {@code @ArrayLenRange} annotation from the range. Might return BOTTOMVAL or
    * UNKNOWNVAL.
+   *
+   * @param range the range to convert to an annotation
+   * @return an {@code @ArrayLenRange} annotation for the range, or BOTTOMVAL or UNKNOWNVAL
    */
   public AnnotationMirror createArrayLenRangeAnnotation(Range range) {
     if (range.isNothing()) {

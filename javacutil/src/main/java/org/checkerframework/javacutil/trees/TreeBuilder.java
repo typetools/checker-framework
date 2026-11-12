@@ -502,7 +502,12 @@ public class TreeBuilder {
     return primValueAccess;
   }
 
-  /** Maps public AST Tree.Kinds to internal javac JCTree.Tags. */
+  /**
+   * Maps public AST Tree.Kinds to internal javac JCTree.Tags.
+   *
+   * @param kind a tree kind
+   * @return the javac tag that corresponds to the tree kind
+   */
   public JCTree.Tag kindToTag(Tree.Kind kind) {
     return switch (kind) {
       case AND -> JCTree.Tag.BITAND;

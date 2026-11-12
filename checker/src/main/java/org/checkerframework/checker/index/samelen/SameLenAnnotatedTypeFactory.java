@@ -141,7 +141,12 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     return atm;
   }
 
-  /** Returns true if the given expression can appear in a @SameLen annotation. */
+  /**
+   * Returns true if the given expression can appear in a @SameLen annotation.
+   *
+   * @param expr an expression
+   * @return true if {@code expr} can appear in a @SameLen annotation
+   */
   public static boolean mayAppearInSameLen(JavaExpression expr) {
     return !expr.containsUnknown()
         && !(expr instanceof ArrayCreation)

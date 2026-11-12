@@ -174,7 +174,11 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
       this.currentlyPrintingRaw = false;
     }
 
-    /** Sets the current verbose settings to use while printing. */
+    /**
+     * Sets the current verbose settings to use while printing.
+     *
+     * @param printVerbose true if invisible annotations and verbose generics should be printed
+     */
     protected void setVerboseSettings(boolean printVerbose) {
       this.currentPrintInvisibleSetting = printVerbose;
       this.currentPrintVerboseGenerics = printVerbose;

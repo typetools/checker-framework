@@ -82,8 +82,13 @@ public class I18nFormatterTreeUtil {
 
   /** Describes the format annotation type. */
   public enum FormatType {
+    /** An invalid format string, annotated with {@link I18nInvalidFormat}. */
     I18NINVALID,
+    /** A valid format string, annotated with {@link I18nFormat}. */
     I18NFORMAT,
+    /**
+     * A format string that is associated with an argument, annotated with {@link I18nFormatFor}.
+     */
     I18NFORMATFOR
   }
 
@@ -91,6 +96,9 @@ public class I18nFormatterTreeUtil {
    * Takes an exception that describes an invalid formatter string and returns a syntax tree element
    * that represents an {@link I18nInvalidFormat} annotation with the exception's error message as
    * its value.
+   *
+   * @param ex an exception that describes an invalid formatter string
+   * @return an {@link I18nInvalidFormat} annotation whose value is the exception's error message
    */
   public AnnotationMirror exceptionToInvalidFormatAnnotation(IllegalArgumentException ex) {
     return stringToInvalidFormatAnnotation(ex.getMessage());

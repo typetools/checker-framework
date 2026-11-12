@@ -38,13 +38,21 @@ public class ConditionalBlockImpl extends BlockImpl implements ConditionalBlock 
     super(BlockType.CONDITIONAL_BLOCK);
   }
 
-  /** Sets the then branch successor. */
+  /**
+   * Sets the then branch successor.
+   *
+   * @param b the new then branch successor
+   */
   public void setThenSuccessor(BlockImpl b) {
     thenSuccessor = b;
     b.addPredecessor(this);
   }
 
-  /** Sets the else branch successor. */
+  /**
+   * Sets the else branch successor.
+   *
+   * @param b the new else branch successor
+   */
   public void setElseSuccessor(BlockImpl b) {
     elseSuccessor = b;
     b.addPredecessor(this);
