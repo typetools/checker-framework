@@ -49,8 +49,10 @@ public class BinaryOperandPromotion {
     long r = (a + b) + c;
   }
 
+  // The inner addition promotes its left operand, b.  Its result is @Promoted, but the outer
+  // addition does not convert it.
   void nestedRightNotConverted(int a, byte b, int c) {
-    // :: error: [promoted.right]
+    // :: error: [promoted.left]
     int r = a + (b + c);
   }
 
