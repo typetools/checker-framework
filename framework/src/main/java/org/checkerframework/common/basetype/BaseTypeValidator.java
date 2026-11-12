@@ -171,7 +171,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
   protected List<DiagMessage> isValidStructurally(
       QualifierHierarchy qualHierarchy, AnnotatedTypeMirror type) {
     SimpleAnnotatedTypeScanner<List<DiagMessage>, QualifierHierarchy> scanner =
-        new SimpleAnnotatedTypeScanner<>(
+        new SimpleAnnotatedTypeScanner<List<DiagMessage>, QualifierHierarchy>(
             (atm, q) -> isTopLevelValidType(q, atm),
             DiagMessage::mergeLists,
             Collections.emptyList());
