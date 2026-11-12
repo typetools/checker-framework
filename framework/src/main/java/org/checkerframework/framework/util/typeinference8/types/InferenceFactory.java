@@ -783,17 +783,18 @@ public class InferenceFactory {
 
   /**
    * Adds to {@code map} an inference variable for each captured type variable that is a type
-   * argument of {@code capturedType} and that is not already in {@code map}. The bounds of each new
-   * variable are the bounds of the captured type variable that it replaces (JLS 18.5.5, step 3).
+   * argument of one of {@code capturedTypes} and that is not already in {@code map}. The bounds of
+   * each new variable are the bounds of the captured type variable that it replaces (JLS 18.5.5,
+   * step 3).
    *
    * @param deconstructor the deconstructor of the record pattern
-   * @param capturedType the capture of the matched type, or of a parameterized type that bounds it
-   *     (JLS 18.5.5, step 3)
+   * @param capturedTypes the captures of the matched type, or of the parameterized types that bound
+   *     it (JLS 18.5.5, step 3)
    * @param map the mapping to add to
    */
   public void addVariablesForCapturedTypeArguments(
-      ExpressionTree deconstructor, AnnotatedDeclaredType capturedType, Theta map) {
-    // This replaces every captured type variable that is a type argument of capturedType,
+      ExpressionTree deconstructor, List<AnnotatedDeclaredType> capturedTypes, Theta map) {
+    // This replaces every captured type variable that is a type argument of a captured type,
     // including one that the matched type already mentions.  JLS 18.5.5 step 3 requires this:
     // "This includes type variables produced by the capture conversion in this step, and type
     // variables produced by capture conversion elsewhere."  For example, if a record component has
@@ -801,19 +802,25 @@ public class InferenceFactory {
     // in another one is matched against Box<CAP#1>.  Resolution instantiates the new variable for
     // CAP#1 as a fresh type variable, and upward projection then removes that fresh type variable,
     // so the type of the nested record pattern is Box<? extends B>.
+    //
+    // Every variable is added to map before the bounds of any are initialized, because the bound
+    // of a captured type variable of one captured type can mention a captured type variable of
+    // another.
     List<Variable> newVariables = new ArrayList<>();
-    for (AnnotatedTypeMirror typeArg : capturedType.getTypeArguments()) {
-      if (typeArg.getKind() != TypeKind.TYPEVAR
-          || !TypesUtils.isCapturedTypeVariable(typeArg.getUnderlyingType())
-          || map.get(typeArg.getUnderlyingType()) != null) {
-        continue;
+    for (AnnotatedDeclaredType capturedType : capturedTypes) {
+      for (AnnotatedTypeMirror typeArg : capturedType.getTypeArguments()) {
+        if (typeArg.getKind() != TypeKind.TYPEVAR
+            || !TypesUtils.isCapturedTypeVariable(typeArg.getUnderlyingType())
+            || map.get(typeArg.getUnderlyingType()) != null) {
+          continue;
+        }
+        AnnotatedTypeVariable zi = (AnnotatedTypeVariable) typeArg;
+        @SuppressWarnings("interning:interned.object.creation") // no equal variable is created
+        Variable betai =
+            new @Interned Variable(zi, zi.getUnderlyingType(), deconstructor, context, map);
+        map.put(zi.getUnderlyingType(), betai);
+        newVariables.add(betai);
       }
-      AnnotatedTypeVariable zi = (AnnotatedTypeVariable) typeArg;
-      @SuppressWarnings("interning:interned.object.creation") // no equal variable is created
-      Variable betai =
-          new @Interned Variable(zi, zi.getUnderlyingType(), deconstructor, context, map);
-      map.put(zi.getUnderlyingType(), betai);
-      newVariables.add(betai);
     }
     for (Variable betai : newVariables) {
       betai.initialBounds(map);
