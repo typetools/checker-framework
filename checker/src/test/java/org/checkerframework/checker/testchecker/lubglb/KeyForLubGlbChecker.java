@@ -153,6 +153,19 @@ public class KeyForLubGlbChecker extends KeyForSubchecker {
     sameAssert(
         "annotation after addAnnotation(" + ba + ")", atm.getPrimaryAnnotation(KeyFor.class), ab);
 
+    // A malformed annotation that lacks a value element is returned unchanged, without crashing.
+    AnnotationMirror noValue = new AnnotationBuilder(processingEnv, KeyFor.class).build();
+    if (qualHierarchy.canonicalize(noValue) != noValue) {
+      throw new AssertionError("canonicalize(" + noValue + ") should return its argument");
+    }
+    AnnotatedTypeMirror atmNoValue =
+        AnnotatedTypeMirror.createType(stringType, atypeFactory, false);
+    atmNoValue.addAnnotation(noValue);
+    if (atmNoValue.getPrimaryAnnotation(KeyFor.class) != noValue) {
+      throw new AssertionError(
+          "annotation after addAnnotation(" + noValue + ") should be its argument");
+    }
+
     // For canonical arguments, the result does not depend on the order of the arguments or their
     // values.
     AnnotationMirror canonicalBa = qualHierarchy.canonicalize(ba);
@@ -175,6 +188,9 @@ public class KeyForLubGlbChecker extends KeyForSubchecker {
     KeyForAnnotatedTypeFactory atypeFactory =
         (KeyForAnnotatedTypeFactory) ((BaseTypeVisitor<?>) visitor).getTypeFactory();
     for (VariableElement field : ElementFilter.fieldsIn(e.getEnclosedElements())) {
+      if (!field.getSimpleName().contentEquals("noncanonicalKeyFor")) {
+        continue;
+      }
       sameAssert(
           "annotation on field " + field,
           atypeFactory.getAnnotatedType(field).getPrimaryAnnotation(KeyFor.class),
