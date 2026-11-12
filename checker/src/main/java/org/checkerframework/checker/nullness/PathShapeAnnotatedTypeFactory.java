@@ -1,6 +1,7 @@
 package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -184,9 +185,10 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /**
    * Returns true if the given tree overrides, or refers to, a declaration whose type contains a
-   * path shape qualifier, such as a method whose return type is {@code @HasName Object}. Such a
-   * tree must be checked even if it mentions no {@code Path} or {@code File} type and writes no
-   * path shape qualifier.
+   * path shape qualifier, such as a method whose return type is {@code @HasName Object}. A lambda or
+   * method reference refers to the method of its functional interface, and a method reference also
+   * refers to the method that it names. Such a tree must be checked even if it mentions no {@code
+   * Path} or {@code File} type and writes no path shape qualifier.
    *
    * @param tree a tree
    * @return true if {@code tree} overrides, or refers to, a declaration with a path shape contract
@@ -195,6 +197,10 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     switch (tree.getKind()) {
       case METHOD -> {
         ExecutableElement method = TreeUtils.elementFromDeclaration((MethodTree) tree);
+        if (method == null) {
+          // The method's contract cannot be inspected, so conservatively check the class.
+          return true;
+        }
         for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> entry :
             AnnotatedTypes.overriddenMethods(elements, this, method).entrySet()) {
           AnnotatedExecutableType overriddenType =
@@ -212,6 +218,17 @@ public class PathShapeAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       case NEW_CLASS -> {
         return containsPathShapeQualifier(
             fromElement(TreeUtils.elementFromUse((NewClassTree) tree)));
+      }
+      case LAMBDA_EXPRESSION -> {
+        // The lambda body is checked against the functional interface method's contract.
+        return containsPathShapeQualifier(
+            fromElement(TreeUtils.findFunction(tree, processingEnv)));
+      }
+      case MEMBER_REFERENCE -> {
+        // The referenced method is checked against the functional interface method's contract.
+        return containsPathShapeQualifier(fromElement(TreeUtils.findFunction(tree, processingEnv)))
+            || containsPathShapeQualifier(
+                fromElement(TreeUtils.elementFromUse((MemberReferenceTree) tree)));
       }
       case IDENTIFIER, MEMBER_SELECT -> {
         ExpressionTree expr = (ExpressionTree) tree;
