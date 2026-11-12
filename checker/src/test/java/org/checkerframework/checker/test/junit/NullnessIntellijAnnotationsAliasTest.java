@@ -21,10 +21,7 @@ public class NullnessIntellijAnnotationsAliasTest extends CheckerFrameworkPerDir
         testFiles,
         org.checkerframework.checker.nullness.NullnessChecker.class,
         "nullness",
-        "-AintellijAnnotations=tests/nullness-intellijannotations-alias",
-        // Other checkers in the Nullness Checker's compound checker, which do not know the alias,
-        // warn that the alias is an unknown annotation.
-        "-AstubNoWarnIfNotFound");
+        "-AintellijAnnotations=tests/nullness-intellijannotations-alias");
   }
 
   /**

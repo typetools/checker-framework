@@ -30,6 +30,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.signature.qual.CanonicalName;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.FromStubFile;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.stub.AnnotationFileParser.AnnotationFileAnnotations;
@@ -187,6 +188,53 @@ public final class IntelliJAnnotationParser {
   }
 
   /**
+   * Returns true if {@code atypeFactory}'s checker should warn that an annotation name that is not
+   * on the classpath is unknown. That is the case if the checker is an ultimate parent checker (see
+   * {@link BaseTypeChecker#getUltimateParentChecker}) and neither it nor any of its subcheckers
+   * treats the name as an alias (see {@link AnnotatedTypeFactory#canonicalAnnotationForAliasName}).
+   *
+   * <p>Every checker of a compound checker reads the annotation file, but an alias such as {@code
+   * androidx.annotation.NonNull} is typically known to only one of them, such as the Nullness
+   * Checker's subchecker that does not check initialization. A subchecker cannot consult the
+   * factories of the checkers that depend on it, because those factories are created after the
+   * subchecker's factory has read the annotation file. So a subchecker never warns, and the
+   * ultimate parent checker, whose factory is created last, warns once for the whole compound
+   * checker.
+   *
+   * @param annoName the fully-qualified name of an annotation that is not on the classpath and that
+   *     {@code atypeFactory} does not treat as an alias
+   * @param atypeFactory a type factory that is reading an annotation file
+   * @return true if {@code atypeFactory}'s checker should warn that {@code annoName} is unknown
+   */
+  @SuppressWarnings("interning:not.interned") // checkers are compared by identity
+  private static boolean isUnknownToCompoundChecker(
+      String annoName, AnnotatedTypeFactory atypeFactory) {
+    BaseTypeChecker checker = atypeFactory.getChecker();
+    if (checker.getUltimateParentChecker() != checker) {
+      return false;
+    }
+    // The outermost checker's getSubcheckers() returns every checker that runs, even if the
+    // outermost checker is an aggregate checker, of which `checker` is one part.
+    SourceChecker outermost = checker;
+    for (SourceChecker parent = checker.getParentChecker();
+        parent != null;
+        parent = parent.getParentChecker()) {
+      outermost = parent;
+    }
+    for (SourceChecker subchecker : outermost.getSubcheckers()) {
+      if (subchecker instanceof BaseTypeChecker baseTypeSubchecker
+          && baseTypeSubchecker != checker
+          && baseTypeSubchecker.getUltimateParentChecker() == checker
+          && baseTypeSubchecker.getVisitor() != null
+          && baseTypeSubchecker.getTypeFactory().canonicalAnnotationForAliasName(annoName)
+              != null) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Parses the {@code <annotation>} children of an {@code <item>} element.
    *
    * @param itemElement the XML item element containing annotation child tags
@@ -220,9 +268,9 @@ public final class IntelliJAnnotationParser {
         AnnotationMirror aliasCanonical = atypeFactory.canonicalAnnotationForAliasName(annoName);
         if (aliasCanonical != null) {
           result.add(aliasCanonical);
-          continue;
+        } else if (isUnknownToCompoundChecker(annoName, atypeFactory)) {
+          warnNotFound(atypeFactory.getChecker(), "Unknown annotation: " + annoName);
         }
-        warnNotFound(atypeFactory.getChecker(), "Unknown annotation: " + annoName);
         continue;
       }
       if (annoTypeElt.getKind() != ElementKind.ANNOTATION_TYPE) {

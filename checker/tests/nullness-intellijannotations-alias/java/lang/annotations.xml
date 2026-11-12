@@ -5,4 +5,9 @@
   <item name="java.lang.System java.lang.String getenv(java.lang.String)">
     <annotation name="androidx.annotation.NonNull" />
   </item>
+  <!-- No checker of the Nullness Checker's compound checker knows this annotation, so the
+       Nullness Checker warns once that it is unknown. -->
+  <item name="java.lang.System java.lang.String getProperty(java.lang.String)">
+    <annotation name="not.on.the.classpath.UnknownAnnotation" />
+  </item>
 </root>
