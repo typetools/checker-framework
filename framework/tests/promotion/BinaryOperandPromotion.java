@@ -37,6 +37,25 @@ public class BinaryOperandPromotion {
     int r = a + b;
   }
 
+  // The result of the inner addition is @Promoted, but the outer addition does not convert it.
+  void nestedNotConverted(byte a, int b, int c) {
+    // :: error: [promoted.left]
+    int r = (a + b) + c;
+  }
+
+  // The result of the inner addition is @Promoted, and the outer addition widens it.
+  void nestedConverted(byte a, int b, long c) {
+    // :: error: [promoted.left] :: error: [promoted.left]
+    long r = (a + b) + c;
+  }
+
+  // The inner addition promotes its left operand, b.  Its result is @Promoted, but the outer
+  // addition does not convert it.
+  void nestedRightNotConverted(int a, byte b, int c) {
+    // :: error: [promoted.left]
+    int r = a + (b + c);
+  }
+
   // An equality test of two boxed operands compares references and does not unbox them.
   void referenceEquality(Integer a, Integer b) {
     boolean r = a == b;
@@ -54,6 +73,34 @@ public class BinaryOperandPromotion {
   void numericInequality(int a, Integer b) {
     // :: error: [promoted.right]
     boolean r = a != b;
+  }
+
+  boolean booleanReferenceEquality(Boolean a, Boolean b) {
+    return a == b;
+  }
+
+  boolean booleanSameKinds(boolean a, boolean b) {
+    return a == b;
+  }
+
+  boolean booleanEquality(Boolean a, boolean b) {
+    // :: error: [return]
+    return a == b;
+  }
+
+  boolean booleanAnd(Boolean a, boolean b) {
+    // :: error: [return]
+    return a & b;
+  }
+
+  boolean booleanXorBoxed(Boolean a, Boolean b) {
+    // :: error: [return]
+    return a ^ b;
+  }
+
+  boolean conditionalOr(boolean a, Boolean b) {
+    // :: error: [return]
+    return a || b;
   }
 
   // A shift operation promotes each operand separately, so a long right operand does not widen the
