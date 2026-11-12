@@ -169,7 +169,10 @@ public abstract class CFAbstractAnalysis<
    * @param factory an annotated type factory to introduce type and dataflow rules
    * @param maxCountBeforeWidening number of times a block can be analyzed before widening
    */
-  @SuppressWarnings("this-escape")
+  @SuppressWarnings({
+    "this-escape",
+    "nullness:method.invocation" // calls createTransferFunction() on a partly-initialized object
+  })
   protected CFAbstractAnalysis(
       BaseTypeChecker checker,
       GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,

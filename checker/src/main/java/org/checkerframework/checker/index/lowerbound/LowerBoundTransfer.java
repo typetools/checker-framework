@@ -263,10 +263,14 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     if (!isNonNegative(leftAnno) || !isNonNegative(otherAnno)) {
       return;
     }
+    Tree leftTree = leftNode.getTree();
+    if (leftTree == null) {
+      return;
+    }
     JavaExpression otherJe = JavaExpression.fromNode(otherNode);
     if (atypeFactory
         .getLessThanAnnotatedTypeFactory()
-        .isLessThanOrEqual(leftNode.getTree(), otherJe.toString())) {
+        .isLessThanOrEqual(leftTree, otherJe.toString())) {
       insertValueForComparedNode(store, otherNode, POS);
     }
   }
@@ -333,7 +337,9 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
             .getQualifierHierarchy()
             .greatestLowerBoundShallow(rightAnno, left.getType(), leftAnno, right.getType());
 
-    insertValueForComparedNode(store, left, newLBType);
+    if (newLBType != null) {
+      insertValueForComparedNode(store, left, newLBType);
+    }
   }
 
   /**
