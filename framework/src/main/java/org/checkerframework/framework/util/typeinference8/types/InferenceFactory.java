@@ -1088,7 +1088,8 @@ public class InferenceFactory {
    *       IgnoredAnnotations#ignoredPositionsStayIgnored}).
    * </ul>
    *
-   * The copy keeps the origin. Otherwise, returns null.
+   * The copy keeps the origin. Otherwise, returns null; that is normal and not an error, and it is
+   * the usual case, because most types have no origin.
    *
    * @param type an input to a least upper bound or greatest lower bound computation
    * @param inputs all the inputs to that computation, including {@code type}
