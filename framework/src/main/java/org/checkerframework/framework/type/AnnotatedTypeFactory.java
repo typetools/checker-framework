@@ -1135,6 +1135,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         elementCache.clear();
       }
       cacheDeclAnnos.clear();
+      // Populated in lockstep with `cacheDeclAnnos`.
+      inheritedSideEffectsOnlyExpressions.clear();
     }
   }
 
