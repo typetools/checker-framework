@@ -1131,6 +1131,7 @@ public abstract class CFAbstractTransfer<
    * @return the right operand of the binary operation whose left operand is {@code node}, or null
    *     if {@code node} is not the left operand of a binary operation
    */
+  @SuppressWarnings("interning:not.interned") // reference equality of AST nodes
   private @Nullable ExpressionTree laterOperand(Node node) {
     TreePath path = sourcePath(node);
     if (path == null) {
