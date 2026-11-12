@@ -3388,8 +3388,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    */
   public BinaryArgTypes binaryTreeArgTypes(
       Tree.Kind operator, AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
-    TypeKind leftKind = numericTypeKind(left);
-    TypeKind rightKind = numericTypeKind(right);
     switch (operator) {
       case LEFT_SHIFT,
           RIGHT_SHIFT,
@@ -3397,8 +3395,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
           LEFT_SHIFT_ASSIGNMENT,
           RIGHT_SHIFT_ASSIGNMENT,
           UNSIGNED_RIGHT_SHIFT_ASSIGNMENT -> {
-        return new BinaryArgTypes(
-            unaryNumericPromotion(left, leftKind), unaryNumericPromotion(right, rightKind));
+        return new BinaryArgTypes(unaryNumericPromotion(left), unaryNumericPromotion(right));
       }
       case EQUAL_TO, NOT_EQUAL_TO -> {
         if (!left.getKind().isPrimitive() && !right.getKind().isPrimitive()) {
@@ -3407,7 +3404,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       }
       default -> {}
     }
-    TypeKind promotedKind = TypeKindUtils.widenedNumericType(leftKind, rightKind);
+    TypeKind promotedKind =
+        TypeKindUtils.widenedNumericType(numericTypeKind(left), numericTypeKind(right));
     if (!TypeKindUtils.isNumeric(promotedKind)) {
       return new BinaryArgTypes(left, right);
     }
@@ -3430,19 +3428,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
   /**
    * Returns the type of the given operand after unary numeric promotion (JLS 5.6), or the operand's
-   * type unchanged if unary numeric promotion does not apply to it.
+   * type unchanged if unary numeric promotion does not apply to it. For example, unary numeric
+   * promotion unboxes a {@code Character} operand and widens it to {@code int}.
    *
-   * @param type the type of an operand
-   * @param kind the numeric primitive kind of {@code type}, as returned by {@link
-   *     #numericTypeKind}, or {@code NONE}
+   * @param type the type of an operand, such as the left operand of a shift
    * @return the type of the operand after unary numeric promotion
    */
-  private AnnotatedTypeMirror unaryNumericPromotion(AnnotatedTypeMirror type, TypeKind kind) {
-    return switch (kind) {
-      case BYTE, SHORT, CHAR -> promoteNumeric(type, TypeKind.INT);
-      case INT, LONG, FLOAT, DOUBLE -> promoteNumeric(type, kind);
-      default -> type;
-    };
+  public AnnotatedTypeMirror unaryNumericPromotion(AnnotatedTypeMirror type) {
+    // Unary numeric promotion is binary numeric promotion with an int operand.
+    TypeKind promotedKind = TypeKindUtils.widenedNumericType(numericTypeKind(type), TypeKind.INT);
+    return TypeKindUtils.isNumeric(promotedKind) ? promoteNumeric(type, promotedKind) : type;
   }
 
   /**
@@ -3454,10 +3449,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the type of the operand after unboxing and widening
    */
   private AnnotatedPrimitiveType promoteNumeric(AnnotatedTypeMirror type, TypeKind promotedKind) {
-    AnnotatedPrimitiveType unboxed =
-        type.getKind().isPrimitive()
-            ? (AnnotatedPrimitiveType) type
-            : getUnboxedType((AnnotatedDeclaredType) type);
+    AnnotatedPrimitiveType unboxed = applyUnboxing(type);
     return unboxed.getKind() == promotedKind
         ? unboxed
         : getWidenedPrimitive(unboxed, types.getPrimitiveType(promotedKind));

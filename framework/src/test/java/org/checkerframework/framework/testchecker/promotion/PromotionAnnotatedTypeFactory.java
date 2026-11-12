@@ -19,7 +19,7 @@ public class PromotionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   /**
    * Creates a PromotionAnnotatedTypeFactory.
    *
-   * @param checker the checker
+   * @param checker a Promotion Checker
    */
   @SuppressWarnings("this-escape")
   public PromotionAnnotatedTypeFactory(BaseTypeChecker checker) {
