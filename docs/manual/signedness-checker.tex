@@ -78,13 +78,13 @@ These are the qualifiers in the signedness type system:
 \item[\refqualclass{checker/signedness/qual}{SignedPositive}]
     indicates that a value is known at compile time to be in the non-negative
     signed range, so it has the same interpretation as signed or unsigned
-    and may be used with either interpretation.  (Equivalently, the most
+    and can be used with either interpretation.  (Equivalently, the most
     significant bit is guaranteed to be 0.)  Programmers should usually
     write \refqualclass{checker/signedness/qual}{Signed} or
     \refqualclass{checker/signedness/qual}{Unsigned} instead.
 
 \item[\refqualclass{checker/signedness/qual}{SignednessGlb}]
-    indicates that a value may be interpreted as unsigned or signed.  It
+    indicates that a value can be interpreted as unsigned or signed.  It
     covers the same cases as
     \refqualclass{checker/signedness/qual}{SignedPositive}, plus manifest literals, to
     prevent the programmer from having to annotate them all explicitly.
@@ -251,25 +251,25 @@ the Signedness Checker permits both \verb|(byte) (myInt >> 8)| and
 Class \refclass{checker/signedness/util}{SignednessUtil} provides static
 utility methods for working with unsigned values.  They are
 properly annotated with \refqualclass{checker/signedness/qual}{Unsigned}
-where appropriate, so using them may reduce the number of annotations that
+where appropriate, so using them can reduce the number of annotations that
 you need to write.
 To use the \refclass{checker/signedness/util}{SignednessUtil} class, the
 \<checker-util.jar> file must be on the classpath at run time.
 
 Class \refclass{checker/signedness/util}{SignednessUtilExtra} contains more utility
 methods that reference packages not included in Android.  This class is not
-included in \code{checker-util.jar}, so you may want to copy the methods to your code.
+included in \code{checker-util.jar}, so you might want to copy the methods to your code.
 
 
 \sectionAndLabel{Local type refinement}{signedness-refinement}
 
-Local type refinement/inference (Section~\ref{type-refinement}) may be
+Local type refinement/inference (Section~\ref{type-refinement}) might be
 surprising for the Signedness type system.  Ordinarily, an expression with
-unsigned type may not participate in a division, as shown in
+unsigned type cannot participate in a division, as shown in
 Sections~\ref{signedness-checker-prohibited-operations}
 and~\ref{signedness-checker-rationale}.  However, if a constant is assigned
 to a variable that was declared with \<@Unsigned> type, then --- just like
-the constant --- the variable may be treated as either signed or unsigned,
+the constant --- the variable can be treated as either signed or unsigned,
 due to local type refinement (Section~\ref{type-refinement}).
 For example, it can participate in division.
 
@@ -307,7 +307,7 @@ refinement) refines the types of local variables.
 When calling a method with formal parameters annotated as
 \refqualclass{checker/signedness/qual}{PolySigned}, all arguments for
 \<@PolySigned> formal parameters must have comparable types.  (One way to
-do this is for all types to be the same.)  This is different than the usual
+do this is for all types to be the same.)  This is different from the usual
 rules for polymorphic qualifiers.  If you violate this rule, then the
 Signedness Checker's error messages can be obscure, because they are about
 \<@SignednessBottom>.  You can fix the signedness error messages by casting

@@ -41,7 +41,7 @@ licensing restrictions.
 
 \sectionAndLabel{Android}{android}
 
-When creating an Android app, you may wish to use \<checker-qual-android>
+When creating an Android app, you might wish to use \<checker-qual-android>
 whenever this document mentions \<checker-qual>.  This can lead to smaller
 dex files (smaller distributed apps).
 
@@ -176,7 +176,7 @@ ensures that an external \code{javac} program is called.  Otherwise, Ant will ru
 \code{javac} via a Java method call, and there is no guarantee that it will get
 the correct version of \code{javac}.
 
-The \code{-version} compiler argument is just for debugging; you may omit
+The \code{-version} compiler argument is just for debugging; you can omit
 it.
 
 The \code{-implicit:class} compiler argument causes annotation processing
@@ -193,7 +193,7 @@ supplying the argument explicitly suppresses a compiler warning.
 \item The \code{check-nullness} target:
 
 The target assumes the existence of a \code{clean} target that removes all
-\code{.class} files.  That is necessary because Ant's \code{javac} target
+\code{.class} files.  That is necessary because Ant's \code{javac} task
 doesn't re-compile \code{.java} files for which a \code{.class} file
 already exists.
 
@@ -216,7 +216,7 @@ To run the Checker Framework, see Stack Overflow discussion 48555320
 Buck is a build system maintained by Meta.
 
 Buck has support for annotation processors, but that support is
-undocumented because the Buck maintainers may change the syntax in the
+undocumented because the Buck maintainers might change the syntax in the
 future and they don't wish to ever change anything that is documented.
 You can learn more about Buck and annotation processors at these URLs:
 {\codesize\url{https://stackoverflow.com/questions/32915721/documentation-for-annotation-processors-buck}},
@@ -263,11 +263,11 @@ For example, you might run
 \end{Verbatim}
 
 However, the command lines that Buck prints with \<-v 8> are \emph{not} what
-Buck actually executes.  Buck's invocation of the Checker Framework may
+Buck actually executes.  Buck's invocation of the Checker Framework might
 produce errors that cannot be reproduced from the command line.  This is
 because Buck uses
 \href{https://github.com/facebook/buck/blob/main/src/com/facebook/buck/jvm/java/Jsr199Javac.java}{in-process
-  compilation}, potentially multi-threaded, and because Buck may use
+  compilation}, potentially multi-threaded, and because Buck might use
 \href{https://github.com/facebook/buck/blob/main/src/com/facebook/buck/util/ClassLoaderCache.java}{multiple
   classloaders} that are cached.
 
@@ -310,7 +310,7 @@ other than \<\${HOME}/checker-framework-\ReleaseVersion{}/>.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
-    \verb|~/.profile| (or alternately \verb|~/.bash_profile| or \verb|~/.bashrc|) file:
+    \verb|~/.profile| (or alternatively \verb|~/.bash_profile| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
   export CHECKERFRAMEWORK=${HOME}/checker-framework-4.4.0
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
@@ -373,7 +373,7 @@ other than \<\${HOME}/checker-framework-\ReleaseVersion{}/>.
 
 
 
-%% Does this work?  Text elsewhere in the manual imples that it does not.
+%% Does this work?  Text elsewhere in the manual implies that it does not.
 % \item
 % \begin{sloppypar}
 %   In order to use the updated compiler when you type \code{javac}, add the
@@ -432,7 +432,7 @@ Section~\ref{javac-wrapper}.
 This
 section assumes you have downloaded the Checker Framework release zip and set
 the environment variable \<CHECKERFRAMEWORK> to point to the unzipped directory.
-Alternately, you can get all of the jars mentioned in this section from Maven Central:
+Alternatively, you can get all of the jars mentioned in this section from Maven Central:
 
 \begin{itemize}
 \item \<checker-qual.jar>: \url{https://repo1.maven.org/maven2/org/checkerframework/checker-qual/4.4.0/checker-qual-4.4.0.jar}
@@ -471,16 +471,16 @@ javac \
 The arguments are explained above, except for two of them:
 \begin{enumerate}
 
-\item \<-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED> which
+\item \<-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED>, which
 opens the \<jdk.compiler/com.sun.tools.javac.comp> package.  This is
 required because the Checker Framework reflectively accesses private members of this package.
 
-\item \<-J--add-exports=...=ALL-UNNAMED> which exports the listed packages.  This is
+\item \<-J--add-exports=...=ALL-UNNAMED>, which exports the listed packages.  This is
 required because the Checker Framework accesses non-exported members of these packages.
 
 \end{enumerate}
 
-If these options are missing, \<javac> may issue one of the following warnings:
+If these options are missing, \<javac> might issue one of the following warnings:
 \begin{Verbatim}
 WARNING: An illegal reflective access operation has occurred
 WARNING: Illegal reflective access by org.checkerframework.javacutil.Resolver
@@ -591,7 +591,7 @@ To eliminate the warnings:
 disable all ``Unhandled Token in @SuppressWarnings'' warnings in Eclipse.
 Look under the menu headings
 ``Java \rightarrowsym{} Compiler \rightarrowsym{} Errors/Warnings \rightarrowsym{}
-Annotations \rightarrowsym{} Unhandled Token in '@SuppressWarnings',''
+Annotations \rightarrowsym{} Unhandled Token in '@SuppressWarnings'{}''
 and set it to ignore.
 
 
@@ -750,7 +750,7 @@ The \href{https://anthonywhitford.com/lombok.maven/lombok-maven-plugin/}{Lombok 
 can be used to delombok source code for Maven projects. The
 \href{https://anthonywhitford.com/lombok.maven/lombok-maven-plugin/faq.html#alt-src-setup}
 {Lombok Maven Plugin FAQ} discusses how to configure the plugin when code
-using Lombok is mixed with standard Java code. Once the Lombok Maven plugin
+using Lombok is mixed with standard Java code. Once the Lombok Maven Plugin
 is configured correctly, the Checker Framework Maven configuration can be added
 independently.
 
@@ -773,7 +773,7 @@ Please note that the \<-AoutputArgsToFile> command-line option
 (see Section~\ref{creating-debugging-options-output-args}) and shorthands for built-in checkers
 (see Section~\ref{shorthand-for-checkers}) are not available when
 following these instructions.  Both these features are available only when a checker is
-launched via \<checker.jar> such as when \code{\$CHECKERFRAMEWORK/checker/bin/javac}
+launched via \<checker.jar>, such as when \code{\$CHECKERFRAMEWORK/checker/bin/javac}
 is run.  The instructions in this section
 bypass \<checker.jar> and cause the compiler to run a
 checker as an annotation processor directly.
@@ -916,7 +916,7 @@ Warning:  adding
 \end{mysmall}
 
 \noindent
-may suppress warnings from the stub parser.
+might suppress warnings from the stub parser.
 
 \end{enumerate}
 
@@ -997,7 +997,7 @@ are currently unavailable on NetBeans 8.1 and 8.2.
 \begin{enumerate}
 \item
   Add the Checker Framework libraries to your project's
-  library. First, right click on the project in the Projects panel,
+  library. First, right-click on the project in the Projects panel,
   and select ``Properties'' in the drop-down menu. Then, in the
   ``Project Properties'' window, navigate to the ``Libraries'' tab.
 
@@ -1021,10 +1021,10 @@ are currently unavailable on NetBeans 8.1 and 8.2.
 
 \item
   Add the checker to run, by clicking ``Add'' next to the box labeled
-  ``Annotation Processors'' and enter the fully qualified name of the
+  ``Annotation Processors'', entering the fully-qualified name of the
   checker (for
-  example, \<org.checkerframework.checker.nullness.NullnessChecker>)
-  and click ``OK'' to add.
+  example, \<org.checkerframework.checker.nullness.NullnessChecker>),
+  and clicking ``OK'' to add.
 \end{enumerate}
 
 The selected checker should be run on the project either on a save (if
@@ -1057,7 +1057,7 @@ Set the \code{cfJavac} property:
 \item
 Override the \code{-init-macrodef-javac-with-processors} target to
 use \code{cf.javac} instead of \code{javac} and to run the checker.
-In this example, a nullness checker is run:
+In this example, the Nullness Checker is run:
 
 \begin{smaller}
 \begin{Verbatim}

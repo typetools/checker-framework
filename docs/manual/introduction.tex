@@ -362,7 +362,7 @@ command line.
 
 \sectionAndLabel{Where to write type annotations}{writing-annotations}
 
-You may write a type annotation immediately before any
+You can write a type annotation immediately before any
 use of a type, including in generics and casts.  Because array levels are
 types and receivers have types, you can also write type annotations on
 them.  Here are a few examples of type annotations:
@@ -425,11 +425,11 @@ and about customizing other IDEs and build tools.
 
 The checker is run on only the Java files that javac compiles.
 This includes all Java files specified on the command line and those
-created by another annotation processor.  It may also include other Java
+created by another annotation processor.  It might also include other Java
 files of yours, if they are more recent than the corresponding \code{.class} file.
 Even when the checker does not analyze a class (say, the class was
 already compiled, or source code is not available), it does check
-the \emph{uses} of those classes in the source code being compiled.
+the \emph{uses} of that class in the source code being compiled.
 Type-checking works modularly and intraprocedurally:  when verifying a
 method, it examines only the signature (including annotations) of other
 methods, not their implementations.  When analyzing a variable use, it
@@ -551,7 +551,7 @@ The ``\<checker.jar>'' should be literal --- don't provide a path.
 You can pass command-line arguments to a checker via \<javac>'s standard \<-A>
 option (``\<A>'' stands for ``annotation'').  All of the distributed
 checkers support the following command-line options.
-Each checker may support additional command-line options; see the checker's
+Each checker can support additional command-line options; see the checker's
 documentation.
 
 To pass an option to only a particular checker,
@@ -604,7 +604,7 @@ Unsound checking: ignore some errors
   Ignore the possibility of overflow for range annotations such as
   \<@IntRange>; see Section~\ref{value-checker-overflow}.
 \item \<-Awarns>
-  Treat checker errors as warnings.  If you use this, you may wish to also
+  Treat checker errors as warnings.  If you use this, you might wish to also
   supply \code{-Xmaxwarns 10000}, because by default \<javac> prints at
   most 100 warnings.  If you use this, don't supply \code{-Werror},
   which is a javac argument to halt compilation if a warning is issued.
@@ -648,12 +648,12 @@ More sound (strict) checking: enable errors that are disabled by default
   Section~\ref{defaults-classfile}.
   \item
   Outside the scope of any relevant
-  \refqualclass{framework/qual}{AnnotatedFor} annotation, ``source'' specifies whether conservative
-  default annotations are applied to source code and suppress all type-checking warnings; see
+  \refqualclass{framework/qual}{AnnotatedFor} annotation, ``source'' specifies whether to apply conservative
+  default annotations to source code and suppress all type-checking warnings; see
   Section~\ref{compiling-libraries}.
   \end{itemize}
 \item \<-AconcurrentSemantics>
-  Whether to assume concurrent semantics (field values may change at any
+  Whether to assume concurrent semantics (field values can change at any
   time) or sequential semantics; see Section~\ref{faq-concurrency}.
 \item \<-AignoreRawTypeArguments=false>
   Do not ignore subtype tests for type arguments that were inferred for a
@@ -685,22 +685,22 @@ Type-checking modes:  enable/disable functionality
   debugging information to be output.
 \item \<-Ainfer=\emph{outputformat}>
   Output suggested annotations for method signatures and fields.
-  These annotations may reduce the number of type-checking
+  These annotations might reduce the number of type-checking
   errors on subsequent type-checking runs.  This option is
   typically used by whole-program inference (WPI; see
   Section~\ref{whole-program-inference}) rather than by programmers.
   Using \<-Ainfer=jaifs> produces \<.jaif> files.
   Using \<-Ainfer=stubs> produces \<.astub> files.
   Using \<-Ainfer=ajava> produces \<.ajava> files.
-  You must also supply \<-Awarns>, or the inference output may be incomplete.
+  You must also supply \<-Awarns>, or the inference output might be incomplete.
 \item \<-AinferOutputDirectory>
   The directory into which to write inference output (e.g., \<.ajava>
   files).  It defaults to \<build/whole-program-inference>.  When using
-  a build system (e.g., Gradle), the default may be interpreted relative to
+  a build system (e.g., Gradle), the default might be interpreted relative to
   a build system directory (e.g., \<\$HOME/.gradle/workers>) rather than the
-  project root directory, so you may need to provide an absolute path.
+  project root directory, so you might need to provide an absolute path.
 \item \<-AinferOutputOriginal>
-  When outputting \<.ajava> files when running with \<-Ainfer=ajava>,
+  When outputting \<.ajava> files (that is, when running with \<-Ainfer=ajava>),
   also output a copy of the original file with no inferred annotations,
   but with the formatting of a \<.ajava> file, to permit use of \<diff>
   to view the inferred annotations. Must be combined with \<-Ainfer=ajava>.
@@ -712,7 +712,7 @@ Type-checking modes:  enable/disable functionality
   issued by the checker.  This only warns about
   \<@SuppressWarnings> strings that contain a checker name
   other than \<"allcheckers">
-  (for syntax, Section~\ref{suppresswarnings-annotation-syntax}).  The
+  (for syntax, see Section~\ref{suppresswarnings-annotation-syntax}).  The
   \<-ArequirePrefixInWarningSuppressions> command-line argument ensures
   that all \<@SuppressWarnings> strings contain a checker name.
   An \<unneeded.suppression> warning can be suppressed only by
@@ -730,9 +730,9 @@ Type-checking modes:  enable/disable functionality
   supplied, then \<@SuppressWarnings("assignment")> has no effect, but
   \<@SuppressWarnings("nullness:assignment")> does.
 \item \<-AshowPrefixInWarningMessages>
-  When issuing an error or warning, prefix the warning suppression key by
+  When issuing an error or warning, prefix the warning suppression key with
   the checker name.  For instance, output ``error: [nullness:assignment]
-  ...'' instead of ``error: [assignment]''.  This makes it easy to tell,
+  ...'' instead of ``error: [assignment] ...''.  This makes it easy to tell,
   from the suppression key only, which checker issued the error or warning.
 \end{itemize}
 
@@ -853,17 +853,17 @@ the Subtyping Checker (see Chapter~\ref{subtyping-checker}) and the Fenum Checke
 (see Chapter~\ref{fenum-checker}) which annotations to check.
 
 
-Here are some standard javac command-line options that you may find useful.
+Here are some standard javac command-line options that you might find useful.
 Many of them contain ``processor'' or ``proc'', because in javac jargon, a
 checker is an ``annotation processor''.
 
 \begin{itemize}
 \item \<-processor> Names the checker to be
   run; see Sections~\ref{running} and~\ref{shorthand-for-checkers}.
-  May be a comma-separated list of multiple checkers.  Note that javac
+  Can be a comma-separated list of multiple checkers.  Note that javac
   stops processing an indeterminate time after detecting an error.  When
   providing multiple checkers, if one checker detects any error, subsequent
-  checkers may not run.
+  checkers might not run.
 \item \<-processorpath> Indicates where to search for the
   checker.  This should also contain any classes used by type-checkers,
   such as qualifiers used by the Subtyping Checker (see
@@ -931,7 +931,7 @@ annotation processing including all pluggable type-checking.
 % the standard javac. Should this be explained?
 
 Ordinarily, javac's \code{-processor} flag requires fully-qualified class names.
-When using the Checker Framework javac wrapper (Section~\ref{javac-wrapper}), you may
+When using the Checker Framework javac wrapper (Section~\ref{javac-wrapper}), you can
 omit the package name and the \<Checker> suffix.
 The following three commands are equivalent:
 
@@ -1034,7 +1034,7 @@ There are some limitations to the guarantee.
 %   that therefore may violate the property being checked.
 
 \item
-  Specific checkers may have other limitations; see their documentation for
+  Specific checkers might have other limitations; see their documentation for
   details.
 
 \end{itemize}
@@ -1055,7 +1055,7 @@ statement.
 In other cases, a checker avoids issuing later warnings with the same cause
 even when later code in a method might also fail.
 This does not
-affect the soundness guarantee, but a user may need to examine more
+affect the soundness guarantee, but a user might need to examine more
 warnings after fixing the first ones identified.  (Often,
 a single fix corrects all the warnings.)
 
@@ -1079,7 +1079,7 @@ Then, run the checker to uncover bugs in the code or the documentation.
 
 Don't do the opposite, which is to run the checker and then add annotations
 according to the warnings issued.  This approach is less systematic, so you
-may overlook some annotations.  It often leads to confusion and poor
+might overlook some annotations.  It often leads to confusion and poor
 results.  It leads users to make changes not for any principled reason, but
 to ``make the type-checker happy'', even when the changes are in conflict
 with the documentation or the code.  Also see
@@ -1089,14 +1089,14 @@ with the documentation or the code.  Also see
 
 \subsectionAndLabel{How to get started annotating legacy code}{get-started-with-legacy-code}
 
-Annotating an entire existing program may seem like a daunting task.  But,
+Annotating an entire existing program might seem like a daunting task.  But,
 if you approach it systematically and do a little bit at a time, you will
 find that it is manageable.
 
 \subsubsectionAndLabel{Start small}{get-started-start-small}
 
 Start small.  Focus on one specific property that matters to you; in
-other words, run just one checker rather than multiple ones.  You may
+other words, run just one checker rather than multiple ones.  You can
 choose a different checker for different programs.
 Focus on
 the most mission-critical or error-prone part of your code; don't try to
@@ -1152,7 +1152,7 @@ method bodies.  The only reason to even
 undocumented methods ---
 for example, if the method returns null, you know its return type should be
 annotated \<@Nullable>, and a parameter that is compared against \<null>
-may need to be annotated \<@Nullable>.
+might need to be annotated \<@Nullable>.
 
 The specification should state all facts that are relevant to callers.
 When checking a method, the checker uses only the specification, not the
@@ -1163,7 +1163,7 @@ current method that produced the value.
 
 After you have annotated all the signatures, run the checker.
 Then, fix bugs in code and add/modify annotations as necessary.
-% If signature annotations are necessary, then you may want
+% If signature annotations are necessary, then you might want
 % to fix the documentation that did not indicate the property; but this isn't
 % strictly necessary, since the annotations that you wrote provide that
 % documentation.
@@ -1311,13 +1311,13 @@ caused by null pointers, you need to prevent those thrown by methods including
 
 (One might argue that the formal parameter should be annotated as
 \refqualclass{checker/nullness/qual}{Nullable} because passing \code{null} has a
-well-defined semantics (throw an exception) and such an execution may be
+well-defined semantics (throw an exception) and such an execution might be
 possible if your program has a bug.  However, it is never the programmer's
 intent for \<null> to flow there.  Preventing such bugs is the purpose of
 the Nullness Checker.)
 
 A method like \<requireNonNull> is useless for making your code correct,
-but it does have a benefit:  its stack trace may help developers to track
+but it does have a benefit:  its stack trace might help developers to track
 down the bug.  (For users, the stack trace is scary, confusing, and usually
 non-actionable.)  But if you are using the Checker Framework, you can
 prevent errors rather than needing extra help in debugging the ones that
@@ -1435,13 +1435,13 @@ only non-\code{null} elements to \code{ms.add()}.  A particular class
 that implements Multiset could declare \code{add} to take a
 \code{@Nullable} parameter.  That still satisfies the original contract.
 It strengthens the contract by promising even more:  a client with such a
-reference can pass any non-\code{null} value to \code{add()}, and may also
+reference can pass any non-\code{null} value to \code{add()}, and can also
 pass \code{null}.
 
 \textbf{However}, the best annotation for line 141 is no annotation at all.
 The reason is that each implementation of the Multiset interface should
 specify its own nullness properties when it specifies the type parameter
-for Multiset.  For example, two clients could be written as
+for Multiset.  For example, two implementations could be written as
 
 \begin{Verbatim}
   class MyNullPermittingMultiset implements Multiset<@Nullable Object> { ... }
@@ -1507,14 +1507,14 @@ There are three general causes for the warnings:
   Do not add an \<if> test that can never fail, just to suppress a
   warning.  Adding a gratuitous \<if> clutters the code and confuses
   readers.  A reader should assume that every \<if> condition can evaluate to true
-  or false.  There is one exception to this rule:  an \<if> test may have a
+  or false.  There is one exception to this rule:  an \<if> test is permitted to have a
   condition that you think will never evaluate to true, if its body just throws a
   descriptive error message.
 \end{description}
 
 For each warning issued by the checker, you need to determine which of the
 above categories it falls into.  Here is an effective methodology to do so.
-It relies mostly on manual code examination, but you may also find it
+It relies mostly on manual code examination, but you might also find it
 useful to write test cases for your code or do other kinds of analysis, to
 verify your reasoning.
 (Also see
@@ -1589,7 +1589,7 @@ Here are some examples of the translation.
 \end{itemize}
 
 All of these are examples of correcting weaknesses in the annotations you wrote.
-The Checker Framework provides many other powerful annotations; you may
+The Checker Framework provides many other powerful annotations; you might
 be surprised how many proofs you can express in annotations.
 If you need to annotate a method that is defined in a
 library that your code uses, see \chapterpageref{annotating-libraries}.
@@ -1606,7 +1606,7 @@ might be \<null>''.  In this case, you have two choices.
 %
 First, you can suppress the warning
 (\chapterpageref{suppressing-warnings}); be sure to write a comment
-explaining your reasoning for suppressing the warning.  You may wish to
+explaining your reasoning for suppressing the warning.  You might wish to
 submit a feature request (Section~\ref{reporting-bugs}) asking for
 annotations that handle your use case.
 %
@@ -1636,19 +1636,19 @@ in the future (Section~\ref{reporting-bugs}).
 
 Sometimes, you wish to type-check only part of your program.
 You might focus on the most mission-critical or error-prone part of your
-code.  When you start to use a checker, you may not wish to annotate
+code.  When you start to use a checker, you might not wish to annotate
 your entire program right away.
 % Not having source code is *not* a reason.
-You may not have
+You might not have
 enough knowledge to annotate poorly-documented libraries that your program uses.
-Or, the code you are annotating may call into unannotated libraries.
+Or, the code you are annotating might call into unannotated libraries.
 
-If annotated code uses unannotated code, then the checker may issue
+If annotated code uses unannotated code, then the checker might issue
 warnings.  For example, the Nullness Checker (Chapter~\ref{nullness-checker}) will
 warn whenever an unannotated method result is used in a non-null context:
 
 \begin{Verbatim}
-  @NonNull Object myvar = unannotated_method();   // WARNING: unannotated_method may return null
+  @NonNull Object myvar = unannotated_method();   // WARNING: unannotated_method might return null
 \end{Verbatim}
 
 If the call \emph{can} return null, you should fix the bug in your program by
@@ -1673,7 +1673,7 @@ or suppress warnings.
 \item To suppress all warnings related to uses of
   \code{unannotated\_method}, use the \code{-AskipUses} command-line option
   (Section~\ref{askipuses}).  Beware:  a carelessly-written regular
-  expression may suppress more warnings than you intend.
+  expression might suppress more warnings than you intend.
 \end{enumerate}
 
 

@@ -17,10 +17,11 @@ verifies that code is properly internationalized.
 A Compiler Message Key Checker (Section \refwithpage{compilermsgs-checker})
 verifies that compiler message keys used in the Checker Framework are
 declared in a property file.
-This is an example of a simple specialization of the property
-file checker, and the Checker Framework source code shows how it is used.
+The Compiler Message Key Checker is an example of a simple specialization of
+the Property File Checker, and the Checker Framework source code shows how
+it is used.
 
-It is easy to customize the Property Key Checker for other related purposes.
+It is easy to customize the Property File Checker for other related purposes.
 Take a look at the source code of the Compiler Message Key Checker and adapt it for
 your purposes.
 
@@ -41,7 +42,7 @@ property file or resource bundle, and adds annotations as appropriate.
 
 If you pass a \code{CharSequence} (including \<String>) variable to be
 eventually used as a key, you
-also need to annotate all these variables with \code{@PropertyKey}.
+also need to annotate all such variables with \code{@PropertyKey}.
 
 
 The checker can be invoked by running the following
@@ -125,7 +126,7 @@ The Internationalization Checker verifies these two properties:
 
 \end{enumerate}
 
-If you use the Internationalization Checker, you may want to also use the
+If you use the Internationalization Checker, you might want to also use the
 Internationalization Format String Checker, or I18n Format String Checker
 (Chapter~\ref{i18n-formatter-checker}).
 It verifies that internationalization format strings are well-formed and
@@ -150,12 +151,12 @@ indicates that the
 qualified \code{CharSequence} or \code{Object} is a valid key found in the
 localization resource.
 This annotation is a specialization of the \code{@PropertyKey} annotation, which
-gets checked by the general Property Key Checker.
+gets checked by the general Property File Checker.
 It is a subtype of \refqualclass{checker/i18n/qual}{UnknownLocalizableKey},
 which is the default and which programmers do not need to write.
 \end{description}
 
-You may need to add the \code{@Localized} annotation to more methods in the
+You might need to add the \code{@Localized} annotation to more methods in the
 JDK or other libraries, or in your own code.
 
 
@@ -171,7 +172,7 @@ command:
 \end{smaller}
 
 You must specify the localization resource, which maps keys to user-visible
-text.  Like the general Property Key Checker, the Internationalization Checker
+text.  Like the general Property File Checker, the Internationalization Checker
 supports two types of localization resource:
 \code{ResourceBundle}s using the
 \code{-Abundlenames=\emph{resource\_name}} option
@@ -210,8 +211,8 @@ command:
 \end{Verbatim}
 
 You must specify the resource, which maps compiler message keys to user-visible
-text.  The checker supports the same options as the general Property Key Checker.
-Within the Checker Framework we only use property files,
+text.  The checker supports the same options as the general Property File Checker.
+Within the Checker Framework, we only use property files,
 so the \code{-Apropfiles=\emph{prop\_file}} option should be used.
 
 % LocalWords:  NullPointerException genpropkey compilermsgs propkey PropertyKey

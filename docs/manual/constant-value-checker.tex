@@ -28,7 +28,7 @@ Checker can execute at compile time
 
 Typically, the programmer does not write any type annotations.  Rather, the
 type annotations are inferred by the Constant Value Checker.
-The programmer is also permitted to write type annotations.  This is only necessary in
+The programmer is also permitted to write type annotations.  This is necessary only in
 locations where the Constant Value Checker does not infer annotations:  on fields
 and method signatures.
 
@@ -77,17 +77,17 @@ only the minimum and maximum lengths are used in \<@ArrayLenRange>,
 giving a range of possible lengths of the string.
 
 The \<@StringVal>, \<@MatchesRegex>, and \<@DoesNotMatchRegex>
-annotations may be applied to char arrays.  Although byte
-arrays are often converted to/from strings, these annotations may
-not be applied to them.  This is because the conversion depends on the
+annotations can be applied to char arrays.  Although byte
+arrays are often converted to/from strings, these annotations cannot
+be applied to them.  This is because the conversion depends on the
 platform's character set.
 
 The \<@MatchesRegex> and \<@DoesNotMatchRegex> annotations use the standard Java regular expression syntax.
-\<@MatchesRegex(A)> is only a subtype of \<@MatchesRegex(B)> if the set of regular
+\<@MatchesRegex(A)> is a subtype of \<@MatchesRegex(B)> only if the set of regular
 expressions \<A> is a subset of the set of regular expressions \<B>. An
 \<@StringVal> annotation is a subtype of a \<@MatchesRegex> annotation if
 each string matches at least one of the regular expressions.
-\<@DoesNotMatchRegex(A)> is only a subtype of \<@DoesNotMatchRegex(B)> if the set of regular
+\<@DoesNotMatchRegex(A)> is a subtype of \<@DoesNotMatchRegex(B)> only if the set of regular
 expressions \<A> is a superset of the set of regular expressions \<B>.
 Matching is done
 via the
@@ -99,7 +99,7 @@ The \<@EnumVal> annotation's argument is the names of the enum constants
 that the type might evaluate to.  (Java syntax does not allow the enum
 constants themselves to be arguments.)  \<@EnumVal>
 is treated identically to \<@StringVal> by the checker internally, so
-\<@StringVal> may appear in error messages related to enums.
+\<@StringVal> might appear in error messages related to enums.
 
 % \refqualclass{checker/value/qual}{BottomVal}, meaning that the expression
 % is dead or always has the value \<null>.
@@ -118,7 +118,7 @@ to \refqualclass{common/value/qual}{ArrayLen} that
 \refqualclass{common/value/qual}{IntRange} has to
 \refqualclass{common/value/qual}{IntVal}.
 The \<@MinLen> annotation is an alias for \<@ArrayLenRange> (meaning that every \<@MinLen> annotation
- is automatically converted to an \<@ArrayLenRange> annotation) that only takes
+ is automatically converted to an \<@ArrayLenRange> annotation) that takes only
 one argument, which is the lower bound of the range. The upper bound of the
 range is the maximum integer value.
 
@@ -173,7 +173,7 @@ annotation, the Checker Framework can type-check your code.
 It treats annotations from other tools
 as if you had written the corresponding annotation from the
 Constant Value Checker, as described in Figure~\ref{fig-constant-value-refactoring}.
-If the other annotation is a declaration annotation, it may be moved; see
+If the other annotation is a declaration annotation, it might be moved; see
 Section~\ref{declaration-annotations-moved}.
 
 
@@ -255,7 +255,7 @@ The static execution feature has some requirements:
   a call site.
 
   This means that \<@StaticallyExecutable> is not applicable
-  to user-written instance methods.  It is only applicable to instance
+  to user-written instance methods.  It is applicable only to instance
   methods whose receiver is a compile-time constant, such as a primitive
   wrapper or an array.
 
@@ -314,9 +314,9 @@ Here are some examples:
 
   An exception was thrown when trying to statically execute (at compile time) the
   method. In this case, it was a divide-by-zero exception. If the
-  arguments to the method each only had one value in their annotations,
+  arguments to the method each had only one value in their annotations,
   then this exception will always occur when the program is actually
-  run as well. If there are multiple possible values then the exception
+  run as well. If there are multiple possible values, then the exception
   might not be thrown on every execution, depending on the run-time values.
 
 \end{itemize}
@@ -329,7 +329,7 @@ warning message:
 \begin{itemize}
 \item \code{[too.many.values.given] The maximum number of arguments permitted is 10.}
 
-  The Constant Value Checker only tracks up to 10 possible values for an
+  The Constant Value Checker tracks only up to 10 possible values for an
   expression.  If you write an annotation with more values than will be
   tracked, the annotation is replaced with \<@IntRange>, \<@ArrayLen>, \<@ArrayLenRange>, or \<@UnknownVal>.
 
@@ -368,7 +368,7 @@ for range types, which gives smaller ranges to range types.}
 \end{figure}
 
 As with any unsound behavior in the Checker Framework, this option reduces
-the number of warnings and errors produced, and may reduce the number of
+the number of warnings and errors produced, and can reduce the number of
 \<@IntRange> qualifiers that you need to write in the source code.
 However, it is possible that at run time, an expression might evaluate to a
 value that is not in its \<@IntRange> qualifier.  You should either accept
@@ -394,7 +394,7 @@ Therefore, the type of ``\<x + "c">'' is
 The \code{-AnonNullStringsConcatenation} command-line option makes the
 Constant Value Checker unsoundly assume that no arguments in a string
 concatenation are null.
-With the command-line argument, the type of ``\<x + "c">'' is
+With this command-line option, the type of ``\<x + "c">'' is
 \<@StringVal("ac", "bc") String>.
 
 %%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange bc

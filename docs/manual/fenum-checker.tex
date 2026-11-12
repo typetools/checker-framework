@@ -28,7 +28,7 @@ ever tries to call \<setNavigationMode> with an \<int> that is not a
 \<@NavigationMode int>.
 
 The Fake Enum Checker gives the same safety guarantees as a true enumeration
-type or typedef, but retains backward-compatibility with interfaces that
+type or typedef, but retains backward compatibility with interfaces that
 use existing Java types.  You can apply fenum annotations to any Java type,
 including all primitive types and also reference types.  Thus, you could
 use it (for example) to represent floating-point values between 0 and 1, or
@@ -55,7 +55,7 @@ introduce both types of fenums. The type qualifiers in gray
 should never be written in
 source code; they are used internally by the type system.
 \<@FenumUnqualified> is the default qualifier for unannotated types, except
-for upper bounds which default to \<@FenumTop>.
+for upper bounds, which default to \<@FenumTop>.
 }
 \label{fig-fenum-hierarchy}
 \end{figure}
@@ -261,8 +261,8 @@ enumeration, both of which are error-prone:
 Sometimes you need to use the fake enum pattern,
 rather than a real enum or the typesafe enum pattern.
 %
-One reason is backward-compatibility.  A public API that predates Java's
-enum keyword may use \code{int} constants; it cannot be changed, because
+One reason is backward compatibility.  A public API that predates Java's
+enum keyword might use \code{int} constants; it cannot be changed, because
 doing so would break existing clients.  For example, Java's JDK still uses
 \code{int} constants in the AWT and Swing frameworks, and Android also uses
 \code{int} constants rather than Java enums.

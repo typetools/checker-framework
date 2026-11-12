@@ -59,17 +59,17 @@ this property could hold:
   constructor for class \textit{C} is called a limited number of times, and with
   specific values that ensure the results are not \code{equals()} to one
   another.  Objects of class \textit{C} can always be compared with \code{==}.
-  Such objects may be mutable or immutable.
+  Such objects can be mutable or immutable.
 \item
-  Local control flow.  Even though not all objects of the given type may be
-  compared with \code{==}, the specific objects that can reach a given
-  comparison may be.
+  Local control flow.  Even though not all objects of the given type can be
+  safely compared with \code{==}, the specific objects that can reach a given
+  comparison can be.
   \begin{itemize}
   \item
-    When searching for an element (say, in a collection), \code{==} may be
+    When searching for an element (say, in a collection), \code{==} might be
     appropriate.
   \item
-    Some routines return either their argument, or a modified version of
+    Some routines return either their argument or a modified version of
     it.  Your code might compare \code{s == s.toLowerCase()} to see whether
     a string contains any upper-case characters.
   \end{itemize}
@@ -139,7 +139,7 @@ These qualifiers are part of the Interning type system:
 
 \item[\refqualclass{checker/interning/qual}{InternMethod}]
   is a method declaration annotation that indicates that this method
-  returns an interned object and may be invoked
+  returns an interned object and can be invoked
   on an uninterned object. See Section~\ref{interning-intern-methods} for more details.
 
 \item[\refqualclass{checker/interning/qual}{EqualsMethod}]
@@ -157,7 +157,7 @@ These qualifiers are part of the Interning type system:
   method uses \<==> to perform comparisons against the annotated formal
   parameter.  A common reason is that the method searches for the formal
   parameter in some data structure, using \<==>.  Any value
-  may be passed to the method.
+  can be passed to the method.
 \end{description}
 
 \sectionAndLabel{Annotating your code with \code{@Interned}}{interning-annotating}
@@ -314,7 +314,7 @@ it would be legal to write \<myValue == MyType.SPECIAL> rather than
 The \<@InternedDistinct> annotation is trusted (not verified), because it would be too
 complex to analyze the \<equals()> method to ensure that no other value is
 \<equals()> to an \<@InternedDistinct> value.  You will need to manually
-verify that it is only written in locations where its contract is satisfied.
+verify that it is written only in locations where its contract is satisfied.
 For example, here is one set of guidelines that you could check manually:
 \begin{itemize}
 \item The constructor is private.
@@ -330,7 +330,7 @@ necessarily \<@InternedDistinct> because the \<equals()> method of
 
 \sectionAndLabel{What the Interning Checker checks}{interning-checks}
 
-Objects of an \refqualclass{checker/interning/qual}{Interned} type may be safely compared using the ``\code{==}''
+Objects of an \refqualclass{checker/interning/qual}{Interned} type can be safely compared using the ``\code{==}''
 operator.
 
 The checker issues an error in two cases:
@@ -450,7 +450,7 @@ The paper ``Building and using pluggable
 type-checkers''~\cite{DietlDEMS2011} (ICSE 2011,
 \myurl{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-icse2011.pdf})
 describes case studies in which the Interning Checker found
-previously-unknown errors in real software.
+previously unknown errors in real software.
 
 
 \sectionAndLabel{Other interning annotations}{other-interning-annotations}
@@ -463,7 +463,7 @@ annotation, the Checker Framework can type-check your code.
 It treats annotations from other tools
 as if you had written the corresponding annotation from the
 Interning Checker, as described in Figure~\ref{fig-interning-refactoring}.
-If the other annotation is a declaration annotation, it may be moved; see
+If the other annotation is a declaration annotation, it might be moved; see
 Section~\ref{declaration-annotations-moved}.
 
 

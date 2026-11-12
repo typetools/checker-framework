@@ -57,7 +57,7 @@ Install the latest version of Eclipse and use it instead.
 \subsectionAndLabel{Unable to run the checker, or checker crashes}{common-problems-running}
 
 If you are unable to run the checker, or if the checker or the compiler
-terminates with an error, then the problem may be a problem with your environment.
+terminates with an error, then the problem might be with your environment.
 (If the checker or the compiler crashes, that is a bug in the Checker
 Framework; please report it.  See Section~\ref{reporting-bugs}.)
 This section describes some possible problems and solutions.
@@ -100,7 +100,7 @@ error: Annotation processor 'org.checkerframework.checker.signedness.SignednessC
 \end{smaller}
 
 \noindent
-then the problem may be that you have not set the \code{CHECKERFRAMEWORK} environment
+then the problem might be that you have not set the \code{CHECKERFRAMEWORK} environment
 variable, as described in Section~\ref{javac-wrapper}.  Or, maybe
 you made it a user variable instead of a system variable.
 
@@ -195,7 +195,7 @@ Checker Framework writes an annotation on every type in the library's
 signatures (see Section~\ref{faq-classfile-annotations}).  This is the case
 even if the library's source code contains no annotations.
 
-If you use Maven with \code{<fork>true</fork>}, then Maven may hide this error
+If you use Maven with \code{<fork>true</fork>}, then Maven might hide this error
 message and report only ``Compilation failure''
 (see \href{https://issues.apache.org/jira/browse/MCOMPILER-434}{MCOMPILER-434}).
 
@@ -235,7 +235,7 @@ system.
 % NullAway 0.9.2 was released in July 2021.
 Versions 0.9.0 and 0.9.1 of
 \href{https://github.com/uber/NullAway}{NullAway} are compatible
-only with Checker Framework version 3.6.0 through 3.8.0.  Those versions of
+only with Checker Framework versions 3.6.0 through 3.8.0.  Those versions of
 NullAway use version 3.6.0 of the Checker Framework's dataflow analysis
 library without shading it.  As of version 0.9.2, NullAway uses a shaded version of
 the library, so this conflict no longer exists.
@@ -253,7 +253,7 @@ to type errors in your code.
 \begin{itemize}
 
 \item
-If you get an error like the following
+If you get an error like the following,
 
 \begin{Verbatim}
 error: scoping construct for static nested type cannot be annotated
@@ -284,7 +284,7 @@ The reason for the Java 8 syntax is to avoid syntactic irregularity.  When
 writing a member nested class (also known as an inner class), it is
 possible to write annotations on both the outer and the inner class:  \<@A1
 Outer. @A2 Inner>.  Therefore, when writing a static nested class, the
-annotations should go on the same place:  \<Outer. @A3 StaticNested> (rather
+annotations should go in the same place:  \<Outer. @A3 StaticNested> (rather
 than \<@ConfusingAnnotation Outer.\ Nested> where
 \<@ConfusingAnnotation> applies to \<Outer> if \<Nested> is a member class
 and applies to \<Nested> if \<Nested> is a static class).  It's not legal
@@ -437,7 +437,7 @@ cannot find symbol: constructor StringBuffer(StringBuffer)
 
 \item
 If you get an error related to a bounded type parameter and a literal such
-as \<null>, the problem may be missing defaulting.  Here is an example:
+as \<null>, the problem might be missing defaulting.  Here is an example:
 
 \begin{Verbatim}
 mypackage/MyClass.java:2044: warning: incompatible types in assignment.
@@ -467,7 +467,7 @@ MyFile.java:123: error: incompatible types in argument.
 \end{Verbatim}
 
 \noindent
-may stem from use of raw types.  (``\<String>'' might be a different type
+might stem from use of raw types.  (``\<String>'' might be a different type
 and might have type annotations.)  If your declaration was
 
 \begin{Verbatim}
@@ -611,7 +611,7 @@ requests.  We also welcome pull requests with annotated libraries, bug
 fixes, new features, new checkers, and other improvements.
 
 Please ensure that your bug report is clear and that it is complete.
-Otherwise, we may be unable to understand it or to reproduce it, either of
+Otherwise, we might be unable to understand it or to reproduce it, either of
 which would prevent us from helping you.  Your bug report should include at
 least the following 4 parts: commands, inputs, output, and expectation.
 
@@ -628,7 +628,7 @@ least the following 4 parts: commands, inputs, output, and expectation.
   environment variables if necessary.
 
   If you encountered the problem in an IDE, reproduce it from the command
-  line; if you cannot, report the bug to the IDE integration.
+  line; if you cannot, report the bug to the maintainers of the IDE integration.
   If you encountered the problem when using a build system, it is most
   useful to the Checker Framework developers if you provide a single
   \<javac> command rather than a build file.
@@ -672,7 +672,7 @@ least the following 4 parts: commands, inputs, output, and expectation.
   indicate what you expected the result to be, since a bug is a difference
   between desired and actual outcomes.  Also, please indicate \textbf{why}
   you expected that result --- explaining your reasoning can reveal
-  how your reasoning is different than the checker's and which
+  how your reasoning is different from the checker's and which
   one is wrong.  Remember that the checker reasons modularly and
   intraprocedurally:  it examines one method at a time, using only the
   method signatures of other methods.
@@ -680,8 +680,8 @@ least the following 4 parts: commands, inputs, output, and expectation.
   It can also be helpful to indicate what you have already done to try to
   understand the problem.  Did you do any additional experiments?  What
   parts of the manual did you read, and what else did you search for in the
-  manual?  Without this information, the maintainers may give you redundant
-  suggestions or may waste time re-doing work you have already done.
+  manual?  Without this information, the maintainers might give you redundant
+  suggestions or might waste time re-doing work you have already done.
 \end{description}
 
 % A particularly useful format for a test case is as a new file, or a diff to
@@ -699,7 +699,7 @@ maintainers' time to evaluate and fix.
 \subsectionAndLabel{Problems with annotated libraries}{reporting-bugs-annotated-libraries}
 
 If a checker reports a warning because a library contains \emph{incorrect} annotations,
-then please open a pull request that adds the annotations.  If the
+then please open a pull request that corrects the annotations.  If the
 library's maintainers have added annotations, make a pull request to them.
 If the Checker Framework maintainers have added annotations,
 you can find the annotated source in \url{https://github.com/typetools/}.
@@ -720,7 +720,7 @@ Thanks for your contribution to the annotated libraries!
 
 The Checker Framework release (Section~\ref{installation}) contains
 everything that most users need, both to use the distributed checkers and
-to write your own checkers.  This section describes how to compile its
+to write their own checkers.  This section describes how to compile its
 binaries from source.  You will be using the latest development version of
 the Checker Framework, rather than an official release.
 
@@ -746,7 +746,7 @@ Put the setting of the \<JAVA\_HOME> environment variable in a startup file
 such as \<.bash\_profile> or \<.bashrc>, if \<JAVA\_HOME> is not already
 set appropriately.  It must be the location of your JDK
 installation (not the JRE installation).
-You may need to log out and log back in for the setting to take effect.
+You might need to log out and log back in for the setting to take effect.
 
 \begin{description}
 \item[Ubuntu]
@@ -819,7 +819,7 @@ export JAVA25_HOME=/usr/lib/jvm/java-25-openjdk-amd64
 \end{Verbatim}
 
 
-  You may have to answer questions about which time zone your computer is in.
+  You might have to answer questions about which time zone your computer is in.
 
 In a startup file, write:
 % Can someone give a simpler command?
@@ -833,7 +833,7 @@ In a startup file, write:
 
 \item[macOS]
 \label{building-prerequisites-macos}
-  If you employ \href{https://brew.sh}{homebrew} to install packages, run
+  If you employ \href{https://brew.sh}{Homebrew} to install packages, run
   the following commands:
 
 \begin{Verbatim}
@@ -844,7 +844,7 @@ brew install --cask mactex
 \end{Verbatim}
 
 Note: Running \<brew install --cask temurin17> is only necessary if you do not
-already have a JDK that is compatible with the Checker Framework installed.
+already have installed a JDK that is compatible with the Checker Framework.
 
 If \<echo \$JAVA\_HOME> outputs nothing (that is, if the \<JAVA\_HOME>
 environment variable is not set), then write the following
@@ -920,7 +920,7 @@ of the supporting repositories is in an inconsistent state; see
 Section~\ref{building-related-repositories}.
 
 \item
-Once it is built, you may wish to put the Checker Framework's \<javac>
+Once it is built, you might wish to put the Checker Framework's \<javac>
 even earlier in your \<PATH>:
 
 \begin{Verbatim}
@@ -1099,7 +1099,7 @@ infect your code with the GPL\@.  Running the Checker Framework during
 development has no effect on your intellectual property or licensing.
 
 If you want to ship the Checker Framework as part of your product, then
-your product may need to be licensed under the GPL\@.  Because of the
+your product might need to be licensed under the GPL\@.  Because of the
 classpath exception, you can include parts of the Checker Framework in your
 product, even if your product uses a different license.  For example,
 Google's \href{https://github.com/google/error-prone}{Error Prone} and

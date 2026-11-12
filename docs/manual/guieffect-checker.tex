@@ -21,16 +21,16 @@ the GUI framework raises an exception that terminates the program.
 To fix the bug, the background thread should send a request to the
 UI thread to perform the access on its behalf.
 
-It is difficult for a programmer to remember which methods may be called on
+It is difficult for a programmer to remember which methods can be called on
 which thread(s).
 The GUI Effect Checker solves this problem.
 The programmer annotates each method to indicate whether:
 \begin{itemize}
 \item
-  It accesses no UI elements (and may run on any thread);
+  It accesses no UI elements (and can run on any thread);
   such a method is said to have the ``safe effect''.
 \item
-  It may access UI elements (and must run on the UI thread);
+  It might access UI elements (and must run on the UI thread);
   such a method is said to have the ``UI effect''.
 \end{itemize}
 
@@ -54,8 +54,8 @@ The programmer annotates each method to indicate whether:
 % on behavior as the method being overridden.  For checked exceptions, this means the method override
 % cannot throw any exceptions not permitted by the parent class implementation's \code{throws} clause.
 
-The GUI Effect Checker verifies these effects and statically enforces that UI methods are only
-called from the correct thread.  A method with the safe effect is prohibited from calling a method
+The GUI Effect Checker verifies these effects and statically enforces that UI methods are
+called only from the correct thread.  A method with the safe effect is prohibited from calling a method
 with the UI effect.
 % All UI element methods have the ``UI effect.''
 
@@ -101,7 +101,7 @@ There are two primary GUI effect annotations:
   is a method annotation marking code that must not
   access UI objects.
 \item[\refqualclass{checker/guieffect/qual}{UIEffect}]
-  is a method annotation marking code that may access
+  is a method annotation marking code that might access
   UI objects.  Most UI object methods (e.g., methods of \<JPanel>) are
   annotated as \code{@UIEffect}.
 \end{description}
@@ -135,7 +135,7 @@ The GUI Effect Checker issues errors in the following cases:
 \end{itemize}
 
 Additionally, if a method implements or overrides a method in two
-supertypes (two interfaces, or an interface and parent class), and those
+supertypes (two interfaces, or an interface and a parent class), and those
 supertypes give different effects for the methods, the GUI Effect Checker
 issues a warning (not an error).
 
@@ -182,7 +182,7 @@ or package:
 \item[\refqualclass{checker/guieffect/qual}{SafeType}]
   is a class annotation that makes the effect for unannotated methods in
   that class default to \code{@SafeEffect}.  Because \code{@SafeEffect} is
-  already the default effect, \code{@SafeType} is only useful for class
+  already the default effect, \code{@SafeType} is useful only for class
   types inside a package marked \code{@UIPackage}.
 \end{description}
 
@@ -201,9 +201,9 @@ follow the standard defaulting rules.
 Sometimes a type is reused for both UI-specific and background-thread work.  A good example is the
 \code{Runnable} interface, which is used both for creating new background threads (in which case the
 \code{run()} method must have the \code{@SafeEffect}) and for sending code to the UI thread to
-execute (in which case the \code{run()} method may have the
+execute (in which case the \code{run()} method can have the
 \code{@UIEffect}).  But the declaration of
-\code{Runnable.run()} may have only one effect annotation in the source code.
+\code{Runnable.run()} can have only one effect annotation in the source code.
 How do we reconcile these
 conflicting use cases?
 
@@ -237,7 +237,7 @@ public interface Runnable \{
 \end{alltt}
 
 \noindent
-This declares that class \<Runnable> is parameterized over one
+This declares that interface \<Runnable> is parameterized over one
 generic effect, and that when \<Runnable> is instantiated, the effect
 argument will be used as the effect for the \<run> method.
 
@@ -258,7 +258,7 @@ qualifiers before a use of the type:
   effect to \code{@PolyUIEffect} for the same instantiation as the current
   (containing) class.  For example, this is the qualifier of the receiver
   \code{this} inside a method of a \code{@PolyUIType} class, which is how
-  one method of an effect-polymorphic class may call an effect-polymorphic
+  one method of an effect-polymorphic class can call an effect-polymorphic
   method of the same class.
 \end{description}
 
@@ -279,8 +279,8 @@ members of that specific anonymous class.
 
 \subsectionAndLabel{Subclassing a specific instantiation of an effect-polymorphic type}{guieffect-subclassing}
 
-Sometimes you may wish to subclass a specific instantiation of an effect-polymorphic type, just as
-you may extend \code{List<String>}.
+Sometimes you might wish to subclass a specific instantiation of an effect-polymorphic type, just as
+you can extend \code{List<String>}.
 
 To do this, simply place the effect instantiation qualifier by the name of the type you are
 defining, e.g.:
@@ -306,7 +306,7 @@ With three effect annotations, we must extend the static sub-effecting relations
 This is the correct sub-effecting relation because it is always safe to
 call a \code{@SafeEffect}
 method (whether from an effect-polymorphic method or a UI method), and a \code{@UIEffect} method
-may safely call any other method.
+can safely call any other method.
 % (since the instantiation of \code{@PolyUIEffect} may be at most
 % \code{@UIEffect} itself).
 
@@ -337,11 +337,11 @@ This use of \code{@PolyUI} will be handled as is standard for polymorphic qualif
 Framework (see Section \ref{method-qualifier-polymorphism}).
 
 \code{@PolyUIEffect} methods should generally not use \code{@PolyUI} arguments: it is permitted by
-the framework, but its interaction with inheritance is subtle, and may not behave as you would
+the framework, but its interaction with inheritance is subtle, and might not behave as you would
 hope.
 
-The shortest explanation is this: \code{@PolyUI} arguments may only be overridden by \code{@PolyUI}
-arguments, even though the implicitly \code{@PolyUI} \emph{receiver} may be overridden with an
+The shortest explanation is this: \code{@PolyUI} arguments can be overridden only by \code{@PolyUI}
+arguments, even though the implicitly \code{@PolyUI} \emph{receiver} can be overridden with an
 \code{@AlwaysSafe} receiver.
 
 As noted earlier (Section \ref{covariant-type-parameters}), Java's generics are invariant ---
@@ -377,7 +377,7 @@ public class SafeDispatcher implements Dispatcher \{
 \}
 \end{alltt}
 
-This may initially seem like harmless code to write, which simply specializes the implicit effect
+This might initially seem like harmless code to write, which simply specializes the implicit effect
 parameter from \code{Dispatcher} in the \code{SafeDispatcher} implementation.  However, the way
 method effect polymorphism is implemented is by implicitly making the receiver of a
 \code{@PolyUIEffect} method --- the object on which the method is invoked --- \code{@PolyUI}.  So
@@ -393,7 +393,7 @@ At the call to \code{dispatch}, the Checker Framework is free to consider \code{
 supertype, \code{@UI SafeDispatcher}.  This permits the framework to choose the same qualifier for
 both the (implicit) receiver use of \code{@PolyUI} and the \code{toRun} argument to
 \code{Dispatcher.dispatch}, passing the checker.  But this code would then pass a UI-thread-only
-task to a method which should only accept background thread tasks --- exactly what the checker
+task to a method that should accept only background-thread tasks --- exactly what the checker
 should prevent!
 
 To resolve this, the GUI Effect Checker rejects the definitions above, specifically the
@@ -402,7 +402,7 @@ To resolve this, the GUI Effect Checker rejects the definitions above, specifica
 
 A subtlety of the code above is that the receiver for \code{SafeDispatcher.dispatch} is also
 overridden, switching from a \code{@PolyUI} receiver to an \code{@AlwaysSafe} receiver.  That change is
-permissible.  But when that is done, the polymorphic arguments may no longer be interchangeable
+permissible.  But when that is done, the polymorphic arguments might no longer be interchangeable
 with the receiver.
 
 

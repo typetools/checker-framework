@@ -19,11 +19,11 @@ Framework attempts to resolve reflection.  At each call to \<Method.invoke>
 or \<Constructor.newInstance>, the Checker Framework first soundly estimates
 which methods might be invoked at run time.  When type-checking the call, the
 Checker Framework uses the library annotations for the possibly-invoked
-methods, rather than the imprecise one for \<Method.invoke>.
+methods, rather than the imprecise ones for \<Method.invoke>.
 
 If the estimate of invoked methods is small,
 the checker issues fewer false positive warnings.
-If the estimate of invoked methods is large, the resulting types may be no better than the
+If the estimate of invoked methods is large, the resulting types might be no better than the
 conservative library annotations.
 
 Reflection resolution is disabled by default, because it increases the time
@@ -50,7 +50,7 @@ In particular, it does not replace the \<Method.invoke> or
 \<Constructor.newInstance> calls.
 
 The command-line option \<-AresolveReflection=debug> outputs verbose
-information about the reflection resolution process, which may be useful
+information about the reflection resolution process, which can be useful
 for debugging.
 
 Section~\ref{reflection-examples} gives an example of reflection resolution.
@@ -126,7 +126,7 @@ Checker (Section~\ref{classval-checker}) and the MethodVal Checker
 Value Checker (Chapter~\ref{constant-value-checker}) in that their
 annotations estimate the run-time value of an expression.
 
-In some cases, you may need to write annotations such as
+In some cases, you might need to write annotations such as
 \refqualclass{common/reflection/qual}{ClassVal},
 \refqualclass{common/reflection/qual}{MethodVal},
 \refqualclass{common/value/qual}{StringVal}, and
@@ -173,10 +173,10 @@ Each argument is a ``fully-qualified binary name''
 \item[\reflectionAnno{UnknownClass}{}] Indicates that there is no
   compile-time information about the run-time value of the class --- or
   that the Java type is not \<Class>.
-  This is the default qualifier, and it may not be written in source code.
+  This is the default qualifier, and it must not be written in source code.
 
 \item[\reflectionAnno{ClassValBottom}{}] Type given to the \<null> literal.
-  It may not be written in source code.
+  It must not be written in source code.
 \end{description}
 \begin{figure}
 \includeimage{classval}{6cm}
@@ -220,17 +220,17 @@ is either \<HashMap.containsKey> with 1 formal parameter or
 \<HashMap.containsValue> with 1 formal parameter.
 
 The \<@MethodVal> type qualifier indicates the number of
-parameters that the method takes, but not their type.  This means that the
+parameters that the method takes, but not their types.  This means that the
 Checker Framework's reflection resolution cannot distinguish among
 overloaded methods.
 
 \item[\reflectionAnno{UnknownMethod}{}] Indicates that there is no
   compile-time information about the run-time value of the method --- or
   that the Java type is not \<Method> or \<Constructor>.
-  This is the default qualifier, and it may not be written in source code.
+  This is the default qualifier, and it must not be written in source code.
 
 \item[\reflectionAnno{MethodValBottom}{}] Type given to the \<null> literal.
-  It may not be written in source code.
+  It must not be written in source code.
 \end{description}
 
 \begin{figure}
@@ -276,11 +276,11 @@ API\@:
 \end{itemize}
 
 Note that an exact class name is necessary to precisely resolve
-reflectively-invoked constructors since a constructor in a subclass does not
+reflectively invoked constructors, since a constructor in a subclass does not
 override a constructor in its superclass. This means that the MethodVal Checker
 does not infer a \<@MethodVal> annotation for \<Class.getConstructor> if the
 type of that class is \<@ClassBound>. In contrast, either an exact class name or a bound
-is adequate to resolve reflectively-invoked methods because of the subtyping
+is adequate to resolve reflectively invoked methods because of the subtyping
 rules for overridden methods.
 
 

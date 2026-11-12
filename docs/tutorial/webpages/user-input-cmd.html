@@ -54,7 +54,7 @@
   "border-bottom: 1px solid #EEE; border-top: none;">
     <h1>Checker Framework Tutorial</h1>
 
-    <h2><small>Previous <a href="get-started-cmd.html">Getting
+    <h2><small>Previous: <a href="get-started-cmd.html">Getting
     Started</a></small></h2>
   </div>
 
@@ -150,7 +150,7 @@ Exception in thread "main" java.util.regex.PatternSyntaxException: Unclosed char
         <p>The Regex Checker prevents, at compile time, use of
         syntactically invalid regular expressions and access of invalid
         capturing groups. In other words, it prevents you from writing code
-        that would throw certain exceptions at run time. Next <b>run the Regex
+        that would throw certain exceptions at run time. Next, <b>run the Regex
         Checker</b> to see how it could have spotted this issue at compile
         time.
         </p>
@@ -165,14 +165,14 @@ RegexExample.java:13: error: [argument] incompatible types in argument.
 </pre>
 
         <p>The "incompatible types" error indicates that variable
-        <code>regex</code> is not of type <code>@Regex String</code> which
+        <code>regex</code> is not of type <code>@Regex String</code>, which
         is required for strings passed to <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/regex/Pattern.html#compile(java.lang.String)"><code>Pattern.compile()</code></a>.</p>
       </div>
 
       <div id="validate">
         <h4>4. Fix the code</h4>
 
-        <p>The right way to fix the problems is for the code to issue a
+        <p>The right way to fix the problem is for the code to issue a
         user-friendly message at run time.  It should <b>verify the user
         input</b> using the
         <a href="https://checkerframework.org/api/org/checkerframework/checker/regex/util/RegexUtil.html#isRegex(java.lang.String)"><code>RegexUtil.isRegex(String, int)</code></a> method.

@@ -54,8 +54,8 @@
   "border-bottom: 1px solid #EEE; border-top: none;">
     <h1>Checker Framework Tutorial</h1>
 
-    <h2><small>Previous <a href="security-error-cmd.html">Finding a
-    Security Error</a>, Download <a href="../sourcefiles.zip">Example
+    <h2><small>Previous: <a href="security-error-cmd.html">Finding a
+    Security Error</a>. Download <a href="../sourcefiles.zip">Example
     Sources</a></small></h2>
   </div>
 
@@ -68,12 +68,12 @@
 
   <div id="introduction">
     <p>This section of the tutorial is only for those who are interested
-    in writing their own type-checkers. Others may skip this
+    in writing their own type-checkers. Others can skip this
     section.</p><!--Copied from the manual-->
 
     <p>Although the Checker Framework ships with <a href=
     "https://checkerframework.org/manual/#introduction">
-    many checkers</a>, you may wish to write your own checker because
+    many checkers</a>, you might wish to write your own checker because
     there are other run-time problems you wish to prevent.  If you do
     not wish to write a new type-checker, feel free to skip this section
     of the tutorial.</p>
@@ -160,7 +160,7 @@ encrypted/EncryptionDemo.java:32: error: [argument] incompatible types in argume
 
     <p>The first error needs to be suppressed, because the expression on the
     right is considered "encrypted" in this encryption scheme. All
-    <code>@SuppressWarnings</code> should have a comment explaining why
+    <code>@SuppressWarnings</code> annotations should have a comment explaining why
     suppressing the warning is the correct action. See the correction
     below.</p>
     <pre>
@@ -225,7 +225,7 @@ $ <strong>javacheck -processor org.checkerframework.common.subtyping.SubtypingCh
       <h2>The end of the Checker Framework Tutorial <small><br/>
       <strong>Return
       to the <a href="../index.html">main page</a> of the
-      Tutorial.</strong></small></h2>
+      tutorial.</strong></small></h2>
     </div>
   </div>
 <!--
