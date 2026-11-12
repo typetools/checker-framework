@@ -1064,7 +1064,7 @@ public abstract class CFAbstractTransfer<
           allSimple = false;
         }
       }
-      AssignmentTargetScanner scanner = new AssignmentTargetScanner();
+      AssignmentTargetScanner scanner = new AssignmentTargetScanner(this::isSideEffectFree);
       if (!allSimple) {
         // A compound assignment, increment, or decrement.  Conservatively consider every
         // assignment within the tree as executing after every part is evaluated.
@@ -1113,9 +1113,33 @@ public abstract class CFAbstractTransfer<
           }
         }
       }
+      if (scanner.callsMethodWithSideEffects) {
+        // Java evaluates the receivers and indices of the targets before the calls in the
+        // right-hand side.  A call might reassign a target's receiver or index, as in
+        // `global.next = m()` where `m` reassigns `global`.  Then the assignment stores into a
+        // location that the target no longer denotes.
+        List<Node> targetNodes = new ArrayList<>();
+        for (Node n : chain) {
+          if (n instanceof AssignmentNode a) {
+            targetNodes.add(a.getTarget());
+          }
+        }
+        result.removeIf(
+            p ->
+                targetNodes.stream().anyMatch(t -> t == p)
+                    && locationIsAssignableByOtherCode(JavaExpression.fromNode(p)));
+      }
     }
 
-    ExpressionTree laterOperand = laterOperand(node);
+    boolean anyInsertable = false;
+    for (Node p : result) {
+      if (CFAbstractStore.canInsertJavaExpression(JavaExpression.fromNode(p))) {
+        anyInsertable = true;
+        break;
+      }
+    }
+    // Computing the later operand is expensive, so skip it if it could not remove any part.
+    ExpressionTree laterOperand = anyInsertable ? laterOperand(node) : null;
     if (laterOperand != null) {
       AssignmentTargetScanner laterScanner = new AssignmentTargetScanner(this::isSideEffectFree);
       List<JavaExpression> laterTargets = new ArrayList<>();
@@ -1262,11 +1286,6 @@ public abstract class CFAbstractTransfer<
 
     /** True if the scanned trees call a method or constructor that is not side-effect-free. */
     boolean callsMethodWithSideEffects = false;
-
-    /** Creates an AssignmentTargetScanner that does not examine calls. */
-    AssignmentTargetScanner() {
-      this(null);
-    }
 
     /**
      * Creates an AssignmentTargetScanner.
@@ -1581,7 +1600,7 @@ public abstract class CFAbstractTransfer<
    * @param rhs the right-hand side of the assignment
    * @return true if evaluating {@code rhs} might change the location that {@code lhs} denotes
    */
-  private static boolean rhsMayRelocateTarget(Node lhs, Node rhs) {
+  private boolean rhsMayRelocateTarget(Node lhs, Node rhs) {
     if (lhs instanceof LocalVariableNode) {
       return false;
     }
@@ -1590,9 +1609,31 @@ public abstract class CFAbstractTransfer<
       return false;
     }
     List<JavaExpression> targets = new ArrayList<>();
-    new AssignmentTargetScanner().scan(rhsTree, targets);
-    return !targets.isEmpty()
-        && mayBeChangedByAssignment(JavaExpression.fromNode(lhs), targets, true);
+    AssignmentTargetScanner scanner = new AssignmentTargetScanner(this::isSideEffectFree);
+    scanner.scan(rhsTree, targets);
+    JavaExpression lhsExpr = JavaExpression.fromNode(lhs);
+    return (!targets.isEmpty() && mayBeChangedByAssignment(lhsExpr, targets, true))
+        || (scanner.callsMethodWithSideEffects && locationIsAssignableByOtherCode(lhsExpr));
+  }
+
+  /**
+   * Returns true if other code, such as a method call, might change the location that the given
+   * assignment target denotes: that is, if other code might assign the receiver of a field access
+   * or the array or index of an array access. (Other code assigning the target itself does not
+   * change the location it denotes.)
+   *
+   * @param target the left-hand side of an assignment
+   * @return true if other code might change the location that {@code target} denotes
+   */
+  @Pure
+  private static boolean locationIsAssignableByOtherCode(JavaExpression target) {
+    if (target instanceof FieldAccess fa) {
+      return fa.getReceiver().isAssignableByOtherCode();
+    } else if (target instanceof ArrayAccess aa) {
+      return aa.getArray().isAssignableByOtherCode() || aa.getIndex().isAssignableByOtherCode();
+    } else {
+      return false;
+    }
   }
 
   @Override

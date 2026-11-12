@@ -153,6 +153,42 @@ public class AssignmentInComparison {
     }
   }
 
+  // Sets `global` to `other` and returns a non-null value.
+  static AssignmentInComparison reassignGlobal(AssignmentInComparison other) {
+    global = other;
+    return other;
+  }
+
+  static void methodCallReassignsReceiver(AssignmentInComparison other) {
+    if (global == null) {
+      return;
+    }
+    // :: warning: [nulltest.redundant]
+    if ((global.next = reassignGlobal(other)) != null) {
+      // After the assignment, `global.next` is a field of a different object.
+      // :: error: [dereference.of.nullable]
+      global.next.toString();
+    }
+  }
+
+  static void methodCallReassignsReceiverNoComparison(AssignmentInComparison other) {
+    if (global == null) {
+      return;
+    }
+    global.next = reassignGlobal(other);
+    // After the assignment, `global.next` is a field of a different object.
+    // :: error: [dereference.of.nullable]
+    global.next.toString();
+  }
+
+  // A method call cannot reassign a local receiver.
+  static void methodCallLocalReceiver(AssignmentInComparison n, AssignmentInComparison other) {
+    // :: warning: [nulltest.redundant]
+    if ((n.next = reassignGlobal(other)) != null) {
+      n.next.toString();
+    }
+  }
+
   void chainOfFieldTargets(@Nullable AssignmentInComparison o) {
     if ((this.next = this.other = o) != null) {
       this.next.toString();
