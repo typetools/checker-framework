@@ -1,14 +1,18 @@
 package org.checkerframework.checker.collectionownership;
 
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreeScanner;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -20,6 +24,7 @@ import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.IPair;
 
 /** Matches enhanced-`for` {@link DisposalLoopInfo} from CFG. */
@@ -45,7 +50,7 @@ final class EnhancedForDisposalLoopMatcher {
 
   /**
    * Returns the {@link DisposalLoopInfo} if the enhanced-for-loop iterates over a resource
-   * collection.
+   * collection and its body does not assign to the variable that holds the collection.
    *
    * @param tree the enhanced-for-loop to inspect
    * @return the matched disposal loop info, or {@code null} if the loop does not match
@@ -54,15 +59,50 @@ final class EnhancedForDisposalLoopMatcher {
     if (!coAtf.isResourceCollection(tree.getExpression())) {
       return null;
     }
+    // If the body reassigns the collection variable, the loop still iterates over the original
+    // collection, but after the loop the variable refers to a different collection.
+    Name collectionName =
+        CollectionOwnershipUtils.getNameFromExpressionTree(
+            TreeUtils.withoutParens(tree.getExpression()));
+    if (collectionName != null && assignsTo(tree.getStatement(), collectionName)) {
+      return null;
+    }
     return resolveEnhancedForLoop(tree);
+  }
+
+  /**
+   * Returns true if {@code body} contains an assignment to a variable or field named {@code name}.
+   *
+   * @param body a loop body
+   * @param name a variable or field name
+   * @return true if {@code body} assigns to {@code name}
+   */
+  private static boolean assignsTo(StatementTree body, Name name) {
+    @Nullable Boolean result =
+        new TreeScanner<Boolean, Void>() {
+          @Override
+          public Boolean visitAssignment(AssignmentTree tree, Void p) {
+            if (CollectionOwnershipUtils.getNameFromExpressionTree(tree.getVariable()) == name) {
+              return true;
+            }
+            return super.visitAssignment(tree, p);
+          }
+
+          @Override
+          public Boolean reduce(@Nullable Boolean r1, @Nullable Boolean r2) {
+            return Boolean.TRUE.equals(r1) || Boolean.TRUE.equals(r2);
+          }
+        }.scan(body, null);
+    return Boolean.TRUE.equals(result);
   }
 
   /**
    * Searches the method CFG for the first occurrence of {@code tree} and resolves it to {@link
    * DisposalLoopInfo}.
    *
-   * <p>This performs a CFG traversal, looking for a desugared iterator {@code hasNext()} node
-   * tagged with the target enhanced-for-loop.
+   * <p>This performs a CFG traversal, looking for the desugared iterator {@code next()} node tagged
+   * with the target enhanced-for-loop. (Only the {@code next()} node is tagged; the {@code
+   * hasNext()} node is not.)
    *
    * @param tree the enhanced-for-loop to resolve
    * @return the CFG-resolved loop info, or {@code null} if it cannot be resolved
@@ -106,11 +146,12 @@ final class EnhancedForDisposalLoopMatcher {
    * Returns the resolved disposal loop info for the target enhanced-for-loop {@code tree} over a
    * resource collection.
    *
-   * <p>Starting from the desugared iterator {@code hasNext()} node, this walks forward to recover
-   * the loop-variable assignment and body-entry block, then walks backward to recover the loop
-   * condition and update block.
+   * <p>Starting from the desugared iterator {@code next()} node (the only node whose {@link
+   * MethodInvocationNode#getEnhancedForLoop()} is set), this walks forward to recover the
+   * loop-variable assignment and body-entry block, then walks backward to recover the {@code
+   * hasNext()} loop condition and the update block.
    *
-   * @param methodInvocationNode the iterator {@code hasNext()} invocation of {@code tree}
+   * @param methodInvocationNode the iterator {@code next()} invocation of {@code tree}
    * @param tree the enhanced-for-loop being resolved
    * @return the resolved loop info, or {@code null} if it cannot be resolved
    */
@@ -118,11 +159,11 @@ final class EnhancedForDisposalLoopMatcher {
       MethodInvocationNode methodInvocationNode, @FindDistinct EnhancedForLoopTree tree) {
     VariableTree loopVariable = tree.getVariable();
 
-    // Walk forward from the iterator `hasNext()` node to find the assignment that initializes the
+    // Walk forward from the iterator `next()` node to find the assignment that initializes the
     // loop variable from `next()`. The successor after that assignment is the loop-body entry
     // block.
-    Block blockContainingHasNext = methodInvocationNode.getBlock();
-    if (!(blockContainingHasNext instanceof SingleSuccessorBlock singleSuccessorBlock)) {
+    Block blockContainingNext = methodInvocationNode.getBlock();
+    if (!(blockContainingNext instanceof SingleSuccessorBlock singleSuccessorBlock)) {
       return null;
     }
     Iterator<Node> nodeIterator = singleSuccessorBlock.getNodes().iterator();
@@ -149,9 +190,9 @@ final class EnhancedForDisposalLoopMatcher {
     } while (!isAssignmentOfLoopVariable);
     Block loopBodyEntryBlock = singleSuccessorBlock.getSuccessor();
 
-    // Walk backward from the iterator `hasNext()` node to recover the loop-condition node and the
-    // loop-update/back-edge block for this desugared enhanced-for.
-    Block loopUpdateBlock = blockContainingHasNext;
+    // Walk backward from the iterator `next()` node to recover the `hasNext()` loop-condition node
+    // and the loop-update/back-edge block for this desugared enhanced-for.
+    Block loopUpdateBlock = blockContainingNext;
     nodeIterator = loopUpdateBlock.getNodes().iterator();
     Node loopConditionNode;
     boolean isLoopCondition;
@@ -211,8 +252,8 @@ final class EnhancedForDisposalLoopMatcher {
   }
 
   /**
-   * Returns whether {@code methodInvocationNode} is the iterator {@code hasNext()} invocation for
-   * the target enhanced-for-loop {@code tree}.
+   * Returns whether {@code methodInvocationNode} is the iterator {@code next()} invocation for the
+   * target enhanced-for-loop {@code tree}.
    *
    * @param methodInvocationNode the node to check
    * @param tree the target enhanced-for-loop
