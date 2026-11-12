@@ -760,7 +760,7 @@ To determine which methods such a loop calls, the checker does the following:
 
 \begin{itemize}
   \item It checks that the loop does not terminate early.
-  \item It uses the Called Methods analysis to determine the methods that are definitely called on the loop variable. Therefore, the checker supports anything that changes the \<@CalledMethods> type of the loop variable, such as passing it as an argument to a method annotated with \<@EnsuresCalledMethods("m")> or using it in a try-with-resources statement.
+  \item It uses the Called Methods analysis to determine the methods that are definitely called on the loop variable. Therefore, the checker supports anything that changes the \<@CalledMethods> type of the loop variable, such as passing it as an argument to a method annotated with \<@EnsuresCalledMethods(value = "\#1", methods = "m")> or using it in a try-with-resources statement.
   \item It permits the loop to skip null elements:  it suffices to fulfill the obligation for every non-null element of the collection. The checker recognizes a null check syntactically rather than by performing a full nullness analysis, so it might fail to verify a loop that checks for null in an unusual way.
 \end{itemize}
 
