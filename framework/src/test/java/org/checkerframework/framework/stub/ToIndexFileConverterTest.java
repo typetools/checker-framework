@@ -954,6 +954,43 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * A method's JVML descriptor uses the binary name of a member type that a static import makes
+   * available.
+   */
+  @Test
+  public void testStaticImportOfMemberType() throws Exception {
+    String[] importDecls = {"import static java.util.Map.Entry;", "import static java.util.Map.*;"};
+    for (String importDecl : importDecls) {
+      String jaif =
+          convert(
+              "package p;", importDecl, "class C {", "  void m(Entry<String, String> e) {}", "}");
+      assertMethod(jaif, "C", "m(Ljava/util/Map$Entry;)V");
+    }
+  }
+
+  /** A static import makes a nested annotation interface available by its simple name. */
+  @Test
+  public void testStaticImportOfNestedAnnotation() throws Exception {
+    String holder = "org.checkerframework.framework.testchecker.defaulting.UpperBoundQual";
+    String[] importDecls = {
+      "import static " + holder + ".UbImplicit;", "import static " + holder + ".*;"
+    };
+    for (String importDecl : importDecls) {
+      AField param =
+          firstParameter(
+              "m(Ljava/lang/String;)V",
+              "package p;",
+              importDecl,
+              "class C {",
+              "  void m(@UbImplicit String s) {}",
+              "}");
+      Assert.assertNull("@UbImplicit was recorded on the parameter", param.lookup("UbImplicit"));
+      Assert.assertNotNull(
+          "@UbImplicit was not recorded on the type", param.type.lookup("UbImplicit"));
+    }
+  }
+
+  /**
    * An annotation interface that an enclosing declaration of the stub file declares shadows an
    * imported one of the same name when its {@code @Target} is determined.
    */
