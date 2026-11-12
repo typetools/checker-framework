@@ -14,8 +14,6 @@ A default that a type system registers for an element through
 `@DefaultQualifier` annotation on that element.  Formerly, it
 suppressed the `@DefaultQualifier` annotations on the element and on the
 element's enclosing elements.
-A `@DefaultQualifier` annotation written on the element takes precedence
-over a registered default for the same location and hierarchy.
 
 ### Closed issues
 

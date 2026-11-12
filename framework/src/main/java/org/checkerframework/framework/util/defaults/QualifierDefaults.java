@@ -318,11 +318,8 @@ public class QualifierDefaults {
    * <p>The default is treated like a {@code @DefaultQualifier} annotation written on {@code elem}:
    * it applies within {@code elem} and within the elements that {@code elem} encloses, and it is
    * combined with the other {@code @DefaultQualifier} annotations that apply there, rather than
-   * suppressing them. A {@code @DefaultQualifier} annotation written on {@code elem} takes
-   * precedence: if it gives a default in the same hierarchy for the same location, then this
-   * default does not apply at that location. As with {@code @DefaultQualifier}, an alias is
-   * replaced by its canonical qualifier, and a qualifier that this type system does not support is
-   * ignored.
+   * suppressing them. As with {@code @DefaultQualifier}, an alias is replaced by its canonical
+   * qualifier.
    *
    * <p>Call this method before the type of {@code elem}, or of any element that {@code elem}
    * encloses, is computed. A type that was computed earlier does not reflect the default.
@@ -330,12 +327,14 @@ public class QualifierDefaults {
    * @param elem the scope to set the default within
    * @param elementDefaultAnno the default to set
    * @param location the location to apply the default to
+   * @throws BugInCF if this type system does not support the qualifier
    */
   public void addElementDefault(
       Element elem, AnnotationMirror elementDefaultAnno, TypeUseLocation location) {
     AnnotationMirror anno = atypeFactory.canonicalAnnotation(elementDefaultAnno);
     if (!atypeFactory.isSupportedQualifier(anno)) {
-      return;
+      throw new BugInCF(
+          "addElementDefault: unsupported qualifier " + elementDefaultAnno + " for " + elem);
     }
     DefaultSet prevset = elementDeclaredDefaults.get(elem);
     if (prevset != null) {
@@ -644,7 +643,7 @@ public class QualifierDefaults {
    * Returns the defaults that apply to the given Element, considering defaults from enclosing
    * Elements.
    *
-   * @param elt the element, or null
+   * @param elt an element, or null
    * @return the defaults
    */
   private DefaultSet defaultsAt(@Nullable Element elt) {
@@ -682,14 +681,7 @@ public class QualifierDefaults {
 
     DefaultSet elementDefaults = elementDeclaredDefaults.get(elt);
     if (elementDefaults != null) {
-      // A @DefaultQualifier on elt takes precedence over a conflicting registered default.  The
-      // registered defaults never conflict with one another, so checking each one against the
-      // previously added registered defaults too does not change the result.
-      for (Default def : elementDefaults) {
-        if (!conflictsWithExistingDefaults(qualifiers, def.anno, def.location)) {
-          qualifiers.add(def);
-        }
-      }
+      qualifiers.addAll(elementDefaults);
     }
 
     Element parent;

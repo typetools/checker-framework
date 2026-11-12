@@ -15,7 +15,6 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.testchecker.util.Critical;
-import org.checkerframework.framework.testchecker.util.Odd;
 import org.checkerframework.framework.testchecker.util.SubQual;
 import org.checkerframework.framework.testchecker.util.SuperQual;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -26,10 +25,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * alias for {@code @SubQual}. On every class with the given name, this registers:
  *
  * <ul>
- *   <li>{@code ElementDefault}: {@code @SubQual} for {@link TypeUseLocation#RETURN}, and {@code
- *       Critical} for the same location.
- *   <li>{@code ElementDefaultConflict}: {@code @SubQual} for {@link TypeUseLocation#RETURN}, and
- *       {@code @Odd} followed by {@code @SubQual} for {@link TypeUseLocation#PARAMETER}.
+ *   <li>{@code ElementDefault}: {@code @SubQual} for {@link TypeUseLocation#RETURN}, and
+ *       {@code @Critical} for the same location.
  *   <li>{@code ElementDefaultEnclosing}: on its member class {@code Inner}, {@code @Critical} for
  *       {@link TypeUseLocation#RETURN}.
  *   <li>{@code ElementDefaultLate}: {@code @SubQual} for {@link TypeUseLocation#RETURN}; then,
@@ -48,20 +45,16 @@ public class ElementDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   /** The {@code @Critical} annotation, which this type system treats as an alias for SubQual. */
   private final AnnotationMirror CRITICAL;
 
-  /** The {@code @Odd} annotation, which this type system does not support. */
-  private final AnnotationMirror ODD;
-
   /**
    * Creates an ElementDefaultAnnotatedTypeFactory.
    *
-   * @param checker the checker
+   * @param checker an ElementDefaultChecker
    */
   @SuppressWarnings("this-escape")
   public ElementDefaultAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     SUB_QUAL = AnnotationBuilder.fromClass(getElementUtils(), SubQual.class);
     CRITICAL = AnnotationBuilder.fromClass(getElementUtils(), Critical.class);
-    ODD = AnnotationBuilder.fromClass(getElementUtils(), Odd.class);
     addAliasedTypeAnnotation(Critical.class, SUB_QUAL);
     this.postInit();
   }
@@ -89,12 +82,6 @@ public class ElementDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
           // The alias is canonicalized to @SubQual, so it duplicates the previous default rather
           // than conflicting with it.
           defaults.addElementDefault(classElt, CRITICAL, TypeUseLocation.RETURN);
-        } else if (className.contentEquals("ElementDefaultConflict")) {
-          defaults.addElementDefault(classElt, SUB_QUAL, TypeUseLocation.RETURN);
-          // This type system does not support @Odd, so the @Odd default is ignored.  In
-          // particular, it does not conflict with the @SubQual default for the same location.
-          defaults.addElementDefault(classElt, ODD, TypeUseLocation.PARAMETER);
-          defaults.addElementDefault(classElt, SUB_QUAL, TypeUseLocation.PARAMETER);
         } else if (className.contentEquals("ElementDefaultEnclosing")) {
           for (TypeElement member : ElementFilter.typesIn(classElt.getEnclosedElements())) {
             if (member.getSimpleName().contentEquals("Inner")) {

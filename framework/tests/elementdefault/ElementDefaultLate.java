@@ -15,6 +15,12 @@ public class ElementDefaultLate {
     return subField;
   }
 
+  // The return type is @SubQual, from the default that was registered before the type of first()
+  // was computed.
+  void useReturn() {
+    @SubQual Object sub = first();
+  }
+
   // The parameter is @SubQual, from the default that was registered after the type of first()
   // was computed.
   void second(Object param) {}
