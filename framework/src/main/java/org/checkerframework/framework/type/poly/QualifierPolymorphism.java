@@ -10,6 +10,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 /**
  * Interface to implement qualifier polymorphism.
  *
+ * <p>Most implementations should extend {@link AbstractQualifierPolymorphism}. A class that
+ * implements this interface directly must implement every method, including {@link
+ * #resolveWithReceiver}, which the framework calls when it resolves polymorphic qualifiers for an
+ * accessor method that is invoked implicitly, such as by a record pattern.
+ *
  * @see PolymorphicQualifier
  * @see AbstractQualifierPolymorphism
  * @see DefaultQualifierPolymorphism
