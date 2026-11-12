@@ -9,6 +9,11 @@
 
 ### Changes for type system implementers
 
+The `CaseNode` constructor takes a new `alwaysMatches` argument, and the new
+method `CaseNode.alwaysMatches()` returns it; for such a `CaseNode`, the CFG
+does not test the labels, and `CFAbstractTransfer.visitCase()` returns a regular
+store.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
@@ -50,10 +55,6 @@ that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
 
 Removed `CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
-The `CaseNode` constructor takes a new `alwaysMatches` argument, and the new
-method `CaseNode.alwaysMatches()` returns it; for such a `CaseNode`, the CFG
-does not test the labels, and `CFAbstractTransfer.visitCase()` returns a regular
-store.
 
 Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
 and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
