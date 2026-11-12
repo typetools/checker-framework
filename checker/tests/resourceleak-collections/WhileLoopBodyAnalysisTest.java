@@ -111,19 +111,51 @@ class WhileLoopBodyAnalysisTest {
 
   /*
    * The same partial-satisfaction case should fail for close-only resources that throw
-   * checked exceptions.
+   * checked exceptions: an element is not closed on some path.
    */
-  void whileIteratorPartialShouldError2(@OwningCollection List<FileInputStream> resources)
-      throws IOException {
+  // :: error: unfulfilled.collection.obligations
+  void whileIteratorPartialShouldError2(
+      @OwningCollection List<FileInputStream> resources, boolean b) throws IOException {
     Iterator<FileInputStream> it = resources.iterator();
     while (it.hasNext()) {
       FileInputStream r = it.next();
-      try {
-        r.close();
-      } catch (IOException e) {
+      if (b) {
+        try {
+          r.close();
+        } catch (IOException e) {
+        }
       }
     }
+    // :: error: argument
     checkArgIsOCWO2(resources);
+  }
+
+  /*
+   * Iterating over a view such as subList does not dispose of all the elements of the list.
+   */
+  // :: error: unfulfilled.collection.obligations
+  void whileIteratorOverSubList(@OwningCollection List<Resource> resources) {
+    Iterator<Resource> it = resources.subList(0, 1).iterator();
+    while (it.hasNext()) {
+      Resource r = it.next();
+      r.close();
+      r.flush();
+    }
+  }
+
+  /*
+   * An iterator might not visit an element inserted during the iteration (for example, if the
+   * list is a CopyOnWriteArrayList), so this loop is not a disposal loop.
+   */
+  // :: error: unfulfilled.collection.obligations
+  void whileIteratorInsertsIntoCollection(@OwningCollection List<Resource> resources) {
+    Iterator<Resource> it = resources.iterator();
+    while (it.hasNext()) {
+      Resource r = it.next();
+      r.close();
+      r.flush();
+      resources.add(new Resource());
+    }
   }
 
   /*

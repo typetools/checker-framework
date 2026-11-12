@@ -462,7 +462,8 @@ public class CollectionOwnershipAnnotatedTypeFactory
             ResourceLeakUtils.getRLCCalledMethodsChecker(this).getTypeFactory();
     // Inferring owning annotations for @Owning fields/parameters, @EnsuresCalledMethods for
     // finalizer methods, and @InheritableMustCall annotations for the class declarations.
-    if (cmAtf.getWholeProgramInference() != null) {
+    // MustCallInference writes to this factory's WPI, so check that one.
+    if (getWholeProgramInference() != null) {
       if (cfg.getUnderlyingAST().getKind() == UnderlyingAST.Kind.METHOD) {
         MustCallInference.runMustCallInference(cmAtf, cfg, mustCallConsistencyAnalyzer);
       }
@@ -916,27 +917,6 @@ public class CollectionOwnershipAnnotatedTypeFactory
     }
   }
 
-  /**
-   * Returns a JavaExpression for the given String. Returns null if the string is not parsable as a
-   * Java expression or the method has no source declaration.
-   *
-   * @param s the string
-   * @param method the method with the annotation
-   * @return a JavaExpression for the given String, or null if the string is not parsable as a Java
-   *     expression or the method has no source declaration
-   */
-  public @Nullable JavaExpression stringToJavaExpression(String s, ExecutableElement method) {
-    Tree methodTree = declarationFromElement(method);
-    if (methodTree instanceof MethodTree mit) {
-      try {
-        return StringToJavaExpression.atMethodBody(s, mit, checker);
-      } catch (JavaExpressionParseException ex) {
-        return null;
-      }
-    }
-    return null;
-  }
-
   @Override
   protected TypeAnnotator createTypeAnnotator() {
     return new ListTypeAnnotator(
@@ -1102,7 +1082,7 @@ public class CollectionOwnershipAnnotatedTypeFactory
           List<? extends VariableElement> params = method.getParameters();
           List<? extends AnnotatedTypeMirror> paramTypes = annotatedMethod.getParameterTypes();
           for (int i = 0; i < params.size(); i++) {
-            if (params.get(i).getSimpleName() == elt.getSimpleName()) {
+            if (params.get(i).equals(elt)) {
               AnnotationMirror paramAnno = paramTypes.get(i).getAnnotationInHierarchy(TOP);
               if (paramAnno != null) {
                 type.replaceAnnotation(paramAnno);

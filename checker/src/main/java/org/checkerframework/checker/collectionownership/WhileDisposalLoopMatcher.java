@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.interning.qual.FindDistinct;
@@ -64,6 +65,13 @@ final class WhileDisposalLoopMatcher {
    */
   private static final Set<String> NONEMPTY_EXTRACT_METHODS =
       Set.of("poll", "pollFirst", "pollLast", "remove", "removeFirst", "removeLast", "pop");
+
+  /**
+   * Methods that replace elements of a collection but are not annotated
+   * {@code @CreatesCollectionObligation}. An iterator loop that calls one of these on the iterated
+   * collection is not a disposal loop.
+   */
+  private static final Set<String> REPLACING_METHODS = Set.of("set", "replaceAll");
 
   /** The CO type factory used for collection-ownership queries. */
   private final CollectionOwnershipAnnotatedTypeFactory coAtf;
@@ -340,7 +348,7 @@ final class WhileDisposalLoopMatcher {
       return null;
     }
 
-    ExpressionTree collectionTree = CollectionOwnershipUtils.referenceExpression(receiver);
+    ExpressionTree collectionTree = referenceExpressionIfNotView(receiver);
     if (collectionTree == null) {
       return null;
     }
@@ -429,7 +437,22 @@ final class WhileDisposalLoopMatcher {
     if (!coAtf.isResourceCollection(collectionExpression)) {
       return null;
     }
-    return CollectionOwnershipUtils.referenceExpression(collectionExpression);
+    return referenceExpressionIfNotView(collectionExpression);
+  }
+
+  /**
+   * Returns the given collection expression if {@link CollectionOwnershipUtils#referenceExpression}
+   * maps it to itself, as for a variable or a field access. Otherwise returns null. In particular,
+   * this rejects a view such as {@code list.subList(0, 1)}, which {@code referenceExpression} maps
+   * to {@code list}: iterating over a view does not dispose of all of the receiver's elements.
+   *
+   * @param collectionExpression a collection expression
+   * @return {@code collectionExpression}, or null if it does not refer directly to the collection
+   */
+  private static @Nullable ExpressionTree referenceExpressionIfNotView(
+      @FindDistinct ExpressionTree collectionExpression) {
+    ExpressionTree reference = CollectionOwnershipUtils.referenceExpression(collectionExpression);
+    return reference == collectionExpression ? reference : null;
   }
 
   /**
@@ -488,6 +511,8 @@ final class WhileDisposalLoopMatcher {
    *
    * <ul>
    *   <li>does not overwrite the header variable or the matched collection variable
+   *   <li>for an iterator loop, does not insert into or replace elements of the collection (an
+   *       iterator might not visit the new elements, as for {@code CopyOnWriteArrayList})
    *   <li>contains exactly one allowed extraction call on the header/collection variable
    * </ul>
    */
@@ -611,8 +636,37 @@ final class WhileDisposalLoopMatcher {
       return super.visitAssignment(tree, p);
     }
 
+    /**
+     * Rejects a loop body that inserts into or replaces elements of the iterated collection, in an
+     * iterator loop. (In a loop that empties the collection, the loop also disposes of inserted
+     * elements.)
+     *
+     * @param invocation a method invocation in the loop body
+     */
+    private void markMutationOfIteratedCollection(MethodInvocationTree invocation) {
+      if (collectionVarNameForInvalidation == null
+          || collectionVarNameForInvalidation == headerVarName) {
+        return;
+      }
+      ExpressionTree receiver = receiverOfInvocation(invocation);
+      if (receiver == null
+          || CollectionOwnershipUtils.getNameFromExpressionTree(receiver)
+              != collectionVarNameForInvalidation) {
+        return;
+      }
+      ExecutableElement method = TreeUtils.elementFromUse(invocation);
+      if (coAtf.isCreatesCollectionObligationMethod(method)
+          || REPLACING_METHODS.contains(method.getSimpleName().toString())) {
+        illegal = true;
+      }
+    }
+
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
+      markMutationOfIteratedCollection(tree);
+      if (illegal) {
+        return null;
+      }
       recordExtractionIfAny(tree);
       return super.visitMethodInvocation(tree, p);
     }

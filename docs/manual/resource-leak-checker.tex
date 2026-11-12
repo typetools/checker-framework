@@ -722,7 +722,7 @@ The type hierarchy of the ownership type system is:
     because most expressions are not collections of resources.
 \end{itemize}
 
-A \<@NotOwningCollection can only do certain ``safe'' operations on the
+A \<@NotOwningCollection> reference can only do certain ``safe'' operations on the
 collection. It can only insert elements that are definitely not owning, such as
 the result of a method whose return type is \<@NotOwning>. It cannot clear
 the collection or discard or overwrite elements, for example with
@@ -741,7 +741,7 @@ To fulfill the obligation of a resource collection, the obligation can be passed
 Here is an example of such a loop:
 
 \begin{verbatim}
-// The type of `socketList` is @OwningCollection @MustCall("close").
+// `socketList` is @OwningCollection; its elements are @MustCall("close").
 for (Socket s : socketList) {
   try {
     s.close();
@@ -749,7 +749,7 @@ for (Socket s : socketList) {
     e.printStackTrace();
   }
 }
-// The type of `socketList` is now @OwningCollectionWithoutObligation @MustCall().
+// `socketList` is now @OwningCollectionWithoutObligation; its elements' obligations are fulfilled.
 \end{verbatim}
 
 The main effect such a loop has is that the obligations corresponding to the methods it calls on all elements are removed. If the loop calls all required methods - which is almost always the case, since classes usually have at most one \<MustCall> method - the type of the collection is additionally refined to \<@OwningCollectionWithoutObligation>.
@@ -767,6 +767,11 @@ Two forms of \<while> loops are supported:
   \item An iterator loop: the condition is \<it.hasNext()>, where \<it> is an iterator over the collection, and the loop body calls \<it.next()> exactly once.
   \item A loop that empties the collection: the condition is \<!c.isEmpty()>, \code{c.size() > 0}, or \<0 < c.size()>, and the loop body removes an element exactly once, with \<poll()>, \<pollFirst()>, \<pollLast()>, \<remove()>, \<removeFirst()>, \<removeLast()>, or \<pop()>.
 \end{itemize}
+
+\noindent
+The loop body must not assign to the iterator or collection variable.  The
+body of an iterator loop must not add elements to the collection or replace
+its elements, because the iterator might not visit the new elements.
 
 \begin{verbatim}
 Iterator<Socket> it = socketList.iterator();

@@ -61,8 +61,9 @@ final class EnhancedForDisposalLoopMatcher {
    * Searches the method CFG for the first occurrence of {@code tree} and resolves it to {@link
    * DisposalLoopInfo}.
    *
-   * <p>This performs a CFG traversal, looking for a desugared iterator {@code hasNext()} node
-   * tagged with the target enhanced-for-loop.
+   * <p>This performs a CFG traversal, looking for the desugared iterator {@code next()} node tagged
+   * with the target enhanced-for-loop. (Only the {@code next()} node is tagged; the {@code
+   * hasNext()} node is not.)
    *
    * @param tree the enhanced-for-loop to resolve
    * @return the CFG-resolved loop info, or {@code null} if it cannot be resolved
@@ -106,11 +107,12 @@ final class EnhancedForDisposalLoopMatcher {
    * Returns the resolved disposal loop info for the target enhanced-for-loop {@code tree} over a
    * resource collection.
    *
-   * <p>Starting from the desugared iterator {@code hasNext()} node, this walks forward to recover
-   * the loop-variable assignment and body-entry block, then walks backward to recover the loop
-   * condition and update block.
+   * <p>Starting from the desugared iterator {@code next()} node (the only node whose {@link
+   * MethodInvocationNode#getEnhancedForLoop()} is set), this walks forward to recover the
+   * loop-variable assignment and body-entry block, then walks backward to recover the {@code
+   * hasNext()} loop condition and the update block.
    *
-   * @param methodInvocationNode the iterator {@code hasNext()} invocation of {@code tree}
+   * @param methodInvocationNode the iterator {@code next()} invocation of {@code tree}
    * @param tree the enhanced-for-loop being resolved
    * @return the resolved loop info, or {@code null} if it cannot be resolved
    */
@@ -118,11 +120,11 @@ final class EnhancedForDisposalLoopMatcher {
       MethodInvocationNode methodInvocationNode, @FindDistinct EnhancedForLoopTree tree) {
     VariableTree loopVariable = tree.getVariable();
 
-    // Walk forward from the iterator `hasNext()` node to find the assignment that initializes the
+    // Walk forward from the iterator `next()` node to find the assignment that initializes the
     // loop variable from `next()`. The successor after that assignment is the loop-body entry
     // block.
-    Block blockContainingHasNext = methodInvocationNode.getBlock();
-    if (!(blockContainingHasNext instanceof SingleSuccessorBlock singleSuccessorBlock)) {
+    Block blockContainingNext = methodInvocationNode.getBlock();
+    if (!(blockContainingNext instanceof SingleSuccessorBlock singleSuccessorBlock)) {
       return null;
     }
     Iterator<Node> nodeIterator = singleSuccessorBlock.getNodes().iterator();
@@ -149,9 +151,9 @@ final class EnhancedForDisposalLoopMatcher {
     } while (!isAssignmentOfLoopVariable);
     Block loopBodyEntryBlock = singleSuccessorBlock.getSuccessor();
 
-    // Walk backward from the iterator `hasNext()` node to recover the loop-condition node and the
-    // loop-update/back-edge block for this desugared enhanced-for.
-    Block loopUpdateBlock = blockContainingHasNext;
+    // Walk backward from the iterator `next()` node to recover the `hasNext()` loop-condition node
+    // and the loop-update/back-edge block for this desugared enhanced-for.
+    Block loopUpdateBlock = blockContainingNext;
     nodeIterator = loopUpdateBlock.getNodes().iterator();
     Node loopConditionNode;
     boolean isLoopCondition;
@@ -211,8 +213,8 @@ final class EnhancedForDisposalLoopMatcher {
   }
 
   /**
-   * Returns whether {@code methodInvocationNode} is the iterator {@code hasNext()} invocation for
-   * the target enhanced-for-loop {@code tree}.
+   * Returns whether {@code methodInvocationNode} is the iterator {@code next()} invocation for the
+   * target enhanced-for-loop {@code tree}.
    *
    * @param methodInvocationNode the node to check
    * @param tree the target enhanced-for-loop
