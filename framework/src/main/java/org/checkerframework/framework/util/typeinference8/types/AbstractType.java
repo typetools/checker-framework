@@ -69,9 +69,9 @@ public abstract class AbstractType {
 
   /**
    * True if the primary annotations of this type should be ignored during inference, because they
-   * do not constrain any inference variable's annotations. For a type variable or a wildcard, this
-   * includes the primary annotations of its bounds. It does not include annotations nested in this
-   * type, such as those of its type arguments or its component type.
+   * do not constrain any inference variable's annotations. For a type variable or a wildcard, the
+   * primary annotations of its bounds are also ignored. It does not include annotations nested in
+   * this type, such as those of its type arguments or its component type.
    *
    * <p>For example, this field is true for a bound that {@link UseOfVariable#addBound} creates from
    * a use of an inference variable that has a primary annotation, such as {@code @Nullable T}. That

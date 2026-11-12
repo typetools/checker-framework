@@ -1037,8 +1037,8 @@ public class InferenceFactory {
       if (properType.ignoreAnnotations == ignoreAnnotations) {
         lubATM = AnnotatedTypes.leastUpperBound(typeFactory, lubSoFarATM, atm, lubTM);
       } else if (properType.ignoreAnnotations) {
-        // Only the primary annotations of `atm` are ignored.  Make them bottom, so that they don't
-        // change the lub.
+        // The primary annotations of `atm` are ignored, but not lubSoFarATM.  Make the primary
+        // annotations of `atm` bottom, so that they don't change the lub.
         AnnotatedTypeMirror atmWithBottomPrimary = atm.deepCopy();
         atmWithBottomPrimary.replaceAnnotations(qh.getBottomAnnotations());
         lubATM =
