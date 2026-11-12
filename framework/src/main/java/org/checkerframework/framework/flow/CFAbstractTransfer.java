@@ -1384,7 +1384,9 @@ public abstract class CFAbstractTransfer<
         }
       }
     }
-    if (lubResult != null && alwaysMatches) {
+    assert lubResult != null
+        : "@AssumeAssertion(nullness): a CaseNode has at least one case operand";
+    if (alwaysMatches) {
       // The case expressions are not tested, so the facts that hold when they match hold after
       // this node.  (strengthenAnnotationOfEqualTo returns a conditional result.)
       return new RegularTransferResult<>(null, lubResult.getThenStore(), lubResult.storeChanged());
