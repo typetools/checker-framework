@@ -71,7 +71,7 @@ public class SwitchSelectorChangedByGuard {
 
   // Without a guard, the selector field is refined.
   void noGuard() {
-    this.shape = new Circle();
+    // :: error: [switching.nullable]
     switch (this.shape) {
       case Circle c -> {}
       case Shape t -> {
