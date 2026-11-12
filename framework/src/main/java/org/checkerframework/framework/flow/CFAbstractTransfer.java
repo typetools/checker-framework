@@ -1238,6 +1238,7 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitAssignment(AssignmentNode n, TransferInput<V, S> in) {
     Node lhs = n.getTarget();
     Node rhs = n.getExpression();
+    Tree rhsTree = sourceRhsTree(n);
 
     V rhsValue = in.getValueOfSubNode(rhs);
 
@@ -1264,13 +1265,13 @@ public abstract class CFAbstractTransfer<
       // the `then` and `else` store are not merged.
       S thenStore = in.getThenStore();
       S elseStore = in.getElseStore();
-      processCommonAssignment(in, lhs, rhs, thenStore, rhsValue);
-      processCommonAssignment(in, lhs, rhs, elseStore, rhsValue);
+      processCommonAssignment(in, lhs, rhs, rhsTree, thenStore, rhsValue);
+      processCommonAssignment(in, lhs, rhs, rhsTree, elseStore, rhsValue);
       return new ConditionalTransferResult<>(
           finishValue(rhsValue, thenStore, elseStore), thenStore, elseStore);
     } else {
       S store = in.getRegularStore();
-      processCommonAssignment(in, lhs, rhs, store, rhsValue);
+      processCommonAssignment(in, lhs, rhs, rhsTree, store, rhsValue);
       return new RegularTransferResult<>(finishValue(rhsValue, store), store);
     }
   }
@@ -1313,42 +1314,66 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
+   * Returns the right-hand side of the given assignment, as written in source code. This differs
+   * from the tree of {@code n.getExpression()} when the CFG replaces the right-hand side by a
+   * synthetic expression. For example, the CFG translates the postfix increment in {@code a[i] =
+   * i++} into a read of a synthetic temporary variable, whose tree does not contain {@code i++}.
+   *
+   * @param n an assignment node
+   * @return the right-hand side of {@code n} as written in source code, or the tree of {@code
+   *     n.getExpression()} if {@code n} does not correspond to a source assignment or compound
+   *     assignment
+   */
+  private static @Nullable Tree sourceRhsTree(AssignmentNode n) {
+    Tree tree = n.getTree();
+    if (tree instanceof AssignmentTree assignmentTree) {
+      return assignmentTree.getExpression();
+    } else if (tree instanceof CompoundAssignmentTree compoundAssignmentTree) {
+      return compoundAssignmentTree.getExpression();
+    } else {
+      return n.getExpression().getTree();
+    }
+  }
+
+  /**
    * Determine abstract value of right-hand side and update the store accordingly.
    *
    * @param in the store(s) before the assignment
    * @param lhs the left-hand side of the assignment
    * @param rhs the right-hand side of the assignment
+   * @param rhsTree the right-hand side of the assignment as written in source code, or null if
+   *     there is none. This may differ from {@code rhs.getTree()}; for example, the CFG translates
+   *     a postfix increment into a read of a synthetic temporary variable.
    * @param store the regular input store (from {@code in})
    * @param rhsValue the value of the right-hand side of the assignment
    */
   protected void processCommonAssignment(
-      TransferInput<V, S> in, Node lhs, Node rhs, S store, V rhsValue) {
+      TransferInput<V, S> in, Node lhs, Node rhs, @Nullable Tree rhsTree, S store, V rhsValue) {
 
     // update information in the store
-    if (rhsMayRelocateTarget(lhs, rhs)) {
+    store.updateForAssignment(lhs, rhsValue);
+    if (rhsMayRelocateTarget(lhs, rhsTree)) {
       // After the assignment, `lhs` denotes a different location than the one that was assigned.
-      // Remove information that the assignment might invalidate, but record no value for `lhs`.
-      store.updateForAssignment(lhs, null);
-    } else {
-      store.updateForAssignment(lhs, rhsValue);
+      // The call above used `rhsValue` to update information about locations that might alias the
+      // assigned one.  Now remove the value it recorded for `lhs`.
+      store.clearValue(JavaExpression.fromNode(lhs));
     }
   }
 
   /**
-   * Returns true if evaluating {@code rhs} might reassign a variable in the receiver or index of
-   * {@code lhs}, as in {@code n.next = (n = o)}. Java evaluates the receiver and index of {@code
-   * lhs} before {@code rhs}, so in that case the assignment stores into a location that {@code lhs}
-   * no longer denotes after the assignment.
+   * Returns true if evaluating {@code rhsTree} might reassign a variable in the receiver or index
+   * of {@code lhs}, as in {@code n.next = (n = o)}. Java evaluates the receiver and index of {@code
+   * lhs} before the right-hand side, so in that case the assignment stores into a location that
+   * {@code lhs} no longer denotes after the assignment.
    *
    * @param lhs the left-hand side of an assignment
-   * @param rhs the right-hand side of the assignment
-   * @return true if evaluating {@code rhs} might change the location that {@code lhs} denotes
+   * @param rhsTree the right-hand side of the assignment as written in source code, or null
+   * @return true if evaluating {@code rhsTree} might change the location that {@code lhs} denotes
    */
-  private static boolean rhsMayRelocateTarget(Node lhs, Node rhs) {
+  private static boolean rhsMayRelocateTarget(Node lhs, @Nullable Tree rhsTree) {
     if (lhs instanceof LocalVariableNode) {
       return false;
     }
-    Tree rhsTree = rhs.getTree();
     if (rhsTree == null) {
       return false;
     }

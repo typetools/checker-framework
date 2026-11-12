@@ -288,6 +288,28 @@ public class AssignmentInComparison {
     n.next.toString();
   }
 
+  // Java assigns `a[0]`, but after the assignment `a[i]` is `a[1]`.
+  static void indexPostfixIncrementedRhs(@Nullable Integer[] a) {
+    int i = 0;
+    a[i] = i++;
+    // :: error: [dereference.of.nullable]
+    a[i].intValue();
+  }
+
+  static class Holder {
+    @Nullable String value;
+    final String text = "";
+  }
+
+  // The assignment stores a non-null value, so it cannot make `p.value` null even if `p` aliases
+  // the original `n`.
+  static void receiverReassignedPreservesOtherRefinements(Holder p, Holder n, Holder o) {
+    if (p.value != null) {
+      n.value = (n = o).text;
+      p.value.length();
+    }
+  }
+
   static void annotationArgumentInRhs(
       @Nullable Object o, @Nullable Object p, Map<String, Object> m) {
     // The annotation argument `"m"` is not an assignment to a variable.
