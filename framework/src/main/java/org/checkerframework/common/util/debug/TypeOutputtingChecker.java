@@ -13,6 +13,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -56,7 +57,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
   /** Prints the types of the class and all of its enclosed fields, methods, and inner classes. */
   public static class Visitor extends BaseTypeVisitor<GenericAnnotatedTypeFactory<?, ?, ?, ?>> {
     /** The name of the class currently being visited. */
-    String currentClass;
+    @MonotonicNonNull String currentClass;
 
     /**
      * Creates a Visitor.
