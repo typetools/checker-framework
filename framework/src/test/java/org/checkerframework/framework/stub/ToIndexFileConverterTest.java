@@ -543,6 +543,39 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * In package {@code p}, the name {@code q.Outer} does not refer to a type in subpackage {@code
+   * p.q}, even if the stub file declares one.
+   */
+  @Test
+  public void testStubFileSubpackageIsNotInCurrentPackage() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass {",
+            "  void myMethod(q.Outer o) {}",
+            "}",
+            "package p.q;",
+            "class Outer {}",
+            "package q;",
+            "class Outer {}");
+    assertMethod(jaif, "MyClass", "myMethod(Lq/Outer;)V");
+  }
+
+  /** A type that the stub file declares in {@code java.lang} is implicitly imported. */
+  @Test
+  public void testStubFileJavaLangTypeIsImplicitlyImported() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class MyClass {",
+            "  void myMethod(StubOnlyType t) {}",
+            "}",
+            "package java.lang;",
+            "public class StubOnlyType {}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/lang/StubOnlyType;)V");
+  }
+
+  /**
    * A type that the stub file declares is qualified by the stub file's package, even where it is
    * used before its declaration.
    */
@@ -696,6 +729,72 @@ public class ToIndexFileConverterTest {
             "  void myMethod(Map.Entry e) {}",
             "}");
     assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyClass$Map$Entry;)V");
+  }
+
+  /** A member type that a stub-declared type inherits from a classpath supertype is found. */
+  @Test
+  public void testInheritedMemberTypeFromClasspath() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import java.util.Map;",
+            "class MyClass {",
+            "  abstract static class Map implements java.util.Map<String, String> {}",
+            "  void myMethod(Map.Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
+  }
+
+  /** A member type that a stub-declared type inherits from a stub-declared supertype is found. */
+  @Test
+  public void testInheritedMemberTypeFromStub() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Super {",
+            "  static class Inner {}",
+            "  private static class Hidden {}",
+            "}",
+            "class Sub extends Super {}",
+            "class MyClass {",
+            "  void myMethod(Sub.Inner x) {}",
+            "  void myOtherMethod(Sub.Hidden x) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/Super$Inner;)V");
+    // A private member type is not inherited.
+    assertMethod(jaif, "MyClass", "myOtherMethod(Lp/Sub$Hidden;)V");
+  }
+
+  /** Cyclic inheritance, which is illegal, does not make the converter recurse forever. */
+  @Test
+  public void testCyclicInheritance() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class A extends B {}",
+            "class B extends A {}",
+            "class MyClass {",
+            "  void myMethod(A.Missing x) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/A$Missing;)V");
+  }
+
+  /**
+   * A class's member types are not in scope in the class's header, such as in the bounds of its
+   * type parameters, but they are in scope in its body.
+   */
+  @Test
+  public void testMemberTypeNotInScopeInClassTypeParameterBound() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class C<T extends Number> {",
+            "  static class Number {}",
+            "  void m(T x) {}",
+            "  <U extends Number> void m2(U x) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/lang/Number;)V");
+    assertMethod(jaif, "C", "m2(Lp/C$Number;)V");
   }
 
   /**
@@ -1219,6 +1318,43 @@ public class ToIndexFileConverterTest {
     Assert.assertNull("@UbImplicit was recorded on the parameter", param.lookup("UbImplicit"));
     Assert.assertNotNull(
         "@UbImplicit was not recorded on the type", param.type.lookup("UbImplicit"));
+  }
+
+  /**
+   * An annotation name that denotes a nested annotation interface in one class and an imported one
+   * elsewhere gets the {@code @Target} of the interface that it denotes at each use.
+   */
+  @Test
+  public void testShadowingAnnotationTargetsAreNotShared() throws Exception {
+    AScene scene =
+        sceneOfStub(
+            "package p;",
+            "import org.checkerframework.checker.nullness.qual.Nullable;",
+            "class A {",
+            "  void m(@Nullable String s) {}",
+            "}",
+            "class B {",
+            "  @interface Nullable {}",
+            "  void m(@Nullable String s) {}",
+            "}",
+            "class C {",
+            "  void m(@Nullable String s) {}",
+            "}");
+    // The imported @Nullable is TYPE_USE.  p.B$Nullable cannot be loaded, so its @Target is
+    // unknown and it is a declaration annotation.
+    for (String className : new String[] {"p.A", "p.B", "p.C"}) {
+      AField param =
+          scene.classes.get(className).methods.get("m(Ljava/lang/String;)V").parameters.get(0);
+      boolean isTypeUse = !className.equals("p.B");
+      Assert.assertEquals(
+          "@Nullable on the parameter in " + className,
+          !isTypeUse,
+          param.lookup("Nullable") != null);
+      Assert.assertEquals(
+          "@Nullable on the type in " + className,
+          isTypeUse,
+          param.type.lookup("Nullable") != null);
+    }
   }
 
   /**
