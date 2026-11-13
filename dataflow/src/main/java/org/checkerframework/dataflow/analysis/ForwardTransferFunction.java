@@ -8,9 +8,9 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
  * Interface of a forward transfer function for the abstract interpretation used for the forward
  * flow analysis.
  *
- * <p><em>Important</em>: The individual transfer functions ( {@code visit*}) are allowed to use
- * (and modify) the stores contained in the argument passed; the ownership is transferred from the
- * caller to that function.
+ * <p><em>Important</em>: The individual transfer functions ({@code visit*}) are allowed to use (and
+ * modify) the stores contained in the argument passed; the ownership is transferred from the caller
+ * to that function.
  *
  * @param <V> the abstract value type to be tracked by the analysis
  * @param <S> the store type used in the analysis

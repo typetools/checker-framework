@@ -30,7 +30,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * that wants to ensure safe initialization.
  *
  * <p>When an expression has type {@code @UnderInitialization}, then no aliases that are typed
- * differently may exist.
+ * differently can exist.
  *
  * @checker_framework.manual #initialization-checker Initialization Checker
  * @checker_framework.manual #underinitialization-examples Examples of the @UnderInitialization

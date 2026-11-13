@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized;
 public class StubparserTaintingTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a StubparserTaintingTest.
+   * Creates a StubparserTaintingTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

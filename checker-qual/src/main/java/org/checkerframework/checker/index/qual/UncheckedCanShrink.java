@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * An expression of type {@code @UncheckedCanShrink} may be used to remove elements, e.g., by
+ * An expression of type {@code @UncheckedCanShrink} can be used to remove elements, e.g., by
  * calling {@code remove()} or {@code clear()} on it.
  *
  * <p>The Index Checker does not issue warnings about possible {@code IndexOutOfBoundsException}s

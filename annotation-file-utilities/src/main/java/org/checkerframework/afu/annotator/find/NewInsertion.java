@@ -13,7 +13,7 @@ public class NewInsertion extends TypedInsertion {
   protected boolean qualifyType;
 
   /**
-   * Construct a NewInsertion.
+   * Constructs a NewInsertion.
    *
    * <p>If "new" already exists in the initializer, then pass a {@link DeclaredType} whose name is
    * the empty String. This will only insert an annotation on the existing type.

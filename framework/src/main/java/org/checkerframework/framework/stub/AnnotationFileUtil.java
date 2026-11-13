@@ -249,7 +249,7 @@ public class AnnotationFileUtil {
   public record QualifiedName(@FullyQualifiedName String typeName, String memberName) {}
 
   /**
-   * Split a name (which comes from an import statement) into the part before the last period and
+   * Splits a name (which comes from an import statement) into the part before the last period and
    * the part after the last period.
    *
    * @param imported the name to split
@@ -404,8 +404,8 @@ public class AnnotationFileUtil {
    *     fileType} are used.
    * @param fileType file type of files to collect
    * @return annotation files with the given file type found in the file system (does not look on
-   *     classpath). Returns null if the file system location does not exist; the caller may wish to
-   *     issue a warning in that case.
+   *     classpath). Returns null if the file system location does not exist; the caller might wish
+   *     to issue a warning in that case.
    */
   public static @Nullable List<AnnotationFileResource> allAnnotationFiles(
       String location, AnnotationFileType fileType) {

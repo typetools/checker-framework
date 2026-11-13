@@ -26,7 +26,7 @@ import org.checkerframework.framework.qual.JavaExpression;
  *
  * <p>Because this annotation can only add obligations, it can be written safely on any method, even
  * one that does not actually create a new obligation. Writing this annotation on a method that does
- * not actually create any new obligations may lead to false alarms (warnings at correct code), but
+ * not actually create any new obligations can lead to false alarms (warnings at correct code), but
  * never to missed alarms (lack of warnings at incorrect code).
  *
  * <p>As an example, consider the following code, which uses a {@code @CreatesMustCallFor}
@@ -79,8 +79,8 @@ public @interface CreatesMustCallFor {
    * annotation. The expression must be visible in the scope immediately before each call site, so
    * it can only refer to fields, the method's parameters (which should be referenced via the "#X"
    * syntax, where "#1" is the first argument, "#2" is the second, etc.), or {@code "this"}. The
-   * default is {@code "this"}. At call-sites, the viewpoint-adapted referent of expression must be
-   * owning (an owning field, a local variable tracked in a resource alias set, etc.) or a {@code
+   * default is {@code "this"}. At call-sites, the viewpoint-adapted referent of the expression must
+   * be owning (an owning field, a local variable tracked in a resource alias set, etc.) or a {@code
    * reset.not.owning} error is issued.
    *
    * @return the expression to which must-call obligations are added when the annotated method is

@@ -8,7 +8,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class RegexTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a RegexTest.
+   * Creates a RegexTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */
