@@ -43,7 +43,7 @@ from raw types.
 
 When you define a generic class in Java, the \<extends> clause
 of the generic type parameter (known as the ``upper bound'') requires that
-the corresponding type argument must be a subtype of the bound.
+the corresponding type argument be a subtype of the bound.
 For example, given the definition
 \verb|class G<T extends Number> {...}|,
 the upper bound is \<Number>
@@ -83,7 +83,7 @@ write the lower bound on the type variable.
   class MyList<@LowerBound T extends @UpperBound Object> { ... }
 \end{Verbatim}
 
-You may omit either the upper or the lower bound, and the Checker Framework
+You can omit either the upper or the lower bound, and the Checker Framework
 will use a default.
 
 For a discussion of wildcards, see Section~\ref{annotations-on-wildcards}.
@@ -109,7 +109,7 @@ The above declaration states that the upper bound of the type variable
 is \<@Regex(1) String> and the lower bound is \<@Regex(5) void>.  That is,
 arguments that replace \code{T} in \code{MyRegexes<T>} must be subtypes of
 \code{@Regex(1) String} and supertypes of \code{@Regex(5) void}.
-Since \<void> cannot be used to instantiate a generic class, \<MyRegexes> may
+Since \<void> cannot be used to instantiate a generic class, \<MyRegexes> can
 be instantiated with \<@Regex(1) String> through \<@Regex(5) String>.
 
 
@@ -211,7 +211,7 @@ overriding method must contain the type parameter bounds of the overridden
 method.  That is, the upper bound of the overriding method must be a supertype
 of the upper bound of the overridden method, and the lower bound of the
 overriding method must be a subtype of the lower bound of the overridden
-method.  The reason is that a client may call the overridden method with any
+method.  The reason is that a client can call the overridden method with any
 type argument that is within the bounds of the overridden method, and the
 overriding method is what runs, so the overriding method must permit every such
 type argument.
@@ -228,7 +228,7 @@ type argument.
   }
 \end{Verbatim}
 
-The declaration in \code{Sub} is illegal because a client may call
+The declaration in \code{Sub} is illegal because a client can call
 \code{pick} through a reference of type \code{Super}, with the type argument
 \code{@NonNull String} that \code{Sub.pick} does not permit:
 
@@ -272,7 +272,7 @@ variable:
 \end{Verbatim}
 
 \noindent
-The type annotation does not restrict how \code{MyClass2} may be
+The type annotation does not restrict how \code{MyClass2} can be
 instantiated.  In other words, both
 \code{MyClass2<@NonNull String>} and \code{MyClass2<@Nullable String>} are
 legal, and in both cases \code{@Nullable T} means \code{@Nullable String}.
@@ -304,7 +304,7 @@ a type variable use represents a set of possible types.
 At an instantiation of a generic type, a Java wildcard indicates that some
 constraints are known on the type argument, but the type argument is not known
 exactly.
-For example, you can indicate that the type parameter for variable \<ls> is
+For example, you can indicate that the type argument for variable \<ls> is
 some unknown subtype of \<CharSequence>:
 
 \begin{Verbatim}
@@ -417,16 +417,16 @@ value and produce (retrieve) a null value.
 The implementation of \<MyList2> has to account for only non-null values --- it
 does not have to account for consuming or producing null.
 
-\<MyList3> may be instantiated either way:
+\<MyList3> can be instantiated either way:
 with a nullable type or a non-null type.  The implementation of \<MyList3> must consider
-that it may be instantiated either way --- flexible enough to support either
+that it might be instantiated either way --- flexible enough to support either
 instantiation, yet rigorous enough to impose the correct constraints of the
 specific instantiation.  It must also itself comply with the constraints of
 the potential instantiations.
 
 One way to express the difference among \<MyList1>, \<MyList2>, and
 \<MyList3> is by comparing what expressions are legal in the implementation
-of the list --- that is, what expressions may appear in the ellipsis in the
+of the list --- that is, what expressions can appear in the ellipsis in the
 declarations above, such as inside a method's body.  Suppose each class
 has, in the ellipsis, these declarations:
 
@@ -439,7 +439,7 @@ has, in the ellipsis, these declarations:
 \end{Verbatim}
 
 \noindent
-Then the following expressions would be legal, inside a given
+Then the following table shows which expressions would be legal inside a given
 implementation --- that is, also within the ellipses.
 (Compilable source code appears as file
 \<checker-framework/checker/tests/nullness/generics/GenericsExample.java>.)
@@ -526,7 +526,7 @@ explicit method type arguments, for which the syntax is as follows:
 This uses Java's existing syntax for specifying a method call's type arguments.
 
 
-\subsectionAndLabel{The Bottom type}{bottom-type}
+\subsectionAndLabel{The bottom type}{bottom-type}
 
 Many type systems have a \<*Bottom> type that is used only for the \<null>
 value, dead code, and some erroneous situations.  A programmer should
@@ -556,14 +556,14 @@ Here is where a polymorphic qualifier (e.g., \<@PolyNull>) can be used:
 \item If you can use generics, you typically do not need to use a
   polymorphic qualifier.  Do not write a polymorphic qualifier on a type
   variable declaration.
-\item Polymorphic qualifiers may not be used on a class declaration.
+\item Polymorphic qualifiers must not be used on a class declaration.
   To apply qualifier polymorphism to classes, use a class qualifier
   parameter; see Section~\ref{class-qualifier-polymorphism}.
-\item A polymorphic qualifier may be used on a field declaration only in a
+\item A polymorphic qualifier can be used on a field declaration only in a
   class with a class qualifier parameter; see Section~\ref{class-qual-param-field}.
 \item If a class has a class qualifier parameter, then a polymorphic
   qualifier written on a method in the class has a slightly different
-  meaning, see Section~\ref{class-qual-param-method}.
+  meaning; see Section~\ref{class-qual-param-method}.
 \end{itemize}
 
 Section~\ref{creating-declarative-hierarchy} explains how to define a
@@ -808,7 +808,7 @@ multiple times in a signature.
 This section describes situations when it makes sense to write just one
 polymorphic qualifier in a method signature.
 Some of these situations can be avoided by writing a generic method,
-but in legacy code it may not be possible for you to change a method to be
+but in legacy code it might not be possible for you to change a method to be
 generic.
 
 
@@ -885,7 +885,7 @@ which expands to
 \end{Verbatim}
 
 This is no different (in terms of which calls to the method will
-type-check) than writing just
+type-check) from writing just
 
 \begin{Verbatim}
   void m(@Nullable Object obj)
@@ -971,7 +971,7 @@ class Buffer {
 \noindent
 Because \<@PolyTainted> applies to a type (\<Buffer>) with a qualifier parameter, all
 uses of \<@PolyTainted> are instantiated to the qualifiers on the type of
-the receiver expression at call sites to \<append>. For example,
+the receiver expression at call sites of \<append>. For example,
 
 \begin{Verbatim}
 @Untainted Buffer untaintedBuffer = ...;
@@ -980,7 +980,7 @@ untaintedBuffer.append(taintedString); // error: [argument]
 \end{Verbatim}
 The above \<append> call is illegal because the \<@PolyTainted> qualifier is instantiated to \<@Untainted> and
 the type of the argument is \<@Tainted>, which is a supertype of \<@Untainted>.  If the type of
-\<untaintedBuffer> were \<@Tainted> then the call would be legal.
+\<untaintedBuffer> were \<@Tainted>, then the call would be legal.
 
 \subsectionAndLabel{Using class qualifier parameters in the type of a field}{class-qual-param-field}
 
@@ -997,7 +997,7 @@ class Buffer {
 
 At a field access where the declared type of the field has a polymorphic
 qualifier, that polymorphic qualifier is instantiated to the qualifier on the
-type of the receiver of the field access (or in the case of type variables, the
+type of the receiver of the field access (or, in the case of type variables, the
 qualifier on the upper bound).  That is, the qualifier on \<myBuffer.field>
 is the same as that on \<myBuffer>.
 
@@ -1024,10 +1024,10 @@ that \<StringBuffer> is annotated with \<@HasQualifierParameter(Tainted.class)>.
 Normally, the framework would determine that \<local> has type \<@Untainted
 StringBuffer> and the call to \<executeSql> would be valid. However, since by
 default \<local> has type \<@Tainted StringBuffer>, and
-\<@Untainted StringBuffer> is not a subtype, no type refinement would be
-performed, leading to an error. Fixing this would require manually annotating
-\<local> as an \<@Untainted StringBuffer>, increasing the annotation burden on
-programmers.
+\<@Untainted StringBuffer> is not a subtype of \<@Tainted StringBuffer>, no type
+refinement would be performed, leading to an error. Fixing this would require
+manually annotating \<local> as an \<@Untainted StringBuffer>, increasing the
+annotation burden on programmers.
 
 For this reason, local variables with types that have a qualifier parameter use
 different defaulting rules. When a local variable has an initializer, the type
@@ -1041,8 +1041,8 @@ refinement.
 If many classes in a project should have \<@HasQualifierParameter>, it's
 possible to enable it on all classes in a package by default. Writing
 \<@HasQualifierParameter> on a package is equivalent to writing
-\<@HasQualifierParameter> on each class in that package and all subpackages with
-the same arguments.
+\<@HasQualifierParameter>, with the same arguments, on each class in that package
+and all subpackages.
 
 For example, writing this annotation enables \<@HasQualifierParameter>
 for all classes in \code{mypackage}.

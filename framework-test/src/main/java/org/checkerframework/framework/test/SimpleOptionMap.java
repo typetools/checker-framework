@@ -19,7 +19,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * }</pre>
  *
  * This class is mainly used by TestConfigurationBuilder to make working with existing options
- * simpler and less error prone. It is not intended for a general option container because users
+ * simpler and less error-prone. It is not intended as a general option container because users
  * creating tests via source code can more easily manipulate the map whereas a lot of sugar would be
  * needed to make this class usable from the command line.
  */

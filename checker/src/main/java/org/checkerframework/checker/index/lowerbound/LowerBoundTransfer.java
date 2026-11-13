@@ -45,8 +45,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * <p>Also implements the logic for binary operations: +, -, *, /, and %.
  *
  * <p>&gt;, &lt;, &ge;, &le;, ==, and != nodes are represented as combinations of &gt; and &ge;
- * (e.g. == is &ge; in both directions in the then branch), and implement refinements based on these
- * decompositions.
+ * (e.g., == is &ge; in both directions in the then branch), and implement refinements based on
+ * these decompositions.
  *
  * <pre>
  * Refinement/transfer rules for conditionals:
@@ -123,7 +123,7 @@ import org.checkerframework.javacutil.TreeUtils;
  *   <li>5. The rule described above for ==
  *   <li>6. The rule described above for !=
  *   <li>7. A special refinement for != when the value being compared to is a compile-time constant
- *       with a value exactly equal to -1 or 0 (i.e. {@code x != -1} and x is GTEN1 implies x is
+ *       with a value exactly equal to -1 or 0 (i.e., {@code x != -1} and x is GTEN1 implies x is
  *       non-negative). Maybe two rules?
  *   <li>8. When a compile-time constant -2 is added to a positive, the result is GTEN1
  *   <li>9. When a compile-time constant 2 is added to a GTEN1, the result is positive
@@ -135,8 +135,8 @@ import org.checkerframework.javacutil.TreeUtils;
  *   <li>14. When the left side of a subtraction expression is &ge; the right side according to the
  *       LessThanChecker, the result of the subtraction expression is non-negative
  *   <li>15. special handling for when the left side is the length of an array or String that's
- *       stored as a field, and the right side is a compile time constant. Do we need this?
- *   <li>16. Multiplying any value by a compile time constant of 1 preserves its type
+ *       stored as a field, and the right side is a compile-time constant. Do we need this?
+ *   <li>16. Multiplying any value by a compile-time constant of 1 preserves its type
  *   <li>17. Multiplying two positives produces a positive
  *   <li>18. Multiplying a positive and a non-negative produces a non-negative
  *   <li>19. Multiplying two non-negatives produces a non-negative
@@ -221,7 +221,7 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
   }
 
   /**
-   * Implements the transfer rules for both equal nodes and not-equals nodes (i.e. cases 5, 6, 32).
+   * Implements the transfer rules for both equal nodes and not-equals nodes (i.e., cases 5, 6, 32).
    */
   @Override
   protected TransferResult<CFValue, CFStore> strengthenAnnotationOfEqualTo(
@@ -263,10 +263,14 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     if (!isNonNegative(leftAnno) || !isNonNegative(otherAnno)) {
       return;
     }
+    Tree leftTree = leftNode.getTree();
+    if (leftTree == null) {
+      return;
+    }
     JavaExpression otherJe = JavaExpression.fromNode(otherNode);
     if (atypeFactory
         .getLessThanAnnotatedTypeFactory()
-        .isLessThanOrEqual(leftNode.getTree(), otherJe.toString())) {
+        .isLessThanOrEqual(leftTree, otherJe.toString())) {
       insertValueForComparedNode(store, otherNode, POS);
     }
   }
@@ -330,7 +334,9 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
             .getQualifierHierarchy()
             .greatestLowerBoundShallow(rightAnno, left.getType(), leftAnno, right.getType());
 
-    insertValueForComparedNode(store, left, newLBType);
+    if (newLBType != null) {
+      insertValueForComparedNode(store, left, newLBType);
+    }
   }
 
   /**

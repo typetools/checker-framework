@@ -16,12 +16,12 @@ public interface Constraint extends ReductionResult {
   Kind getKind();
 
   /**
-   * Reduce this constraint; what this means depends on the kind of constraint. Reduction can
+   * Reduces this constraint; what this means depends on the kind of constraint. Reduction can
    * produce new bounds and/or new constraints.
    *
    * <p>Reduction is documented in <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.2">JLS section
-   * 18.2</a>
+   * 18.2</a>.
    *
    * @param context Java8InferenceContext
    * @return the result of reducing this constraint
@@ -42,8 +42,8 @@ public interface Constraint extends ReductionResult {
     /** {@code < S <= T >}: A type argument S is contained by a type argument T. */
     CONTAINED,
     /**
-     * {@code < S = T >}: A type S is the same as a type T, or a type argument S is the same as type
-     * argument T.
+     * {@code < S = T >}: A type S is the same as a type T, or a type argument S is the same as a
+     * type argument T.
      */
     TYPE_EQUALITY,
     /**

@@ -15,7 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class UnsignedRightShiftNode extends BinaryOperationNode {
 
   /**
-   * Constructs an {@link UnsignedRightShiftNode}
+   * Constructs an {@link UnsignedRightShiftNode}.
    *
    * @param tree the binary tree
    * @param left the left operand

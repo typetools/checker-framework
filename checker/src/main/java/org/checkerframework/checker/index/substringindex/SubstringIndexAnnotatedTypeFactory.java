@@ -65,7 +65,7 @@ public class SubstringIndexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   }
 
   /**
-   * Creates an {@link DependentTypesHelper} that allows use of addition and subtraction in the
+   * Creates a {@link DependentTypesHelper} that allows use of addition and subtraction in the
    * Substring Index Checker annotations.
    */
   @Override

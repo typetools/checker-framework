@@ -64,7 +64,7 @@ public final class OptionalUtil {
    *
    * @param <T> the type of content of the Optional
    * @param ref an Optional reference of @MaybePresent type, that is present at run time
-   * @return the argument, casted to have the type qualifier @Present
+   * @return the argument, cast to have the type qualifier @Present
    */
   @EnsuresPresent("#1")
   public static <T extends @MaybePresent Object> @Present Optional<T> castPresent(
