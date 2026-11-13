@@ -99,7 +99,7 @@ public abstract class CheckerFrameworkWPIPerDirectoryTest extends CheckerFramewo
   /**
    * Returns true if {@code file} contains {@code skipComment}.
    *
-   * @param file a java test file
+   * @param file a Java test file
    * @param skipComment a comment that indicates that a test should be skipped
    * @return true if {@code file} contains {@code skipComment}
    */

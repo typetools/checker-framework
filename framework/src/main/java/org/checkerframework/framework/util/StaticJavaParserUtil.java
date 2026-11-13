@@ -93,11 +93,11 @@ public final class StaticJavaParserUtil {
    * creates a new instance of JavaParser each time it is invoked. Re-using {@code StaticJavaParser}
    * causes memory problems because it retains too much memory.
    *
-   * <p>Unlike the other {@code parseCompilationUnit} methods, this one does not preprocess unicode
-   * escapes, so that the line and column of every node is a position in {@code javaSource} itself.
-   * When JavaParser preprocesses unicode escapes, it maps each node's position back to a position
+   * <p>Unlike the other {@code parseCompilationUnit} methods, this one does not preprocess Unicode
+   * escapes, so that the line and column of every node are a position in {@code javaSource} itself.
+   * When JavaParser preprocesses Unicode escapes, it maps each node's position back to a position
    * in the unpreprocessed text, but that mapping is off by one character per backslash escape:
-   * after a backslash that does not start a unicode escape, JavaParser pushes the following
+   * after a backslash that does not start a Unicode escape, JavaParser pushes the following
    * character back onto its input but counts it twice. A caller such as {@link
    * org.checkerframework.framework.ajava.InsertAjavaAnnotations} that converts a position into an
    * offset into {@code javaSource} would compute the wrong offset.

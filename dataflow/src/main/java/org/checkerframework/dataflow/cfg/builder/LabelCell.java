@@ -11,13 +11,13 @@ import org.checkerframework.javacutil.BugInCF;
   /** True if the label has been accessed. */
   private boolean accessed;
 
-  /** Create a LabelCell with no label; the label will be lazily created if needed. */
+  /** Creates a LabelCell with no label; the label will be lazily created if needed. */
   protected LabelCell() {
     this.accessed = false;
   }
 
   /**
-   * Create a LabelCell with the given label.
+   * Creates a LabelCell with the given label.
    *
    * @param label the label
    */
