@@ -29,7 +29,7 @@ public class MethodAccessNode extends Node {
   protected final Node receiver;
 
   /**
-   * Create a new MethodAccessNode.
+   * Creates a new MethodAccessNode.
    *
    * @param tree the expression that is a method access
    * @param receiver the receiver
@@ -39,7 +39,7 @@ public class MethodAccessNode extends Node {
   }
 
   /**
-   * Create a new MethodAccessNode.
+   * Creates a new MethodAccessNode.
    *
    * @param tree the expression that is a method access
    * @param method the element for the method

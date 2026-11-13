@@ -22,7 +22,7 @@ public abstract class JavaExpressionVisitor<R, P> {
   }
 
   /**
-   * Visit an {@link ArrayAccess}.
+   * Visits an {@link ArrayAccess}.
    *
    * @param arrayAccessExpr the JavaExpression to visit
    * @param p the parameter to pass to the visit method
@@ -31,7 +31,7 @@ public abstract class JavaExpressionVisitor<R, P> {
   protected abstract R visitArrayAccess(ArrayAccess arrayAccessExpr, P p);
 
   /**
-   * Visit an {@link ArrayCreation}.
+   * Visits an {@link ArrayCreation}.
    *
    * @param arrayCreationExpr the JavaExpression to visit
    * @param p the parameter to pass to the visit method
@@ -40,7 +40,7 @@ public abstract class JavaExpressionVisitor<R, P> {
   protected abstract R visitArrayCreation(ArrayCreation arrayCreationExpr, P p);
 
   /**
-   * Visit a {@link BinaryOperation}.
+   * Visits a {@link BinaryOperation}.
    *
    * @param binaryOpExpr the JavaExpression to visit
    * @param p the parameter to pass to the visit method
@@ -49,7 +49,7 @@ public abstract class JavaExpressionVisitor<R, P> {
   protected abstract R visitBinaryOperation(BinaryOperation binaryOpExpr, P p);
 
   /**
-   * Visit a {@link ClassName}.
+   * Visits a {@link ClassName}.
    *
    * @param classNameExpr the JavaExpression to visit
    * @param p the parameter to pass to the visit method
@@ -58,7 +58,7 @@ public abstract class JavaExpressionVisitor<R, P> {
   protected abstract R visitClassName(ClassName classNameExpr, P p);
 
   /**
-   * Visit a {@link FieldAccess}.
+   * Visits a {@link FieldAccess}.
    *
    * @param fieldAccessExpr the JavaExpression to visit
    * @param p the parameter to pass to the visit method
@@ -67,7 +67,7 @@ public abstract class JavaExpressionVisitor<R, P> {
   protected abstract R visitFieldAccess(FieldAccess fieldAccessExpr, P p);
 
   /**
-   * Visit a {@link FormalParameter}.
+   * Visits a {@link FormalParameter}.
    *
    * @param parameterExpr the JavaExpression to visit
    * @param p the parameter to pass to the visit method
@@ -76,7 +76,7 @@ public abstract class JavaExpressionVisitor<R, P> {
   protected abstract R visitFormalParameter(FormalParameter parameterExpr, P p);
 
   /**
-   * Visit a {@link LocalVariable}.
+   * Visits a {@link LocalVariable}.
    *
    * @param localVarExpr the JavaExpression to visit
    * @param p the parameter to pass to the visit method
@@ -85,7 +85,7 @@ public abstract class JavaExpressionVisitor<R, P> {
   protected abstract R visitLocalVariable(LocalVariable localVarExpr, P p);
 
   /**
-   * Visit an {@link IteratedCollectionElement}.
+   * Visits an {@link IteratedCollectionElement}.
    *
    * @param iteratedCollectionElt the JavaExpression to visit
    * @param p the parameter to pass to the visit method
@@ -95,7 +95,7 @@ public abstract class JavaExpressionVisitor<R, P> {
       IteratedCollectionElement iteratedCollectionElt, P p);
 
   /**
-   * Visit a {@link MethodCall}.
+   * Visits a {@link MethodCall}.
    *
    * @param methodCallExpr the JavaExpression to visit
    * @param p the parameter to pass to the visit method
@@ -104,7 +104,7 @@ public abstract class JavaExpressionVisitor<R, P> {
   protected abstract R visitMethodCall(MethodCall methodCallExpr, P p);
 
   /**
-   * Visit a {@link ThisReference}.
+   * Visits a {@link ThisReference}.
    *
    * @param thisExpr the JavaExpression to visit
    * @param p the parameter to pass to the visit method
@@ -113,7 +113,7 @@ public abstract class JavaExpressionVisitor<R, P> {
   protected abstract R visitThisReference(ThisReference thisExpr, P p);
 
   /**
-   * Visit a {@link SuperReference}.
+   * Visits a {@link SuperReference}.
    *
    * @param superExpr the JavaExpression to visit
    * @param p the parameter to pass to the visit method
@@ -122,7 +122,7 @@ public abstract class JavaExpressionVisitor<R, P> {
   protected abstract R visitSuperReference(SuperReference superExpr, P p);
 
   /**
-   * Visit an {@link UnaryOperation}.
+   * Visits a {@link UnaryOperation}.
    *
    * @param unaryOpExpr the JavaExpression to visit
    * @param p the parameter to pass to the visit method
@@ -131,7 +131,7 @@ public abstract class JavaExpressionVisitor<R, P> {
   protected abstract R visitUnaryOperation(UnaryOperation unaryOpExpr, P p);
 
   /**
-   * Visit an {@link Unknown}.
+   * Visits an {@link Unknown}.
    *
    * @param unknownExpr the JavaExpression to visit
    * @param p the parameter to pass to the visit method
@@ -140,7 +140,7 @@ public abstract class JavaExpressionVisitor<R, P> {
   protected abstract R visitUnknown(Unknown unknownExpr, P p);
 
   /**
-   * Visit a {@link ValueLiteral}.
+   * Visits a {@link ValueLiteral}.
    *
    * @param literalExpr the JavaExpression to visit
    * @param p the parameter to pass to the visit method

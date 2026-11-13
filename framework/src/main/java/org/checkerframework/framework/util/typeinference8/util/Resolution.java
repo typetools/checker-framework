@@ -28,7 +28,7 @@ import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Resolution finds an instantiation for each variable in a given set of variables. It does this
- * using all the bounds on a variable. Because a bound on a variable may be another unresolved
+ * using all the bounds on a variable. Because a bound on a variable might be another unresolved
  * variable, the order in which the variables are resolved must be computed before resolution. If
  * the set of variables contains any captured variables, then a different resolution algorithm is
  * used. If a set of variables does not contain a captured variable, but the resolution fails, then
@@ -38,7 +38,7 @@ import org.checkerframework.javacutil.BugInCF;
  * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-18.html#jls-18.4">JLS Section
  * 18.4</a>.
  *
- * <p>Entry point is two static methods, {@link #resolve(Collection, BoundSet,
+ * <p>The entry points are two static methods, {@link #resolve(Collection, BoundSet,
  * Java8InferenceContext)} and {@link #resolve(Variable, BoundSet, Java8InferenceContext)}, which
  * create {@link Resolution} objects that actually perform the resolution.
  */
@@ -141,11 +141,11 @@ public final class Resolution {
   }
 
   /**
-   * Resolve all the variables in {@code unresolvedVars}.
+   * Resolves all the variables in {@code unresolvedVars}.
    *
    * @param boundSet current bound set
    * @param unresolvedVars a set of unresolved variables that includes all dependencies
-   * @return the bounds set with the resolved bounds
+   * @return the bound set with the resolved bounds
    */
   private BoundSet resolve(BoundSet boundSet, Queue<Variable> unresolvedVars) {
     List<Variable> resolvedVars = boundSet.getInstantiatedVariables();
@@ -170,7 +170,7 @@ public final class Resolution {
    *
    * @param resolvedVars variables that have been resolved
    * @param unresolvedVars variables that have not been resolved; must be non-empty
-   * @return the smallest set of unresolved variable
+   * @return the smallest set of unresolved variables
    */
   private Set<Variable> getSmallestDependencySet(
       List<Variable> resolvedVars, Queue<Variable> unresolvedVars) {
@@ -199,11 +199,11 @@ public final class Resolution {
   }
 
   /**
-   * Resolves {@code as}
+   * Resolves {@code as}.
    *
    * @param as the smallest set of unresolved variables that includes any variable on which a
    *     variable in the set depends
-   * @param boundSet current bounds set
+   * @param boundSet current bound set
    * @return current bound set
    */
   private BoundSet resolveSmallestSet(Set<Variable> as, BoundSet boundSet) {
@@ -272,9 +272,9 @@ public final class Resolution {
   }
 
   /**
-   * Apply the instantiated variables to the bounds of the variables in {@code variables}. This may
-   * result in an instantiation being found of a variable in {@code variables}. All instantiated
-   * variables are removed from {@code variables}.
+   * Applies the instantiated variables to the bounds of the variables in {@code variables}. This
+   * might result in an instantiation being found of a variable in {@code variables}. All
+   * instantiated variables are removed from {@code variables}.
    *
    * @param variables a list of variables; side-effected by this method
    */
@@ -299,13 +299,14 @@ public final class Resolution {
 
   /**
    * Resolves all variables in {@code as} by instantiating each to the greatest lower bound of its
-   * proper upper bounds. This may fail and resolveWithCapture will need to be used instead.
+   * proper upper bounds. This might fail, in which case resolveWithCapture will need to be used
+   * instead.
    *
    * <p>Resolves all non-captured variables in {@code as} by:
    *
    * <ul>
    *   <li>Resolving all variables with proper lower bounds by instantiating them to the least upper
-   *       bound of their proper lower bounds. The instantiations are applies to the bounds of all
+   *       bound of their proper lower bounds. The instantiations are applied to the bounds of all
    *       variables in {@code as}. Then this step is repeated until no new instantiations are
    *       found.
    *   <li>Resolving all remaining variables using the greatest lower bound of their proper upper
@@ -314,7 +315,7 @@ public final class Resolution {
    *
    * Then all bounds are reduced and incorporated into {@code boundSet}.
    *
-   * <p>Any of these steps may fail in which case the resulting bound set will contain false and
+   * <p>Any of these steps might fail, in which case the resulting bound set will contain false and
    * {@link #resolveWithCapture(Set, BoundSet, Java8InferenceContext)} should be used instead.
    *
    * @param as variables to resolve
@@ -388,7 +389,7 @@ public final class Resolution {
   }
 
   /**
-   * Resolve {@code ai} by instantiating it to the least upper bound of its proper lower bounds.
+   * Resolves {@code ai} by instantiating it to the least upper bound of its proper lower bounds.
    *
    * @param ai a variable to resolve
    * @param lowerBounds {@code ai}'s nonempty set of proper lower bounds
@@ -407,7 +408,7 @@ public final class Resolution {
    * annotations of its lower bound change in the same way, and its own primary annotations are
    * unchanged.
    *
-   * <p>The result may share its AnnotatedTypeMirror with an element of {@code lowerBounds}, which
+   * <p>The result might share its AnnotatedTypeMirror with an element of {@code lowerBounds}, which
    * is stored in a hash set of bounds. Callers must not mutate the result.
    *
    * @param ai a variable
@@ -454,7 +455,7 @@ public final class Resolution {
    * the variables.
    *
    * @param as a set of variables to resolve
-   * @param boundSet the bounds set to use
+   * @param boundSet the bound set to use
    * @param context the context
    * @return the resolved bound set
    */

@@ -8,7 +8,7 @@ import org.checkerframework.dataflow.cfg.visualize.CFGVisualizeOptions;
 import org.checkerframework.dataflow.livevariable.LiveVarStore;
 import org.checkerframework.dataflow.livevariable.LiveVarTransfer;
 
-/** Run live variable analysis on a file and create a PDF of the CFG. */
+/** Runs live variable analysis on a file and creates a PDF of the CFG. */
 public final class LiveVariablePdf {
 
   /** Class cannot be instantiated. */
@@ -17,7 +17,7 @@ public final class LiveVariablePdf {
   }
 
   /**
-   * Run live variable analysis on a file and create a PDF of the CFG.
+   * Runs live variable analysis on a file and creates a PDF of the CFG.
    *
    * @param args command-line arguments
    */

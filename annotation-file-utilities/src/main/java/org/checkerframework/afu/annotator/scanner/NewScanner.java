@@ -34,9 +34,9 @@ public final class NewScanner extends CommonScanner {
    * indexing. The tree has to be either a NewClassTree or a NewArrayTree. If the tree is not in a
    * method, then the index is computed
    *
-   * @param origpath the path ending in the given cast tree
-   * @param tree the cast tree to search for
-   * @return the index of the given cast tree
+   * @param origpath the path ending in the given new tree
+   * @param tree the new tree to search for
+   * @return the index of the given new tree
    */
   public static int indexOfNewTree(TreePath origpath, Tree tree) {
     if (debug) {
@@ -93,7 +93,7 @@ public final class NewScanner extends CommonScanner {
   }
 
   /**
-   * Output debugging information, if debugging is enabled.
+   * Outputs debugging information, if debugging is enabled.
    *
    * @param fmt a format string
    * @param args the arguments to the format string
@@ -109,7 +109,7 @@ public final class NewScanner extends CommonScanner {
   private static Map<String, List<Integer>> methodNameToNewOffsets = new HashMap<>();
 
   /**
-   * Register the location of a {@code new} instruction.
+   * Registers the location of a {@code new} instruction.
    *
    * @param methodName the name of the method that contains the {@code new} instruction
    * @param offset the offset of the {@code new} instruction
