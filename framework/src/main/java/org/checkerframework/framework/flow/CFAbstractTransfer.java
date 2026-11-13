@@ -1524,8 +1524,11 @@ public abstract class CFAbstractTransfer<
         return true;
       }
       for (FieldAccess field : fields) {
+        // A static field is the same location regardless of the receiver.  Do not check whether
+        // the receivers can alias:  two subclasses that inherit the static field, such as `Left`
+        // in `Left.f` and `Right` in `Right.f`, are not related by subtyping.
         if (field.getField().equals(fa.getField())
-            && analysis.canAlias(field.getReceiver(), fa.getReceiver())) {
+            && (fa.isStatic() || analysis.canAlias(field.getReceiver(), fa.getReceiver()))) {
           return true;
         }
       }
