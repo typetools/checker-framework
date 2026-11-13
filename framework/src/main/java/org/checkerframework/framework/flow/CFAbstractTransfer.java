@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,6 +42,7 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
+import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.node.AbstractNodeVisitor;
 import org.checkerframework.dataflow.cfg.node.AnyPatternNode;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
@@ -1399,6 +1401,10 @@ public abstract class CFAbstractTransfer<
     }
     assert lubResult != null
         : "@AssumeAssertion(nullness): a CaseNode has at least one case operand";
+    // Non-null if a record accessor might have changed the selector expression and the case node
+    // has exceptional successors (for a MatchException when no case matches).  These stores
+    // contain the effect of the accessor calls but not the facts implied by a successful match.
+    Map<TypeMirror, S> exceptionalStores = null;
     if (!canRefineSelector && recordPatternMightHaveSideEffect(n)) {
       // A record accessor that a record pattern of this case invokes might have changed the
       // selector expression.  The CFG does not represent the accessor calls, so their effect on
@@ -1408,11 +1414,24 @@ public abstract class CFAbstractTransfer<
       if (!alwaysMatches) {
         lubResult.getElseStore().clearValue(selector);
       }
+      if (n.getBlock() instanceof ExceptionBlock block
+          && !block.getExceptionalSuccessors().isEmpty()) {
+        exceptionalStores = new LinkedHashMap<>();
+        for (TypeMirror exceptionType : block.getExceptionalSuccessors().keySet()) {
+          S exceptionalStore = store.copy();
+          exceptionalStore.clearValue(selector);
+          exceptionalStores.put(exceptionType, exceptionalStore);
+        }
+      }
     }
     if (alwaysMatches) {
       // The case expressions are not tested, so the facts that hold when they match hold after
       // this node.  (strengthenAnnotationOfEqualTo returns a conditional result.)
-      return new RegularTransferResult<>(null, lubResult.getThenStore(), lubResult.storeChanged());
+      return new RegularTransferResult<>(
+          null, lubResult.getThenStore(), exceptionalStores, lubResult.storeChanged());
+    }
+    if (exceptionalStores != null) {
+      return lubResult.withExceptionalStores(exceptionalStores);
     }
     return lubResult;
   }

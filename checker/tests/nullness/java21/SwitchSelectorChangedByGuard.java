@@ -143,6 +143,33 @@ public class SwitchSelectorChangedByGuard {
     };
   }
 
+  record Inner() {}
+
+  record Outer(@Nullable Inner inner) {
+    // A record pattern invokes this accessor, even if the pattern does not match.
+    @Override
+    public @Nullable Inner inner() {
+      staticOuter = null;
+      return inner;
+    }
+  }
+
+  static @Nullable Outer staticOuter;
+
+  // The sole case is exhaustive, but Outer(null) is a remainder that it does not match, so the
+  // switch throws MatchException after the accessor has changed the selector.
+  void accessorChangesFieldBeforeMatchException() {
+    staticOuter = new Outer(null);
+    try {
+      switch (staticOuter) {
+        case Outer(Inner()) -> {}
+      }
+    } catch (RuntimeException e) {
+      // :: error: [dereference.of.nullable]
+      staticOuter.hashCode();
+    }
+  }
+
   // A guard cannot change a local variable that is the selector expression.
   String localSelectorAfterGuard(@Nullable Shape s) {
     return switch (s) {
