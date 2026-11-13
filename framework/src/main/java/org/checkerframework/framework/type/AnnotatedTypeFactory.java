@@ -6,12 +6,14 @@ package org.checkerframework.framework.type;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BindingPatternTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -1580,6 +1582,88 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     AnnotatedTypeMirror type = fromTypeTree(tree);
     addComputedTypeAnnotations(tree, type);
     return type;
+  }
+
+  /**
+   * Returns the qualifiers to which an instanceof refines its expression where the instanceof is
+   * true. Each is a qualifier that is explicitly written on the reference type (the type after
+   * "instanceof") and that is strictly more specific than the expression's effective qualifier in
+   * the same hierarchy. For a binding pattern, the reference type is the declared type of the
+   * binding variable, as in {@code e instanceof @A T v}.
+   *
+   * <p>Defaulted qualifiers of the reference type play no role, so a qualifier written in one
+   * hierarchy refines the expression even if the reference type is not a subtype of the
+   * expression's type in another hierarchy.
+   *
+   * @param tree an instanceof tree
+   * @param expType the type of the expression that {@code tree} tests
+   * @return the qualifiers to which {@code tree} refines its expression where it is true
+   */
+  public AnnotationMirrorSet getInstanceOfRefinement(
+      InstanceOfTree tree, AnnotatedTypeMirror expType) {
+    // The reference type, with only its explicitly-written qualifiers.
+    AnnotatedTypeMirror refType;
+    Tree patternTree = tree.getPattern();
+    if (patternTree == null) {
+      refType = fromTypeTree(tree.getType());
+    } else if (patternTree instanceof BindingPatternTree bindingPatternTree) {
+      refType = fromMember(bindingPatternTree.getVariable());
+    } else {
+      // TODO: Refine the expression by an annotated deconstruction pattern.
+      return AnnotationMirrorSet.emptySet();
+    }
+
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
+    for (AnnotationMirror refAnno : refType.getPrimaryAnnotations()) {
+      // Use the effective qualifier, so that an expression whose type is a type variable or
+      // wildcard without a primary qualifier is compared via its upper bound.
+      AnnotationMirror expAnno = expType.getAnnotationInHierarchy(refAnno);
+      if (expAnno != null
+          && !AnnotationUtils.areSame(refAnno, expAnno)
+          && qualHierarchy.isSubtypeShallow(
+              refAnno, refType.getUnderlyingType(), expAnno, expType.getUnderlyingType())) {
+        result.add(refAnno);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns the qualifiers to which an instanceof refines the variable of its binding pattern, such
+   * as {@code v} in {@code e instanceof T v}, where the instanceof is true. The variable holds the
+   * value of the expression, and it also has the qualifiers that are explicitly written on its
+   * declared type. So, in each hierarchy, the result is the greatest lower bound of the
+   * expression's qualifier and the variable's written qualifier, or the expression's qualifier if
+   * no qualifier is written in that hierarchy.
+   *
+   * <p>Defaulted qualifiers of the variable play no role, because the default for a binding
+   * variable need not be a supertype of the expression's qualifier.
+   *
+   * @param tree an instanceof tree
+   * @param expType the type of the expression that {@code tree} tests
+   * @return the qualifiers to which {@code tree} refines the variable of its binding pattern where
+   *     it is true, or the empty set if {@code tree} has no binding pattern
+   */
+  public AnnotationMirrorSet getBindingVariableRefinement(
+      InstanceOfTree tree, AnnotatedTypeMirror expType) {
+    if (!(tree.getPattern() instanceof BindingPatternTree bindingPatternTree)) {
+      return AnnotationMirrorSet.emptySet();
+    }
+    // The declared type of the binding variable, with only its explicitly-written qualifiers.
+    AnnotatedTypeMirror declaredType = fromMember(bindingPatternTree.getVariable());
+    AnnotationMirrorSet result = new AnnotationMirrorSet();
+    for (AnnotationMirror expAnno : expType.getAnnotations()) {
+      AnnotationMirror declaredAnno = declaredType.getPrimaryAnnotationInHierarchy(expAnno);
+      result.add(
+          declaredAnno == null
+              ? expAnno
+              : qualHierarchy.greatestLowerBoundShallow(
+                  expAnno,
+                  expType.getUnderlyingType(),
+                  declaredAnno,
+                  declaredType.getUnderlyingType()));
+    }
+    return result;
   }
 
   /**
