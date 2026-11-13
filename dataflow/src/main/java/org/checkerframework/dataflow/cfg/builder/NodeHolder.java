@@ -10,7 +10,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
   protected final Node node;
 
   /**
-   * Construct a NodeHolder for the given Node.
+   * Constructs a NodeHolder for the given Node.
    *
    * @param node the node to hold
    */

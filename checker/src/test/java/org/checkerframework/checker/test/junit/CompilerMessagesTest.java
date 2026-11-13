@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class CompilerMessagesTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a CompilerMessagesTest.
+   * Creates a CompilerMessagesTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

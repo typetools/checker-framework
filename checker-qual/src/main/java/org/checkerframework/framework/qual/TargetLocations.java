@@ -7,8 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A meta-annotation that restricts the type-use locations where a type qualifier may be written.
- * When written together with {@code @Target({ElementType.TYPE_USE})}, the given type qualifier may
+ * A meta-annotation that restricts the type-use locations where a type qualifier can be written.
+ * When written together with {@code @Target({ElementType.TYPE_USE})}, the given type qualifier can
  * be written only at locations listed in the {@code @TargetLocations(...)} meta-annotation.
  * {@code @Target({ElementType.TYPE_USE})} together with no {@code @TargetLocations(...)} means that
  * the qualifier can be written on any type use.

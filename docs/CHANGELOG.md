@@ -15,7 +15,7 @@
 
 ### User-visible changes
 
-A method with a purity annotation may call the functional method of one of its
+A method with a purity annotation can call the functional method of one of its
 functional-interface parameters, such as `f.apply(x)` for a parameter
 `Function f`; the call is treated as having the method's purity.  In exchange,
 under `-AcheckPurityAnnotations`, each argument passed to such a parameter must
@@ -51,6 +51,8 @@ now a final, non-generic class.  `NumberMath.getNumberMath()` throws
 `PurityChecker.checkPurity()` takes two new arguments: the method declaration
 that lexically encloses the statement being checked (or null, as for an
 arbitrary expression) and the processing environment.
+
+Removed `CaseNode.getGuard()` and the `guard` parameter of the `CaseNode` constructor.
 
 Renamed `ControlFlowGraph.convertedTreeLookup` to `implicitlyConvertedTreeLookup`
 and `CFGTranslationPhaseOne.addToConvertedLookupMap()` to
@@ -206,7 +208,7 @@ compile to Java 8 or 11 bytecodes and run on JRE versions 8 or 11.  That is,
 your code can run under any release of Java, from Java 8 onward.
 
 The type qualifiers and utility libraries in `checker-qual.jar` and
-`checker-util.jar` still use Java 11 bytecode.  Thus, they may be used in
+`checker-util.jar` still use Java 11 bytecode.  Thus, they can be used in
 projects that run under Java 11 or later.
 
 ### Changes since version 3.0.0
@@ -297,7 +299,7 @@ New command-line argument `-Aonelinemsg` puts error messages on a single line.
 This is useful when using a tool that only shows the first line of the error.
 
 The command-line argument `-Anomsgtext` surrounds the error key with brackets
-instead of parenthesis. This matches Java error messages.
+instead of parentheses. This matches Java error messages.
 
 ### Implementation details
 
@@ -353,7 +355,7 @@ Added `Opt.ifPresentOrElse()` method.
 
 ### Implementation details
 
-In `CFAbstractAnalysis`, renamed `defaultCreateAbstractValue` to `getCfValue`
+In `CFAbstractAnalysis`, renamed `defaultCreateAbstractValue` to `getCfValue`.
 
 In `GenericAnnotatedTypeFactory`:
 
@@ -452,7 +454,7 @@ two new annotations:
 The Signature Checker no longer supports `@BinaryNameWithoutPackage` because
 it is equivalent to `@Identifier`; use `@Identifier` instead.
 
-The JavaStubifier implementation now appears in package `org.checkerframework.framework.stubifier.JavaStubifier`.
+The JavaStubifier implementation now appears in package `org.checkerframework.framework.stubifier`.
 
 ### Closed issues
 
@@ -528,7 +530,7 @@ Removed annotations:
 The new SqlQuotesChecker prevents errors in quoting in SQL queries.  It prevents
 injection attacks that exploit quoting errors.
 
-Renamed `@EnsuresCalledMethodsVarArgs`to `@EnsuresCalledMethodsVarargs`.
+Renamed `@EnsuresCalledMethodsVarArgs` to `@EnsuresCalledMethodsVarargs`.
 
 ### Closed issues
 
@@ -538,7 +540,7 @@ Renamed `@EnsuresCalledMethodsVarArgs`to `@EnsuresCalledMethodsVarargs`.
 
 ### Implementation details
 
-Added a `Tree` argument to `AnnotatedTypes.adaptParameters()`
+Added a `Tree` argument to `AnnotatedTypes.adaptParameters()`.
 
 Deprecated methods:
 
@@ -569,7 +571,7 @@ Renamed fields:
 Deprecated methods:
 
 * `AbstractAnalysis.getContainingMethod()` => `getEnclosingMethod()`
-* `AbstractAnalysis.getContainingClass()` => `getEnclosingMethod()`
+* `AbstractAnalysis.getContainingClass()` => `getEnclosingClass()`
 * `ControlFlowGraph.getContainingMethod()` => `getEnclosingMethod()`
 * `ControlFlowGraph.getContainingClass()` => `getEnclosingClass()`
 * `JavaExpression.isUnassignableByOtherCode()` => `isAssignableByOtherCode()`
@@ -703,7 +705,7 @@ advised against using.
 
 ### Implementation details
 
-Renamed `SourceChecker.processArg()' to`processErrorMessageArg()`.
+Renamed `SourceChecker.processArg()` to `processErrorMessageArg()`.
 
 ### Closed issues
 
@@ -724,11 +726,11 @@ to be written on a non-integral type.
 
 * The constructor takes an `AnnotatedTypeFactory`.
 * Changes to `isSubtype()`:
-  * `isSubtype()` has been renamed to `isSubypeQualifiers()` and made protected.
+  * `isSubtype()` has been renamed to `isSubtypeQualifiers()` and made protected.
       Clients that are not in a qualifier hierarchy should call `isSubtypeShallow()`
       or, rarely, new method `isSubtypeQualifiersOnly()`.
-  * New public method `isSubtypeShallow()' that takes two more arguments than
-      `isSubypeQualifiers()`.
+  * New public method `isSubtypeShallow()` that takes two more arguments than
+      `isSubtypeQualifiers()`.
 * Similar changes to `greatestLowerBound()` and `leastUpperBound()`.
 
 ### Closed issues
@@ -1033,7 +1035,7 @@ Removed variable `BaseTypeVisitor.inferPurity`.
 
 ### User-visible changes
 
-Make `mustcall.not.inheritable` a warning rather than an error.
+Made `mustcall.not.inheritable` a warning rather than an error.
 
 The Property File Checker, Internationalization Checker, and Compiler
 Message Checker use `File.pathSeparator` to separate property file paths in
@@ -1084,7 +1086,7 @@ Checker warnings related to field initialization.
 
 ### Implementation details
 
-Expose CFG APIs to allow inserting jumps and throws.
+Exposed CFG APIs to allow inserting jumps and throws.
 
 ## Version 3.22.1 (June 1, 2022)
 
@@ -1103,11 +1105,11 @@ the standard rule for polymorphic qualifiers.)
 
 ### Implementation details
 
-When passed a NewClassTree that creates an anonymous constructor,
-AnnotatedTypeFactory#constructorFormUse now returns the type of the anonymous
+When passed a NewClassTree that creates an anonymous class,
+AnnotatedTypeFactory#constructorFromUse now returns the type of the anonymous
 constructor rather than the type of the super constructor invoked in the
-anonymous classes constructor.  If the super constructor has explicit
-annotations, they are copied to the anonymous classes constructor.
+anonymous class's constructor.  If the super constructor has explicit
+annotations, they are copied to the anonymous class's constructor.
 
 ### Closed issues
 
@@ -1211,8 +1213,8 @@ contains switch expressions.
 
 ### Implementation details
 
-Removed `org.checkerframework.framework.type.VisitorState`
-Removed `AnnotatedTypeFactory#postTypeVarSubstitution`
+Removed `org.checkerframework.framework.type.VisitorState`.
+Removed `AnnotatedTypeFactory#postTypeVarSubstitution`.
 
 Deprecated methods in AnnotatedTypeFactory:
 
@@ -1244,7 +1246,7 @@ Java records are type-checked.  Thanks to Neil Brown.
 ### User-visible changes
 
 `-Ainfer` can now infer postcondition annotations that reference formal parameters
-(e.g. `"#1"`, `"#2"`) and the receiver (`"this"`).
+(e.g., `"#1"`, `"#2"`) and the receiver (`"this"`).
 
 ### Implementation details
 
@@ -1283,7 +1285,7 @@ The following methods no longer take a `fieldValues` parameter:
 ### User-visible changes
 
 You can run the Checker Framework on a JDK 16 JVM.  You can pass the `--release
-16` command-line argument to the compiler.  You may need to add additional
+16` command-line argument to the compiler.  You might need to add additional
 command-line options, such as `--add-opens`; see the Checker Framework manual.
 New syntax, such as records and switch expressions, is not yet supported or
 type-checked; that will be added in a future release.  Thanks to Neil Brown for
@@ -1304,11 +1306,11 @@ Method renamings (the old methods remain but are deprecated):
 
 Method renamings (the old methods were removed):
 
-* `AnnotatedTypeMirror.clearAnnotations =>`clearPrimaryAnnotations`
+* `AnnotatedTypeMirror.clearAnnotations` => `clearPrimaryAnnotations`
 
 Method renamings in `DefaultTypeHierarchy` (the old methods were removed):
 
-* `visitIntersectionSupertype` => `visitIntersectionSupertype`
+* `visitIntersectionSupertype` => `visitType_Intersection`
 * `visitIntersectionSubtype` => `visitIntersection_Type`
 * `visitUnionSubtype` => `visitUnion_Type`
 * `visitTypevarSubtype` => `visitTypevar_Type`
@@ -1330,7 +1332,7 @@ Method renamings in `AnnotatedTypes` (the old methods were removed):
 ### User-visible changes
 
 The Resource Leak Checker ensures that certain methods are called on an
-object before it is de-allocated. By default, it enforces that `close()` is
+object before it is deallocated. By default, it enforces that `close()` is
 called on any expression whose compile-time type implements `java.io.Closeable`.
 
 ### Implementation details
@@ -1438,7 +1440,7 @@ A precondition or normal postcondition annotation's `value` element must have
 type `String[]`, not `String`.  A conditional postcondition annotation's
 `expression` element must have type `String[]`, not `String`.  These changes
 will not affect users (any programmer-written annotation that was legal before
-will still be legal), but it may affect checker implementations.
+will still be legal), but they might affect checker implementations.
 
 `JavaExpressionParseUtil`:
 `JavaExpressionParseUtil#parse` no longer viewpoint-adapts Java expressions. It
@@ -1475,7 +1477,7 @@ Method renamings:
   * `standardizeVariable` => `atVariableDeclaration`
 
 Deprecated some overloads in `AnnotationUtils` that take a `CharSequence`
-(use an overload that takes an `ExecutablElement`):
+(use an overload that takes an `ExecutableElement`):
 
 * `getElementValueArray`
 * `getElementValueClassName`
@@ -1501,7 +1503,7 @@ Removed deprecated `PluginUtil` class.
 
 ### User-visible changes
 
-In a stub file for a class C, you may write a declaration for a method that is
+In a stub file for a class C, you can write a declaration for a method that is
 inherited by C but not defined by it.  Previously, such stub declarations were
 ignored.  For more information, see the manual's documentation of "fake
 overrides".
@@ -1550,7 +1552,7 @@ Changes to JavaExpressionContext:
 
 Parsing a Java expression no longer requires the formal parameters
 `AnnotationProvider provider` or `boolean allowNonDeterministic`.  Methods
-in `JavaExpression` with simplified signatures include
+in `JavaExpression` with simplified signatures include:
 
 * `fromArrayAccess`
 * `fromNodeFieldAccess`
@@ -1607,7 +1609,7 @@ Removed methods:
 * `SourceChecker.getContext()`: it returned the receiver
 * `SourceChecker.getChecker()`: it returned the receiver
 * `AnnotatedTypeFactory.getContext()`: use `getChecker()`
-* methods on `TreePath`s from class 'TreeUtils`; use the versions in`TreePathUtil`.
+* methods on `TreePath`s from class `TreeUtils`; use the versions in `TreePathUtil`.
 
 Moved class:
 
@@ -1631,8 +1633,8 @@ Renamed methods:
 
 ### Implementation details
 
-Copied methods on `TreePath`s from class 'TreeUtils` to new class `TreePathUtil`.
-(The methods in TreePath will be deleted in the next release.)
+Copied methods on `TreePath`s from class `TreeUtils` to new class `TreePathUtil`.
+(The methods in TreeUtils will be deleted in the next release.)
 
 * `TreeUtils.enclosingClass` => `TreePathUtil.enclosingClass`
 * `TreeUtils.enclosingMethod` => `TreePathUtil.enclosingMethod`
@@ -1787,7 +1789,7 @@ of user-written type annotations, even when parsed in declaration locations.
 ### User-visible changes
 
 The new Called Methods Checker tracks methods that have definitely been
-called on an object. It automatically supports detecting mis-uses of the
+called on an object. It automatically supports detecting misuses of the
 builder pattern in code that uses Lombok or AutoValue.
 
 Accumulation analysis is now supported via a generic Accumulation Checker.
@@ -1810,7 +1812,7 @@ utility checkers, such as the Constant Value Checker.
 
 ### Implementation details
 
-A checker implementation may override AnnotatedTypeFactory.getWidenedAnnotations
+A checker implementation can override AnnotatedTypeFactory.getWidenedAnnotations
 to provide special behavior for primitive widening conversions.
 
 Deprecated org.checkerframework.framework.util.MultiGraphQualifierHierarchy and
@@ -1827,7 +1829,7 @@ Renamed methods:
 * NumberUtils.isPrimitiveFloatingPoint => TypeKindUtils.isFloatingPoint
 * NumberUtils.isPrimitiveIntegral => TypeKindUtils.isIntegral
 * NumberUtils.unboxPrimitive => TypeKindUtils.primitiveOrBoxedToTypeKind
-* TypeKindUtils.widenedNumericType => TypeKindUtils.widenedNumericType
+* TypesUtils.widenedNumericType => TypeKindUtils.widenedNumericType
 * TypesUtils.isFloating => TypesUtils.isFloatingPrimitive
 * TypesUtils.isIntegral => TypesUtils.isIntegralPrimitive
 
@@ -1968,7 +1970,7 @@ Removed methods and classes marked deprecated in release 3.3.0 or earlier.
 
 * -Ainfer=jaifs uses .jaif files to store the results of whole-program inference.
 * -Ainfer=stubs uses .astub files to store the results of whole-program inference.
-* -Ainfer is deprecated but is the same as -Ainfer=jaifs, for backwards compatibility.
+* -Ainfer is deprecated but is the same as -Ainfer=jaifs, for backward compatibility.
 
 New command-line option:
 
@@ -2014,7 +2016,7 @@ argument.  To make the Nullness Checker permit null, pass
 
 The argument to @SuppressWarnings can be a substring of a message key that
 extends at each end to a period or an end of the key.  (Previously, any
-substring worked, including the empty string which suppressed all warnings.
+substring worked, including the empty string, which suppressed all warnings.
 Use "all" to suppress all warnings.)
 
 All postcondition annotations are repeatable (e.g., `@EnsuresNonNull`,
@@ -2110,8 +2112,8 @@ repository from which the Checker Framework was compiled.
 
 ## Version 3.0.1 (December 2, 2019)
 
-New command-line option for the Constant Value Checker
-`-AnoNullStringsConcatenation` unsoundly assumes that every operand of a String
+New command-line option `-AnoNullStringsConcatenation` for the Constant Value
+Checker unsoundly assumes that every operand of a String
 concatenation is non-null.
 
 ### Implementation details
@@ -2198,7 +2200,7 @@ Removed meta-annotation @ImplicitFor:
      @QualifierForLiterals(literals = LiteralKind.NULL)
    are added to the bottom qualifier by default.
 
-Add @DefaultQualifierOnUse and @NoDefaultQualifierOnUse type declaration annotations
+Added @DefaultQualifierOnUse and @NoDefaultQualifierOnUse type declaration annotations.
 
 New/changed error message keys:
 
@@ -2212,8 +2214,8 @@ New/changed error message keys:
 * Renamed ImplicitsTreeAnnotator to LiteralTreeAnnotator
 * Renamed ImplicitsTypeAnnotator to DefaultForTypeAnnotator
 * Removed TypeUseLocation.TYPE_DECLARATION
-* Removed InheritedFromClassAnnotator, replace with DefaultQualifierForUseTypeAnnotator
-* Rename TreeUtils.isSuperCall and TreeUtils.isThisCall to
+* Removed InheritedFromClassAnnotator; replaced it with DefaultQualifierForUseTypeAnnotator
+* Renamed TreeUtils.isSuperCall and TreeUtils.isThisCall to
  isSuperConstructorCall and isThisConstructorCall
 
 ### Closed issues
@@ -2231,7 +2233,7 @@ Linked to the Checker Framework Gradle plugin, which makes it easy to run
 a checker on a project that is built using the Gradle build tool.
 
 Implementation detail: deprecated TreeUtils.skipParens in favor of
-TreeUtils.withoutParens which has the same specification.
+TreeUtils.withoutParens, which has the same specification.
 
 ### Closed issues
 
@@ -2251,11 +2253,11 @@ Moved text about the Purity Checker into its own chapter in the manual.
 Support `androidx.annotation.RecentlyNonNull` and `RecentlyNullable` (as of
 2.6.0, but not previously documented).
 
-The following qualifiers are now repeatable:  `@DefaultQualifier`
-`@EnsuresQualifierIf` `@EnsuresQualifier` `@RequiresQualifier`.  Therefore,
-users generally do not need to write the following wrapper annotations:
-`@DefaultQualifiers` `@EnsuresQualifiersIf` `@EnsuresQualifiers`
-`@RequiresQualifiers`.
+The following qualifiers are now repeatable:  `@DefaultQualifier`,
+`@EnsuresQualifierIf`, `@EnsuresQualifier`, and `@RequiresQualifier`.
+Therefore, users generally do not need to write the following wrapper
+annotations:  `@DefaultQualifiers`, `@EnsuresQualifiersIf`,
+`@EnsuresQualifiers`, and `@RequiresQualifiers`.
 
 New command-line option `-ArequirePrefixInWarningSuppressions` makes
 `@SuppressWarnings` recognize warning keys of the form
@@ -2294,7 +2296,7 @@ io.reactivex.annotations.NonNull and io.reactivex.annotations.Nullable.
 The checker-qual artifact (jar file) contains an OSGi manifest.
 
 New TYPE_DECLARATION enum constant in TypeUseLocation makes it possible to
-(for example) set defaults annotations for class/interface definitions.
+(for example) set default annotations for class/interface definitions.
 
 Interface changes:
 
@@ -2305,7 +2307,7 @@ Interface changes:
    ParameterizedExecutableType.
 
 Added missing checks regarding annotations on classes, constructor
-declarations, and constructor invocations.  You may see new warnings.
+declarations, and constructor invocations.  You might see new warnings.
 
 ### Closed issues
 
@@ -2353,7 +2355,7 @@ UI Thread safety properties for stream-based Android applications.
 
 ## Version 2.5.6 (October 3, 2018)
 
-Introduce checker-qual-android artifact that is just like the checker-qual
+Introduced the checker-qual-android artifact, which is just like the checker-qual
 artifact, but the qualifiers have classfile retention.  This is useful for
 Android projects.
 
@@ -2415,10 +2417,10 @@ Added a Maven artifact of the Checker Framework testing library, testlib.
 ## Version 2.5.0 (April 2, 2018)
 
 Declaration annotations that are aliases for type annotations are now treated
-as if they apply to the top-level type.  See "Declaration annotations" section
-in the "Warnings" chapter in the manual for more details.
+as if they apply to the top-level type.  See the "Declaration annotations"
+section in the "Warnings" chapter in the manual for more details.
 
-Ended support for annotations in comments.  See "Migrating away from
+Ended support for annotations in comments.  See the "Migrating away from
 annotations in comments" section in the "Handling legacy code" chapter in the
 manual for instructions on how to remove annotations from comments.
 
@@ -2441,7 +2443,7 @@ Added a @QualifierArgument annotation to be used on pre- and postcondition
   and @ConditionalPostconditionAnnotation. This allows qualifiers with
   arguments to be used in pre- and postconditions.
 
-Added new type @InternalFormForNonArray to the Signature Checker
+Added new type @InternalFormForNonArray to the Signature Checker.
 
 Moved annotated libraries from checker/lib/*.jar to the Maven Central Repository:
 <https://central.sonatype.com/search?q=org.checkerframework.annotatedlib>
@@ -2493,7 +2495,7 @@ indicates that the value is not equals() to any other value.
 
 An annotated version of the Commons IO library appears in checker/lib/ .
 
-Closed issue #1586, which required re-opening issues 293 and 341 until
+Closed issue #1586, which required reopening issues 293 and 341 until
 proper fixes for those are implemented.
 
 ### Closed issues
@@ -2518,14 +2520,14 @@ classes compiled to Java 7 byte code.
 ## Version 2.2.0 (September 5, 2017)
 
 A Java 8 JVM is required to run the Checker Framework.
-You can still typecheck and compile Java 7 (or earlier) code.
+You can still type-check and compile Java 7 (or earlier) code.
 With the "-target 7" flag, the resulting .class files still run with JDK 7.
 
 The stub file format has changed to be more similar to regular Java syntax.
 Most notably, receiver annotations are written using standard Java 8 syntax
 (a special first formal parameter named "this") and inner classes are written
 using standard Java syntax (rather than at the top level using a name that
-contains "$". You need to update your stub files to conform to the new syntax.
+contains "$"). You need to update your stub files to conform to the new syntax.
 
 ### Closed issues
 
@@ -2536,12 +2538,12 @@ contains "$". You need to update your stub files to conform to the new syntax.
 ## Version 2.1.14 (3 August 2017)
 
 Nullness Checker change to annotated JDK:  The type argument to the Class,
-Constructor, and Optional classes may now be annotated as @Nullable or
+Constructor, and Optional classes can now be annotated as @Nullable or
 @NonNull.  The nullness of the type argument doesn't matter, but this
 enables easier integration with generic clients.
 
 Many crashes and false positives associated with uninferred method type
-arguments have been correct. By default, uninferred method type arguments,
+arguments have been corrected. By default, uninferred method type arguments,
 which can happen with Java 8 style target type contexts, are silently ignored.
 Use the option -AconservativeUninferredTypeArguments to see warnings about
 method calls where the Checker Framework fails to infer type arguments.
@@ -2631,7 +2633,7 @@ Manual improvements:
 
 * Added a link to jOOQ's SQL checker.
 * Documented the `-AprintVerboseGenerics` command-line option.
-* Better explanation of relationship between Fake Enum and Subtyping Checkers.
+* Better explanation of the relationship between Fake Enum and Subtyping Checkers.
 
 ### Closed issues
 
@@ -2651,7 +2653,7 @@ method in Java 8's java.util.Optional class, but written for possibly-null
 references rather than for the Optional type.  This can shorten code that
 manipulates possibly-null references.
 
-In bytecode, type variable upper bounds of type Object may or may not have
+In bytecode, type variable upper bounds of type Object might or might not have
 been explicitly written.  The Checker Framework now assumes they were not
 written explicitly in source code and defaults them as implicit upper bounds.
 
@@ -2701,7 +2703,7 @@ The new Signedness Checker prevents mixing of unsigned and signed
 values and prevents meaningless operations on unsigned values.
 
 The Lock Checker expresses the annotated variable as `<self>`;
-previously it used `itself`, which may conflict with an identifier.
+previously it used `itself`, which could conflict with an identifier.
 
 ### Closed issues
 
@@ -2787,7 +2789,7 @@ Tool changes:
 Documentation:
 
 * Clarified Maven documentation about use of annotations in comments.
-* Added FAQ about annotating fully-qualified type names.
+* Added FAQ about annotating fully qualified type names.
 
 ### Closed issues
 
@@ -2801,7 +2803,7 @@ During type-checking, you should put these versions first on your classpath,
 to obtain more precise type-checking with fewer false positive warnings.
 
 tools.jar is no longer required to be on the classpath when using
-checker-qual.jar
+checker-qual.jar.
 
 The Signature String Checker supports two new string representations of a
 Java type: @InternalForm and @ClassGetSimpleName.
@@ -2821,8 +2823,8 @@ Renamed enum DefaultLocation to TypeUseLocation.
 ## Version 1.9.11 (1 February 2016)
 
 Renamed and merged -AuseSafeDefaultsForUnannotatedSourceCode and
--AsafeDefaultsForUnannotatedBytecode command-line options to
--AuseDefaultsForUncheckedCode that takes arguments source and bytecode.
+-AsafeDefaultsForUnannotatedBytecode command-line options into
+-AuseDefaultsForUncheckedCode, which takes arguments source and bytecode.
 
 For type-system developers:
 
@@ -2863,7 +2865,7 @@ For type-system developers:
   Support for TypeQualifier{s} will be removed in the next release.
 * Renamed
   `org.checkerframework.framework.qual.Default{,Qualifier}ForUnannotatedCode` to
-  `DefaultInUncheckedCodeFor and DefaultQualifierInHierarchyInUncheckedCode`.
+  `DefaultInUncheckedCodeFor` and `DefaultQualifierInHierarchyInUncheckedCode`.
 
 ### Closed issues
 
@@ -2885,7 +2887,7 @@ Updated Maven instructions to no longer require a script.
 Added an example of how to use the instructions under
 docs/examples/MavenExample.
 
-The javac_maven script (and batch file) are deprecated and will be
+The javac_maven script (and batch file) is deprecated and will be
 removed as of December 2015.
 
 Fixed issues:  #487, #500, #502.
@@ -2906,7 +2908,7 @@ Test Framework Updates:
 * Tests that previously extended ParameterizedCheckerTest or
   CheckerTest should extend either CheckerFrameworkTest or nothing.
 * If a test used methods that were previously found on
-  CheckerTest, you may find them in TestUtilities.
+  CheckerTest, you can find them in TestUtilities.
 
 Fixed issues:  #438, #457, #459.
 
@@ -2916,7 +2918,7 @@ Documented the notion of a compound checker, which depends on other checkers
   and automatically runs them.
 
 Renamed -AuseConservativeDefaultsForUnannotatedSourceCode command-line
-  option to -AuseSafeDefaultsForUnannotatedSourceCode
+  option to -AuseSafeDefaultsForUnannotatedSourceCode.
 
 Moved the Checker Framework version control repository from Google Code to
 GitHub, and from the Mercurial version control system to Git.  If you have
@@ -2964,7 +2966,7 @@ Bug fixes for generics, especially type parameters:
 
 * Manual chapter 21 "Generics and polymorphism" has been expanded,
      and it gives more information on annotating type parameters.
-* The qualifier on a type parameter (e.g. <@HERE T> ) only applies
+* The qualifier on a type parameter (e.g., <@HERE T> ) only applies
      to the lower bound of that type parameter.  Previously it also
      applied to the upper bound.
 * Unannotated, unbounded wildcards are now qualified with the
@@ -2972,7 +2974,7 @@ Bug fixes for generics, especially type parameters:
      See the new manual section 23.3.4 for more details.
 * Warning "bound" is issued if the lower bound of
      a type parameter or wildcard is a supertype of its upper bound,
-     e.g.  <@Nullable T extends @NonNull Object>
+     e.g., <@Nullable T extends @NonNull Object>
 * Method type argument inference has been improved. Fewer warnings
      should be issued when method invocations omit type arguments.
 * Added command-line option -AprintVerboseGenerics to print more
@@ -3014,12 +3016,12 @@ Implicit imports are deprecated, including the jsr308_imports environment
 variable and the -jsr308_imports ... and -Djsr308.imports=... command-line
 options.
 
-For checkers bundled with the Checker Framework, package names may now
+For checkers bundled with the Checker Framework, package names can now
 be omitted when running from the command line.
 E.g.
     javac -processor NullnessChecker MyFile.java
 
-The Nullness checker supports Android annotations
+The Nullness Checker supports Android annotations
 android.support.annotation.NonNull and android.support.annotation.Nullable.
 
 Fixed issues: #366, #379.
@@ -3078,7 +3080,7 @@ The new Constant Value Checker is a constant propagation analysis:  it
 determines which variable values can be known at compile time.
 
 Overriding methods now inherit declaration annotations from methods they
-override, if the declaration annotation is meta-annotate with
+override, if the declaration annotation is meta-annotated with
 @InheritedAnnotation.  In particular, the purity annotations @SideEffectFree,
 @Deterministic, and @Pure are inherited.
 
@@ -3115,8 +3117,8 @@ Updated the Initialization Checker section in the manual with
 a new introduction paragraph.
 
 Removed the Maven plugin section from the manual as the plugin is
-no longer maintained and the final release was on June 2, #2014.
-The javac_maven script (and batch file) are available to use
+no longer maintained and the final release was on June 2, 2014.
+The javac_maven script (and batch file) is available to use
 the Checker Framework from Maven.
 
 Fixed issue #331.
@@ -3125,12 +3127,12 @@ Fixed issue #331.
 
 Converted from using rt.jar to ct.sym for creating the annotated jdk.
 Using the annotated jdk on the bootclasspath of a VM will cause the
-vm to crash immediately.
+VM to crash immediately.
 
 The Lock Checker has been rewritten to support dataflow analysis.
 It can now understand conditional expressions, for example, and
 knows that "lock" is held in the body of statements like
-"if (lock.tryLock()) { ... }"
+"if (lock.tryLock()) { ... }".
 The Lock Checker chapter in the manual has been updated accordingly
 and describes the new Lock Checker features in detail.
 
@@ -3146,7 +3148,7 @@ Fixed issues: #312, #315, #316, #318, #319, #324, #326, #327.
 
 ## Version 1.8.1 (1 May 2014)
 
-Support to directly use the Java 8 javac in addition to jsr308-langtools.
+Support for directly using the Java 8 javac in addition to jsr308-langtools.
 Added docs/examples directory to checker-framework.zip.
 New section in the manual describing the contents of checker-framework.zip.
 
@@ -3216,7 +3218,7 @@ Issues #141, #145, #257, #261, #269, #267, #275, #278, #282, #283, #284, #285.
 
 ### Implementation details
 
-Renamed AbstractBasicAnnotatedTypeFactory to GenericAnnotatedTypeFactory
+Renamed AbstractBasicAnnotatedTypeFactory to GenericAnnotatedTypeFactory.
 
 ## Version 1.7.0 (23 October 2013)
 
@@ -3240,8 +3242,8 @@ Renamed method annotations used by the Nullness Checker:
 
 * @AssertNonNullAfter => @EnsuresNonNull
 * @NonNullOnEntry => @RequiresNonNull
-* @AssertNonNullIfTrue(...) => @IfMethodReturnsFalseEnsuresNonNull
-* @AssertNonNullIfFalse(...) => @IfMethodReturnsFalseEnsuresNonNull
+* @AssertNonNullIfTrue(...) => @EnsuresNonNullIf(result=true, ...)
+* @AssertNonNullIfFalse(...) => @EnsuresNonNullIf(result=false, ...)
 * @LazyNonNull => @MonotonicNonNull
 * @AssertParametersNonNull => [no replacement]
 
@@ -3264,8 +3266,8 @@ and @Deterministic.
 
 Pre- and postconditions about type qualifiers are available for any type system
 through @RequiresQualifier, @EnsuresQualifier and @EnsuresQualifierIf.  The
-contract annotations for the Nullness Checker (e.g. @EnsuresNonNull) are now
-only a special case of these general purpose annotations.
+contract annotations for the Nullness Checker (e.g., @EnsuresNonNull) are now
+only a special case of these general-purpose annotations.
 The meta-annotations @PreconditionAnnotation, @PostconditionAnnotation, and
 @ConditionalPostconditionAnnotation can be used to create more special-case
 annotations for other type systems.
@@ -3301,8 +3303,8 @@ Manual:
 
 * New manual section about array types.
 * New FAQ entries:  "Which checker should I start with?", "How can I handle
-  typestate, or phases of my program with different data properties?",
-* "What is the meaning of a type qualifier at a class declaration?"
+  typestate, or phases of my program with different data properties?", and
+  "What is the meaning of a type qualifier at a class declaration?"
 * Reorganized FAQ chapter into sections.
 * Many other improvements.
 
@@ -3334,7 +3336,7 @@ User-visible framework improvements:
 
 Maven plugin:
 
-* Maven plugin will now issue a warning rather than quit when zero checkers
+* The Maven plugin will now issue a warning rather than quit when zero checkers
   are specified in a project's pom.xml.
 
 Documentation:
@@ -3356,7 +3358,7 @@ Maven plugin:
 
 * The Maven plugin no longer requires the Maven project's output directory to
   exist in order to run the Checker Framework.  However, if you ask the Checker
-  Framework to generate class files then the output directory will be created.
+  Framework to generate class files, then the output directory will be created.
 
 Documentation:
 
@@ -3382,7 +3384,7 @@ Documentation:
 Eclipse plugin:
 
 * The "Additional compiler parameters" text field has now been replaced by a
-  list.  Parameters in this list may be activated/deactivated via checkbox.
+  list.  Parameters in this list can be activated/deactivated via checkbox.
 
 Eclipse plugin bug fixes:
 
@@ -3401,9 +3403,9 @@ Internal framework improvements:
 User-visible framework improvements:
 
 * A number of error messages have been clarified.
-* Stub file now supports type annotations in front and after method type
+* Stub files now support type annotations in front of and after method type
   variable declarations.
-* You may now specify custom paths to javac.jar and jdk7.jar on the command line
+* You can now specify custom paths to javac.jar and jdk7.jar on the command line
   for non-standard installations.
 
 Internal framework improvements:
@@ -3414,17 +3416,17 @@ Internal framework improvements:
 
 Maven plugin:
 
-* Put Checker Framework jars at the beginning of classpath.
+* Put Checker Framework jars at the beginning of the classpath.
 * Added option to compile code in order to support checking for multi-module
   projects.
-* The plugin no longer copies the various Checker Framework maven artifacts to
+* The plugin no longer copies the various Checker Framework Maven artifacts to
   one location but instead takes advantage of the new custom path options for
   javac.jar and jdk7.jar.
-* The maven plugin no longer attempts to resolve jdk6.jar
+* The Maven plugin no longer attempts to resolve jdk6.jar
 
 Eclipse plugin:
 
-* Put Checker Framework jars at the beginning of classpath.
+* Put Checker Framework jars at the beginning of the classpath.
 * All files selected from a single project can now be checked.  The previous
   behavior only checked the entire project or one file depending on the type of
   the first file selected.
@@ -3445,7 +3447,7 @@ User-visible framework improvements:
 
 Adapt to underlying jsr308-langtools changes.
 
-* The most visible change is syntax for fully-qualified types,
+* The most visible change is the syntax for fully qualified types,
   from `@A java.lang.Object` to `java.lang.@A Object`.
 * JDK 7 is now required.  The Checker Framework does not build or run on JDK 6.
 
@@ -3542,7 +3544,7 @@ Support new foreign annotations:
 New FAQ: "What is a receiver?"
 
 Make annotations use 1-based numbering for formal parameters.
-Previously, due to a bug the annotations used 0-based numbering.
+Previously, due to a bug, the annotations used 0-based numbering.
 This change means that you need to rewrite annotations in the following ways:
 
 ```rewrites
@@ -3591,7 +3593,7 @@ Code refactoring:
   hardly used and can be replaced easily.
 * Used more consistent naming for a few more fields.
 * Moved AnnotatedTypes from package checkers.types to checkers.utils.
-  this required making a few methods in AnnotatedTypeFactory public,
+  This required making a few methods in AnnotatedTypeFactory public,
   which might require changes in downstream code.
 
 Internal framework improvements:
@@ -3655,7 +3657,7 @@ Internal framework improvements:
 Installation:
 
 * Clarify installation instructions for Windows.  Remove javac.bat, which
-* worked for running distributed checkers but not for creating new checkers.
+  worked for running distributed checkers but not for creating new checkers.
 
 User-visible framework improvements:
 
@@ -3810,7 +3812,7 @@ Manual:
 * Add a new @InvisibleQualifier meta-annotation for type qualifiers.
   Instead of special-casing @Unqualified in the AnnotatedTypeMirror it
   now looks for this meta-annotation. This also allows type systems to
-  hide type qualifiers it doesn't want visible, which we now use in the
+  hide type qualifiers they don't want visible, which we now use in the
   Nullness Checker to hide the @Primitive annotation.
 * Nullness Checker:  Introduce a new internal qualifier @Primitive that is
   used for primitive types.
@@ -4042,7 +4044,7 @@ Eclipse support:
   <https://checkerframework.org/eclipse/>
 
 Property Key Checker:
-  The property key checker allows multiple resource bundles and the
+  The Property Key Checker allows multiple resource bundles and the
   simultaneous use of both resource bundles and property files.
 
 Javari Checker:
@@ -4050,7 +4052,7 @@ Javari Checker:
 
 Distribution:
   Changed directory structure (top level is "checker-framework"; "checkers"
-  is a under that) for consistency with version control repository.
+  is under that) for consistency with version control repository.
 
 Many documentation improvements and minor bugfixes.
 
@@ -4087,7 +4089,7 @@ Nullness Checker:
 
 Checkers:
 
-* Interning: Skipping equality check, if either operands should be skipped
+* Interning: Skipping equality check, if either operand should be skipped
 * Fixed a bug related to annotations targeting array fields found in classfile
 * Fixed a bug related to method invocation generic type inference
     in static methods
@@ -4131,12 +4133,12 @@ Checkers
 * Updated stub parser project to latest version (javaparser 1.0.8)
 * Fixed bugs related to iterable wildcards and type parameter types
 
-## Version 1.0.6 (24 Feb 2009)
+## Version 1.0.6 (24 Feb 2010)
 
 Nullness Checker
 
 * Added support for new annotations:
-  * Pure - indicates that the method, given the same parameters, return the
+  * Pure - indicates that the method, given the same parameters, returns the
     same values
   * AssertNonNullIfFalse - indicates that a field is NonNull if the method
     returns false
@@ -4146,11 +4148,11 @@ Nullness Checker
 Javari Checker
 
 * Fixed many bugs:
-  * handle implicit dereferencing of this (e.g. `field` in place of
+  * handle implicit dereferencing of this (e.g., `field` in place of
     `this.field`)
   * apply default annotations to method parameters
 
-## Version 1.0.5 (12 Jan 2009)
+## Version 1.0.5 (12 Jan 2010)
 
 Checkers
 
@@ -4158,7 +4160,7 @@ Checkers
 * Improved readability of some failure messages
 * Added AssertNonNullIfTrue support for method parameter references
 * Fixed a bug related to LazyNonNull and array fields
-* Fixed a bug related to inference and compound assignments (e.g. +=)
+* Fixed a bug related to inference and compound assignments (e.g., +=)
 * nullness: permit the type of @NonNull Void
 
 Manual
@@ -4170,7 +4172,7 @@ Manual
 Bug Fixes
 
 * wildcards not recognized as subtypes of type variables
-    e.g. '? extends A' and 'A'
+    e.g., '? extends A' and 'A'
 * PolyNull methods not accepting null literal value arguments
 * spurious unexpected Raw warnings
 
@@ -4189,19 +4191,19 @@ Checkers
     rather than requiring @DefaultQualifier("checkers.nullness.quals.Nullable").
 * Local variable type inference has improved support for array accesses.
 * The repository contains Eclipse project and launch configuration files.
-    This is helpful too people who want to build a checker, not to people
+    This is helpful to people who want to build a checker, not to people
     who merely want to run a checker.
 * Many bug fixes, including:
     handling wildcard subtyping rules
     stub files and vararg methods being ignored
     nullness and spurious rawness errors
-    uses of array clone method (e.g. String[].clone())
-    multibound type parameters (e.g. <T extends @A Number & @B Cloneable>)
+    uses of array clone method (e.g., String[].clone())
+    multibound type parameters (e.g., <T extends @A Number & @B Cloneable>)
 
 Manual
 
 * Documented the behavior of annotations on type parameter declarations.
-* New FAQ item:
+* New FAQ items:
   * How to collect warnings from multiple files
   * Why a qualifier shouldn't apply to both types and declarations
 
@@ -4241,7 +4243,7 @@ Bug fixes
 * Fixed a crashing bug related to interaction between
     generic types and wildcards
 * Fixed a bug in stub file parser related to vararg annotations
-* Fixed few bugs in skeleton file generators
+* Fixed a few bugs in skeleton file generators
 
 Manual
 
@@ -4332,7 +4334,7 @@ Bug fixes
 
 Functionality
 
-* Changed 'jsr308.skipClasses' property with '-AskipClasses' option
+* Replaced 'jsr308.skipClasses' property with '-AskipClasses' option
 * Locking checker
   * Add subtype checking for Holding
   * Treat constructors as synchronized methods
@@ -4391,7 +4393,7 @@ Manual Documentations
 
 Functionality
 
-* Added support DefaultQualifier on packages
+* Added support for DefaultQualifier on packages
 * Added support for Dependent qualifier types
     see checkers.quals.Dependent
 * Added an option to treat checker errors as warnings
@@ -4449,7 +4451,7 @@ Framework
 
 * More space and performance optimizations
 * Handle raw type with multiple type var level
-    e.g. class Pair<X, Y extends X> { ... }
+    e.g., class Pair<X, Y extends X> { ... }
 
 Manual
 
@@ -4478,7 +4480,7 @@ Nullness Checker
 
 Framework
 
-* Fixed bugs related to assignments expressions in Flow
+* Fixed bugs related to assignment expressions in Flow
 * Fixed bugs related to enum and annotation type hierarchy
 * Fixed bugs related to default annotations on wildcard bounds
 
@@ -4535,7 +4537,7 @@ Framework
 
 * Fixed bugs related to inner classes
 * Changed cast semantics
-    Unqualified casts don't change cast away (or in) any qualifiers
+    Unqualified casts don't cast away (or in) any qualifiers
 * Refactored AnnotationBuilder to ease building annotations
 * Added support for Object += String new behavior
 * Added a type validation check for method return types
@@ -4563,7 +4565,7 @@ Framework
 
 Nullness
 
-* Improved error messages readability
+* Improved error message readability
 * Added partial support for Map.get() detection
 
 Manual
@@ -4646,8 +4648,8 @@ Framework
 * Changed default array syntax to ARRAYS-PRE, per the JSR 308 specification
 * Added an optional check for qualifier unsafe casts
 * Added support for running multiple checkers at once
-* Fixed bugs related array syntax
-* Fixed bugs related to accessing outer classes with-in inner classes
+* Fixed bugs related to array syntax
+* Fixed bugs related to accessing outer classes within inner classes
 
 Manual
 
@@ -4802,7 +4804,7 @@ Framework
   * Moved meta-qualifiers from checkers.metaquals package to checkers.quals.
   * Removed @VariableQualifier and @RootQualifier meta-qualifiers.
 * Added BasicAnnotatedTypeFactory, a factory that handles implicitFor,
-    defaults, flow-sensitive type inference.
+    defaults, and flow-sensitive type inference.
 * Deprecated GraphQualifierHierarchy; DAGQualifierHierarchy replaces it.
 * Renamed methods in QualifierHierarchy.
 
@@ -4831,9 +4833,9 @@ Javari Checker
 * Removed redundant code now added to the framework from JavariVisitor,
     JavariChecker and JavariAnnotatedTypeFactory
 * Refactored method polymorphism into JavariAnnotatedTypeFactory
-* Fixed bug on obtaining type from NewClassTree, annotations at constructor
+* Fixed bug on obtaining type from NewClassTree; annotations at constructor
     invocation are not ignored now
-* Refactored polymorphism resolution, now all annotations on parameters and
+* Refactored polymorphism resolution; now all annotations on parameters and
     receivers are replaced, not only on the return type
 * Refactored and renamed internal annotator classes in
     JavariAnnotatedTypeFactory
@@ -4846,7 +4848,7 @@ Checker Framework
 
 * Improved documentation and manual
 * Treat qualifiers on extends clauses of type variables and wildcard types as
-    if present on type variable itself
+    if present on the type variable itself
 * Renamed AnnotationRelations to QualifierHierarchy
 * Renamed GraphAnnotationRelations to GraphQualifierHierarchy
 * Renamed TypeRelations to TypeHierarchy
@@ -4908,13 +4910,13 @@ IGJ Checker
 
 Javari Checker
 
-* Changing RoMaybe annotation to PolyRead
+* Changed RoMaybe annotation to PolyRead
 * Updated checker to use AnnotationRelations and TypeRelations
 * Updated the JDK
 * Fixed bugs related to QReadOnly and type argument subtyping
 * Fixed bugs related to this-mutable fields in methods with @ReadOnly receiver
 * Fixed bugs related to primitive type casts
-* Added new tests to test suit
+* Added new tests to test suite
 
 NonNull Checker
 
@@ -4934,7 +4936,7 @@ Checker Framework API
 * Introduced AnnotationRelations and TypeRelations, more robust classes to
     represent type and annotation hierarchies, and deprecated
     SimpleSubtypeRelation
-* Add support for meta-annotations to declare type qualifiers subtype relations
+* Add support for meta-annotations to declare type qualifier subtype relations
 * Re-factored AnnotatedTypes and AnnotatedTypeFactory
 * Added a default implementation of SourceChecker.getSuppressWarningsKey()
     that reads the @SuppressWarningsKey class annotation
@@ -4944,7 +4946,7 @@ Checker Framework API
 * Framework ignores annotations on a type that do not have @TypeQualifier
 * Moved error/warning messages into "messages.properties" files in each
     checker package
-* Fixed a bug in which annotations were inferred to liberally by
+* Fixed a bug in which annotations were inferred too liberally by
     checkers.flow.Flow
 
 Interned Checker
@@ -4992,7 +4994,7 @@ Checker Framework API
     including type inference
 * Enhanced performance of AnnotatedTypeFactory
 * Checkers run only when no errors are found by Javac
-* Fixed bugs related AnnotationUtils.deepCopy()
+* Fixed bugs related to AnnotationUtils.deepCopy()
 * Fixed support for annotated class type parameters
 * Fixed some support for annotated type variable bounds
 * Added enhancements to flow-sensitive qualifier inference
@@ -5014,8 +5016,8 @@ IGJ Checker
 Javari Checker
 
 * Removed redundant methods from JavariVisitor in the new framework
-* Added support to constructor receivers
-* Added support to parenthesized expressions
+* Added support for constructor receivers
+* Added support for parenthesized expressions
 * Fixed a bug related to resolving RoMaybe constructors
 * Fixed a bug related to parsing conditional expressions
 * Added parsing of parenthesized expressions
@@ -5024,7 +5026,7 @@ Javari Checker
 * Modified JavariVisitor type parameters (it now extends
     BaseTypeVisitor<Void, Void>, not BaseTypeVisitor<Void,
     checkers.javari.VisitorState>)
-* Modified JavariAnnotatedTypeFactory TreePreAnnotator to mutate a
+* Modified JavariAnnotatedTypeFactory TreePreAnnotator to mutate an
     AnnotatedTypeMirror parameter instead of returning a
     `List<AnnotationMirror>`, in accordance with other parts of the
     framework design
@@ -5078,7 +5080,7 @@ IGJ Checker
 
 * Implemented the immutability inference for self-type (type of
     'this') properly
-* Enhanced the implicit annotations to make an un-annotated code
+* Enhanced the implicit annotations to make unannotated code
     type-check
 * Fixed bugs related to invoking methods based on a method's receiver
     annotations
@@ -5105,7 +5107,7 @@ Checker Framework API
 * Introduced default error messages analogous to javac's error messages.
 * Fixed bugs related to handling array access and enhanced-for-loop type
     testing.
-* Fixed several bugs that are due AnnotationMirror not overriding .equals()
+* Fixed several bugs that are due to AnnotationMirror not overriding .equals()
     and .hashCode().
 * Improved Javadocs for various classes and methods.
 * Fixed several bugs that caused crashes in the checkers.
@@ -5244,8 +5246,8 @@ NonNull Checker
 
 * New features:
   * flow-sensitive analysis for assignments from a known @NonNull type (e.g.,
-      when the right-hand of an assignment is @NonNull, the left-hand is
-      considered @NonNull from the assignment to the next possible
+      when the right-hand side of an assignment is @NonNull, the left-hand
+      side is considered @NonNull from the assignment to the next possible
       reassignment)
   * flow-sensitive analysis within conditional checks
 
@@ -5288,16 +5290,16 @@ Code Changes
   * added checks for annotations on primitive types inside arrays
 
 * checkers.nonnull
-  * flow sensitive analysis supports System.exit, new class/array creation
+  * flow-sensitive analysis supports System.exit, new class/array creation
 
 * checkers.subtype
   * fixes for method overriding and other generics-related bugs
 
 * checkers.types
   * added AnnotatedTypeMirror, a new representation for annotated types that
-      might be moved to the compiler in later version
+      might be moved to the compiler in a later version
   * added AnnotatedTypeScanner and AnnotatedTypeVisitor, visitors for types
-  * AnnotatedTypeFactory uses GenericsUtils for improved handing of annotated
+  * AnnotatedTypeFactory uses GenericsUtils for improved handling of annotated
       generic types
 
 * checkers.util
@@ -5314,7 +5316,7 @@ Documentation Changes
   * improvements to page
 
 * checkers/javari-checker.html
-  * examples now point to test suit files
+  * examples now point to test suite files
 
 Miscellaneous Changes
 
@@ -5361,7 +5363,7 @@ Code Changes
 * checkers.types
   * AnnotatedTypeFactory.getClass(Element) and getMethod(Element) use the
       tree of the passed Element if one exists
-  * AnnotatedClassType.includeAt, .execludeAt, .getAnnotationData were
+  * AnnotatedClassType.includeAt, .excludeAt, .getAnnotationData were
       added and are public
   * added constructor() and skipParens() methods to InternalUtils
     renamed getTypeArgumentLocations() to getAnnotatedTypeArgumentLocations()
@@ -5478,7 +5480,7 @@ Code Changes
 
 Miscellaneous Changes
 
-* Improved documentation of ch examples..
+* Improved documentation of ch examples.
 * Checker Framework build file now only attempts to compile .java files.
 
 ## Version 0.1.0 (1 May 2007)
