@@ -40,7 +40,7 @@ public final class SystemUtil {
    * Like {@code System.getProperty}, but splits on the path separator and never returns null.
    *
    * @param propName a system property name
-   * @return the paths in the system property; may be an empty array
+   * @return the paths in the system property; might be an empty list
    */
   public static final List<String> getPathsProperty(String propName) {
     String propValue = System.getProperty(propName);
@@ -134,11 +134,11 @@ public final class SystemUtil {
   // From https://stackoverflow.com/a/54513347 .
   /**
    * Returns the number of bytes in a UTF-8 character based on the bit pattern of the supplied byte.
-   * The only valid values are 1, 2 3 or 4. If the byte has an invalid bit pattern an
+   * The only valid values are 1, 2, 3, or 4. If the byte has an invalid bit pattern, an
    * IllegalArgumentException is thrown.
    *
    * @param b the first byte of a UTF-8 character
-   * @return the number of bytes for this UTF-* character
+   * @return the number of bytes for this UTF-8 character
    * @throws IllegalArgumentException if the bit pattern is invalid
    */
   private static @IntVal({1, 2, 3, 4}) int getByteCount(byte b) {

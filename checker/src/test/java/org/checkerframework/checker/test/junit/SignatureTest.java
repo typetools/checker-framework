@@ -8,7 +8,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class SignatureTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a SignatureTest.
+   * Creates a SignatureTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */
