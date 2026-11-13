@@ -71,10 +71,10 @@ public final class TypeKindUtils {
   // Cannot create an overload that takes an AnnotatedTypeMirror because the javacutil
   // package must not depend on the framework package.
   /**
-   * Given a primitive type, return its kind. Given a boxed primitive type, return the corresponding
-   * primitive type kind. Given a type variable or intersection type whose erasure is a boxed
-   * primitive type, such as {@code T extends Integer}, return the primitive type kind that unboxing
-   * conversion produces. Otherwise, return null.
+   * Given a primitive type, returns its kind. Given a boxed primitive type, returns the
+   * corresponding primitive type kind. Given a type variable or intersection type whose erasure is
+   * a boxed primitive type, such as {@code T extends Integer}, returns the primitive type kind that
+   * unboxing conversion produces. Otherwise, returns null.
    *
    * <p>For a type variable or intersection type, this agrees with {@link
    * TypesUtils#boxedPrimitiveForUnboxing}, which requires a {@link javax.lang.model.util.Types}
@@ -134,8 +134,8 @@ public final class TypeKindUtils {
   }
 
   /**
-   * Given two type kinds, return the type kind they are widened to, when an arithmetic operation is
-   * performed on them. Defined in JLS 5.6.2.
+   * Given two type kinds, returns the type kind they are widened to, when an arithmetic operation
+   * is performed on them. Defined in JLS 5.6.2.
    *
    * @param a a type kind
    * @param b a type kind
@@ -222,7 +222,7 @@ public final class TypeKindUtils {
    * not a primitive type.
    *
    * @param tk a primitive type kind
-   * @return the number of bits in its representation, or -1 if not integral
+   * @return the number of bits in its representation, or -1 if not a primitive type
    */
   private static int numBits(TypeKind tk) {
     return switch (tk) {

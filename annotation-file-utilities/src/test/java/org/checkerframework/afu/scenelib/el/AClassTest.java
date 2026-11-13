@@ -98,7 +98,7 @@ public class AClassTest {
 
   /**
    * Copying an AClass whose enum constants are unset leaves them unset in the copy, so that the
-   * copy's enum constants can still be set. ({@link AClass#setEnumConstants} may be called at most
+   * copy's enum constants can still be set. ({@link AClass#setEnumConstants} can be called at most
    * once.)
    */
   @Test
