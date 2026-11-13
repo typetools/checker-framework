@@ -933,7 +933,7 @@ public abstract class CFAbstractTransfer<
    * with {@code firstNode} and {@code secondNode} reversed, to refine each of them.
    *
    * <p>An overriding method that inserts a new type for {@code secondNode} into the store should do
-   * so by calling {@link #insertValueForSplitAssignments}. It inserts the new type for each node in
+   * so by calling {@link #insertValueForNodesWithValueOf}. It inserts the new type for each node in
    * the result of {@link #nodesWithValueOf nodesWithValueOf(secondNode)}, which omits each node
    * that might not have the value of {@code secondNode} when the comparison completes.
    *
@@ -958,7 +958,7 @@ public abstract class CFAbstractTransfer<
       if (!firstValue.equals(secondValue) && hasRefinableSide(secondNode)) {
         S thenStore = res.getThenStore();
         S elseStore = res.getElseStore();
-        insertValueForSplitAssignments(notEqualTo ? elseStore : thenStore, secondNode, firstValue);
+        insertValueForNodesWithValueOf(notEqualTo ? elseStore : thenStore, secondNode, firstValue);
         res = new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
       }
     }
@@ -1005,7 +1005,7 @@ public abstract class CFAbstractTransfer<
    * refinement to the target of a monotonic qualifier (see {@link
    * org.checkerframework.framework.qual.MonotonicQualifier}): whether the store keeps a refinement
    * depends on the refined value, which this method does not know. {@link
-   * #insertValueForSplitAssignments} inserts such a refinement where the store would keep it.
+   * #insertValueForNodesWithValueOf} inserts such a refinement where the store would keep it.
    *
    * <p>A node that is neither an assignment nor a value-preserving cast is a candidate even if it
    * contains an assignment, as in {@code x + (x = 1)}. {@link JavaExpression#fromNode} converts
@@ -1019,7 +1019,7 @@ public abstract class CFAbstractTransfer<
    *     node} itself, except for those that might have a different value by then
    */
   protected List<Node> nodesWithValueOf(Node node) {
-    return splitAssignmentsResult(node).sides();
+    return nodesWithValueOfResult(node).sides();
   }
 
   /**
@@ -1032,7 +1032,7 @@ public abstract class CFAbstractTransfer<
    *     before the comparison completes, might write the field that the node denotes; each converts
    *     to a {@link FieldAccess}
    */
-  record SplitAssignmentsResult(List<Node> sides, List<Node> fieldsWrittenByCalls) {}
+  record NodesWithValueOfResult(List<Node> sides, List<Node> fieldsWrittenByCalls) {}
 
   /**
    * Returns the result of {@link #nodesWithValueOf}, together with the fields that it omits only
@@ -1044,8 +1044,8 @@ public abstract class CFAbstractTransfer<
    * @return the result of {@link #nodesWithValueOf} for {@code node}, and the fields that it omits
    *     only because a call might write them
    */
-  private SplitAssignmentsResult splitAssignmentsResult(Node node) {
-    SplitAssignmentsResult result = analysis.nodesWithValueOfCache.get(node);
+  private NodesWithValueOfResult nodesWithValueOfResult(Node node) {
+    NodesWithValueOfResult result = analysis.nodesWithValueOfCache.get(node);
     if (result == null) {
       result = computeNodesWithValueOf(node);
       analysis.nodesWithValueOfCache.put(node, result);
@@ -1067,16 +1067,16 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns true if {@link #insertValueForSplitAssignments} might insert a value for the given
+   * Returns true if {@link #insertValueForNodesWithValueOf} might insert a value for the given
    * node: if a store can hold a value for some node in the result of {@link #nodesWithValueOf}, or
    * for some field that it omits only because a call might write it, and that node is
    * deterministic.
    *
    * @param node a node in an operand of a comparison, possibly an assignment or a cast
-   * @return true if {@link #insertValueForSplitAssignments} might insert a value for {@code node}
+   * @return true if {@link #insertValueForNodesWithValueOf} might insert a value for {@code node}
    */
   protected boolean hasRefinableSide(Node node) {
-    SplitAssignmentsResult split = splitAssignmentsResult(node);
+    NodesWithValueOfResult split = nodesWithValueOfResult(node);
     for (List<Node> sides : List.of(split.sides(), split.fieldsWrittenByCalls())) {
       for (Node side : sides) {
         JavaExpression expr = JavaExpression.fromNode(side);
@@ -1101,21 +1101,21 @@ public abstract class CFAbstractTransfer<
    * @param node a node in an operand of a comparison, possibly an assignment or a cast
    * @param value the value to insert for each expression that has the value of {@code node}
    */
-  protected void insertValueForSplitAssignments(S store, Node node, V value) {
-    insertValueForSplitAssignments(store, node, expr -> value);
+  protected void insertValueForNodesWithValueOf(S store, Node node, V value) {
+    insertValueForNodesWithValueOf(store, node, expr -> value);
   }
 
   /**
    * Inserts the given annotation into the given store for each node that {@link #nodesWithValueOf}
    * returns for the given node, and for each field that it omits only because a call might write
-   * it, as {@link #insertValueForSplitAssignments(CFAbstractStore, Node, CFAbstractValue)} does.
+   * it, as {@link #insertValueForNodesWithValueOf(CFAbstractStore, Node, CFAbstractValue)} does.
    *
    * @param store the store to modify
    * @param node a node in an operand of a comparison, possibly an assignment or a cast
    * @param anno the annotation to insert for each expression that has the value of {@code node}
    */
-  protected void insertValueForSplitAssignments(S store, Node node, AnnotationMirror anno) {
-    insertValueForSplitAssignments(
+  protected void insertValueForNodesWithValueOf(S store, Node node, AnnotationMirror anno) {
+    insertValueForNodesWithValueOf(
         store, node, expr -> analysis.createSingleAnnotationValue(anno, expr.getType()));
   }
 
@@ -1127,9 +1127,9 @@ public abstract class CFAbstractTransfer<
    * @param node a node in an operand of a comparison, possibly an assignment or a cast
    * @param valueOf the value to insert for an expression that has the value of {@code node}
    */
-  private void insertValueForSplitAssignments(
+  private void insertValueForNodesWithValueOf(
       S store, Node node, Function<JavaExpression, V> valueOf) {
-    SplitAssignmentsResult split = splitAssignmentsResult(node);
+    NodesWithValueOfResult split = nodesWithValueOfResult(node);
     for (Node side : split.sides()) {
       JavaExpression expr = JavaExpression.fromNode(side);
       store.insertValue(expr, valueOf.apply(expr));
@@ -1146,12 +1146,12 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns the result of {@link #splitAssignmentsResult}, without using the cache.
+   * Returns the result of {@link #nodesWithValueOfResult}, without using the cache.
    *
    * @param node a node in an operand of a comparison, possibly an assignment or a cast
-   * @return the result of {@link #splitAssignmentsResult} for {@code node}
+   * @return the result of {@link #nodesWithValueOfResult} for {@code node}
    */
-  private SplitAssignmentsResult computeNodesWithValueOf(Node node) {
+  private NodesWithValueOfResult computeNodesWithValueOf(Node node) {
     Node unwrapped = node;
     while (unwrapped instanceof WideningConversionNode widening
         && isValuePreservingConversion(widening)) {
@@ -1183,7 +1183,7 @@ public abstract class CFAbstractTransfer<
       }
       result.add(candidate);
     }
-    return new SplitAssignmentsResult(
+    return new NodesWithValueOfResult(
         Collections.unmodifiableList(result), Collections.unmodifiableList(fieldsWrittenByCalls));
   }
 

@@ -20,7 +20,7 @@ override `nodesWithValueOf()` instead.
 
 To refine an operand of a comparison, an override of
 `CFAbstractTransfer.strengthenAnnotationOfEqualTo` should call the new method
-`CFAbstractTransfer.insertValueForSplitAssignments`.
+`CFAbstractTransfer.insertValueForNodesWithValueOf`.
 
 ### Closed issues
 

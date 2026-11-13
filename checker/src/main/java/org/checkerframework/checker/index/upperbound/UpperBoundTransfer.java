@@ -233,7 +233,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       }
       UBQualifier qual = getUBQualifier(node, in);
       UBQualifier newQual = qual.glb(typeOfMultiplication);
-      insertValueForSplitAssignments(
+      insertValueForNodesWithValueOf(
           store, node, atypeFactory.convertUBQualifierToAnnotation(newQual));
     }
   }
@@ -262,7 +262,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     UBQualifier newInfo = typeOfSubtraction.minusOffset(node.getRightOperand(), atypeFactory);
 
     UBQualifier newLeft = left.glb(newInfo);
-    insertValueForSplitAssignments(
+    insertValueForNodesWithValueOf(
         store, node.getLeftOperand(), atypeFactory.convertUBQualifierToAnnotation(newLeft));
   }
 
@@ -293,7 +293,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     } else if (atypeFactory.hasLowerBoundTypeByClass(other, NonNegative.class)) {
       newQual = newQual.glb(typeOfAddition);
     }
-    insertValueForSplitAssignments(
+    insertValueForNodesWithValueOf(
         store, operand, atypeFactory.convertUBQualifierToAnnotation(newQual));
   }
 
@@ -324,7 +324,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     refineSubtrahendWithOffset(larger, smaller, true, in, store);
 
-    insertValueForSplitAssignments(
+    insertValueForNodesWithValueOf(
         store, smaller, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
   }
 
@@ -352,7 +352,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     refineSubtrahendWithOffset(left, right, false, in, store);
 
-    insertValueForSplitAssignments(
+    insertValueForNodesWithValueOf(
         store, right, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
   }
 
@@ -388,7 +388,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       UBQualifier newQual =
           subtrahendQual.glb(
               minuendQual.plusOffset(offsetNode, atypeFactory).plusOffset(offsetAddOne ? 1 : 0));
-      insertValueForSplitAssignments(
+      insertValueForNodesWithValueOf(
           store, subtrahend, atypeFactory.convertUBQualifierToAnnotation(newQual));
     }
   }
@@ -430,8 +430,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     UBQualifier glb = rightQualifier.glb(leftQualifier);
     AnnotationMirror glbAnno = atypeFactory.convertUBQualifierToAnnotation(glb);
 
-    insertValueForSplitAssignments(store, right, glbAnno);
-    insertValueForSplitAssignments(store, left, glbAnno);
+    insertValueForNodesWithValueOf(store, right, glbAnno);
+    insertValueForNodesWithValueOf(store, left, glbAnno);
   }
 
   /**
@@ -486,7 +486,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         UBQualifier newQualifier =
             UBQualifier.createUBQualifier(sequence, Integer.toString(lengthOffset));
         otherQualifier = otherQualifier.glb(newQualifier);
-        insertValueForSplitAssignments(
+        insertValueForNodesWithValueOf(
             store, otherNode, atypeFactory.convertUBQualifierToAnnotation(otherQualifier));
       }
     }

@@ -149,7 +149,7 @@ public class NullnessTransfer
     // For a node that is neither an assignment nor a cast, the result of nodesWithValueOf contains
     // at most the node itself.  Not calling nodesWithValueOf avoids its cost at every dereference.
     if (node instanceof AssignmentNode || node instanceof TypeCastNode) {
-      insertValueForSplitAssignments(store, node, NONNULL);
+      insertValueForNodesWithValueOf(store, node, NONNULL);
     } else {
       store.insertValue(JavaExpression.fromNode(node), NONNULL);
     }
@@ -246,7 +246,7 @@ public class NullnessTransfer
       NullnessStore thenStore = res.getThenStore();
       NullnessStore elseStore = res.getElseStore();
 
-      insertValueForSplitAssignments(notEqualTo ? thenStore : elseStore, secondNode, NONNULL);
+      insertValueForNodesWithValueOf(notEqualTo ? thenStore : elseStore, secondNode, NONNULL);
 
       if (secondValue != null
           && nullnessTypeFactory.containsSameByClass(
