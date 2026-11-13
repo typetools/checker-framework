@@ -14,7 +14,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 public class InitializedFieldsTransfer extends AccumulationTransfer {
 
   /**
-   * Create an InitializedFieldsTransfer.
+   * Creates an InitializedFieldsTransfer.
    *
    * @param analysis the analysis
    */

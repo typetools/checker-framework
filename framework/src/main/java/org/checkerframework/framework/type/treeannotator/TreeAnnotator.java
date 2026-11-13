@@ -39,7 +39,7 @@ public abstract class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTyp
   protected final AnnotatedTypeFactory atypeFactory;
 
   /**
-   * Create a new TreeAnnotator.
+   * Creates a new TreeAnnotator.
    *
    * @param atypeFactory the type factory
    */
@@ -48,7 +48,7 @@ public abstract class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTyp
   }
 
   /**
-   * Output a message, if logging is on.
+   * Outputs a message, if logging is on.
    *
    * @param format a format string
    * @param args arguments to the format string

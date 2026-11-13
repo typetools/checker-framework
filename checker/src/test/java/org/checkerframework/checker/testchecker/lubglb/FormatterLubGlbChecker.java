@@ -48,7 +48,7 @@ public class FormatterLubGlbChecker extends FormatterChecker {
     /**
      * Constructor.
      *
-     * @param checker checker
+     * @param checker the checker
      */
     public FormatterLubGlbAnnotatedTypeFactory(BaseTypeChecker checker) {
       super(checker);
@@ -64,7 +64,7 @@ public class FormatterLubGlbChecker extends FormatterChecker {
   }
 
   /**
-   * Throws an exception if glb(arg1, arg2) != result.
+   * Throws an exception if glb(arg1, arg2) != expected.
    *
    * @param arg1 the first argument
    * @param arg2 the second argument
@@ -81,7 +81,7 @@ public class FormatterLubGlbChecker extends FormatterChecker {
   }
 
   /**
-   * Throws an exception if lub(arg1, arg2) != result.
+   * Throws an exception if lub(arg1, arg2) != expected.
    *
    * @param arg1 the first argument
    * @param arg2 the second argument
