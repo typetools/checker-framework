@@ -19,22 +19,22 @@ import javax.lang.model.util.Types;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * Records any mapping between the type parameters of a subtype to the corresponding type parameters
- * of a supertype. For example, suppose we have the following classes:
+ * Records any mapping from the type parameters of a subtype to the corresponding type parameters of
+ * a supertype. For example, suppose we have the following classes:
  *
  * <pre>{@code
  * class Map<M1,M2>
  * class HashMap<H1, H2> extends Map<H1,H2>
  * }</pre>
  *
- * And we pass HashMap and Map to mapTypeArguments, the result would be:
+ * If we pass HashMap and Map to mapTypeArguments, the result would be:
  *
  * <pre>{@code
  * Map(H1 => M1, H2 => M2)
  * }</pre>
  *
- * Note, a single type argument in the subtype can map to multiple type parameters in the supertype.
- * e.g.,
+ * Note that a single type argument in the subtype can map to multiple type parameters in the
+ * supertype. For example,
  *
  * <pre>{@code
  * class OneTypeMap<O1> extends Map<O1,O1>
@@ -135,17 +135,20 @@ public class TypeArgumentMapper {
    * Returns a mapping from the type parameters of subtype to a list of the type parameters in
    * supertype that must be the same type as subtype.
    *
-   * <p>e.g.,
+   * <p>For example,
    *
    * <pre>{@code
    * class A<A1,A2,A3>
    * class B<B1,B2,B3,B4> extends A<B1,B1,B3> {}
    * }</pre>
    *
-   * results in a {@code Map(B1 => [A1,A2], B2 => [], B3 => [A3], B4 => [])}
+   * results in a {@code Map(B1 => [A1,A2], B2 => [], B3 => [A3], B4 => [])}.
    *
-   * @return a mapping from the type parameters of subtype to the supertype type parameter's that to
-   *     which they are a type argument
+   * @param subtype the subtype whose type parameters are the keys of the result
+   * @param supertype a supertype of {@code subtype}
+   * @param types the Types utility
+   * @return a mapping from the type parameters of subtype to the supertype type parameters for
+   *     which they are type arguments
    */
   public static Map<TypeParameterElement, Set<TypeParameterElement>> mapTypeArguments(
       TypeElement subtype, TypeElement supertype, Types types) {
@@ -231,8 +234,8 @@ public class TypeArgumentMapper {
   }
 
   /**
-   * Create a list of TypeRecord's that form a "path" to target from subtype. e.g. Suppose I have
-   * the types
+   * Creates a list of TypeRecords that form a "path" to target from subtype. For example, suppose I
+   * have the types
    *
    * <pre>{@code
    * interface Map<M1,M2>
@@ -249,7 +252,7 @@ public class TypeArgumentMapper {
    * }</pre>
    *
    * Note: You can have an implementation of the same interface inherited multiple times as long as
-   * the parameterization of that interface remains the same e.g.
+   * the parameterization of that interface remains the same. For example:
    *
    * <pre>{@code
    * interface List<E>
@@ -257,9 +260,9 @@ public class TypeArgumentMapper {
    * class ArrayList<T> extends AbstractList<T> implements List<T>
    * }</pre>
    *
-   * Notice how ArrayList implements list both by inheriting from AbstractList and from explicitly
+   * Notice how ArrayList implements List both by inheriting from AbstractList and by explicitly
    * listing it in the implements clause. We prioritize finding a path through the list of
-   * interfaces first since this will be the shorter path.
+   * interfaces first, since this will be the shorter path.
    *
    * @param subtype the start of the resulting sequence
    * @param target the end of the resulting sequence
@@ -329,20 +332,20 @@ public class TypeArgumentMapper {
    * Maps a class or interface's declaration element to the type it would be if viewed from a
    * subtype class or interface.
    *
-   * <p>e.g. suppose we have the elements for the declarations:
+   * <p>For example, suppose we have the elements for the declarations:
    *
    * <pre>{@code
    * class A<Ta>
    * class B<Tb> extends A<Tb>
    * }</pre>
    *
-   * The type record of B if it is viewed as class A would bed:
+   * The type record of B if it is viewed as class A would be:
    *
    * <pre>{@code
    * TypeRecord( element = A<Ta>, type = A<Tb> )
    * }</pre>
    *
-   * That is, B can be viewed as an object of type A with an type argument of type parameter Tb
+   * That is, B can be viewed as an object of type A with a type argument of type parameter Tb.
    */
   private static class TypeRecord {
     public final TypeElement element;

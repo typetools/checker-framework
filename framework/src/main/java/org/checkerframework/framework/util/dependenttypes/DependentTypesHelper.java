@@ -77,12 +77,12 @@ import org.plumelib.util.CollectionsP;
  *       #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)}, though clients do not
  *       call it (they call other methods in this class, which eventually call it). Subclasses can
  *       specialize this process by overriding methods in this class. Methods in this class always
- *       standardize Java expressions and may additionally viewpoint-adapt or delocalize
+ *       standardize Java expressions and might additionally viewpoint-adapt or delocalize
  *       expressions. Below is an explanation of each kind of conversion.
  *       <ul>
  *         <li>Standardization: the expressions in the annotations are converted such that two
  *             expression strings that are equivalent are made to be equal. For example, an instance
- *             field f may appear in an expression string as "f" or "this.f"; this class
+ *             field f can appear in an expression string as "f" or "this.f"; this class
  *             standardizes both strings to "this.f". All dependent type annotations must be
  *             standardized so that the implementation of {@link
  *             org.checkerframework.framework.type.QualifierHierarchy#isSubtypeShallow(AnnotationMirror,
@@ -90,15 +90,15 @@ import org.plumelib.util.CollectionsP;
  *             equivalent if their string representations are {@code equals()}.
  *         <li>Viewpoint-adaption: converts an expression to some use site. For example, in method
  *             bodies, formal parameter references such as "#2" are converted to the name of the
- *             formal parameter. Another example, is at method call site, "this" is converted to the
- *             receiver of the method invocation.
+ *             formal parameter. Another example is that at a method call site, "this" is converted
+ *             to the receiver of the method invocation.
  *         <li>Delocalization: removes all expressions with references to local variables that are
  *             not parameters and changes parameters to the "#1" syntax.
  *       </ul>
  *   <li>If any of the conversions above results in an invalid expression, this class changes
  *       invalid expression strings to an error string that includes the reason why the expression
  *       is invalid. For example, {@code @KeyFor("m")} would be changed to {@code @KeyFor("[error
- *       for expression: m error: m: identifier not found]")} if m is not a valid identifier. This
+ *       for expression: m; error: m: identifier not found]")} if m is not a valid identifier. This
  *       allows subtyping checks to assume that if two strings are equal and not errors, they
  *       reference the same valid Java expression.
  *   <li>Checks annotated types for error strings that have been added by this class and issues an
@@ -136,7 +136,7 @@ public class DependentTypesHelper {
   private final AnnotatedTypeReplacer annotatedTypeReplacer = new AnnotatedTypeReplacer();
 
   /**
-   * Copies annotations that might have been viewpoint adapted from the visited type (the first
+   * Copies annotations that might have been viewpoint-adapted from the visited type (the first
    * formal parameter of {@code ViewpointAdaptedCopier#visit}) to the second formal parameter.
    */
   protected final ViewpointAdaptedCopier viewpointAdaptedCopier = new ViewpointAdaptedCopier();
@@ -457,7 +457,7 @@ public class DependentTypesHelper {
   /**
    * Viewpoint-adapts the Java expressions in annotations written on the signature of the method
    * declaration (for example, a return type) to the body of the method. This means the parameter
-   * syntax, e.g. "#2", is converted to the names of the parameter.
+   * syntax, e.g., "#2", is converted to the name of the parameter.
    *
    * @param atm a type at the method signature; is side-effected by this method
    * @param methodDeclTree a method declaration
@@ -502,8 +502,8 @@ public class DependentTypesHelper {
       EnumSet.of(Tree.Kind.METHOD, Tree.Kind.LAMBDA_EXPRESSION);
 
   /**
-   * Standardize the Java expressions in annotations in a variable declaration. Converts the
-   * parameter syntax, e.g "#1", to the parameter name.
+   * Standardizes the Java expressions in annotations in a variable declaration. Converts the
+   * parameter syntax, e.g., "#1", to the parameter name.
    *
    * @param type the type of the variable declaration; is side-effected by this method
    * @param declarationTree the variable declaration
@@ -600,10 +600,10 @@ public class DependentTypesHelper {
   }
 
   /**
-   * Standardize the Java expressions in annotations in written in the {@code expressionTree}. Also,
-   * converts the parameter syntax, e.g. "#1", to the parameter name.
+   * Standardizes the Java expressions in annotations written in the {@code expressionTree}. Also,
+   * converts the parameter syntax, e.g., "#1", to the parameter name.
    *
-   * <p>{@code expressionTree} must be an expressions which can contain explicitly written
+   * <p>{@code expressionTree} must be an expression that can contain explicitly written
    * annotations, namely a {@link NewClassTree}, {@link com.sun.source.tree.NewArrayTree}, or {@link
    * com.sun.source.tree.TypeCastTree}. For example, this method standardizes the {@code KeyFor}
    * annotation in {@code (@KeyFor("map") String) key }.
@@ -632,8 +632,8 @@ public class DependentTypesHelper {
   }
 
   /**
-   * Standardize the Java expressions in annotations in a type. Converts the parameter syntax, e.g.
-   * "#2", to the parameter name.
+   * Standardizes the Java expressions in annotations in a type. Converts the parameter syntax,
+   * e.g., "#2", to the parameter name.
    *
    * @param type the type to standardize; is side-effected by this method
    * @param elt the element whose type is {@code type}
@@ -678,7 +678,7 @@ public class DependentTypesHelper {
   }
 
   /**
-   * Viewpoint-adapt all dependent type annotations to the method declaration, {@code
+   * Viewpoint-adapts all dependent type annotations to the method declaration, {@code
    * methodDeclTree}. This method changes occurrences of formal parameter names to the "#2" syntax,
    * and it removes expressions that contain other local variables.
    *
@@ -686,7 +686,7 @@ public class DependentTypesHelper {
    * parameters), the expression is removed from the annotation. This could result in dependent type
    * annotations with empty lists of expressions. If this is a problem, a subclass can override
    * {@link #buildAnnotation(AnnotationMirror, Map)} to do something besides creating an annotation
-   * with a empty list.
+   * with an empty list.
    *
    * @param atm type to viewpoint-adapt; is side-effected by this method
    * @param methodDeclTree the method declaration to which the annotations are viewpoint-adapted
@@ -739,7 +739,7 @@ public class DependentTypesHelper {
 
   /**
    * Delocalizes dependent type annotations in {@code atm} so that they can be placed on the
-   * declaration of the given method or constructor being invoked. Used by whole program inference
+   * declaration of the given method or constructor being invoked. Used by whole-program inference
    * to infer dependent types for method/constructor parameters based on the actual arguments used
    * at call sites.
    *
@@ -822,7 +822,7 @@ public class DependentTypesHelper {
 
   /**
    * Calls {@link #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)} on each
-   * annotation mirror on type with {@code stringToJavaExpr}. And replaces the annotation with the
+   * annotation mirror on type with {@code stringToJavaExpr}, and replaces the annotation with the
    * one created by {@code convertAnnotationMirror}, if it's not null. If it is null, the original
    * annotation is used. See {@link #convertAnnotationMirror(StringToJavaExpression,
    * AnnotationMirror)} for more details.
@@ -850,8 +850,8 @@ public class DependentTypesHelper {
    *   <li>{@link #shouldPassThroughExpression(String)}: to control which expressions are skipped.
    *       If this method returns true, then the expression string is not parsed and is included in
    *       the new annotation unchanged.
-   *   <li>{@link #transform(JavaExpression)}: make changes to the JavaExpression produced by {@code
-   *       stringToJavaExpr}.
+   *   <li>{@link #transform(JavaExpression)}: to make changes to the JavaExpression produced by
+   *       {@code stringToJavaExpr}.
    *   <li>{@link #buildAnnotation(AnnotationMirror, Map)}: to change the annotation returned by
    *       this method.
    * </ul>
@@ -898,14 +898,14 @@ public class DependentTypesHelper {
   /**
    * This method is for subclasses to override to change JavaExpressions in some way before they are
    * inserted into new annotations. This method is called after parsing and viewpoint-adaptation
-   * have occurred. {@code javaExpr} may be a {@link DependentTypesHelper.PassThroughExpression}.
+   * have occurred. {@code javaExpr} might be a {@link DependentTypesHelper.PassThroughExpression}.
    *
-   * <p>If {@code null} is returned then the expression is not added to the new annotation.
+   * <p>If {@code null} is returned, then the expression is not added to the new annotation.
    *
-   * <p>The default implementation returns the argument, but subclasses may override it.
+   * <p>The default implementation returns the argument, but subclasses can override it.
    *
    * @param javaExpr a JavaExpression
-   * @return a transformed JavaExpression or {@code null} if no transformation exists
+   * @return a transformed JavaExpression, or {@code null} if no transformation exists
    */
   protected @Nullable JavaExpression transform(JavaExpression javaExpr) {
     return javaExpr;
@@ -916,7 +916,7 @@ public class DependentTypesHelper {
    * method returns true, the {@code expression} is not parsed.
    *
    * <p>The default implementation returns true if the {@code expression} is an expression error
-   * according to {@link DependentTypesError#isExpressionError(String)}. Subclasses may override
+   * according to {@link DependentTypesError#isExpressionError(String)}. Subclasses can override
    * this method to add additional logic.
    *
    * @param expression an expression string in a dependent types annotation
@@ -927,14 +927,14 @@ public class DependentTypesHelper {
   }
 
   /**
-   * Create a new annotation of the same type as {@code originalAnno} using the provided {@code
+   * Creates a new annotation of the same type as {@code originalAnno} using the provided {@code
    * elementMap}.
    *
    * @param originalAnno the annotation passed to {@link
    *     #convertAnnotationMirror(StringToJavaExpression, AnnotationMirror)} (this method is a
    *     helper method for {@link #convertAnnotationMirror(StringToJavaExpression,
    *     AnnotationMirror)})
-   * @param elementMap a mapping from element of {@code originalAnno} to {@code JavaExpression}s
+   * @param elementMap a mapping from elements of {@code originalAnno} to {@code JavaExpression}s
    * @return an annotation created from {@code elementMap}
    */
   protected AnnotationMirror buildAnnotation(
@@ -988,7 +988,7 @@ public class DependentTypesHelper {
   }
 
   /**
-   * Creates a {@link JavaExpression} representing the error caused when parsing {@code expression}
+   * Creates a {@link JavaExpression} representing the error caused when parsing {@code expression}.
    *
    * @param expression an expression that caused {@code error} when parsed
    * @param error the error message caused by {@code expression}
@@ -1105,7 +1105,7 @@ public class DependentTypesHelper {
   }
 
   /**
-   * Report the given errors as "expression.unparsable".
+   * Reports the given errors as "expression.unparsable".
    *
    * @param errorTree where to report the errors
    * @param errors the errors to report
@@ -1255,7 +1255,7 @@ public class DependentTypesHelper {
   private final class ExpressionErrorCollector
       extends SimpleAnnotatedTypeScanner<List<DependentTypesError>, Void> {
 
-    /** Create ExpressionErrorCollector. */
+    /** Creates an ExpressionErrorCollector. */
     private ExpressionErrorCollector() {
       super(
           (AnnotatedTypeMirror type, Void aVoid) -> {
@@ -1279,7 +1279,7 @@ public class DependentTypesHelper {
   protected final class ErrorAnnoReplacer extends SimpleAnnotatedTypeScanner<Void, Void> {
 
     /**
-     * Create an ErrorAnnoReplacer.
+     * Creates an ErrorAnnoReplacer.
      *
      * @param qh the qualifier hierarchy
      */
@@ -1306,8 +1306,8 @@ public class DependentTypesHelper {
 
   /**
    * Appends list2 to list1 in a new list. If either list is empty, returns the other. Thus, the
-   * result may be aliased to one of the arguments and the client should only read, not write into,
-   * the result.
+   * result might be aliased to one of the arguments, and the client should only read, not write
+   * into, the result.
    *
    * @param list1 a list
    * @param list2 a list
@@ -1334,7 +1334,7 @@ public class DependentTypesHelper {
    */
   protected final class ViewpointAdaptedCopier extends DoubleAnnotatedTypeScanner<Void> {
 
-    /** Create a ViewpointAdaptedCopier. */
+    /** Creates a ViewpointAdaptedCopier. */
     private ViewpointAdaptedCopier() {}
 
     @Override

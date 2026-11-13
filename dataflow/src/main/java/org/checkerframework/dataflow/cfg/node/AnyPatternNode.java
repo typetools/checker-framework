@@ -20,7 +20,7 @@ public class AnyPatternNode extends Node {
   private final Tree anyPatternTree;
 
   /**
-   * Creates a {@code AnyPatternNode}.
+   * Creates an {@code AnyPatternNode}.
    *
    * @param type the type of the node
    * @param anyPatternTree the {@code AnyPatternTree}

@@ -12,9 +12,9 @@ import org.junit.runners.Parameterized.Parameters;
  * test data, which generates the ajava files. This specific test suite is designed to elicit
  * problems with ajava parsing that only occur when the Nullness Checker is run.
  *
- * <p>IMPORTANT: The errors captured in the tests located in tests/ainfer-index/ are not relevant.
- * The meaning of this test class is to test if the generated ajava files are similar to the
- * expected ones. The errors on .java files must be ignored.
+ * <p>IMPORTANT: The errors captured in the tests located in tests/ainfer-nullness/ are not
+ * relevant. The meaning of this test class is to test if the generated ajava files are similar to
+ * the expected ones. The errors on .java files must be ignored.
  */
 @Category(AinferNullnessAjavaGenerationTest.class)
 public class AinferNullnessAjavaGenerationTest extends AinferGeneratePerDirectoryTest {

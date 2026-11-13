@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class TaintingTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a TaintingTest.
+   * Creates a TaintingTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

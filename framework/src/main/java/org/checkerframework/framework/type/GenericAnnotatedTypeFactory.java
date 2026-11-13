@@ -156,24 +156,24 @@ public abstract class GenericAnnotatedTypeFactory<
   private @MonotonicNonNull Set<Class<? extends Annotation>> supportedMonotonicQuals;
 
   /**
-   * Used to annotate types based on the given un-annotated types. The type may be for source code
+   * Used to annotate types based on the given un-annotated types. The type might be for source code
    * or bytecode.
    */
   protected TypeAnnotator typeAnnotator;
 
-  /** for use in addAnnotationsFromDefaultForType */
+  /** For use in addAnnotationsFromDefaultForType. */
   private DefaultQualifierForUseTypeAnnotator defaultQualifierForUseTypeAnnotator;
 
-  /** for use in addAnnotationsFromDefaultForType */
+  /** For use in addAnnotationsFromDefaultForType. */
   private DefaultForTypeAnnotator defaultForTypeAnnotator;
 
   /** Used to annotate types based on a given tree. */
   protected TreeAnnotator treeAnnotator;
 
-  /** to handle any polymorphic types */
+  /** To handle any polymorphic types. */
   protected QualifierPolymorphism poly;
 
-  /** to handle defaults specified by the user */
+  /** To handle defaults specified by the user. */
   protected QualifierDefaults defaults;
 
   /** To handle dependent type annotations and contract expressions. */
@@ -183,38 +183,38 @@ public abstract class GenericAnnotatedTypeFactory<
   protected final ContractsFromMethod contractsUtils;
 
   /**
-   * The Java types on which users may write this type system's type annotations. null means no
-   * restrictions. Arrays are handled by separate field {@link #arrayTypesAreRelevant}.
+   * The Java types on which users can write this type system's type annotations. null means no
+   * restrictions. Arrays are handled by the separate field {@link #arrayTypesAreRelevant}.
    *
    * <p>If the relevant type is generic, this contains its erasure.
    *
    * <p>Although a {@code Class<?>} object exists for every element, this does not contain those
    * {@code Class<?>} objects because the elements will be compared to TypeMirrors for which Class
-   * objects may not exist (they might not be on the classpath).
+   * objects might not exist (they might not be on the classpath).
    */
   public final @Nullable Set<TypeMirror> relevantJavaTypes;
 
-  /** True if users may write type annotations from this type system on arrays. */
+  /** True if users can write type annotations from this type system on arrays. */
   protected final boolean arrayTypesAreRelevant;
 
   // Flow related fields
 
-  /** Should flow be used by default? */
+  /** True if flow should be used by default. */
   protected static boolean flowByDefault = true;
 
   /**
-   * Should use flow-sensitive type refinement analysis? This value can be changed when an
-   * AnnotatedTypeMirror without annotations from data flow is required.
+   * True if flow-sensitive type refinement analysis should be used. This value can be changed when
+   * an AnnotatedTypeMirror without annotations from data flow is required.
    *
    * @see #getAnnotatedTypeLhs(Tree)
    */
   private boolean useFlow;
 
-  /** Is this type factory configured to use flow-sensitive type refinement? */
+  /** True if this type factory is configured to use flow-sensitive type refinement. */
   private final boolean everUseFlow;
 
   /**
-   * Should the local variable default annotation be applied to type variables?
+   * True if the local variable default annotation should be applied to type variables.
    *
    * <p>It is initialized to true if data flow is used by the checker. It is set to false when
    * getting the assignment context for type argument inference.
@@ -251,8 +251,8 @@ public abstract class GenericAnnotatedTypeFactory<
   private final Map<Tree, AnnotatedTypeMirror> initializerCache;
 
   /**
-   * Should the analysis assume that side effects to a value can change the type of aliased
-   * references?
+   * True if the analysis should assume that side effects to a value can change the type of aliased
+   * references.
    *
    * <p>For many type systems, once a local variable's type is refined, side effects to the
    * variable's value do not change the variable's type annotations. For some type systems, a side
@@ -304,7 +304,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Subcheckers share the same ControlFlowGraph for each analyzed code statement. This maps from
-   * code statements to the shared control flow graphs. This map is null in all subcheckers (i.e.
+   * code statements to the shared control flow graphs. This map is null in all subcheckers (i.e.,
    * any checker for which getParentChecker() returns non-null). This map is also unused (and
    * therefore null) for a checker with no subcheckers with which it can share CFGs.
    *
@@ -320,7 +320,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * checker runs. The ultimate parent checker's {@link #setRoot(CompilationUnitTree)} (the last to
    * run) sets this field to true.
    *
-   * <p>In first subchecker to run for the next compilation unit, {@link
+   * <p>In the first subchecker to run for the next compilation unit, {@link
    * #setRoot(CompilationUnitTree)} observes the true value, clears the {@link #subcheckerSharedCFG}
    * map, and sets this field back to false. That first subchecker will create a CFG and re-populate
    * the map, and subsequent subcheckers will use the map.
@@ -538,7 +538,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *   <li>{@link DependentTypesTreeAnnotator}: Adapts dependent annotations based on context
    * </ol>
    *
-   * <p>Subclasses may override this method to specify additional tree annotators, for example:
+   * <p>Subclasses can override this method to specify additional tree annotators, for example:
    *
    * <pre>
    * new ListTreeAnnotator(super.createTreeAnnotator(), new KeyLookupTreeAnnotator(this));
@@ -557,16 +557,16 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns a {@link DefaultForTypeAnnotator} that adds annotations to a type based on the content
-   * of the type itself.
+   * Returns a {@link TypeAnnotator} that adds annotations to a type based on the content of the
+   * type itself.
    *
-   * <p>Subclass may override this method. The default type annotator is a {@link ListTypeAnnotator}
-   * of the following:
+   * <p>Subclasses can override this method. The default type annotator is a {@link
+   * ListTypeAnnotator} of the following:
    *
    * <ol>
    *   <li>{@link IrrelevantTypeAnnotator}: Adds top to types not listed in the {@code @}{@link
    *       RelevantJavaTypes} annotation on the checker.
-   *   <li>{@link PropagationTypeAnnotator}: Propagates annotation onto wildcards.
+   *   <li>{@link PropagationTypeAnnotator}: Propagates annotations onto wildcards.
    * </ol>
    *
    * @return a type annotator
@@ -592,7 +592,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Creates an {@link DefaultQualifierForUseTypeAnnotator}.
+   * Creates a {@link DefaultQualifierForUseTypeAnnotator}.
    *
    * @return a new {@link DefaultQualifierForUseTypeAnnotator}
    */
@@ -601,7 +601,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Creates an {@link DefaultForTypeAnnotator}.
+   * Creates a {@link DefaultForTypeAnnotator}.
    *
    * @return a new {@link DefaultForTypeAnnotator}
    */
@@ -722,7 +722,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Creates an {@link ContractsFromMethod} and returns it.
+   * Creates a {@link ContractsFromMethod} and returns it.
    *
    * @return a new {@link ContractsFromMethod}
    */
@@ -757,8 +757,8 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Create {@link QualifierDefaults} which handles checker specified defaults, and initialize the
-   * created {@link QualifierDefaults}. Subclasses should override {@link
+   * Creates {@link QualifierDefaults}, which handles checker-specified defaults, and initializes
+   * the created {@link QualifierDefaults}. Subclasses should override {@link
    * GenericAnnotatedTypeFactory#addCheckedCodeDefaults(QualifierDefaults defs)} to add more
    * defaults or use different defaults.
    *
@@ -781,8 +781,10 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Create {@link QualifierDefaults} which handles checker specified defaults. Sub-classes override
-   * this method to provide a different {@code QualifierDefault} implementation.
+   * Creates {@link QualifierDefaults}, which handles checker-specified defaults. Subclasses
+   * override this method to provide a different {@code QualifierDefaults} implementation.
+   *
+   * @return a new QualifierDefaults
    */
   protected QualifierDefaults createQualifierDefaults() {
     return new QualifierDefaults(elements, this);
@@ -830,11 +832,11 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Adds default qualifiers for type-checked code by reading {@link DefaultFor} and {@link
-   * DefaultQualifierInHierarchy} meta-annotations. Subclasses may override this method to add
+   * DefaultQualifierInHierarchy} meta-annotations. Subclasses can override this method to add
    * defaults that cannot be specified with a {@link DefaultFor} or {@link
-   * DefaultQualifierInHierarchy} meta-annotations.
+   * DefaultQualifierInHierarchy} meta-annotation.
    *
-   * @param defs the QualifierDefault object to which defaults are added
+   * @param defs the QualifierDefaults object to which defaults are added
    */
   protected void addCheckedCodeDefaults(QualifierDefaults defs) {
     // Add defaults from @DefaultFor and @DefaultQualifierInHierarchy
@@ -873,10 +875,10 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Check that a default qualifier (in at least one hierarchy) has been set and issue an error if
+   * Checks that a default qualifier (in at least one hierarchy) has been set and issues an error if
    * not.
    *
-   * @param defs {@link QualifierDefaults} object to which defaults are added
+   * @param defs {@link QualifierDefaults} object to check
    */
   protected void checkForDefaultQualifierInHierarchy(QualifierDefaults defs) {
     if (!defs.hasDefaultsForCheckedCode()) {
@@ -902,7 +904,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Gives the current {@link QualifierPolymorphism} instance which supports the
+   * Returns the current {@link QualifierPolymorphism} instance which supports the
    * QualifierPolymorphism mechanism.
    *
    * @return the QualifierPolymorphism instance to use
@@ -929,7 +931,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Returns the primary annotation with {@code clazz} on {@code expression}'s type, at a particular
-   * location. The returned annotation may be null even if the expression should have a primary
+   * location. The returned annotation might be null even if the expression should have a primary
    * annotation of {@code clazz}. This is because {@link JavaExpression}s do not always have enough
    * information to get an annotated type.
    *
@@ -953,7 +955,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Returns the primary annotation with {@code clazz} on {@code expr}'s type, at a particular
-   * location. The returned annotation may be null even if the expression should have a primary
+   * location. The returned annotation might be null even if the expression should have a primary
    * annotation of {@code clazz}. This is because {@link JavaExpression}s do not always have enough
    * information to get an annotated type.
    *
@@ -973,15 +975,15 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Returns the primary annotations on an expression, at a particular location. The returned set of
-   * annotations may be empty even if the expression should have primary annotations. This is
-   * because {@link JavaExpression} do not always have enough information to get an annotated type.
+   * annotations might be empty even if the expression should have primary annotations. This is
+   * because {@link JavaExpression}s do not always have enough information to get an annotated type.
    *
    * <p>This method should only be used if a tree, element, or node is not available for {@code
    * expr}. Use {@link #getAnnotatedType(Tree)} or {@link #getAnnotatedType(Element)} instead.
    *
-   * @param expr the expression for which the annotation is returned
+   * @param expr the expression for which the annotations are returned
    * @param tree current tree
-   * @return the annotations on the expression. May be empty if {@code expr} does not have enough
+   * @return the annotations on the expression. Might be empty if {@code expr} does not have enough
    *     information to get the annotated type.
    */
   public AnnotationMirrorSet getAnnotationsFromJavaExpression(JavaExpression expr, Tree tree) {
@@ -1082,7 +1084,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns true if the {@code exprTree} is unreachable. This is a conservative estimate and may
+   * Returns true if the {@code exprTree} is unreachable. This is a conservative estimate and might
    * return {@code false} even though the {@code exprTree} is unreachable.
    *
    * @param exprTree an expression tree
@@ -1108,7 +1110,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Track the state of org.checkerframework.dataflow analysis scanning for each class tree in the
+   * Tracks the state of org.checkerframework.dataflow analysis scanning for each class tree in the
    * compilation unit.
    */
   protected enum ScanState {
@@ -1192,13 +1194,13 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Returns a list of all return statements of {@code method} paired with their corresponding
-   * {@link TransferResult}. If {@code method} has no return statement, then the empty list is
+   * Returns a list of all return statements of {@code methodTree} paired with their corresponding
+   * {@link TransferResult}. If {@code methodTree} has no return statement, then the empty list is
    * returned.
    *
    * @param methodTree method whose return statements should be returned
-   * @return a list of all return statements of {@code method} paired with their corresponding
-   *     {@link TransferResult} or an empty list if {@code method} has no return statements
+   * @return a list of all return statements of {@code methodTree} paired with their corresponding
+   *     {@link TransferResult} or an empty list if {@code methodTree} has no return statements
    */
   public List<ReturnStatementStore<Value, Store>> getReturnStatementStores(MethodTree methodTree) {
     List<ReturnStatementStore<Value, Store>> result = returnStatementStores.get(methodTree);
@@ -1254,7 +1256,7 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Returns the store immediately after a given tree.
    *
-   * <p>May return null; for example, after a {@code return} statement.
+   * <p>Might return null; for example, after a {@code return} statement.
    *
    * @param tree the tree whose post-store to return
    * @return the store immediately after a given tree
@@ -1346,7 +1348,7 @@ public abstract class GenericAnnotatedTypeFactory<
   public record LambdaAndStore<S>(LambdaExpressionTree lambda, @Nullable S store) {}
 
   /**
-   * Perform a org.checkerframework.dataflow analysis over a single class tree and its nested
+   * Performs an org.checkerframework.dataflow analysis over a single class tree and its nested
    * classes.
    *
    * @param classTree the class to analyze
@@ -1626,7 +1628,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Perform any additional operations after CFG construction, but before dataflow analysis runs on
+   * Performs any additional operations after CFG construction, but before dataflow analysis runs on
    * the CFG.
    *
    * <p>This hook is intended for checker-specific setup that needs the CFG before {@link
@@ -1654,7 +1656,7 @@ public abstract class GenericAnnotatedTypeFactory<
       };
 
   /**
-   * Analyze the AST {@code ast} and store the result. Additional operations that should be
+   * Analyzes the AST {@code ast} and stores the result. Additional operations that should be
    * performed after analysis should be implemented in {@link #postAnalyze(ControlFlowGraph)}.
    *
    * @param classQueue the queue for encountered class trees and their initial stores
@@ -1662,10 +1664,11 @@ public abstract class GenericAnnotatedTypeFactory<
    * @param ast the AST to analyze
    * @param fieldValues the abstract values for all fields of the same class
    * @param cfg control flow graph to use; if null, one will be created and returned
-   * @param isInitializationCode are we analyzing a (static/non-static) initializer block of a class
-   * @param updateInitializationStore should the initialization store be updated
-   * @param isStatic are we analyzing a static construct
-   * @param capturedStore the input Store to use for captured variables, e.g. in a lambda
+   * @param isInitializationCode true if we are analyzing a (static/non-static) initializer block of
+   *     a class
+   * @param updateInitializationStore true if the initialization store should be updated
+   * @param isStatic true if we are analyzing a static construct
+   * @param capturedStore the input Store to use for captured variables, e.g., in a lambda
    * @return the control flow graph for {@code ast}, which is {@code cfg} if {@code cfg} is non-null
    * @see #postAnalyze(org.checkerframework.dataflow.cfg.ControlFlowGraph)
    */
@@ -1778,11 +1781,11 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Perform any additional operations on a CFG. Called once per CFG, after the CFG has been
+   * Performs any additional operations on a CFG. Called once per CFG, after the CFG has been
    * analyzed by {@link #analyze(Queue, Queue, UnderlyingAST, List, ControlFlowGraph, boolean,
    * boolean, boolean, CFAbstractStore)}. If the CFG is analyzed more than once, this method is
    * still only called one time after the last time the CFG is analyzed. This method can be used to
-   * initialize additional state or to perform any analyzes that are easier to perform on the CFG
+   * initialize additional state or to perform any analyses that are easier to perform on the CFG
    * instead of the AST.
    *
    * @param cfg the CFG
@@ -1797,7 +1800,7 @@ public abstract class GenericAnnotatedTypeFactory<
   private final boolean handleCFGViz;
 
   /**
-   * Handle the visualization of the CFG, if necessary.
+   * Handles the visualization of the CFG, if necessary.
    *
    * @param cfg the CFG
    */
@@ -1835,7 +1838,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * Returns the type of the left-hand side of an assignment.
    *
    * <p>The default implementation returns the type without considering dataflow type refinement.
-   * Subclass can override this method and add additional logic for computing the type of a LHS.
+   * Subclasses can override this method and add additional logic for computing the type of a LHS.
    *
    * @param lhsTree left-hand side of an assignment
    * @return AnnotatedTypeMirror of {@code lhsTree}
@@ -1986,7 +1989,7 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Like {@link #getDefaultAnnotations(Tree, AnnotatedTypeMirror)}.
    *
-   * <p>For use ONLY by the {@code -AwarnRedundantAnnotations} command-line option. May add fewer
+   * <p>For use ONLY by the {@code -AwarnRedundantAnnotations} command-line option. Might add fewer
    * annotations than {@link #getDefaultAnnotations(Tree, AnnotatedTypeMirror)}.
    *
    * @param tree tree where the type is used
@@ -2071,7 +2074,7 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Like {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)}.
    *
-   * <p>For use ONLY by the {@code -AwarnRedundantAnnotations} command-line option. May add fewer
+   * <p>For use ONLY by the {@code -AwarnRedundantAnnotations} command-line option. Might add fewer
    * annotations than {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)}.
    *
    * @param tree an AST node
@@ -2088,8 +2091,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * Flow analysis will be performed if all of the following are true.
    *
    * <ul>
-   *   <li>{@code tree} is a {@link ClassTree}
-   *   <li>Flow analysis has not already been performed on {@code tree}
+   *   <li>{@code classTree} is a {@link ClassTree}
+   *   <li>Flow analysis has not already been performed on {@code classTree}
    * </ul>
    *
    * @param classTree the tree to check and possibly perform flow analysis on
@@ -2149,7 +2152,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Applies defaults for types in a class with an qualifier parameter.
+   * Applies defaults for types in a class with a qualifier parameter.
    *
    * <p>Within a class with {@code @HasQualifierParameter}, types with that class default to the
    * polymorphic qualifier rather than the typical default. Local variables with a type that has a
@@ -2164,7 +2167,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Applies defaults for types in a class with an qualifier parameter.
+   * Applies defaults for types in a class with a qualifier parameter.
    *
    * <p>Within a class with {@code @HasQualifierParameter}, types with that class default to the
    * polymorphic qualifier rather than the typical default. Local variables with a type that has a
@@ -2398,7 +2401,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Should the local variable default annotation be applied to type variables?
+   * Returns true if the local variable default annotation should be applied to type variables.
    *
    * <p>It is initialized to true if data flow is used by the checker. It is set to false when
    * getting the assignment context for type argument inference.
@@ -2414,7 +2417,7 @@ public abstract class GenericAnnotatedTypeFactory<
   protected final CFGVisualizer<Value, Store, TransferFunction> cfgVisualizer;
 
   /**
-   * Create a new CFGVisualizer.
+   * Creates a new CFGVisualizer.
    *
    * @return a new CFGVisualizer, or null if none will be used on this run
    */
@@ -2477,7 +2480,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Parse keys or key-value pairs into a map from key to value (to true if no value is provided).
+   * Parses keys or key-value pairs into a map from key to value (to true if no value is provided).
    *
    * @param opts the CFG visualization options
    * @return a map that represents the options
@@ -2497,7 +2500,11 @@ public abstract class GenericAnnotatedTypeFactory<
     return res;
   }
 
-  /** The CFGVisualizer to be used by all CFAbstractAnalysis instances. */
+  /**
+   * Returns the CFGVisualizer to be used by all CFAbstractAnalysis instances.
+   *
+   * @return the CFGVisualizer
+   */
   public CFGVisualizer<Value, Store, TransferFunction> getCFGVisualizer() {
     return cfgVisualizer;
   }
@@ -2552,7 +2559,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Output a message, if logging is on.
+   * Outputs a message, if logging is on.
    *
    * @param format a format string
    * @param args arguments to the format string
@@ -2573,9 +2580,9 @@ public abstract class GenericAnnotatedTypeFactory<
    * Returns true if users can write type annotations from this type system directly on the given
    * Java type.
    *
-   * <p>For a compound type, returns true only if a programmer may write a type qualifier on the top
-   * level of the compound type. That is, this method may return false, when it is possible to write
-   * type qualifiers on elements of the type.
+   * <p>For a compound type, returns true only if a programmer can write a type qualifier on the top
+   * level of the compound type. That is, this method might return false even when it is possible to
+   * write type qualifiers on elements of the type.
    *
    * <p>Subclasses should override {@code #isRelevantImpl} instead of this method.
    *
@@ -2603,8 +2610,8 @@ public abstract class GenericAnnotatedTypeFactory<
    * Returns true if users can write type annotations from this type system directly on the given
    * Java type.
    *
-   * <p>For a compound type, returns true only if it a programmer may write a type qualifier on the
-   * top level of the compound type. That is, this method may return false, when it is possible to
+   * <p>For a compound type, returns true only if a programmer can write a type qualifier on the top
+   * level of the compound type. That is, this method might return false even when it is possible to
    * write type qualifiers on elements of the type.
    *
    * <p>Subclasses should override {@code #isRelevantImpl} instead of this method.
@@ -2626,7 +2633,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * <p>An override must handle every type, including the types for which this implementation
    * returns true immediately: those in {@link #relevantJavaTypes}, and every type if {@code
-   * relevantJavaTypes == null}. An override may call {@code super} to do so.
+   * relevantJavaTypes == null}. An override can call {@code super} to do so.
    *
    * @param tm a type
    * @return true if users can write type annotations from this type system on the given Java type
@@ -2752,7 +2759,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * null.
    *
    * @param typeMirror a type
-   * @return the annotated type of {@code type}'s default value
+   * @return the annotated type of {@code typeMirror}'s default value
    */
   // TODO: Cache results to avoid recomputation.
   public AnnotatedTypeMirror getDefaultValueAnnotatedType(TypeMirror typeMirror) {
@@ -2927,7 +2934,7 @@ public abstract class GenericAnnotatedTypeFactory<
   /**
    * Returns a list of inferred {@code @RequiresQualifier} annotations for the given expression. By
    * default this list does not include any qualifier that has elements/arguments, which
-   * {@code @RequiresQualifier} does not support. Subclasses may remove this restriction by
+   * {@code @RequiresQualifier} does not support. Subclasses can remove this restriction by
    * overriding {@link #createRequiresOrEnsuresQualifier}.
    *
    * <p>Each annotation in the list is of the form
@@ -2949,7 +2956,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * Returns a list of inferred {@code @EnsuresQualifier} annotations for the given expression. By
    * default this list does not include any qualifier that has elements/arguments, which
    * {@code @EnsuresQualifier} does not support; and, preconditions are not used to suppress
-   * redundant postconditions. Subclasses may remove these restrictions by overriding {@link
+   * redundant postconditions. Subclasses can remove these restrictions by overriding {@link
    * #createRequiresOrEnsuresQualifier}.
    *
    * <p>Each annotation in the list is of the form {@code @EnsuresQualifier(expression="expression",
@@ -2982,7 +2989,7 @@ public abstract class GenericAnnotatedTypeFactory<
    * support.
    *
    * <p>This implementation makes no assumptions about preconditions suppressing postconditions, but
-   * subclasses may do so.
+   * subclasses can do so.
    *
    * @param expression an expression whose type annotations to return
    * @param inferredType the type of the expression, on method entry or exit (depending on the value
@@ -3029,7 +3036,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
   /**
    * Matches parameter expressions as they appear in {@link EnsuresQualifier} and {@link
-   * RequiresQualifier} annotations, e.g. "#1", "#2", etc.
+   * RequiresQualifier} annotations, e.g., "#1", "#2", etc.
    */
   protected static final Pattern formalParameterPattern = Pattern.compile("^#[0-9]+$");
 
@@ -3048,7 +3055,7 @@ public abstract class GenericAnnotatedTypeFactory<
    *
    * <p>This implementation returns null if no annotation can be created, because the qualifier has
    * elements/arguments, which {@code @RequiresQualifier} and {@code @EnsuresQualifier} do not
-   * support. Subclasses may override this method to return qualifiers that do have arguments
+   * support. Subclasses can override this method to return qualifiers that do have arguments
    * instead of returning null.
    *
    * @param expression the expression to which the qualifier applies
@@ -3090,7 +3097,7 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * Add a new entry to the shared CFG. If this is a subchecker, this method delegates to the
+   * Adds a new entry to the shared CFG. If this is a subchecker, this method delegates to the
    * superchecker's GenericAnnotatedTypeFactory, if it exists. Duplicate keys must map to the same
    * CFG.
    *
@@ -3187,8 +3194,8 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * If kind = CONDITIONALPOSTCONDITION, return the result element, e.g. {@link
-   * EnsuresQualifierIf#result}. Otherwise, return null.
+   * If kind = CONDITIONALPOSTCONDITION, returns the result element, e.g., {@link
+   * EnsuresQualifierIf#result}. Otherwise, returns null.
    *
    * @param kind the kind of {@code contractAnnotation}
    * @param contractAnnotation a {@link RequiresQualifier}, {@link EnsuresQualifier}, or {@link
@@ -3216,10 +3223,10 @@ public abstract class GenericAnnotatedTypeFactory<
   }
 
   /**
-   * If {@code contractAnnotation} is a framework annotation, return its {@code expression} element.
-   * Otherwise, {@code contractAnnotation} is defined in a checker. If kind =
-   * CONDITIONALPOSTCONDITION, return its {@code expression} element, else return its {@code value}
-   * element.
+   * If {@code contractAnnotation} is a framework annotation, returns its {@code expression}
+   * element. Otherwise, {@code contractAnnotation} is defined in a checker. If kind =
+   * CONDITIONALPOSTCONDITION, returns its {@code expression} element, else returns its {@code
+   * value} element.
    *
    * @param kind the kind of {@code contractAnnotation}
    * @param contractAnnotation a {@link RequiresQualifier}, {@link EnsuresQualifier}, or {@link
