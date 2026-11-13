@@ -18,7 +18,7 @@ Checker Framework redesign/refactoring (in priority order):
 * CF cleanups based on langtools cleanups -- typeFromElement and typeFromTree hacks can be removed [Werner]
 
 * Some things need to happen only once ever, whereas others happen once per compilation method.
-  Need a setup and teardown method (rather than typeProcessingOver, which is not called if there is a Java error or typechecking error (but is called if there are warnings)).
+  Need a setup and teardown method (rather than typeProcessingOver, which is not called if there is a Java error or type-checking error (but is called if there are warnings)).
   [Werner.]
 
 * AnnotatedTypeFactory changes (Stuart); see below
@@ -26,7 +26,7 @@ Checker Framework redesign/refactoring (in priority order):
 * Eliminate use of reflection in composing a type-checker from
   similarly-named classes; force this to be explicit.  This will make the
   type-checkers a bit more verbose, but easier to understand and debug.
-  Examples throughout the manual may need to be updated.
+  Examples throughout the manual might need to be updated.
 
 * change from AST visiting to CFG visiting, so that each type system doesn't
   have to implement special logic to infer where boxing, unboxing, and
@@ -83,7 +83,7 @@ transformation:
 * eliminate postInit method
 
 * load javac via a classloader rather than by starting a new process -- this
-  may avoid some problems with the Maven plugin?
+  might avoid some problems with the Maven plugin?
 
 ===========================================================================
 

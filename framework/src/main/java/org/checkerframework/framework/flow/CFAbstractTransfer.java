@@ -141,19 +141,19 @@ public abstract class CFAbstractTransfer<
   protected final CFAbstractAnalysis<V, S, T> analysis;
 
   /**
-   * Should the analysis use sequential Java semantics (i.e., assume that only one thread is running
-   * at all times)?
+   * True if the analysis should use sequential Java semantics (i.e., assume that only one thread is
+   * running at all times).
    */
   protected final boolean sequentialSemantics;
 
-  /** Indicates that the whole-program inference is on. */
+  /** True if whole-program inference is on. */
   private final boolean infer;
 
   /** The method {@code Object.toString()}, which a string conversion calls. */
   private final ExecutableElement objectToString;
 
   /**
-   * Create a CFAbstractTransfer.
+   * Creates a CFAbstractTransfer.
    *
    * @param analysis the analysis used by this transfer function
    */
@@ -263,9 +263,9 @@ public abstract class CFAbstractTransfer<
   private @Nullable S fixedInitialStore = null;
 
   /**
-   * Set a fixed initial Store.
+   * Sets a fixed initial store.
    *
-   * @param s initial store; possible null
+   * @param s initial store; possibly null
    */
   public void setFixedInitialStore(@Nullable S s) {
     fixedInitialStore = s;
@@ -428,7 +428,8 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns true if a given lambda expression may be leaked outside the method in which it appears.
+   * Returns true if a given lambda expression might be leaked outside the method in which it
+   * appears.
    *
    * <p>Currently, a lambda is considered leaked unless it is an argument to a method whose
    * corresponding formal parameter is annotated as @{@link NonLeaked}. The @{@link NonLeaked}
@@ -451,7 +452,7 @@ public abstract class CFAbstractTransfer<
    *
    * @param lambda the lambda
    * @param aTypeFactory an annotated type factory
-   * @return true if the lambda may be leaked
+   * @return true if the lambda might be leaked
    */
   private boolean doesLambdaLeak(CFGLambda lambda, AnnotatedTypeFactory aTypeFactory) {
     LambdaExpressionTree lambdaTree = lambda.getLambdaTree();
@@ -514,7 +515,7 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Add field values to the initial store before {@code methodTree}.
+   * Adds field values to the initial store before {@code methodTree}.
    *
    * <p>The initializer value is inserted into {@code store} if the field is final and the field
    * type is immutable, as defined by {@link AnnotatedTypeFactory#isImmutable(TypeMirror)}.
@@ -529,7 +530,7 @@ public abstract class CFAbstractTransfer<
    *       determined by {@link #isNotFullyInitializedReceiver(MethodTree)}.
    * </ul>
    *
-   * @param store initial store into which field values are inserted; it may not be empty
+   * @param store initial store into which field values are inserted; it might not be empty
    * @param classTree the class that contains {@code methodTree}
    * @param methodTree the method or constructor tree
    */
@@ -566,7 +567,7 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Adds information about effectively final variables (from outer scopes)
+   * Adds information about effectively final variables (from outer scopes).
    *
    * @param store the store to add to
    * @param enclosingElement the enclosing element of the code we are analyzing
@@ -627,7 +628,7 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Add the information from all the preconditions of a method to the initial store in the method
+   * Adds the information from all the preconditions of a method to the initial store in the method
    * body.
    *
    * @param initialStore the initial store for the method body
@@ -718,7 +719,7 @@ public abstract class CFAbstractTransfer<
    * @param tm the type for the result value
    * @param in the transfer input
    * @return the input information, as a TransferResult
-   * @see #createTransferResult(CFAbstractValue value, TransferInput in) {
+   * @see #createTransferResult(CFAbstractValue, TransferInput)
    */
   @SideEffectFree
   protected TransferResult<V, S> createTransferResult(
@@ -807,7 +808,7 @@ public abstract class CFAbstractTransfer<
     return new RegularTransferResult<>(finishValue(value, store), store);
   }
 
-  /** Use the most specific type information available according to the store. */
+  /** Uses the most specific type information available according to the store. */
   @Override
   public TransferResult<V, S> visitLocalVariable(LocalVariableNode n, TransferInput<V, S> in) {
     S store = in.getRegularStore();
@@ -867,7 +868,7 @@ public abstract class CFAbstractTransfer<
     return visitLocalVariable(n.getSwitchExpressionVar(), vsTransferInput);
   }
 
-  /** Reverse the role of the 'thenStore' and 'elseStore'. */
+  /** Reverses the roles of the 'thenStore' and 'elseStore'. */
   @Override
   public TransferResult<V, S> visitConditionalNot(ConditionalNotNode n, TransferInput<V, S> p) {
     TransferResult<V, S> result = super.visitConditionalNot(n, p);
@@ -926,15 +927,15 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Refine the annotation of {@code secondNode} if the annotation {@code secondValue} is less
-   * precise than {@code firstValue}. This is possible, if {@code secondNode} is an expression that
+   * Refines the annotation of {@code secondNode} if the annotation {@code secondValue} is less
+   * precise than {@code firstValue}. This is possible if {@code secondNode} is an expression that
    * is tracked by the store (e.g., a local variable or a field). Clients usually call this twice
    * with {@code firstNode} and {@code secondNode} reversed, to refine each of them.
    *
-   * <p>Note that when overriding this method, insert a new type for {@code secondNode} into the
-   * store by calling {@link #insertValueForSplitAssignments}. It inserts the new type for each node
-   * that {@link #splitAssignments} returns, which omits each node that might not have the value of
-   * {@code secondNode} when the comparison completes.
+   * <p>An overriding method that inserts a new type for {@code secondNode} into the store should do
+   * so by calling {@link #insertValueForSplitAssignments}. It inserts the new type for each node in
+   * the result of {@link #nodesWithValueOf nodesWithValueOf(secondNode)}, which omits each node
+   * that might not have the value of {@code secondNode} when the comparison completes.
    *
    * @param firstNode the node that might be more precise
    * @param secondNode the node whose type to possibly refine
@@ -965,26 +966,34 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Takes a node, and either returns the node itself again (as a singleton list), or if the node is
-   * an assignment node, returns the sides of the assignment. The sides are the lhs and rhs, where
-   * splitAssignments is applied recursively to the rhs -- that is, it is possible that the rhs does
-   * not appear in the result, but rather its lhs and rhs do.
+   * Returns the nodes that have the value of the given node when the comparison that contains the
+   * node completes. The comparison is a binary comparison such as {@code ==} or {@code <}, and the
+   * caller refines each node in the result according to the outcome of the comparison.
    *
-   * <p>{@code node} is an operand of a comparison, such as {@code ==} or {@code <}, and the caller
-   * refines each node in the result according to the outcome of the comparison. Therefore, the
-   * result omits each node that a store can hold a value for (see {@link
+   * <p>If {@code node} is an assignment or a value-preserving cast (one that does not change the
+   * value of its operand; see {@link #isValuePreservingCast}), the candidates are its sides (see
+   * {@link #sidesOfAssignment}). For example, the sides of {@code a = b = c}, which is parsed as
+   * {@code a = (b = c)}, are {@code a}, {@code b}, and {@code c}, and the sides of {@code (String)
+   * (s = t)} are the cast, {@code s}, and {@code t}. Otherwise, the only candidate is {@code node}
+   * itself. A widening conversion that does not change the value of its operand (see {@link
+   * #isValuePreservingConversion}), such as the binary numeric promotion of {@code (int) s} in
+   * {@code (int) s == 5L}, is looked through.
+   *
+   * <p>The result omits each candidate that a store can hold a value for (see {@link
    * CFAbstractStore#canInsertJavaExpression}) and that, when the comparison completes, might have a
-   * different value than {@code node} had when it was evaluated. A node's value can change when
-   * code that is evaluated after the node writes a variable, field, or array element that the node
-   * reads. That code is the rest of the assignment, and the code in the enclosing expressions that
-   * is evaluated after {@code node} and before the comparison completes, such as the right operand
-   * of the comparison if {@code node} is in its left operand. For example:
+   * different value than {@code node} had when it was evaluated. A candidate's value can change
+   * when code that is evaluated after the candidate writes a variable, field, or array element that
+   * the candidate reads. That code is the rest of the assignment, and the code in the enclosing
+   * expressions that is evaluated after {@code node} and before the comparison completes, such as
+   * the right operand of the comparison if {@code node} is in its left operand. For example:
    *
    * <ul>
    *   <li>The result for {@code n = n.next} is just {@code n}, because after the assignment {@code
    *       n.next} is a field of a different object. Likewise, the result for {@code n.next = (n =
    *       o).other} omits {@code n.next}.
-   *   <li>The result for the left operand of {@code n.next == (n = o)} is empty.
+   *   <li>The result for the left operand of {@code n.next == o} is {@code n.next}, but the result
+   *       for the left operand of {@code n.next == (n = o)} is empty, because {@code n = o} is
+   *       evaluated after {@code n.next}.
    *   <li>The result for {@code a[i = 0] = b[i]} contains {@code b[i]}, because {@code i = 0} is
    *       evaluated before {@code b[i]}.
    * </ul>
@@ -998,37 +1007,27 @@ public abstract class CFAbstractTransfer<
    * depends on the refined value, which this method does not know. {@link
    * #insertValueForSplitAssignments} inserts such a refinement where the store would keep it.
    *
-   * <p>A node that is neither an assignment nor a value-preserving cast is returned even if it
+   * <p>A node that is neither an assignment nor a value-preserving cast is a candidate even if it
    * contains an assignment, as in {@code x + (x = 1)}. {@link JavaExpression#fromNode} converts
    * such a node to an expression that contains {@link Unknown}, which no store holds a value for.
    *
-   * <p>A cast that does not change the value of its operand (see {@link #isValuePreservingCast}) is
-   * treated like an assignment: the result contains both the cast and its operand, to which
-   * splitAssignments is applied recursively. For example, the result for {@code (String) (s = t)}
-   * contains the cast, {@code s}, and {@code t}.
-   *
-   * <p>A widening conversion that does not change the value of its operand (see {@link
-   * #isValuePreservingConversion}), such as the binary numeric promotion of {@code (int) s} in
-   * {@code (int) s == 5L}, is looked through.
-   *
    * <p>Clients must not modify the result, which is cached.
    *
-   * @param node possibly an assignment node or a cast
-   * @return a list containing the right- and left-hand sides in the given assignment node that have
-   *     the value of the assignment when the comparison completes; if {@code node} is neither an
-   *     assignment nor a value-preserving cast, a list containing just {@code node}, or an empty
-   *     list if {@code node} might have a different value when the comparison completes
+   * @param node a node in an operand of a comparison, possibly an assignment or a cast
+   * @return the nodes that have the value of {@code node} when the comparison completes: the sides
+   *     of {@code node} if it is an assignment or a value-preserving cast, and otherwise {@code
+   *     node} itself, except for those that might have a different value by then
    */
-  protected List<Node> splitAssignments(Node node) {
+  protected List<Node> nodesWithValueOf(Node node) {
     return splitAssignmentsResult(node).sides();
   }
 
   /**
-   * The result of {@link #splitAssignments}, together with the fields that it omits only because a
+   * The result of {@link #nodesWithValueOf}, together with the fields that it omits only because a
    * call might write them.
    *
-   * @param sides the result of {@link #splitAssignments}
-   * @param fieldsWrittenByCalls the nodes that the result of {@link #splitAssignments} omits only
+   * @param sides the result of {@link #nodesWithValueOf}
+   * @param fieldsWrittenByCalls the nodes that the result of {@link #nodesWithValueOf} omits only
    *     because a call that is not side-effect-free, and that is evaluated after the node and
    *     before the comparison completes, might write the field that the node denotes; each converts
    *     to a {@link FieldAccess}
@@ -1036,31 +1035,44 @@ public abstract class CFAbstractTransfer<
   record SplitAssignmentsResult(List<Node> sides, List<Node> fieldsWrittenByCalls) {}
 
   /**
-   * Returns the result of {@link #splitAssignments}, together with the fields that it omits only
+   * Returns the result of {@link #nodesWithValueOf}, together with the fields that it omits only
    * because a call might write them.
    *
    * <p>Clients must not modify the result, which is cached.
    *
-   * @param node possibly an assignment node or a cast
-   * @return the result of {@link #splitAssignments} for {@code node}, and the fields that it omits
+   * @param node a node in an operand of a comparison, possibly an assignment or a cast
+   * @return the result of {@link #nodesWithValueOf} for {@code node}, and the fields that it omits
    *     only because a call might write them
    */
   private SplitAssignmentsResult splitAssignmentsResult(Node node) {
-    SplitAssignmentsResult result = analysis.splitAssignmentsCache.get(node);
+    SplitAssignmentsResult result = analysis.nodesWithValueOfCache.get(node);
     if (result == null) {
-      result = computeSplitAssignments(node);
-      analysis.splitAssignmentsCache.put(node, result);
+      result = computeNodesWithValueOf(node);
+      analysis.nodesWithValueOfCache.put(node, result);
     }
     return result;
   }
 
   /**
+   * Returns the nodes that have the value of the given node when the comparison that contains the
+   * node completes.
+   *
+   * @param node a node in an operand of a comparison, possibly an assignment or a cast
+   * @return the nodes that have the value of {@code node} when the comparison completes
+   * @deprecated use {@link #nodesWithValueOf}
+   */
+  @Deprecated // 2026-11-13
+  protected List<Node> splitAssignments(Node node) {
+    return nodesWithValueOf(node);
+  }
+
+  /**
    * Returns true if {@link #insertValueForSplitAssignments} might insert a value for the given
-   * node: if a store can hold a value for some node in the result of {@link #splitAssignments}, or
+   * node: if a store can hold a value for some node in the result of {@link #nodesWithValueOf}, or
    * for some field that it omits only because a call might write it, and that node is
    * deterministic.
    *
-   * @param node possibly an assignment node or a cast
+   * @param node a node in an operand of a comparison, possibly an assignment or a cast
    * @return true if {@link #insertValueForSplitAssignments} might insert a value for {@code node}
    */
   protected boolean hasRefinableSide(Node node) {
@@ -1078,15 +1090,15 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Inserts the given value into the given store for each node that {@link #splitAssignments}
-   * returns for the given node. Also inserts a value for each field that {@link #splitAssignments}
+   * Inserts the given value into the given store for each node that {@link #nodesWithValueOf}
+   * returns for the given node. Also inserts a value for each field that {@link #nodesWithValueOf}
    * omits only because a call that is not side-effect-free might write it: the value that the store
    * keeps for the field across such a call (see {@link
    * CFAbstractStore#newFieldValueAfterMethodCall}), such as a refinement to the target of a
    * monotonic qualifier.
    *
    * @param store the store to modify
-   * @param node possibly an assignment node or a cast
+   * @param node a node in an operand of a comparison, possibly an assignment or a cast
    * @param value the value to insert for each expression that has the value of {@code node}
    */
   protected void insertValueForSplitAssignments(S store, Node node, V value) {
@@ -1094,12 +1106,12 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Inserts the given annotation into the given store for each node that {@link #splitAssignments}
+   * Inserts the given annotation into the given store for each node that {@link #nodesWithValueOf}
    * returns for the given node, and for each field that it omits only because a call might write
    * it, as {@link #insertValueForSplitAssignments(CFAbstractStore, Node, CFAbstractValue)} does.
    *
    * @param store the store to modify
-   * @param node possibly an assignment node or a cast
+   * @param node a node in an operand of a comparison, possibly an assignment or a cast
    * @param anno the annotation to insert for each expression that has the value of {@code node}
    */
   protected void insertValueForSplitAssignments(S store, Node node, AnnotationMirror anno) {
@@ -1108,11 +1120,11 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Inserts a value into the given store for each node that {@link #splitAssignments} returns for
+   * Inserts a value into the given store for each node that {@link #nodesWithValueOf} returns for
    * the given node, and for each field that it omits only because a call might write it.
    *
    * @param store the store to modify
-   * @param node possibly an assignment node or a cast
+   * @param node a node in an operand of a comparison, possibly an assignment or a cast
    * @param valueOf the value to insert for an expression that has the value of {@code node}
    */
   private void insertValueForSplitAssignments(
@@ -1136,40 +1148,40 @@ public abstract class CFAbstractTransfer<
   /**
    * Returns the result of {@link #splitAssignmentsResult}, without using the cache.
    *
-   * @param node possibly an assignment node or a cast
+   * @param node a node in an operand of a comparison, possibly an assignment or a cast
    * @return the result of {@link #splitAssignmentsResult} for {@code node}
    */
-  private SplitAssignmentsResult computeSplitAssignments(Node node) {
+  private SplitAssignmentsResult computeNodesWithValueOf(Node node) {
     Node unwrapped = node;
     while (unwrapped instanceof WideningConversionNode widening
         && isValuePreservingConversion(widening)) {
       unwrapped = widening.getOperand();
     }
-    List<Node> sides =
+    List<Node> candidates =
         unwrapped instanceof AssignmentNode
                 || (unwrapped instanceof TypeCastNode cast && isValuePreservingCast(cast))
             ? sidesOfAssignment(unwrapped)
             : Collections.singletonList(node);
-    // Find the later writes only if a side might be omitted because of them, because finding them
-    // requires the path to the tree of `node`, which can be costly to compute.
-    Writes laterWrites = null;
-    List<Node> result = new ArrayList<>(sides.size());
+    // Find the written locations only if a candidate might be omitted because of them, because
+    // finding them requires the path to the tree of `node`, which can be costly to compute.
+    WrittenLocations locationsWrittenUntilComparison = null;
+    List<Node> result = new ArrayList<>(candidates.size());
     List<Node> fieldsWrittenByCalls = new ArrayList<>(0);
-    for (Node side : sides) {
-      JavaExpression expr = JavaExpression.fromNode(side);
+    for (Node candidate : candidates) {
+      JavaExpression expr = JavaExpression.fromNode(candidate);
       if (CFAbstractStore.canInsertJavaExpression(expr)) {
-        if (laterWrites == null) {
-          laterWrites = laterWrites(node);
+        if (locationsWrittenUntilComparison == null) {
+          locationsWrittenUntilComparison = locationsWrittenUntilComparison(node);
         }
-        if (laterWrites.mayChange(expr, false)) {
+        if (locationsWrittenUntilComparison.mayChange(expr, false)) {
           if (expr instanceof FieldAccess fieldAccess
-              && laterWrites.mayChangeOnlyByCalls(fieldAccess)) {
-            fieldsWrittenByCalls.add(side);
+              && locationsWrittenUntilComparison.mayChangeOnlyByCalls(fieldAccess)) {
+            fieldsWrittenByCalls.add(candidate);
           }
           continue;
         }
       }
-      result.add(side);
+      result.add(candidate);
     }
     return new SplitAssignmentsResult(
         Collections.unmodifiableList(result), Collections.unmodifiableList(fieldsWrittenByCalls));
@@ -1177,19 +1189,23 @@ public abstract class CFAbstractTransfer<
 
   /**
    * Returns the sides of the given assignment or value-preserving cast that have its value when it
-   * completes. The sides are the targets of the chain of assignments and value-preserving casts
-   * that starts with {@code assignment}, such as {@code a} and {@code b} in {@code a = b = c}; each
-   * value-preserving cast in the chain; and the operand of the last assignment or cast in the
-   * chain, such as {@code c}. The chain looks through value-preserving widening conversions. The
-   * result omits each side that a store can hold a value for and that the rest of the assignment
-   * might change.
+   * completes.
+   *
+   * <p>The chain that starts with {@code assignment} is {@code assignment}, followed by its operand
+   * (the rhs of an assignment, or the operand of a cast) if that is an assignment or a
+   * value-preserving cast, followed by that node's operand if that is an assignment or a
+   * value-preserving cast, and so on. The chain looks through value-preserving widening
+   * conversions. For example, {@code a = b = c} is parsed as {@code a = (b = c)}, and its chain is
+   * {@code a = (b = c)} and {@code b = c}. The sides are the targets of the assignments in the
+   * chain, such as {@code a} and {@code b}; each value-preserving cast in the chain; and the
+   * operand of the last assignment or cast in the chain, such as {@code c}. The result omits each
+   * side that a store can hold a value for and whose value the rest of the chain might change.
    *
    * @param assignment an assignment node or a value-preserving cast
    * @return the sides of {@code assignment} that have its value when it completes, in source order
    */
   private List<Node> sidesOfAssignment(Node assignment) {
-    // The assignments and value-preserving casts whose value is the value of `assignment`,
-    // outermost first.
+    // The chain that starts with `assignment`, outermost first.
     List<Node> chain = new ArrayList<>();
     Node rhs = assignment;
     while (true) {
@@ -1208,14 +1224,16 @@ public abstract class CFAbstractTransfer<
       }
     }
 
-    // Javac evaluates the receivers and indices of the targets from left to right, then the rhs,
-    // and then it stores into the targets from right to left. A cast evaluates nothing but its
-    // operand. Visit the sides in reverse order of evaluation, so that `writes` contains the
-    // writes that happen after the side is evaluated.
-    Writes writes = new Writes();
+    // Java evaluates the receivers and indices of the targets of the assignments in `chain` from
+    // left to right, then `rhs` (the operand of the last node in `chain`), and then it stores into
+    // the targets from right to left. A cast evaluates nothing but its operand. Visit the sides
+    // (`rhs`, and then the nodes of `chain` from last to first) in reverse order of evaluation, so
+    // that `written` contains the locations that are written while or after each side is
+    // evaluated.
+    WrittenLocations written = new WrittenLocations();
     for (Node n : chain) {
       if (n instanceof AssignmentNode a) {
-        writes.add(JavaExpression.fromNode(a.getTarget()));
+        written.add(JavaExpression.fromNode(a.getTarget()));
       }
     }
     Node innermost = chain.get(chain.size() - 1);
@@ -1224,29 +1242,33 @@ public abstract class CFAbstractTransfer<
             ? rhsTree(a)
             : ((TypeCastNode) innermost).getTree().getExpression();
     if (rhsTree != null) {
-      writes.scan(rhsTree, null);
+      written.scan(rhsTree, null);
     }
+    // The sides that the result contains, in source order: `sides[i]` is the target of
+    // `chain.get(i)` if that is an assignment, and `chain.get(i)` itself if that is a cast; and
+    // `sides[chain.size()]` is `rhs`. An element is null if the result omits that side.
     Node[] sides = new Node[chain.size() + 1];
-    int numKept = 0;
-    if (!mayBeChanged(rhs, writes)) {
+    // The number of non-null elements of `sides`, which is the size of the result.
+    int resultSize = 0;
+    if (!mayBeChanged(rhs, written)) {
       sides[chain.size()] = rhs;
-      numKept++;
+      resultSize++;
     }
     for (int i = chain.size() - 1; i >= 0; i--) {
       Node side;
       if (chain.get(i) instanceof AssignmentNode a) {
         side = a.getTarget();
-        writes.scan(side.getTree(), null);
+        written.scan(side.getTree(), null);
       } else {
         side = chain.get(i);
       }
-      if (!mayBeChanged(side, writes)) {
+      if (!mayBeChanged(side, written)) {
         sides[i] = side;
-        numKept++;
+        resultSize++;
       }
     }
 
-    List<Node> result = new ArrayList<>(numKept);
+    List<Node> result = new ArrayList<>(resultSize);
     for (Node side : sides) {
       if (side != null) {
         result.add(side);
@@ -1310,18 +1332,24 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns true if a store can hold a value for the given side of an assignment, and the side
-   * might be changed by the given writes.
+   * Returns true if a store can hold a value for the given side of a chain of assignments, and
+   * writing the given locations might change the side's value.
    *
-   * @param side a side of an assignment
-   * @param writes the writes that happen after {@code side} is evaluated and before the assignment
-   *     stores into its targets; they do not change the location that {@code side} denotes, because
-   *     the assignment stores the value of {@code side} into that location or reads it afterward
-   * @return true if a store can hold a value for {@code side} and the writes might change its value
+   * @param side a side of a chain of assignments and casts (see {@link #sidesOfAssignment}): an
+   *     entire target, such as {@code a[i]} (not {@code a} or {@code i}), a cast in the chain, or
+   *     the entire operand of the last node in the chain
+   * @param written the locations that are written while or after {@code side} is evaluated, up to
+   *     and including the stores into the targets of the chain. A write to the location that {@code
+   *     side} denotes does not change the value of {@code side} when the chain completes: if {@code
+   *     side} is a target, the chain later stores its value into that location, and if {@code side}
+   *     is the rhs, the write either happens before {@code side} reads the location or stores the
+   *     value that {@code side} read.
+   * @return true if a store can hold a value for {@code side} and writing {@code written} might
+   *     change its value
    */
-  private boolean mayBeChanged(Node side, Writes writes) {
+  private boolean mayBeChanged(Node side, WrittenLocations written) {
     JavaExpression expr = JavaExpression.fromNode(side);
-    return CFAbstractStore.canInsertJavaExpression(expr) && writes.mayChange(expr, true);
+    return CFAbstractStore.canInsertJavaExpression(expr) && written.mayChange(expr, true);
   }
 
   /**
@@ -1346,21 +1374,21 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns the writes that happen after the given node is evaluated and before the comparison
-   * (such as {@code ==} or {@code <}) that contains it completes. They are the writes of the code
-   * in the enclosing expressions that is evaluated after the node, and of those enclosing
-   * expressions themselves. For example, if {@code node} is {@code x} in {@code foo(x).f == y},
-   * they are the writes of the call to {@code foo} and of {@code y}.
+   * Returns the locations that are written after the given node is evaluated and before the
+   * comparison (such as {@code ==} or {@code <}) that contains it completes. They are the locations
+   * written by the code in the enclosing expressions that is evaluated after the node, and by those
+   * enclosing expressions themselves. For example, if {@code node} is {@code x} in {@code foo(x).f
+   * == y}, they are the locations written by the call to {@code foo} and by {@code y}.
    *
-   * <p>If no comparison encloses the node, the result contains the writes up to the outermost
-   * enclosing expression, or up to an enclosing lambda or switch expression.
+   * <p>If no comparison encloses the node, the result contains the locations written up to the
+   * outermost enclosing expression, or up to an enclosing lambda or switch expression.
    *
    * @param node a node
-   * @return the writes that happen after {@code node} is evaluated and before the comparison that
-   *     contains it completes
+   * @return the locations that are written after {@code node} is evaluated and before the
+   *     comparison that contains it completes
    */
-  private Writes laterWrites(Node node) {
-    Writes result = new Writes();
+  private WrittenLocations locationsWrittenUntilComparison(Node node) {
+    WrittenLocations result = new WrittenLocations();
     TreePath path = sourcePath(node);
     if (path == null) {
       return result;
@@ -1390,7 +1418,7 @@ public abstract class CFAbstractTransfer<
    * Returns true if the code that is evaluated after {@code node} and before the comparison that
    * contains it completes might change the value of {@code node}. For example, returns true for the
    * left operand of {@code i > (i = 0)}, and for the left operand of {@code f == clearF()} if
-   * {@code f} is a non-final field. Unlike {@link #splitAssignments}, this method also considers
+   * {@code f} is a non-final field. Unlike {@link #nodesWithValueOf}, this method also considers
    * expressions that no store can hold a value for, such as {@code i - 1}.
    *
    * <p>A client that refines one operand of a comparison with a fact that mentions the other
@@ -1401,13 +1429,13 @@ public abstract class CFAbstractTransfer<
    *     completes might change the value of {@code node}
    */
   protected boolean mayBeChangedByLaterOperand(Node node) {
-    return laterWrites(node).mayChange(JavaExpression.fromNode(node), false);
+    return locationsWrittenUntilComparison(node).mayChange(JavaExpression.fromNode(node), false);
   }
 
   /**
-   * Returns the path to the tree of the given node. If the node's tree is artificial, as for an
-   * unboxing conversion, returns the path to the tree of the node's first operand that has one,
-   * recursively.
+   * Returns the path to the tree of the given node. If the node has no tree, or if its tree is not
+   * in the compilation unit (as for the artificial tree of an unboxing conversion), returns the
+   * result of this method for the first operand of the node for which that result is non-null.
    *
    * @param node a node
    * @return the path to the source tree that {@code node} represents, or null if there is none
@@ -1454,24 +1482,25 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * The locations that the evaluation of some code might write. {@link #add} adds a write to a
-   * given location, and {@link #scan} adds the writes that evaluating a tree might perform: its
-   * assignments, compound assignments, increments, decrements, method calls, object creations, and
-   * string conversions. A method call, object creation, or string conversion (which calls {@code
-   * toString()}) might write any field or array element, unless the method or constructor is
-   * side-effect-free.
+   * The locations that the evaluation of some code might write. A location is a local variable, a
+   * field, or an array element, such as {@code x}, {@code o.f}, or {@code a[i]}. {@link #add} adds
+   * a write to a given location, and {@link #scan} adds the writes that evaluating a tree might
+   * perform: its assignments, compound assignments, increments, decrements, method calls, object
+   * creations, and string conversions. A method call, object creation, or string conversion (which
+   * calls {@code toString()}) might write every non-final field and every array element, unless the
+   * method or constructor is side-effect-free; {@link #anyHeapLocation} records that.
    *
-   * <p>{@link #scan} does not descend into lambda bodies or class bodies, which do not execute when
-   * the tree is evaluated. A method call or object creation that might execute them is a write to
-   * any field or array element, and they cannot assign a local variable that is visible outside
-   * them. {@link #scan} does not descend into annotations either: javac represents an annotation
-   * argument as an assignment, as in {@code @IntVal(value = {0, 1})}, but it does not assign a
-   * variable.
+   * <p>{@link #scan} does not descend into lambda bodies or class bodies, because they do not
+   * execute when the tree is evaluated. The writes of such a body to fields and array elements are
+   * accounted for by the method call or object creation that executes the body, and such a body
+   * cannot assign a local variable that is declared outside the body. {@link #scan} does not
+   * descend into annotations either: javac represents an annotation argument as an assignment, as
+   * in {@code @IntVal(value = {0, 1})}, but it does not assign a variable.
    *
    * <p>{@link #mayChange} uses the analysis's rules for aliasing and purity (see {@link
    * CFAbstractAnalysis#canAlias} and {@link CFAbstractAnalysis#isSideEffectFree}).
    */
-  private final class Writes extends TreeScanner<Void, Void> {
+  private final class WrittenLocations extends TreeScanner<Void, Void> {
 
     /** The local variables that might be written. */
     private final List<LocalVariable> locals = new ArrayList<>();
@@ -1482,23 +1511,26 @@ public abstract class CFAbstractTransfer<
     /** The array elements that might be written. */
     private final List<ArrayAccess> arrayElements = new ArrayList<>();
 
-    /** True if any non-final field and any array element might be written. */
+    /**
+     * True if every non-final field and every array element might be written, as by a call to a
+     * method that is not side-effect-free.
+     */
     private boolean anyHeapLocation = false;
 
     /**
-     * True if a call to a method or constructor that is not side-effect-free might write any
-     * non-final field and any array element.
+     * True if a call to a method or constructor that is not side-effect-free might write every
+     * non-final field and every array element.
      */
     private boolean anyHeapLocationByCall = false;
 
     /**
-     * True if an assignment, compound assignment, increment, or decrement might write any non-final
-     * field and any array element.
+     * True if an assignment, compound assignment, increment, or decrement might write every
+     * non-final field and every array element.
      */
     private boolean anyHeapLocationByAssignment = false;
 
-    /** Creates an empty set of writes. */
-    Writes() {}
+    /** Creates an empty set of locations. */
+    WrittenLocations() {}
 
     /**
      * Adds a write to the given location.
@@ -1513,8 +1545,9 @@ public abstract class CFAbstractTransfer<
       } else if (target instanceof ArrayAccess arrayAccess) {
         arrayElements.add(arrayAccess);
       } else {
-        // Every local variable converts to a LocalVariable, so `target` is a field or an array
-        // element.
+        // `target` is not represented precisely, as when it is an `Unknown`. A local variable is
+        // always represented as a `LocalVariable`, so `target` is a field or an array element, and
+        // a write to every field and array element includes it.
         anyHeapLocation = true;
         anyHeapLocationByAssignment = true;
       }
@@ -1638,7 +1671,9 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * Returns true if these writes might change the value of {@code expr}.
+     * Returns true if writing these locations might change the value of {@code expr}: that is, if
+     * evaluating {@code expr} after the writes might yield a different value than evaluating it
+     * before them.
      *
      * <p>A write to a local variable changes only expressions that contain the variable. A write to
      * a field changes only accesses of the same field, and method calls. A write to an array
@@ -1652,7 +1687,9 @@ public abstract class CFAbstractTransfer<
      * @param ignoreOwnLocation true if a write to the location that {@code expr} denotes (if it is
      *     a variable, field access, or array access) does not matter, but a write that changes
      *     which location {@code expr} denotes (that is, a write to its receiver or index) does
-     * @return true if these writes might change the value of {@code expr}
+     *     matter
+     * @return true if evaluating {@code expr} after writing these locations might yield a different
+     *     value than evaluating it before
      */
     boolean mayChange(JavaExpression expr, boolean ignoreOwnLocation) {
       if (anyHeapLocation
@@ -1698,16 +1735,16 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * Returns true if these writes might change the value of the given field access only because a
-     * call that is not side-effect-free might write the field that it denotes. The store keeps part
-     * of a refinement of such a field across such a call (see {@link
+     * Returns true if writing these locations might change the value of the given field access only
+     * because a call that is not side-effect-free might write the field that it denotes. The store
+     * keeps part of a refinement of such a field across such a call (see {@link
      * CFAbstractStore#newFieldValueAfterMethodCall}). Returns false if side effects unrefine
      * aliases (see {@link GenericAnnotatedTypeFactory#sideEffectsUnrefineAliases}), because then
      * the store keeps no refinement of the field across the call.
      *
      * @param fa a field access
-     * @return true if these writes might change the value of {@code fa} only because a call might
-     *     write the field that it denotes
+     * @return true if writing these locations might change the value of {@code fa} only because a
+     *     call might write the field that it denotes
      */
     boolean mayChangeOnlyByCalls(FieldAccess fa) {
       if (!anyHeapLocationByCall
@@ -1726,10 +1763,10 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * Returns true if these writes might write the field that {@code fa} denotes.
+     * Returns true if these locations might include the field that {@code fa} denotes.
      *
      * @param fa a field access
-     * @return true if these writes might write the field that {@code fa} denotes
+     * @return true if these locations might include the field that {@code fa} denotes
      */
     private boolean mayWriteField(FieldAccess fa) {
       if (anyHeapLocation && !fa.isFinal()) {
@@ -1745,10 +1782,10 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * Returns true if these writes might write the array element that {@code aa} denotes.
+     * Returns true if these locations might include the array element that {@code aa} denotes.
      *
      * @param aa an array access
-     * @return true if these writes might write the array element that {@code aa} denotes
+     * @return true if these locations might include the array element that {@code aa} denotes
      */
     private boolean mayWriteArrayElement(ArrayAccess aa) {
       if (anyHeapLocation) {
@@ -1865,7 +1902,7 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Determine abstract value of right-hand side and update the store accordingly.
+   * Determines the abstract value of the right-hand side and updates the store accordingly.
    *
    * @param in the store(s) before the assignment
    * @param lhs the left-hand side of the assignment
@@ -1892,10 +1929,10 @@ public abstract class CFAbstractTransfer<
   /**
    * Returns true if evaluating {@code rhsTree} might change the receiver or index of {@code lhs},
    * as in {@code n.next = (n = o)}. A method call that is not side-effect-free might change a field
-   * or array element in the receiver or index (see {@link Writes}), as in {@code global.next =
-   * reassignGlobal()}. Java evaluates the receiver and index of {@code lhs} before the right-hand
-   * side, so in that case the assignment stores into a location that {@code lhs} no longer denotes
-   * after the assignment.
+   * or array element in the receiver or index (see {@link WrittenLocations}), as in {@code
+   * global.next = reassignGlobal()}. Java evaluates the receiver and index of {@code lhs} before
+   * the right-hand side, so in that case the assignment stores into a location that {@code lhs} no
+   * longer denotes after the assignment.
    *
    * @param lhs the left-hand side of an assignment
    * @param rhsTree the right-hand side of the assignment as written in source code, or null
@@ -1908,9 +1945,9 @@ public abstract class CFAbstractTransfer<
     if (rhsTree == null) {
       return false;
     }
-    Writes writes = new Writes();
-    writes.scan(rhsTree, null);
-    return writes.mayChange(JavaExpression.fromNode(lhs), true);
+    WrittenLocations written = new WrittenLocations();
+    written.scan(rhsTree, null);
+    return written.mayChange(JavaExpression.fromNode(lhs), true);
   }
 
   @Override
@@ -2025,7 +2062,7 @@ public abstract class CFAbstractTransfer<
    * a @SuppressWarnings, then this method returns false.
    *
    * @param tree a tree
-   * @return true if to perform whole-program inference on the tree
+   * @return true if whole-program inference should be performed on the tree
    */
   protected boolean shouldPerformWholeProgramInference(Tree tree) {
     // Test `infer` first: computing the path is expensive, and it is needed only if WPI is on.
@@ -2042,7 +2079,7 @@ public abstract class CFAbstractTransfer<
    *
    * @param expressionTree the right-hand side of an assignment
    * @param lhsTree the left-hand side of an assignment
-   * @return true if to perform whole-program inference
+   * @return true if whole-program inference should be performed
    */
   protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
     // Check that infer is true and the tree isn't in scope of a @SuppressWarnings
@@ -2060,7 +2097,7 @@ public abstract class CFAbstractTransfer<
    *
    * @param tree a tree
    * @param elt its element
-   * @return true if to perform whole-program inference
+   * @return true if whole-program inference should be performed
    */
   private boolean shouldPerformWholeProgramInference(Tree tree, Element elt) {
     return shouldPerformWholeProgramInference(tree)
@@ -2068,7 +2105,7 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Add information from the postconditions of a method to the store after an invocation.
+   * Adds information from the postconditions of a method to the store after an invocation.
    *
    * @param invocationNode a method call or an object creation
    * @param store a store; is side-effected by this method
@@ -2087,7 +2124,7 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Add information from the conditional postconditions of a method to the stores after an
+   * Adds information from the conditional postconditions of a method to the stores after an
    * invocation.
    *
    * @param invocationNode a method call
@@ -2110,7 +2147,7 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Add information from the postconditions and conditional postconditions of a method to the
+   * Adds information from the postconditions and conditional postconditions of a method to the
    * stores after an invocation.
    *
    * @param invocationNode a method call node or an object creation node
@@ -2181,7 +2218,9 @@ public abstract class CFAbstractTransfer<
     }
   }
 
-  /** A case produces no value, but it may imply some facts about switch selector expression. */
+  /**
+   * A case produces no value, but it might imply some facts about the switch selector expression.
+   */
   @Override
   public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
     S store = in.getRegularStore();
@@ -2399,8 +2438,8 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Inserts newAnno as the value into all stores (conditional or not) in the result for node. This
-   * is a utility method for subclasses.
+   * Inserts newAnno as the value into all stores (conditional or not) in the result for target.
+   * This is a utility method for subclasses.
    *
    * @param result the TransferResult holding the stores to modify
    * @param target the receiver whose value should be modified

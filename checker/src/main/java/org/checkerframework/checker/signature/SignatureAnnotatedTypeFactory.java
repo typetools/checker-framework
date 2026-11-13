@@ -128,7 +128,7 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Create a LiteralTreeAnnotator for the Signature Checker.
+   * Creates a LiteralTreeAnnotator for the Signature Checker.
    *
    * @param atypeFactory the type factory
    * @return a LiteralTreeAnnotator for the Signature Checker

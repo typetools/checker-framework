@@ -35,35 +35,26 @@ public class CaseNode extends Node {
    */
   protected final List<Node> caseExprs;
 
-  /** The guard (the expression in the {@code when} clause) for this case. */
-  protected final @Nullable Node guard;
-
   /**
-   * Create a new CaseNode.
+   * Creates a new CaseNode.
    *
    * @param tree the tree for this node
    * @param selectorExprAssignment the Node for the assignment of the switch selector expression to
    *     a synthetic local variable
    * @param caseExprs the case expression(s) to match the switch expression against
-   * @param guard the guard expression or null
    * @param types a factory of utility methods for operating on types
    */
   public CaseNode(
-      CaseTree tree,
-      AssignmentNode selectorExprAssignment,
-      List<Node> caseExprs,
-      @Nullable Node guard,
-      Types types) {
+      CaseTree tree, AssignmentNode selectorExprAssignment, List<Node> caseExprs, Types types) {
     super(types.getNoType(TypeKind.NONE));
     this.tree = tree;
     this.selectorExprAssignment = selectorExprAssignment;
     this.caseExprs = caseExprs;
-    this.guard = guard;
   }
 
   /**
-   * The Node for the assignment of the switch selector expression to a synthetic local variable.
-   * This is used to refine the type of the switch selector expression in a case block.
+   * Returns the Node for the assignment of the switch selector expression to a synthetic local
+   * variable. This is used to refine the type of the switch selector expression in a case block.
    *
    * @return the assignment of the switch selector expression to a synthetic local variable
    */
@@ -72,22 +63,13 @@ public class CaseNode extends Node {
   }
 
   /**
-   * Gets the nodes corresponding to the case expressions. There can be multiple expressions since
-   * Java 12.
+   * Returns the nodes corresponding to the case expressions. There can be multiple expressions
+   * since Java 12.
    *
    * @return the nodes corresponding to the (potentially multiple) case expressions
    */
   public List<Node> getCaseOperands() {
     return caseExprs;
-  }
-
-  /**
-   * Gets the node for the guard (the expression in the {@code when} clause).
-   *
-   * @return the node for the guard
-   */
-  public @Nullable Node getGuard() {
-    return guard;
   }
 
   @Override

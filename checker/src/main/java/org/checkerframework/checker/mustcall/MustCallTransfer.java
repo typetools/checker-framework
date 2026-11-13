@@ -161,9 +161,9 @@ public class MustCallTransfer extends CFTransfer {
    * See {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
    *
    * @param tree a tree
-   * @return false if Resource Leak Checker is running as one of the upstream checkers and the
-   *     -AenableWpiForRlc flag is not passed as a command line argument, otherwise returns the
-   *     result of the super call
+   * @return false if the Resource Leak Checker is running as one of the upstream checkers and the
+   *     -AenableWpiForRlc flag is not passed as a command-line argument; otherwise, the result of
+   *     the super call
    */
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree tree) {
@@ -178,10 +178,10 @@ public class MustCallTransfer extends CFTransfer {
    * See {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
    *
    * @param expressionTree a tree
-   * @param lhsTree its element
-   * @return false if Resource Leak Checker is running as one of the upstream checkers and the
-   *     -AenableWpiForRlc flag is not passed as a command line argument, otherwise returns the
-   *     result of the super call
+   * @param lhsTree the left-hand side of an assignment
+   * @return false if the Resource Leak Checker is running as one of the upstream checkers and the
+   *     -AenableWpiForRlc flag is not passed as a command-line argument; otherwise, the result of
+   *     the super call
    */
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
@@ -273,7 +273,7 @@ public class MustCallTransfer extends CFTransfer {
    * <p>Note that error reporting code assumes that the names of temporary variables are not legal
    * Java identifiers (see <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-3.html#jls-3.8">JLS 3.8</a>). The
-   * temporary variable names generated here include an {@code '-'} character to make the names
+   * temporary variable names generated here include a {@code '-'} character to make the names
    * invalid.
    *
    * @param node an expression node
@@ -323,7 +323,7 @@ public class MustCallTransfer extends CFTransfer {
    * Checks if WPI is enabled for the Resource Leak Checker inference. See {@link
    * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
    *
-   * @return returns true if WPI is enabled for the Resource Leak Checker
+   * @return true if WPI is enabled for the Resource Leak Checker
    */
   protected boolean isWpiEnabledForRLC() {
     return enableWpiForRlc;

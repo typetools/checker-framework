@@ -29,7 +29,7 @@ import org.plumelib.util.CollectionsP;
  *   <li>3. if {@code 0 < right}, {@code left - right} has type {@code @LessThan("left")}
  * </ul>
  *
- * These are implemented generally, so they also apply to e.g. &lt; and &le; comparisons.
+ * These are implemented generally, so they also apply to e.g., &lt; and &le; comparisons.
  */
 public class LessThanTransfer extends IndexAbstractTransfer {
 
@@ -66,7 +66,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
       if (!lessThanExpressions.contains(leftString)) {
         lessThanExpressions = CollectionsP.append(lessThanExpressions, leftString);
         AnnotationMirror refinedRightAnno = factory.createLessThanQualifier(lessThanExpressions);
-        for (Node internal : splitAssignments(right)) {
+        for (Node internal : nodesWithValueOf(right)) {
           store.insertValue(JavaExpression.fromNode(internal), refinedRightAnno);
         }
       }
@@ -105,7 +105,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
       if (!lessThanExpressions.contains(leftIncremented)) {
         lessThanExpressions = CollectionsP.append(lessThanExpressions, leftIncremented);
         AnnotationMirror refinedRightAnno = factory.createLessThanQualifier(lessThanExpressions);
-        for (Node internal : splitAssignments(right)) {
+        for (Node internal : nodesWithValueOf(right)) {
           store.insertValue(JavaExpression.fromNode(internal), refinedRightAnno);
         }
       }
