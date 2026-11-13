@@ -2,6 +2,7 @@ package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.CompilationUnitTree;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -9,8 +10,11 @@ import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -101,6 +105,12 @@ public abstract class CFAbstractAnalysis<
   /** Instance of the types utility. */
   protected final Types types;
 
+  /** True if -AassumeSideEffectFree or -AassumePure was passed on the command line. */
+  private final boolean assumeSideEffectFree;
+
+  /** True if -AassumePureGetters was passed on the command line. */
+  private final boolean assumePureGetters;
+
   /**
    * Cache for {@link #getSideEffectsOnlyExpressions}, which would otherwise re-parse the
    * annotation's expressions once per dataflow iteration per call site. A key that is mapped to
@@ -152,7 +162,10 @@ public abstract class CFAbstractAnalysis<
    * @param factory an annotated type factory to introduce type and dataflow rules
    * @param maxCountBeforeWidening number of times a block can be analyzed before widening
    */
-  @SuppressWarnings("this-escape")
+  @SuppressWarnings({
+    "this-escape",
+    "nullness:method.invocation" // calls createTransferFunction() on a partly-initialized object
+  })
   protected CFAbstractAnalysis(
       BaseTypeChecker checker,
       GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
@@ -165,6 +178,9 @@ public abstract class CFAbstractAnalysis<
     dependentTypesHelper = factory.getDependentTypesHelper();
     this.atypeFactory = factory;
     this.checker = checker;
+    this.assumeSideEffectFree =
+        checker.hasOption("assumeSideEffectFree") || checker.hasOption("assumePure");
+    this.assumePureGetters = checker.hasOption("assumePureGetters");
     this.transferFunction = createTransferFunction();
     this.fieldValues = new ArrayList<>();
   }
@@ -507,5 +523,91 @@ public abstract class CFAbstractAnalysis<
    */
   public ProcessingEnvironment getEnv() {
     return env;
+  }
+
+  /**
+   * Returns true if a call to the given method or constructor does not change any field or array
+   * element, according to the method's annotations (such as {@link
+   * org.checkerframework.dataflow.qual.SideEffectFree}) and the command-line options {@code
+   * -AassumeSideEffectFree}, {@code -AassumePure}, and {@code -AassumePureGetters}.
+   *
+   * @param method a method or constructor
+   * @return true if a call to {@code method} does not change any field or array element
+   */
+  public boolean isSideEffectFree(ExecutableElement method) {
+    return assumeSideEffectFree
+        || (assumePureGetters && ElementUtils.isGetter(method))
+        || atypeFactory.isSideEffectFree(method);
+  }
+
+  /**
+   * Returns true if the given expressions might evaluate to the same object, judging by their
+   * types: that is, true if the erasure of some bound of one expression's type is a subtype of the
+   * erasure of some bound of the other expression's type, as described below.
+   *
+   * <p>The answer is not conservative when an interface type is involved. One object can have two
+   * unrelated interface types, such as {@code Runnable} and {@code Serializable}, or a class type
+   * and an unrelated interface type, but this method returns false for expressions of such types.
+   * See https://github.com/typetools/checker-framework/issues/8558.
+   *
+   * <p>This compares the erasures of the types, because two parameterizations of a generic type can
+   * denote the same object even if neither is a subtype of the other. For example, a {@code
+   * Box<Integer>} is both a {@code Box<? extends Number>} and a {@code Box<? super Integer>}. It
+   * compares every bound of a type variable or intersection type, because the erasure of such a
+   * type is the erasure of only its first bound. For example, a {@code T[]} where {@code T extends
+   * Number & Comparable<T>} can be the same array as a {@code Comparable<T>[]}, though {@code
+   * Number[]} and {@code Comparable[]} are unrelated.
+   *
+   * @param a an expression
+   * @param b another expression
+   * @return true if {@code a} and {@code b} might evaluate to the same object
+   */
+  public boolean canAlias(JavaExpression a, JavaExpression b) {
+    List<TypeMirror> erasuresA = erasedBounds(a.getType());
+    List<TypeMirror> erasuresB = erasedBounds(b.getType());
+    for (TypeMirror ta : erasuresA) {
+      for (TypeMirror tb : erasuresB) {
+        if (types.isSubtype(ta, tb) || types.isSubtype(tb, ta)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns the erasures of the bounds of the given type: for a type variable or intersection type,
+   * the erasure of each of its bounds, such as {@code Number} and {@code Comparable} for a type
+   * variable that extends {@code Number & Comparable<T>}; for an array type, an array of each
+   * erased bound of its component type; and otherwise, the erasure of the type. Every value of the
+   * type has each of the returned types.
+   *
+   * @param type a type
+   * @return the erasures of the bounds of {@code type}
+   */
+  private List<TypeMirror> erasedBounds(TypeMirror type) {
+    switch (type.getKind()) {
+      case TYPEVAR -> {
+        return erasedBounds(((TypeVariable) type).getUpperBound());
+      }
+      case INTERSECTION -> {
+        List<TypeMirror> result = new ArrayList<>();
+        for (TypeMirror bound : ((IntersectionType) type).getBounds()) {
+          result.addAll(erasedBounds(bound));
+        }
+        return result;
+      }
+      case ARRAY -> {
+        List<TypeMirror> componentBounds = erasedBounds(((ArrayType) type).getComponentType());
+        List<TypeMirror> result = new ArrayList<>(componentBounds.size());
+        for (TypeMirror componentBound : componentBounds) {
+          result.add(types.getArrayType(componentBound));
+        }
+        return result;
+      }
+      default -> {
+        return Collections.singletonList(types.erasure(type));
+      }
+    }
   }
 }
