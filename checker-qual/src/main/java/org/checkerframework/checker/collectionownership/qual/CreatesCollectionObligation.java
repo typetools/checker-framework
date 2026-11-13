@@ -8,15 +8,22 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
- * A method carrying this annotation creates a {@code CollectionObligation} for the receiver
- * collection.
+ * The annotated method might insert an element into its receiver collection, and thus creates an
+ * obligation for the receiver collection. For example, {@code Collection.add} is annotated with
+ * {@code @CreatesCollectionObligation}.
  *
- * <p>Consider a call to a {@code CreatesCollectionObligation}-annotated method. If the receiver is
- * of type {@code @OwningCollectionWithoutObligation}, it is unrefined to {@code @OwningCollection},
- * and a CollectionObligation is created for each {@code @MustCall} method of the type variable of
- * the receiver.
+ * <p>A call to such a method changes the type of its receiver to {@code @OwningCollection}, and it
+ * creates an obligation for each method in the {@code @MustCall} type of the receiver's type
+ * argument:
  *
- * <p>This annotation should only be used on methods declared in a subtype of {@code
+ * <pre><code>
+ *  List&lt;Socket&gt; sockets = new ArrayList&lt;&gt;();
+ *  // `sockets` is {@literal @}OwningCollectionWithoutObligation
+ *  sockets.add(new Socket(host, port));
+ *  // `sockets` is {@literal @}OwningCollection, with an obligation to close every element
+ * </code></pre>
+ *
+ * <p>This annotation should be written only on methods declared in a subtype of {@code
  * java.lang.Iterable}.
  *
  * @checker_framework.manual #resource-leak-checker Resource Leak Checker
