@@ -51,7 +51,7 @@ public class ObjectCreationNode extends Node {
   protected final @Nullable ClassDeclarationNode classbody;
 
   /**
-   * Constructs a {@link ObjectCreationNode}.
+   * Constructs an {@link ObjectCreationNode}.
    *
    * @param tree the NewClassTree
    * @param enclosingExpr the enclosing expression Node if it exists, or null

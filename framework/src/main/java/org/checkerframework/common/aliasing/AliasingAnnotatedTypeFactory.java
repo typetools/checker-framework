@@ -41,7 +41,11 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected final AnnotationMirror MAYBE_LEAKED =
       AnnotationBuilder.fromClass(elements, MaybeLeaked.class);
 
-  /** Create the type factory. */
+  /**
+   * Creates the type factory.
+   *
+   * @param checker the checker that uses this type factory
+   */
   @SuppressWarnings("this-escape")
   public AliasingAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
@@ -84,7 +88,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   protected class AliasingQualifierHierarchy extends NoElementQualifierHierarchy {
 
     /**
-     * Create AliasingQualifierHierarchy.
+     * Creates an AliasingQualifierHierarchy.
      *
      * @param qualifierClasses classes of annotations that are the qualifiers
      * @param elements element utils
@@ -95,10 +99,10 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns true is {@code anno} is annotation in the Leaked hierarchy.
+     * Returns true if {@code anno} is an annotation in the Leaked hierarchy.
      *
      * @param anno an annotation
-     * @return true is {@code anno} is annotation in the Leaked hierarchy
+     * @return true if {@code anno} is an annotation in the Leaked hierarchy
      */
     private boolean isLeakedQualifier(AnnotationMirror anno) {
       return areSameByClass(anno, MaybeLeaked.class)

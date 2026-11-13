@@ -30,18 +30,18 @@ import org.plumelib.util.StringsP;
  * pseudo-assignments such as parameter passing and method invocation, and method overriding.
  *
  * <p>Most type-checker annotation processors should extend this class, instead of {@link
- * SourceChecker}. Checkers that require annotated types but not subtype checking (e.g. for testing
- * purposes) should extend {@link SourceChecker}. Non-type checkers (e.g. checkers to enforce coding
- * styles) can extend {@link SourceChecker} or {@link AbstractTypeProcessor}; the Checker Framework
- * is not specifically designed to support such checkers.
+ * SourceChecker}. Checkers that require annotated types but not subtype checking (e.g., for testing
+ * purposes) should extend {@link SourceChecker}. Non-type checkers (e.g., checkers to enforce
+ * coding styles) can extend {@link SourceChecker} or {@link AbstractTypeProcessor}; the Checker
+ * Framework is not specifically designed to support such checkers.
  *
  * <p>It is a convention that, for a type system Foo, the checker, the visitor, and the annotated
  * type factory are named as <i>FooChecker</i>, <i>FooVisitor</i>, and
  * <i>FooAnnotatedTypeFactory</i>. Some factory methods use this convention to construct the
  * appropriate classes reflectively.
  *
- * <p>{@code BaseTypeChecker} encapsulates a group for factories for various representations/classes
- * related the type system, mainly:
+ * <p>{@code BaseTypeChecker} encapsulates a group of factories for various representations/classes
+ * related to the type system, mainly:
  *
  * <ul>
  *   <li>{@link QualifierHierarchy}: to represent the supported qualifiers in addition to their
@@ -59,7 +59,7 @@ import org.plumelib.util.StringsP;
  *
  * <p>If the specified type qualifiers are meta-annotated with {@link SubtypeOf}, this
  * implementation will automatically construct the type qualifier hierarchy. Otherwise, or if this
- * behavior must be overridden, the subclass may override the {@link
+ * behavior must be overridden, the subclass can override the {@link
  * BaseAnnotatedTypeFactory#createQualifierHierarchy()} method.
  *
  * @checker_framework.manual #creating-compiler-interface The checker class
@@ -69,7 +69,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
   /** An array containing just {@code BaseTypeChecker.class}. */
   protected static Class<?>[] baseTypeCheckerClassArray = new Class<?>[] {BaseTypeChecker.class};
 
-  /** Create a new BaseTypeChecker. */
+  /** Creates a new BaseTypeChecker. */
   protected BaseTypeChecker() {}
 
   /**
@@ -78,8 +78,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
    *
    * <p>This implementation uses the checker naming convention to create the appropriate visitor. If
    * no visitor is found, it returns an instance of {@link BaseTypeVisitor}. It reflectively invokes
-   * the constructor that accepts this checker and the compilation unit tree (in that order) as
-   * arguments.
+   * the constructor that accepts this checker as its argument.
    *
    * <p>Subclasses have to override this method to create the appropriate visitor if they do not
    * follow the checker naming convention.
@@ -143,7 +142,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
    * or if the type factory is null. The caller must know the exact checker class to request.
    *
    * <p>Because the visitor state is copied, call this method each time a subfactory is needed
-   * rather than store the returned subfactory in a field.
+   * rather than storing the returned subfactory in a field.
    *
    * @param subCheckerClass the class of the subchecker
    * @param <T> the type of {@code subCheckerClass}'s {@link AnnotatedTypeFactory}
@@ -214,7 +213,7 @@ public abstract class BaseTypeChecker extends SourceChecker {
 
   /**
    * Finds the ultimate parent checker of this checker. The ultimate parent checker is the checker
-   * that the user actually requested, i.e. the one with no parent. The ultimate parent might be
+   * that the user actually requested, i.e., the one with no parent. The ultimate parent might be
    * this checker itself.
    *
    * @return the first checker in the parent checker chain with no parent checker of its own, i.e.,
