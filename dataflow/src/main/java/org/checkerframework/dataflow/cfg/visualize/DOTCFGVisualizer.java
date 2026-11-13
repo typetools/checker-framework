@@ -44,7 +44,13 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 
-/** Generate a graph description in the DOT language of a control graph. */
+/**
+ * Generates a graph description in the DOT language of a control flow graph.
+ *
+ * @param <V> the abstract value type
+ * @param <S> the store type
+ * @param <T> the transfer function type
+ */
 public class DOTCFGVisualizer<
         V extends AbstractValue<V>, S extends Store<S>, T extends TransferFunction<V, S>>
     extends AbstractCFGVisualizer<V, S, T> {
@@ -198,7 +204,7 @@ public class DOTCFGVisualizer<
   }
 
   /**
-   * Create a dot file and return its name.
+   * Creates a dot file and returns its name.
    *
    * @param ast an abstract syntax tree
    * @return the file name used for DOT output
@@ -334,7 +340,7 @@ public class DOTCFGVisualizer<
   }
 
   /**
-   * Escape the input String.
+   * Escapes the input String.
    *
    * @param str the string to be escaped
    * @return the escaped version of the string
@@ -345,8 +351,8 @@ public class DOTCFGVisualizer<
   }
 
   /**
-   * Write a file {@code methods.txt} that contains a mapping from source code location to generated
-   * dot file.
+   * Writes a file {@code methods.txt} that contains a mapping from source code location to
+   * generated dot file.
    */
   @Override
   public void shutdown() {

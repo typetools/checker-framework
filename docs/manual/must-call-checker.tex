@@ -26,7 +26,7 @@ before it is de-allocated''.
 If you are running the Resource Leak Checker
 (\chapterpageref{resource-leak-checker}), then there is no need to run the
 Must Call Checker, because the Resource Leak Checker does so automatically.
-Running both may cause warning suppressions for the Must Call Checker not to
+Running both might cause warning suppressions for the Must Call Checker not to
 work.
 
 
@@ -57,7 +57,7 @@ The Must Call Checker supports these type qualifiers:
 \item[\refqualclasswithparams{checker/mustcall/qual}{InheritableMustCall}{String[] value}]
   is an alias of \<@MustCall> that can only be written on a class declaration.
   It applies both to the class declaration on which it is written and also to all subclasses.
-  This frees the user of the need to write the \<@MustCall> annotation on every subclass.
+  This frees the user from the need to write the \<@MustCall> annotation on every subclass.
   See Section~\ref{must-call-on-class} for details.
 
 \end{description}
@@ -170,14 +170,14 @@ this assumption applies only to types that cannot be resolved.
 
 \sectionAndLabel{Type parameter bounds often need to be annotated}{must-call-type-params}
 
-In an unannotated program, there may be mismatches between defaulted type
+In an unannotated program, there can be mismatches between defaulted type
 qualifiers that lead to type-checking errors.  That is, the defaulted
-annotations at two different locations may be different and in conflict.  A
+annotations at two different locations can be different and in conflict.  A
 specific example is in code that contains a mix of explicit upper bounds
 with an \<extends> clause and implicit upper bounds without an \<extends>
 clause.
 
-For example, consider the following example (from
+Consider the following example (from
 \href{https://github.com/plume-lib/plume-util}{plume-util}) of an
 interface with explicit upper bounds and a client with implicit upper
 bounds:

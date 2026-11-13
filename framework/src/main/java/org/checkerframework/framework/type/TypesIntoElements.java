@@ -35,10 +35,10 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 
 /**
- * A helper class that puts the annotations from an AnnotatedTypeMirrors back into the corresponding
+ * A helper class that puts the annotations from an AnnotatedTypeMirror back into the corresponding
  * Elements, so that they get stored in the bytecode by the compiler.
  *
- * <p>This has kind-of the symmetric function to {@code TypeFromElement}.
+ * <p>This class is roughly symmetric to {@link ElementAnnotationApplier}.
  *
  * <p>This class deals with javac internals and liberally imports such classes.
  */
@@ -286,7 +286,7 @@ public final class TypesIntoElements {
   }
 
   /**
-   * Convert an AnnotatedTypeMirror and a TypeAnnotationPosition into the corresponding
+   * Converts an AnnotatedTypeMirror and a TypeAnnotationPosition into the corresponding
    * TypeCompounds.
    */
   private static class TCConvert
