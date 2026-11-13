@@ -69,7 +69,7 @@ public final class ClassFileWriter {
    *   -h, --help   print usage information and exit
    * </pre>
    *
-   * @param args options and classes and index files to analyze;
+   * @param args options and classes and index files to analyze
    * @throws IOException if a class file or index file cannot be opened/written
    */
   @SuppressWarnings("IncrementInForLoopAndHeader") // array contains alternating elements
@@ -168,7 +168,7 @@ public final class ClassFileWriter {
 
   /**
    * Inserts the annotations contained in {@code scene} into the class file contained in {@code
-   * fileName }, and write the result back into {@code fileName}.
+   * fileName}, and writes the result back into {@code fileName}.
    *
    * @param scene the scene containing the annotations to insert into a class
    * @param fileName the file name of the class the annotations should be inserted into. Should be a
@@ -198,8 +198,8 @@ public final class ClassFileWriter {
   }
 
   /**
-   * Inserts the annotations contained in {@code scene } into the class file read from {@code in},
-   * and writes the resulting class file into {@code out }. {@code in } should be a stream of bytes
+   * Inserts the annotations contained in {@code scene} into the class file read from {@code input},
+   * and writes the resulting class file into {@code out}. {@code input} should be a stream of bytes
    * that specify a valid Java class file, and {@code out} will contain a stream of bytes in the
    * same format, and will also contain the annotations from {@code scene}.
    *
@@ -209,7 +209,7 @@ public final class ClassFileWriter {
    * @param overwrite controls behavior when an annotation exists on a particular element in both
    *     the scene and the class file. If true, then the one from the scene is used; else the
    *     existing annotation in the class file is retained.
-   * @throws IOException if there is a problem reading from {@code in } or writing to {@code out}
+   * @throws IOException if there is a problem reading from {@code input} or writing to {@code out}
    */
   public static void insert(AScene scene, InputStream input, OutputStream out, boolean overwrite)
       throws IOException {
@@ -224,9 +224,10 @@ public final class ClassFileWriter {
   }
 
   /**
-   * Inserts the annotations contained in {@code scene } into the class {@code in}, and writes the
-   * resulting class file into {@code out }. {@code in} should be the name of a fully-qualified
-   * class, and {@code out} should be the name of a file to output the resulting class file to.
+   * Inserts the annotations contained in {@code scene} into the class {@code className}, and writes
+   * the resulting class file into {@code outputFileName}. {@code className} should be the name of a
+   * fully-qualified class, and {@code outputFileName} should be the name of a file to output the
+   * resulting class file to.
    *
    * @param scene the scene containing the annotations to insert into a class
    * @param className the fully qualified class to read
@@ -234,7 +235,8 @@ public final class ClassFileWriter {
    * @param overwrite controls behavior when an annotation exists on a particular element in both
    *     the scene and the class file. If true, then the one from the scene is used; else the
    *     existing annotation in the class file is retained.
-   * @throws IOException if there is a problem reading from {@code in } or writing to {@code out}
+   * @throws IOException if there is a problem reading from {@code className} or writing to {@code
+   *     outputFileName}
    */
   public static void insert(
       AScene scene, String className, String outputFileName, boolean overwrite) throws IOException {

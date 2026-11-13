@@ -24,22 +24,22 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public final class CreatesMustCallForToJavaExpression {
 
-  /** static utility methods only; don't create instances */
+  /** Static utility methods only; don't create instances. */
   private CreatesMustCallForToJavaExpression() {}
 
   /**
    * Returns the elements of the @CreatesMustCallFor annotations on the invoked method, as
-   * JavaExpressions. Returns the empty set if the given method has no @CreatesMustCallFor
+   * JavaExpressions. Returns the empty list if the given method has no @CreatesMustCallFor
    * annotation.
    *
-   * <p>If any expression is unparsable, this method reports an error and returns the empty set.
+   * <p>If any expression is unparsable, this method reports an error and returns the empty list.
    *
    * @param n a method invocation
    * @param atypeFactory the type factory to report errors and parse the expression string
    * @param supplier a type factory that can supply the executable elements for CreatesMustCallFor
    *     and CreatesMustCallFor.List's value elements. Usually, you should just pass atypeFactory
    *     again. The arguments are different so that the given type factory's adherence to both
-   *     protocols are checked by the type system.
+   *     protocols is checked by the type system.
    * @return the arguments of the method's @CreatesMustCallFor annotation, or an empty list
    */
   public static List<JavaExpression> getCreatesMustCallForExpressionsAtInvocation(
@@ -67,17 +67,17 @@ public final class CreatesMustCallForToJavaExpression {
 
   /**
    * Returns the elements of the @CreatesMustCallFor annotations on the method declaration, as
-   * JavaExpressions. Returns the empty set if the given method has no @CreatesMustCallFor
+   * JavaExpressions. Returns the empty list if the given method has no @CreatesMustCallFor
    * annotation.
    *
-   * <p>If any expression is unparsable, this method reports an error and returns the empty set.
+   * <p>If any expression is unparsable, this method reports an error and returns the empty list.
    *
    * @param tree a method declaration
    * @param atypeFactory the type factory to report errors and parse the expression string
    * @param supplier a type factory that can supply the executable elements for CreatesMustCallFor
    *     and CreatesMustCallFor.List's value elements. Usually, you should just pass atypeFactory
    *     again. The arguments are different so that the given type factory's adherence to both
-   *     protocols are checked by the type system.
+   *     protocols is checked by the type system.
    * @return the arguments of the method's @CreatesMustCallFor annotation, or an empty list
    */
   public static List<JavaExpression> getCreatesMustCallForExpressionsAtMethodDeclaration(
@@ -140,13 +140,13 @@ public final class CreatesMustCallForToJavaExpression {
    * issues a checker error.
    *
    * @param createsMustCallFor a @CreatesMustCallFor annotation
-   * @param tree the tree on which to report an error if annotation cannot be parsed
-   * @param methodName name to use in error message if annotation cannot be parsed
+   * @param tree the tree on which to report an error if the annotation cannot be parsed
+   * @param methodName name to use in the error message if the annotation cannot be parsed
    * @param atypeFactory the type factory
    * @param supplier a type factory that can supply the executable elements for CreatesMustCallFor
    *     and CreatesMustCallFor.List's value elements. Usually, you should just pass atypeFactory
    *     again. The arguments are different so that the given type factory's adherence to both
-   *     protocols are checked by the type system.
+   *     protocols is checked by the type system.
    * @param converter function to be used to create JavaExpression
    * @return the Java expression representing the target, or null if the target is unparsable
    */

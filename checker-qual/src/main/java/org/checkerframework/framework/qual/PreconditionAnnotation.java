@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
  * <p>The established precondition P has type specified by the {@code qualifier} field of this
  * annotation. If the annotation R has elements annotated by {@link QualifierArgument}, their values
  * are copied to the arguments (elements) of annotation P with the same names. Different element
- * names may be used in R and P, if a {@link QualifierArgument} in R gives the name of the
+ * names can be used in R and P, if a {@link QualifierArgument} in R gives the name of the
  * corresponding element in P.
  *
  * <p>For example, the following code declares a precondition annotation for the {@link

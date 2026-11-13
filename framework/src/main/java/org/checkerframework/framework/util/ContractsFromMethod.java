@@ -214,7 +214,7 @@ public class ContractsFromMethod {
 
   /**
    * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
-   * contractAnno}. May return null.
+   * contractAnno}. Might return null.
    *
    * @param contractAnno a pre- or post-condition annotation, such as {@code @RequiresQualifier}
    * @return the type annotation specified in {@code contractAnno.qualifier}
@@ -226,7 +226,7 @@ public class ContractsFromMethod {
 
   /**
    * Returns the annotation mirror as specified by the {@code qualifier} element in {@code
-   * contractAnno}, with elements/arguments taken from {@code argumentAnno}. May return null.
+   * contractAnno}, with elements/arguments taken from {@code argumentAnno}. Might return null.
    *
    * @param contractAnno a contract meta-annotation, such as {@code @PreconditionAnnotation}
    * @param argumentAnno a contract annotation that is meta-annotated by {@code contractAnno}; it
@@ -245,7 +245,7 @@ public class ContractsFromMethod {
    * Returns the annotation mirror as specified by the "qualifier" element in {@code contractAnno}.
    * If {@code argumentAnno} is specified, then elements/arguments are copied from {@code
    * argumentAnno} to the returned annotation, renamed according to {@code argumentRenaming}. If
-   * {@code argumentAnno} is not specified, the result has no elements/arguments; this may make it
+   * {@code argumentAnno} is not specified, the result has no elements/arguments; this might make it
    * invalid.
    *
    * <p>This is a helper method. Use one of its overloads if possible.
@@ -299,7 +299,7 @@ public class ContractsFromMethod {
    * specified or is an empty string, then the element is mapped to an argument of the same name.
    *
    * @param contractAnnoElement the declaration of the contract annotation containing the elements
-   * @return map from the names of elements of {@code sourceArgumentNames} to the corresponding
+   * @return map from the names of elements of {@code contractAnnoElement} to the corresponding
    *     qualifier argument names
    * @see QualifierArgument
    */

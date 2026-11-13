@@ -11,12 +11,12 @@ import java.util.Map;
 public final class MemberReferenceScanner extends CommonScanner {
 
   /**
-   * Computes the index of the given method invocation amongst all method invocation trees inside
-   * its method, using 0-based indexing.
+   * Computes the index of the given member reference amongst all member reference trees inside its
+   * method, using 0-based indexing.
    *
-   * @param origpath the path ending in the given method invocation tree
-   * @param tree the method invocation tree to search for
-   * @return the index of the given method invocation tree
+   * @param origpath the path ending in the given member reference tree
+   * @param tree the member reference tree to search for
+   * @return the index of the given member reference tree
    */
   public static int indexOfMemberReferenceTree(TreePath origpath, Tree tree) {
     TreePath path = TreePathUtil.findCountingContext(origpath);
@@ -34,10 +34,10 @@ public final class MemberReferenceScanner extends CommonScanner {
   private final Tree tree;
 
   /**
-   * Creates an InstanceOfScanner that will scan the source tree for the given node representing the
-   * method invocation to find.
+   * Creates a MemberReferenceScanner that will scan the source tree for the given node representing
+   * the member reference to find.
    *
-   * @param tree the given method invocation to search for
+   * @param tree the given member reference to search for
    */
   private MemberReferenceScanner(Tree tree) {
     this.index = -1;
@@ -80,7 +80,7 @@ public final class MemberReferenceScanner extends CommonScanner {
    * context.
    *
    * @param methodName the name of the method
-   * @param offset the offset of the lambda expression
+   * @param offset the offset of the member reference
    * @return the index of the given offset, or a negative number if the offset does not exist inside
    *     the context
    */
