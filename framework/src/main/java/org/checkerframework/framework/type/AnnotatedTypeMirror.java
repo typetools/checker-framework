@@ -395,7 +395,7 @@ public abstract class AnnotatedTypeMirror implements DeepCopyable<AnnotatedTypeM
    *
    * @return the annotation on this type, or null if there is none
    */
-  public final AnnotationMirror getAnnotation() {
+  public final @Nullable AnnotationMirror getAnnotation() {
     AnnotationMirrorSet effectiveAnnotations = getAnnotations();
     if (effectiveAnnotations.isEmpty()) {
       // This AnnotatedTypeMirror must be a type variable or wildcard.
