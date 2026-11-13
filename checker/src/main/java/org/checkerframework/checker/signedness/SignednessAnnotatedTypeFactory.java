@@ -312,7 +312,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
           } else {
             ExpressionTree left = tree.getLeftOperand();
             if (tree.getKind() == Tree.Kind.LEFT_SHIFT
-                && TypesUtils.isCharOrCharacter(TreeUtils.typeOf(left))) {
+                && TypesUtils.isCharOrCharacter(
+                    TypesUtils.unboxedTypeOrSelf(TreeUtils.typeOf(left), types))) {
               // Unary numeric promotion widens a char to an @SignedPositive int.  A right shift
               // preserves that, but a left shift can set the sign bit:  (char) 0x8000 << 16 is
               // Integer.MIN_VALUE.  The test examines the Java type of the operand because its
