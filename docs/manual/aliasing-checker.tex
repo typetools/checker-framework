@@ -47,7 +47,7 @@ This is the default, so every unannotated type is
 \item[\refqualclass{common/aliasing/qual}{Unique}]
 is the type of an expression that has no aliases.
 
-The \code{@Unique} annotation is only allowed at local variables, method
+The \code{@Unique} annotation is only allowed on local variables, method
 parameters, constructor results, and method returns.
 A constructor's result should be annotated with \code{@Unique} only if the
 constructor's body does not create an alias to the constructed object.
@@ -68,7 +68,7 @@ For example, the formal parameter of the String copy constructor,
 only makes a copy of the parameter.
 
 \item[\refqualclass{common/aliasing/qual}{LeakedToResult}]
-is used when the parameter may be returned, but it is not
+is used when the parameter might be returned, but it is not
 otherwise leaked.
 For example, the receiver parameter of \code{StringBuffer.append(StringBuffer
 this, String s)} is
@@ -108,7 +108,7 @@ Here is an example for argument-passing:
   void mightDoAnything(Object o) { ... }
 
   @Unique Object u = ...;
-  mightDoAnything(u);  // type-checking error, because the callee may create an alias of the passed argument
+  mightDoAnything(u);  // type-checking error, because the callee might create an alias of the passed argument
 \end{Verbatim}
 
 Passing a non-aliased
@@ -192,12 +192,12 @@ void aliasInArrayInitializer() {
 \end{description}
 
 
-\sectionAndLabel{Restrictions on where \<@Unique> may be written}{aliasing-unique-restrictions}
+\sectionAndLabel{Restrictions on where \<@Unique> can be written}{aliasing-unique-restrictions}
 
-The \<@Unique> qualifier may not be written on locations such as fields,
+The \<@Unique> qualifier cannot be written on locations such as fields,
 array elements, and type parameters.
 
-As an example of why \<@Unique> may not be written on a field's type,
+As an example of why \<@Unique> cannot be written on a field's type,
 consider the following code:
 
 \begin{Verbatim}
@@ -216,7 +216,7 @@ the \<@Unique> qualifier on subcomponents of a structure, such as fields.
 Other solutions might be possible; they would be more complicated but would
 permit more code to type-check.
 
-\<@Unique> may not be written on a type parameter for similar reasons.
+\<@Unique> cannot be written on a type parameter for similar reasons.
 The assignment
 
 \begin{Verbatim}
@@ -242,7 +242,7 @@ For more details, see Section~\ref{type-refinement}.
 
 The Aliasing Checker treats type refinement in the usual way,
 except that at (pseudo-)assignments
-the right-hand side (RHS) may lose its type refinement before the
+the right-hand side (RHS) might lose its type refinement before the
 left-hand side (LHS) is type-refined.
 The RHS always loses its type refinement (it is widened to
 \code{@MaybeAliased}, and its declared type must have been

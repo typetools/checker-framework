@@ -11,7 +11,7 @@ import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.source.SupportedLintOptions;
 
 /**
- * An implementation of the nullness type-system, parameterized by an initialization type-system for
+ * An implementation of the nullness type system, parameterized by an initialization type system for
  * safe initialization. It uses freedom-before-commitment, augmented by type frames (which are
  * crucial to obtain acceptable precision), as its initialization type system.
  *
@@ -60,8 +60,8 @@ public class NullnessChecker extends InitializationChecker {
   public static final boolean LINT_DEFAULT_TRUSTARRAYLENZERO = false;
 
   /**
-   * If true, client code may clear system properties. If false (the default), some calls to {@code
-   * System.getProperty} are refined to return @NonNull.
+   * If true, client code might clear system properties. If false (the default), some calls to
+   * {@code System.getProperty} are refined to return @NonNull.
    */
   public static final String LINT_PERMITCLEARPROPERTY = "permitClearProperty";
 

@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  * }</pre>
  *
  * Calling {@code close()} on the returned {@code OutputStream} will close the underlying socket,
- * but the Socket may also be closed directly, which has the same effect.
+ * but the Socket can also be closed directly, which has the same effect.
  *
  * <h2>Type system semantics</h2>
  *

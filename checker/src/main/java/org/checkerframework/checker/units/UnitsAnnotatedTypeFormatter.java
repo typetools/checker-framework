@@ -20,7 +20,7 @@ public class UnitsAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {
   protected final Elements elements;
 
   /**
-   * Create a UnitsAnnotatedTypeFormatter.
+   * Creates a UnitsAnnotatedTypeFormatter.
    *
    * @param checker the checker
    */
@@ -56,11 +56,19 @@ public class UnitsAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {
     }
   }
 
-  /** Format the error printout of any units qualifier that uses Prefix.one. */
+  /** Formats the error printout of any units qualifier that uses Prefix.one. */
   protected static class UnitsAnnotationFormatter extends DefaultAnnotationFormatter {
+    /** The checker that uses this formatter. */
     protected final BaseTypeChecker checker;
+
+    /** The element utilities. */
     protected final Elements elements;
 
+    /**
+     * Creates a UnitsAnnotationFormatter.
+     *
+     * @param checker the checker that uses this formatter
+     */
     public UnitsAnnotationFormatter(BaseTypeChecker checker) {
       this.checker = checker;
       this.elements = checker.getElementUtils();
