@@ -82,7 +82,7 @@ public class InferenceResult {
    * @param variables instantiated variables
    * @param needUncheckedConversion the expressions that need unchecked conversion
    * @param annoInferenceFailed true if inference failed because of annotations
-   * @param inferenceCrashed the type argument inference code crashed
+   * @param inferenceCrashed true if the type argument inference code crashed
    * @param errorMsg message to report to users if inference failed
    */
   public InferenceResult(
@@ -99,8 +99,8 @@ public class InferenceResult {
   }
 
   /**
-   * A mapping from a tree that needs type argument inference to a map from type parameter to its
-   * inferred annotated type argument. If inference failed, this map will be empty.
+   * Returns a mapping from a tree that needs type argument inference to a map from type parameter
+   * to its inferred annotated type argument. If inference failed, this map will be empty.
    *
    * @return mapping from a tree that needs type argument inference to a map from type parameter to
    *     its inferred annotated type argument
@@ -122,7 +122,7 @@ public class InferenceResult {
   }
 
   /**
-   * True if type argument inference failed because an annotated type could not be inferred.
+   * Returns true if type argument inference failed because an annotated type could not be inferred.
    *
    * @return true if type argument inference failed because an annotated type could not be inferred
    */
@@ -131,7 +131,7 @@ public class InferenceResult {
   }
 
   /**
-   * True if inference crashed.
+   * Returns true if inference crashed.
    *
    * @return true if inference crashed
    */
@@ -140,8 +140,8 @@ public class InferenceResult {
   }
 
   /**
-   * Convert the instantiated variables to a map from expression tree to a map from type variable to
-   * its type argument.
+   * Converts the instantiated variables to a map from expression tree to a map from type variable
+   * to its type argument.
    *
    * @param variables instantiated variables
    * @return a map from expression tree to a map from type variable to its type argument
@@ -172,7 +172,7 @@ public class InferenceResult {
   }
 
   /**
-   * An error message to report to the user.
+   * Returns an error message to report to the user.
    *
    * @return an error message to report to the user
    */
@@ -181,7 +181,7 @@ public class InferenceResult {
   }
 
   /**
-   * Switch the {@link TypeVariable}s in {@code results} with the {@code TypeVariable}s in {@code
+   * Switches the {@link TypeVariable}s in {@code results} with the {@code TypeVariable}s in {@code
    * executableType} so that the {@code TypeVariable}s in the result are {@code .equals}. {@link
    * TypesUtils#areSame(TypeVariable, TypeVariable)} is used to decide which type variables to swap.
    *

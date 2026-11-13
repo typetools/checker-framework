@@ -115,7 +115,7 @@ Answering 'no' to a prompt does not exit the script unless otherwise indicated.
     release</a> since the last Checker Framework
     release, <a href="https://github.com/typetools/stubparser#updating-from-upstream-javaparser">update
       Stubparser from JavaParser</a>.
-    You may do this on your own computer; it doesn't have to be done on the CSE file system.
+    You can do this on your own computer; it doesn't have to be done on the CSE file system.
   </li>
   <li>On your own computer, update the Checker Framework source code <em>in
       the <code>master</code> branch</em>:
@@ -129,7 +129,7 @@ Answering 'no' to a prompt does not exit the script unless otherwise indicated.
       </li>
       -->
       <li>
-        <b>Update Checker Framework change log</b> by following the instructions
+        <b>Update the Checker Framework changelog</b> by following the instructions
         at <a href="#content_guidelines">content guidelines</a>.
       </li>
       <li> <b>Update the Checker Framework version number</b>
@@ -213,7 +213,7 @@ TreeAnnotator
   <li> <strong>Update list of qualifiers in Project Lombok.</strong>
     Follow the instructions in <a href="https://github.com/projectlombok/lombok/blob/master/src/core/lombok/core/handlers/HandlerUtil.java">HandlerUtil.java</a>.
     If the release did not add, remove, or rename any type qualifiers, no changes are required.
-    Those instructions do not work on macOS, so you may need to use a Linux machine to make the changes.
+    Those instructions do not work on macOS, so you might need to use a Linux machine to make the changes.
   </li>
   <li> <strong>Make Daikon use the latest Checker Framework version.</strong>
 
@@ -254,7 +254,7 @@ TreeAnnotator
     Often, the version number in <code>checker-framework/build.gradle</code>
     (in <code>allprojects { version ... }</code>) will end
     in <code>-SNAPSHOT</code>, but this is not a requirement.  Regardless of the
-    version number, beware that you may get different results than on other
+    version number, beware that you might get different results than on other
     computers that have not deployed the same commit of the Checker Framework to
     their local Maven repository.
   </p>
@@ -363,7 +363,7 @@ configurations.all({
         <a href="https://central.sonatype.org/pages/ossrh-guide.html#create-a-ticket-with-sonatype">here</a>).
         If after signing up for a Sonatype JIRA account you are not able to sign in to
         <a href="https://issues.sonatype.org">https://issues.sonatype.org</a>
-        to create a ticket, there may be a configuration problem with your account.  In that case, sign up for a
+        to create a ticket, there might be a configuration problem with your account.  In that case, sign up for a
         second Sonatype account, and use that account to file a ticket indicating that you cannot sign in
         with your first account.
       </td>
@@ -381,7 +381,7 @@ SONATYPE_NEXUS_PASSWORD=your_tokenkey</pre>
     </tr>
     <tr>
       <td>5.</td>
-      <td><strong>Get edit privileges for Checker Framework</strong><br/>
+      <td><strong>Get edit privileges for the Checker Framework</strong><br/>
         Once a release has been completed, you will be prompted to update issues in the
         issue tracker for each project that has been released.
         You will need to be a "developer" for each project so that you have update privileges for
@@ -392,8 +392,8 @@ SONATYPE_NEXUS_PASSWORD=your_tokenkey</pre>
     <tr>
       <td>6.</td>
       <td><strong>Install uv</strong><br/>
-       If you are going to perform the release on tern, you may need to <a href="https://docs.astral.sh/uv/getting-started/installation/">install
-       uv</a>.  You may need to add <code>~/.local/bin</code>
+       If you are going to perform the release on tern, you might need to <a href="https://docs.astral.sh/uv/getting-started/installation/">install
+       uv</a>.  You might need to add <code>~/.local/bin</code>
        to your path.
       </td>
     </tr>
@@ -648,14 +648,14 @@ docs/developer/release/release_build.py</pre>
     release.  The release script will allow you to do a point release like &quot;1.8.0.1&quot; when a version
     &quot;1.8.0&quot; already exists.<br/>
     <br/>
-    If you have NOT committed an irreversible step then you can
+    If you have NOT committed an irreversible step, then you can
     follow the steps below to point the live release to a previous release.  You can then redo the original
     release.  Make sure to say &quot;yes&quot; when the release script asks you to delete the old directories.
   </p>
   <h3 id="backing_out_steps">Manual Steps to Back Out a Release</h3>
   <ul>
     <li><strong>Drop the artifacts from Central</strong><br/>
-      You may have staged and then closed the artifacts in the Sonatype Central Repository.  Drop (do NOT release)
+      You might have staged and then closed the artifacts in the Sonatype Central Repository.  Drop (do NOT release)
       these artifacts.  See
       <a href="https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide#SonatypeOSSMavenRepositoryUsageGuide-DroppingaStagingRepository%28i.e.WhattoDoifYourStagingRepositoryHasErrors%29">
         the Sonatype OSS Repository Usage Guidelines.
@@ -669,8 +669,8 @@ docs/developer/release/release_build.py</pre>
         existed for a while.
       </p>
 
-      At the moment, we have decided to drop the user of our local Maven repository in favor of using
-      the Central Repository exclusively.  This may not be the case in the future.  If we do have a
+      At the moment, we have decided to drop the use of our local Maven repository in favor of using
+      the Central Repository exclusively.  This might not be the case in the future.  If we do have a
       local repository, you need to go into the repositories directory (usually an m2-repo directory) and
       manually delete the versions of the Maven artifacts.  For instance, for the artifacts checker and compiler
       using version 0.9.8, I would delete the directories:
@@ -683,9 +683,9 @@ docs/developer/release/release_build.py</pre>
     </li> -->
   </ul>
 
-  <p class="alert alert-danger"><strong>Note:</strong> You may find yourself copying release directories for some
-    reason or other.  It is important to remember that the symlinks may be absolute.  You should check any
-    symlinks that may be affected by the move and ensure they point to the new location and not the old one.
+  <p class="alert alert-danger"><strong>Note:</strong> You might find yourself copying release directories for some
+    reason or other.  It is important to remember that the symlinks might be absolute.  You should check any
+    symlinks that might be affected by the move and ensure they point to the new location and not the old one.
   </p>
 
   <h2 id="future_improvements">Future Improvements</h2>

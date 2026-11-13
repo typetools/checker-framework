@@ -179,7 +179,7 @@ public class InitializedFieldsAnnotatedTypeFactory extends AccumulationAnnotated
    *   <li>No initialization block or static initialization block sets the field. (This is handled
    *       automatically because dataflow visits (static) initialization blocks as part of the
    *       constructor.)
-   *   <li>F's annotated type is not consistent with the default value (0, 0.0, false, or null)
+   *   <li>F's annotated type is not consistent with the default value (0, 0.0, false, or null).
    * </ul>
    *
    * @param type the type whose fields to list

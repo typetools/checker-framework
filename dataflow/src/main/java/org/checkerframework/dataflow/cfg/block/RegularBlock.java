@@ -14,7 +14,11 @@ public interface RegularBlock extends SingleSuccessorBlock {
   @Pure
   @Nullable Block getRegularSuccessor();
 
-  /** Is this block empty (i.e., does it not contain any contents). */
+  /**
+   * Returns true if this block is empty (i.e., does not contain any contents).
+   *
+   * @return true if this block is empty
+   */
   @Pure
   boolean isEmpty();
 }
