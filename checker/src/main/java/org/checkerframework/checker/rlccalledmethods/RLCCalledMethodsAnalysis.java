@@ -19,7 +19,7 @@ public class RLCCalledMethodsAnalysis extends CalledMethodsAnalysis {
   private final SetOfTypes ignoredExceptions;
 
   /**
-   * Creates a new {@code CalledMethodsAnalysis}.
+   * Creates a new {@code RLCCalledMethodsAnalysis}.
    *
    * @param checker the checker
    * @param factory the factory

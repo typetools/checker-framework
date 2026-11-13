@@ -9,7 +9,7 @@ import javax.lang.model.type.TypeMirror;
   protected final Label finallyLabel;
 
   /**
-   * Construct a TryFinallyFrame.
+   * Constructs a TryFinallyFrame.
    *
    * @param finallyLabel finally label
    */

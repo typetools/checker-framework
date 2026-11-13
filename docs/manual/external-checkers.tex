@@ -8,7 +8,7 @@ please send us a link and a short description.)
 Many of the publications in Section~\ref{publications} provide
 implementations, which are not necessarily listed here yet.
 
-These tools are externally-maintained, so if you have problems or questions, you
+These tools are externally maintained, so if you have problems or questions, you
 should contact their maintainers rather than the Checker Framework
 maintainers.
 
@@ -30,7 +30,7 @@ deterministic program is easier to test and to debug (for example, by
 comparing executions).
 
 The Determinism Checker focuses on sequential programs.  It detects
-nondeterminism due to the iteration order of a hash table (or on any other
+nondeterminism due to the iteration order of a hash table (or to any other
 property of hash codes), default formatting (such as Java's
 \<Object.toString()>, which includes a memory address), \<random>,
 date-and-time functions, and accessing system properties such as the file
@@ -97,7 +97,7 @@ Web Services.
 The \ahreforurl{https://github.com/awslabs/aws-kms-compliance-checker}{AWS KMS
   compliance checker} extends the Constant Value Checker (see
 \chapterpageref{constant-value-checker}) to enforce that calls to Amazon
-Web Services' Key Management Service only request 256-bit (or longer) data
+Web Services' Key Management Service request only 256-bit (or longer) data
 keys.  This checker can be used to help enforce a compliance requirement
 (such as from SOC or PCI-DSS) that customer data is always encrypted with
 256-bit keys.
@@ -212,7 +212,7 @@ a byte (or character) without first checking the value against -1.  This is
 rule
 \href{https://wiki.sei.cmu.edu/confluence/display/java/FIO08-J.+Distinguish+between+characters+or+bytes+read+from+a+stream+and+-1}{CERT-FIO08-J}.
 The \ahreforurl{https://github.com/opprop/ReadChecker}{Read Checker} and/or
-\ahreforurl{https://github.com/opprop/cast-checker}{Cast Checker} enforces it.
+\ahreforurl{https://github.com/opprop/cast-checker}{Cast Checker} enforce it.
 
 % I cannot find a free online copy of this paper.
 The paper ``Don't miss the end: Preventing unsafe end-of-file
@@ -312,14 +312,14 @@ The Javari type system is described in
   comparison''}~\cite{ArtziQKE2009} (J.ASE 2009).  The paper
 \href{https://homes.cs.washington.edu/~mernst/pubs/pluggable-checkers-issta2008.pdf}{``Practical
   pluggable types for Java''}~\cite{PapiACPE2008} (ISSTA 2008) describes
-case studies in which the Javari and IGJ Checkers found previously-unknown
+case studies in which the Javari and IGJ Checkers found previously unknown
 errors in real software.
 
 
 \sectionAndLabel{JCrypt: computation over encrypted data}{jcrypt-checker}
 
 \ahreforurl{https://github.com/proganalysis/type-inference}{JCrypt} is a
-static program analysis which transforms a Java program into an equivalent
+static program analysis that transforms a Java program into an equivalent
 one, so that it performs computation over encrypted data and preserves data
 confidentiality.  It is described in the paper
 \href{https://www.cs.rpi.edu/~milanova/docs/pppj16b.pdf}{``JCrypt: Towards

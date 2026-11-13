@@ -62,7 +62,7 @@ import org.checkerframework.javacutil.TypesUtils;
  *   <li>{@code UnaryTree}
  * </ul>
  *
- * Other expressions are in fact type trees and their annotated type mirrors are computed as type
+ * Other expressions are in fact type trees, and their annotated type mirrors are computed as type
  * trees:
  *
  * <ul>
@@ -183,7 +183,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
   }
 
   /**
-   * Compute the type of the switch expression tree.
+   * Computes the type of the switch expression tree.
    *
    * @param switchExpressionTree the switch expression tree
    * @param f an AnnotatedTypeFactory
@@ -321,7 +321,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
   }
 
   /**
-   * Add annotations to an array type.
+   * Adds annotations to an array type.
    *
    * @param result an array type; is side-effected by this method
    * @param tree an array construction expression from which to obtain annotations

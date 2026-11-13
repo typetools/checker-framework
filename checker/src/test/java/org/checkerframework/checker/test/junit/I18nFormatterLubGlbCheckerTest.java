@@ -13,7 +13,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class I18nFormatterLubGlbCheckerTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create an I18nFormatterLubGlbCheckerTest.
+   * Creates an I18nFormatterLubGlbCheckerTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

@@ -12,8 +12,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * stored as a parameter to the annotation, allowing the Regex Checker to verify some concatenations
  * of partial regular expression Strings.
  *
- * <p>This annotation may not be written in source code; it is an implementation detail of the Regex
- * Checker.
+ * <p>This annotation must not be written in source code; it is an implementation detail of the
+ * Regex Checker.
  *
  * @checker_framework.manual #regex-checker Regex Checker
  */
