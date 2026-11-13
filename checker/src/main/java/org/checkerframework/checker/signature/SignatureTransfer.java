@@ -24,7 +24,7 @@ public class SignatureTransfer extends CFTransfer {
   private final SignatureAnnotatedTypeFactory atypeFactory;
 
   /**
-   * Create a new SignatureTransfer.
+   * Creates a new SignatureTransfer.
    *
    * @param analysis the analysis
    */
