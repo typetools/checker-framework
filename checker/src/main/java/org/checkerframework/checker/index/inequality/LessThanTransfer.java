@@ -66,7 +66,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
       if (!lessThanExpressions.contains(leftString)) {
         lessThanExpressions = CollectionsP.append(lessThanExpressions, leftString);
         AnnotationMirror refinedRightAnno = factory.createLessThanQualifier(lessThanExpressions);
-        for (Node internal : splitAssignments(right)) {
+        for (Node internal : nodesWithValueOf(right)) {
           store.insertValue(JavaExpression.fromNode(internal), refinedRightAnno);
         }
       }
@@ -105,7 +105,7 @@ public class LessThanTransfer extends IndexAbstractTransfer {
       if (!lessThanExpressions.contains(leftIncremented)) {
         lessThanExpressions = CollectionsP.append(lessThanExpressions, leftIncremented);
         AnnotationMirror refinedRightAnno = factory.createLessThanQualifier(lessThanExpressions);
-        for (Node internal : splitAssignments(right)) {
+        for (Node internal : nodesWithValueOf(right)) {
           store.insertValue(JavaExpression.fromNode(internal), refinedRightAnno);
         }
       }
