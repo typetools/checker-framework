@@ -11,7 +11,7 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.QualifierKindHierarchy;
 
 /**
- * A {@link org.checkerframework.framework.type.QualifierHierarchy} where qualifiers may be
+ * A {@link org.checkerframework.framework.type.QualifierHierarchy} where qualifiers can be
  * represented by annotations with elements, but most of the qualifiers do not have elements. In
  * contrast to {@link org.checkerframework.framework.type.ElementQualifierHierarchy}, this class
  * partially implements {@link #isSubtypeShallow(AnnotationMirror, TypeMirror, AnnotationMirror,

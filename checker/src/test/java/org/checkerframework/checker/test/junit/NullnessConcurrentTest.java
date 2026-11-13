@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class NullnessConcurrentTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a NullnessConcurrentTest.
+   * Creates a NullnessConcurrentTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

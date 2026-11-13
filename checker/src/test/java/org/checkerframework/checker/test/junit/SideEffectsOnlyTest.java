@@ -10,7 +10,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class SideEffectsOnlyTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a SideEffectsOnlyTest.
+   * Creates a SideEffectsOnlyTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

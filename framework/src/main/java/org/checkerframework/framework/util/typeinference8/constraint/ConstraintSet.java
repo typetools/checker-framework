@@ -93,8 +93,8 @@ public class ConstraintSet implements ReductionResult {
    * Creates an empty constraint set whose constraints cannot be modified. Only {@code
    * ImmutableConstraintSet} calls this constructor.
    *
-   * @param annotationFailure inference failed because the qualifiers were not in the correct
-   *     relationship
+   * @param annotationFailure true if inference failed because the qualifiers were not in the
+   *     correct relationship
    */
   private ConstraintSet(boolean annotationFailure) {
     this.queue = new UnmodifiableEmptyDeque();
@@ -211,7 +211,7 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
-   * Remove all constraints in {@code subset} from this constraint set.
+   * Removes all constraints in {@code subset} from this constraint set.
    *
    * @param subset the set of constraints to remove from this set
    */
@@ -232,8 +232,9 @@ public class ConstraintSet implements ReductionResult {
 
   /**
    * Returns a subset of {@code c}; for each constraint in the subset, no input variable can
-   * influence an output variable of another constraint in C. If that subset is empty, returns a set
-   * containing a single constraint that participates in a constraint cycle. (See JLS 18.5.2.2)
+   * influence an output variable of another constraint in {@code c}. If that subset is empty,
+   * returns a set containing a single constraint that participates in a constraint cycle. (See JLS
+   * 18.5.2.2.)
    *
    * @param c a nonempty constraint set
    * @param dependencies an object describing the dependencies of inference variables
@@ -443,7 +444,7 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
-   * Reduces all the constraints in this set. (See JLS 18.2)
+   * Reduces all the constraints in this set. (See JLS 18.2.)
    *
    * @param context the context
    * @return the bound set produced by reducing this constraint set
@@ -460,7 +461,7 @@ public class ConstraintSet implements ReductionResult {
   }
 
   /**
-   * Reduce one constraint in this set.
+   * Reduces one constraint in this set.
    *
    * @param context the context
    * @return the result of reducing one constraint in this set
@@ -532,8 +533,8 @@ public class ConstraintSet implements ReductionResult {
      * Creates an immutable constraint set.
      *
      * @param name the name of this constraint set; it is the value returned by {@link #toString}
-     * @param annotationFailure inference failed because the qualifiers were not in the correct
-     *     relationship
+     * @param annotationFailure true if inference failed because the qualifiers were not in the
+     *     correct relationship
      */
     ImmutableConstraintSet(String name, boolean annotationFailure) {
       super(annotationFailure);

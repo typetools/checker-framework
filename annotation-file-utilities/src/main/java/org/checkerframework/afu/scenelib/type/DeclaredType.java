@@ -19,7 +19,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * {@link #getInnerType()}, and {@link #setTypeParameters(List)}. If called, an {@link
  * IllegalStateException} will be thrown.
  *
- * <p>Types are stored with the outer most type at the top of the type tree. This is opposite to the
+ * <p>Types are stored with the outermost type at the top of the type tree. This is opposite to the
  * way types are stored in javac.
  */
 public class DeclaredType extends Type {
@@ -146,7 +146,7 @@ public class DeclaredType extends Type {
     return WILDCARD.equals(name);
   }
 
-  /** Throw an {@link IllegalStateException} if this type is a wildcard. */
+  /** Throws an {@link IllegalStateException} if this type is a wildcard. */
   private void checkWildcard() {
     if (isWildcard()) {
       throw new IllegalStateException(
