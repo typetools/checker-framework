@@ -2105,12 +2105,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Creates a declaration of a fresh variable that holds the iterator of an enhanced for loop over
-   * an {@code Iterable}.
+   * Returns the declaration of a new, uniquely named variable that holds the iterator of an
+   * enhanced for loop over an {@code Iterable}.
    *
-   * @param iteratorCall the call to {@code iterator()} that initializes the variable
-   * @param variableElement the element of the enhanced for loop's variable
-   * @return a declaration of a fresh iterator variable
+   * @param iteratorCall the call to {@code iterator()}, which initializes the new variable
+   * @param variableElement the loop variable of the enhanced for loop; the new variable has the
+   *     same enclosing element
+   * @return the declaration of the new iterator variable
    */
   protected VariableTree createIteratorVariableForEnhancedForLoop(
       MethodInvocationTree iteratorCall, VariableElement variableElement) {
@@ -2127,12 +2128,14 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Creates a declaration of a fresh variable that holds the array of an enhanced for loop over an
-   * array.
+   * Returns the declaration of a new, uniquely named variable that holds the array of an enhanced
+   * for loop over an array.
    *
-   * @param expression the array expression that initializes the variable
-   * @param variableElement the element of the enhanced for loop's variable
-   * @return a declaration of a fresh array variable
+   * @param expression the array expression of the enhanced for loop, which initializes the new
+   *     variable
+   * @param variableElement the loop variable of the enhanced for loop; the new variable has the
+   *     same enclosing element
+   * @return the declaration of the new array variable
    */
   protected VariableTree createArrayVariableForEnhancedForLoop(
       ExpressionTree expression, VariableElement variableElement) {
