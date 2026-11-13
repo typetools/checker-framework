@@ -22,7 +22,7 @@ public class Default implements Comparable<Default> {
   public final TypeUseLocation location;
 
   /**
-   * Construct a Default object.
+   * Constructs a Default object.
    *
    * @param anno the default annotation mirror
    * @param location the type use location

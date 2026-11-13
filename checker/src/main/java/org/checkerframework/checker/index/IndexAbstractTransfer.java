@@ -112,6 +112,17 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
     }
   }
 
+  /**
+   * Refines the given store, assuming that the value of {@code left} is greater than the value of
+   * {@code right}.
+   *
+   * @param left the larger operand of a comparison
+   * @param leftAnno the annotation of {@code left}
+   * @param right the smaller operand of the comparison
+   * @param rightAnno the annotation of {@code right}
+   * @param store the store to refine
+   * @param in the input to the transfer function for the comparison
+   */
   protected abstract void refineGT(
       Node left,
       AnnotationMirror leftAnno,
@@ -120,6 +131,17 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
       CFStore store,
       TransferInput<CFValue, CFStore> in);
 
+  /**
+   * Refines the given store, assuming that the value of {@code left} is greater than or equal to
+   * the value of {@code right}.
+   *
+   * @param left the larger-or-equal operand of a comparison
+   * @param leftAnno the annotation of {@code left}
+   * @param right the smaller-or-equal operand of the comparison
+   * @param rightAnno the annotation of {@code right}
+   * @param store the store to refine
+   * @param in the input to the transfer function for the comparison
+   */
   protected abstract void refineGTE(
       Node left,
       AnnotationMirror leftAnno,

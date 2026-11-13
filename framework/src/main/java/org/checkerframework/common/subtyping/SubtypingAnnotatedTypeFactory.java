@@ -91,7 +91,7 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * If necessary, make Unqualified the default qualifier. Keep most logic in sync with super.
+   * If necessary, makes Unqualified the default qualifier. Keep most logic in sync with super.
    *
    * @see
    *     org.checkerframework.framework.type.GenericAnnotatedTypeFactory#addCheckedCodeDefaults(org.checkerframework.framework.util.defaults.QualifierDefaults)
