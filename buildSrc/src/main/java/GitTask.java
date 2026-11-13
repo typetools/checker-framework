@@ -6,7 +6,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.gradle.api.DefaultTask;
 import org.gradle.process.ExecOperations;
 
-/** An abstract class that is used by other task to do git commands. */
+/** An abstract class that is used by other tasks to do git commands. */
 public abstract class GitTask extends DefaultTask {
 
   /** Used to run exec commands. */
@@ -23,7 +23,7 @@ public abstract class GitTask extends DefaultTask {
   }
 
   /**
-   * Clones the repository at {@code url}. If the clone fails, sleep 1 minute then retry clone. If
+   * Clones the repository at {@code url}. If the clone fails, sleeps 1 minute and then retries. If
    * the second try fails, then a warning is printed, but no exception is thrown.
    *
    * @param url repository URL

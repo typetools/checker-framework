@@ -63,7 +63,7 @@ public final class NullnessUtil {
    *
    * @param <T> the type of the reference
    * @param ref a reference of @Nullable type, that is non-null at run time
-   * @return the argument, casted to have the type qualifier @NonNull
+   * @return the argument, cast to have the type qualifier @NonNull
    */
   @EnsuresNonNull("#1")
   public static <T extends @Nullable Object> @NonNull T castNonNull(@Nullable T ref) {
@@ -72,14 +72,14 @@ public final class NullnessUtil {
   }
 
   /**
-   * Suppress warnings from the Nullness Checker, with a custom error message. See {@link
+   * Suppresses warnings from the Nullness Checker, with a custom error message. See {@link
    * #castNonNull(Object)} for documentation.
    *
    * @see #castNonNull(Object)
    * @param <T> the type of the reference
    * @param ref a reference of @Nullable type, that is non-null at run time
    * @param message text to include if this method is misused
-   * @return the argument, casted to have the type qualifier @NonNull
+   * @return the argument, cast to have the type qualifier @NonNull
    */
   @EnsuresNonNull("#1")
   public static <T extends @Nullable Object> @NonNull T castNonNull(
@@ -96,7 +96,7 @@ public final class NullnessUtil {
    * @param <T> the component type of the array
    * @param arr an array all of whose elements, and their elements recursively, are non-null at run
    *     time
-   * @return the argument, casted to have the type qualifier @NonNull at all levels
+   * @return the argument, cast to have the type qualifier @NonNull at all levels
    * @see #castNonNull(Object)
    */
   @EnsuresNonNull("#1")
@@ -114,7 +114,7 @@ public final class NullnessUtil {
    * @param arr an array all of whose elements, and their elements recursively, are non-null at run
    *     time
    * @param message text to include if this method is misused
-   * @return the argument, casted to have the type qualifier @NonNull at all levels
+   * @return the argument, cast to have the type qualifier @NonNull at all levels
    * @see #castNonNull(Object)
    */
   @EnsuresNonNull("#1")
@@ -131,7 +131,7 @@ public final class NullnessUtil {
    * @param <T> the component type of the component type of the array
    * @param arr an array all of whose elements, and their elements recursively, are non-null at run
    *     time
-   * @return the argument, casted to have the type qualifier @NonNull at all levels
+   * @return the argument, cast to have the type qualifier @NonNull at all levels
    * @see #castNonNull(Object)
    */
   @EnsuresNonNull("#1")
@@ -149,7 +149,7 @@ public final class NullnessUtil {
    * @param arr an array all of whose elements, and their elements recursively, are non-null at run
    *     time
    * @param message text to include if this method is misused
-   * @return the argument, casted to have the type qualifier @NonNull at all levels
+   * @return the argument, cast to have the type qualifier @NonNull at all levels
    * @see #castNonNull(Object)
    */
   @EnsuresNonNull("#1")
@@ -166,7 +166,7 @@ public final class NullnessUtil {
    * @param <T> the component type (three levels in) of the array
    * @param arr an array all of whose elements, and their elements recursively, are non-null at run
    *     time
-   * @return the argument, casted to have the type qualifier @NonNull at all levels
+   * @return the argument, cast to have the type qualifier @NonNull at all levels
    * @see #castNonNull(Object)
    */
   @EnsuresNonNull("#1")
@@ -184,7 +184,7 @@ public final class NullnessUtil {
    * @param arr an array all of whose elements, and their elements recursively, are non-null at run
    *     time
    * @param message text to include if this method is misused
-   * @return the argument, casted to have the type qualifier @NonNull at all levels
+   * @return the argument, cast to have the type qualifier @NonNull at all levels
    * @see #castNonNull(Object)
    */
   @EnsuresNonNull("#1")
@@ -201,7 +201,7 @@ public final class NullnessUtil {
    * @param <T> the component type of the array
    * @param arr an array all of whose elements, and their elements recursively, are non-null at run
    *     time
-   * @return the argument, casted to have the type qualifier @NonNull at all levels
+   * @return the argument, cast to have the type qualifier @NonNull at all levels
    * @see #castNonNull(Object)
    */
   @EnsuresNonNull("#1")
@@ -219,7 +219,7 @@ public final class NullnessUtil {
    * @param arr an array all of whose elements, and their elements recursively, are non-null at run
    *     time
    * @param message text to include if this method is misused
-   * @return the argument, casted to have the type qualifier @NonNull at all levels
+   * @return the argument, cast to have the type qualifier @NonNull at all levels
    * @see #castNonNull(Object)
    */
   @EnsuresNonNull("#1")
@@ -236,7 +236,7 @@ public final class NullnessUtil {
    * @param <T> the component type (four levels in) of the array
    * @param arr an array all of whose elements, and their elements recursively, are non-null at run
    *     time
-   * @return the argument, casted to have the type qualifier @NonNull at all levels
+   * @return the argument, cast to have the type qualifier @NonNull at all levels
    * @see #castNonNull(Object)
    */
   @EnsuresNonNull("#1")
@@ -254,7 +254,7 @@ public final class NullnessUtil {
    * @param arr an array all of whose elements, and their elements recursively, are non-null at run
    *     time
    * @param message text to include if this method is misused
-   * @return the argument, casted to have the type qualifier @NonNull at all levels
+   * @return the argument, cast to have the type qualifier @NonNull at all levels
    * @see #castNonNull(Object)
    */
   @EnsuresNonNull("#1")
@@ -269,9 +269,8 @@ public final class NullnessUtil {
    * @param <T> the component type (five levels in) of the array
    * @param arr an array all of whose elements, and their elements recursively, are non-null at run
    *     time
-   * @param message text to include if there is a non-null value, or null to use uncustomized
-   *     message
-   * @return the argument, casted to have the type qualifier @NonNull at all levels
+   * @param message text to include if there is a null value, or null to use uncustomized message
+   * @return the argument, cast to have the type qualifier @NonNull at all levels
    */
   private static <T extends @Nullable Object> @NonNull T @NonNull [] castNonNullArray(
       T @Nullable [] arr, @Nullable String message) {
@@ -292,8 +291,7 @@ public final class NullnessUtil {
    *
    * @param ref a value; if an array, all of its elements, and their elements recursively, are
    *     non-null at run time
-   * @param message text to include if there is a non-null value, or null to use uncustomized
-   *     message
+   * @param message text to include if there is a null value, or null to use uncustomized message
    */
   private static void checkIfArray(@NonNull Object ref, @Nullable String message) {
     assert ref != null

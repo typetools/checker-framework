@@ -75,7 +75,7 @@ The document
     href="annotation-file-format.pdf">PDF</a>, <a
     href="annotation-file-format.html">HTML</a>)
 defines a textual format for annotations,
-and it also motivates reasons why such a file format is necessary in
+and it also explains why such a file format is necessary in
 addition to the <code>.java</code> and <code>.class</code> formats.  The
 file format supports both declaration annotations and type annotations.
 </p>
@@ -96,7 +96,7 @@ Programmers need to be able to transfer annotations
 between the three possible locations for annotations &mdash; source code, class files,
 and annotation files.  Programmers will want to extract
 annotations from source and class files to an annotation file in order to easily
-read annotations, while various tools will only read annotations from
+read annotations, while various tools read annotations only from
 source and class files.  The Annotation File Utilities provide three tools
 to read and write annotation files.
 </p>
@@ -130,8 +130,6 @@ file.
 
 <hr />
 <h2 id="installation">Installation</h2>
-
-<p>
 
 <ol>
 <li>
@@ -444,7 +442,7 @@ components of the Annotation File Utilities and how they fit together.
 It is intended for someone who is beginning work on the Annotation File
 Utilities or is curious about how the Annotation File Utilities work.</p>
 
-<p>The Annotation File Utilities is composed of two sub-projects:
+<p>The Annotation File Utilities are composed of two sub-projects:
 <code>scene-lib</code> and
 <code>annotation-file-utilities</code>.  The
 <code>scene-lib</code> sub-project represents a <code>.jaif</code> file
@@ -506,8 +504,8 @@ bytecode off to the
 <code>annotation-file-utilities/src/main/java/org/checkerframework/afu/scenelib/io/classfile/ClassAnnotationSceneWriter.java</code>
 class. This class has a reference to the <code>AScene</code> parsed
 from the <code>.jaif</code> file. As this class receives the parsed
-bytecode it inserts the relevant annotations from the
-<code>AScene</code> in the bytecode and then writes the bytecode back
+bytecode, it inserts the relevant annotations from the
+<code>AScene</code> into the bytecode and then writes the bytecode back
 out.</p>
 
 <h4 id="bytecode-extraction" class="subsubsection">Bytecode Extraction</h4>
@@ -574,7 +572,7 @@ public class Test {
 </li><li class="li-itemize"><code>ParamCriterion(1)</code>
 </li></ul>
 
-<p>After this <code>CriterionList</code> is built up an
+<p>After this <code>CriterionList</code> is built up, an
 <code>annotation-file-utilities/src/main/java/org/checkerframework/afu/annotator/find/Insertion.java</code>
 is created.  An <code>Insertion</code> stores an
 <code>annotation-file-utilities/src/main/java/org/checkerframework/afu/annotator/find/Criteria.java</code>
@@ -585,13 +583,13 @@ abstract syntax tree. This is followed by a call to the
 <code>getPositions</code> method of
 <code>annotation-file-utilities/src/main/java/org/checkerframework/afu/annotator/find/TreeFinder.java</code>,
 which scans through each node of the abstract syntax tree. For each node,
-it runs through the <code>Criteria</code> for each un-matched
+it runs through the <code>Criteria</code> for each unmatched
 <code>Insertion</code>. If at least one of the <code>Criteria</code>
 does not match, then this is not the correct place for the
 <code>Insertion</code> and the <code>Insertion</code> will be checked
 at the remaining nodes of the tree. If all of the <code>Criteria</code>
 match, then this node is the correct place for the
-<code>Insertion</code>. It is removed from the list of un-matched
+<code>Insertion</code>. It is removed from the list of unmatched
 <code>Insertion</code>s and the position where to insert the
 <code>Insertion</code> is determined. This position is the integer
 index in the file where the <code>Insertion</code> should be inserted.

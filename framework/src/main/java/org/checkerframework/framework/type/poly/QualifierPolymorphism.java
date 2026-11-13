@@ -52,7 +52,7 @@ public interface QualifierPolymorphism {
   /**
    * Resolves polymorphism annotations for the given field type.
    *
-   * @param field field element to whose poly annotation must be resolved
+   * @param field the field element whose poly annotation must be resolved
    * @param owner the type of the object whose field is being typed
    * @param type type of the field which still has poly annotations
    */
