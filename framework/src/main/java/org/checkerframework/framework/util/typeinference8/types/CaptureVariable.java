@@ -86,7 +86,7 @@ import org.checkerframework.framework.util.typeinference8.util.Theta;
    * invocation, must not be used for them. Reference equality is also what the {@code @Interned}
    * annotation on this class requires.
    *
-   * <p>{@link Variable#hashCode} is still correct for capture variables: it may return the same
+   * <p>{@link Variable#hashCode} is still correct for capture variables: it might return the same
    * value for two capture variables that are not equal, which is permitted.
    */
   @Override

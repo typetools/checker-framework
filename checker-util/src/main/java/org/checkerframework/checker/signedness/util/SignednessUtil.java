@@ -310,7 +310,7 @@ public final class SignednessUtil {
   }
 
   /**
-   * Writes an unsigned byte to the RandomAccessFile f. This method is a wrapper around {@link
+   * Writes an unsigned int to the RandomAccessFile f. This method is a wrapper around {@link
    * java.io.RandomAccessFile#writeInt(int) writeInt(int)}, but assumes the input should be
    * interpreted as unsigned.
    */
@@ -320,7 +320,7 @@ public final class SignednessUtil {
   }
 
   /**
-   * Writes an unsigned byte to the RandomAccessFile f. This method is a wrapper around {@link
+   * Writes an unsigned long to the RandomAccessFile f. This method is a wrapper around {@link
    * java.io.RandomAccessFile#writeLong(long) writeLong(long)}, but assumes the input should be
    * interpreted as unsigned.
    */

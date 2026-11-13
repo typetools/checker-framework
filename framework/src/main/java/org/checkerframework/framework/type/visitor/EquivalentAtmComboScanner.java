@@ -18,7 +18,7 @@ import org.checkerframework.framework.util.AtmCombo;
 
 /**
  * EquivalentAtmComboScanner is an AtmComboVisitor that accepts combinations that are identical in
- * TypeMirror structure but might differ in contained AnnotationMirrors. This method will scan the
+ * TypeMirror structure but might differ in contained AnnotationMirrors. This class will scan the
  * individual components of the visited type pairs together.
  */
 public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
@@ -35,8 +35,8 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
   }
 
   /**
-   * In an AnnotatedTypeScanner a null type is encounter than null is returned. A user may want to
-   * customize the behavior of this scanner depending on whether or not one or both types is null.
+   * In an AnnotatedTypeScanner, if a null type is encountered, then null is returned. A user might
+   * want to customize the behavior of this scanner depending on whether one or both types are null.
    *
    * @param type1 a nullable AnnotatedTypeMirror
    * @param type2 a nullable AnnotatedTypeMirror
@@ -227,7 +227,7 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM>
     }
 
     /**
-     * Add a new pair to the history.
+     * Adds a new pair to the history.
      *
      * @param type1 the first type
      * @param type2 the second type

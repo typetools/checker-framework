@@ -25,7 +25,7 @@ class ValueTypeAnnotator extends TypeAnnotator {
   protected final ValueAnnotatedTypeFactory typeFactory;
 
   /**
-   * Construct a new ValueTypeAnnotator.
+   * Constructs a new ValueTypeAnnotator.
    *
    * @param typeFactory the type factory to use
    */
@@ -49,7 +49,7 @@ class ValueTypeAnnotator extends TypeAnnotator {
    * ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree, Void)} which issues warnings
    * to users in these cases.
    *
-   * <p>If any @IntRange or @ArrayLenRange annotation has incorrect parameters, e.g. the value
+   * <p>If any @IntRange or @ArrayLenRange annotation has incorrect parameters, e.g., the value
    * "from" is greater than the value "to", replaces the annotation by {@code @BottomVal}. The
    * {@link ValueVisitor#visitAnnotation(com.sun.source.tree.AnnotationTree, Void)} raises an error
    * to users if the annotation was user-written.
@@ -61,7 +61,9 @@ class ValueTypeAnnotator extends TypeAnnotator {
    * <p>If a user only writes one side of an {@code IntRange} annotation, this method also computes
    * an appropriate default based on the underlying type for the other side of the range. For
    * instance, if the user writes {@code @IntRange(from = 1) short x;} then this method will
-   * translate the annotation to {@code @IntRange(from = 1, to = Short.MAX_VALUE}.
+   * translate the annotation to {@code @IntRange(from = 1, to = Short.MAX_VALUE)}.
+   *
+   * @param atm the type whose annotation is replaced, if it is one of the special cases
    */
   private void replaceWithNewAnnoInSpecialCases(AnnotatedTypeMirror atm) {
     AnnotationMirror anno = atm.getPrimaryAnnotationInHierarchy(typeFactory.UNKNOWNVAL);

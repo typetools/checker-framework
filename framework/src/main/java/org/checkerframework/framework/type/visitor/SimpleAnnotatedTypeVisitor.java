@@ -45,7 +45,7 @@ public abstract class SimpleAnnotatedTypeVisitor<R, P> implements AnnotatedTypeV
 
   /**
    * Performs the default action for visiting trees, if subclasses do not override the visitFOO
-   * node.
+   * method.
    *
    * <p>This implementation merely returns the default value (as specified by the protected field
    * {@code DEFAULT_VALUE}).

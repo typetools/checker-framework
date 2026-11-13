@@ -27,7 +27,7 @@ public final class CFGTranslationPhaseTwo {
   private CFGTranslationPhaseTwo() {}
 
   /**
-   * Perform phase two of the translation.
+   * Performs phase two of the translation.
    *
    * @param in the result of phase one
    * @return a control flow graph that might still contain degenerate basic blocks (such as empty

@@ -149,7 +149,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
   }
 
   /**
-   * Reset to allow reuse of the same instance. Subclasses should override this method. The
+   * Resets this to allow reuse of the same instance. Subclasses should override this method. The
    * overriding implementation should clear its additional state and then call the super
    * implementation.
    */
@@ -323,8 +323,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
    * the primary annotation of {@code type} and the map is returned. Otherwise, an empty map is
    * returned.
    *
-   * @param type type with qualifier to us in the map
-   * @param polyType type that may have polymorphic qualifiers
+   * @param type type with qualifier to use in the map
+   * @param polyType type that might have polymorphic qualifiers
    * @return a mapping from the polymorphic qualifiers in {@code polyType} to the qualifiers in
    *     {@code type}
    */
@@ -349,7 +349,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
   }
 
   /**
-   * Returns annotation that is the combination of the two annotations. The annotations are
+   * Returns the annotation that is the combination of the two annotations. The annotations are
    * instantiations for {@code polyQual}.
    *
    * <p>The combination is typically their least upper bound. (It could be the GLB in the case that
@@ -390,9 +390,9 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * Set of {@link AnnotatedTypeVariable} or {@link AnnotatedWildcardType} that have been visited.
      * Used to prevent infinite recursion on recursive types.
      *
-     * <p>Uses reference equality rather than equals because the visitor may visit two types that
+     * <p>Uses reference equality rather than equals because the visitor might visit two types that
      * are structurally equal, but not actually the same. For example, the wildcards in {@code
-     * Map<?,?>} may be equal, but they both should be visited.
+     * Map<?,?>} might be equal, but they both should be visited.
      */
     private final Set<AnnotatedTypeMirror> visitedTypes =
         Collections.newSetFromMap(new IdentityHashMap<>());
@@ -447,8 +447,8 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * Calls {@link #visit(AnnotatedTypeMirror, AnnotatedTypeMirror)} for each type in {@code
      * types}.
      *
-     * @param types the AnnotateTypeMirrors used to find instantiations
-     * @param polyTypes the AnnotatedTypeMirrors that may have polymorphic qualifiers
+     * @param types the AnnotatedTypeMirrors used to find instantiations
+     * @param polyTypes the AnnotatedTypeMirrors that might have polymorphic qualifiers
      * @return a mapping of polymorphic qualifiers to their instantiations
      */
     private AnnotationMirrorMap<AnnotationMirror> visit(
@@ -484,7 +484,7 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
      * composite type in {@code type}.
      *
      * @param type the AnnotatedTypeMirror used to find instantiations
-     * @param polyType the AnnotatedTypeMirror that may have polymorphic qualifiers
+     * @param polyType the AnnotatedTypeMirror that might have polymorphic qualifiers
      * @return a mapping of polymorphic qualifiers to their instantiations
      */
     private AnnotationMirrorMap<AnnotationMirror> visit(
