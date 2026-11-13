@@ -39,7 +39,7 @@ import org.plumelib.util.ArrayMap;
 import org.plumelib.util.StringsP;
 
 /**
- * Builds an annotation mirror that may have some values.
+ * Builds an annotation mirror that might have some values.
  *
  * <p>Constructing an {@link AnnotationMirror} requires:
  *
@@ -75,7 +75,7 @@ public class AnnotationBuilder {
   private final Map<ExecutableElement, AnnotationValue> elementValues;
 
   /**
-   * Create a new AnnotationBuilder for the given annotation and environment (with no
+   * Creates a new AnnotationBuilder for the given annotation and environment (with no
    * elements/fields, but they can be added later).
    *
    * @param env the processing environment
@@ -87,8 +87,8 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Create a new AnnotationBuilder for the given annotation name (with no elements/fields, but they
-   * can be added later).
+   * Creates a new AnnotationBuilder for the given annotation name (with no elements/fields, but
+   * they can be added later).
    *
    * @param env the processing environment
    * @param name the canonical name of the annotation to build
@@ -106,7 +106,8 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Create a new AnnotationBuilder that copies the given annotation, including its elements/fields.
+   * Creates a new AnnotationBuilder that copies the given annotation, including its
+   * elements/fields.
    *
    * @param env the processing environment
    * @param annotation the annotation to copy
@@ -286,7 +287,7 @@ public class AnnotationBuilder {
    * in {@code ignorableElements}.
    *
    * @param other the annotation that holds the values to be copied; need not be an annotation of
-   *     the same type of the one being built
+   *     the same type as the one being built
    * @param ignorableElements the names of elements of {@code other} that can be safely dropped
    */
   public void copyElementValuesFromAnnotation(AnnotationMirror other, String... ignorableElements) {
@@ -346,7 +347,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element/field with the given name, to the given value.
+   * Sets the element/field with the given name to the given value.
    *
    * @param elementName the element/field name
    * @param value the new value for the element/field
@@ -358,7 +359,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element/field with the given name, to the given value.
+   * Sets the element/field with the given name to the given value.
    *
    * @param elementName the element/field name
    * @param values the new value for the element/field
@@ -371,7 +372,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element to the given value.
+   * Sets the element to the given value.
    *
    * @param element the element
    * @param values the new value for the element
@@ -397,7 +398,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element/field with the given name, to the given value.
+   * Sets the element/field with the given name to the given value.
    *
    * @param elementName the element/field name
    * @param values the new values for the element/field
@@ -408,7 +409,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element/field with the given name, to the given value.
+   * Sets the element/field with the given name to the given value.
    *
    * @param elementName the element/field name
    * @param value the new value for the element/field
@@ -419,7 +420,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element/field with the given name, to the given value.
+   * Sets the element/field with the given name to the given value.
    *
    * @param elementName the element/field name
    * @param value the new value for the element/field
@@ -430,7 +431,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element/field with the given name, to the given value.
+   * Sets the element/field with the given name to the given value.
    *
    * @param elementName the element/field name
    * @param value the new value for the element/field
@@ -441,7 +442,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element/field with the given name, to the given value.
+   * Sets the element/field with the given name to the given value.
    *
    * @param elementName the element/field name
    * @param value the new value for the element/field
@@ -452,7 +453,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element/field with the given name, to the given value.
+   * Sets the element/field with the given name to the given value.
    *
    * @param elementName the element/field name
    * @param value the new value for the element/field
@@ -463,7 +464,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element/field with the given name, to the given value.
+   * Sets the element/field with the given name to the given value.
    *
    * @param elementName the element/field name
    * @param value the new value for the element/field
@@ -474,7 +475,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element/field with the given name, to the given value.
+   * Sets the element/field with the given name to the given value.
    *
    * @param elementName the element/field name
    * @param value the new value for the element/field
@@ -485,7 +486,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element/field with the given name, to the given value.
+   * Sets the element/field with the given name to the given value.
    *
    * @param elementName the element/field name
    * @param value the new value for the element/field
@@ -496,7 +497,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element/field with the given name, to the given value.
+   * Sets the element/field with the given name to the given value.
    *
    * @param elementName the element/field name
    * @param value the new value for the element/field
@@ -507,7 +508,11 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Remove the element/field with the given name. Does not err if no such element/field is present.
+   * Removes the element/field with the given name. Does not err if no such element/field is
+   * present.
+   *
+   * @param elementName the name of the element/field to remove
+   * @return this
    */
   public AnnotationBuilder removeElement(CharSequence elementName) {
     assertNotBuilt();
@@ -524,7 +529,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element/field with the given name, to the given value.
+   * Sets the element/field with the given name to the given value.
    *
    * @param elementName the element/field name
    * @param value the new value for the element/field
@@ -545,7 +550,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Given a class, return the corresponding TypeMirror.
+   * Given a class, returns the corresponding TypeMirror.
    *
    * @param clazz a class
    * @return the TypeMirror corresponding to the given class
@@ -555,7 +560,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element/field with the given name, to the given value.
+   * Sets the element/field with the given name to the given value.
    *
    * @param elementName the element/field name
    * @param value the new value for the element/field
@@ -567,7 +572,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element/field with the given name, to the given value.
+   * Sets the element/field with the given name to the given value.
    *
    * @param elementName the element/field name
    * @param value the new value for the element/field
@@ -580,7 +585,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element/field with the given name, to the given value.
+   * Sets the element/field with the given name to the given value.
    *
    * @param elementName the element/field name
    * @param value the new value for the element/field
@@ -599,7 +604,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element/field with the given name, to the given value.
+   * Sets the element/field with the given name to the given value.
    *
    * @param elementName the element/field name
    * @param values the new values for the element/field
@@ -642,7 +647,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element/field with the given name, to the given value.
+   * Sets the element/field with the given name to the given value.
    *
    * @param elementName the element/field name
    * @param values the new values for the element/field
@@ -689,7 +694,12 @@ public class AnnotationBuilder {
     return this;
   }
 
-  /** Find the VariableElement for the given enum. */
+  /**
+   * Returns the VariableElement for the given enum constant.
+   *
+   * @param value an enum constant
+   * @return the VariableElement for the enum constant
+   */
   private VariableElement findEnumElement(Enum<?> value) {
     String enumClass = value.getDeclaringClass().getCanonicalName();
     assert enumClass != null : "@AssumeAssertion(nullness): assumption";
@@ -704,7 +714,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Set the element/field with the given name, to the given value.
+   * Sets the element/field with the given name to the given value.
    *
    * @param key the element/field name
    * @param value the new value for the element/field
@@ -782,7 +792,7 @@ public class AnnotationBuilder {
   }
 
   /**
-   * Create an AnnotationValue -- a value for an annotation element/field.
+   * Creates an AnnotationValue -- a value for an annotation element/field.
    *
    * @param obj the value to be stored in an annotation element/field
    * @return an AnnotationValue for the given Java value
@@ -808,7 +818,7 @@ public class AnnotationBuilder {
     final @Interned @CanonicalName String annotationName;
 
     /**
-     * Create a CheckerFrameworkAnnotationMirror.
+     * Creates a CheckerFrameworkAnnotationMirror.
      *
      * @param annotationType the annotation type
      * @param elementValues the element values
@@ -872,7 +882,11 @@ public class AnnotationBuilder {
     /** The interned value of toString. */
     private @Nullable @Interned String toStringVal;
 
-    /** Create an annotation value. */
+    /**
+     * Creates an annotation value.
+     *
+     * @param obj the value
+     */
     CheckerFrameworkAnnotationValue(Object obj) {
       this.value = obj;
     }

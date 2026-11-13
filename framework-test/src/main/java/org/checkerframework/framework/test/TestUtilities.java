@@ -80,7 +80,7 @@ public final class TestUtilities {
   }
 
   /**
-   * Find test java sources within currentDir/tests.
+   * Finds test Java sources within currentDir/tests.
    *
    * @param dirNames subdirectories of currentDir/tests
    * @return found files
@@ -90,7 +90,7 @@ public final class TestUtilities {
   }
 
   /**
-   * Find test java sources within {@code parent}.
+   * Finds test Java sources within {@code parent}.
    *
    * @param parent directory to search within
    * @param dirNames subdirectories of {@code parent}
@@ -101,7 +101,7 @@ public final class TestUtilities {
   }
 
   /**
-   * Find test java sources within {@code parent}.
+   * Finds test Java sources within {@code parent}.
    *
    * @param parent directory to search within
    * @param dirNames subdirectories of {@code parent}
@@ -121,7 +121,7 @@ public final class TestUtilities {
 
   /**
    * Returns a list where each item is a list of Java files, excluding any skip tests, for each
-   * directory given by dirName and also a list for any subdirectory.
+   * directory given by dirNames and also a list for any subdirectory.
    *
    * @param parent parent directory of the dirNames directories
    * @param dirNames names of directories to search
@@ -367,10 +367,10 @@ public final class TestUtilities {
   }
 
   /**
-   * Given an option map, return a list of option names.
+   * Given an option map, returns a list of option names.
    *
    * @param options an option map
-   * @return return a list of option names
+   * @return a list of option names
    */
   @SideEffectFree
   @SuppressWarnings("purity") // adds only to a newly allocated list
@@ -389,7 +389,7 @@ public final class TestUtilities {
   }
 
   /**
-   * Write all the lines in the given Iterable to the given File.
+   * Writes all the lines in the given Iterable to the given File.
    *
    * @param file where to write the lines
    * @param lines what lines to write
@@ -464,7 +464,7 @@ public final class TestUtilities {
   }
 
   /**
-   * Append a test configuration to the end of a file.
+   * Appends a test configuration to the end of a file.
    *
    * @param file the file to write to
    * @param config the configuration to append to the end of the file
@@ -523,7 +523,7 @@ public final class TestUtilities {
   }
 
   /**
-   * If the given TypecheckResult has unexpected or missing diagnostics, fail the running JUnit
+   * If the given TypecheckResult has unexpected or missing diagnostics, fails the running JUnit
    * test.
    *
    * @param testResult the result of type-checking
@@ -542,7 +542,7 @@ public final class TestUtilities {
   }
 
   /**
-   * Create the directory (and its parents) if it does not exist.
+   * Creates the directory (and its parents) if it does not exist.
    *
    * @param dir the directory to create
    */

@@ -47,10 +47,10 @@ public final class I18nFormatUtil {
   }
 
   /**
-   * Returns a {@link I18nConversionCategory} for every conversion found in the format string.
+   * Returns an {@link I18nConversionCategory} for every conversion found in the format string.
    *
    * @param format the format string to parse
-   * @return a {@link I18nConversionCategory} for every conversion found in the format string
+   * @return an {@link I18nConversionCategory} for every conversion found in the format string
    * @throws IllegalFormatException if the format is not syntactically valid
    */
   public static I18nConversionCategory[] formatParameterCategories(String format) {
@@ -399,8 +399,13 @@ public final class I18nFormatUtil {
     }
 
     /**
-     * Returns the index of s in list. If not found, return the index of
-     * s.trim().toLowerCase(Locale.ROOT) in list. If still not found, return -1.
+     * Returns the index of s in list. If not found, returns the index of
+     * s.trim().toLowerCase(Locale.ROOT) in list. If still not found, returns -1.
+     *
+     * @param s the string to search for
+     * @param list the strings to search in
+     * @return the index of {@code s} or of its trimmed lowercase form in {@code list}, or -1 if
+     *     neither is found
      */
     private static int findKeyword(String s, String[] list) {
       for (int i = 0; i < list.length; ++i) {

@@ -83,7 +83,7 @@ import org.checkerframework.javacutil.UserError;
  * List)} on corresponding child trees.
  *
  * <p>To use this class, extend it and override {@link #defaultAction(Tree, Tree)} to perform work
- * for each matched pair of trees. Subclasses may also override specific {@code visitXyz} methods to
+ * for each matched pair of trees. Subclasses can also override specific {@code visitXyz} methods to
  * customize behavior, but do not need to override root methods such as {@code visitCompilationUnit}
  * or {@code visitClass} unless they want to change traversal. The one exception is {@link
  * #visitModifiers}, which is never called; override {@link #scanModifiers} instead.
@@ -95,13 +95,13 @@ import org.checkerframework.javacutil.UserError;
  * all paired-tree structural checks in {@link #scan(Tree, Tree)} rather than duplicating them in
  * every {@code visitXyz} method.
  *
- * <p>This base visitor does not compare or traverse annotation lists, since annotations may
- * legitimately differ between a Java file and its corresponding {@code .ajava} file. Subclasses may
+ * <p>This base visitor does not compare or traverse annotation lists, since annotations can
+ * legitimately differ between a Java file and its corresponding {@code .ajava} file. Subclasses can
  * change that behavior.
  */
 public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
-  /** Create a DoubleJavacVisitor. */
+  /** Creates a DoubleJavacVisitor. */
   protected DoubleJavacVisitor() {}
 
   /**
@@ -119,8 +119,8 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
 
   /**
    * Visits two corresponding annotation lists. This base implementation does nothing because
-   * annotations may legitimately differ between a Java file and its corresponding {@code .ajava}
-   * file. Subclasses may override this method to process annotations.
+   * annotations can legitimately differ between a Java file and its corresponding {@code .ajava}
+   * file. Subclasses can override this method to process annotations.
    *
    * @param owner1 the tree from the first AST that the annotations are attached to
    * @param owner2 the tree from the second AST that the annotations are attached to
@@ -138,7 +138,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   //
 
   /**
-   * Both trees must have the same {@link Tree.Kind}.
+   * Throws a {@link UserError} unless both trees are non-null and have the same {@link Tree.Kind}.
    *
    * @param tree1 the first tree to scan, or null
    * @param tree2 the second tree to scan, or null
@@ -165,7 +165,7 @@ public abstract class DoubleJavacVisitor extends SimpleTreeVisitor<Void, Tree> {
   }
 
   /**
-   * The two list arguments must have the same length.
+   * Throws a {@link UserError} unless both lists are non-null and have the same length.
    *
    * @param list1 the first list of trees
    * @param list2 the second list of trees

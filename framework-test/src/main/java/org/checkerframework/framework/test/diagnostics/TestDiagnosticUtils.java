@@ -40,7 +40,7 @@ public final class TestDiagnosticUtils {
   /**
    * How a warning appears in Java source files. An example is "warning: [unchecked] unchecked
    * cast". Capturing group 1 is the warning message, which (unlike a message matched by {@link
-   * #DIAGNOSTIC_IN_JAVA_REGEX}) may contain a line separator.
+   * #DIAGNOSTIC_IN_JAVA_REGEX}) might contain a line separator.
    */
   public static final String DIAGNOSTIC_WARNING_IN_JAVA_REGEX = "\\s*warning:\\s*(.*\\s*.*)\\s*";
 
@@ -92,7 +92,7 @@ public final class TestDiagnosticUtils {
       Pattern.compile(DIAGNOSTIC_FILE_WARNING_REGEX);
 
   /**
-   * Instantiate the diagnostic based on a string that would appear in diagnostic files (i.e. files
+   * Instantiates the diagnostic based on a string that would appear in diagnostic files (i.e. files
    * that only contain line after line of expected diagnostics).
    *
    * @param stringFromDiagnosticFile a single diagnostic string to parse
@@ -109,7 +109,7 @@ public final class TestDiagnosticUtils {
   }
 
   /**
-   * Instantiate the diagnostic from a string that would appear in a Java test file, e.g.: "error:
+   * Instantiates the diagnostic from a string that would appear in a Java test file, e.g.: "error:
    * (error-message-key)"
    *
    * @param filename the file containing the diagnostic (and the error)
@@ -130,8 +130,8 @@ public final class TestDiagnosticUtils {
   }
 
   /**
-   * Instantiate a diagnostic from output produced by the Java compiler. The resulting diagnostic is
-   * never fixable and always has square brackets.
+   * Instantiates a diagnostic from output produced by the Java compiler. The resulting diagnostic
+   * is never fixable and always has square brackets.
    *
    * @param diagnosticString a diagnostic produced by the Java compiler
    * @return a TestDiagnostic for the string
@@ -149,7 +149,7 @@ public final class TestDiagnosticUtils {
   }
 
   /**
-   * Instantiate the diagnostic from a JSpecify string that would appear in a Java file, e.g.:
+   * Instantiates the diagnostic from a JSpecify string that would appear in a Java file, e.g.:
    * "jspecify_some_category".
    *
    * @param filename the file containing the diagnostic (and the error)
@@ -171,7 +171,7 @@ public final class TestDiagnosticUtils {
   }
 
   /**
-   * Instantiate the diagnostic via pattern-matching against the given patterns.
+   * Instantiates the diagnostic via pattern-matching against the given patterns.
    *
    * @param diagnosticPattern a pattern that matches any diagnostic
    * @param warningPattern a pattern that matches a warning diagnostic
@@ -298,7 +298,7 @@ public final class TestDiagnosticUtils {
   public record MessageAndFilename(String message, String filename) {}
 
   /**
-   * Given a javax diagnostic, return the first line of the message, without the leading filename,
+   * Given a javax diagnostic, returns the first line of the message, without the leading filename,
    * and the filename.
    *
    * @param original a javax diagnostic
@@ -349,10 +349,10 @@ public final class TestDiagnosticUtils {
   }
 
   /**
-   * Given a category string that may be prepended with "fixable-", return the category enum that
-   * corresponds with the category and whether or not it is an isFixable error.
+   * Given a category string that might be prepended with "fixable-", returns the category enum that
+   * corresponds with the category and whether or not it is a fixable error.
    *
-   * @param category a category string that may be prepended with "fixable-"
+   * @param category a category string that might be prepended with "fixable-"
    * @return the category and whether it was prepended with "fixable-"
    */
   @SideEffectFree
@@ -393,7 +393,7 @@ public final class TestDiagnosticUtils {
   }
 
   /**
-   * Convert an end-of-line diagnostic message to a beginning-of-line one. Returns the argument
+   * Converts an end-of-line diagnostic message to a beginning-of-line one. Returns the argument
    * unchanged if it does not contain an end-of-line diagnostic message.
    *
    * <p>Most diagnostics in Java files start at the beginning of a line. Occasionally, javac issues
@@ -416,7 +416,12 @@ public final class TestDiagnosticUtils {
     }
   }
 
-  /** Return true if this line in a Java file continues an expected diagnostic. */
+  /**
+   * Returns true if this line in a Java file continues an expected diagnostic.
+   *
+   * @param originalLine a line in a Java file; can be null
+   * @return true if {@code originalLine} continues an expected diagnostic
+   */
   @EnsuresNonNullIf(result = true, expression = "#1")
   @SideEffectFree
   public static boolean isJavaDiagnosticLineContinuation(@Nullable String originalLine) {
@@ -440,7 +445,7 @@ public final class TestDiagnosticUtils {
   }
 
   /**
-   * Convert a line in a Java source file to a TestDiagnosticLine.
+   * Converts a line in a Java source file to a TestDiagnosticLine.
    *
    * <p>The input {@code line} is possibly the concatenation of multiple source lines, if the
    * diagnostic was split across lines in the source code.
@@ -490,7 +495,12 @@ public final class TestDiagnosticUtils {
     }
   }
 
-  /** Convert a line in a DiagnosticFile to a TestDiagnosticLine. */
+  /**
+   * Converts a line in a DiagnosticFile to a TestDiagnosticLine.
+   *
+   * @param diagnosticLine a line in a DiagnosticFile
+   * @return the corresponding TestDiagnosticLine
+   */
   @SideEffectFree
   public static TestDiagnosticLine fromDiagnosticFileLine(String diagnosticLine) {
     String trimmedLine = diagnosticLine.trim();
@@ -504,7 +514,7 @@ public final class TestDiagnosticUtils {
   }
 
   /**
-   * Convert Java compiler output into a set of {@code TestDiagnostic}s.
+   * Converts Java compiler output into a set of {@code TestDiagnostic}s.
    *
    * @param javaxDiagnostics output of the Java compiler
    * @return a set of {@code TestDiagnostic}s
@@ -536,7 +546,7 @@ public final class TestDiagnosticUtils {
    * Converts the given diagnostics to strings (as they would appear in a source file individually).
    *
    * @param diagnostics a list of diagnostics
-   * @return a list of the diagnastics as they would appear in a source file
+   * @return a list of the diagnostics as they would appear in a source file
    */
   public static List<String> diagnosticsToString(List<TestDiagnostic> diagnostics) {
     return CollectionsP.mapList(TestDiagnostic::toString, diagnostics);

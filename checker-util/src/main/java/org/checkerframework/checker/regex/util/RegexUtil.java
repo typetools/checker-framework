@@ -46,7 +46,7 @@ public final class RegexUtil {
    *
    * <p>This exception is useful when an illegal regex is detected but the contextual information to
    * report a helpful error message is not available at the current depth in the call stack. By
-   * using a checked PatternSyntaxException the error must be handled up the call stack where a
+   * using a checked PatternSyntaxException, the error must be handled up the call stack where a
    * better error message can be reported.
    *
    * <p>Typical usage is:
@@ -445,7 +445,7 @@ public final class RegexUtil {
    *
    * <p>The point of this method is to make mapping operations more concise. Import it with
    *
-   * <pre>import static org.plumelib.util.CollectionsP.mapList;</pre>
+   * <pre>import static org.checkerframework.checker.regex.util.RegexUtil.mapList;</pre>
    *
    * This method is just like {@code transform}, but with the arguments in the other order.
    *

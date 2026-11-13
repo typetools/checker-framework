@@ -18,7 +18,7 @@ import org.plumelib.util.StringsP;
 public class ImmutableTestConfiguration implements TestConfiguration {
 
   /**
-   * Options that should be passed to the compiler. This a {@code Map(optionName =>
+   * Options that should be passed to the compiler. This is a {@code Map(optionName =>
    * optionArgumentIfAny)}. E.g.,
    *
    * <pre>{@code
@@ -39,7 +39,7 @@ public class ImmutableTestConfiguration implements TestConfiguration {
   /**
    * The source files to compile. If the file is expected to emit errors on compilation, the file
    * should contain expected error diagnostics OR should have a companion file with the same
-   * path/name but with the extension .goal instead of .java if they
+   * path/name but with the extension .goal instead of .java.
    */
   private final List<File> testSourceFiles;
 
@@ -50,7 +50,7 @@ public class ImmutableTestConfiguration implements TestConfiguration {
   private final boolean shouldEmitDebugInfo;
 
   /**
-   * Create a new ImmutableTestConfiguration.
+   * Creates a new ImmutableTestConfiguration.
    *
    * @param diagnosticFiles files containing diagnostics that should be returned by javac
    * @param testSourceFiles the source files to compile

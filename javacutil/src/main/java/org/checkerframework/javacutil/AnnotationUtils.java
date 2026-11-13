@@ -65,8 +65,8 @@ public final class AnnotationUtils {
    * Returns the fully-qualified name of an annotation as a String.
    *
    * <p>This method is efficient for {@code AnnotationBuilder.CheckerFrameworkAnnotationMirror}, for
-   * which it looks up the name. This method may be inefficient for other subclasses of {@code
-   * AnnotationMirror}, because it may compute a new string.
+   * which it looks up the name. This method might be inefficient for other subclasses of {@code
+   * AnnotationMirror}, because it might compute a new string.
    *
    * @param annotation the annotation whose name to return
    * @return the fully-qualified name of an annotation as a String
@@ -120,8 +120,8 @@ public final class AnnotationUtils {
    * Returns true iff both annotations are of the same type and have the same annotation values.
    *
    * <p>This behavior differs from {@code AnnotationMirror.equals(Object)}. The equals method
-   * returns true iff both annotations are the same and annotate the same annotation target (e.g.
-   * field, variable, etc) -- that is, if its arguments are the same annotation instance.
+   * returns true iff both annotations are the same and annotate the same annotation target (e.g.,
+   * field, variable, etc.) -- that is, if its arguments are the same annotation instance.
    *
    * @param a1 the first AnnotationMirror to compare
    * @param a2 the second AnnotationMirror to compare
@@ -142,8 +142,8 @@ public final class AnnotationUtils {
   }
 
   /**
-   * Returns -1, 0, or 1 depending on whether the name of a1 is less, equal to, or greater than that
-   * of a2 (lexicographically).
+   * Returns -1, 0, or 1 depending on whether the name of a1 is less than, equal to, or greater than
+   * that of a2 (lexicographically).
    *
    * @param a1 the first AnnotationMirror to compare
    * @param a2 the second AnnotationMirror to compare
@@ -179,8 +179,8 @@ public final class AnnotationUtils {
 
   /**
    * Returns true iff a1 and a2 have the same annotation type. Does not check annotation
-   * element/field values. One reason that clients may call this is that it is slightly faster than
-   * {@link #areSame} when the annotation is known to have no elements/fields. (TODO: Is that
+   * element/field values. One reason that clients might call this is that it is slightly faster
+   * than {@link #areSame} when the annotation is known to have no elements/fields. (TODO: Is that
    * considered to be good style?)
    *
    * @param a1 the first AnnotationMirror to compare
@@ -217,7 +217,7 @@ public final class AnnotationUtils {
    *
    * @param am the AnnotationMirror whose class to compare
    * @param annoClass the class to compare
-   * @return true if annoclass is the class of am
+   * @return true if annoClass is the class of am
    * @deprecated use {@code AnnotatedTypeFactory#areSameByClass} or {@link #areSameByName}
    */
   @Deprecated // for use only by the framework
@@ -400,7 +400,7 @@ public final class AnnotationUtils {
   }
 
   /**
-   * Provide an ordering for {@link AnnotationMirror}s. AnnotationMirrors are first compared by
+   * Provides an ordering for {@link AnnotationMirror}s. AnnotationMirrors are first compared by
    * their fully-qualified names, then by their element values in order of the name of the element.
    *
    * @param a1 the first annotation
@@ -442,7 +442,7 @@ public final class AnnotationUtils {
   }
 
   /**
-   * Compare the two AnnotationValue objects for order.
+   * Compares the two AnnotationValue objects for order.
    *
    * @param av1 the first AnnotationValue to compare
    * @param av2 the second AnnotationValue to compare
@@ -523,10 +523,10 @@ public final class AnnotationUtils {
   }
 
   /**
-   * Returns true if the given annotation has a @Inherited meta-annotation.
+   * Returns true if the given annotation has an @Inherited meta-annotation.
    *
    * @param anno the annotation to check for an @Inherited meta-annotation
-   * @return true if the given annotation has a @Inherited meta-annotation
+   * @return true if the given annotation has an @Inherited meta-annotation
    */
   public static boolean hasInheritedMeta(AnnotationMirror anno) {
     return anno.getAnnotationType().asElement().getAnnotation(Inherited.class) != null;
@@ -587,7 +587,7 @@ public final class AnnotationUtils {
   /**
    * Returns the element with the name {@code elementName} of the annotation {@code anno}. The
    * result has type {@code expectedType}. If there is no value for {@code elementName}, {@code
-   * defaultValue} is returned
+   * defaultValue} is returned.
    *
    * <p>This method is intended only for use when the class of the annotation is not on the user's
    * classpath. This is for users of the Dataflow Framework that do not use the rest of the Checker
@@ -726,8 +726,8 @@ public final class AnnotationUtils {
   }
 
   /**
-   * Returns the element with the name {@code elementName} of the annotation {@code anno}, or return
-   * null if no such element exists.
+   * Returns the element with the name {@code elementName} of the annotation {@code anno}, or
+   * returns null if no such element exists.
    *
    * <p>This method is intended only for use by the framework. A checker implementation should use
    * {@link #getElementValue(AnnotationMirror, ExecutableElement, Class, Object)}.
@@ -751,8 +751,9 @@ public final class AnnotationUtils {
   }
 
   /**
-   * Returns the element with the name {@code elementName} of the annotation {@code anno}, or return
-   * null if no such element exists. One element of the result has type {@code expectedType}.
+   * Returns the element with the name {@code elementName} of the annotation {@code anno}, or
+   * returns null if no such element exists. One element of the result has type {@code
+   * expectedType}.
    *
    * <p>This method is intended only for use by the framework. A checker implementation should use
    * {@link #getElementValue(AnnotationMirror, ExecutableElement, Class, Object)}.
@@ -838,7 +839,7 @@ public final class AnnotationUtils {
    * @param anno the annotation to disassemble
    * @param elementName the name of the element to access; it must be present in the annotation
    * @param useDefaults if true, apply default values to the element
-   * @return the name of the class that is referenced by element with the given name; may be an
+   * @return the name of the class that is referenced by element with the given name; might be an
    *     empty name, for a local or anonymous class
    * @deprecated use an ExecutableElement
    */
@@ -1154,7 +1155,7 @@ public final class AnnotationUtils {
    *
    * @param anno the annotation to disassemble
    * @param element the element to access; it must be present in the annotation
-   * @return the name of the class that is referenced by element with the given name; may be an
+   * @return the name of the class that is referenced by element with the given name; might be an
    *     empty name, for a local or anonymous class
    */
   public static @CanonicalName Name getElementValueClassName(
@@ -1405,8 +1406,8 @@ public final class AnnotationUtils {
   // The Javadoc doesn't use `@link` because framework is a different project than this one
   // (javacutil).
   /**
-   * Update a map, to add {@code newQual} to the set that {@code key} maps to. The mapped-to element
-   * is an unmodifiable set.
+   * Updates a map, to add {@code newQual} to the set that {@code key} maps to. The mapped-to
+   * element is an unmodifiable set.
    *
    * <p>See
    * org.checkerframework.framework.type.QualifierHierarchy#updateMappingToMutableSet(QualifierHierarchy,

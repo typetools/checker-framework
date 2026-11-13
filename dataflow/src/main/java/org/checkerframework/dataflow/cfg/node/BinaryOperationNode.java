@@ -12,7 +12,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * <p>For example:
  *
  * <pre>
- *   <em>lefOperandNode</em> <em>operator</em> <em>rightOperandNode</em>
+ *   <em>leftOperandNode</em> <em>operator</em> <em>rightOperandNode</em>
  * </pre>
  */
 public abstract class BinaryOperationNode extends Node {

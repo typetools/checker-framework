@@ -43,7 +43,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  *       getSupportedAnnotationTypes}, {@link #getSupportedOptions getSupportedOptions}, and {@link
  *       #getSupportedSourceVersion getSupportedSourceVersion}. These methods are only called once
  *       per run, not on each round.
- *   <li>For each class containing a supported annotation, the tool calls {@link
+ *   <li>For each class containing a supported annotation, the tool calls the {@link
  *       #typeProcess(TypeElement, TreePath) typeProcess} method on the {@code Processor}. The class
  *       is guaranteed to be type-checked Java code and all the tree type and symbol information is
  *       resolved.
@@ -55,9 +55,9 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  * rest of classes are analyzed. The tool is also permitted to stop type processing immediately if
  * any errors are raised, without invoking {@link #typeProcessingOver}.
  *
- * <p>A subclass may override any of the methods in this class, as long as the general {@link
+ * <p>A subclass can override any of the methods in this class, as long as the general {@link
  * javax.annotation.processing.Processor Processor} contract is obeyed, with one notable exception.
- * {@link #process(Set, RoundEnvironment)} may not be overridden, as it is called during the
+ * {@link #process(Set, RoundEnvironment)} cannot be overridden, as it is called during the
  * declaration annotation phase before classes are analyzed.
  */
 public abstract class AbstractTypeProcessor extends AbstractProcessor {
@@ -117,7 +117,7 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
   /**
    * A method to be called once before the first call to typeProcess.
    *
-   * <p>Subclasses may override this method to do any initialization work.
+   * <p>Subclasses can override this method to do any initialization work.
    */
   @SuppressWarnings("PMD.EmptyMethodInAbstractClassShouldBeAbstract")
   public void typeProcessingStart() {
@@ -138,7 +138,7 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
   /**
    * A method to be called once all the classes are processed.
    *
-   * <p>Subclasses may override this method to do any aggregate analysis (e.g. generate report,
+   * <p>Subclasses can override this method to do any aggregate analysis (e.g., generate a report,
    * persistence) or resource deallocation.
    *
    * <p>Method {@link #getCompilerLog()} can be used to access the number of compiler errors.
@@ -165,7 +165,7 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
 
   /** A task listener that invokes the processor whenever a class is fully analyzed. */
   private final class AttributionTaskListener implements TaskListener {
-    /** Creates a AttributionTaskListener. */
+    /** Creates an AttributionTaskListener. */
     public AttributionTaskListener() {}
 
     @Override

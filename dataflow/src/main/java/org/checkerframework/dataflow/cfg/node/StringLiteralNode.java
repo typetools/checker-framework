@@ -17,7 +17,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 public class StringLiteralNode extends ValueLiteralNode {
 
   /**
-   * Create a new StringLiteralNode.
+   * Creates a new StringLiteralNode.
    *
    * @param t the tree for the literal value
    */
