@@ -15,7 +15,7 @@ public final class Effect {
   private final Class<? extends Annotation> annotClass;
 
   /**
-   * Create a new Effect object.
+   * Creates a new Effect object.
    *
    * @param cls one of UIEffect.class, PolyUIEffect.class, or SafeEffect.class
    */
@@ -28,7 +28,7 @@ public final class Effect {
    * Returns true iff {@code left} is less than or equal to {@code right}.
    *
    * @param left the first effect to compare
-   * @param right the first effect to compare
+   * @param right the second effect to compare
    * @return true iff {@code left} is less than or equal to {@code right}
    */
   public static boolean lessThanOrEqualTo(Effect left, Effect right) {

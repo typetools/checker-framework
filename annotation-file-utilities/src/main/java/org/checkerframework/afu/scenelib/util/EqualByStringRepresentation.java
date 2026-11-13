@@ -8,7 +8,7 @@ package org.checkerframework.afu.scenelib.util;
  */
 @SuppressWarnings("EqualsGetClass")
 public abstract class EqualByStringRepresentation {
-  /** Creates a EqualByStringRepresentation. */
+  /** Creates an EqualByStringRepresentation. */
   public EqualByStringRepresentation() {}
 
   @Override

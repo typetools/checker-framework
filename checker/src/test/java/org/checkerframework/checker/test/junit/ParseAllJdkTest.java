@@ -10,7 +10,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class ParseAllJdkTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a ParseAllJdkTest.
+   * Creates a ParseAllJdkTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

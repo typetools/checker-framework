@@ -18,8 +18,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * <p>A monotonically non-null field has these two properties:
  *
  * <ol>
- *   <li>The field may be assigned only non-null values.
- *   <li>The field may be reassigned as often as desired.
+ *   <li>The field can be assigned only non-null values.
+ *   <li>The field can be reassigned as often as desired.
  * </ol>
  *
  * <p>When the field is first read within a method, the field cannot be assumed to be non-null.
