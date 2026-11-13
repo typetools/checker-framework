@@ -12,7 +12,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * Indicates that an expression is used as a lock and the lock is known to be held on the current
  * thread.
  *
- * <p>This annotation may not be written in source code; it is an implementation detail of the
+ * <p>This annotation must not be written in source code; it is an implementation detail of the
  * checker.
  *
  * @see LockPossiblyHeld

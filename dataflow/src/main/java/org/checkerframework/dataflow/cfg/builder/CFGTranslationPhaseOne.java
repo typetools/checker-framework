@@ -232,10 +232,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** The annotation provider, e.g., a type factory. */
   protected final AnnotationProvider annotationProvider;
 
-  /** Can assertions be assumed to be disabled? */
+  /** True if assertions can be assumed to be disabled. */
   protected final boolean assumeAssertionsDisabled;
 
-  /** Can assertions be assumed to be enabled? */
+  /** True if assertions can be assumed to be enabled. */
   protected final boolean assumeAssertionsEnabled;
 
   /* --------------------------------------------------------- */
@@ -340,7 +340,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** The AssertionError type. */
   protected final TypeMirror assertionErrorType;
 
-  /** The ClassCastException type . */
+  /** The ClassCastException type. */
   protected final TypeMirror classCastExceptionType;
 
   /** The Iterable type (erased). */
@@ -349,7 +349,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** The NegativeArraySizeException type. */
   protected final TypeMirror negativeArraySizeExceptionType;
 
-  /** The NullPointerException type . */
+  /** The NullPointerException type. */
   protected final TypeMirror nullPointerExceptionType;
 
   /** The OutOfMemoryError type. */
@@ -358,7 +358,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** The ClassCircularityError type. */
   protected final @Nullable TypeMirror classCircularityErrorType;
 
-  /** The ClassFormatErrorType type. */
+  /** The ClassFormatError type. */
   protected final @Nullable TypeMirror classFormatErrorType;
 
   /** The NoClassDefFoundError type. */
@@ -390,12 +390,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   protected final Set<TypeMirror> arrayAccessExceptionTypes;
 
   /**
-   * Creates {@link CFGTranslationPhaseOne}.
+   * Creates a {@link CFGTranslationPhaseOne}.
    *
    * @param treeBuilder builder for new AST nodes
    * @param annotationProvider extracts annotations from AST nodes
-   * @param assumeAssertionsDisabled can assertions be assumed to be disabled?
-   * @param assumeAssertionsEnabled can assertions be assumed to be enabled?
+   * @param assumeAssertionsDisabled true if assertions can be assumed to be disabled
+   * @param assumeAssertionsEnabled true if assertions can be assumed to be enabled
    * @param env annotation processing environment containing type utilities
    */
   @SuppressWarnings("this-escape")
@@ -517,7 +517,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Process a single body within {@code root}. This method does not process the entire given
+   * Processes a single body within {@code root}. This method does not process the entire given
    * CompilationUnitTree. Rather, it processes one body (of a method/lambda/etc.) within it, which
    * corresponds to {@code underlyingAST}.
    *
@@ -533,7 +533,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Perform any actions required when CFG translation creates a new Tree that is not part of the
+   * Performs any actions required when CFG translation creates a new Tree that is not part of the
    * original AST.
    *
    * @param tree the newly created Tree
@@ -589,7 +589,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /* --------------------------------------------------------- */
 
   /**
-   * Add a node to the lookup map if it not already present.
+   * Adds a node to the lookup map if it is not already present.
    *
    * @param node the node to add to the lookup map
    */
@@ -650,7 +650,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Extend the list of extended nodes with a node.
+   * Extends the list of extended nodes with a node.
    *
    * @param node the node to add
    */
@@ -660,7 +660,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Extend the list of extended nodes with a node, where {@code node} might throw the exception
+   * Extends the list of extended nodes with a node, where {@code node} might throw the exception
    * {@code cause}.
    *
    * @param node the node to add
@@ -673,7 +673,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Extend the list of extended nodes with a node, where {@code node} might throw any of the
+   * Extends the list of extended nodes with a node, where {@code node} might throw any of the
    * exceptions in {@code causes}.
    *
    * @param node the node to add
@@ -693,10 +693,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Extend a list of extended nodes with a ClassName node.
+   * Extends the list of extended nodes with a ClassName node.
    *
-   * <p>Evaluating a class literal kicks off class loading (JLS 15.8.2) which can fail and throw one
-   * of the specified subclasses of a LinkageError or an OutOfMemoryError (JLS 12.2.1).
+   * <p>Evaluating a class literal kicks off class loading (JLS 15.8.2), which can fail and throw
+   * one of the specified subclasses of a LinkageError or an OutOfMemoryError (JLS 12.2.1).
    *
    * @param node the ClassName node to add
    * @return the node holder
@@ -720,12 +720,13 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Insert {@code node} after {@code pred} in the list of extended nodes, or append to the list if
-   * {@code pred} is not present.
+   * Inserts {@code node} after {@code pred} in the list of extended nodes, or appends to the list
+   * if {@code pred} is not present.
    *
+   * @param <T> the type of the node
    * @param node the node to add
    * @param pred the desired predecessor of node
-   * @return the node holder
+   * @return {@code node}
    */
   protected <T extends Node> T insertNodeAfter(T node, Node pred) {
     addToLookupMap(node);
@@ -734,8 +735,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Insert a {@code node} that might throw the exceptions in {@code causes} after {@code pred} in
-   * the list of extended nodes, or append to the list if {@code pred} is not present.
+   * Inserts a {@code node} that might throw the exceptions in {@code causes} after {@code pred} in
+   * the list of extended nodes, or appends to the list if {@code pred} is not present.
    *
    * @param node the node to add
    * @param causes the set of exceptions that the node might throw
@@ -755,7 +756,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Extend the list of extended nodes with an extended node.
+   * Extends the list of extended nodes with an extended node.
    *
    * @param n the extended node
    */
@@ -764,8 +765,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Insert {@code n} after the node {@code pred} in the list of extended nodes, or append {@code n}
-   * if {@code pred} is not present.
+   * Inserts {@code n} after the node {@code pred} in the list of extended nodes, or appends {@code
+   * n} if {@code pred} is not present.
    *
    * @param n the extended node
    * @param pred the desired predecessor
@@ -809,9 +810,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Add the label {@code l} to the extended node that will be placed next in the sequence.
+   * Adds the label {@code l} to the extended node that will be placed next in the sequence.
    *
-   * @param l the node to add to the forthcoming extended node
+   * @param l the label to add to the forthcoming extended node
    */
   protected void addLabelForNextNode(Label l) {
     if (bindings.containsKey(l)) {
@@ -839,11 +840,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * If the input node is an unboxed primitive type, insert a call to the appropriate valueOf
-   * method, otherwise leave it alone.
+   * If the input node is an unboxed primitive type, inserts a call to the appropriate valueOf
+   * method; otherwise, leaves it alone.
    *
-   * @param node in input node
-   * @return a Node representing the boxed version of the input, which may simply be the input node
+   * @param node an input node
+   * @return a Node representing the boxed version of the input, which might simply be the input
+   *     node
    */
   protected Node box(Node node) {
     // For boxing conversion, see JLS 5.1.7
@@ -883,10 +885,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * If the input node is a boxed type, unbox it, otherwise leave it alone.
+   * If the input node is a boxed type, unboxes it; otherwise, leaves it alone.
    *
-   * @param node in input node
-   * @return a Node representing the unboxed version of the input, which may simply be the input
+   * @param node an input node
+   * @return a Node representing the unboxed version of the input, which might simply be the input
    *     node
    */
   protected Node unbox(Node node) {
@@ -957,10 +959,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Convert the input node to String type, if it isn't already.
+   * Converts the input node to String type, if it isn't already.
    *
    * @param node an input node
-   * @return a Node with the value promoted to String, which may be the input node
+   * @return a Node with the value promoted to String, which might be the input node
    */
   protected Node stringConversion(Node node) {
     // For string conversion, see JLS 5.1.11
@@ -975,11 +977,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Perform unary numeric promotion on the input node.
+   * Performs unary numeric promotion on the input node.
    *
    * @param node a node producing a value of numeric primitive or boxed type
-   * @return a Node with the value promoted to the int, long, float, or double; may return be the
-   *     input node
+   * @return a Node with the value promoted to int, long, float, or double; might be the input node
    */
   protected Node unaryNumericPromotion(Node node) {
     // For unary numeric promotion, see JLS 5.6.1
@@ -1013,8 +1014,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Compute the type to which two numeric types must be promoted before performing a binary numeric
-   * operation on them. The input types must both be numeric and the output type is primitive.
+   * Computes the type to which two numeric types must be promoted before performing a binary
+   * numeric operation on them. The input types must both be numeric and the output type is
+   * primitive.
    *
    * @param left the type of the left operand
    * @param right the type of the right operand
@@ -1044,11 +1046,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Perform binary numeric promotion on the input node to make it match the expression type.
+   * Performs binary numeric promotion on the input node to make it match the expression type.
    *
    * @param node a node producing a value of numeric primitive or boxed type
    * @param exprType the type to promote the value to
-   * @return a Node with the value promoted to the exprType, which may be the input node
+   * @return a Node with the value promoted to the exprType, which might be the input node
    */
   protected Node binaryNumericPromotion(Node node, TypeMirror exprType) {
     // For binary numeric promotion, see JLS 5.6.2
@@ -1065,11 +1067,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Perform widening primitive conversion on the input node to make it match the destination type.
+   * Performs widening primitive conversion on the input node to make it match the destination type.
    *
    * @param node a node producing a value of numeric primitive type
    * @param destType the type to widen the value to
-   * @return a Node with the value widened to the exprType, which may be the input node
+   * @return a Node with the value widened to the destType, which might be the input node
    */
   protected Node widen(Node node, TypeMirror destType) {
     // For widening conversion, see JLS 5.1.2
@@ -1086,11 +1088,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Perform narrowing conversion on the input node to make it match the destination type.
+   * Performs narrowing conversion on the input node to make it match the destination type.
    *
    * @param node a node producing a value of numeric primitive type
    * @param destType the type to narrow the value to
-   * @return a Node with the value narrowed to the exprType, which may be the input node
+   * @return a Node with the value narrowed to the destType, which might be the input node
    */
   protected Node narrow(Node node, TypeMirror destType) {
     // For narrowing conversion, see JLS 5.1.3
@@ -1107,12 +1109,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Perform narrowing conversion and optionally boxing conversion on the input node to make it
+   * Performs narrowing conversion and optionally boxing conversion on the input node to make it
    * match the destination type.
    *
    * @param node a node producing a value of numeric primitive type
    * @param destType the type to narrow the value to (possibly boxed)
-   * @return a Node with the value narrowed and boxed to the destType, which may be the input node
+   * @return a Node with the value narrowed and boxed to the destType, which might be the input node
    */
   protected Node narrowAndBox(Node node, TypeMirror destType) {
     if (TypesUtils.isBoxedPrimitive(destType)) {
@@ -1149,9 +1151,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    *
    * @param node a Node producing a value
    * @param varType the type of a variable
-   * @param contextAllowsNarrowing if true, allow narrowing (for assignment conversion) (for method
-   *     invocation conversion)
-   * @return a Node with the value converted to the type of the variable, which may be the input
+   * @param contextAllowsNarrowing if true, allow narrowing (for assignment conversion); if false,
+   *     do not (for method invocation conversion)
+   * @return a Node with the value converted to the type of the variable, which might be the input
    *     node itself
    */
   protected Node commonConvert(Node node, TypeMirror varType, boolean contextAllowsNarrowing) {
@@ -1208,11 +1210,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Perform assignment conversion so that it can be assigned to a variable of the given type.
+   * Performs assignment conversion so that the node can be assigned to a variable of the given
+   * type.
    *
    * @param node a Node producing a value
    * @param varType the type of a variable
-   * @return a Node with the value converted to the type of the variable, which may be the input
+   * @return a Node with the value converted to the type of the variable, which might be the input
    *     node itself
    */
   protected Node assignConvert(Node node, TypeMirror varType) {
@@ -1220,21 +1223,21 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Perform method invocation conversion so that the node can be passed as a formal parameter of
+   * Performs method invocation conversion so that the node can be passed as a formal parameter of
    * the given type.
    *
    * @param node a Node producing a value
    * @param formalType the type of a formal parameter
-   * @return a Node with the value converted to the type of the formal, which may be the input node
-   *     itself
+   * @return a Node with the value converted to the type of the formal, which might be the input
+   *     node itself
    */
   protected Node methodInvocationConvert(Node node, TypeMirror formalType) {
     return commonConvert(node, formalType, false);
   }
 
   /**
-   * Given a method element, its type at the call site, and a list of argument expressions, return a
-   * list of {@link Node}s representing the arguments converted for a call of the method. This
+   * Given a method element, its type at the call site, and a list of argument expressions, returns
+   * a list of {@link Node}s representing the arguments converted for a call of the method. This
    * method applies to both method invocations and constructor calls.
    *
    * <p>For {@code outer.new Inner(...) {...}}, the anonymous constructor's first parameter is the
@@ -1374,7 +1377,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * @param booleanParam 0-based index of the parameter of the expression that is tested by the
    *     assert method. (Or -1 if this isn't an assert method.)
    * @param exceptionType the type of the exception thrown by the assert method
-   * @param isAssertFalse is this an assert false method?
+   * @param isAssertFalse true if this is an assert false method
    */
   /*package-private*/ record AssertMethodTuple(
       int booleanParam, TypeMirror exceptionType, boolean isAssertFalse) {
@@ -1385,11 +1388,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Convert an operand of a conditional expression to the type of the whole expression.
+   * Converts an operand of a conditional expression to the type of the whole expression.
    *
    * @param node a node occurring as the second or third operand of a conditional expression
    * @param destType the type to promote the value to
-   * @return a Node with the value promoted to the destType, which may be the input node
+   * @return a Node with the value promoted to the destType, which might be the input node
    */
   protected Node conditionalExprPromotion(Node node, TypeMirror destType) {
     // For rules on converting operands of conditional expressions,
@@ -2026,7 +2029,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Extends the CFG with an access to the length of the array variable of an enhanced for loop.
    *
    * @param arrayVariable the array variable
-   * @param mayThrowNullPointerException true if the access may throw a {@code NullPointerException}
+   * @param mayThrowNullPointerException true if the access might throw a {@code
+   *     NullPointerException}
    * @return the node for the access
    */
   private FieldAccessNode extendWithArrayLengthAccess(
@@ -2053,7 +2057,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
    * Returns false if the expression is never null, judging from its syntax.
    *
    * @param expression an expression of reference type
-   * @return false if the expression is never null; true if it may be null
+   * @return false if the expression is never null; true if it might be null
    */
   private static boolean mayBeNull(ExpressionTree expression) {
     expression = TreeUtils.withoutParens(expression);
@@ -2099,12 +2103,12 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   private final class SwitchBuilder {
 
     /**
-     * The tree for the switch statement or switch expression. Its type may be {@link SwitchTree}
+     * The tree for the switch statement or switch expression. Its type is either {@link SwitchTree}
      * (for a switch statement) or {@code SwitchExpressionTree}.
      */
     private final Tree switchTree;
 
-    /** The case trees of {@code switchTree} */
+    /** The case trees of {@code switchTree}. */
     private final List<? extends CaseTree> caseTrees;
 
     /**
@@ -2131,7 +2135,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     private @Nullable VariableTree switchExprVarTree;
 
     /**
-     * Construct a SwitchBuilder.
+     * Constructs a SwitchBuilder.
      *
      * @param switchTree a {@link SwitchTree} or a {@code SwitchExpressionTree}
      */
@@ -2152,7 +2156,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
 
     /**
-     * Build up the CFG for the switchTree.
+     * Builds up the CFG for the switchTree.
      *
      * @return if the switch is a switch expression, then a {@link SwitchExpressionNode}; otherwise,
      *     null
@@ -2304,7 +2308,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     }
 
     /**
-     * Build the CFG for the given case tree.
+     * Builds the CFG for the given case tree.
      *
      * @param caseTree a case tree whose CFG to build
      * @param index the index of the case tree in {@link #caseBodyLabels}
@@ -2430,7 +2434,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Visit a SwitchExpressionTree.
+   * Visits a SwitchExpressionTree.
    *
    * @param switchExpressionTree a SwitchExpressionTree, typed as Tree to be backward-compatible
    * @param p parameter
@@ -2468,7 +2472,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns the first argument if it is non-null, otherwise return the second argument. Throws an
+   * Returns the first argument if it is non-null, otherwise returns the second argument. Throws an
    * exception if both arguments are null.
    *
    * @param <A> the type of the arguments
@@ -2748,8 +2752,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Shared logic for CFG generation for a finally block. The block may correspond to a {@link
-   * TryTree} originally in the source code, or it may be a synthetic finally block used to model
+   * Shared logic for CFG generation for a finally block. The block might correspond to a {@link
+   * TryTree} originally in the source code, or it might be a synthetic finally block used to model
    * closing of a resource due to try-with-resources.
    *
    * @param markerTree tree to reference when creating {@link MarkerNode}s for the finally block
@@ -3033,9 +3037,9 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Extend the CFG with an assignment for either the true or false case of a conditional
+   * Extends the CFG with an assignment for either the true or false case of a conditional
    * expression, assigning the value of the expression for the case to the synthetic variable for
-   * the conditional expression
+   * the conditional expression.
    *
    * @param condExprVarTree tree for synthetic variable for conditional expression
    * @param caseExprTree expression tree for the case
@@ -3065,7 +3069,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   private record VarUseNode(IdentifierTree tree, LocalVariableNode node) {}
 
   /**
-   * Build an {@link IdentifierTree} and a {@link LocalVariableNode} to represent a use of some
+   * Builds an {@link IdentifierTree} and a {@link LocalVariableNode} to represent a use of some
    * variable. Does not add the node to the CFG.
    *
    * @param varTree tree for the variable
@@ -3220,7 +3224,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Should assertions be assumed to be executed for a given {@link AssertTree}? False by default.
+   * Returns true if assertions should be assumed to be executed for a given {@link AssertTree}.
+   * False by default.
+   *
+   * @param tree an assert tree
+   * @return true if assertions should be assumed to be executed for {@code tree}
    */
   protected boolean assumeAssertionsEnabledFor(AssertTree tree) {
     return false;
@@ -3229,7 +3237,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   /** The {@link VariableTree} that indicates whether assertions are enabled or not. */
   protected VariableTree ea = null;
 
-  /** Get a synthetic {@link VariableTree} that indicates whether assertions are enabled or not. */
+  /**
+   * Returns a synthetic {@link VariableTree} that indicates whether assertions are enabled or not.
+   *
+   * @return a synthetic variable that indicates whether assertions are enabled or not
+   */
   protected VariableTree getAssertionsEnabledVariable() {
     if (ea == null) {
       String name = uniqueName("assertionsEnabled");
@@ -3542,13 +3554,27 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     return assignmentNode;
   }
 
-  /** Translate an assignment. */
+  /**
+   * Translates an assignment.
+   *
+   * @param tree the assignment or variable declaration tree
+   * @param target the target of the assignment
+   * @param rhs the right-hand side of the assignment, which is not yet scanned
+   * @return the node for the assignment
+   */
   protected AssignmentNode translateAssignment(Tree tree, Node target, ExpressionTree rhs) {
     Node expression = scan(rhs, null);
     return translateAssignment(tree, target, expression);
   }
 
-  /** Translate an assignment where the RHS has already been scanned. */
+  /**
+   * Translates an assignment where the RHS has already been scanned.
+   *
+   * @param tree the assignment or variable declaration tree
+   * @param target the target of the assignment
+   * @param expression the node for the right-hand side, which has already been scanned
+   * @return the node for the assignment
+   */
   protected AssignmentNode translateAssignment(Tree tree, Node target, Node expression) {
     assert tree instanceof AssignmentTree || tree instanceof VariableTree;
     target.setLValue();
@@ -3602,7 +3628,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Map an operation with assignment to the corresponding operation without assignment.
+   * Maps an operation with assignment to the corresponding operation without assignment.
    *
    * @param kind a Tree.Kind representing an operation with assignment
    * @return the Tree.Kind for the same operation without assignment
@@ -3926,11 +3952,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Create assignment node which represent increment or decrement.
+   * Creates an assignment node that represents an increment or decrement.
    *
    * @param unaryTree increment or decrement tree
    * @param expr expression node to be incremented or decremented
-   * @param isIncrement true when it's increment
+   * @param isIncrement true when it's an increment
    * @param isPostfix true if {@code expr} is a postfix increment or decrement
    * @return assignment node for corresponding increment or decrement
    */
@@ -4231,7 +4257,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Visit a AnyPatternTree.
+   * Visits an AnyPatternTree.
    *
    * @param anyPatternTree an AnyPatternTree, typed as Tree so the Checker Framework compiles under
    *     JDK 21 and earlier
@@ -4259,7 +4285,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Visit a DeconstructionPatternTree.
+   * Visits a DeconstructionPatternTree.
    *
    * @param deconstructionPatternTree a DeconstructionPatternTree, typed as Tree so the Checker
    *     Framework compiles under JDK 20 and earlier
@@ -4499,11 +4525,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Visit a SwitchExpressionTree.
+   * Visits a YieldTree.
    *
    * @param yieldTree a YieldTree, typed as Tree to be backward-compatible
    * @param p parameter
-   * @return the result of visiting the switch expression tree
+   * @return the result of visiting the yield tree
    */
   @Override
   public Node visitYield(YieldTree yieldTree, Void p) {

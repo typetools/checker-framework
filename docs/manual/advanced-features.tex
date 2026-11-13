@@ -2,7 +2,7 @@
 
 This chapter describes features that are automatically supported by every
 checker written with the Checker Framework.
-You may wish to skim or skip this chapter on first reading.  After you have
+You might wish to skim or skip this chapter on first reading.  After you have
 used a checker for a little while and want to be able to express more
 sophisticated and useful types, or to understand more about how the Checker
 Framework works, you can return to it.
@@ -86,14 +86,14 @@ that either in the context (change the declaration of \<myStrings>) or in a
 
 The examples in this section use the type qualifier hierarchy \code{@A :> @B :> @C}.
 
-A qualifier on a use of a certain type must be a subtype or equal to the upper bound for that type.
+A qualifier on a use of a certain type must be a subtype of or equal to the upper bound for that type.
 The upper bound of qualifiers used on a given type is specified by annotating the type declaration
 with some qualifier --- that is, by writing an annotation on a class declaration.
 \begin{Verbatim}
   @C class MyClass {}
 \end{Verbatim}
 
-This means that \<@B MyClass> is an invalid type.  (Annotations on class declarations may also specify
+This means that \<@B MyClass> is an invalid type.  (Annotations on class declarations can also specify
 default annotations for uses of the type; see Section~\ref{default-for-use}.)
 
 If it is not possible to annotate the class's definition (e.g., for
@@ -111,7 +111,7 @@ There are two exceptions.
   An expression can have a supertype of the upper bound; that is, some expression could
   have type \<@B MyClass>.  This type is not written explicitly, but results from viewpoint adaptation.
   \item
-  Using usual CLIMB-to-top rules (Section~\ref{climb-to-top}),
+  Using the usual CLIMB-to-top rules (Section~\ref{climb-to-top}),
   local variables of type MyClass default to \<@A MyClass>.
   It is legal for \<@A MyClass> to be the type of a local variable.
   For consistency, users are allowed to write such a type on a local variable declaration.
@@ -151,7 +151,7 @@ and the client code
 
 The type of \<m.get(key)> is \<@Nullable Optional>, which is an illegal type.
 However, this is a very common paradigm.  Programmers should not need to rewrite the code to test
-\<m.containsKey(key)> nor suppress a warning in this safe code.
+\<m.containsKey(key)> or suppress a warning in this safe code.
 
 
 \sectionAndLabel{The effective qualifier on a type (defaults and inference)}{effective-qualifier}
@@ -180,7 +180,7 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
   exactly as if the programmer had written them explicitly.
 
 \item
-  The type system may refine a qualified type on a local variable --- that
+  The type system might refine a qualified type on a local variable --- that
   is, treat it as a subtype of how it was declared or defaulted.  This
   refinement is always sound and has the effect of eliminating false
   positive error messages.  See Section~\ref{type-refinement}.
@@ -316,7 +316,7 @@ class MyClass {
 }
 \end{Verbatim}
 
-You may write multiple
+You can write multiple
 \refqualclass{framework/qual}{DefaultQualifier} annotations at a single location.
 
 If \code{@DefaultQualifier}[\code{s}] is placed on a package (via the
@@ -357,7 +357,7 @@ and (some) \textbf{Im}plicit \textbf{B}ounds.
 For example, when the user writes an unqualified type such as \<Date> in such a
 location, the Nullness Checker interprets it as \<@Nullable Date> (because
 \refqualclass{checker/nullness/qual}{Nullable} is the top qualifier in the
-hierarchy, see Figure~\ref{fig-nullness-hierarchy}).
+hierarchy; see Figure~\ref{fig-nullness-hierarchy}).
 (Casts are treated a bit specially; see below.)
 
 % TODO:  Add wildcard bounds to the set of type-refined locations?
@@ -502,7 +502,7 @@ supertypes, then a user would have to examine all supertypes, and do
 computations over them, to understand the meaning of an unannotated type in
 a given file.
 For declaration annotations, no computation is necessary; that is why they
-may be inherited.
+can be inherited.
 Computation is necessary for type annotations because different annotations might be inherited
 from a supertype and an interface, or from two interfaces.  For return
 types, the inherited type should be the least upper bound of all
@@ -513,7 +513,7 @@ Checker Framework would need to issue an error if no such annotations existed.
 
 Because a program is read more often than it is edited/annotated, the
 Checker Framework does not currently support the alternate design.  In the
-future, this feature may be added.
+future, this feature might be added.
 
 
 \subsectionAndLabel{Inherited wildcard annotations}{inherited-wildcard-annotations}
@@ -633,7 +633,7 @@ for an appropriate value of \<@Default>.  (The default might be different for
 return types and parameter types, depending on how the checker is written.)
 
 These defaulting rules are unsafe:  the default might be different than
-what the library author intended, so the Checker Framework may not warn
+what the library author intended, so the Checker Framework might not warn
 about some misuses of the library.  (This includes both misuse by passing
 in a bad value and misuse by using a returned value incorrectly.)  However,
 this unsafe default can be useful because it permits you to focus on errors
@@ -752,7 +752,7 @@ are similar.  The type of the expression is determined by the annotation on
 the result type of the constructor declaration.  It is possible to write a cast
 \<(@Anno MyClass) new MyClass()>.  The syntax \<new @Anno MyClass()> is shorthand
 for the cast.  For either syntax, the Checker Framework will issue a
-warning that it cannot verify that the cast is correct.  The programmer may
+warning that it cannot verify that the cast is correct.  The programmer can
 suppress the warning if the code is correct.
 
 
@@ -791,7 +791,7 @@ it is treated as \<@NonNull String> within the body of the \<if> test.
 \end{Verbatim}
 
 Here is another example.
-Note that the same expression may yield a
+Note that the same expression can yield a
 warning or not depending on its context (that is, depending on the current
 type refinement).
 
@@ -839,7 +839,7 @@ via an assignment, or because a method call might have a side effect).
 
 The checker never treats a variable as
 a supertype of its declared type.  For example, an expression with declared type \refqualclass{checker/nullness/qual}{NonNull}
-is never treated as possibly-null, and such an assignment is always illegal.
+is never treated as possibly-null, and assigning a possibly-null value to it is always illegal.
 
 The functionality has a variety of names:  type refinement,
 flow-sensitive type qualifier inference, local type inference, and
@@ -879,7 +879,7 @@ is \code{@NonNull String} in the following declaration:
     public final String protocol = "https";
 \end{Verbatim}
 
-Such an inferred type may leak to the public interface of the class.
+Such an inferred type might leak to the public interface of the class.
 If you wish to override such behavior, you can explicitly insert the desired
 annotation, e.g.,
 
@@ -912,7 +912,7 @@ class DBObject {
 }
 \end{Verbatim}
 
-A method call may invalidate inferences about field types; see
+A method call might invalidate inferences about field types; see
 Section~\ref{type-refinement-purity}.
 
 \end{itemize}
@@ -1271,7 +1271,7 @@ statements) are enabled, as if Java is run with the \<-ea> or
 \<-enableassertions> command-line argument.  If you supply the
 \<-AassumeAssertionsAreDisabled> command-line option, then the Checker
 Framework assumes assertions are disabled, as if Java is run with the
-\<-da> or \<-disableassertions> command-line argument.  You may not supply
+\<-da> or \<-disableassertions> command-line argument.  You must not supply
 both command-line options.  It is uncommon to supply either one.
 
 These command-line arguments have no effect on processing of \<assert>
@@ -1290,7 +1290,7 @@ the type of the initializer expression at the declaration.
 \end{Verbatim}
 
 Flow-sensitive type refinement applies to these variables as usual.
-The base type qualifier may change at a later program point due to
+The base type qualifier might change at a later program point due to
 a subsequent assignment, but the qualifiers on type parameters and
 array contents remain exactly the same.
 
@@ -1372,9 +1372,9 @@ systems) ``\code{<self>}''.
   compiled, it cannot interpret a formal parameter name, but it can
   interpret a number.
 
-  Within a method \emph{body}, you may use the formal parameter name.  The
+  Within a method \emph{body}, you can use the formal parameter name.  The
   formal parameter name never works within a method \emph{signature} or for
-  a contract (pre- or post-condition) annotation; in those locations, an
+  a contract (pre- or postcondition) annotation; in those locations, an
   identifier is interpreted as a field name (not a formal parameter).
 
 \item
@@ -1389,7 +1389,7 @@ systems) ``\code{<self>}''.
 \item
   a field of any expression.  For example:  \<next>,
   \<this.next>, \<\#1.next>. %, \<myLocalVar.next>.
-  You may optionally omit a leading ``\<this.>'', just as in Java.  Thus,
+  You can optionally omit a leading ``\<this.>'', just as in Java.  Thus,
   \<this.next> and \<next> are equivalent.
 
 \item
@@ -1406,7 +1406,7 @@ systems) ``\code{<self>}''.
   \<m1(x, y.z, \#2)>, \<a.m2("hello")>.
 
   Currently, the Checker Framework cannot prove all contracts about method
-  calls, so you may need to suppress some warnings.
+  calls, so you might need to suppress some warnings.
 
   One unusual feature of the Checker Framework's Java expressions is that a
   method call is allowed to have side effects.  Other tools forbid methods
@@ -1428,7 +1428,7 @@ systems) ``\code{<self>}''.
 
 \item a class name expression within another expression, e.g., ``String''
   in \<String.class> or ``pkg.MyClass'' in \<pkg.MyClass.staticField>.  The
-  class name must be fully-qualified unless it can be referenced by its
+  class name must be fully qualified unless it can be referenced by its
   simple name without an \<import> statement at the location where the
   annotation appears.  For example, an annotation in class \<C> can use the
   simple name of a class in \<java.lang> or in the same package as \<C>.
@@ -1443,7 +1443,7 @@ systems) ``\code{<self>}''.
 % but it enables more expressive and useful specifications to be written, it does not jeopardize soundness nor let the client manipulate the
 % representation, and it is simple
 % simpler than defining specification fields or ghost fields
-%% TODO: we may eventually have an @SpecField annotation
+%% TODO: we might eventually have an @SpecField annotation
 
 
 \subsectionAndLabel{Limitations}{java-expressions-limitations}
@@ -1533,7 +1533,7 @@ error if a program tries to access \<myMammal.pouchSize>.
 
 If you cannot use subtypes in your program, you can enforce similar
 requirements using type qualifiers.
-For fields, use the \<@Unused> annotation (Section~\ref{unused-annotation}), which enforces that a field or method may only
+For fields, use the \<@Unused> annotation (Section~\ref{unused-annotation}), which enforces that a field or method can only
 be accessed from a receiver expression with a given annotation (or one of
 its subtypes).
 For methods, annotate the receiver parameter \<this>; then a method call
@@ -1574,7 +1574,7 @@ class Marsupial extends Mammal {
 You can simulate
 the same effect for type qualifiers:
 the \refqualclass{framework/qual}{Unused} annotation
-on a field declares that the field may \emph{not} be accessed via a receiver of
+on a field declares that the field must \emph{not} be accessed via a receiver of
 the given qualified type (or any \emph{super}type).
 % a given field \emph{may not} be accessed via
 % a reference with a supertype qualifier, but \emph{may} be accessed via a reference

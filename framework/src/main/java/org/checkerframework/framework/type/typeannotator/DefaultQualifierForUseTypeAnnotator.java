@@ -32,7 +32,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
   private final ExecutableElement noDefaultQualifierForUseValueElement;
 
   /**
-   * Creates an DefaultQualifierForUseTypeAnnotator for {@code typeFactory}.
+   * Creates a DefaultQualifierForUseTypeAnnotator for {@code typeFactory}.
    *
    * @param typeFactory the type factory
    */
@@ -121,7 +121,7 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
    * Returns the default qualifiers for uses of {@code element} as specified by a {@link
    * DefaultQualifierForUse} annotation.
    *
-   * <p>Subclasses may override to use an annotation other than {@link DefaultQualifierForUse}.
+   * <p>Subclasses can override to use an annotation other than {@link DefaultQualifierForUse}.
    *
    * @param element an element
    * @return the default qualifiers for uses of {@code element}
@@ -155,12 +155,10 @@ public class DefaultQualifierForUseTypeAnnotator extends TypeAnnotator {
   }
 
   /**
-   * Returns the set of qualifiers supported by this type system from the value element of {@code
-   * annotationMirror}.
+   * Returns the set of qualifiers supported by this type system from {@code annoClassNames}.
    *
    * @param annoClassNames a list of annotation class names
-   * @return the set of qualifiers supported by this type system from the value element of {@code
-   *     annotationMirror}
+   * @return the set of qualifiers supported by this type system from {@code annoClassNames}
    */
   protected final AnnotationMirrorSet supportedAnnosFromAnnotationMirror(
       List<@CanonicalName Name> annoClassNames) {
