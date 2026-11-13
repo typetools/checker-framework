@@ -21,7 +21,7 @@ adjusted by the programmer, can be used by tools such as the type-checker,
 and can be inserted into the source code or the class file.
 
 Inserting the inferred annotations into the program source code creates documentation in the form of type
-qualifiers, which can aid programmer understanding and may make
+qualifiers, which can aid programmer understanding and can make
 type-checking warnings more comprehensible.
 Storing annotations in side-files is more desirable if the program's source code cannot
 be modified for some reason, if the type-checking is ``one-off'' (type-checking will
@@ -45,7 +45,7 @@ you can use and possibly modify the results.
 
 This section lists tools that take a program and output a set of
 annotations for it.
-It first lists tools that work only for a single type system (but may do a
+It first lists tools that work only for a single type system (but might do a
 more accurate job for that type system),
 then lists general tools that work for any type system.
 
@@ -76,7 +76,7 @@ the type systems that are distributed with the Checker Framework.
 \item[Cascade, for any type system:]
 \href{https://github.com/reprogrammer/cascade/}{Cascade}~\cite{VakilianPEJ2015}
 is an Eclipse plugin that implements interactive type qualifier inference.
-Cascade is interactive rather than fully-automated:  it makes it easier for
+Cascade is interactive rather than fully automated:  it makes it easier for
 a developer to insert annotations.
 Cascade starts with an unannotated program and runs a type-checker.  For each
 warning it suggests multiple fixes, the developer chooses a fix, and
@@ -132,7 +132,7 @@ Each has advantages and disadvantages, discussed below:
 
 These type inference scripts appear in the \<checker/bin/> directory.
 The remainder of this chapter describes them
-(Sections~\ref{wpi-two}--\ref{wpi-insert}), then concludes with discussion
+(Sections~\ref{wpi-two}--\ref{wpi-insert}), then concludes with a discussion
 that applies to all of them.
 
 
@@ -212,7 +212,7 @@ The output of \<wpi2.sh> is a top-level directory
 \<whole-program-inference-output>.  For each of your project's source files
 for which the Checker Framework inferred an annotation, it contains a file
 \<\emph{package}/\emph{ClassName}-\emph{checkername}.ajava>, where
-\emph{checkername} is the fully-qualified name of the checker that ran.  A
+\emph{checkername} is the fully qualified name of the checker that ran.  A
 source file for which nothing was inferred has no \<.ajava> file.
 \<wpi2.sh> uses three other top-level directories:
 \<whole-program-inference-new>, which the compiler writes each iteration's
@@ -221,7 +221,7 @@ results to and which \<wpi2.sh> removes when inference converges;
 file per iteration (\<iteration-1.diff>, \<iteration-2.diff>, etc.) for
 diagnostic purposes; and \<whole-program-inference-previous>, which exists
 only while each iteration's results replace the previous iteration's.
-You may wish to add \<whole-program-inference-*> to
+You might wish to add \<whole-program-inference-*> to
 your \<.gitignore> file.
 
 \<wpi2.sh> exits with status 0 if inference converged, and with a nonzero
@@ -298,7 +298,7 @@ Here is an explanation of the arguments:
   When running WPI on a single module of a multi-module project,
   you might want to use this option (possibly in combination with \<-b>, below),
   depending on the setup of the target project.
-  The argument may contain spaces and is re-tokenized by the shell.
+  The argument can contain spaces and is re-tokenized by the shell.
 
 \item[-b EXTRA\_BUILD\_ARGS]
   Extra arguments to pass to the build script invocation. This argument
@@ -309,7 +309,7 @@ Here is an explanation of the arguments:
   \<ant clean>, \<gradle clean>, or \<mvn clean>.
   % An alternative would be to permit it to be passed multiple times, and
   % not re-tokenize it.
-  The argument may contain spaces and is re-tokenized by the shell.
+  The argument can contain spaces and is re-tokenized by the shell.
 
 \item[-g GRADLECACHEDIR]
   The directory to use for the \<-g> option to Gradle (the Gradle home
@@ -336,7 +336,7 @@ Here is an explanation of the arguments:
   argument to \<wpi.sh>.
 \end{description}
 
-You may need to wait a few minutes for the command to complete.
+You might need to wait a few minutes for the command to complete.
 
 \subsectionAndLabel{Whole-program inference results}{wpi-results}
 
@@ -358,8 +358,8 @@ The \<dljc-out/> folder contains:
   The final results (i.e., those obtained using the most precise, consistent
   set of annotations) will appear at the end of this file.
 \item \<wpi-stdout-*>: These files are separate from the logs in \<wpi-stdout.log>.
-  They may be useful in the case where \<dljc> is not working as expected.
-\item \<toplevel.log>: The log of the command executed at the top-level of the
+  They might be useful in the case where \<dljc> is not working as expected.
+\item \<toplevel.log>: The log of the command executed at the top level of the
   target directory to invoke whole-program inference.
 \item \<javac.json>: The list of all \<.java> files for which inference was
   attempted by \<wpi.sh>, and the options passed to \<javac>.
@@ -402,9 +402,6 @@ set, the WPI scripts will download this dependency automatically.)
   mvn,
   python3 (for dljc),
   wget.
-
-  Python 2.7 modules:
-  subprocess32.
 \end{itemize}
 
 
@@ -460,7 +457,7 @@ some output was produced.)
     Fork the project and add the annotations directly to the project's
     source code, and add a dependency on
     \<org.checkerframework:checker-qual> to the project's build
-    system. This approach is the most difficult, but has the advantage that
+    system. This approach is the more difficult, but has the advantage that
     the checker will attempt to verify any annotations you add.
   \item Add the annotations in a stub file, creating the \<.astub> file as
     a copy of the \<.java> file.  When you run the checker, supply the
@@ -485,7 +482,7 @@ An invocation should also include \<-- [\emph{DLJC-ARGS}]> at the end;
 \item[-o outdir]
   Run the experiment in the \<\emph{outdir}> directory, and place the results in
   the \<\emph{outdir}-results> directory. Both will be created if they do not
-  exist.  The directory may be specified as an absolute or relative path.
+  exist.  The directory can be specified as an absolute or relative path.
 
 \item[-i infile]
   Read the list of repositories to use from the file infile.
@@ -551,7 +548,7 @@ Its command-line arguments are:
 \item Target program's classpath.  This argument is required; pass \<""> if it
   is empty.
 \item Optional: Extra processor arguments which will be passed to the checker, if any.
-  You may supply any number of such arguments, or none.  Each such argument
+  You can supply any number of such arguments, or none.  Each such argument
   must start with a hyphen.
 \item Optional: Paths to \<.jaif> files used as input in the inference
     process.
@@ -565,13 +562,13 @@ git clone https://github.com/mernst/plume-lib.git
 cd plume-lib
 make jar
 $CHECKERFRAMEWORK/checker/bin/infer-and-annotate.sh \
-    "LockChecker,NullnessChecker" java/plume.jar:java/lib/junit-4.12.jar:$JAVA_HOME/lib/tools.jar \
+    "LockChecker,NullnessChecker" java/plume.jar:java/lib/junit-4.12.jar \
     $(find java/src/plume/ -name "*.java")
 # View the results
 git diff
 \end{Verbatim}
 
-You may need to wait a few minutes for the command to complete.
+You might need to wait a few minutes for the command to complete.
 You can ignore warnings that the command outputs while it tries different
 annotations in your code.
 
@@ -587,11 +584,11 @@ Type inference outputs the most specific type qualifiers that are
 consistent with all the source code it is given.
 (Section~\ref{whole-program-inference-ignores-some-code}
 explains when type inference ignores some code.)
-This may be different than the specification the programmer had in mind
+This might be different from the specification the programmer had in mind
 when writing the code.
 If the program uses a method or field in a limited way, then the inferred
 annotations will be legal for the program as
-currently written but may not be as general as possible and may not
+currently written but might not be as general as possible and might not
 accommodate future program changes.
 
 Here are some examples:
@@ -623,7 +620,7 @@ some other overriding method is allowed to return
 \end{itemize}
 
 If the program contains erroneous calls, the
-inferred annotations may reflect those errors.
+inferred annotations might reflect those errors.
 Suppose you intend method \<m3> to be called with
 non-null arguments, but your program contains an error and one of the calls
 to \<m3> passes \<null> as the argument.  Then the tool will infer that
@@ -631,7 +628,7 @@ to \<m3> passes \<null> as the argument.  Then the tool will infer that
 
 If you run whole-program inference on a library that contains mutually
 recursive routines, and there are no non-recursive calls to the routines,
-then whole-program inference may run a long time and eventually produce
+then whole-program inference might run for a long time and eventually produce
 incorrect results.  In this case, write type annotations on the formal
 parameters of one of the routines.
 
@@ -664,7 +661,7 @@ ignore such a field.
 You probably have an annotation such as
 \javaeejavadocanno{javax/inject/Inject.html}{Inject}
 or
-\href{https://types.cs.washington.edu/plume-lib/api/plume/Option.html}{\<@Option>}
+\href{https://plumelib.org/options/api/org/plumelib/options/Option.html}{\<@Option>}
 that indicates such fields.  Meta-annotate the declaration of the \<Inject>
 or \<Option> annotation with
 \refqualclass{framework/qual}{IgnoreInWholeProgramInference}.
@@ -681,7 +678,7 @@ ignores assignments and pseudo-assignments where the right-hand side is the \<nu
 
 With any type inference tool, it is a good idea to manually examine the
 results.  This can help you find bugs in your code or places where type
-inference inferred an overly-precise result.
+inference inferred an overly precise result.
 You can correct the inferred results manually, or you can
 add tests that pass additional values and then re-run inference.
 
@@ -690,7 +687,7 @@ commonly infers overly precise type annotations, such as \<@Interned> and
 \<@Regex> annotations when the analyzed code only uses a constant string.
 
 When an annotation is inferred for a \emph{use} of a type variable,
-you may wish to move the annotation
+you might wish to move the annotation
 to the corresponding upper bounds of the type variable \emph{declaration}.
 
 
@@ -710,14 +707,14 @@ to the checker via the \<-Aajava> command-line argument;
 \ahreforurl{https://checkerframework.org/annotation-file-utilities/}{Annotation File Utilities}.
 
 On each
-iteration through the process, there may be new annotations in the \<.jaif> or \<.ajava>
-files, and some type-checking errors may be eliminated (though others might
+iteration through the process, there might be new annotations in the \<.jaif> or \<.ajava>
+files, and some type-checking errors might be eliminated (though others might
 be introduced).
 The process halts when there are no more changes to the inference results,
 that is, the \<.jaif> or \<.ajava> files are unchanged between two runs.
 
 When the type-checker is run on the program with the final annotations
-inserted, there might still be errors.  This may be because the tool did
+inserted, there might still be errors.  This might be because the tool did
 not infer enough annotations, or because your program cannot type-check
 (either because it contains a defect, or because it contains subtle code that
 is beyond the capabilities of the type system).
@@ -736,7 +733,7 @@ type-checking fast.  However, it has some disadvantages:
   already-processed classes.
 \item
   Revisiting an
-  already-processed class may result in a better estimate.
+  already-processed class might result in a better estimate.
 \end{itemize}
 
 
@@ -753,7 +750,7 @@ some benefits:
   The type qualifiers act as machine-checked documentation,
   which can aid programmer understanding.
 \item
-  Error messages may be more comprehensible.  With a monolithic
+  Error messages can be more comprehensible.  With a monolithic
   whole-program analysis, error messages can be obscure, because the
   analysis has already inferred (possibly incorrect) types for a number of
   variables.
@@ -770,5 +767,5 @@ some benefits:
 %%  LocalWords:  Ainfer java jaif plugin classpath m2 m1 multi javax CFI
 %%  LocalWords:  AsuggestPureMethods CHECKERFRAMEWORK GuardedByBottom dljc
 %%  LocalWords:  IgnoreInWholeProgramInference typechecking Inference'' m3
-% LocalWords:  PROJECTDIR awk gradle mvn python3 wget subprocess32 github
+% LocalWords:  PROJECTDIR awk gradle mvn python3 wget github
 % LocalWords:  securerandom astub typecheck

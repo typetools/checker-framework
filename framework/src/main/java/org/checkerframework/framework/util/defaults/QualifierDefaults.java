@@ -66,7 +66,7 @@ public class QualifierDefaults {
 
   /**
    * True if a default should be applied to type vars located in the type being defaulted. This
-   * should only ever be true when the type variable is a local variable, non-component use, i.e.
+   * should only ever be true when the type variable is a local variable, non-component use, i.e.,
    *
    * <pre>{@code
    * <T> void method(@NOT_HERE T tIn) {
@@ -113,7 +113,7 @@ public class QualifierDefaults {
    */
   private final IdentityHashMap<Element, DefaultSet> elementDefaults = new IdentityHashMap<>();
 
-  /** A mapping of Element &rarr; Whether or not that element is AnnotatedFor this type system. */
+  /** A mapping of Element &rarr; true if that element is AnnotatedFor this type system. */
   private final IdentityHashMap<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
 
   /** CLIMB locations whose standard default is top for a given type system. */
@@ -158,17 +158,21 @@ public class QualifierDefaults {
   private final boolean useConservativeDefaultsBytecode;
 
   /**
-   * Returns an array of locations that are valid for the unchecked value defaults. These are simply
-   * by syntax, since an entire file is typechecked, it is not possible for local variables to be
-   * unchecked.
+   * Returns an array of locations that are valid for the unchecked value defaults. These are
+   * determined simply by syntax: since an entire file is type-checked, it is not possible for local
+   * variables to be unchecked.
+   *
+   * @return the locations that are valid for the unchecked value defaults
    */
   public static List<TypeUseLocation> validLocationsForUncheckedCodeDefaults() {
     return validUncheckedCodeDefaultLocations;
   }
 
   /**
+   * Creates a new QualifierDefaults.
+   *
    * @param elements interface to Element data in the current processing environment
-   * @param atypeFactory an annotation factory, used to get annotations by name
+   * @param atypeFactory an annotated type factory, used to get annotations by name
    */
   public QualifierDefaults(Elements elements, AnnotatedTypeFactory atypeFactory) {
     this.elements = elements;
@@ -198,7 +202,7 @@ public class QualifierDefaults {
   }
 
   /**
-   * Check that a default with TypeUseLocation OTHERWISE or ALL is specified.
+   * Returns true if a default with TypeUseLocation OTHERWISE or ALL is specified.
    *
    * @return true if we found a Default with location OTHERWISE or ALL
    */
@@ -211,7 +215,7 @@ public class QualifierDefaults {
     return false;
   }
 
-  /** Add standard unchecked defaults that do not conflict with previously added defaults. */
+  /** Adds standard unchecked defaults that do not conflict with previously added defaults. */
   public void addUncheckedStandardDefaults() {
     QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
     AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
@@ -236,7 +240,7 @@ public class QualifierDefaults {
     }
   }
 
-  /** Add standard CLIMB defaults that do not conflict with previously added defaults. */
+  /** Adds standard CLIMB defaults that do not conflict with previously added defaults. */
   public void addClimbStandardDefaults() {
     QualifierHierarchy qualHierarchy = this.atypeFactory.getQualifierHierarchy();
     AnnotationMirrorSet tops = qualHierarchy.getTopAnnotations();
@@ -264,7 +268,7 @@ public class QualifierDefaults {
   }
 
   /**
-   * Adds a default annotation. A programmer may override this by writing the @DefaultQualifier
+   * Adds a default annotation. A programmer can override this by writing the @DefaultQualifier
    * annotation on an element.
    *
    * @param absoluteDefaultAnno the default annotation mirror
@@ -277,7 +281,7 @@ public class QualifierDefaults {
   }
 
   /**
-   * Add a default annotation for unchecked elements.
+   * Adds a default annotation for unchecked elements.
    *
    * @param uncheckedDefaultAnno the default annotation mirror
    * @param location the type use location
@@ -542,7 +546,7 @@ public class QualifierDefaults {
       new TypeUseLocation[] {org.checkerframework.framework.qual.TypeUseLocation.ALL};
 
   /**
-   * Create a DefaultSet from a @DefaultQualifier annotation.
+   * Creates a DefaultSet from a @DefaultQualifier annotation.
    *
    * @param dq a @DefaultQualifier annotation
    * @return a DefaultSet corresponding to the @DefaultQualifier annotation
@@ -833,7 +837,7 @@ public class QualifierDefaults {
     }
 
     /**
-     * Apply default to the type.
+     * Applies the default to the type.
      *
      * @param def default to apply
      */
@@ -862,10 +866,10 @@ public class QualifierDefaults {
     }
 
     /**
-     * Add the qualifier to the type if it does not already have an annotation in the same hierarchy
-     * as qual.
+     * Adds the qualifier to the type if it does not already have an annotation in the same
+     * hierarchy as qual.
      *
-     * @param type type to add qual
+     * @param type type to which to add qual
      * @param qual annotation to add
      */
     protected void addAnnotation(AnnotatedTypeMirror type, AnnotationMirror qual) {
@@ -1067,8 +1071,13 @@ public class QualifierDefaults {
       }
 
       /**
-       * Visit the bounds of a type variable or a wildcard and potentially apply qual to those
-       * bounds. This method will also update the boundType, isLowerBound, and isUpperbound fields.
+       * Visits the bounds of a type variable or a wildcard and potentially applies qual to those
+       * bounds. This method will also update the boundType, isLowerBound, and isUpperBound fields.
+       *
+       * @param boundedType the type variable or wildcard whose bounds to visit
+       * @param upperBound the upper bound of {@code boundedType}
+       * @param lowerBound the lower bound of {@code boundedType}
+       * @param qual the qualifier to apply to the bounds
        */
       protected void visitBounds(
           AnnotatedTypeMirror boundedType,
@@ -1117,7 +1126,7 @@ public class QualifierDefaults {
     LOWER,
 
     /**
-     * Neither bound is specified, BOTH are implicit. (If a type variable is declared in bytecode
+     * Neither bound is specified; BOTH are implicit. (If a type variable is declared in bytecode
      * and the type of the upper bound is Object, then the checker assumes that the bound was not
      * explicitly written in source code.)
      */
@@ -1217,12 +1226,12 @@ public class QualifierDefaults {
   }
 
   /**
-   * Returns the BoundType of annotatedWildcard. If it is unbounded, use the type parameter to which
-   * its an argument.
+   * Returns the BoundType of wildcardType. If it is unbounded, uses the type parameter to which it
+   * is an argument.
    *
    * @param wildcardType the annotated wildcard type
-   * @return the BoundType of annotatedWildcard. If it is unbounded, use the type parameter to which
-   *     its an argument
+   * @return the BoundType of wildcardType. If it is unbounded, uses the type parameter to which it
+   *     is an argument
    */
   public BoundType getWildcardBoundType(AnnotatedWildcardType wildcardType) {
     if (AnnotatedTypes.hasNoExplicitBound(wildcardType)) {

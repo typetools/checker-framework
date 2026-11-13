@@ -15,7 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class EqualToNode extends BinaryOperationNode {
 
   /**
-   * Create a new EqualToNode object.
+   * Creates a new EqualToNode object.
    *
    * @param tree the tree for this node
    * @param left the first argument

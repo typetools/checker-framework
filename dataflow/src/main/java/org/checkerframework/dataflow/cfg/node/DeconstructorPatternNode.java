@@ -10,7 +10,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 
-/** A node for a deconstrutor pattern. */
+/** A node for a deconstructor pattern. */
 public class DeconstructorPatternNode extends Node {
   /**
    * The {@code DeconstructorPatternTree}, declared as {@link Tree} to permit this file to compile

@@ -52,10 +52,10 @@ import org.objectweb.asm.ClassReader;
  * <ul>
  *   <li>add the class name to array {@link #allTests}
  *   <li>place two files in directory {@link #CLASS_FILE_BASE}: a .class file (for the unannotated
- *       version of the class), an _Expected.class file (for the annotated version of the class).
+ *       version of the class) and an _Expected.class file (for the annotated version of the class).
  *   <li>place two files in directory {@link #INDEX_FILE_BASE}: a .java source file (this is not
  *       used by the tests -- it is only for documentation, and is helpful when creating the test
- *       files), a .jaif index file.
+ *       files) and a .jaif index file.
  *   <li>Add a {@code testc*()} method to test against class file and a {@code testi*()} method to
  *       test against index file; this is just so that JUnit has an accurate count of all tests.
  * </ul>
@@ -80,7 +80,7 @@ public class AnnotationsTest {
   /**
    * An array of all the classes to test. For each name in this array, there must be a corresponding
    * .jaif file in {@link #INDEX_FILE_BASE} and .class and _Expected.class files in {@link
-   * #CLASS_FILE_BASE}
+   * #CLASS_FILE_BASE}.
    */
   @SuppressWarnings("MutablePublicArray") // TODO
   public static final String[] allTests = {
@@ -101,7 +101,7 @@ public class AnnotationsTest {
     "TestMethodReturnTypeGenericArray"
   };
 
-  /** Constructs a new {@code AnnotationsTest} with the given name. */
+  /** Constructs a new {@code AnnotationsTest}. */
   public AnnotationsTest() {}
 
   /** Runs all the tests in {@link #allTests} and displays the failure and error counts. */
@@ -261,10 +261,13 @@ public class AnnotationsTest {
 
   /**
    * Runs a test that:
-   * <li>reads annotations from indexFileName,
-   * <li>inserts them into baseClassName.class,
-   * <li>writes the result out to baseClassName_Generated.class, and
-   * <li>asserts that the results written out match baseClassName_Expected.class
+   *
+   * <ul>
+   *   <li>reads annotations from indexFileName,
+   *   <li>inserts them into baseClassName.class,
+   *   <li>writes the result out to baseClassName_Generated.class, and
+   *   <li>asserts that the results written out match baseClassName_Expected.class.
+   * </ul>
    */
   private void testAgainstClass(String indexFileName, String baseClassName) {
     String base = baseClassName + ".class";
@@ -286,11 +289,14 @@ public class AnnotationsTest {
 
   /**
    * Runs a test that:
-   * <li>reads annotations from indexFileName,
-   * <li>inserts them into className
-   * <li>writes results out to a temporary class file
-   * <li>reads annotations from that class file, and
-   * <li>asserts that results written out match the annotations in the index file.
+   *
+   * <ul>
+   *   <li>reads annotations from indexFileName,
+   *   <li>inserts them into className,
+   *   <li>writes results out to a temporary class file,
+   *   <li>reads annotations from that class file, and
+   *   <li>asserts that results written out match the annotations in the index file.
+   * </ul>
    */
   private void testAgainstIndexFile(String indexFileName, String className) {
     AScene correctScene = createScene(indexFileName);

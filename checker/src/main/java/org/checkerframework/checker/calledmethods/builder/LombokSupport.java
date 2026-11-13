@@ -143,7 +143,7 @@ public class LombokSupport implements BuilderFrameworkSupport {
    * constructor.
    *
    * @param type type to update
-   * @param classElement corresponding AutoValue class
+   * @param classElement corresponding Lombok class
    */
   private void handleToBuilderType(AnnotatedTypeMirror type, Element classElement) {
     List<String> requiredProperties = getLombokRequiredProperties(classElement);

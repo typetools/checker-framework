@@ -86,12 +86,12 @@ code or the \code{.class} file.
   version of the code could contain the annotations, but the developer
   could move them to the separate file before committing changes.)
 \item
-  Tool writers may find it more convenient to use a textual file, rather
+  Tool writers might find it more convenient to use a textual file, rather
   than writing a Java or \code{.class} file parser.
 \item
   When debugging annotation-processing tools, a textual file format
   (extracted from the Java or \code{.class} files) is easier to read and
-  is easier for use in testing.
+  easier to use in testing.
 \end{itemize}
 
 All of these uses require an external, textual file format for Java annotations.
@@ -122,7 +122,7 @@ syntax for annotations in method bodies.
 
 
 
-%% I don't like this, as it may force distributing logically connected
+%% I don't like this, as it might force distributing logically connected
 %% elements all over a file system.  Users should be permitted, but not
 %% forced, to adopt such a file structure. -MDE
 %   Each file corresponds to exactly one
@@ -196,7 +196,7 @@ program elements in the class (see the example in Section~\ref{example}).
 Comments can be written throughout the annotation file using the double-slash
 syntax employed by Java for single-line comments: anything following
 two adjacent slashes (``//'') until the first newline is a comment.
-This is omitted from the grammar for simplicity.
+Comments are omitted from the grammar for simplicity.
 Block comments (``/* \ldots\ */'') are not allowed.
 
 The line end symbol \lineend{} is used for all the different line end
@@ -214,8 +214,8 @@ in an annotation file.
 An annotation file has the same basic structure as a Java program. That is,
 there are packages, classes, fields, and methods.
 
-The annotation file may omit certain program elements --- for instance, it
-may mention only some of the packages in a program, or only some of the
+The annotation file can omit certain program elements --- for instance, it
+can mention only some of the packages in a program, or only some of the
 classes in a package, or only some of the fields or methods of a class.
 Program elements that do not appear in the annotation file are treated as
 unannotated.
@@ -487,7 +487,7 @@ parameter in a method declaration.  A method receiver is the implicit formal
 parameter, \code{this}, used in non-static methods.  For source code insertion,
 the receiver parameter will be inserted if it does not already exist.
 
-Only constructors of inner classes have a receiver.  A top-level constructor does not have
+Among constructors, only constructors of inner classes have a receiver.  A top-level constructor does not have
 a receiver, though it does have a result.  The type of a constructor result
 is represented as a return type.
 
@@ -575,7 +575,7 @@ different compilation strategies yield different \code{.class} files, a
 tool that maps such annotations from an annotation file into source code must
 have access to the specific \code{.class} file that was used to generate
 the annotation file.  The
-\code{javap -v} command is an effective technique to discover bytecode
+\code{javap -v} command is an effective way to discover bytecode
 offsets.  Non-expression annotations such as those on methods,
 fields, classes, etc., do not use a bytecode offset.
 
@@ -599,7 +599,7 @@ public void method() {
 \code{@A} is on new, index 0. \code{@B} is on typecast, index 0. \code{@C} is on
 new, index 1. \code{@D} is on typecast, index 1.
 
-Source code indexes only include occurrences in the class that exactly matches
+Source code indexes include only occurrences in the class that exactly matches
 the name of the enclosing \bnfnt{class-definition} rule. Specifically,
 occurrences in nested classes are not included. Use a new
 \bnfnt{class-definition} rule with the name of the nested class for source code
@@ -742,8 +742,8 @@ of \code{Map.Entry<java.lang.String, java.lang.Object>}.
 \qquad        \bnfnt{compound-type}*
 \end{tabbing}
 
-An AST path represents a traversal through the AST. AST paths can only be
-used in \bnfnt{field-definition}s and \bnfnt{method-definition}s.
+An AST path represents a traversal through the AST. AST paths can be used
+only in \bnfnt{field-definition}s and \bnfnt{method-definition}s.
 An AST path starts with the first element under the definition. For
 methods, this is \code{Block}, and for fields, this is \code{Variable}.
 
@@ -861,7 +861,7 @@ Note that a cast can be inserted on any expression, not
 just the deepest expression in the AST. For example, a cast could be inserted on
 the expression \code{i + j}, the identifier \code{i}, and/or the identifier \code{j}.
 
-To help create correct AST paths, it may be useful to view the AST of a class.
+To help create correct AST paths, it can be useful to view the AST of a class.
 The Checker Framework has a processor to do this. The following command will
 output indented AST nodes for the entire input program.
 
@@ -1053,7 +1053,7 @@ file.
 \subsubsection{Annotation definitions}\label{annotation-definitions}
 
 An annotation definition describes the annotation's fields and their
-types, so that they may be referenced in a compact way throughout the
+types, so that they can be referenced in a compact way throughout the
 annotation file. Any annotation that is used in an annotation file
 % either on a program element or as a field of another annotation definition.
 must be defined before use.
@@ -1064,12 +1064,12 @@ The two exceptions to this rule are the \code{@java.lang.annotation.Target} and
 are often used in annotation definitions, so for ease of use they are not required to
 be defined themselves.
 In the annotation file, the annotation definition appears within the
-package that defines the annotation.  The annotation may be applied to
+package that defines the annotation.  The annotation can be applied to
 elements of any package.
 
 Note that these annotation definitions should not be confused with the
 \code{@interface} syntax used in a Java source file to declare an annotation. An
-annotation definition in an annotation file is only used internally. An
+annotation definition in an annotation file is used only internally. An
 annotation definition in an annotation file will often mirror an
 \code{@interface} annotation declaration in a Java source file in order to use
 that annotation in an annotation file.
@@ -1113,7 +1113,7 @@ The previous rules have used two productions for annotation uses in an
 annotation file: \bnfnt{decl-annotation} and \bnfnt{type-annotation}.
 The \bnfnt{decl-annotation} and \bnfnt{type-annotation} productions use the same
 syntax to specify an annotation. These two different rules exist only to show
-which type of annotation is valid in a given location. A declaration annotation
+which kind of annotation is valid in a given location. A declaration annotation
 must be used where the \bnfnt{decl-annotation} production is used, and a type
 annotation must be used where the \bnfnt{type-annotation} production is used.
 
@@ -1132,7 +1132,7 @@ The syntax for an annotation is the same as in a Java source file.
 \bnfnt{annotation} ::= \\
 \qquad    \bnfcmt The name may be the annotation's simple name, unless the file \\
 \qquad    \bnfcmt contains definitions for two annotations with the same simple name. \\
-\qquad    \bnfcmt In this case, the fully-qualified name of the annotation is required. \\
+\qquad    \bnfcmt In this case, the fully qualified name of the annotation is required. \\
 % TODO:
 % Perhaps we could add that if a class is in the same package
 % as an annotation it may always use the simple name (even if there's another
@@ -1149,7 +1149,7 @@ The syntax for an annotation is the same as in a Java source file.
 
 \noindent
 Certain Java elements allow both declaration and type annotations (for example,
-formal method parameters). For these elements, the \bnfnt{type-annotations}
+method formal parameters). For these elements, the \bnfnt{type-annotations}
 rule is used to differentiate between the declaration annotations and the type
 annotations.
 
@@ -1165,7 +1165,7 @@ annotations.
 \paragraph{Compound type annotations}
 
 A compound type is a parameterized, wildcard, array, or nested type. Annotations
-may be on any type in a compound type. In order to specify the location of an
+can be on any type in a compound type. In order to specify the location of an
 annotation within a compound type, we use a ``type path''. A
 type path is composed of one or more pairs of type kind and type argument index.
 
@@ -1200,7 +1200,7 @@ understanding, in Section 3.4 of the JSR 308 Specification.\footnotemark
 
 Consider the code of Figure~\ref{fig:java-example}.
 Figure~\ref{fig:annotation-file-examples} shows two legal annotation files,
-each of which represents its annotations.
+each of which represents the annotations in that code.
 
 
 \begin{figure}
@@ -1319,7 +1319,7 @@ represented in annotation files.
 the enumeration class, such as \code{enum java.lang.Thread\$State}.
 \item Annotation: \code{@} followed by the binary name of the annotation type.
 \item Array: The representation of the element type followed by \code{[]}, such
-as \code{String[]}, with one exception: an annotation definition may specify
+as \code{String[]}, with one exception: an annotation definition can specify
 a field type as \code{unknown[]} if, in all occurrences of that annotation in
 the annotation file, the field value is a zero-length array.\footnotemark
 \footnotetext{There is a design flaw in the format of array field values in a
@@ -1349,7 +1349,7 @@ and \code{int.class}.
 \code{RUNNABLE}.
 \item Array: a sequence of elements inside \code{\char`\{\char`\}} with a comma
 between each pair of adjacent elements; a comma following the last element is
-optional as in Java.  Also as in Java, the braces may be omitted if the
+optional as in Java.  Also as in Java, the braces can be omitted if the
 array has only one element.
 Examples: \code{\char`\{1\char`\}}, \code{1},
 \code{\char`\{true, false,\char`\}}, and \code{\char`\{\char`\}}.
@@ -1413,8 +1413,8 @@ very hard to read; style sheets mitigate this
 problem, but editing XML files remains tedious and error-prone.
 Programmatically, a layer of abstraction (an API) is needed in any event, so it
 makes little difference what the underlying textual representation is.
-XML files are easier to parse, but the parsing code only needs to be
-written once and is abstracted away by an API to the data structure.
+XML files are easier to parse, but the parsing code needs to be
+written only once and is abstracted away by an API to the data structure.
 
 
 Another alternative is a format like the \code{.spec}/\code{.jml} files
@@ -1438,7 +1438,7 @@ existing Java classes. For example, the Checker Framework uses stub files to add
 annotations to libraries (such as the JDK) without modifying
 the source code or bytecode of the library. A single stub file can contain
 multiple packages and classes. Unlike a \code{.jaif} file, a stub file cannot
-express annotations within method bodies. Further, stub files are only read by
+express annotations within method bodies. Further, stub files are read only by
 the Checker Framework during type checking; they cannot be used to insert
 annotations into a source file or classfile.
 

@@ -31,7 +31,7 @@ import javax.lang.model.util.Types;
   protected final List<CatchLabel> catchLabels;
 
   /**
-   * Construct a TryCatchFrame.
+   * Constructs a TryCatchFrame.
    *
    * @param types the Types utilities
    * @param catchLabels the catch labels
@@ -55,9 +55,9 @@ import javax.lang.model.util.Types;
   }
 
   /**
-   * Given a type of thrown exception, add the set of possible control flow successor {@link Label}s
-   * to the argument set. Return true if the exception is known to be caught by one of those labels
-   * and false if it may propagate still further.
+   * Given a type of thrown exception, adds the set of possible control flow successor {@link
+   * Label}s to the argument set. Returns true if the exception is known to be caught by one of
+   * those labels and false if it might propagate still further.
    */
   @Override
   public boolean possibleLabels(TypeMirror thrown, Set<Label> labels) {

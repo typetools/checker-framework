@@ -20,7 +20,7 @@ import org.checkerframework.framework.source.SupportedOptions;
  * all MustCall obligations are fulfilled.
  *
  * <p>The checker hierarchy is: this "empty" RLC &rarr; RLCCalledMethodsChecker &rarr;
- * MustCallChecker
+ * MustCallChecker.
  *
  * <p>The MustCallChecker is a subchecker of the RLCCm checker (instead of a sibling), since we want
  * them to operate on the same CFG (so we can get both a CM and MC store for a given CFG block),

@@ -12,7 +12,7 @@ import org.junit.runners.Parameterized;
 public class StubparserRecordTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a StubparserRecordTest.
+   * Creates a StubparserRecordTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */
