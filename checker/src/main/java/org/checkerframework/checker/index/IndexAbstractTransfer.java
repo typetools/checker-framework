@@ -100,14 +100,14 @@ public abstract class IndexAbstractTransfer extends CFTransfer {
 
   /**
    * Inserts the given annotation into the store for each expression that has the value of the given
-   * node when the comparison that contains the node completes (see {@link #splitAssignments}).
+   * node when the comparison that contains the node completes (see {@link #nodesWithValueOf}).
    *
    * @param store the store to modify
    * @param node a node in an operand of a comparison
    * @param anno the annotation to insert for each expression that has the value of {@code node}
    */
   protected void insertValueForComparedNode(CFStore store, Node node, AnnotationMirror anno) {
-    for (Node internal : splitAssignments(node)) {
+    for (Node internal : nodesWithValueOf(node)) {
       store.insertValue(JavaExpression.fromNode(internal), anno);
     }
   }

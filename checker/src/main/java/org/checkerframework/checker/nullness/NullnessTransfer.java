@@ -250,7 +250,7 @@ public class NullnessTransfer
       NullnessStore thenStore = res.getThenStore();
       NullnessStore elseStore = res.getElseStore();
 
-      List<Node> secondParts = splitAssignments(secondNode);
+      List<Node> secondParts = nodesWithValueOf(secondNode);
       for (Node secondPart : secondParts) {
         JavaExpression secondInternal = JavaExpression.fromNode(secondPart);
         if (CFAbstractStore.canInsertJavaExpression(secondInternal)) {
