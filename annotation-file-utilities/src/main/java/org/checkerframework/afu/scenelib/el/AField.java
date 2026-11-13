@@ -19,7 +19,7 @@ public class AField extends ADeclaration {
   public AExpression init;
 
   /**
-   * Create an AField of the given name.
+   * Creates an AField of the given name.
    *
    * @param name the name of the field or formal parameter
    */
@@ -31,7 +31,7 @@ public class AField extends ADeclaration {
   }
 
   /**
-   * Create an AField of the given name and type.
+   * Creates an AField of the given name and type.
    *
    * @param name the name of the field or formal parameter
    * @param typeMirror javac's representation of the type of the wrapped field
@@ -44,7 +44,7 @@ public class AField extends ADeclaration {
   }
 
   /**
-   * Create an AField that is a copy of the given one.
+   * Creates an AField that is a copy of the given one.
    *
    * @param field the AField to copy
    */
@@ -68,7 +68,7 @@ public class AField extends ADeclaration {
   private Pattern digits = Pattern.compile("^[0-9]+$");
 
   /**
-   * Set the name of this field or formal parameter.
+   * Sets the name of this field or formal parameter.
    *
    * @param newName the new name of this field or formal parameter
    */
@@ -94,7 +94,7 @@ public class AField extends ADeclaration {
   }
 
   /**
-   * Set the TypeMirror this.
+   * Sets the TypeMirror of this.
    *
    * @param typeMirror javac's representation of the type of this
    */

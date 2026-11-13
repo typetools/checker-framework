@@ -23,7 +23,7 @@ public class AssertionErrorNode extends Node {
   /** Tree for the assert statement or assert method. */
   protected final Tree tree;
 
-  /** The condition that if it is false, the assertion exception is thrown. */
+  /** The condition such that, if it is false, the assertion exception is thrown. */
   protected final Node condition;
 
   /** The node for the expression after {@code :} in the assert statement, or null. */
@@ -33,7 +33,8 @@ public class AssertionErrorNode extends Node {
    * Creates an AssertionErrorNode.
    *
    * @param tree tree for the assert statement or assert method
-   * @param condition the node of the condition when if false the assertion exception is thrown
+   * @param condition the node of the condition such that, if it is false, the assertion exception
+   *     is thrown
    * @param detail node for the expression after {@code :} in the assert statement, or null
    * @param type the type of the exception thrown
    */
@@ -47,9 +48,9 @@ public class AssertionErrorNode extends Node {
   }
 
   /**
-   * The node of the condition that if it is false, the assertion exception is thrown.
+   * Returns the node of the condition such that, if it is false, the assertion exception is thrown.
    *
-   * @return the node of the condition that if it is false, the assertion exception is thrown
+   * @return the node of the condition such that, if it is false, the assertion exception is thrown
    */
   @Pure
   public Node getCondition() {
@@ -57,7 +58,7 @@ public class AssertionErrorNode extends Node {
   }
 
   /**
-   * The node for the expression after {@code :} in the assert statement, or null.
+   * Returns the node for the expression after {@code :} in the assert statement, or null.
    *
    * @return node for the expression after {@code :} in the assert statement, or null
    */

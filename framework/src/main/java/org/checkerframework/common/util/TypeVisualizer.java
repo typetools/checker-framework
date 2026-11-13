@@ -36,12 +36,12 @@ import org.plumelib.util.StringsP;
 
 /**
  * TypeVisualizer prints AnnotatedTypeMirrors as a directed graph where each node is a type and an
- * arrow is a reference. Arrows are labeled with the relationship that reference represents (e.g. an
- * arrow marked "extends" starts from a type variable or wildcard type and points to the upper bound
- * of that type).
+ * arrow is a reference. Arrows are labeled with the relationship that reference represents (e.g.,
+ * an arrow marked "extends" starts from a type variable or wildcard type and points to the upper
+ * bound of that type).
  *
- * <p>Currently, to use TypeVisualizer just insert an if statement somewhere that targets the type
- * you would like to print: e.g.
+ * <p>Currently, to use TypeVisualizer, just insert an if statement somewhere that targets the type
+ * you would like to print; for example:
  *
  * <pre>{@code
  * if (type.getKind() == TypeKind.EXECUTABLE && type.toString().contains("methodToPrint")) {
@@ -72,7 +72,7 @@ public class TypeVisualizer {
   /**
    * Creates a dot file at dest that contains a digraph for the structure of {@code type}.
    *
-   * @param dest the destination dot file, this string will be directly passed to new File(dest)
+   * @param dest the destination dot file; this string will be directly passed to new File(dest)
    * @param type the type to be written
    */
   public static void drawToDot(String dest, AnnotatedTypeMirror type) {
@@ -80,8 +80,9 @@ public class TypeVisualizer {
   }
 
   /**
-   * Draws a dot file for type in a temporary directory then calls the "dot" program to convert that
-   * file into a png at the location dest. This method will fail if a temp file can't be created.
+   * Draws a dot file for type in a temporary directory, then calls the "dot" program to convert
+   * that file into a png at the location dest. This method will fail if a temp file can't be
+   * created.
    *
    * @param dest the destination png file
    * @param type the type to be written
@@ -98,10 +99,11 @@ public class TypeVisualizer {
   }
 
   /**
-   * Draws a dot file for type in a temporary directory then calls the "dot" program to convert that
-   * file into a png at the location dest. This method will fail if a temp file can't be created.
+   * Draws a dot file for type in a temporary directory, then calls the "dot" program to convert
+   * that file into a png at the location dest. This method will fail if a temp file can't be
+   * created.
    *
-   * @param dest the destination png file, this string will be directly passed to new File(dest)
+   * @param dest the destination png file; this string will be directly passed to new File(dest)
    * @param type the type to be written
    */
   public static void drawToPng(String dest, AnnotatedTypeMirror type) {
@@ -110,7 +112,7 @@ public class TypeVisualizer {
 
   /**
    * Converts the given dot file to a png file at the specified location. This method calls the
-   * program "dot" from Runtime.exec and will fail if "dot" is not on your class path.
+   * program "dot" from Runtime.exec and will fail if "dot" is not on your path.
    *
    * @param dotFile the dot file to convert
    * @param pngFile the destination of the resultant png file
@@ -124,8 +126,8 @@ public class TypeVisualizer {
   }
 
   /**
-   * If the name of typeVariable matches one in the list of typeVarNames, then print typeVariable to
-   * a dot file at {@code directory/varName}.
+   * If the name of typeVariable matches one in the list of typeVarNames, then prints typeVariable
+   * to a dot file at {@code directory/varName}.
    *
    * @return true if the type variable was printed, otherwise false
    */
@@ -135,8 +137,8 @@ public class TypeVisualizer {
   }
 
   /**
-   * If the name of typeVariable matches one in the list of typeVarNames, then print typeVariable to
-   * a png file at {@code directory/varName.png}.
+   * If the name of typeVariable matches one in the list of typeVarNames, then prints typeVariable
+   * to a png file at {@code directory/varName.png}.
    *
    * @return true if the type variable was printed, otherwise false
    */
@@ -169,8 +171,8 @@ public class TypeVisualizer {
    * This class exists because there is no LinkedIdentityHashMap.
    *
    * <p>Node is just a wrapper around type mirror that replaces .equals with referential equality.
-   * This is done to preserve the order types were traversed so that printing will occur in a
-   * hierarchical order. However, since there is no LinkedIdentityHashMap, it was easiest to just
+   * This is done to preserve the order in which types were traversed so that printing will occur in
+   * a hierarchical order. However, since there is no LinkedIdentityHashMap, it was easiest to just
    * create a wrapper that performed referential equality on types and use a LinkedHashMap.
    */
   private static final class Node {
@@ -178,7 +180,7 @@ public class TypeVisualizer {
     private final @InternedDistinct AnnotatedTypeMirror type;
 
     /**
-     * Create a new Node that wraps the given type.
+     * Creates a new Node that wraps the given type.
      *
      * @param type the type that the newly-constructed Node represents
      */
@@ -246,7 +248,7 @@ public class TypeVisualizer {
     }
 
     /**
-     * Write this to a file.
+     * Writes this to a file.
      *
      * @param file the file to write to
      */
@@ -414,7 +416,7 @@ public class TypeVisualizer {
      */
     private class NodeDrawer implements AnnotatedTypeVisitor<Void, Void> {
 
-      /** Create a new NodeDrawer. */
+      /** Creates a new NodeDrawer. */
       public NodeDrawer() {}
 
       private void visitAll(List<? extends AnnotatedTypeMirror> types) {

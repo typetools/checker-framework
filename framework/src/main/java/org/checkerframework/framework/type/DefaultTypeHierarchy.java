@@ -33,16 +33,16 @@ import org.checkerframework.javacutil.TypesUtils;
 /**
  * Default implementation of TypeHierarchy that implements the JLS specification with minor
  * deviations as outlined by the Checker Framework manual. Changes to the JLS include forbidding
- * covariant array types, raw types, and allowing covariant type arguments depending on various
+ * covariant array types and raw types, and allowing covariant type arguments depending on various
  * options passed to DefaultTypeHierarchy.
  *
  * <p>Subtyping rules of the JLS can be found in <a
  * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.10">section 4.10,
  * "Subtyping"</a>.
  *
- * <p>Note: The visit methods of this class must be public but it is intended to be used through a
- * TypeHierarchy interface reference which will only allow isSubtype to be called. Clients should
- * not call the visit methods.
+ * <p>Note: The visit methods of this class must be public, but this class is intended to be used
+ * through a TypeHierarchy interface reference which will only allow isSubtype to be called. Clients
+ * should not call the visit methods.
  *
  * <p>The visit methods return true if the first argument is a subtype of the second argument.
  */
@@ -126,7 +126,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   /**
-   * Create the equality comparer.
+   * Creates the equality comparer.
    *
    * @return the equality comparer
    */
@@ -319,7 +319,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   /**
-   * Compare the primary annotations of {@code subtype} and {@code supertype}. Neither type can be
+   * Compares the primary annotations of {@code subtype} and {@code supertype}. Neither type can be
    * missing annotations.
    *
    * @param subtype a type that might be a subtype (with respect to primary annotations)
@@ -347,8 +347,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * Like {@link #isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)}, but uses a cache to prevent
    * infinite recursion on recursive types.
    *
-   * @param subtype a type that may be a subtype
-   * @param supertype a type that may be a supertype
+   * @param subtype a type that might be a subtype
+   * @param supertype a type that might be a supertype
    * @return true if subtype {@literal <:} supertype
    */
   protected boolean isSubtypeCaching(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
@@ -364,7 +364,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   /**
-   * Are all the types in {@code subtypes} a subtype of {@code supertype}?
+   * Returns true if all the types in {@code subtypes} are subtypes of {@code supertype}.
    *
    * <p>The underlying type mirrors of {@code subtypes} must be subtypes of the underlying type
    * mirror of {@code supertype}.
@@ -393,7 +393,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
    * 4.5.1 "Type Arguments of Parameterized Types"</a>.
    *
    * <p>As described in <a
-   * href=https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.10.2>JLS section
+   * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-4.html#jls-4.10.2">JLS section
    * 4.10.2 Subtyping among Class and Interface Types</a>, a declared type S is considered a
    * supertype of another declared type T only if all of S's type arguments "contain" the
    * corresponding type arguments of the subtype T.
@@ -1261,8 +1261,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   /**
-   * If {@code type} is a type variable or wildcard recur on its upper bound until an upper bound is
-   * found that is neither a type variable nor a wildcard.
+   * If {@code type} is a type variable or wildcard, recurs on its upper bound until an upper bound
+   * is found that is neither a type variable nor a wildcard.
    *
    * @param type the type
    * @return if {@code type} is a type variable or wildcard, recur on its upper bound until an upper
@@ -1293,7 +1293,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   /**
-   * Check a wildcard type's relation against a subtype.
+   * Checks a wildcard type's relation against a subtype.
    *
    * @param subtype the potential subtype to check
    * @param supertype the wildcard supertype to check
@@ -1308,7 +1308,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Void>
   }
 
   /**
-   * Check a wildcard type's relation against a supertype.
+   * Checks a wildcard type's relation against a supertype.
    *
    * @param subtype the potential wildcard subtype to check
    * @param supertype the supertype to check
