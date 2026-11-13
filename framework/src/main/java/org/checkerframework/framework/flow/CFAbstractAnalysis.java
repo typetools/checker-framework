@@ -48,13 +48,17 @@ import org.checkerframework.javacutil.TypesUtils;
 /**
  * {@link CFAbstractAnalysis} is an extensible org.checkerframework.dataflow analysis for the
  * Checker Framework that tracks the annotations using a flow-sensitive analysis. It uses an {@link
- * AnnotatedTypeFactory} to provide checker-specific logic how to combine types (e.g., what is the
- * type of a string concatenation, given the types of the two operands) and as an abstraction
+ * AnnotatedTypeFactory} to provide checker-specific logic for how to combine types (e.g., what is
+ * the type of a string concatenation, given the types of the two operands) and as an abstraction
  * function (e.g., determine the annotations on literals).
  *
- * <p>The purpose of this class is twofold: Firstly, it serves as factory for abstract values,
- * stores and the transfer function. Furthermore, it makes it easy for the transfer function and the
- * stores to access the {@link AnnotatedTypeFactory}, the qualifier hierarchy, etc.
+ * <p>The purpose of this class is twofold: Firstly, it serves as a factory for abstract values,
+ * stores, and the transfer function. Furthermore, it makes it easy for the transfer function and
+ * the stores to access the {@link AnnotatedTypeFactory}, the qualifier hierarchy, etc.
+ *
+ * @param <V> the abstract value type to be tracked by the analysis
+ * @param <S> the store type used in the analysis
+ * @param <T> the transfer function type that is used to approximate run-time behavior
  */
 public abstract class CFAbstractAnalysis<
         V extends CFAbstractValue<V>,
@@ -163,7 +167,7 @@ public abstract class CFAbstractAnalysis<
   private @Nullable CompilationUnitTree seOnlyParseCacheRoot;
 
   /**
-   * Create a CFAbstractAnalysis.
+   * Creates a CFAbstractAnalysis.
    *
    * @param checker a checker that contains command-line arguments and other information
    * @param factory an annotated type factory to introduce type and dataflow rules
@@ -193,7 +197,7 @@ public abstract class CFAbstractAnalysis<
   }
 
   /**
-   * Create a CFAbstractAnalysis.
+   * Creates a CFAbstractAnalysis.
    *
    * @param checker a checker that contains command-line arguments and other information
    * @param factory an annotated type factory to introduce type and dataflow rules
@@ -205,7 +209,7 @@ public abstract class CFAbstractAnalysis<
   }
 
   /**
-   * Analyze the given control flow graph.
+   * Analyzes the given control flow graph.
    *
    * @param cfg control flow graph to analyze
    * @param fieldValues initial values of the fields
@@ -233,7 +237,7 @@ public abstract class CFAbstractAnalysis<
    * Null means "the method might side-effect anything", which is the conservative result; returning
    * a list that omits the unparseable expression would treat the method as side-effecting
    * <em>less</em> than it was declared to. The parse error itself is reported at the call site in
-   * addition to at the declaration, since the callee's declaration may not be under compilation.
+   * addition to at the declaration, since the callee's declaration might not be under compilation.
    *
    * <p>The result is cached, because dataflow calls this once per iteration per call site and
    * parsing an expression is not cheap. Clients should not side-effect the returned value, which is
@@ -387,7 +391,7 @@ public abstract class CFAbstractAnalysis<
   }
 
   /**
-   * A list of initial abstract values for the fields.
+   * Returns a list of initial abstract values for the fields.
    *
    * @return a list of initial abstract values for the fields
    */

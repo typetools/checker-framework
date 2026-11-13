@@ -313,7 +313,7 @@ public final class InClassCriterion implements Criterion {
   }
 
   /**
-   * Print debugging output to System.out.
+   * Prints debugging output to System.out.
    *
    * @param message a format string
    * @param args arguments to the format string

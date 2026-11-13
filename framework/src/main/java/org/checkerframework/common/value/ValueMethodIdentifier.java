@@ -31,7 +31,7 @@ class ValueMethodIdentifier {
   private final List<ExecutableElement> copyOfMethods;
 
   /**
-   * Initialize elements with methods that have special handling in the value checker.
+   * Initializes elements with methods that have special handling in the value checker.
    *
    * @param processingEnv the processing environment
    */
@@ -84,7 +84,7 @@ class ValueMethodIdentifier {
    *
    * @param tree tree to check
    * @param processingEnv the processing environment
-   * @return true iff the argument is an invocation of {@code Array.getLength()} method
+   * @return true iff the argument is an invocation of the {@code Array.getLength()} method
    */
   public boolean isArrayGetLengthInvocation(Tree tree, ProcessingEnvironment processingEnv) {
     return TreeUtils.isMethodInvocation(tree, getLengthMethod, processingEnv);
@@ -94,7 +94,7 @@ class ValueMethodIdentifier {
    * Returns true if a method is the {@code String.length()} method.
    *
    * @param method the element to check
-   * @return true iff the argument method is {@code String.length()} method
+   * @return true iff the argument method is the {@code String.length()} method
    */
   public boolean isStringLengthMethod(ExecutableElement method) {
     // equals (rather than ElementUtils.ismethod) because String.length cannot be overridden
@@ -105,7 +105,7 @@ class ValueMethodIdentifier {
    * Returns true if a method is the {@code Array.getLength()} method.
    *
    * @param method the element to check
-   * @return true iff the argument method is {@code Array.getLength()} method
+   * @return true iff the argument method is the {@code Array.getLength()} method
    */
   public boolean isArrayGetLengthMethod(ExecutableElement method) {
     // equals (rather than ElementUtils.ismethod) because String.length cannot be overridden
@@ -116,7 +116,7 @@ class ValueMethodIdentifier {
    * Returns true if a method is the {@code String.startsWith(String)} method.
    *
    * @param method the element to check
-   * @return true iff the argument method is {@code String.startsWith(String)} method
+   * @return true iff the argument method is the {@code String.startsWith(String)} method
    */
   public boolean isStartsWithMethod(ExecutableElement method) {
     // equals (rather than ElementUtils.ismethod) because String.length cannot be overridden
@@ -139,7 +139,7 @@ class ValueMethodIdentifier {
    *
    * @param tree tree to check
    * @param processingEnv the processing environment
-   * @return true iff the argument is an invocation of {@code Arrays.copyOf()} method
+   * @return true iff the argument is an invocation of the {@code Arrays.copyOf()} method
    */
   public boolean isArraysCopyOfInvocation(Tree tree, ProcessingEnvironment processingEnv) {
     return TreeUtils.isMethodInvocation(tree, copyOfMethods, processingEnv);

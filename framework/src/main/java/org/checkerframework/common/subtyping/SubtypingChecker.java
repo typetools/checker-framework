@@ -21,13 +21,13 @@ import org.checkerframework.framework.source.SourceVisitor;
  *       for one qualified subtype hierarchy can be passed.
  * </ul>
  *
- * @checker_framework.manual #subtyping-checker Subtying Checker
+ * @checker_framework.manual #subtyping-checker Subtyping Checker
  */
 @SupportedOptions({"quals", "qualDirs"})
 public final class SubtypingChecker extends BaseTypeChecker {
 
   /**
-   * Compute SuppressWarnings prefixes, based on the names of all the qualifiers.
+   * Computes SuppressWarnings prefixes, based on the names of all the qualifiers.
    *
    * <p>Provided for the convenience of checkers that do not subclass {@code SubtypingChecker}
    * (because it is final). Clients should call it like:

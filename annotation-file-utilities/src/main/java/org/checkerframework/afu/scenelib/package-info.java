@@ -7,7 +7,7 @@
  * <ul>
  *   <li>An {@link org.checkerframework.afu.scenelib.el.AScene} holds annotations for a set of
  *       classes and packages.
- *   <li>A {@link org.checkerframework.afu.scenelib.el.AElement} represents one particular element
+ *   <li>An {@link org.checkerframework.afu.scenelib.el.AElement} represents one particular element
  *       of a Java program within an {@code AScene}.
  *   <li>Package {@link org.checkerframework.afu.scenelib.io} provides routines to read and write
  *       {@link org.checkerframework.afu.scenelib.el.AScene}s in various formats.
@@ -23,7 +23,7 @@
  * <h2>Example</h2>
  *
  * <p>The example program {@code annotations.tests.Example} demonstrates the library's
- * annotation-processing capabilities. Its source code (and also example input and output) are
+ * annotation-processing capabilities. Its source code (and also example input and output) is
  * distributed with the Annotation Scene Library.
  */
 package org.checkerframework.afu.scenelib;
