@@ -1394,7 +1394,8 @@ public abstract class CFAbstractTransfer<
         }
       }
     }
-    assert lubResult != null : "@AssumeAssertion(nullness): a CaseNode has a case operand";
+    assert lubResult != null
+        : "@AssumeAssertion(nullness): a CaseNode has at least one case operand";
     if (!canRefineSelector && recordPatternMightHaveSideEffect(n)) {
       // A record accessor that a record pattern of this case invokes might have changed the
       // selector expression.  The CFG does not represent the accessor calls, so their effect on
