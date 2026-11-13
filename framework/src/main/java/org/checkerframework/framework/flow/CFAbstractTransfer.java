@@ -1058,17 +1058,17 @@ public abstract class CFAbstractTransfer<
         node instanceof AssignmentNode assignment
             ? sidesOfAssignment(assignment)
             : Collections.singletonList(node);
-    // Find the writes only if a candidate might be omitted because of them, because finding them
-    // requires the path to the tree of `node`, which can be costly to compute.
-    Writes writesUntilComparison = null;
+    // Find the written locations only if a candidate might be omitted because of them, because
+    // finding them requires the path to the tree of `node`, which can be costly to compute.
+    WrittenLocations locationsWrittenUntilComparison = null;
     List<Node> result = new ArrayList<>(candidates.size());
     for (Node candidate : candidates) {
       JavaExpression expr = JavaExpression.fromNode(candidate);
       if (CFAbstractStore.canInsertJavaExpression(expr)) {
-        if (writesUntilComparison == null) {
-          writesUntilComparison = writesUntilComparison(node);
+        if (locationsWrittenUntilComparison == null) {
+          locationsWrittenUntilComparison = locationsWrittenUntilComparison(node);
         }
-        if (writesUntilComparison.mayChange(expr, false)) {
+        if (locationsWrittenUntilComparison.mayChange(expr, false)) {
           continue;
         }
       }
@@ -1104,15 +1104,15 @@ public abstract class CFAbstractTransfer<
     // Java evaluates the receivers and indices of the targets of the assignments in `chain` from
     // left to right, then `rhs` (the rhs of the last assignment in `chain`), and then it stores
     // into the targets from right to left. Visit the sides (`rhs`, and then the targets from last
-    // to first) in reverse order of evaluation, so that `writes` contains the writes that happen
-    // while or after each side is evaluated.
-    Writes writes = new Writes();
+    // to first) in reverse order of evaluation, so that `written` contains the locations that are
+    // written while or after each side is evaluated.
+    WrittenLocations written = new WrittenLocations();
     for (AssignmentNode a : chain) {
-      writes.add(JavaExpression.fromNode(a.getTarget()));
+      written.add(JavaExpression.fromNode(a.getTarget()));
     }
     ExpressionTree rhsTree = rhsTree(chain.get(chain.size() - 1));
     if (rhsTree != null) {
-      writes.scan(rhsTree, null);
+      written.scan(rhsTree, null);
     }
     // The sides that the result contains, in source order: `sides[i]` is the target of
     // `chain.get(i)`, and `sides[chain.size()]` is `rhs`. An element is null if the result omits
@@ -1120,14 +1120,14 @@ public abstract class CFAbstractTransfer<
     Node[] sides = new Node[chain.size() + 1];
     // The number of non-null elements of `sides`, which is the size of the result.
     int resultSize = 0;
-    if (!mayBeChanged(rhs, writes)) {
+    if (!mayBeChanged(rhs, written)) {
       sides[chain.size()] = rhs;
       resultSize++;
     }
     for (int i = chain.size() - 1; i >= 0; i--) {
       Node target = chain.get(i).getTarget();
-      writes.scan(target.getTree(), null);
-      if (!mayBeChanged(target, writes)) {
+      written.scan(target.getTree(), null);
+      if (!mayBeChanged(target, written)) {
         sides[i] = target;
         resultSize++;
       }
@@ -1143,23 +1143,24 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns true if a store can hold a value for the given side of a chain of assignments, and the
-   * given writes might change the side's value.
+   * Returns true if a store can hold a value for the given side of a chain of assignments, and
+   * writing the given locations might change the side's value.
    *
    * @param side a side of a chain of assignments (see {@link #sidesOfAssignment}): an entire
    *     target, such as {@code a[i]} (not {@code a} or {@code i}), or the entire rhs of the last
    *     assignment in the chain
-   * @param writes the writes that happen while or after {@code side} is evaluated, up to and
-   *     including the stores into the targets of the chain. A write to the location that {@code
+   * @param written the locations that are written while or after {@code side} is evaluated, up to
+   *     and including the stores into the targets of the chain. A write to the location that {@code
    *     side} denotes does not change the value of {@code side} when the chain completes: if {@code
    *     side} is a target, the chain later stores its value into that location, and if {@code side}
    *     is the rhs, the write either happens before {@code side} reads the location or stores the
    *     value that {@code side} read.
-   * @return true if a store can hold a value for {@code side} and the writes might change its value
+   * @return true if a store can hold a value for {@code side} and writing {@code written} might
+   *     change its value
    */
-  private boolean mayBeChanged(Node side, Writes writes) {
+  private boolean mayBeChanged(Node side, WrittenLocations written) {
     JavaExpression expr = JavaExpression.fromNode(side);
-    return CFAbstractStore.canInsertJavaExpression(expr) && writes.mayChange(expr, true);
+    return CFAbstractStore.canInsertJavaExpression(expr) && written.mayChange(expr, true);
   }
 
   /**
@@ -1184,21 +1185,21 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns the writes that happen after the given node is evaluated and before the comparison
-   * (such as {@code ==} or {@code <}) that contains it completes. They are the writes of the code
-   * in the enclosing expressions that is evaluated after the node, and of those enclosing
-   * expressions themselves. For example, if {@code node} is {@code x} in {@code foo(x).f == y},
-   * they are the writes of the call to {@code foo} and of {@code y}.
+   * Returns the locations that are written after the given node is evaluated and before the
+   * comparison (such as {@code ==} or {@code <}) that contains it completes. They are the locations
+   * written by the code in the enclosing expressions that is evaluated after the node, and by those
+   * enclosing expressions themselves. For example, if {@code node} is {@code x} in {@code foo(x).f
+   * == y}, they are the locations written by the call to {@code foo} and by {@code y}.
    *
-   * <p>If no comparison encloses the node, the result contains the writes up to the outermost
-   * enclosing expression, or up to an enclosing lambda or switch expression.
+   * <p>If no comparison encloses the node, the result contains the locations written up to the
+   * outermost enclosing expression, or up to an enclosing lambda or switch expression.
    *
    * @param node a node
-   * @return the writes that happen after {@code node} is evaluated and before the comparison that
-   *     contains it completes
+   * @return the locations that are written after {@code node} is evaluated and before the
+   *     comparison that contains it completes
    */
-  private Writes writesUntilComparison(Node node) {
-    Writes result = new Writes();
+  private WrittenLocations locationsWrittenUntilComparison(Node node) {
+    WrittenLocations result = new WrittenLocations();
     TreePath path = sourcePath(node);
     if (path == null) {
       return result;
@@ -1292,7 +1293,7 @@ public abstract class CFAbstractTransfer<
    * <p>{@link #mayChange} uses the analysis's rules for aliasing and purity (see {@link
    * CFAbstractAnalysis#canAlias} and {@link CFAbstractAnalysis#isSideEffectFree}).
    */
-  private final class Writes extends TreeScanner<Void, Void> {
+  private final class WrittenLocations extends TreeScanner<Void, Void> {
 
     /** The local variables that might be written. */
     private final List<LocalVariable> locals = new ArrayList<>();
@@ -1309,8 +1310,8 @@ public abstract class CFAbstractTransfer<
      */
     private boolean anyHeapLocation = false;
 
-    /** Creates an empty set of writes. */
-    Writes() {}
+    /** Creates an empty set of locations. */
+    WrittenLocations() {}
 
     /**
      * Adds a write to the given location.
@@ -1449,8 +1450,9 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * Returns true if these writes might change the value of {@code expr}: that is, if evaluating
-     * {@code expr} after the writes might yield a different value than evaluating it before them.
+     * Returns true if writing these locations might change the value of {@code expr}: that is, if
+     * evaluating {@code expr} after the writes might yield a different value than evaluating it
+     * before them.
      *
      * <p>A write to a local variable changes only expressions that contain the variable. A write to
      * a field changes only accesses of the same field, and method calls. A write to an array
@@ -1465,8 +1467,8 @@ public abstract class CFAbstractTransfer<
      *     a variable, field access, or array access) does not matter, but a write that changes
      *     which location {@code expr} denotes (that is, a write to its receiver or index) does
      *     matter
-     * @return true if evaluating {@code expr} after these writes might yield a different value than
-     *     evaluating it before them
+     * @return true if evaluating {@code expr} after writing these locations might yield a different
+     *     value than evaluating it before
      */
     boolean mayChange(JavaExpression expr, boolean ignoreOwnLocation) {
       if (anyHeapLocation
@@ -1512,10 +1514,10 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * Returns true if these writes might write the field that {@code fa} denotes.
+     * Returns true if these locations might include the field that {@code fa} denotes.
      *
      * @param fa a field access
-     * @return true if these writes might write the field that {@code fa} denotes
+     * @return true if these locations might include the field that {@code fa} denotes
      */
     private boolean mayWriteField(FieldAccess fa) {
       if (anyHeapLocation && !fa.isFinal()) {
@@ -1531,10 +1533,10 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * Returns true if these writes might write the array element that {@code aa} denotes.
+     * Returns true if these locations might include the array element that {@code aa} denotes.
      *
      * @param aa an array access
-     * @return true if these writes might write the array element that {@code aa} denotes
+     * @return true if these locations might include the array element that {@code aa} denotes
      */
     private boolean mayWriteArrayElement(ArrayAccess aa) {
       if (anyHeapLocation) {
