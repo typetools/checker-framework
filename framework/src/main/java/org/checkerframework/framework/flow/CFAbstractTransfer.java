@@ -138,19 +138,19 @@ public abstract class CFAbstractTransfer<
   protected final CFAbstractAnalysis<V, S, T> analysis;
 
   /**
-   * Should the analysis use sequential Java semantics (i.e., assume that only one thread is running
-   * at all times)?
+   * True if the analysis should use sequential Java semantics (i.e., assume that only one thread is
+   * running at all times).
    */
   protected final boolean sequentialSemantics;
 
-  /** Indicates that the whole-program inference is on. */
+  /** True if whole-program inference is on. */
   private final boolean infer;
 
   /** The method {@code Object.toString()}, which a string conversion calls. */
   private final ExecutableElement objectToString;
 
   /**
-   * Create a CFAbstractTransfer.
+   * Creates a CFAbstractTransfer.
    *
    * @param analysis the analysis used by this transfer function
    */
@@ -260,9 +260,9 @@ public abstract class CFAbstractTransfer<
   private @Nullable S fixedInitialStore = null;
 
   /**
-   * Set a fixed initial Store.
+   * Sets a fixed initial store.
    *
-   * @param s initial store; possible null
+   * @param s initial store; possibly null
    */
   public void setFixedInitialStore(@Nullable S s) {
     fixedInitialStore = s;
@@ -425,7 +425,8 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Returns true if a given lambda expression may be leaked outside the method in which it appears.
+   * Returns true if a given lambda expression might be leaked outside the method in which it
+   * appears.
    *
    * <p>Currently, a lambda is considered leaked unless it is an argument to a method whose
    * corresponding formal parameter is annotated as @{@link NonLeaked}. The @{@link NonLeaked}
@@ -448,7 +449,7 @@ public abstract class CFAbstractTransfer<
    *
    * @param lambda the lambda
    * @param aTypeFactory an annotated type factory
-   * @return true if the lambda may be leaked
+   * @return true if the lambda might be leaked
    */
   private boolean doesLambdaLeak(CFGLambda lambda, AnnotatedTypeFactory aTypeFactory) {
     LambdaExpressionTree lambdaTree = lambda.getLambdaTree();
@@ -511,7 +512,7 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Add field values to the initial store before {@code methodTree}.
+   * Adds field values to the initial store before {@code methodTree}.
    *
    * <p>The initializer value is inserted into {@code store} if the field is final and the field
    * type is immutable, as defined by {@link AnnotatedTypeFactory#isImmutable(TypeMirror)}.
@@ -526,7 +527,7 @@ public abstract class CFAbstractTransfer<
    *       determined by {@link #isNotFullyInitializedReceiver(MethodTree)}.
    * </ul>
    *
-   * @param store initial store into which field values are inserted; it may not be empty
+   * @param store initial store into which field values are inserted; it might not be empty
    * @param classTree the class that contains {@code methodTree}
    * @param methodTree the method or constructor tree
    */
@@ -563,7 +564,7 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Adds information about effectively final variables (from outer scopes)
+   * Adds information about effectively final variables (from outer scopes).
    *
    * @param store the store to add to
    * @param enclosingElement the enclosing element of the code we are analyzing
@@ -624,7 +625,7 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Add the information from all the preconditions of a method to the initial store in the method
+   * Adds the information from all the preconditions of a method to the initial store in the method
    * body.
    *
    * @param initialStore the initial store for the method body
@@ -715,7 +716,7 @@ public abstract class CFAbstractTransfer<
    * @param tm the type for the result value
    * @param in the transfer input
    * @return the input information, as a TransferResult
-   * @see #createTransferResult(CFAbstractValue value, TransferInput in) {
+   * @see #createTransferResult(CFAbstractValue, TransferInput)
    */
   @SideEffectFree
   protected TransferResult<V, S> createTransferResult(
@@ -804,7 +805,7 @@ public abstract class CFAbstractTransfer<
     return new RegularTransferResult<>(finishValue(value, store), store);
   }
 
-  /** Use the most specific type information available according to the store. */
+  /** Uses the most specific type information available according to the store. */
   @Override
   public TransferResult<V, S> visitLocalVariable(LocalVariableNode n, TransferInput<V, S> in) {
     S store = in.getRegularStore();
@@ -864,7 +865,7 @@ public abstract class CFAbstractTransfer<
     return visitLocalVariable(n.getSwitchExpressionVar(), vsTransferInput);
   }
 
-  /** Reverse the role of the 'thenStore' and 'elseStore'. */
+  /** Reverses the roles of the 'thenStore' and 'elseStore'. */
   @Override
   public TransferResult<V, S> visitConditionalNot(ConditionalNotNode n, TransferInput<V, S> p) {
     TransferResult<V, S> result = super.visitConditionalNot(n, p);
@@ -923,8 +924,8 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Refine the annotation of {@code secondNode} if the annotation {@code secondValue} is less
-   * precise than {@code firstValue}. This is possible, if {@code secondNode} is an expression that
+   * Refines the annotation of {@code secondNode} if the annotation {@code secondValue} is less
+   * precise than {@code firstValue}. This is possible if {@code secondNode} is an expression that
    * is tracked by the store (e.g., a local variable or a field). Clients usually call this twice
    * with {@code firstNode} and {@code secondNode} reversed, to refine each of them.
    *
@@ -1610,7 +1611,7 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Determine abstract value of right-hand side and update the store accordingly.
+   * Determines the abstract value of the right-hand side and updates the store accordingly.
    *
    * @param in the store(s) before the assignment
    * @param lhs the left-hand side of the assignment
@@ -1769,7 +1770,7 @@ public abstract class CFAbstractTransfer<
    * a @SuppressWarnings, then this method returns false.
    *
    * @param tree a tree
-   * @return true if to perform whole-program inference on the tree
+   * @return true if whole-program inference should be performed on the tree
    */
   protected boolean shouldPerformWholeProgramInference(Tree tree) {
     // Test `infer` first: computing the path is expensive, and it is needed only if WPI is on.
@@ -1786,7 +1787,7 @@ public abstract class CFAbstractTransfer<
    *
    * @param expressionTree the right-hand side of an assignment
    * @param lhsTree the left-hand side of an assignment
-   * @return true if to perform whole-program inference
+   * @return true if whole-program inference should be performed
    */
   protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
     // Check that infer is true and the tree isn't in scope of a @SuppressWarnings
@@ -1804,7 +1805,7 @@ public abstract class CFAbstractTransfer<
    *
    * @param tree a tree
    * @param elt its element
-   * @return true if to perform whole-program inference
+   * @return true if whole-program inference should be performed
    */
   private boolean shouldPerformWholeProgramInference(Tree tree, Element elt) {
     return shouldPerformWholeProgramInference(tree)
@@ -1812,7 +1813,7 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Add information from the postconditions of a method to the store after an invocation.
+   * Adds information from the postconditions of a method to the store after an invocation.
    *
    * @param invocationNode a method call or an object creation
    * @param store a store; is side-effected by this method
@@ -1831,7 +1832,7 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Add information from the conditional postconditions of a method to the stores after an
+   * Adds information from the conditional postconditions of a method to the stores after an
    * invocation.
    *
    * @param invocationNode a method call
@@ -1854,7 +1855,7 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Add information from the postconditions and conditional postconditions of a method to the
+   * Adds information from the postconditions and conditional postconditions of a method to the
    * stores after an invocation.
    *
    * @param invocationNode a method call node or an object creation node
@@ -1925,7 +1926,9 @@ public abstract class CFAbstractTransfer<
     }
   }
 
-  /** A case produces no value, but it may imply some facts about switch selector expression. */
+  /**
+   * A case produces no value, but it might imply some facts about the switch selector expression.
+   */
   @Override
   public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
     S store = in.getRegularStore();
@@ -2143,8 +2146,8 @@ public abstract class CFAbstractTransfer<
   }
 
   /**
-   * Inserts newAnno as the value into all stores (conditional or not) in the result for node. This
-   * is a utility method for subclasses.
+   * Inserts newAnno as the value into all stores (conditional or not) in the result for target.
+   * This is a utility method for subclasses.
    *
    * @param result the TransferResult holding the stores to modify
    * @param target the receiver whose value should be modified

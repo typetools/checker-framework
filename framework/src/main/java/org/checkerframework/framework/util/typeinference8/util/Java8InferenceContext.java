@@ -61,7 +61,7 @@ public class Java8InferenceContext {
   public final DeclaredType enclosingType;
 
   /**
-   * Store previously created type variable to inference variable maps as a map from invocation
+   * Previously created type variable to inference variable maps, stored as a map from invocation
    * expression to Theta.
    */
   public final Map<ExpressionTree, Theta> maps;
@@ -135,7 +135,7 @@ public class Java8InferenceContext {
    * that declares it, and the parameter's index in the lambda's parameter list.
    *
    * <p>The lambda's target type is stored rather than the parameter's own type because, when this
-   * is recorded, the target type may still mention inference variables.
+   * is recorded, the target type might still mention inference variables.
    *
    * @param lambdaTargetType the target type of the lambda that declares the parameter
    * @param index the index of the parameter in the lambda's parameter list

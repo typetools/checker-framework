@@ -78,8 +78,8 @@ public class ModifiabilityVisitor extends SourceVisitor<Void, Void> {
 
   /**
    * Sets {@link #inParameterType} while scanning this lambda's formal parameters, so that an
-   * explicitly-typed lambda parameter may be annotated {@code @UnmodifiableParam}, just as a method
-   * formal parameter may. An implicitly-typed lambda parameter has no type to annotate.
+   * explicitly-typed lambda parameter can be annotated {@code @UnmodifiableParam}, just as a method
+   * formal parameter can. An implicitly-typed lambda parameter has no type to annotate.
    */
   @Override
   public Void visitLambdaExpression(LambdaExpressionTree tree, Void p) {
@@ -121,9 +121,9 @@ public class ModifiabilityVisitor extends SourceVisitor<Void, Void> {
    * <p>These restrictions follow from what the annotation means: the method preserves modifiability
    * capabilities from its argument to its result. That requires a result and exactly one argument.
    * With more than one formal parameter, it would be ambiguous which argument the result depends
-   * on. A varargs parameter is excluded because a call's argument may be an element of the varargs
-   * array rather than the array itself, and that element has a different type than the formal
-   * parameter.
+   * on. A varargs parameter is excluded because a call's argument might be an element of the
+   * varargs array rather than the array itself, and that element has a different type than the
+   * formal parameter.
    *
    * @param tree a method declaration
    */
