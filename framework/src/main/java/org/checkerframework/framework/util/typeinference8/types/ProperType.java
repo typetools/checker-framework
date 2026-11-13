@@ -16,6 +16,7 @@ import java.util.function.Supplier;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
@@ -311,10 +312,10 @@ public class ProperType extends AbstractType {
     if (origin == null) {
       return fromType.get();
     }
-    return partCache()
-        .parts()
-        .computeIfAbsent(
-            key, k -> computePartFromOrigin(origin, part, fromType, primaryAnnotationsFromType));
+    return getOrCompute(
+        partCache().parts(),
+        key,
+        () -> computePartFromOrigin(origin, part, fromType, primaryAnnotationsFromType));
   }
 
   /**
@@ -364,6 +365,30 @@ public class ProperType extends AbstractType {
       partCache = cache;
     }
     return cache;
+  }
+
+  /**
+   * Returns the value that {@code map} maps {@code key} to. If there is none, returns the result of
+   * {@code compute}, after adding it to {@code map} if it is non-null.
+   *
+   * @param <K> the type of the keys of the map
+   * @param <V> the type of the values of the map
+   * @param map a map
+   * @param key a key
+   * @param compute computes a value for {@code key}
+   * @return the value for {@code key}, or null if {@code map} has none and {@code compute} returns
+   *     null
+   */
+  private static <K extends @NonNull Object, V> @Nullable V getOrCompute(
+      Map<K, V> map, K key, Supplier<@Nullable V> compute) {
+    @Nullable V result = map.get(key);
+    if (result == null) {
+      result = compute.get();
+      if (result != null) {
+        map.put(key, result);
+      }
+    }
+    return result;
   }
 
   /**
@@ -418,11 +443,10 @@ public class ProperType extends AbstractType {
       return fromType.get();
     }
     List<AbstractType> result =
-        partCache()
-            .listParts()
-            .computeIfAbsent(
-                key,
-                k -> computeListPartFromOrigin(origin, part, fromType, primaryAnnotationsFromType));
+        getOrCompute(
+            partCache().listParts(),
+            key,
+            () -> computeListPartFromOrigin(origin, part, fromType, primaryAnnotationsFromType));
     // The cached list must not be mutated.
     return result == null ? null : new ArrayList<>(result);
   }
@@ -503,13 +527,12 @@ public class ProperType extends AbstractType {
     if (origin == null) {
       return super.asSuper(superType);
     }
-    return partCache()
-        .asSuper()
-        .computeIfAbsent(
-            superType,
-            k ->
-                computePartFromOrigin(
-                    origin, t -> t.asSuper(superType), () -> super.asSuper(superType), true));
+    return getOrCompute(
+        partCache().asSuper(),
+        superType,
+        () ->
+            computePartFromOrigin(
+                origin, t -> t.asSuper(superType), () -> super.asSuper(superType), true));
   }
 
   @Override
