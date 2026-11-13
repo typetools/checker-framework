@@ -261,8 +261,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
   /**
    * Returns the outermost tree required to find the type of {@code tree}.
    *
-   * @param tree tree that may need an outer tree to find the type
-   * @param parentPath path to the parent of {@code tree} or null if no such parent exists
+   * @param tree tree that might need an outer tree to find the type
+   * @param parentPath path to the parent of {@code tree}, or null if no such parent exists
    * @param env the processing environment
    * @return the outermost tree required to find the type of {@code tree}
    */
@@ -365,7 +365,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * @param executableElement symbol of method or constructor
    * @param argTrees all the arguments of the method or constructor call
    * @param argTree the argument of interest
-   * @param newClassTree the new class tree or {@code null} if {@code executableElement} is a method
+   * @param newClassTree the new class tree, or {@code null} if {@code executableElement} is a
+   *     method
    * @return true if {@code argTree} is pseudo-assigned to a parameter in {@code executableElement}
    *     that contains a type variable that needs to be inferred
    */

@@ -10,9 +10,9 @@ import org.checkerframework.dataflow.cfg.node.Node;
 
 /**
  * This interface defines a dataflow analysis, given a control flow graph and a transfer function. A
- * dataflow analysis has a direction, either forward or backward. The direction of corresponding
- * transfer function is consistent with the analysis, i.e. a forward analysis has a forward transfer
- * function, and a backward analysis has a backward transfer function.
+ * dataflow analysis has a direction, either forward or backward. The direction of the corresponding
+ * transfer function is consistent with the analysis, i.e., a forward analysis has a forward
+ * transfer function, and a backward analysis has a backward transfer function.
  *
  * @param <V> the abstract value type to be tracked by the analysis
  * @param <S> the store type used in the analysis
@@ -48,21 +48,21 @@ public interface Analysis<
   Direction getDirection();
 
   /**
-   * Is the analysis currently running?
+   * Returns true if the analysis is currently running.
    *
    * @return true if the analysis is running currently, else false
    */
   boolean isRunning();
 
   /**
-   * Perform the actual analysis.
+   * Performs the actual analysis.
    *
    * @param cfg the control flow graph
    */
   void performAnalysis(ControlFlowGraph cfg);
 
   /**
-   * Perform the actual analysis on one block.
+   * Performs the actual analysis on one block.
    *
    * @param b the block to analyze
    */
@@ -70,8 +70,9 @@ public interface Analysis<
 
   /**
    * Runs the analysis again within the block of {@code node} and returns the store at the location
-   * of {@code node}. If {@code before} is true, then the store immediately before the {@link Node}
-   * {@code node} is returned. Otherwise, the store immediately after {@code node} is returned.
+   * of {@code node}. If {@code preOrPost} is {@link BeforeOrAfter#BEFORE}, then the store
+   * immediately before the {@link Node} {@code node} is returned. Otherwise, the store immediately
+   * after {@code node} is returned.
    *
    * @param node the node to analyze
    * @param preOrPost which store to return: the store immediately before {@code node} or the store
@@ -81,8 +82,8 @@ public interface Analysis<
    * @param analysisCaches caches of analysis results. If it is not null, this method uses and
    *     updates it. It is a map from a TransferInput for a Block to a map. The inner map is from a
    *     node within the block to a TransferResult.
-   * @return the store before or after {@code node} (depends on the value of {@code before}) after
-   *     running the analysis
+   * @return the store before or after {@code node} (depends on the value of {@code preOrPost})
+   *     after running the analysis
    */
   S runAnalysisFor(
       Node node,
@@ -93,7 +94,8 @@ public interface Analysis<
           analysisCaches);
 
   /**
-   * The result of running the analysis. This is only available once the analysis finished running.
+   * Returns the result of running the analysis. This is only available once the analysis has
+   * finished running.
    *
    * @return the result of running the analysis
    */
@@ -119,7 +121,7 @@ public interface Analysis<
    * available. Note that if the analysis has not finished yet, this value might not represent the
    * final value for this node.
    *
-   * @param n n a node
+   * @param n a node
    * @return the abstract value for node {@code n}, or {@code null} if no information is available
    */
   @Nullable V getValue(Node n);
@@ -127,7 +129,7 @@ public interface Analysis<
   /**
    * Returns the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
    * available. Note that if the analysis has not finished yet, this value might not represent the
-   * final value for this node.
+   * final value for this tree.
    *
    * @param t the given tree
    * @return the abstract value for the given tree
@@ -135,10 +137,10 @@ public interface Analysis<
   @Nullable V getValue(Tree t);
 
   /**
-   * Returns the regular exit store, or {@code null}, if there is no such store (because the method
+   * Returns the regular exit store, or {@code null} if there is no such store (because the method
    * cannot exit through the regular exit block).
    *
-   * @return the regular exit store, or {@code null}, if there is no such store (because the method
+   * @return the regular exit store, or {@code null} if there is no such store (because the method
    *     cannot exit through the regular exit block)
    */
   @Nullable S getRegularExitStore();

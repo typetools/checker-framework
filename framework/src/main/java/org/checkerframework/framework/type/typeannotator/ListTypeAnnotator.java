@@ -25,7 +25,7 @@ public final class ListTypeAnnotator extends TypeAnnotator {
   private final List<TypeAnnotator> annotators;
 
   /**
-   * Create a new ListTypeAnnotator.
+   * Creates a new ListTypeAnnotator.
    *
    * @param annotators the annotators that will be executed for each type scanned by this
    *     TypeAnnotator. They are executed in the order passed in.

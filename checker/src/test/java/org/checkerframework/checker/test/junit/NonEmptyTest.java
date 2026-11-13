@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class NonEmptyTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a NonEmptyTest.
+   * Creates a NonEmptyTest.
    *
    * @param testFiles the files containing test code to be type-checked
    */

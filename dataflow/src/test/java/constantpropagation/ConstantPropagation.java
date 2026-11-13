@@ -15,7 +15,7 @@ public class ConstantPropagation {
   }
 
   /**
-   * The main method expects to be run in dataflow/tests/constant-propagation directory.
+   * The main method expects to be run in the dataflow/tests/constant-propagation directory.
    *
    * @param args not used
    */

@@ -24,10 +24,10 @@ import org.junit.runners.model.TestClass;
 // Reduce duplication by moving common parts to an abstract class.
 /**
  * PerDirectorySuite runs a test class once for each set of javaFiles returned by its method marked
- * with {@code @Parameters}
+ * with {@code @Parameters}.
  *
  * <p>To use:<br>
- * Annotated your test class with {@code @RunWith(PerDirectorySuite.class)}<br>
+ * Annotate your test class with {@code @RunWith(PerDirectorySuite.class)}<br>
  * Create a javaFiles method by annotating a public static method with {@code @Parameters}. This
  * method must return either a {@code List<File>} where each element of the list is a Java file to
  * test against OR a {@code String []} where each String in the array is a directory in the tests
@@ -85,7 +85,12 @@ public class PerDirectorySuite extends RootedSuite {
     return TestUtilities.findJavaFilesPerDirectory(resolveTestDirectory(), dirs);
   }
 
-  /** Returns method annotated @Parameters, typically the getTestDirs or getTestFiles method. */
+  /**
+   * Returns the method annotated @Parameters, typically the getTestDirs or getTestFiles method.
+   *
+   * @param testClass the test class
+   * @return the method annotated @Parameters
+   */
   private FrameworkMethod getParametersMethod(TestClass testClass) {
     List<FrameworkMethod> parameterMethods = testClass.getAnnotatedMethods(Parameters.class);
     if (parameterMethods.size() != 1) {

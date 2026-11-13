@@ -19,7 +19,7 @@ public class JarEntryAnnotationFileResource implements AnnotationFileResource {
   private final byte[] contents;
 
   /**
-   * Constructs a {@code AnnotationFileResource} for the specified entry in the specified archive.
+   * Constructs an {@code AnnotationFileResource} for the specified entry in the specified archive.
    *
    * @param archive the JAR or ZIP archive
    * @param entryName the name of the entry in the archive

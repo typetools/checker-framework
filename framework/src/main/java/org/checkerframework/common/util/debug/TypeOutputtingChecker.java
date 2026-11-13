@@ -13,6 +13,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Elements;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.signature.qual.CanonicalName;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -26,8 +27,8 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A testing class that can be used to test {@link TypeElement}. In particular it tests that the
- * types read from classfiles are the same to the ones from Java files.
+ * A testing class that can be used to test {@link TypeElement}. In particular, it tests that the
+ * types read from classfiles are the same as the ones from Java files.
  *
  * <p>For testing, you need to do the following:
  *
@@ -53,10 +54,16 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
     return new Visitor(this);
   }
 
-  /** Prints the types of the class and all of its enclosing fields, methods, and inner classes. */
+  /** Prints the types of the class and all of its enclosed fields, methods, and inner classes. */
   public static class Visitor extends BaseTypeVisitor<GenericAnnotatedTypeFactory<?, ?, ?, ?>> {
-    String currentClass;
+    /** The name of the class currently being visited. */
+    @MonotonicNonNull String currentClass;
 
+    /**
+     * Creates a Visitor.
+     *
+     * @param checker the checker that creates this visitor
+     */
     public Visitor(BaseTypeChecker checker) {
       super(checker);
     }
@@ -106,7 +113,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
   }
 
   /**
-   * Run the test.
+   * Runs the test.
    *
    * @param args command-line arguments
    */
@@ -124,7 +131,12 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
     }
   }
 
-  /** Prints the types of the class and all of its enclosing fields, methods, and inner classes. */
+  /**
+   * Prints the types of the class and all of its enclosed fields, methods, and inner classes.
+   *
+   * @param typeElt the class whose types are printed
+   * @param atypeFactory the type factory used to compute the types
+   */
   protected static void printClassType(TypeElement typeElt, AnnotatedTypeFactory atypeFactory) {
     assert typeElt != null;
 
@@ -149,7 +161,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
   /**
    * Stores any explicit annotation in AnnotatedTypeMirrors. It doesn't have a qualifier hierarchy,
    * so it violates most of the specifications for AnnotatedTypeMirrors and AnnotatedTypeFactorys,
-   * which may cause crashes and other unexpected behaviors.
+   * which might cause crashes and other unexpected behaviors.
    */
   public static class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
 
@@ -168,7 +180,7 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
       // tests/nullness/GeneralATFStore.java
     }
 
-    /** Return true to support any qualifier. No handling of aliases. */
+    /** Returns true, to support any qualifier. No handling of aliases. */
     @Override
     public boolean isSupportedQualifier(AnnotationMirror a) {
       return true;

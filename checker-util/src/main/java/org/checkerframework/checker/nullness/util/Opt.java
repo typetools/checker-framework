@@ -64,7 +64,7 @@ public final class Opt {
   }
 
   /**
-   * If primary is non-null, invoke the specified consumer with the value, otherwise do nothing.
+   * If primary is non-null, invokes the specified consumer with the value, otherwise does nothing.
    *
    * @see java.util.Optional#ifPresent(Consumer)
    */
@@ -75,7 +75,7 @@ public final class Opt {
   }
 
   /**
-   * If primary is non-null, invoke the specified consumer with the value, otherwise invoke the
+   * If primary is non-null, invokes the specified consumer with the value, otherwise invokes the
    * empty action.
    *
    * @param <T> the type of the argument
@@ -94,8 +94,8 @@ public final class Opt {
   }
 
   /**
-   * If primary is non-null, and its value matches the given predicate, return the value. If primary
-   * is null or its non-null value does not match the predicate, return null.
+   * If primary is non-null, and its value matches the given predicate, returns the value. If
+   * primary is null or its non-null value does not match the predicate, returns null.
    *
    * @see java.util.Optional#filter(Predicate)
    */
@@ -109,8 +109,8 @@ public final class Opt {
   }
 
   /**
-   * If primary is non-null, apply the provided mapping function to it and return the result. If
-   * primary is null, return null.
+   * If primary is non-null, applies the provided mapping function to it and returns the result. If
+   * primary is null, returns null.
    *
    * @see java.util.Optional#map(Function)
    */
@@ -126,7 +126,7 @@ public final class Opt {
   // flatMap would have the same signature and implementation as map
 
   /**
-   * Returns primary if it is non-null. If primary is null, return other.
+   * Returns primary if it is non-null. If primary is null, returns other.
    *
    * @see java.util.Optional#orElse(Object)
    */
@@ -135,8 +135,8 @@ public final class Opt {
   }
 
   /**
-   * Returns {@code primary} if it is non-null. If {@code primary} is null, invoke {@code other} and
-   * return the result of that invocation.
+   * Returns {@code primary} if it is non-null. If {@code primary} is null, invokes {@code other}
+   * and returns the result of that invocation.
    *
    * @see java.util.Optional#orElseGet(Supplier)
    */
@@ -145,7 +145,7 @@ public final class Opt {
   }
 
   /**
-   * Returns primary if it is non-null. If primary is null, throw an exception to be created by the
+   * Returns primary if it is non-null. If primary is null, throws an exception to be created by the
    * provided supplier.
    *
    * @see java.util.Optional#orElseThrow(Supplier)
