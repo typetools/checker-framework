@@ -105,12 +105,6 @@ public abstract class CFAbstractAnalysis<
   /** Instance of the types utility. */
   protected final Types types;
 
-  /** True if -AassumeSideEffectFree or -AassumePure was passed on the command line. */
-  private final boolean assumeSideEffectFree;
-
-  /** True if -AassumePureGetters was passed on the command line. */
-  private final boolean assumePureGetters;
-
   /**
    * Cache for {@link #getSideEffectsOnlyExpressions}, which would otherwise re-parse the
    * annotation's expressions once per dataflow iteration per call site. A key that is mapped to
@@ -173,10 +167,7 @@ public abstract class CFAbstractAnalysis<
    * @param factory an annotated type factory to introduce type and dataflow rules
    * @param maxCountBeforeWidening number of times a block can be analyzed before widening
    */
-  @SuppressWarnings({
-    "this-escape",
-    "nullness:method.invocation" // calls createTransferFunction() on a partly-initialized object
-  })
+  @SuppressWarnings("this-escape")
   protected CFAbstractAnalysis(
       BaseTypeChecker checker,
       GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
@@ -189,9 +180,6 @@ public abstract class CFAbstractAnalysis<
     dependentTypesHelper = factory.getDependentTypesHelper();
     this.atypeFactory = factory;
     this.checker = checker;
-    this.assumeSideEffectFree =
-        checker.hasOption("assumeSideEffectFree") || checker.hasOption("assumePure");
-    this.assumePureGetters = checker.hasOption("assumePureGetters");
     this.transferFunction = createTransferFunction();
     this.fieldValues = new ArrayList<>();
   }
@@ -535,21 +523,6 @@ public abstract class CFAbstractAnalysis<
    */
   public ProcessingEnvironment getEnv() {
     return env;
-  }
-
-  /**
-   * Returns true if a call to the given method or constructor does not change any field or array
-   * element, according to the method's annotations (such as {@link
-   * org.checkerframework.dataflow.qual.SideEffectFree}) and the command-line options {@code
-   * -AassumeSideEffectFree}, {@code -AassumePure}, and {@code -AassumePureGetters}.
-   *
-   * @param method a method or constructor
-   * @return true if a call to {@code method} does not change any field or array element
-   */
-  public boolean isSideEffectFree(ExecutableElement method) {
-    return assumeSideEffectFree
-        || (assumePureGetters && ElementUtils.isGetter(method))
-        || atypeFactory.isSideEffectFree(method);
   }
 
   /**
