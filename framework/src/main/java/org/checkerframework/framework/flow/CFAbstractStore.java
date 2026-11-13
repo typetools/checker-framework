@@ -46,7 +46,6 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.ElementUtils;
 import org.plumelib.util.CollectionsP;
 import org.plumelib.util.MapsP;
 import org.plumelib.util.ToStringComparator;
@@ -119,12 +118,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    */
   protected final boolean sequentialSemantics;
 
-  /** True if -AassumeSideEffectFree or -AassumePure was passed on the command line. */
-  private final boolean assumeSideEffectFree;
-
-  /** True if -AassumePureGetters was passed on the command line. */
-  private final boolean assumePureGetters;
-
   /** The unique ID for the next-created object. */
   private static final AtomicLong nextUid = new AtomicLong(0);
 
@@ -156,10 +149,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     this.arrayValues = new HashMap<>();
     this.classValues = new HashMap<>();
     this.sequentialSemantics = sequentialSemantics;
-    this.assumeSideEffectFree =
-        analysis.checker.hasOption("assumeSideEffectFree")
-            || analysis.checker.hasOption("assumePure");
-    this.assumePureGetters = analysis.checker.hasOption("assumePureGetters");
   }
 
   /**
@@ -177,8 +166,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     this.arrayValues = new HashMap<>(other.arrayValues);
     this.classValues = new HashMap<>(other.classValues);
     this.sequentialSemantics = other.sequentialSemantics;
-    this.assumeSideEffectFree = other.assumeSideEffectFree;
-    this.assumePureGetters = other.assumePureGetters;
   }
 
   /**
@@ -236,11 +223,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     GenericAnnotatedTypeFactory<V, S, ?, ?> atypeFactory = analysis.atypeFactory;
 
     // Case 1: The method is side-effect-free.
-    boolean hasSideEffect =
-        !(assumeSideEffectFree
-            || (assumePureGetters && ElementUtils.isGetter(method))
-            || atypeFactory.isSideEffectFree(method));
-    if (hasSideEffect) {
+    if (!atypeFactory.isSideEffectFree(method)) {
 
       boolean sideEffectsUnrefineAliases = atypeFactory.sideEffectsUnrefineAliases;
       Node receiver = methodInvocationNode.getTarget().getReceiver();
