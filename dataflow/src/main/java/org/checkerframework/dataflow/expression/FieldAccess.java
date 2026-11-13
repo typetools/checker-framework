@@ -147,7 +147,11 @@ public class FieldAccess extends JavaExpression {
 
   @Override
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
-    return super.containsModifiableAliasOf(store, other)
+    // `other` denotes the same location as this field access if it accesses the same field of
+    // the same object.
+    return (other instanceof FieldAccess otherFieldAccess
+            && field.equals(otherFieldAccess.field)
+            && (isStatic() || store.canAlias(receiver, otherFieldAccess.receiver)))
         || receiver.containsModifiableAliasOf(store, other);
   }
 
