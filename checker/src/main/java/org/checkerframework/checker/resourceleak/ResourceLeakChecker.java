@@ -23,7 +23,7 @@ import org.checkerframework.framework.source.SupportedOptions;
  * which traverses the cfg to check whether all MustCall obligations are fulfilled.
  *
  * <p>The checker hierarchy is: this "empty" RLC &rarr; CollectionOwnershipChecker &rarr;
- * RLCCalledMethodsChecker &rarr; MustCallChecker
+ * RLCCalledMethodsChecker &rarr; MustCallChecker.
  *
  * <p>The subchecker hierarchy is a line graph (instead of siblings), since we want them to operate
  * on the same CFG (so we can get a CalledMethods, MustCall, and CollectionOwnership store for a

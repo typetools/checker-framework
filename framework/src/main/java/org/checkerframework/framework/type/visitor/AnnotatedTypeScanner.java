@@ -44,7 +44,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * reduce(super.visitAnnotatedTypeMirror(type, parameter), result)} so that the whole type is
  * scanned.
  *
- * <p>To begin scanning a type call {@link #visit(AnnotatedTypeMirror, Object)} or (to pass {@code
+ * <p>To begin scanning a type, call {@link #visit(AnnotatedTypeMirror, Object)} or (to pass {@code
  * null} as the last parameter) call {@link #visit(AnnotatedTypeMirror)}. Both methods call {@link
  * #reset()}.
  *
@@ -132,7 +132,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
   /**
    * Constructs an AnnotatedTypeScanner with the given reduce function. If {@code reduceFunction} is
    * null, then the reduce function returns the first result if it is nonnull; otherwise the second
-   * result is returned. The default result is {@code null}
+   * result is returned. The default result is {@code null}.
    *
    * @param reduceFunction function used to combine two results
    */
@@ -163,7 +163,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
   protected final IdentityHashMap<AnnotatedTypeMirror, R> visitedNodes = new IdentityHashMap<>();
 
   /**
-   * Reset the scanner to allow reuse of the same instance. Subclasses should override this method
+   * Resets the scanner to allow reuse of the same instance. Subclasses should override this method
    * to clear their additional state; they must call the super implementation.
    */
   public void reset() {
@@ -195,7 +195,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
   }
 
   /**
-   * Scan {@code type} by calling {@code type.accept(this, p)}; this method may be overridden by
+   * Scans {@code type} by calling {@code type.accept(this, p)}; this method can be overridden by
    * subclasses.
    *
    * @param type type to scan
@@ -207,7 +207,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
   }
 
   /**
-   * Scan all the types and returns the reduced result.
+   * Scans all the types and returns the reduced result.
    *
    * @param types types to scan
    * @param p the parameter to use
@@ -234,7 +234,7 @@ public abstract class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor
    * Scans {@code type} with the parameter {@code p} and reduces the result with {@code r}.
    *
    * @param type type to scan
-   * @param p parameter to use for when scanning {@code type}
+   * @param p parameter to use when scanning {@code type}
    * @param r result to combine with the result of scanning {@code type}
    * @return the combination of {@code r} with the result of scanning {@code type}
    */

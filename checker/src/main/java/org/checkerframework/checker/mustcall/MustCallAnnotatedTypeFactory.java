@@ -98,10 +98,10 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * This code is safe from resource leaks: sock is an unconnected socket and therefore has no
    * must-call obligation. The expression sock.socket() similarly has no must-call obligation
    * because it is a resource alias, but without a temporary variable that represents that
-   * expression in the store, the resource leak checker wouldn't be able to determine that.
+   * expression in the store, the Resource Leak Checker wouldn't be able to determine that.
    *
    * <p>These temporary variables are only created once---here---but are used by all three parts of
-   * the resource leak checker by calling {@link #getTempVar(Node)}. The temporary variables are
+   * the Resource Leak Checker by calling {@link #getTempVar(Node)}. The temporary variables are
    * shared in the same way that subcheckers share CFG structure; see {@link
    * #getSharedCFGForTree(Tree)}.
    */
@@ -524,8 +524,8 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   private class MustCallQualifierUpperBounds extends QualifierUpperBounds {
 
     /**
-     * Creates a {@link QualifierUpperBounds} from the MustCall Checker the annotations that are in
-     * the type hierarchy.
+     * Creates a {@link QualifierUpperBounds} for the Must Call Checker, using the annotations that
+     * are in the type hierarchy.
      */
     public MustCallQualifierUpperBounds() {
       super(MustCallAnnotatedTypeFactory.this);
@@ -550,7 +550,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
 
   /**
    * Cache of the MustCall annotations that have actually been created. Most programs require few
-   * distinct MustCall annotations (e.g. MustCall() and MustCall("close")).
+   * distinct MustCall annotations (e.g., MustCall() and MustCall("close")).
    */
   private final Map<List<String>, AnnotationMirror> mustCallAnnotations = new HashMap<>(10);
 
@@ -683,7 +683,7 @@ public class MustCallAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
    * Checks if WPI is enabled for the Resource Leak Checker inference. See {@link
    * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
    *
-   * @return returns true if WPI is enabled for the Resource Leak Checker
+   * @return true if WPI is enabled for the Resource Leak Checker
    */
   protected boolean isWpiEnabledForRLC() {
     return enableWpiForRlc;

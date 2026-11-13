@@ -30,7 +30,7 @@ public class LocalVariableNode extends Node {
   protected final @Nullable Node receiver;
 
   /**
-   * Create a new local variable node for the given tree.
+   * Creates a new local variable node for the given tree.
    *
    * @param tree the tree for the local variable: a VariableTree or an IdentifierTree
    */
@@ -39,7 +39,7 @@ public class LocalVariableNode extends Node {
   }
 
   /**
-   * Create a new local variable node for the given tree and receiver.
+   * Creates a new local variable node for the given tree and receiver.
    *
    * @param tree the tree for the local variable: a VariableTree or an IdentifierTree
    * @param receiver the receiver for the local variable, or null if none
@@ -72,7 +72,11 @@ public class LocalVariableNode extends Node {
     return el;
   }
 
-  /** The receiver node for the local variable, {@code null} otherwise. */
+  /**
+   * Returns the receiver node for the local variable, or {@code null} if none.
+   *
+   * @return the receiver node for the local variable, or {@code null} if none
+   */
   public @Nullable Node getReceiver() {
     return receiver;
   }

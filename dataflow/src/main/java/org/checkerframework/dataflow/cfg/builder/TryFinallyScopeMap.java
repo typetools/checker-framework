@@ -17,7 +17,7 @@ import org.plumelib.util.ArrayMap;
   /** New labels within a try block that were added by this implementation. */
   private final Map<Name, Label> accessedNames;
 
-  /** Create a new TryFinallyScopeMap. */
+  /** Creates a new TryFinallyScopeMap. */
   protected TryFinallyScopeMap() {
     this.accessedNames = new ArrayMap<>(2);
   }

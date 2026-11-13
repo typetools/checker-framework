@@ -35,7 +35,7 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
   private NavigableMap<@KeyFor("this") AnnotationMirror, V> shadowMap =
       new TreeMap<>(AnnotationUtils::compareAnnotationMirrors);
 
-  /** The canonical unmodifiable empty set. */
+  /** The canonical unmodifiable empty map. */
   private static AnnotationMirrorMap<?> emptyMap = unmodifiableSet(Collections.emptyMap());
 
   /** Default constructor. */
@@ -53,10 +53,10 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
   }
 
   /**
-   * Returns an unmodifiable AnnotationMirrorSet with the given elements.
+   * Returns an unmodifiable AnnotationMirrorMap with the given mappings.
    *
-   * @param annos the annotation mirrors that will constitute the new unmodifiable set
-   * @return an unmodifiable AnnotationMirrorSet with the given elements
+   * @param annos the mappings that will constitute the new unmodifiable map
+   * @return an unmodifiable AnnotationMirrorMap with the given mappings
    * @param <V> the type of the values in the map
    */
   public static <V> AnnotationMirrorMap<V> unmodifiableSet(
@@ -67,9 +67,9 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
   }
 
   /**
-   * Returns an empty set.
+   * Returns an empty map.
    *
-   * @return an empty set
+   * @return an empty map
    * @param <V> the type of the values in the map
    */
   @SuppressWarnings("unchecked")
@@ -78,9 +78,9 @@ public class AnnotationMirrorMap<V> implements Map<@KeyFor("this") AnnotationMir
   }
 
   /**
-   * Make this set unmodifiable.
+   * Makes this map unmodifiable.
    *
-   * @return this set
+   * @return this map
    */
   public @This AnnotationMirrorMap<V> makeUnmodifiable() {
     shadowMap = Collections.unmodifiableNavigableMap(shadowMap);

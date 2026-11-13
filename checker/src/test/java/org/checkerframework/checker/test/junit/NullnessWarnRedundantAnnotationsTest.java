@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class NullnessWarnRedundantAnnotationsTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a NullnessWarnRedundantAnnotationsTest.
+   * Creates a NullnessWarnRedundantAnnotationsTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

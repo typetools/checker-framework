@@ -38,7 +38,7 @@ public final class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>,
    * Returns all the diagnostics in any of the Java source files.
    *
    * @param files the Java files to read; each is a File or a JavaFileObject
-   * @return the TestDiagnostics from the input file
+   * @return the TestDiagnostics from the input files
    */
   // The argument has type Iterable<? extends Object> because Java cannot resolve the overload
   // of two versions that take Iterable<? extends File> and Iterable<? extends JavaFileObject>.
@@ -69,7 +69,7 @@ public final class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>,
    * Reads diagnostics line-by-line from the input diagnostic files.
    *
    * @param files a set of diagnostic files
-   * @return the TestDiagnosticLines from the input files
+   * @return the TestDiagnostics from the input files
    */
   public static List<TestDiagnostic> readDiagnosticFiles(Iterable<? extends File> files) {
     List<TestDiagnostic> result = new ArrayList<>();
@@ -265,7 +265,7 @@ public final class JavaDiagnosticReader implements Iterator<TestDiagnosticLine>,
   }
 
   /**
-   * Read the next line.
+   * Reads the next line.
    *
    * @throws IOException if there is trouble while reading
    */
