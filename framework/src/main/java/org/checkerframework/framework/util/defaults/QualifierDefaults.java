@@ -380,28 +380,38 @@ public class QualifierDefaults {
    * {@code elem} itself. Thus, the default applies within {@code elem} and within the elements that
    * {@code elem} encloses; it takes precedence over the defaults on the elements that enclose
    * {@code elem}; and the defaults on the elements that {@code elem} encloses take precedence over
-   * it.
+   * it. As with {@code @DefaultQualifier}, an alias is replaced by its canonical qualifier.
    *
    * <p>As for a {@code @DefaultQualifier} annotation, a default for {@link
    * TypeUseLocation#OTHERWISE} applies only where no registered or {@code @DefaultQualifier}
    * default for a more concrete location applies, even one on an element that encloses {@code
    * elem}; see {@link #applicationOrder}.
    *
+   * <p>Call this method before the type of {@code elem}, or of any element that {@code elem}
+   * encloses, is computed. A type that was computed earlier does not reflect the default.
+   *
    * @param elem the scope to set the default within
    * @param elementDefaultAnno the default to set
    * @param location the location to apply the default to
+   * @throws BugInCF if this type system does not support the qualifier
    */
   public void addElementDefault(
       Element elem, AnnotationMirror elementDefaultAnno, TypeUseLocation location) {
+    AnnotationMirror anno = atypeFactory.canonicalAnnotation(elementDefaultAnno);
+    if (!atypeFactory.isSupportedQualifier(anno)) {
+      throw new BugInCF(
+          "addElementDefault: unsupported qualifier " + elementDefaultAnno + " for " + elem);
+    }
     DefaultSet prevset = elementDeclaredDefaults.get(elem);
     if (prevset != null) {
-      checkDuplicates(prevset, elementDefaultAnno, location);
+      checkDuplicates(prevset, anno, location);
     } else {
       prevset = new DefaultSet();
       elementDeclaredDefaults.put(elem, prevset);
     }
-    prevset.add(new Default(elementDefaultAnno, location));
-    clearDefaultsCaches();
+    if (prevset.add(new Default(anno, location))) {
+      clearDefaultsCaches();
+    }
   }
 
   /**
@@ -713,7 +723,7 @@ public class QualifierDefaults {
    * Returns the defaults that apply to the given Element, considering defaults from enclosing
    * Elements.
    *
-   * @param elt the element
+   * @param elt an element, or null
    * @return the defaults
    */
   private ScopeDefaults defaultsAt(@Nullable Element elt) {
@@ -728,37 +738,25 @@ public class QualifierDefaults {
 
     // Non-empty if non-null, because addElementDefault stores a set only when adding to it.
     DefaultSet elementDefaults = elementDeclaredDefaults.get(elt);
-    DefaultSet qualifierDefaults = null;
+    DefaultSet qualifierDefaults = new DefaultSet();
 
-    {
-      AnnotationMirror dqAnno = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.class);
-
-      if (dqAnno != null) {
-        qualifierDefaults = new DefaultSet();
-        Set<Default> p = fromDefaultQualifier(dqAnno);
-
-        if (p != null) {
-          qualifierDefaults.addAll(p);
-        }
+    AnnotationMirror dqAnno = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.class);
+    if (dqAnno != null) {
+      Set<Default> p = fromDefaultQualifier(dqAnno);
+      if (p != null) {
+        qualifierDefaults.addAll(p);
       }
     }
 
-    {
-      AnnotationMirror dqListAnno =
-          atypeFactory.getDeclAnnotation(elt, DefaultQualifier.List.class);
-      if (dqListAnno != null) {
-        if (qualifierDefaults == null) {
-          qualifierDefaults = new DefaultSet();
-        }
-
-        List<AnnotationMirror> values =
-            AnnotationUtils.getElementValueArray(
-                dqListAnno, defaultQualifierListValueElement, AnnotationMirror.class);
-        for (AnnotationMirror dqAnno : values) {
-          Set<Default> p = fromDefaultQualifier(dqAnno);
-          if (p != null) {
-            qualifierDefaults.addAll(p);
-          }
+    AnnotationMirror dqListAnno = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.List.class);
+    if (dqListAnno != null) {
+      List<AnnotationMirror> values =
+          AnnotationUtils.getElementValueArray(
+              dqListAnno, defaultQualifierListValueElement, AnnotationMirror.class);
+      for (AnnotationMirror listDqAnno : values) {
+        Set<Default> p = fromDefaultQualifier(listDqAnno);
+        if (p != null) {
+          qualifierDefaults.addAll(p);
         }
       }
     }
@@ -772,7 +770,7 @@ public class QualifierDefaults {
 
     ScopeDefaults parentDefaults = defaultsAt(parent);
     ScopeDefaults result;
-    if (elementDefaults == null && (qualifierDefaults == null || qualifierDefaults.isEmpty())) {
+    if (elementDefaults == null && qualifierDefaults.isEmpty()) {
       result = parentDefaults;
     } else {
       // The scope's own defaults come first, so that they take precedence over the defaults of
@@ -783,9 +781,7 @@ public class QualifierDefaults {
       if (elementDefaults != null) {
         nearestFirst.addAll(elementDefaults);
       }
-      if (qualifierDefaults != null) {
-        addAllAbsent(nearestFirst, qualifierDefaults);
-      }
+      addAllAbsent(nearestFirst, qualifierDefaults);
       addAllAbsent(nearestFirst, parentDefaults.nearestFirst());
       result = new ScopeDefaults(nearestFirst, applicationOrder(nearestFirst));
     }
