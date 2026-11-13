@@ -140,7 +140,7 @@ public class NullnessTransfer
   /**
    * Sets a given {@link Node} to non-null in the given {@code store}. If the node is an assignment
    * or a value-preserving cast, also sets to non-null the other expressions that {@link
-   * #splitAssignments} returns for it, because they have the same value as the node. For example,
+   * #nodesWithValueOf} returns for it, because they have the same value as the node. For example,
    * after {@code (s = t).length()} both {@code s} and {@code t} are non-null, and after {@code
    * ((String) o).length()} {@code o} is non-null. Calls to this method implement case 2.
    *
@@ -148,11 +148,11 @@ public class NullnessTransfer
    * @param node the node that should be non-null
    */
   protected void makeNonNull(NullnessStore store, Node node) {
-    // For a node that is neither an assignment nor a cast, the result of splitAssignments contains
-    // at most the node itself.  Not calling splitAssignments avoids its cost at every dereference.
+    // For a node that is neither an assignment nor a cast, the result of nodesWithValueOf contains
+    // at most the node itself.  Not calling nodesWithValueOf avoids its cost at every dereference.
     List<Node> parts =
         node instanceof AssignmentNode || node instanceof TypeCastNode
-            ? splitAssignments(node)
+            ? nodesWithValueOf(node)
             : Collections.singletonList(node);
     for (Node part : parts) {
       store.insertValue(JavaExpression.fromNode(part), NONNULL);
