@@ -10,8 +10,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
- * This represents the start and end of a synchronized code block. If startOfBlock == true it is the
- * node preceding a synchronized code block. Otherwise it is the node immediately after a
+ * This represents the start and end of a synchronized code block. If startOfBlock == true, it is
+ * the node preceding a synchronized code block. Otherwise, it is the node immediately after a
  * synchronized code block.
  */
 public class SynchronizedNode extends Node {

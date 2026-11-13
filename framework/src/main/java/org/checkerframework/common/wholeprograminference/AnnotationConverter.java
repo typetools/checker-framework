@@ -251,9 +251,9 @@ public class AnnotationConverter {
   /**
    * Adds a field to an AnnotationBuilder.
    *
-   * @param fieldKey is the name of the field
-   * @param obj is the value of the field
-   * @param builder is the AnnotationBuilder
+   * @param fieldKey the name of the field
+   * @param obj the value of the field
+   * @param builder the AnnotationBuilder
    * @param processingEnv the ProcessingEnvironment, for converting a subannotation
    */
   protected static void addFieldToAnnotationBuilder(

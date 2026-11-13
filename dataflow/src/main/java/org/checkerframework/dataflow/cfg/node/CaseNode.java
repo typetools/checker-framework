@@ -50,7 +50,7 @@ public class CaseNode extends Node {
   protected final boolean precededByOtherCode;
 
   /**
-   * Create a new CaseNode.
+   * Creates a new CaseNode.
    *
    * @param tree the tree for this node
    * @param selectorExprAssignment the Node for the assignment of the switch selector expression to
@@ -79,8 +79,8 @@ public class CaseNode extends Node {
   }
 
   /**
-   * The Node for the assignment of the switch selector expression to a synthetic local variable.
-   * This is used to refine the type of the switch selector expression in a case block.
+   * Returns the Node for the assignment of the switch selector expression to a synthetic local
+   * variable. This is used to refine the type of the switch selector expression in a case block.
    *
    * @return the assignment of the switch selector expression to a synthetic local variable
    */
@@ -89,8 +89,8 @@ public class CaseNode extends Node {
   }
 
   /**
-   * Gets the nodes corresponding to the case expressions. There can be multiple expressions since
-   * Java 12.
+   * Returns the nodes corresponding to the case expressions. There can be multiple expressions
+   * since Java 12.
    *
    * @return the nodes corresponding to the (potentially multiple) case expressions
    */

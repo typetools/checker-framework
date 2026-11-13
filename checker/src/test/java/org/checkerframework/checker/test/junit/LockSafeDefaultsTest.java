@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class LockSafeDefaultsTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a LockSafeDefaultsTest.
+   * Creates a LockSafeDefaultsTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

@@ -57,7 +57,7 @@ public final class DeclarationsIntoElements {
   }
 
   /**
-   * Add {@code @Pure} to the compiler-generated accessors of a record, so it is written into
+   * Adds {@code @Pure} to the compiler-generated accessors of a record, so it is written into
    * bytecode.
    *
    * <p>{@link org.checkerframework.dataflow.util.PurityUtils} treats compiler-generated record
@@ -85,12 +85,12 @@ public final class DeclarationsIntoElements {
   }
 
   /**
-   * Add inherited declaration annotations from overridden methods into the corresponding Elements
+   * Adds inherited declaration annotations from overridden methods into the corresponding Elements
    * so they are written into bytecode.
    *
    * @param env the processing environment
    * @param atypeFactory the type factory
-   * @param meth the MethodTree to add the annotations
+   * @param meth the MethodTree whose element receives the annotations
    */
   private static void storeMethod(
       ProcessingEnvironment env, AnnotatedTypeFactory atypeFactory, MethodTree meth) {

@@ -6,7 +6,7 @@ import org.checkerframework.checker.calledmethods.CalledMethodsChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/** Test that the Called Methods Checker's support for Lombok works correctly. */
+/** Tests that the Called Methods Checker's support for Lombok works correctly. */
 public class CalledMethodsLombokTest extends CheckerFrameworkPerDirectoryTest {
   public CalledMethodsLombokTest(List<File> testFiles) {
     super(
