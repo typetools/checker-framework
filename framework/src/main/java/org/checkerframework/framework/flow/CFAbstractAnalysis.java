@@ -129,7 +129,7 @@ public abstract class CFAbstractAnalysis<
       sideEffectsOnlyExpressionsCache = new IdentityHashMap<>();
 
   /**
-   * Cache for {@link CFAbstractTransfer#splitAssignments}, whose result depends only on its
+   * Cache for {@link CFAbstractTransfer#nodesWithValueOf}, whose result depends only on its
    * argument and on the trees around the argument's tree, but which would otherwise be recomputed
    * once per dataflow iteration per comparison.
    *
@@ -137,7 +137,7 @@ public abstract class CFAbstractAnalysis<
    * This is an {@link IdentityHashMap} because the result depends on the trees around the node, but
    * {@link Node#equals} can be true for nodes that represent different trees.
    */
-  final IdentityHashMap<Node, List<Node>> splitAssignmentsCache = new IdentityHashMap<>();
+  final IdentityHashMap<Node, List<Node>> nodesWithValueOfCache = new IdentityHashMap<>();
 
   /**
    * Cache for {@link StringToJavaExpression#atMethodDecl}, as called by {@link
@@ -224,7 +224,7 @@ public abstract class CFAbstractAnalysis<
     this.fieldValues.addAll(fieldValues);
     // The cache's keys are nodes of the control flow graph that was analyzed previously.
     sideEffectsOnlyExpressionsCache.clear();
-    splitAssignmentsCache.clear();
+    nodesWithValueOfCache.clear();
     super.performAnalysis(cfg);
   }
 
@@ -554,8 +554,13 @@ public abstract class CFAbstractAnalysis<
 
   /**
    * Returns true if the given expressions might evaluate to the same object, judging by their
-   * types. Returns a conservative answer: true unless their types show that no object has both of
-   * them.
+   * types: that is, true if the erasure of some bound of one expression's type is a subtype of the
+   * erasure of some bound of the other expression's type, as described below.
+   *
+   * <p>The answer is not conservative when an interface type is involved. One object can have two
+   * unrelated interface types, such as {@code Runnable} and {@code Serializable}, or a class type
+   * and an unrelated interface type, but this method returns false for expressions of such types.
+   * See https://github.com/typetools/checker-framework/issues/8558.
    *
    * <p>This compares the erasures of the types, because two parameterizations of a generic type can
    * denote the same object even if neither is a subtype of the other. For example, a {@code
