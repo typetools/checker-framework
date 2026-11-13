@@ -17,7 +17,9 @@ public class ResourceLeakMessagesTest {
   private static final String[] RLC_KEYS = {"required.method.not.called", "reset.not.owning"};
 
   /** Message keys issued by the RLCCalledMethodsChecker (the RLCCalledMethodsVisitor). */
-  private static final String[] RLCCM_KEYS = {"required.method.not.called", "owning.override.param"};
+  private static final String[] RLCCM_KEYS = {
+    "required.method.not.called", "owning.override.param"
+  };
 
   @Test
   public void resourceLeakCheckerHasMessageText() {
