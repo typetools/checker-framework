@@ -26,7 +26,7 @@ public abstract class BlockImpl implements Block {
   }
 
   /**
-   * Create a new BlockImpl.
+   * Creates a new BlockImpl.
    *
    * @param type the type of this basic block
    */

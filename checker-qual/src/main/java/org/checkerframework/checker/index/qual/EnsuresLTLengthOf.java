@@ -29,7 +29,7 @@ import org.checkerframework.framework.qual.QualifierArgument;
  * }
  * </pre>
  *
- * where {@code end} is annotated as {@code @NonNegative @LTEqLengthOf("array") int end;}
+ * where {@code end} is annotated as {@code @NonNegative @LTEqLengthOf("array") int end;}.
  *
  * <p>This method guarantees that {@code end} has type {@code @LTLengthOf(value="array", offset="x -
  * 1")} after the method returns. This is useful in cases like this one:

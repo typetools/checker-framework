@@ -38,7 +38,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * Presents formatted type information for various AST trees in a class.
  *
  * <p>The formatted type information is designed to be visualized by editors and IDEs that support
- * Language Server Protocol (LSP).
+ * the Language Server Protocol (LSP).
  */
 public class TypeInformationPresenter {
 
@@ -46,7 +46,7 @@ public class TypeInformationPresenter {
   private final AnnotatedTypeFactory factory;
 
   /**
-   * The GenericAnnotatedTypeFactory for the current analysis. null if the factory is not an
+   * The GenericAnnotatedTypeFactory for the current analysis. Null if the factory is not an
    * instance of GenericAnnotatedTypeFactory; otherwise, factory and genFactory refer to the same
    * object.
    */
@@ -172,10 +172,10 @@ public class TypeInformationPresenter {
     }
 
     /**
-     * Reports a diagnostic message indicating the range corresponds to the given tree has the given
-     * type. Specifically, the message has key "lsp.type.information", and it contains the name of
-     * the checker, the given messageKind, the given type, and the computed message range for the
-     * tree. If the tree is an artificial tree, don't report anything.
+     * Reports a diagnostic message indicating that the range corresponding to the given tree has
+     * the given type. Specifically, the message has key "lsp.type.information", and it contains the
+     * name of the checker, the given messageKind, the given type, and the computed message range
+     * for the tree. If the tree is an artificial tree, don't report anything.
      *
      * @param tree the tree that is used to find the corresponding range to report
      * @param type the type that we are going to display
@@ -213,12 +213,13 @@ public class TypeInformationPresenter {
     /**
      * Computes the 0-based inclusive message range for the given tree.
      *
-     * <p>Note that the range sometimes don't cover the entire source code of the tree. For example,
-     * in "int a = 0", we have a variable tree "int a", but we only want to report the range of the
-     * identifier "a". This customizes the positions where we want the type information to show.
+     * <p>Note that the range sometimes doesn't cover the entire source code of the tree. For
+     * example, in "int a = 0", we have a variable tree "int a", but we only want to report the
+     * range of the identifier "a". This customizes the positions where we want the type information
+     * to show.
      *
      * @param tree the tree for which we want to compute the message range
-     * @return a message range corresponds to the tree
+     * @return a message range corresponding to the tree
      */
     private @Nullable MessageRange computeMessageRange(Tree tree) {
       @SuppressWarnings("removal") // getStartPosition(Tree) requires JDK 27
