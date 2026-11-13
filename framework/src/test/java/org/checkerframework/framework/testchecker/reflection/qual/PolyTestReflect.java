@@ -6,9 +6,10 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 
 /**
  * Toy type system for testing reflection resolution. Uses
- * org.checkerframework.common.subtyping.qual.Bottom as bottom
+ * org.checkerframework.common.subtyping.qual.Bottom as bottom.
  *
- * @see TestReflectSibling1, TestReflectSibling2
+ * @see TestReflectSibling1
+ * @see TestReflectSibling2
  */
 @PolymorphicQualifier
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

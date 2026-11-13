@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /**
  * An identifier or a primitive type.
  *
- * <p>Example: Foobar, Baz22, int, float
+ * <p>Examples: Foobar, Baz22, int, float
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */

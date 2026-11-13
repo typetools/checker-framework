@@ -16,7 +16,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class NullnessGenericWildcardTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a NullnessGenericWildcardTest.
+   * Creates a NullnessGenericWildcardTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

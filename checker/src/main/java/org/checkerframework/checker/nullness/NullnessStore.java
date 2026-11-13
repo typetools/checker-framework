@@ -24,8 +24,8 @@ public class NullnessStore extends InitializationStore<NullnessValue, NullnessSt
    * Create a NullnessStore.
    *
    * @param analysis the analysis class this store belongs to
-   * @param sequentialSemantics should the analysis use sequential Java semantics (i.e., assume that
-   *     only one thread is running at all times)?
+   * @param sequentialSemantics true if the analysis should use sequential Java semantics (i.e.,
+   *     assume that only one thread is running at all times)
    */
   public NullnessStore(
       CFAbstractAnalysis<NullnessValue, NullnessStore, ?> analysis, boolean sequentialSemantics) {
@@ -87,7 +87,7 @@ public class NullnessStore extends InitializationStore<NullnessValue, NullnessSt
   /**
    * Set the value of whether, at this point, {@link PolyNull} is known to be {@link NonNull}.
    *
-   * @param isPolyNullNonNull whether, at this point, {@link PolyNull} is known to be {@link
+   * @param isPolyNullNonNull true if, at this point, {@link PolyNull} is known to be {@link
    *     NonNull}
    */
   public void setPolyNullNonNull(boolean isPolyNullNonNull) {
@@ -106,7 +106,7 @@ public class NullnessStore extends InitializationStore<NullnessValue, NullnessSt
   /**
    * Set the value of whether, at this point, {@link PolyNull} is known to be {@link Nullable}.
    *
-   * @param isPolyNullNull whether, at this point, {@link PolyNull} is known to be {@link Nullable}
+   * @param isPolyNullNull true if, at this point, {@link PolyNull} is known to be {@link Nullable}
    */
   public void setPolyNullNull(boolean isPolyNullNull) {
     this.isPolyNullNull = isPolyNullNull;

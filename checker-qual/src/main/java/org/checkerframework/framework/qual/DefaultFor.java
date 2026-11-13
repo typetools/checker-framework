@@ -47,7 +47,7 @@ public @interface DefaultFor {
    *
    * <p>Only the given types, not their subtypes, receive the default. For instance, if the {@code
    * types} element contains only {@code Iterable}, then the default does not apply to a variable or
-   * expression of type {@code Collection} which is a subtype of {@code Iterable}.
+   * expression of type {@code Collection}, which is a subtype of {@code Iterable}.
    *
    * @return {@link Class}es for which an annotation should be applied
    */

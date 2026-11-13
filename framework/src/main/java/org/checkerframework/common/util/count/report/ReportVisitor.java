@@ -41,12 +41,16 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
+/**
+ * A visitor that reports the tree kinds, modifiers, and other program constructs that the user
+ * requested.
+ */
 public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
 
-  /** The tree kinds that should be reported; may be null. */
+  /** The tree kinds that should be reported; can be null. */
   private final @Nullable EnumSet<Tree.Kind> treeKinds;
 
-  /** The modifiers that should be reported; may be null. */
+  /** The modifiers that should be reported; can be null. */
   private final @Nullable EnumSet<Modifier> modifiers;
 
   public ReportVisitor(BaseTypeChecker checker) {
@@ -76,8 +80,8 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
   }
 
   /**
-   * Check for uses of the {@link ReportUse} annotation. This method has to be called for every
-   * explicit or implicit use of a type, most cases are simply covered by the type validator.
+   * Checks for uses of the {@link ReportUse} annotation. This method has to be called for every
+   * explicit or implicit use of a type; most cases are simply covered by the type validator.
    *
    * @param tree the tree for error reporting only
    * @param member the element from which to start looking
