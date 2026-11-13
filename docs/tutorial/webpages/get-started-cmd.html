@@ -90,15 +90,20 @@
         <h4>1. Spot the null pointer exception</h4>Begin by <b>viewing
         <a href=
         "../src/NullnessExample.java">NullnessExample.java</a></b>. (If
-        you have not already, download <a href="../sourcefiles.zip">the
+        you have not already done so, download <a href="../sourcefiles.zip">the
         source files</a> for the tutorial.)
-        It is a simple Java program with an obvious null pointer exception.
+        It is a simple Java program that throws a null pointer exception
+        when it is run with fewer than three command-line arguments.
         <pre>
 public class NullnessExample {
-    public static void main(String[] args) {
-        Object myObject = null;
-        System.out.println(myObject.toString());
+  public static void main(String[] args) {
+    Object myObject = null;
+
+    if (args.length &gt; 2) {
+      myObject = new Object();
     }
+    System.out.println(myObject.toString());
+  }
 }
 </pre>
       </div>
@@ -114,7 +119,7 @@ public class NullnessExample {
         org.checkerframework.checker.nullness.NullnessChecker</code>, as
         follows.</p>
 
-        <p>(Note:  In this tutorial, the commands that you cut-and-paste
+        <p>(Note:  In this tutorial, the commands that you cut and paste
         to run on the command line appear in bold after a <code>$</code> prompt.)
         <br/>
         (Note: You should have already made
@@ -127,9 +132,9 @@ $ <b>javacheck -processor org.checkerframework.checker.nullness.NullnessChecker 
 
         <p>The following error will be produced.</p>
         <pre>
-NullnessExample.java:9: error: [dereference.of.nullable] dereference of possibly-null reference myObject
-        System.out.println(myObject.toString());
-                           ^
+NullnessExample.java:8: error: [dereference.of.nullable] dereference of possibly-null reference myObject
+    System.out.println(myObject.toString());
+                       ^
 1 error
 </pre>
       </div>
@@ -141,10 +146,14 @@ NullnessExample.java:9: error: [dereference.of.nullable] dereference of possibly
         to some non-null value.</p>
         <pre>
 public class NullnessExample {
-    public static void main(String[] args) {
-        Object myObject = <b>new Object()</b>;
-        System.out.println(myObject.toString());
+  public static void main(String[] args) {
+    Object myObject = <b>new Object()</b>;
+
+    if (args.length &gt; 2) {
+      myObject = new Object();
     }
+    System.out.println(myObject.toString());
+  }
 }
 </pre>
       </div>

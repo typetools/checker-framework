@@ -40,7 +40,7 @@ command-line arguments:
 \begin{itemize}
 
 \item
-Provide the fully-qualified class name(s) of the annotation(s) in the custom
+Provide the fully qualified class name(s) of the annotation(s) in the custom
 type system through the \code{-Aquals} option, using a comma-no-space-separated
 notation:
 
@@ -51,7 +51,7 @@ notation:
 \end{alltt}
 
 \item
-Provide the fully-qualified paths to a set of directories that contain the
+Provide the fully qualified paths to a set of directories that contain the
 annotations in the custom type system through the \code{-AqualDirs} option,
 using a colon-no-space-separated notation. For example,
 if the Checker Framework is on the classpath rather than the processorpath:
@@ -80,7 +80,7 @@ is not sufficient to supply their source files on the command line.
 \subsectionAndLabel{Suppressing warnings from the Subtyping Checker}{subtyping-suppressing}
 
 When suppressing a warning issued by the Subtyping Checker, as the
-``checker name'' you may use the unqualified, uncapitalized name of any of
+``checker name'' you can use the unqualified, uncapitalized name of any of
 the annotations passed to \code{-Aquals}.  (See
 Section~\ref{suppresswarnings-annotation-syntax} for details about the
 \<@SuppressWarnings> syntax.)  As a matter of style, you should
@@ -154,7 +154,7 @@ $ javac myPackage/qual/Encrypted.java myPackage/qual/PossiblyUnencrypted.java
 \end{Verbatim}
 
 The resulting \<.class> files should be on the same path (the classpath or
-processor path) as the Checker Framework.
+processorpath) as the Checker Framework.
 
 \item
   Write \code{@Encrypted} annotations in your program (say, in file
@@ -187,7 +187,7 @@ void sendPassword() \{
 \}
 \end{alltt}
 
-You may also need to add \code{@SuppressWarnings} annotations to the
+You might also need to add \code{@SuppressWarnings} annotations to the
 \code{encrypt} and \code{decrypt} methods.  Analyzing them is beyond the
 capability of any realistic type system.
 
@@ -208,7 +208,7 @@ required: @myPackage.qual.Encrypted java.lang.String
 \end{alltt}
 
 \item
-You can also provide the fully-qualified paths to a set of directories
+You can also provide the fully qualified paths to a set of directories
 that contain the qualifiers using the \code{-AqualDirs} option, and add
 the directories to the boot classpath, for example:
 
@@ -219,7 +219,7 @@ the directories to the boot classpath, for example:
 \end{alltt}
 
 \begin{sloppypar}
-Note that in these two examples, the compiled class file of the
+Note that in these two examples, the compiled class files of the
 \<myPackage.qual.Encrypted> and \<myPackage.qual.PossiblyUnencrypted> annotations
 must exist in either the \<myProject/bin> directory or the \<myLibrary/bin>
 directory. The following placement of the class files will work with the above
@@ -240,7 +240,7 @@ Also, see the example project in the \<docs/examples/subtyping-extension> direct
 
 A type alias or typedef is a type that shares the same representation as
 another type but is conceptually distinct from it.  For example, some
-strings in your program may be street addresses; others may be passwords;
+strings in your program might be street addresses; others might be passwords;
 and so on.  You wish to indicate, for each string, which one it is, and to
 avoid mixing up the different types of strings.  Likewise, you could
 distinguish integers that are offsets from those that are absolute values.
@@ -272,7 +272,7 @@ The Fake Enum Checker (\chapterpageref{fenum-checker})
 builds in a set of assumptions.  If those fit your
 use case, then it's easiest to use the Fake Enum Checker (though you can
 achieve the same effect using the Subtyping Checker).  The Fake Enum Checker forbids
-mixing of fenums of different types, or fenums and unannotated types.  For
+mixing of fenums of different types, or of fenums and unannotated types.  For
 instance, binary operations other than string concatenations are forbidden,
 such as \<NORTH+1>, \<NORTH+MONDAY>, and \<NORTH==MONDAY>.  However,
 \<NORTH+SOUTH> is permitted.
@@ -285,8 +285,8 @@ type system will look something like Figure~\ref{fig-typedef-hierarchy}.
 
 \begin{figure}
 \includeimage{typedef}{3.5cm}
-\caption{Type system for a type alias or typedef type system.
-  The type system designer may choose to omit some of these types, but
+\caption{Type system for a type alias or typedef.
+  The type system designer can choose to omit some of these types, but
   this is the general case.
   The type system designer's choice of defaults affects the interpretation
   of unannotated code, which affects the guarantees given for unannotated code.
@@ -297,7 +297,7 @@ References whose type is \<@MyType> are known to store only values from
 your new type.  There is no such guarantee for \<@MyTypeUnknown> and
 \<@NotMyType>, but those types mean different things.  An expression of type
 \<@NotMyType> is guaranteed never to evaluate to a value of your new type.
-An expression of type \<@MyTypeUnknown> may evaluate to any value ---
+An expression of type \<@MyTypeUnknown> might evaluate to any value ---
 including values of your new type and values not of your new type.
 (\<@MyTypeBottom> is the type of \<null> and is also used for dead code and
 erroneous situations; it can be ignored for this
@@ -318,9 +318,9 @@ it does not contain values of your type.
 
 \item
 If unannotated types are interpreted as \<@MyTypeUnknown>, then
-a generic, unannotated type may contain a value of your new type.
+a generic, unannotated type might contain a value of your new type.
 In this case, \<@NotMyType> does not need to exist, and \<@MyTypeBottom>
-may or may not exist in your type system.
+might or might not exist in your type system.
 \end{itemize}
 
 A downside of the stronger guarantee that comes from using \<@NotMyType> as

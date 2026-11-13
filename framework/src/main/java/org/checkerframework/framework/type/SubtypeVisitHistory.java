@@ -6,8 +6,7 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 
 /**
- * THIS CLASS IS DESIGNED FOR USE WITH DefaultTypeHierarchy, DefaultRawnessComparer, and
- * StructuralEqualityComparer ONLY.
+ * THIS CLASS IS DESIGNED FOR USE WITH DefaultTypeHierarchy and StructuralEqualityVisitHistory ONLY.
  *
  * <p>VisitHistory tracks triples of (type1, type2, top), where type1 is a subtype of type2. It does
  * not track when type1 is not a subtype of type2; such entries are missing from the history.
@@ -15,7 +14,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
  * AnnotatedTypeMirrors already. This is necessary in order to halt visiting on recursive bounds.
  *
  * <p>This class is primarily used to implement isSubtype(ATM, ATM). The pair of types corresponds
- * to the subtype and the supertype being checked. A single subtype may be visited more than once,
+ * to the subtype and the supertype being checked. A single subtype can be visited more than once,
  * but with a different supertype. For example, if the two types are {@code @A T extends @B
  * Serializable<T>} and {@code @C Serializable<?>}, then isSubtype is first called on those types
  * and then on {@code @B Serializable<T>} and {@code @C Serializable<?>}.
@@ -49,7 +48,7 @@ public class SubtypeVisitHistory {
   }
 
   /**
-   * Put a visit for {@code type1}, {@code type2}, and {@code top} in the history. Has no effect if
+   * Puts a visit for {@code type1}, {@code type2}, and {@code top} in the history. Has no effect if
    * isSubtype is false.
    *
    * @param type1 the first type
@@ -81,7 +80,7 @@ public class SubtypeVisitHistory {
   }
 
   /**
-   * Remove {@code type1} and {@code type2}.
+   * Removes {@code type1} and {@code type2}.
    *
    * @param type1 the first type
    * @param type2 the second type
