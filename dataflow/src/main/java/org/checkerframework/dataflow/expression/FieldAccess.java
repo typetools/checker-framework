@@ -50,7 +50,7 @@ public class FieldAccess extends JavaExpression {
   }
 
   /**
-   * Create a {@code FieldAccess}.
+   * Creates a {@code FieldAccess}.
    *
    * @param receiver receiver of the field access
    * @param node the FieldAccessNode
@@ -60,7 +60,7 @@ public class FieldAccess extends JavaExpression {
   }
 
   /**
-   * Create a {@code FieldAccess}.
+   * Creates a {@code FieldAccess}.
    *
    * @param receiver receiver of the field access
    * @param fieldElement element of the field
@@ -70,7 +70,7 @@ public class FieldAccess extends JavaExpression {
   }
 
   /**
-   * Create a {@code FieldAccess}.
+   * Creates a {@code FieldAccess}.
    *
    * @param receiver receiver of the field access
    * @param type type of the field

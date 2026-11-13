@@ -2,7 +2,7 @@ package org.checkerframework.afu.annotator.find;
 
 /**
  * This insertion adds two closing parentheses to close the unclosed parentheses left by a {@link
- * CastInsertion}. This should be inserted after the expression that's being casted.
+ * CastInsertion}. This should be inserted after the expression that's being cast.
  */
 public class CloseParenthesisInsertion extends Insertion {
 

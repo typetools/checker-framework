@@ -34,8 +34,8 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
  *     return (this.derived != null);
  *   }}</pre>
  *
- * As another example, an {@code Iterator} may cache the next value that will be returned, in which
- * case its {@code hasNext} method could be annotated as:
+ * As another example, an {@code Iterator} might cache the next value that will be returned, in
+ * which case its {@code hasNext} method could be annotated as:
  *
  * <pre>{@code   @EnsuresNonNullIf(expression="next_cache", result=true)
  *   public boolean hasNext() {
