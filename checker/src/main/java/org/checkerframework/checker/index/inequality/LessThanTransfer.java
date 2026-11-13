@@ -29,7 +29,7 @@ import org.plumelib.util.CollectionsP;
  *   <li>3. if {@code 0 < right}, {@code left - right} has type {@code @LessThan("left")}
  * </ul>
  *
- * These are implemented generally, so they also apply to e.g. &lt; and &le; comparisons.
+ * These are implemented generally, so they also apply to e.g., &lt; and &le; comparisons.
  */
 public class LessThanTransfer extends IndexAbstractTransfer {
 

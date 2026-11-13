@@ -48,7 +48,7 @@ public interface Block extends UniqueId {
   Set<Block> getSuccessors();
 
   /**
-   * Returns the nodes contained within this basic block. The list may be empty.
+   * Returns the nodes contained within this basic block. The list can be empty.
    *
    * <p>The following invariant holds.
    *

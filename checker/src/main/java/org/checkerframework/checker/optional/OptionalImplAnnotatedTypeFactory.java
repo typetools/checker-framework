@@ -60,7 +60,7 @@ public class OptionalImplAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
    * </ul>
    *
    * @param tree a tree
-   * @param type the type of the tree, which may be side-effected by this method
+   * @param type the type of the tree, which might be side-effected by this method
    */
   private void optionalMapNonNull(Tree tree, AnnotatedTypeMirror type) {
     if (!TreeUtils.isMethodInvocation(tree, optionalMap, processingEnv)) {
