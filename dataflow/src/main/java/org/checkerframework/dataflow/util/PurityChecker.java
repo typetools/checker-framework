@@ -67,7 +67,7 @@ public final class PurityChecker {
   }
 
   /**
-   * Compute whether the given statement is side-effect-free, deterministic, or both. Returns a
+   * Computes whether the given statement is side-effect-free, deterministic, or both. Returns a
    * result that can be queried.
    *
    * @param statement the statement to check
@@ -107,7 +107,7 @@ public final class PurityChecker {
   }
 
   /**
-   * Compute whether the given statements, taken together, are side-effect-free, deterministic, or
+   * Computes whether the given statements, taken together, are side-effect-free, deterministic, or
    * both. Returns a result that can be queried.
    *
    * <p>Use this rather than calling {@link #checkPurity(TreePath, AnnotationProvider, MethodTree,
@@ -160,10 +160,10 @@ public final class PurityChecker {
    * <p>Per-parameter computations refine this set. At a call to {@code method}, an argument is not
    * required to have a kind that the parameter's functional method already promises, nor to be
    * deterministic if it is side-effect-free and returns no value. Within the body, a call to a
-   * parameter's functional method may assume the purity computed by {@link
+   * parameter's functional method can assume the purity computed by {@link
    * #functionalParameterPurity}, which also accounts for the methods that {@code method} overrides.
    *
-   * <p>A {@code @SideEffectsOnly} method may modify the listed expressions, but each argument
+   * <p>A {@code @SideEffectsOnly} method can modify the listed expressions, but each argument
    * passed to one of its functional-interface parameters is required to be side-effect-free. A
    * method inherits {@code @SideEffectsOnly} from the methods that it overrides, though
    * {@code @SideEffectsOnly} is not inherited as an annotation.
@@ -214,7 +214,7 @@ public final class PurityChecker {
   }
 
   /**
-   * Returns the purity that a call of {@code invoked} on {@code expr} may be assumed to have beyond
+   * Returns the purity that a call of {@code invoked} on {@code expr} can be assumed to have beyond
    * {@code invoked}'s own annotations, if {@code expr} is an effectively final functional-interface
    * parameter of {@code method} and {@code invoked} is the functional method of {@code expr}'s type
    * (or overrides it); otherwise returns an empty set. See {@link #functionalParameterPurity(
@@ -230,7 +230,7 @@ public final class PurityChecker {
    * @param invoked a method that {@code expr} is used to invoke or to refer to
    * @param method a method or constructor declaration, or null
    * @param env the processing environment
-   * @return the purity that the call may be assumed to have, or an empty set
+   * @return the purity that the call can be assumed to have, or an empty set
    */
   public static EnumSet<PurityKind> functionalParameterCallPurity(
       AnnotationProvider annoProvider,
@@ -318,7 +318,7 @@ public final class PurityChecker {
    * other: then the call checks nothing about the code that {@code parameterFunction} runs.
    *
    * @param annoProvider the annotation provider
-   * @param declaration a method through which a call may reach an implementation
+   * @param declaration a method through which a call might reach an implementation
    * @param index the index of a formal parameter of {@code declaration}
    * @param parameterFunction the functional method of the implementation's parameter at {@code
    *     index}
@@ -526,7 +526,7 @@ public final class PurityChecker {
     }
 
     /**
-     * Is the method pure w.r.t. a given set of kinds?
+     * Returns true if the method is pure with respect to a given set of kinds.
      *
      * @param otherKinds the varieties of purity to check
      * @return true if the method is pure with respect to all the given kinds
@@ -545,7 +545,7 @@ public final class PurityChecker {
     }
 
     /**
-     * Add a reason why the method is not side-effect-free.
+     * Adds a reason why the method is not side-effect-free.
      *
      * @param t a tree
      * @param msgId why the tree is not side-effect-free
@@ -565,7 +565,7 @@ public final class PurityChecker {
     }
 
     /**
-     * Add a reason why the method is not deterministic.
+     * Adds a reason why the method is not deterministic.
      *
      * @param t a tree
      * @param msgId why the tree is not deterministic
@@ -585,9 +585,9 @@ public final class PurityChecker {
     }
 
     /**
-     * Add a reason why the method is not both side-effect-free and deterministic.
+     * Adds a reason why the method is not both side-effect-free and deterministic.
      *
-     * @param t tree
+     * @param t a tree
      * @param msgId why the tree is not deterministic and side-effect-free
      */
     public void addNotBothReason(Tree t, String msgId) {
@@ -651,7 +651,7 @@ public final class PurityChecker {
     private final boolean assumePureGetters;
 
     /**
-     * Create a PurityCheckerHelper.
+     * Creates a PurityCheckerHelper.
      *
      * @param annoProvider the annotation provider
      * @param enclosingMethod the method declaration that lexically encloses the checked statement,
@@ -677,7 +677,7 @@ public final class PurityChecker {
     }
 
     /**
-     * Returns the purity that {@code tree} may be assumed to have beyond {@code invoked}'s own
+     * Returns the purity that {@code tree} can be assumed to have beyond {@code invoked}'s own
      * annotations: if {@code tree} invokes the functional method of an effectively final
      * functional-interface parameter of the method being checked, the purity that every call to the
      * method required of the argument; otherwise, an empty set.
@@ -685,7 +685,7 @@ public final class PurityChecker {
      * @param tree a method invocation
      * @param invoked the invoked method
      * @return the purity that a call to a functional-interface parameter of the enclosing method
-     *     may be assumed to have, or an empty set
+     *     can be assumed to have, or an empty set
      */
     private EnumSet<PurityKind> functionalParameterCallPurity(
         MethodInvocationTree tree, ExecutableElement invoked) {
@@ -879,7 +879,8 @@ public final class PurityChecker {
     }
 
     /**
-     * Returns true if {@code variable} is permitted on the left-hand-side of an assignment.
+     * Checks whether {@code variable} is permitted on the left-hand side of an assignment, and
+     * records a reason in the purity result if it is not.
      *
      * @param variable the lhs to check
      */
@@ -916,7 +917,7 @@ public final class PurityChecker {
      *
      * <p>{@link #assignmentCheck} permits such code to assign to a field of its own class, because
      * the object is not yet visible to other code. That reasoning does not extend to a lambda that
-     * the code creates: the lambda's body may run long after construction has finished, when the
+     * the code creates: the lambda's body might run long after construction has finished, when the
      * object is visible. Nor does it extend to a static initializer block or the initializer of a
      * static field, which run at class initialization rather than during construction.
      *
@@ -977,7 +978,7 @@ public final class PurityChecker {
     }
 
     /**
-     * Checks if the argument is a local variable.
+     * Returns true if the argument is a local variable.
      *
      * @param variable the tree to check
      * @return true if the argument is a local variable

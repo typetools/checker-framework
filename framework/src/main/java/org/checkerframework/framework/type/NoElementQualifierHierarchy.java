@@ -73,7 +73,7 @@ public class NoElementQualifierHierarchy extends QualifierHierarchy {
   }
 
   /**
-   * Create the {@link QualifierKindHierarchy}. (Subclasses may override to return a subclass of
+   * Creates the {@link QualifierKindHierarchy}. (Subclasses can override to return a subclass of
    * QualifierKindHierarchy.)
    *
    * @param qualifierClasses classes of annotations that are the qualifiers

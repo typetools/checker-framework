@@ -195,7 +195,7 @@ import org.plumelib.util.CollectionsP;
  *       method overriding checks.
  *   <li><b>Type Validity Check</b>: It verifies that any user-supplied type is a valid type, using
  *       one of the {@code isValidUse} methods.
- *   <li><b>(Re-)Assignability Check</b>: It verifies that any assignment is valid, using {@code
+ *   <li><b>(Re-)Assignability Check</b>: It verifies that any assignment is valid, using the {@code
  *       Checker.isAssignable} method.
  * </ol>
  *
@@ -209,7 +209,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /** The {@link BaseTypeChecker} for error reporting. */
   protected final BaseTypeChecker checker;
 
-  /** The factory to use for obtaining "parsed" version of annotations. */
+  /** The factory to use for obtaining "parsed" versions of annotations. */
   protected final Factory atypeFactory;
 
   /** The qualifier hierarchy. */
@@ -312,7 +312,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   protected @Nullable Tree slowTypecheckingTree = null;
 
   /**
-   * Create a new BaseTypeChecker.
+   * Creates a new BaseTypeVisitor.
    *
    * @param checker the type-checker associated with this visitor (for callbacks to {@link
    *     TypeHierarchy#isSubtype})
@@ -322,6 +322,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
+   * Creates a new BaseTypeVisitor.
+   *
    * @param checker the type-checker associated with this visitor
    * @param typeFactory the type factory, or null. If null, this calls {@link #createTypeFactory}.
    */
@@ -383,11 +385,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * <p>The default implementation uses the checker naming convention to create the appropriate type
    * factory. If no factory is found, it returns {@link BaseAnnotatedTypeFactory}. It reflectively
-   * invokes the constructor that accepts this checker and compilation unit tree (in that order) as
-   * arguments.
+   * invokes the constructor that accepts this checker as its argument.
    *
-   * <p>Subclasses have to override this method to create the appropriate visitor if they do not
-   * follow the checker naming convention.
+   * <p>Subclasses have to override this method to create the appropriate type factory if they do
+   * not follow the checker naming convention.
    *
    * @return the appropriate type factory
    */
@@ -458,13 +459,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Test {@link org.checkerframework.framework.ajava.JointJavacJavaParserVisitor} if the checker
+   * Tests {@link org.checkerframework.framework.ajava.JointJavacJavaParserVisitor} if the checker
    * has the "ajavaChecks" option.
    *
-   * <p>Parse the current source file with JavaParser and check that the AST can be matched with the
-   * Tree produced by javac. Crash if not.
+   * <p>Parses the current source file with JavaParser and checks that the AST can be matched with
+   * the Tree produced by javac. Crashes if not.
    *
-   * <p>Subclasses may override this method to disable the test even if the "ajavaChecks" option is
+   * <p>Subclasses can override this method to disable the test even if the "ajavaChecks" option is
    * provided.
    */
   @SuppressWarnings("removal") // getStartPosition(Tree) requires JDK 27
@@ -512,7 +513,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *   <li>Throws an exception if the ASTs are not the same.
    * </ol>
    *
-   * <p>Subclasses may override this method to disable the test even if the option is provided.
+   * <p>Subclasses can override this method to disable the test even if the option is provided.
    */
   protected void testAnnotationInsertion() {
     if (root == null || !ajavaChecks) {
@@ -568,7 +569,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Replace newlines in the printed representation by spaces.
+   * Replaces newlines in the printed representation by spaces.
    *
    * @param arg an object to format
    * @return the object's toString representation, on one line
@@ -578,7 +579,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Type-check tree and skips classes specified by the skipDef option or by {@link
+   * Type-checks tree and skips classes specified by the skipDef option or by {@link
    * #shouldSkipClass}. Subclasses should override {@link #processClassTree(ClassTree)} instead of
    * this method.
    *
@@ -626,7 +627,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * factory still computes the types of trees in the class (for example, when another checker
    * queries them), but the types are not refined by dataflow analysis.
    *
-   * <p>This implementation returns false. A checker may override it, for example to skip a class in
+   * <p>This implementation returns false. A checker can override it, for example to skip a class in
    * which the checker can never issue a warning nor refine a type.
    *
    * @param tree a class
@@ -637,7 +638,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Issue a warning if type-checking took too long.
+   * Issues a warning if type-checking took too long.
    *
    * @param tree the tree being type-checked
    * @param startSlowTypeCheckingTree the value of {@link #slowTypecheckingTree}, when type-checking
@@ -659,7 +660,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Type-check classTree. Subclasses should override this method instead of {@link
+   * Type-checks classTree. Subclasses should override this method instead of {@link
    * #visitClass(ClassTree, Void)}.
    *
    * @param classTree class to check
@@ -753,7 +754,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Issues an error if {@code classTree} has polymorphic fields but is not annotated with
-   * {@code @HasQualifierParameter}. Always issue a warning if the type of a static field is
+   * {@code @HasQualifierParameter}. Always issues a warning if the type of a static field is
    * annotated with a polymorphic qualifier.
    *
    * <p>Issues an error if {@code classTree} extends or implements a class/interface that has a
@@ -831,19 +832,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * A scanner that given a set of polymorphic qualifiers, returns a list of errors reporting a use
+   * A scanner that, given a set of polymorphic qualifiers, returns a list of errors reporting a use
    * of one of the polymorphic qualifiers.
    */
   private final HasInvalidPolyScanner hasInvalidPolyScanner = new HasInvalidPolyScanner();
 
   /**
-   * A scanner that given a set of polymorphic qualifiers, returns a list of errors reporting a use
+   * A scanner that, given a set of polymorphic qualifiers, returns a list of errors reporting a use
    * of one of the polymorphic qualifiers.
    */
   static final class HasInvalidPolyScanner
       extends SimpleAnnotatedTypeScanner<List<DiagMessage>, AnnotationMirrorSet> {
 
-    /** Create HasInvalidPolyScanner. */
+    /** Creates a HasInvalidPolyScanner. */
     private HasInvalidPolyScanner() {
       super(DiagMessage::mergeLists, Collections.emptyList());
     }
@@ -865,10 +866,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * In {@code @A class X extends @B Y implements @C Z {}}, enforce that {@code @A} must be a
+   * In {@code @A class X extends @B Y implements @C Z {}}, enforces that {@code @A} must be a
    * subtype of {@code @B} and {@code @C}.
    *
-   * <p>Also validate the types of the extends and implements clauses.
+   * <p>Also validates the types of the extends and implements clauses.
    *
    * @param classTree class tree to check
    */
@@ -900,7 +901,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * Helper for {@link #checkExtendsAndImplements} that checks one extends or implements clause.
    *
    * @param superClause an extends or implements clause
-   * @param classBounds the type declarations bounds to check for consistency with {@code
+   * @param classBounds the type declaration's bounds to check for consistency with {@code
    *     superClause}
    * @param classType the type being declared
    * @param isExtends true for an extends clause, false for an implements clause
@@ -924,13 +925,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Check that the field invariant declaration annotations meet the following requirements:
+   * Checks that the field invariant declaration annotations meet the following requirements:
    *
    * <ol>
    *   <!-- The item numbering is referred to in the body of the method.-->
    *   <li value="1">If the superclass of {@code classTree} has a field invariant, then the field
    *                 invariant for {@code classTree} must include all the fields in the superclass
-   *                 invariant and those fields' annotations must be a subtype (or equal) to the
+   *                 invariant and those fields' annotations must be a subtype of (or equal to) the
    *                 annotations for those fields in the superclass.
    *   <li value="2">The fields in the invariant must be a.) final and b.) declared in a superclass
    *                 of {@code classTree}.
@@ -1019,7 +1020,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Check the default constructor.
+   * Checks the default constructor.
    *
    * @param tree a class declaration
    */
@@ -1029,7 +1030,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * Checks that the method or constructor obeys override and subtype rules to all overridden
    * methods. (Uses the pseudo-assignment logic to do so.)
    *
-   * <p>The override rule specifies that a method, m1, may override a method m2 only if:
+   * <p>The override rule specifies that a method, m1, can override a method m2 only if:
    *
    * <ul>
    *   <li>m1 return type is a subtype of m2
@@ -1037,7 +1038,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *   <li>m1 parameters are supertypes of corresponding m2 parameters
    * </ul>
    *
-   * Also, it issues a "missing.this" error for static method annotated receivers.
+   * Also, it issues a "missing.this" error for annotated receivers of static methods.
    */
   @Override
   public final Void visitMethod(MethodTree tree, Void p) {
@@ -1050,7 +1051,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Type-check {@literal methodTree}. Subclasses should override this method instead of {@link
+   * Type-checks {@code tree}. Subclasses should override this method instead of {@link
    * #visitMethod(MethodTree, Void)}.
    *
    * @param className the class that contains the method, for diagnostics only
@@ -1164,9 +1165,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Should Whole Program Inference attempt to infer contract annotations? Typically, the answer is
-   * "yes" whenever WPI is enabled, but this method exists to allow subclasses to customize that
-   * behavior.
+   * Returns true if Whole Program Inference should attempt to infer contract annotations.
+   * Typically, the result is true whenever WPI is enabled, but this method exists to allow
+   * subclasses to customize that behavior.
    *
    * @return true if contract inference should be performed, false if it should be disabled (even
    *     when WPI is enabled)
@@ -1202,11 +1203,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Check method purity if needed. The purity annotations of an overridden method are inherited, so
-   * this checks an overriding method against the purity annotations of the methods it overrides,
+   * Checks method purity if needed. The purity annotations of an overridden method are inherited,
+   * so this checks an overriding method against the purity annotations of the methods it overrides,
    * even if it has no purity annotation of its own.
    *
-   * <p>If the method {@code tree} is annotated with {@link SideEffectsOnly}, check that the method
+   * <p>If the method {@code tree} is annotated with {@link SideEffectsOnly}, checks that the method
    * side-effects only the specified expressions.
    *
    * @param tree the method tree to check
@@ -1437,14 +1438,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Return either the {@link Pure} or {@link SideEffectFree} annotation (in that order) if either
-   * appears on the given method declaration, otherwise return null.
+   * Returns either the {@link Pure} or {@link SideEffectFree} annotation (in that order) if either
+   * appears on the given method declaration; otherwise, returns null.
    *
    * <p>This intentionally does not return a {@link SideEffectsOnly} annotation.
    *
    * @param methodDeclaration the method declaration
    * @return either the {@link Pure} or {@link SideEffectFree} annotation (in that order) if either
-   *     appears on the given method declaration
+   *     appears on the given method declaration, or null
    */
   private @Nullable AnnotationMirror getPureOrSideEffectFreeAnnotation(Element methodDeclaration) {
     AnnotationMirror pureAnnotation = atypeFactory.getDeclAnnotation(methodDeclaration, Pure.class);
@@ -1455,17 +1456,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Return either the {@link Pure} or {@link SideEffectFree} annotation (in that order) if either
+   * Returns either the {@link Pure} or {@link SideEffectFree} annotation (in that order) if either
    * is <em>written</em> on the given method declaration -- either in source code or in an
-   * annotation file -- rather than being inherited, otherwise return null.
+   * annotation file -- rather than being inherited; otherwise, returns null.
    *
    * <p>This differs from {@link #getPureOrSideEffectFreeAnnotation} in more than the writtenness
-   * test: a method may inherit one of the two annotations and write the other, so it is not enough
+   * test: a method can inherit one of the two annotations and write the other, so it is not enough
    * to test whether that method's result is written on the method declaration.
    *
    * @param methodDeclaration the method declaration
    * @return either the {@link Pure} or {@link SideEffectFree} annotation (in that order) if either
-   *     is written on the given method declaration
+   *     is written on the given method declaration, or null
    */
   private @Nullable AnnotationMirror getWrittenPureOrSideEffectFreeAnnotation(
       Element methodDeclaration) {
@@ -1512,7 +1513,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Returns a diagnostic message for a {@code @SideEffectsOnly} expression that cannot be parsed.
    * The message names the method whose annotation contains the expression, because the message
-   * might be issued at a call site, which may be far from that method's declaration.
+   * might be issued at a call site, which might be far from that method's declaration.
    *
    * @param ex the parse failure
    * @param declaringMethod the method on whose declaration the annotation appears
@@ -1530,7 +1531,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Returns a diagnostic message for a contract expression that cannot be parsed. The message names
-   * the contract annotation and the method that it appears on, because a method declaration may
+   * the contract annotation and the method that it appears on, because a method declaration can
    * carry several contract annotations.
    *
    * @param ex the parse failure
@@ -1598,7 +1599,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Infer a purity annotation for {@code elt} by converting {@code kinds} into a method annotation.
+   * Infers a purity annotation for {@code elt} by converting {@code purityKinds} into a method
+   * annotation.
    *
    * <p>This method delegates to {@code WholeProgramInference.addMethodDeclarationAnnotation}, which
    * special-cases purity annotations: that method lubs a purity argument with whatever purity
@@ -1625,7 +1627,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Issue a warning if the result type of the constructor declaration is not top. If it is a
+   * Issues a warning if the result type of the constructor declaration is not top. If it is a
    * supertype of the class, then a conflicting.annos error will also be issued by {@link
    * #isValidUse(AnnotatedTypeMirror.AnnotatedDeclaredType,AnnotatedTypeMirror.AnnotatedDeclaredType,Tree)}.
    *
@@ -1697,7 +1699,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * BaseTypeVisitor.OverrideChecker#checkMethodReferencePurity} check that.
    *
    * <p>Only a parameter whose declared type is a functional interface is checked. No implementation
-   * of {@code callee} may assume anything about an argument to any other parameter, such as one
+   * of {@code callee} can assume anything about an argument to any other parameter, such as one
    * whose type is a type variable or a varargs array; see {@link
    * PurityChecker#functionalParameterPurity}.
    *
@@ -1742,9 +1744,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * @param paramFunction the functional method of a parameter's type
    * @param methodKinds the purity that a method requires of its functional-interface arguments
-   * @param applyAssumptions whether to apply the {@code -AassumeSideEffectFree} and {@code
-   *     -AassumePure} command-line options
-   * @return the purity required of the argument, which may be empty
+   * @param applyAssumptions true if the {@code -AassumeSideEffectFree} and {@code -AassumePure}
+   *     command-line options should be applied
+   * @return the purity required of the argument, which might be empty
    */
   private EnumSet<PurityKind> purityRequiredOfArgument(
       ExecutableElement paramFunction, EnumSet<PurityKind> methodKinds, boolean applyAssumptions) {
@@ -1770,7 +1772,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Returns the purity kinds that whole-program inference may infer for {@code method}: the kinds
+   * Returns the purity kinds that whole-program inference can infer for {@code method}: the kinds
    * that annotations written on {@code method} guarantee, plus those of {@code kinds} that no call
    * to {@code method} would newly require of an argument that is passed to a functional-interface
    * parameter. See {@link #checkFunctionalArguments}.
@@ -2083,9 +2085,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * or null if it has none.
    *
    * <p>This is {@code paramFunction} itself when {@code type} is the functional interface, but an
-   * argument may also be of a class type, including an anonymous class, that implements the
+   * argument can also be of a class type, including an anonymous class, that implements the
    * interface. The implementation is what will run, so its annotations are what matter. Likewise, a
-   * functional subinterface may implement {@code paramFunction} with a default method and declare
+   * functional subinterface can implement {@code paramFunction} with a default method and declare
    * an unrelated abstract method as its own functional method; the default method is what runs.
    *
    * @param type the type of an argument
@@ -2319,7 +2321,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Check the contracts written on a method declaration. Ensures that the postconditions hold on
+   * Checks the contracts written on a method declaration. Ensures that the postconditions hold on
    * exit, and that the contracts are well-formed.
    *
    * @param methodTree the method declaration
@@ -2410,8 +2412,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       };
 
   /**
-   * Check that the parameters used in {@code javaExpression} are effectively final for method
-   * {@code method}.
+   * Checks that the parameters used in {@code javaExpression} are effectively final for method
+   * {@code methodDeclTree}.
    *
    * @param methodDeclTree a method declaration
    * @param javaExpression a Java expression
@@ -2434,7 +2436,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Check that the expression's type is annotated with {@code annotation} at the regular exit
+   * Checks that the expression's type is annotated with {@code annotation} at the regular exit
    * store.
    *
    * @param methodTree declaration of the method
@@ -2487,7 +2489,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Check that the expression's type is annotated with {@code annotation} at every regular exit
+   * Checks that the expression's type is annotated with {@code annotation} at every regular exit
    * that returns {@code result}.
    *
    * @param methodTree tree of method with the postcondition
@@ -2561,7 +2563,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Issues "explicit.annotation.ignored" warning if any explicit annotation on an intersection
+   * Issues an "explicit.annotation.ignored" warning if any explicit annotation on an intersection
    * bound is not the same as the primary annotation of the given intersection type.
    *
    * @param intersection type to use
@@ -2657,8 +2659,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Warn if a type annotation is written before a modifier such as "public" or before a declaration
-   * annotation.
+   * Warns if a type annotation is written before a modifier such as "public" or before a
+   * declaration annotation.
    *
    * @param tree a VariableTree or a MethodTree
    * @param modifiersTree the modifiers sub-tree of tree
@@ -2787,7 +2789,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * Performs a subtype check, to test whether the tree expression iterable type is a subtype of the
    * variable type in the enhanced for loop.
    *
-   * <p>If the subtype check fails, it issues a "enhancedfor" error.
+   * <p>If the subtype check fails, it issues an "enhancedfor" error.
    */
   @Override
   public Void visitEnhancedForLoop(EnhancedForLoopTree tree, Void p) {
@@ -2812,7 +2814,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   /**
    * Performs a method invocation check.
    *
-   * <p>An invocation of a method, m, on the receiver, r is valid only if:
+   * <p>An invocation of a method, m, on the receiver, r, is valid only if:
    *
    * <ul>
    *   <li>passed arguments are subtypes of corresponding m parameters
@@ -2928,7 +2930,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Checks that the following rule is satisfied: The type on a constructor declaration must be a
-   * supertype of the return type of "this()" invocation within that constructor.
+   * supertype of the return type of the "this()" invocation within that constructor.
    *
    * <p>Subclasses can override this method to change the behavior for just "this" constructor
    * class. Or override {@link #checkThisOrSuperConstructorCall(MethodInvocationTree, String)} to
@@ -2942,7 +2944,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Checks that the following rule is satisfied: The type on a constructor declaration must be a
-   * supertype of the return type of "super()" invocation within that constructor.
+   * supertype of the return type of the "super()" invocation within that constructor.
    *
    * <p>Subclasses can override this method to change the behavior for just "super" constructor
    * class. Or override {@link #checkThisOrSuperConstructorCall(MethodInvocationTree, String)} to
@@ -2956,7 +2958,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Checks that the following rule is satisfied: The type on a constructor declaration must be a
-   * supertype of the return type of "this()" or "super()" invocation within that constructor.
+   * supertype of the return type of the "this()" or "super()" invocation within that constructor.
    *
    * @param call the AST node for the constructor call
    * @param errorKey the error message key to use if the check fails
@@ -2980,8 +2982,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * If the given invocation is a varargs invocation, check that the array type of actual varargs is
-   * a subtype of the corresponding formal parameter; issues "argument" error if not.
+   * If the given invocation is a varargs invocation, checks that the array type of actual varargs
+   * is a subtype of the corresponding formal parameter; issues an "argument" error if not.
    *
    * <p>The caller must type-check for each element in varargs before or after calling this method.
    *
@@ -3129,7 +3131,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Type checks the method arguments of {@code Vector.copyInto()}.
+   * Type-checks the method arguments of {@code Vector.copyInto()}.
    *
    * <p>The Checker Framework special-cases the method invocation, as its type safety cannot be
    * expressed by Java's type system.
@@ -3142,7 +3144,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * subtype of the component type of the passed array argument.
    *
    * @param tree a method invocation of {@code Vector.copyInto()}
-   * @param params the types of the parameters of {@code Vectory.copyInto()}
+   * @param params the types of the parameters of {@code Vector.copyInto()}
    */
   protected void typeCheckVectorCopyIntoArgument(
       MethodInvocationTree tree, List<? extends AnnotatedTypeMirror> params) {
@@ -3448,7 +3450,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Checks that the type of the return expression is a subtype of the enclosing method required
+   * Checks that the type of the return expression is a subtype of the enclosing method's required
    * return type. If not, it issues a "return" error.
    */
   @Override
@@ -3487,7 +3489,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Ensure that the annotation arguments comply to their declarations. This needs some special
+   * Ensures that the annotation arguments comply with their declarations. This needs some special
    * casing, as annotation arguments form special trees.
    */
   @Override
@@ -3583,7 +3585,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * This method validates the type of the switch expression. It issues an error if the type of a
-   * value that the switch expression can result is not a subtype of the switch type.
+   * value that the switch expression can result in is not a subtype of the switch type.
    *
    * <p>If a subclass overrides this method, it must call {@code super.scan(switchExpressionTree,
    * null)} so that the blocks and statements in the cases are checked.
@@ -3623,7 +3625,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   // Check for illegal re-assignment
   // **********************************************************************
 
-  /** Performs assignability check. */
+  /** Performs an assignability check. */
   @Override
   public Void visitUnary(UnaryTree tree, Void p) {
     Tree.Kind treeKind = tree.getKind();
@@ -3655,7 +3657,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     return super.visitUnary(tree, p);
   }
 
-  /** Performs assignability check. */
+  /** Performs an assignability check. */
   @Override
   public Void visitCompoundAssignment(CompoundAssignmentTree tree, Void p) {
     // If tree is the tree representing the compounds assignment s += expr,
@@ -3742,7 +3744,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * supplied.
    *
    * @param castType annotated type of the cast
-   * @param exprType annotated type of the casted expression
+   * @param exprType annotated type of the expression being cast
    * @return true if the type cast is safe, false otherwise
    */
   protected boolean isTypeCastSafe(AnnotatedTypeMirror castType, AnnotatedTypeMirror exprType) {
@@ -3833,11 +3835,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * Returns true if it is legal to cast the {@code exprType} to {@code castType}, a type with a
    * qualifier parameter.
    *
-   * <p>If {@code exprType} has qualifier parameter, the cast is legal if the qualifiers are
-   * invariant. Otherwise, the cast is legal is if the qualifier on both types is bottom.
+   * <p>If {@code exprType} has a qualifier parameter, the cast is legal if the qualifiers are
+   * invariant. Otherwise, the cast is legal if the qualifier on both types is bottom.
    *
    * @param castType a type with a qualifier parameter
-   * @param exprType type of the expressions that is cast which may or may not have a qualifier
+   * @param exprType type of the expression that is cast, which might or might not have a qualifier
    *     parameter
    * @param top the top qualifier of the hierarchy to check
    * @return true if casting the {@code exprType} to {@code castType}, a type with a qualifier
@@ -4031,12 +4033,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * If the given Java basetype is not relevant, report an "anno.on.irrelevant" if it is annotated.
-   * This method does not necessarily issue an error, but it might.
+   * If the given Java basetype is not relevant, reports an "anno.on.irrelevant" error if it is
+   * annotated. This method does not necessarily issue an error, but it might.
    *
    * @param errorLocation where to report the error
    * @param type the Java basetype
-   * @param annos the annotation on the type
+   * @param annos the annotations on the type
    */
   private void maybeReportAnnoOnIrrelevant(
       Tree errorLocation, TypeMirror type, List<? extends AnnotationTree> annos) {
@@ -4051,9 +4053,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Returns true if the checker should issue warnings about irrelevant java types.
+   * Returns true if the checker should issue warnings about irrelevant Java types.
    *
-   * @return true if the checker should issue warnings about irrelevant java types
+   * @return true if the checker should issue warnings about irrelevant Java types
    */
   protected boolean shouldWarnAboutIrrelevantJavaTypes() {
     return atypeFactory.relevantJavaTypes != null;
@@ -4064,10 +4066,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * those that are part of the current type system.
    *
    * <p>This method ignores aliases of supported annotations that are declaration annotations,
-   * because they may apply to inner types.
+   * because they might apply to inner types.
    *
    * @param annoTrees annotation trees
-   * @param type on which {@code annoTrees} were written
+   * @param type the type on which {@code annoTrees} were written
    * @return a new list containing only the supported annotations from its argument
    */
   private List<AnnotationTree> supportedAnnoTrees(
@@ -4105,11 +4107,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Issue error if the exception parameter is not a supertype of the annotation specified by {@link
-   * #getExceptionParameterLowerBoundAnnotations()}, which is top by default.
+   * Issues an error if the exception parameter is not a supertype of the annotation specified by
+   * {@link #getExceptionParameterLowerBoundAnnotations()}, which is top by default.
    *
-   * <p>Subclasses may override this method to change the behavior of this check. Subclasses wishing
-   * to enforce that exception parameter be annotated with other annotations can just override
+   * <p>Subclasses can override this method to change the behavior of this check. Subclasses wishing
+   * to enforce that exception parameters be annotated with other annotations can just override
    * {@link #getExceptionParameterLowerBoundAnnotations()}.
    *
    * @param tree a CatchTree to check
@@ -4159,13 +4161,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    *
    * <p>By default, this method checks that the thrown expression is a subtype of top.
    *
-   * <p>Issue error if the thrown expression is not a sub type of the annotation given by {@link
+   * <p>Issues an error if the thrown expression is not a subtype of the annotation given by {@link
    * #getThrowUpperBoundAnnotations()}, the same as {@link
    * #getExceptionParameterLowerBoundAnnotations()} by default.
    *
-   * <p>Subclasses may override this method to change the behavior of this check. Subclasses wishing
+   * <p>Subclasses can override this method to change the behavior of this check. Subclasses wishing
    * to enforce that the thrown expression be a subtype of a type besides {@link
-   * #getExceptionParameterLowerBoundAnnotations}, should override {@link
+   * #getExceptionParameterLowerBoundAnnotations} should override {@link
    * #getThrowUpperBoundAnnotations()}.
    *
    * @param tree a ThrowTree to check
@@ -4219,7 +4221,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * emits an error message (through the compiler's messaging interface) if it is not valid.
    *
    * <p>Because this method is not called for all pseudo-assignments, subclasses should only
-   * override this class if {@code varTree} is needed. Otherwise, {@link
+   * override this method if {@code varTree} is needed. Otherwise, {@link
    * #commonAssignmentCheck(AnnotatedTypeMirror, ExpressionTree, String, Object...)} or {@link
    * #commonAssignmentCheck(AnnotatedTypeMirror, AnnotatedTypeMirror, Tree, String, Object...)}
    * should be overridden instead.
@@ -4271,8 +4273,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * interface) if it is not valid.
    *
    * <p>Because this method is not called for all pseudo-assignments, subclasses should only
-   * override this, if the tree of the value expression is required; otherwise, override {@link
-   * #commonAssignmentCheck(AnnotatedTypeMirror, AnnotatedTypeMirror, Tree, String, Object...)}.
+   * override this method if the tree of the value expression is required; otherwise, override
+   * {@link #commonAssignmentCheck(AnnotatedTypeMirror, AnnotatedTypeMirror, Tree, String,
+   * Object...)}.
    *
    * <p>Overrides to this method should first call {@link #shouldSkipUses(ExpressionTree)} and
    * return if that method returns true.
@@ -4346,11 +4349,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Checks the validity of an assignment (or pseudo-assignment) from {@code valueType} to {@code
-   * variableType} and emits an error message (through the compiler's messaging interface) if it is
-   * not valid.
+   * varType} and emits an error message (through the compiler's messaging interface) if it is not
+   * valid.
    *
    * <p>Subclasses should override this method unless the tree for the {@code varType} or {@code
-   * valueType} are needed.
+   * valueType} is needed.
    *
    * @param varType the annotated type of the variable
    * @param valueType the annotated type of the value
@@ -4430,7 +4433,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * set.
    *
    * @param success true if the check succeeded
-   * @param extraMessage information about why the result is what it is; may be null
+   * @param extraMessage information about why the result is what it is; can be null
    * @param varType the annotated type of the variable
    * @param valueType the annotated type of the value
    * @param valueExpTree the location to use when reporting the error message
@@ -4775,14 +4778,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Returns true if to skip subtype checks on the receiver when checking method invocability. A
-   * visitor may, for example, allow a method to be invoked even if the receivers are siblings in a
-   * hierarchy, provided that some other condition (implemented by the visitor) is satisfied.
+   * Returns true if subtype checks on the receiver should be skipped when checking method
+   * invocability. A visitor can, for example, allow a method to be invoked even if the receivers
+   * are siblings in a hierarchy, provided that some other condition (implemented by the visitor) is
+   * satisfied.
    *
    * @param tree the method invocation tree
    * @param methodDefinitionReceiver the ATM of the receiver of the method definition
    * @param methodCallReceiver the ATM of the receiver of the method call
-   * @return true if to skip subtype checks on the receiver
+   * @return true if subtype checks on the receiver should be skipped
    */
   protected boolean skipReceiverSubtypeCheck(
       MethodInvocationTree tree,
@@ -4792,8 +4796,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Returns true if the method can be invoked using the receiver of the 'tree' method invocation,
-   * and issues a "method.invocation" if the invocation is invalid.
+   * Checks whether the method can be invoked using the receiver of the 'tree' method invocation,
+   * and issues a "method.invocation" error if the invocation is invalid.
    *
    * <p>This implementation tests whether the receiver in the method invocation is a subtype of the
    * method receiver type. This behavior can be specialized by overriding skipReceiverSubtypeCheck.
@@ -4837,7 +4841,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Report a method invocability error. Allows checkers to change how the message is output.
+   * Reports a method invocability error. Allows checkers to change how the message is output.
    *
    * @param tree the AST node at which to report the error
    * @param found the actual type of the receiver
@@ -4854,10 +4858,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Check that the (explicit) annotations on a new class tree are comparable to the result type of
-   * the constructor. Issue an error if not.
+   * Checks that the (explicit) annotations on a new class tree are comparable to the result type of
+   * the constructor. Issues an error if not.
    *
-   * <p>Issue a warning if the annotations on the constructor invocation is a subtype of the
+   * <p>Issues a warning if the annotations on the constructor invocation are a subtype of the
    * constructor result type. This is equivalent to down-casting.
    */
   protected void checkConstructorInvocation(
@@ -4896,14 +4900,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * A helper method to check that each passed argument is a subtype of the corresponding required
-   * argument. Issues an "argument" error for each passed argument that not a subtype of the
+   * argument. Issues an "argument" error for each passed argument that is not a subtype of the
    * required one.
    *
    * <p>Note this method requires the lists to have the same length, as it does not handle cases
    * like varargs.
    *
    * @see #checkVarargs(AnnotatedTypeMirror.AnnotatedExecutableType, Tree)
-   * @param requiredTypes the required types. This may differ from the formal parameter types,
+   * @param requiredTypes the required types. This can differ from the formal parameter types,
    *     because it replaces a varargs parameter by multiple parameters with the vararg's element
    *     type.
    * @param passedArgs the expressions passed to the corresponding types
@@ -4956,7 +4960,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   // com.sun.tools.javac.util.List has a toString that does not include surrounding "[...]",
   // making it hard to interpret in messages.
   /**
-   * Produce a printed representation of a list, in the standard format with surrounding "[...]".
+   * Produces a printed representation of a list, in the standard format with surrounding "[...]".
    *
    * @param lst a list to format
    * @return the printed representation of the list
@@ -4998,7 +5002,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Create an OverrideChecker.
+   * Creates an OverrideChecker.
    *
    * <p>This exists so that subclasses can subclass OverrideChecker and use their subclass instead
    * of using OverrideChecker itself.
@@ -5006,7 +5010,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param overriderTree the AST node of the overriding method or method reference
    * @param overriderMethodType the type of the overriding method
    * @param overriderType the type enclosing the overrider method, usually an AnnotatedDeclaredType;
-   *     for Method References may be something else
+   *     for method references, it might be something else
    * @param overriderReturnType the return type of the overriding method
    * @param overriddenMethodType the type of the overridden method
    * @param overriddenType the declared type enclosing the overridden method
@@ -5032,7 +5036,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Type checks that a method may override another method. Uses an OverrideChecker subclass as
+   * Type-checks that a method can override another method. Uses an OverrideChecker subclass as
    * created by {@link #createOverrideChecker}. This version of the method uses the annotated type
    * factory to get the annotated type of the overriding method, and does NOT expose that type.
    *
@@ -5061,7 +5065,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Type checks that a method may override another method. Uses an OverrideChecker subclass as
+   * Type-checks that a method can override another method. Uses an OverrideChecker subclass as
    * created by {@link #createOverrideChecker}. This version of the method exposes the
    * AnnotatedExecutableType of the overriding method. Override this version of the method if you
    * need to access that type.
@@ -5103,7 +5107,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Check that a method reference is allowed. Uses the OverrideChecker class.
+   * Checks that a method reference is allowed. Uses the OverrideChecker class.
    *
    * @param memberReferenceTree the tree for the method reference
    * @return true if the method reference is allowed
@@ -5263,7 +5267,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** The supertype that declares the overridden method. */
     protected final AnnotatedDeclaredType overriddenType;
 
-    /** The teturn type of the overridden method. */
+    /** The return type of the overridden method. */
     protected final AnnotatedTypeMirror overriddenReturnType;
 
     /** The return type of the overriding method. */
@@ -5285,7 +5289,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected final @Nullable Map<TypeVariable, AnnotatedTypeMirror> typeVarMapping;
 
     /**
-     * Create an OverrideChecker.
+     * Creates an OverrideChecker.
      *
      * <p>Notice that the return types are passed in separately. This is to support some types of
      * method references where the overrider's return type is not the appropriate type to check.
@@ -5293,7 +5297,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param overriderTree the AST node of the overriding method or method reference
      * @param overrider the type of the overriding method
      * @param overriderType the type enclosing the overrider method, usually an
-     *     AnnotatedDeclaredType; for Method References may be something else
+     *     AnnotatedDeclaredType; for method references, it might be something else
      * @param overriderReturnType the return type of the overriding method
      * @param overridden the type of the overridden method
      * @param overriddenType the declared type enclosing the overridden method
@@ -5360,7 +5364,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * substitution loses no information. It permits the ordinary subtyping rules for two uses of
      * the same type variable to be applied to the two methods' signatures.
      *
-     * @param type a type that may contain uses of the overriding method's type variables
+     * @param type a type that might contain uses of the overriding method's type variables
      * @return {@code type}, expressed in terms of the overridden method's type variables
      */
     protected AnnotatedTypeMirror adaptToOverridden(AnnotatedTypeMirror type) {
@@ -5390,7 +5394,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Perform the check.
+     * Performs the check.
      *
      * @return true if the override is allowed
      */
@@ -5440,7 +5444,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Check that the referenced method is at least as pure as the functional interface method that
+     * Checks that the referenced method is at least as pure as the functional interface method that
      * the method reference implements.
      *
      * <p>Only a method reference needs this check. A method that overrides another one inherits its
@@ -5547,9 +5551,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param method a method
      * @param isImplementation true if {@code method} is the referenced method, which implements the
      *     functional interface method. If so, the result also includes what the command-line
-     *     assumptions, such as {@code -AassumeSideEffectFree}, grant {@code method}, and it includes
-     *     {@link PurityKind#DETERMINISTIC} if {@code method} is side-effect-free and returns void;
-     *     see {@link #implementationPurityKinds}.
+     *     assumptions, such as {@code -AassumeSideEffectFree}, grant {@code method}, and it
+     *     includes {@link PurityKind#DETERMINISTIC} if {@code method} is side-effect-free and
+     *     returns void; see {@link #implementationPurityKinds}.
      * @return the purity kinds of {@code method}
      */
     private EnumSet<PurityKind> purityKinds(ExecutableElement method, boolean isImplementation) {
@@ -5807,12 +5811,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Check that an override side-effects no more than the overridden method's
+     * Checks that an override side-effects no more than the overridden method's
      * {@code @SideEffectsOnly} annotation permits.
      *
      * <p>This check is necessary for soundness. A call site is checked against the
      * {@code @SideEffectsOnly} annotation of the method that the call statically resolves to, but
-     * the call may execute an override of that method. Without this check, the override's extra
+     * the call might execute an override of that method. Without this check, the override's extra
      * side effects would be invisible at every call whose receiver is statically of the supertype.
      *
      * <p>The check also reports a method that overrides methods in two supertypes with incompatible
@@ -5882,7 +5886,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Returns true if side-effecting the given expression is permitted by the given
      * {@code @SideEffectsOnly} expressions: it is one of them, or is reached through one of them.
      *
-     * @param expr an expression that a method may side-effect
+     * @param expr an expression that a method might side-effect
      * @param permitted the expressions that the method is permitted to side-effect
      * @return true if side-effecting {@code expr} is permitted
      */
@@ -5924,7 +5928,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Reports that the overriding method may side-effect more than the overridden method permits.
+     * Reports that the overriding method might side-effect more than the overridden method permits.
      *
      * @param overriderExpressionStrings the {@code @SideEffectsOnly} expressions that apply to the
      *     overriding method, or null if none does
@@ -6034,7 +6038,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Issue a "methodref.receiver" or "methodref.receiver.bound" error if the receiver for the
+     * Issues a "methodref.receiver" or "methodref.receiver.bound" error if the receiver for the
      * method reference does not satisfy overriding rules.
      *
      * @return true if the override is legal
@@ -6129,7 +6133,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Issue an "override.receiver" error if the receiver override is not valid.
+     * Issues an "override.receiver" error if the receiver override is not valid.
      *
      * @return true if the override is legal
      */
@@ -6166,7 +6170,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Issue an error if a type parameter of the overriding method has bounds that do not contain
+     * Issues an error if a type parameter of the overriding method has bounds that do not contain
      * the bounds of the corresponding type parameter of the overridden method.
      *
      * <p>Nothing is checked if the overridden method is unchecked code that receives conservative
@@ -6191,7 +6195,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Issue an error if the upper bound of the overriding method's type parameter at the given
+     * Issues an error if the upper bound of the overriding method's type parameter at the given
      * index is not a supertype of the upper bound of the overridden method's type parameter.
      *
      * @param index the index of the type parameter
@@ -6208,7 +6212,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Issue an error if the lower bound of the overriding method's type parameter at the given
+     * Issues an error if the lower bound of the overriding method's type parameter at the given
      * index is not a subtype of the lower bound of the overridden method's type parameter.
      *
      * @param index the index of the type parameter
@@ -6225,10 +6229,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Issue an error, if the check of one bound of the overriding method's type parameter at the
-     * given index failed. Also print debugging output if {@code -Ashowchecks} was passed.
+     * Issues an error if the check of one bound of the overriding method's type parameter at the
+     * given index failed. Also prints debugging output if {@code -Ashowchecks} was passed.
      *
-     * @param success whether the check succeeded or failed
+     * @param success true if the check succeeded
      * @param index the index of the type parameter
      * @param messageKey the message key, which names the bound that is checked
      * @param overriderBound the bound of the overriding method's type parameter
@@ -6411,7 +6415,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Issue an error message or log message about checking an overriding return type.
+     * Issues an error message or log message about checking an overriding return type.
      *
      * @param success true if the check succeeded
      */
@@ -6499,7 +6503,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param overriderType the subtype
    * @param overriddenType the supertype
    * @param mustSubset annotations that should be weaker
-   * @param set anontations that should be stronger
+   * @param set annotations that should be stronger
    * @param messageKey message key for error messages
    */
   private void checkContractsSubset(
@@ -6708,7 +6712,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
   }
 
   /**
-   * Issues an error if access not allowed, based on an @Unused annotation.
+   * Issues an error if access is not allowed, based on an @Unused annotation.
    *
    * @param field the field to be accessed, whose declaration might be annotated by @Unused. It can
    *     also be (for example) {@code this}, in which case {@code receiverType} is null.
@@ -6752,8 +6756,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * Tests that the qualifiers present on {@code useType} are valid qualifiers, given the qualifiers
    * on the declaration of the type, {@code declarationType}.
    *
-   * <p>The check is shallow, as it does not descend into generic or array types (i.e. only
-   * performing the validity check on the raw type or outermost array dimension). {@link
+   * <p>The check is shallow, as it does not descend into generic or array types (i.e., it performs
+   * the validity check only on the raw type or outermost array dimension). {@link
    * BaseTypeVisitor#validateTypeOf(Tree)} would call this for each type argument or array dimension
    * separately.
    *
@@ -6769,7 +6773,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
    * @param declarationType the type of the class (TypeElement)
    * @param useType the use of the class (instance type)
    * @param tree the tree where the type is used
-   * @return true if the useType is a valid use of elemType
+   * @return true if the useType is a valid use of declarationType
    */
   public boolean isValidUse(
       AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
@@ -6802,7 +6806,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Tests that the qualifiers present on the array type are valid. This method will be invoked for
-   * each array level independently, i.e. this method only needs to check the top-level qualifiers
+   * each array level independently, i.e., this method only needs to check the top-level qualifiers
    * of an array.
    *
    * @param type the array type use
@@ -6816,8 +6820,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Returns true if the tree expressed by the passed type tree is a valid type, and emits an error
-   * if that is not the case (e.g. '@Mutable String'). If the tree is a method or constructor, check
-   * the return type.
+   * if that is not the case (e.g., '@Mutable String'). If the tree is a method or constructor,
+   * checks the return type.
    *
    * @param tree the AST type supplied by the user
    * @return true if the tree is a valid type
@@ -6851,7 +6855,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   /**
    * Returns true if the type and corresponding type tree is a valid type, and emits an error if
-   * that is not the case (e.g. '@Mutable String'). If the tree is a method or constructor, tests
+   * that is not the case (e.g., '@Mutable String'). If the tree is a method or constructor, tests
    * the return type.
    *
    * @param tree the type tree supplied by the user
