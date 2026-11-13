@@ -211,11 +211,19 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
 
     if (intLiteral == 0) {
       if (atypeFactory.areSameByClass(otherAnno, NonNegative.class)) {
-        insertValueForComparedNode(store, otherNode, POS);
+        List<Node> internals = nodesWithValueOf(otherNode);
+        for (Node internal : internals) {
+          JavaExpression je = JavaExpression.fromNode(internal);
+          store.insertValue(je, POS);
+        }
       }
     } else if (intLiteral == -1) {
       if (atypeFactory.areSameByClass(otherAnno, GTENegativeOne.class)) {
-        insertValueForComparedNode(store, otherNode, NN);
+        List<Node> internals = nodesWithValueOf(otherNode);
+        for (Node internal : internals) {
+          JavaExpression je = JavaExpression.fromNode(internal);
+          store.insertValue(je, NN);
+        }
       }
     }
   }
@@ -263,15 +271,11 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
     if (!isNonNegative(leftAnno) || !isNonNegative(otherAnno)) {
       return;
     }
-    Tree leftTree = leftNode.getTree();
-    if (leftTree == null) {
-      return;
-    }
     JavaExpression otherJe = JavaExpression.fromNode(otherNode);
     if (atypeFactory
         .getLessThanAnnotatedTypeFactory()
-        .isLessThanOrEqual(leftTree, otherJe.toString())) {
-      insertValueForComparedNode(store, otherNode, POS);
+        .isLessThanOrEqual(leftNode.getTree(), otherJe.toString())) {
+      store.insertValue(otherJe, POS);
     }
   }
 
@@ -297,16 +301,18 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       return;
     }
 
+    JavaExpression leftJe = JavaExpression.fromNode(left);
+
     if (AnnotationUtils.areSame(rightAnno, GTEN1)) {
-      insertValueForComparedNode(store, left, NN);
+      store.insertValue(leftJe, NN);
       return;
     }
     if (AnnotationUtils.areSame(rightAnno, NN)) {
-      insertValueForComparedNode(store, left, POS);
+      store.insertValue(leftJe, POS);
       return;
     }
     if (AnnotationUtils.areSame(rightAnno, POS)) {
-      insertValueForComparedNode(store, left, POS);
+      store.insertValue(leftJe, POS);
       return;
     }
   }
@@ -332,14 +338,14 @@ public class LowerBoundTransfer extends IndexAbstractTransfer {
       return;
     }
 
+    JavaExpression leftJe = JavaExpression.fromNode(left);
+
     AnnotationMirror newLBType =
         atypeFactory
             .getQualifierHierarchy()
             .greatestLowerBoundShallow(rightAnno, left.getType(), leftAnno, right.getType());
 
-    if (newLBType != null) {
-      insertValueForComparedNode(store, left, newLBType);
-    }
+    store.insertValue(leftJe, newLBType);
   }
 
   /**

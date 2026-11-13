@@ -8,6 +8,7 @@ import org.checkerframework.checker.index.qual.SearchIndexFor;
 import org.checkerframework.common.value.ValueCheckerUtils;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
@@ -70,7 +71,7 @@ public class SearchIndexTransfer extends IndexAbstractTransfer {
             AnnotationUtils.getElementValueArray(
                 rightSIF, atypeFactory.searchIndexForValueElement, String.class);
         AnnotationMirror nif = atypeFactory.createNegativeIndexFor(arrays);
-        insertValueForComparedNode(store, right, nif);
+        store.insertValue(JavaExpression.fromNode(right), nif);
       }
     }
   }
