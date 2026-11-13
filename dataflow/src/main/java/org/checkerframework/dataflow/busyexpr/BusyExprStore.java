@@ -21,7 +21,7 @@ public class BusyExprStore implements Store<BusyExprStore> {
   private final @Growable @Shrinkable Set<BusyExprValue> busyExprValueSet;
 
   /**
-   * Create a new BusyExprStore.
+   * Creates a new BusyExprStore.
    *
    * @param busyExprValueSet a set of busy expression abstract values. The parameter is captured and
    *     the caller should not retain an alias.
@@ -30,13 +30,13 @@ public class BusyExprStore implements Store<BusyExprStore> {
     this.busyExprValueSet = busyExprValueSet;
   }
 
-  /** Create a new BusyExprStore. */
+  /** Creates a new BusyExprStore. */
   public BusyExprStore() {
     busyExprValueSet = new LinkedHashSet<>();
   }
 
   /**
-   * Kill expressions if they contain variable var.
+   * Kills expressions if they contain variable var.
    *
    * @param var a variable
    */
@@ -48,7 +48,7 @@ public class BusyExprStore implements Store<BusyExprStore> {
   /**
    * Returns true if the expression contains variable var. Note that {@code .equals} is used in the
    * return statement to verify value equality, as the statement decides whether the two nodes have
-   * the same value, not represent the same CFG node.
+   * the same value, not whether they represent the same CFG node.
    *
    * @param expr the expression checked
    * @param var the variable
@@ -64,7 +64,7 @@ public class BusyExprStore implements Store<BusyExprStore> {
   }
 
   /**
-   * Add busy expression e to busy expression value set.
+   * Adds busy expression e to the busy expression value set.
    *
    * @param e the busy expression to be added
    */
@@ -73,7 +73,7 @@ public class BusyExprStore implements Store<BusyExprStore> {
   }
 
   /**
-   * Add expressions to the store, add sub-expressions to the store recursively.
+   * Adds expressions to the store, and adds sub-expressions to the store recursively.
    *
    * @param e the expression to be added
    */

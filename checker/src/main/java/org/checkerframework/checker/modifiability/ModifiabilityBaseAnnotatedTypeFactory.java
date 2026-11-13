@@ -232,9 +232,9 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
    * #typeLacksCapability} holds of the subtype. For example, the Replace Checker's result includes
    * {@code List}.
    *
-   * <p>A type variable or wildcard may be instantiated by any subtype of its upper bound, including
+   * <p>A type variable or wildcard can be instantiated by any subtype of its upper bound, including
    * a subtype that also implements an unrelated interface. For example, a type variable whose upper
-   * bound is {@code AbstractCollection} or {@code Serializable} may be instantiated by {@code
+   * bound is {@code AbstractCollection} or {@code Serializable} can be instantiated by {@code
    * HashSet}, which cannot be replaced into. So an alias written on a type variable claims this
    * checker's capability only if the upper bound is a subtype of one of these types.
    *
@@ -243,12 +243,12 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
   protected abstract List<TypeMirror> typesWithCapability();
 
   /**
-   * Returns true if a type variable or wildcard whose upper bound is {@code bound} may be
+   * Returns true if a type variable or wildcard whose upper bound is {@code bound} might be
    * instantiated by a type that structurally cannot support this checker's capability; that is, if
    * no bound is a subtype of a type in {@link #typesWithCapability}.
    *
-   * @param bound the upper bound of a type variable or wildcard; it may be an intersection type
-   * @return true if some instantiation of the type variable or wildcard may lack the capability
+   * @param bound the upper bound of a type variable or wildcard; it might be an intersection type
+   * @return true if some instantiation of the type variable or wildcard might lack the capability
    */
   private boolean someInstantiationLacksCapability(TypeMirror bound) {
     List<? extends TypeMirror> bounds =
@@ -268,7 +268,7 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
   /**
    * Returns true if {@code @PolyModifiable} weakens to the top qualifier on {@code type}, rather
    * than to this checker's polymorphic qualifier. This differs from {@link #typeLacksCapability}
-   * because a polymorphic qualifier may usefully carry a capability that the type itself cannot
+   * because a polymorphic qualifier can usefully carry a capability that the type itself cannot
    * exercise; for example, {@code Map.Entry} carries the replace capability of its map.
    *
    * @param type the type on which {@code @PolyModifiable} was written; it is an upper bound, so it
@@ -333,7 +333,7 @@ public abstract class ModifiabilityBaseAnnotatedTypeFactory extends BaseAnnotate
    * variable or wildcard, {@code @Modifiable} and {@code @Unmodifiable} weaken to the top qualifier
    * unless the upper bound is a subtype of a type that has this checker's capability; see {@link
    * #typesWithCapability}. For example, {@code @Modifiable T} for an unbounded {@code T} is
-   * {@code @MaybeReplaceable}, because {@code T} may be {@code Set}.
+   * {@code @MaybeReplaceable}, because {@code T} might be {@code Set}.
    */
   @Override
   public AnnotationMirror canonicalAnnotation(

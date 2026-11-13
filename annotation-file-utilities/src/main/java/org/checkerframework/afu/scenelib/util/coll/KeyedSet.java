@@ -42,7 +42,7 @@ public interface KeyedSet<K, V> extends Set<V> {
    * then this method carries out the {@code equalBehavior} and returns the existing object.
    * Otherwise, if an object having a key equal to {@code v}'s is already present in this {@code
    * KeyedSet}, then this method carries out the {@code conflictBehavior} and returns the existing
-   * object. Otherwise, this method adds {@code v } to this {@code KeyedSet} and returns null.
+   * object. Otherwise, this method adds {@code v} to this {@code KeyedSet} and returns null.
    *
    * @param v the object to be added
    * @param conflictBehavior specifies what to do if {@code v}'s key equals an existing object's key

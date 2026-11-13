@@ -71,7 +71,7 @@ public final class BoundsInitializer {
 
   /**
    * Returns a wildcard whose extends bound is the same as {@code typeVariable}'s upper bound. If
-   * the upper bound is an intersection, then this method returns an unbound wildcard.
+   * the upper bound is an intersection, then this method returns an unbounded wildcard.
    *
    * @param typeVariable a type variable
    * @param types types util
@@ -130,7 +130,7 @@ public final class BoundsInitializer {
     }
 
     /**
-     * Creates a {@link AnnotatedTypeMirror} with the same structure as {@code javaType}.
+     * Creates an {@link AnnotatedTypeMirror} with the same structure as {@code javaType}.
      *
      * @param javaType a Java type
      * @return a new {@link AnnotatedTypeMirror} with the same structure as {@code javaType}
