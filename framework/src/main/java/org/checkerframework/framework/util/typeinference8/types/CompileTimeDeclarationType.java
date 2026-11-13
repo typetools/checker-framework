@@ -37,7 +37,7 @@ import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
 public class CompileTimeDeclarationType extends AbstractExecutableType {
 
   /**
-   * The type of the receiver. Its value may be different than {@code
+   * The type of the receiver. Its value might be different from {@code
    * this.annotatedExecutableType.getReceiver()}.
    */
   private final AnnotatedTypeMirror receiver;

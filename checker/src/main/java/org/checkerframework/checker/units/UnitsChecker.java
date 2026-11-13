@@ -8,10 +8,10 @@ import org.checkerframework.common.subtyping.SubtypingChecker;
 /**
  * Units Checker main class.
  *
- * <p>Supports "units" option to add support for additional individually named and externally
- * defined units, and "unitsDirs" option to add support for directories of externally defined units.
- * Directories must be well-formed paths from file system root, separated by colon (:) between each
- * directory.
+ * <p>Supports the "units" option to add support for additional individually named and externally
+ * defined units, and the "unitsDirs" option to add support for directories of externally defined
+ * units. Directories must be well-formed paths from file system root, separated by colon (:)
+ * between each directory.
  *
  * @checker_framework.manual #units-checker Units Checker
  */

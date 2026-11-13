@@ -39,12 +39,12 @@ public final class PurityUtils {
     throw new Error("Do not instantiate PurityUtils.");
   }
 
-  /** Represents a method that is both deterministic and side-effect free. */
+  /** Represents a method that is both deterministic and side-effect-free. */
   private static final EnumSet<PurityKind> detAndSeFree =
       EnumSet.of(PurityKind.DETERMINISTIC, PurityKind.SIDE_EFFECT_FREE);
 
   /**
-   * Does the method {@code methodTree} have any purity annotation?
+   * Returns true if the method {@code methodTree} has any purity annotation.
    *
    * @param provider how to get annotations
    * @param methodTree a method to test
@@ -55,7 +55,7 @@ public final class PurityUtils {
   }
 
   /**
-   * Does the method {@code methodElement} have any purity annotation?
+   * Returns true if the method {@code methodElement} has any purity annotation.
    *
    * @param provider how to get annotations
    * @param methodElement a method to test
@@ -67,7 +67,7 @@ public final class PurityUtils {
   }
 
   /**
-   * Is the method {@code methodTree} deterministic?
+   * Returns true if the method {@code methodTree} is deterministic.
    *
    * @param provider how to get annotations
    * @param methodTree a method to test
@@ -82,7 +82,7 @@ public final class PurityUtils {
   }
 
   /**
-   * Is the method {@code methodElement} deterministic?
+   * Returns true if the method {@code methodElement} is deterministic.
    *
    * @param provider how to get annotations
    * @param methodElement a method to test
@@ -95,7 +95,7 @@ public final class PurityUtils {
   }
 
   /**
-   * Is the method {@code methodElement} side-effect-free?
+   * Returns true if the method {@code methodElement} is side-effect-free.
    *
    * <p>This method does not use, and has different semantics than, {@link
    * AnnotationProvider#isSideEffectFree}. This method is concerned only with standard purity
@@ -117,7 +117,7 @@ public final class PurityUtils {
    * @param provider how to get annotations. Its {@link AnnotationProvider#isSideEffectFree} and
    *     {@link AnnotationProvider#isDeterministic} methods are not used.
    * @param methodTree a method to test
-   * @return the types of purity of the method {@code methodTree}; a new set, which the caller may
+   * @return the types of purity of the method {@code methodTree}; a new set, which the caller can
    *     modify
    */
   public static EnumSet<PurityKind> getPurityKinds(
@@ -137,7 +137,7 @@ public final class PurityUtils {
    *     {@link AnnotationProvider#isDeterministic} methods are not used.
    * @param methodElement a method to test
    * @return the types of purity of the method {@code methodElement}; a new set, which the caller
-   *     may modify
+   *     can modify
    */
   public static EnumSet<PurityKind> getPurityKinds(
       AnnotationProvider provider, ExecutableElement methodElement) {
@@ -185,7 +185,7 @@ public final class PurityUtils {
    *
    * <p>{@link #getPurityKinds} and {@link #isDeterministic} do not apply this rule, for two
    * reasons. First, a constructor's return type is void, but a {@code new} expression is not
-   * deterministic. Second, a caller may combine purity from several sources, such as the
+   * deterministic. Second, a caller might combine purity from several sources, such as the
    * command-line assumptions, and this rule must be applied after all of them.
    *
    * @param kinds the purity of a call; modified by this method

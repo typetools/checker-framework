@@ -23,17 +23,17 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Represents a constraint between two {@link AbstractType}. One of:
+ * Represents a constraint between two {@link AbstractType}s. One of:
  *
  * <ul>
  *   <li>{@link Kind#TYPE_COMPATIBILITY} {@code < S -> T >}: A type S is compatible in a loose
- *       invocation context with type T
+ *       invocation context with type T.
  *   <li>{@link Kind#SUBTYPE} {@code < S <: T >}: A reference type S is a subtype of a reference
- *       type T
+ *       type T.
  *   <li>{@link Kind#CONTAINED} {@code < S <= T >}: A type argument S is contained by a type
  *       argument T.
  *   <li>{@link Kind#TYPE_EQUALITY} {@code < S = T >}: A type S is the same as a type T, or a type
- *       argument S is the same as type argument T.
+ *       argument S is the same as a type argument T.
  * </ul>
  */
 public class Typing extends TypeConstraint {
@@ -43,7 +43,7 @@ public class Typing extends TypeConstraint {
 
   /**
    * Kind of constraint. One of: {@link Kind#TYPE_COMPATIBILITY}, {@link Kind#SUBTYPE}, {@link
-   * Kind#CONTAINED}, or {@link Kind#TYPE_EQUALITY}
+   * Kind#CONTAINED}, or {@link Kind#TYPE_EQUALITY}.
    */
   private final Kind kind;
 
@@ -51,7 +51,7 @@ public class Typing extends TypeConstraint {
   private final boolean isCovarTypeArg;
 
   /**
-   * Whether reducing this constraint should compare the qualifiers of two proper types. It is set
+   * True if reducing this constraint should compare the qualifiers of two proper types. It is set
    * for the equality constraints that incorporating two bounds on an inference variable implies, in
    * {@code VariableBounds.getConstraintsFromParameterized}.
    */
@@ -474,8 +474,8 @@ public class Typing extends TypeConstraint {
   }
 
   /**
-   * Returns the result of reducing this constraint, assume it is a type compatibility constraint.
-   * See JLS 18.2.2
+   * Returns the result of reducing this constraint, assuming it is a type compatibility constraint.
+   * See JLS 18.2.2.
    *
    * @return the result of reducing the constraint
    */
@@ -524,8 +524,8 @@ public class Typing extends TypeConstraint {
   }
 
   /**
-   * Returns the result of reducing this constraint, assume it is an equality constraint. See JLS
-   * 18.2.4
+   * Returns the result of reducing this constraint, assuming it is an equality constraint. See JLS
+   * 18.2.4.
    *
    * @return the result of reducing the constraint
    */

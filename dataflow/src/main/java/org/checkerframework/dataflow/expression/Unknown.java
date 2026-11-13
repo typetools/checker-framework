@@ -17,7 +17,7 @@ public class Unknown extends JavaExpression {
   private final String originalExpression;
 
   /**
-   * Create a new Unknown JavaExpression.
+   * Creates a new Unknown JavaExpression.
    *
    * @param type the Java type of this
    */
@@ -26,7 +26,7 @@ public class Unknown extends JavaExpression {
   }
 
   /**
-   * Create a new Unknown JavaExpression.
+   * Creates a new Unknown JavaExpression.
    *
    * @param type the Java type of this
    * @param originalExpression a String representation of the expression that has no corresponding
@@ -38,7 +38,7 @@ public class Unknown extends JavaExpression {
   }
 
   /**
-   * Create a new Unknown JavaExpression.
+   * Creates a new Unknown JavaExpression.
    *
    * @param tree a tree that does not have a corresponding {@code JavaExpression}
    */
@@ -47,7 +47,7 @@ public class Unknown extends JavaExpression {
   }
 
   /**
-   * Create a new Unknown JavaExpression.
+   * Creates a new Unknown JavaExpression.
    *
    * @param node a node that does not have a corresponding {@code JavaExpression}
    */
