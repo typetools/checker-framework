@@ -18,6 +18,15 @@ public class ExhaustiveSwitchLastCase {
 
   record Square() implements Shape {}
 
+  // The label of the last case refines the nullable selector expression in the body.
+  String selectorRefinement(@Nullable Shape shape) {
+    // :: error: [switching.nullable]
+    return switch (shape) {
+      case Circle c -> "a";
+      case Square s -> shape.toString();
+    };
+  }
+
   String switchExpression(Shape shape) {
     String r =
         switch (shape) {

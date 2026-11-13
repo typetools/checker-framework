@@ -1393,7 +1393,9 @@ public abstract class CFAbstractTransfer<
         }
       }
     }
-    if (lubResult != null && !canRefineSelector && recordPatternMightHaveSideEffect(n)) {
+    assert lubResult != null
+        : "@AssumeAssertion(nullness): a CaseNode has at least one case operand";
+    if (!canRefineSelector && recordPatternMightHaveSideEffect(n)) {
       // A record accessor that a record pattern of this case invokes might have changed the
       // selector expression.  The CFG does not represent the accessor calls, so their effect on
       // the selector expression is applied here.  (The stores of lubResult are fresh copies.)
@@ -1403,7 +1405,7 @@ public abstract class CFAbstractTransfer<
         lubResult.getElseStore().clearValue(selector);
       }
     }
-    if (lubResult != null && alwaysMatches) {
+    if (alwaysMatches) {
       // The case expressions are not tested, so the facts that hold when they match hold after
       // this node.  (strengthenAnnotationOfEqualTo returns a conditional result.)
       return new RegularTransferResult<>(null, lubResult.getThenStore(), lubResult.storeChanged());
