@@ -68,6 +68,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory.JavaExpressionAndOffset;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -600,16 +601,77 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
         addAnnotationForBitwiseComplement(
             getSearchIndexAnnotatedTypeFactory().getAnnotatedType(tree.getExpression()), type);
       } else if (tree.getKind() == Tree.Kind.POSTFIX_INCREMENT
-          || tree.getKind() == Tree.Kind.POSTFIX_DECREMENT
-          || tree.getKind() == Tree.Kind.PREFIX_DECREMENT) {
-        // The value of a postfix increment or decrement is the operand's value, and a decrement
-        // cannot make a value violate an upper-bound qualifier, so the result has the operand's
-        // type.
+          || tree.getKind() == Tree.Kind.POSTFIX_DECREMENT) {
+        // The value of a postfix increment or decrement is the operand's value, so the result has
+        // the operand's type.
         atypeFactory.replaceAnnotations(atypeFactory.getAnnotatedType(tree.getExpression()), type);
+      } else if (tree.getKind() == Tree.Kind.PREFIX_DECREMENT) {
+        addAnnotationForPrefixDecrement(atypeFactory.getAnnotatedType(tree.getExpression()), type);
       } else {
         type.addAnnotation(UNKNOWN);
       }
       return super.visitUnary(tree, type);
+    }
+
+    /**
+     * Sets the upper-bound type of a prefix decrement expression {@code --x}.
+     *
+     * <p>A decrement cannot make a value violate a bound such as {@code @LTLengthOf}, so in general
+     * the result has the operand's type. However, {@code @UpperBoundLiteral} denotes an exact
+     * value, which a decrement changes. A literal operand type yields the decremented literal. A
+     * polymorphic qualifier or a type variable whose bounds include an exact literal might be
+     * instantiated as a literal, so in those cases the result is {@code @UpperBoundUnknown}.
+     *
+     * @param operandType the type of the operand, {@code x}
+     * @param typeDst the type of the prefix decrement expression; it is side-effected
+     */
+    private void addAnnotationForPrefixDecrement(
+        AnnotatedTypeMirror operandType, AnnotatedTypeMirror typeDst) {
+      if (operandType instanceof AnnotatedTypeVariable operandTypeVar) {
+        AnnotationMirror upper = operandTypeVar.getUpperBound().getAnnotationInHierarchy(UNKNOWN);
+        AnnotationMirror lower = operandTypeVar.getLowerBound().getAnnotationInHierarchy(UNKNOWN);
+        if (isLiteralOrPoly(upper) || isLiteralOrPoly(lower)) {
+          typeDst.replaceAnnotation(UNKNOWN);
+        } else {
+          atypeFactory.replaceAnnotations(operandType, typeDst);
+        }
+        return;
+      }
+
+      AnnotationMirror anno = operandType.getAnnotationInHierarchy(UNKNOWN);
+      if (anno == null) {
+        typeDst.replaceAnnotation(UNKNOWN);
+        return;
+      }
+      UBQualifier qual = UBQualifier.createUBQualifier(anno, (IndexChecker) checker);
+      if (qual.isPoly()) {
+        typeDst.replaceAnnotation(UNKNOWN);
+      } else if (qual.isLiteral()) {
+        int value = ((UpperBoundLiteralQualifier) qual).getValue();
+        if (value == Integer.MIN_VALUE) {
+          // The decrement overflows.
+          typeDst.replaceAnnotation(UNKNOWN);
+        } else {
+          typeDst.replaceAnnotation(createLiteral(value - 1));
+        }
+      } else {
+        typeDst.replaceAnnotation(anno);
+      }
+    }
+
+    /**
+     * Returns true if the given annotation is an {@code @UpperBoundLiteral} or a polymorphic
+     * qualifier.
+     *
+     * @param anno an annotation in the upper-bound hierarchy, or null
+     * @return true if {@code anno} is an {@code @UpperBoundLiteral} or a polymorphic qualifier
+     */
+    private boolean isLiteralOrPoly(@Nullable AnnotationMirror anno) {
+      if (anno == null) {
+        return false;
+      }
+      UBQualifier qual = UBQualifier.createUBQualifier(anno, (IndexChecker) checker);
+      return qual.isLiteral() || qual.isPoly();
     }
 
     /**
