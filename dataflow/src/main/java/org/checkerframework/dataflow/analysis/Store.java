@@ -9,7 +9,7 @@ import org.checkerframework.dataflow.expression.JavaExpression;
  * has accumulated at any given point in time.
  *
  * @param <S> the type of the store returned by {@code copy} and that is used in {@code
- *     leastUpperBound}. Usually it is the implementing class itself, e.g. in {@code T extends
+ *     leastUpperBound}. Usually it is the implementing class itself, e.g., in {@code T extends
  *     Store<T>}.
  */
 public interface Store<S extends Store<S>> {
@@ -49,7 +49,7 @@ public interface Store<S extends Store<S>> {
   S copy();
 
   /**
-   * Compute the least upper bound of two stores.
+   * Computes the least upper bound of two stores.
    *
    * <p><em>Important</em>: This method must fulfill the following contract:
    *
@@ -65,7 +65,7 @@ public interface Store<S extends Store<S>> {
   S leastUpperBound(S other);
 
   /**
-   * Compute an upper bound of two stores that is wider than the least upper bound of the two
+   * Computes an upper bound of two stores that is wider than the least upper bound of the two
    * stores. Used to jump to a higher abstraction to allow faster termination of the fixed point
    * computations in {@link Analysis}. {@code previous} must be the previous store.
    *
@@ -88,13 +88,18 @@ public interface Store<S extends Store<S>> {
   S widenedUpperBound(S previous);
 
   /**
-   * Can the objects {@code a} and {@code b} be aliases? Returns a conservative answer (i.e.,
-   * returns {@code true} if not enough information is available to determine aliasing).
+   * Returns true if the objects {@code a} and {@code b} can be aliases. Returns a conservative
+   * answer (i.e., returns {@code true} if not enough information is available to determine
+   * aliasing).
+   *
+   * @param a a Java expression
+   * @param b a Java expression
+   * @return true if {@code a} and {@code b} can be aliases
    */
   boolean canAlias(JavaExpression a, JavaExpression b);
 
   /**
-   * Delegate visualization responsibility to a visualizer.
+   * Delegates visualization responsibility to a visualizer.
    *
    * @param viz the visualizer to visualize this store
    * @return the String representation of this store

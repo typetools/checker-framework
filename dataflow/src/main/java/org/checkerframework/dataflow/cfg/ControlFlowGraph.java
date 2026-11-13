@@ -145,7 +145,7 @@ public class ControlFlowGraph implements UniqueId {
   }
 
   /**
-   * Verify that this is a complete and well-formed CFG, i.e. that all internal invariants hold.
+   * Verifies that this is a complete and well-formed CFG, i.e., that all internal invariants hold.
    *
    * @throws IllegalStateException if some internal invariant is violated
    */
@@ -348,9 +348,9 @@ public class ControlFlowGraph implements UniqueId {
 
   /**
    * Returns all basic blocks in this control flow graph, in reversed depth-first postorder. Blocks
-   * may appear more than once in the sequence.
+   * can appear more than once in the sequence.
    *
-   * @return the list of all basic block in this control flow graph in reversed depth-first
+   * @return the list of all basic blocks in this control flow graph in reversed depth-first
    *     postorder sequence
    */
   public List<Block> getDepthFirstOrderedBlocks() {

@@ -9,7 +9,7 @@ import org.checkerframework.dataflow.cfg.node.NodeVisitor;
  * <p>A transfer function consists of the following components:
  *
  * <ul>
- *   <li>Initial store method(s) that determines which initial store should be used in the
+ *   <li>Initial store method(s) that determine which initial store should be used in the
  *       org.checkerframework.dataflow analysis.
  *   <li>A function for every {@link Node} type that determines the behavior of the
  *       org.checkerframework.dataflow analysis in that case. This method takes a {@link Node} and
@@ -21,9 +21,9 @@ import org.checkerframework.dataflow.cfg.node.NodeVisitor;
  * ForwardTransferFunction} and {@link BackwardTransferFunction} will create their own initial store
  * method(s).
  *
- * <p><em>Important</em>: The individual transfer functions ( {@code visit*}) are allowed to use
- * (and modify) the stores contained in the argument passed; the ownership is transferred from the
- * caller to that function.
+ * <p><em>Important</em>: The individual transfer functions ({@code visit*}) are allowed to use (and
+ * modify) the stores contained in the argument passed; the ownership is transferred from the caller
+ * to that function.
  *
  * @param <V> type of the abstract value that is tracked
  * @param <S> the store type used in the analysis

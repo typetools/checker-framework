@@ -26,7 +26,7 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
   private final boolean storeChanged;
 
   /**
-   * Create a new {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}, using {@code
+   * Creates a new {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}, using {@code
    * null} for {@link org.checkerframework.dataflow.analysis.TransferResult#exceptionalStores}.
    *
    * <p><em>Exceptions</em>: If the corresponding {@link
@@ -49,7 +49,7 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
   }
 
   /**
-   * Create a new {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}, using {@code
+   * Creates a new {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}, using {@code
    * null} for {@link org.checkerframework.dataflow.analysis.TransferResult#exceptionalStores} and
    * {@code false} for {@link org.checkerframework.dataflow.analysis.TransferResult#storeChanged}.
    *
@@ -62,7 +62,7 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
   }
 
   /**
-   * Create a new {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}, using {@code
+   * Creates a new {@link #RegularTransferResult(AbstractValue, Store, Map, boolean)}, using {@code
    * false} for {@link org.checkerframework.dataflow.analysis.TransferResult#storeChanged}.
    *
    * @param value the abstract value produced by the transfer function
@@ -77,9 +77,9 @@ public class RegularTransferResult<V extends AbstractValue<V>, S extends Store<S
   }
 
   /**
-   * Create a {@code TransferResult} with {@code resultStore} as the resulting store. If the
+   * Creates a {@code TransferResult} with {@code resultStore} as the resulting store. If the
    * corresponding {@link org.checkerframework.dataflow.cfg.node.Node} is a boolean node, then
-   * {@code resultStore} is used for both the 'then' and 'else' edge.
+   * {@code resultStore} is used for both the 'then' and 'else' edges.
    *
    * <p><em>Exceptions</em>: If the corresponding {@link
    * org.checkerframework.dataflow.cfg.node.Node} throws an exception, then the corresponding store

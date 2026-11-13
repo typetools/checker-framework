@@ -36,7 +36,7 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
 
   /**
    * If the underlying type is a type variable or a wildcard and the annotations include an
-   * accumulator annotation, then this is the set of accumulated values, which may be empty.
+   * accumulator annotation, then this is the set of accumulated values, which might be empty.
    * Otherwise, it is null.
    */
   private @Nullable Set<String> accumulatedValues = null;
@@ -89,7 +89,7 @@ public class AccumulationValue extends CFAbstractValue<AccumulationValue> {
 
   /**
    * If the underlying type is a type variable or a wildcard and the annotations include an
-   * accumulator annotation, then this is the set of accumulated values, which may be empty.
+   * accumulator annotation, then this is the set of accumulated values, which might be empty.
    * Otherwise, it is null.
    *
    * @return the set (this is not a copy of the set, but an alias)

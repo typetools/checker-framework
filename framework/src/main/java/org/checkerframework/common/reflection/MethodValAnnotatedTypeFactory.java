@@ -80,7 +80,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       TreeUtils.getMethod(StringVal.class, "value", 0, processingEnv);
 
   /**
-   * Create a new MethodValAnnotatedTypeFactory.
+   * Creates a new MethodValAnnotatedTypeFactory.
    *
    * @param checker the type-checker associated with this factory
    */
@@ -150,11 +150,11 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Returns a list of class names for the given tree using the Class Val Checker.
+   * Returns a list of class names for the given tree using the ClassVal Checker.
    *
    * @param tree an ExpressionTree whose class names are requested
-   * @param mustBeExact true if @ClassBound may be read to produce the result; if false,
-   *     only @ClassVal may be read
+   * @param mustBeExact true if only @ClassVal can be read to produce the result; if
+   *     false, @ClassBound can also be read
    * @return list of class names or the empty list if no class names were found
    */
   private List<String> getClassNamesFromClassValChecker(ExpressionTree tree, boolean mustBeExact) {
@@ -178,7 +178,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
   }
 
   /**
-   * Returns the string values for the argument passed. The String Values are estimated using the
+   * Returns the string values for the argument passed. The string values are estimated using the
    * Value Checker.
    *
    * @param arg an ExpressionTree whose string values are sought
@@ -399,7 +399,7 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * If getMethod(Object receiver, Object... params) or getConstructor(Object... params) have one
+     * If getMethod(Object receiver, Object... params) or getConstructor(Object... params) has one
      * argument for params, then the number of parameters in the underlying method or constructor
      * must be:
      *
@@ -412,8 +412,8 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * </ul>
      *
      * @param argument the single argument in a call to {@code getMethod} or {@code getConstructor}
-     * @return a list, each of whose elementts is a possible the number of parameters; it is often,
-     *     but not always, a singleton list
+     * @return a list, each of whose elements is a possible number of parameters; it is often, but
+     *     not always, a singleton list
      */
     private List<Integer> getNumberOfParameterOneArg(ExpressionTree argument) {
       AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(argument);
