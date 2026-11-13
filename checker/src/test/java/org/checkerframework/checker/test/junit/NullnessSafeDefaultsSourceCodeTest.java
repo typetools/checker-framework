@@ -17,7 +17,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class NullnessSafeDefaultsSourceCodeTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a NullnessSafeDefaultsSourceCodeTest.
+   * Creates a NullnessSafeDefaultsSourceCodeTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

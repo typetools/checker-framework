@@ -41,7 +41,7 @@ These qualifiers make up the Regex type system:
   that many. If not provided, the parameter defaults to 0.
   For example, if an expression's type is \<@Regex(1) String>, then its
   run-time value could be \<"colo(u?)r"> or \<"(brown|beige)"> but not
-  \<"colou?r"> nor a non-regex string such as \<"1) first point">.
+  \<"colou?r"> or a non-regex string such as \<"1) first point">.
 
 \item[\refqualclass{checker/regex/qual}{PolyRegex}]
   indicates qualifier polymorphism.
@@ -91,7 +91,7 @@ to \sunjavadoc{java.base/java/util/regex/Matcher.html}{Matcher}'s
 the type of \<Matcher> must be qualified with a \<@Regex> annotation
 with the number of capturing groups in the regular expression. This is
 handled implicitly by the Regex Checker for local variables (see
-Section~\ref{type-refinement}), but you may need to add \<@Regex> annotations
+Section~\ref{type-refinement}), but you might need to add \<@Regex> annotations
 with a capturing group count to \<Pattern> and \<Matcher> fields and
 parameters.
 
@@ -124,7 +124,7 @@ is a regular expression --- and sometimes your code cannot either!  In
 these cases, you can use the \<isRegex> method to perform such a test, and
 other helper methods to provide useful error messages.  A
 common use is for user-provided regular expressions (such as ones passed
-on the command-line).
+on the command line).
 Figure~\ref{fig-regex-util-example} gives an
 example of the intended use of the \code{RegexUtil} methods.
 

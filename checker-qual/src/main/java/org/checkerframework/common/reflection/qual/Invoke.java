@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation for methods like {@code Method.invoke}, whose signature is: <br>
- * {@code Object method(@}{@link MethodVal}{@code (classname=c, methodname=m, params=p) Method this,
+ * {@code Object method(@}{@link MethodVal}{@code (className=c, methodName=m, params=p) Method this,
  * Object obj, Object... args)}
  *
  * @checker_framework.manual #reflection-resolution Reflection resolution
