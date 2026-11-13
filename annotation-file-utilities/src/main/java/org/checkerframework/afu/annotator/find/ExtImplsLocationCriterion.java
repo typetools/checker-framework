@@ -17,8 +17,10 @@ public class ExtImplsLocationCriterion implements Criterion {
   private final Integer index;
 
   /**
+   * Creates a new ExtImplsLocationCriterion.
+   *
    * @param classname the class name; for debugging purposes only, not used to constrain
-   * @param tyLoc -1 for an extends clause, $ge; 0 for the zero-based implements clause
+   * @param tyLoc -1 for an extends clause, &ge; 0 for the zero-based implements clause
    */
   public ExtImplsLocationCriterion(String classname, TypeIndexLocation tyLoc) {
     this.classname = classname;

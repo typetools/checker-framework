@@ -239,7 +239,7 @@ public class UnitsRelationsDefault implements UnitsRelations {
    * @param ul left-hand unit
    * @param rht right-hand annotated type
    * @param ur right-hand unit
-   * @return true if lht has lu and rht has ru, false otherwise
+   * @return true if lht has ul and rht has ur, false otherwise
    */
   protected boolean havePairOfUnits(
       AnnotatedTypeMirror lht, AnnotationMirror ul, AnnotatedTypeMirror rht, AnnotationMirror ur) {

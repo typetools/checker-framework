@@ -53,7 +53,7 @@ public final class TypePathEntry {
       new TypePathEntry(TypePath.WILDCARD_BOUND, 0);
 
   /**
-   * Construct a new TypePathEntry.
+   * Constructs a new TypePathEntry.
    *
    * @param step the type of the TypePathEntry
    * @param argument index of the type argument or 0
@@ -64,7 +64,7 @@ public final class TypePathEntry {
   }
 
   /**
-   * Create a TypePathEntry.
+   * Creates a TypePathEntry.
    *
    * @param step the type of the TypePathEntry
    * @param argument index of the type argument or 0
@@ -117,7 +117,7 @@ public final class TypePathEntry {
    *
    * @param step the kind of TypePathEntry
    * @param argument a type index if the step == TYPE_ARGUMENT, otherwise ignored
-   * @return the String reresentaion of the TypePathEntry
+   * @return the String representation of the TypePathEntry
    */
   public static String toString(int step, int argument) {
     return switch (step) {
