@@ -105,7 +105,7 @@ import org.plumelib.util.UtilP;
  *
  * <p>Most type-checker plug-ins should extend {@link BaseTypeChecker}, instead of this class. Only
  * checkers that require annotated types but not subtype checking (e.g. for testing purposes) should
- * extend this. Non-type checkers (e.g. for enforcing coding styles) may extend {@link
+ * extend this. Non-type checkers (e.g. for enforcing coding styles) can extend {@link
  * AbstractProcessor} (or even this class).
  */
 @SupportedOptions({
@@ -515,7 +515,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * SuppressWarnings strings supplied via the {@code -AsuppressWarnings} option. Do not use
-   * directly, call {@link #getSuppressWarningsStringsFromOption()}.
+   * directly; call {@link #getSuppressWarningsStringsFromOption()}.
    */
   private String @MonotonicNonNull [] suppressWarningsStringsFromOption;
 
@@ -577,7 +577,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * Regular expression pattern to specify files or directories that should be checked.
    *
    * <p>It contains the pattern specified by the user, through the option {@code
-   * checkers.onlyFiles}; otherwise it contains a pattern that can match no directory.
+   * checkers.onlyFiles}; otherwise it contains a pattern that matches everything.
    */
   private @MonotonicNonNull Pattern onlyFilesPattern;
 
@@ -609,7 +609,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * The string that separates the checker name from the option name in a "-A" command-line
-   * argument. This string may only consist of valid Java identifier part characters, because it
+   * argument. This string must consist only of valid Java identifier part characters, because it
    * will be used within the key of an option.
    */
   protected static final String OPTION_SEPARATOR = "_";
@@ -630,7 +630,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * the trees are within {@link #reportOnceCompilationUnit}. Only the ultimate parent checker's set
    * is consulted, so all the checkers of a compound checker share one set.
    *
-   * <p>The whole message, rather than just its key, is part of the pair because one tree may be the
+   * <p>The whole message, rather than just its key, is part of the pair because one tree can be the
    * source of several distinct messages that have the same key. For example, an enhanced for loop
    * is desugared into calls to {@code iterator()}, {@code hasNext()}, and {@code next()}, each of
    * which is reported at the {@code for} statement. The message is represented as its string
@@ -747,7 +747,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Set the processing environment and other related fields of the current checker.
+   * Sets the processing environment and other related fields of the current checker.
    *
    * @param env the new processing environment
    */
@@ -758,7 +758,11 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     this.types = processingEnv.getTypeUtils();
   }
 
-  /** Set the parent checker of the current checker. */
+  /**
+   * Sets the parent checker of the current checker.
+   *
+   * @param parentChecker the parent checker
+   */
   protected void setParentChecker(SourceChecker parentChecker) {
     this.parentChecker = parentChecker;
   }
@@ -1022,7 +1026,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Extract the value of the {@code skipFiles} option given the value of the options passed to the
+   * Extracts the value of the {@code skipFiles} option given the value of the options passed to the
    * checker.
    *
    * @param options the map of options and their values passed to the checker
@@ -1043,7 +1047,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Extract the value of the {@code onlyFiles} option given the value of the options passed to the
+   * Extracts the value of the {@code onlyFiles} option given the value of the options passed to the
    * checker.
    *
    * @param options the map of options and their values passed to the checker
@@ -1060,7 +1064,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /**
    * {@inheritDoc}
    *
-   * <p>Type-checkers are not supposed to override this. Instead override initChecker. This allows
+   * <p>Type-checkers are not supposed to override this. Instead, override initChecker. This allows
    * us to handle BugInCF only here and doesn't require all overriding implementations to be aware
    * of BugInCF.
    *
@@ -1109,7 +1113,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Initialize the checker.
+   * Initializes the checker.
    *
    * @see AbstractProcessor#init(ProcessingEnvironment)
    */
@@ -1156,23 +1160,23 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     warnUnneededSuppressions = hasOption("warnUnneededSuppressions");
   }
 
-  /** Output the warning about source level at most once. */
+  /** True if the warning about the source level has been output; it is output at most once. */
   private boolean warnedAboutSourceLevel = false;
 
   /**
-   * If true, javac failed to compile the code or a previously-run annotation processor issued an
+   * True if javac failed to compile the code or a previously-run annotation processor issued an
    * error.
    */
   protected boolean javacErrored = false;
 
-  /** Output the warning about memory at most once. */
+  /** True if the warning about memory has been output; it is output at most once. */
   private boolean warnedAboutGarbageCollection = false;
 
   /**
    * The number of errors at the last exit of the type processor (that is, upon completion of
    * processing the previous compilation unit). At entry to the type processor, if the current error
    * count is higher, then javac must have issued an error. If javac issued an error, then don't
-   * process the file, as it contains * some Java errors.
+   * process the file, as it contains some Java errors.
    */
   private int errsOnLastExit = 0;
 
@@ -1287,7 +1291,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Type-check the code using this checker's visitor.
+   * Type-checks the code using this checker's visitor.
    *
    * @see Processor#process(Set, RoundEnvironment)
    */
@@ -1423,7 +1427,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /**
    * Reports an error. By default, prints it to the screen via the compiler's internal messager.
    *
-   * @param source the source position information; may be an Element, a Tree, or null
+   * @param source the source position information; can be an Element, a Tree, or null
    * @param messageKey the message key
    * @param args arguments for interpolation in the string corresponding to the given message key
    */
@@ -1435,7 +1439,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /**
    * Reports a warning. By default, prints it to the screen via the compiler's internal messager.
    *
-   * @param source the source position information; may be an Element, a Tree, or null
+   * @param source the source position information; can be an Element, a Tree, or null
    * @param messageKey the message key
    * @param args arguments for interpolation in the string corresponding to the given message key
    */
@@ -1451,7 +1455,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * <p>It is rare to use this method. Most clients should use {@link #reportError} or {@link
    * #reportWarning}.
    *
-   * @param source the source position information; may be an Element, a Tree, or null
+   * @param source the source position information; can be an Element, a Tree, or null
    * @param d the diagnostic message
    */
   public void report(@Nullable Object source, DiagMessage d) {
@@ -1467,7 +1471,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * <p>Because the message does not depend on which checker computes it, a
    * {@code @SuppressWarnings} whose prefix names any checker of the compound checker suppresses it.
    * In particular, the prefix of the checker that the user ran does, even though some subchecker
-   * may be the one that computed the message.
+   * might be the one that computed the message.
    *
    * <p>Use this for a diagnostic that does not depend on which checker computes it, but that every
    * checker of a compound checker computes independently -- such as one that is computed during
@@ -1512,7 +1516,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * Reports a diagnostic message. By default, it prints it to the screen via the compiler's
    * internal messager; however, it might also store it for later output.
    *
-   * @param source the source position information; may be an Element or a Tree
+   * @param source the source position information; can be an Element or a Tree
    * @param kind the type of message
    * @param messageKey the message key
    * @param args arguments for interpolation in the string corresponding to the given message key
@@ -1609,7 +1613,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Print a non-localized message using the javac messager. This is preferable to using System.out
+   * Prints a non-localized message using the javac messager. This is preferable to using System.out
    * or System.err, but should only be used for exceptional cases that don't happen in correct
    * usage. Localized messages should be raised using {@link #reportError}, {@link #reportWarning},
    * etc.
@@ -1625,7 +1629,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Print a non-localized message using the javac messager. This is preferable to using System.out
+   * Prints a non-localized message using the javac messager. This is preferable to using System.out
    * or System.err, but should only be used for exceptional cases that don't happen in correct
    * usage. Localized messages should be raised using {@link #reportError}, {@link #reportWarning},
    * etc.
@@ -1643,9 +1647,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Print the given message.
+   * Prints the given message.
    *
-   * @param msg the message to print x
+   * @param msg the message to print
    */
   private void printMessage(String msg) {
     if (messager == null) {
@@ -1720,7 +1724,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Output the given stack trace if the "dumpOnErrors" option is enabled.
+   * Outputs the given stack trace if the "dumpOnErrors" option is enabled.
    *
    * @param trace stack trace when the checker encountered a warning/error
    */
@@ -1766,7 +1770,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Process an argument to an error message before it is passed to String.format.
+   * Processes an argument to an error message before it is passed to String.format.
    *
    * <p>This implementation expands the argument if it is exactly a message key.
    *
@@ -1791,7 +1795,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /**
    * Returns all but the message key part of the message format output by {@code -Adetailedmsgtext}.
    *
-   * @param source the object from which to obtain source position information; may be an Element, a
+   * @param source the object from which to obtain source position information; can be an Element, a
    *     Tree, or null
    * @param defaultFormat the message key, in square brackets
    * @param args arguments for interpolation in the string corresponding to the given message key
@@ -1835,7 +1839,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *       "allcheckers".
    *   <li>If {@code -ArequirePrefixInWarningSuppressions} or {@code -AshowPrefixInWarningMessages}
    *       was supplied on the command line, this is {@code checkername:msg} (where {@code
-   *       checkername} may be "allcheckers").
+   *       checkername} can be "allcheckers").
    *   <li>Otherwise, it is just {@code msg}.
    * </ul>
    *
@@ -1869,9 +1873,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Convert a Tree, Element, or null, into a Tree or null.
+   * Converts a Tree, Element, or null, into a Tree or null.
    *
-   * @param source the object from which to obtain source position information; may be an Element, a
+   * @param source the object from which to obtain source position information; can be an Element, a
    *     Tree, or null
    * @return the tree associated with the given source object, or null if none
    */
@@ -1888,7 +1892,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * For the given tree, compute the source positions for that tree. Return a "tuple"-like string
+   * For the given tree, computes the source positions for that tree. Returns a "tuple"-like string
    * (e.g. "( 1, 200 )" ) that contains the start and end position of the tree in the current
    * compilation unit. Used only by the -Adetailedmsgtext output format.
    *
@@ -1917,7 +1921,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   //
 
   /**
-   * Determine which lint options are artive.
+   * Determines which lint options are active.
    *
    * @param options the command-line options
    * @return the active lint options
@@ -2017,7 +2021,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Set the value of the lint option with the given name. Just as <a
+   * Sets the value of the lint option with the given name. Just as <a
    * href="https://docs.oracle.com/javase/7/docs/technotes/tools/windows/javac.html">javac</a> uses
    * "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx, annotation-related lint options
    * are enabled with "-Alint=xxx" and disabled with "-Alint=-xxx". This method can be used by
@@ -2068,7 +2072,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * Helper method to find the parent of a lint key. The lint hierarchy level is denoted by a colon
-   * ':'. 'all' is the root for all hierarchy.
+   * ':'. 'all' is the root of the whole hierarchy.
    *
    * <pre>
    * Example
@@ -2077,7 +2081,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    *    all         &rarr; {@code null}
    * </pre>
    *
-   * @param name the lint key whose parest to find
+   * @param name the lint key whose parent to find
    * @return the parent of the lint key
    */
   private @Nullable String parentOfOption(String name) {
@@ -2108,7 +2112,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * #getOptionsNoSubcheckers()} or {@link #hasOptionNoSubcheckers(String)} to avoid recursively
    * calling this method.
    *
-   * <p>Each subchecker of this checker may also depend on other checkers. If this checker and one
+   * <p>Each subchecker of this checker can also depend on other checkers. If this checker and one
    * of its subcheckers both depend on a third checker, that checker will only be instantiated once.
    *
    * <p>Though each checker is run on a whole compilation unit before the next checker is run, error
@@ -2177,7 +2181,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Compute the set of supported lint options for this checker and its subcheckers.
+   * Computes the set of supported lint options for this checker and its subcheckers.
    *
    * @return the set of supported lint options for this checker and its subcheckers
    */
@@ -2212,7 +2216,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Set the supported lint options.
+   * Sets the supported lint options.
    *
    * @param newLints the new supported lint options, which replace any existing ones
    */
@@ -2225,7 +2229,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   //
 
   /**
-   * Determine which options are active.
+   * Determines which options are active.
    *
    * @param options all provided options
    * @return a value for {@link #activeOptions}
@@ -2438,8 +2442,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Generate the possible command-line option names by prefixing each class name from {@code
-   * classPrefixes} to {@code options}, separated by {@link #OPTION_SEPARATOR}.
+   * Generates the possible command-line option names by prefixing each class name from {@code
+   * clazzPrefixes} to {@code options}, separated by {@link #OPTION_SEPARATOR}.
    *
    * @param clazzPrefixes the classes to prefix
    * @param options the option names
@@ -2461,7 +2465,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /**
    * Overrides the default implementation to always return a singleton set containing only "*".
    *
-   * <p>javac uses this list to determine which classes process; javac only runs an annotation
+   * <p>javac uses this list to determine which classes to process; javac only runs an annotation
    * processor on classes that contain at least one of the mentioned annotations. Thus, the effect
    * of returning "*" is as if the checker were annotated by {@code @SupportedAnnotationTypes("*")}:
    * javac runs the checker on every class mentioned on the javac command line. This method also
@@ -2661,7 +2665,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * Finds the tree that is a {@code @SuppressWarnings} annotation.
    *
    * @param tree a class, method, or variable tree annotated with {@code @SuppressWarnings}
-   * @return tree for {@code @SuppressWarnings} or {@code default} if one isn't found
+   * @return tree for {@code @SuppressWarnings}
    */
   private Tree findSuppressWarningsAnnotationTree(Tree tree) {
     List<? extends AnnotationTree> annotations;
@@ -2687,7 +2691,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * implementation just delegates to an overloaded, more specific version of {@code
    * shouldSuppressWarnings()}.
    *
-   * @param src the position object to test; may be an Element, a Tree, or null
+   * @param src the position object to test; can be an Element, a Tree, or null
    * @param errKey the error key the checker is emitting
    * @return true if all warnings pertaining to the given source should be suppressed
    * @see #shouldSuppressWarnings(Element, String)
@@ -2821,7 +2825,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Should conservative defaults be used for the kind of unchecked code indicated by the parameter?
+   * Returns true if conservative defaults should be used for the kind of unchecked code indicated
+   * by the parameter.
    *
    * @param kindOfCode source or bytecode
    * @return true if conservative defaults should be used
@@ -2909,17 +2914,17 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * Returns true if an error (whose message key is {@code messageKey}) should be suppressed. It is
    * suppressed if any of the given SuppressWarnings strings suppresses it.
    *
-   * <p>A SuppressWarnings string may be of the following pattern:
+   * <p>A SuppressWarnings string can have one of the following forms:
    *
    * <ol>
    *   <li>{@code "prefix"}, where prefix is a SuppressWarnings prefix, as specified by {@link
    *       #getSuppressWarningsPrefixes()}. For example, {@code "nullness"} and {@code
    *       "initialization"} for the Nullness Checker, {@code "regex"} for the Regex Checker.
    *   <li>{@code "partial-message-key"}, where partial-message-key is a prefix or suffix of the
-   *       message key that it may suppress. So "generic.argument" would suppress any errors whose
+   *       message key that it can suppress. So "generic.argument" would suppress any errors whose
    *       message key contains "generic.argument".
-   *   <li>{@code "prefix:partial-message-key}, where the prefix and partial-message-key is as
-   *       above. So "nullness:generic.argument", would suppress any errors in the Nullness Checker
+   *   <li>{@code "prefix:partial-message-key"}, where the prefix and partial-message-key are as
+   *       above. So "nullness:generic.argument" would suppress any errors in the Nullness Checker
    *       with a message key that contains "generic.argument".
    * </ol>
    *
@@ -2930,7 +2935,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * {@code "partial-message-key"} has no effect; {@code "prefix"} and {@code
    * "prefix:partial-message-key"} are the only SuppressWarnings strings that have an effect.
    *
-   * @param suppressWarningsInEffect the SuppressWarnings strings that are in effect. May be null,
+   * @param suppressWarningsInEffect the SuppressWarnings strings that are in effect. Can be null,
    *     in which case this method returns false.
    * @param messageKey the message key of the error the checker is emitting; a lowercase string,
    *     without any "checkername:" prefix
@@ -2945,7 +2950,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * Helper method for {@link #shouldSuppress(String[], String)}.
    *
    * @param prefixes the SuppressWarnings prefixes used by this checker
-   * @param suppressWarningsInEffect the SuppressWarnings strings that are in effect. May be null,
+   * @param suppressWarningsInEffect the SuppressWarnings strings that are in effect. Can be null,
    *     in which case this method returns false.
    * @param messageKey the message key of the error the checker is emitting; a lowercase string,
    *     without any "checkername:" prefix
@@ -3024,8 +3029,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Does the given messageKey match a messageKey that appears in a SuppressWarnings? Subclasses
-   * should override this method if they need additional logic to compare message keys.
+   * Returns true if the given messageKey matches a messageKey that appears in a SuppressWarnings.
+   * Subclasses should override this method if they need additional logic to compare message keys.
    *
    * @param messageKey the message key of the error that is being emitted, without any "checker:"
    *     prefix
@@ -3154,7 +3159,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
    * checker.skipUses} property. In contrast to {@link #shouldSkipUses(Element)} this version can
    * also be used from primitive types, which don't have an element.
    *
-   * <p>Checkers that require their annotations not to be checked on certain JDK classes may
+   * <p>Checkers that require their annotations not to be checked on certain JDK classes can
    * override this method to skip them. They shall call {@code super.shouldSkipUses(typeName)} to
    * also skip the classes matching the pattern.
    *
@@ -3259,8 +3264,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Returns true if the file at the file path should be not be checked because it matches the
-   * {@code checker.skipFiles} property.
+   * Returns true if the file at the file path should not be checked because it matches the {@code
+   * checker.skipFiles} property.
    *
    * @param path the path to the file to potentially skip
    * @return true iff the checker should not check the file at {@code path}
@@ -3293,7 +3298,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Log (that is, print) a user error, along with its causes if it has any.
+   * Logs (that is, prints) a user error, along with its causes if it has any.
    *
    * @param ce the user error to output
    */
@@ -3312,7 +3317,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Log (that is, print) a type system error.
+   * Logs (that is, prints) a type system error.
    *
    * @param ce the type system error to output
    */
@@ -3322,7 +3327,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Log (that is, print) an internal error in the framework or a checker.
+   * Logs (that is, prints) an internal error in the framework or a checker.
    *
    * @param ce the internal error to output
    */
@@ -3342,7 +3347,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Log (that is, print) an internal error in the framework or a checker.
+   * Logs (that is, prints) an internal error in the framework or a checker.
    *
    * @param ce the internal error to output
    * @param culprit a message to print about the cause
@@ -3466,7 +3471,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     }
   }
 
-  /** Print resource usage statistics. */
+  /** Prints resource usage statistics. */
   protected void printStats() {
     List<MemoryPoolMXBean> memoryPools = ManagementFactory.getMemoryPoolMXBeans();
     for (MemoryPoolMXBean memoryPool : memoryPools) {
@@ -3517,7 +3522,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   /** True if the git.properties file has been printed. */
   private static boolean gitPropertiesPrinted = false;
 
-  /** Print information about the git repository from which the Checker Framework was compiled. */
+  /** Prints information about the git repository from which the Checker Framework was compiled. */
   private void printGitProperties() {
     if (gitPropertiesPrinted) {
       return;
@@ -3567,7 +3572,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
 
   /**
    * Gradle and IntelliJ wrap the processing environment to gather information about modifications
-   * done by annotation processor during incremental compilation. But the Checker Framework calls
+   * done by annotation processors during incremental compilation. But the Checker Framework calls
    * methods from javac that require the processing environment to be {@code
    * com.sun.tools.javac.processing.JavacProcessingEnvironment}. They fail if given a proxy. This
    * method unwraps a proxy if one is used.
@@ -3657,7 +3662,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
   }
 
   /**
-   * Index of this checker {@link #getSubcheckers()} or the size of {@link #getSubcheckers()} if
+   * Index of this checker in {@link #getSubcheckers()} or the size of {@link #getSubcheckers()} if
    * this is the ultimate ancestor checker. Do not use this field directly. Call {@link
    * #getSubCheckerIndex()} instead.
    */
@@ -3711,7 +3716,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor implements Opt
     final StackTraceElement[] trace;
 
     /**
-     * Create a new CheckerMessage.
+     * Creates a new CheckerMessage.
      *
      * @param kind kind of diagnostic, for example, error or warning
      * @param message error message that needs to be printed

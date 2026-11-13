@@ -9,7 +9,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
 
 /**
  * The analysis class for the non-null type system (serves as factory for the transfer function,
- * stores and abstract values.
+ * stores, and abstract values).
  */
 public class NullnessAnalysis
     extends CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer> {
