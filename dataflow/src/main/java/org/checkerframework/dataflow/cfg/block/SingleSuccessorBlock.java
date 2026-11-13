@@ -26,7 +26,7 @@ public interface SingleSuccessorBlock extends Block {
   FlowRule getFlowRule();
 
   /**
-   * Set the flow rule for information flowing from this block to its successor.
+   * Sets the flow rule for information flowing from this block to its successor.
    *
    * @param rule the new flow rule for information flowing from this block to its successor
    */

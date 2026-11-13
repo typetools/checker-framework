@@ -34,7 +34,7 @@ public final class FormatUtil {
     private final ConversionCategory cath;
 
     /**
-     * Construct a new Conversion.
+     * Constructs a new Conversion.
      *
      * @param index the index in the argument list
      * @param c the conversion character
@@ -159,7 +159,7 @@ public final class FormatUtil {
   }
 
   /**
-   * A regex that matches a format specifier. Its syntax is specified in the See <a
+   * A regex that matches a format specifier. Its syntax is specified in the <a
    * href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Formatter.html#syntax">{@code
    * Formatter} documentation</a>.
    *
@@ -212,7 +212,7 @@ public final class FormatUtil {
   }
 
   /**
-   * Returns the conversion character from a format specifier..
+   * Returns the conversion character from a format specifier.
    *
    * @param m a matcher that matches a format specifier
    * @return the conversion character from the format specifier
@@ -249,7 +249,7 @@ public final class FormatUtil {
   }
 
   /**
-   * Parse the given format string, return information about its format specifiers.
+   * Parses the given format string and returns information about its format specifiers.
    *
    * @param format a format string
    * @return the list of Conversions from the format specifiers in the format string

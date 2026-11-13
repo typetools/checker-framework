@@ -4,6 +4,7 @@ import com.github.javaparser.ParseException;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.StubUnit;
@@ -19,12 +20,14 @@ import com.github.javaparser.ast.body.InitializerDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.ReceiverParameter;
+import com.github.javaparser.ast.body.RecordDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
@@ -53,9 +56,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.checkerframework.afu.scenelib.Annotation;
@@ -80,10 +85,9 @@ import org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers;
 import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.javacutil.BugInCF;
-import org.plumelib.reflection.Signatures;
 
 /**
- * Convert a JAIF file plus a stub file into index files (JAIFs). Note that the resulting index
+ * Converts a JAIF file plus a stub file into index files (JAIFs). Note that the resulting index
  * files will not include annotation definitions, for which stubfiles do not generally provide
  * complete information.
  *
@@ -94,7 +98,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   // The possessive modifiers "*+" are for efficiency only.
   // private static Pattern packagePattern =
   //         Pattern.compile("\\bpackage *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
-  /** A pattern that matches an import statement. */
+  /**
+   * A pattern that matches an import statement. Its group 1 matches the imported name: a fully
+   * qualified type name such as {@code java.util.Map.Entry} for a single-type import, or a name
+   * followed by {@code .*} such as {@code java.util.*} for an import-on-demand. For a static
+   * import, group 1 starts with {@code static}, so callers skip static imports before matching.
+   */
   private static final Pattern importPattern =
       Pattern.compile("\\bimport *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
 
@@ -125,10 +134,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private final @Nullable @DotSeparatedIdentifiers String pkgName;
 
-  /** Imports that appear in the stub file. */
-  private final List<String> imports;
+  /** Single-type imports that appear in the stub file, such as {@code java.util.List}. */
+  private final List<String> singleTypeImports;
 
-  /** A scene read from the input JAIF file, and will be written to the output JAIF file. */
+  /** Imports-on-demand that appear in the stub file, such as {@code java.util.*}. */
+  private final List<String> onDemandImports;
+
+  /**
+   * A scene that is read from the input JAIF file and that will be written to the output JAIF file.
+   */
   private final AScene scene;
 
   /**
@@ -147,7 +161,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /**
    * Creates a new ToIndexFileConverter.
    *
-   * @param pkgDecl the AST node for package declaration
+   * @param pkgDecl the AST node for the package declaration
    * @param importDecls the AST nodes for import declarations
    * @param scene scene for visitor methods to fill in
    */
@@ -157,27 +171,31 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     this.scene = scene;
     pkgName = pkgDecl == null ? null : pkgDecl.getNameAsString();
     if (importDecls == null) {
-      imports = Collections.emptyList();
+      singleTypeImports = Collections.emptyList();
+      onDemandImports = Collections.emptyList();
     } else {
-      ArrayList<String> imps = new ArrayList<>(importDecls.size());
+      ArrayList<String> singles = new ArrayList<>(importDecls.size());
+      ArrayList<String> onDemands = new ArrayList<>(importDecls.size());
       for (ImportDeclaration decl : importDecls) {
         if (!decl.isStatic()) {
           Matcher m = importPattern.matcher(decl.toString());
           if (m.find()) {
             String s = m.group(1);
             if (s != null) {
-              imps.add(s);
+              (s.endsWith("*") ? onDemands : singles).add(s);
             }
           }
         }
       }
-      imps.trimToSize();
-      imports = Collections.unmodifiableList(imps);
+      singles.trimToSize();
+      onDemands.trimToSize();
+      singleTypeImports = Collections.unmodifiableList(singles);
+      onDemandImports = Collections.unmodifiableList(onDemands);
     }
   }
 
   /**
-   * Parse stub files and write out equivalent JAIFs. Note that the results do not include
+   * Parses stub files and writes out equivalent JAIFs. Note that the results do not include
    * annotation definitions, for which stubfiles do not generally provide complete information.
    *
    * @param args name of JAIF with annotation definition, followed by names of stub files to be
@@ -215,8 +233,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Augment given scene with information from stubfile, reading stubs from input stream and writing
-   * JAIF to output stream.
+   * Augments the given scene with information from a stub file, reading stubs from an input stream
+   * and writing a JAIF to an output stream.
    *
    * @param scene the initial scene
    * @param in stubfile contents
@@ -272,8 +290,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Builds simplified annotation from its declaration. Only the name is included, because stubfiles
-   * do not generally have access to the full definitions of annotations.
+   * Builds a simplified annotation from its declaration. Only the name is included, because
+   * stubfiles do not generally have access to the full definitions of annotations.
+   *
+   * @param expr an annotation expression, such as {@code @Nullable}
+   * @return a simplified annotation with only the name, or null if the annotation is synthetic
    */
   private static @Nullable Annotation extractAnnotation(AnnotationExpr expr) {
     String exprName = expr.toString().substring(1); // leave off leading '@'
@@ -337,9 +358,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     List<Type> paramTypes = new ArrayList<>();
     if (params != null) {
       for (Parameter param : params) {
-        Type paramType = parameterType(param);
-        paramTypes.add(paramType);
-        sb.append(getJVML(paramType));
+        paramTypes.add(parameterType(param));
+        sb.append(parameterJVML(param));
       }
     }
     sb.append(")V");
@@ -365,11 +385,20 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   public Void visit(EnumConstantDeclaration decl, AElement elem) {
     AField field = ((AClass) elem).fields.getVivify(decl.getNameAsString());
     visitDecl(decl, field);
-    return super.visit(decl, field);
+    // Do not visit the arguments or the class body.  A class body declares an anonymous class,
+    // whose members do not belong to the field.
+    return null;
   }
 
   @Override
   public Void visit(EnumDeclaration decl, AElement elem) {
+    AClass clazz = classFor(decl, elem);
+    visitDecl(decl, clazz);
+    return super.visit(decl, clazz);
+  }
+
+  @Override
+  public Void visit(RecordDeclaration decl, AElement elem) {
     AClass clazz = classFor(decl, elem);
     visitDecl(decl, clazz);
     return super.visit(decl, clazz);
@@ -407,9 +436,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     List<Type> paramTypes = new ArrayList<>();
     if (params != null) {
       for (Parameter param : params) {
-        Type paramType = parameterType(param);
-        paramTypes.add(paramType);
-        sb.append(getJVML(paramType));
+        paramTypes.add(parameterType(param));
+        sb.append(parameterJVML(param));
       }
     }
     sb.append(')').append(getJVML(type));
@@ -563,6 +591,20 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
+   * Returns a formal parameter's JVML representation. Unlike {@code getJVML(parameterType(param))},
+   * this resolves the type in the context of the parameter's declaration. For a varargs parameter,
+   * {@link #parameterType} returns a copy of the element type that is not part of the AST, so
+   * resolving that copy would not consider the declarations that enclose the parameter.
+   *
+   * @param param a formal parameter
+   * @return the JVML representation of the type of {@code param}
+   */
+  private String parameterJVML(Parameter param) {
+    String elementJVML = getJVML(param.getType());
+    return param.isVarArgs() ? "[" + elementJVML : elementJVML;
+  }
+
+  /**
    * Copies the annotations that precede a declaration's type to the declaration, to the type, or to
    * both.
    *
@@ -616,7 +658,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    */
   private @Nullable List<ElementType> getTargets(AnnotationExpr expr) {
     @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
-    @BinaryName String name = expr.getNameAsString();
+    @FullyQualifiedName String name = expr.getNameAsString();
     if (targetsCache.containsKey(name)) {
       return targetsCache.get(name);
     }
@@ -739,20 +781,42 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   String getJVML(Type type) {
     return type.accept(
         new GenericVisitorAdapter<String, Void>() {
+          // The type parameters whose erasure is being computed.  It prevents infinite recursion
+          // on a malformed stub file whose bounds are cyclic, as in `<T extends U, U extends T>`.
+          private final Set<TypeParameter> visiting =
+              Collections.newSetFromMap(new IdentityHashMap<>());
+
           @Override
           public String visit(ClassOrInterfaceType type, Void v) {
-            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameAsString
-            @FullyQualifiedName String typeName = type.getNameAsString();
-            @SuppressWarnings("signature" // TODO:  bug in ToIndexFileConverter:
-            // resolve requires a @BinaryName, but this passes a @FullyQualifiedName.
-            // They differ for inner classes.
-            )
+            // Use the name together with its scope, so that a qualified name such as
+            // `java.util.List` or `Map.Entry` is not truncated to its last identifier.
+            @SuppressWarnings("signature") // https://tinyurl.com/cfissue/658 for getNameWithScope
+            @FullyQualifiedName String typeName = type.getNameWithScope();
+            String[] identifiers = typeName.split("\\.", -1);
+            // Search each enclosing scope, innermost first.
+            Node declaration = null;
+            for (Node n = type; n != null; n = n.getParentNode().orElse(null)) {
+              declaration = firstDeclarationAt(n, identifiers);
+              if (declaration != null) {
+                break;
+              }
+            }
+            if (declaration instanceof TypeParameter typeParam) {
+              // The JVML descriptor uses the erasure, which is the first bound, or Object if
+              // the type parameter has no bound.
+              NodeList<ClassOrInterfaceType> bounds = typeParam.getTypeBound();
+              if (bounds.isEmpty() || !visiting.add(typeParam)) {
+                return "Ljava/lang/Object;";
+              }
+              String result = bounds.get(0).accept(this, null);
+              visiting.remove(typeParam);
+              return result;
+            }
             String name = resolve(typeName);
             if (name == null) {
-              // could be defined in the same stub file
-              return "L" + typeName + ";";
+              name = typeName;
             }
-            return "L" + String.join("/", name.split("\\.")) + ";";
+            return "L" + name.replace('.', '/') + ";";
           }
 
           @Override
@@ -800,13 +864,35 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
+   * Returns the declaration, in the stub file, that the first element of {@code identifiers} names
+   * among the types that {@code n} itself puts in scope, which are its type parameters. A type
+   * parameter is considered only if {@code identifiers} has one element, because a type parameter
+   * has no member types.
+   *
+   * @param n a node in the stub file's AST
+   * @param identifiers a type name that has been split at its {@code .} separators
+   * @return the declaration of the first element of {@code identifiers}, or null
+   */
+  private static @Nullable Node firstDeclarationAt(Node n, String[] identifiers) {
+    if (identifiers.length == 1 && n instanceof NodeWithTypeParameters<?> nodeWithTypeParams) {
+      for (TypeParameter typeParam : nodeWithTypeParams.getTypeParameters()) {
+        if (typeParam.getNameAsString().equals(identifiers[0])) {
+          return typeParam;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
    * Finds the fully qualified name of the class with the given name.
    *
-   * @param className possibly unqualified name of class
-   * @return fully qualified name of class that {@code className} identifies in the current context,
-   *     or null if resolution fails
+   * @param className possibly unqualified name of class, in which a {@code .} (not a {@code $})
+   *     separates a nested class from its enclosing class
+   * @return binary name of class that {@code className} identifies in the current context, or null
+   *     if resolution fails
    */
-  private @Nullable @BinaryName String resolve(@BinaryName String className) {
+  private @Nullable @BinaryName String resolve(@FullyQualifiedName String className) {
     if (resolveCache.containsKey(className)) {
       return resolveCache.get(className);
     }
@@ -818,51 +904,97 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /**
    * Finds the fully qualified name of the class with the given name, without consulting the cache.
    *
-   * @param className possibly unqualified name of class
-   * @return fully qualified name of class that {@code className} identifies in the current context,
-   *     or null if resolution fails
+   * @param className possibly unqualified name of class, in which a {@code .} (not a {@code $})
+   *     separates a nested class from its enclosing class
+   * @return binary name of class that {@code className} identifies in the current context, or null
+   *     if resolution fails
    */
-  private @Nullable @BinaryName String resolveUncached(@BinaryName String className) {
+  private @Nullable @BinaryName String resolveUncached(@FullyQualifiedName String className) {
+    // The order of the lookups below is the order in which Java resolves a type name: a
+    // single-type import shadows a type in the current package, which shadows a type that an
+    // import-on-demand declaration makes available.
+
+    for (String declName : singleTypeImports) {
+      String qualifiedName = mergeImport(declName, className);
+      if (qualifiedName != null) {
+        String binaryName = loadClassBinaryName(qualifiedName);
+        if (binaryName != null) {
+          return binaryName;
+        }
+      }
+    }
     if (pkgName != null) {
-      String qualifiedName = Signatures.addPackage(pkgName, className);
-      if (loadClass(qualifiedName) != null) {
-        return qualifiedName;
+      // The first identifier of `className` names a type in the current package, not a
+      // subpackage, so every later identifier names a member type.
+      @SuppressWarnings("signature") // a type in a package, followed by its member types
+      @BinaryName String binaryName = pkgName + "." + className.replace('.', '$');
+      if (loadClass(binaryName) != null) {
+        return binaryName;
+      }
+    }
+
+    for (String declName : onDemandImports) {
+      String qualifiedName = mergeImport(declName, className);
+      if (qualifiedName != null) {
+        String binaryName = loadClassBinaryName(qualifiedName);
+        // An import on demand makes available the member types of a package or type, not its
+        // subpackages, so the first identifier of `className` names a type.  Therefore no `.`
+        // follows the part of `binaryName` that comes from the import, such as `x.` in `x.*`.
+        if (binaryName != null && binaryName.lastIndexOf('.') < declName.length() - 1) {
+          return binaryName;
+        }
       }
     }
 
     {
       // Every Java program implicitly does "import java.lang.*",
       // so see whether this class is in that package.
-      String qualifiedName = Signatures.addPackage("java.lang", className);
-      if (loadClass(qualifiedName) != null) {
-        return qualifiedName;
+      String binaryName = loadClassBinaryName("java.lang." + className);
+      // As for any import on demand, the first identifier of `className` names a type, not a
+      // subpackage of java.lang.
+      if (binaryName != null && binaryName.lastIndexOf('.') == "java.lang".length()) {
+        return binaryName;
       }
     }
 
-    for (String declName : imports) {
-      String qualifiedName = mergeImport(declName, className);
-      if (qualifiedName != null && loadClass(qualifiedName) != null) {
-        return qualifiedName;
-      }
-    }
-
-    if (loadClass(className) != null) {
-      return className;
-    }
-
-    return null;
+    return loadClassBinaryName(className);
   }
 
   /**
-   * Combines an import with a partial binary name, yielding a binary name.
+   * Returns the binary name of the class that a fully qualified name refers to, or null if no such
+   * class can be loaded. A fully qualified name does not indicate which of its dot-separated
+   * components are packages and which are enclosing classes, so this method tries each possibility,
+   * starting with the one that has the fewest enclosing classes.
+   *
+   * @param fqName a fully qualified class name
+   * @return the binary name of the class that {@code fqName} refers to, or null
+   */
+  @SuppressWarnings("signature") // string manipulation of signature strings
+  private static @Nullable @BinaryName String loadClassBinaryName(String fqName) {
+    StringBuilder candidate = new StringBuilder(fqName);
+    int dot = candidate.length();
+    while (true) {
+      if (loadClass(candidate.toString()) != null) {
+        return candidate.toString();
+      }
+      dot = candidate.lastIndexOf(".", dot - 1);
+      if (dot < 0) {
+        return null;
+      }
+      candidate.setCharAt(dot, '$');
+    }
+  }
+
+  /**
+   * Combines an import with a partially qualified name, yielding a fully qualified name.
    *
    * @param importName package name or (for an inner class) the outer class name
    * @param className the class name
    * @return fully qualified class name if resolution succeeds, null otherwise
    */
   @SuppressWarnings("signature") // string manipulation of signature strings
-  private static @Nullable @BinaryName String mergeImport(
-      String importName, @BinaryName String className) {
+  private static @Nullable @FullyQualifiedName String mergeImport(
+      String importName, @FullyQualifiedName String className) {
     if (importName.isEmpty() || importName.equals(className)) {
       return className;
     }

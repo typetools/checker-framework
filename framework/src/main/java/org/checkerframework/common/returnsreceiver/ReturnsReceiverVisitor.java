@@ -18,7 +18,7 @@ import org.checkerframework.javacutil.TreeUtils;
 public class ReturnsReceiverVisitor extends BaseTypeVisitor<ReturnsReceiverAnnotatedTypeFactory> {
 
   /**
-   * Create a new {@code ReturnsReceiverVisitor}.
+   * Creates a new {@code ReturnsReceiverVisitor}.
    *
    * @param checker the type-checker associated with this visitor
    */

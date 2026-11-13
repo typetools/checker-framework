@@ -67,7 +67,7 @@ public class TreeBuilder {
   /** The javac {@link Symtab} object. */
   protected final Symtab symtab;
 
-  /** The javac {@link ProcessingEnvironment} */
+  /** The javac {@link ProcessingEnvironment}. */
   protected final ProcessingEnvironment env;
 
   /**
@@ -151,7 +151,7 @@ public class TreeBuilder {
   }
 
   /**
-   * Build a {@link MemberSelectTree} for accessing the {@code close} method of an expression that
+   * Builds a {@link MemberSelectTree} for accessing the {@code close} method of an expression that
    * implements {@link AutoCloseable}. This method is used when desugaring try-with-resources
    * statements during CFG construction.
    *
@@ -426,7 +426,7 @@ public class TreeBuilder {
   }
 
   /**
-   * Builds an AST Tree to access the valueOf() method of boxed type such as Short or Float.
+   * Builds an AST Tree to access the valueOf() method of a boxed type such as Short or Float.
    *
    * @param expr an expression whose type is a boxed type
    * @return a MemberSelectTree that accesses the valueOf() method of the expression
@@ -505,7 +505,12 @@ public class TreeBuilder {
     return primValueAccess;
   }
 
-  /** Map public AST Tree.Kinds to internal javac JCTree.Tags. */
+  /**
+   * Maps public AST Tree.Kinds to internal javac JCTree.Tags.
+   *
+   * @param kind a tree kind
+   * @return the javac tag that corresponds to the tree kind
+   */
   public JCTree.Tag kindToTag(Tree.Kind kind) {
     return switch (kind) {
       case AND -> JCTree.Tag.BITAND;
@@ -596,7 +601,7 @@ public class TreeBuilder {
    * @param op an AST Tree operator
    * @param left the left operand tree
    * @param right the right operand tree
-   * @return a Tree representing "left &lt; right"
+   * @return a Tree representing "left op right"
    */
   public BinaryTree buildBinary(
       TypeMirror type, Tree.Kind op, ExpressionTree left, ExpressionTree right) {

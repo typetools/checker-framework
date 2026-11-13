@@ -6,7 +6,7 @@ import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * Represents the criterion that a program element is enclosed (directly or indirect) by a program
+ * Represents the criterion that a program element is enclosed (directly or indirectly) by a program
  * element of a certain type.
  */
 final class EnclosedByCriterion implements Criterion {

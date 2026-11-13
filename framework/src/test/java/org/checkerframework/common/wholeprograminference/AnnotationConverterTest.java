@@ -44,7 +44,7 @@ public class AnnotationConverterTest {
 
   /**
    * The compilation unit that the tests analyze. {@code MyAnno} declares an element of every type
-   * that an annotation element may have, and {@code Annotated} is annotated with every element
+   * that an annotation element can have, and {@code Annotated} is annotated with every element
    * whose value {@link AnnotationConverter} can convert in both directions.
    */
   private static final String SOURCE =

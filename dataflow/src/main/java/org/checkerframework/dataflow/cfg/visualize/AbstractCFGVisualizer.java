@@ -67,7 +67,7 @@ public abstract class AbstractCFGVisualizer<
   }
 
   /**
-   * Convert the value to boolean, by parsing a string or casting any other value. null converts to
+   * Converts the value to boolean, by parsing a string or casting any other value. null converts to
    * false.
    *
    * @param o an object to convert to boolean
@@ -84,7 +84,7 @@ public abstract class AbstractCFGVisualizer<
   }
 
   /**
-   * Visualize a control flow graph.
+   * Visualizes a control flow graph.
    *
    * @param cfg the current control flow graph
    * @param entry the entry block of the control flow graph
@@ -264,7 +264,7 @@ public abstract class AbstractCFGVisualizer<
   }
 
   /**
-   * Make the string suitable for the output format, i.e. with format-specific characters escaped.
+   * Makes the string suitable for the output format, i.e., with format-specific characters escaped.
    *
    * @param str a string
    * @return the escaped string
@@ -274,7 +274,7 @@ public abstract class AbstractCFGVisualizer<
   }
 
   /**
-   * Make the object's string representation suitable for the output format, i.e. with
+   * Makes the object's string representation suitable for the output format, i.e., with
    * format-specific characters escaped.
    *
    * @param obj an object
@@ -306,7 +306,7 @@ public abstract class AbstractCFGVisualizer<
   }
 
   /**
-   * Visualize the transfer input before, or the transfer result after, the given block. The
+   * Visualizes the transfer input before, or the transfer result after, the given block. The
    * transfer input and the transfer result contain stores and other information.
    *
    * @param where either BEFORE or AFTER
@@ -399,7 +399,7 @@ public abstract class AbstractCFGVisualizer<
   }
 
   /**
-   * Visualize a special block.
+   * Visualizes a special block.
    *
    * @param sbb the special block
    * @return the String representation of the special block
@@ -414,7 +414,7 @@ public abstract class AbstractCFGVisualizer<
   }
 
   /**
-   * Generate the order of processing blocks. Because a block may appear more than once in {@link
+   * Generates the order of processing blocks. Because a block can appear more than once in {@link
    * ControlFlowGraph#getDepthFirstOrderedBlocks()}, the orders of each block are stored in a
    * separate array list.
    *
@@ -439,7 +439,7 @@ public abstract class AbstractCFGVisualizer<
   }
 
   /**
-   * Generate the String representation of the nodes of a control flow graph.
+   * Generates the String representation of the nodes of a control flow graph.
    *
    * @param blocks the set of all the blocks in a control flow graph
    * @param cfg the control flow graph
@@ -450,7 +450,7 @@ public abstract class AbstractCFGVisualizer<
       Set<Block> blocks, ControlFlowGraph cfg, @Nullable Analysis<V, S, T> analysis);
 
   /**
-   * Generate the String representation of an edge.
+   * Generates the String representation of an edge.
    *
    * @param sId a representation of the current block, such as its ID
    * @param eId a representation of the successor block, such as its ID
