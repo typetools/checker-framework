@@ -10,7 +10,7 @@ import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * An expression of type {@code @UnshrinkableRef} may not be used to remove elements, e.g., by
+ * An expression of type {@code @UnshrinkableRef} cannot be used to remove elements, e.g., by
  * calling {@code remove()} or {@code clear()} on it. The collection might be shrunk by some other
  * reference that aliases the expression of type {@code @UnshrinkableRef}.
  */

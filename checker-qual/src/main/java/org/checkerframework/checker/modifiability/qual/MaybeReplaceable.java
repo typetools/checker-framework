@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The top qualifier in the Replace hierarchy. The collection may or may not support replace
+ * The top qualifier in the Replace hierarchy. The collection might or might not support replace
  * operations such as {@code set} and {@code replaceAll}. The checker conservatively issues an error
  * wherever a replace operation is called on a {@code @MaybeReplaceable} expression.
  *

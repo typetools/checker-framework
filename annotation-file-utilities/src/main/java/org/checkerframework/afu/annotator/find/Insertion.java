@@ -122,7 +122,7 @@ public abstract class Insertion {
   protected abstract String getText(boolean abbreviate);
 
   /**
-   * Indicates if a preceding space should be added to this insertion. Subclasses may override this
+   * Indicates if a preceding space should be added to this insertion. Subclasses can override this
    * method for custom leading space rules.
    *
    * @param gotSeparateLine {@code true} if this insertion is actually added on a separate line
@@ -144,11 +144,11 @@ public abstract class Insertion {
   }
 
   /**
-   * Indicates if a trailing space should be added to this insertion. Subclasses may override this
+   * Indicates if a trailing space should be added to this insertion. Subclasses can override this
    * method for custom trailing space rules.
    *
    * @param gotSeparateLine {@code true} if this insertion is actually added on a separate line
-   * @return {@code} true if a trailing space should be added, {@code false} otherwise
+   * @return {@code true} if a trailing space should be added, {@code false} otherwise
    */
   protected boolean addTrailingSpace(boolean gotSeparateLine) {
     // Don't added a trailing space if this insertion is on its own line.
@@ -156,10 +156,10 @@ public abstract class Insertion {
   }
 
   /**
-   * Gets the package name.
+   * Gets the package names.
    *
-   * @return the package name of the annotation being inserted by this Insertion. This will be empty
-   *     unless {@link #getText(boolean)} is called with abbreviate=true.
+   * @return the package names of the annotations being inserted by this Insertion. This will be
+   *     empty unless {@link #getText(boolean)} is called with abbreviate=true.
    */
   public Set<String> getPackageNames() {
     return packageNames;
@@ -221,7 +221,7 @@ public abstract class Insertion {
   }
 
   /**
-   * Format this without reporting its class name.
+   * Formats this without reporting its class name.
    *
    * @return a representation of this, without its class name
    */
@@ -230,7 +230,7 @@ public abstract class Insertion {
   }
 
   /**
-   * Format a list of insertions, with one insertion on each line.
+   * Formats a list of insertions, with one insertion on each line.
    *
    * @param list a collection of insertions
    * @return a multi-line string representation of the list

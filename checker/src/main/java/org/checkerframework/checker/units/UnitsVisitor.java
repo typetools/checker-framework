@@ -11,7 +11,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 /**
  * Units visitor.
  *
- * <p>Ensure consistent use of compound assignments.
+ * <p>Ensures consistent use of compound assignments.
  */
 public class UnitsVisitor extends BaseTypeVisitor<UnitsAnnotatedTypeFactory> {
   public UnitsVisitor(BaseTypeChecker checker) {

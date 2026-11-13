@@ -29,7 +29,7 @@ public class MethodRecorder extends ClassVisitor {
   private List<String> fields;
 
   /**
-   * Construct a new MethodRecorder.
+   * Constructs a new MethodRecorder.
    *
    * @param api version of ASM api to use
    */
@@ -38,7 +38,7 @@ public class MethodRecorder extends ClassVisitor {
   }
 
   /**
-   * Construct a new MethodRecorder.
+   * Constructs a new MethodRecorder.
    *
    * @param api version of ASM api to use
    * @param classVisitor ClassVisitor to use
