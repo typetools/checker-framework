@@ -709,7 +709,9 @@ public class ToIndexFileConverterTest {
             "  void myMethod(Sub.Inner x) {}",
             "}");
     assertMethod(
-        jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/inheritancea/Base$Inner;)V");
+        jaif,
+        "MyClass",
+        "myMethod(Lorg/checkerframework/framework/stub/inheritancea/Base$Inner;)V");
   }
 
   /** Cyclic inheritance, which is illegal, does not make the converter recurse forever. */
@@ -1098,9 +1100,9 @@ public class ToIndexFileConverterTest {
   }
 
   /**
-   * A method's or constructor's type parameters are not in scope in its modifiers, so an
-   * annotation among the modifiers denotes an imported annotation interface, even if a type
-   * parameter has the same name.
+   * A method's or constructor's type parameters are not in scope in its modifiers, so an annotation
+   * among the modifiers denotes an imported annotation interface, even if a type parameter has the
+   * same name.
    */
   @Test
   public void testTypeParameterNotInScopeInModifiers() throws Exception {
