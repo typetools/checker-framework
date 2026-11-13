@@ -23,15 +23,16 @@ import org.junit.runner.RunWith;
  *       exactly.
  *       <ul>
  *         <li>{@code @Parameters public static String [] getTestDirs()}
- *             <p>getTestDir must return an array of directories that exist in the test folder, e.g.
+ *             <p>getTestDirs must return an array of directories that exist in the test folder,
+ *             e.g.
  *             <pre>  @Parameters
  *   public static String [] getTestDirs() {
  *      return new String[] {"all-systems", "flow"};
  *   }</pre>
  *             The directories can contain more path information (e.g., "myTestDir/moreTests") but
- *             note, the test suite will find all of the Java test files that exists below the
- *             listed directories. It is unnecessary to list child directories of a directory you
- *             have already listed.
+ *             note, the test suite will find all of the Java test files that exist below the listed
+ *             directories. It is unnecessary to list child directories of a directory you have
+ *             already listed.
  *         <li>{@code @Parameters public static List<File> getTestFiles() }
  *             <p>The method returns a List of Java files. There are methods like {@link
  *             TestUtilities#findNestedJavaTestFiles} to help you construct this List. The
@@ -108,7 +109,7 @@ public abstract class CheckerFrameworkPerFileTest extends CheckerFrameworkRooted
    * <p>If you want to specify the same command-line option for all tests of a particular checker,
    * then pass it to the {@link CheckerFrameworkPerFileTest} constructor.
    *
-   * @param previousOptions the options specified in the constructor of the test previousOptions is
+   * @param previousOptions the options specified in the constructor of the test; previousOptions is
    *     unmodifiable
    * @return a new list of options or the original passed through
    */

@@ -178,8 +178,8 @@ public class BoundSetTest {
    *
    * <p>The instance is created the way deserialization creates one, via {@code
    * sun.reflect.ReflectionFactory}. That class is used reflectively so that compiling this file
-   * does not produce a "internal proprietary API" warning, which {@code -Werror} would turn into an
-   * error.
+   * does not produce an "internal proprietary API" warning, which {@code -Werror} would turn into
+   * an error.
    *
    * @param <T> the type of the instance to create
    * @param clazz the class of the instance to create

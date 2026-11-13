@@ -12,7 +12,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesTreeAnno
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Dependent type helper for array offset expressions. Each array offset expression may be the
+ * Dependent type helper for array offset expressions. Each array offset expression can be the
  * addition or subtraction of several Java expressions. For example, {@code array.length - 1}.
  */
 public class OffsetDependentTypesHelper extends DependentTypesHelper {

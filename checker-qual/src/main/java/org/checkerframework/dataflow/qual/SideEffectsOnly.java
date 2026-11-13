@@ -45,7 +45,7 @@ public @interface SideEffectsOnly {
    * variable, a field access, an array access, a literal, a class name, or a call to a {@link Pure}
    * method, recursively. A {@code @Pure} method returns the same value every time it is called with
    * the same arguments, so a call to one qualifies so long as its receiver and its arguments do. An
-   * expression such as {@code "#1.getList()"}, where {@code getList} is not {@code @Pure}, may
+   * expression such as {@code "#1.getList()"}, where {@code getList} is not {@code @Pure}, might
    * denote a different value each time it is evaluated, so no method body could satisfy it.
    *
    * <p>The annotation {@code @SideEffectsOnly({})} (with an empty list of expressions) is illegal;
