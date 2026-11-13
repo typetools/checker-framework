@@ -1361,9 +1361,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Returns true if the objects {@code a} and {@code b} can be aliases. Returns a conservative
-   * answer (i.e., returns {@code true} if not enough information is available to determine
-   * aliasing).
+   * Returns true if the expressions {@code a} and {@code b} might evaluate to the same object.
+   * Returns a conservative answer (i.e., returns {@code true} if not enough information is
+   * available to determine aliasing).
    *
    * <p>This implementation judges by the types of {@code a} and {@code b} and does not depend on
    * the contents of the store; see {@link CFAbstractAnalysis#canAlias}.
