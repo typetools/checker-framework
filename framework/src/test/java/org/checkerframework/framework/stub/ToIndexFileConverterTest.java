@@ -765,6 +765,49 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myOtherMethod(Lp/Sub$Hidden;)V");
   }
 
+  /**
+   * A package-private member type of a classpath supertype is not inherited by a subclass in
+   * another package, so a member type of the same name that another supertype declares is found
+   * instead.
+   */
+  @Test
+  public void testInheritedMemberTypeIsAccessible() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Sub extends org.checkerframework.framework.stub.inheritanceb.Middle {}",
+            "class MyClass {",
+            "  void myMethod(Sub.Inner x) {}",
+            "}");
+    assertMethod(
+        jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/inheritanceb/I$Inner;)V");
+
+    // The inheritance path leaves the package of Base and returns to it, so Base.Inner is still not
+    // inherited.
+    jaif =
+        convert(
+            "package org.checkerframework.framework.stub.inheritancea;",
+            "class Sub extends org.checkerframework.framework.stub.inheritanceb.Middle {}",
+            "class MyClass {",
+            "  void myMethod(Sub.Inner x) {}",
+            "}");
+    assertMethod(
+        jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/inheritanceb/I$Inner;)V");
+
+    // A subclass in the package of Base inherits Base.Inner.
+    jaif =
+        convert(
+            "package org.checkerframework.framework.stub.inheritancea;",
+            "class Sub extends Base {}",
+            "class MyClass {",
+            "  void myMethod(Sub.Inner x) {}",
+            "}");
+    assertMethod(
+        jaif,
+        "MyClass",
+        "myMethod(Lorg/checkerframework/framework/stub/inheritancea/Base$Inner;)V");
+  }
+
   /** Cyclic inheritance, which is illegal, does not make the converter recurse forever. */
   @Test
   public void testCyclicInheritance() throws Exception {
@@ -777,6 +820,97 @@ public class ToIndexFileConverterTest {
             "  void myMethod(A.Missing x) {}",
             "}");
     assertMethod(jaif, "MyClass", "myMethod(Lp/A$Missing;)V");
+  }
+
+  /**
+   * In a class body, a simple name resolves to a member type that the class inherits, which shadows
+   * a type of the same name in the package.
+   */
+  @Test
+  public void testSimpleNameOfInheritedMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Base {",
+            "  static class Inner {}",
+            "}",
+            "class Inner {}",
+            "class C extends Base {",
+            "  void m(Inner x) {}",
+            "  static class Nested {",
+            "    void n(Inner x) {}",
+            "  }",
+            "}",
+            "abstract class E implements java.util.Map<String, String> {",
+            "  void m(Entry e) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Lp/Base$Inner;)V");
+    // A member type that an enclosing class inherits is in scope in a nested class.
+    assertMethod(jaif, "C$Nested", "n(Lp/Base$Inner;)V");
+    // A member type inherited from a classpath supertype.
+    assertMethod(jaif, "E", "m(Ljava/util/Map$Entry;)V");
+  }
+
+  /** A type parameter shadows a member type that the class inherits. */
+  @Test
+  public void testTypeParameterShadowsInheritedMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Base {",
+            "  static class T {}",
+            "}",
+            "class C<T extends Number> extends Base {",
+            "  void m(T x) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/lang/Number;)V");
+  }
+
+  /** An import on demand from a stub-declared type makes available the types that it inherits. */
+  @Test
+  public void testOnDemandImportOfInheritedMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "import p.Sub.*;",
+            "import p.OtherSub.*;",
+            "class Base {",
+            "  static class Inner {}",
+            "}",
+            "class Sub extends Base {}",
+            "class OtherSub extends some.other.pkg.OtherBase {}",
+            "class MyClass {",
+            "  void myMethod(Inner x) {}",
+            "  void myOtherMethod(OtherInner x) {}",
+            "}",
+            "package some.other.pkg;",
+            "public class OtherBase {",
+            "  public static class OtherInner {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/Base$Inner;)V");
+    // The supertype is in another compilation unit of the stub file, in a package whose name is
+    // longer than the import's.
+    assertMethod(jaif, "MyClass", "myOtherMethod(Lsome/other/pkg/OtherBase$OtherInner;)V");
+  }
+
+  /**
+   * A member type that a type inherits from a supertype in another compilation unit of the stub
+   * file is found.
+   */
+  @Test
+  public void testInheritedMemberTypeFromOtherCompilationUnit() throws Exception {
+    String jaif =
+        convert(
+            "package q;",
+            "class Sub extends p.Base {}",
+            "class MyClass {",
+            "  void myMethod(Sub.Inner x) {}",
+            "}",
+            "package p;",
+            "public class Base {",
+            "  public static class Inner {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/Base$Inner;)V");
   }
 
   /**
@@ -1288,6 +1422,33 @@ public class ToIndexFileConverterTest {
     Assert.assertNotNull(
         "@MustCallAlias was not recorded on the constructed type",
         constructor.returnType.lookup("MustCallAlias"));
+  }
+
+  /**
+   * A method's or constructor's type parameters are not in scope in its modifiers, so an annotation
+   * among the modifiers denotes an imported annotation interface, even if a type parameter has the
+   * same name.
+   */
+  @Test
+  public void testTypeParameterNotInScopeInModifiers() throws Exception {
+    String[] stubFileLines = {
+      "package p;",
+      "import org.checkerframework.checker.nullness.qual.Nullable;",
+      "class C {",
+      "  @Nullable <Nullable> String m();",
+      "  @Nullable <Nullable> C() {}",
+      "}"
+    };
+    AMethod method = methodOfStub("m()Ljava/lang/String;", stubFileLines);
+    Assert.assertNull("@Nullable was recorded on the method", method.lookup("Nullable"));
+    Assert.assertNotNull(
+        "@Nullable was not recorded on the return type", method.returnType.lookup("Nullable"));
+
+    AMethod constructor = methodOfStub("<init>()V", stubFileLines);
+    Assert.assertNull("@Nullable was recorded on the constructor", constructor.lookup("Nullable"));
+    Assert.assertNotNull(
+        "@Nullable was not recorded on the constructed type",
+        constructor.returnType.lookup("Nullable"));
   }
 
   /**
