@@ -31,8 +31,8 @@ public class CalledMethodsChecker extends AccumulationChecker {
 
   /**
    * This option disables the support for (and therefore the automated checking of) code that uses
-   * the given builder frameworks. Useful when a user **only** wants to enforce specifications on
-   * custom builder objects (such as the AWS SDK examples).
+   * the given builder frameworks. Useful when a user <em>only</em> wants to enforce specifications
+   * on custom builder objects (such as the AWS SDK examples).
    */
   public static final String DISABLE_BUILDER_FRAMEWORK_SUPPORTS = "disableBuilderFrameworkSupports";
 

@@ -30,7 +30,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
  * class does not implement that loop and its name {@code WholeProgramInference} is misleading.
  *
  * <p>This interface has update* methods that should be called at certain (pseudo-)assignments, and
- * they may update the type of the LHS of the (pseudo-)assignment based on the type of the RHS. In
+ * they might update the type of the LHS of the (pseudo-)assignment based on the type of the RHS. In
  * case the element on the LHS already had an inferred type, its new type will be the LUB between
  * the previous and new types.
  *
@@ -162,9 +162,9 @@ public interface WholeProgramInference {
    *
    * @param retNode the node that contains the expression returned
    * @param classSymbol the symbol of the class that contains the method
-   * @param methodTree the tree of the method whose return type may be updated
-   * @param overriddenMethods the methods that the given method return overrides, indexed by the
-   *     annotated type of the superclass in which each method is defined
+   * @param methodTree the tree of the method whose return type might be updated
+   * @param overriddenMethods the methods that the given method overrides, indexed by the annotated
+   *     type of the superclass in which each method is defined
    */
   void updateFromReturn(
       ReturnNode retNode,
@@ -194,7 +194,7 @@ public interface WholeProgramInference {
    * AnnotationMirrors from ajavaATM -- it considers the LUB between an AnnotationMirror am and a
    * missing AnnotationMirror to be am. The results are stored in sourceCodeATM.
    *
-   * @param sourceCodeATM the annotated type on the source code; side effected by this method
+   * @param sourceCodeATM the annotated type on the source code; side-effected by this method
    * @param ajavaATM the annotated type on the annotation file
    */
   void updateAtmWithLub(AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror ajavaATM);
@@ -208,7 +208,7 @@ public interface WholeProgramInference {
   void addMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno);
 
   /**
-   * Updates a method to add a declaration annotation. Optionally, may replace the current purity
+   * Updates a method to add a declaration annotation. Optionally, replaces the current purity
    * annotation on {@code elt} with the logical least upper bound between that purity annotation and
    * {@code anno}, if {@code anno} is also a purity annotation.
    *

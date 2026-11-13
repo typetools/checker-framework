@@ -14,8 +14,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.util.AtmCombo;
 
 /**
- * Implements all methods from AtmComboVisitor. By default all methods throw an exception. Implement
- * only those methods you expect to be called on your subclass.
+ * Implements all methods from AtmComboVisitor. By default, all methods throw an exception.
+ * Implement only those methods you expect to be called on your subclass.
  *
  * <p>This class does no traversal.
  */

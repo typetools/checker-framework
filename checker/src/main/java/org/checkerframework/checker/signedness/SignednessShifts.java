@@ -89,7 +89,7 @@ public final class SignednessShifts {
   }
 
   /**
-   * Given a masking operation of the form {@code expr & maskLit} or {@code expr | maskLit}, return
+   * Given a masking operation of the form {@code expr & maskLit} or {@code expr | maskLit}, returns
    * true iff the masking operation results in the same output regardless of the value of the
    * shiftAmount most significant bits of expr. This is if the shiftAmount most significant bits of
    * mask are 0 for AND, and 1 for OR. For example, assuming that shiftAmount is 4, the following is
@@ -138,7 +138,7 @@ public final class SignednessShifts {
 
   /**
    * Given a casted right shift of the form {@code (type) (baseExpr >> shiftAmount)} or {@code
-   * (type) (baseExpr >>> shiftAmount)}, return true iff the expression's value is the same
+   * (type) (baseExpr >>> shiftAmount)}, returns true iff the expression's value is the same
    * regardless of the type of right shift (signed or unsigned). This is true if the cast ignores
    * the shiftAmount most significant bits of the shift result -- that is, if the cast ignores all
    * the new bits that the right shift introduced on the left.
@@ -254,7 +254,7 @@ public final class SignednessShifts {
    * bits duplicated into the shift result. For example, the following pair of right shifts on
    * {@code short s} both produce the same results under any input, because of type casting:
    *
-   * <p>{@code (byte)(s >> 8) == (byte)(b >>> 8);}
+   * <p>{@code (byte)(s >> 8) == (byte)(s >>> 8);}
    *
    * @param shiftExpr a right shift expression: {@code expr1 >> expr2} or {@code expr1 >>> expr2}
    * @param path the path to {@code shiftExpr}
