@@ -159,7 +159,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Checks if the provided method is a constructor method or no.
+   * Checks if the provided method is a constructor method or not.
    *
    * @param tree a tree defining the method
    * @return true iff tree describes a constructor
@@ -237,10 +237,10 @@ public final class TreeUtils {
    *   this.method()
    * </pre>
    *
-   * It does not perform any semantical check to differentiate between fields and local variables;
-   * local methods or imported static methods.
+   * It does not perform any semantic check to differentiate between fields and local variables, or
+   * between local methods and imported static methods.
    *
-   * @param tree expression tree representing an access to object member
+   * @param tree expression tree representing an access to an object member
    * @return {@code true} iff the member is a member of {@code this} instance
    */
   public static boolean isSelfAccess(ExpressionTree tree) {
@@ -275,8 +275,8 @@ public final class TreeUtils {
   }
 
   /**
-   * If the given tree is a parenthesized tree, return the enclosed non-parenthesized tree.
-   * Otherwise, return the same tree.
+   * If the given tree is a parenthesized tree, returns the enclosed non-parenthesized tree.
+   * Otherwise, returns the same tree.
    *
    * @param tree an expression tree
    * @return the outermost non-parenthesized tree enclosed by the given tree
@@ -291,8 +291,8 @@ public final class TreeUtils {
   }
 
   /**
-   * If the given tree is a parenthesized tree or cast tree, return the enclosed non-parenthesized,
-   * non-cast tree. Otherwise, return the same tree.
+   * If the given tree is a parenthesized tree or cast tree, returns the enclosed non-parenthesized,
+   * non-cast tree. Otherwise, returns the same tree.
    *
    * @param tree an expression tree
    * @return the outermost non-parenthesized non-cast tree enclosed by the given tree
@@ -320,9 +320,9 @@ public final class TreeUtils {
    *
    * <p>This method returns null for a local or anonymous class whose enclosing top-level class has
    * not yet been attributed. javac attributes one top-level class at a time, but the Checker
-   * Framework may visit an entire compilation unit (e.g., when processing an ajava file) after only
-   * its first class is attributed. An example is Ordering$1 in PolyCollectorTypeVars.java in the
-   * all-systems test suite.
+   * Framework might visit an entire compilation unit (e.g., when processing an ajava file) after
+   * only its first class is attributed. An example is Ordering$1 in PolyCollectorTypeVars.java in
+   * the all-systems test suite.
    *
    * @param tree class declaration
    * @return the element for the given class, or null if {@code tree} has not been attributed
@@ -335,7 +335,7 @@ public final class TreeUtils {
   /**
    * Returns the type element corresponding to the given class declaration.
    *
-   * <p>The TypeElement may be null for a local or anonymous class that has not been attributed.
+   * <p>The TypeElement might be null for a local or anonymous class that has not been attributed.
    *
    * @param tree the {@link ClassTree} node to get the element for
    * @return the {@link TypeElement} for the given tree
@@ -733,7 +733,7 @@ public final class TreeUtils {
 
   /**
    * Returns the constructor invoked by {@code newClassTree} unless {@code newClassTree} is creating
-   * an anonymous class. In which case, the super constructor is returned.
+   * an anonymous class, in which case the super constructor is returned.
    *
    * @param newClassTree the constructor invocation
    * @return the super constructor invoked in the body of the anonymous constructor; or {@link
@@ -948,7 +948,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Is this method's declared return type "void"?
+   * Returns true if the method's declared return type is "void".
    *
    * @param tree a method declaration
    * @return true iff method's declared return type is "void"
@@ -1078,10 +1078,10 @@ public final class TreeUtils {
   }
 
   /**
-   * Is the given tree kind a class, i.e. a class, enum, interface, or annotation type.
+   * Returns true if the given tree is a class, i.e., a class, enum, interface, or annotation type.
    *
    * @param tree the tree to test
-   * @return true, iff the given kind is a class kind
+   * @return true iff the kind of the given tree is a class kind
    */
   public static boolean isClassTree(Tree tree) {
     return classTreeKinds().contains(tree.getKind());
@@ -1141,21 +1141,26 @@ public final class TreeUtils {
   }
 
   /**
-   * Is the given tree a type instantiation?
+   * Returns true if the given tree is a type instantiation.
    *
-   * <p>TODO: this is an under-approximation: e.g. an identifier could be either a type use or an
-   * expression. How can we distinguish.
+   * <p>TODO: this is an under-approximation: e.g., an identifier could be either a type use or an
+   * expression. How can we distinguish them?
    *
    * @param tree the tree to test
-   * @return true, iff the given tree is a type
+   * @return true iff the given tree is a type
    */
   public static boolean isTypeTree(Tree tree) {
     return typeTreeKinds().contains(tree.getKind());
   }
 
   /**
-   * Returns true if the given element is an invocation of the method, or of any method that
-   * overrides that one.
+   * Returns true if the given tree is an invocation of the method, or of any method that overrides
+   * that one.
+   *
+   * @param tree a tree
+   * @param method a method
+   * @param env the processing environment
+   * @return true if the tree is an invocation of {@code method} or of a method that overrides it
    */
   public static boolean isMethodInvocation(
       Tree tree, ExecutableElement method, ProcessingEnvironment env) {
@@ -1242,7 +1247,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns the ExecutableElement for a method declaration. Returns null there is no matching
+   * Returns the ExecutableElement for a method declaration. Returns null if there is no matching
    * method. Errs if there is more than one matching method. If more than one method takes the same
    * number of formal parameters, then use {@link #getMethod(String, String, ProcessingEnvironment,
    * String...)}.
@@ -1435,7 +1440,7 @@ public final class TreeUtils {
    * This method currently also returns true for class literals and qualified this.
    *
    * @param tree a tree that might be a field access
-   * @return true iff if tree is a field access expression (implicit or explicit)
+   * @return true iff tree is a field access expression (implicit or explicit)
    */
   public static boolean isFieldAccess(Tree tree) {
     return asFieldAccess(tree) != null;
@@ -1494,7 +1499,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Compute the name of the field that the field access {@code tree} accesses. Requires {@code
+   * Returns the name of the field that the field access {@code tree} accesses. Requires {@code
    * tree} to be a field access, as determined by {@code isFieldAccess} (which currently also
    * returns true for class literals and qualified this).
    *
@@ -1542,7 +1547,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Compute the name of the method that the method access {@code tree} accesses. Requires {@code
+   * Returns the name of the method that the method access {@code tree} accesses. Requires {@code
    * tree} to be a method access, as determined by {@code isMethodAccess}.
    *
    * @param tree a method access tree
@@ -1664,8 +1669,8 @@ public final class TreeUtils {
    * Returns true if the given {@link MethodTree} is an anonymous constructor (the constructor for
    * an anonymous class).
    *
-   * @param method a method tree that may be an anonymous constructor
-   * @return true if the given path points to an anonymous constructor, false if it does not
+   * @param method a method tree that might be an anonymous constructor
+   * @return true if the given method is an anonymous constructor, false if it is not
    */
   public static boolean isAnonymousConstructor(MethodTree method) {
     Element e = elementFromTree(method);
@@ -1723,10 +1728,10 @@ public final class TreeUtils {
   /**
    * Returns true if the given {@link MethodTree} is a compact canonical constructor (the
    * constructor for a record where the parameters are implicitly declared and implicitly assigned
-   * to the record's fields). This may be an explicitly declared compact canonical constructor or an
+   * to the record's fields). This can be an explicitly declared compact canonical constructor or an
    * implicitly generated one.
    *
-   * @param method a method tree that may be a compact canonical constructor
+   * @param method a method tree that might be a compact canonical constructor
    * @return true if the given method is a compact canonical constructor
    */
   public static boolean isCompactCanonicalRecordConstructor(MethodTree method) {
@@ -1744,7 +1749,7 @@ public final class TreeUtils {
    * list, or an automatically generated canonical constructor.
    *
    * @param member the {@link Tree} for a member of a record
-   * @return true if the given path is generated by the compiler
+   * @return true if the given member is generated by the compiler
    */
   public static boolean isAutoGeneratedRecordMember(Tree member) {
     Element e = elementFromTree(member);
@@ -1769,7 +1774,7 @@ public final class TreeUtils {
    * Converts the given AnnotationTree to an AnnotationMirror.
    *
    * @param tree annotation tree to convert to an annotation mirror
-   * @return annotation mirror that represent the given annotation tree
+   * @return annotation mirror that represents the given annotation tree
    */
   public static AnnotationMirror annotationFromAnnotationTree(AnnotationTree tree) {
     return ((JCAnnotation) tree).attribute;
@@ -1954,7 +1959,7 @@ public final class TreeUtils {
    * supported javac API.
    */
   public enum MemberReferenceKind {
-    /** super # instMethod */
+    /** super # instMethod. */
     SUPER(ReferenceMode.INVOKE, false),
     /** Type # instMethod. */
     UNBOUND(ReferenceMode.INVOKE, true),
@@ -1987,7 +1992,7 @@ public final class TreeUtils {
     }
 
     /**
-     * True if this kind is unbound.
+     * Returns true if this kind is unbound.
      *
      * @return true if this kind is unbound
      */
@@ -2071,7 +2076,7 @@ public final class TreeUtils {
    * @param tree a tree
    * @param length the maximum length for the result; must be at least 6
    * @return a one-line string representation of the tree that is no longer than {@code length}
-   *     characters long
+   *     characters
    */
   public static String toStringTruncated(Tree tree, int length) {
     if (length < 6) {
@@ -2111,7 +2116,7 @@ public final class TreeUtils {
   }
 
   /**
-   * Returns true if the binary operator may do a widening primitive conversion. See <a
+   * Returns true if the binary operator might do a widening primitive conversion. See <a
    * href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-5.html">JLS chapter 5</a>.
    *
    * @param tree a binary tree
@@ -2207,7 +2212,7 @@ public final class TreeUtils {
    *
    * @param typeMirror a type
    * @param processingEnv the processing environment
-   * @return a tree for {@code type}'s default value
+   * @return a tree for {@code typeMirror}'s default value
    */
   public static LiteralTree getDefaultValueTree(
       TypeMirror typeMirror, ProcessingEnvironment processingEnv) {
@@ -2444,7 +2449,7 @@ public final class TreeUtils {
    * Returns true if the given method reference has a varargs formal parameter.
    *
    * @param methref a method reference
-   * @return if the given method reference has a varargs formal parameter
+   * @return true if the given method reference has a varargs formal parameter
    */
   public static boolean hasVarargsParameter(MemberReferenceTree methref) {
     JCMemberReference jcMethoRef = (JCMemberReference) methref;
@@ -2507,7 +2512,7 @@ public final class TreeUtils {
    *
    * @param invok the method invocation
    * @return true if the given method invocation is an invocation of a method with a vararg
-   *     parameter, and the invocation has with zero vararg actuals
+   *     parameter, and the invocation has zero vararg actuals
    */
   public static boolean isCallToVarargsMethodWithZeroVarargsActuals(MethodInvocationTree invok) {
     if (!isVarargsCall(invok)) {
@@ -2523,7 +2528,7 @@ public final class TreeUtils {
    * Returns true if the given constructor invocation is a varargs invocation.
    *
    * @param newClassTree the constructor invocation
-   * @return true if the given method invocation is a varargs invocation
+   * @return true if the given constructor invocation is a varargs invocation
    */
   public static boolean isVarargsCall(NewClassTree newClassTree) {
     return ((JCNewClass) newClassTree).varargsElement != null;
@@ -2605,7 +2610,7 @@ public final class TreeUtils {
    * @param treeMaker the TreeMaker to use
    * @param base the expression for the select
    * @param name the name to select
-   * @return the JCFieldAccess tree to select sym in base
+   * @return the JCFieldAccess tree to select name in base
    */
   public static JCFieldAccess Select(
       TreeMaker treeMaker, Tree base, com.sun.tools.javac.util.Name name) {
@@ -2617,11 +2622,11 @@ public final class TreeUtils {
   /**
    * Returns true if {@code tree} is an explicitly typed lambda.
    *
-   * <p>An lambda whose formal type parameters have declared types or with no parameters is an
+   * <p>A lambda whose formal type parameters have declared types or with no parameters is an
    * explicitly typed lambda. (See JLS 15.27.1)
    *
    * @param tree any kind of tree
-   * @return true iff {@code tree} is an implicitly typed lambda
+   * @return true iff {@code tree} is an explicitly typed lambda
    */
   public static boolean isExplicitlyTypeLambda(Tree tree) {
     return tree instanceof LambdaExpressionTree
@@ -2717,10 +2722,10 @@ public final class TreeUtils {
   }
 
   /**
-   * Is the tree a reference to a constructor of a generic class whose type argument isn't
-   * specified? For example, {@code HashSet::new)}.
+   * Returns true if the tree is a reference to a constructor of a generic class whose type argument
+   * isn't specified. For example, {@code HashSet::new}.
    *
-   * @param tree may or may not be a {@link MemberReferenceTree}
+   * @param tree a tree that might or might not be a {@link MemberReferenceTree}
    * @return true if tree is a reference to a constructor of a generic class whose type argument
    *     isn't specified
    */

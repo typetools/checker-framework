@@ -50,7 +50,7 @@ public class ReflectiveEvaluator {
   private final boolean reportWarnings;
 
   /**
-   * Create a new ReflectiveEvaluator.
+   * Creates a new ReflectiveEvaluator.
    *
    * @param checker the BaseTypeChecker
    * @param factory the annotated type factory
@@ -63,7 +63,7 @@ public class ReflectiveEvaluator {
   }
 
   /**
-   * Returns all possible values that the method may return, or null if the method could not be
+   * Returns all possible values that the method might return, or null if the method could not be
    * evaluated.
    *
    * @param allArgValues a list of lists where the first list corresponds to all possible values for
@@ -71,7 +71,7 @@ public class ReflectiveEvaluator {
    * @param receiverValues a list of possible receiver values. null indicates that the method has no
    *     receiver.
    * @param tree location to report any errors
-   * @return all possible values that the method may return, or null if the method could not be
+   * @return all possible values that the method might return, or null if the method could not be
    *     evaluated
    */
   public @Nullable List<?> evaluateMethodCall(
@@ -153,7 +153,7 @@ public class ReflectiveEvaluator {
    * @param arguments an array of arguments for {@code method}. The length is at least {@code
    *     numberOfParameters - 1}.
    * @param numberOfParameters number of parameters of the vararg method
-   * @return the length of the array is exactly {@code numberOfParameters}
+   * @return an array whose length is exactly {@code numberOfParameters}
    */
   private Object[] normalizeVararg(Object[] arguments, int numberOfParameters) {
 
@@ -276,7 +276,7 @@ public class ReflectiveEvaluator {
   }
 
   /**
-   * Returns the value of a static field access. Return null if accessing the field reflectively
+   * Returns the value of a static field access. Returns null if accessing the field reflectively
    * fails.
    *
    * @param classname the class containing the field

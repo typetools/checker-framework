@@ -50,7 +50,7 @@ public class ASceneWrapper {
   private final AScene theScene;
 
   /**
-   * Constructor. Pass the AScene to wrap.
+   * Creates an ASceneWrapper that wraps the given AScene.
    *
    * @param theScene the scene to wrap
    */
@@ -181,10 +181,10 @@ public class ASceneWrapper {
   }
 
   /**
-   * Write the scene wrapped by this object to a file at the given path.
+   * Writes the scene wrapped by this object to a file at the given path.
    *
    * @param jaifPath the path of the file to be written, but ending in ".jaif". If {@code
-   *     outputformat} is not {@code JAIF}, the path will be modified to match.
+   *     outputFormat} is not {@code JAIF}, the path will be modified to match.
    * @param annosToIgnore which annotations should be ignored in which contexts
    * @param outputFormat the output format to use
    * @param checker the checker from which this method is called, for naming stub files
@@ -265,12 +265,12 @@ public class ASceneWrapper {
   }
 
   /**
-   * Updates the symbol information stored in AClass for the given class. May be called multiple
+   * Updates the symbol information stored in AClass for the given class. Can be called multiple
    * times (and needs to be if the second parameter was null the first time it was called; only some
    * calls provide the symbol information).
    *
    * @param aClass the class representation in which the symbol information is to be updated
-   * @param classSymbol the source of the symbol information; may be null, in which case this method
+   * @param classSymbol the source of the symbol information; can be null, in which case this method
    *     does nothing
    */
   public void updateSymbolInformation(AClass aClass, @Nullable ClassSymbol classSymbol) {
