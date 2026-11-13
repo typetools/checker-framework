@@ -10,7 +10,7 @@ import org.checkerframework.javacutil.TypesUtils;
 /** A use of {@code this}. */
 public class ThisReference extends JavaExpression {
   /**
-   * Create a new ThisReference.
+   * Creates a new ThisReference.
    *
    * @param type the type of the {@code this} reference
    */

@@ -98,7 +98,7 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
    * Given a declaration, returns a List of annotations currently in declaration position that can't
    * possibly be declaration annotations for that type of declaration.
    *
-   * @param node a JavaParser node for declaration
+   * @param node a JavaParser node for a declaration
    * @param declarationType the type of declaration {@code node} represents; always FIELD or METHOD
    * @return a list of annotations in declaration position that should be on the declaration's type
    */
@@ -140,9 +140,10 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
   }
 
   /**
-   * Returns if {@code annotation} could be a declaration annotation for {@code declarationType}.
-   * This would be the case if the annotation isn't recognized at all, or if it has no
-   * {@code @Target} meta-annotation, or if it has {@code declarationType} as one of its targets.
+   * Returns true if {@code annotation} could be a declaration annotation for {@code
+   * declarationType}. This would be the case if the annotation isn't recognized at all, or if it
+   * has no {@code @Target} meta-annotation, or if it has {@code declarationType} as one of its
+   * targets.
    *
    * @param annotation a JavaParser annotation expression
    * @param declarationType the declaration type to check if {@code annotation} might be a
@@ -208,10 +209,10 @@ public class TypeAnnotationMover extends VoidVisitorAdapter<Void> {
    * contains a declaration like {@code @Anno java.lang.String myField}, the annotation must belong
    * to the declaration and not the type.
    *
-   * <p>If a declaration contains an inner class type like {@code @Anno Outer.Inner myField}, it may
-   * be the case that {@code @Anno} belongs to the type {@code Outer}, not the declaration, and
-   * should be moved, but it's impossible to distinguish this from the above case using only the
-   * JavaParser AST for a file. To be safe, the annotation still shouldn't be moved, but this may
+   * <p>If a declaration contains an inner class type like {@code @Anno Outer.Inner myField}, it
+   * might be the case that {@code @Anno} belongs to the type {@code Outer}, not the declaration,
+   * and should be moved, but it's impossible to distinguish this from the above case using only the
+   * JavaParser AST for a file. To be safe, the annotation still shouldn't be moved, but this might
    * lead to suboptimal formatting placing {@code @Anno} on its own line.
    *
    * @param type a JavaParser type node

@@ -256,8 +256,8 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * caller has already put every permitted expression in {@code sideEffectsOnlyExpressions}.
    *
    * @param statement the statement to check; a method body or the body of a lambda
-   * @param sideEffectsOnlyExpressions the expressions that the code may side-effect, written in
-   *     terms of the code being checked
+   * @param sideEffectsOnlyExpressions the expressions that the code is permitted to side-effect,
+   *     written in terms of the code being checked
    * @param checker the checker to use
    * @param methodName the name to use in diagnostics for the code being checked
    * @param assumeSideEffectFree true if every method should be assumed to be side-effect-free
@@ -376,8 +376,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
   }
 
   /**
-   * Returns the expressions that the invoked method may side-effect: the arguments/elements of its
-   * {@link SideEffectsOnly} annotation, viewpoint-adapted to the given call site.
+   * Returns the expressions that the invoked method is permitted to side-effect: the
+   * arguments/elements of its {@link SideEffectsOnly} annotation, viewpoint-adapted to the given
+   * call site.
    *
    * <p>An expression that denotes an object that the call site allocates, in the sense of {@link
    * #isNewObjectTree}, is omitted from the result.
@@ -438,7 +439,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    *
    * <p>A larger expression that merely <em>contains</em> {@code this} or a formal parameter, such
    * as {@code this.f}, has no such tree: {@code this.f} denotes a different object than {@code
-   * this} does, and that object may have existed before the call.
+   * this} does, and that object might have existed before the call.
    *
    * @param atDeclaration an expression written at the declaration of the invoked method
    * @param invokedElem the invoked method or constructor
@@ -729,7 +730,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * <p>The expression {@code this} is omitted from the result. In a constructor's annotation,
    * {@code this} is the object being constructed, which did not exist before the call, so modifying
    * it is not a side effect that is visible to the caller. A larger expression that merely
-   * <em>contains</em> {@code this}, such as {@code this.f}, gets no such exemption: its value may
+   * <em>contains</em> {@code this}, such as {@code this.f}, gets no such exemption: its value might
    * be an object that existed before the call, as it does for a constructor whose body contains
    * {@code this.f = p;} where {@code p} is a formal parameter.
    *
@@ -874,7 +875,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * method being checked created. Assigning to it is not visible to the caller.
    *
    * <p>Only the object's own fields and elements qualify. A field of a field does not: {@code
-   * fresh.f} may be an object that existed before the call, so assigning to {@code fresh.f.g} is
+   * fresh.f} might be an object that existed before the call, so assigning to {@code fresh.f.g} is
    * visible to the caller.
    *
    * @param expr an expression
@@ -971,7 +972,7 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
    * are assigned only {@code new} expressions.
    *
    * <p>Only a {@code new} expression is guaranteed to yield an object that did not exist before the
-   * method being checked was called. Any other value may be an object that the caller can also
+   * method being checked was called. Any other value might be an object that the caller can also
    * reach; for example, a string literal is interned, so {@code String s = "hello";} does not make
    * {@code s} fresh. (That is of no consequence for a String, which cannot be modified.)
    *

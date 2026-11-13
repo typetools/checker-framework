@@ -564,7 +564,7 @@ public final class JavaParserUtil {
    * the AST node.
    *
    * <p>Resolving a name that appears in the body of an anonymous or local class resolves that
-   * class's supertype names, each of which may itself appear in the body of an anonymous or local
+   * class's supertype names, each of which might itself appear in the body of an anonymous or local
    * class. Without memoization, the same supertype name would be resolved once for every path
    * through the enclosing classes, which is exponential in the nesting depth.
    *
@@ -1152,7 +1152,7 @@ public final class JavaParserUtil {
    *
    * <p>The result is not erased. Only a type variable that is the whole type, or the component type
    * of an array type, is replaced. Like the result of {@link #typeToTypeMirror(Elements, Types,
-   * Type, Map)}, the result for a class or interface type is the type of its declaration, which may
+   * Type, Map)}, the result for a class or interface type is the type of its declaration, which can
    * contain the declaration's own type variables, as in {@code java.lang.Comparable<T>} for the
    * bound of {@code <U extends Comparable<U>>}. When a type variable's upper bound is an
    * intersection type, which {@code Types} cannot create, this yields the intersection type's
@@ -1297,11 +1297,11 @@ public final class JavaParserUtil {
    * Side-effects node by combining any added String literals in node's subtree into their
    * concatenation. For example, the expression {@code "a" + "b"} becomes {@code "ab"}. This occurs
    * even if, when reading from left to right, the two string literals are not added directly. For
-   * example, the expression {@code 1 + "a" + "b"} parses as {@code (1 + "a") + "b"}}, but it is
+   * example, the expression {@code 1 + "a" + "b"} parses as {@code (1 + "a") + "b"}, but it is
    * transformed into {@code 1 + "ab"}.
    *
    * <p>This is the same transformation performed by javac automatically. Javac seems to ignore
-   * string literals surrounded in parentheses, so this method does as well.
+   * string literals surrounded by parentheses, so this method does as well.
    *
    * @param node a JavaParser Node
    */
@@ -1309,8 +1309,12 @@ public final class JavaParserUtil {
     node.accept(new StringLiteralConcatenateVisitor(), null);
   }
 
-  /** Visitor that combines added String literals, see {@link #concatenateAddedStringLiterals}. */
+  /** Visitor that combines added String literals; see {@link #concatenateAddedStringLiterals}. */
   public static class StringLiteralConcatenateVisitor extends VoidVisitorAdapter<Void> {
+
+    /** Creates a StringLiteralConcatenateVisitor. */
+    public StringLiteralConcatenateVisitor() {}
+
     @Override
     public void visit(BinaryExpr node, Void p) {
       super.visit(node, p);
