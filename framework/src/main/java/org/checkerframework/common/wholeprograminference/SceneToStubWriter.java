@@ -53,7 +53,7 @@ import org.checkerframework.javacutil.BugInCF;
  * files.
  *
  * <p>This class works by taking as input a scene-lib representation of a type augmented with
- * additional information, stored in javac's format (e.g. as TypeMirrors or Elements). {@link
+ * additional information, stored in javac's format (e.g., as TypeMirrors or Elements). {@link
  * ASceneWrapper} stores this additional information. This class walks the scene-lib representation
  * structurally and outputs the stub file as a string, by combining the information scene-lib stores
  * with the information gathered elsewhere.
@@ -259,8 +259,8 @@ public final class SceneToStubWriter {
    * the component type is unannotated).
    *
    * @param e the array type element; can be null
-   * @return the next level of the array, if scene-lib stores information on it. null if the input
-   *     is null or scene-lib is not storing more information.
+   * @return the next level of the array, if scene-lib stores information on it, or null if the
+   *     input is null or scene-lib is not storing more information.
    */
   private static @Nullable ATypeElement getNextArrayLevel(@Nullable ATypeElement e) {
     if (e == null) {
@@ -485,7 +485,7 @@ public final class SceneToStubWriter {
     }
 
     /**
-     * Write an import statement for a given AnnotationDef. This is only called once per annotation
+     * Writes an import statement for a given AnnotationDef. This is only called once per annotation
      * used in the scene.
      *
      * @param d the annotation definition to print an import for
@@ -509,8 +509,8 @@ public final class SceneToStubWriter {
   }
 
   /**
-   * Print the enclosing classes up to and including the given class, and return the number of curly
-   * braces to close with. The classes are printed with appropriate opening curly braces, in
+   * Prints the enclosing classes up to and including the given class, and returns the number of
+   * curly braces to close with. The classes are printed with appropriate opening curly braces, in
    * standard Java style.
    *
    * <p>In an AScene, an inner class name is a binary name like "Outer$Inner". In a stub file, inner
@@ -824,7 +824,7 @@ public final class SceneToStubWriter {
   }
 
   /**
-   * Print the class body, or nothing if this is an anonymous inner class. Call {@link
+   * Prints the class body, or nothing if this is an anonymous inner class. Call {@link
    * #isPrintable(String, AClass)} and check that it returns true before calling this method.
    *
    * @param classname the class name
@@ -919,7 +919,7 @@ public final class SceneToStubWriter {
   /**
    * Prints the given type parameters.
    *
-   * @param typeParameters the type element to print
+   * @param typeParameters the type parameters to print
    * @param printWriter where to print the type parameters
    */
   private static void printTypeParameters(

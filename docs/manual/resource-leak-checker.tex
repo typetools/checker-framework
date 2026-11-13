@@ -63,7 +63,7 @@ the Called Methods Checker, plus five others:
 \item[\<-AenableReturnsReceiverForRlc>]
   Enables the Returns Receiver Checker (Chapter~\ref{returns-receiver-checker})
   when running this checker. By default, the Returns Receiver Checker is
-  disabled when running the Called Methods Checker as part of the RLC,
+  disabled when running the Called Methods Checker as part of the Resource Leak Checker,
   because it has a significant type-checking cost but provides little benefit in the common case,
   since resources are rarely combined with fluent builders.
 \item[\<-AenableWpiForRlc>]
@@ -219,8 +219,8 @@ element that the Called Methods set does not.
 \sectionAndLabel{Aliased references and ownership transfer}{resource-leak-ownership}
 
 Resource leak checking is complicated by aliasing.  Multiple expressions
-may evaluate to the same Java object, but each object only needs to be
-closed once.  (Section~\ref{resource-leak-resource-alias} describes a
+can evaluate to the same Java object, but each object needs to be
+closed only once.  (Section~\ref{resource-leak-resource-alias} describes a
 related situation called ``resource aliasing'', when multiple Java objects
 refer to the same underlying resource.)
 
@@ -265,8 +265,8 @@ As with any annotation, incorrect or missing annotations can lead to false posit
 
 \subsectionAndLabel{Owning parameters and exceptions}{resource-leak-owning-parameters-and-exceptions}
 
-When \<@Owning> is written on a method parameter, the method only takes ownership of the
-parameter when it returns normally.  In this example, the Resource Leak Checker will report
+When \<@Owning> is written on a method parameter, the method takes ownership of the
+parameter only when it returns normally.  In this example, the Resource Leak Checker will report
 an error in the \<example> method and allow the definition of \<closeSocket>:
 
 \begin{verbatim}
@@ -325,8 +325,8 @@ more details on how to annotate a non-final, non-static owning field.
 
 Owning fields are treated slightly differently in constructors versus normal methods.
 In normal methods, assigning a value to an owning field always satisfies the object's
-must-call obligations.  However, within a constructor, those obligations are only
-satisfied if the constructor returns normally.  If the constructor throws an exception,
+must-call obligations.  However, within a constructor, those obligations are
+satisfied only if the constructor returns normally.  If the constructor throws an exception,
 the constructed object will not be accessible afterward, and therefore its fields need
 to be closed before it exits.
 
@@ -337,7 +337,7 @@ This constructor safely closes the object it allocates before throwing an except
   public ConstructorThatCanThrow() throws IOException {
     Socket s = new Socket(myHost, myPort);
     try {
-      initialize(s); // may throw IOException
+      initialize(s); // might throw IOException
     } catch (Exception e) {
       s.close();
       throw e;
@@ -374,7 +374,7 @@ A \emph{resource alias} set is a set of Java objects that
 correspond to the same underlying system resource.
 Calling a must-call method on any member of a resource-alias set
 fulfills that obligation for all members of the set.
-Members of the set may have different Java types.
+Members of the set can have different Java types.
 
 Programmers most often encounter resource aliasing when using \emph{wrapper types}.
 For example, the Java \<Buffered\-Output\-Stream> wrapper adds buffering to a
@@ -434,7 +434,7 @@ class InputStreamWrapper {
 Consider a class that has must-call obligations; that is, the class
 declaration is annotated with \<@MustCall(...)>.
 Every constructor implicitly creates obligations for the newly-created object.
-Non-constructor methods may also create obligations
+Non-constructor methods can also create obligations
 when re-assigning non-final owning fields or allocating
 new system-level resources.
 
@@ -443,7 +443,7 @@ A post-condition annotation,
 indicates for which expression an obligation is created.
 If you write \<@CreatesMustCallFor(>\emph{T}\<)> on a method \emph{N} that
 overrides a method \emph{M}, then \emph{M} must also be annotated as
-\<@CreatesMustCallFor(>\emph{T}\<)>.  (\emph{M} may also have other
+\<@CreatesMustCallFor(>\emph{T}\<)>.  (\emph{M} can also have other
 \<@CreatesMustCallFor> annotations that \emph{N} does not.)
 
 \<@CreatesMustCallFor> allows the Resource Leak Checker to verify uses of non-final fields
@@ -524,7 +524,7 @@ instead).
 
 Any method that re-assigns a non-final, owning field of some object \<obj>
 must be annotated \<@CreatesMustCallFor("obj")>.
-Other methods may also be annotated with \<@CreatesMustCallFor>.
+Other methods can also be annotated with \<@CreatesMustCallFor>.
 
 The Resource Leak Checker enforces two rules to ensure that re-assignments
 to non-final, owning fields (like \<sock> in method \<reconnect> above) are
@@ -542,7 +542,7 @@ to \<reconnect()>, and the second rule ensures that \<reconnect()>
 safely closes \<sock> before re-assigning it. Because the Called Methods Checker
 treats calls to a \<@CreatesMustCallFor> method like \<reconnect()> as if the call might
 cause arbitrary side effects, after such a call the only method known to have been
-definitely called is the \<@CreatesMustCallFor> method: previous called
+definitely called is the \<@CreatesMustCallFor> method: previously called
 methods (including \<close()>) do not appear in the \<@CalledMethods> type qualifier.
 
 % TODO: should this section also include text about unconnected sockets, or is what's here sufficient?
@@ -551,8 +551,8 @@ methods (including \<close()>) do not appear in the \<@CalledMethods> type quali
 \sectionAndLabel{Ignored exception types}{resource-leak-ignored-exceptions}
 
 The Resource Leak Checker checks that an element's must-call obligations
-are fulfilled when that element may go out of scope: at the end of its
-lexical scope or when control may be transferred to the end of its lexical
+are fulfilled when that element might go out of scope: at the end of its
+lexical scope or when control might be transferred to the end of its lexical
 scope, such as via a \<break> or \<continue> statement or via throwing an
 exception.  As an example of an exception, consider the following method:
 
@@ -565,7 +565,7 @@ exception.  As an example of an exception, consider the following method:
 \end{verbatim}
 
 If \<bar> is declared to throw an exception, the Resource Leak Checker
-warns that a \<Socket> may be leaked.  If \<bar> throws an exception, the
+warns that a \<Socket> might be leaked.  If \<bar> throws an exception, the
 only reference to \<s> is lost, which could lead to a resource leak.
 
 The Resource Leak Checker ignores control flow due to some exceptions.
@@ -576,7 +576,7 @@ By default, the Resource Leak Checker ignores run-time errors that can occur
 unpredictably at most points in the program. For example, the JVM can throw
 an \<OutOfMemoryError> on any allocation.  Similarly,
 \<ClassCircularityError>, \<ClassFormatError>, and \<NoClassDefFoundError>
-may occur at any reference to a class.  Such exceptions usually terminate
+can occur at any reference to a class.  Such exceptions usually terminate
 the program, and in that case unclosed resources do not matter.
 Furthermore, any method can throw \<RuntimeException>, and the Checker
 Framework pessimistically assumes one can be thrown at every call site.
@@ -591,7 +591,7 @@ The Resource Leak Checker also ignores exception types that can be verified
 to never occur.  In particular, the Resource Leak Checker ignores \<NullPointerException>s
 (use the Nullness Checker, \chapterpageref{nullness-checker}) and
 \<ArrayIndexOutOfBoundsException>s and \<NegativeArraySizeException>s (use the Index
-Checker, \chapterpageref{index-checker}). Other exception types may be added to this
+Checker, \chapterpageref{index-checker}). Other exception types might be added to this
 list in the future.  Please let us know if there is a type that you think should
 be ignored by filing an issue listing both the exception type and the
 verification tool.
@@ -599,7 +599,7 @@ verification tool.
 
 The set of ignored exception types can be controlled with the option
 \<-AresourceLeakIgnoredExceptions=...>.  The option takes a comma-separated list of
-fully-qualified exception types.  A type can be prefixed with \<=> to ignore exactly
+fully qualified exception types.  A type can be prefixed with \<=> to ignore exactly
 that type and not its subclasses.  For example, for a very pedantic set of ignored
 exceptions, use either of these, which have the same effect:
 
@@ -635,7 +635,7 @@ and issues an error.
 
 One way to prevent this false positive warning is to declare the field as \<final>.
 
-Alternately, to suppress all warnings related to field assignments in the
+Alternatively, to suppress all warnings related to field assignments in the
 constructor and in initializer blocks, pass the
 \<-ApermitInitializationLeak> command-line argument.  This makes the
 checker unsound:  the Resource Leak Checker will not warn if the constructor
@@ -649,7 +649,7 @@ when a variable with the type \<@MustCallUnknown> has a must-call obligation.
 \<@MustCallUnknown> rarely occurs, but if you encounter this error, usually
 the right thing to do is to write an explicit \<@MustCall> annotation
 on the indicated expression (e.g., as a cast), because the Must Call Checker
-will only use \<@MustCallUnknown> as a default when encountering a language
+will use \<@MustCallUnknown> as a default only when encountering a language
 feature that it is unable to reason about.
 
 \sectionAndLabel{Collections of resources}{resource-leak-collections}
@@ -1005,7 +1005,7 @@ Verification''~\cite{KelloggSSE2021} (ESEC/FSE 2021,
 gives more details about the Resource Leak Checker.
 
 The Resource Leak Checker uses a specialized algorithm to infer annotations
-when whole program inference (WPI, Section~\ref{whole-program-inference})
+when whole-program inference (WPI, Section~\ref{whole-program-inference})
 is enabled.  The algorithm is described in the paper ``Inference of
 Resource Management Specifications''~\cite{ShadabGTEKLLS2023} (OOPSLA 2023,
 \myurl{https://homes.cs.washington.edu/~mernst/pubs/resource-inference-oopsla2023-abstract.html}).
