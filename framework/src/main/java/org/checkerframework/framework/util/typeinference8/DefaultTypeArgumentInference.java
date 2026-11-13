@@ -294,10 +294,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * for example when the target type is the only source of the type of a lambda's return
    * expression.
    *
-   * <p>A crash is a bug in the Checker Framework. Because the retry is optional, a crash is
-   * ignored (and the caller uses the result of inference with the target type instead) unless
-   * {@code -AconvertTypeArgInferenceCrashToWarning=false} is passed, as the Checker Framework's
-   * tests do. In that case the crash propagates so that the bug is not hidden.
+   * <p>A crash is a bug in the Checker Framework. Because the retry is optional, a crash is ignored
+   * (and the caller uses the result of inference with the target type instead) unless {@code
+   * -AconvertTypeArgInferenceCrashToWarning=false} is passed, as the Checker Framework's tests do.
+   * In that case the crash propagates so that the bug is not hidden.
    *
    * @param typeFactory the type factory
    * @param retry an inference problem that does not use the target type
@@ -385,8 +385,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
   /**
    * Returns the outermost tree required to find the type of {@code tree}.
    *
-   * @param tree tree that may need an outer tree to find the type
-   * @param parentPath path to the parent of {@code tree} or null if no such parent exists
+   * @param tree tree that might need an outer tree to find the type
+   * @param parentPath path to the parent of {@code tree}, or null if no such parent exists
    * @param env the processing environment
    * @return the outermost tree required to find the type of {@code tree}
    */
@@ -489,7 +489,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    * @param executableElement symbol of method or constructor
    * @param argTrees all the arguments of the method or constructor call
    * @param argTree the argument of interest
-   * @param newClassTree the new class tree or {@code null} if {@code executableElement} is a method
+   * @param newClassTree the new class tree, or {@code null} if {@code executableElement} is a
+   *     method
    * @return true if {@code argTree} is pseudo-assigned to a parameter in {@code executableElement}
    *     that contains a type variable that needs to be inferred
    */

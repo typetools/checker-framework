@@ -79,7 +79,7 @@ public abstract class CloneOrUpdateRelatedTask extends GitTask {
   }
 
   /**
-   * Check that the {@code relatedRepo} is checked out to the same org and branch as the root
+   * Checks that the {@code relatedRepo} is checked out to the same org and branch as the root
    * directory of this project.
    *
    * @param relatedRepoDir a related repository
@@ -147,9 +147,9 @@ public abstract class CloneOrUpdateRelatedTask extends GitTask {
   }
 
   /**
-   * Find the org and branch of the remote tracking branch that is currently checked out in {@code
-   * gitDir}. If the branch checked out at {@code gitDir} does not have a remote tracking branch,
-   * returns {@code null}.
+   * Returns the org and branch of the remote tracking branch that is currently checked out in
+   * {@code gitDir}. If the branch checked out at {@code gitDir} does not have a remote tracking
+   * branch, returns {@code null}.
    *
    * @param gitDir a .git directory
    * @return the org and branch of {@code gitDir} or null if there is no remote branch

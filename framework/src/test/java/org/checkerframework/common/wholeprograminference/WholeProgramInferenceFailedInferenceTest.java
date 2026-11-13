@@ -92,7 +92,7 @@ public class WholeProgramInferenceFailedInferenceTest {
   }
 
   /**
-   * No failed inference may be reported for a method or constructor that has no declaration in
+   * No failed inference should be reported for a method or constructor that has no declaration in
    * source code, because a user could not act on the message.
    */
   @Test

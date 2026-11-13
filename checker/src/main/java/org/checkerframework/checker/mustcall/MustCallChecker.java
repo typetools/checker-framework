@@ -142,7 +142,7 @@ public class MustCallChecker extends BaseTypeChecker {
 
   /**
    * Parse the argument given for the {@link #IGNORED_EXCEPTIONS} option. Warnings will be issued
-   * for any problems in the argument, for instance if any of the named exceptions cannot be found.
+   * for any problems in the argument, for instance, if any of the named exceptions cannot be found.
    *
    * @param ignoredExceptionsOptionValue the value given for {@link #IGNORED_EXCEPTIONS}
    * @return the set of ignored exceptions

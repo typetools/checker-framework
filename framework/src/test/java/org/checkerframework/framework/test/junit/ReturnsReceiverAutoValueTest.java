@@ -8,7 +8,7 @@ import org.checkerframework.common.returnsreceiver.ReturnsReceiverChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/** tests the returns receiver checker's AutoValue integration. */
+/** Tests the Returns Receiver Checker's AutoValue integration. */
 public class ReturnsReceiverAutoValueTest extends CheckerFrameworkPerDirectoryTest {
 
   public ReturnsReceiverAutoValueTest(List<File> testFiles) {

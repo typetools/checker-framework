@@ -118,13 +118,13 @@ public class BugInCF extends RuntimeException {
    * Adds the location to {@code throwable}. If {@code throwable} is a {@code BugInCF} that does not
    * have a location, then its location is set to {@code location}.
    *
-   * <p>If {@code throwable} is not a{@code BugInCF}, then a {@code BugInCF} is created with {@code
+   * <p>If {@code throwable} is not a {@code BugInCF}, then a {@code BugInCF} is created with {@code
    * location} and cause {@code throwable}.
    *
    * @param location the location at which to report this bug
    * @param throwable a throwable whose location is set to {@code location} if it does not already
    *     have a location
-   * @return {@code throwable} if its a {@code BugInCF} otherwise a new {@code BugInCF} object
+   * @return {@code throwable} if it is a {@code BugInCF}, otherwise a new {@code BugInCF} object
    */
   public static BugInCF addLocation(Tree location, Throwable throwable) {
     if (throwable instanceof BugInCF bugInCF) {

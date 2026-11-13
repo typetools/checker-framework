@@ -141,15 +141,15 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
   }
 
   /**
-   * Work around a bug in javac 9 where sometimes the bound field is set to the transitive
+   * Works around a bug in javac 9 where sometimes the bound field is set to the transitive
    * supertype's type parameter instead of the type parameter which the wildcard directly
    * instantiates. See https://github.com/eisop/checker-framework/issues/18
    *
    * <p>Sets each wildcard type argument's bound from typeArgs to the corresponding type parameter
    * from typeParams.
    *
-   * <p>If typeArgs.isEmpty() the method does nothing and returns. Otherwise, typeArgs.size() has to
-   * be equal to typeParams.size().
+   * <p>If typeArgs.isEmpty(), the method does nothing and returns. Otherwise, typeArgs.size() has
+   * to be equal to typeParams.size().
    *
    * <p>For each wildcard type argument and corresponding type parameter, sets the
    * WildcardType.bound field to the corresponding type parameter, if and only if the owners of the
@@ -250,8 +250,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
   }
 
   /**
-   * If a tree can be found for the declaration of the type variable {@code type}, then a {@link
-   * AnnotatedTypeVariable} is returned with explicit annotations from the type variables declared
+   * If a tree can be found for the declaration of the type variable {@code type}, then an {@link
+   * AnnotatedTypeVariable} is returned with explicit annotations from the type variable's declared
    * bounds. If a tree cannot be found, then {@code type}, converted to a use, is returned.
    *
    * @param type type variable used to find declaration tree

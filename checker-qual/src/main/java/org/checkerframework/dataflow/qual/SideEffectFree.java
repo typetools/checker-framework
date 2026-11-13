@@ -37,7 +37,7 @@ import java.lang.annotation.Target;
  * </ol>
  *
  * These rules are conservative: any code that passes the checks is side-effect-free, but the
- * Checker Framework may issue false positive warnings, for code that uses one of the forbidden
+ * Checker Framework might issue false positive warnings, for code that uses one of the forbidden
  * constructs but is side-effect-free nonetheless. In particular, a method that caches its result
  * will be rejected.
  *
