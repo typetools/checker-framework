@@ -29,7 +29,7 @@ import org.checkerframework.javacutil.AnnotationMirrorSet;
  */
 public interface WholeProgramInferenceStorage<T> {
   /**
-   * Returns the file corresponding to the given element. This may side-effect the storage to load
+   * Returns the file corresponding to the given element. This might side-effect the storage to load
    * the file if it hasn't been read yet.
    *
    * <p>The element must be declared in source code that is being compiled; that is, {@link
@@ -44,14 +44,14 @@ public interface WholeProgramInferenceStorage<T> {
 
   /**
    * Given an ExecutableElement in a compilation unit that has already been read into storage,
-   * returns whether there exists a stored method matching {@code elt}.
+   * returns true if there exists a stored method matching {@code methodElt}.
    *
-   * <p>An implementation is permitted to return false if {@code elt} represents a method that was
-   * synthetically added by javac, such as zero-argument constructors or valueOf(String) methods for
-   * enum types.
+   * <p>An implementation is permitted to return false if {@code methodElt} represents a method that
+   * was synthetically added by javac, such as zero-argument constructors or valueOf(String) methods
+   * for enum types.
    *
    * @param methodElt a method or constructor Element
-   * @return true if the storage has a method corresponding to {@code elt}
+   * @return true if the storage has a method corresponding to {@code methodElt}
    */
   boolean hasStorageLocationForMethod(ExecutableElement methodElt);
 
@@ -115,9 +115,9 @@ public interface WholeProgramInferenceStorage<T> {
    * org.checkerframework.framework.qual.RequiresQualifier} or {@link
    * org.checkerframework.framework.qual.EnsuresQualifier} annotation.
    *
-   * <p>This method may return null if the given expression is not a supported expression type.
-   * Currently, the supported expression types are: fields of "this" (e.g. "this.f", pre- and
-   * postconditions), "this" (postconditions only), and method parameters (e.g. "#1", "#2",
+   * <p>This method might return null if the given expression is not a supported expression type.
+   * Currently, the supported expression types are: fields of "this" (e.g., "this.f", pre- and
+   * postconditions), "this" (postconditions only), and method parameters (e.g., "#1", "#2",
    * postconditions only).
    *
    * @param className the class that contains the method, for diagnostics only
@@ -185,12 +185,12 @@ public interface WholeProgramInferenceStorage<T> {
    * of WPI.
    *
    * @param elt a method
-   * @return the declaration annotations inferred on elt so far (may be empty)
+   * @return the declaration annotations inferred on elt so far (might be empty)
    */
   AnnotationMirrorSet getMethodDeclarationAnnotations(ExecutableElement elt);
 
   /**
-   * Removes the given annotation from the given method element's inferred declaration annotation.
+   * Removes the given annotation from the given method element's inferred declaration annotations.
    * If the given annotation was not in the list of inferred declaration annotations on the given
    * method, calling this method is a no-op.
    *
@@ -202,7 +202,7 @@ public interface WholeProgramInferenceStorage<T> {
   boolean removeMethodDeclarationAnnotation(ExecutableElement methodElt, AnnotationMirror anno);
 
   /**
-   * Obtain the type from a storage location.
+   * Obtains the type from a storage location.
    *
    * @param typeMirror the underlying type for the result
    * @param storageLocation the storage location from which to obtain annotations
@@ -223,7 +223,7 @@ public interface WholeProgramInferenceStorage<T> {
    * Therefore, it is not a problem to remove all annotations before inserting the new annotations.
    *
    * <p>The {@code update*} methods in {@link WholeProgramInference} perform LUB. This one just does
-   * replacement. (Thus, the naming may be a bit confusing.)
+   * replacement. (Thus, the naming might be a bit confusing.)
    *
    * @param newATM the type whose annotations will be added to the {@code AnnotatedTypeMirror}
    * @param curATM the annotations currently stored at the location, used to check if the element

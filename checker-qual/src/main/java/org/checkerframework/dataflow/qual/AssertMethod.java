@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
  * public static void assertTrue(boolean condition);
  * }</pre>
  *
- * Then, in the code below, the Optional Checker can determine that {@code optional} has a value and
+ * then, in the code below, the Optional Checker can determine that {@code optional} has a value and
  * the call to {@code Optional#get} will not throw an exception.
  *
  * <pre>
@@ -41,7 +41,7 @@ public @interface AssertMethod {
   /**
    * The class of the exception thrown by this method. The default is {@link AssertionError}.
    *
-   * @return class of the exception thrown by this method
+   * @return the class of the exception thrown by this method
    */
   Class<?> value() default AssertionError.class;
 

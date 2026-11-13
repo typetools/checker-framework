@@ -157,7 +157,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    *
    * @param left the first tree to compare
    * @param right the second tree to compare
-   * @return is left less than right?
+   * @return true if left is less than right
    */
   public boolean isLessThan(Tree left, String right) {
     return isLessThan(getLessThanAnnotation(left), right);
@@ -168,7 +168,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    *
    * @param left the first value to compare (an annotation)
    * @param right the second value to compare (an expression)
-   * @return is left less than right?
+   * @return true if left is less than right
    */
   public boolean isLessThan(AnnotationMirror left, String right) {
     List<String> expressions = getLessThanExpressions(left);
@@ -184,8 +184,8 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    *
    * @param smaller the first value to compare
    * @param bigger the second value to compare
-   * @param path used to parse expressions strings
-   * @return {@code smaller < bigger}, using information from the Value Checker
+   * @param path used to parse expression strings
+   * @return true if {@code smaller < bigger}, using information from the Value Checker
    */
   public boolean isLessThanByValue(Tree smaller, String bigger, TreePath path) {
     Long smallerValue = ValueCheckerUtils.getMaxValue(smaller, getValueAnnotatedTypeFactory());
@@ -268,7 +268,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    *
    * @param left the first value to compare
    * @param right the second value to compare
-   * @return is left less than or equal to right?
+   * @return true if left is less than or equal to right
    */
   public boolean isLessThanOrEqual(Tree left, String right) {
     return isLessThanOrEqual(getLessThanAnnotation(left), right);
@@ -279,7 +279,7 @@ public class LessThanAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForInd
    *
    * @param left the first value to compare
    * @param right the second value to compare
-   * @return is left less than or equal to right?
+   * @return true if left is less than or equal to right
    */
   public boolean isLessThanOrEqual(AnnotationMirror left, String right) {
     List<String> expressions = getLessThanExpressions(left);

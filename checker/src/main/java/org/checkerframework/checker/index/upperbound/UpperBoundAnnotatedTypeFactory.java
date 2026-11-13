@@ -97,13 +97,13 @@ import org.checkerframework.javacutil.TypeSystemError;
  *   <li>4. Right shifting by a constant between 0 and 30 preserves the type of the left side
  *       expression.
  *   <li>5. If either argument to a bitwise and expression is non-negative, the and expression
- *       retains that argument's upperbound type. If both are non-negative, the result of the
+ *       retains that argument's upper bound type. If both are non-negative, the result of the
  *       expression is the GLB of the two.
  *   <li>6. if numerator &ge; 0, then numerator % divisor &le; numerator
  *   <li>7. if divisor &ge; 0, then numerator % divisor &lt; divisor
  *   <li>8. If the numerator is an array length access of an array with non-zero length, and the
  *       divisor is greater than one, glb the result with an LTL of the array.
- *   <li>9. if numeratorTree is a + b and divisor greater than 1, and a and b are less than the
+ *   <li>9. if numeratorTree is a + b and divisor is greater than 1, and a and b are less than the
  *       length of some sequence, then (a + b) / divisor is less than the length of that sequence.
  *   <li>10. Special handling for Math.random: Math.random() * array.length is LTL array.
  * </ul>
@@ -216,7 +216,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
   /**
    * Gets the annotated type factory of the Substring Index Checker running along with the Upper
-   * Bound checker, allowing it to refine the upper bounds of expressions annotated by Substring
+   * Bound Checker, allowing it to refine the upper bounds of expressions annotated by Substring
    * Index Checker annotations.
    */
   SubstringIndexAnnotatedTypeFactory getSubstringIndexAnnotatedTypeFactory() {
@@ -271,7 +271,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
    * annotation. If so, adds an {@link UpperBoundBottom} annotation to type.
    *
    * @param valueType annotated type from the {@link ValueAnnotatedTypeFactory}
-   * @param type annotated type from this factory that is side effected
+   * @param type annotated type from this factory that is side-effected
    */
   private void addUpperBoundTypeFromValueType(
       AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
@@ -408,7 +408,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     return new UpperBoundQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
   }
 
-  /** The qualifier hierarchy for the upperbound type system. */
+  /** The qualifier hierarchy for the upper bound type system. */
   protected final class UpperBoundQualifierHierarchy extends ElementQualifierHierarchy {
     /**
      * Creates an UpperBoundQualifierHierarchy from the given classes.
@@ -613,7 +613,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     }
 
     /**
-     * If a type returned by an {@link SearchIndexAnnotatedTypeFactory} has a {@link
+     * If a type returned by a {@link SearchIndexAnnotatedTypeFactory} has a {@link
      * NegativeIndexFor} annotation, then refine the result to be {@link LTEqLengthOf}. This handles
      * this case:
      *
@@ -711,7 +711,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
     }
 
     /**
-     * If either argument is non-negative, the and expression retains that argument's upperbound
+     * If either argument is non-negative, the and expression retains that argument's upper bound
      * type. If both are non-negative, the result of the expression is the GLB of the two (case 5).
      */
     private void addAnnotationForAnd(
@@ -744,7 +744,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
 
     /**
      * Infers upper-bound annotation for {@code numerator % divisor}. There are two cases where an
-     * upperbound type is inferred:
+     * upper bound type is inferred:
      *
      * <ul>
      *   <li>6. if numerator &ge; 0, then numerator % divisor &le; numerator
@@ -777,8 +777,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactoryForI
      * <ul>
      *   <li>8. If the numerator is an array length access of an array with non-zero length, and the
      *       divisor is greater than one, glb the result with an LTL of the array.
-     *   <li>9. if numeratorTree is a + b and divisor greater than 1, and a and b are less than the
-     *       length of some sequence, then (a + b) / divisor is less than the length of that
+     *   <li>9. if numeratorTree is a + b and divisor is greater than 1, and a and b are less than
+     *       the length of some sequence, then (a + b) / divisor is less than the length of that
      *       sequence.
      * </ul>
      */

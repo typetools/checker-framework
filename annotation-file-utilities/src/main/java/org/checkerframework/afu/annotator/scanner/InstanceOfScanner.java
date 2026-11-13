@@ -43,7 +43,7 @@ public final class InstanceOfScanner extends CommonScanner {
   }
 
   /**
-   * Computes the index of the given instanceof tree amongst all instanceof tree inside its method,
+   * Computes the index of the given instanceof tree amongst all instanceof trees inside its method,
    * using 0-based indexing.
    *
    * @param origpath the path ending in the given instanceof tree

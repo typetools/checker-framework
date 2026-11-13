@@ -93,7 +93,7 @@ public final class StubGeneratorTestHelper {
    * Returns a source file that declares an annotation in package {@code p}.
    *
    * @param name the simple name of the annotation
-   * @param targets the simple names of the {@code ElementType} constants that the annotation may be
+   * @param targets the simple names of the {@code ElementType} constants that the annotation can be
    *     written on
    * @return a source file that declares the annotation
    */

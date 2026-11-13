@@ -9,7 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class ModifiabilityTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a ModifiabilityTest.
+   * Creates a ModifiabilityTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

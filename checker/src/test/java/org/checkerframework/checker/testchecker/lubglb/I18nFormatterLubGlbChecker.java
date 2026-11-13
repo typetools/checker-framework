@@ -50,7 +50,7 @@ public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
     /**
      * Constructor.
      *
-     * @param checker checker
+     * @param checker the checker
      */
     public I18nFormatterLubGlbAnnotatedTypeFactory(BaseTypeChecker checker) {
       super(checker);
@@ -425,7 +425,7 @@ public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
   }
 
   /**
-   * Throws an exception if glb(arg1, arg2) != result.
+   * Throws an exception if glb(arg1, arg2) != expected.
    *
    * @param arg1 the first argument
    * @param arg2 the second argument
@@ -442,7 +442,7 @@ public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
   }
 
   /**
-   * Throws an exception if lub(arg1, arg2) != result.
+   * Throws an exception if lub(arg1, arg2) != expected.
    *
    * @param arg1 the first argument
    * @param arg2 the second argument

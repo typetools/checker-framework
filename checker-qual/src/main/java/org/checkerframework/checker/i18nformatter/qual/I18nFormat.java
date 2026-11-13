@@ -8,10 +8,10 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * This annotation, attached to a String type, indicates that the String may be passed to {@link
+ * This annotation, attached to a String type, indicates that the String can be passed to {@link
  * java.text.MessageFormat#format(String, Object...) MessageFormat.format}.
  *
- * <p>The annotation's value represents the valid arguments that may be passed to the format method.
+ * <p>The annotation's value represents the valid arguments that can be passed to the format method.
  * For example:
  *
  * <pre>{@literal @}I18nFormat({GENERAL, NUMBER}) String f;
