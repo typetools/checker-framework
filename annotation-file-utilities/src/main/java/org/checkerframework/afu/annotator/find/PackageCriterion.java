@@ -10,7 +10,7 @@ import org.checkerframework.afu.annotator.Main;
 import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-/** Represents the criterion that a program element is in a method with a certain name. */
+/** Represents the criterion that a program element is a package with a certain name. */
 final class PackageCriterion implements Criterion {
 
   private final String name;

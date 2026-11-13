@@ -63,7 +63,7 @@ public class AnnotationMirrorSet
   }
 
   /**
-   * Returns a new {@link AnnotationMirrorSet} that contains the given annotation mirrors.
+   * Creates a new {@link AnnotationMirrorSet} that contains the given annotation mirrors.
    *
    * @param annos the AnnotationMirrors to put in the set
    */
@@ -81,7 +81,7 @@ public class AnnotationMirrorSet
   }
 
   /**
-   * Make this set unmodifiable.
+   * Makes this set unmodifiable.
    *
    * @return this set
    */

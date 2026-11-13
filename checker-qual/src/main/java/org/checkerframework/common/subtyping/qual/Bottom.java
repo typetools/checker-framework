@@ -18,7 +18,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * top and bottom qualifier that gets stored in bytecode.
  *
  * <p>To use this qualifier, the type system designer needs to use methods like {@code
- * ImplicitsTreeAnnotator.addTreeKind()} to add default annotations and needs to manually add the
+ * LiteralTreeAnnotator.addLiteralKind()} to add default annotations and needs to manually add the
  * bottom qualifier to the qualifier hierarchy.
  *
  * <p>See {@code QualifierHierarchy.getBottomAnnotations()}.

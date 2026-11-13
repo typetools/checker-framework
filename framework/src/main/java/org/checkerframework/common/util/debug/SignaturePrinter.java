@@ -60,7 +60,7 @@ import org.plumelib.util.StringsP;
  *
  * By default, only the annotations explicitly written by the user are emitted. To view the default
  * and effective annotations in a class that are associated with a checker, the fully qualified name
- * of the checker needs to be passed as {@code -Achecker=} argument, e.g.
+ * of the checker needs to be passed as the {@code -Achecker=} argument, e.g.
  *
  * <pre>{@code
  * javac -processor SignaturePrinter
@@ -80,7 +80,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
 
   // ///////// Initialization /////////////
   /**
-   * Initialization.
+   * Initializes this SignaturePrinter.
    *
    * @param env the ProcessingEnvironment
    * @param checkerName the name of the checker
@@ -282,7 +282,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
     }
 
     /**
-     * Print the supertypes.
+     * Prints the supertypes.
      *
      * @param dt the type whose supertypes to print
      */
