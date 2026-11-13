@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
- * Method declaration annotation used to indicate that this method may be invoked on an uninterned
+ * Method declaration annotation used to indicate that this method can be invoked on an uninterned
  * object and that it returns an interned object.
  *
  * @checker_framework.manual #interning-checker Interning Checker
