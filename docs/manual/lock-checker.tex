@@ -5,7 +5,7 @@ locking discipline.  A locking discipline indicates which locks must be held
 when a given operation occurs.  You express the locking discipline by
 declaring a variable's type to have the qualifier
 \<\refqualclass{checker/lock/qual}{GuardedBy}{\small("\emph{lockexpr}")}>.
-This indicates that the variable's value may
+This indicates that the variable's value can
 be dereferenced only if the given lock is held.
 
 
@@ -75,7 +75,7 @@ This section describes the lock annotations you can write on types and methods.
 \begin{description}
 
 \item[\refqualclass{checker/lock/qual}{GuardedBy}{\small(\emph{exprSet})}]
-  If a variable \<x> has type \<@GuardedBy("\emph{expr}")>, then a thread may
+  If a variable \<x> has type \<@GuardedBy("\emph{expr}")>, then a thread can
   dereference the value referred to by \<x> only when the thread holds the
   lock that \emph{expr} currently evaluates to.
 
@@ -113,7 +113,7 @@ This section describes the lock annotations you can write on types and methods.
   \code{@GuardedByUnknown}.  In particular, if it is written on a
   formal parameter, then any value,
   including one whose locks are not currently held,
-  may be passed as an argument.
+  can be passed as an argument.
 
   \<@GuardedByUnknown> is the conservative
   default type qualifier for method receivers in unannotated libraries
@@ -178,8 +178,8 @@ of a problem that would occur if this rule were relaxed.
 
   \code{@GuardSatisfied} is only allowed in method signatures:  on
   formal parameters (including the receiver) and return types.
-  It may not be written on fields.  Also, it is a limitation of the
-  current design that \code{@GuardSatisfied} may not be written on
+  It cannot be written on fields.  Also, it is a limitation of the
+  current design that \code{@GuardSatisfied} cannot be written on
   array elements or on local variables.
 
   A return type can only be annotated with \<@GuardSatisfied(\emph{index})>,
@@ -257,7 +257,7 @@ method itself rather than to some particular type.
   annotation.
 
 \item[\refqualclass{checker/lock/qual}{MayReleaseLocks}]
-  The method may release locks that were held prior to the method being called.
+  The method might release locks that were held prior to the method being called.
   You can write this when you are certain the method releases locks, or
   when you don't know whether the method releases locks.
   This is the conservative default for methods in unannotated libraries (see \chapterpageref{annotating-libraries}).
@@ -303,7 +303,7 @@ the following additional rules.
   type is unrelated to every other type in the \<@GuardedBy> hierarchy,
   including other occurrences of \<@GuardSatisfied> without an index.
 
-  \<@GuardSatisfied> may not be used on formal parameters, receivers, or
+  \<@GuardSatisfied> must not be used on formal parameters, receivers, or
   return types of a method annotated with \<@MayReleaseLocks>.
 \end{description}
 
@@ -312,15 +312,15 @@ the following additional rules.
 \begin{description}
 
 \item[\code{@GuardedBy}]
-  An expression of type \<@GuardedBy(\emph{eset})> may be dereferenced only
+  An expression of type \<@GuardedBy(\emph{eset})> can be dereferenced only
   if all locks in \emph{eset} are held.
 
 \item[\code{@GuardSatisfied}]
-  An expression of type \<@GuardSatisfied> may be dereferenced.
+  An expression of type \<@GuardSatisfied> can be dereferenced.
 
 \item[Not \code{@GuardedBy} or \code{@GuardSatisfied}]
   An expression whose type is not annotated with \code{@GuardedBy} or
-  \code{@GuardSatisfied} may not be dereferenced.
+  \code{@GuardSatisfied} cannot be dereferenced.
 %  In particular, an expression of type \code{@PolyGuardedBy} may not be dereferenced.
 
 \end{description}
@@ -391,7 +391,7 @@ the \<@GuardedBy> type hierarchy, including \<@GuardedBy(\{\})>.
   annotated with \code{@MayReleaseLocks} and having a formal parameter
   or receiver annotated with \code{@GuardSatisfied}.  This is because
   the Lock Checker cannot guarantee that the guard will be satisfied
-  throughout the body of a method if that method may release a lock.
+  throughout the body of a method if that method might release a lock.
 
 \item[No side effects on lock expressions]
   If expression \emph{expr} is used to acquire a lock, then
@@ -466,7 +466,7 @@ class MyClass {
 Note that the expression \code{new Object()} is inferred to have type \code{@GuardedBy("lock")}
 because it is immediately assigned to a newly-declared
 variable having type annotation \code{@GuardedBy("lock")}.  You could
-explicitly write \code{new @GuardedBy("lock") Object()} but it is not
+explicitly write \code{new @GuardedBy("lock") Object()}, but it is not
 required.
 
 The following example demonstrates that using \code{<self>} as a lock expression
@@ -647,7 +647,7 @@ void clientMethod() {
     mySideEffectFreeMethod();
     x.toString(); // OK: the lock is still held since mySideEffectFreeMethod is side-effect-free
     myUnlockingMethod();
-    x.toString(); // ILLEGAL: myUnlockingMethod may have released a lock
+    x.toString(); // ILLEGAL: myUnlockingMethod might have released a lock
   }
   if (lock.tryLock()) {
     x.toString(); // OK: the lock is held
@@ -684,7 +684,7 @@ might not even be in scope at the declaration.  Therefore, the declaration
 cannot use \<@GuardedBy> and must use \<@GuardSatisfied>.  The arguments to
 \<@GuardSatisfied> indicate that the receiver and result (which are the
 same value) are guarded by the same (unknown, possibly empty) set of locks,
-and the \<str> parameter may be guarded by a different set of locks.
+and the \<str> parameter might be guarded by a different set of locks.
 
 The \code{@LockingFree} annotation indicates that
 this method makes no use of
@@ -797,8 +797,9 @@ Section~\ref{type-refinement}.
 \subsectionAndLabel{Discussion of default qualifier}{lock-checker-default-qualifier}
 
 The default qualifier for unannotated types is \<@GuardedBy(\{\})>.
-This default forces you to write explicit \<@GuardSatisfied> in method
-signatures in the common case that clients ensure that all locks are held.
+This default forces you to write explicit \<@GuardSatisfied> annotations in
+method signatures in the common case that clients ensure that all locks are
+held.
 
 It might seem that \<@GuardSatisfied> would be a better default for
 method signatures, but such a default would require even more annotations.
@@ -890,7 +891,7 @@ annotation, the Checker Framework can type-check your code.
 It treats annotations from other tools
 as if you had written the corresponding annotation from the
 Lock Checker, as described in Figure~\ref{fig-lock-refactoring}.
-If the other annotation is a declaration annotation, it may be moved; see
+If the other annotation is a declaration annotation, it might be moved; see
 Section~\ref{declaration-annotations-moved}.
 
 
@@ -929,7 +930,7 @@ The book \href{https://jcip.net/}{\emph{Java Concurrency in Practice}}~\cite{Goe
 \begin{itemize}
 \item
   When applied to a field, it means that the given lock must be held when
-  accessing the field.  The lock acquisition and the field access may occur
+  accessing the field.  The lock acquisition and the field access can occur
   arbitrarily far in the future.
 \item
   When applied to a method, it means that the given lock must be held by

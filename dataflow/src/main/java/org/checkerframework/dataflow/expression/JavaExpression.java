@@ -60,7 +60,7 @@ import org.plumelib.util.CollectionsP;
  * expressions. For example, it does not represent a ternary conditional expression {@code ?:},
  * because there is no CFG node for that expression (the expression is turned into multiple CFG
  * nodes). Use {@link org.checkerframework.dataflow.expression.Unknown} for unrepresentable
- * expressions).
+ * expressions.
  *
  * <p>This class's representation is like an AST: subparts are also expressions. For declared names
  * (fields, local variables, and methods), it also contains an Element.
@@ -78,7 +78,7 @@ public abstract class JavaExpression {
   protected final TypeMirror type;
 
   /**
-   * Create a JavaExpression.
+   * Creates a JavaExpression.
    *
    * @param type the type of the expression
    */
@@ -226,7 +226,7 @@ public abstract class JavaExpression {
    * {@code a} as a receiver, but not the converse. Callers must therefore pass the arguments in the
    * intended order, and must not rely on it as an equivalence relation.
    *
-   * <p>A {@link MethodCall} whose method is not pure contains only itself: {@code a.m()} may
+   * <p>A {@link MethodCall} whose method is not pure contains only itself: {@code a.m()} might
    * evaluate to an object that has nothing to do with {@code a}, so its result is not reached
    * through {@code a}.
    *
@@ -281,7 +281,7 @@ public abstract class JavaExpression {
   }
 
   /**
-   * Returns true if some subexpression is of given class.
+   * Returns true if some subexpression is of the given class.
    *
    * <p>If you want to debug and determine <em>which</em> subexpression is of the given class, use
    * {@link #containedOfClass}.
@@ -301,7 +301,7 @@ public abstract class JavaExpression {
    *
    * @param <T> the type corresponding to {@code clazz}
    * @param clazz the JavaExpression subclass to search for
-   * @return true if some subexpression whose class is the given class
+   * @return the first subexpression whose class is the given class, or null
    */
   @Pure
   public abstract <T extends JavaExpression> @Nullable T containedOfClass(Class<T> clazz);
@@ -309,7 +309,7 @@ public abstract class JavaExpression {
   /**
    * Returns true if some subexpression is {@link Unknown}.
    *
-   * <p>If you want to debug and determine <em>which</em> subexpression is of the given class, use
+   * <p>If you want to debug and determine <em>which</em> subexpression is {@link Unknown}, use
    * {@link #containedUnknown}.
    *
    * @return true if some subexpression is {@link Unknown}
@@ -411,7 +411,7 @@ public abstract class JavaExpression {
   //
 
   /**
-   * Format this verbosely, for debugging.
+   * Formats this verbosely, for debugging.
    *
    * @return a verbose string representation of this
    */
@@ -436,7 +436,7 @@ public abstract class JavaExpression {
   //
 
   /**
-   * Returns the Java expression for a {@link FieldAccessNode}. The result may contain {@link
+   * Returns the Java expression for a {@link FieldAccessNode}. The result might contain {@link
    * Unknown} as receiver.
    *
    * @param node the FieldAccessNode to convert to a JavaExpression
@@ -464,10 +464,10 @@ public abstract class JavaExpression {
 
   /**
    * Returns the internal representation (as an {@link ArrayAccess}) of an {@link ArrayAccessNode}.
-   * The result may contain {@link Unknown} as receiver.
+   * The result might contain {@link Unknown} as receiver.
    *
    * @param node the ArrayAccessNode to convert to a JavaExpression
-   * @return the internal representation (as an {@link ArrayAccess}) of a {@link ArrayAccessNode}.
+   * @return the internal representation (as an {@link ArrayAccess}) of an {@link ArrayAccessNode}.
    *     Can contain {@link Unknown} as receiver.
    */
   public static ArrayAccess fromArrayAccess(ArrayAccessNode node) {

@@ -23,8 +23,8 @@ public abstract class DefCollector {
 
   /**
    * Constructs a new {@link DefCollector}, which immediately collects all the definitions from
-   * annotations the given scene. Next call {@link #visit} to have the definitions passed back to
-   * you in topological order. If the scene contains two irreconcilable definitions of the same
+   * annotations in the given scene. Next, call {@link #visit} to have the definitions passed back
+   * to you in topological order. If the scene contains two irreconcilable definitions of the same
    * annotation type, a {@link DefException} is thrown.
    */
   public DefCollector(AScene s) throws DefException {
@@ -99,7 +99,7 @@ public abstract class DefCollector {
   }
 
   /**
-   * Collect annotation definitions for an element.
+   * Collects annotation definitions for an element.
    *
    * @param e the element to collect annotation definitions from
    * @throws DefException if an annotation definition cannot be found
@@ -117,7 +117,7 @@ public abstract class DefCollector {
   }
 
   /**
-   * Collect annotation definitions for an annotation.
+   * Collects annotation definitions for an annotation.
    *
    * @param a the annotation to collect annotation definitions from
    * @throws DefException if an annotation definition cannot be found
@@ -132,7 +132,7 @@ public abstract class DefCollector {
   }
 
   /**
-   * Collect annotation definitions for a type.
+   * Collects annotation definitions for a type.
    *
    * @param t the type to collect annotation definitions from
    * @throws DefException if an annotation definition cannot be found
@@ -160,7 +160,7 @@ public abstract class DefCollector {
   }
 
   /**
-   * Collect annotation definitions for a method.
+   * Collects annotation definitions for a method.
    *
    * @param m the method to collect annotation definitions from
    * @throws DefException if an annotation definition cannot be found
@@ -191,7 +191,7 @@ public abstract class DefCollector {
   }
 
   /**
-   * Collect annotation definitions for a block.
+   * Collects annotation definitions for a block.
    *
    * @param b the block to collect annotation definitions from
    * @throws DefException if an annotation definition cannot be found

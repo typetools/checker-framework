@@ -16,7 +16,7 @@ public class LiveVariable {
   }
 
   /**
-   * The main method expects to be run in dataflow/tests/live-variable directory.
+   * The main method expects to be run in the dataflow/tests/live-variable directory.
    *
    * @param args not used
    */

@@ -37,7 +37,7 @@ public abstract class AbstractSetInclusionQualifierHierarchy
    */
   private final ProcessingEnvironment processingEnv;
 
-  /** Whether a qualifier is a subtype when its elements are a subset of another qualifier's. */
+  /** True if a qualifier is a subtype when its elements are a subset of another qualifier's. */
   private final boolean subtypeIsSubset;
 
   /**
@@ -46,7 +46,7 @@ public abstract class AbstractSetInclusionQualifierHierarchy
    * @param qualifierClasses classes of annotations that are the qualifiers for this hierarchy
    * @param processingEnv processing environment
    * @param atypeFactory the associated type factory
-   * @param subtypeIsSubset whether subtyping follows the subset relation rather than the superset
+   * @param subtypeIsSubset true if subtyping follows the subset relation rather than the superset
    *     relation
    */
   protected AbstractSetInclusionQualifierHierarchy(
@@ -182,7 +182,8 @@ public abstract class AbstractSetInclusionQualifierHierarchy
    * element must be an array of strings.
    *
    * @param annotation an annotation
-   * @return a mutable list containing the annotation's {@code value} element; may be the empty list
+   * @return a mutable list containing the annotation's {@code value} element; might be the empty
+   *     list
    */
   private static List<String> valuesStringList(AnnotationMirror annotation) {
     @SuppressWarnings("deprecation") // concrete annotation class is not known

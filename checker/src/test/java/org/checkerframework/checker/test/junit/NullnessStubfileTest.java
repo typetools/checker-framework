@@ -8,7 +8,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class NullnessStubfileTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a NullnessStubfileTest.
+   * Creates a NullnessStubfileTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */
