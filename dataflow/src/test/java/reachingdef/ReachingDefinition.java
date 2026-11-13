@@ -16,7 +16,7 @@ public class ReachingDefinition {
   }
 
   /**
-   * The main method expects to be run in dataflow/tests/reaching-definitions directory.
+   * The main method expects to be run in the dataflow/tests/reaching-definitions directory.
    *
    * @param args not used
    */

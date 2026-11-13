@@ -20,7 +20,7 @@ import org.plumelib.util.StringsP;
  * {@link PropagationTypeAnnotator} adds qualifiers to types, where the qualifier to add should be
  * transferred from one or more other types.
  *
- * <p>At the moment, the only function PropagationTypeAnnotator provides, is the propagation of
+ * <p>At the moment, the only function PropagationTypeAnnotator provides is the propagation of
  * generic type parameter annotations to unannotated wildcards with missing bounds annotations.
  *
  * <p>PropagationTypeAnnotator traverses trees deeply by default.
@@ -173,7 +173,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
   }
 
   /**
-   * Take the primary annotations from typeParamBound and place them as primary annotations on
+   * Takes the primary annotations from typeParamBound and places them as primary annotations on the
    * wildcard bound.
    */
   private void applyAnnosFromBound(

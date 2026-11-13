@@ -31,7 +31,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class NullnessJSpecifySamplesTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create a NullnessJSpecifySamplesTest.
+   * Creates a NullnessJSpecifySamplesTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */
@@ -77,12 +77,12 @@ public class NullnessJSpecifySamplesTest extends CheckerFrameworkPerDirectoryTes
   }
 
   /**
-   * Returns true if {@code cfDiagnostic} being issued fulfils the expectation that {@code
+   * Returns true if {@code cfDiagnostic} being issued fulfills the expectation that {@code
    * jspecifyDiagnostic} should be issued.
    *
    * @param jspecifyDiagnostic an expected JSpecify diagnostic
-   * @param cfDiagnostic an actual javacdiagnostic
-   * @return true if {@code actual} fulfills an expectation to see {@code expected}
+   * @param cfDiagnostic an actual javac diagnostic
+   * @return true if {@code cfDiagnostic} fulfills an expectation to see {@code jspecifyDiagnostic}
    */
   private static boolean matches(TestDiagnostic jspecifyDiagnostic, TestDiagnostic cfDiagnostic) {
     assert jspecifyDiagnostic.getKind() == DiagnosticKind.JSpecify

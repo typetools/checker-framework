@@ -11,14 +11,14 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.UserError;
 
 /**
- * Given two javac ASTs representing the same Java file that may differ in annotations, {@link
+ * Given two javac ASTs representing the same Java file that might differ in annotations, {@link
  * #findMismatch(Tree, Tree)} tests if they have the same annotations.
  *
  * <p>Two annotations are compared as {@link AnnotationMirror}s when both ASTs have been attributed
  * by javac, and as source text otherwise; see {@link #sameAnnotation}.
  *
  * <p>Known gap: a receiver parameter is compared only if both ASTs have one, because a {@code
- * .ajava} file may add an explicit receiver parameter that the Java file omits. As a consequence,
+ * .ajava} file can add an explicit receiver parameter that the Java file omits. As a consequence,
  * if a receiver parameter appears in only one of the two ASTs, its annotations are ignored rather
  * than reported as a mismatch. See {@link DoubleJavacVisitor#visitMethod}.
  *

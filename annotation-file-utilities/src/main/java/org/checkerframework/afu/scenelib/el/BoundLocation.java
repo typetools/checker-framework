@@ -16,7 +16,7 @@ public final class BoundLocation {
   public final int paramIndex;
 
   /**
-   * The index of the bound among all bounds on the type parameter. -1 if for the type parameter
+   * The index of the bound among all bounds on the type parameter, or -1 for the type parameter
    * itself.
    */
   public final int boundIndex;
@@ -31,7 +31,7 @@ public final class BoundLocation {
   }
 
   /**
-   * Returns true if this {@link BoundLocation} equals {@code o}; a slightly faster variant of
+   * Returns true if this {@link BoundLocation} equals {@code l}; a slightly faster variant of
    * {@link #equals(Object)} for when the argument is statically known to be another nonnull {@link
    * BoundLocation}.
    */
