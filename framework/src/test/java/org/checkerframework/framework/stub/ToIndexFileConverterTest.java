@@ -1143,7 +1143,7 @@ public class ToIndexFileConverterTest {
 
   /**
    * The annotations of a field whose brackets follow its name are recorded at the type paths of
-   * that field's own type, which may differ from the type of another field in the same declaration.
+   * that field's own type, which can differ from the type of another field in the same declaration.
    */
   @Test
   public void testBracketsAfterFieldName() throws Exception {

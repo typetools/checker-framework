@@ -13,7 +13,7 @@ import org.checkerframework.dataflow.cfg.builder.ExtendedNode.ExtendedNodeType;
   protected final FlowRule flowRule;
 
   /**
-   * Construct an UnconditionalJump.
+   * Constructs an UnconditionalJump.
    *
    * @param jumpTarget the jump target label
    */
@@ -22,7 +22,7 @@ import org.checkerframework.dataflow.cfg.builder.ExtendedNode.ExtendedNodeType;
   }
 
   /**
-   * Construct an UnconditionalJump, specifying its flow rule.
+   * Constructs an UnconditionalJump, specifying its flow rule.
    *
    * @param jumpTarget the jump target label
    * @param flowRule the flow rule for this edge
@@ -49,7 +49,7 @@ import org.checkerframework.dataflow.cfg.builder.ExtendedNode.ExtendedNodeType;
   }
 
   /**
-   * Produce a string representation.
+   * Produces a string representation.
    *
    * @return a string representation
    * @see org.checkerframework.dataflow.cfg.builder.PhaseOneResult#nodeToString

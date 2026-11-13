@@ -33,8 +33,8 @@ public final class UnitsRelationsTools {
    *
    * @param env the Checker Processing Environment, provided as a parameter in init() of a
    *     UnitsRelations implementation
-   * @param annoClass the fully-qualified name of an Annotation representing a Unit (eg m.class for
-   *     meters)
+   * @param annoClass the fully-qualified name of an Annotation representing a Unit (e.g., m.class
+   *     for meters)
    * @param p a Prefix value
    * @return an AnnotationMirror of the Unit with the Prefix p, or null if it cannot be constructed
    */
@@ -50,8 +50,8 @@ public final class UnitsRelationsTools {
    *
    * @param env checker Processing Environment, provided as a parameter in init() of a
    *     UnitsRelations implementation
-   * @param annoClass the getElementValueClassname of an Annotation representing a Unit (eg m.class
-   *     for meters)
+   * @param annoClass the getElementValueClassname of an Annotation representing a Unit (e.g.,
+   *     m.class for meters)
    * @return an AnnotationMirror of the Unit with no prefix, or null if it cannot be constructed
    */
   public static @Nullable AnnotationMirror buildAnnoMirrorWithNoPrefix(
@@ -127,7 +127,7 @@ public final class UnitsRelationsTools {
   }
 
   /**
-   * Checks to see if an Annotation has no prefix (ie, no value element).
+   * Checks to see if an Annotation has no prefix (i.e., no value element).
    *
    * @param unitsAnnotation an AnnotationMirror representing a Units Annotation
    * @return true if it has no prefix, false otherwise
@@ -147,7 +147,7 @@ public final class UnitsRelationsTools {
   }
 
   /**
-   * Given an Annotation, returns the prefix (eg kilo) as an AnnotationValue if there is any,
+   * Given an Annotation, returns the prefix (e.g., kilo) as an AnnotationValue if there is any,
    * otherwise returns null.
    */
   private static @Nullable AnnotationValue getAnnotationMirrorPrefix(
@@ -227,7 +227,7 @@ public final class UnitsRelationsTools {
    * calculations.
    *
    * <p>Any number that isn't assigned a unit will automatically get the Annotation UnknownUnits.
-   * eg: int x = 5; // x has @UnknownUnits
+   * For example: int x = 5; // x has @UnknownUnits
    *
    * @param annoType an AnnotatedTypeMirror representing a Units Annotated Type
    * @return true if the Type has no units, false otherwise
@@ -267,11 +267,11 @@ public final class UnitsRelationsTools {
    * p.
    *
    * <p>This interface is intended only for subclasses of UnitsRelations; other clients should use
-   * {@link #buildAnnoMirrorWithSpecificPrefix(ProcessingEnvironment, CharSequence, Prefix)}
+   * {@link #buildAnnoMirrorWithSpecificPrefix(ProcessingEnvironment, CharSequence, Prefix)}.
    *
    * @param env the Checker Processing Environment, provided as a parameter in init() of a
    *     UnitsRelations implementation
-   * @param annoClass the Class of an Annotation representing a Unit (eg m.class for meters)
+   * @param annoClass the Class of an Annotation representing a Unit (e.g., m.class for meters)
    * @param p a Prefix value
    * @return an AnnotationMirror of the Unit with the Prefix p, or null if it cannot be constructed
    */
@@ -291,7 +291,7 @@ public final class UnitsRelationsTools {
    *
    * @param env the Checker Processing Environment, provided as a parameter in init() of a
    *     UnitsRelations implementation
-   * @param annoClass the Class of an Annotation representing a Unit (eg m.class for meters)
+   * @param annoClass the Class of an Annotation representing a Unit (e.g., m.class for meters)
    * @return an AnnotationMirror of the Unit with Prefix.one, or null if it cannot be constructed
    */
   public static @Nullable AnnotationMirror buildAnnoMirrorWithDefaultPrefix(
@@ -307,7 +307,7 @@ public final class UnitsRelationsTools {
    *
    * @param env checker Processing Environment, provided as a parameter in init() of a
    *     UnitsRelations implementation
-   * @param annoClass the Class of an Annotation representing a Unit (eg m.class for meters)
+   * @param annoClass the Class of an Annotation representing a Unit (e.g., m.class for meters)
    * @return an AnnotationMirror of the Unit with no prefix, or null if it cannot be constructed
    */
   static @Nullable AnnotationMirror buildAnnoMirrorWithNoPrefix(

@@ -38,7 +38,7 @@ public final class SceneOps {
   private SceneOps() {}
 
   /**
-   * Run an operation on a subcommand-specific number of JAIFs. Currently the only available
+   * Runs an operation on a subcommand-specific number of JAIFs. Currently the only available
    * subcommand is "diff", which must be the first of three arguments, followed in order by the
    * "minuend" and the "subtrahend" (see {@link #diff(AScene, AScene)}). If successful, the diff
    * subcommand writes the scene it calculates to {@link System#out}.
@@ -74,7 +74,7 @@ public final class SceneOps {
   }
 
   /**
-   * Compute the difference of two scenes, that is, a scene containing all and only those insertion
+   * Computes the difference of two scenes, that is, a scene containing all and only those insertion
    * specifications that exist in the first but not in the second.
    *
    * @param s1 the "minuend"
@@ -88,7 +88,11 @@ public final class SceneOps {
     return diff;
   }
 
-  /** Print stack trace (for debugging) and exit with return code 1. */
+  /**
+   * Prints a stack trace (for debugging) and exits with return code 1.
+   *
+   * @param e the exception whose stack trace is printed
+   */
   private static void exitWithException(Exception e) {
     e.printStackTrace();
     System.exit(1);
@@ -100,7 +104,7 @@ public final class SceneOps {
   }
 
   /**
-   * Test that X-X=0, for several scenes X.
+   * Tests that X-X=0, for several scenes X.
    *
    * @throws IOException if there is trouble with IO
    */

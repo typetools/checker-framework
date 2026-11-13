@@ -211,7 +211,8 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Is the definition of the given annotation class annotated with {@link InvisibleQualifier}?
+   * Returns true if the definition of the given annotation class is annotated with {@link
+   * InvisibleQualifier}.
    *
    * @param qual an annotation class
    * @return true iff {@code qual} is meta-annotated with {@link InvisibleQualifier}
@@ -223,7 +224,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Constructs a new {@code WholeProgramInferenceJavaParser} that has not yet inferred any
+   * Constructs a new {@code WholeProgramInferenceJavaParserStorage} that has not yet inferred any
    * annotations.
    *
    * @param atypeFactory the associated type factory
@@ -261,7 +262,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Set the source file as modified, for the given class.
+   * Sets the source file as modified, for the given class.
    *
    * @param className the binary name of a class that should be written to disk
    */
@@ -276,7 +277,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Set the source files as modified, for all the given classes.
+   * Sets the source files as modified, for all the given classes.
    *
    * @param classNames the binary names of classes that should be written to disk
    */
@@ -290,7 +291,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * For every modified file, consider its subclasses and superclasses modified, too. The reason is
+   * For every modified file, considers its subclasses and superclasses modified, too. The reason is
    * that an annotation change in a class might require annotations in its superclasses and
    * subclasses to be modified, in order to preserve behavioral subtyping. Setting it modified will
    * cause it to be written out, and while writing out, the annotations will be made consistent
@@ -749,12 +750,12 @@ public class WholeProgramInferenceJavaParserStorage
            * sourceAnnos}.
            *
            * <p>This method computes the name of the class when the element corresponding to tree is
-           * null and uses it as the key for {@code classToAnnos}
+           * null and uses it as the key for {@code classToAnnos}.
            *
            * @param tree tree to add. Its corresponding name is used as the key for {@code
            *     classToAnnos}.
            * @param javaParserNode the node corresponding to the declaration, which is used to place
-           *     annotations on the class itself. Can be null, e.g. for an anonymous class.
+           *     annotations on the class itself. Can be null, e.g., for an anonymous class.
            */
           private void addClass(ClassTree tree, @Nullable TypeDeclaration<?> javaParserNode) {
             String className;
@@ -978,7 +979,7 @@ public class WholeProgramInferenceJavaParserStorage
   /**
    * Side-effects the class annotations to make any desired changes before writing to a file.
    *
-   * <p>Because of the side effect, clients may want to pass a copy into this method.
+   * <p>Because of the side effect, clients might want to pass a copy into this method.
    *
    * @param classAnnos the class annotations to modify
    * @param supertypes the binary names of all supertypes, or null if none are known; not
@@ -1030,7 +1031,7 @@ public class WholeProgramInferenceJavaParserStorage
 
   /**
    * Side-effects the method or constructor annotations to make any desired changes before writing
-   * to a file. For example, this method may make inferred annotations consistent with one another
+   * to a file. For example, this method might make inferred annotations consistent with one another
    * between superclasses and subclasses.
    *
    * @param methodAnnos the method or constructor annotations to modify
@@ -1265,7 +1266,7 @@ public class WholeProgramInferenceJavaParserStorage
    *
    * @param gatf the type factory associated with this
    * @param componentType a JavaParser type
-   * @param arrayLevels the number of array levels to wrap {@code componentType} in; may be 0
+   * @param arrayLevels the number of array levels to wrap {@code componentType} in; can be 0
    * @return true if a type qualifier written on the array type might be relevant
    */
   private boolean typeIsRelevant(
@@ -1324,7 +1325,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Write an ajava file to disk.
+   * Writes an ajava file to disk.
    *
    * @param outputPath the path to which the ajava file should be written
    * @param root the compilation unit to be written
@@ -1469,10 +1470,10 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Replace lonely surrogate characters by their unicode escape.
+   * Replaces lonely surrogate characters by their Unicode escape.
    *
    * @param s a string
-   * @return the string, with lonely surrogate characters replaced by their unicode escape
+   * @return the string, with lonely surrogate characters replaced by their Unicode escape
    */
   /*package-private*/ static String escapeLonelySurrogates(String s) {
     int idx = indexOfLonelySurrogateCharacter(s);
@@ -1528,10 +1529,10 @@ public class WholeProgramInferenceJavaParserStorage
   /**
    * Transfers all annotations for {@code annotatedType} and its nested types to {@code target},
    * which is the JavaParser node representing the same type. Does nothing if {@code annotatedType}
-   * is null (this may occur if there are no inferred annotations for the type).
+   * is null (this might occur if there are no inferred annotations for the type).
    *
    * @param annotatedType type to transfer annotations from
-   * @param target the JavaParser type to transfer annotation to; must represent the same type as
+   * @param target the JavaParser type to transfer annotations to; must represent the same type as
    *     {@code annotatedType}
    */
   private static void transferAnnotations(
@@ -1594,7 +1595,7 @@ public class WholeProgramInferenceJavaParserStorage
      * repeatedly is harmless because it first removes all annotations from the AST, so each call
      * overwrites the previous call's output rather than adding to it.
      *
-     * @param checker the checker who's name to include in the @AnnotatedFor annotation
+     * @param checker the checker whose name to include in the @AnnotatedFor annotation
      */
     public void transferAnnotations(BaseTypeChecker checker) {
       JavaParserUtil.clearAnnotations(compilationUnit);
@@ -1636,7 +1637,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Stores wrappers for the locations where annotations may be inferred in a class or interface.
+   * Stores wrappers for the locations where annotations can be inferred in a class or interface.
    */
   public static class ClassOrInterfaceAnnos implements DeepCopyable<ClassOrInterfaceAnnos> {
     /**
@@ -1666,7 +1667,7 @@ public class WholeProgramInferenceJavaParserStorage
     private @BinaryName String className;
 
     /**
-     * Create a new ClassOrInterfaceAnnos.
+     * Creates a new ClassOrInterfaceAnnos.
      *
      * @param className the binary name of the class
      * @param javaParserNode the JavaParser node corresponding to the class declaration, which is
@@ -1884,8 +1885,8 @@ public class WholeProgramInferenceJavaParserStorage
      *
      * @param index_0based index of the parameter to return the inferred annotations of (0-based)
      * @return an {@code AnnotatedTypeMirror} containing all annotations inferred for the parameter
-     *     at the given index, or null if there's no parameter at {@code index_0based} or if there's
-     *     not inferred annotations for that parameter
+     *     at the given index, or null if there's no parameter at {@code index_0based} or if there
+     *     are no inferred annotations for that parameter
      */
     public @Nullable AnnotatedTypeMirror getParameterType(int index_0based) {
       if (parameterTypes == null || index_0based < 0 || index_0based >= parameterTypes.size()) {
@@ -2003,7 +2004,7 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Returns the inferred preconditions for this callable declaration. The keys of the returned
      * map use the same string formatting as the {@link
-     * org.checkerframework.framework.qual.RequiresQualifier} annotation, e.g. "#1" for the first
+     * org.checkerframework.framework.qual.RequiresQualifier} annotation, e.g., "#1" for the first
      * parameter.
      *
      * <p>Although the map is immutable, the AnnotatedTypeMirrors within it can be modified, and
@@ -2023,7 +2024,7 @@ public class WholeProgramInferenceJavaParserStorage
     /**
      * Returns the inferred postconditions for this callable declaration. The keys of the returned
      * map use the same string formatting as the {@link
-     * org.checkerframework.framework.qual.EnsuresQualifier} annotation, e.g. "#1" for the first
+     * org.checkerframework.framework.qual.EnsuresQualifier} annotation, e.g., "#1" for the first
      * parameter.
      *
      * <p>Although the map is immutable, the AnnotatedTypeMirrors within it can be modified, and
@@ -2186,7 +2187,7 @@ public class WholeProgramInferenceJavaParserStorage
   }
 
   /**
-   * Deep copy (according to the {@code DeepCopyable} interface) a pre- or post-condition map.
+   * Deep copies (according to the {@code DeepCopyable} interface) a pre- or post-condition map.
    *
    * @param orig the map to copy
    * @return a deep copy of the map

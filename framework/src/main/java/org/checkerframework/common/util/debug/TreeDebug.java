@@ -23,9 +23,9 @@ import javax.lang.model.util.ElementFilter;
  * A utility class for displaying the structure of the AST of a program.
  *
  * <p>The class is actually an annotation processor; in order to use it, invoke the compiler on the
- * source file(s) for which you wish to view the structure of the program. You may also wish to use
- * the {@code -proc:only} javac option to stop compilation after annotation processing. (But, in
- * general {@code -proc:only} causes type annotation processors not to be run.)
+ * source file(s) for which you wish to view the structure of the program. You might also wish to
+ * use the {@code -proc:only} javac option to stop compilation after annotation processing. (But, in
+ * general, {@code -proc:only} causes type annotation processors not to be run.)
  *
  * <p>The utility will display the {@link com.sun.source.tree.Tree.Kind Tree.Kind} of each node it
  * encounters while scanning the AST, indented according to its depth in the tree. Additionally, the
