@@ -1363,12 +1363,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Returns true if the objects {@code a} and {@code b} can be aliases, judging by their types.
-   * This implementation does not depend on the contents of the store; see {@link
-   * CFAbstractAnalysis#canAlias}.
+   * Returns true if the objects {@code a} and {@code b} can be aliases. Returns a conservative
+   * answer (i.e., returns {@code true} if not enough information is available to determine
+   * aliasing).
    *
-   * <p>Contrary to the specification of {@link Store#canAlias}, the answer is not conservative when
-   * an interface type is involved. See https://github.com/typetools/checker-framework/issues/8558.
+   * <p>This implementation judges by the types of {@code a} and {@code b} and does not depend on
+   * the contents of the store; see {@link CFAbstractAnalysis#canAlias}.
    */
   @Override
   public boolean canAlias(JavaExpression a, JavaExpression b) {
