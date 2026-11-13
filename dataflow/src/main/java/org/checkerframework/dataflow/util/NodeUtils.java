@@ -74,7 +74,7 @@ public final class NodeUtils {
    * @param node a node, not necessarily a method invocation
    * @param method a method
    * @param env a processing environment
-   * @return true if {@code node} is an invocation of one of the given methods
+   * @return true if {@code node} is an invocation of the given method
    */
   public static boolean isMethodInvocation(
       Node node, ExecutableElement method, ProcessingEnvironment env) {
@@ -120,7 +120,7 @@ public final class NodeUtils {
   }
 
   /**
-   * Remove any {@link TypeCastNode}s wrapping a node, returning the operand nested within the type
+   * Removes any {@link TypeCastNode}s wrapping a node, returning the operand nested within the type
    * casts.
    *
    * @param node a node

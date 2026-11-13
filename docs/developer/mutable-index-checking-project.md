@@ -1,4 +1,4 @@
-# Index checking for mutable length data structures
+# Index checking for mutable-length data structures
 
 The [Index Checker](https://checkerframework.org/manual/#index-checker) is
 currently restricted to fixed-size data structures. A fixed-size data
@@ -36,7 +36,7 @@ as `List`s.
 
 <!-- markdownlint-enable line-length -->
 
-It is essential to invalidate some flow facts when a mutation may occur.
+It is essential to invalidate some flow facts when a mutation might occur.
 (And to forbid mutation when prohibited by a programmer-written annotation.)
 It is a goal to invalidate as few flow facts as possible, while still retaining
 soundness.
@@ -47,14 +47,14 @@ mutated.
 
 Here are some steps toward invalidating fewer flow facts.
 
-1. Invalidate all Index Checker qualifiers whenever a side effect may
+1. Invalidate all Index Checker qualifiers whenever a side effect might
    occur (for example, at every call to a method that might have side
    effects). This is imprecise (it loses refined type information) and
    therefore will result in many false positive alarms, so it is an
    impractical solution. However, it is sound, which is most important.
    Subsequent steps will improve its precision.
 
-2. Only invalidate *some* Index Checker qualifiers when a side effect may
+2. Only invalidate *some* Index Checker qualifiers when a side effect might
    occur -- namely, those relating to mutable-length data structures. This
    requires determining which indexable datatypes have mutable lengths,
    which can be hard-coded for the collection classes in the JDK.
@@ -76,7 +76,7 @@ Here are some steps toward invalidating fewer flow facts.
    the length of a data structure to the length of its backing data
    structure. For example, an annotation on `ArrayList` could tell the checker
    which field of the `ArrayList` class is the backing array. Then, make it an
-   error if any method of a class with such an annotation re-assigns the
+   error if any method of a class with such an annotation reassigns the
    backing array unless it has a new annotation (e.g., `@ChangesLength`). This
    annotation could apply recursively, to allow data structures that are
    themselves backed by mutable-length data structures. Only invalidate facts
@@ -104,7 +104,7 @@ Here are some steps toward invalidating fewer flow facts.
 
 6. Run a pointer analysis before type-checking. Now, at a possible side
    effect to expressions `a` and `b`, it is only necessary to invalidate
-   Index Checker qualifiers related to expressions that may be aliased to
+   Index Checker qualifiers related to expressions that might be aliased to
    `a` or `b`. One possible pointer analysis is that of
    [Doop](https://github.com/plast-lab/doop-mirror).
 
@@ -114,11 +114,11 @@ Here are some steps toward invalidating fewer flow facts.
    program be present to be analyzed, and it is slow.
 
 7. Modify rather than discard the Index Checker qualifiers on
-   possibly-aliased data structures. If an expression is must-aliased to
+   possibly aliased data structures. If an expression is must-aliased to
    `a`, then its type should be updated in exactly the way that `a`'s is.
    If an expression is may-aliased to `a`, then its type should become the
    LUB of its old type and `a`'s new type. Adjusting the types of
-   dependently-typed variables is a bit more complicated.
+   dependently typed variables is a bit more complicated.
 
 ## Forbid problematic mutation: only permit lists to grow
 
@@ -151,7 +151,7 @@ This is the qualifier hierarchy:
   This is the default type.
 * A `@CanShrink` reference to a collection allows removing elements
   from the collection using methods such as `remove()` and `clear()`.
-  An alias to the collection may also shrink the collection.
+  An alias to the collection can also shrink the collection.
 * `@UnshrinkableRef`: calling `remove()`, `clear()`, etc. is forbidden.  A
   `@UnshrinkableRef` reference to the collection cannot be used to remove
   elements, but admits the possibility of removing elements from the
@@ -162,7 +162,7 @@ This is the qualifier hierarchy:
 
 Unless a reference is `@GrowOnly` or `@UncheckedCanShrink`,
 the checker has to invalidate all `@IndexFor` qualifiers for it
-whenever a side effect may occur.
+whenever a side effect might occur.
 
 The type hierarchy guarantees that no `@GrowOnly` expression is
 aliased to any `@CanShrink` expression.

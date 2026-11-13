@@ -60,7 +60,7 @@ public class CFTreeBuilder extends TreeBuilder {
   }
 
   /**
-   * Converts a list of AnnotationMirrors to the a corresponding list of new AnnotationTrees.
+   * Converts a list of AnnotationMirrors to a corresponding list of new AnnotationTrees.
    *
    * @param annotations the annotations
    * @return new annotation trees representing the annotations

@@ -20,7 +20,7 @@ public interface TestConfiguration {
    * Diagnostic files consist of a set of lines that enumerate expected error/warning diagnostics.
    * The lines are of the form:
    *
-   * <pre>fileName:lineNumber: diagnostKind: (messageKey)</pre>
+   * <pre>fileName:lineNumber: diagnosticKind: (messageKey)</pre>
    *
    * e.g.,
    *
@@ -47,7 +47,7 @@ public interface TestConfiguration {
 
   /**
    * Some Javac command line arguments require arguments themselves (e.g. {@code -classpath} takes a
-   * path) getOptions returns a {@code Map(optionName => optionArgumentIfAny)}. If an option does
+   * path). getOptions returns a {@code Map(optionName => optionArgumentIfAny)}. If an option does
    * not take an argument, pass null as the value.
    *
    * <p>E.g.,
@@ -66,10 +66,10 @@ public interface TestConfiguration {
 
   /**
    * Returns the map returned by {@link #getOptions}, flattened into a list. The entries will be
-   * added as followed: List(key1, value1, key2, value2, ..., keyN, valueN). If a value is NULL,
-   * then it will not appear in the list.
+   * added as follows: List(key1, value1, key2, value2, ..., keyN, valueN). If a value is NULL, then
+   * it will not appear in the list.
    *
-   * @return the map returned {@link #getOptions}, but flattened into a list
+   * @return the map returned by {@link #getOptions}, but flattened into a list
    */
   List<String> getFlatOptions();
 

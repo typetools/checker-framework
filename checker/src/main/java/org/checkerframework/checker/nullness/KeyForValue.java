@@ -26,7 +26,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * <pre><code>
  * Map&lt;T, Object&gt; map = ...;
  * &lt;T&gt; T method(T param) {
- *   if (map.contains(param)) {
+ *   if (map.containsKey(param)) {
  *    &nbsp;@NonNull Object o = map.get(param);
  *     return param;
  *   }

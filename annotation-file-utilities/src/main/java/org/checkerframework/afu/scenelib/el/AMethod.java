@@ -81,7 +81,7 @@ public class AMethod extends ADeclaration {
   public ABlock body;
 
   /**
-   * Create an AMethod.
+   * Creates an AMethod.
    *
    * @param methodSignature the method's name, plus its erased signature in JVML format within
    *     parentheses
@@ -95,7 +95,7 @@ public class AMethod extends ADeclaration {
   }
 
   /**
-   * Create a copy of an AMethod.
+   * Creates a copy of an AMethod.
    *
    * @param other the AMethod to copy
    */
@@ -147,7 +147,7 @@ public class AMethod extends ADeclaration {
   }
 
   /**
-   * Set the type parameters of this method.
+   * Sets the type parameters of this method.
    *
    * @param typeParameters the list of type parameters
    */
@@ -179,13 +179,13 @@ public class AMethod extends ADeclaration {
   }
 
   /**
-   * Obtain the parameter at the given index, which can be further operated on to e.g. add a type
-   * annotation.
+   * Obtains the parameter at the given index, which can be further operated on, for example to add
+   * a type annotation.
    *
    * @param i the parameter index (first parameter is zero)
    * @param type the type of the parameter
    * @param simpleName the name of the parameter
-   * @return an AFieldWrapper representing the parameter
+   * @return an AField representing the parameter
    */
   public AField vivifyAndAddTypeMirrorToParameter(int i, TypeMirror type, Name simpleName) {
     AField param = parameters.getVivify(i);
@@ -197,8 +197,8 @@ public class AMethod extends ADeclaration {
   }
 
   /**
-   * Obtain information about an expression at method entry. It can be further operated on to e.g.
-   * add a type annotation.
+   * Obtains information about an expression at method entry. It can be further operated on, for
+   * example to add a type annotation.
    *
    * @param expression the expression
    * @param type the type of the expression
@@ -215,8 +215,8 @@ public class AMethod extends ADeclaration {
 
   // TODO: `type` is ignored if information is already present.  Is that desirable??
   /**
-   * Obtain information about an expression at method exit. It can be further operated on to e.g.
-   * add a type annotation.
+   * Obtains information about an expression at method exit. It can be further operated on, for
+   * example to add a type annotation.
    *
    * @param expression the expression
    * @param type the type of the expression
@@ -241,7 +241,7 @@ public class AMethod extends ADeclaration {
   }
 
   /**
-   * Set the return type. Does nothing if the argument is null. Errs if called twice with different
+   * Sets the return type. Does nothing if the argument is null. Errs if called twice with different
    * non-null arguments.
    *
    * @param returnTypeMirror the return type
