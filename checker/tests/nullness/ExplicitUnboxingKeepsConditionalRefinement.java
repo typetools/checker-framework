@@ -19,6 +19,17 @@ public class ExplicitUnboxingKeepsConditionalRefinement {
     }
   }
 
+  // Inside a try block, the method access ends its block, and the unboxing call begins the
+  // successor block.
+  void ifThenInTry(@Nullable Object o) {
+    try {
+      if (isNN(o).booleanValue()) {
+        o.hashCode();
+      }
+    } catch (RuntimeException e) {
+    }
+  }
+
   void ifElse(@Nullable Object o) {
     if (isNull(o).booleanValue()) {
       // :: error: [dereference.of.nullable]

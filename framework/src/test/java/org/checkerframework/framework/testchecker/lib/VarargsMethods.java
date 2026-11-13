@@ -2,7 +2,7 @@ package org.checkerframework.framework.testchecker.lib;
 
 import org.checkerframework.common.value.qual.StaticallyExecutable;
 
-/** Used by framework/tests/value/VarargsRe.java */
+/** Used by framework/tests/value/VarargsRe.java. */
 public class VarargsMethods {
 
   /** Do not instantiate. */

@@ -1,5 +1,5 @@
 /**
- * Classes using for live variable analysis. Live variable analysis is a backward analysis to
+ * Classes used for live variable analysis. Live variable analysis is a backward analysis to
  * calculate the variables that are live at each point in the program. To run live variable analysis
  * on a file and create a PDF of the CFG, run {@code java
  * org.checkerframework.dataflow.cfg.playground.LiveVariablePdf MyFile.java}.
