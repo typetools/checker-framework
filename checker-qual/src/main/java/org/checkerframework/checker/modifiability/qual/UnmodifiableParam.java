@@ -7,8 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Convenience alias that is syntactic sugar for {@code @}{@link MaybeModifiable}. It may only be
- * written within a formal parameter type.
+ * Convenience alias that is syntactic sugar for {@code @}{@link MaybeModifiable}. It can be written
+ * only within a formal parameter type.
  *
  * <p>You can write {@code @UnmodifiableParam} to indicate that a method does not change its
  * parameter. From the method's point of view, the parameter is unmodifiable. This is reference

@@ -19,7 +19,7 @@ annotations invariably lead to checker warnings.
 
 This chapter describes how to eliminate
 the warnings by adding annotations to the library.
-(Alternately, the \code{-AskipUses} or \code{-AonlyUses} command-line
+(Alternatively, the \code{-AskipUses} or \code{-AonlyUses} command-line
 option can
 suppress all warnings related to an unannotated library, or to part of your
 codebase; see
@@ -31,7 +31,7 @@ You can write annotations for a library, and make them known to a checker, in tw
 \item
   Write annotations in a copy of the library's source code (for instance,
   in a fork of the library's GitHub project).  In addition to writing
-  annotations, adjust the build system to run pluggable-type-checking when
+  annotations, adjust the build system to run pluggable type-checking when
   compiling (see \chapterpageref{external-tools}).  Now, when you compile
   the library, the resulting \<.jar> file contains type annotations.
 
@@ -88,7 +88,7 @@ Sharing your annotations is useful even if the library is only partially
 annotated.
 However, as noted in Sections~\ref{get-started-with-legacy-code} and~\ref{library-tips-fully-annotate}, you
 should annotate an entire class at a time.
-You may find type inference tools (\chapterpageref{type-inference}) helpful
+You might find type inference tools (\chapterpageref{type-inference}) helpful
 when getting started, but you should always examine their results.
 
 
@@ -166,7 +166,7 @@ they do, you can also express the fact as an annotation.
 
 \subsectionAndLabel{Report bugs upstream}{library-tips-report-bugs}
 
-While annotating the library, you may discover bugs or missing/wrong
+While annotating the library, you might discover bugs or missing/wrong
 documentation.  If you have a documentation improvement or a bug fix, then
 open a pull request against the upstream version of the library.  This will
 benefit all users of the library.  And, once the documentation is updated,
@@ -186,12 +186,12 @@ documentation.  Here are reasons for this rule:
 
 \begin{itemize}
 \item
-  If you annotate just part of the file, then users may be surprised that
-  calls to some methods type-check as expected whereas other methods do not
-  (because they have not been annotated).
+  If you annotate just part of the file, then users might be surprised that
+  calls to some methods type-check as expected whereas calls to other
+  methods do not (because they have not been annotated).
 \item
-  Annotating one method or field at a time may lead to inconsistencies
-  between different parts of the file.  Different people may make different
+  Annotating one method or field at a time can lead to inconsistencies
+  between different parts of the file.  Different people might make different
   assumptions, might write annotations in a way that is locally convenient
   but globally inconsistent, or might not read all the documentation of the
   class to understand how it works.
@@ -353,7 +353,7 @@ classes but not others.
 method signatures but do not type-check the bodies.
 See Section~\ref{library-tips-verify}.)
 
-Here are two concerns you may have when partially annotating a library:
+Here are two concerns you might have when partially annotating a library:
 
 \begin{itemize}
 \item
@@ -413,7 +413,7 @@ library annotations.
 The \refqualclass{framework/qual}{AnnotatedFor} annotation, written on a
 class, indicates that the class has been annotated for certain type
 systems.
-You may write \<@AnnotatedFor> on a class that contains no explicit
+You can write \<@AnnotatedFor> on a class that contains no explicit
 annotations from the given type system, if the defaulting rules already
 give appropriate qualifiers for every type in the class.
 
@@ -429,7 +429,7 @@ annotation name, but a checker name.
 \begin{sloppypar}
 Whenever you compile a class using the Checker Framework, including when
 using the \<-AuseConservativeDefaultsForUncheckedCode=source,bytecode> command-line
-argument, the resulting \<.class> files are fully-annotated; each type use
+argument, the resulting \<.class> files are fully annotated; each type use
 in the \<.class> file has an explicit type qualifier for any checker that
 is run.
 \end{sloppypar}
@@ -567,8 +567,8 @@ class \<Sub> in a stub file.  The Checker Framework will use that type for
 In a fake override of \<m>, the formal parameter Java types of the method
 must be identical to those where \<m> is defined, but you can change its
 annotations.  (The return type and the receiver type can be different.)
-You may write the name of a formal parameter type in fully-qualified,
-partially-qualified, or simple form, and you may omit its type arguments.
+You can write the name of a formal parameter type in fully qualified,
+partially-qualified, or simple form, and you can omit its type arguments.
 If a fake override has no annotations on a given type use, that type use is
 defaulted according to the usual defaulting rules.
 
@@ -637,19 +637,19 @@ following ways:
 
 \item{\textbf{Method bodies:}}
   The stub class does not require method bodies for classes; any method
-  body may be replaced by a semicolon (\code{;}), as in an interface or
+  body can be replaced by a semicolon (\code{;}), as in an interface or
   abstract method declaration.
 
 \item{\textbf{Method declarations:}}
   You only have to specify the methods that you need to annotate.
-  Any method declaration may be omitted, in which case the checker reads
+  Any method declaration can be omitted, in which case the checker reads
   its annotations from the library's \<.class> files.  If you are using a stub class, then
   often the library is unannotated, but you can use stub files to override
   library annotations.
 
 \item{\textbf{Declaration specifiers:}}
   Declaration specifiers (e.g., \<public>, \<final>, \<volatile>)
-  may be omitted.
+  can be omitted.
 
 \item{\textbf{Return types:}}
   The return type of a method does not need to match the real method.
@@ -659,11 +659,11 @@ following ways:
 \item{\textbf{Multiple classes and packages:}}
   The stub file format permits having multiple classes and packages.
   The packages are separated by a package statement:
-  \<package my.package;>.  Each package declaration may occur only once; in
+  \<package my.package;>.  Each package declaration can occur only once; in
   other words, all classes from a package must appear together.
 
 \item{\textbf{Import statements:}}
-  Imports may appear at the beginning of the file or after any package declaration.
+  Imports can appear at the beginning of the file or after any package declaration.
   An import applies to the whole file.
   The only required import statements are the ones to import type
   annotations.  Import statements for types are optional.  If you omit an
@@ -708,7 +708,7 @@ it runs.
 % for a given method rather than just skimming a few pages of method signatures.
 
 You can minimize source files to speed up parsing them.
-Use the \<JavaStubifier> to convert, in-place, all \<.java> files in given directories into
+Use the \<JavaStubifier> to convert, in place, all \<.java> files in given directories into
 minimal stub files.
 
 \begin{Verbatim}
@@ -718,7 +718,7 @@ minimal stub files.
   find project-stubs -type f -name "*.java" -exec rename 's/.java$/.astub/' {} \;
 \end{Verbatim}
 
-Supply it a list of directories to process. Replacement happens in-place, so make sure to
+Supply it a list of directories to process. Replacement happens in place, so make sure to
 process a copy of your sources.
 
 You can now provide \<project-stubs> as a stub directory using \<-Astubs=project-stubs> as
@@ -762,7 +762,7 @@ is a class, interface, etc., so you can write ``\<class>'' regardless of
 what kind of type it is.
 
 A common mistake at this stage is that the
-target method or field may be defined in a superclass of the static type of
+target method or field might be defined in a superclass of the static type of
 the class that is actually being used in the code you are trying to
 analyze. For example, suppose that you are trying to annotate the
 \<drawImage(Image,int,int,int,int,ImageObserver)> method of an object whose static
@@ -796,7 +796,7 @@ For a field, this is the type, field name, and ``\<;>'', without an initializer.
 %     org.checkerframework.framework.stub.StubGenerator java.lang.String > String.astub
 % \end{Verbatim}
 %
-%   Supply it with the fully-qualified name of the class for which you wish to
+%   Supply it with the fully qualified name of the class for which you wish to
 %   generate a stub class.  The stub class generator prints the
 %   stub class to standard out, so you may wish to redirect its output to a
 %   file.
@@ -837,7 +837,7 @@ providing your stub files to the checker author, so that other users can
 also benefit from the stub files you wrote.
 
 Stub files distributed with a checker appear in the same directory as the
-checker implementation (the \<*Checker.java> file, see
+checker implementation (the \<*Checker.java> file; see
 Section~\ref{creating-parts-of-a-checker}).  For example, in the Checker
 Framework they appear in files such as
 \begin{Verbatim}
@@ -935,7 +935,7 @@ Some command-line options make the stub parser issue more warnings:
 
 \item[\<-AstubWarnNote>]
   Issue a ``note'', not a warning, for the \<-AstubWarn*> command-line
-  arguments.  A warning may prevent further compilation (depending on
+  arguments.  A warning can prevent further compilation (depending on
   whether the \<-Werror> command-line argument is passed), but a note permits
   compilation to proceed.
 
@@ -1029,7 +1029,7 @@ due to mismatches.
 The ajava file must either (1) be found below one of the arguments to
 \code{-Aajava}, in a subdirectory matching its package name, or (2) be
 unambiguously specified directly with its full path. A pair of \<.ajava>
-files is specified ambiguously if one of their fully-qualified names
+files is specified ambiguously if one of their fully qualified names
 is a substring of the other, and both are specified as \<.ajava> files (rather
 than being found under directories). For example, if the \<-Aajava> argument
 was \<-Aajava=~/foo/Bar.ajava:~/baz/foo/Bar.ajava>, the two \<.ajava> files
@@ -1055,13 +1055,13 @@ named
 The
 ajava file must contain the same source code as the source file, with the following exceptions:
 \begin{itemize}
-  \item The two may differ in annotations.
-  \item The two may have different import statements.
-  \item The ajava file may have explicit receivers where the source file
+  \item The two can differ in annotations.
+  \item The two can have different import statements.
+  \item The ajava file can have explicit receivers where the source file
     doesn't. If a source file has a method declaration \code{void
       myMethod()}, the ajava file might contain \code{void myMethod(MyClass
       this)} or \code{void myMethod(@Interned MyClass this)}.
-  \item The ajava file may have explicit type bounds that are implicit in the source file.
+  \item The ajava file can have explicit type bounds that are implicit in the source file.
     If a source file has a type argument \<?>,
     the ajava file might contain \code{? extends Object} or \code{? extends
       @Nullable Object}.
@@ -1072,7 +1072,7 @@ ajava file must contain the same source code as the source file, with the follow
 
 The \code{InsertAjavaAnnotations.java} program inserts annotations
 from ajava files into Java files.  This can be used to
-insert the annotations inferred by whole program inference into the source code
+insert the annotations inferred by whole-program inference into the source code
 of a program, similarly to the
 \href{https://checkerframework.org/annotation-file-utilities/#insert-annotations-to-source}{\code{insert-annotations-to-source}
   script} from the
@@ -1091,9 +1091,9 @@ Here is an example invocation:
 
 \sectionAndLabel{Troubleshooting/debugging annotated libraries}{libraries-troubleshooting}
 
-Sometimes, it may seem that a checker is treating a library as unannotated
+Sometimes, it might seem that a checker is treating a library as unannotated
 even though the library has annotations.  The compiler has a flag that
-may help you in determining which library files are read.
+can help you determine which library files are read.
 
 \begin{description}
 \item \<-verbose>

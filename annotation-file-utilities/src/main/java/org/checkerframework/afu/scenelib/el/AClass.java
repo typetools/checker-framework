@@ -25,7 +25,7 @@ public class AClass extends ADeclaration {
   public final @Growable @Replaceable @Shrinkable VivifyingMap<BoundLocation, ATypeElement> bounds =
       ATypeElement.<BoundLocation>newVivifyingLHMap_ATE();
 
-  /** -1 maps to superclass, non-negative integers map to implemented or extended interfaces. */
+  /** -1 maps to superclass; non-negative integers map to implemented or extended interfaces. */
   public final @Shrinkable VivifyingMap<TypeIndexLocation, ATypeElement> extendsImplements =
       ATypeElement.<TypeIndexLocation>newVivifyingLHMap_ATE();
 
@@ -61,23 +61,27 @@ public class AClass extends ADeclaration {
   /** The fully-qualified name of the annotated class. */
   public final String className;
 
-  /** The simple class names any of this class's outer classes (or this class) that are enums. */
+  /** The simple class names of any of this class's outer classes (or this class) that are enums. */
   private final @Growable HashSet<String> enums = new HashSet<>();
 
   /** The enum constants of this class, or null if this class is not an enum. */
   private /*@MonotonicNonNull*/ List<VariableElement> enumConstants = null;
 
   /**
-   * The simple class names any of this class's outer classes (or this class) that are annotations.
+   * The simple class names of any of this class's outer classes (or this class) that are
+   * annotations.
    */
   private final @Growable HashSet<String> annotationTypes = new HashSet<>();
 
   /**
-   * The simple class names any of this class's outer classes (or this class) that are interfaces.
+   * The simple class names of any of this class's outer classes (or this class) that are
+   * interfaces.
    */
   private final @Growable HashSet<String> interfaces = new HashSet<>();
 
-  /** The simple class names any of this class's outer classes (or this class) that are records. */
+  /**
+   * The simple class names of any of this class's outer classes (or this class) that are records.
+   */
   private final @Growable HashSet<String> records = new HashSet<>();
 
   // debug fields to keep track of all classes created
@@ -85,7 +89,7 @@ public class AClass extends ADeclaration {
   // private final List<AClass> allClasses;
 
   /**
-   * Create a new AClass.
+   * Creates a new AClass.
    *
    * @param className the fully-qualified name of the annotated class
    */
@@ -180,7 +184,7 @@ public class AClass extends ADeclaration {
   }
 
   /**
-   * Format this class, indenting each line with {@code linePrefix}.
+   * Formats this class, indenting each line with {@code linePrefix}.
    *
    * @param linePrefix the indentation to use on each line
    * @return a formatted version of this class
@@ -429,19 +433,19 @@ public class AClass extends ADeclaration {
   }
 
   /**
-   * Returns true if the given class is an record.
+   * Returns true if the given class is a record.
    *
    * @param className the simple class name of this class or one of its outer classes
-   * @return true if the given class is an record
+   * @return true if the given class is a record
    */
   public boolean isRecord(String className) {
     return records.contains(className);
   }
 
   /**
-   * Returns true if this class is an record.
+   * Returns true if this class is a record.
    *
-   * @return true if this class is an record
+   * @return true if this class is a record
    */
   public boolean isRecord() {
     return records.contains(this.className);
@@ -472,7 +476,7 @@ public class AClass extends ADeclaration {
   }
 
   /**
-   * Set the type element representing the class.
+   * Sets the type element representing the class.
    *
    * @param typeElement the type element representing the class
    */

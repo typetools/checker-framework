@@ -45,7 +45,7 @@ public abstract class AbstractAnalysis<
   /** The direction of this analysis. */
   protected final Direction direction;
 
-  /** Is the analysis currently running? */
+  /** True if the analysis is currently running. */
   protected boolean isRunning = false;
 
   /** The transfer function for regular nodes. */
@@ -103,7 +103,7 @@ public abstract class AbstractAnalysis<
   }
 
   /**
-   * Set the tree that is currently being looked at.
+   * Sets the tree that is currently being looked at.
    *
    * @param currentTree the tree that should be currently looked at
    */
@@ -112,7 +112,7 @@ public abstract class AbstractAnalysis<
   }
 
   /**
-   * Set the node that is currently being looked at.
+   * Sets the node that is currently being looked at.
    *
    * @param currentNode the node that should be currently looked at
    */
@@ -162,12 +162,12 @@ public abstract class AbstractAnalysis<
     }
   }
 
-  /** Initialize the transfer inputs of every basic block before performing the analysis. */
+  /** Initializes the transfer inputs of every basic block before performing the analysis. */
   @RequiresNonNull("cfg")
   protected abstract void initInitialInputs();
 
   /**
-   * Propagate the stores in {@code currentInput} to the next block in the direction of analysis,
+   * Propagates the stores in {@code currentInput} to the next block in the direction of analysis,
    * according to the {@code flowRule}.
    *
    * @param nextBlock the target block to propagate the stores to
@@ -379,7 +379,7 @@ public abstract class AbstractAnalysis<
   }
 
   /**
-   * Set all current node values to the given map.
+   * Sets all current node values to the given map.
    *
    * @param in the current node values
    */
@@ -426,7 +426,7 @@ public abstract class AbstractAnalysis<
    * produce a value.
    *
    * @param t the given tree
-   * @return the set of corresponding nodes to the given tree
+   * @return the set of nodes corresponding to the given tree
    */
   public @Nullable Set<Node> getNodesForTree(Tree t) {
     if (cfg == null) {
@@ -480,7 +480,7 @@ public abstract class AbstractAnalysis<
    * Node} in the CFG or {@code null} otherwise.
    *
    * @param t the given tree
-   * @return the contained method tree of the given tree
+   * @return the method tree that contains the given tree
    */
   public @Nullable MethodTree getEnclosingMethod(Tree t) {
     if (cfg == null) {
@@ -494,7 +494,7 @@ public abstract class AbstractAnalysis<
    * Node} in the CFG or {@code null} otherwise.
    *
    * @param t the given tree
-   * @return the contained class tree of the given tree
+   * @return the class tree that contains the given tree
    */
   public @Nullable ClassTree getEnclosingClass(Tree t) {
     if (cfg == null) {
@@ -504,8 +504,8 @@ public abstract class AbstractAnalysis<
   }
 
   /**
-   * Call the transfer function for node {@code node}, and set that node as current node first. This
-   * method requires a {@code transferInput} that the method can modify.
+   * Calls the transfer function for node {@code node}, after setting that node as the current node.
+   * This method requires a {@code transferInput} that the method can modify.
    *
    * @param node the given node
    * @param transferInput the transfer input
@@ -541,7 +541,7 @@ public abstract class AbstractAnalysis<
   }
 
   /**
-   * Initialize the analysis with a new control flow graph.
+   * Initializes the analysis with a new control flow graph.
    *
    * @param cfg the control flow graph to use
    */
@@ -551,7 +551,7 @@ public abstract class AbstractAnalysis<
   }
 
   /**
-   * Should exceptional control flow for a particular exception type be ignored?
+   * Returns true if exceptional control flow for a particular exception type should be ignored.
    *
    * <p>The default implementation always returns {@code false}. Subclasses should override the
    * method to implement a different policy.
@@ -565,7 +565,7 @@ public abstract class AbstractAnalysis<
   }
 
   /**
-   * Initialize fields of this object based on a given control flow graph. Sub-class may override
+   * Initializes fields of this object based on a given control flow graph. Subclasses can override
    * this method to initialize customized fields.
    *
    * @param cfg a given control flow graph
@@ -599,7 +599,7 @@ public abstract class AbstractAnalysis<
   }
 
   /**
-   * Add a basic block to {@link #worklist}. If {@code b} is already present, the method does
+   * Adds a basic block to {@link #worklist}. If {@code b} is already present, the method does
    * nothing.
    *
    * @param b the block to add to {@link #worklist}
@@ -625,7 +625,7 @@ public abstract class AbstractAnalysis<
     protected final IdentityHashMap<Block, Integer> depthFirstOrder = new IdentityHashMap<>();
 
     /**
-     * Comparators to allow priority queue to order blocks by their depth-first order, using by
+     * A comparator to allow the priority queue to order blocks by their depth-first order, used by
      * forward analysis.
      */
     public class ForwardDfoComparator implements Comparator<Block> {
@@ -640,7 +640,7 @@ public abstract class AbstractAnalysis<
     }
 
     /**
-     * Comparators to allow priority queue to order blocks by their depth-first order, using by
+     * A comparator to allow the priority queue to order blocks by their depth-first order, used by
      * backward analysis.
      */
     public class BackwardDfoComparator implements Comparator<Block> {
@@ -661,7 +661,7 @@ public abstract class AbstractAnalysis<
     protected final Set<Block> queueSet;
 
     /**
-     * Create a Worklist.
+     * Creates a Worklist.
      *
      * @param direction the direction (forward or backward)
      */
@@ -678,7 +678,7 @@ public abstract class AbstractAnalysis<
     }
 
     /**
-     * Process the control flow graph.
+     * Processes the control flow graph.
      *
      * <p>This implementation sets the depth-first order for each block, by adding the blocks to
      * {@link #depthFirstOrder}.
@@ -721,7 +721,8 @@ public abstract class AbstractAnalysis<
     }
 
     /**
-     * Add the given block to this Worklist. Adds unconditionally: does not check containment first.
+     * Adds the given block to this Worklist. Adds unconditionally: does not check containment
+     * first.
      *
      * @param block the block to add to this Worklist
      */
@@ -731,10 +732,10 @@ public abstract class AbstractAnalysis<
     }
 
     /**
-     * Returns the head of this Worklist.
+     * Removes and returns the head of this Worklist, or null if this Worklist is empty.
      *
      * @see PriorityQueue#poll
-     * @return the head of this Worklist
+     * @return the head of this Worklist, or null if this Worklist is empty
      */
     @Pure
     public @Nullable Block poll() {
@@ -746,7 +747,7 @@ public abstract class AbstractAnalysis<
     }
 
     /**
-     * Returns the head of this Worklist.
+     * Removes and returns the head of this Worklist.
      *
      * @see PriorityQueue#remove
      * @return the head of this Worklist
