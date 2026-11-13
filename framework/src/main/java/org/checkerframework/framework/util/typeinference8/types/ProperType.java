@@ -123,9 +123,9 @@ public class ProperType extends AbstractType {
 
   /**
    * If this is a primitive type, then the proper type corresponding to its wrapper is returned.
-   * Otherwise, this object is return.
+   * Otherwise, this object is returned.
    *
-   * @return the proper type that is the wrapper type for this type or this if no such wrapper
+   * @return the proper type that is the wrapper type for this type, or this if no such wrapper
    *     exists
    */
   public ProperType boxType() {
@@ -139,7 +139,7 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Is {@code this} a subtype of {@code superType}?
+   * Determines whether {@code this} is a subtype of {@code superType}.
    *
    * @param superType super type
    * @return if {@code this} is a subtype of {@code superType}, then return {@link
@@ -164,7 +164,7 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Is {@code this} an unchecked subtype of {@code superType}?
+   * Determines whether {@code this} is an unchecked subtype of {@code superType}.
    *
    * @param superType super type
    * @return if {@code this} is an unchecked subtype of {@code superType}, then return {@link
@@ -194,7 +194,7 @@ public class ProperType extends AbstractType {
   }
 
   /**
-   * Is {@code this} assignable to {@code superType}?
+   * Determines whether {@code this} is assignable to {@code superType}.
    *
    * @param superType super type
    * @return if {@code this} is assignable to {@code superType}, then return {@link
@@ -216,9 +216,9 @@ public class ProperType extends AbstractType {
    * that their underlying Java types have already been found to be the same. If either type is
    * marked as having annotations that should be ignored, then the annotations are not compared.
    *
-   * <p>Neither type may be an uncaptured wildcard: the type hierarchy compares a wildcard's {@code
-   * extends} bound against the other type, which for a lower-bounded wildcard is not the bound that
-   * holds its qualifiers.
+   * <p>Neither type is permitted to be an uncaptured wildcard: the type hierarchy compares a
+   * wildcard's {@code extends} bound against the other type, which for a lower-bounded wildcard is
+   * not the bound that holds its qualifiers.
    *
    * <p>The type hierarchy compares a polymorphic qualifier as though it were concrete, so it
    * reports a conflict with every qualifier that the polymorphic qualifier could be instantiated

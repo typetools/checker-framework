@@ -113,13 +113,13 @@ public abstract class InitializationAnnotatedTypeFactory<
    * <p>{@link UnknownInitialization} {@link UnderInitialization} {@link Initialized} {@link
    * FBCBottom}
    *
-   * <p>This is used to quickly check of an AnnotationMirror is one of the initialization
+   * <p>This is used to quickly check if an AnnotationMirror is one of the initialization
    * annotations without having to repeatedly convert them to strings.
    */
   protected final Set<String> initAnnoNames;
 
   /**
-   * Create a new InitializationAnnotatedTypeFactory.
+   * Creates a new InitializationAnnotatedTypeFactory.
    *
    * @param checker the checker to which the new type factory belongs
    */
@@ -164,7 +164,7 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   /**
-   * Is the annotation {@code anno} an initialization qualifier?
+   * Returns true if the annotation {@code anno} is an initialization qualifier.
    *
    * @param anno the annotation to check
    * @return true if the argument is an initialization qualifier
@@ -180,9 +180,9 @@ public abstract class InitializationAnnotatedTypeFactory<
    */
 
   /**
-   * Returns the list of annotations that is forbidden for the constructor return type.
+   * Returns the set of annotations that are forbidden for the constructor return type.
    *
-   * @return the list of annotations that is forbidden for the constructor return type
+   * @return the set of annotations that are forbidden for the constructor return type
    */
   public Set<Class<? extends Annotation>> getInvalidConstructorReturnTypeAnnotations() {
     return getInitializationAnnotations();
@@ -222,7 +222,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    * instantiation of the type parameter could have the invariant annotation. See {@link
    * NullnessAnnotatedTypeFactory#hasFieldInvariantAnnotation(VariableTree)} for an example.
    *
-   * @param type of field that might have invariant annotation
+   * @param type the type of a field that might have the invariant annotation
    * @param fieldElement the field element, which can be used to check annotations on the
    *     declaration
    * @return true if the type has the invariant annotation
@@ -231,7 +231,7 @@ public abstract class InitializationAnnotatedTypeFactory<
       AnnotatedTypeMirror type, VariableElement fieldElement);
 
   /**
-   * Creates a {@link UnderInitialization} annotation with the given type as its type frame
+   * Creates an {@link UnderInitialization} annotation with the given type as its type frame
    * argument.
    *
    * @param typeFrame the type down to which some value has been initialized
@@ -245,7 +245,7 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   /**
-   * Creates a {@link UnderInitialization} annotation with the given type frame.
+   * Creates an {@link UnderInitialization} annotation with the given type frame.
    *
    * @param typeFrame the type down to which some value has been initialized
    * @return an {@link UnderInitialization} annotation with the given argument
@@ -258,7 +258,7 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   /**
-   * Creates a {@link UnknownInitialization} annotation with a given type frame.
+   * Creates an {@link UnknownInitialization} annotation with a given type frame.
    *
    * @param typeFrame the type down to which some value has been initialized
    * @return an {@link UnknownInitialization} annotation with the given argument
@@ -286,7 +286,7 @@ public abstract class InitializationAnnotatedTypeFactory<
   /**
    * Returns the type frame (that is, the argument) of a given initialization annotation.
    *
-   * @param annotation a {@link UnderInitialization} or {@link UnknownInitialization} annotation
+   * @param annotation an {@link UnderInitialization} or {@link UnknownInitialization} annotation
    * @return the annotation's argument
    */
   public TypeMirror getTypeFrameFromAnnotation(AnnotationMirror annotation) {
@@ -301,7 +301,8 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   /**
-   * Is {@code anno} the {@link UnderInitialization} annotation (with any type frame)?
+   * Returns true if {@code anno} is the {@link UnderInitialization} annotation (with any type
+   * frame).
    *
    * @param anno the annotation to check
    * @return true if {@code anno} is {@link UnderInitialization}
@@ -311,7 +312,8 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   /**
-   * Is {@code anno} the {@link UnknownInitialization} annotation (with any type frame)?
+   * Returns true if {@code anno} is the {@link UnknownInitialization} annotation (with any type
+   * frame).
    *
    * @param anno the annotation to check
    * @return true if {@code anno} is {@link UnknownInitialization}
@@ -321,7 +323,7 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   /**
-   * Is {@code anno} the bottom annotation?
+   * Returns true if {@code anno} is the bottom annotation.
    *
    * @param anno the annotation to check
    * @return true if {@code anno} is {@link FBCBottom}
@@ -331,7 +333,7 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   /**
-   * Is {@code anno} the {@link Initialized} annotation?
+   * Returns true if {@code anno} is the {@link Initialized} annotation.
    *
    * @param anno the annotation to check
    * @return true if {@code anno} is {@link Initialized}
@@ -341,7 +343,8 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   /**
-   * Does {@code anno} have the annotation {@link UnderInitialization} (with any type frame)?
+   * Returns true if {@code anno} has the annotation {@link UnderInitialization} (with any type
+   * frame).
    *
    * @param anno the annotation to check
    * @return true if {@code anno} has {@link UnderInitialization}
@@ -351,7 +354,8 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   /**
-   * Does {@code anno} have the annotation {@link UnknownInitialization} (with any type frame)?
+   * Returns true if {@code anno} has the annotation {@link UnknownInitialization} (with any type
+   * frame).
    *
    * @param anno the annotation to check
    * @return true if {@code anno} has {@link UnknownInitialization}
@@ -361,7 +365,7 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   /**
-   * Does {@code anno} have the bottom annotation?
+   * Returns true if {@code anno} has the bottom annotation.
    *
    * @param anno the annotation to check
    * @return true if {@code anno} has {@link FBCBottom}
@@ -371,7 +375,7 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   /**
-   * Does {@code anno} have the annotation {@link Initialized}?
+   * Returns true if {@code anno} has the annotation {@link Initialized}.
    *
    * @param anno the annotation to check
    * @return true if {@code anno} has {@link Initialized}
@@ -381,7 +385,7 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   /**
-   * Are all fields initialized-only?
+   * Returns true if all fields are initialized-only.
    *
    * @param classTree the class to query
    * @return true if all fields are initialized-only
@@ -407,7 +411,7 @@ public abstract class InitializationAnnotatedTypeFactory<
   /**
    * {@inheritDoc}
    *
-   * <p>In most cases, subclasses want to call this method first because it may clear all
+   * <p>In most cases, subclasses want to call this method first because it might clear all
    * annotations and use the hierarchy's root annotations.
    */
   @Override
@@ -463,7 +467,8 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   /**
-   * In the first enclosing class, find the path to the top-level member that contains {@code path}.
+   * In the first enclosing class, finds the path to the top-level member that contains {@code
+   * path}.
    *
    * @param path the path whose leaf is the target
    * @return path to a top-level member containing the leaf of {@code path}
@@ -534,7 +539,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    * type frame.
    *
    * @param type a type
-   * @return true an {@link UnderInitialization} for the supertype of {@code type}
+   * @return an {@link UnderInitialization} annotation for the supertype of {@code type}
    */
   protected AnnotationMirror getUnderInitializationAnnotationOfSuperType(TypeMirror type) {
     // Find supertype if possible.
@@ -616,7 +621,7 @@ public abstract class InitializationAnnotatedTypeFactory<
    * @param isStatic if true, report static fields; if false, report instance fields
    * @param receiverAnnotations the annotations on the receiver
    * @return the fields that have the invariant annotation and are not yet initialized in a given
-   *     store (a pair of lists)
+   *     store
    */
   public final List<VariableTree> getUninitializedInvariantFields(
       Store store,
@@ -694,7 +699,7 @@ public abstract class InitializationAnnotatedTypeFactory<
   }
 
   /**
-   * Determine the type of a field access (implicit or explicit) based on the receiver type and the
+   * Determines the type of a field access (implicit or explicit) based on the receiver type and the
    * declared annotations for the field.
    *
    * @param type type of the field access expression
@@ -839,8 +844,8 @@ public abstract class InitializationAnnotatedTypeFactory<
    * <p>Type systems extending the Initialization Checker should call methods {@link
    * InitializationQualifierHierarchy#isSubtypeInitialization} and {@link
    * InitializationQualifierHierarchy#leastUpperBoundInitialization} for appropriate qualifiers. See
-   * protected subclass NullnessQualifierHierarchy within class {@link NullnessChecker} for an
-   * example.
+   * protected subclass NullnessQualifierHierarchy within class {@link NullnessAnnotatedTypeFactory}
+   * for an example.
    */
   protected abstract class InitializationQualifierHierarchy
       extends MostlyNoElementQualifierHierarchy {
@@ -851,7 +856,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     /** Qualifier kind for the @{@link UnderInitialization} annotation. */
     private final QualifierKind UNDER_INIT;
 
-    /** Create an InitializationQualifierHierarchy. */
+    /** Creates an InitializationQualifierHierarchy. */
     protected InitializationQualifierHierarchy() {
       super(
           InitializationAnnotatedTypeFactory.this.getSupportedTypeQualifiers(),
@@ -892,7 +897,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Compute the least upper bound of two initialization qualifiers. Returns null if one of the
+     * Computes the least upper bound of two initialization qualifiers. Returns null if one of the
      * qualifiers is not in the initialization hierarchy. Subclasses should override leastUpperBound
      * and call this method for initialization qualifiers.
      *
@@ -955,8 +960,8 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Compute the greatest lower bound of two initialization qualifiers. Returns null if one of the
-     * qualifiers is not in the initialization hierarchy. Subclasses should override
+     * Computes the greatest lower bound of two initialization qualifiers. Returns null if one of
+     * the qualifiers is not in the initialization hierarchy. Subclasses should override
      * greatestLowerBound and call this method for initialization qualifiers.
      *
      * @param anno1 an initialization qualifier

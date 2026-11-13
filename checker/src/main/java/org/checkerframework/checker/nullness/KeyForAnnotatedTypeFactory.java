@@ -74,8 +74,8 @@ public class KeyForAnnotatedTypeFactory
 
   /**
    * If true, assume the argument to Map.get is always a key for the receiver map. This is set by
-   * the `-AassumeKeyFor` command-line argument. However, if the Nullness Checker is being run, then
-   * `-AassumeKeyFor` disables the Map Key Checker.
+   * the {@code -AassumeKeyFor} command-line argument. However, if the Nullness Checker is being
+   * run, then {@code -AassumeKeyFor} disables the Map Key Checker.
    */
   private final boolean assumeKeyFor;
 
@@ -138,7 +138,7 @@ public class KeyForAnnotatedTypeFactory
   }
 
   /**
-   * Given a string array 'values', returns an AnnotationMirror corresponding to @KeyFor(values)
+   * Given a string array 'values', returns an AnnotationMirror corresponding to @KeyFor(values).
    *
    * @param values the values for the {@code @KeyFor} annotation
    * @return a {@code @KeyFor} annotation with the given values
@@ -153,7 +153,7 @@ public class KeyForAnnotatedTypeFactory
   }
 
   /**
-   * Given a string 'value', returns an AnnotationMirror corresponding to @KeyFor(value)
+   * Given a string 'value', returns an AnnotationMirror corresponding to @KeyFor(value).
    *
    * @param value the argument to {@code @KeyFor}
    * @return a {@code @KeyFor} annotation with the given value
@@ -245,7 +245,7 @@ public class KeyForAnnotatedTypeFactory
    *
    * <p>For example, if the type of some method called, {@code getList(...)}, is changed from {@code
    * List<@KeyFor("a ? b : c") String>} to {@code List<@UnknownKeyFor String>}, then the returned
-   * list may have @UnknownKeyFor strings added.
+   * list might have @UnknownKeyFor strings added.
    *
    * <pre>{@code
    * List<String> l = getList(...);

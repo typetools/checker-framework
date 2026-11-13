@@ -2,7 +2,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Call this program with two arguments; a regular expression and a string. The program prints the
+ * Call this program with two arguments: a regular expression and a string. The program prints the
  * text, from the string, that matches the first capturing group in the regular expression.
  */
 public class RegexExample {

@@ -117,8 +117,8 @@ public class CollectionToArrayHeuristics {
   /**
    * Sets the nullness of the component of the array type.
    *
-   * @param isNonNull indicates which annotation ({@code NonNull} or {@code Nullable}) should be
-   *     inserted
+   * @param isNonNull true if {@code NonNull} should be inserted, false if {@code Nullable} should
+   *     be inserted
    * @param type the array type
    */
   private void setComponentNullness(boolean isNonNull, AnnotatedTypeMirror type) {
@@ -132,7 +132,7 @@ public class CollectionToArrayHeuristics {
    *
    * @param argument the tree passed to {@link Collection#toArray(Object[]) Collection.toArray(T[])}
    * @param receiver the expression for the receiver collection
-   * @return true if the argument is handled and assume to return nonnull elements
+   * @return true if the argument is handled and assumed to return non-null elements
    */
   private boolean isHandledArrayCreation(Tree argument, String receiver) {
     if (!(argument instanceof NewArrayTree newArr)) {
@@ -191,8 +191,8 @@ public class CollectionToArrayHeuristics {
   }
 
   /**
-   * Returns {@code true} if the method invocation tree receiver is collection that contains
-   * non-null elements (i.e. its type argument is {@code @NonNull}.
+   * Returns {@code true} if the method invocation tree receiver is a collection that contains
+   * non-null elements (i.e., its type argument is {@code @NonNull}).
    *
    * @param tree a method invocation
    * @return true if the receiver is a collection of non-null elements
