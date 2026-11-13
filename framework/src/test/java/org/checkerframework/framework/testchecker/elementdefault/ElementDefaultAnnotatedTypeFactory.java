@@ -6,24 +6,37 @@ import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.framework.testchecker.util.Odd;
+import org.checkerframework.framework.testchecker.util.Critical;
 import org.checkerframework.framework.testchecker.util.SubQual;
 import org.checkerframework.framework.testchecker.util.SuperQual;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Registers defaults through {@code QualifierDefaults.addElementDefault}: a {@code @SubQual}
- * default for {@link TypeUseLocation#RETURN} on every class named {@code ElementDefault}, a
- * {@code @SubQual} default for {@link TypeUseLocation#FIELD} on every class named {@code
- * ElementDefaultPrecedence}, and an {@code @ElementDefaultQual} default for {@link
- * TypeUseLocation#OTHERWISE} on every class named {@code ElementDefaultRegisteredOtherwise}.
+ * Registers defaults through {@code QualifierDefaults.addElementDefault}. {@code @Critical} is an
+ * alias for {@code @SubQual}. On every class with the given name, this registers:
+ *
+ * <ul>
+ *   <li>{@code ElementDefault}: {@code @SubQual} for {@link TypeUseLocation#RETURN}, and
+ *       {@code @Critical} for the same location.
+ *   <li>{@code ElementDefaultEnclosing}: after computing the type of method {@code takesSub} of its
+ *       member class {@code Inner}, {@code @Critical} for {@link TypeUseLocation#RETURN} on {@code
+ *       Inner}.
+ *   <li>{@code ElementDefaultLate}: {@code @SubQual} for {@link TypeUseLocation#RETURN}; then,
+ *       after computing the type of its method {@code first}, {@code @SubQual} for {@link
+ *       TypeUseLocation#PARAMETER}.
+ *   <li>{@code ElementDefaultPrecedence}: {@code @SubQual} for {@link TypeUseLocation#FIELD}.
+ *   <li>{@code ElementDefaultRegisteredOtherwise}: {@code @ElementDefaultQual} for {@link
+ *       TypeUseLocation#OTHERWISE}.
+ * </ul>
  *
  * <p>The test files then check that such a default composes with the {@code @DefaultQualifier}
  * annotations on the same element and on the element's enclosing scopes, rather than suppressing
@@ -39,20 +52,21 @@ public class ElementDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
   /** The {@code @ElementDefaultQual} annotation. */
   private final AnnotationMirror ELEMENT_DEFAULT_QUAL;
 
-  /** The {@code @Odd} annotation, which this type system does not support. */
-  private final AnnotationMirror ODD;
+  /** The {@code @Critical} annotation, which this type system treats as an alias for SubQual. */
+  private final AnnotationMirror CRITICAL;
 
   /**
    * Creates an ElementDefaultAnnotatedTypeFactory.
    *
-   * @param checker the checker
+   * @param checker an ElementDefaultChecker
    */
   @SuppressWarnings("this-escape")
   public ElementDefaultAnnotatedTypeFactory(BaseTypeChecker checker) {
     super(checker);
     SUB_QUAL = AnnotationBuilder.fromClass(getElementUtils(), SubQual.class);
     ELEMENT_DEFAULT_QUAL = AnnotationBuilder.fromClass(getElementUtils(), ElementDefaultQual.class);
-    ODD = AnnotationBuilder.fromClass(getElementUtils(), Odd.class);
+    CRITICAL = AnnotationBuilder.fromClass(getElementUtils(), Critical.class);
+    addAliasedTypeAnnotation(Critical.class, SUB_QUAL);
     this.postInit();
   }
 
@@ -77,9 +91,33 @@ public class ElementDefaultAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
         Name className = classElt.getSimpleName();
         if (className.contentEquals("ElementDefault")) {
           defaults.addElementDefault(classElt, SUB_QUAL, TypeUseLocation.RETURN);
-          // A qualifier of some other type system is tolerated; it has no effect, and it does
-          // not prevent another default from applying at the same location.
-          defaults.addElementDefault(classElt, ODD, TypeUseLocation.PARAMETER);
+          // The alias is canonicalized to @SubQual, so it duplicates the previous default rather
+          // than conflicting with it.
+          defaults.addElementDefault(classElt, CRITICAL, TypeUseLocation.RETURN);
+        } else if (className.contentEquals("ElementDefaultEnclosing")) {
+          for (TypeElement member : ElementFilter.typesIn(classElt.getEnclosedElements())) {
+            if (member.getSimpleName().contentEquals("Inner")) {
+              for (ExecutableElement method :
+                  ElementFilter.methodsIn(member.getEnclosedElements())) {
+                if (method.getSimpleName().contentEquals("takesSub")) {
+                  // Computing this type computes the defaults that apply within Inner, which
+                  // are then the same as the defaults of the enclosing class.  Registering a
+                  // default for Inner must not change the defaults of the enclosing class.
+                  getAnnotatedType(method);
+                }
+              }
+              defaults.addElementDefault(member, CRITICAL, TypeUseLocation.RETURN);
+            }
+          }
+        } else if (className.contentEquals("ElementDefaultLate")) {
+          defaults.addElementDefault(classElt, SUB_QUAL, TypeUseLocation.RETURN);
+          for (ExecutableElement method : ElementFilter.methodsIn(classElt.getEnclosedElements())) {
+            if (method.getSimpleName().contentEquals("first")) {
+              // Computing this type computes the defaults that apply within the class.
+              getAnnotatedType(method);
+            }
+          }
+          defaults.addElementDefault(classElt, SUB_QUAL, TypeUseLocation.PARAMETER);
         } else if (className.contentEquals("ElementDefaultPrecedence")) {
           defaults.addElementDefault(classElt, SUB_QUAL, TypeUseLocation.FIELD);
         } else if (className.contentEquals("ElementDefaultRegisteredOtherwise")) {
