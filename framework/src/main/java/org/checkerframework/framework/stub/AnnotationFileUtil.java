@@ -529,7 +529,9 @@ public class AnnotationFileUtil {
    *     rather than being found by searching a directory or an archive. A file named by the user is
    *     used if {@link #isUsableNamedFile} returns true for it; a file found by searching is used
    *     only if its name indicates that it is an annotation file of type {@code fileType}. An
-   *     archive found by searching a directory is not opened.
+   *     archive found by searching a directory is not opened. An ajava file in an archive is
+   *     read only as a stub file: {@code AnnotatedTypeFactory.setRoot} never selects it as the
+   *     ajava file that corresponds to a source file.
    */
   private static void addAnnotationFilesToList(
       File location,

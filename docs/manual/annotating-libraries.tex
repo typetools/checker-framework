@@ -1034,6 +1034,10 @@ is a substring of the other, and both are specified as \<.ajava> files (rather
 than being found under directories). For example, if the \<-Aajava> argument
 was \<-Aajava=~/foo/Bar.ajava:~/baz/foo/Bar.ajava>, the two \<.ajava> files
 would be considered ambiguous and an \<ambiguous.ajava> warning would be issued.
+An ajava file within a \<.jar> or \<.zip> archive never corresponds to a
+source file.  The Checker Framework reads it as it reads a stub file, so it
+ignores annotations in the archived ajava file that a stub file cannot
+express, such as annotations within anonymous and local classes.
 Files found under a directory are always unambiguous, because their file structure
 must match their package name; the solution to an \<ambiguous.ajava> warning is to
 convert the specific files in the \<-Aajava> argument to directories.
