@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 
 /**
- * A polymorphic qualifier for the Collection-Ownership type system.
+ * A polymorphic qualifier for the Collection Ownership type system.
  *
  * @checker_framework.manual #resource-leak-checker Resource Leak Checker
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
