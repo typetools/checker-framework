@@ -32,7 +32,6 @@ import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.StringToJavaExpression;
-import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -75,9 +74,9 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
 
   /**
    * @param tree a tree
-   * @return false if Resource Leak Checker is running as one of the upstream checkers and the
+   * @return false if the Resource Leak Checker is running as one of the upstream checkers and the
    *     -AenableWpiForRlc flag (see {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}) is not passed
-   *     as a command line argument, otherwise returns the result of the super call
+   *     as a command-line argument; otherwise, the result of the super call
    */
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree tree) {
@@ -92,10 +91,10 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * See {@link ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
    *
    * @param expressionTree a tree
-   * @param lhsTree its element
-   * @return false if Resource Leak Checker is running as one of the upstream checkers and the
-   *     -AenableWpiForRlc flag is not passed as a command line argument, otherwise returns the
-   *     result of the super call
+   * @param lhsTree the left-hand side of an assignment
+   * @return false if the Resource Leak Checker is running as one of the upstream checkers and the
+   *     -AenableWpiForRlc flag is not passed as a command-line argument; otherwise, the result of
+   *     the super call
    */
   @Override
   protected boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
@@ -110,8 +109,9 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   public TransferResult<AccumulationValue, AccumulationStore> visitMethodInvocation(
       MethodInvocationNode node, TransferInput<AccumulationValue, AccumulationStore> input) {
 
-    // The call to `super.visitMethodInvocation()` modifies the input store in-place.  So if we end
-    // up needing to create the exceptional stores, then we'll need this copy taken beforehand.
+    // The call to `super.visitMethodInvocation()` modifies the input store in-place, adding the
+    // invoked method's postconditions, which hold only on normal return.  So if we end up needing
+    // to create the exceptional stores, then we'll need this copy taken beforehand.
     AccumulationStore inputStore = input.getRegularStore().copy();
 
     TransferResult<AccumulationValue, AccumulationStore> superResult =
@@ -121,6 +121,9 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
     // accumulate(), which will accumulate values into the result's exceptional stores as well.
     Map<TypeMirror, AccumulationStore> exceptionalStores = superResult.getExceptionalStores();
     if (exceptionalStores == null) {
+      // The invoked method might have side effects before it throws an exception.  The method call
+      // has no value on the exceptional paths.
+      inputStore.updateForMethodCall(node, null);
       exceptionalStores = makeExceptionalStores(node, inputStore);
       superResult = superResult.withExceptionalStores(exceptionalStores);
     }
@@ -149,36 +152,38 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
       Node node, TransferResult<AccumulationValue, AccumulationStore> result, String... values) {
     super.accumulate(node, result, values);
 
+    if (result.getExceptionalStores() == null) {
+      return;
+    }
+    JavaExpression target = JavaExpression.fromNode(node);
+    if (CFAbstractStore.canInsertJavaExpression(target)) {
+      accumulateInExceptionalStores(target, result, Arrays.asList(values));
+    }
+  }
+
+  /**
+   * Adds the given method names to the estimate for {@code target} in each exceptional store of
+   * {@code result}, if it has any, so that a method counts as called even on the paths where it
+   * throws an exception. Each exceptional store's new estimate for {@code target} is its previous
+   * estimate plus {@code methodNames}.
+   *
+   * @param target a JavaExpression for which {@code CFAbstractStore.canInsertJavaExpression}
+   *     returns true
+   * @param result a transfer result
+   * @param methodNames names of newly called methods, such as "close"
+   */
+  protected void accumulateInExceptionalStores(
+      JavaExpression target,
+      TransferResult<AccumulationValue, AccumulationStore> result,
+      List<String> methodNames) {
     Map<TypeMirror, AccumulationStore> exceptionalStores = result.getExceptionalStores();
     if (exceptionalStores == null) {
       return;
     }
-
-    List<String> valuesAsList = Arrays.asList(values);
-    JavaExpression target = JavaExpression.fromNode(node);
-    if (CFAbstractStore.canInsertJavaExpression(target)) {
-      AccumulationValue flowValue = result.getRegularStore().getValue(target);
-      if (flowValue != null) {
-        // Dataflow has already recorded information about the target.  Integrate it into
-        // the list of values in the new annotation.
-        AnnotationMirrorSet flowAnnos = flowValue.getAnnotations();
-        assert flowAnnos.size() <= 1;
-        for (AnnotationMirror anno : flowAnnos) {
-          if (atypeFactory.isAccumulatorAnnotation(anno)) {
-            List<String> oldFlowValues =
-                AnnotationUtils.getElementValueArray(anno, calledMethodsValueElement, String.class);
-            // valuesAsList cannot have its length changed -- it is backed by an
-            // array.  getElementValueArray returns a new, modifiable list.
-            oldFlowValues.addAll(valuesAsList);
-            valuesAsList = oldFlowValues;
-          }
-        }
-      }
-      AnnotationMirror newAnno = atypeFactory.createAccumulatorAnnotation(valuesAsList);
-      exceptionalStores.forEach(
-          (tm, s) ->
-              s.replaceValue(
-                  target, analysis.createSingleAnnotationValue(newAnno, target.getType())));
+    // Do not use the estimate in the regular store:  it can contain facts that hold only on normal
+    // return, such as postconditions of the invoked method.
+    for (AccumulationStore exceptionalStore : exceptionalStores.values()) {
+      updateValueAndInsertIntoStore(exceptionalStore, target, methodNames);
     }
   }
 
@@ -190,10 +195,9 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * @param <V> the type of abstract values
    * @param <S> the type of store
    * @param node a method invocation
-   * @param inputStore the transfer input associated with the method invocation
+   * @param inputStore the regular store of the transfer input associated with the method invocation
    * @return a map from types to stores. The keys are the same keys used by {@link
-   *     ExceptionBlock#getExceptionalSuccessors()}. The values are copies of the regular store from
-   *     {@code input}.
+   *     ExceptionBlock#getExceptionalSuccessors()}. The values are copies of {@code inputStore}.
    */
   public static <V extends CFAbstractValue<V>, S extends CFAbstractStore<V, S>>
       Map<TypeMirror, S> makeExceptionalStores(MethodInvocationNode node, S inputStore) {
@@ -309,7 +313,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
   /**
    * Extract the current called-methods type from {@code currentType}, and then add each element of
    * {@code methodNames} to it, and return the result. This method is similar to GLB, but should be
-   * used when the new methods come from a source other than an {@code CalledMethods} annotation.
+   * used when the new methods come from a source other than a {@code CalledMethods} annotation.
    *
    * @param currentType the current type in the called-methods hierarchy
    * @param methodNames the names of the new methods to add to the type
@@ -347,7 +351,7 @@ public class CalledMethodsTransfer extends AccumulationTransfer {
    * Checks if WPI is enabled for the Resource Leak Checker inference. See {@link
    * ResourceLeakChecker#ENABLE_WPI_FOR_RLC}.
    *
-   * @return returns true if WPI is enabled for the Resource Leak Checker
+   * @return true if WPI is enabled for the Resource Leak Checker
    */
   protected boolean isWpiEnabledForRLC() {
     return enableWpiForRlc;

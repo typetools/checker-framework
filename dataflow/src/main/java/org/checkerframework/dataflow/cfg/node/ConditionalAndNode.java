@@ -15,7 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class ConditionalAndNode extends BinaryOperationNode {
 
   /**
-   * Create a new ConditionalAndNode.
+   * Creates a new ConditionalAndNode.
    *
    * @param tree the conditional-and tree for this node
    * @param left the first argument

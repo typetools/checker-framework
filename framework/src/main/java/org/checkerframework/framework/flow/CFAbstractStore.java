@@ -1,7 +1,9 @@
 package org.checkerframework.framework.flow;
 
+import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -30,6 +32,7 @@ import org.checkerframework.dataflow.cfg.visualize.StringCFGVisualizer;
 import org.checkerframework.dataflow.expression.ArrayAccess;
 import org.checkerframework.dataflow.expression.ClassName;
 import org.checkerframework.dataflow.expression.FieldAccess;
+import org.checkerframework.dataflow.expression.IteratedCollectionElement;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.LocalVariable;
 import org.checkerframework.dataflow.expression.MethodCall;
@@ -56,11 +59,11 @@ import org.plumelib.util.UniqueId;
  * <p>When adding a new field to track values for a code construct (similar to {@code
  * localVariableValues} and {@code thisValue}), it is important to review all constructors and
  * methods in this class for locations where the new field must be handled (such as the copy
- * constructor and {@code clearValue}), as well as all constructors/methods in subclasses of {code
+ * constructor and {@code clearValue}), as well as all constructors/methods in subclasses of {@code
  * CFAbstractStore}. Note that this includes not only overridden methods in the subclasses, but new
  * methods in the subclasses as well. Also check if
- * BaseTypeVisitor#getJavaExpressionContextFromNode(Node) needs to be updated. Failing to do so may
- * result in silent failures that are time consuming to debug.
+ * BaseTypeVisitor#getJavaExpressionContextFromNode(Node) needs to be updated. Failing to do so
+ * might result in silent failures that are time-consuming to debug.
  */
 // TODO: Split this class into two parts: one that is reusable generally and
 // one that is specific to the Checker Framework.
@@ -73,8 +76,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /** Information collected about local variables (including method parameters). */
   protected final Map<LocalVariable, V> localVariableValues;
 
+  /** Information collected about iterated collection elements. */
+  protected final Map<IteratedCollectionElement, V> iteratedCollectionElements;
+
   /** Information collected about the current object. */
-  protected V thisValue;
+  protected @Nullable V thisValue;
 
   /** Information collected about fields, using the internal representation {@link FieldAccess}. */
   protected Map<FieldAccess, V> fieldValues;
@@ -108,8 +114,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected final Map<ClassName, V> classValues;
 
   /**
-   * Should the analysis use sequential Java semantics (i.e., assume that only one thread is running
-   * at all times)?
+   * True if the analysis should use sequential Java semantics (i.e., assume that only one thread is
+   * running at all times).
    */
   protected final boolean sequentialSemantics;
 
@@ -138,11 +144,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Creates a new CFAbstractStore.
    *
    * @param analysis the analysis class this store belongs to
-   * @param sequentialSemantics should the analysis use sequential Java semantics?
+   * @param sequentialSemantics true if the analysis should use sequential Java semantics
    */
   protected CFAbstractStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
     this.analysis = analysis;
     this.localVariableValues = new HashMap<>();
+    this.iteratedCollectionElements = new HashMap<>();
     this.thisValue = null;
     this.fieldValues = new HashMap<>();
     this.methodCallExpressions = new HashMap<>();
@@ -163,6 +170,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected CFAbstractStore(CFAbstractStore<V, S> other) {
     this.analysis = other.analysis;
     this.localVariableValues = new HashMap<>(other.localVariableValues);
+    this.iteratedCollectionElements = new HashMap<>(other.iteratedCollectionElements);
     this.thisValue = other.thisValue;
     this.fieldValues = new HashMap<>(other.fieldValues);
     this.methodCallExpressions = new HashMap<>(other.methodCallExpressions);
@@ -174,7 +182,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Set the abstract value of a method parameter (only adds the information to the store, does not
+   * Sets the abstract value of a method parameter (only adds the information to the store, does not
    * remove any other knowledge). Any previous information is erased; this method should only be
    * used to initialize the abstract value.
    */
@@ -185,7 +193,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Set the value of the current object. Any previous information is erased; this method should
+   * Sets the value of the current object. Any previous information is erased; this method should
    * only be used to initialize the value.
    */
   public void initializeThisValue(AnnotationMirror a, TypeMirror underlyingType) {
@@ -199,7 +207,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   /* --------------------------------------------------------- */
 
   /**
-   * Remove any information that might not be valid any more after a method call, and add
+   * Removes any information that might not be valid any more after a method call, and adds
    * information guaranteed by the method.
    *
    * <ol>
@@ -207,11 +215,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *       org.checkerframework.dataflow.qual.SideEffectFree} or {@link
    *       org.checkerframework.dataflow.qual.Pure}), then no information needs to be removed.
    *   <li>Otherwise, all information about field accesses {@code a.f} needs to be removed, except
-   *       if the method {@code n} cannot modify {@code a.f}. This unmodifiability property holds if
-   *       {@code a} is a local variable or {@code this}, and {@code f} is final, or if {@code a.f}
-   *       has a {@link MonotonicQualifier} in the current store. Subclasses can change this
-   *       behavior by overriding {@link #newFieldValueAfterMethodCall(FieldAccess,
-   *       GenericAnnotatedTypeFactory, CFAbstractValue)}.
+   *       if the method cannot modify {@code a.f}. This unmodifiability property holds if {@code a}
+   *       is a local variable or {@code this}, and {@code f} is final, or if {@code a.f} has a
+   *       {@link MonotonicQualifier} in the current store. Subclasses can change this behavior by
+   *       overriding {@link #newFieldValueAfterMethodCall(FieldAccess, GenericAnnotatedTypeFactory,
+   *       CFAbstractValue)}.
    *   <li>Furthermore, if the field has a monotonic annotation, then its information can also be
    *       kept.
    * </ol>
@@ -219,9 +227,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Furthermore, if the method is deterministic, we store its result {@code val} in the store.
    *
    * @param methodInvocationNode method whose information is being updated
-   * @param val abstract value of the method call
+   * @param val abstract value of the method call, or null to store no value for the method call
    */
-  public void updateForMethodCall(MethodInvocationNode methodInvocationNode, V val) {
+  public void updateForMethodCall(MethodInvocationNode methodInvocationNode, @Nullable V val) {
     ExecutableElement method = methodInvocationNode.getTarget().getMethod();
 
     @SuppressWarnings("unchecked")
@@ -249,9 +257,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       // TODO: Also remove if any element/argument to the annotation is not
       // isUnmodifiableByOtherCode.  Example: @KeyFor("valueThatCanBeMutated").
 
-      // Update local variables.
+      // Update local variables and iterated collection elements.
       if (sideEffectsUnrefineAliases) {
         localVariableValues
+            .entrySet()
+            .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
+        iteratedCollectionElements
             .entrySet()
             .removeIf(e -> isSideEffected(e.getKey(), unrefinableReceiverJe, seOnlyExpressions));
       }
@@ -310,17 +321,24 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * change. Concretely, the implementation evaluates to false if {@code expr} is strictly equal to
    * {@code notSideEffectedExpression}.
    *
+   * <p>An {@link IteratedCollectionElement} is side-effected exactly when its {@link
+   * IteratedCollectionElement#reference reference} is, such as the loop variable {@code o} in
+   * {@code for (Object o : list)}.
+   *
    * @param expr an expression
    * @param notSideEffectedExpression an expression that is never considered to be side-effected, or
    *     null
    * @param sideEffectsOnlyExpressions if non-null, only these expressions (and expressions whose
-   *     value they may change) are considered to be side-effected
+   *     value they might change) are considered to be side-effected
    * @return true if the abstract value of the expression might have changed
    */
   private boolean isSideEffected(
       JavaExpression expr,
       @Nullable JavaExpression notSideEffectedExpression,
       @Nullable List<JavaExpression> sideEffectsOnlyExpressions) {
+    if (expr instanceof IteratedCollectionElement ice) {
+      return isSideEffected(ice.reference, notSideEffectedExpression, sideEffectsOnlyExpressions);
+    }
     if (!expr.isModifiableByOtherCode()) {
       return false;
     }
@@ -343,14 +361,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * <p>It is also the case when {@code expr} contains a method call through which {@code
    * seOnlyExpr} is reached; see {@link #callMayChangeValue}.
    *
-   * <p>This method is unsound for two array accesses that may denote the same element without
+   * <p>This method is unsound for two array accesses that might denote the same element without
    * containing one another. It returns false for {@code a[i]} and {@code a[0]}, so the refinement
    * of {@code a[i]} survives a call to a {@code @SideEffectsOnly("a[0]")} method even when {@code
-   * i} is 0. TODO: return true when both expressions are array accesses on arrays that may be the
+   * i} is 0. TODO: return true when both expressions are array accesses on arrays that might be the
    * same, unless the two index expressions are known to differ.
    *
    * @param expr an expression whose value is stored in this store
-   * @param seOnlyExpr an expression that may be modified
+   * @param seOnlyExpr an expression that might be modified
    * @return true if modifying {@code seOnlyExpr} might change the value of {@code expr}
    */
   private static boolean mayChangeValue(JavaExpression expr, JavaExpression seOnlyExpr) {
@@ -385,7 +403,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * compared against {@code seOnlyExpr} but is descended into here.
    *
    * @param expr an expression whose value is stored in this store
-   * @param seOnlyExpr an expression that may be modified
+   * @param seOnlyExpr an expression that might be modified
    * @return true if modifying {@code seOnlyExpr} might change the value of expr, by changing the
    *     value of a call within {@code expr}
    */
@@ -411,11 +429,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Returns true if {@code seOnlyExpr} may be reached through {@code input}.
+   * Returns true if {@code seOnlyExpr} might be reached through {@code input}.
    *
    * @param input the receiver or an argument of a stored method call
-   * @param seOnlyExpr an expression that may be modified
-   * @return true if {@code seOnlyExpr} may be reached through {@code input}
+   * @param seOnlyExpr an expression that might be modified
+   * @return true if {@code seOnlyExpr} might be reached through {@code input}
    */
   private static boolean mayReach(JavaExpression input, JavaExpression seOnlyExpr) {
     // The recursive call handles a nested call such as `x.getA().getB()`, whose receiver is
@@ -500,15 +518,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Helper for {@link #updateForMethodCall(MethodInvocationNode, CFAbstractValue)}. Remove any
-   * information about field values that might not be valid any more after a method call, and add
+   * Helper for {@link #updateForMethodCall(MethodInvocationNode, CFAbstractValue)}. Removes any
+   * information about field values that might not be valid any more after a method call, and adds
    * information guaranteed by the method.
    *
-   * <p>More specifically, remove all information about fields except for unassignable fields and
+   * <p>More specifically, removes all information about fields except for unassignable fields and
    * fields that have a monotonic annotation.
    *
    * <p>A non-null {@code sideEffectsOnlyExpressions} indicates that the invoked method has limited
-   * side effects. In this case, remove information for fields that appear in the list of
+   * side effects. In this case, removes information for fields that appear in the list of
    * side-effected expressions.
    *
    * @param atypeFactory AnnotatedTypeFactory of the associated checker
@@ -541,19 +559,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Add the annotation {@code a} for the expression {@code expr} (correctly deciding where to store
-   * the information depending on the type of the expression {@code expr}).
+   * Adds the annotation {@code a} for the expression {@code expr} (correctly deciding where to
+   * store the information depending on the type of the expression {@code expr}).
    *
    * <p>This method does not take care of removing other information that might be influenced by
    * changes to certain parts of the state.
    *
    * <p>If there is already a value {@code v} present for {@code expr}, then the stronger of the new
-   * and old value are taken (according to the lattice). Note that this happens per hierarchy, and
-   * if the store already contains information about a hierarchy other than {@code a}s hierarchy,
-   * that information is preserved.
+   * and old value is taken (according to the lattice). Note that this happens per hierarchy, and if
+   * the store already contains information about a hierarchy other than {@code a}'s hierarchy, that
+   * information is preserved.
    *
-   * <p>If {@code expr} is nondeterministic, this method does not insert {@code value} into the
-   * store.
+   * <p>If {@code expr} is nondeterministic, this method does not insert {@code a} into the store.
    *
    * @param expr an expression
    * @param a an annotation for the expression
@@ -578,8 +595,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Add the annotation {@code newAnno} for the expression {@code expr} (correctly deciding where to
-   * store the information depending on the type of the expression {@code expr}).
+   * Adds the annotation {@code newAnno} for the expression {@code expr} (correctly deciding where
+   * to store the information depending on the type of the expression {@code expr}).
    *
    * <p>This method does not take care of removing other information that might be influenced by
    * changes to certain parts of the state.
@@ -590,7 +607,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * <p>Note that this happens per hierarchy, and if the store already contains information about a
    * hierarchy other than {@code newAnno}'s hierarchy, that information is preserved.
    *
-   * <p>If {@code expr} is nondeterministic, this method does not insert {@code value} into the
+   * <p>If {@code expr} is nondeterministic, this method does not insert {@code newAnno} into the
    * store.
    *
    * @param expr an expression
@@ -621,7 +638,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * @param expr an expression
    * @param newAnno the expression's annotation
-   * @param permitNondeterministic true if nondeterministic expressions may be inserted into the
+   * @param permitNondeterministic true if nondeterministic expressions can be inserted into the
    *     store
    */
   protected void insertOrRefine(
@@ -643,7 +660,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       return;
     }
     computeNewValueAndInsert(
-        expr, newValue, CFAbstractValue<V>::greatestLowerBound, permitNondeterministic);
+        expr,
+        newValue,
+        (previousValue, value) -> {
+          assert previousValue != null
+              : "@AssumeAssertion(nullness): oldValue, checked above, is non-null";
+          return previousValue.greatestLowerBound(value);
+        },
+        permitNondeterministic);
   }
 
   /** Returns true if {@code expr} can be stored in this store. */
@@ -652,6 +676,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         || expr instanceof ThisReference
         || expr instanceof SuperReference
         || expr instanceof LocalVariable
+        || expr instanceof IteratedCollectionElement
         || expr instanceof MethodCall
         || expr instanceof ArrayAccess
         || expr instanceof ClassName) {
@@ -661,15 +686,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Add the abstract value {@code value} for the expression {@code expr} (correctly deciding where
+   * Adds the abstract value {@code value} for the expression {@code expr} (correctly deciding where
    * to store the information depending on the type of the expression {@code expr}).
    *
    * <p>This method does not take care of removing other information that might be influenced by
    * changes to certain parts of the state.
    *
    * <p>If there is already a value {@code v} present for {@code expr}, then the stronger of the new
-   * and old value are taken (according to the lattice). Note that this happens per hierarchy, and
-   * if the store already contains information about a hierarchy for which {@code value} does not
+   * and old value is taken (according to the lattice). Note that this happens per hierarchy, and if
+   * the store already contains information about a hierarchy for which {@code value} does not
    * contain information, then that information is preserved.
    *
    * <p>If {@code expr} is nondeterministic, this method does not insert {@code value} into the
@@ -692,7 +717,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * <p>However, contracts can mention a nondeterministic JavaExpression. For example, a contract
    * might have a postcondition that {@code nondet()} is odd. This means that the next call to
-   * {@code nondet()} will return odd. Such a postcondition may be evicted from the store by calling
+   * {@code nondet()} will return odd. Such a postcondition can be evicted from the store by calling
    * a side-effecting method.
    *
    * @param expr the expression to insert in the store
@@ -704,10 +729,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   /**
    * Returns true if the given (expression, value) pair can be inserted in the store, namely if the
-   * value is non-null and the expression does not contain unknown or a nondeterministic expression.
+   * value is non-null and the expression does not contain an unknown or a nondeterministic
+   * expression.
    *
    * <p>This method returning true does not guarantee that the value will be inserted; the
-   * implementation of {@link #insertValue( JavaExpression, CFAbstractValue, boolean)} might still
+   * implementation of {@link #insertValue(JavaExpression, CFAbstractValue, boolean)} might still
    * not insert it.
    *
    * @param expr the expression to insert in the store
@@ -757,7 +783,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected void insertValue(
       JavaExpression expr, @Nullable V value, boolean permitNondeterministic) {
     computeNewValueAndInsert(
-        expr, value, (old, newValue) -> newValue.mostSpecific(old, null), permitNondeterministic);
+        expr,
+        value,
+        (old, newValue) -> {
+          assert newValue != null
+              : "@AssumeAssertion(nullness): shouldInsert ensures a non-null value";
+          return newValue.mostSpecific(old, null);
+        },
+        permitNondeterministic);
   }
 
   /**
@@ -773,61 +806,43 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   protected void computeNewValueAndInsert(
       JavaExpression expr,
       @Nullable V value,
-      BinaryOperator<V> merger,
+      BinaryOperator<@Nullable V> merger,
       boolean permitNondeterministic) {
     if (!shouldInsert(expr, value, permitNondeterministic)) {
       return;
     }
 
     if (expr instanceof LocalVariable localVar) {
-      V oldValue = localVariableValues.get(localVar);
-      V newValue = merger.apply(oldValue, value);
-      if (newValue != null) {
-        localVariableValues.put(localVar, newValue);
-      }
+      mergeIntoMap(localVariableValues, localVar, value, merger);
+    } else if (expr instanceof IteratedCollectionElement collectionElt) {
+      mergeIntoMap(iteratedCollectionElements, collectionElt, value, merger);
     } else if (expr instanceof FieldAccess fieldAcc) {
       // Only store information about final fields (where the receiver is
       // also fixed) if concurrent semantics are enabled.
       boolean isMonotonic = isMonotonicUpdate(fieldAcc, value);
       if (sequentialSemantics || isMonotonic || !fieldAcc.isAssignableByOtherCode()) {
-        V oldValue = fieldValues.get(fieldAcc);
-        V newValue = merger.apply(oldValue, value);
-        if (newValue != null) {
-          fieldValues.put(fieldAcc, newValue);
-        }
+        mergeIntoMap(fieldValues, fieldAcc, value, merger);
       }
     } else if (expr instanceof MethodCall method) {
       // Don't store any information if concurrent semantics are enabled.
       if (sequentialSemantics) {
-        V oldValue = methodCallExpressions.get(method);
-        V newValue = merger.apply(oldValue, value);
-        if (newValue != null) {
-          methodCallExpressions.put(method, newValue);
-        }
+        mergeIntoMap(methodCallExpressions, method, value, merger);
       }
     } else if (expr instanceof ArrayAccess arrayAccess) {
       if (sequentialSemantics) {
-        V oldValue = arrayValues.get(arrayAccess);
-        V newValue = merger.apply(oldValue, value);
-        if (newValue != null) {
-          arrayValues.put(arrayAccess, newValue);
-        }
+        mergeIntoMap(arrayValues, arrayAccess, value, merger);
       }
     } else if (expr instanceof ThisReference || expr instanceof SuperReference) {
       if (sequentialSemantics || !expr.isAssignableByOtherCode()) {
-        V oldValue = thisValue;
-        V newValue = merger.apply(oldValue, value);
+        @Nullable V oldValue = thisValue;
+        @Nullable V newValue = merger.apply(oldValue, value);
         if (newValue != null) {
           thisValue = newValue;
         }
       }
     } else if (expr instanceof ClassName className) {
       if (sequentialSemantics || !className.isAssignableByOtherCode()) {
-        V oldValue = classValues.get(className);
-        V newValue = merger.apply(oldValue, value);
-        if (newValue != null) {
-          classValues.put(className, newValue);
-        }
+        mergeIntoMap(classValues, className, value, merger);
       }
     } else {
       // No other types of expressions need to be stored.
@@ -835,9 +850,29 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Returns true if fieldAcc is an update of a monotonic qualifier to its target qualifier.
-   * (e.g. @MonotonicNonNull to @NonNull). Always returns false if {@code sequentialSemantics} is
-   * true.
+   * Puts into {@code map} the result of applying {@code merger} to the value that {@code map} gives
+   * {@code key} (or null) and {@code value}. Does nothing if the result is null.
+   *
+   * @param <K> the type of the keys, such as {@link LocalVariable}
+   * @param map a map in this store, such as {@link #localVariableValues}, which this method
+   *     side-effects
+   * @param key the key whose value to update
+   * @param value the value to merge with the value that {@code map} gives {@code key}
+   * @param merger the function that merges the value that {@code map} gives {@code key} and {@code
+   *     value}
+   */
+  private <K extends Object> void mergeIntoMap(
+      Map<K, V> map, K key, @Nullable V value, BinaryOperator<@Nullable V> merger) {
+    @Nullable V newValue = merger.apply(map.get(key), value);
+    if (newValue != null) {
+      map.put(key, newValue);
+    }
+  }
+
+  /**
+   * Returns true if fieldAcc is an update of a monotonic qualifier to its target qualifier (e.g.,
+   * {@code @MonotonicNonNull} to {@code @NonNull}). Always returns false if {@code
+   * sequentialSemantics} is true.
    *
    * @return true if fieldAcc is an update of a monotonic qualifier to its target qualifier
    *     (e.g. @MonotonicNonNull to @NonNull)
@@ -912,7 +947,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Remove any knowledge about the expression {@code expr} (correctly deciding where to remove the
+   * Removes any knowledge about the expression {@code expr} (correctly deciding where to remove the
    * information depending on the type of the expression {@code expr}).
    */
   public void clearValue(JavaExpression expr) {
@@ -922,6 +957,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
     if (expr instanceof LocalVariable localVar) {
       localVariableValues.remove(localVar);
+    } else if (expr instanceof IteratedCollectionElement collectionElt) {
+      iteratedCollectionElements.remove(collectionElt);
     } else if (expr instanceof FieldAccess fieldAcc) {
       fieldValues.remove(fieldAcc);
     } else if (expr instanceof MethodCall method) {
@@ -938,6 +975,38 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
+   * Returns the {@link IteratedCollectionElement} in this store that the given node or tree
+   * denotes, or null if this store has no such element.
+   *
+   * <p>An element is denoted by its own tree (compared by reference) and by every node that {@link
+   * IteratedCollectionElement#isDenotedBy denotes} it, such as each use of {@code o} in the body of
+   * {@code for (Object o : list)}. An element whose tree is {@code tree} takes precedence, because
+   * more than one element might be denoted by {@code node}: for example, two loops that each call
+   * {@code it.next()} on the same iterator {@code it} have equal references.
+   *
+   * @param node a CFG node, such as the node for {@code o} in {@code o.close()}
+   * @param tree a tree that might be an element's tree, or null
+   * @return the {@link IteratedCollectionElement} that {@code node} or {@code tree} denotes, or
+   *     null if this store has no such element
+   */
+  public @Nullable IteratedCollectionElement getIteratedCollectionElement(
+      Node node, @Nullable Tree tree) {
+    // Check for an exact tree match first, because `isDenotedBy` can match more than one element.
+    for (IteratedCollectionElement ice : iteratedCollectionElements.keySet()) {
+      // `Tree` does not override `equals`, so this compares trees by reference.
+      if (ice.tree.equals(tree)) {
+        return ice;
+      }
+    }
+    for (IteratedCollectionElement ice : iteratedCollectionElements.keySet()) {
+      if (ice.isDenotedBy(node)) {
+        return ice;
+      }
+    }
+    return null;
+  }
+
+  /**
    * Returns the current abstract value of a Java expression, or {@code null} if no information is
    * available.
    *
@@ -947,6 +1016,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   public @Nullable V getValue(JavaExpression expr) {
     if (expr instanceof LocalVariable localVar) {
       return localVariableValues.get(localVar);
+    } else if (expr instanceof IteratedCollectionElement collectionElt) {
+      return iteratedCollectionElements.get(collectionElt);
     } else if (expr instanceof ThisReference || expr instanceof SuperReference) {
       return thisValue;
     } else if (expr instanceof FieldAccess fieldAcc) {
@@ -1016,11 +1087,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Returns the current abstract value of a field access, or {@code null} if no information is
+   * Returns the current abstract value of an array access, or {@code null} if no information is
    * available.
    *
    * @param n the node whose abstract value to return
-   * @return the current abstract value of a field access, or {@code null} if no information is
+   * @return the current abstract value of an array access, or {@code null} if no information is
    *     available
    */
   public @Nullable V getValue(ArrayAccessNode n) {
@@ -1029,7 +1100,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Update the information in the store by considering an assignment with target {@code n}.
+   * Updates the information in the store by considering an assignment with target {@code n}.
    *
    * @param n the left-hand side of an assignment
    * @param val the right-hand value of an assignment
@@ -1048,11 +1119,12 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Update the information in the store by considering a field assignment with target {@code n},
-   * where the right-hand side has the abstract value {@code val}.
+   * Updates the information in the store by considering a field assignment with target {@code
+   * fieldAccess}, where the right-hand side has the abstract value {@code val}.
    *
-   * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
-   *     abstract value is not known)
+   * @param fieldAccess the target of the assignment
+   * @param val the abstract value of the value assigned to {@code fieldAccess} (or {@code null} if
+   *     the abstract value is not known)
    */
   protected void updateForFieldAccessAssignment(FieldAccess fieldAccess, @Nullable V val) {
     removeConflicting(fieldAccess, val);
@@ -1068,11 +1140,15 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Update the information in the store by considering an assignment with target {@code n}, where
-   * the target is an array access.
+   * Updates the information in the store by considering an assignment with target {@code
+   * arrayAccess}, where the right-hand side has the abstract value {@code val}.
    *
    * <p>See {@link #removeConflicting(ArrayAccess,CFAbstractValue)}, as it is called first by this
    * method.
+   *
+   * @param arrayAccess the target of the assignment
+   * @param val the abstract value of the value assigned to {@code arrayAccess} (or {@code null} if
+   *     the abstract value is not known)
    */
   protected void updateForArrayAssignment(ArrayAccess arrayAccess, @Nullable V val) {
     removeConflicting(arrayAccess, val);
@@ -1086,10 +1162,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Set the abstract value of a local variable in the store. Overwrites any value that might have
+   * Sets the abstract value of a local variable in the store. Overwrites any value that might have
    * been available previously.
    *
-   * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
+   * @param receiver the local variable that is assigned
+   * @param val the abstract value of the value assigned to {@code receiver} (or {@code null} if the
    *     abstract value is not known)
    */
   protected void updateForLocalVariableAssignment(LocalVariable receiver, @Nullable V val) {
@@ -1100,10 +1177,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   }
 
   /**
-   * Remove any information in this store that might not be true any more after {@code fieldAccess}
+   * Removes any information in this store that might not be true any more after {@code fieldAccess}
    * has been assigned a new value (with the abstract value {@code val}). This includes the
    * following steps (assume that {@code fieldAccess} is of the form <em>a.f</em> for some
-   * <em>a</em>.
+   * <em>a</em>).
    *
    * <ol>
    *   <li value="1">Update the abstract value of other field accesses <em>b.g</em> where the field
@@ -1114,14 +1191,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *                 <em>g</em> is not final.
    *   <li value="2">Remove any abstract values for field accesses <em>b.g</em> where {@code
    *                 fieldAccess} might alias any expression in the receiver <em>b</em>.
-   *   <li value="3">Remove any information about method calls.
-   *   <li value="4">Remove any abstract values an array access <em>b[i]</em> where {@code
+   *   <li value="3">Remove any information about method calls, including about iterated collection
+   *                 elements whose reference is a method call.
+   *   <li value="4">Remove any abstract values for an array access <em>b[i]</em> where {@code
    *                 fieldAccess} might alias any expression in the receiver <em>a</em> or index
    *                 <em>i</em>.
    * </ol>
    *
-   * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
-   *     abstract value is not known)
+   * @param fieldAccess the field access that is assigned
+   * @param val the abstract value of the value assigned to {@code fieldAccess} (or {@code null} if
+   *     the abstract value is not known)
    */
   protected void removeConflicting(FieldAccess fieldAccess, @Nullable V val) {
     Iterator<Map.Entry<FieldAccess, V>> fieldValuesIterator = fieldValues.entrySet().iterator();
@@ -1161,13 +1240,23 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     // case 3:
     methodCallExpressions.clear();
+    removeIteratedCollectionElementsWithMethodCallReference();
   }
 
   /**
-   * Remove any information in the store that might not be true any more after {@code arrayAccess}
+   * Removes any information about iterated collection elements whose {@link
+   * IteratedCollectionElement#reference reference} is a method call, such as {@code list.get(i)}.
+   * This is called wherever all information about method calls is removed.
+   */
+  private void removeIteratedCollectionElementsWithMethodCallReference() {
+    iteratedCollectionElements.keySet().removeIf(ice -> ice.reference instanceof MethodCall);
+  }
+
+  /**
+   * Removes any information in the store that might not be true any more after {@code arrayAccess}
    * has been assigned a new value (with the abstract value {@code val}). This includes the
    * following steps (assume that {@code arrayAccess} is of the form <em>a[i]</em> for some
-   * <em>a</em>.
+   * <em>a</em>).
    *
    * <ol>
    *   <li value="1">Remove any abstract value for other array access <em>b[j]</em> where <em>a</em>
@@ -1176,11 +1265,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *   <li value="2">Remove any abstract values for field accesses <em>b.g</em> where <em>a[i]</em>
    *                 might alias any expression in the receiver <em>b</em> and there is an array
    *                 expression somewhere in the receiver.
-   *   <li value="3">Remove any information about method calls.
+   *   <li value="3">Remove any information about method calls, including about iterated collection
+   *                 elements whose reference is a method call.
    * </ol>
    *
-   * @param val the abstract value of the value assigned to {@code n} (or {@code null} if the
-   *     abstract value is not known)
+   * @param arrayAccess the array access that is assigned
+   * @param val the abstract value of the value assigned to {@code arrayAccess} (or {@code null} if
+   *     the abstract value is not known)
    */
   protected void removeConflicting(ArrayAccess arrayAccess, @Nullable V val) {
     Iterator<Map.Entry<ArrayAccess, V>> arrayValuesIterator = arrayValues.entrySet().iterator();
@@ -1212,20 +1303,24 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
     // case 3:
     methodCallExpressions.clear();
+    removeIteratedCollectionElementsWithMethodCallReference();
   }
 
   /**
-   * Remove any information in this store that might not be true any more after {@code localVar} has
+   * Removes any information in this store that might not be true any more after {@code var} has
    * been assigned a new value. This includes the following steps:
    *
    * <ol>
-   *   <li value="1">Remove any abstract values for field accesses <em>b.g</em> where {@code
-   *                 localVar} might alias any expression in the receiver <em>b</em>.
-   *   <li value="2">Remove any abstract values for array accesses <em>a[i]</em> where {@code
-   *                 localVar} might alias the receiver <em>a</em>.
+   *   <li value="1">Remove any abstract values for field accesses <em>b.g</em> where {@code var}
+   *                 might alias any expression in the receiver <em>b</em>.
+   *   <li value="2">Remove any abstract values for array accesses <em>a[i]</em> where {@code var}
+   *                 might alias the receiver <em>a</em>.
    *   <li value="3">Remove any information about method calls where the receiver or any of the
-   *                 parameters contains {@code localVar}.
+   *                 parameters contains {@code var}, including about iterated collection elements
+   *                 whose reference is such a method call, such as {@code list.get(i)}.
    * </ol>
+   *
+   * @param var the local variable that is assigned
    */
   protected void removeConflicting(LocalVariable var) {
     Iterator<Map.Entry<FieldAccess, V>> fieldValuesIterator = fieldValues.entrySet().iterator();
@@ -1258,11 +1353,20 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         methodCallExpressionsIterator.remove();
       }
     }
+
+    // case 3, for iterated collection elements such as `list.get(i)`:
+    iteratedCollectionElements
+        .keySet()
+        .removeIf(
+            ice ->
+                ice.reference instanceof MethodCall
+                    && ice.reference.containsSyntacticEqualJavaExpression(var));
   }
 
   /**
-   * Can the objects {@code a} and {@code b} be aliases? Returns a conservative answer (i.e.,
-   * returns {@code true} if not enough information is available to determine aliasing).
+   * Returns true if the objects {@code a} and {@code b} can be aliases. Returns a conservative
+   * answer (i.e., returns {@code true} if not enough information is available to determine
+   * aliasing).
    */
   @Override
   public boolean canAlias(JavaExpression a, JavaExpression b) {
@@ -1328,20 +1432,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
   private S upperBound(S other, boolean shouldWiden) {
     S newStore = analysis.createEmptyStore(sequentialSemantics);
 
-    for (Map.Entry<LocalVariable, V> e : other.localVariableValues.entrySet()) {
-      // local variables that are only part of one store, but not the other are discarded, as
-      // one of store implicitly contains 'top' for that variable.
-      LocalVariable localVar = e.getKey();
-      V thisVal = localVariableValues.get(localVar);
-      if (thisVal != null) {
-        V otherVal = e.getValue();
-        V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
-
-        if (mergedVal != null) {
-          newStore.localVariableValues.put(localVar, mergedVal);
-        }
-      }
-    }
+    upperBoundOfMaps(
+        localVariableValues, other.localVariableValues, newStore.localVariableValues, shouldWiden);
+    upperBoundOfMaps(
+        iteratedCollectionElements,
+        other.iteratedCollectionElements,
+        newStore.iteratedCollectionElements,
+        shouldWiden);
 
     // information about the current object
     {
@@ -1354,57 +1451,40 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       }
     }
 
-    for (Map.Entry<FieldAccess, V> e : other.fieldValues.entrySet()) {
-      // information about fields that are only part of one store, but not the other are
-      // discarded, as one store implicitly contains 'top' for that field.
-      FieldAccess el = e.getKey();
-      V thisVal = fieldValues.get(el);
-      if (thisVal != null) {
-        V otherVal = e.getValue();
-        V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
-        if (mergedVal != null) {
-          newStore.fieldValues.put(el, mergedVal);
-        }
-      }
-    }
-    for (Map.Entry<ArrayAccess, V> e : other.arrayValues.entrySet()) {
-      // information about arrays that are only part of one store, but not the other are
-      // discarded, as one store implicitly contains 'top' for that array access.
-      ArrayAccess el = e.getKey();
-      V thisVal = arrayValues.get(el);
-      if (thisVal != null) {
-        V otherVal = e.getValue();
-        V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
-        if (mergedVal != null) {
-          newStore.arrayValues.put(el, mergedVal);
-        }
-      }
-    }
-    for (Map.Entry<MethodCall, V> e : other.methodCallExpressions.entrySet()) {
-      // information about methods that are only part of one store, but not the other are
-      // discarded, as one store implicitly contains 'top' for that field.
-      MethodCall el = e.getKey();
-      V thisVal = methodCallExpressions.get(el);
-      if (thisVal != null) {
-        V otherVal = e.getValue();
-        V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
-        if (mergedVal != null) {
-          newStore.methodCallExpressions.put(el, mergedVal);
-        }
-      }
-    }
-    for (Map.Entry<ClassName, V> e : other.classValues.entrySet()) {
-      ClassName el = e.getKey();
-      V thisVal = classValues.get(el);
-      if (thisVal != null) {
-        V otherVal = e.getValue();
-        V mergedVal = upperBoundOfValues(otherVal, thisVal, shouldWiden);
-        if (mergedVal != null) {
-          newStore.classValues.put(el, mergedVal);
-        }
-      }
-    }
+    upperBoundOfMaps(fieldValues, other.fieldValues, newStore.fieldValues, shouldWiden);
+    upperBoundOfMaps(arrayValues, other.arrayValues, newStore.arrayValues, shouldWiden);
+    upperBoundOfMaps(
+        methodCallExpressions,
+        other.methodCallExpressions,
+        newStore.methodCallExpressions,
+        shouldWiden);
+    upperBoundOfMaps(classValues, other.classValues, newStore.classValues, shouldWiden);
     return newStore;
+  }
+
+  /**
+   * Puts into {@code result} the upper bound of the values that {@code thisMap} and {@code
+   * otherMap} give each key that both maps contain. A key that only one of the maps contains is
+   * discarded, because the other map implicitly gives it the value top.
+   *
+   * @param <K> the type of the keys, such as {@link LocalVariable}
+   * @param thisMap a map in this store, such as {@link #localVariableValues}
+   * @param otherMap the corresponding map in the other store
+   * @param result the corresponding map in the new store, which this method side-effects
+   * @param shouldWiden true if the values should be widened rather than joined
+   */
+  private <K extends Object> void upperBoundOfMaps(
+      Map<K, V> thisMap, Map<K, V> otherMap, Map<K, V> result, boolean shouldWiden) {
+    for (Map.Entry<K, V> e : otherMap.entrySet()) {
+      K key = e.getKey();
+      V thisVal = thisMap.get(key);
+      if (thisVal != null) {
+        V mergedVal = upperBoundOfValues(e.getValue(), thisVal, shouldWiden);
+        if (mergedVal != null) {
+          result.put(key, mergedVal);
+        }
+      }
+    }
   }
 
   private V upperBoundOfValues(V otherVal, V thisVal, boolean shouldWiden) {
@@ -1416,47 +1496,31 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * argument {@link CFAbstractStore}. Note that we test the entry keys and values by Java equality,
    * not by any subtype relationship. This method is used primarily to simplify the equals
    * predicate.
+   *
+   * @param other a store
+   * @return true iff this store contains a superset of the map entries of {@code other}
    */
   protected boolean supersetOf(CFAbstractStore<V, S> other) {
-    for (Map.Entry<LocalVariable, V> e : other.localVariableValues.entrySet()) {
-      LocalVariable key = e.getKey();
-      V value = localVariableValues.get(key);
-      if (value == null || !value.equals(e.getValue())) {
-        return false;
-      }
-    }
-    if (!Objects.equals(thisValue, other.thisValue)) {
-      return false;
-    }
-    for (Map.Entry<FieldAccess, V> e : other.fieldValues.entrySet()) {
-      FieldAccess key = e.getKey();
-      V value = fieldValues.get(key);
-      if (value == null || !value.equals(e.getValue())) {
-        return false;
-      }
-    }
-    for (Map.Entry<ArrayAccess, V> e : other.arrayValues.entrySet()) {
-      ArrayAccess key = e.getKey();
-      V value = arrayValues.get(key);
-      if (value == null || !value.equals(e.getValue())) {
-        return false;
-      }
-    }
-    for (Map.Entry<MethodCall, V> e : other.methodCallExpressions.entrySet()) {
-      MethodCall key = e.getKey();
-      V value = methodCallExpressions.get(key);
-      if (value == null || !value.equals(e.getValue())) {
-        return false;
-      }
-    }
-    for (Map.Entry<ClassName, V> e : other.classValues.entrySet()) {
-      ClassName key = e.getKey();
-      V value = classValues.get(key);
-      if (value == null || !value.equals(e.getValue())) {
-        return false;
-      }
-    }
-    return true;
+    return mapSupersetOf(localVariableValues, other.localVariableValues)
+        && mapSupersetOf(iteratedCollectionElements, other.iteratedCollectionElements)
+        && Objects.equals(thisValue, other.thisValue)
+        && mapSupersetOf(fieldValues, other.fieldValues)
+        && mapSupersetOf(arrayValues, other.arrayValues)
+        && mapSupersetOf(methodCallExpressions, other.methodCallExpressions)
+        && mapSupersetOf(classValues, other.classValues);
+  }
+
+  /**
+   * Returns true if {@code map} contains every entry of {@code otherMap}, comparing keys and values
+   * by {@code equals}.
+   *
+   * @param <K> the type of the keys, such as {@link LocalVariable}
+   * @param map a map in this store, such as {@link #localVariableValues}
+   * @param otherMap the corresponding map in another store
+   * @return true if {@code map} contains every entry of {@code otherMap}
+   */
+  private <K> boolean mapSupersetOf(Map<K, V> map, Map<K, V> otherMap) {
+    return map.entrySet().containsAll(otherMap.entrySet());
   }
 
   @Override
@@ -1472,7 +1536,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
 
   @Override
   public int hashCode() {
-    // `equals` is mutual containment of the five maps, so equal stores have equal key sets --
+    // `equals` is mutual containment of the six maps, so equal stores have equal key sets --
     // except that a subclass may ignore some entries of `fieldValues`, which is why the keys of
     // `fieldValues` are hashed by the overridable `fieldValuesKeysHashCode`.  `Set.hashCode` does
     // not depend on iteration order.
@@ -1482,6 +1546,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     // identity hash codes of the javac `Type` and of each javac annotation mirror.
     return Objects.hash(
         localVariableValues.keySet(),
+        iteratedCollectionElements.keySet(),
         fieldValuesKeysHashCode(),
         arrayValues.keySet(),
         methodCallExpressions.keySet(),
@@ -1534,6 +1599,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     StringJoiner res = new StringJoiner(viz.getSeparator());
     for (LocalVariable lv : ToStringComparator.sorted(localVariableValues.keySet())) {
       res.add(viz.visualizeStoreLocalVar(lv, localVariableValues.get(lv)));
+    }
+    List<Map.Entry<IteratedCollectionElement, V>> iceEntries =
+        new ArrayList<>(iteratedCollectionElements.entrySet());
+    // Sort by node uid, which is cheap and deterministic.  Elements of different loops can have the
+    // same `toString()`, so sorting by `toString()` would not be deterministic.
+    iceEntries.sort(Comparator.comparingLong(e -> e.getKey().node.getUid()));
+    for (Map.Entry<IteratedCollectionElement, V> iceEntry : iceEntries) {
+      res.add(viz.visualizeStoreIteratedCollectionElt(iceEntry.getKey(), iceEntry.getValue()));
     }
     if (thisValue != null) {
       res.add(viz.visualizeStoreThisVal(thisValue));

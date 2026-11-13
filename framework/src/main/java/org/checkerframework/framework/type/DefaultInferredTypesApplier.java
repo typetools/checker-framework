@@ -34,11 +34,11 @@ public class DefaultInferredTypesApplier {
   }
 
   /**
-   * For each top in qualifier hierarchy, traverse inferred and copy the required annotations over
-   * to type.
+   * For each top in the qualifier hierarchy, traverses inferred and copies the required annotations
+   * over to type.
    *
    * @param type the type to which annotations are being applied
-   * @param inferredSet the type inferred by data flow
+   * @param inferredSet the type inferred by dataflow
    * @param inferredTypeMirror underlying inferred type
    */
   public void applyInferredType(
