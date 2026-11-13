@@ -1014,7 +1014,7 @@ public abstract class CFAbstractTransfer<
    *
    * A method call, object creation, or string conversion (which calls {@code toString()}) might
    * write any field or array element, unless the method or constructor is side-effect-free (see
-   * {@link CFAbstractAnalysis#isSideEffectFree}). The result omits a field that such a call might
+   * {@link AnnotatedTypeFactory#isSideEffectFree}). The result omits a field that such a call might
    * write even when the store would keep the field's refinement across the call, as it does for a
    * refinement to the target of a monotonic qualifier (see {@link
    * org.checkerframework.framework.qual.MonotonicQualifier}): whether the store keeps a refinement
@@ -1400,7 +1400,7 @@ public abstract class CFAbstractTransfer<
    * in {@code @IntVal(value = {0, 1})}, but it does not assign a variable.
    *
    * <p>{@link #mayChange} uses the analysis's rules for aliasing and purity (see {@link
-   * CFAbstractAnalysis#canAlias} and {@link CFAbstractAnalysis#isSideEffectFree}).
+   * CFAbstractAnalysis#canAlias} and {@link AnnotatedTypeFactory#isSideEffectFree}).
    */
   private final class WrittenLocations extends TreeScanner<Void, Void> {
 
@@ -1481,7 +1481,7 @@ public abstract class CFAbstractTransfer<
      * @param method a method or constructor that is called
      */
     private void addCall(ExecutableElement method) {
-      if (!analysis.isSideEffectFree(method)) {
+      if (!analysis.getTypeFactory().isSideEffectFree(method)) {
         anyHeapLocation = true;
       }
     }
