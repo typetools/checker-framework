@@ -54,8 +54,9 @@ import org.checkerframework.javacutil.TypesUtils;
  *   <li>After an expression is compared with the {@code null} literal, then that expression can
  *       safely be considered {@link NonNull} if the result of the comparison is false or {@link
  *       Nullable} if the result is true.
- *   <li>If an expression is dereferenced, then it can safely be assumed to non-null in the future.
- *       If it would not be, then the dereference would have raised a {@link NullPointerException}.
+ *   <li>If an expression is dereferenced, then it can safely be assumed to be non-null in the
+ *       future. If it would not be, then the dereference would have raised a {@link
+ *       NullPointerException}.
  *   <li>Tracks whether {@link PolyNull} is known to be {@link NonNull} or {@link Nullable} (or not
  *       known to be either).
  * </ol>
@@ -92,9 +93,9 @@ public class NullnessTransfer
   private final boolean assumeKeyFor;
 
   /**
-   * True if invocationPreservesArgumentNullness flag is turned on, meaning that after a method call
-   * or constructor invocation, non-null arguments of the invocation (including the receiver) are
-   * assumed to still be non-null.
+   * True if the invocationPreservesArgumentNullness flag is turned on, meaning that after a method
+   * call or constructor invocation, non-null arguments of the invocation (including the receiver)
+   * are assumed to still be non-null.
    */
   private final boolean nonNullAssumptionAfterInvocation;
 
@@ -210,8 +211,8 @@ public class NullnessTransfer
    * other node.
    *
    * @param value a value
-   * @param isPolyNullNonNull whether {@link PolyNull} is known to be {@link NonNull}
-   * @param isPolyNullNull whether {@link PolyNull} is known to be {@link Nullable}
+   * @param isPolyNullNonNull true if {@link PolyNull} is known to be {@link NonNull}
+   * @param isPolyNullNull true if {@link PolyNull} is known to be {@link Nullable}
    * @return a value like {@code value}, but whose poly-null fields have the given values
    */
   private NullnessValue withPolyNull(
@@ -415,7 +416,7 @@ public class NullnessTransfer
    * assumed to be non-null after the invocation.
    *
    * <p>When the flag is turned off, the analysis is sound: it checks that the method is
-   * SideEffectFree or the receiver is unassignable. Only if either one of the two is true, is the
+   * SideEffectFree or the receiver is unassignable. Only if either one of the two is true is the
    * receiver made non-null. Similar logic is applied to the arguments of the invocation.
    *
    * <p>The receiver of a static method invocation is never made non-null, because the invocation
@@ -487,10 +488,10 @@ public class NullnessTransfer
   }
 
   /**
-   * Returns true if mapType's value type (the V type argument to Map) is @Nullable.
+   * Returns true if {@code mapOrSubtype}'s value type (the V type argument to Map) is @Nullable.
    *
    * @param mapOrSubtype the Map type, or a subtype
-   * @return true if mapType's value type is @Nullable
+   * @return true if {@code mapOrSubtype}'s value type is @Nullable
    */
   private boolean isValueTypeNullable(AnnotatedTypeMirror mapOrSubtype) {
     AnnotatedDeclaredType mapType =

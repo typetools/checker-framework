@@ -103,7 +103,7 @@ public final class IndexFileWriter {
   final PrintWriter pw;
 
   /**
-   * Print the annotation using the {@link #pw} field, after formatting it.
+   * Prints the annotation using the {@link #pw} field, after formatting it.
    *
    * @param a the annotation to print
    */
@@ -123,7 +123,7 @@ public final class IndexFileWriter {
   }
 
   /**
-   * Print the annotations on the given AElement.
+   * Prints the annotations on the given AElement.
    *
    * @param e a program element
    */
@@ -159,10 +159,10 @@ public final class IndexFileWriter {
   }
 
   /**
-   * Prints the innerType annotations for an ATypeELement.
+   * Prints the innerType annotations for an ATypeElement.
    *
    * @param indentation string containing indentation spaces
-   * @param e ATypeElement to search for innner ty pes
+   * @param e ATypeElement to search for inner types
    */
   private void printInnerTypes(String indentation, ATypeElement e) {
     for (Map.Entry<List<TypePathEntry>, ATypeElement> ite : e.innerTypes.entrySet()) {

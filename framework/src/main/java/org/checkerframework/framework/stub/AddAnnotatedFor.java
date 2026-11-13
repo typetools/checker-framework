@@ -71,9 +71,9 @@ public final class AddAnnotatedFor {
   }
 
   /**
-   * Reads JAIF from the file indicated by the first element, or standard input if the argument
-   * array is empty; inserts any appropriate {@code @AnnotatedFor} annotations, based on the
-   * annotations defined in the input JAIF; and writes the augmented JAIF to standard output.
+   * Reads a JAIF from the file indicated by the first element, or from standard input if the
+   * argument array is empty; inserts any appropriate {@code @AnnotatedFor} annotations, based on
+   * the annotations defined in the input JAIF; and writes the augmented JAIF to standard output.
    *
    * @param args one jaif file, or empty to read from standard input
    * @throws IOException if there is trouble reading or writing a file
@@ -103,7 +103,7 @@ public final class AddAnnotatedFor {
   }
 
   /**
-   * Add {@code @AnnotatedFor} annotations to each class in the given scene.
+   * Adds {@code @AnnotatedFor} annotations to each class in the given scene.
    *
    * @param scene an {@code @AnnotatedFor} annotation is added to each class in this scene
    */

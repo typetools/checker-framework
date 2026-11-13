@@ -12,7 +12,7 @@ public final class ViewpointAdaptJavaExpression extends JavaExpressionConverter 
   // Public static methods
 
   /**
-   * Replace {@link FormalParameter}s by {@code args} in {@code javaExpr}. ({@link ThisReference}s
+   * Replaces {@link FormalParameter}s by {@code args} in {@code javaExpr}. ({@link ThisReference}s
    * are not converted.)
    *
    * @param javaExpr the expression to viewpoint-adapt
@@ -26,8 +26,8 @@ public final class ViewpointAdaptJavaExpression extends JavaExpressionConverter 
   }
 
   /**
-   * Replace {@link ThisReference} with {@code thisReference} in {@code javaExpr}. ({@link
-   * FormalParameter} are not replaced.
+   * Replaces {@link ThisReference} with {@code thisReference} in {@code javaExpr}. ({@link
+   * FormalParameter}s are not replaced.)
    *
    * @param javaExpr the expression to viewpoint-adapt
    * @param thisReference the expression that replaces occurrences of {@link ThisReference}; if
@@ -40,13 +40,13 @@ public final class ViewpointAdaptJavaExpression extends JavaExpressionConverter 
   }
 
   /**
-   * Replace {@link FormalParameter}s with {@code args} and {@link ThisReference} with {@code
+   * Replaces {@link FormalParameter}s with {@code args} and {@link ThisReference} with {@code
    * thisReference} in {@code javaExpr}.
    *
    * @param javaExpr the expression to viewpoint-adapt
    * @param thisReference the expression that replaces occurrences of {@link ThisReference}; if
    *     null, {@link ThisReference}s are not replaced
-   * @param args the expressions that replaces {@link FormalParameter}s; if null, {@link
+   * @param args the expressions that replace {@link FormalParameter}s; if null, {@link
    *     FormalParameter}s are not replaced
    * @return the viewpoint-adapted expression
    */
@@ -59,7 +59,7 @@ public final class ViewpointAdaptJavaExpression extends JavaExpressionConverter 
 
   // Fields
 
-  /** List of arguments used to replace occurrences {@link FormalParameter}s. */
+  /** List of arguments used to replace occurrences of {@link FormalParameter}s. */
   private final @Nullable List<JavaExpression> args;
 
   /** The expression to replace occurrences of {@link ThisReference}. */
@@ -73,8 +73,8 @@ public final class ViewpointAdaptJavaExpression extends JavaExpressionConverter 
    *
    * @param thisReference the expression that replaces occurrences of {@link ThisReference}; {@code
    *     null} means don't replace
-   * @param args list of arguments that replaces occurrences {@link FormalParameter}s; {@code null}
-   *     means don't replace
+   * @param args list of arguments that replace occurrences of {@link FormalParameter}s; {@code
+   *     null} means don't replace
    */
   private ViewpointAdaptJavaExpression(
       @Nullable JavaExpression thisReference, @Nullable List<JavaExpression> args) {
