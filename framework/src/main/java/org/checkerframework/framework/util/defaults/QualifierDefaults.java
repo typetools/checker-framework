@@ -11,7 +11,10 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -107,11 +110,21 @@ public class QualifierDefaults {
   protected final Map<Element, BoundType> elementToBoundType = MapsP.createLruCache(CACHE_SIZE);
 
   /**
-   * Defaults that apply for a certain Element. On the one hand this is used for caching (an earlier
-   * name for the field was "qualifierCache"). It can also be used by type systems to set defaults
-   * for certain Elements.
+   * Defaults that a type system has explicitly declared for an Element, via {@link
+   * #addElementDefault}. See {@link #addElementDefault} for how they interact with the other
+   * defaults.
    */
-  private final IdentityHashMap<Element, DefaultSet> elementDefaults = new IdentityHashMap<>();
+  private final IdentityHashMap<Element, DefaultSet> elementDeclaredDefaults =
+      new IdentityHashMap<>();
+
+  /**
+   * Memoizes {@link #defaultsAt}: a mapping from an Element to all the defaults that apply to that
+   * Element, including the defaults contributed by the Element's enclosing scopes.
+   *
+   * <p>This is an LRU cache, because most Elements map to {@link ScopeDefaults#EMPTY} and an
+   * unbounded map would retain an entry for every scope in the compilation.
+   */
+  private final Map<Element, ScopeDefaults> defaultsAtCache = MapsP.createLruCache(CACHE_SIZE);
 
   /** A mapping of Element &rarr; true if that element is AnnotatedFor this type system. */
   private final IdentityHashMap<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
@@ -312,20 +325,43 @@ public class QualifierDefaults {
   /**
    * Sets the default annotations for a certain Element.
    *
+   * <p>The default behaves like a {@code @DefaultQualifier} annotation written on {@code elem},
+   * except that it takes precedence over a {@code @DefaultQualifier} annotation that is written on
+   * {@code elem} itself. Thus, the default applies within {@code elem} and within the elements that
+   * {@code elem} encloses; it takes precedence over the defaults on the elements that enclose
+   * {@code elem}; and the defaults on the elements that {@code elem} encloses take precedence over
+   * it. As with {@code @DefaultQualifier}, an alias is replaced by its canonical qualifier.
+   *
+   * <p>As for a {@code @DefaultQualifier} annotation, a default for {@link
+   * TypeUseLocation#OTHERWISE} applies only where no registered or {@code @DefaultQualifier}
+   * default for a more concrete location applies, even one on an element that encloses {@code
+   * elem}; see {@link #applicationOrder}.
+   *
+   * <p>Call this method before the type of {@code elem}, or of any element that {@code elem}
+   * encloses, is computed. A type that was computed earlier does not reflect the default.
+   *
    * @param elem the scope to set the default within
    * @param elementDefaultAnno the default to set
    * @param location the location to apply the default to
+   * @throws BugInCF if this type system does not support the qualifier
    */
   public void addElementDefault(
       Element elem, AnnotationMirror elementDefaultAnno, TypeUseLocation location) {
-    DefaultSet prevset = elementDefaults.get(elem);
+    AnnotationMirror anno = atypeFactory.canonicalAnnotation(elementDefaultAnno);
+    if (!atypeFactory.isSupportedQualifier(anno)) {
+      throw new BugInCF(
+          "addElementDefault: unsupported qualifier " + elementDefaultAnno + " for " + elem);
+    }
+    DefaultSet prevset = elementDeclaredDefaults.get(elem);
     if (prevset != null) {
-      checkDuplicates(prevset, elementDefaultAnno, location);
+      checkDuplicates(prevset, anno, location);
     } else {
       prevset = new DefaultSet();
+      elementDeclaredDefaults.put(elem, prevset);
     }
-    prevset.add(new Default(elementDefaultAnno, location));
-    elementDefaults.put(elem, prevset);
+    if (prevset.add(new Default(anno, location))) {
+      defaultsAtCache.clear();
+    }
   }
 
   /**
@@ -623,49 +659,40 @@ public class QualifierDefaults {
    * Returns the defaults that apply to the given Element, considering defaults from enclosing
    * Elements.
    *
-   * @param elt the element
+   * @param elt an element, or null
    * @return the defaults
    */
-  private DefaultSet defaultsAt(Element elt) {
+  private ScopeDefaults defaultsAt(@Nullable Element elt) {
     if (elt == null) {
-      return DefaultSet.EMPTY;
+      return ScopeDefaults.EMPTY;
     }
 
-    if (elementDefaults.containsKey(elt)) {
-      return elementDefaults.get(elt);
+    ScopeDefaults cached = defaultsAtCache.get(elt);
+    if (cached != null) {
+      return cached;
     }
 
-    DefaultSet qualifiers = null;
+    // Non-empty if non-null, because addElementDefault stores a set only when adding to it.
+    DefaultSet elementDefaults = elementDeclaredDefaults.get(elt);
+    DefaultSet qualifierDefaults = new DefaultSet();
 
-    {
-      AnnotationMirror dqAnno = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.class);
-
-      if (dqAnno != null) {
-        qualifiers = new DefaultSet();
-        Set<Default> p = fromDefaultQualifier(dqAnno);
-
-        if (p != null) {
-          qualifiers.addAll(p);
-        }
+    AnnotationMirror dqAnno = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.class);
+    if (dqAnno != null) {
+      Set<Default> p = fromDefaultQualifier(dqAnno);
+      if (p != null) {
+        qualifierDefaults.addAll(p);
       }
     }
 
-    {
-      AnnotationMirror dqListAnno =
-          atypeFactory.getDeclAnnotation(elt, DefaultQualifier.List.class);
-      if (dqListAnno != null) {
-        if (qualifiers == null) {
-          qualifiers = new DefaultSet();
-        }
-
-        List<AnnotationMirror> values =
-            AnnotationUtils.getElementValueArray(
-                dqListAnno, defaultQualifierListValueElement, AnnotationMirror.class);
-        for (AnnotationMirror dqAnno : values) {
-          Set<Default> p = fromDefaultQualifier(dqAnno);
-          if (p != null) {
-            qualifiers.addAll(p);
-          }
+    AnnotationMirror dqListAnno = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.List.class);
+    if (dqListAnno != null) {
+      List<AnnotationMirror> values =
+          AnnotationUtils.getElementValueArray(
+              dqListAnno, defaultQualifierListValueElement, AnnotationMirror.class);
+      for (AnnotationMirror listDqAnno : values) {
+        Set<Default> p = fromDefaultQualifier(listDqAnno);
+        if (p != null) {
+          qualifierDefaults.addAll(p);
         }
       }
     }
@@ -677,19 +704,108 @@ public class QualifierDefaults {
       parent = elt.getEnclosingElement();
     }
 
-    DefaultSet parentDefaults = defaultsAt(parent);
-    if (qualifiers == null || qualifiers.isEmpty()) {
-      qualifiers = parentDefaults;
+    ScopeDefaults parentDefaults = defaultsAt(parent);
+    ScopeDefaults result;
+    if (elementDefaults == null && qualifierDefaults.isEmpty()) {
+      result = parentDefaults;
     } else {
-      qualifiers.addAll(parentDefaults);
+      // The scope's own defaults come first, so that they take precedence over the defaults of
+      // the enclosing scopes.  Within the scope, the registered defaults come first, so that they
+      // take precedence over the scope's @DefaultQualifier annotations.  The new list is a copy,
+      // so a later call to addElementDefault does not change the result.
+      List<Default> nearestFirst = new ArrayList<>();
+      if (elementDefaults != null) {
+        nearestFirst.addAll(elementDefaults);
+      }
+      addAllAbsent(nearestFirst, qualifierDefaults);
+      addAllAbsent(nearestFirst, parentDefaults.nearestFirst());
+      result = new ScopeDefaults(nearestFirst, applicationOrder(nearestFirst));
     }
 
-    if (qualifiers != null && !qualifiers.isEmpty()) {
-      elementDefaults.put(elt, qualifiers);
-      return qualifiers;
-    } else {
-      return DefaultSet.EMPTY;
+    // Memoize the empty answer as well as a non-empty one: most elements have no applicable
+    // default, and recomputing that walks the whole chain of enclosing scopes every time.
+    // Do not memoize while an annotation file is being parsed, because the @DefaultQualifier
+    // annotations that it supplies might not have been recorded yet, so the result might be
+    // incomplete.
+    if (atypeFactory.shouldCache && !atypeFactory.isParsingAnnotationFiles()) {
+      defaultsAtCache.put(elt, result);
     }
+
+    return result;
+  }
+
+  /**
+   * Appends to {@code nearestFirst} each of the given defaults that it does not already contain.
+   * Omitting such a default does not change which defaults apply, because the earlier, equal
+   * default has already been applied wherever the omitted one would be; but it avoids a redundant
+   * pass over the type in {@link #applyDefaultsElement}.
+   *
+   * <p>This uses {@link List#contains} rather than a hash set, because {@link Default#hashCode}
+   * hashes an {@link AnnotationMirror}, whose {@code hashCode} is not consistent with {@link
+   * Default#equals}. The lists are short.
+   *
+   * @param nearestFirst a list of defaults, which this method side-effects
+   * @param defaults the defaults to append to {@code nearestFirst}
+   */
+  private static void addAllAbsent(List<Default> nearestFirst, Iterable<Default> defaults) {
+    for (Default def : defaults) {
+      if (!nearestFirst.contains(def)) {
+        nearestFirst.add(def);
+      }
+    }
+  }
+
+  /**
+   * Returns the given defaults in the order in which to apply them. A default that is applied
+   * earlier takes precedence over one that is applied later.
+   *
+   * <p>Generally, the order is that of {@code nearestFirst}, whatever the locations of the
+   * defaults. For example, a {@code @DefaultQualifier} for {@link TypeUseLocation#ALL} on a method
+   * precedes a {@code @DefaultQualifier} for {@link TypeUseLocation#RETURN} on the enclosing class.
+   *
+   * <p>The exception is {@link TypeUseLocation#OTHERWISE}, which means "apply if nothing more
+   * concrete is provided". A default for {@link TypeUseLocation#OTHERWISE} is moved later, past the
+   * defaults for concrete locations (that is, locations other than {@link
+   * TypeUseLocation#OTHERWISE} and {@link TypeUseLocation#ALL}) from any scope, but not past a
+   * default for {@link TypeUseLocation#ALL} in the same type hierarchy, since {@link
+   * TypeUseLocation#ALL} is not more concrete. For example, a {@code @DefaultQualifier} for {@link
+   * TypeUseLocation#OTHERWISE} on a method follows a {@code @DefaultQualifier} for {@link
+   * TypeUseLocation#RETURN} on the enclosing class, but it precedes a {@code @DefaultQualifier} for
+   * {@link TypeUseLocation#ALL} on the enclosing class.
+   *
+   * @param nearestFirst defaults, in the order described by {@link ScopeDefaults#nearestFirst()}
+   * @return the defaults in the order in which to apply them
+   */
+  private List<Default> applicationOrder(List<Default> nearestFirst) {
+    QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
+    List<Default> result = new ArrayList<>(nearestFirst.size());
+    // The OTHERWISE defaults that are not yet in the result.
+    List<Default> otherwiseDefaults = new ArrayList<>();
+    for (Default def : nearestFirst) {
+      switch (def.location) {
+        case OTHERWISE -> otherwiseDefaults.add(def);
+        case ALL -> {
+          // A default that follows this one in its hierarchy never applies, so an OTHERWISE
+          // default in the same hierarchy must precede it.  A registered default whose qualifier
+          // the type system does not support belongs to no hierarchy.
+          if (atypeFactory.isSupportedQualifier(def.anno)) {
+            AnnotationMirror top = qualHierarchy.getTopAnnotation(def.anno);
+            for (Iterator<Default> iter = otherwiseDefaults.iterator(); iter.hasNext(); ) {
+              Default otherwise = iter.next();
+              if (atypeFactory.isSupportedQualifier(otherwise.anno)
+                  && AnnotationUtils.areSame(top, qualHierarchy.getTopAnnotation(otherwise.anno))) {
+                result.add(otherwise);
+                iter.remove();
+              }
+            }
+          }
+          result.add(def);
+        }
+        default -> result.add(def);
+      }
+    }
+    result.addAll(otherwiseDefaults);
+    return result;
   }
 
   /**
@@ -741,8 +857,15 @@ public class QualifierDefaults {
   }
 
   /**
-   * Applies default annotations to a type. Conservative defaults are applied first as appropriate,
-   * followed by source code defaults.
+   * Applies default annotations to a type.
+   *
+   * <p>The defaults are applied in this order: first the defaults that {@link #addElementDefault}
+   * registered for the scope or for one of its enclosing scopes, together with the
+   * {@code @DefaultQualifier} annotations on the scope and on its enclosing scopes; then the
+   * conservative defaults if conservative defaults apply to the scope; and last the checked code
+   * defaults. A default that is applied earlier takes precedence over one that is applied later.
+   *
+   * <p>{@link #applicationOrder} gives the order within the first group.
    *
    * <p>For a discussion on the rules for application of source code and conservative defaults,
    * please see the linked manual sections.
@@ -755,11 +878,11 @@ public class QualifierDefaults {
    * @checker_framework.manual #annotating-libraries Annotating libraries
    */
   private void applyDefaultsElement(Element annotationScope, AnnotatedTypeMirror type) {
-    DefaultSet defaults = defaultsAt(annotationScope);
+    ScopeDefaults scopeDefaults = defaultsAt(annotationScope);
     DefaultApplierElement applier =
         createDefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
 
-    for (Default def : defaults) {
+    for (Default def : scopeDefaults.inApplicationOrder()) {
       applier.applyDefault(def);
     }
 
@@ -772,6 +895,29 @@ public class QualifierDefaults {
     for (Default def : checkedCodeDefaults) {
       applier.applyDefault(def);
     }
+  }
+
+  /**
+   * The defaults that apply to a scope, other than the checked code defaults and the conservative
+   * defaults: those that {@link QualifierDefaults#addElementDefault} registered and those written
+   * as {@code @DefaultQualifier}.
+   *
+   * <p>Each component is a list rather than a {@link DefaultSet}, because a {@link DefaultSet} is
+   * sorted by location and then by annotation name, but precedence is decided by the scope that a
+   * default comes from and by whether the default is registered. Callers must not modify either
+   * list.
+   *
+   * @param nearestFirst all the defaults, nearest scope first; within one scope, the registered
+   *     defaults precede the {@code @DefaultQualifier} defaults. This is needed to compute the
+   *     defaults of a nested scope.
+   * @param inApplicationOrder all the defaults, in the order in which to apply them; see {@link
+   *     QualifierDefaults#applicationOrder}
+   */
+  private record ScopeDefaults(List<Default> nearestFirst, List<Default> inApplicationOrder) {
+
+    /** No defaults at all. */
+    public static final ScopeDefaults EMPTY =
+        new ScopeDefaults(Collections.emptyList(), Collections.emptyList());
   }
 
   /**
