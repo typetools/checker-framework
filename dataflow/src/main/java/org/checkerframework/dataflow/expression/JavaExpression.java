@@ -10,6 +10,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
@@ -637,6 +638,9 @@ public abstract class JavaExpression {
         } else {
           result = fromVariableElement(typeOfId, (VariableElement) ele, identifierTree);
         }
+      }
+      case PARENTHESIZED -> {
+        return fromTree(((ParenthesizedTree) tree).getExpression());
       }
       case UNARY_PLUS -> {
         return fromTree(((UnaryTree) tree).getExpression());
