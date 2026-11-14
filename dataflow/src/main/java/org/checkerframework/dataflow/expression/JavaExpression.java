@@ -10,6 +10,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
@@ -442,6 +443,7 @@ public abstract class JavaExpression {
    * @param node the FieldAccessNode to convert to a JavaExpression
    * @return the {@link FieldAccess} or {@link ClassName} that corresponds to {@code node}
    */
+  @SideEffectFree
   public static JavaExpression fromNodeFieldAccess(FieldAccessNode node) {
     Node receiverNode = node.getReceiver();
     String fieldName = node.getFieldName();
@@ -470,6 +472,7 @@ public abstract class JavaExpression {
    * @return the internal representation (as an {@link ArrayAccess}) of an {@link ArrayAccessNode}.
    *     Can contain {@link Unknown} as receiver.
    */
+  @SideEffectFree
   public static ArrayAccess fromArrayAccess(ArrayAccessNode node) {
     JavaExpression array = fromNode(node.getArray());
     JavaExpression index = fromNode(node.getIndex());
@@ -482,6 +485,7 @@ public abstract class JavaExpression {
    * @param receiverNode a node to convert to a JavaExpression
    * @return the internal representation of the given node. Might contain {@link Unknown}.
    */
+  @SideEffectFree
   public static JavaExpression fromNode(Node receiverNode) {
     JavaExpression result = null;
     if (receiverNode instanceof FieldAccessNode fieldAccessNode) {
@@ -637,6 +641,9 @@ public abstract class JavaExpression {
         } else {
           result = fromVariableElement(typeOfId, (VariableElement) ele, identifierTree);
         }
+      }
+      case PARENTHESIZED -> {
+        return fromTree(((ParenthesizedTree) tree).getExpression());
       }
       case UNARY_PLUS -> {
         return fromTree(((UnaryTree) tree).getExpression());

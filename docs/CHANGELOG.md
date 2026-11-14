@@ -9,6 +9,19 @@
 
 ### Changes for type system implementers
 
+`CFAbstractTransfer.processCommonAssignment` takes a new parameter: the
+right-hand side of the assignment as written in source code.
+
+Renamed `CFAbstractTransfer.splitAssignments()` to `nodesWithValueOf()`.  Its
+result omits each node that might have a different value by the time the
+enclosing comparison completes, such as `n.next` in `n.next == (n = o)`, so the
+result can be empty.  A subclass that overrides `splitAssignments()` must
+override `nodesWithValueOf()` instead.
+
+To refine an operand of a comparison, an override of
+`CFAbstractTransfer.strengthenAnnotationOfEqualTo` should call the new method
+`CFAbstractTransfer.insertValueForNodesWithValueOf`.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)

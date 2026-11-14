@@ -233,8 +233,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       }
       UBQualifier qual = getUBQualifier(node, in);
       UBQualifier newQual = qual.glb(typeOfMultiplication);
-      JavaExpression je = JavaExpression.fromNode(node);
-      store.insertValue(je, atypeFactory.convertUBQualifierToAnnotation(newQual));
+      insertValueForNodesWithValueOf(
+          store, node, atypeFactory.convertUBQualifierToAnnotation(newQual));
     }
   }
 
@@ -262,8 +262,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     UBQualifier newInfo = typeOfSubtraction.minusOffset(node.getRightOperand(), atypeFactory);
 
     UBQualifier newLeft = left.glb(newInfo);
-    JavaExpression leftJe = JavaExpression.fromNode(node.getLeftOperand());
-    store.insertValue(leftJe, atypeFactory.convertUBQualifierToAnnotation(newLeft));
+    insertValueForNodesWithValueOf(
+        store, node.getLeftOperand(), atypeFactory.convertUBQualifierToAnnotation(newLeft));
   }
 
   /**
@@ -293,8 +293,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     } else if (atypeFactory.hasLowerBoundTypeByClass(other, NonNegative.class)) {
       newQual = newQual.glb(typeOfAddition);
     }
-    JavaExpression operandJe = JavaExpression.fromNode(operand);
-    store.insertValue(operandJe, atypeFactory.convertUBQualifierToAnnotation(newQual));
+    insertValueForNodesWithValueOf(
+        store, operand, atypeFactory.convertUBQualifierToAnnotation(newQual));
   }
 
   /**
@@ -324,8 +324,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     refineSubtrahendWithOffset(larger, smaller, true, in, store);
 
-    JavaExpression rightJe = JavaExpression.fromNode(smaller);
-    store.insertValue(rightJe, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
+    insertValueForNodesWithValueOf(
+        store, smaller, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
   }
 
   /**
@@ -352,8 +352,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
 
     refineSubtrahendWithOffset(left, right, false, in, store);
 
-    JavaExpression rightJe = JavaExpression.fromNode(right);
-    store.insertValue(rightJe, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
+    insertValueForNodesWithValueOf(
+        store, right, atypeFactory.convertUBQualifierToAnnotation(refinedRight));
   }
 
   /**
@@ -388,8 +388,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
       UBQualifier newQual =
           subtrahendQual.glb(
               minuendQual.plusOffset(offsetNode, atypeFactory).plusOffset(offsetAddOne ? 1 : 0));
-      JavaExpression subtrahendJe = JavaExpression.fromNode(subtrahend);
-      store.insertValue(subtrahendJe, atypeFactory.convertUBQualifierToAnnotation(newQual));
+      insertValueForNodesWithValueOf(
+          store, subtrahend, atypeFactory.convertUBQualifierToAnnotation(newQual));
     }
   }
 
@@ -430,17 +430,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     UBQualifier glb = rightQualifier.glb(leftQualifier);
     AnnotationMirror glbAnno = atypeFactory.convertUBQualifierToAnnotation(glb);
 
-    List<Node> internalsRight = splitAssignments(right);
-    for (Node internal : internalsRight) {
-      JavaExpression rightJe = JavaExpression.fromNode(internal);
-      store.insertValue(rightJe, glbAnno);
-    }
-
-    List<Node> internalsLeft = splitAssignments(left);
-    for (Node internal : internalsLeft) {
-      JavaExpression leftJe = JavaExpression.fromNode(internal);
-      store.insertValue(leftJe, glbAnno);
-    }
+    insertValueForNodesWithValueOf(store, right, glbAnno);
+    insertValueForNodesWithValueOf(store, left, glbAnno);
   }
 
   /**
@@ -495,10 +486,8 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         UBQualifier newQualifier =
             UBQualifier.createUBQualifier(sequence, Integer.toString(lengthOffset));
         otherQualifier = otherQualifier.glb(newQualifier);
-        for (Node internal : splitAssignments(otherNode)) {
-          JavaExpression leftJe = JavaExpression.fromNode(internal);
-          store.insertValue(leftJe, atypeFactory.convertUBQualifierToAnnotation(otherQualifier));
-        }
+        insertValueForNodesWithValueOf(
+            store, otherNode, atypeFactory.convertUBQualifierToAnnotation(otherQualifier));
       }
     }
   }
