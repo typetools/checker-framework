@@ -1781,7 +1781,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           new MethodInvocationNode(
               iteratorCall, iteratorAccessNode, Collections.emptyList(), getCurrentPath());
       iteratorCallNode.setInSource(false);
-      extendWithMethodInvocationNode(iteratorCallNode.getTarget().getMethod(), iteratorCallNode);
+      extendWithMethodInvocationNode(iteratorCallNode);
 
       translateAssignment(
           iteratorVariable, new LocalVariableNode(iteratorVariable), iteratorCallNode);
@@ -1810,7 +1810,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
           new MethodInvocationNode(
               hasNextCall, hasNextAccessNode, Collections.emptyList(), getCurrentPath());
       hasNextCallNode.setInSource(false);
-      extendWithMethodInvocationNode(hasNextCallNode.getTarget().getMethod(), hasNextCallNode);
+      extendWithMethodInvocationNode(hasNextCallNode);
       extendWithExtendedNode(new ConditionalJump(loopEntry, loopExit));
 
       // Loop body, starting with declaration of the loop iteration variable
@@ -1843,7 +1843,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       nextCallNode.setIterableExpression(expression);
       nextCallNode.setEnhancedForLoop(tree);
       nextCallNode.setInSource(false);
-      extendWithMethodInvocationNode(nextCallNode.getTarget().getMethod(), nextCallNode);
+      extendWithMethodInvocationNode(nextCallNode);
 
       translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
 
@@ -2740,7 +2740,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         new MethodInvocationNode(
             closeCall, closeAccessNode, Collections.emptyList(), getCurrentPath());
     closeCallNode.setInSource(false);
-    extendWithMethodInvocationNode(TreeUtils.elementFromUse(closeCall), closeCallNode);
+    extendWithMethodInvocationNode(closeCallNode);
 
     if (resourceMayBeNull) {
       addLabelForNextNode(afterCloseLabel);
@@ -3367,21 +3367,19 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
 
     MethodInvocationNode node = new MethodInvocationNode(tree, target, arguments, getCurrentPath());
 
-    extendWithMethodInvocationNode(method, node);
+    extendWithMethodInvocationNode(node);
     return node;
   }
 
   /**
-   * Extends the CFG with a MethodInvocationNode, accounting for potential exceptions thrown by the
-   * invocation. If the method is annotated {@link TerminatesExecution}, the invocation terminates
-   * execution.
+   * Extends the CFG with the given MethodInvocationNode, accounting for potential exceptions thrown
+   * by the invocation. If the method is annotated {@link TerminatesExecution}, the invocation
+   * terminates execution.
    *
-   * @param method the invoked method
-   * @param node the invocation
-   * @return an ExtendedNode representing the invocation and its possible thrown exceptions
+   * @param node an invocation
    */
-  private ExtendedNode extendWithMethodInvocationNode(
-      ExecutableElement method, MethodInvocationNode node) {
+  private void extendWithMethodInvocationNode(MethodInvocationNode node) {
+    ExecutableElement method = node.getTarget().getMethod();
     List<? extends TypeMirror> thrownTypes = method.getThrownTypes();
     Set<TypeMirror> thrownSet =
         new LinkedHashSet<>(thrownTypes.size() + uncheckedExceptionTypes.size());
@@ -3394,7 +3392,6 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
     if (annotationProvider.getDeclAnnotation(method, TerminatesExecution.class) != null) {
       extendedNode.setTerminatesExecution(true);
     }
-    return extendedNode;
   }
 
   @Override
