@@ -119,6 +119,17 @@ public abstract class CFAbstractAnalysis<
       sideEffectsOnlyExpressionsCache = new IdentityHashMap<>();
 
   /**
+   * Cache for {@link CFAbstractTransfer#nodesWithValueOf}, whose result depends only on its
+   * argument and on the trees around the argument's tree, but which would otherwise be recomputed
+   * once per dataflow iteration per comparison.
+   *
+   * <p>The keys are nodes of a single control flow graph, so {@link #performAnalysis} clears this.
+   * This is an {@link IdentityHashMap} because the result depends on the trees around the node, but
+   * {@link Node#equals} can be true for nodes that represent different trees.
+   */
+  final IdentityHashMap<Node, List<Node>> nodesWithValueOfCache = new IdentityHashMap<>();
+
+  /**
    * Cache for {@link StringToJavaExpression#atMethodDecl}, as called by {@link
    * #computeSideEffectsOnlyExpressions}. Parsing an expression in the scope of the method that
    * declares the {@code @SideEffectsOnly} annotation does not depend on the call site, so every
@@ -197,6 +208,7 @@ public abstract class CFAbstractAnalysis<
     this.fieldValues.addAll(fieldValues);
     // The cache's keys are nodes of the control flow graph that was analyzed previously.
     sideEffectsOnlyExpressionsCache.clear();
+    nodesWithValueOfCache.clear();
     super.performAnalysis(cfg);
   }
 
@@ -507,5 +519,18 @@ public abstract class CFAbstractAnalysis<
    */
   public ProcessingEnvironment getEnv() {
     return env;
+  }
+
+  /**
+   * Returns true if the given expressions might evaluate to the same object, judging by their
+   * types. See {@link TypesUtils#canAlias} for details, including the cases in which the answer is
+   * not conservative.
+   *
+   * @param a an expression
+   * @param b another expression
+   * @return true if {@code a} and {@code b} might evaluate to the same object
+   */
+  public boolean canAlias(JavaExpression a, JavaExpression b) {
+    return TypesUtils.canAlias(a.getType(), b.getType(), types);
   }
 }

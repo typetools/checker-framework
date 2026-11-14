@@ -9,6 +9,12 @@
 
 ### Changes for type system implementers
 
+Renamed `CFAbstractTransfer.splitAssignments()` to `nodesWithValueOf()`.  Its
+result omits each node that might have a different value by the time the
+enclosing comparison completes, such as `n.next` in `n.next == (n = o)`, so the
+result can be empty.  A subclass that overrides `splitAssignments()` must
+override `nodesWithValueOf()` instead.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)

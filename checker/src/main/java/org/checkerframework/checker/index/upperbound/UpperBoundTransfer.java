@@ -430,13 +430,13 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
     UBQualifier glb = rightQualifier.glb(leftQualifier);
     AnnotationMirror glbAnno = atypeFactory.convertUBQualifierToAnnotation(glb);
 
-    List<Node> internalsRight = splitAssignments(right);
+    List<Node> internalsRight = nodesWithValueOf(right);
     for (Node internal : internalsRight) {
       JavaExpression rightJe = JavaExpression.fromNode(internal);
       store.insertValue(rightJe, glbAnno);
     }
 
-    List<Node> internalsLeft = splitAssignments(left);
+    List<Node> internalsLeft = nodesWithValueOf(left);
     for (Node internal : internalsLeft) {
       JavaExpression leftJe = JavaExpression.fromNode(internal);
       store.insertValue(leftJe, glbAnno);
@@ -495,7 +495,7 @@ public class UpperBoundTransfer extends IndexAbstractTransfer {
         UBQualifier newQualifier =
             UBQualifier.createUBQualifier(sequence, Integer.toString(lengthOffset));
         otherQualifier = otherQualifier.glb(newQualifier);
-        for (Node internal : splitAssignments(otherNode)) {
+        for (Node internal : nodesWithValueOf(otherNode)) {
           JavaExpression leftJe = JavaExpression.fromNode(internal);
           store.insertValue(leftJe, atypeFactory.convertUBQualifierToAnnotation(otherQualifier));
         }
