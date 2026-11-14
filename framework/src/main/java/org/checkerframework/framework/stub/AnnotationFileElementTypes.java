@@ -144,6 +144,8 @@ public class AnnotationFileElementTypes {
    *   <li>Stub files returned by {@link BaseTypeChecker#getExtraStubFiles} (treated like those
    *       listed in @StubFiles annotation)
    *   <li>Stub files provided via {@code -Astubs} compiler option
+   *   <li>IntelliJ IDEA external annotations provided via {@code -AintellijAnnotations} compiler
+   *       option
    * </ol>
    *
    * <p>If a type is annotated with a qualifier from the same hierarchy in more than one stub file,
@@ -201,6 +203,13 @@ public class AnnotationFileElementTypes {
         parseAnnotationFiles(
             SystemUtil.pathSeparatorSplitter.splitToList(stubsOption),
             AnnotationFileType.COMMAND_LINE_STUB);
+      }
+
+      // 6. Annotations provided via -AintellijAnnotations command-line option
+      String intellijAnnotationsOption = checker.getOption("intellijAnnotations");
+      if (intellijAnnotationsOption != null) {
+        parseIntellijAnnotations(
+            SystemUtil.pathSeparatorSplitter.splitToList(intellijAnnotationsOption));
       }
     } finally {
       parsing = false;
@@ -291,6 +300,58 @@ public class AnnotationFileElementTypes {
   }
 
   /**
+   * Parses IntelliJ annotation files.
+   *
+   * @param intellijAnnotationPaths list of files, directories, or jars/zips to parse
+   */
+  public void parseIntellijAnnotations(List<String> intellijAnnotationPaths) {
+    if (intellijAnnotationPaths.isEmpty()) {
+      return;
+    }
+    boolean wasParsing = parsing;
+    parsing = true;
+    try {
+      ProcessingEnvironment processingEnv = factory.getProcessingEnv();
+      if (stubDebug) {
+        AnnotationFileParser.stubDebugStatic(
+            processingEnv, "AFET.parseIntellijAnnotations(%s)", intellijAnnotationPaths);
+      }
+      SourceChecker checker = factory.getChecker();
+      for (String path : intellijAnnotationPaths) {
+        List<AnnotationFileResource> allFiles =
+            AnnotationFileUtil.allAnnotationFiles(path, AnnotationFileType.INTELLIJ_ANNOTATIONS);
+        if (allFiles == null) {
+          checker.message(
+              Diagnostic.Kind.ERROR, "IntelliJ IDEA annotations file not found: " + path);
+        } else if (allFiles.isEmpty()) {
+          // The path exists but contains no annotations.xml file, so the user gets no
+          // annotations from it.  That is most likely a mistake, so warn rather than issuing a
+          // note, which javac does not display by default.
+          checker.message(Diagnostic.Kind.WARNING, "No annotations.xml file found within " + path);
+        } else {
+          for (AnnotationFileResource resource : allFiles) {
+            try (BufferedInputStream annotationFileStream =
+                new BufferedInputStream(resource.getInputStream())) {
+              IntelliJAnnotationParser.parseAnnotationsXml(
+                  resource.getDescription(),
+                  annotationFileStream,
+                  factory,
+                  processingEnv,
+                  annotationFileAnnos);
+            } catch (IOException e) {
+              checker.message(
+                  Diagnostic.Kind.ERROR,
+                  "Could not read IntelliJ IDEA annotations: " + resource.getDescription());
+            }
+          }
+        }
+      }
+    } finally {
+      parsing = wasParsing;
+    }
+  }
+
+  /**
    * Parses the files in {@code annotationFiles} of the given file type. This includes files listed
    * directly in {@code annotationFiles} and for each listed directory, also includes all files
    * located in that directory (recursively).
@@ -310,6 +371,15 @@ public class AnnotationFileElementTypes {
           processingEnv, "AFET.parseAnnotationFiles(%s, %s)", annotationFiles, fileType);
     }
     for (String path : annotationFiles) {
+      File namedFile = AnnotationFileUtil.findFileSystemLocation(path);
+      if (namedFile != null
+          && namedFile.isFile()
+          && !AnnotationFileUtil.isJarOrZip(namedFile.getName())
+          && !AnnotationFileUtil.isUsableNamedFile(namedFile.getPath(), fileType)) {
+        warnUnusableNamedFile(path, fileType);
+        continue;
+      }
+
       List<AnnotationFileResource> allFiles = AnnotationFileUtil.allAnnotationFiles(path, fileType);
       if (allFiles != null) {
         for (AnnotationFileResource resource : allFiles) {
@@ -333,8 +403,8 @@ public class AnnotationFileElementTypes {
                 fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
           } catch (IOException e) {
             checker.message(
-                Diagnostic.Kind.NOTE,
-                "Could not read annotation resource: " + resource.getDescription());
+                Diagnostic.Kind.WARNING,
+                "Could not read annotation resource: " + resource.getDescription() + ": " + e);
           }
         }
       } else {
@@ -345,7 +415,10 @@ public class AnnotationFileElementTypes {
           path = "/" + path.substring("checker.jar/".length());
         }
         try (InputStream in = checker.getClass().getResourceAsStream(path)) {
-          if (in != null) {
+          if (in != null && !AnnotationFileUtil.isUsableNamedFile(path, fileType)) {
+            // A classpath resource is subject to the same naming rule as a file on disk.
+            warnUnusableNamedFile(path, fileType);
+          } else if (in != null) {
             AnnotationFileParser.parseStubFile(
                 path, in, factory, processingEnv, annotationFileAnnos, fileType);
           } else {
@@ -406,6 +479,25 @@ public class AnnotationFileElementTypes {
         }
       }
     }
+  }
+
+  /**
+   * Issues a warning that a file named by the user is being ignored, because its name does not suit
+   * its file type.
+   *
+   * @param path the file's name, as the user supplied it
+   * @param fileType the type of annotation file that the user supplied
+   */
+  private void warnUnusableNamedFile(String path, AnnotationFileType fileType) {
+    String reason;
+    if (fileType == AnnotationFileType.COMMAND_LINE_STUB) {
+      reason = ", which is an ajava file; supply it via -Aajava";
+    } else if (fileType.isStub()) {
+      reason = ": the name of a stub file must not end with .ajava";
+    } else {
+      reason = ": the name of an ajava file must end with .ajava";
+    }
+    factory.getChecker().message(Diagnostic.Kind.WARNING, "Ignoring " + path + reason);
   }
 
   /**

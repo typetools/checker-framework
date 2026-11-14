@@ -7,6 +7,18 @@
 
 ### User-visible changes
 
+Added support for IntelliJ IDEA annotation files (`annotations.xml`) via the
+`-AintellijAnnotations` command-line option.
+
+The `-Astubs` and `-Aajava` command-line options accept `.zip` archives, in
+addition to `.jar` archives and directories.  An archive is read only if it is
+named in the option; an archive within a directory that is named in the option
+is ignored.  Within a directory or archive, hidden files (whose names start with
+`.`), such as the `._Foo.astub` files that macOS creates, are ignored.
+
+All ajava files must end with `.ajava`.  Stub files must not end with `.ajava`;
+they conventionally end `.astub`.
+
 ### Changes for type system implementers
 
 ### Closed issues
