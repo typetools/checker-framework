@@ -421,7 +421,7 @@ public class NullnessTransfer
     TransferResult<NullnessValue, NullnessStore> result = super.visitMethodInvocation(n, in);
 
     MethodInvocationTree tree = n.getTree();
-    ExecutableElement method = TreeUtils.elementFromUse(tree);
+    ExecutableElement method = n.getTarget().getMethod();
 
     boolean isMethodSideEffectFree = atypeFactory.isSideEffectFree(method);
     Node receiver = n.getTarget().getReceiver();
