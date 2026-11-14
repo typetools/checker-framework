@@ -65,8 +65,8 @@ The Called Methods Checker supports the following optional command-line argument
 
 \sectionAndLabel{For Lombok users}{called-methods-lombok}
 
-The Called Methods Checker supports projects that use Lombok via
-the \href{https://plugins.gradle.org/plugin/io.freefair.lombok}{io.freefair.lombok} Gradle plugin automatically.
+The Called Methods Checker automatically supports projects that use Lombok via
+the \href{https://plugins.gradle.org/plugin/io.freefair.lombok}{io.freefair.lombok} Gradle plugin.
 However, note that the checker's error messages refer to Lombok's output, which is a variant of your source code
 that appears in a \<delombok> directory.
 To fix issues, you should edit your original source code, \textbf{not} the files in the checker's error messages.
@@ -102,7 +102,7 @@ defaulting rules for Lombok and AutoValue.
   \label{fig-called-methods-types}
 \end{figure}
 
-In some cases, you may need to specify your code. You do so by writing one of the following type
+In some cases, you might need to specify your code. You do so by writing one of the following type
 annotations (Figure~\ref{fig-called-methods-types}):
 \begin{description}
 \item[\refqualclasswithparams{checker/calledmethods/qual}{CalledMethods}{String[] methodNames}]
@@ -121,7 +121,7 @@ annotations (Figure~\ref{fig-called-methods-types}):
   Then the receiver for any call to \<build()> must have had \<setX()> and \<setY()> called on it.
 
   A typical case in which Lombok users must manually write this annotation is when performing extra
-  builder input validation. Performing validation can be done through subclassing generated builders
+  builder input validation. You can perform validation by subclassing generated builders
   and overriding the generated \<build()> method as follows.
 
   \begin{Verbatim}
@@ -148,7 +148,7 @@ annotations (Figure~\ref{fig-called-methods-types}):
 
   A note on the not operator (\<!>): the annotation
   \<@CalledMethodsPredicate("!m")> means ``it is not true that \<m> was
-  definitely called''; equivalently ``there is some path on which \<m> was
+  definitely called''; equivalently, ``there is some path on which \<m> was
   not called''.  The annotation \<@CalledMethodsPredicate("!m")> does
   \emph{not} mean ``\<m> was not called''.
 
@@ -159,12 +159,12 @@ annotations (Figure~\ref{fig-called-methods-types}):
   if the method is called on some but not all paths.
 
 \item[\refqualclass{common/returnsreceiver/qual}{This}]
-  \<@This> may only be written on a method return type, and means that the method returns its receiver.
+  \<@This> can only be written on a method return type, and means that the method returns its receiver.
   This is helpful when type-checking fluent APIs. This annotation is defined by the
   Returns Receiver Checker (\chapterpageref{returns-receiver-checker}), but is particularly useful
   for the Called Methods Checker because many builders are fluent APIs.
 
-  For Lombok users it is important to (manually) add \<@This> to any custom method that calls any other
+  For Lombok users, it is important to (manually) add \<@This> to any custom method that calls any other
   generated builder method. For instance, in the following example, it is important to annotate
   \<setXMod42()> with \<@This>, since the added method calls \<setX()> (which returns the current builder
   instance).
@@ -217,7 +217,7 @@ There are also method annotations:
   }
   \end{Verbatim}
 
-  If \<m()> might have side-effects (i.e., it is not annotated
+  If \<m()> might have side effects (i.e., it is not annotated
   as \refqualclass{dataflow/qual}{SideEffectFree},
   as \refqualclass{dataflow/qual}{Pure}\iffalse,
   or as \refqualclass{dataflow/qual}{SideEffectsOnly} with no expression
@@ -260,8 +260,8 @@ There are also method annotations:
   to be called on the varargs parameter's elements before the method returns. This annotation
   currently cannot be verified, and an \<ensuresvarargs.unverified> error is always issued
   when it is used. When annotating a method as \<@EnsuresCalledMethodsVarargs>, you should verify
-  that the named methods are actually called on every element of the varargs parameter via some
-  other method (such as manual inspection) and then suppress the warning.
+  that the named methods are actually called on every element of the varargs parameter by some
+  other means (such as manual inspection) and then suppress the warning.
 
 \item[\refqualclass{checker/calledmethods/qual}{EnsuresCalledMethodsOnException}]
   This declaration annotation specifies a post-condition on a method, indicating the methods it
@@ -322,7 +322,7 @@ by Lombok and AutoValue. There are three places where annotations are usually as
 \end{itemize}
 
 If your program directly defines any of these methods (for example, by adding your own setters to
-a Lombok builder), you may need to write the annotations manually.
+a Lombok builder), you might need to write the annotations manually.
 
 Minor notes/caveats on these rules:
 \begin{itemize}
@@ -343,7 +343,7 @@ The Called Methods Checker can be used to verify any property of the form
 For example, consider the AWS EC2 \<describeImages> API, which
 clients use during the process of initializing a new cloud instance.
 \href{https://www.cve.org/CVERecord?id=CVE-2018-15869}{CVE-2018-15869}
-describes how an improperly-configured request to this API can make the
+describes how an improperly configured request to this API can make the
 requesting client vulnerable to a ``machine-image sniping'' attack that
 would allow a malicious third party to control the operating system image
 used to initialize the machine. To prevent this attack, clients must
@@ -356,7 +356,7 @@ such an attack.
 
 To improve precision, you can specify the
 \<-ACalledMethodsChecker\_useValueChecker> command-line option, which
-instructs the checker to treat provably-safe calls to the \<withFilters>
+instructs the checker to treat provably safe calls to the \<withFilters>
 method of a \<DescribeImagesRequest> as equivalent to the \<withOwners> or
 \<withImageIds> methods.
 

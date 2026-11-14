@@ -3,7 +3,7 @@ package org.checkerframework.afu.scenelib.field;
 import javax.lang.model.element.VariableElement;
 
 /**
- * An {@link EnumAFT} is the type of an annotation field that can hold an constant from a certain
+ * An {@link EnumAFT} is the type of an annotation field that can hold a constant from a certain
  * enumeration type.
  */
 public final class EnumAFT extends ScalarAFT {

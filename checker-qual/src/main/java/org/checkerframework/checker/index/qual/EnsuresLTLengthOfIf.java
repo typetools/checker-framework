@@ -34,10 +34,10 @@ import org.checkerframework.framework.qual.QualifierArgument;
  *      }
  * </pre>
  *
- * Calling this function ensures that the field {@code end} of the {@code this} object is of type
- * {@code @LTLengthOf(value = "array", offset = "x - 1")}, for the value {@code x} that is passed as
- * the argument. This allows the Index Checker to verify that {@code end + x} is an index into
- * {@code array} in the following code:
+ * A call to this method that returns true ensures that the field {@code end} of the {@code this}
+ * object is of type {@code @LTLengthOf(value = "array", offset = "x - 1")}, for the value {@code x}
+ * that is passed as the argument. This allows the Index Checker to verify that {@code end + x} is
+ * an index into {@code array} in the following code:
  *
  * <pre>
  *      public void useTryShiftIndex(&#64;NonNegative int x) {
