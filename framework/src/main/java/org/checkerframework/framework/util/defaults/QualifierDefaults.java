@@ -107,11 +107,18 @@ public class QualifierDefaults {
   protected final Map<Element, BoundType> elementToBoundType = MapsP.createLruCache(CACHE_SIZE);
 
   /**
-   * Defaults that apply for a certain Element. On the one hand this is used for caching (an earlier
-   * name for the field was "qualifierCache"). It can also be used by type systems to set defaults
-   * for certain Elements.
+   * Defaults that a type system has explicitly declared for an Element, via {@link
+   * #addElementDefault}. See {@link #addElementDefault} for how they interact with the other
+   * defaults.
    */
-  private final IdentityHashMap<Element, DefaultSet> elementDefaults = new IdentityHashMap<>();
+  private final IdentityHashMap<Element, DefaultSet> elementDeclaredDefaults =
+      new IdentityHashMap<>();
+
+  /**
+   * Memoizes {@link #defaultsAt}: a mapping from an Element to all the defaults that apply to that
+   * Element, including the defaults contributed by the Element's enclosing scopes.
+   */
+  private final IdentityHashMap<Element, DefaultSet> defaultsAtCache = new IdentityHashMap<>();
 
   /** A mapping of Element &rarr; true if that element is AnnotatedFor this type system. */
   private final IdentityHashMap<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
@@ -312,20 +319,37 @@ public class QualifierDefaults {
   /**
    * Sets the default annotations for a certain Element.
    *
+   * <p>The default is treated like a {@code @DefaultQualifier} annotation written on {@code elem}:
+   * it applies within {@code elem} and within the elements that {@code elem} encloses, and it is
+   * combined with the other {@code @DefaultQualifier} annotations that apply there, rather than
+   * suppressing them. As with {@code @DefaultQualifier}, an alias is replaced by its canonical
+   * qualifier.
+   *
+   * <p>Call this method before the type of {@code elem}, or of any element that {@code elem}
+   * encloses, is computed. A type that was computed earlier does not reflect the default.
+   *
    * @param elem the scope to set the default within
    * @param elementDefaultAnno the default to set
    * @param location the location to apply the default to
+   * @throws BugInCF if this type system does not support the qualifier
    */
   public void addElementDefault(
       Element elem, AnnotationMirror elementDefaultAnno, TypeUseLocation location) {
-    DefaultSet prevset = elementDefaults.get(elem);
+    AnnotationMirror anno = atypeFactory.canonicalAnnotation(elementDefaultAnno);
+    if (!atypeFactory.isSupportedQualifier(anno)) {
+      throw new BugInCF(
+          "addElementDefault: unsupported qualifier " + elementDefaultAnno + " for " + elem);
+    }
+    DefaultSet prevset = elementDeclaredDefaults.get(elem);
     if (prevset != null) {
-      checkDuplicates(prevset, elementDefaultAnno, location);
+      checkDuplicates(prevset, anno, location);
     } else {
       prevset = new DefaultSet();
+      elementDeclaredDefaults.put(elem, prevset);
     }
-    prevset.add(new Default(elementDefaultAnno, location));
-    elementDefaults.put(elem, prevset);
+    if (prevset.add(new Default(anno, location))) {
+      defaultsAtCache.clear();
+    }
   }
 
   /**
@@ -623,51 +647,45 @@ public class QualifierDefaults {
    * Returns the defaults that apply to the given Element, considering defaults from enclosing
    * Elements.
    *
-   * @param elt the element
+   * @param elt an element, or null
    * @return the defaults
    */
-  private DefaultSet defaultsAt(Element elt) {
+  private DefaultSet defaultsAt(@Nullable Element elt) {
     if (elt == null) {
       return DefaultSet.EMPTY;
     }
 
-    if (elementDefaults.containsKey(elt)) {
-      return elementDefaults.get(elt);
+    DefaultSet cached = defaultsAtCache.get(elt);
+    if (cached != null) {
+      return cached;
     }
 
-    DefaultSet qualifiers = null;
+    DefaultSet qualifiers = new DefaultSet();
 
-    {
-      AnnotationMirror dqAnno = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.class);
+    AnnotationMirror dqAnno = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.class);
+    if (dqAnno != null) {
+      Set<Default> p = fromDefaultQualifier(dqAnno);
+      if (p != null) {
+        qualifiers.addAll(p);
+      }
+    }
 
-      if (dqAnno != null) {
-        qualifiers = new DefaultSet();
-        Set<Default> p = fromDefaultQualifier(dqAnno);
-
+    AnnotationMirror dqListAnno = atypeFactory.getDeclAnnotation(elt, DefaultQualifier.List.class);
+    if (dqListAnno != null) {
+      List<AnnotationMirror> values =
+          AnnotationUtils.getElementValueArray(
+              dqListAnno, defaultQualifierListValueElement, AnnotationMirror.class);
+      for (AnnotationMirror listDqAnno : values) {
+        Set<Default> p = fromDefaultQualifier(listDqAnno);
         if (p != null) {
           qualifiers.addAll(p);
         }
       }
     }
 
-    {
-      AnnotationMirror dqListAnno =
-          atypeFactory.getDeclAnnotation(elt, DefaultQualifier.List.class);
-      if (dqListAnno != null) {
-        if (qualifiers == null) {
-          qualifiers = new DefaultSet();
-        }
-
-        List<AnnotationMirror> values =
-            AnnotationUtils.getElementValueArray(
-                dqListAnno, defaultQualifierListValueElement, AnnotationMirror.class);
-        for (AnnotationMirror dqAnno : values) {
-          Set<Default> p = fromDefaultQualifier(dqAnno);
-          if (p != null) {
-            qualifiers.addAll(p);
-          }
-        }
-      }
+    DefaultSet elementDefaults = elementDeclaredDefaults.get(elt);
+    if (elementDefaults != null) {
+      qualifiers.addAll(elementDefaults);
     }
 
     Element parent;
@@ -678,14 +696,14 @@ public class QualifierDefaults {
     }
 
     DefaultSet parentDefaults = defaultsAt(parent);
-    if (qualifiers == null || qualifiers.isEmpty()) {
+    if (qualifiers.isEmpty()) {
       qualifiers = parentDefaults;
     } else {
       qualifiers.addAll(parentDefaults);
     }
 
-    if (qualifiers != null && !qualifiers.isEmpty()) {
-      elementDefaults.put(elt, qualifiers);
+    if (!qualifiers.isEmpty()) {
+      defaultsAtCache.put(elt, qualifiers);
       return qualifiers;
     } else {
       return DefaultSet.EMPTY;

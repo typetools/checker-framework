@@ -9,6 +9,12 @@
 
 ### Changes for type system implementers
 
+A default that a type system registers for an element through
+`QualifierDefaults.addElementDefault()` is now treated like a
+`@DefaultQualifier` annotation on that element.  Formerly, it
+suppressed the `@DefaultQualifier` annotations on the element and on the
+element's enclosing elements.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
