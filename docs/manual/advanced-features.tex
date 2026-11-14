@@ -1252,6 +1252,21 @@ Therefore, \code{x.getField(y)} is non-null within the \<then> branch
 of the \<if> statement.
 
 
+\iffalse
+\subsubsectionAndLabel{Method references and \<@SideEffectsOnly>}{side-effects-method-references}
+
+A method reference is checked against the \<@SideEffectsOnly> annotation of the
+functional interface method that it implements, as an overriding method is checked
+against the overridden method's annotation.  The two methods' parameters do not
+necessarily correspond positionally:  for an unbound reference such as \<Collection::clear>,
+the interface method's first parameter is the referenced method's receiver, and the
+interface method's parameter \<\#(i+1)> is the referenced method's parameter \<\#i>.  For a
+bound reference such as \<myList::clear>, no expression at the interface method's
+declaration denotes the bound receiver, so the reference does not satisfy any
+\<@SideEffectsOnly> annotation if the referenced method modifies \<this>.
+\fi
+
+
 
 % This is a slightly funny place for this section, but I cannot decide on a
 % better one.
