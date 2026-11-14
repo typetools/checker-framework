@@ -7,10 +7,10 @@ import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * Tests that {@code @SideEffectsOnly} annotations are not checked against method bodies without
- * {@code -AcheckPurityAnnotations}, even when {@code -AsuggestPureMethods} is supplied. Issuing a
- * purity suggestion does not require {@code -AcheckPurityAnnotations}, so the two options must not
- * be conflated.
+ * Tests that {@code @SideEffectsOnly} annotations are not checked against method bodies or
+ * overriding methods without {@code -AcheckPurityAnnotations}, even when {@code
+ * -AsuggestPureMethods} is supplied. Issuing a purity suggestion does not require {@code
+ * -AcheckPurityAnnotations}, so the two options must not be conflated.
  */
 public class SideEffectsOnlyNoCheckTest extends CheckerFrameworkPerDirectoryTest {
 
