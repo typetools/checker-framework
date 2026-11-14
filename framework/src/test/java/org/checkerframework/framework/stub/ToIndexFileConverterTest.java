@@ -932,6 +932,56 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * In an unresolvable name, an identifier that starts with an uppercase letter is assumed to be a
+   * class name and one that starts with a lowercase letter is assumed to be a package name.
+   */
+  @Test
+  public void testUnresolvedQualifiedType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass {",
+            "  void myMethod(MyOtherClass.MyNestedClass c, other.pkg.MyOtherClass o) {}",
+            "}");
+    assertMethod(
+        jaif,
+        "MyClass",
+        "myMethod(Lmypackage/MyOtherClass$MyNestedClass;Lother/pkg/MyOtherClass;)V");
+  }
+
+  /** A single-type import qualifies an unresolvable name, including a nested one. */
+  @Test
+  public void testUnresolvedImportedType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import other.pkg.MyOtherClass;",
+            "class MyClass {",
+            "  void myMethod(MyOtherClass c, MyOtherClass.MyNestedClass n) {}",
+            "}");
+    assertMethod(
+        jaif,
+        "MyClass",
+        "myMethod(Lother/pkg/MyOtherClass;Lother/pkg/MyOtherClass$MyNestedClass;)V");
+  }
+
+  /**
+   * A single-type import determines the type that a name refers to, even if the imported type is
+   * not on the classpath and a type of the same name is in {@code java.lang}.
+   */
+  @Test
+  public void testUnloadableSingleTypeImportShadowsJavaLang() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import other.pkg.Module;",
+            "class MyClass {",
+            "  void myMethod(Module m) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lother/pkg/Module;)V");
+  }
+
+  /**
    * A missing member of a stub-declared type has the same binary name whether or not the name is
    * qualified by the stub file's package.
    */
