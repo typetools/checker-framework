@@ -272,7 +272,7 @@ public final class PurityChecker {
    *
    * @param annoProvider the annotation provider
    * @param method a method or constructor
-   * @param index the index of one of {@code method}'s formal parameters
+   * @param index the 0-based index of one of {@code method}'s formal parameters
    * @param env the processing environment
    * @return the purity that the argument at {@code index} is known to have
    */
@@ -296,7 +296,7 @@ public final class PurityChecker {
    *
    * @param annoProvider the annotation provider
    * @param method a method or constructor
-   * @param index the index of one of {@code method}'s formal parameters
+   * @param index the 0-based index of one of {@code method}'s formal parameters
    * @param parameterFunction the functional method of the type of the parameter at {@code index}
    * @param env the processing environment
    * @return the purity that the argument at {@code index} is known to have
@@ -322,70 +322,33 @@ public final class PurityChecker {
   }
 
   /**
-   * Returns the purity that every call through {@code declaration}, or through a method that {@code
-   * declaration} overrides, guarantees of the code that it passes to the parameter at {@code
-   * index}, for an implementation whose parameter at that index has the functional method {@code
-   * parameterFunction}. Each call checks its arguments against the declaration that it invokes, so
-   * the result is the purity that {@link #guaranteedFunctionalArgumentPurity} computes for every
-   * one of those declarations.
+   * Returns the purity that a call through {@code declaration} guarantees of {@code
+   * parameterFunction}, as implemented by the argument that the call passes to the parameter at
+   * {@code index}. The call checks the argument against {@code declaration}'s purity annotation,
+   * and the argument also has the purity that the functional method of {@code declaration}'s
+   * parameter promises.
    *
-   * @param annoProvider the annotation provider
-   * @param declaration a method through which a call might reach an implementation
-   * @param index the index of a formal parameter of {@code declaration}
-   * @param parameterFunction the functional method of the implementation's parameter at {@code
-   *     index}
-   * @param env the processing environment
-   * @return the purity that every call through {@code declaration} or a method that it overrides
-   *     guarantees of the argument
-   */
-  public static EnumSet<PurityKind> guaranteedFunctionalArgumentPurityWithOverridden(
-      AnnotationProvider annoProvider,
-      ExecutableElement declaration,
-      int index,
-      ExecutableElement parameterFunction,
-      ProcessingEnvironment env) {
-    EnumSet<PurityKind> result =
-        guaranteedFunctionalArgumentPurity(
-            annoProvider, declaration, index, parameterFunction, env);
-    for (ExecutableElement overridden :
-        ElementUtils.getOverriddenMethods(declaration, env.getTypeUtils())) {
-      if (result.isEmpty()) {
-        break;
-      }
-      result.retainAll(
-          guaranteedFunctionalArgumentPurity(
-              annoProvider, overridden, index, parameterFunction, env));
-    }
-    return result;
-  }
-
-  /**
-   * Returns the purity that a call through {@code declaration} guarantees of the code that it
-   * passes to the parameter at {@code index}, for an implementation whose parameter at that index
-   * has the functional method {@code parameterFunction}. The call checks the argument against
-   * {@code declaration}'s purity annotation, and the argument also has the purity that the
-   * functional method of {@code declaration}'s parameter promises.
-   *
-   * <p>The functional method of {@code declaration}'s parameter may override {@code
+   * <p>The functional method of {@code declaration}'s parameter might override {@code
    * parameterFunction}, rather than the other way around. That happens for a method reference whose
-   * functional method passes a subinterface, such as one that redeclares {@code Function.apply}, to
-   * a referenced method's parameter of the superinterface type. The argument's implementation of
-   * {@code parameterFunction} is then its implementation of the overriding method, which the call
-   * checked.
+   * functional method has a parameter of a subinterface type, such as one that redeclares {@code
+   * Function.apply}, where the corresponding parameter of the referenced method has the
+   * superinterface type. The argument's implementation of {@code parameterFunction} is then its
+   * implementation of the overriding method, which the call checked.
    *
    * <p>The result is empty if {@code declaration}'s parameter at {@code index} is not a functional
    * interface, or if neither {@code parameterFunction} nor its functional method overrides the
    * other: then the call checks nothing about the code that {@code parameterFunction} runs.
    *
    * @param annoProvider the annotation provider
-   * @param declaration a method through which a call might reach an implementation
-   * @param index the index of a formal parameter of {@code declaration}
-   * @param parameterFunction the functional method of the implementation's parameter at {@code
-   *     index}
+   * @param declaration a method that a call might invoke
+   * @param index the 0-based index of a formal parameter of {@code declaration}
+   * @param parameterFunction a functional method that might be called on the argument: the
+   *     functional method of the type of the parameter at {@code index} in an overrider of {@code
+   *     declaration} or in a method that a method reference refers to
    * @param env the processing environment
    * @return the purity that a call through {@code declaration} guarantees of the argument
    */
-  private static EnumSet<PurityKind> guaranteedFunctionalArgumentPurity(
+  public static EnumSet<PurityKind> guaranteedFunctionalArgumentPurity(
       AnnotationProvider annoProvider,
       ExecutableElement declaration,
       int index,
@@ -409,7 +372,7 @@ public final class PurityChecker {
    * #functionalMethodOfType}. A varargs parameter's type is an array, which does not.
    *
    * @param method a method or constructor
-   * @param index the index of a formal parameter
+   * @param index the 0-based index of a formal parameter
    * @param env the processing environment
    * @return the functional method of the parameter's type, or null
    */

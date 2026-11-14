@@ -239,6 +239,41 @@ static, private, or final) and its body does not rely on the assumption:  the
 body uses the parameter only to store it, return it, compare it, or call a
 method other than the functional method on it.
 
+\begin{Verbatim}
+  class Util {
+    @SideEffectFree
+    static int call(Function<String, Integer> f, String s) {
+      return f.apply(s);  // permitted: apply is treated as side-effect-free
+    }
+
+    @SideEffectFree
+    static int ignore(Function<String, Integer> f, String s) {
+      return 0;
+    }
+  }
+
+  @FunctionalInterface
+  interface Caller {
+    int run(Function<String, Integer> f, String s);
+  }
+
+  @FunctionalInterface
+  interface PureCaller {
+    @SideEffectFree int run(Function<String, Integer> f, String s);
+  }
+
+  @FunctionalInterface
+  interface StrongCaller extends Caller {
+    @Override
+    @SideEffectFree int run(Function<String, Integer> f, String s);
+  }
+
+  PureCaller c1 = Util::call;    // OK: PureCaller.run requires a side-effect-free f
+  Caller c2 = Util::call;        // error: c2.run(s -> count++, "hi") would have a side effect
+  StrongCaller c3 = Util::call;  // error: a call through Caller.run can run Util.call
+  Caller c4 = Util::ignore;      // OK: Util.ignore is static and never calls f.apply
+\end{Verbatim}
+
 The assumption affects purity checking, and the dataflow analysis of a lambda
 in the method body, but not the dataflow analysis of the body itself.  A
 direct call to a functional-interface parameter in the body still discards

@@ -5532,6 +5532,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return;
       }
       ExecutableElement functionalMethod = overridden.getElement();
+      // The methods through which a call can run the referenced method.
+      List<ExecutableElement> declarations = new ArrayList<>();
+      declarations.add(functionalMethod);
+      declarations.addAll(ElementUtils.getOverriddenMethods(functionalMethod, types));
       int offset = methodRefParameterOffset();
       List<? extends VariableElement> params = referenced.getParameters();
       for (int i = 0; i < params.size(); i++) {
@@ -5547,19 +5551,24 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (assumed.isEmpty()) {
           continue;
         }
-        EnumSet<PurityKind> provided =
-            PurityChecker.guaranteedFunctionalArgumentPurityWithOverridden(
-                atypeFactory, functionalMethod, i + offset, parameterFunction, env);
-        if (!provided.containsAll(assumed)
-            && mightRelyOnFunctionalParameter(referenced, params.get(i), parameterFunction)) {
-          reportErrorOnce(
-              overriderTree,
-              "purity.methodref.functional.parameter",
-              params.get(i).getSimpleName(),
-              ElementUtils.getSimpleDescription(referenced),
-              purityKindsToString(assumed),
-              TypesUtils.simpleTypeName(overriddenType.getUnderlyingType()),
-              purityKindsToString(provided));
+        for (ExecutableElement declaration : declarations) {
+          EnumSet<PurityKind> provided =
+              PurityChecker.guaranteedFunctionalArgumentPurity(
+                  atypeFactory, declaration, i + offset, parameterFunction, env);
+          if (!provided.containsAll(assumed)) {
+            // The error message names the first declaration whose calls lack the guarantee.
+            if (mightRelyOnFunctionalParameter(referenced, params.get(i), parameterFunction)) {
+              reportErrorOnce(
+                  overriderTree,
+                  "purity.methodref.functional.parameter",
+                  params.get(i).getSimpleName(),
+                  ElementUtils.getSimpleDescription(referenced),
+                  purityKindsToString(assumed),
+                  ElementUtils.getSimpleDescription(declaration),
+                  purityKindsToString(provided));
+            }
+            break;
+          }
         }
       }
     }
