@@ -1843,18 +1843,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       nextCallNode.setIterableExpression(expression);
       nextCallNode.setEnhancedForLoop(tree);
       nextCallNode.setInSource(false);
-      extendWithNode(nextCallNode);
+      extendWithMethodInvocationNode(TreeUtils.elementFromUse(nextCall), nextCallNode);
 
-      AssignmentNode assignNode =
-          translateAssignment(variable, new LocalVariableNode(variable), nextCall);
-      // translateAssignment() translates nextCall again and creates new nodes, so set the
-      // expression there, too:  on the new node for nextCall, when assignment conversion leaves it
-      // unchanged, and on each boxing or unboxing call that assignment conversion creates.
-      if (assignNode.getExpression() instanceof MethodInvocationNode assignedNextCall) {
-        assignedNextCall.setIterableExpression(expression);
-        assignedNextCall.setEnhancedForLoop(tree);
-      }
-      setIterableExpressionOnBoxingCalls(nextCallNode, expression, tree);
+      translateAssignment(variable, new LocalVariableNode(variable), nextCallNode);
+      setIterableExpressionOnUnboxingCalls(nextCallNode, expression, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -1948,7 +1940,7 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
       arrayAccessNode.setInSource(false);
       extendWithNode(arrayAccessNode);
       translateAssignment(variable, new LocalVariableNode(variable), arrayAccessNode);
-      setIterableExpressionOnBoxingCalls(arrayAccessNode, expression, tree);
+      setIterableExpressionOnUnboxingCalls(arrayAccessNode, expression, tree);
 
       assert statement != null;
       scan(statement, p);
@@ -1993,23 +1985,27 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Sets the iterable expression and the enhanced for loop of each boxing or unboxing call that
-   * assignment conversion applied to {@code element}, so that the type of each call is the element
-   * type of the iterable expression. Assignment conversion boxes or unboxes the element in, for
-   * example, {@code for (int x : listOfInteger)} and {@code for (Integer x : arrayOfInt)}.
+   * Sets the iterable expression and the enhanced for loop of each unboxing call that assignment
+   * conversion applied to the given element, so that the value of each call has the qualifiers of
+   * the element type of the iterable expression. Assignment conversion unboxes the element in, for
+   * example, {@code for (int x : listOfInteger)} and {@code for (long x : arrayOfInteger)}.
    *
-   * @param element the node for the element, before conversion
+   * <p>A boxing call, as in {@code for (Integer x : arrayOfInt)}, is not changed: boxing can change
+   * qualifiers, as when a primitive is interned but its boxed value is not.
+   *
+   * @param element a node for an element of an enhanced for loop, before assignment conversion
    * @param expression the iterable expression of the enhanced for loop
    * @param tree the enhanced for loop
    */
-  private void setIterableExpressionOnBoxingCalls(
+  private void setIterableExpressionOnUnboxingCalls(
       Node element, ExpressionTree expression, EnhancedForLoopTree tree) {
     Set<Node> converted = treeToImplicitlyConvertedCfgNodes.get(element.getTree());
     if (converted == null) {
       return;
     }
     for (Node node : converted) {
-      if (node instanceof MethodInvocationNode conversion) {
+      if (node instanceof MethodInvocationNode conversion
+          && TypesUtils.isPrimitive(conversion.getType())) {
         conversion.setIterableExpression(expression);
         conversion.setEnhancedForLoop(tree);
       }
@@ -2017,10 +2013,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns the declaration of a new, uniquely named variable that holds the iterator of an
+   * Returns the declaration of a new, uniquely named variable that holds the iterator of the given
    * enhanced for loop over an {@code Iterable}.
    *
-   * @param iteratorCall the call to {@code iterator()}, which initializes the new variable
+   * @param iteratorCall a call to {@code iterator()}, which initializes the new variable
    * @param variableElement the loop variable of the enhanced for loop; the new variable has the
    *     same enclosing element
    * @return the declaration of the new iterator variable
@@ -2040,10 +2036,10 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
   }
 
   /**
-   * Returns the declaration of a new, uniquely named variable that holds the array of an enhanced
-   * for loop over an array.
+   * Returns the declaration of a new, uniquely named variable that holds the array of the given
+   * enhanced for loop over an array.
    *
-   * @param expression the array expression of the enhanced for loop, which initializes the new
+   * @param expression an array expression of an enhanced for loop, which initializes the new
    *     variable
    * @param variableElement the loop variable of the enhanced for loop; the new variable has the
    *     same enclosing element
