@@ -114,8 +114,14 @@ import org.checkerframework.framework.ajava.InsertAjavaAnnotations;
 import org.checkerframework.framework.ajava.JointVisitorWithDefaultAction;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
+import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.DefaultQualifier;
+import org.checkerframework.framework.qual.EnsuresQualifier;
+import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.qual.HasQualifierParameter;
+import org.checkerframework.framework.qual.PostconditionAnnotation;
+import org.checkerframework.framework.qual.PreconditionAnnotation;
+import org.checkerframework.framework.qual.RequiresQualifier;
 import org.checkerframework.framework.qual.Unused;
 import org.checkerframework.framework.source.DiagMessage;
 import org.checkerframework.framework.source.SourceVisitor;
@@ -1133,6 +1139,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
           CollectionsP.mapList(
               (VariableTree param) -> param.getName().toString(), tree.getParameters());
       checkContractsAtMethodDeclaration(tree, methodElement, formalParamNames, abstractMethod);
+      // This check is not in checkContractsAtMethodDeclaration, because that method also checks
+      // contracts that are not written in the source code, and because here the warning can be
+      // issued at the annotation itself.
+      checkContractQualifiersAreNotTop(modifiers.getAnnotations());
 
       // Infer postconditions
       if (shouldPerformContractInference()) {
@@ -3473,6 +3483,113 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     }
     return null;
+  }
+
+  /** The names of the framework contract annotations, which have a {@code qualifier} element. */
+  private static final Set<String> frameworkContractAnnotationNames =
+      Set.of(
+          RequiresQualifier.class.getCanonicalName(),
+          EnsuresQualifier.class.getCanonicalName(),
+          EnsuresQualifierIf.class.getCanonicalName());
+
+  /** The names of the wrappers for repeated framework contract annotations. */
+  private static final Set<String> frameworkContractListAnnotationNames =
+      Set.of(
+          RequiresQualifier.List.class.getCanonicalName(),
+          EnsuresQualifier.List.class.getCanonicalName(),
+          EnsuresQualifierIf.List.class.getCanonicalName());
+
+  /**
+   * Issues a "contracts.toptype" warning for each contract annotation in {@code annoTrees} whose
+   * qualifier is the top qualifier, because such a contract has no effect. This method handles
+   * framework contract annotations, such as {@code @RequiresQualifier}; type-system-specific
+   * contract annotations, such as {@code @RequiresNonNull}, whose declaration is meta-annotated by
+   * a contract meta-annotation such as {@code @PreconditionAnnotation}; and wrappers for repeated
+   * contract annotations, such as {@code @RequiresQualifier.List}.
+   *
+   * @param annoTrees the annotations written on a method or constructor declaration
+   */
+  protected void checkContractQualifiersAreNotTop(List<? extends AnnotationTree> annoTrees) {
+    ContractsFromMethod contractsFromMethod = atypeFactory.getContractsFromMethod();
+    for (AnnotationTree annoTree : annoTrees) {
+      AnnotationMirror anno = TreeUtils.annotationFromAnnotationTree(annoTree);
+      TypeElement annoType = (TypeElement) anno.getAnnotationType().asElement();
+      String annoName = annoType.getQualifiedName().toString();
+      if (atypeFactory.isListForRepeatedAnnotation(anno)) {
+        // Recurse only into wrappers whose elements are treated as contracts:  the framework
+        // wrappers, and wrappers that are meta-annotated with a contract meta-annotation (as in
+        // AnnotatedTypeFactory#getDeclAnnotationWithMetaAnnotation).
+        if (frameworkContractListAnnotationNames.contains(annoName)
+            || !getContractMetaAnnotations(annoType).isEmpty()) {
+          checkContractQualifiersAreNotTop(getAnnotationTreeArguments(annoTree));
+        }
+        continue;
+      }
+      List<@Nullable AnnotationMirror> qualifiers = new ArrayList<>();
+      if (frameworkContractAnnotationNames.contains(annoName)) {
+        qualifiers.add(contractsFromMethod.getQualifierEnforcedByContractAnnotation(anno));
+      } else {
+        // An annotation may have more than one contract meta-annotation, such as both
+        // @PreconditionAnnotation and @PostconditionAnnotation.  Check each of them.
+        for (AnnotationMirror metaAnno : getContractMetaAnnotations(annoType)) {
+          qualifiers.add(
+              contractsFromMethod.getQualifierEnforcedByContractAnnotation(metaAnno, anno));
+        }
+      }
+      for (AnnotationMirror qualifier : qualifiers) {
+        if (qualifier != null
+            && AnnotationUtils.areSame(qualifier, qualHierarchy.getTopAnnotation(qualifier))) {
+          Name qualifierName = qualifier.getAnnotationType().asElement().getSimpleName();
+          checker.reportWarning(annoTree, "contracts.toptype", qualifierName, annoTree);
+          // Issue at most one warning per annotation.
+          break;
+        }
+      }
+    }
+  }
+
+  /**
+   * Returns the annotations that are written as arguments to the given annotation, such as the
+   * elements of a wrapper for repeated annotations.
+   *
+   * @param annoTree an annotation tree
+   * @return the annotation trees that are arguments to {@code annoTree}
+   */
+  private List<AnnotationTree> getAnnotationTreeArguments(AnnotationTree annoTree) {
+    List<AnnotationTree> result = new ArrayList<>();
+    for (ExpressionTree arg : annoTree.getArguments()) {
+      ExpressionTree value = arg instanceof AssignmentTree at ? at.getExpression() : arg;
+      if (value instanceof AnnotationTree nested) {
+        result.add(nested);
+      } else if (value instanceof NewArrayTree nat) {
+        for (ExpressionTree init : nat.getInitializers()) {
+          if (init instanceof AnnotationTree nested) {
+            result.add(nested);
+          }
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns the contract meta-annotations ({@code @PreconditionAnnotation},
+   * {@code @PostconditionAnnotation}, and {@code @ConditionalPostconditionAnnotation}) on the given
+   * annotation declaration.
+   *
+   * @param annoType an annotation declaration
+   * @return the contract meta-annotations on {@code annoType}; empty if there are none
+   */
+  private List<AnnotationMirror> getContractMetaAnnotations(TypeElement annoType) {
+    List<AnnotationMirror> result = new ArrayList<>();
+    for (AnnotationMirror metaAnno : annoType.getAnnotationMirrors()) {
+      if (atypeFactory.areSameByClass(metaAnno, PreconditionAnnotation.class)
+          || atypeFactory.areSameByClass(metaAnno, PostconditionAnnotation.class)
+          || atypeFactory.areSameByClass(metaAnno, ConditionalPostconditionAnnotation.class)) {
+        result.add(metaAnno);
+      }
+    }
+    return result;
   }
 
   @Override

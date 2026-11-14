@@ -8,6 +8,7 @@ class PreconditionFieldNotInStore {
 
   private @org.checkerframework.checker.nullness.qual.MonotonicNonNull String filename;
 
+  // :: warning: [contracts.toptype]
   @org.checkerframework.framework.qual.RequiresQualifier(
       expression = {"this.filename"},
       qualifier = org.checkerframework.checker.nullness.qual.Nullable.class)
