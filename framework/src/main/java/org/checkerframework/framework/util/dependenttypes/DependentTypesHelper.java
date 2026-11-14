@@ -39,7 +39,9 @@ import org.checkerframework.dataflow.expression.FormalParameter;
 import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.dataflow.expression.JavaExpressionConverter;
 import org.checkerframework.dataflow.expression.JavaExpressionParseException;
+import org.checkerframework.dataflow.expression.JavaExpressionScanner;
 import org.checkerframework.dataflow.expression.LocalVariable;
+import org.checkerframework.dataflow.expression.MethodCall;
 import org.checkerframework.dataflow.expression.SuperReference;
 import org.checkerframework.dataflow.expression.ThisReference;
 import org.checkerframework.dataflow.expression.Unknown;
@@ -370,6 +372,86 @@ public class DependentTypesHelper {
           type, TreeUtils.toStringTruncated(fieldAccess, 65), stringToJavaExpr);
     }
     convertAnnotatedTypeMirror(stringToJavaExpr, type);
+  }
+
+  /**
+   * Viewpoint-adapts the Java expressions in annotations written on a record component to an access
+   * of that component of {@code receiver}, as in a deconstruction pattern.
+   *
+   * <p>{@code type} is the type of the component as a member of the type of {@code receiver}, so it
+   * might contain annotations from the type arguments of {@code receiver}'s type. Those annotations
+   * are written in the scope of the deconstruction pattern, not of the record, so they are not
+   * viewpoint-adapted. Only annotations from the declaration of the record component are adapted.
+   *
+   * <p>If {@code receiver} is not deterministic, then an expression that depends on the receiver
+   * could refer to a different record than the one that was deconstructed. Therefore, such
+   * expressions are removed from the annotations on the component's declared type. Expressions that
+   * do not depend on the receiver, such as static fields, are retained.
+   *
+   * @param type the type of the record component; is side-effected by this method
+   * @param accessor the accessor method of the record component
+   * @param receiver the record whose component is accessed
+   */
+  public void atRecordComponentAccess(
+      AnnotatedTypeMirror type, ExecutableElement accessor, JavaExpression receiver) {
+    if (!hasDependentAnnotations()) {
+      return;
+    }
+
+    // As in atInvocation, adapt the declared type of the component, then copy the adapted
+    // annotations to `type`, except at locations where type variables have been substituted.
+    AnnotatedTypeMirror declaredType = factory.getRecordAccessorType(accessor).getReturnType();
+    if (!hasDependentType(declaredType)) {
+      return;
+    }
+
+    boolean isDeterministic = isDeterministicIncludingReceivers(receiver);
+    StringToJavaExpression stringToJavaExpr =
+        stringExpr -> {
+          JavaExpression declExpr =
+              StringToJavaExpression.atMethodDecl(stringExpr, accessor, factory.getChecker());
+          if (!isDeterministic
+              && (declExpr.containsOfClass(ThisReference.class)
+                  || declExpr.containsOfClass(SuperReference.class))) {
+            return null;
+          }
+          return declExpr.atFieldAccess(receiver);
+        };
+    if (debugStringToJavaExpression) {
+      System.out.printf(
+          "atRecordComponentAccess(%s, %s, %s) created %s%n",
+          type, accessor, receiver, stringToJavaExpr);
+    }
+    convertAnnotatedTypeMirror(stringToJavaExpr, declaredType);
+    this.viewpointAdaptedCopier.visit(declaredType, type);
+  }
+
+  /**
+   * Returns true if {@code expr} and all of its subexpressions are deterministic.
+   *
+   * <p>{@link MethodCall#isDeterministic} does not check the receiver of the call. For a record
+   * pattern nested in another one, the receiver is an accessor call on the value matched by the
+   * enclosing pattern, as in {@code getOuter().inner()}. That value is the same on each evaluation
+   * only if every receiver in the chain is deterministic.
+   *
+   * @param expr an expression
+   * @return true if {@code expr} and all of its subexpressions are deterministic
+   */
+  private boolean isDeterministicIncludingReceivers(JavaExpression expr) {
+    if (!expr.isDeterministic(factory)) {
+      return false;
+    }
+    boolean[] result = {true};
+    new JavaExpressionScanner<Void>() {
+      @Override
+      protected Void visitMethodCall(MethodCall methodCallExpr, Void p) {
+        if (!methodCallExpr.isDeterministic(factory)) {
+          result[0] = false;
+        }
+        return super.visitMethodCall(methodCallExpr, p);
+      }
+    }.scan(expr, null);
+    return result[0];
   }
 
   /**
