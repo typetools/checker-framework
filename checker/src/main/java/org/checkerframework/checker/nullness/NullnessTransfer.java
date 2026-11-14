@@ -22,9 +22,9 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
-import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.NullChkNode;
 import org.checkerframework.dataflow.cfg.node.NullLiteralNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.ThrowNode;
@@ -354,6 +354,16 @@ public class NullnessTransfer
   }
 
   @Override
+  public TransferResult<NullnessValue, NullnessStore> visitNullChk(
+      NullChkNode n, TransferInput<NullnessValue, NullnessStore> p) {
+    TransferResult<NullnessValue, NullnessStore> result = super.visitNullChk(n, p);
+    // A null check throws NullPointerException if its operand is null.
+    makeNonNull(result, n.getOperand());
+    refineToNonNull(result);
+    return result;
+  }
+
+  @Override
   public TransferResult<NullnessValue, NullnessStore> visitInstanceOf(
       InstanceOfNode n, TransferInput<NullnessValue, NullnessStore> p) {
     TransferResult<NullnessValue, NullnessStore> result = super.visitInstanceOf(n, p);
@@ -361,18 +371,6 @@ public class NullnessTransfer
     NullnessStore elseStore = result.getElseStore();
     makeNonNull(thenStore, n.getOperand());
     return new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
-  }
-
-  @Override
-  public TransferResult<NullnessValue, NullnessStore> visitMethodAccess(
-      MethodAccessNode n, TransferInput<NullnessValue, NullnessStore> p) {
-    TransferResult<NullnessValue, NullnessStore> result = super.visitMethodAccess(n, p);
-    // The receiver of an instance method access is non-null. A static method access does not
-    // ensure that the receiver is non-null.
-    if (!n.isStatic()) {
-      makeNonNull(result, n.getReceiver());
-    }
-    return result;
   }
 
   @Override
@@ -428,6 +426,10 @@ public class NullnessTransfer
         atypeFactory.isSideEffectFree(method) || PurityUtils.isSideEffectFree(atypeFactory, method);
     Node receiver = n.getTarget().getReceiver();
     // A static method invocation does not dereference its receiver.
+    // The receiver is refined here, after the invocation completes normally, rather than at the
+    // MethodAccessNode.  A call tests its receiver for nullness after evaluating its arguments, so
+    // neither the arguments nor a handler for the call's NullPointerException may assume that the
+    // receiver is non-null.
     if (!n.getTarget().isStatic()
         && (nonNullAssumptionAfterInvocation
             || isMethodSideEffectFree

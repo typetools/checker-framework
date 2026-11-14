@@ -11,6 +11,7 @@ import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.NullChkNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.dataflow.cfg.node.TypeCastNode;
 import org.checkerframework.dataflow.cfg.node.UnaryOperationNode;
@@ -76,6 +77,8 @@ public class LiveVarStore implements Store<LiveVarStore> {
       addUseInExpression(ternaryNode.getElseOperand());
     } else if (expression instanceof TypeCastNode typeCastNode) {
       addUseInExpression(typeCastNode.getOperand());
+    } else if (expression instanceof NullChkNode nullChkNode) {
+      addUseInExpression(nullChkNode.getOperand());
     } else if (expression instanceof InstanceOfNode instanceOfNode) {
       addUseInExpression(instanceOfNode.getOperand());
     } else if (expression instanceof BinaryOperationNode binaryNode) {

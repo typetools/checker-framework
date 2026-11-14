@@ -37,6 +37,7 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.NullChkNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.SuperNode;
 import org.checkerframework.dataflow.cfg.node.ThisNode;
@@ -505,6 +506,9 @@ public abstract class JavaExpression {
     } else if (receiverNode instanceof NarrowingConversionNode narrowingConversionNode) {
       // ignore narrowing
       return fromNode(narrowingConversionNode.getOperand());
+    } else if (receiverNode instanceof NullChkNode nullChkNode) {
+      // ignore null check
+      return fromNode(nullChkNode.getOperand());
     } else if (receiverNode instanceof UnaryOperationNode uopn) {
       return new UnaryOperation(uopn, fromNode(uopn.getOperand()));
     } else if (receiverNode instanceof BinaryOperationNode bopn) {
@@ -673,6 +677,13 @@ public abstract class JavaExpression {
         JavaExpression left = fromTree(binaryTree.getLeftOperand());
         JavaExpression right = fromTree(binaryTree.getRightOperand());
         return new BinaryOperation(TreeUtils.typeOf(tree), tree.getKind(), left, right);
+      }
+      case OTHER -> {
+        if (TreeUtils.isNullCheck(tree)) {
+          // ignore null check
+          return fromTree(((UnaryTree) tree).getExpression());
+        }
+        result = null;
       }
       default -> result = null;
     }
