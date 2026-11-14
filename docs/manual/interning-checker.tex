@@ -390,8 +390,11 @@ To restrict which types the checker should type-check, pass a canonical
 name (fully qualified name) using the \code{-Acheckclass} option.
 For example, to find only the
 interning errors related to uses of \code{String}, you can pass
-\code{-Acheckclass=java.lang.String}.  The Interning Checker always checks all
-subclasses and superclasses of the given class.
+\code{-Acheckclass=java.lang.String}.  The Interning Checker checks each
+\code{==} or \code{!=} comparison in which an operand's value might be an
+instance of the given class:  that is, an operand whose type can be cast to
+the given class, such as a subclass or superclass of it, an interface that a
+subclass of it might implement, or a type variable.
 
 
 \subsectionAndLabel{Imprecision (false positive warnings) of the Interning Checker}{interning-limitations}

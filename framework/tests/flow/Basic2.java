@@ -94,8 +94,9 @@ public class Basic2 {
     c1.c.f1 = p1;
     @Odd String l4 = c1.c.f1;
     c2.c = c2;
-    // :: error: [assignment]
+    // Assigning `c2.c` does not change `c1.f1`, which reads neither `c2` nor field `c`.
     @Odd String l5 = c1.f1;
+    // `c1.c` might be the location `c2.c`.
     // :: error: [assignment]
     @Odd String l6 = c1.c.f1;
   }

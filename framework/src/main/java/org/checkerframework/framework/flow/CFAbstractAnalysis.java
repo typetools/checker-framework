@@ -39,6 +39,7 @@ import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -101,6 +102,9 @@ public abstract class CFAbstractAnalysis<
   /** Instance of the types utility. */
   protected final Types types;
 
+  /** The javac types utility, which can determine whether one type can be cast to another. */
+  private final com.sun.tools.javac.code.Types javacTypes;
+
   /**
    * Cache for {@link #getSideEffectsOnlyExpressions}, which would otherwise re-parse the
    * annotation's expressions once per dataflow iteration per call site. A key that is mapped to
@@ -160,6 +164,7 @@ public abstract class CFAbstractAnalysis<
     super(maxCountBeforeWidening);
     env = checker.getProcessingEnvironment();
     types = env.getTypeUtils();
+    javacTypes = com.sun.tools.javac.code.Types.instance(InternalUtils.getJavacContext(env));
     qualHierarchy = factory.getQualifierHierarchy();
     typeHierarchy = factory.getTypeHierarchy();
     dependentTypesHelper = factory.getDependentTypesHelper();
@@ -507,5 +512,17 @@ public abstract class CFAbstractAnalysis<
    */
   public ProcessingEnvironment getEnv() {
     return env;
+  }
+
+  /**
+   * Returns true if the given expressions might evaluate to the same object, judging by their
+   * types. See {@link TypesUtils#canAlias} for details.
+   *
+   * @param a an expression
+   * @param b another expression
+   * @return true if {@code a} and {@code b} might evaluate to the same object
+   */
+  public boolean canAlias(JavaExpression a, JavaExpression b) {
+    return TypesUtils.canAlias(a.getType(), b.getType(), javacTypes);
   }
 }
