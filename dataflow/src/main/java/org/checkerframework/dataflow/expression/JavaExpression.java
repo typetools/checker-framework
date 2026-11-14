@@ -219,6 +219,20 @@ public abstract class JavaExpression {
   }
 
   /**
+   * Returns true if some element of the list {@link #containsModifiableAliasOf contains a
+   * modifiable alias of} {@code other}.
+   *
+   * @param list a list of expressions, each of which might be {@code null}
+   * @param store the store, which determines whether two expressions might alias
+   * @param other a local variable, field access, or array access that is assigned
+   * @return true if assigning {@code other} might change the value of some element of {@code list}
+   */
+  public static boolean listContainsModifiableAliasOf(
+      List<? extends @Nullable JavaExpression> list, Store<?> store, JavaExpression other) {
+    return list.stream().anyMatch(je -> je != null && je.containsModifiableAliasOf(store, other));
+  }
+
+  /**
    * Returns true if the given expression is equal to this or equal to the receiver of this,
    * recursively. For example, {@code a.f.g} contains {@code a.f} and {@code a} as receivers.
    *
@@ -275,9 +289,8 @@ public abstract class JavaExpression {
    * the value of {@code x.f.g} if {@code x} and {@code y} might be the same object, but assigning
    * {@code y.h} does not change the value of {@code x.f.g}, nor of the local variable {@code x}.
    *
-   * <p>This implementation returns true if this expression equals {@code other} or if their values
-   * might be the same object. It does not examine subexpressions, so every subclass that has
-   * subexpressions overrides it, as does every subclass that reads no location.
+   * <p>This implementation conservatively returns true. A subclass that knows the locations it
+   * reads overrides it.
    *
    * @param store the store, which determines whether two expressions might alias
    * @param other a local variable, field access, or array access that is assigned
@@ -285,7 +298,7 @@ public abstract class JavaExpression {
    */
   @Pure
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
-    return this.equals(other) || store.canAlias(this, other);
+    return true;
   }
 
   /**

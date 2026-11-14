@@ -180,15 +180,8 @@ public class MethodCall extends JavaExpression {
     if (!(other instanceof LocalVariable)) {
       return true;
     }
-    if (receiver.containsModifiableAliasOf(store, other)) {
-      return true;
-    }
-    for (JavaExpression p : arguments) {
-      if (p.containsModifiableAliasOf(store, other)) {
-        return true;
-      }
-    }
-    return false;
+    return receiver.containsModifiableAliasOf(store, other)
+        || listContainsModifiableAliasOf(arguments, store, other);
   }
 
   @Override

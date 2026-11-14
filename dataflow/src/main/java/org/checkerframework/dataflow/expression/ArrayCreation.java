@@ -74,17 +74,8 @@ public class ArrayCreation extends JavaExpression {
   @Override
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
     // The created array is a new object, so only its dimensions and initializers read locations.
-    for (JavaExpression n : dimensions) {
-      if (n != null && n.containsModifiableAliasOf(store, other)) {
-        return true;
-      }
-    }
-    for (JavaExpression n : initializers) {
-      if (n.containsModifiableAliasOf(store, other)) {
-        return true;
-      }
-    }
-    return false;
+    return listContainsModifiableAliasOf(dimensions, store, other)
+        || listContainsModifiableAliasOf(initializers, store, other);
   }
 
   @Override

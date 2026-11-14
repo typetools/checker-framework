@@ -1,6 +1,8 @@
 package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -1184,11 +1186,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * <ol>
    *   <li value="1">Update the abstract value of other field accesses <em>b.g</em> where the field
-   *                 is equal (that is, <em>f=g</em>), and the receiver <em>b</em> might alias the
-   *                 receiver of {@code fieldAccess}, <em>a</em>. This update will raise the
-   *                 abstract value for such field accesses to at least {@code val} (or the old
-   *                 value, if that was less precise). However, this is only necessary if the field
-   *                 <em>g</em> is not final.
+   *                 is equal (that is, <em>f=g</em>), and either the field is static or the
+   *                 receiver <em>b</em> might alias the receiver of {@code fieldAccess},
+   *                 <em>a</em>. This update will raise the abstract value for such field accesses
+   *                 to at least {@code val} (or the old value, if that was less precise). However,
+   *                 this is only necessary if the field <em>g</em> is not final.
    *   <li value="2">Remove any abstract values for field accesses <em>b.g</em> where the receiver
    *                 <em>b</em> reads a location that {@code fieldAccess} might denote.
    *   <li value="3">Remove any information about method calls, including about iterated collection
@@ -1212,17 +1214,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       if (otherFieldAccess.getReceiver().containsModifiableAliasOf(this, fieldAccess)) {
         fieldValuesIterator.remove(); // remove information completely
       }
-      // case 1:
-      else if (fieldAccess.getField().equals(otherFieldAccess.getField())) {
-        if (canAlias(fieldAccess.getReceiver(), otherFieldAccess.getReceiver())) {
-          if (!otherFieldAccess.isFinal()) {
-            if (val != null) {
-              V newVal = val.leastUpperBound(otherVal);
-              entry.setValue(newVal);
-            } else {
-              // remove information completely
-              fieldValuesIterator.remove();
-            }
+      // case 1:  Because case 2 does not apply, `otherFieldAccess` contains a modifiable alias of
+      // `fieldAccess` only if the two might be the same location.
+      else if (otherFieldAccess.containsModifiableAliasOf(this, fieldAccess)) {
+        if (!otherFieldAccess.isFinal()) {
+          if (val != null) {
+            V newVal = val.leastUpperBound(otherVal);
+            entry.setValue(newVal);
+          } else {
+            // remove information completely
+            fieldValuesIterator.remove();
           }
         }
       }
@@ -1363,17 +1364,24 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Returns true if the objects {@code a} and {@code b} can be aliases. Returns a conservative
    * answer (i.e., returns {@code true} if not enough information is available to determine
    * aliasing).
+   *
+   * <p>This implementation returns true if a cast from the erasure of one type to the erasure of
+   * the other is legal. Erasure makes the test conservative for type variables, wildcards, and type
+   * arguments: for example, values of types {@code T} and {@code U} that are both bounded by {@code
+   * D} might be the same object, and so might values of types {@code Box<? extends Number>} and
+   * {@code Box<? super Integer>}. Castability makes the test conservative for interfaces: for
+   * example, values of types {@code Runnable[]} and {@code Comparable<?>[]} might be the same
+   * object. In none of these examples is either type a subtype of the other.
    */
   @Override
   public boolean canAlias(JavaExpression a, JavaExpression b) {
     Types types = analysis.getTypes();
-    // Erasure makes the test conservative for type variables, wildcards, and type arguments.  For
-    // example, values of types `T` and `U` that are both bounded by `D` might be the same object,
-    // and so might values of types `Box<? extends Number>` and `Box<? super Integer>`, even though
-    // neither type is a subtype of the other.
-    TypeMirror ta = types.erasure(a.getType());
-    TypeMirror tb = types.erasure(b.getType());
-    return types.isSubtype(ta, tb) || types.isSubtype(tb, ta);
+    Type ta = (Type) types.erasure(a.getType());
+    Type tb = (Type) types.erasure(b.getType());
+    com.sun.tools.javac.code.Types javacTypes =
+        com.sun.tools.javac.code.Types.instance(
+            ((JavacProcessingEnvironment) analysis.getEnv()).getContext());
+    return javacTypes.isCastable(ta, tb) || javacTypes.isCastable(tb, ta);
   }
 
   /* --------------------------------------------------------- */
