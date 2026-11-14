@@ -431,11 +431,15 @@ public class NullnessVisitor
         }
       }
     }
-    // Don't call super because it will issue an incorrect instanceof.unsafe warning.
-    // Instead, just scan the part before "instanceof".
-    super.scan(tree.getExpression(), p);
-    return null;
+    return super.visitInstanceOf(tree, p);
   }
+
+  /**
+   * Does nothing: every instanceof is safe in the Nullness type system, because its run-time check
+   * establishes that the value is non-null.
+   */
+  @Override
+  protected void checkInstanceOfSafety(InstanceOfTree tree) {}
 
   /**
    * Reports an error if a comparison of a @NonNull expression with the null literal is performed.

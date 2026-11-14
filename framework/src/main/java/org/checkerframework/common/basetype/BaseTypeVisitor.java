@@ -3800,12 +3800,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
   @Override
   public Void visitInstanceOf(InstanceOfTree tree, Void p) {
-    // The "reference type" is the type after "instanceof".
+    Tree patternTree = tree.getPattern();
+    if (patternTree == null) {
+      validateTypeOf(tree.getType());
+    } else if (patternTree instanceof BindingPatternTree bindingPatternTree) {
+      validateTypeOf(bindingPatternTree.getVariable());
+    }
+    checkInstanceOfSafety(tree);
+    return super.visitInstanceOf(tree, p);
+  }
+
+  /**
+   * Issues a warning if the given instanceof is unsafe: that is, if its run-time check does not
+   * establish the qualifiers of the reference type, which is the type after "instanceof".
+   *
+   * @param tree an instanceof
+   */
+  protected void checkInstanceOfSafety(InstanceOfTree tree) {
     Tree patternTree = tree.getPattern();
     if (patternTree != null) {
       if (patternTree instanceof BindingPatternTree bindingPatternTree) {
         VariableTree variableTree = bindingPatternTree.getVariable();
-        validateTypeOf(variableTree);
         if (variableTree.getModifiers() != null) {
           AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
           AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
@@ -3818,7 +3833,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
       }
     } else {
       Tree refTypeTree = tree.getType();
-      validateTypeOf(refTypeTree);
       if (refTypeTree instanceof AnnotatedTypeTree) {
         AnnotatedTypeMirror refType = atypeFactory.getAnnotatedType(refTypeTree);
         AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
@@ -3828,8 +3842,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
       }
     }
-
-    return super.visitInstanceOf(tree, p);
   }
 
   /**
