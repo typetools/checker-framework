@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * reference equality ({@code ==}).
  *
  * <p>Within the method, the formal parameter should be compared with {@code ==} rather than with
- * {@code equals()}. However, any value may be passed to the method, and the Interning Checker does
+ * {@code equals()}. However, any value can be passed to the method, and the Interning Checker does
  * not verify that use of {@code ==} within the method is logically correct.
  *
  * @see org.checkerframework.checker.interning.InterningChecker

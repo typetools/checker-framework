@@ -46,7 +46,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeSystemError;
 
 /**
- * Adds {@link Regex} to the type of tree, in the following cases:
+ * Adds {@link Regex} to the type of a tree, in the following cases:
  *
  * <ol>
  *   <li value="1">a {@code String} or {@code char} literal that is a valid regular expression
@@ -62,8 +62,8 @@ import org.checkerframework.javacutil.TypeSystemError;
  * </ol>
  *
  * Provides a basic analysis of concatenation of partial regular expressions to determine if a valid
- * regular expression is produced by concatenating non-regular expression Strings. Do do this,
- * {@link PartialRegex} is added to the type of tree in the following cases:
+ * regular expression is produced by concatenating non-regular expression Strings. To do this,
+ * {@link PartialRegex} is added to the type of a tree in the following cases:
  *
  * <ol>
  *   <li value="1">a String literal that is not a valid regular expression.
@@ -128,7 +128,7 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       TreeUtils.getMethod("java.util.regex.Pattern", "compile", 2, processingEnv);
 
   /**
-   * Create a new RegexAnnotatedTypeFactory.
+   * Creates a new RegexAnnotatedTypeFactory.
    *
    * @param checker the checker
    */
@@ -479,13 +479,13 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns the value of the Regex annotation on the given type or NULL if there is no Regex
+     * Returns the value of the Regex annotation on the given type or null if there is no Regex
      * annotation. If type is a TYPEVAR, WILDCARD, or INTERSECTION type, visit first their primary
      * annotation then visit their upper bounds to get the Regex annotation. The method gets
      * "minimum" regex count because, depending on the bounds of a typevar or wildcard, the actual
-     * type may have more than the upper bound's count.
+     * type might have more than the upper bound's count.
      *
-     * @param type type that may carry a Regex annotation
+     * @param type type that might carry a Regex annotation
      * @return the Integer value of the Regex annotation (0 if no value exists)
      */
     private @Nullable Integer getMinimumRegexCount(AnnotatedTypeMirror type) {

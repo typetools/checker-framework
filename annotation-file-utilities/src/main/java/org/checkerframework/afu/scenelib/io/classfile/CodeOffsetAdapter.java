@@ -246,7 +246,7 @@ public class CodeOffsetAdapter extends ClassVisitor {
   }
 
   /**
-   * Fetch previousOffset.
+   * Returns previousOffset.
    *
    * @return previousOffset
    */
@@ -255,7 +255,7 @@ public class CodeOffsetAdapter extends ClassVisitor {
   }
 
   /**
-   * Fetch offset.
+   * Returns offset.
    *
    * @return offset
    */
@@ -264,7 +264,7 @@ public class CodeOffsetAdapter extends ClassVisitor {
   }
 
   /**
-   * Fetch bytecode offset.
+   * Returns bytecode offset.
    *
    * @return bytecode offset
    */
@@ -274,7 +274,7 @@ public class CodeOffsetAdapter extends ClassVisitor {
 
   // move ahead, marking previous position
   /**
-   * Save offset to previousOffset and advance offset.
+   * Saves offset to previousOffset and advances offset.
    *
    * @param n amount to advance offset
    */

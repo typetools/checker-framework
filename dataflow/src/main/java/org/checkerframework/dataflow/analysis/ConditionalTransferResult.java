@@ -29,7 +29,7 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
   protected final S elseStore;
 
   /**
-   * Create a new {@link #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)},
+   * Creates a new {@link #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)},
    * using {@code null} for {@link #exceptionalStores}.
    *
    * <p><em>Exceptions</em>: If the corresponding {@link
@@ -53,7 +53,7 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
   }
 
   /**
-   * Create a new {@link #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)},
+   * Creates a new {@link #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)},
    * using {@code false} for whether the store changed and {@code null} for {@link
    * #exceptionalStores}.
    *
@@ -67,7 +67,7 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
   }
 
   /**
-   * Create a new {@link #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)},
+   * Creates a new {@link #ConditionalTransferResult(AbstractValue, Store, Store, Map, boolean)},
    * using {@code false} for the {@code storeChanged} formal parameter.
    *
    * @param value the abstract value produced by the transfer function
@@ -82,9 +82,9 @@ public class ConditionalTransferResult<V extends AbstractValue<V>, S extends Sto
   }
 
   /**
-   * Create a {@code ConditionalTransferResult} with {@code thenStore} as the resulting store if the
-   * corresponding {@link org.checkerframework.dataflow.cfg.node.Node} evaluates to {@code true} and
-   * {@code elseStore} otherwise.
+   * Creates a {@code ConditionalTransferResult} with {@code thenStore} as the resulting store if
+   * the corresponding {@link org.checkerframework.dataflow.cfg.node.Node} evaluates to {@code true}
+   * and {@code elseStore} otherwise.
    *
    * <p><em>Exceptions</em>: If the corresponding {@link
    * org.checkerframework.dataflow.cfg.node.Node} throws an exception, then the corresponding store
