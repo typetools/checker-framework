@@ -26,7 +26,7 @@ import org.plumelib.util.StringsP;
  * that, for two objects, all fields are also structurally equal and for primitives their values are
  * equal.
  *
- * <p>See also DefaultTypeHierarchy, and SubtypeVisitHistory
+ * <p>See also DefaultTypeHierarchy and SubtypeVisitHistory.
  */
 public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean, Void> {
   /** History saving the result of previous comparisons. */
@@ -36,7 +36,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   private AnnotationMirror currentTop = null;
 
   /**
-   * Create a StructuralEqualityComparer.
+   * Creates a StructuralEqualityComparer.
    *
    * @param typeargVisitHistory history saving the result of previous comparisons
    */
@@ -122,8 +122,8 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   }
 
   /**
-   * Compare each type in types1 and types2 pairwise and return true if they are all equal. This
-   * method throws an exception if types1.size() != types2.size()
+   * Compares each type in types1 and types2 pairwise and returns true if they are all equal. This
+   * method throws an exception if types1.size() != types2.size().
    *
    * @return true if for each pair (t1 = types1.get(i); t2 = types2.get(i)), areEqual(t1,t2)
    */
@@ -150,8 +150,8 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
   }
 
   /**
-   * First check visitHistory to see if type1 and type2 have been compared once already. If so
-   * return true; otherwise compare them and put them in visitHistory.
+   * First checks visitHistory to see if type1 and type2 have been compared once already. If so,
+   * returns true; otherwise, compares them and puts them in visitHistory.
    *
    * @param type1 the first type
    * @param type2 the second type
@@ -303,7 +303,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
    *   <li>Their bounds are equal
    * </ul>
    *
-   * Note: Primary annotations will be taken into account when the bounds are retrieved
+   * Note: Primary annotations will be taken into account when the bounds are retrieved.
    */
   @Override
   public Boolean visitTypevar_Typevar(
@@ -338,7 +338,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
    *   <li>Their bounds are equal
    * </ul>
    *
-   * Note: Primary annotations will be taken into account when the bounds are retrieved
+   * Note: Primary annotations will be taken into account when the bounds are retrieved.
    */
   @Override
   public Boolean visitWildcard_Wildcard(

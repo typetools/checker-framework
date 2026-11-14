@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
  * <p>The {@link DefaultQualifier} annotation, which targets Java code elements, takes precedence
  * over {@code DefaultQualifierInHierarchy}.
  *
- * <p>Each type qualifier hierarchy may have at most one qualifier marked as {@code
+ * <p>Each type qualifier hierarchy can have at most one qualifier marked as {@code
  * DefaultQualifierInHierarchy}.
  *
  * @checker_framework.manual #effective-qualifier The effective qualifier on a type (defaults and

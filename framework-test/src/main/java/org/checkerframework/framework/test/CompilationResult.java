@@ -24,7 +24,7 @@ public class CompilationResult {
   }
 
   /**
-   * Returns true if compilation succeeded without errors or exceptions. May return true if
+   * Returns true if compilation succeeded without errors or exceptions. Might return true if
    * compilation issued warnings.
    *
    * @return true if compilation succeeded without errors or exceptions

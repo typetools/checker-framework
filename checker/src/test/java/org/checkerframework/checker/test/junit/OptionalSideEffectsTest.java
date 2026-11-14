@@ -13,7 +13,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class OptionalSideEffectsTest extends CheckerFrameworkPerDirectoryTest {
 
   /**
-   * Create an OptionalSideEffectsTest.
+   * Creates an OptionalSideEffectsTest.
    *
    * @param testFiles the files containing test code, which will be type-checked
    */

@@ -116,7 +116,7 @@ public class InsertAjavaAnnotations {
     }
   }
 
-  /** Represents some text to be inserted at a file and its location. */
+  /** Represents some text to be inserted into a file, and its location. */
   private static class Insertion {
     /** Offset of the insertion in the file, measured in characters from the beginning. */
     public final int position;
@@ -196,10 +196,11 @@ public class InsertAjavaAnnotations {
 
     /**
      * Constructs a {@code BuildInsertionsVisitor} where {@code destFileContents} is the String
-     * representation of the AST to insert annotation into, that uses the given line separator. When
-     * visiting a node pair, the second node must always be from an AST generated from this String.
+     * representation of the AST to insert annotations into, that uses the given line separator.
+     * When visiting a node pair, the second node must always be from an AST generated from this
+     * String.
      *
-     * @param destFileContents the String the second vistide AST was parsed from
+     * @param destFileContents the String the second visited AST was parsed from
      * @param lineSeparator the line separator that {@code destFileContents} uses
      */
     public BuildInsertionsVisitor(String destFileContents, @Regex String lineSeparator) {
@@ -539,7 +540,7 @@ public class InsertAjavaAnnotations {
    * Inserts all annotations from an ajava file into a Java file.
    *
    * @param annotationFileName an ajava file
-   * @param javaFileName a Java file to insert annotation into
+   * @param javaFileName a Java file to insert annotations into
    */
   public void insertAnnotations(String annotationFileName, String javaFileName) {
     try {

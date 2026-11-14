@@ -16,13 +16,13 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
  * </pre>
  *
  * Java source and the AST representation do not have "short" literals. They have integer literals
- * that may be narrowed to shorts depending on context.
+ * that might be narrowed to shorts depending on context.
  */
 // TODO: If we use explicit NarrowingConversionNodes, do we need ShortLiteralNodes too?
 public class ShortLiteralNode extends ValueLiteralNode {
 
   /**
-   * Create a new ShortLiteralNode.
+   * Creates a new ShortLiteralNode.
    *
    * @param t the tree for the literal value
    */

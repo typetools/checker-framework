@@ -72,7 +72,7 @@ class RangeOrListOfValues {
 
   /**
    * Produces the most precise annotation that captures the information stored in this
-   * RangeOrListOfValues. The result is either a {@link ArrayLen} or a {@link ArrayLenRange}.
+   * RangeOrListOfValues. The result is either an {@link ArrayLen} or an {@link ArrayLenRange}.
    *
    * @param atypeFactory the type factory
    * @return an annotation corresponding to this RangeOrListOfValues

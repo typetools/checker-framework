@@ -37,8 +37,8 @@ public class KeyForPropagator {
     TO_SUPERTYPE,
 
     /**
-     * first execute TO_SUBTYPE then TO_SUPERTYPE. If TO_SUBTYPE actually transfers an annotation
-     * for a particular type T then T will not be affected by the TO_SUPERTYPE transfer because it
+     * First execute TO_SUBTYPE, then TO_SUPERTYPE. If TO_SUBTYPE actually transfers an annotation
+     * for a particular type T, then T will not be affected by the TO_SUPERTYPE transfer because it
      * will already have a KeyFor annotation.
      */
     BOTH
@@ -48,7 +48,7 @@ public class KeyForPropagator {
    * The top type of the KeyFor hierarchy.
    *
    * <p>This class will replace @UnknownKeyFor annotations. It will also add annotations when they
-   * are missing for types that require primary annotation (i.e. not TypeVars, Wildcards,
+   * are missing for types that require primary annotation (i.e., not TypeVars, Wildcards,
    * Intersections, or Unions).
    */
   private final AnnotationMirror UNKNOWN_KEYFOR;
@@ -69,10 +69,10 @@ public class KeyForPropagator {
    * Propagate annotations from the type arguments of one type to another. Which type is the source
    * and destination of the annotations depends on the direction parameter. Only @KeyFor annotations
    * are propagated and only if the type to which it would be propagated contains an @UnknownKeyFor
-   * or contains no key for annotations of any kind. If any of the type arguments are wildcards than
+   * or contains no KeyFor annotations of any kind. If any of the type arguments are wildcards, then
    * they are ignored.
    *
-   * <p>Note the primary annotations of subtype/supertype are not used.
+   * <p>Note that the primary annotations of subtype/supertype are not used.
    *
    * <p>Simple Example:
    *
@@ -185,8 +185,8 @@ public class KeyForPropagator {
   }
 
   /**
-   * An {@link AnnotatedTypeReplacer} that copies the annotation in KeyFor hierarchy from the first
-   * types to the second type, if the second type is annotated with @UnknownKeyFor or has no
+   * An {@link AnnotatedTypeReplacer} that copies the annotation in the KeyFor hierarchy from the
+   * first type to the second type, if the second type is annotated with @UnknownKeyFor or has no
    * annotation in the KeyFor hierarchy.
    */
   private final class KeyForPropagationReplacer extends AnnotatedTypeReplacer {

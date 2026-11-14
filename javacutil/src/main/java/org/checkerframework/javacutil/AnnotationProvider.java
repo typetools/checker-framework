@@ -19,7 +19,7 @@ public interface AnnotationProvider {
    * @param elt the element
    * @param anno annotation class
    * @return an annotation mirror of class {@code anno} on {@code elt}, or an equivalent one, or
-   *     null if none exists on {@code anno}
+   *     null if none exists on {@code elt}
    */
   @Nullable AnnotationMirror getDeclAnnotation(Element elt, Class<? extends Annotation> anno);
 
