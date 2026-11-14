@@ -268,6 +268,24 @@ public abstract class AbstractQualifierPolymorphism implements QualifierPolymorp
   }
 
   @Override
+  public void resolveWithReceiver(AnnotatedTypeMirror receiverType, AnnotatedExecutableType type) {
+    if (polyQuals.isEmpty() || !hasPolymorphicQualifiers(type)) {
+      return;
+    }
+    // This is resolve(MethodInvocationTree, AnnotatedExecutableType) for an invocation that has no
+    // arguments.
+    AnnotatedTypeMirror methodReceiverType = type.getReceiverType();
+    AnnotationMirrorMap<AnnotationMirror> instantiationMapping =
+        methodReceiverType == null ? null : collector.visit(receiverType, methodReceiverType);
+    if (instantiationMapping != null && !instantiationMapping.isEmpty()) {
+      replacer.visit(type, instantiationMapping);
+    } else {
+      completer.visit(type);
+    }
+    reset();
+  }
+
+  @Override
   public void resolve(
       AnnotatedExecutableType functionalInterface, AnnotatedExecutableType memberReference) {
     if (hasPolymorphicQualifiers(functionalInterface.getReturnType())) {

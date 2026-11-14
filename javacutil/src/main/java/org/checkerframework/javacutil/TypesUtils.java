@@ -987,6 +987,26 @@ public final class TypesUtils {
   }
 
   /**
+   * Returns true if a cast from {@code exprType} to {@code castType} is an unchecked cast (JLS
+   * 5.1.6.2): that is, the run-time check that the cast performs does not verify all of {@code
+   * castType}. Ignores annotations. Returns false if the cast is not legal.
+   *
+   * @param exprType the type of the expression being cast
+   * @param castType the type that the expression is cast to
+   * @param processingEnv the processing environment
+   * @return true if a cast from {@code exprType} to {@code castType} is an unchecked cast
+   */
+  public static boolean isUncheckedCast(
+      TypeMirror exprType, TypeMirror castType, ProcessingEnvironment processingEnv) {
+    com.sun.tools.javac.code.Types javacTypes =
+        com.sun.tools.javac.code.Types.instance(InternalUtils.getJavacContext(processingEnv));
+    // isCastable records, in the javac Warner, any lint warnings that the cast would need.
+    Warner lintRecorder = new Warner();
+    return javacTypes.isCastable((Type) exprType, (Type) castType, lintRecorder)
+        && lintRecorder.hasNonSilentLint(LintCategory.UNCHECKED);
+  }
+
+  /**
    * Returns true if the erased type of {@code type1} is the same type as the erased type of {@code
    * type2}.
    *
@@ -1935,6 +1955,9 @@ public final class TypesUtils {
    * same name and the same enclosing element. Unlike {@link Types#isSameType(TypeMirror,
    * TypeMirror)}, they do not have to be the same object.
    *
+   * <p>Captured type variables, including fresh type variables, all have the same name and
+   * enclosing element, so two of them are the same only if they have the same element.
+   *
    * <p>This method is needed when a type has gone through type variable substitution, but only some
    * of the type variables were substituted. Also, a new {@link TypeVariable} object is created as
    * the type of a tree created by {@link org.checkerframework.javacutil.trees.TreeBuilder}.
@@ -1948,6 +1971,9 @@ public final class TypesUtils {
   public static boolean areSame(TypeVariable typeVariable1, TypeVariable typeVariable2) {
     if (typeVariable1 == typeVariable2) {
       return true;
+    }
+    if (isCapturedElement(typeVariable1) || isCapturedElement(typeVariable2)) {
+      return typeVariable1.asElement().equals(typeVariable2.asElement());
     }
     Name otherName = typeVariable2.asElement().getSimpleName();
     Element otherEnclosingElement = typeVariable2.asElement().getEnclosingElement();
@@ -1973,6 +1999,20 @@ public final class TypesUtils {
     // converted to a String because areSame compares names with Name.contentEquals, and Name does
     // not specify that its hashCode is consistent with contentEquals.
     Element element = typeVariable.asElement();
+    if (isCapturedElement(typeVariable)) {
+      return System.identityHashCode(element);
+    }
     return Objects.hash(element.getSimpleName().toString(), element.getEnclosingElement());
+  }
+
+  /**
+   * Returns true if the element of {@code typeVariable} is the element of a captured type variable.
+   *
+   * @param typeVariable a type variable
+   * @return true if the element of {@code typeVariable} is the element of a captured type variable
+   */
+  private static boolean isCapturedElement(TypeVariable typeVariable) {
+    // typeVariable need not be a javac type, but its element's type is.
+    return isCapturedTypeVariable(typeVariable.asElement().asType());
   }
 }

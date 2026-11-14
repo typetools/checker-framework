@@ -7,7 +7,59 @@
 
 ### User-visible changes
 
+Pattern variables, such as `s` in `o instanceof String s` or `case String s`,
+are defaulted to the top qualifier, like other local variables (the
+CLIMB-to-top rule).  An unannotated pattern variable is refined as if it were
+assigned a cast of the expression or record component that the pattern is
+matched against, as in `String s = (String) o;`.  A type system can refine it
+further; for example, the Nullness Checker refines it to `@NonNull` when the
+type pattern is the entire pattern of an `instanceof` or a case label, because
+such a pattern does not match null.  A pattern nested in a record pattern can
+match null if it is unconditional for the record component's type; for
+example, in `case Box(var s)` or `case Box(String s)`, `s` is null if the
+component is null, so `s` remains nullable if the component's type is
+`@Nullable`.
+
+The qualifiers of a record pattern's type are inferred from the type that the
+pattern is matched against, in the same way that javac infers its type
+arguments (JLS 18.5.5).  For example, given `record Box<T>(T t) {}` and
+`Box<@Untainted String> b`, in `b instanceof Box(var s)` the variable `s` has
+type `@Untainted String`.  If the qualifiers cannot be inferred, the Checker
+Framework issues a `type.arguments.not.inferred` error.
+
+A type pattern nested in a record pattern, such as `String s` in
+`Box(String s)`, is checked against the type of the record component: as an
+assignment if the pattern is unconditional for that type, and like an
+`instanceof` type pattern otherwise.  This can issue new `assignment` errors and
+`instanceof.pattern.unsafe` warnings.
+
 ### Changes for type system implementers
+
+`TypeUseLocation.LOCAL_VARIABLE` now applies to pattern variables.
+
+New overridable methods `BaseTypeVisitor.checkInstanceOfPattern()` and
+`BaseTypeVisitor.instanceOfPatternMatchedType()` check the binding variable of
+an `instanceof` type pattern.  New overridable methods
+`CFAbstractTransfer.refineBindingVariable()` and
+`CFAbstractTransfer.refineCaseLabelBindingVariable()` refine a binding variable.
+
+New method `QualifierPolymorphism.resolveWithReceiver()`.  A class that
+implements `QualifierPolymorphism` directly, rather than extending
+`AbstractQualifierPolymorphism`, must implement it.
+
+New overridable methods `BaseTypeVisitor.checkRecordPatternTypeInference()`,
+`BaseTypeVisitor.checkNestedBindingPatterns()`, and
+`BaseTypeVisitor.checkConditionalNestedBindingPattern()` check a record pattern.
+New method `AnnotatedTypeFactory.getRecordPatternComponentTypes()` returns the
+inferred types of the record components of a record pattern.  New class
+`RecordPatternTypeInference` infers the type of a record pattern, and new class
+`AnnotatedTypeProjection` computes the upward projection of an annotated type
+(JLS 4.10.5).
+
+New method `QualifierPolymorphism.resolveWithReceiver()` resolves the
+polymorphic qualifiers of a method invoked with no arguments on a receiver of a
+given type; a class that implements `QualifierPolymorphism` directly, rather
+than by extending `AbstractQualifierPolymorphism`, must implement it.
 
 ### Closed issues
 
