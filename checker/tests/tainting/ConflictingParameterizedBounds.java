@@ -130,7 +130,7 @@ public class ConflictingParameterizedBounds {
   }
 
   void useCovariantFirstArg() {
-    // :: error: [assignment] :: error: [type.arguments.not.inferred]
+    // :: error: [assignment]
     CovariantSecond<@Tainted String, @Untainted String> x = covariantSecond();
   }
 
