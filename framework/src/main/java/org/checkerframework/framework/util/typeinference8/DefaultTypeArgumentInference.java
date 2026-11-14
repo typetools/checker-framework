@@ -48,11 +48,12 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
   /**
    * A cache from the outermost tree of an inference problem (a method invocation or class instance
-   * creation) to the result of solving that problem, before {@link
-   * InferenceResult#swapTypeVariables} is applied. Its keys contain trees of the compilation unit
-   * that the type factory is processing; see {@link #clearCache}. See {@link #canUseCache}.
+   * creation) to the type of the outer method that the problem was solved for and the result of
+   * solving that problem, before {@link InferenceResult#swapTypeVariables} is applied. Its keys
+   * contain trees of the compilation unit that the type factory is processing; see {@link
+   * #clearCache}. See {@link #canUseCache}.
    */
-  private final Map<CacheKey, InferenceResult> inferenceCache;
+  private final Map<CacheKey, CacheEntry> inferenceCache;
 
   /**
    * A key of {@link #inferenceCache}.
@@ -69,6 +70,22 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
    *     outerTree}'s method were resolved before inference
    */
   private record CacheKey(ExpressionTree outerTree, boolean polyQualifiersResolved) {}
+
+  /**
+   * An entry in {@link #inferenceCache}.
+   *
+   * <p>The same outermost tree can be inferred with different types for the outer method: a caller
+   * that infers the type arguments of the outermost tree itself supplies the method type, which may
+   * have its polymorphic qualifiers resolved, but a request for a nested tree uses the type from
+   * {@link AnnotatedTypeFactory#methodFromUseWithoutTypeArgInference(MethodInvocationTree)}, whose
+   * polymorphic qualifiers are not resolved. So, a cached result is reused only for an outer method
+   * type that is equal to the one it was computed from.
+   *
+   * @param outerMethodType a copy of the type of the outer method that the inference problem was
+   *     solved for
+   * @param result the result of solving the inference problem
+   */
+  private record CacheEntry(AnnotatedExecutableType outerMethodType, InferenceResult result) {}
 
   /**
    * Creates a DefaultTypeArgumentInference whose cache has the default size, {@link
@@ -138,23 +155,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
     assert pathToExpression != null : "@AssumeAssertion(nullness): the tree is being type-checked";
 
-    boolean useCache =
-        !(outerTree instanceof MemberReferenceTree) && canUseCache(typeFactory, pathToExpression);
-    // The key is used only if useCache is true.
-    CacheKey cacheKey = new CacheKey(outerTree, outerTree == expressionTree);
-    if (useCache) {
-      InferenceResult cached = inferenceCache.get(cacheKey);
-      // A member reference that the cached result has no type arguments for needs another
-      // inference, below, that reuses the inference problem.  Do not use the cache for it.
-      if (cached != null
-          && (cached.getResults().containsKey(expressionTree)
-              || !(expressionTree instanceof MemberReferenceTree))) {
-        return cached
-            .copyForExpression(expressionTree)
-            .swapTypeVariables(executableType, expressionTree);
-      }
-    }
-
     // Null if outerTree is a member reference.
     AnnotatedExecutableType outerMethodType;
     if (outerTree == expressionTree) {
@@ -170,6 +170,26 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
           "Unexpected kind of outer expression to infer type arguments: %s", outerTree.getKind());
     }
 
+    boolean useCache = outerMethodType != null && canUseCache(typeFactory, pathToExpression);
+    // The key is used only if useCache is true.
+    CacheKey cacheKey = new CacheKey(outerTree, outerTree == expressionTree);
+    if (useCache) {
+      CacheEntry cached = inferenceCache.get(cacheKey);
+      // A cached result that was computed from a different outer method type, such as one whose
+      // polymorphic qualifiers were resolved differently, is not reused; see CacheEntry.
+      // A member reference that the cached result has no type arguments for needs another
+      // inference, below, that reuses the inference problem.  Do not use the cache for it.
+      if (cached != null
+          && cached.outerMethodType().equals(outerMethodType)
+          && (cached.result().getResults().containsKey(expressionTree)
+              || !(expressionTree instanceof MemberReferenceTree))) {
+        return cached
+            .result()
+            .copyForExpression(expressionTree)
+            .swapTypeVariables(executableType, expressionTree);
+      }
+    }
+
     try {
       if (outerTree instanceof MemberReferenceTree outerMemberRef) {
         InvocationTypeInference java8Inference =
@@ -178,6 +198,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       }
       assert outerMethodType != null
           : "@AssumeAssertion(nullness): outerTree is not a member reference";
+      // Copy the outer method type before inference, so that the cache entry is not affected by
+      // any later change to it.
+      AnnotatedExecutableType outerMethodTypeCopy = useCache ? outerMethodType.deepCopy() : null;
       InvocationTypeInference java8Inference =
           new InvocationTypeInference(typeFactory, pathToExpression, true);
       InferenceResult result =
@@ -214,7 +237,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
       }
       chosenInference.recordLambdaParameterTypes();
       if (useCache) {
-        inferenceCache.put(cacheKey, result);
+        assert outerMethodTypeCopy != null : "@AssumeAssertion(nullness): useCache is true";
+        inferenceCache.put(cacheKey, new CacheEntry(outerMethodTypeCopy, result));
       }
       if (!result.getResults().containsKey(expressionTree)
           && expressionTree instanceof MemberReferenceTree mrt) {
