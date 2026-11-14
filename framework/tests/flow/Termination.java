@@ -85,4 +85,19 @@ public class Termination {
     }
     @Odd String l3 = l1;
   }
+
+  // The desugared call to iterator() can throw an exception that a catch clause handles.
+  void t7(@Odd String p1, String p2, boolean b1, TerminatingIterable it) {
+    String l1 = p2;
+    if (b1) {
+      l1 = p1;
+    } else {
+      try {
+        for (String s : it) {}
+      } catch (Error e) {
+      }
+    }
+    // :: error: [assignment]
+    @Odd String l3 = l1;
+  }
 }
