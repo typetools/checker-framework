@@ -877,12 +877,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       return createStringAnnotation(stringVals);
     }
 
-    TypeKind primitiveKind;
-    if (TypesUtils.isPrimitive(resultType)) {
-      primitiveKind = resultType.getKind();
-    } else if (TypesUtils.isBoxedPrimitive(resultType)) {
-      primitiveKind = types.unboxedType(resultType).getKind();
-    } else {
+    TypeKind primitiveKind = TypeKindUtils.primitiveOrBoxedToTypeKind(resultType);
+    if (primitiveKind == null) {
       return UNKNOWNVAL;
     }
 
