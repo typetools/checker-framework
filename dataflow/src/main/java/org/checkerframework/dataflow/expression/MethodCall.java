@@ -175,15 +175,13 @@ public class MethodCall extends JavaExpression {
 
   @Override
   public boolean containsModifiableAliasOf(Store<?> store, JavaExpression other) {
-    if (receiver.containsModifiableAliasOf(store, other)) {
+    // The method might read any field or array element, not only those reachable from its receiver
+    // and arguments.  The only local variables that it reads are its receiver and arguments.
+    if (!(other instanceof LocalVariable)) {
       return true;
     }
-    for (JavaExpression p : arguments) {
-      if (p.containsModifiableAliasOf(store, other)) {
-        return true;
-      }
-    }
-    return false; // the method call itself is not modifiable
+    return receiver.containsModifiableAliasOf(store, other)
+        || listContainsModifiableAliasOf(arguments, store, other);
   }
 
   @Override

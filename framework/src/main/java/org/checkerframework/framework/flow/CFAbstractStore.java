@@ -1,6 +1,8 @@
 package org.checkerframework.framework.flow;
 
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -1184,18 +1186,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * <ol>
    *   <li value="1">Update the abstract value of other field accesses <em>b.g</em> where the field
-   *                 is equal (that is, <em>f=g</em>), and the receiver <em>b</em> might alias the
-   *                 receiver of {@code fieldAccess}, <em>a</em>. This update will raise the
-   *                 abstract value for such field accesses to at least {@code val} (or the old
-   *                 value, if that was less precise). However, this is only necessary if the field
-   *                 <em>g</em> is not final.
-   *   <li value="2">Remove any abstract values for field accesses <em>b.g</em> where {@code
-   *                 fieldAccess} might alias any expression in the receiver <em>b</em>.
+   *                 is equal (that is, <em>f=g</em>), and either the field is static or the
+   *                 receiver <em>b</em> might alias the receiver of {@code fieldAccess},
+   *                 <em>a</em>. This update will raise the abstract value for such field accesses
+   *                 to at least {@code val} (or the old value, if that was less precise). However,
+   *                 this is only necessary if the field <em>g</em> is not final.
+   *   <li value="2">Remove any abstract values for field accesses <em>b.g</em> where the receiver
+   *                 <em>b</em> reads a location that {@code fieldAccess} might denote.
    *   <li value="3">Remove any information about method calls, including about iterated collection
    *                 elements whose reference is a method call.
-   *   <li value="4">Remove any abstract values for an array access <em>b[i]</em> where {@code
-   *                 fieldAccess} might alias any expression in the receiver <em>a</em> or index
-   *                 <em>i</em>.
+   *   <li value="4">Remove any abstract values for an array access <em>b[i]</em> where the array
+   *                 <em>b</em> or the index <em>i</em> reads a location that {@code fieldAccess}
+   *                 might denote.
    * </ol>
    *
    * @param fieldAccess the field access that is assigned
@@ -1212,17 +1214,16 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       if (otherFieldAccess.getReceiver().containsModifiableAliasOf(this, fieldAccess)) {
         fieldValuesIterator.remove(); // remove information completely
       }
-      // case 1:
-      else if (fieldAccess.getField().equals(otherFieldAccess.getField())) {
-        if (canAlias(fieldAccess.getReceiver(), otherFieldAccess.getReceiver())) {
-          if (!otherFieldAccess.isFinal()) {
-            if (val != null) {
-              V newVal = val.leastUpperBound(otherVal);
-              entry.setValue(newVal);
-            } else {
-              // remove information completely
-              fieldValuesIterator.remove();
-            }
+      // case 1:  Because case 2 does not apply, `otherFieldAccess` contains a modifiable alias of
+      // `fieldAccess` only if the two might be the same location.
+      else if (otherFieldAccess.containsModifiableAliasOf(this, fieldAccess)) {
+        if (!otherFieldAccess.isFinal()) {
+          if (val != null) {
+            V newVal = val.leastUpperBound(otherVal);
+            entry.setValue(newVal);
+          } else {
+            // remove information completely
+            fieldValuesIterator.remove();
           }
         }
       }
@@ -1260,11 +1261,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * <ol>
    *   <li value="1">Remove any abstract value for other array access <em>b[j]</em> where <em>a</em>
-   *                 and <em>b</em> can be aliases, or where either <em>b</em> or <em>j</em>
-   *                 contains a modifiable alias of <em>a[i]</em>.
-   *   <li value="2">Remove any abstract values for field accesses <em>b.g</em> where <em>a[i]</em>
-   *                 might alias any expression in the receiver <em>b</em> and there is an array
-   *                 expression somewhere in the receiver.
+   *                 and <em>b</em> can be aliases, or where either <em>b</em> or <em>j</em> reads a
+   *                 location that <em>a[i]</em> might denote.
+   *   <li value="2">Remove any abstract values for field accesses <em>b.g</em> where the receiver
+   *                 <em>b</em> reads a location that <em>a[i]</em> might denote.
    *   <li value="3">Remove any information about method calls, including about iterated collection
    *                 elements whose reference is a method call.
    * </ol>
@@ -1279,11 +1279,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       Map.Entry<ArrayAccess, V> entry = arrayValuesIterator.next();
       ArrayAccess otherArrayAccess = entry.getKey();
       // case 1:
+      // TODO: When the arrays can be aliases, one could be less strict here, and only raise the
+      // abstract value of the other array access.
       if (otherArrayAccess.containsModifiableAliasOf(this, arrayAccess)) {
-        arrayValuesIterator.remove(); // remove information completely
-      } else if (canAlias(arrayAccess.getArray(), otherArrayAccess.getArray())) {
-        // TODO: one could be less strict here, and only raise the abstract
-        // value for all array expressions with potentially aliasing receivers.
         arrayValuesIterator.remove(); // remove information completely
       }
     }
@@ -1294,8 +1292,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
       Map.Entry<FieldAccess, V> entry = fieldValuesIterator.next();
       FieldAccess otherFieldAccess = entry.getKey();
       JavaExpression otherReceiver = otherFieldAccess.getReceiver();
-      if (otherReceiver.containsModifiableAliasOf(this, arrayAccess)
-          && otherReceiver.containsOfClass(ArrayAccess.class)) {
+      if (otherReceiver.containsModifiableAliasOf(this, arrayAccess)) {
         // remove information completely
         fieldValuesIterator.remove();
       }
@@ -1312,9 +1309,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    *
    * <ol>
    *   <li value="1">Remove any abstract values for field accesses <em>b.g</em> where {@code var}
-   *                 might alias any expression in the receiver <em>b</em>.
+   *                 appears in the receiver <em>b</em>.
    *   <li value="2">Remove any abstract values for array accesses <em>a[i]</em> where {@code var}
-   *                 might alias the receiver <em>a</em>.
+   *                 appears in the array <em>a</em> or the index <em>i</em>.
    *   <li value="3">Remove any information about method calls where the receiver or any of the
    *                 parameters contains {@code var}, including about iterated collection elements
    *                 whose reference is such a method call, such as {@code list.get(i)}.
@@ -1367,13 +1364,24 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
    * Returns true if the objects {@code a} and {@code b} can be aliases. Returns a conservative
    * answer (i.e., returns {@code true} if not enough information is available to determine
    * aliasing).
+   *
+   * <p>This implementation returns true if a cast from the erasure of one type to the erasure of
+   * the other is legal. Erasure makes the test conservative for type variables, wildcards, and type
+   * arguments: for example, values of types {@code T} and {@code U} that are both bounded by {@code
+   * D} might be the same object, and so might values of types {@code Box<? extends Number>} and
+   * {@code Box<? super Integer>}. Castability makes the test conservative for interfaces: for
+   * example, values of types {@code Runnable[]} and {@code Comparable<?>[]} might be the same
+   * object. In none of these examples is either type a subtype of the other.
    */
   @Override
   public boolean canAlias(JavaExpression a, JavaExpression b) {
-    TypeMirror tb = b.getType();
-    TypeMirror ta = a.getType();
     Types types = analysis.getTypes();
-    return types.isSubtype(ta, tb) || types.isSubtype(tb, ta);
+    Type ta = (Type) types.erasure(a.getType());
+    Type tb = (Type) types.erasure(b.getType());
+    com.sun.tools.javac.code.Types javacTypes =
+        com.sun.tools.javac.code.Types.instance(
+            ((JavacProcessingEnvironment) analysis.getEnv()).getContext());
+    return javacTypes.isCastable(ta, tb) || javacTypes.isCastable(tb, ta);
   }
 
   /* --------------------------------------------------------- */

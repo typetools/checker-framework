@@ -9,6 +9,21 @@
 
 ### Changes for type system implementers
 
+`JavaExpression.containsModifiableAliasOf(store, other)` returns true if
+assigning `other` might change the value of the expression:  that is, if `other`
+might denote a location (a variable, field, or array element) that the
+expression or one of its subexpressions reads.  It no longer returns true merely
+because the value of a subexpression might be the same object as the value of
+`other`.  For example, assigning `y.g` does not change the value of the local
+variable `x` or of `x.f`.  The default implementation returns true; a subclass
+of `JavaExpression` that overrides it must adopt the new meaning.
+
+`CFAbstractStore.canAlias(a, b)` returns true if a cast from the erasure of the
+type of `a` to the erasure of the type of `b`, or vice versa, is legal.  It
+previously required one type to be a subtype of the other, so it returned false
+for some values that can be the same object, such as values whose types are two
+different type variables, or two interfaces.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
