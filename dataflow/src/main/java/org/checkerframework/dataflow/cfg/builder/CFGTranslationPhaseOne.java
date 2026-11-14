@@ -2418,8 +2418,8 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
      *
      * @param caseTree a case tree whose CFG to build
      * @param index the index of the case tree in {@link #caseBodyLabels}
-     * @param isLastCaseOfExhaustive true if this is the last case of an exhaustive switch
-     *     statement, with no fallthrough to it. In other words, no test of the labels is necessary.
+     * @param isLastCaseOfExhaustive true if this is the last case of an exhaustive switch statement
+     *     or switch expression. The CFG does not test its labels.
      */
     private void buildCase(CaseTree caseTree, int index, boolean isLastCaseOfExhaustive) {
       boolean isDefaultCase = CaseUtils.isDefaultCaseTree(caseTree);
@@ -2438,11 +2438,11 @@ public class CFGTranslationPhaseOne extends TreeScanner<Node, Void> {
         }
 
         // If true, the labels are not tested.
-        boolean alwaysMatches = isLastCaseOfExhaustive || labelAlwaysMatches(caseTree, index);
+        boolean labelsUntested = isLastCaseOfExhaustive || labelAlwaysMatches(caseTree, index);
         extendWithNode(
             new CaseNode(
-                caseTree, selectorExprAssignment, exprs, alwaysMatches, env.getTypeUtils()));
-        if (!alwaysMatches) {
+                caseTree, selectorExprAssignment, exprs, labelsUntested, env.getTypeUtils()));
+        if (!labelsUntested) {
           Label labelsMatchLabel = new Label();
           extendWithExtendedNode(new ConditionalJump(labelsMatchLabel, nextCaseLabel));
           addLabelForNextNode(labelsMatchLabel);

@@ -9,8 +9,9 @@
 
 ### Changes for type system implementers
 
-The `CaseNode` constructor takes a new `alwaysMatches` argument, and the new
-method `CaseNode.alwaysMatches()` returns it; for such a `CaseNode`, the CFG
+The `CaseNode` constructor takes a new `labelsUntested` argument, and the new
+method `CaseNode.labelsUntested()` returns it.  It is true for the last case of
+an exhaustive switch.  For a `CaseNode` whose `labelsUntested()` is true, the CFG
 does not test the labels, and `CFAbstractTransfer.visitCase()` returns a regular
 store.
 
