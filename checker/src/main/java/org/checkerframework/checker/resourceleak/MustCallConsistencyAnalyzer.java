@@ -657,12 +657,12 @@ public class MustCallConsistencyAnalyzer {
    * Checks that an invocation of a CreatesMustCallFor method is valid.
    *
    * <p>Such an invocation is valid if any of the conditions in {@link
-   * #isValidCreatesMustCallForExpression(Set, JavaExpression, MethodInvocationNode, TreePath)} is
-   * true for each expression in the argument to the CreatesMustCallFor annotation. As a special
-   * case, the invocation of a CreatesMustCallFor method with "this" as its expression is permitted
-   * in the constructor of the relevant class (invoking a constructor already creates an
-   * obligation). If none of these conditions are true for any of the expressions, this method
-   * issues a reset.not.owning error.
+   * #isValidCreatesMustCallForExpression(Set, JavaExpression, TreePath)} is true for each
+   * expression in the argument to the CreatesMustCallFor annotation. As a special case, the
+   * invocation of a CreatesMustCallFor method with "this" as its expression is permitted in the
+   * constructor of the relevant class (invoking a constructor already creates an obligation). If
+   * none of these conditions are true for any of the expressions, this method issues a
+   * reset.not.owning error.
    *
    * <p>For soundness, this method also guarantees that if any of the expressions in the
    * CreatesMustCallFor annotation has a tracked Obligation, any tracked resource aliases of it will
@@ -684,7 +684,7 @@ public class MustCallConsistencyAnalyzer {
             node, cmAtf, cmAtf);
     List<JavaExpression> missing = new ArrayList<>(0);
     for (JavaExpression expression : cmcfExpressions) {
-      if (!isValidCreatesMustCallForExpression(obligations, expression, node, currentPath)) {
+      if (!isValidCreatesMustCallForExpression(obligations, expression, currentPath)) {
         missing.add(expression);
       }
     }
@@ -732,17 +732,12 @@ public class MustCallConsistencyAnalyzer {
    * @param obligations the currently-tracked Obligations; this value is side-effected if there is
    *     an Obligation in it which tracks {@code expression} as one of its resource aliases
    * @param expression an element of a method's @CreatesMustCallFor annotation
-   * @param invocation the invocation of the method from whose @CreatesMustCallFor annotation {@code
-   *     expression} came
    * @param invocationPath the path to the invocation of the method from whose @CreatesMustCallFor
    *     annotation {@code expression} came
    * @return true iff the expression is valid, as defined above
    */
   private boolean isValidCreatesMustCallForExpression(
-      Set<Obligation> obligations,
-      JavaExpression expression,
-      MethodInvocationNode invocation,
-      TreePath invocationPath) {
+      Set<Obligation> obligations, JavaExpression expression, TreePath invocationPath) {
     if (expression instanceof FieldAccess fa) {
       Element elt = fa.getField();
       if (!noLightweightOwnership && cmAtf.hasOwning(elt)) {
@@ -780,7 +775,7 @@ public class MustCallConsistencyAnalyzer {
                     ImmutableSet.of(alias),
                     obligation.whenToEnforce,
                     checker.countFoundObligation(
-                        new CreatesMustCallForKey(invocation.getTree(), expression),
+                        new CreatesMustCallForKey(invocationPath.getLeaf(), expression),
                         expression.getType()));
           }
         }
@@ -862,7 +857,8 @@ public class MustCallConsistencyAnalyzer {
    */
   /*package-private*/ void updateObligationsWithInvocationResult(
       Set<Obligation> obligations, Node node) {
-    Tree tree = node.getTree();
+    @SuppressWarnings("nullness:assignment") // an invocation node has a tree
+    @NonNull Tree tree = node.getTree();
     // Only track the result of the call if there is a temporary variable for the call node
     // (because if there is no temporary, then the invocation must produce an untrackable value,
     // such as a primitive type).
