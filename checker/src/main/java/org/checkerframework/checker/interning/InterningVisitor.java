@@ -49,6 +49,7 @@ import org.checkerframework.framework.util.Heuristics;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -83,6 +84,11 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
    */
   private final @Nullable DeclaredType typeToCheck = typeToCheck();
 
+  /** The javac type utilities, which determine whether one type can be cast to another. */
+  private final com.sun.tools.javac.code.Types javacTypes =
+      com.sun.tools.javac.code.Types.instance(
+          InternalUtils.getJavacContext(checker.getProcessingEnvironment()));
+
   /** The Comparable.compareTo method. */
   private final ExecutableElement comparableCompareTo =
       TreeUtils.getMethod(
@@ -98,9 +104,11 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
   }
 
   /**
-   * Returns true if interning should be verified for the input expression. By default, all classes
-   * are checked for interning unless {@code -Acheckclass} is specified.
+   * Returns true if interning should be verified for the input expression: that is, true unless
+   * {@code -Acheckclass} is specified and the expression's value cannot be an instance of the
+   * specified class.
    *
+   * @param tree an expression
    * @return true if interning should be verified for the input expression
    * @see <a href="https://checkerframework.org/manual/#interning-checks">What the Interning Checker
    *     checks</a>
@@ -110,8 +118,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
       return true;
     }
 
-    TypeMirror type = TreeUtils.typeOf(tree);
-    return types.isSubtype(type, typeToCheck) || types.isSubtype(typeToCheck, type);
+    return TypesUtils.canAlias(TreeUtils.typeOf(tree), typeToCheck, javacTypes);
   }
 
   /** Checks comparison operators, == and !=, for INTERNING violations. */
@@ -143,32 +150,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
       return super.visitBinary(tree, p);
     }
 
-    // If shouldCheckExpression returns true for either the LHS or RHS,
-    // this method proceeds with the interning check.
-
-    // Justification: Consider the following scenario:
-
-    // interface I { ... }
-    // class A { ... }
-    // class B extends A implements I { ... }
-    // ...
-    // I i;
-    // A a;
-    // ...
-    // if (a == i) { ... }
-
-    // The Java compiler does not issue a compilation error for the (a == i) comparison because,
-    // even though A does not implement I, 'a' could be assigned an instance of B, and B does
-    // implement I (note that the compiler does not need to know about the existence of B
-    // in order to assume this).
-
-    // Now suppose the user passes -AcheckClass=A on the command-line.
-    // I is not a subtype or supertype of A, so shouldCheckExpression will not return true for
-    // I.
-    // But the interning check must be performed, given the argument above.  Therefore if
-    // shouldCheckExpression returns true for either the LHS or the RHS, this method proceeds
-    // with the interning check.
-
+    // Check the comparison if either operand's value might be an instance of the class to check.
     if (!shouldCheckExpression(leftOp) && !shouldCheckExpression(rightOp)) {
       return super.visitBinary(tree, p);
     }
