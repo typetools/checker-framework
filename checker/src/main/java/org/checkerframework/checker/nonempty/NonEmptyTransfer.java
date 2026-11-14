@@ -4,6 +4,7 @@ import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.nonempty.qual.NonEmpty;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.CaseNode;
@@ -352,7 +353,7 @@ public class NonEmptyTransfer extends CFTransfer {
    * @param n a node that might be an invocation of a size-dependent method
    * @return the value that the method returns for an empty container, or null
    */
-  private Integer emptyValue(Node n) {
+  private @Nullable Integer emptyValue(Node n) {
     if (isSizeAccess(n)) {
       return 0;
     } else if (NodeUtils.isMethodInvocation(n, listIndexOf, env)) {
