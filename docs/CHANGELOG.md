@@ -7,9 +7,13 @@
 
 ### User-visible changes
 
+The manual's alias figure now names `org.checkerframework.common.value.qual.IntRange`.
+
 ### Changes for type system implementers
 
 ### Closed issues
+
+\#8551.
 
 ## Version 4.4.0 (2026-11-02)
 
