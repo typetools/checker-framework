@@ -9,7 +9,6 @@ import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
@@ -21,7 +20,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
 @SubtypeOf({GuardedBy.class, GuardSatisfied.class})
 @DefaultFor(TypeUseLocation.CONSTRUCTOR_RESULT)
 @QualifierForLiterals({LiteralKind.STRING, LiteralKind.PRIMITIVE})
