@@ -191,7 +191,10 @@ functional-interface parameter, and it applies even if the method's body never
 calls that parameter's functional method.  Only a parameter whose declared
 type is a functional interface is checked:  the method can assume nothing about an
 argument to a parameter whose type is a type variable, nor about the elements
-of a varargs array.  How the argument is checked depends on its form:
+of a varargs array.  How the argument is checked depends on its form.
+Parentheses around the argument are ignored, and so is a cast of a lambda, a
+method reference, a conditional expression, or a switch expression, because
+such a cast does not change the code that the argument denotes.
 
 \begin{itemize}
 \item
@@ -199,6 +202,12 @@ of a varargs array.  How the argument is checked depends on its form:
   the required purity annotations.
 \item
   A lambda is checked via its body, which must have the required purity.
+\item
+  A conditional expression (\<?:>) or a switch expression is checked branch
+  by branch:  each of its possible result expressions is checked according
+  to these rules.
+\item
+  The \<null> literal is not checked, because it denotes no code.
 \item
   Any other argument is checked via the functional method of the argument's
   declared type, which must have the required purity annotations.
@@ -208,6 +217,8 @@ of a varargs array.  How the argument is checked depends on its form:
   m(String::length, "hi");   // OK: String.length() is side-effect-free
   m(s -> s.length(), "hi");  // OK: the lambda body is side-effect-free
   m(s -> count++, "hi");     // error: the lambda body has a side effect
+  m(b ? String::length : s -> 0, "hi");  // OK: each branch is side-effect-free
+  m(b ? null : s -> count++, "hi");      // error: the false branch has a side effect
 
   void caller(Function<String, Integer> g) {
     m(g, "hi");              // error: [purity.functional.argument] Function.apply is not @SideEffectFree
