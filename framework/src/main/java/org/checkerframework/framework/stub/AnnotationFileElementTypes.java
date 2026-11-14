@@ -310,6 +310,15 @@ public class AnnotationFileElementTypes {
           processingEnv, "AFET.parseAnnotationFiles(%s, %s)", annotationFiles, fileType);
     }
     for (String path : annotationFiles) {
+      File namedFile = AnnotationFileUtil.findFileSystemLocation(path);
+      if (namedFile != null
+          && namedFile.isFile()
+          && !AnnotationFileUtil.isJarOrZip(namedFile.getName())
+          && !AnnotationFileUtil.isUsableNamedFile(namedFile.getPath(), fileType)) {
+        warnUnusableNamedFile(path, fileType);
+        continue;
+      }
+
       List<AnnotationFileResource> allFiles = AnnotationFileUtil.allAnnotationFiles(path, fileType);
       if (allFiles != null) {
         for (AnnotationFileResource resource : allFiles) {
@@ -333,8 +342,8 @@ public class AnnotationFileElementTypes {
                 fileType == AnnotationFileType.AJAVA ? AnnotationFileType.AJAVA_AS_STUB : fileType);
           } catch (IOException e) {
             checker.message(
-                Diagnostic.Kind.NOTE,
-                "Could not read annotation resource: " + resource.getDescription());
+                Diagnostic.Kind.WARNING,
+                "Could not read annotation resource: " + resource.getDescription() + ": " + e);
           }
         }
       } else {
@@ -345,7 +354,10 @@ public class AnnotationFileElementTypes {
           path = "/" + path.substring("checker.jar/".length());
         }
         try (InputStream in = checker.getClass().getResourceAsStream(path)) {
-          if (in != null) {
+          if (in != null && !AnnotationFileUtil.isUsableNamedFile(path, fileType)) {
+            // A classpath resource is subject to the same naming rule as a file on disk.
+            warnUnusableNamedFile(path, fileType);
+          } else if (in != null) {
             AnnotationFileParser.parseStubFile(
                 path, in, factory, processingEnv, annotationFileAnnos, fileType);
           } else {
@@ -406,6 +418,25 @@ public class AnnotationFileElementTypes {
         }
       }
     }
+  }
+
+  /**
+   * Issues a warning that a file named by the user is being ignored, because its name does not suit
+   * its file type.
+   *
+   * @param path the file's name, as the user supplied it
+   * @param fileType the type of annotation file that the user supplied
+   */
+  private void warnUnusableNamedFile(String path, AnnotationFileType fileType) {
+    String reason;
+    if (fileType == AnnotationFileType.COMMAND_LINE_STUB) {
+      reason = ", which is an ajava file; supply it via -Aajava";
+    } else if (fileType.isStub()) {
+      reason = ": the name of a stub file must not end with .ajava";
+    } else {
+      reason = ": the name of an ajava file must end with .ajava";
+    }
+    factory.getChecker().message(Diagnostic.Kind.WARNING, "Ignoring " + path + reason);
   }
 
   /**
