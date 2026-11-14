@@ -14,12 +14,14 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.plumelib.util.CollectionsP;
 
 /**
  * A {@link org.checkerframework.framework.type.QualifierHierarchy} where, when a qualifier has
  * arguments, the subtype relation is determined by a subset or superset test on the elements
  * (arguments). Each qualifier that has elements must have exactly one element, named {@code value},
- * whose type is {@code String[]}.
+ * whose type is {@code String[]}. In the canonical form of such a qualifier, the values are sorted
+ * and have no duplicates.
  *
  * <p>This assumes that if the lub or glb of two qualifier kinds has elements, then it is one of the
  * two qualifier kinds. Otherwise, computing the lub or glb throws {@link BugInCF}.
@@ -57,6 +59,22 @@ public abstract class AbstractSetInclusionQualifierHierarchy
     super(qualifierClasses, processingEnv.getElementUtils(), atypeFactory);
     this.processingEnv = processingEnv;
     this.subtypeIsSubset = subtypeIsSubset;
+  }
+
+  @Override
+  public AnnotationMirror canonicalize(AnnotationMirror qualifier) {
+    QualifierKind kind = getQualifierKind(qualifier);
+    if (!kind.hasElements()) {
+      return qualifier;
+    }
+    // canonicalize is called on every annotation added to a type, so do not crash on a malformed
+    // annotation that lacks a value element.
+    List<String> values =
+        AnnotationUtils.getElementValueArrayOrNull(qualifier, "value", String.class, true);
+    if (values == null || CollectionsP.isSortedNoDuplicates(values)) {
+      return qualifier;
+    }
+    return createAnnotation(kind, new TreeSet<>(values));
   }
 
   @Override
@@ -171,8 +189,18 @@ public abstract class AbstractSetInclusionQualifierHierarchy
     } else if (isValues2) {
       return a2;
     }
-    AnnotationBuilder builder =
-        new AnnotationBuilder(processingEnv, resultKind.getAnnotationClass());
+    return createAnnotation(resultKind, values);
+  }
+
+  /**
+   * Returns an annotation of the given kind whose values are the given strings, in iteration order.
+   *
+   * @param kind the kind of the annotation
+   * @param values the values of the annotation
+   * @return an annotation of kind {@code kind} whose values are {@code values}
+   */
+  private AnnotationMirror createAnnotation(QualifierKind kind, Set<String> values) {
+    AnnotationBuilder builder = new AnnotationBuilder(processingEnv, kind.getAnnotationClass());
     builder.setValue("value", values.toArray());
     return builder.build();
   }
