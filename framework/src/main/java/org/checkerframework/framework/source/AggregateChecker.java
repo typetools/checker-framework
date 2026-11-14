@@ -4,8 +4,10 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Properties;
 import java.util.Set;
 import javax.tools.Diagnostic;
+import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * An abstract {@link SourceChecker} that runs independent subcheckers and interleaves their
@@ -41,6 +43,38 @@ public abstract class AggregateChecker extends SourceChecker {
   @Override
   protected final Set<Class<? extends SourceChecker>> getImmediateSubcheckerClasses() {
     return new LinkedHashSet<>(getSupportedCheckers());
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>An aggregate checker's messages also include those of its immediate subcheckers, because the
+   * aggregate checker can report a diagnostic whose message key a subchecker defines. If the
+   * aggregate checker and a subchecker define the same key, the aggregate checker's text is used.
+   */
+  @Override
+  public Properties getMessagesProperties() {
+    if (messagesProperties != null) {
+      return messagesProperties;
+    }
+
+    Properties result = new Properties();
+    // This creates new instances rather than calling `getSubcheckers()`, which requires a
+    // processing environment and so fails outside a compilation, such as in a unit test.
+    for (Class<? extends SourceChecker> subcheckerClass : getSupportedCheckers()) {
+      SourceChecker subchecker;
+      try {
+        subchecker = subcheckerClass.getDeclaredConstructor().newInstance();
+      } catch (Exception e) {
+        throw new TypeSystemError("Could not create an instance of " + subcheckerClass, e);
+      }
+      result.putAll(subchecker.getMessagesProperties());
+    }
+    // `super.getMessagesProperties()` caches only the aggregate checker's own messages in the
+    // field, so the field is overwritten below.
+    result.putAll(super.getMessagesProperties());
+    messagesProperties = result;
+    return result;
   }
 
   @Override
