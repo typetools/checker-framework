@@ -976,7 +976,9 @@ public final class TypesUtils {
    *
    * <p>The answer is not conservative when an interface type is involved. One object can have two
    * unrelated interface types, such as {@code Runnable} and {@code Serializable}, or a class type
-   * and an unrelated interface type, but this method returns false for such types. See
+   * and an unrelated interface type, but this method returns false for such types. The same holds
+   * for arrays whose component types are such types: one {@code Integer[]} can be both a {@code
+   * Number[]} and a {@code Comparable[]}. See
    * https://github.com/typetools/checker-framework/issues/8558.
    *
    * <p>This compares the erasures of the types, because two parameterizations of a generic type can
