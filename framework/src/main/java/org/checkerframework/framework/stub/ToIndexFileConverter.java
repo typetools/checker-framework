@@ -1095,9 +1095,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   /**
    * Returns the type that the first element of {@code identifiers} names in the innermost scope,
    * enclosing {@code node}, that contains it. The scopes searched are those of the declarations
-   * that enclose {@code node} and of its compilation unit's top-level types. Once the first
-   * identifier names a type, the caller resolves the remaining identifiers within that type,
-   * without searching outer scopes.
+   * that enclose {@code node} and of its compilation unit's top-level types. A class's scope
+   * contains the member types that it inherits from its supertypes. Once the first identifier names
+   * a type, the caller resolves the remaining identifiers within that type, without searching outer
+   * scopes.
    *
    * @param node a node in the stub file's AST
    * @param identifiers a type name that has been split at its {@code .} separators
@@ -1155,7 +1156,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param typeParamsInScope whether the type parameters of {@code n} are in scope; false if the
    *     name is written in the modifiers of {@code n}
    * @param memberTypesInScope whether the member types of {@code n}, if it is a type declaration,
-   *     are in scope; false if the name is written in the header of {@code n} rather than its body
+   *     are in scope, including the ones that it inherits from its supertypes; false if the name is
+   *     written in the header of {@code n} rather than its body
    * @return the type that the first element of {@code identifiers} names: a {@link TypeParameter}
    *     or {@link TypeDeclaration} of the stub file, a {@link Class} on the classpath that {@code
    *     n} inherits as a member type, or null
