@@ -38,9 +38,11 @@ public class CaseNode extends Node {
   /**
    * True if the CFG does not test the case expressions. This is so if they match every value of the
    * switch selector expression that is tested against them, or if this is the last case of an
-   * exhaustive switch.
+   * exhaustive switch. The last case of an exhaustive switch does not necessarily match every
+   * value: for example, an enum constant that was added after the switch was compiled matches no
+   * case, and the switch throws a MatchException.
    */
-  protected final boolean alwaysMatches;
+  protected final boolean labelsUntested;
 
   /**
    * True if code other than the switch selector expression, such as the guard of an earlier case,
@@ -56,8 +58,8 @@ public class CaseNode extends Node {
    * @param selectorExprAssignment the Node for the assignment of the switch selector expression to
    *     a synthetic local variable
    * @param caseExprs the case expression(s) to match the switch expression against
-   * @param alwaysMatches true if the CFG does not test the case expressions; see {@link
-   *     #alwaysMatches()}
+   * @param labelsUntested true if the CFG does not test the case expressions; see {@link
+   *     #labelsUntested()}
    * @param precededByOtherCode true if code other than the switch selector expression, such as the
    *     guard of an earlier case, is evaluated before this case's labels are tested; see {@link
    *     #isPrecededByOtherCode()}
@@ -67,14 +69,14 @@ public class CaseNode extends Node {
       CaseTree tree,
       AssignmentNode selectorExprAssignment,
       List<Node> caseExprs,
-      boolean alwaysMatches,
+      boolean labelsUntested,
       boolean precededByOtherCode,
       Types types) {
     super(types.getNoType(TypeKind.NONE));
     this.tree = tree;
     this.selectorExprAssignment = selectorExprAssignment;
     this.caseExprs = caseExprs;
-    this.alwaysMatches = alwaysMatches;
+    this.labelsUntested = labelsUntested;
     this.precededByOtherCode = precededByOtherCode;
   }
 
@@ -101,12 +103,14 @@ public class CaseNode extends Node {
   /**
    * Returns true if the CFG does not test the case expressions. This is so if they match every
    * value of the switch selector expression that is tested against them, or if this is the last
-   * case of an exhaustive switch.
+   * case of an exhaustive switch. The last case of an exhaustive switch does not necessarily match
+   * every value: for example, an enum constant that was added after the switch was compiled matches
+   * no case, and the switch throws a MatchException.
    *
    * @return true if the CFG does not test the case expressions
    */
-  public boolean alwaysMatches() {
-    return alwaysMatches;
+  public boolean labelsUntested() {
+    return labelsUntested;
   }
 
   /**
@@ -140,7 +144,10 @@ public class CaseNode extends Node {
 
   @Override
   public String toString() {
-    return "case " + StringsP.join(", ", getCaseOperands()) + ":";
+    return "case "
+        + StringsP.join(", ", getCaseOperands())
+        + ":"
+        + (labelsUntested ? " (labels untested)" : "");
   }
 
   @Override
@@ -150,13 +157,13 @@ public class CaseNode extends Node {
     }
     return getSwitchOperand().equals(other.getSwitchOperand())
         && getCaseOperands().equals(other.getCaseOperands())
-        && alwaysMatches == other.alwaysMatches
+        && labelsUntested == other.labelsUntested
         && precededByOtherCode == other.precededByOtherCode;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getSwitchOperand(), getCaseOperands(), alwaysMatches, precededByOtherCode);
+    return Objects.hash(getSwitchOperand(), getCaseOperands(), labelsUntested, precededByOtherCode);
   }
 
   @Override

@@ -62,7 +62,7 @@ Before:   reaching definitions = { to_increment = 0, switch#num0 = i }
 ~~~~~~~~~
 _   [ AnyPattern ]
 WrappedBoolean(_)   [ DeconstructorPattern ]
-case WrappedBoolean(_):   [ Case ]
+case WrappedBoolean(_): (labels untested)   [ Case ]
 to_increment   [ LocalVariable ]
 to_increment   [ LocalVariable ]
 2   [ IntegerLiteral ]

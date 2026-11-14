@@ -62,7 +62,7 @@ Before:   reaching definitions = { size = 0, switch#num0 = shape }
 side   [ VariableDeclaration ]
 side   [ LocalVariable ]
 Square(int side)   [ DeconstructorPattern ]
-case Square(int side):   [ Case ]
+case Square(int side): (labels untested)   [ Case ]
 size   [ LocalVariable ]
 side   [ LocalVariable ]
 size = side   [ Assignment ]
