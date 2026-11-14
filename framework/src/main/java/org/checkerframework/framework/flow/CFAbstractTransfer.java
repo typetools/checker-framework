@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,6 +23,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.RecordComponentElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -40,6 +42,7 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
+import org.checkerframework.dataflow.cfg.block.ExceptionBlock;
 import org.checkerframework.dataflow.cfg.node.AbstractNodeVisitor;
 import org.checkerframework.dataflow.cfg.node.AnyPatternNode;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
@@ -95,7 +98,10 @@ import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.CaseUtils;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.DeconstructionPatternUtils;
 import org.checkerframework.javacutil.TreeUtilsAfterJava17.PatternCaseLabelUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The default analysis transfer function for the Checker Framework. It propagates information
@@ -1342,8 +1348,13 @@ public abstract class CFAbstractTransfer<
    * A case produces no value, but it might imply some facts about the switch selector expression.
    */
   @Override
+  @SuppressWarnings("nullness:argument") // strengthenAnnotationOfEqualTo permits null values
   public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
     S store = in.getRegularStore();
+    boolean alwaysMatches = n.alwaysMatches();
+    // The case labels are tested against the value of the selector expression that was saved
+    // before the switch.  If the selector expression may have changed since then, do not refine it.
+    boolean canRefineSelector = canRefineSwitchSelector(n);
     TransferResult<V, S> lubResult = null;
     // Case operands are the case constants. For example, A, B and C in case A, B, C:.
     // This method refines the type of the selector expression and the synthetic variable that
@@ -1352,15 +1363,23 @@ public abstract class CFAbstractTransfer<
     // If there are multiple case constants then a new store is created for each case constant
     // and then they are lubbed. This method returns the lubbed result.
     for (Node caseOperand : n.getCaseOperands()) {
+      // If the case expressions always match, there is no else store.
       TransferResult<V, S> result =
-          new ConditionalTransferResult<>(
-              finishValue(null, store), in.getThenStore().copy(), in.getElseStore().copy(), false);
+          alwaysMatches
+              ? new RegularTransferResult<>(finishValue(null, store), store.copy(), false)
+              : new ConditionalTransferResult<>(
+                  finishValue(null, store),
+                  in.getThenStore().copy(),
+                  in.getElseStore().copy(),
+                  false);
       V caseValue = in.getValueOfSubNode(caseOperand);
       AssignmentNode assign = n.getSwitchOperand();
       V switchValue = store.getValue(JavaExpression.fromNode(assign.getTarget()));
-      result =
-          strengthenAnnotationOfEqualTo(
-              result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      if (canRefineSelector) {
+        result =
+            strengthenAnnotationOfEqualTo(
+                result, caseOperand, assign.getExpression(), caseValue, switchValue, false);
+      }
       // Update value of switch temporary variable
       result =
           strengthenAnnotationOfEqualTo(
@@ -1371,13 +1390,124 @@ public abstract class CFAbstractTransfer<
         lubResult = result;
       } else {
         S thenStore = lubResult.getThenStore().leastUpperBound(result.getThenStore());
-        S elseStore = lubResult.getElseStore().leastUpperBound(result.getElseStore());
-        lubResult =
-            new ConditionalTransferResult<>(
-                null, thenStore, elseStore, lubResult.storeChanged() || result.storeChanged());
+        boolean storeChanged = lubResult.storeChanged() || result.storeChanged();
+        if (alwaysMatches) {
+          lubResult = new RegularTransferResult<>(null, thenStore, storeChanged);
+        } else {
+          S elseStore = lubResult.getElseStore().leastUpperBound(result.getElseStore());
+          lubResult = new ConditionalTransferResult<>(null, thenStore, elseStore, storeChanged);
+        }
       }
     }
+    assert lubResult != null
+        : "@AssumeAssertion(nullness): a CaseNode has at least one case operand";
+    // Non-null if a record accessor might have changed the selector expression and the case node
+    // has exceptional successors (for a MatchException when no case matches).  These stores
+    // contain the effect of the accessor calls but not the facts implied by a successful match.
+    Map<TypeMirror, S> exceptionalStores = null;
+    if (!canRefineSelector && recordPatternMightHaveSideEffect(n)) {
+      // A record accessor that a record pattern of this case invokes might have changed the
+      // selector expression.  The CFG does not represent the accessor calls, so their effect on
+      // the selector expression is applied here.  (The stores of lubResult are fresh copies.)
+      JavaExpression selector = JavaExpression.fromNode(n.getSwitchOperand().getExpression());
+      lubResult.getThenStore().clearValue(selector);
+      if (!alwaysMatches) {
+        lubResult.getElseStore().clearValue(selector);
+      }
+      if (n.getBlock() instanceof ExceptionBlock block
+          && !block.getExceptionalSuccessors().isEmpty()) {
+        exceptionalStores = new LinkedHashMap<>();
+        for (TypeMirror exceptionType : block.getExceptionalSuccessors().keySet()) {
+          S exceptionalStore = store.copy();
+          exceptionalStore.clearValue(selector);
+          exceptionalStores.put(exceptionType, exceptionalStore);
+        }
+      }
+    }
+    if (alwaysMatches) {
+      // The case expressions are not tested, so the facts that hold when they match hold after
+      // this node.  (strengthenAnnotationOfEqualTo returns a conditional result.)
+      return new RegularTransferResult<>(
+          null, lubResult.getThenStore(), exceptionalStores, lubResult.storeChanged());
+    }
+    if (exceptionalStores != null) {
+      return lubResult.withExceptionalStores(exceptionalStores);
+    }
     return lubResult;
+  }
+
+  /**
+   * Returns true if matching a record pattern among the labels of the given case might have a side
+   * effect: that is, if a record accessor that the pattern invokes, directly or through a nested
+   * record pattern, is not side-effect-free.
+   *
+   * @param n a case node
+   * @return true if matching a record pattern among the labels of {@code n} might have a side
+   *     effect
+   */
+  private boolean recordPatternMightHaveSideEffect(CaseNode n) {
+    for (Tree label : CaseUtils.getLabels(n.getTree())) {
+      if (recordPatternMightHaveSideEffect(label)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if {@code pattern} is a record pattern, and a record accessor that it invokes,
+   * directly or through a nested record pattern, is not side-effect-free.
+   *
+   * @param pattern a case label or a pattern nested within a record pattern
+   * @return true if {@code pattern} is a record pattern whose matching might have a side effect
+   */
+  private boolean recordPatternMightHaveSideEffect(Tree pattern) {
+    if (!TreeUtils.isDeconstructionPatternTree(pattern)) {
+      return false;
+    }
+    TypeElement record = TypesUtils.getTypeElement(TreeUtils.typeOf(pattern));
+    if (record == null) {
+      return true;
+    }
+    for (RecordComponentElement component : record.getRecordComponents()) {
+      ExecutableElement accessor = component.getAccessor();
+      if (accessor == null || !analysis.atypeFactory.isSideEffectFree(accessor)) {
+        return true;
+      }
+    }
+    for (Tree nested : DeconstructionPatternUtils.getNestedPatterns(pattern)) {
+      if (recordPatternMightHaveSideEffect(nested)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if a transfer function may refine the switch selector expression (the expression
+   * of {@link CaseNode#getSwitchOperand()}) at {@code n}. It may not if other code, such as the
+   * guard of an earlier case or a record accessor that a record pattern invokes, might have changed
+   * the abstract value of the selector expression since it was evaluated (see {@link
+   * CaseNode#isPrecededByOtherCode()}). That code cannot assign a local variable that it does not
+   * declare (JLS 14.11.1), but it can assign a field or change the result of a method call. The
+   * synthetic variable to which the selector expression is assigned may always be refined.
+   *
+   * @param n a case node
+   * @return true if a transfer function may refine the switch selector expression at {@code n}
+   */
+  protected boolean canRefineSwitchSelector(CaseNode n) {
+    if (!n.isPrecededByOtherCode()) {
+      return true;
+    }
+    JavaExpression selector = JavaExpression.fromNode(n.getSwitchOperand().getExpression());
+    if (selector.containsOfClass(MethodCall.class)) {
+      return false;
+    }
+    // This mirrors the unrefinement that CFAbstractStore performs at a side effect.  Neither a
+    // guard nor a record accessor can assign a local variable that is declared outside it.
+    return analysis.atypeFactory.sideEffectsUnrefineAliases
+        ? !selector.isModifiableByOtherCode()
+        : !selector.isAssignableByOtherCode();
   }
 
   // /**
@@ -1423,7 +1553,9 @@ public abstract class CFAbstractTransfer<
   public TransferResult<V, S> visitVariableDeclaration(
       VariableDeclarationNode n, TransferInput<V, S> p) {
     S store = p.getRegularStore();
-    // The last case of an exhaustive switch has no CaseNode, so refine here instead.
+    // The binding variable is declared before the CaseNode, and visitCase refines the selector by
+    // the binding variable, not the binding variable by the selector.  Refine it here, so that the
+    // guard and the body see the refinement.
     ExpressionTree selector = getSelectorOfCaseLabelBindingVariable(n.getTree());
     if (selector != null) {
       refineCaseLabelBindingVariable(store, n.getTree(), selector);
