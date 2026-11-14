@@ -1,5 +1,8 @@
-// `@SideEffectsOnly` is inherited by overriding methods, so an override that does not repeat the
-// annotation is nonetheless checked against the overridden method's annotation.
+// `@SideEffectsOnly` is inherited by overriding methods, so the body of an override that does not
+// repeat the annotation is nonetheless checked against the overridden method's annotation.  The
+// body of an override that writes its own purity annotation is checked against that annotation,
+// and that annotation is checked against the overridden method's annotation:  it can permit fewer
+// side effects, but not more.
 
 import java.util.Collection;
 import org.checkerframework.dataflow.qual.SideEffectFree;

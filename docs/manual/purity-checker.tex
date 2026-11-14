@@ -322,6 +322,36 @@ MyClass.java:1465: error: [purity.assign.field] field assignment not allowed in 
 You can fix the definition by making its body pure.  Alternately, you can
 suppress the warning; see \chapterpageref{suppressing-warnings}.
 
+\iffalse
+A \refqualclass{dataflow/qual}{SideEffectsOnly} annotation is inherited in
+the same way:  an overriding method that has no purity annotation is checked
+against the overridden method's \<@SideEffectsOnly> annotation.  The
+annotation's expressions are interpreted in the overridden method, which
+declares them.  For example, in the inherited annotation, \<this.f> names the
+field \<f> that the overridden method sees, even if the overriding method's
+class declares a field \<f> that hides it.
+
+An overriding method can strengthen an inherited \<@SideEffectsOnly>
+annotation by writing \refqualclass{dataflow/qual}{SideEffectFree},
+\refqualclass{dataflow/qual}{Pure}, or a \<@SideEffectsOnly> annotation in
+which each expression is one that the overridden method lists or is reached
+through one that the overridden method lists.  For example, an override of a
+\<@SideEffectsOnly("\#1")> method can be annotated
+\<@SideEffectsOnly("\#1.f")>, and an override of a
+\<@SideEffectsOnly(\{"\#1", "\#2"\})> method can be annotated
+\<@SideEffectsOnly("\#2")>.
+
+A method that overrides methods in two or more supertypes, and that has no
+purity annotation of its own, inherits the \<@SideEffectsOnly> expressions of
+all of the overridden methods.  If those methods' annotations differ, the
+union of their expressions permits more side effects than an overridden
+method permits, so the Checker Framework issues a
+\<purity.sideeffectsonly.overriding> error for each overridden method that
+permits less than the union.  To fix the errors, write, on the overriding
+method, a \<@SideEffectsOnly> annotation that every overridden method permits,
+or a stronger purity annotation.
+\fi
+
 
 \sectionAndLabel{Suppressing warnings}{purity-suppress-warnings}
 
