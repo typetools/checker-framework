@@ -8,8 +8,9 @@ import org.junit.Test;
 
 /**
  * Tests that the checkers of the Resource Leak Checker, which issue the diagnostics, have the
- * message text for their message keys. Other tests run with {@code -Anomsgtext}, so they do not
- * notice missing text.
+ * message text for their message keys. The other Resource Leak Checker tests do not notice missing
+ * text, because the test framework compares an expected diagnostic with an issued one by its
+ * message key, not by its message text.
  */
 public class ResourceLeakMessagesTest {
 
