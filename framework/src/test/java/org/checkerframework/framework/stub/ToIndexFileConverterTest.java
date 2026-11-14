@@ -493,6 +493,277 @@ public class ToIndexFileConverterTest {
     assertMethod(jaif, "MyClass", "myOtherMethod([[Ljava/lang/CharSequence;)V");
   }
 
+  /** A varargs parameter whose element type is a stub-declared type uses that type's name. */
+  @Test
+  public void testStubDeclaredTypeVarargs() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Local {",
+            "  class Inner {}",
+            "}",
+            "class MyClass {",
+            "  void myMethod(Local... ls) {}",
+            "  void myOtherMethod(Local.Inner[]... is) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod([Lp/Local;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod([[Lp/Local$Inner;)V");
+  }
+
+  /** A type that the stub file declares is qualified by the stub file's package. */
+  @Test
+  public void testStubDeclaredType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Local {}",
+            "class MyClass {",
+            "  void myMethod(Local l) {}",
+            "  <T extends Local> void myOtherMethod(T t) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/Local;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Lp/Local;)V");
+  }
+
+  /**
+   * A type that the stub file declares is qualified by the stub file's package, even where it is
+   * used before its declaration.
+   */
+  @Test
+  public void testStubDeclaredTypeUsedBeforeDeclaration() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass {",
+            "  void myMethod(MyOtherClass c) {}",
+            "}",
+            "class MyOtherClass {",
+            "  void myOtherMethod(MyClass c) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyOtherClass;)V");
+    assertMethod(jaif, "MyOtherClass", "myOtherMethod(Lmypackage/MyClass;)V");
+  }
+
+  /**
+   * A nested class that the stub file declares gets its binary name, qualified by the stub file's
+   * package.
+   */
+  @Test
+  public void testStubDeclaredNestedType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass {",
+            "  void myMethod(MyOtherClass.MyNestedClass c) {}",
+            "}",
+            "class MyOtherClass {",
+            "  class MyNestedClass {",
+            "    class MyDoublyNestedClass {}",
+            "    void myNestedMethod(MyDoublyNestedClass c, MyOtherClass o) {}",
+            "  }",
+            "  void myOtherMethod(MyNestedClass c) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyOtherClass$MyNestedClass;)V");
+    assertMethod(jaif, "MyOtherClass", "myOtherMethod(Lmypackage/MyOtherClass$MyNestedClass;)V");
+    assertMethod(
+        jaif,
+        "MyOtherClass$MyNestedClass",
+        "myNestedMethod(Lmypackage/MyOtherClass$MyNestedClass$MyDoublyNestedClass;"
+            + "Lmypackage/MyOtherClass;)V");
+  }
+
+  /** A class declared in the stub file shadows a class of the same name on the classpath. */
+  @Test
+  public void testStubFileDeclarationShadowsClasspath() throws Exception {
+    // org.checkerframework.dataflow.util.PurityChecker is on the classpath.
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import org.checkerframework.dataflow.util.PurityChecker;",
+            "class MyClass {",
+            "  class PurityChecker {}",
+            "  void myMethod(PurityChecker c) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyClass$PurityChecker;)V");
+  }
+
+  /** A nested class shadows a type parameter of an enclosing class. */
+  @Test
+  public void testNestedClassShadowsTypeParameter() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass<E> {",
+            "  void myMethod(E e) {}",
+            "  class MyNestedClass {",
+            "    class E {}",
+            "    void myNestedMethod(E e) {}",
+            "  }",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/lang/Object;)V");
+    assertMethod(
+        jaif, "MyClass$MyNestedClass", "myNestedMethod(Lmypackage/MyClass$MyNestedClass$E;)V");
+  }
+
+  /** The stub file may refer to one of its own types by the type's fully qualified name. */
+  @Test
+  public void testFullyQualifiedNameOfStubFileType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "class MyClass {",
+            "  void myMethod(mypackage.MyOtherClass.MyNestedClass c) {}",
+            "}",
+            "class MyOtherClass {",
+            "  class MyNestedClass {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyOtherClass$MyNestedClass;)V");
+  }
+
+  /**
+   * Once the first identifier of a qualified name names a member type, the remaining identifiers
+   * are resolved within that member type, even if the stub file does not declare them.
+   */
+  @Test
+  public void testQualifiedNameIsResolvedWithinMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import java.util.Map;",
+            "class MyClass {",
+            "  static class Map {}",
+            "  void myMethod(Map.Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lmypackage/MyClass$Map$Entry;)V");
+  }
+
+  /** A member type that a stub-declared type inherits from a classpath supertype is found. */
+  @Test
+  public void testInheritedMemberTypeFromClasspath() throws Exception {
+    String jaif =
+        convert(
+            "package mypackage;",
+            "import java.util.Map;",
+            "class MyClass {",
+            "  abstract static class Map implements java.util.Map<String, String> {}",
+            "  void myMethod(Map.Entry e) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Ljava/util/Map$Entry;)V");
+  }
+
+  /** A member type that a stub-declared type inherits from a stub-declared supertype is found. */
+  @Test
+  public void testInheritedMemberTypeFromStub() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Super {",
+            "  static class Inner {}",
+            "  private static class Hidden {}",
+            "}",
+            "class Sub extends Super {}",
+            "class MyClass {",
+            "  void myMethod(Sub.Inner x) {}",
+            "  void myOtherMethod(Sub.Hidden x) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/Super$Inner;)V");
+    // A private member type is not inherited.
+    assertMethod(jaif, "MyClass", "myOtherMethod(Lp/Sub$Hidden;)V");
+  }
+
+  /**
+   * A package-private member type of a classpath supertype is not inherited by a subclass in
+   * another package, so a member type of the same name that another supertype declares is found
+   * instead.
+   */
+  @Test
+  public void testInheritedMemberTypeIsAccessible() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class Sub extends org.checkerframework.framework.stub.inheritanceb.Middle {}",
+            "class MyClass {",
+            "  void myMethod(Sub.Inner x) {}",
+            "}");
+    assertMethod(
+        jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/inheritanceb/I$Inner;)V");
+
+    // The inheritance path leaves the package of Base and returns to it, so Base.Inner is still not
+    // inherited.
+    jaif =
+        convert(
+            "package org.checkerframework.framework.stub.inheritancea;",
+            "class Sub extends org.checkerframework.framework.stub.inheritanceb.Middle {}",
+            "class MyClass {",
+            "  void myMethod(Sub.Inner x) {}",
+            "}");
+    assertMethod(
+        jaif, "MyClass", "myMethod(Lorg/checkerframework/framework/stub/inheritanceb/I$Inner;)V");
+
+    // A subclass in the package of Base inherits Base.Inner.
+    jaif =
+        convert(
+            "package org.checkerframework.framework.stub.inheritancea;",
+            "class Sub extends Base {}",
+            "class MyClass {",
+            "  void myMethod(Sub.Inner x) {}",
+            "}");
+    assertMethod(
+        jaif,
+        "MyClass",
+        "myMethod(Lorg/checkerframework/framework/stub/inheritancea/Base$Inner;)V");
+  }
+
+  /** Cyclic inheritance, which is illegal, does not make the converter recurse forever. */
+  @Test
+  public void testCyclicInheritance() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class A extends B {}",
+            "class B extends A {}",
+            "class MyClass {",
+            "  void myMethod(A.Missing x) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/A$Missing;)V");
+  }
+
+  /**
+   * A class's member types are not in scope in the class's header, such as in the bounds of its
+   * type parameters, but they are in scope in its body.
+   */
+  @Test
+  public void testMemberTypeNotInScopeInClassTypeParameterBound() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class C<T extends Number> {",
+            "  static class Number {}",
+            "  void m(T x) {}",
+            "  <U extends Number> void m2(U x) {}",
+            "}");
+    assertMethod(jaif, "C", "m(Ljava/lang/Number;)V");
+    assertMethod(jaif, "C", "m2(Lp/C$Number;)V");
+  }
+
+  /**
+   * A missing member of a stub-declared type has the same binary name whether or not the name is
+   * qualified by the stub file's package.
+   */
+  @Test
+  public void testPackageQualifiedMissingMemberType() throws Exception {
+    String jaif =
+        convert(
+            "package p;",
+            "class B {}",
+            "class MyClass {",
+            "  void myMethod(B.Missing x) {}",
+            "  void myOtherMethod(p.B.Missing x) {}",
+            "}");
+    assertMethod(jaif, "MyClass", "myMethod(Lp/B$Missing;)V");
+    assertMethod(jaif, "MyClass", "myOtherMethod(Lp/B$Missing;)V");
+  }
+
   /** A cyclic bound, which is illegal, does not make the converter recurse forever. */
   @Test
   public void testCyclicTypeVariableBound() throws Exception {
@@ -663,6 +934,80 @@ public class ToIndexFileConverterTest {
   }
 
   /**
+   * An annotation interface that an enclosing declaration of the stub file declares shadows an
+   * imported one of the same name when its {@code @Target} is determined.
+   */
+  @Test
+  public void testNestedAnnotationShadowsImport() throws Exception {
+    // p.C$Nullable cannot be loaded, so its @Target is unknown and it is a declaration annotation.
+    AField param =
+        firstParameter(
+            "m(Ljava/lang/String;)V",
+            "package p;",
+            "import org.checkerframework.checker.nullness.qual.Nullable;",
+            "class C {",
+            "  @interface Nullable {}",
+            "  void m(@Nullable String s) {}",
+            "}");
+    Assert.assertNotNull("@Nullable was not recorded on the parameter", param.lookup("Nullable"));
+    Assert.assertNull("@Nullable was recorded on the type", param.type.lookup("Nullable"));
+
+    // UpperBoundQual.UbImplicit is on the classpath, and its @Target is TYPE_USE.
+    AMethod method =
+        sceneOfStub(
+                "package org.checkerframework.framework.testchecker.defaulting;",
+                "class UpperBoundQual {",
+                "  @interface UbImplicit {}",
+                "  void m(@UbImplicit String s) {}",
+                "}")
+            .classes
+            .get("org.checkerframework.framework.testchecker.defaulting.UpperBoundQual")
+            .methods
+            .get("m(Ljava/lang/String;)V");
+    param = method.parameters.get(0);
+    Assert.assertNull("@UbImplicit was recorded on the parameter", param.lookup("UbImplicit"));
+    Assert.assertNotNull(
+        "@UbImplicit was not recorded on the type", param.type.lookup("UbImplicit"));
+  }
+
+  /**
+   * An annotation name that denotes a nested annotation interface in one class and an imported one
+   * elsewhere gets the {@code @Target} of the interface that it denotes at each use.
+   */
+  @Test
+  public void testShadowingAnnotationTargetsAreNotShared() throws Exception {
+    AScene scene =
+        sceneOfStub(
+            "package p;",
+            "import org.checkerframework.checker.nullness.qual.Nullable;",
+            "class A {",
+            "  void m(@Nullable String s) {}",
+            "}",
+            "class B {",
+            "  @interface Nullable {}",
+            "  void m(@Nullable String s) {}",
+            "}",
+            "class C {",
+            "  void m(@Nullable String s) {}",
+            "}");
+    // The imported @Nullable is TYPE_USE.  p.B$Nullable cannot be loaded, so its @Target is
+    // unknown and it is a declaration annotation.
+    for (String className : new String[] {"p.A", "p.B", "p.C"}) {
+      AField param =
+          scene.classes.get(className).methods.get("m(Ljava/lang/String;)V").parameters.get(0);
+      boolean isTypeUse = !className.equals("p.B");
+      Assert.assertEquals(
+          "@Nullable on the parameter in " + className,
+          !isTypeUse,
+          param.lookup("Nullable") != null);
+      Assert.assertEquals(
+          "@Nullable on the type in " + className,
+          isTypeUse,
+          param.type.lookup("Nullable") != null);
+    }
+  }
+
+  /**
    * An annotation that precedes a field's type or a method's return type is recorded as a
    * declaration annotation or as a type annotation, according to its {@code @Target}. As a type
    * annotation, it applies to the innermost component type of an array type.
@@ -752,6 +1097,33 @@ public class ToIndexFileConverterTest {
     Assert.assertNotNull(
         "@MustCallAlias was not recorded on the constructed type",
         constructor.returnType.lookup("MustCallAlias"));
+  }
+
+  /**
+   * A method's or constructor's type parameters are not in scope in its modifiers, so an annotation
+   * among the modifiers denotes an imported annotation interface, even if a type parameter has the
+   * same name.
+   */
+  @Test
+  public void testTypeParameterNotInScopeInModifiers() throws Exception {
+    String[] stubFileLines = {
+      "package p;",
+      "import org.checkerframework.checker.nullness.qual.Nullable;",
+      "class C {",
+      "  @Nullable <Nullable> String m();",
+      "  @Nullable <Nullable> C() {}",
+      "}"
+    };
+    AMethod method = methodOfStub("m()Ljava/lang/String;", stubFileLines);
+    Assert.assertNull("@Nullable was recorded on the method", method.lookup("Nullable"));
+    Assert.assertNotNull(
+        "@Nullable was not recorded on the return type", method.returnType.lookup("Nullable"));
+
+    AMethod constructor = methodOfStub("<init>()V", stubFileLines);
+    Assert.assertNull("@Nullable was recorded on the constructor", constructor.lookup("Nullable"));
+    Assert.assertNotNull(
+        "@Nullable was not recorded on the constructed type",
+        constructor.returnType.lookup("Nullable"));
   }
 
   /**
