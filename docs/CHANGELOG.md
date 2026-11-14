@@ -9,6 +9,15 @@
 
 ### Changes for type system implementers
 
+`AnnotatedTypeFactory.binaryTreeArgTypes(AnnotatedTypeMirror, AnnotatedTypeMirror)`
+takes an additional first argument, the operator, because the conversions of a
+binary operation's operands depend on the operator.
+
+Removed `CFGTranslationPhaseOne.isNumericOrBoxed()`; use
+`TypesUtils.isNumericAfterUnboxing()`, which also returns true for a type
+variable or intersection type whose upper bound unboxes to a numeric primitive,
+such as `T extends Integer`.
+
 ### Closed issues
 
 ## Version 4.4.0 (2026-11-02)
@@ -38,6 +47,10 @@ A subclass of `CFAbstractValue` or `CFValue` that adds state must override
 
 New method `BaseTypeVisitor.shouldSkipClass()` lets a checker skip a class
 entirely, including dataflow analysis.
+
+In `CFGTranslationPhaseOne`, renamed `createEnhancedForLoopIteratorVariable()` to
+`createIteratorVariableForEnhancedForLoop()` and
+`createEnhancedForLoopArrayVariable()` to `createArrayVariableForEnhancedForLoop()`.
 
 Removed classes `ByteMath`, `ShortMath`, `IntegerMath`, `LongMath`, `FloatMath`,
 and `DoubleMath`.  Use `NumberMath.getNumberMath()` instead.  `NumberMath` is
