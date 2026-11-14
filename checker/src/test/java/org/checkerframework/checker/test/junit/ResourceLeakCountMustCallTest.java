@@ -39,6 +39,33 @@ public class ResourceLeakCountMustCallTest {
   }
 
   /**
+   * A leaked object whose class is not in the JDK is not counted, even if its variable's type is in
+   * the JDK.
+   */
+  @Test
+  public void userClassIsNotCounted() {
+    assertCounts("UserClassAsJdkType.java", false, 0, 0);
+  }
+
+  /** An owning field is counted, and is not verified if it is overwritten. */
+  @Test
+  public void overwrittenFieldIsNotVerified() {
+    assertCounts("OverwrittenField.java", false, 3, 2);
+  }
+
+  /** An owning field is counted, and is not verified if the destructor does not close it. */
+  @Test
+  public void unclosedFieldIsNotVerified() {
+    assertCounts("UnclosedField.java", false, 2, 1);
+  }
+
+  /** A wrapper stream and the stream that it wraps are counted as one obligation. */
+  @Test
+  public void wrapperIsOneObligation() {
+    assertCounts("Wrapper.java", false, 1, 0);
+  }
+
+  /**
    * Runs the Resource Leak Checker with {@code -AcountMustCall} on the given file and checks the
    * statistics that it prints.
    *
