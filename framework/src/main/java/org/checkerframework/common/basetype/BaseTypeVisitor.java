@@ -147,6 +147,7 @@ import org.checkerframework.framework.util.JavaParserUtil;
 import org.checkerframework.framework.util.StaticJavaParserUtil;
 import org.checkerframework.framework.util.StringToJavaExpression;
 import org.checkerframework.framework.util.typeinference8.InferenceResult;
+import org.checkerframework.framework.util.typeinference8.RecordPatternTypeInference;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -158,6 +159,7 @@ import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TreeUtils.MemberReferenceKind;
+import org.checkerframework.javacutil.TreeUtilsAfterJava17.DeconstructionPatternUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.plumelib.util.ArrayMap;
 import org.plumelib.util.ArraySet;
@@ -450,7 +452,86 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     if (getCurrentPath() != null) {
       this.atypeFactory.setVisitorTreePath(new TreePath(getCurrentPath(), tree));
     }
+    if (TreeUtils.isDeconstructionPatternTree(tree)) {
+      checkRecordPatternTypeInference(tree);
+      checkNestedBindingPatterns(tree);
+    }
     return super.scan(tree, p);
+  }
+
+  /**
+   * Checks that the type of each binding variable that is declared by a type pattern nested in the
+   * record pattern {@code recordPattern} is compatible with the type of the record component that
+   * the type pattern is matched against.
+   *
+   * <p>If the type pattern is unconditional for the record component (JLS 14.30.3), the pattern
+   * always matches, so the check is an assignment check. Otherwise, the check is the same as for a
+   * type pattern in an {@code instanceof}.
+   *
+   * @param recordPattern a {@code DeconstructionPatternTree}
+   */
+  protected void checkNestedBindingPatterns(Tree recordPattern) {
+    List<? extends Tree> nestedPatterns =
+        DeconstructionPatternUtils.getNestedPatterns(recordPattern);
+    List<AnnotatedTypeMirror> componentTypes = null;
+    for (int i = 0; i < nestedPatterns.size(); i++) {
+      if (!(nestedPatterns.get(i) instanceof BindingPatternTree bindingPattern)) {
+        continue;
+      }
+      VariableTree variableTree = bindingPattern.getVariable();
+      if (TreeUtils.isVariableTreeDeclaredUsingVar(variableTree)) {
+        continue;
+      }
+      if (componentTypes == null) {
+        componentTypes = atypeFactory.getRecordPatternComponentTypes(recordPattern);
+      }
+      AnnotatedTypeMirror componentType = componentTypes.get(i);
+      AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
+      if (atypeFactory.isUnconditionalNestedTypePattern(recordPattern, i)) {
+        commonAssignmentCheck(variableType, componentType, bindingPattern, "assignment");
+      } else {
+        checkConditionalNestedBindingPattern(bindingPattern, variableType, componentType);
+      }
+    }
+  }
+
+  /**
+   * Reports a warning if the type of the binding variable declared by {@code bindingPattern} is not
+   * a safe downcast from {@code componentType}, as adjusted by {@link
+   * #instanceOfPatternMatchedType}. {@code bindingPattern} is nested in a record pattern and is not
+   * unconditional for the record component that it is matched against.
+   *
+   * @param bindingPattern a type pattern nested in a record pattern
+   * @param variableType the type of the binding variable declared by {@code bindingPattern}
+   * @param componentType the type of the record component that {@code bindingPattern} is matched
+   *     against
+   */
+  protected void checkConditionalNestedBindingPattern(
+      BindingPatternTree bindingPattern,
+      AnnotatedTypeMirror variableType,
+      AnnotatedTypeMirror componentType) {
+    if (!isTypeCastSafe(variableType, instanceOfPatternMatchedType(componentType))) {
+      checker.reportWarning(
+          bindingPattern, "instanceof.pattern.unsafe", componentType, bindingPattern.getVariable());
+    }
+  }
+
+  /**
+   * Reports a "type.arguments.not.inferred" or "type.argument.inference.crashed" error if the type
+   * arguments of the record pattern {@code recordPattern} cannot be inferred.
+   *
+   * @param recordPattern a {@code DeconstructionPatternTree}
+   */
+  protected void checkRecordPatternTypeInference(Tree recordPattern) {
+    RecordPatternTypeInference.Failure failure =
+        atypeFactory.getRecordPatternInferenceFailure(recordPattern);
+    if (failure != null) {
+      checker.reportError(
+          recordPattern,
+          failure.crashed() ? "type.argument.inference.crashed" : "type.arguments.not.inferred",
+          DeconstructionPatternUtils.getDeconstructor(recordPattern),
+          failure.message());
+    }
   }
 
   /**
@@ -3807,14 +3888,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         VariableTree variableTree = bindingPatternTree.getVariable();
         validateTypeOf(variableTree);
         if (variableTree.getModifiers() != null) {
-          AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
-          AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
-          if (!isTypeCastSafe(variableType, expType)) {
-            checker.reportWarning(tree, "instanceof.pattern.unsafe", expType, variableTree);
-          }
+          checkInstanceOfPattern(tree, variableTree);
         }
       } else {
-        // TODO: implement deconstructed patterns.
+        // A record pattern is checked by checkRecordPatternTypeInference and
+        // checkNestedBindingPatterns.
       }
     } else {
       Tree refTypeTree = tree.getType();
@@ -3830,6 +3908,37 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     return super.visitInstanceOf(tree, p);
+  }
+
+  /**
+   * Reports an {@code instanceof.pattern.unsafe} warning if the given binding variable's type is
+   * not a safe downcast from the type of the given instanceof expression's left operand, as
+   * adjusted by {@link #instanceOfPatternMatchedType}.
+   *
+   * @param tree an instanceof expression whose pattern is a binding pattern
+   * @param variableTree the binding variable of the pattern of {@code tree}
+   */
+  protected void checkInstanceOfPattern(InstanceOfTree tree, VariableTree variableTree) {
+    AnnotatedTypeMirror variableType = atypeFactory.getAnnotatedType(variableTree);
+    AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(tree.getExpression());
+    if (!isTypeCastSafe(variableType, instanceOfPatternMatchedType(expType))) {
+      checker.reportWarning(tree, "instanceof.pattern.unsafe", expType, variableTree);
+    }
+  }
+
+  /**
+   * Returns the type that a type pattern's binding variable is checked against, given the type of
+   * the value that the pattern is matched against: the left operand of an instanceof expression, or
+   * the record component that a type pattern nested in a record pattern is matched against. Returns
+   * {@code expType} itself. A subclass overrides this method if a type pattern matches only some
+   * values of {@code expType}; for example, a type pattern that is not unconditional does not match
+   * null.
+   *
+   * @param expType the type of the value that a type pattern is matched against
+   * @return the type that a type pattern's binding variable is checked against
+   */
+  protected AnnotatedTypeMirror instanceOfPatternMatchedType(AnnotatedTypeMirror expType) {
+    return expType;
   }
 
   /**
