@@ -534,7 +534,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
   public boolean shouldCache;
 
   /** Size of LRU cache if one isn't specified using the atfCacheSize option. */
-  private static final int DEFAULT_CACHE_SIZE = 300;
+  public static final int DEFAULT_CACHE_SIZE = 300;
 
   /** Mapping from a Tree to its annotated type; defaults have been applied. */
   private final Map<Tree, AnnotatedTypeMirror> classAndMethodTreeCache;
@@ -1000,6 +1000,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
       fromMemberTreeCache.clear();
       fromTypeTreeCache.clear();
       classAndMethodTreeCache.clear();
+      typeArgumentInference.clearCache();
 
       // There is no need to clear the following cache, it is limited by cache size and it
       // contents won't change between compilation units.
@@ -1178,7 +1179,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
    * @return the object that infers type arguments
    */
   protected TypeArgumentInference createTypeArgumentInference() {
-    return new DefaultTypeArgumentInference();
+    return new DefaultTypeArgumentInference(getCacheSize());
   }
 
   public TypeArgumentInference getTypeArgumentInference() {
