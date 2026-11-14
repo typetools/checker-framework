@@ -52,4 +52,22 @@ public class AssumeSideEffectFree {
     field++;
     return field;
   }
+
+  interface SideEffectFreeSupplier {
+    @SideEffectFree
+    int get();
+  }
+
+  interface DeterministicSupplier {
+    @Deterministic
+    int get();
+  }
+
+  /** A method reference is treated like a lambda whose body calls the referenced method. */
+  void methodReferences() {
+    SideEffectFreeSupplier s1 = this::unannotated;
+    SideEffectFreeSupplier l1 = () -> unannotated();
+    // :: error: [purity.methodref]
+    DeterministicSupplier s3 = this::unannotated;
+  }
 }
