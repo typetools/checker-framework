@@ -42,6 +42,31 @@ public class SwitchSelectorCaseNull {
     return i;
   }
 
+  // In a case other than `case null`, the selector is non-null.
+
+  void boxedNonNullCases(@Nullable Integer i) {
+    switch (i) {
+      case 1 -> i.toString();
+      case null -> {}
+      default -> i.toString();
+    }
+  }
+
+  int boxedSwitchExpression(@Nullable Integer i) {
+    return switch (i) {
+      case null -> 0;
+      default -> i;
+    };
+  }
+
+  int boxedSwitchExpressionNullCase(@Nullable Integer i) {
+    return switch (i) {
+      // :: error: [unboxing.of.nullable]
+      case null -> i;
+      default -> 0;
+    };
+  }
+
   // The selector's type is a type variable whose bound is a primitive wrapper.
 
   <T extends @Nullable Integer> void typeVar(T t) {
