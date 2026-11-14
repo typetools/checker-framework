@@ -46,7 +46,7 @@ public class PurityFunctionalMethodRef {
     UnboundApplier c = PurityFunctionalMethodRef::applyInstance;
     // :: error: [purity.methodref.functional.parameter]
     GenericApplier<Function<String, Integer>> d = PurityFunctionalMethodRef::applyStatic;
-    // A call through UnannotatedApplier checks nothing, so it may run applyStatic with a function
+    // A call through UnannotatedApplier checks nothing, so it can run applyStatic with a function
     // that has side effects.
     // :: error: [purity.methodref.functional.parameter]
     UnannotatedApplier e = PurityFunctionalMethodRef::applyStatic;
@@ -82,6 +82,59 @@ public class PurityFunctionalMethodRef {
   interface SubApplier {
     @SideEffectFree
     int apply(PureFunction f, String s);
+  }
+
+  /** Redeclares {@code UnannotatedApplier.apply}, which a call can still go through. */
+  @FunctionalInterface
+  interface StrongApplier extends UnannotatedApplier {
+    @Override
+    @SideEffectFree
+    int apply(Function<String, Integer> f, String s);
+  }
+
+  void overriddenFunctionalMethod() {
+    // A call through UnannotatedApplier.apply can run the reference.
+    // :: error: [purity.methodref.functional.parameter]
+    StrongApplier a = PurityFunctionalMethodRef::applyStatic;
+  }
+
+  @SideEffectFree
+  static int ignoreStatic(Function<String, Integer> f, String s) {
+    return 0;
+  }
+
+  @SideEffectFree
+  static int storeStatic(Function<String, Integer> f, String s) {
+    Function<String, Integer> g = f;
+    return f == null ? 0 : f.hashCode();
+  }
+
+  @SideEffectFree
+  final int ignoreFinal(Function<String, Integer> f, String s) {
+    return 0;
+  }
+
+  @SideEffectFree
+  int ignoreOverridable(Function<String, Integer> f, String s) {
+    return 0;
+  }
+
+  @SideEffectFree
+  static int passStatic(Function<String, Integer> f, String s) {
+    return applyStatic(f, s);
+  }
+
+  void bodyDoesNotRelyOnParameter() {
+    // None of these bodies relies on the purity of f, so no call can make one run impure code.
+    UnannotatedApplier a = PurityFunctionalMethodRef::ignoreStatic;
+    UnannotatedApplier b = PurityFunctionalMethodRef::storeStatic;
+    UnannotatedApplier c = this::ignoreFinal;
+    // An override of ignoreOverridable might call f.
+    // :: error: [purity.methodref.functional.parameter]
+    UnannotatedApplier d = this::ignoreOverridable;
+    // passStatic relies on the purity of f to call applyStatic.
+    // :: error: [purity.methodref.functional.parameter]
+    UnannotatedApplier e = PurityFunctionalMethodRef::passStatic;
   }
 
   void contravariantCallbackParameter() {

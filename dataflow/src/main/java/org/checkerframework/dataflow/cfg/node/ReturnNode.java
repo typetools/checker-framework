@@ -41,9 +41,9 @@ public class ReturnNode extends Node {
   }
 
   /**
-   * The result of the return node, {@code null} otherwise.
+   * Returns the result of the return node, or {@code null} if none.
    *
-   * @return the result of the return node, {@code null} otherwise
+   * @return the result of the return node, or {@code null} if none
    */
   public @Nullable Node getResult() {
     return result;

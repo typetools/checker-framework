@@ -17,7 +17,7 @@ import javax.annotation.processing.ProcessingEnvironment;
  *
  * <p>This is useful for parsing {@code EnsuresNonNull*}, and {@code KeyFor} values.
  *
- * <p>Currently, it handles four tree types only:
+ * <p>Currently, it handles five tree types only:
  *
  * <ul>
  *   <li>Identifier tree (e.g. {@code id})
@@ -27,9 +27,9 @@ import javax.annotation.processing.ProcessingEnvironment;
  *   <li>Array access tree (e.g. {@code array[id]})
  * </ul>
  *
- * Notable limitation: Doesn't handle spaces, or non-method-argument parenthesis.
+ * Notable limitation: Doesn't handle spaces, or non-method-argument parentheses.
  *
- * <p>It's implemented via a Recursive-Descend parser.
+ * <p>It's implemented via a Recursive-Descent parser.
  */
 public class TreeParser {
   /** Valid delimiters. */
@@ -44,7 +44,11 @@ public class TreeParser {
   /** The names instance. */
   private final Names names;
 
-  /** Create a TreeParser. */
+  /**
+   * Creates a TreeParser.
+   *
+   * @param env the processing environment
+   */
   public TreeParser(ProcessingEnvironment env) {
     Context context = ((JavacProcessingEnvironment) env).getContext();
     maker = TreeMaker.instance(context);
@@ -68,12 +72,22 @@ public class TreeParser {
     }
   }
 
-  /** The next token from the tokenizer, or the {@code SENTINEL} if none is available. */
+  /**
+   * Returns the next token from the tokenizer, or the {@code SENTINEL} if none is available.
+   *
+   * @param tokenizer the tokenizer to read from
+   * @return the next token, or {@code SENTINEL}
+   */
   private String nextToken(StringTokenizer tokenizer) {
     return tokenizer.hasMoreTokens() ? tokenizer.nextToken() : SENTINEL;
   }
 
-  /** The parsed expression tree for the given token. */
+  /**
+   * Returns the parsed expression tree for the given token.
+   *
+   * @param token a token that is a literal or an identifier
+   * @return the parsed expression tree for the token
+   */
   private JCExpression fromToken(String token) {
     // Optimization
     if ("true".equals(token)) {
@@ -108,7 +122,7 @@ public class TreeParser {
   private record ExpressionAndNextToken(JCExpression expression, String nextToken) {}
 
   /**
-   * Parse an expression.
+   * Parses an expression.
    *
    * @param tokenizer the tokenizer
    * @param token the first token
@@ -159,7 +173,11 @@ public class TreeParser {
     /** The serial version UID. */
     private static final long serialVersionUID = 1887754619522101929L;
 
-    /** Create a ParseError. */
+    /**
+     * Creates a ParseError.
+     *
+     * @param cause the underlying exception
+     */
     ParseError(Throwable cause) {
       super(cause);
     }

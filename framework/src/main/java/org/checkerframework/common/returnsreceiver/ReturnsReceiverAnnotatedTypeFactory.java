@@ -17,12 +17,12 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
 
   /**
    * The {@code @}{@link This} annotation. The field is package visible (i.e., "package private")
-   * due to a use in {@link ReturnsReceiverVisitor}
+   * due to a use in {@link ReturnsReceiverVisitor}.
    */
   final AnnotationMirror THIS_ANNOTATION;
 
   /**
-   * Create a new {@code ReturnsReceiverAnnotatedTypeFactory}.
+   * Creates a new {@code ReturnsReceiverAnnotatedTypeFactory}.
    *
    * @param checker the type-checker associated with this factory
    */
@@ -43,7 +43,7 @@ public class ReturnsReceiverAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
   private class ReturnsReceiverTypeAnnotator extends TypeAnnotator {
 
     /**
-     * Create a new ReturnsReceiverTypeAnnotator.
+     * Creates a new ReturnsReceiverTypeAnnotator.
      *
      * @param typeFactory the {@link AnnotatedTypeFactory} associated with this {@link
      *     TypeAnnotator}

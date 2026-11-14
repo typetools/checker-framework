@@ -339,7 +339,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
   /**
    * Adds the qualifiers in {@code annos} to {@code type} that are below the qualifier upper bound
-   * of type and for which type does not already have annotation in the same hierarchy. If a
+   * of type and for which type does not already have an annotation in the same hierarchy. If a
    * qualifier in {@code annos} is above the bound, then the bound is added to {@code type} instead.
    *
    * @param type annotations are added to this type

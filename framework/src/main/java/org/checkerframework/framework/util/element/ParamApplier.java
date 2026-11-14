@@ -24,7 +24,7 @@ import org.checkerframework.javacutil.BugInCF;
 public class ParamApplier extends IndexedElementAnnotationApplier {
 
   /**
-   * Apply annotations from {@code element} to {@code type}.
+   * Applies annotations from {@code element} to {@code type}.
    *
    * @param type the type whose annotations to change
    * @param element where to get annotations from
@@ -79,10 +79,10 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
   }
 
   /**
-   * Returns the index of element its parent method's parameter list. Integer.MIN_VALUE if the
+   * Returns the index of element in its parent method's parameter list, or Integer.MIN_VALUE if the
    * element is the receiver parameter.
    *
-   * @return the index of element its parent method's parameter list. Integer.MIN_VALUE if the
+   * @return the index of element in its parent method's parameter list, or Integer.MIN_VALUE if the
    *     element is the receiver parameter
    */
   @Override
@@ -261,7 +261,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
    * Returns the enclosing MethodSymbol of the given element, throwing an exception if the symbol's
    * enclosing element is not a MethodSymbol.
    *
-   * @param methodChildElem some element that is a child of a method typeDeclaration (e.g. a
+   * @param methodChildElem some element that is a child of a method typeDeclaration (e.g., a
    *     parameter or return type)
    * @return the MethodSymbol of the method enclosing methodChildElem
    */

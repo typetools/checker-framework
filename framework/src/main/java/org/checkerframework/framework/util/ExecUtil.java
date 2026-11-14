@@ -16,7 +16,7 @@ public class ExecUtil {
   }
 
   /**
-   * Runs the given command in a new process
+   * Runs the given command in a new process.
    *
    * @param cmd the command
    * @param std a stream to capture the standard output of the process

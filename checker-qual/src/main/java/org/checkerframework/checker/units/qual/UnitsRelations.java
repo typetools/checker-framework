@@ -5,7 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Specify the class that knows how to handle the meta-annotated unit when put in relation (plus,
+ * Specifies the class that knows how to handle the meta-annotated unit when put in relation (plus,
  * multiply, ...) with another unit. That class is a subtype of interface {@link
  * org.checkerframework.checker.units.UnitsRelations}.
  *

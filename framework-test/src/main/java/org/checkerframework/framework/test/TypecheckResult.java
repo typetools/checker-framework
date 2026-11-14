@@ -146,7 +146,7 @@ public class TypecheckResult {
   }
 
   /**
-   * Summarize unexpected and missing diagnostics.
+   * Summarizes unexpected and missing diagnostics.
    *
    * @return summary of failures
    */
