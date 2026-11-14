@@ -131,6 +131,39 @@ public class DesugaredCalls {
     for (String s : r) {}
   }
 
+  // The iterator of a `GenericIterable<I>` has type `I`.  The loop calls the `hasNext()` and
+  // `next()` methods of the type argument for `I`, not those of its bound.
+  abstract static class LoggingIterator implements Iterator<String> {
+    // `Iterator.next()` is `@SideEffectsOnly("this")`.
+    @Override
+    // :: error: (purity.sideeffectsonly.overriding)
+    @SideEffectsOnly("DesugaredCalls.log")
+    public abstract String next();
+  }
+
+  abstract static class NonLoggingIterator extends LoggingIterator {
+    @Override
+    @SideEffectFree
+    public abstract String next();
+  }
+
+  abstract static class GenericIterable<I extends LoggingIterator> implements Iterable<String> {
+    @Override
+    @SideEffectFree
+    public abstract I iterator();
+  }
+
+  @SideEffectsOnly("this")
+  void enhancedForOverNonLoggingIterator(GenericIterable<NonLoggingIterator> r) {
+    for (String s : r) {}
+  }
+
+  @SideEffectsOnly("this")
+  void enhancedForOverLoggingIterator(GenericIterable<LoggingIterator> r) {
+    // :: error: (purity.incorrect.sideeffectsonly)
+    for (String s : r) {}
+  }
+
   static class Resource implements AutoCloseable {
     @SideEffectsOnly("this")
     Resource() {}

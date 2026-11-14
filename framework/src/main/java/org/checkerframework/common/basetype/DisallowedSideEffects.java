@@ -532,7 +532,9 @@ public class DisallowedSideEffects extends TreePathScanner<Void, Void> {
       // no caller can observe a modification of the iterator itself, such as advancing it.  A null
       // receiver denotes such an object.  Anything else that `hasNext()` or `next()` modifies is
       // still checked.
-      TypeMirror iteratorType = iteratorMethod.getReturnType();
+      TypeMirror iteratorType =
+          ElementUtils.getReturnTypeAsMemberOf(
+              iterableType, iteratorMethod, checker.getProcessingEnvironment());
       for (String iteratorMethodName : new String[] {"hasNext", "next"}) {
         ExecutableElement iteratorElem =
             ElementUtils.resolveNoArgumentCall(

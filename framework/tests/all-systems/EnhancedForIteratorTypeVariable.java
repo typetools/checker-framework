@@ -28,6 +28,11 @@ public class EnhancedForIteratorTypeVariable {
     for (String s : iterable) {}
   }
 
+  // The upper bound of `T` is the uncaptured type `StringIterable<?>`.
+  <T extends StringIterable<?>> void stringsTypeVariableWithWildcard(T iterable) {
+    for (String s : iterable) {}
+  }
+
   <I extends Iterator<Integer>> long integers(IntegerIterable<I> iterable) {
     long sum = 0;
     for (int x : iterable) {

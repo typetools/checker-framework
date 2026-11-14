@@ -1031,6 +1031,9 @@ public final class ElementUtils {
     Context ctx = InternalUtils.getJavacContext(env);
     com.sun.tools.javac.code.Types javacTypes = com.sun.tools.javac.code.Types.instance(ctx);
     Symbol.TypeSymbol origin = ((Type) upperBound).tsym;
+    // The receiver expression's type is captured, but its upper bound might not be, as for a type
+    // variable whose bound is `List<?>`.
+    Type site = javacTypes.capture((Type) upperBound);
     com.sun.tools.javac.util.Name name =
         com.sun.tools.javac.util.Names.instance(ctx).fromString(methodName);
     // Elements.getAllMembers would find the candidates, but in rare cases it crashes with a
@@ -1049,8 +1052,7 @@ public final class ElementUtils {
             && (method.flags() & (Flags.STATIC | Flags.PRIVATE | Flags.SYNTHETIC)) == 0
             && method.isInheritedIn(origin, javacTypes)
             && (result == null
-                || takesPrecedenceInMethodResolution(
-                    method, result, (Type) upperBound, javacTypes))) {
+                || takesPrecedenceInMethodResolution(method, result, site, javacTypes))) {
           result = method;
         }
       }
@@ -1061,16 +1063,27 @@ public final class ElementUtils {
   /**
    * Returns true if a call on an expression of type {@code site}, which inherits both {@code m1}
    * and {@code m2}, invokes {@code m1} rather than {@code m2}. The two methods have the same
-   * signature. For an interface, a method of an interface takes precedence over a method of {@code
-   * Object}, the only class among its supertypes. For any other type, a method of a class takes
-   * precedence over a method of an interface. Otherwise, a method of a subtype takes precedence
-   * over a method of its supertype. If neither method's declaring type is a subtype of the other's,
-   * the method with the more specific return type (as a member of {@code site}) takes precedence.
-   * These rules are those of javac's method resolution (JLS 15.12.2.5).
+   * signature. These rules are those of javac's method resolution, applied in order:
+   *
+   * <ol>
+   *   <li>A method of a subtype takes precedence over a method of its supertype, except that a
+   *       method of an interface does not take precedence over a method of {@code Object}.
+   *   <li>If {@code site} is an interface, a method of an interface takes precedence over a method
+   *       of {@code Object}, the only class among its supertypes.
+   *   <li>A concrete method of a class takes precedence over a method of an interface, which the
+   *       class does not inherit (JLS 8.4.8).
+   *   <li>A concrete method, which might be a default method, takes precedence over an abstract
+   *       method (JLS 15.12.2.5).
+   *   <li>Of two abstract methods, the one with the more specific return type (as a member of
+   *       {@code site}) takes precedence (JLS 15.12.2.5).
+   * </ol>
+   *
+   * If no rule applies, as for two abstract methods with the same return type, then neither method
+   * takes precedence over the other.
    *
    * @param m1 a method
    * @param m2 a method with the same signature as {@code m1}
-   * @param site the type of the receiver of the call
+   * @param site the captured type of the receiver of the call
    * @param javacTypes the javac type utilities
    * @return true if {@code m1} takes precedence over {@code m2}
    */
@@ -1078,19 +1091,75 @@ public final class ElementUtils {
       MethodSymbol m1, MethodSymbol m2, Type site, com.sun.tools.javac.code.Types javacTypes) {
     Symbol owner1 = m1.owner;
     Symbol owner2 = m2.owner;
-    if (owner1.isInterface() != owner2.isInterface()) {
-      return owner1.isInterface() == site.tsym.isInterface();
-    }
-    if (owner1.equals(owner2) || owner2.isSubClass(owner1, javacTypes)) {
+    if (owner1.equals(owner2)) {
       return false;
     }
-    if (owner1.isSubClass(owner2, javacTypes)) {
-      return true;
+    boolean isInterface1 = owner1.isInterface();
+    boolean isInterface2 = owner2.isInterface();
+    if (isInterface1 == isInterface2) {
+      if (owner1.isSubClass(owner2, javacTypes)) {
+        return true;
+      }
+      if (owner2.isSubClass(owner1, javacTypes)) {
+        return false;
+      }
+    } else {
+      if (site.tsym.isInterface()) {
+        return isInterface1;
+      }
+      MethodSymbol classMethod = isInterface1 ? m2 : m1;
+      MethodSymbol interfaceMethod = isInterface1 ? m1 : m2;
+      if (!isAbstract(classMethod)
+          || classMethod.owner.isSubClass(interfaceMethod.owner, javacTypes)) {
+        return classMethod == m1;
+      }
+    }
+    boolean isAbstract1 = isAbstract(m1);
+    boolean isAbstract2 = isAbstract(m2);
+    if (isAbstract1 != isAbstract2) {
+      return isAbstract2;
+    }
+    if (!isAbstract1) {
+      // Two concrete methods, neither of which overrides the other, make the call ambiguous.
+      return false;
     }
     Type returnType1 = javacTypes.memberType(site, m1).getReturnType();
     Type returnType2 = javacTypes.memberType(site, m2).getReturnType();
     return javacTypes.isSubtype(returnType1, returnType2)
         && !javacTypes.isSameType(returnType1, returnType2);
+  }
+
+  /**
+   * Returns true if the given method is abstract. A default method is not abstract.
+   *
+   * @param method a method
+   * @return true if {@code method} is abstract
+   */
+  private static boolean isAbstract(MethodSymbol method) {
+    return (method.flags() & Flags.ABSTRACT) != 0;
+  }
+
+  /**
+   * Returns the return type of a call {@code receiver.method(...)}, where {@code receiver} is an
+   * expression of type {@code receiverType}. The result is the return type of {@code method} as a
+   * member of {@code receiverType}. For example, if {@code method} is {@code Iterable.iterator()},
+   * whose declared return type is {@code Iterator<T>}, and {@code receiverType} is {@code
+   * List<String>}, then the result is {@code Iterator<String>}.
+   *
+   * @param receiverType the type of the receiver expression
+   * @param method a method that {@code receiverType} has as a member
+   * @param env the processing environment
+   * @return the return type of the call, which might contain captured type variables
+   */
+  public static TypeMirror getReturnTypeAsMemberOf(
+      TypeMirror receiverType, ExecutableElement method, ProcessingEnvironment env) {
+    com.sun.tools.javac.code.Types javacTypes =
+        com.sun.tools.javac.code.Types.instance(InternalUtils.getJavacContext(env));
+    // The receiver expression's type is captured, but its upper bound might not be, as for a type
+    // variable whose bound is `List<?>`.  As a member of an uncaptured type, a method's return
+    // type might be a wildcard, which is not a type.
+    Type site = javacTypes.capture((Type) TypesUtils.upperBound(receiverType));
+    return javacTypes.memberType(site, (Symbol) method).getReturnType();
   }
 
   /**
