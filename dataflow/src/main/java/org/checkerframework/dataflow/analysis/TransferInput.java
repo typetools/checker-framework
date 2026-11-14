@@ -64,7 +64,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
    * @param store the regular result store, or {@code null} if none is present
    * @param thenStore the "then" result store, or {@code null} if none is present
    * @param elseStore the "else" result store, or {@code null} if none is present
-   * @param analysis analysis the corresponding analysis class to get intermediate flow results
+   * @param analysis the corresponding analysis class to get intermediate flow results
    */
   private TransferInput(
       @Nullable Node node,
@@ -85,7 +85,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
   }
 
   /**
-   * Create a {@link TransferInput}, given a {@link TransferResult} and a node-value mapping.
+   * Creates a {@link TransferInput}, given a {@link TransferResult} and a node-value mapping.
    *
    * <p><em>Aliasing</em>: The stores returned by any methods of {@code to} will be stored
    * internally and are not allowed to be used elsewhere. Full control of them is transferred to
@@ -108,7 +108,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
   }
 
   /**
-   * Create a {@link TransferInput}, given a store and a node-value mapping.
+   * Creates a {@link TransferInput}, given a store and a node-value mapping.
    *
    * <p><em>Aliasing</em>: The store {@code s} will be stored internally and is not allowed to be
    * used elsewhere. Full control over {@code s} is transferred to this object.
@@ -125,7 +125,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
   }
 
   /**
-   * Create a {@link TransferInput}, given two stores and a node-value mapping.
+   * Creates a {@link TransferInput}, given two stores and a node-value mapping.
    *
    * <p><em>Aliasing</em>: The two stores {@code s1} and {@code s2} will be stored internally and
    * are not allowed to be used elsewhere. Full control of them is transferred to this object.
@@ -166,7 +166,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
   /**
    * Returns the abstract value of node {@code n}, which is required to be a "sub-node" (that is, a
    * direct or indirect child) of the node this transfer input is associated with. Furthermore,
-   * {@code n} cannot be a l-value node. Returns {@code null} if no value is available.
+   * {@code n} cannot be an l-value node. Returns {@code null} if no value is available.
    *
    * @param n a node
    * @return the abstract value of node {@code n}, or {@code null} if no value is available
@@ -248,7 +248,7 @@ public class TransferInput<V extends AbstractValue<V>, S extends Store<S>> imple
   }
 
   /**
-   * Compute the least upper bound of two stores.
+   * Computes the least upper bound of two transfer inputs.
    *
    * <p><em>Important</em>: This method must fulfill the same contract as {@code leastUpperBound} of
    * {@link Store}.

@@ -7,8 +7,8 @@ import org.checkerframework.checker.interning.qual.FindDistinct;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * Represents the criterion that a program element is not enclosed by any method (i.e. it's a field,
- * class type parameter, etc.).
+ * Represents the criterion that a program element is not enclosed by any method (e.g., it's a
+ * field, class type parameter, etc.).
  */
 final class NotInMethodCriterion implements Criterion {
   /** Creates a NotInMethodCriterion. */

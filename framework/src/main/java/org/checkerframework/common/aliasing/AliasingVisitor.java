@@ -127,12 +127,14 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
   }
 
   /**
-   * Possibly issue a "unique.leaked" error.
+   * Possibly issues a "unique.leaked" error.
    *
    * @param tree a method invocation
-   * @param parentIsStatement is the parent of {@code tree} a statement?
-   * @param hasNonLeaked does the receiver have a {@code @NonLeaked} annotation?
-   * @param hasLeakedToResult does the receiver have a {@code @LeakedToResult} annotation?
+   * @param parentIsStatement true if the parent of {@code tree} is a statement
+   * @param hasNonLeaked true if the formal parameter (possibly the receiver) to which {@code this}
+   *     is passed has a {@code @NonLeaked} annotation
+   * @param hasLeakedToResult true if the formal parameter (possibly the receiver) to which {@code
+   *     this} is passed has a {@code @LeakedToResult} annotation
    */
   private void isUniqueCheck(
       MethodInvocationTree tree,
@@ -296,14 +298,14 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
   }
 
   /**
-   * Returns true if {@code exp} has type {@code @Unique} and is not a method invocation nor a new
-   * class expression. It checks whether the tree expression is unique by either checking for an
+   * Returns true if {@code exp} has type {@code @Unique} and is neither a method invocation nor a
+   * new class expression. It checks whether the tree expression is unique by either checking for an
    * explicit annotation or checking whether the class of the tree expression {@code exp} has type
-   * {@code @Unique}
+   * {@code @Unique}.
    *
    * @param exp the Tree to check
-   * @return true if {@code exp} has type {@code @Unique} and is not a method invocation nor a new
-   *     class expression
+   * @return true if {@code exp} has type {@code @Unique} and is neither a method invocation nor a
+   *     new class expression
    */
   private boolean canBeLeaked(Tree exp) {
     AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(exp);
@@ -318,7 +320,7 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
    * {@code @Unique}.
    *
    * @param type the annotated type whose class must be checked
-   * @return boolean true if class is unique and false otherwise
+   * @return true if the class is unique and false otherwise
    */
   private boolean isUniqueClass(AnnotatedTypeMirror type) {
     Element el = types.asElement(type.getUnderlyingType());

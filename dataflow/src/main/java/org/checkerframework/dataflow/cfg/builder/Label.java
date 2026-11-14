@@ -10,7 +10,7 @@ package org.checkerframework.dataflow.cfg.builder;
  */
 public class Label {
 
-  /** Unique id counter that incremented in {@code #uniqueName}. */
+  /** Unique id counter that is incremented in {@code #uniqueName}. */
   private static int uid = 0;
 
   protected final String name;

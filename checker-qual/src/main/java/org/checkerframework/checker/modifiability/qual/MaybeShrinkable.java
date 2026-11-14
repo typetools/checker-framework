@@ -9,8 +9,8 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The top qualifier in the Shrink hierarchy. The collection may or may not support shrink
- * operations such as {@code remove}, {@code, removeAll}, and {@code clear}. The checker
+ * The top qualifier in the Shrink hierarchy. The collection might or might not support shrink
+ * operations such as {@code remove}, {@code removeAll}, and {@code clear}. The checker
  * conservatively issues an error wherever a shrink operation is called on a
  * {@code @MaybeShrinkable} expression.
  *

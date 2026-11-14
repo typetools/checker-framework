@@ -17,7 +17,7 @@ import org.checkerframework.framework.qual.AnnotatedFor;
 
 /**
  * Elements of this enumeration are used in a {@link Format Format} annotation to indicate the valid
- * types that may be passed as a format parameter. For example:
+ * types that can be passed as a format parameter. For example:
  *
  * <blockquote>
  *
@@ -42,7 +42,7 @@ public enum ConversionCategory {
 
   /**
    * Use if the parameter is of a basic type that represents Unicode characters: char, Character,
-   * byte, Byte, short, and Short. This conversion may also be applied to the types int and Integer
+   * byte, Byte, short, and Short. This conversion can also be applied to the types int and Integer
    * when Character.isValidCodePoint(int) returns true. Applicable for conversions c, C.
    */
   CHAR("cC", Character.class, Byte.class, Short.class, Integer.class),
@@ -69,7 +69,7 @@ public enum ConversionCategory {
   /**
    * Use if the parameter is both a char and an int.
    *
-   * <p>In a format string, multiple conversions may be applied to the same parameter. This is
+   * <p>In a format string, multiple conversions can be applied to the same parameter. This is
    * seldom needed, but the following is an example of such use:
    *
    * <pre>
@@ -127,7 +127,7 @@ public enum ConversionCategory {
   public final @Nullable String chars;
 
   /**
-   * Create a new conversion category.
+   * Creates a new conversion category.
    *
    * @param chars the format specifier characters. Null means users cannot specify it directly.
    * @param types the argument types. Null means every type.
@@ -150,8 +150,8 @@ public enum ConversionCategory {
   }
 
   /**
-   * If the given class is a primitive wrapper, return the corresponding primitive class. Otherwise
-   * return null.
+   * If the given class is a primitive wrapper, returns the corresponding primitive class.
+   * Otherwise, returns null.
    *
    * @param c a class
    * @return the unwrapped primitive, or null

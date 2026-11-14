@@ -181,8 +181,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    *
    * @param methodName the name of the method being explicitly called
    * @param tree the invocation of the method
-   * @return "withOwners" or "withImageIds" if the tree is an equivalent filter addition. Otherwise,
-   *     return the first argument.
+   * @return "withOwners" or "withImageIds" if the tree is an equivalent filter addition; otherwise,
+   *     {@code methodName}
    */
   // This cannot return a Name because filterTreeToMethodName cannot.
   public String adjustMethodNameUsingValueChecker(String methodName, MethodInvocationTree tree) {
@@ -324,7 +324,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
   }
 
   /**
-   * Adds @CalledMethod annotations for build() methods of AutoValue and Lombok Builders to ensure
+   * Adds @CalledMethods annotations for build() methods of AutoValue and Lombok Builders to ensure
    * required properties have been set.
    */
   private class CalledMethodsTypeAnnotator extends TypeAnnotator {
@@ -438,8 +438,8 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    *
    * @param expressions the expressions to put in the value field of the EnsuresCalledMethods
    *     annotation
-   * @param calledMethods the methods that were definitely called on the expression
-   * @return a {@code @EnsuresCalledMethods("...")} annotation for the given expression
+   * @param calledMethods the methods that were definitely called on the expressions
+   * @return a {@code @EnsuresCalledMethods("...")} annotation for the given expressions
    */
   private AnnotationMirror ensuresCMAnno(String[] expressions, List<String> calledMethods) {
     AnnotationBuilder builder = new AnnotationBuilder(processingEnv, EnsuresCalledMethods.class);
@@ -471,7 +471,7 @@ public class CalledMethodsAnnotatedTypeFactory extends AccumulationAnnotatedType
    * EnsuresCalledMethodsOnException} annotations on it.
    *
    * @param methodOrConstructor the method to examine
-   * @return the exceptional postconditions on the given method; the return value is newly-allocated
+   * @return the exceptional postconditions on the given method; the return value is newly allocated
    *     and can be freely modified by callers
    */
   public Set<EnsuresCalledMethodOnExceptionContract> getExceptionalPostconditions(

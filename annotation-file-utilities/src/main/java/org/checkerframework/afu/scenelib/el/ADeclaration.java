@@ -29,7 +29,7 @@ public abstract class ADeclaration extends AElement {
 
   /**
    * The element's annotated insert-typecast invocations; map key is the AST path to the insertion
-   * place
+   * place.
    */
   @SuppressWarnings("modifiability:assignment") // The anonymous subclass's constructor result
   // is the top qualifier, so it does not propagate the backing map's @Modifiable type.
