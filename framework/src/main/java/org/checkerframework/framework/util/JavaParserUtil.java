@@ -1150,16 +1150,18 @@ public final class JavaParserUtil {
    * that must distinguish a type variable from its bound should call {@link
    * #resolveTypeNameAsTypeParameter(Elements, ClassOrInterfaceType, Map)}.
    *
-   * <p>The result is not erased. Only a type variable that is the whole type, or the component type
-   * of an array type, is replaced. Like the result of {@link #typeToTypeMirror(Elements, Types,
-   * Type, Map)}, the result for a class or interface type is the type of its declaration, which may
-   * contain the declaration's own type variables, as in {@code java.lang.Comparable<T>} for the
-   * bound of {@code <U extends Comparable<U>>}. When a type variable's upper bound is an
-   * intersection type, this yields the intersection type's leftmost bound, because {@code types}
-   * has no method that creates an intersection type. The leftmost bound is not erased: for {@code
-   * <T extends Comparable<T> & Serializable>}, the result is {@code java.lang.Comparable<T>}, not
-   * the raw type {@code java.lang.Comparable}. Erasing the result yields the intersection type's
-   * erasure. A caller that compares the result to another type should therefore erase it first.
+   * <p>The result is not erased, but it does not preserve type arguments either. Only a type
+   * variable that is the whole type, or the component type of an array type, is replaced. Like the
+   * result of {@link #typeToTypeMirror(Elements, Types, Type, Map)}, the result for a class or
+   * interface type is the type of its declaration, which contains the declaration's own type
+   * variables in place of any type arguments: for {@code <U extends Comparable<String>>}, the
+   * result for {@code U} is {@code java.lang.Comparable<T>}, where {@code T} is the type parameter
+   * of {@code Comparable}. When a type variable's upper bound is an intersection type, this uses
+   * the intersection type's leftmost bound in its place, because {@code types} has no method that
+   * creates an intersection type: for {@code <U extends Comparable<String> & Serializable>}, the
+   * result for {@code U} is also {@code java.lang.Comparable<T>}. Erasing the result yields the
+   * erasure of {@code type}. A caller that compares the result to another type should therefore
+   * erase it first.
    *
    * <p>Returns null if the TypeMirror cannot be determined: for the types for which {@link
    * #typeToTypeMirror(Elements, Types, Type, Map)} returns null, other than a use of a type
@@ -1228,21 +1230,19 @@ public final class JavaParserUtil {
   }
 
   /**
-   * Returns the TypeMirror for the upper bound of the given type variable declaration, or null if
-   * the upper bound cannot be determined.
+   * Returns a TypeMirror whose erasure is the erasure of the upper bound of the given type variable
+   * declaration, or null if the upper bound cannot be determined.
    *
-   * <p>When the upper bound is an intersection type, this returns the intersection type's leftmost
-   * bound, because {@code types} has no method that creates an intersection type. The leftmost
-   * bound is not erased; for example, a parameterized bound such as {@code Comparable<T>} is
-   * returned as is, rather than as the raw type {@code Comparable}.
+   * <p>See {@link #typeToTypeMirrorUsingTypeVariableBounds(Elements, Types, Type, Map)} for which
+   * TypeMirror this returns, including when the upper bound is an intersection type.
    *
    * @param elements used for looking up names
    * @param types used for creating types
    * @param typeParameter the declaration of a type variable
    * @param cache maps a name to the type it names, or to null if it names no type; this method both
    *     reads and writes it
-   * @return the TypeMirror for the upper bound of {@code typeParameter} (or for its leftmost bound,
-   *     if that upper bound is an intersection type), or null
+   * @return a TypeMirror whose erasure is the erasure of the upper bound of {@code typeParameter},
+   *     or null
    */
   private static @Nullable TypeMirror typeVariableUpperBound(
       Elements elements,

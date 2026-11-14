@@ -253,13 +253,22 @@ public class JavaParserUtilTest {
         "class SamePackageSub<T extends U, U extends CharSequence> { T f; }",
         "T");
 
-    // The upper bound of `T` is an intersection type, whose erasure is its leftmost bound.
+    // The upper bound of `T` is an intersection type, which is replaced by its leftmost bound.
     assertTypeMirror(
         "java.lang.Number", "class SamePackageSub<T extends Number & Runnable> { T f; }", "T");
 
-    // The result is the type of the declaration, which is not erased.
+    // The result is the type of the declaration, which is not erased.  It contains the
+    // declaration's own type variables (here, `Comparable`'s `T`) in place of the type arguments.
     assertTypeMirror(
         "java.lang.Comparable<T>", "class SamePackageSub<U extends Comparable<U>> { U f; }", "U");
+    assertTypeMirror(
+        "java.lang.Comparable<T>",
+        "class SamePackageSub<U extends Comparable<String>> { U f; }",
+        "U");
+    assertTypeMirror(
+        "java.lang.Comparable<T>",
+        "class SamePackageSub<U extends Comparable<String> & java.io.Serializable> { U f; }",
+        "U");
     assertTypeMirror(
         "java.util.List<E>",
         "import java.util.List; class SamePackageSub<T> { List<T> f; }",
