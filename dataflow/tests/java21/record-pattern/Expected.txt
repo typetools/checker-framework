@@ -86,7 +86,7 @@ Process order: 6
 TransferInput#29
 Before:   reaching definitions = { size = 0, switch#num0 = shape }
 ~~~~~~~~~
-case Square(int side):   [ Case ]
+case Square(int side): (labels untested)   [ Case ]
 ~~~~~~~~~
 AnalysisResult#0
 After:   reaching definitions = { size = 0, switch#num0 = shape }

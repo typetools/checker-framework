@@ -86,7 +86,7 @@ Process order: 6
 TransferInput#29
 Before:   reaching definitions = { to_increment = 0, switch#num0 = i }
 ~~~~~~~~~
-case WrappedBoolean(_):   [ Case ]
+case WrappedBoolean(_): (labels untested)   [ Case ]
 ~~~~~~~~~
 AnalysisResult#0
 After:   reaching definitions = { to_increment = 0, switch#num0 = i }
